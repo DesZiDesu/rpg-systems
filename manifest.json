@@ -1,0 +1,13 @@
+{
+    "display_name": "Tretaresia RPG",
+    "loading_order": 11,
+    "requires": [],
+    "optional": [],
+    "dependencies": [],
+    "js": "index.js",
+    "css": "ui-polish.css",
+    "author": "DesZiDesu",
+    "version": "0.1.0",
+    "homePage": "https://github.com/DesZiDesu/rpg-systems",
+    "auto_update": true
+}

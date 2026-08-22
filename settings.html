@@ -1,0 +1,95 @@
+<div id="tretaresia-rpg-settings" class="tretaresia-rpg-settings">
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header interactable" tabindex="0" role="button" aria-expanded="false">
+            <b><i class="fa-solid fa-book-open" aria-hidden="true"></i> Tretaresia RPG</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down" aria-hidden="true"></div>
+        </div>
+        <div class="inline-drawer-content">
+            <p class="tretaresia-rpg-settings-copy">A persistent Tretaresia role-play state linked to the current chat.</p>
+            <label class="checkbox_label" for="tretaresia-rpg-show-launcher">
+                <input id="tretaresia-rpg-show-launcher" type="checkbox" />
+                <span>Show in the wand menu</span>
+            </label>
+            <label class="checkbox_label" for="tretaresia-rpg-auto-track">
+                <input id="tretaresia-rpg-auto-track" type="checkbox" />
+                <span>Zero-call tracking from the normal AI reply</span>
+            </label>
+            <label class="checkbox_label" for="tretaresia-rpg-inject-state">
+                <input id="tretaresia-rpg-inject-state" type="checkbox" />
+                <span>Include current state in role-play prompts</span>
+            </label>
+            <div class="tretaresia-settings-grid">
+                <label class="tretaresia-settings-field" for="tretaresia-rpg-language">
+                    <span>Interface & action language / ภาษา</span>
+                    <select id="tretaresia-rpg-language">
+                        <option value="en">English</option>
+                        <option value="th">ไทย</option>
+                    </select>
+                </label>
+                <label class="tretaresia-settings-field" for="tretaresia-rpg-interaction-mode">
+                    <span>Action delivery / รูปแบบข้อความ</span>
+                    <select id="tretaresia-rpg-interaction-mode">
+                        <option value="hidden">Hidden action — no user bubble</option>
+                        <option value="visible">Visible message — send now</option>
+                        <option value="draft">Draft only — review, do not send</option>
+                    </select>
+                    <small class="tretaresia-settings-help" data-action-mode-help></small>
+                </label>
+                <label class="tretaresia-settings-field" for="tretaresia-rpg-activity-indicator">
+                    <span>Floating activity status / สถานะการทำงาน</span>
+                    <select id="tretaresia-rpg-activity-indicator">
+                        <option value="full">Full capsule</option>
+                        <option value="compact">Compact capsule</option>
+                        <option value="off">Off</option>
+                    </select>
+                </label>
+                <label class="tretaresia-settings-field" for="tretaresia-rpg-accent">
+                    <span>Interface accent / สีหลัก</span>
+                    <input id="tretaresia-rpg-accent" type="color" value="#8fb4a3" />
+                </label>
+                <label class="tretaresia-settings-field" for="tretaresia-rpg-density">
+                    <span>Information density / ความหนาแน่น</span>
+                    <select id="tretaresia-rpg-density">
+                        <option value="compact">Compact</option>
+                        <option value="comfortable">Comfortable</option>
+                    </select>
+                </label>
+                <label class="tretaresia-settings-field" for="tretaresia-rpg-glass">
+                    <span>Glass opacity</span>
+                    <input id="tretaresia-rpg-glass" type="range" min="55" max="98" value="86" />
+                </label>
+                <label class="tretaresia-settings-field" for="tretaresia-rpg-glow">
+                    <span>Aura glow</span>
+                    <input id="tretaresia-rpg-glow" type="range" min="0" max="100" value="38" />
+                </label>
+            </div>
+            <div class="tretaresia-rpg-settings-note">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                <span>Every normal reply checks progression, power and combat proficiency, Origin skills, long-distance travel, regional currency, dungeons, NPC relationships/stats, Scene, maps, inventory, quests, and Mailbox without a background AI request. Values change only when the story gives a reasonable basis; hidden power types obey Tretaresia sensing rules. Manual Sync uses one separate request.</span>
+            </div>
+            <details class="tretaresia-tracking-explainer">
+                <summary><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> How automatic UI updates work</summary>
+                <ol>
+                    <li>After your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.</li>
+                    <li>The character produces its normal reply once. If a confirmed fact changed, it appends an invisible state patch to that same reply.</li>
+                    <li>The extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.</li>
+                    <li>If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.</li>
+                </ol>
+            </details>
+            <div class="tretaresia-rpg-settings-actions">
+                <button id="tretaresia-rpg-open-from-settings" class="menu_button">
+                    <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
+                    Open Tretaresia RPG
+                </button>
+                <button id="tretaresia-rpg-sync-from-settings" class="menu_button">
+                    <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                    Sync latest turn
+                </button>
+                <span class="tretaresia-rpg-ready-state">
+                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                    Tretaresia engine 0.1 ready
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

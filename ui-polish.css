@@ -1,0 +1,182 @@
+@import url("./style.css");
+
+/* Tretaresia RPG UI polish layer.
+   Kept separate from the core stylesheet so these targeted visual fixes stay
+   isolated from the extension's existing layout and behavior. */
+
+/* Tretaresia's travel scale is a first-class state rather than an instant map
+   teleport. Keep the live journey readable on both desktop and phone. */
+.tretaresia-travel-status {
+    margin: 0 0 .72rem;
+    background:
+        linear-gradient(110deg, rgba(var(--tretaresia-accent-rgb), .09), transparent 54%),
+        rgba(5, 12, 10, .34);
+    border-left: 2px solid var(--tretaresia-accent);
+}
+
+.tretaresia-travel-status .tretaresia-fact-list {
+    margin-top: .55rem;
+}
+
+.tretaresia-travel-status > p {
+    margin: .55rem 0 0;
+    color: var(--tretaresia-muted);
+    font-size: .65rem;
+    line-height: 1.45;
+}
+
+/* Appearance menu: keep the accent picker a true circular swatch instead of
+   stretching it to the full width of the settings column. */
+.tretaresia-setting-row input[type="color"] {
+    width: 2.15rem;
+    min-width: 2.15rem;
+    max-width: 2.15rem;
+    height: 2.15rem;
+    min-height: 2.15rem;
+    padding: 2px;
+    justify-self: start;
+    overflow: hidden;
+    border: 1px solid var(--tretaresia-line);
+    border-radius: 50%;
+    background: #0b0907;
+    cursor: pointer;
+}
+
+.tretaresia-setting-row input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 1px;
+}
+
+.tretaresia-setting-row input[type="color"]::-webkit-color-swatch {
+    border: 0;
+    border-radius: 50%;
+}
+
+.tretaresia-setting-row input[type="color"]::-moz-color-swatch {
+    border: 0;
+    border-radius: 50%;
+}
+
+/* Scene time cycle: turn the old boxed phase row into a cleaner timeline.
+   The active phase remains driven by the existing --phase value. */
+.tretaresia-scene-cycle.tretaresia-day-cycle {
+    min-height: 86px;
+    margin-bottom: .65rem;
+    padding: .9rem .65rem .72rem;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at calc(12.5% + (var(--phase) * 25%)) 28px, rgba(var(--tretaresia-accent-rgb), .10), transparent 18%),
+        linear-gradient(180deg, rgba(var(--tretaresia-accent-rgb), .035), rgba(0, 0, 0, .18));
+    border: 1px solid var(--tretaresia-line-soft);
+    border-radius: 3px;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .018);
+}
+
+.tretaresia-scene-cycle .tretaresia-cycle-line {
+    left: 12.5%;
+    right: 12.5%;
+    top: 28px;
+    height: 2px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, .075);
+    border-radius: 999px;
+}
+
+.tretaresia-scene-cycle .tretaresia-cycle-line span {
+    height: 100%;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--tretaresia-accent) 62%, #6f624d), var(--tretaresia-accent));
+    box-shadow: 0 0 calc(10px * var(--tretaresia-glow-strength)) rgba(var(--tretaresia-accent-rgb), .62);
+}
+
+.tretaresia-scene-cycle .tretaresia-cycle-stop {
+    gap: .38rem;
+    color: var(--tretaresia-muted);
+    font-size: .58rem;
+    letter-spacing: .015em;
+}
+
+.tretaresia-scene-cycle .tretaresia-cycle-stop i {
+    width: 29px;
+    height: 29px;
+    color: #746f67;
+    background: linear-gradient(180deg, #151310, #090806);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .26);
+    font-size: .68rem;
+    transition: transform 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.tretaresia-scene-cycle .tretaresia-cycle-stop span {
+    white-space: nowrap;
+}
+
+.tretaresia-scene-cycle .tretaresia-cycle-stop.is-current {
+    color: color-mix(in srgb, var(--tretaresia-accent) 76%, white);
+    font-weight: 650;
+}
+
+.tretaresia-scene-cycle .tretaresia-cycle-stop.is-current i {
+    color: #0c0804;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tretaresia-accent) 76%, white), var(--tretaresia-accent));
+    border-color: color-mix(in srgb, var(--tretaresia-accent) 72%, white);
+    box-shadow:
+        0 0 0 3px rgba(var(--tretaresia-accent-rgb), .10),
+        0 0 calc(20px * var(--tretaresia-glow-strength)) rgba(var(--tretaresia-accent-rgb), .72);
+    transform: scale(1.08);
+}
+
+@media (max-width: 800px) {
+    /* Fill the middle shell correctly, then dock navigation immediately above
+       the location/sync footer. This also caps iOS safe-area padding so Safari
+       cannot create the large blank bands seen on some mobile viewports. */
+    .tretaresia-app-layout {
+        height: 100%;
+        min-height: 0;
+    }
+
+    .tretaresia-tab-list {
+        align-self: end;
+        padding: .32rem .22rem max(.32rem, min(env(safe-area-inset-bottom, 0px), 12px));
+    }
+
+    .tretaresia-rpg-panel-footer {
+        min-height: 44px;
+        padding: .5rem .68rem max(.5rem, min(env(safe-area-inset-bottom, 0px), 14px));
+    }
+
+    .tretaresia-scene-cycle.tretaresia-day-cycle {
+        min-height: 82px;
+        padding: .82rem .38rem .65rem;
+    }
+
+    .tretaresia-scene-cycle .tretaresia-cycle-line {
+        left: 12.5%;
+        right: 12.5%;
+        top: 26px;
+    }
+
+    .tretaresia-scene-cycle .tretaresia-cycle-stop {
+        gap: .32rem;
+        font-size: .53rem;
+    }
+
+    .tretaresia-scene-cycle .tretaresia-cycle-stop i {
+        width: 27px;
+        height: 27px;
+        font-size: .62rem;
+    }
+}
+
+@media (max-width: 440px) {
+    .tretaresia-scene-cycle.tretaresia-day-cycle {
+        padding-inline: .22rem;
+    }
+
+    .tretaresia-scene-cycle .tretaresia-cycle-stop {
+        font-size: .49rem;
+    }
+
+    .tretaresia-rpg-panel-footer {
+        gap: .5rem;
+    }
+}
