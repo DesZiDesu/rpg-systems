@@ -68,41 +68,162 @@ const DAY_PHASES = ['Morning', 'Afternoon', 'Evening', 'Night'];
 const ZONE_TYPES = ['Safe Zone', 'Neutral Zone', 'Danger Zone', 'Unknown Zone'];
 const ROOM_TYPES = ['Room', 'Hall', 'Corridor', 'Stairs', 'Entrance', 'Garden', 'Utility', 'Unknown'];
 const CONNECTION_TYPES = ['Door', 'Passage', 'Stairs', 'Archway', 'Window'];
+const WORLD_MAP_WIDTH = 2400;
+const WORLD_MAP_HEIGHT = 1400;
+const WORLD_CONTINENTS = [
+    { id: 'central', name: 'Central Continent', className: 'central', label: [1120, 710], bounds: [620, 310, 1660, 1135],
+        path: 'M690 390 830 325 1030 350 1180 315 1370 370 1515 470 1580 620 1540 770 1615 900 1510 1045 1325 1110 1130 1075 950 1125 785 1030 670 880 705 720 625 555Z' },
+    { id: 'forest', name: 'The Great Forest', className: 'forest', label: [2030, 985], bounds: [1660, 650, 2370, 1370],
+        path: 'M1710 760 1810 680 1980 705 2120 660 2270 735 2360 875 2330 1040 2380 1185 2265 1335 2075 1370 1900 1315 1740 1220 1680 1070 1730 920Z' },
+    { id: 'titan', name: 'Great Land of Titan', className: 'titan', label: [350, 1090], bounds: [25, 710, 720, 1380],
+        path: 'M75 900 170 785 335 735 510 770 645 890 710 1050 655 1215 535 1345 350 1380 175 1330 45 1200 20 1040Z' },
+    { id: 'drinovia', name: 'Drinovia Continent', className: 'drinovia', label: [2050, 370], bounds: [1640, 60, 2380, 680],
+        path: 'M1680 180 1805 85 1985 65 2160 120 2310 235 2380 390 2305 540 2165 650 1975 620 1810 555 1660 420 1625 285Z' },
+    { id: 'north', name: 'North Continent', className: 'north', label: [1120, 145], bounds: [650, 10, 1660, 315],
+        path: 'M675 155 820 55 1035 15 1240 35 1435 80 1620 175 1540 275 1350 310 1130 275 940 305 755 250Z' },
+    { id: 'baluguria', name: 'Baluguria Continent', className: 'baluguria', label: [1260, 1270], bounds: [850, 1110, 1690, 1390],
+        path: 'M890 1235 1010 1145 1185 1110 1370 1135 1530 1190 1670 1300 1575 1380 1390 1395 1195 1365 1030 1390 875 1325Z' },
+];
+const mapSite = (id, name, continent, region, x, y, tier = 2, kind = 'landmark', zone = 'Neutral Zone') => (
+    { id, name, continent, region, x, y, tier, kind, zone }
+);
 const WORLD_LOCATIONS = [
-    { id: 'central-capital', continent: 'Central Continent', name: 'Central Capital', x: 314, y: 286, zone: 'Safe Zone' },
-    { id: 'great-academy', continent: 'Central Continent', name: 'The Great Academy', x: 254, y: 224, zone: 'Safe Zone' },
-    { id: 'crossroads', continent: 'Central Continent', name: 'Grand Crossroads', x: 405, y: 346, zone: 'Neutral Zone' },
-    { id: 'central-port', continent: 'Central Continent', name: 'Central Ocean Port', x: 535, y: 458, zone: 'Safe Zone' },
-    { id: 'forest-verge', continent: 'The Great Forest', name: 'Forbidden Verge', x: 790, y: 370, zone: 'Danger Zone' },
-    { id: 'canopy-way', continent: 'The Great Forest', name: 'Canopy Waystation', x: 842, y: 425, zone: 'Neutral Zone' },
-    { id: 'worldroot', continent: 'The Great Forest', name: 'Worldroot Expanse', x: 878, y: 490, zone: 'Danger Zone' },
-    { id: 'cloud-tree', continent: 'The Great Forest', name: 'The Cloud-Piercing Tree', x: 818, y: 530, zone: 'Danger Zone' },
-    { id: 'khaduzar', continent: 'Great Land of Titan', name: 'Grand Kingdom of Khaduzar', x: 175, y: 492, zone: 'Safe Zone' },
-    { id: 'titan-hand', continent: 'Great Land of Titan', name: "Titan's Hand", x: 235, y: 535, zone: 'Neutral Zone' },
-    { id: 'glass-dunes', continent: 'Great Land of Titan', name: 'Glass Dunes', x: 105, y: 446, zone: 'Danger Zone' },
-    { id: 'fallen-arms', continent: 'Drinovia Continent', name: 'Field of Fallen Arms', x: 790, y: 178, zone: 'Danger Zone' },
-    { id: 'duel-crown', continent: 'Drinovia Continent', name: 'Duel Crown', x: 855, y: 120, zone: 'Neutral Zone' },
-    { id: 'ash-march', continent: 'Drinovia Continent', name: 'Ash March', x: 895, y: 250, zone: 'Danger Zone' },
-    { id: 'frostgate', continent: 'North Continent', name: 'Frostgate', x: 535, y: 76, zone: 'Safe Zone' },
-    { id: 'white-wastes', continent: 'North Continent', name: 'White Wastes', x: 606, y: 52, zone: 'Danger Zone' },
-    { id: 'deepwinter', continent: 'North Continent', name: 'Deepwinter Reach', x: 465, y: 48, zone: 'Danger Zone' },
-    { id: 'exile-port', continent: 'Baluguria Continent', name: 'Exile Port', x: 654, y: 488, zone: 'Neutral Zone' },
-    { id: 'gilded-vice', continent: 'Baluguria Continent', name: 'Gilded Vice', x: 705, y: 536, zone: 'Danger Zone' },
-    { id: 'chainmarket', continent: 'Baluguria Continent', name: 'Chainmarket', x: 753, y: 474, zone: 'Danger Zone' },
-    { id: 'underworld', continent: 'Baluguria Continent', name: 'Underworld Quarter', x: 690, y: 430, zone: 'Danger Zone' },
+    mapSite('central-capital', 'Central Crown', 'Central Continent', 'Crown Heartlands', 1135, 690, 0, 'capital', 'Safe Zone'),
+    mapSite('great-academy', 'The Great Academy', 'Central Continent', 'Academy March', 1010, 600, 0, 'academy', 'Safe Zone'),
+    mapSite('grand-crossroads', 'Grand Crossroads', 'Central Continent', 'Kingroads', 1250, 790, 0, 'city', 'Safe Zone'),
+    mapSite('eastwake-port', 'Eastwake Port', 'Central Continent', 'Eastwake Coast', 1510, 890, 0, 'port', 'Safe Zone'),
+    mapSite('sunmere', 'Sunmere Principality', 'Central Continent', 'Sunmere', 860, 520, 1, 'city', 'Safe Zone'),
+    mapSite('river-crown', 'River Crown', 'Central Continent', 'Crown Heartlands', 1180, 585, 1, 'city', 'Safe Zone'),
+    mapSite('bellfoundry', 'Bellfoundry', 'Central Continent', 'Iron Vale', 1395, 550, 1, 'town', 'Neutral Zone'),
+    mapSite('redwillow', 'Redwillow', 'Central Continent', 'Western Farms', 770, 735, 1, 'town', 'Safe Zone'),
+    mapSite('greymark', 'Greymark Citadel', 'Central Continent', 'Northern March', 1100, 410, 1, 'fortress', 'Neutral Zone'),
+    mapSite('hollowbridge', 'Hollowbridge', 'Central Continent', 'Kingroads', 1325, 895, 1, 'town', 'Safe Zone'),
+    mapSite('westmere-port', 'Westmere Port', 'Central Continent', 'Westmere Coast', 690, 855, 1, 'port', 'Safe Zone'),
+    mapSite('saint-orsen', 'Saint Orsen Hospice', 'Central Continent', 'Pilgrim Fields', 945, 820, 2, 'sanctuary', 'Safe Zone'),
+    mapSite('moonmill', 'Moonmill Village', 'Central Continent', 'Western Farms', 830, 940, 2, 'village', 'Safe Zone'),
+    mapSite('ashen-orchard', 'Ashen Orchard', 'Central Continent', 'Cinder Downs', 1460, 730, 2, 'village', 'Neutral Zone'),
+    mapSite('old-ars-road', 'Old Ars Road', 'Central Continent', 'Ancient Roads', 1045, 965, 2, 'road', 'Neutral Zone'),
+    mapSite('copper-den', 'Copper Den', 'Central Continent', 'Iron Vale', 1425, 990, 2, 'mine', 'Danger Zone'),
+    mapSite('veilwood', 'Veilwood Hamlet', 'Central Continent', 'Veilwood', 760, 625, 2, 'village', 'Neutral Zone'),
+    mapSite('larkspur-waystation', 'Larkspur Waystation', 'Central Continent', 'Kingroads', 1210, 1015, 2, 'waystation', 'Safe Zone'),
+    mapSite('glasswater-lake', 'Glasswater Lake', 'Central Continent', 'Lake Country', 930, 1035, 2, 'lake', 'Neutral Zone'),
+    mapSite('black-bell-dungeon', 'Black Bell Dungeon', 'Central Continent', 'Cinder Downs', 1525, 1010, 2, 'dungeon', 'Danger Zone'),
+    mapSite('nameless-chapel', 'Nameless Chapel', 'Central Continent', 'Pilgrim Fields', 1280, 475, 2, 'ruin', 'Danger Zone'),
+
+    mapSite('cloud-tree', 'The Cloud-Piercing Tree', 'The Great Forest', 'Worldroot Core', 2070, 1040, 0, 'world-tree', 'Danger Zone'),
+    mapSite('worldroot-expanse', 'Worldroot Expanse', 'The Great Forest', 'Worldroot Core', 2000, 960, 0, 'forest', 'Danger Zone'),
+    mapSite('forbidden-verge', 'Forbidden Verge', 'The Great Forest', 'Human Exclusion Border', 1745, 905, 0, 'border', 'Danger Zone'),
+    mapSite('verdant-court', 'Verdant Court', 'The Great Forest', 'Elder Canopy', 2150, 870, 0, 'capital', 'Safe Zone'),
+    mapSite('canopy-waystation', 'Canopy Waystation', 'The Great Forest', 'Outer Canopy', 1810, 1020, 1, 'waystation', 'Neutral Zone'),
+    mapSite('rainfang', 'Rainfang Village', 'The Great Forest', 'Rainfang Basin', 2250, 1090, 1, 'village', 'Safe Zone'),
+    mapSite('jade-river', 'Jade River Crossing', 'The Great Forest', 'Jadewater', 1930, 1185, 1, 'crossing', 'Neutral Zone'),
+    mapSite('moss-crown', 'Moss Crown', 'The Great Forest', 'Elder Canopy', 2055, 780, 1, 'town', 'Safe Zone'),
+    mapSite('thousand-vines', 'Thousand-Vine Maze', 'The Great Forest', 'Tangled Interior', 2200, 970, 1, 'labyrinth', 'Danger Zone'),
+    mapSite('greenwhisper', 'Greenwhisper', 'The Great Forest', 'Whispering Boughs', 1865, 820, 1, 'village', 'Safe Zone'),
+    mapSite('orchid-falls', 'Orchid Falls', 'The Great Forest', 'Jadewater', 2115, 1220, 1, 'waterfall', 'Neutral Zone'),
+    mapSite('sleeping-grove', 'Sleeping Grove', 'The Great Forest', 'Dreamwood', 2290, 1245, 2, 'grove', 'Danger Zone'),
+    mapSite('bone-orchard', 'Bone Orchard', 'The Great Forest', 'Tangled Interior', 1965, 855, 2, 'ruin', 'Danger Zone'),
+    mapSite('amber-hive', 'Amber Hive', 'The Great Forest', 'Outer Canopy', 1785, 1130, 2, 'settlement', 'Neutral Zone'),
+    mapSite('starcap-cavern', 'Starcap Cavern', 'The Great Forest', 'Worldroot Core', 2020, 1290, 2, 'dungeon', 'Danger Zone'),
+    mapSite('moonfern-lake', 'Moonfern Lake', 'The Great Forest', 'Dreamwood', 2185, 1320, 2, 'lake', 'Neutral Zone'),
+    mapSite('heretic-bloom', 'Heretic Bloom Shrine', 'The Great Forest', 'Tangled Interior', 2310, 835, 2, 'cult', 'Danger Zone'),
+    mapSite('beast-tongue-market', 'Beast-Tongue Market', 'The Great Forest', 'Rainfang Basin', 2205, 1155, 2, 'market', 'Safe Zone'),
+    mapSite('rootwatch', 'Rootwatch Tower', 'The Great Forest', 'Human Exclusion Border', 1735, 790, 2, 'tower', 'Danger Zone'),
+    mapSite('lost-leaf', 'Lost Leaf Village', 'The Great Forest', 'Whispering Boughs', 1880, 1265, 2, 'hidden-village', 'Neutral Zone'),
+    mapSite('pale-mangrove', 'Pale Mangrove', 'The Great Forest', 'Southern Wetlands', 2240, 1340, 2, 'swamp', 'Danger Zone'),
+
+    mapSite('khaduzar', 'Grand Kingdom of Khaduzar', 'Great Land of Titan', 'Khaduzar', 365, 1080, 0, 'capital', 'Safe Zone'),
+    mapSite('titan-hand', "Titan's Hand", 'Great Land of Titan', 'Khaduzar Dunes', 460, 1000, 0, 'monument', 'Neutral Zone'),
+    mapSite('sunscar-port', 'Sunscar Port', 'Great Land of Titan', 'Burning Coast', 165, 1165, 0, 'port', 'Safe Zone'),
+    mapSite('dune-throne', 'Dune Throne', 'Great Land of Titan', 'Royal Sands', 335, 920, 0, 'city', 'Safe Zone'),
+    mapSite('glass-dunes', 'Glass Dunes', 'Great Land of Titan', 'Titan Wastes', 190, 930, 1, 'desert', 'Danger Zone'),
+    mapSite('red-aquifer', 'Red Aquifer', 'Great Land of Titan', 'Deep Wells', 520, 1160, 1, 'oasis', 'Neutral Zone'),
+    mapSite('iron-sirocco', 'Iron Sirocco', 'Great Land of Titan', 'Stormbelt', 585, 1010, 1, 'fortress', 'Danger Zone'),
+    mapSite('salt-crown', 'Salt Crown', 'Great Land of Titan', 'White Salt', 260, 1250, 1, 'town', 'Safe Zone'),
+    mapSite('giant-step', "Giant's Step", 'Great Land of Titan', 'Khaduzar Dunes', 520, 900, 1, 'waystation', 'Neutral Zone'),
+    mapSite('mirage-market', 'Mirage Market', 'Great Land of Titan', 'Royal Sands', 405, 1215, 1, 'market', 'Safe Zone'),
+    mapSite('sunken-obelisk', 'Sunken Obelisk', 'Great Land of Titan', 'Titan Wastes', 110, 1045, 1, 'ruin', 'Danger Zone'),
+    mapSite('black-cistern', 'Black Cistern', 'Great Land of Titan', 'Deep Wells', 600, 1265, 2, 'dungeon', 'Danger Zone'),
+    mapSite('seven-tents', 'Seven Tents', 'Great Land of Titan', 'Caravan Sea', 320, 1310, 2, 'caravan', 'Safe Zone'),
+    mapSite('bonewind-camp', 'Bonewind Camp', 'Great Land of Titan', 'Stormbelt', 635, 1125, 2, 'camp', 'Danger Zone'),
+    mapSite('blue-flame-oasis', 'Blue-Flame Oasis', 'Great Land of Titan', 'Deep Wells', 475, 1295, 2, 'oasis', 'Neutral Zone'),
+    mapSite('shifting-maw', 'Shifting Maw', 'Great Land of Titan', 'Titan Wastes', 135, 1260, 2, 'dungeon', 'Danger Zone'),
+    mapSite('hammerfall-quarry', 'Hammerfall Quarry', 'Great Land of Titan', 'Khaduzar', 570, 1340, 2, 'mine', 'Neutral Zone'),
+    mapSite('scorpion-road', 'Scorpion Road', 'Great Land of Titan', 'Caravan Sea', 245, 1085, 2, 'road', 'Danger Zone'),
+    mapSite('pale-sultanate', 'Pale Sultanate', 'Great Land of Titan', 'White Salt', 95, 1185, 2, 'city', 'Safe Zone'),
+    mapSite('wrist-shadow', 'Wrist-Shadow Village', 'Great Land of Titan', 'Khaduzar Dunes', 485, 1065, 2, 'village', 'Safe Zone'),
+    mapSite('howling-vault', 'Howling Vault', 'Great Land of Titan', 'Stormbelt', 655, 1305, 2, 'dungeon', 'Danger Zone'),
+
+    mapSite('duel-crown', 'Duel Crown', 'Drinovia Continent', 'Crown of Blades', 2070, 335, 0, 'capital', 'Neutral Zone'),
+    mapSite('fallen-arms', 'Field of Fallen Arms', 'Drinovia Continent', 'Gravefields', 1950, 425, 0, 'battlefield', 'Danger Zone'),
+    mapSite('ash-march', 'Ash March', 'Drinovia Continent', 'Ash Frontier', 2250, 455, 0, 'region', 'Danger Zone'),
+    mapSite('red-arena', 'Red Arena', 'Drinovia Continent', 'Crown of Blades', 2160, 245, 0, 'arena', 'Neutral Zone'),
+    mapSite('speargrave', 'Speargrave', 'Drinovia Continent', 'Gravefields', 1835, 330, 1, 'city', 'Neutral Zone'),
+    mapSite('iron-widow', 'Iron Widow Keep', 'Drinovia Continent', 'Widow Hills', 1980, 155, 1, 'fortress', 'Danger Zone'),
+    mapSite('victors-rest', "Victor's Rest", 'Drinovia Continent', 'Crown of Blades', 2200, 570, 1, 'city', 'Safe Zone'),
+    mapSite('broken-standard', 'Broken Standard', 'Drinovia Continent', 'Gravefields', 1745, 465, 1, 'town', 'Danger Zone'),
+    mapSite('bloodford', 'Bloodford', 'Drinovia Continent', 'Redwater', 2075, 535, 1, 'crossing', 'Danger Zone'),
+    mapSite('last-challenge', 'Last Challenge', 'Drinovia Continent', 'Ash Frontier', 2320, 345, 1, 'fortress', 'Danger Zone'),
+    mapSite('weapon-rain', 'Weapon Rain Plateau', 'Drinovia Continent', 'Widow Hills', 1870, 215, 1, 'battlefield', 'Danger Zone'),
+    mapSite('nameless-duel', 'Nameless Duel Stone', 'Drinovia Continent', 'Crown of Blades', 2110, 440, 2, 'monument', 'Neutral Zone'),
+    mapSite('rust-prayer', 'Rust Prayer Chapel', 'Drinovia Continent', 'Gravefields', 1905, 540, 2, 'ruin', 'Danger Zone'),
+    mapSite('black-banner', 'Black Banner Camp', 'Drinovia Continent', 'Ash Frontier', 2280, 555, 2, 'camp', 'Danger Zone'),
+    mapSite('thousand-swords', 'Thousand Swords Ravine', 'Drinovia Continent', 'Widow Hills', 1770, 190, 2, 'ravine', 'Danger Zone'),
+    mapSite('cinder-lance', 'Cinder Lance', 'Drinovia Continent', 'Ash Frontier', 2340, 245, 2, 'town', 'Neutral Zone'),
+    mapSite('mourning-smithy', 'Mourning Smithy', 'Drinovia Continent', 'Gravefields', 1830, 520, 2, 'smithy', 'Safe Zone'),
+    mapSite('champion-well', "Champion's Well", 'Drinovia Continent', 'Redwater', 2145, 620, 2, 'sanctuary', 'Safe Zone'),
+    mapSite('skull-gate', 'Skull Gate', 'Drinovia Continent', 'Widow Hills', 1665, 360, 2, 'gate', 'Danger Zone'),
+    mapSite('oathbreaker-pit', 'Oathbreaker Pit', 'Drinovia Continent', 'Crown of Blades', 2220, 155, 2, 'dungeon', 'Danger Zone'),
+    mapSite('quiet-blade', 'Quiet Blade Village', 'Drinovia Continent', 'Redwater', 2015, 595, 2, 'village', 'Safe Zone'),
+
+    mapSite('frostgate', 'Frostgate', 'North Continent', 'North Coast', 1120, 245, 0, 'capital', 'Safe Zone'),
+    mapSite('deepwinter', 'Deepwinter Reach', 'North Continent', 'Far North', 900, 115, 0, 'region', 'Danger Zone'),
+    mapSite('white-wastes', 'White Wastes', 'North Continent', 'Outer North', 1340, 145, 0, 'region', 'Danger Zone'),
+    mapSite('aurora-hold', 'Aurora Hold', 'North Continent', 'Aurora Shelf', 1240, 230, 0, 'city', 'Safe Zone'),
+    mapSite('ice-vein', 'Ice-Vein Mine', 'North Continent', 'Outer North', 1460, 205, 1, 'mine', 'Danger Zone'),
+    mapSite('snowblind-port', 'Snowblind Port', 'North Continent', 'North Coast', 1510, 250, 1, 'port', 'Neutral Zone'),
+    mapSite('cold-sun', 'Cold Sun Monastery', 'North Continent', 'Aurora Shelf', 1040, 125, 1, 'monastery', 'Safe Zone'),
+    mapSite('wolfglass', 'Wolfglass Village', 'North Continent', 'Outer North', 1390, 265, 1, 'village', 'Safe Zone'),
+    mapSite('winter-throne', 'Winter Throne', 'North Continent', 'Far North', 780, 190, 1, 'fortress', 'Danger Zone'),
+    mapSite('blue-ice-road', 'Blue-Ice Road', 'North Continent', 'North Coast', 1185, 285, 1, 'road', 'Neutral Zone'),
+    mapSite('breathless-field', 'Breathless Field', 'North Continent', 'Far North', 720, 105, 1, 'wilderness', 'Danger Zone'),
+    mapSite('dead-star-crater', 'Dead Star Crater', 'North Continent', 'Outer North', 1560, 120, 2, 'crater', 'Danger Zone'),
+    mapSite('mammoth-grave', 'Mammoth Grave', 'North Continent', 'Far North', 840, 260, 2, 'graveyard', 'Danger Zone'),
+    mapSite('frozen-mouth', 'Frozen Mouth Dungeon', 'North Continent', 'Aurora Shelf', 1280, 80, 2, 'dungeon', 'Danger Zone'),
+    mapSite('three-fires', 'Three Fires Camp', 'North Continent', 'North Coast', 1010, 270, 2, 'camp', 'Safe Zone'),
+    mapSite('pale-choir', 'Pale Choir Ruins', 'North Continent', 'Outer North', 1435, 85, 2, 'ruin', 'Danger Zone'),
+    mapSite('iceblood-lake', 'Iceblood Lake', 'North Continent', 'Aurora Shelf', 1170, 85, 2, 'lake', 'Danger Zone'),
+    mapSite('last-pine', 'Last Pine', 'North Continent', 'North Coast', 945, 285, 2, 'waystation', 'Safe Zone'),
+    mapSite('storm-nest', 'Storm Nest', 'North Continent', 'Far North', 690, 205, 2, 'lair', 'Danger Zone'),
+    mapSite('silent-thermals', 'Silent Thermals', 'North Continent', 'Aurora Shelf', 1325, 280, 2, 'springs', 'Neutral Zone'),
+    mapSite('minus-three-hundred', '-300 Marker', 'North Continent', 'Far North', 760, 60, 2, 'monument', 'Danger Zone'),
+
+    mapSite('exile-port', 'Exile Port', 'Baluguria Continent', 'Balugurian Coast', 1010, 1290, 0, 'port', 'Neutral Zone'),
+    mapSite('gilded-vice', 'Gilded Vice', 'Baluguria Continent', 'Pleasure District', 1280, 1260, 0, 'city', 'Danger Zone'),
+    mapSite('chainmarket', 'Chainmarket', 'Baluguria Continent', 'Trade Ward', 1420, 1310, 0, 'market', 'Danger Zone'),
+    mapSite('underworld-quarter', 'Underworld Quarter', 'Baluguria Continent', 'Lower Baluguria', 1210, 1345, 0, 'district', 'Danger Zone'),
+    mapSite('black-dice', 'Black Dice', 'Baluguria Continent', 'Gambling Ward', 1160, 1220, 1, 'casino-city', 'Danger Zone'),
+    mapSite('silk-lantern', 'Silk Lantern Row', 'Baluguria Continent', 'Pleasure District', 1335, 1340, 1, 'district', 'Danger Zone'),
+    mapSite('prisoners-mile', "Prisoners' Mile", 'Baluguria Continent', 'Exile Road', 1080, 1360, 1, 'road', 'Danger Zone'),
+    mapSite('smuggler-crown', "Smuggler's Crown", 'Baluguria Continent', 'Lower Baluguria', 1535, 1260, 1, 'fortress', 'Danger Zone'),
+    mapSite('orion-auction', 'Orion Auction Hall', 'Baluguria Continent', 'Trade Ward', 1455, 1250, 1, 'auction', 'Danger Zone'),
+    mapSite('velvet-dock', 'Velvet Dock', 'Baluguria Continent', 'Balugurian Coast', 930, 1340, 1, 'port', 'Neutral Zone'),
+    mapSite('red-ledger', 'Red Ledger Bank', 'Baluguria Continent', 'Gambling Ward', 1245, 1190, 1, 'bank', 'Danger Zone'),
+    mapSite('faceless-den', 'Faceless Den', 'Baluguria Continent', 'Lower Baluguria', 1385, 1380, 2, 'hideout', 'Danger Zone'),
+    mapSite('broken-collar', 'Broken Collar Inn', 'Baluguria Continent', 'Exile Road', 1050, 1200, 2, 'inn', 'Neutral Zone'),
+    mapSite('nightglass', 'Nightglass Alley', 'Baluguria Continent', 'Pleasure District', 1305, 1375, 2, 'district', 'Danger Zone'),
+    mapSite('coin-eater', 'Coin-Eater Pit', 'Baluguria Continent', 'Gambling Ward', 1175, 1350, 2, 'arena', 'Danger Zone'),
+    mapSite('contraband-bazaar', 'Contraband Bazaar', 'Baluguria Continent', 'Trade Ward', 1490, 1365, 2, 'market', 'Danger Zone'),
+    mapSite('salt-cellars', 'Salt Cellars', 'Baluguria Continent', 'Balugurian Coast', 970, 1190, 2, 'dungeon', 'Danger Zone'),
+    mapSite('ash-chain-yard', 'Ash Chain Yard', 'Baluguria Continent', 'Exile Road', 1115, 1265, 2, 'yard', 'Danger Zone'),
+    mapSite('whisper-broker', 'Whisper Broker Court', 'Baluguria Continent', 'Lower Baluguria', 1570, 1340, 2, 'court', 'Danger Zone'),
+    mapSite('golden-cage', 'Golden Cage', 'Baluguria Continent', 'Pleasure District', 1360, 1210, 2, 'estate', 'Danger Zone'),
+    mapSite('last-freeman', "Last Freeman's Shrine", 'Baluguria Continent', 'Balugurian Coast', 900, 1260, 2, 'shrine', 'Neutral Zone'),
 ];
 const WORLD = Object.fromEntries([...new Set(WORLD_LOCATIONS.map(location => location.continent))].map(continent => [
     continent, WORLD_LOCATIONS.filter(location => location.continent === continent).map(location => location.name),
 ]));
-const LOCATION_REGIONS = {
-    'Central Capital': 'Heartlands', 'The Great Academy': 'Academy District', 'Grand Crossroads': 'Caravan Roads',
-    'Central Ocean Port': 'Eastern Coast', 'Forbidden Verge': 'Human Exclusion Border', 'Canopy Waystation': 'Outer Canopy',
-    'Worldroot Expanse': 'Inner Forest', 'The Cloud-Piercing Tree': 'Worldroot Core', 'Grand Kingdom of Khaduzar': 'Khaduzar',
-    "Titan's Hand": 'Khaduzar Dunes', 'Glass Dunes': 'Titan Wastes', 'Field of Fallen Arms': 'Drinovian Battlefields',
-    'Duel Crown': 'Drinovian Crownlands', 'Ash March': 'Drinovian Frontier', Frostgate: 'North Coast',
-    'White Wastes': 'Outer North', 'Deepwinter Reach': 'Far North', 'Exile Port': 'Balugurian Coast',
-    'Gilded Vice': 'Pleasure District', Chainmarket: 'Trade Ward', 'Underworld Quarter': 'Lower Baluguria',
-};
+const LOCATION_REGIONS = Object.fromEntries(WORLD_LOCATIONS.map(location => [location.name, location.region]));
 const DEFAULT_SETTINGS = Object.freeze({
     showWandLauncher: true,
     autoTrack: true,
@@ -114,6 +235,14 @@ const DEFAULT_SETTINGS = Object.freeze({
     glassOpacity: 86,
     glowStrength: 38,
     density: 'compact',
+    eventNotifications: true,
+    notificationDuration: 6000,
+    notifyExperience: true,
+    notifyLevel: true,
+    notifyLearning: true,
+    notifyCombat: true,
+    notifyKills: true,
+    notifyCurrency: true,
 });
 
 const TRANSLATIONS = {
@@ -201,6 +330,8 @@ let pendingSave = Promise.resolve();
 let syncQueue = Promise.resolve();
 let tabTransitionToken = 0;
 let mapSelectionId = null;
+let mapDraftPoint = null;
+let mapDetailFrame = 0;
 let openedLetterId = null;
 let selectedNpcId = null;
 let npcPortraitRenderToken = 0;
@@ -211,7 +342,7 @@ let activityState = { mode: 'ready', label: 'Ready', detail: '', visible: false 
 let pendingComposerDraft = null;
 let audioPlayer = null;
 let audioObjectUrl = '';
-const mapView = { scale: 1, x: 0, y: 0 };
+const mapView = { scale: .78, x: 264, y: 154 };
 
 const uid = () => globalThis.crypto?.randomUUID?.() || `tretaresia-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const clone = value => globalThis.structuredClone ? structuredClone(value) : JSON.parse(JSON.stringify(value));
@@ -265,10 +396,11 @@ function defaultState() {
         },
         progression: {
             adventurerRank: 'Rookie', customRankName: '', magicRank: 'Dormant', swordRank: 'Dormant', experience: 0, experienceMax: 100, reputation: 0,
+            kills: 0,
             currency: { name: 'Central Common Currency', gold: 0, silver: 0, copper: 0 },
         },
         worldClock: { day: 1, dayName: 'Day 1', time: '08:00', phase: 'Morning' },
-        location: { continent: 'Central Continent', region: 'Heartlands', place: 'Unknown', detail: '', zoneType: 'Safe Zone', discovered: ['Central Capital'], pins: [] },
+        location: { continent: 'Central Continent', region: 'Crown Heartlands', place: 'Central Crown', detail: '', zoneType: 'Safe Zone', mapX: 1135, mapY: 690, heading: 0, discovered: ['Central Crown'], pins: [] },
         travel: { status: 'Idle', origin: '', destination: '', route: 'Road', totalDays: 0, remainingDays: 0, notes: '' },
         scene: { position: 'Unknown', weather: 'Unknown', temperature: null },
         sceneMap: { activeMapId: '', activeFloorId: '', playerRoomId: '', maps: [] },
@@ -301,6 +433,8 @@ function getSettings() {
     if (!/^#[0-9a-f]{6}$/i.test(settings.accentColor)) settings.accentColor = DEFAULT_SETTINGS.accentColor;
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
+    settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
+    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency']) settings[key] = Boolean(settings[key]);
     return settings;
 }
 
@@ -581,6 +715,9 @@ function normalize(candidate, base = defaultState()) {
     const progress = source.progression && typeof source.progression === 'object' ? source.progression : {};
     const currency = progress.currency && typeof progress.currency === 'object' ? progress.currency : {};
     const location = source.location && typeof source.location === 'object' ? source.location : {};
+    const migratedMapSite = WORLD_LOCATIONS.find(entry => entry.name === location.place)
+        || WORLD_LOCATIONS.find(entry => entry.name === location.region)
+        || WORLD_LOCATIONS.find(entry => entry.continent === location.continent);
 
     result.version = 1;
     const portraitView = player.portraitView && typeof player.portraitView === 'object' ? player.portraitView : {};
@@ -608,6 +745,7 @@ function normalize(candidate, base = defaultState()) {
         experience: number(progress.experience, result.progression.experience),
         experienceMax: number(progress.experienceMax, result.progression.experienceMax, 1, 999999999),
         reputation: number(progress.reputation, result.progression.reputation, -999999, 999999),
+        kills: number(progress.kills, result.progression.kills, 0, 999999999),
         currency: {
             name: text(currency.name, result.progression.currency.name, 120),
             gold: number(currency.gold, result.progression.currency.gold),
@@ -629,13 +767,18 @@ function normalize(candidate, base = defaultState()) {
         place: text(location.place, result.location.place, 160),
         detail: text(location.detail, result.location.detail, 300),
         zoneType: ZONE_TYPES.includes(location.zoneType) ? location.zoneType : result.location.zoneType,
+        mapX: number(location.mapX, migratedMapSite?.x ?? result.location.mapX, 0, WORLD_MAP_WIDTH),
+        mapY: number(location.mapY, migratedMapSite?.y ?? result.location.mapY, 0, WORLD_MAP_HEIGHT),
+        heading: number(location.heading, result.location.heading, 0, 359.999),
         discovered: Array.isArray(location.discovered)
             ? [...new Set(location.discovered.map(x => text(x, '', 120)).filter(Boolean))].slice(0, 100)
             : result.location.discovered,
         pins: Array.isArray(location.pins) ? location.pins.map(pin => ({
             id: text(pin?.id, uid(), 100), locationId: text(pin?.locationId, '', 100),
+            x: optionalNumber(pin?.x, null, 0, WORLD_MAP_WIDTH), y: optionalNumber(pin?.y, null, 0, WORLD_MAP_HEIGHT),
+            continent: text(pin?.continent, '', 100), region: text(pin?.region, '', 120),
             label: text(pin?.label, 'Marked location', 100), note: text(pin?.note, '', 300),
-        })).filter(pin => pin.locationId).slice(0, 100) : result.location.pins,
+        })).filter(pin => pin.locationId || (pin.x !== null && pin.y !== null)).slice(0, 250) : result.location.pins,
     };
     const travel = source.travel && typeof source.travel === 'object' ? source.travel : {};
     result.travel = {
@@ -650,7 +793,7 @@ function normalize(candidate, base = defaultState()) {
     result.scene = {
         position: text(scene.position, result.scene.position, 200),
         weather: text(scene.weather, result.scene.weather, 120),
-        temperature: optionalNumber(scene.temperature, result.scene.temperature, -100, 100),
+        temperature: optionalNumber(scene.temperature, result.scene.temperature, -1000, 1000),
     };
     result.sceneMap = normalizeSceneMap(source.sceneMap, result.sceneMap);
     if (Array.isArray(source.inventory)) result.inventory = source.inventory.map(item).filter(Boolean).slice(0, 200);
@@ -748,6 +891,17 @@ function getState() {
     return saved && typeof saved === 'object' ? normalize(saved) : defaultState();
 }
 
+function resolveLevelProgression(state) {
+    let levelUps = 0;
+    while (state.progression.experience >= state.progression.experienceMax && levelUps < 100) {
+        state.progression.experience -= state.progression.experienceMax;
+        state.player.level += 1;
+        state.progression.experienceMax = Math.max(state.progression.experienceMax + 25, Math.round(state.progression.experienceMax * 1.2));
+        levelUps += 1;
+    }
+    return levelUps;
+}
+
 async function persistState(candidate, source = 'manual') {
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.()) {
@@ -755,6 +909,7 @@ async function persistState(candidate, source = 'manual') {
         return false;
     }
     const state = normalize(candidate, getState());
+    resolveLevelProgression(state);
     state.updatedAt = new Date().toISOString();
     state.updateSource = source;
     context.chatMetadata[METADATA_KEY] = state;
@@ -836,23 +991,24 @@ function patchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     return [
         'After the role-play reply, append one invisible HTML comment only when confirmed state changed:',
-        '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5],["inc","proficiencies.magic.aura",2],["upsert","proficiencies.customMagic",{"id":"ember-origin","name":"Ember Origin","proficiency":1,"iconKey":"fire"}],["inc","npcValues",{"npcId":"guide","field":"trust","amount":2}],["set","worldClock.time","14:30"]],"summary":"Training, time, and relationship progress recorded."}-->',
+        '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","proficiencies.magic.aura",2,{"reason":"Aura control improved","category":"learning","label":"Aura"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}],["set","worldClock.time","14:30"]],"summary":"Training, payment, and combat progress recorded."}-->',
         'Allowed verbs: set or inc for scalar paths; upsert or delete for inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters; set or inc npcValues; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
         'Use canonical paths shown in the state JSON. For a new incoming physical letter include contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not a letter.',
         'Create or update a named NPC dossier with an upsert on npcs only when that NPC becomes relevant or a confirmed fact changes. Use partial NPC objects and preserve the canonical id from npcIndex. When a relationship becomes a correspondence, also upsert contacts with npcId; do not make every incidental NPC a contact.',
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. NPC portraits and portrait framing are local-only and forbidden in patches.',
         'Evaluate every relevant subsystem after every reply, not only scene/location. Update every materially affected value in the same patch; leave a value unchanged only when this reply provides no reasonable story basis for changing it.',
         'Full checklist: player HP/Aura-or-Mana/stamina/condition, profession, power type, Origin skill and identity; EXP/adventurer rank/custom title/reputation/local currency; inventory, Constructs and learned skills; power/combat/technique proficiency; quests and dungeons; time/location/travel/weather/local map; every participating NPC dossier, relationship meter, location, lastSeen, abilities, diary, and revealed stats; contacts and actual physical letters. Emit only fields affected by this completed reply.',
-        'Progression rules: award player EXP with inc progression.experience for completed meaningful action, successful practice, discovery, combat, quest progress, or milestone. Typical gain: 1-3 routine practice, 4-8 meaningful success, 9-20 major challenge, 21-40 exceptional milestone. Do not award EXP for idle narration, mere plans, or ordinary small talk. The extension handles level rollover automatically.',
+        'EXP rules: award EXP for every completed action that materially counts as studying, reading with understanding, taking a lesson, researching, learning, spell or skill practice, crafting practice, physical training, sparring, combat participation, surviving danger, killing a hostile creature, discovery, quest progress, or another genuine growth action. Use inc progression.experience and always add fourth-position metadata {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical gain: 1-3 routine study/practice, 4-8 meaningful success, 9-20 combat or major challenge, 21-40 exceptional milestone. Do not award EXP for passive narration, merely intending to act, failed non-instructive attempts, or ordinary small talk. The extension levels up automatically the instant accumulated EXP is greater than or exactly equal to experienceMax.',
+        'Kill rules: whenever the player personally kills or decisively finishes a hostile person or creature, inc progression.kills by the confirmed count with fourth-position metadata naming the defeated target, for example ["inc","progression.kills",1,{"reason":"Defeated the cave troll","category":"kill"}]. Also award appropriate combat EXP in the same patch. Do not count knockouts, uncertain deaths, assists without a kill, practice targets, or environmental deaths not caused by the player.',
         'Proficiency rules: increment a used or trained power system or combat discipline by 1-3 when the reply confirms genuine practice or successful use; use 4-8 only for a breakthrough. Do not increase unused proficiencies. When a confirmed power or combat style is not in the preset lists, upsert proficiencies.customMagic or proficiencies.customSword with {id,name,proficiency,description,iconKey}; later upserts may contain only id/name and changed fields.',
         'Tretaresia sensing rule: a power can normally be sensed only by someone who wields the same kind. Formless Aura cannot be sensed by anyone. Divine Mana can be perceived only by another Divine Mana wielder. Never let observers identify a hidden power without valid same-kind perception or direct evidence.',
         'Power canon: False Magic is learnable structured human magic that normally needs a staff, wand, or medium. True Magic is a lost stronger art requiring deep mana understanding and no medium. Aura is innate and commonly carries one birth-given Origin skill. Formless Aura is exceptionally rare and wholly undetectable. Blood Aura is vampiric and a turning may preserve, mutate, split, or erase the prior power. Sage Mana is lost transformative training that can refill from natural energy. Divine Mana may switch among power modes. Constructs allow those without usable Aura to wield a forged ability; primordial Divine Constructs choose one owner and cannot be copied, remade, or manufactured.',
-        'Travel rules: Tretaresia distances take days, months, or years. Roads can produce villages, towns, waystations and caravans; off-road travel may reveal secret dungeons, lost villages, cults or worse. While travel.status is Traveling or Delayed, reduce travel.remainingDays only by elapsed story days and update worldClock. Do not change the current continent/place to the destination until arrival is confirmed. At arrival set travel.status to Arrived, remainingDays to 0, update location fields, and add location.discovered.',
+        'Travel rules: Tretaresia distances take days, months, or years. Roads can produce villages, towns, waystations and caravans; off-road travel may reveal secret dungeons, lost villages, cults or worse. Almost the entire 2400 by 1400 world-coordinate atlas is travelable, including unnamed wilderness and sea routes. While travel.status is Traveling or Delayed, reduce travel.remainingDays only by elapsed story days and update worldClock. Do not change the current continent/place to the destination until arrival is confirmed. At arrival set travel.status to Arrived, remainingDays to 0, update location fields including location.mapX and location.mapY when the destination coordinates are known, and add location.discovered. Update location.heading from 0 north clockwise when a clear travel direction is established.',
         'Dungeon and rank rules: dungeonRank must be one of Unranked, E-, E, E+, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+, S-, S, S+, SS. Adventurer ranks are Rookie, Basic, Intermediate, Ember, and Custom Rank; a Custom Rank name is individually invented by an assessor and should be recorded in progression.customRankName.',
-        'Currency rules: the Central Continent generally shares a common currency, but other regions and non-human lands may use different money. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
+        'Currency rules: the Central Continent generally shares a common currency, but other regions and non-human lands may use different money. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
         'NPC update rules: for every named NPC who directly participates, consider relationship, location, lastSeen, abilities, custom meters, diary, and revealed stats. A substantive friendly/helpful exchange may change affection or trust by 1-3; hostility, deception, fear, romance, loyalty, or corruption should adjust only the relevant meters in proportion to what actually occurred. Use ["inc","npcValues",{"npcId":"...","field":"trust","amount":2}] for deltas or ["set","npcValues",{"npcId":"...","field":"stats.level","value":12}] for revealed absolute values. Valid relationship fields are affection, trust, loyalty, fear, corruption, lust. Valid stat fields are stats.level, stats.rank, stats.hp, stats.mp, stats.stamina, stats.strength, stats.agility, stats.intelligence, stats.endurance. Zero numeric NPC core stats mean unknown, not literal zero. Conversation alone does not increase NPC level or combat stats.',
-        'Track the active scene when confirmed: time, phase, day/dayName, continent, region, place, location detail, scene position, weather, and temperature. Do not invent weather or temperature when the reply provides no evidence.',
+        'Track the active scene when confirmed: time, phase, day/dayName, continent, region, place, location detail, exact world mapX/mapY coordinates, compass heading, scene position, weather, and temperature. Named atlas destinations already provide exact coordinates in state; for newly discovered nearby places use a reasonable nearby coordinate and keep it consistent. Do not invent weather or temperature when the reply provides no evidence.',
         'Maintain a sparse overhead local map only from confirmed or strongly implied spatial facts. Create a sceneMaps record, then its sceneFloors, sceneRooms, and sceneConnections. Room coordinates use x 0-100, y 0-70, width 8-70, height 7-50. Reveal or add rooms gradually; never invent a complete unseen building. Use canonical mapId/floorId/room ids, set the active ids and playerRoomId as the player moves, and preserve all locked maps, rooms, and connections.',
         'Handle all story genres and mature or NSFW scenes neutrally. Do not censor, rewrite, omit, or classify confirmed state merely because the scene is adult; follow the active SillyTavern, model, and provider settings.',
         'Record only outcomes confirmed by this reply. Never record plans, attempts, questions, hypotheticals, rejected actions, or out-of-character discussion. Keep proficiency changes conservative.',
@@ -887,6 +1043,47 @@ function updatePrompt(state = getState()) {
 function notify(type, message) {
     if (typeof toastr !== 'undefined' && typeof toastr[type] === 'function') toastr[type](message, 'Tretaresia RPG');
     else console[type === 'error' ? 'error' : 'info'](`[Tretaresia RPG] ${message}`);
+}
+
+function buildEventNotificationStack() {
+    if (document.getElementById('tretaresia-event-stack')) return;
+    const stack = document.createElement('section');
+    stack.id = 'tretaresia-event-stack';
+    stack.className = 'tretaresia-event-stack';
+    stack.setAttribute('aria-live', 'polite');
+    stack.setAttribute('aria-label', 'Tretaresia event notifications');
+    stack.addEventListener('click', event => event.target.closest('[data-dismiss-event]')?.closest('.tretaresia-event-toast')?.remove());
+    document.body.appendChild(stack);
+}
+
+function eventNotificationEnabled(kind) {
+    const settings = getSettings();
+    if (!settings.eventNotifications) return false;
+    const key = { experience: 'notifyExperience', level: 'notifyLevel', learning: 'notifyLearning', combat: 'notifyCombat', kill: 'notifyKills', currency: 'notifyCurrency' }[kind];
+    return key ? settings[key] : true;
+}
+
+function showEventNotification(event) {
+    if (!event || !eventNotificationEnabled(event.kind)) return;
+    buildEventNotificationStack();
+    const stack = document.getElementById('tretaresia-event-stack');
+    if (!stack) return;
+    const icons = { experience: 'fa-star', level: 'fa-arrow-up', learning: 'fa-book-open', combat: 'fa-khanda', kill: 'fa-skull', currency: 'fa-coins' };
+    const toast = document.createElement('article');
+    toast.className = 'tretaresia-event-toast';
+    toast.dataset.kind = event.kind;
+    toast.innerHTML = `<span class="tretaresia-event-icon"><i class="fa-solid ${icons[event.kind] || 'fa-sparkles'}"></i></span><div><small>${html(event.eyebrow || 'SYSTEM')}</small><strong>${html(event.title)}</strong>${event.detail ? `<p>${html(event.detail)}</p>` : ''}</div>${event.value ? `<b>${html(event.value)}</b>` : ''}<button type="button" data-dismiss-event aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button><i class="tretaresia-event-timer" style="animation-duration:${getSettings().notificationDuration}ms"></i>`;
+    stack.prepend(toast);
+    while (stack.children.length > 5) stack.lastElementChild?.remove();
+    requestAnimationFrame(() => toast.classList.add('is-visible'));
+    setTimeout(() => {
+        toast.classList.remove('is-visible');
+        setTimeout(() => toast.remove(), 260);
+    }, getSettings().notificationDuration);
+}
+
+function showEventNotifications(events) {
+    events.forEach((event, index) => setTimeout(() => showEventNotification(event), index * 180));
 }
 
 function activityCopy(mode = getSettings().interactionMode) {
@@ -966,6 +1163,38 @@ function mapLocation(id) {
     return WORLD_LOCATIONS.find(location => location.id === id);
 }
 
+function currentMapPoint(state) {
+    const known = currentMapLocation(state);
+    return {
+        ...known,
+        name: state.location.place || known.name,
+        continent: state.location.continent || known.continent,
+        region: state.location.region || known.region,
+        zone: state.location.zoneType || known.zone,
+        x: number(state.location.mapX, known.x, 0, WORLD_MAP_WIDTH),
+        y: number(state.location.mapY, known.y, 0, WORLD_MAP_HEIGHT),
+        heading: number(state.location.heading, 0, 0, 359.999),
+    };
+}
+
+function continentAtPoint(x, y, hintedId = '') {
+    const hinted = WORLD_CONTINENTS.find(entry => entry.id === hintedId);
+    if (hinted) return hinted;
+    return WORLD_CONTINENTS.find(entry => x >= entry.bounds[0] && x <= entry.bounds[2] && y >= entry.bounds[1] && y <= entry.bounds[3]) || null;
+}
+
+function nearestMapLocation(x, y, continentName = '') {
+    const pool = continentName ? WORLD_LOCATIONS.filter(entry => entry.continent === continentName) : WORLD_LOCATIONS;
+    return pool.reduce((nearest, entry) => {
+        const distance = Math.hypot(entry.x - x, entry.y - y);
+        return !nearest || distance < nearest.distance ? { entry, distance } : nearest;
+    }, null)?.entry || WORLD_LOCATIONS[0];
+}
+
+function coordinatesLabel(x, y) {
+    return `${Math.round(x).toString().padStart(4, '0')} E · ${Math.round(y).toString().padStart(4, '0')} S`;
+}
+
 const tabButton = (id, icon, label, active = false) => `
     <button class="tretaresia-tab-button${active ? ' is-active' : ''}" type="button" role="tab"
         data-tab="${id}" aria-selected="${active}"><i class="${icon}"></i><span>${html(tr(label))}</span></button>`;
@@ -999,6 +1228,7 @@ function appearanceMenu() {
 
 function buildInterface() {
     buildActivityIndicator();
+    buildEventNotificationStack();
     if (document.getElementById('tretaresia-rpg-overlay')) return;
     const overlay = document.createElement('div');
     overlay.id = 'tretaresia-rpg-overlay';
@@ -1424,8 +1654,10 @@ function renderScene(panel, state) {
                 ${input('World time', 'time', state.worldClock.time, 'time')}${select('Day phase', 'phase', DAY_PHASES, state.worldClock.phase)}
                 ${input('Continent', 'continent', state.location.continent)}${input('Current region', 'region', state.location.region)}
                 ${input('Current place', 'place', state.location.place)}${input('Current location detail', 'detail', state.location.detail)}
+                ${input('World map X', 'mapX', state.location.mapX, 'number', `min="0" max="${WORLD_MAP_WIDTH}" step="1"`)}${input('World map Y', 'mapY', state.location.mapY, 'number', `min="0" max="${WORLD_MAP_HEIGHT}" step="1"`)}
+                ${input('Compass heading', 'heading', state.location.heading, 'number', 'min="0" max="359" step="1"')}
                 ${input('Scene position', 'position', state.scene.position)}${select('Zone type', 'zoneType', ZONE_TYPES, state.location.zoneType)}
-                ${input('Weather', 'weather', state.scene.weather)}${input('Temperature', 'temperature', state.scene.temperature, 'number', 'min="-100" max="100" step="0.1"')}
+                ${input('Weather', 'weather', state.scene.weather)}${input('Temperature', 'temperature', state.scene.temperature, 'number', 'min="-1000" max="1000" step="0.1"')}
                 <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save scene'))}</button>
             </form></details>`;
     setupSceneMapInteractions(panel, state);
@@ -1599,14 +1831,14 @@ function renderRank(panel, state) {
             <strong>${html(p.adventurerRank === 'Custom Rank' && p.customRankName ? p.customRankName : p.adventurerRank)}</strong><small>${html(tr('Recognized guild classification'))}</small></article>
             <div class="tretaresia-rank-stack">${rankRow('Power mastery', p.magicRank, 'fa-solid fa-fire-flame-curved')}
                 ${rankRow('Combat mastery', p.swordRank, 'fa-solid fa-khanda')}${rankRow('Experience', `${p.experience} / ${p.experienceMax}`, 'fa-solid fa-star')}
-                ${rankRow('Reputation', p.reputation, 'fa-solid fa-people-group')}</div></div>
+                ${rankRow('Reputation', p.reputation, 'fa-solid fa-people-group')}${rankRow('Confirmed kills', p.kills, 'fa-solid fa-skull')}</div></div>
         <article class="tretaresia-card tretaresia-wallet" title="${html(p.currency.name)}"><div><span>${html(tr('High denomination'))}</span><strong>${p.currency.gold}</strong></div>
             <div><span>${html(tr('Standard denomination'))}</span><strong>${p.currency.silver}</strong></div><div><span>${html(tr('Fractional denomination'))}</span><strong>${p.currency.copper}</strong></div></article>
         <details class="tretaresia-editor"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Edit progression'))}</summary>
             <form data-form="rank" class="tretaresia-form-grid">${select('Adventurer rank', 'adventurerRank', RANKS, p.adventurerRank)}${input('Custom rank name', 'customRankName', p.customRankName)}
                 ${select('Power mastery', 'magicRank', MASTERY, p.magicRank)}${select('Combat mastery', 'swordRank', MASTERY, p.swordRank)}
                 ${input('Experience', 'experience', p.experience, 'number', 'min="0"')}${input('EXP to next level', 'experienceMax', p.experienceMax, 'number', 'min="1"')}
-                ${input('Reputation', 'reputation', p.reputation, 'number')}
+                ${input('Reputation', 'reputation', p.reputation, 'number')}${input('Confirmed kills', 'kills', p.kills, 'number', 'min="0"')}
                 ${input('Currency / region', 'currencyName', p.currency.name)}${input('High denomination', 'gold', p.currency.gold, 'number', 'min="0"')}${input('Standard denomination', 'silver', p.currency.silver, 'number', 'min="0"')}
                 ${input('Fractional denomination', 'copper', p.currency.copper, 'number', 'min="0"')}
                 <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save progression'))}</button></form></details>`;
@@ -1614,66 +1846,138 @@ function renderRank(panel, state) {
 
 function renderMap(panel, state) {
     if (!panel) return;
-    const current = currentMapLocation(state);
-    if (!mapLocation(mapSelectionId)) mapSelectionId = current.id;
-    const selected = mapLocation(mapSelectionId) || current;
+    const current = currentMapPoint(state);
+    if (!mapLocation(mapSelectionId) && !mapDraftPoint) mapSelectionId = current.id;
+    const selectedLocation = mapLocation(mapSelectionId);
+    const selected = mapDraftPoint ? {
+        id: '__coordinates__', name: mapDraftPoint.name || 'Uncharted coordinate', x: mapDraftPoint.x, y: mapDraftPoint.y,
+        continent: mapDraftPoint.continent || 'Open Ocean', region: mapDraftPoint.region || 'Uncharted Reach',
+        zone: mapDraftPoint.zone || 'Unknown Zone', kind: 'coordinate', tier: 0,
+    } : selectedLocation || current;
     const discovered = new Set(state.location.discovered);
     const pinIds = new Set(state.location.pins.map(pin => pin.locationId));
-    const mapMarkers = WORLD_LOCATIONS.map(location => {
-        const isCurrent = location.id === current.id;
-        const isSelected = location.id === selected.id;
-        const isDiscovered = discovered.has(location.name) || isCurrent;
-        const isPinned = pinIds.has(location.id);
-        return `<g class="tretaresia-map-marker${isCurrent ? ' is-current' : ''}${isSelected ? ' is-selected' : ''}${isDiscovered ? ' is-discovered' : ''}${isPinned ? ' is-pinned' : ''}"
-            data-map-location="${location.id}" transform="translate(${location.x} ${location.y})" tabindex="0" role="button" aria-label="${html(location.name)}">
-            <circle class="tretaresia-marker-aura" r="14"></circle><path class="tretaresia-marker-pin" d="M0-9c-5 0-9 4-9 9 0 7 9 15 9 15S9 7 9 0c0-5-4-9-9-9Z"></path>
-            <circle class="tretaresia-marker-core" cy="0" r="3"></circle><text x="0" y="28">${html(location.name)}</text></g>`;
-    }).join('');
+    const exactSelected = selected.id === '__coordinates__';
+    const selectedRecorded = exactSelected || discovered.has(selected.name);
+    const selectedPinned = exactSelected
+        ? state.location.pins.some(pin => pin.x !== null && Math.hypot(pin.x - selected.x, pin.y - selected.y) < 12)
+        : pinIds.has(selected.id);
+    const continentPaths = WORLD_CONTINENTS.map(continent => `<path class="tretaresia-land ${continent.className}" data-continent-id="${continent.id}" d="${continent.path}"/>`).join('');
+    const continentLabels = WORLD_CONTINENTS.map(continent => `<text x="${continent.label[0]}" y="${continent.label[1]}">${html(continent.name.toUpperCase())}</text>`).join('');
     panel.innerHTML = `${heading('Tretaresia World Atlas', `${state.location.continent} · ${state.location.region}`, 'fa-solid fa-earth-asia')}
         <div class="tretaresia-map-layout"><div class="tretaresia-map-frame"><div class="tretaresia-map-toolbar" aria-label="Map controls">
             <button type="button" data-action="map-zoom-in" title="Zoom in"><i class="fa-solid fa-plus"></i></button>
             <button type="button" data-action="map-zoom-out" title="Zoom out"><i class="fa-solid fa-minus"></i></button>
             <button type="button" data-action="map-center" title="Center current location"><i class="fa-solid fa-crosshairs"></i></button>
-            <button type="button" data-action="map-reset" title="Reset map"><i class="fa-solid fa-expand"></i></button></div>
-            <svg class="tretaresia-world-map" viewBox="0 0 1000 600" role="img" aria-label="Interactive map of the Tretaresia world">
-                <defs><linearGradient id="tretaresia-land-central" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#80915f"/><stop offset="1" stop-color="#405342"/></linearGradient>
-                <linearGradient id="tretaresia-land-demon" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#936b52"/><stop offset="1" stop-color="#4f3436"/></linearGradient>
-                <linearGradient id="tretaresia-land-millis" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#56835f"/><stop offset="1" stop-color="#264c43"/></linearGradient>
-                <pattern id="tretaresia-sea-grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#b9dddf" stroke-opacity=".045"/></pattern>
-                <filter id="tretaresia-map-shadow"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#000" flood-opacity=".6"/></filter></defs>
-                <rect width="1000" height="600" class="tretaresia-map-ocean"></rect><rect width="1000" height="600" fill="url(#tretaresia-sea-grid)"></rect>
+            <button type="button" data-action="map-reset" title="Show whole world"><i class="fa-solid fa-expand"></i></button></div>
+            <div class="tretaresia-map-lod"><i class="fa-solid fa-layer-group"></i><span data-map-lod>World overview</span><b data-map-zoom>${Math.round(mapView.scale * 100)}%</b></div>
+            <button class="tretaresia-world-compass" type="button" data-action="map-compass-north" title="Center your location on the north-up world map" aria-label="World compass, current heading ${Math.round(current.heading)} degrees">
+                <span class="north">N</span><span class="east">E</span><span class="south">S</span><span class="west">W</span>
+                <i class="tretaresia-compass-needle" style="transform:rotate(${current.heading}deg)"></i><em>${Math.round(current.heading)}°</em></button>
+            <svg class="tretaresia-world-map" viewBox="0 0 ${WORLD_MAP_WIDTH} ${WORLD_MAP_HEIGHT}" role="img" aria-label="Interactive map of Tretaresia; click anywhere to select exact coordinates">
+                <defs>
+                    <linearGradient id="tretaresia-ocean" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#183847"/><stop offset=".5" stop-color="#102b38"/><stop offset="1" stop-color="#081d29"/></linearGradient>
+                    <linearGradient id="tretaresia-central" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#809267"/><stop offset="1" stop-color="#3f5a49"/></linearGradient>
+                    <linearGradient id="tretaresia-forest" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#397854"/><stop offset="1" stop-color="#173d35"/></linearGradient>
+                    <linearGradient id="tretaresia-titan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c69b62"/><stop offset="1" stop-color="#715034"/></linearGradient>
+                    <linearGradient id="tretaresia-drinovia" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#955f52"/><stop offset="1" stop-color="#49333b"/></linearGradient>
+                    <linearGradient id="tretaresia-north" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d7eced"/><stop offset="1" stop-color="#7899a5"/></linearGradient>
+                    <linearGradient id="tretaresia-baluguria" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8c6b76"/><stop offset="1" stop-color="#413845"/></linearGradient>
+                    <pattern id="tretaresia-sea-grid" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M80 0H0V80" fill="none" stroke="#b9dddf" stroke-opacity=".045"/></pattern>
+                    <pattern id="tretaresia-topography" width="58" height="58" patternUnits="userSpaceOnUse"><path d="M-10 28Q12 6 34 28T78 28M-10 45Q12 23 34 45T78 45" fill="none" stroke="#fff" stroke-opacity=".04"/></pattern>
+                    <filter id="tretaresia-map-shadow"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity=".62"/></filter>
+                </defs>
+                <rect width="${WORLD_MAP_WIDTH}" height="${WORLD_MAP_HEIGHT}" fill="url(#tretaresia-ocean)"></rect><rect width="${WORLD_MAP_WIDTH}" height="${WORLD_MAP_HEIGHT}" fill="url(#tretaresia-sea-grid)"></rect>
                 <g class="tretaresia-map-camera" transform="translate(${mapView.x} ${mapView.y}) scale(${mapView.scale})">
-                    <g class="tretaresia-continent-shapes" filter="url(#tretaresia-map-shadow)">
-                        <path class="land central" d="M72 86 178 57 308 62 394 95 500 103 554 151 538 219 579 279 554 341 581 402 557 497 487 534 373 521 315 487 245 473 185 425 135 356 91 278 52 181Z"/>
-                        <path class="land begaritt" d="M46 412 137 389 235 415 305 486 277 561 165 578 66 543 25 480Z"/>
-                        <path class="land demon" d="M682 71 823 47 937 70 978 135 961 226 907 310 824 326 750 292 704 219 663 151Z"/>
-                        <path class="land millis" d="M637 352 715 318 822 329 916 374 965 448 932 538 824 570 716 548 646 493 604 414Z"/>
-                        <path class="land heaven" d="M484 36 538 17 614 26 650 58 624 101 553 110 492 84 466 57Z"/>
+                    <g class="tretaresia-continent-shapes" filter="url(#tretaresia-map-shadow)">${continentPaths}</g>
+                    <g class="tretaresia-continent-texture" aria-hidden="true">${WORLD_CONTINENTS.map(continent => `<path d="${continent.path}" fill="url(#tretaresia-topography)"/>`).join('')}</g>
+                    <g class="tretaresia-terrain" aria-hidden="true">
+                        <path class="ridge" d="M785 500l45-95 42 82 48-114 53 126 51-91 55 108M1630 440l44-80 45 96 48-121 52 132 58-108 58 119M580 1110l48-89 47 103 56-128 49 112"/>
+                        <path class="river" d="M1140 360Q1020 515 1115 650T1030 930M350 435Q480 550 430 765T520 975M1900 350Q1770 520 1860 680T1790 920"/>
+                        <path class="road" d="M720 720Q920 590 1100 655T1480 620M1050 785Q1280 920 1550 760M500 1050Q780 1170 1040 1240"/>
+                        <path class="ice-line" d="M170 265Q500 220 800 280T1370 230T2200 260"/>
                     </g>
-                    <g class="tretaresia-mountains" aria-hidden="true"><path d="M196 92 220 154 245 99 271 169 303 108 334 179 371 116 404 188"/>
-                    <path d="M672 449 710 411 735 460 768 416 797 476 830 435 856 491"/><path d="M133 470 161 443 188 486 219 449 244 506"/></g>
-                    <g class="tretaresia-map-labels" aria-hidden="true"><text x="320" y="310">CENTRAL CONTINENT</text><text x="801" y="250">DRINOVIA</text>
-                    <text x="784" y="460">GREAT FOREST</text><text x="138" y="518">LAND OF TITAN</text><text x="530" y="60">NORTH</text><text x="690" y="520">BALUGURIA</text></g>
-                    <path class="tretaresia-route" d="M254 224Q314 286 405 346T535 458M654 488Q705 536 753 474M790 178Q855 120 895 250"/>
-                    <g class="tretaresia-map-markers">${mapMarkers}</g>
+                    <g class="tretaresia-map-labels" aria-hidden="true">${continentLabels}</g>
+                    <g class="tretaresia-map-detail-layer"></g>
                 </g></svg>
-            <div class="tretaresia-map-legend"><span><i class="current"></i>${html(tr('Current'))}</span><span><i class="known"></i>${html(tr('Discovered'))}</span><span><i class="marked"></i>${html(tr('Marked'))}</span><small>${html(tr('Drag to pan · Pinch or scroll to zoom'))}</small></div></div>
+            <div class="tretaresia-map-legend"><span><i class="current"></i>${html(tr('Current'))}</span><span><i class="known"></i>${html(tr('Discovered'))}</span><span><i class="marked"></i>${html(tr('Marked'))}</span><small>Click anywhere to select · ${html(tr('Drag to pan · Pinch or scroll to zoom'))}</small></div></div>
             <aside class="tretaresia-map-sidebar"><article class="tretaresia-location-dossier"><span class="tretaresia-eyebrow">${html(tr('Selected location'))}</span><h4>${html(selected.name)}</h4>
                 <p>${html(selected.continent)}</p><div class="tretaresia-zone-badge" data-zone="${html(selected.zone)}"><i class="fa-solid fa-shield"></i>${html(tr(selected.zone))}</div>
-                <dl><div><dt>${html(tr('Region'))}</dt><dd>${html(LOCATION_REGIONS[selected.name] || selected.name)}</dd></div>
-                <div><dt>${html(tr('Discovery'))}</dt><dd>${html(tr(discovered.has(selected.name) ? 'Recorded' : 'Unexplored'))}</dd></div>
-                <div><dt>${html(tr('Marker'))}</dt><dd>${html(tr(pinIds.has(selected.id) ? 'Pinned' : 'None'))}</dd></div></dl></article>
+                <dl><div><dt>${html(tr('Region'))}</dt><dd>${html(selected.region || LOCATION_REGIONS[selected.name] || selected.name)}</dd></div>
+                <div><dt>World coordinates</dt><dd>${coordinatesLabel(selected.x, selected.y)}</dd></div>
+                <div><dt>${html(tr('Discovery'))}</dt><dd>${html(tr(selectedRecorded ? 'Recorded' : 'Unexplored'))}</dd></div>
+                <div><dt>${html(tr('Marker'))}</dt><dd>${html(tr(selectedPinned ? 'Pinned' : 'None'))}</dd></div></dl>
+                <p class="tretaresia-exact-position"><i class="fa-solid fa-location-crosshairs"></i><span><b>Your exact location</b>${html(current.name)} · ${coordinatesLabel(current.x, current.y)} · ${Math.round(current.heading)}°</span></p></article>
                 <form data-form="travel" class="tretaresia-travel-form"><label class="tretaresia-field"><span>${html(tr('Destination'))}</span><select name="destination">
+                    ${exactSelected ? `<option value="__coordinates__" selected>${html(selected.name)} (${coordinatesLabel(selected.x, selected.y)})</option>` : ''}
                     ${Object.entries(WORLD).map(([continent]) => `<optgroup label="${html(continent)}">${WORLD_LOCATIONS.filter(location => location.continent === continent).map(location =>
                         `<option value="${location.id}"${location.id === selected.id ? ' selected' : ''}>${html(location.name)}</option>`).join('')}</optgroup>`).join('')}</select></label>
                     ${input('Exact place / scene', 'place', selected.name)}${input('Location detail', 'detail', state.location.detail)}
                     ${select('Travel route', 'route', ['Road', 'Caravan', 'Sea', 'Off-road', 'Unknown'], 'Road')}${input('Estimated travel days', 'totalDays', 7, 'number', 'min="1" max="999999"')}
+                    <input type="hidden" name="mapX" value="${selected.x}"><input type="hidden" name="mapY" value="${selected.y}"><input type="hidden" name="continent" value="${html(selected.continent)}"><input type="hidden" name="region" value="${html(selected.region)}">
                     <button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-route"></i> ${html(tr('Begin journey'))}</button></form>
                 <form data-form="map-pin" class="tretaresia-pin-form">${input('Marker label', 'label', selected.name)}${input('Marker note', 'note', '')}
-                    <input type="hidden" name="locationId" value="${selected.id}"><button class="tretaresia-secondary-button" type="submit"><i class="fa-solid fa-map-pin"></i> ${html(tr('Mark location'))}</button></form>
-                ${state.location.pins.length ? `<div class="tretaresia-pin-list">${state.location.pins.map(pin => `<button type="button" data-action="select-pin" data-location-id="${html(pin.locationId)}">
-                    <i class="fa-solid fa-map-pin"></i><span>${html(pin.label)}<small>${html(pin.note || mapLocation(pin.locationId)?.name || '')}</small></span></button>`).join('')}</div>` : ''}</aside></div>`;
+                    <input type="hidden" name="locationId" value="${exactSelected ? '' : selected.id}"><input type="hidden" name="mapX" value="${selected.x}"><input type="hidden" name="mapY" value="${selected.y}">
+                    <input type="hidden" name="continent" value="${html(selected.continent)}"><input type="hidden" name="region" value="${html(selected.region)}"><button class="tretaresia-secondary-button" type="submit"><i class="fa-solid fa-map-pin"></i> ${html(tr('Mark location'))}</button></form>
+                ${state.location.pins.length ? `<div class="tretaresia-pin-list">${state.location.pins.map(pin => `<button type="button" data-action="select-pin" data-pin-id="${html(pin.id)}" data-location-id="${html(pin.locationId)}">
+                    <i class="fa-solid fa-map-pin"></i><span>${html(pin.label)}<small>${html(pin.note || mapLocation(pin.locationId)?.name || coordinatesLabel(pin.x, pin.y))}</small></span></button>`).join('')}</div>` : ''}</aside></div>`;
+    renderMapVisibleLocations(panel, state);
     setupMapInteractions(panel);
+}
+
+function mapLod() {
+    return mapView.scale < 1.35 ? 0 : mapView.scale < 2.4 ? 1 : 2;
+}
+
+function mapVisibleBounds() {
+    const margin = 150 / mapView.scale;
+    return {
+        left: -mapView.x / mapView.scale - margin, top: -mapView.y / mapView.scale - margin,
+        right: (WORLD_MAP_WIDTH - mapView.x) / mapView.scale + margin,
+        bottom: (WORLD_MAP_HEIGHT - mapView.y) / mapView.scale + margin,
+    };
+}
+
+function renderMapMarker(location, state, selectedId, discovered, pinIds) {
+    const isSelected = location.id === selectedId;
+    const isDiscovered = discovered.has(location.name);
+    const isPinned = pinIds.has(location.id);
+    return `<g class="tretaresia-map-marker tier-${location.tier}${isSelected ? ' is-selected' : ''}${isDiscovered ? ' is-discovered' : ''}${isPinned ? ' is-pinned' : ''}" data-kind="${html(location.kind)}"
+        data-map-location="${location.id}" transform="translate(${location.x} ${location.y})" tabindex="0" role="button" aria-label="${html(location.name)}">
+        <circle class="tretaresia-marker-aura" r="13"></circle><circle class="tretaresia-marker-core" r="5"></circle><text x="0" y="25">${html(location.name)}</text></g>`;
+}
+
+function renderMapVisibleLocations(panel = document.querySelector('[data-panel="map"]'), state = getState()) {
+    const layer = panel?.querySelector('.tretaresia-map-detail-layer');
+    if (!layer) return;
+    const lod = mapLod();
+    const bounds = mapVisibleBounds();
+    const discovered = new Set(state.location.discovered);
+    const pinIds = new Set(state.location.pins.map(pin => pin.locationId));
+    const visible = WORLD_LOCATIONS.filter(location => (
+        (location.tier <= lod || location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name))
+        && location.x >= bounds.left && location.x <= bounds.right && location.y >= bounds.top && location.y <= bounds.bottom
+    ));
+    const markers = visible.map(location => renderMapMarker(location, state, mapSelectionId, discovered, pinIds)).join('');
+    const pins = state.location.pins.map(pin => {
+        const site = mapLocation(pin.locationId);
+        const x = pin.x ?? site?.x;
+        const y = pin.y ?? site?.y;
+        if (!Number.isFinite(x) || !Number.isFinite(y) || x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) return '';
+        return `<g class="tretaresia-free-pin" data-action="select-pin" data-pin-id="${html(pin.id)}" transform="translate(${x} ${y})"><path d="M0-18c-8 0-14 6-14 14 0 11 14 25 14 25S14 7 14-4c0-8-6-14-14-14Z"/><circle cy="-4" r="4"/><text y="37">${html(pin.label)}</text></g>`;
+    }).join('');
+    const draft = mapDraftPoint ? `<g class="tretaresia-coordinate-target" transform="translate(${mapDraftPoint.x} ${mapDraftPoint.y})"><circle r="19"/><path d="M-28 0H28M0-28V28"/><text y="43">${html(mapDraftPoint.name || 'Selected coordinate')}</text></g>` : '';
+    const current = currentMapPoint(state);
+    const exact = `<g class="tretaresia-exact-marker" transform="translate(${current.x} ${current.y})"><circle class="pulse" r="23"/><circle class="ring" r="14"/><path class="heading" style="transform:rotate(${current.heading}deg)" d="M0-27 8-8 0-12-8-8Z"/><circle r="6"/><text y="38">YOU · ${html(current.name)}</text></g>`;
+    layer.innerHTML = `${markers}${pins}${draft}${exact}`;
+    const lodText = panel.querySelector('[data-map-lod]');
+    const zoomText = panel.querySelector('[data-map-zoom]');
+    if (lodText) lodText.textContent = ['World overview', 'Regional detail', 'Local detail'][lod];
+    if (zoomText) zoomText.textContent = `${Math.round(mapView.scale * 100)}% · ${visible.length} places`;
+}
+
+function scheduleMapDetailRender() {
+    cancelAnimationFrame(mapDetailFrame);
+    mapDetailFrame = requestAnimationFrame(() => renderMapVisibleLocations());
 }
 
 const textareaField = (label, name, value, rows = 4, extra = '') =>
@@ -2184,15 +2488,19 @@ async function onSubmit(event) {
             notify('success', 'Character status saved.');
             break;
         case 'scene':
+            {
+            const knownPlace = WORLD_LOCATIONS.find(entry => entry.name === values.place) || WORLD_LOCATIONS.find(entry => entry.name === values.region);
             state.worldClock = { day: values.day, dayName: values.dayName, time: values.time, phase: values.phase };
             state.location = {
                 ...state.location, continent: values.continent, region: values.region, place: values.place,
                 detail: values.detail, zoneType: values.zoneType,
+                mapX: values.mapX || knownPlace?.x || state.location.mapX, mapY: values.mapY || knownPlace?.y || state.location.mapY, heading: values.heading,
             };
             state.scene = { position: values.position, weather: values.weather, temperature: values.temperature };
             await persistState(state, 'scene');
             notify('success', getSettings().language === 'th' ? 'บันทึกข้อมูลฉากแล้ว' : 'Scene tracking saved.');
             break;
+            }
         case 'scene-map': {
             const firstFloor = sceneFloor({ name: values.floorName || '1F', level: values.level, rooms: [], connections: [] });
             const nextMap = sceneStructure({ name: values.name, place: values.place, floors: firstFloor ? [firstFloor] : [] });
@@ -2405,15 +2713,22 @@ async function onSubmit(event) {
         case 'rank':
             state.progression = {
                 ...state.progression, adventurerRank: values.adventurerRank, customRankName: values.customRankName, magicRank: values.magicRank,
-                swordRank: values.swordRank, experience: values.experience, experienceMax: values.experienceMax, reputation: values.reputation,
+                swordRank: values.swordRank, experience: values.experience, experienceMax: values.experienceMax, reputation: values.reputation, kills: values.kills,
                 currency: { name: values.currencyName, gold: values.gold, silver: values.silver, copper: values.copper },
             };
             await persistState(state);
             notify('success', 'Progression saved.');
             break;
         case 'travel': {
-            const destination = mapLocation(values.destination);
-            if (!destination) return notify('warning', 'Choose a valid destination.');
+            const namedDestination = mapLocation(values.destination);
+            const isCoordinate = values.destination === '__coordinates__';
+            if (!namedDestination && !isCoordinate) return notify('warning', 'Choose a valid destination.');
+            const mapX = number(values.mapX, namedDestination?.x || 0, 0, WORLD_MAP_WIDTH);
+            const mapY = number(values.mapY, namedDestination?.y || 0, 0, WORLD_MAP_HEIGHT);
+            const destination = namedDestination || {
+                id: '__coordinates__', name: values.place || 'Uncharted coordinate', x: mapX, y: mapY,
+                continent: values.continent || 'Open Ocean', region: values.region || 'Uncharted Reach',
+            };
             const origin = state.location.place !== 'Unknown' ? state.location.place : state.location.region;
             const totalDays = Math.max(1, Number(values.totalDays) || 1);
             state.travel = {
@@ -2431,13 +2746,20 @@ async function onSubmit(event) {
         }
         case 'map-pin': {
             const destination = mapLocation(values.locationId);
-            if (!destination) return notify('warning', 'Choose a map location first.');
-            const existing = state.location.pins.find(pin => pin.locationId === destination.id);
-            const nextPin = { id: existing?.id || uid(), locationId: destination.id, label: values.label || destination.name, note: values.note };
-            state.location.pins = [...state.location.pins.filter(pin => pin.locationId !== destination.id), nextPin];
-            state.location.discovered = [...new Set([...state.location.discovered, destination.name])];
+            const x = number(values.mapX, destination?.x || 0, 0, WORLD_MAP_WIDTH);
+            const y = number(values.mapY, destination?.y || 0, 0, WORLD_MAP_HEIGHT);
+            const existing = destination
+                ? state.location.pins.find(pin => pin.locationId === destination.id)
+                : state.location.pins.find(pin => pin.x !== null && Math.hypot(pin.x - x, pin.y - y) < 8);
+            const nextPin = {
+                id: existing?.id || uid(), locationId: destination?.id || '', x, y,
+                continent: values.continent || destination?.continent || 'Open Ocean', region: values.region || destination?.region || 'Uncharted Reach',
+                label: values.label || destination?.name || 'Marked coordinate', note: values.note,
+            };
+            state.location.pins = [...state.location.pins.filter(pin => pin.id !== existing?.id), nextPin];
+            if (destination) state.location.discovered = [...new Set([...state.location.discovered, destination.name])];
             await persistState(state, 'map');
-            notify('success', `${destination.name} marked on the map.`);
+            notify('success', `${nextPin.label} marked at ${coordinatesLabel(x, y)}.`);
             break;
         }
     }
@@ -2502,15 +2824,18 @@ async function onPanelChange(event) {
     }
     const destination = event.target.closest('form[data-form="travel"] select[name="destination"]');
     if (destination) {
+        if (destination.value === '__coordinates__') return;
+        mapDraftPoint = null;
         mapSelectionId = destination.value;
         renderMap(document.querySelector('[data-panel="map"]'), getState());
     }
 }
 
 async function onPanelClick(event) {
-    const button = event.target.closest('button[data-action], [data-map-location]');
+    const button = event.target.closest('[data-action], [data-map-location]');
     if (!button) return;
     if (button.dataset.mapLocation) {
+        mapDraftPoint = null;
         mapSelectionId = button.dataset.mapLocation;
         renderMap(document.querySelector('[data-panel="map"]'), getState());
         return;
@@ -2562,14 +2887,22 @@ async function onPanelClick(event) {
             setMapZoom(mapView.scale / 1.25);
             break;
         case 'map-reset':
-            Object.assign(mapView, { scale: 1, x: 0, y: 0 });
+            Object.assign(mapView, { scale: .78, x: 264, y: 154 });
             updateMapTransform();
             break;
         case 'map-center': {
-            const location = currentMapLocation(state);
-            mapView.scale = 1.8;
-            mapView.x = 500 - location.x * mapView.scale;
-            mapView.y = 300 - location.y * mapView.scale;
+            const location = currentMapPoint(state);
+            mapView.scale = 2.45;
+            mapView.x = WORLD_MAP_WIDTH / 2 - location.x * mapView.scale;
+            mapView.y = WORLD_MAP_HEIGHT / 2 - location.y * mapView.scale;
+            updateMapTransform();
+            break;
+        }
+        case 'map-compass-north': {
+            const location = currentMapPoint(state);
+            mapView.scale = Math.max(mapView.scale, 2.45);
+            mapView.x = WORLD_MAP_WIDTH / 2 - location.x * mapView.scale;
+            mapView.y = WORLD_MAP_HEIGHT / 2 - location.y * mapView.scale;
             updateMapTransform();
             break;
         }
@@ -2630,10 +2963,20 @@ async function onPanelClick(event) {
             await persistState(state, 'scene-map');
             break;
         }
-        case 'select-pin':
-            mapSelectionId = button.dataset.locationId;
+        case 'select-pin': {
+            const pin = state.location.pins.find(entry => entry.id === button.dataset.pinId);
+            if (!pin) break;
+            if (pin.locationId && mapLocation(pin.locationId)) {
+                mapDraftPoint = null;
+                mapSelectionId = pin.locationId;
+            } else {
+                const continent = continentAtPoint(pin.x, pin.y);
+                mapSelectionId = null;
+                mapDraftPoint = { x: pin.x, y: pin.y, continent: pin.continent || continent?.name || 'Open Ocean', region: pin.region || 'Marked Reach', zone: 'Unknown Zone', name: pin.label };
+            }
             renderMap(document.querySelector('[data-panel="map"]'), getState());
             break;
+        }
         case 'delete-item':
             state.inventory = state.inventory.filter(entry => entry.id !== id);
             await persistState(state);
@@ -2833,10 +3176,11 @@ function resizePortrait(file) {
 function updateMapTransform() {
     const camera = document.querySelector('.tretaresia-map-camera');
     if (camera) camera.setAttribute('transform', `translate(${mapView.x} ${mapView.y}) scale(${mapView.scale})`);
+    scheduleMapDetailRender();
 }
 
-function setMapZoom(scale, anchorX = 500, anchorY = 300) {
-    const next = Math.min(4, Math.max(.75, scale));
+function setMapZoom(scale, anchorX = WORLD_MAP_WIDTH / 2, anchorY = WORLD_MAP_HEIGHT / 2) {
+    const next = Math.min(7, Math.max(.72, scale));
     const ratio = next / mapView.scale;
     mapView.x = anchorX - (anchorX - mapView.x) * ratio;
     mapView.y = anchorY - (anchorY - mapView.y) * ratio;
@@ -2850,17 +3194,26 @@ function setupMapInteractions(panel) {
     const pointers = new Map();
     let previous = null;
     let pinchDistance = 0;
+    let dragDistance = 0;
+    let pointerStart = null;
+    const mapPoint = event => {
+        const rect = svg.getBoundingClientRect();
+        const screenX = (event.clientX - rect.left) / rect.width * WORLD_MAP_WIDTH;
+        const screenY = (event.clientY - rect.top) / rect.height * WORLD_MAP_HEIGHT;
+        return { x: (screenX - mapView.x) / mapView.scale, y: (screenY - mapView.y) / mapView.scale, screenX, screenY };
+    };
     svg.addEventListener('wheel', event => {
         event.preventDefault();
-        const rect = svg.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / rect.width * 1000;
-        const y = (event.clientY - rect.top) / rect.height * 600;
-        setMapZoom(mapView.scale * (event.deltaY < 0 ? 1.15 : .87), x, y);
+        const point = mapPoint(event);
+        setMapZoom(mapView.scale * (event.deltaY < 0 ? 1.15 : .87), point.screenX, point.screenY);
     }, { passive: false });
     svg.addEventListener('pointerdown', event => {
+        if (event.target.closest?.('[data-map-location], [data-action="select-pin"]')) return;
         svg.setPointerCapture?.(event.pointerId);
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         previous = { x: event.clientX, y: event.clientY };
+        pointerStart = { x: event.clientX, y: event.clientY, continentId: event.target.closest?.('[data-continent-id]')?.dataset.continentId || '' };
+        dragDistance = 0;
         svg.classList.add('is-dragging');
     });
     svg.addEventListener('pointermove', event => {
@@ -2869,8 +3222,11 @@ function setupMapInteractions(panel) {
         const points = [...pointers.values()];
         const rect = svg.getBoundingClientRect();
         if (points.length === 1 && previous) {
-            mapView.x += (event.clientX - previous.x) / rect.width * 1000;
-            mapView.y += (event.clientY - previous.y) / rect.height * 600;
+            const dx = event.clientX - previous.x;
+            const dy = event.clientY - previous.y;
+            dragDistance += Math.hypot(dx, dy);
+            mapView.x += dx / rect.width * WORLD_MAP_WIDTH;
+            mapView.y += dy / rect.height * WORLD_MAP_HEIGHT;
             previous = { x: event.clientX, y: event.clientY };
             updateMapTransform();
         } else if (points.length >= 2) {
@@ -2880,10 +3236,27 @@ function setupMapInteractions(panel) {
         }
     });
     const end = event => {
+        const wasClick = pointers.size === 1 && dragDistance < 7 && pointerStart;
         pointers.delete(event.pointerId);
         previous = pointers.size === 1 ? [...pointers.values()][0] : null;
         pinchDistance = 0;
         if (!pointers.size) svg.classList.remove('is-dragging');
+        if (wasClick) {
+            const point = mapPoint(event);
+            const x = number(point.x, 0, 0, WORLD_MAP_WIDTH);
+            const y = number(point.y, 0, 0, WORLD_MAP_HEIGHT);
+            const hintedId = pointerStart.continentId || event.target.closest?.('[data-continent-id]')?.dataset.continentId || '';
+            const continent = continentAtPoint(x, y, hintedId);
+            const nearest = nearestMapLocation(x, y, continent?.name || '');
+            mapSelectionId = null;
+            mapDraftPoint = {
+                x, y, continent: continent?.name || 'Open Ocean',
+                region: continent ? nearest.region : 'Uncharted Sea', zone: continent ? nearest.zone : 'Unknown Zone',
+                name: continent && Math.hypot(nearest.x - x, nearest.y - y) < 42 ? nearest.name : continent ? `Uncharted ${nearest.region}` : 'Open-ocean coordinate',
+            };
+            renderMap(panel, getState());
+        }
+        pointerStart = null;
     };
     svg.addEventListener('pointerup', end);
     svg.addEventListener('pointercancel', end);
@@ -2968,9 +3341,9 @@ const SCALAR_PATCH_PATHS = new Set([
     'player.name', 'player.race', 'player.age', 'player.title', 'player.profession', 'player.guild', 'player.party', 'player.condition', 'player.level', 'player.powerType', 'player.originSkill',
     'player.hp.current', 'player.hp.max', 'player.mp.current', 'player.mp.max', 'player.stamina.current', 'player.stamina.max',
     'progression.adventurerRank', 'progression.customRankName', 'progression.magicRank', 'progression.swordRank', 'progression.experience',
-    'progression.experienceMax', 'progression.reputation', 'progression.currency.gold', 'progression.currency.silver',
+    'progression.experienceMax', 'progression.reputation', 'progression.kills', 'progression.currency.gold', 'progression.currency.silver',
     'progression.currency.name', 'progression.currency.copper', 'worldClock.day', 'worldClock.dayName', 'worldClock.time', 'worldClock.phase', 'location.continent',
-    'location.region', 'location.place', 'location.detail', 'location.zoneType', 'scene.position', 'scene.weather', 'scene.temperature',
+    'location.region', 'location.place', 'location.detail', 'location.zoneType', 'location.mapX', 'location.mapY', 'location.heading', 'scene.position', 'scene.weather', 'scene.temperature',
     'travel.status', 'travel.origin', 'travel.destination', 'travel.route', 'travel.totalDays', 'travel.remainingDays', 'travel.notes',
     'sceneMap.activeMapId', 'sceneMap.activeFloorId', 'sceneMap.playerRoomId',
     ...MAGIC_DISCIPLINES.map(entry => `proficiencies.magic.${entry.id}`),
@@ -3217,23 +3590,68 @@ function applyPatchOperation(state, operation) {
     return false;
 }
 
+function operationMeta(operation) {
+    const raw = operation?.[3];
+    if (typeof raw === 'string') return { reason: text(raw, '', 180) };
+    return raw && typeof raw === 'object' ? {
+        reason: text(raw.reason, text(raw.label, '', 180), 180),
+        category: text(raw.category, '', 40).toLocaleLowerCase(),
+        label: text(raw.label, '', 100),
+    } : { reason: '', category: '', label: '' };
+}
+
+function derivePatchNotifications(current, next, operations, levelUps) {
+    const events = [];
+    const findOp = path => [...operations].reverse().find(operation => operation[1] === path);
+    const expOps = operations.filter(operation => operation[1] === 'progression.experience');
+    let expGain = 0;
+    for (const [verb, , value] of expOps) expGain += verb === 'inc' ? Math.max(0, Number(value) || 0) : Math.max(0, (Number(value) || 0) - current.progression.experience);
+    if (expGain > 0) {
+        const meta = operationMeta(expOps.at(-1));
+        const combat = ['combat', 'kill', 'battle'].includes(meta.category);
+        events.push({ kind: combat ? 'combat' : 'experience', eyebrow: combat ? 'COMBAT RECORD' : 'EXPERIENCE', title: meta.reason || (combat ? 'Combat experience gained' : 'Experience gained'), detail: combat ? 'Battle progress has been recorded.' : 'Your actions advanced your growth.', value: `+${expGain} EXP` });
+    }
+    if (levelUps > 0) events.push({ kind: 'level', eyebrow: 'LEVEL UP', title: `Level ${next.player.level} reached`, detail: `${next.progression.experience} / ${next.progression.experienceMax} EXP toward the next level`, value: levelUps > 1 ? `+${levelUps} LV` : 'LEVEL UP' });
+    const killDelta = next.progression.kills - current.progression.kills;
+    if (killDelta > 0) {
+        const meta = operationMeta(findOp('progression.kills'));
+        events.push({ kind: 'kill', eyebrow: 'ELIMINATION', title: meta.reason || `${killDelta} hostile target${killDelta === 1 ? '' : 's'} defeated`, detail: `Total confirmed kills: ${next.progression.kills}`, value: `+${killDelta}` });
+    }
+    const learned = operations.filter(operation => operation[0] === 'upsert' && ['skills', 'proficiencies.customMagic', 'proficiencies.customSword', 'proficiencies.techniques'].includes(operation[1]));
+    for (const operation of learned.slice(-3)) {
+        const meta = operationMeta(operation);
+        const name = text(operation[2]?.name, meta.label || 'New knowledge', 100);
+        events.push({ kind: 'learning', eyebrow: 'LEARNED', title: name, detail: meta.reason || 'Added to your mastery archive.', value: operation[2]?.rank || '' });
+    }
+    const proficiencyOp = [...operations].reverse().find(operation => operation[0] === 'inc' && String(operation[1]).startsWith('proficiencies.'));
+    if (proficiencyOp && !learned.length) {
+        const meta = operationMeta(proficiencyOp);
+        const name = meta.label || String(proficiencyOp[1]).split('.').at(-1).replaceAll('-', ' ');
+        events.push({ kind: meta.category === 'combat' ? 'combat' : 'learning', eyebrow: meta.category === 'combat' ? 'COMBAT MASTERY' : 'TRAINING', title: meta.reason || `${name} improved`, value: `+${number(proficiencyOp[2], 0, 0, 100)}%` });
+    }
+    for (const denomination of ['gold', 'silver', 'copper']) {
+        const delta = next.progression.currency[denomination] - current.progression.currency[denomination];
+        if (!delta) continue;
+        const meta = operationMeta(findOp(`progression.currency.${denomination}`));
+        events.push({
+            kind: 'currency', eyebrow: delta > 0 ? 'FUNDS RECEIVED' : 'PAYMENT RECORDED',
+            title: meta.reason || (delta > 0 ? `Received ${denomination}` : `Spent ${denomination}`),
+            detail: `${next.progression.currency.name} · Balance ${next.progression.currency[denomination]} ${denomination}`,
+            value: `${delta > 0 ? '+' : ''}${delta} ${denomination}`,
+        });
+    }
+    return events.slice(0, 8);
+}
+
 function applyStatePatch(current, patch) {
     if (!patch || typeof patch !== 'object' || !Array.isArray(patch.ops)) throw new Error('State patch is missing an ops array.');
     const candidate = clone(current);
-    let accepted = 0;
-    for (const operation of patch.ops.slice(0, 50)) {
-        if (applyPatchOperation(candidate, operation)) accepted += 1;
+    const acceptedOps = [];
+    for (const operation of patch.ops.slice(0, 75)) {
+        if (applyPatchOperation(candidate, operation)) acceptedOps.push(operation);
     }
     const next = normalize(candidate, current);
-    if (next.progression.experience > current.progression.experience) {
-        let levelUps = 0;
-        while (next.progression.experience >= next.progression.experienceMax && levelUps < 100) {
-            next.progression.experience -= next.progression.experienceMax;
-            next.player.level += 1;
-            next.progression.experienceMax = Math.max(next.progression.experienceMax + 25, Math.round(next.progression.experienceMax * 1.2));
-            levelUps += 1;
-        }
-    }
+    const levelUps = resolveLevelProgression(next);
     next.player.portrait = current.player.portrait;
     next.player.portraitView = clone(current.player.portraitView);
     next.npcs.forEach(entry => {
@@ -3243,9 +3661,10 @@ function applyStatePatch(current, patch) {
     });
     next.music = clone(current.music);
     next.location.pins = clone(current.location.pins);
+    const accepted = acceptedOps.length;
     const summary = text(patch.summary, accepted ? 'Role-play state updated.' : '', 300);
     if (accepted && summary) next.journal = [...current.journal, { id: uid(), text: summary, at: new Date().toISOString() }].slice(-30);
-    return { next, accepted, summary };
+    return { next, accepted, summary, notifications: derivePatchNotifications(current, next, acceptedOps, levelUps) };
 }
 
 function extractStatePatch(message) {
@@ -3273,7 +3692,7 @@ function extractStatePatch(message) {
         return '';
     });
     const combined = patches.length ? {
-        ops: patches.flatMap(patch => Array.isArray(patch.ops) ? patch.ops : []).slice(0, 50),
+        ops: patches.flatMap(patch => Array.isArray(patch.ops) ? patch.ops : []).slice(0, 75),
         summary: patches.map(patch => text(patch.summary, '', 300)).filter(Boolean).join('; ').slice(0, 300),
     } : null;
     return { visible: visible.trimEnd(), patch: combined, found };
@@ -3305,9 +3724,10 @@ async function processAssistantPatch(messageId, generationType = '') {
         return;
     }
     try {
-        const { next, accepted } = applyStatePatch(getState(), extracted.patch);
+        const { next, accepted, notifications } = applyStatePatch(getState(), extracted.patch);
         if (accepted) {
             await persistState(next, 'inline-patch');
+            showEventNotifications(notifications);
             setSync('success', tr('State updated'), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${accepted} รายการแล้ว` : `${accepted} confirmed change${accepted === 1 ? '' : 's'} saved.`);
             console.info(`[Tretaresia RPG] Applied ${accepted} inline state operation(s).`);
         } else {
@@ -3366,8 +3786,11 @@ async function analyzeChat({ manual = false } = {}) {
             removeReasoning: true,
         });
         const parsed = parseJson(response);
-        const { next, accepted, summary } = applyStatePatch(current, parsed);
-        if (accepted) await persistState(next, 'manual-ai-patch');
+        const { next, accepted, summary, notifications } = applyStatePatch(current, parsed);
+        if (accepted) {
+            await persistState(next, 'manual-ai-patch');
+            showEventNotifications(notifications);
+        }
         setSync('success', tr('AI synchronized'), accepted
             ? (getSettings().language === 'th' ? `Manual Sync บันทึก ${accepted} รายการ` : `Manual Sync saved ${accepted} confirmed change${accepted === 1 ? '' : 's'}.`)
             : (getSettings().language === 'th' ? 'Manual Sync ตรวจแล้ว ไม่มีข้อมูลเปลี่ยนแปลง' : 'Manual Sync found no confirmed changes.'));
@@ -3480,7 +3903,7 @@ function bindSettingControl(id, key, settings, callback) {
     if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
     control.value = String(settings[key]);
     const update = () => {
-        settings[key] = control.type === 'range' ? Number(control.value) : control.value;
+        settings[key] = ['range', 'number'].includes(control.type) ? Number(control.value) : control.value;
         SillyTavern.getContext().saveSettingsDebounced();
         callback?.();
     };
@@ -3500,6 +3923,13 @@ async function addSettingsDrawer() {
         setSync(settings.autoTrack ? 'ready' : 'disabled', settings.autoTrack ? tr('Ready') : tr('Tracking is off'), '', { show: !settings.autoTrack });
     });
     bindCheckbox('tretaresia-rpg-inject-state', 'injectState', settings, updatePrompt);
+    bindCheckbox('tretaresia-rpg-event-notifications', 'eventNotifications', settings);
+    bindCheckbox('tretaresia-rpg-notify-exp', 'notifyExperience', settings);
+    bindCheckbox('tretaresia-rpg-notify-level', 'notifyLevel', settings);
+    bindCheckbox('tretaresia-rpg-notify-learning', 'notifyLearning', settings);
+    bindCheckbox('tretaresia-rpg-notify-combat', 'notifyCombat', settings);
+    bindCheckbox('tretaresia-rpg-notify-kills', 'notifyKills', settings);
+    bindCheckbox('tretaresia-rpg-notify-currency', 'notifyCurrency', settings);
     bindSettingControl('tretaresia-rpg-language', 'language', settings, rebuildInterface);
     bindSettingControl('tretaresia-rpg-interaction-mode', 'interactionMode', settings, updateActionModeHelp);
     bindSettingControl('tretaresia-rpg-activity-indicator', 'activityIndicator', settings, syncActivityIndicator);
@@ -3507,6 +3937,7 @@ async function addSettingsDrawer() {
     bindSettingControl('tretaresia-rpg-density', 'density', settings, applyAppearance);
     bindSettingControl('tretaresia-rpg-glass', 'glassOpacity', settings, applyAppearance);
     bindSettingControl('tretaresia-rpg-glow', 'glowStrength', settings, applyAppearance);
+    bindSettingControl('tretaresia-rpg-notification-duration', 'notificationDuration', settings);
     document.getElementById('tretaresia-rpg-open-from-settings')?.addEventListener('click', openInterface);
     document.getElementById('tretaresia-rpg-sync-from-settings')?.addEventListener('click', () => queueAnalyze({ manual: true }));
     updateActionModeHelp();
@@ -3553,7 +3984,7 @@ async function initialize() {
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape') closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.1.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.2.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

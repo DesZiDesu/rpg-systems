@@ -180,3 +180,67 @@
         gap: .5rem;
     }
 }
+
+/* Tretaresia 2.0 world atlas */
+.tretaresia-map-frame { position: relative; overflow: hidden; background: #081d29; }
+.tretaresia-world-map { width: 100%; aspect-ratio: 12 / 7; min-height: 420px; display: block; cursor: crosshair; touch-action: none; user-select: none; filter: none; }
+.tretaresia-map-toolbar { left: .72rem; right: auto; }
+.tretaresia-world-map.is-dragging { cursor: grabbing; }
+.tretaresia-continent-shapes .tretaresia-land { stroke: rgba(228, 240, 220, .34); stroke-width: 5; vector-effect: non-scaling-stroke; transition: filter 180ms ease; }
+.tretaresia-continent-shapes .tretaresia-land:hover { filter: brightness(1.12); }
+.tretaresia-land.central { fill: url(#tretaresia-central); }
+.tretaresia-land.forest { fill: url(#tretaresia-forest); }
+.tretaresia-land.titan { fill: url(#tretaresia-titan); }
+.tretaresia-land.drinovia { fill: url(#tretaresia-drinovia); }
+.tretaresia-land.north { fill: url(#tretaresia-north); }
+.tretaresia-land.baluguria { fill: url(#tretaresia-baluguria); }
+.tretaresia-continent-texture, .tretaresia-terrain, .tretaresia-map-labels, .tretaresia-exact-marker, .tretaresia-coordinate-target { pointer-events: none; }
+.tretaresia-terrain path { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.tretaresia-terrain .ridge { stroke: rgba(29, 22, 20, .5); stroke-width: 13; stroke-dasharray: 2 10; }
+.tretaresia-terrain .river { stroke: rgba(85, 167, 184, .62); stroke-width: 5; }
+.tretaresia-terrain .road { stroke: rgba(230, 197, 129, .36); stroke-width: 3; stroke-dasharray: 10 8; }
+.tretaresia-terrain .ice-line { stroke: rgba(229, 251, 255, .62); stroke-width: 9; stroke-dasharray: 22 14; }
+.tretaresia-map-labels text { fill: rgba(246, 242, 221, .72); font-family: Cinzel, Georgia, serif; font-size: 31px; font-weight: 800; letter-spacing: 7px; text-anchor: middle; paint-order: stroke; stroke: rgba(4, 13, 17, .68); stroke-width: 8px; }
+.tretaresia-map-marker, .tretaresia-free-pin { cursor: pointer; }
+.tretaresia-map-marker .tretaresia-marker-aura { fill: rgba(var(--tretaresia-accent-rgb), .14); stroke: rgba(var(--tretaresia-accent-rgb), .5); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.tretaresia-map-marker .tretaresia-marker-core { fill: #c5d6c3; stroke: #102129; stroke-width: 3; vector-effect: non-scaling-stroke; }
+.tretaresia-map-marker.is-discovered .tretaresia-marker-core { fill: var(--tretaresia-accent); }
+.tretaresia-map-marker.is-selected .tretaresia-marker-aura { fill: rgba(255, 211, 112, .3); stroke: #ffd370; }
+.tretaresia-map-marker text, .tretaresia-free-pin text, .tretaresia-coordinate-target text, .tretaresia-exact-marker text { fill: #f5f2df; fill-opacity: 1; font: 650 17px Inter, sans-serif; text-anchor: middle; paint-order: stroke; stroke: #07141a; stroke-width: 6px; stroke-linejoin: round; }
+.tretaresia-map-marker.tier-1 text { font-size: 15px; }
+.tretaresia-map-marker.tier-2 text { font-size: 13px; }
+.tretaresia-free-pin path { fill: #e0a85a; stroke: #20150c; stroke-width: 3; vector-effect: non-scaling-stroke; }
+.tretaresia-free-pin circle { fill: #fff0c4; }
+.tretaresia-coordinate-target circle { fill: rgba(255, 211, 112, .09); stroke: #ffd370; stroke-width: 3; stroke-dasharray: 7 5; vector-effect: non-scaling-stroke; }
+.tretaresia-coordinate-target path { stroke: #ffd370; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.tretaresia-exact-marker .pulse { fill: rgba(101, 235, 218, .16); stroke: rgba(101, 235, 218, .45); stroke-width: 3; transform-origin: center; animation: tretaresia-map-pulse 1.8s ease-out infinite; }
+.tretaresia-exact-marker .ring { fill: #06252b; stroke: #71f4dd; stroke-width: 4; vector-effect: non-scaling-stroke; }
+.tretaresia-exact-marker > circle:last-of-type { fill: #eafffa; }
+.tretaresia-exact-marker .heading { fill: #71f4dd; stroke: #06252b; stroke-width: 2; transform-origin: 0 0; vector-effect: non-scaling-stroke; }
+@keyframes tretaresia-map-pulse { from { transform: scale(.65); opacity: 1; } to { transform: scale(1.55); opacity: 0; } }
+.tretaresia-map-lod { position: absolute; z-index: 4; left: .8rem; bottom: 2.55rem; display: flex; gap: .45rem; align-items: center; padding: .42rem .62rem; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(5,17,23,.82); backdrop-filter: blur(9px); color: #dcebe7; font-size: .72rem; pointer-events: none; }
+.tretaresia-map-lod b { color: var(--tretaresia-accent); font-weight: 700; }
+.tretaresia-world-compass { position: absolute; z-index: 5; top: .72rem; right: .72rem; width: 78px; height: 78px; border: 1px solid rgba(255,255,255,.24); border-radius: 50%; background: radial-gradient(circle, rgba(22,51,59,.95), rgba(5,16,22,.94)); box-shadow: 0 8px 24px rgba(0,0,0,.4); color: #d8e7e2; }
+.tretaresia-world-compass span { position: absolute; font: 700 9px Inter, sans-serif; }
+.tretaresia-world-compass .north { top: 4px; left: 34px; color: #f5b67a; }.tretaresia-world-compass .south { bottom: 4px; left: 35px; }.tretaresia-world-compass .east { right: 6px; top: 32px; }.tretaresia-world-compass .west { left: 5px; top: 32px; }
+.tretaresia-compass-needle { position: absolute; left: 34px; top: 16px; width: 10px; height: 44px; transform-origin: 5px 22px; clip-path: polygon(50% 0,100% 55%,60% 49%,50% 100%,40% 49%,0 55%); background: linear-gradient(#ef895e 0 50%,#d7ece8 50%); }
+.tretaresia-world-compass em { position: absolute; left: 50%; bottom: -22px; transform: translateX(-50%); font: 700 10px Inter, sans-serif; color: #bcd3ce; background: rgba(5,17,23,.84); padding: 2px 7px; border-radius: 9px; }
+.tretaresia-exact-position { display: flex; gap: .65rem; align-items: center; margin-top: .8rem; padding: .7rem; border-radius: 10px; background: rgba(71, 225, 201, .08); border: 1px solid rgba(71, 225, 201, .2); }
+.tretaresia-exact-position i { color: #71f4dd; }.tretaresia-exact-position span { display: grid; gap: .15rem; font-size: .72rem; }.tretaresia-exact-position b { color: #dffff9; font-size: .78rem; }
+@media (max-width: 800px) { .tretaresia-world-map { min-height: 340px; } .tretaresia-world-compass { width: 66px; height: 66px; transform: scale(.88); transform-origin: top right; } .tretaresia-map-lod span { display: none; } }
+@media (prefers-reduced-motion: reduce) { .tretaresia-exact-marker .pulse { animation: none; } }
+
+/* Main-chat system events */
+.tretaresia-event-stack { position: fixed; z-index: 30010; right: max(18px, env(safe-area-inset-right)); top: max(72px, env(safe-area-inset-top)); width: min(390px, calc(100vw - 28px)); display: grid; gap: .65rem; pointer-events: none; }
+.tretaresia-notification-settings { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: .3rem .7rem; margin: .45rem 0 .8rem; padding: .65rem .75rem; border: 1px solid rgba(var(--tretaresia-accent-rgb), .18); border-radius: 10px; background: rgba(var(--tretaresia-accent-rgb), .04); }
+.tretaresia-settings-subheading { grid-column: 1 / -1; color: var(--tretaresia-accent); font-size: .72rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.tretaresia-notification-settings .checkbox_label { margin: 0; font-size: .76rem; }
+.tretaresia-event-toast { --event-color: #8fb4a3; position: relative; display: grid; grid-template-columns: 48px minmax(0,1fr) auto 24px; gap: .75rem; align-items: center; overflow: hidden; padding: .78rem .72rem .78rem .78rem; border: 1px solid color-mix(in srgb, var(--event-color) 44%, transparent); border-left: 3px solid var(--event-color); border-radius: 12px; background: linear-gradient(105deg, color-mix(in srgb, var(--event-color) 12%, rgba(5,13,18,.96)), rgba(5,13,18,.96) 52%); box-shadow: 0 16px 42px rgba(0,0,0,.5), inset 0 1px rgba(255,255,255,.05); backdrop-filter: blur(16px); color: #edf5f2; pointer-events: auto; opacity: 0; transform: translateX(32px) scale(.97); transition: opacity 240ms ease, transform 240ms ease; }
+.tretaresia-event-toast.is-visible { opacity: 1; transform: translateX(0) scale(1); }
+.tretaresia-event-toast[data-kind="level"] { --event-color: #f2c35d; }.tretaresia-event-toast[data-kind="experience"] { --event-color: #75d0f0; }.tretaresia-event-toast[data-kind="learning"] { --event-color: #a6dd91; }.tretaresia-event-toast[data-kind="combat"] { --event-color: #ec7f68; }.tretaresia-event-toast[data-kind="kill"] { --event-color: #d37086; }.tretaresia-event-toast[data-kind="currency"] { --event-color: #e0b45d; }
+.tretaresia-event-icon { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--event-color) 58%, transparent); border-radius: 50%; color: var(--event-color); background: color-mix(in srgb, var(--event-color) 10%, transparent); box-shadow: 0 0 20px color-mix(in srgb, var(--event-color) 25%, transparent); }
+.tretaresia-event-toast > div { min-width: 0; display: grid; gap: .13rem; }.tretaresia-event-toast small { color: var(--event-color); font-size: .61rem; font-weight: 800; letter-spacing: .14em; }.tretaresia-event-toast strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; }.tretaresia-event-toast p { margin: 0; color: rgba(230,240,237,.69); font-size: .7rem; line-height: 1.25; }.tretaresia-event-toast > b { color: var(--event-color); white-space: nowrap; font-size: .78rem; }.tretaresia-event-toast > button { width: 24px; height: 24px; padding: 0; border: 0; background: transparent; color: rgba(255,255,255,.55); }.tretaresia-event-timer { position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; background: var(--event-color); transform-origin: left; animation: tretaresia-event-countdown linear forwards; }
+@keyframes tretaresia-event-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (max-width: 600px) { .tretaresia-event-stack { top: max(54px, env(safe-area-inset-top)); right: 10px; width: calc(100vw - 20px); }.tretaresia-event-toast { grid-template-columns: 40px minmax(0,1fr) auto 22px; gap: .55rem; }.tretaresia-event-icon { width: 38px; height: 38px; } }
+@media (max-width: 600px) { .tretaresia-notification-settings { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (prefers-reduced-motion: reduce) { .tretaresia-event-toast { transition: none; }.tretaresia-event-timer { animation: none; } }

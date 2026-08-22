@@ -18,6 +18,19 @@
                 <input id="tretaresia-rpg-inject-state" type="checkbox" />
                 <span>Include current state in role-play prompts</span>
             </label>
+            <label class="checkbox_label" for="tretaresia-rpg-event-notifications">
+                <input id="tretaresia-rpg-event-notifications" type="checkbox" />
+                <span>Show RPG event pop-ups over the main chat</span>
+            </label>
+            <div class="tretaresia-notification-settings">
+                <span class="tretaresia-settings-subheading">Notification events</span>
+                <label class="checkbox_label"><input id="tretaresia-rpg-notify-exp" type="checkbox" /><span>EXP</span></label>
+                <label class="checkbox_label"><input id="tretaresia-rpg-notify-level" type="checkbox" /><span>Level ups</span></label>
+                <label class="checkbox_label"><input id="tretaresia-rpg-notify-learning" type="checkbox" /><span>Learning & training</span></label>
+                <label class="checkbox_label"><input id="tretaresia-rpg-notify-combat" type="checkbox" /><span>Combat</span></label>
+                <label class="checkbox_label"><input id="tretaresia-rpg-notify-kills" type="checkbox" /><span>Kills</span></label>
+                <label class="checkbox_label"><input id="tretaresia-rpg-notify-currency" type="checkbox" /><span>Money gained or spent</span></label>
+            </div>
             <div class="tretaresia-settings-grid">
                 <label class="tretaresia-settings-field" for="tretaresia-rpg-language">
                     <span>Interface & action language / ภาษา</span>
@@ -62,6 +75,10 @@
                     <span>Aura glow</span>
                     <input id="tretaresia-rpg-glow" type="range" min="0" max="100" value="38" />
                 </label>
+                <label class="tretaresia-settings-field" for="tretaresia-rpg-notification-duration">
+                    <span>Pop-up auto-dismiss (milliseconds)</span>
+                    <input id="tretaresia-rpg-notification-duration" type="number" min="1500" max="30000" step="500" value="6000" />
+                </label>
             </div>
             <div class="tretaresia-rpg-settings-note">
                 <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
@@ -87,7 +104,7 @@
                 </button>
                 <span class="tretaresia-rpg-ready-state">
                     <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                    Tretaresia engine 0.1 ready
+                    Tretaresia engine 0.2 ready
                 </span>
             </div>
         </div>
