@@ -10,14 +10,14 @@ A persistent, responsive SillyTavern RPG interface built specifically for the wo
 - Tretaresia power mastery for False Magic, True Magic, Aura, Formless Aura, Blood Aura, Sage Mana, Divine Mana, Constructs, and Divine Constructs.
 - Extensible custom powers, combat disciplines, acquired skills, and techniques with proficiency and semantic icon presets.
 - Tretaresia adventurer ranks: Rookie, Basic, Intermediate, Ember, and individually named Custom Rank.
-- Dungeon records supporting every grade from E- through SS.
+- Mission, quest, contract, and dungeon records supporting every grade from E- through SS. New tasks are captured as soon as the story offers, assigns, or confirms receipt of them, then updated through accepted, active, progress, completion, failure, or hold states.
 - Long-distance journey tracking with origin, destination, road/caravan/sea/off-road route, estimated duration, remaining days, delays, and arrival state. Selecting a destination begins a journey instead of teleporting the scene.
 - Region-aware currency ledger with a named local currency and three flexible denominations.
 - Scene tracker with time, day, continent, region, exact place, position, weather, extreme temperatures, and AI-assisted multi-floor local maps.
-- A completely rebuilt 2,400 × 1,400 world atlas with all six continents, 126 named locations, terrain detail, coordinate-level selection, freeform pins, an exact player-position beacon, and a heading-aware world compass.
-- Smooth level-of-detail rendering: the atlas draws overview, regional, or local place labels only inside the visible camera area, keeping deep zoom and panning responsive.
+- A completely rebuilt world atlas using the supplied 16:9 Tretaresia artwork, with all six continents, 126 named locations, coordinate-level selection, freeform pins, an exact player-position beacon, and a heading-aware world compass.
+- iOS-friendly Canvas tile rendering: four WebP detail levels load only the visible 512 px tiles and visible place labels while zooming or panning, avoiding one enormous SVG scene.
 - Broad action-based EXP tracking for studying, learning, training, crafting practice, combat, kills, discoveries, quests, and other genuine growth; level rollover happens when EXP is exactly equal to or greater than the current requirement.
-- Main-chat system notifications for EXP, learning, training, combat, kills, level-ups, and money changes. Every tracked currency notification identifies why money was gained or spent, with configurable event types and auto-dismiss time.
+- Main-chat system notifications for EXP, learning, training, combat, kills, level-ups, mission/quest receipt and status changes, and money changes. Every tracked currency notification identifies why money was gained or spent, with configurable event types and auto-dismiss time.
 - Inventory, quests, NPC Codex, relationship meters, abilities, revealed stats, private diary entries, contacts, physical letters, and local-device music playlists.
 - English and Thai interface/action support, hidden/visible/draft action delivery, mobile safe-area layout, touch controls, and configurable appearance.
 
@@ -38,9 +38,9 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
 
-## Version 0.2.0
+## Version 0.3.0
 
-Adds the atlas-scale world map, exact coordinates and compass, viewport-aware detail rendering, freeform marking and wilderness travel, comprehensive EXP and kill tracking, exact-threshold level-up logic, and reason-aware main-chat RPG notifications.
+Replaces the SVG atlas with a tiled Canvas map built from the supplied Tretaresia artwork. Adds immediate mission/quest receipt tracking, offered and active states, progress and source metadata, and main-chat quest notifications while preserving the exact-location compass, freeform map marking, EXP, level-up, kill, and currency systems.
 
 ## License
 

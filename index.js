@@ -70,6 +70,14 @@ const ROOM_TYPES = ['Room', 'Hall', 'Corridor', 'Stairs', 'Entrance', 'Garden', 
 const CONNECTION_TYPES = ['Door', 'Passage', 'Stairs', 'Archway', 'Window'];
 const WORLD_MAP_WIDTH = 2400;
 const WORLD_MAP_HEIGHT = 1400;
+const WORLD_TILE_SIZE = 512;
+const WORLD_TILE_ROOT = `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles`;
+const WORLD_TILE_LEVELS = [
+    { z: 0, width: 512, height: 288, columns: 1, rows: 1 },
+    { z: 1, width: 1024, height: 576, columns: 2, rows: 2 },
+    { z: 2, width: 2048, height: 1152, columns: 4, rows: 3 },
+    { z: 3, width: 4096, height: 2304, columns: 8, rows: 5 },
+];
 const WORLD_CONTINENTS = [
     { id: 'central', name: 'Central Continent', className: 'central', label: [1120, 710], bounds: [620, 310, 1660, 1135],
         path: 'M690 390 830 325 1030 350 1180 315 1370 370 1515 470 1580 620 1540 770 1615 900 1510 1045 1325 1110 1130 1075 950 1125 785 1030 670 880 705 720 625 555Z' },
@@ -243,6 +251,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     notifyCombat: true,
     notifyKills: true,
     notifyCurrency: true,
+    notifyQuests: true,
 });
 
 const TRANSLATIONS = {
@@ -331,7 +340,10 @@ let syncQueue = Promise.resolve();
 let tabTransitionToken = 0;
 let mapSelectionId = null;
 let mapDraftPoint = null;
-let mapDetailFrame = 0;
+let mapDrawFrame = 0;
+let mapRenderedPoints = [];
+let mapResizeObserver = null;
+const mapTileCache = new Map();
 let openedLetterId = null;
 let selectedNpcId = null;
 let npcPortraitRenderToken = 0;
@@ -434,7 +446,7 @@ function getSettings() {
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
-    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency']) settings[key] = Boolean(settings[key]);
+    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests']) settings[key] = Boolean(settings[key]);
     return settings;
 }
 
@@ -609,13 +621,17 @@ function musicTrack(value) {
 
 function quest(value) {
     if (!value || typeof value !== 'object' || !text(value.name)) return null;
-    const statuses = ['Active', 'Completed', 'Failed', 'On Hold'];
+    const statuses = ['Offered', 'Active', 'Completed', 'Failed', 'On Hold'];
     return {
         id: text(value.id, uid(), 100), name: text(value.name, '', 120),
-        type: ['Quest', 'Dungeon', 'Contract', 'Personal'].includes(value.type) ? value.type : 'Quest',
+        type: ['Mission', 'Quest', 'Dungeon', 'Contract', 'Personal'].includes(value.type) ? value.type : 'Quest',
         dungeonRank: DUNGEON_RANKS.includes(value.dungeonRank) ? value.dungeonRank : 'Unranked',
         status: statuses.includes(value.status) ? value.status : 'Active',
         objective: text(value.objective, '', 500), reward: text(value.reward, '', 160),
+        giver: text(value.giver, '', 120), source: text(value.source, '', 160),
+        progress: number(value.progress, value.status === 'Completed' ? 100 : 0, 0, 100),
+        receivedAt: text(value.receivedAt, '', 60), updatedAt: text(value.updatedAt, '', 60),
+        notes: text(value.notes, '', 1000),
     };
 }
 
@@ -991,13 +1007,14 @@ function patchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     return [
         'After the role-play reply, append one invisible HTML comment only when confirmed state changed:',
-        '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","proficiencies.magic.aura",2,{"reason":"Aura control improved","category":"learning","label":"Aura"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}],["set","worldClock.time","14:30"]],"summary":"Training, payment, and combat progress recorded."}-->',
+        '<!--tretaresia_patch:{"ops":[["upsert","quests",{"id":"academy-escort","name":"Escort the Academy Caravan","type":"Mission","status":"Active","objective":"Protect the caravan until it reaches Eastwatch","reward":"12 silver","giver":"Quartermaster Lysa","source":"Great Academy mission board","progress":0}],["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}]],"summary":"Mission, training, payment, and combat progress recorded."}-->',
         'Allowed verbs: set or inc for scalar paths; upsert or delete for inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters; set or inc npcValues; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
         'Use canonical paths shown in the state JSON. For a new incoming physical letter include contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not a letter.',
         'Create or update a named NPC dossier with an upsert on npcs only when that NPC becomes relevant or a confirmed fact changes. Use partial NPC objects and preserve the canonical id from npcIndex. When a relationship becomes a correspondence, also upsert contacts with npcId; do not make every incidental NPC a contact.',
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. NPC portraits and portrait framing are local-only and forbidden in patches.',
         'Evaluate every relevant subsystem after every reply, not only scene/location. Update every materially affected value in the same patch; leave a value unchanged only when this reply provides no reasonable story basis for changing it.',
         'Full checklist: player HP/Aura-or-Mana/stamina/condition, profession, power type, Origin skill and identity; EXP/adventurer rank/custom title/reputation/local currency; inventory, Constructs and learned skills; power/combat/technique proficiency; quests and dungeons; time/location/travel/weather/local map; every participating NPC dossier, relationship meter, location, lastSeen, abilities, diary, and revealed stats; contacts and actual physical letters. Emit only fields affected by this completed reply.',
+        'Mission and quest receipt rules: immediately upsert every named mission, quest, contract, dungeon task, or personal objective when this reply formally offers, assigns, gives, or confirms the player has received it. Do not wait for completion or for the user to open the Quest tab. Use status "Offered" when acceptance is optional and not yet confirmed; use "Active" when accepted or assigned automatically. Include a stable id, name, type, status, objective, reward when known, giver, source, progress 0-100, and receivedAt when the story provides a timestamp. If the user accepts an offered task, upsert it as Active in this reply. Update progress/objective/status as confirmed events occur and set Completed only when completion is confirmed. Do not turn casual advice, rumors, possibilities, or rejected work into quests.',
         'EXP rules: award EXP for every completed action that materially counts as studying, reading with understanding, taking a lesson, researching, learning, spell or skill practice, crafting practice, physical training, sparring, combat participation, surviving danger, killing a hostile creature, discovery, quest progress, or another genuine growth action. Use inc progression.experience and always add fourth-position metadata {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical gain: 1-3 routine study/practice, 4-8 meaningful success, 9-20 combat or major challenge, 21-40 exceptional milestone. Do not award EXP for passive narration, merely intending to act, failed non-instructive attempts, or ordinary small talk. The extension levels up automatically the instant accumulated EXP is greater than or exactly equal to experienceMax.',
         'Kill rules: whenever the player personally kills or decisively finishes a hostile person or creature, inc progression.kills by the confirmed count with fourth-position metadata naming the defeated target, for example ["inc","progression.kills",1,{"reason":"Defeated the cave troll","category":"kill"}]. Also award appropriate combat EXP in the same patch. Do not count knockouts, uncertain deaths, assists without a kill, practice targets, or environmental deaths not caused by the player.',
         'Proficiency rules: increment a used or trained power system or combat discipline by 1-3 when the reply confirms genuine practice or successful use; use 4-8 only for a breakthrough. Do not increase unused proficiencies. When a confirmed power or combat style is not in the preset lists, upsert proficiencies.customMagic or proficiencies.customSword with {id,name,proficiency,description,iconKey}; later upserts may contain only id/name and changed fields.',
@@ -1059,7 +1076,7 @@ function buildEventNotificationStack() {
 function eventNotificationEnabled(kind) {
     const settings = getSettings();
     if (!settings.eventNotifications) return false;
-    const key = { experience: 'notifyExperience', level: 'notifyLevel', learning: 'notifyLearning', combat: 'notifyCombat', kill: 'notifyKills', currency: 'notifyCurrency' }[kind];
+    const key = { experience: 'notifyExperience', level: 'notifyLevel', learning: 'notifyLearning', combat: 'notifyCombat', kill: 'notifyKills', currency: 'notifyCurrency', quest: 'notifyQuests' }[kind];
     return key ? settings[key] : true;
 }
 
@@ -1068,7 +1085,7 @@ function showEventNotification(event) {
     buildEventNotificationStack();
     const stack = document.getElementById('tretaresia-event-stack');
     if (!stack) return;
-    const icons = { experience: 'fa-star', level: 'fa-arrow-up', learning: 'fa-book-open', combat: 'fa-khanda', kill: 'fa-skull', currency: 'fa-coins' };
+    const icons = { experience: 'fa-star', level: 'fa-arrow-up', learning: 'fa-book-open', combat: 'fa-khanda', kill: 'fa-skull', currency: 'fa-coins', quest: 'fa-scroll' };
     const toast = document.createElement('article');
     toast.className = 'tretaresia-event-toast';
     toast.dataset.kind = event.kind;
@@ -1382,6 +1399,7 @@ function activateTab(id) {
         void next.offsetWidth;
         next.classList.add('is-entering');
         overlay.querySelector('.tretaresia-rpg-panel-body')?.scrollTo({ top: 0, behavior: 'smooth' });
+        if (id === 'map') requestAnimationFrame(() => scheduleMapDraw(next, getState()));
     };
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) finish();
     else setTimeout(finish, 130);
@@ -1806,19 +1824,26 @@ function renderTechniques(panel, state) {
 
 function renderQuests(panel, state) {
     if (!panel) return;
-    panel.innerHTML = `${heading('Quest Log', `${state.quests.filter(q => q.status === 'Active').length} active`, 'fa-solid fa-scroll')}
+    const activeCount = state.quests.filter(entry => entry.status === 'Active').length;
+    const offeredCount = state.quests.filter(entry => entry.status === 'Offered').length;
+    panel.innerHTML = `${heading('Mission & Quest Log', `${activeCount} active · ${offeredCount} offered`, 'fa-solid fa-scroll')}
         <div class="tretaresia-quest-list">${state.quests.length ? state.quests.map(entry => `
             <article class="tretaresia-quest-card" data-status="${html(entry.status.toLowerCase())}"><div>
                 <span class="tretaresia-quest-status">${html(entry.status)} · ${html(entry.type)}${entry.type === 'Dungeon' ? ` ${html(entry.dungeonRank)}` : ''}</span><h4>${html(entry.name)}</h4>
-                <p>${html(entry.objective || tr('No objective recorded'))}</p>${entry.reward ? `<small>${html(tr('Reward'))}: ${html(entry.reward)}</small>` : ''}</div>
+                <p>${html(entry.objective || tr('No objective recorded'))}</p>
+                <div class="tretaresia-quest-progress"><span><i style="width:${entry.progress}%"></i></span><b>${entry.progress}%</b></div>
+                ${(entry.giver || entry.source) ? `<small><i class="fa-solid fa-user-tag"></i> ${html(entry.giver || tr('Unknown giver'))}${entry.source ? ` · ${html(entry.source)}` : ''}</small>` : ''}
+                ${entry.reward ? `<small><i class="fa-solid fa-gift"></i> ${html(tr('Reward'))}: ${html(entry.reward)}</small>` : ''}
+                ${entry.receivedAt ? `<small><i class="fa-solid fa-clock"></i> ${html(tr('Received'))}: ${html(formatDate(entry.receivedAt))}</small>` : ''}</div>
                 <div class="tretaresia-card-actions"><button type="button" data-action="pursue-quest" data-id="${html(entry.id)}" title="${html(tr('Pursue in role-play'))}"><i class="fa-solid fa-comment-dots"></i></button>
                 <button type="button" data-action="delete-quest" data-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></article>`).join('') : empty('No quests have been recorded yet.')}</div>
-        <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add quest'))}</summary>
-            <form data-form="quest" class="tretaresia-form-grid">${input('Quest name', 'name', '')}
-                ${select('Quest type', 'type', ['Quest', 'Dungeon', 'Contract', 'Personal'], 'Quest')}${select('Dungeon rank', 'dungeonRank', DUNGEON_RANKS, 'Unranked')}
-                ${select('Status', 'status', ['Active', 'Completed', 'Failed', 'On Hold'], 'Active')}
-                ${input('Objective', 'objective', '')}${input('Reward', 'reward', '')}
-                <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add quest'))}</button></form></details>`;
+        <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add mission or quest'))}</summary>
+            <form data-form="quest" class="tretaresia-form-grid">${input('Mission / quest name', 'name', '')}
+                ${select('Type', 'type', ['Mission', 'Quest', 'Dungeon', 'Contract', 'Personal'], 'Quest')}${select('Dungeon rank', 'dungeonRank', DUNGEON_RANKS, 'Unranked')}
+                ${select('Status', 'status', ['Offered', 'Active', 'Completed', 'Failed', 'On Hold'], 'Active')}
+                ${input('Objective', 'objective', '')}${input('Reward', 'reward', '')}${input('Quest giver', 'giver', '')}${input('Source', 'source', 'Manual entry')}
+                ${input('Progress', 'progress', 0, 'number', 'min="0" max="100"')}${input('Notes', 'notes', '')}
+                <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add to log'))}</button></form></details>`;
 }
 
 const rankRow = (label, value, icon) => `<article class="tretaresia-rank-row"><i class="${icon}"></i><span>${html(tr(label))}</span><strong>${html(tr(String(value)))}</strong></article>`;
@@ -1861,8 +1886,6 @@ function renderMap(panel, state) {
     const selectedPinned = exactSelected
         ? state.location.pins.some(pin => pin.x !== null && Math.hypot(pin.x - selected.x, pin.y - selected.y) < 12)
         : pinIds.has(selected.id);
-    const continentPaths = WORLD_CONTINENTS.map(continent => `<path class="tretaresia-land ${continent.className}" data-continent-id="${continent.id}" d="${continent.path}"/>`).join('');
-    const continentLabels = WORLD_CONTINENTS.map(continent => `<text x="${continent.label[0]}" y="${continent.label[1]}">${html(continent.name.toUpperCase())}</text>`).join('');
     panel.innerHTML = `${heading('Tretaresia World Atlas', `${state.location.continent} · ${state.location.region}`, 'fa-solid fa-earth-asia')}
         <div class="tretaresia-map-layout"><div class="tretaresia-map-frame"><div class="tretaresia-map-toolbar" aria-label="Map controls">
             <button type="button" data-action="map-zoom-in" title="Zoom in"><i class="fa-solid fa-plus"></i></button>
@@ -1873,32 +1896,7 @@ function renderMap(panel, state) {
             <button class="tretaresia-world-compass" type="button" data-action="map-compass-north" title="Center your location on the north-up world map" aria-label="World compass, current heading ${Math.round(current.heading)} degrees">
                 <span class="north">N</span><span class="east">E</span><span class="south">S</span><span class="west">W</span>
                 <i class="tretaresia-compass-needle" style="transform:rotate(${current.heading}deg)"></i><em>${Math.round(current.heading)}°</em></button>
-            <svg class="tretaresia-world-map" viewBox="0 0 ${WORLD_MAP_WIDTH} ${WORLD_MAP_HEIGHT}" role="img" aria-label="Interactive map of Tretaresia; click anywhere to select exact coordinates">
-                <defs>
-                    <linearGradient id="tretaresia-ocean" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#183847"/><stop offset=".5" stop-color="#102b38"/><stop offset="1" stop-color="#081d29"/></linearGradient>
-                    <linearGradient id="tretaresia-central" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#809267"/><stop offset="1" stop-color="#3f5a49"/></linearGradient>
-                    <linearGradient id="tretaresia-forest" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#397854"/><stop offset="1" stop-color="#173d35"/></linearGradient>
-                    <linearGradient id="tretaresia-titan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c69b62"/><stop offset="1" stop-color="#715034"/></linearGradient>
-                    <linearGradient id="tretaresia-drinovia" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#955f52"/><stop offset="1" stop-color="#49333b"/></linearGradient>
-                    <linearGradient id="tretaresia-north" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d7eced"/><stop offset="1" stop-color="#7899a5"/></linearGradient>
-                    <linearGradient id="tretaresia-baluguria" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8c6b76"/><stop offset="1" stop-color="#413845"/></linearGradient>
-                    <pattern id="tretaresia-sea-grid" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M80 0H0V80" fill="none" stroke="#b9dddf" stroke-opacity=".045"/></pattern>
-                    <pattern id="tretaresia-topography" width="58" height="58" patternUnits="userSpaceOnUse"><path d="M-10 28Q12 6 34 28T78 28M-10 45Q12 23 34 45T78 45" fill="none" stroke="#fff" stroke-opacity=".04"/></pattern>
-                    <filter id="tretaresia-map-shadow"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity=".62"/></filter>
-                </defs>
-                <rect width="${WORLD_MAP_WIDTH}" height="${WORLD_MAP_HEIGHT}" fill="url(#tretaresia-ocean)"></rect><rect width="${WORLD_MAP_WIDTH}" height="${WORLD_MAP_HEIGHT}" fill="url(#tretaresia-sea-grid)"></rect>
-                <g class="tretaresia-map-camera" transform="translate(${mapView.x} ${mapView.y}) scale(${mapView.scale})">
-                    <g class="tretaresia-continent-shapes" filter="url(#tretaresia-map-shadow)">${continentPaths}</g>
-                    <g class="tretaresia-continent-texture" aria-hidden="true">${WORLD_CONTINENTS.map(continent => `<path d="${continent.path}" fill="url(#tretaresia-topography)"/>`).join('')}</g>
-                    <g class="tretaresia-terrain" aria-hidden="true">
-                        <path class="ridge" d="M785 500l45-95 42 82 48-114 53 126 51-91 55 108M1630 440l44-80 45 96 48-121 52 132 58-108 58 119M580 1110l48-89 47 103 56-128 49 112"/>
-                        <path class="river" d="M1140 360Q1020 515 1115 650T1030 930M350 435Q480 550 430 765T520 975M1900 350Q1770 520 1860 680T1790 920"/>
-                        <path class="road" d="M720 720Q920 590 1100 655T1480 620M1050 785Q1280 920 1550 760M500 1050Q780 1170 1040 1240"/>
-                        <path class="ice-line" d="M170 265Q500 220 800 280T1370 230T2200 260"/>
-                    </g>
-                    <g class="tretaresia-map-labels" aria-hidden="true">${continentLabels}</g>
-                    <g class="tretaresia-map-detail-layer"></g>
-                </g></svg>
+            <canvas class="tretaresia-world-map" role="img" aria-label="Interactive tiled map of Tretaresia; click anywhere to select exact coordinates"></canvas>
             <div class="tretaresia-map-legend"><span><i class="current"></i>${html(tr('Current'))}</span><span><i class="known"></i>${html(tr('Discovered'))}</span><span><i class="marked"></i>${html(tr('Marked'))}</span><small>Click anywhere to select · ${html(tr('Drag to pan · Pinch or scroll to zoom'))}</small></div></div>
             <aside class="tretaresia-map-sidebar"><article class="tretaresia-location-dossier"><span class="tretaresia-eyebrow">${html(tr('Selected location'))}</span><h4>${html(selected.name)}</h4>
                 <p>${html(selected.continent)}</p><div class="tretaresia-zone-badge" data-zone="${html(selected.zone)}"><i class="fa-solid fa-shield"></i>${html(tr(selected.zone))}</div>
@@ -1920,8 +1918,8 @@ function renderMap(panel, state) {
                     <input type="hidden" name="continent" value="${html(selected.continent)}"><input type="hidden" name="region" value="${html(selected.region)}"><button class="tretaresia-secondary-button" type="submit"><i class="fa-solid fa-map-pin"></i> ${html(tr('Mark location'))}</button></form>
                 ${state.location.pins.length ? `<div class="tretaresia-pin-list">${state.location.pins.map(pin => `<button type="button" data-action="select-pin" data-pin-id="${html(pin.id)}" data-location-id="${html(pin.locationId)}">
                     <i class="fa-solid fa-map-pin"></i><span>${html(pin.label)}<small>${html(pin.note || mapLocation(pin.locationId)?.name || coordinatesLabel(pin.x, pin.y))}</small></span></button>`).join('')}</div>` : ''}</aside></div>`;
-    renderMapVisibleLocations(panel, state);
     setupMapInteractions(panel);
+    scheduleMapDraw(panel, state);
 }
 
 function mapLod() {
@@ -1937,47 +1935,170 @@ function mapVisibleBounds() {
     };
 }
 
-function renderMapMarker(location, state, selectedId, discovered, pinIds) {
-    const isSelected = location.id === selectedId;
-    const isDiscovered = discovered.has(location.name);
-    const isPinned = pinIds.has(location.id);
-    return `<g class="tretaresia-map-marker tier-${location.tier}${isSelected ? ' is-selected' : ''}${isDiscovered ? ' is-discovered' : ''}${isPinned ? ' is-pinned' : ''}" data-kind="${html(location.kind)}"
-        data-map-location="${location.id}" transform="translate(${location.x} ${location.y})" tabindex="0" role="button" aria-label="${html(location.name)}">
-        <circle class="tretaresia-marker-aura" r="13"></circle><circle class="tretaresia-marker-core" r="5"></circle><text x="0" y="25">${html(location.name)}</text></g>`;
+function worldTileLevel() {
+    if (mapView.scale < .82) return WORLD_TILE_LEVELS[0];
+    if (mapView.scale < 1.35) return WORLD_TILE_LEVELS[1];
+    if (mapView.scale < 2.55) return WORLD_TILE_LEVELS[2];
+    return WORLD_TILE_LEVELS[3];
 }
 
-function renderMapVisibleLocations(panel = document.querySelector('[data-panel="map"]'), state = getState()) {
-    const layer = panel?.querySelector('.tretaresia-map-detail-layer');
-    if (!layer) return;
+function worldTile(level, column, row) {
+    const key = `${level.z}/${column}-${row}`;
+    const cached = mapTileCache.get(key);
+    if (cached) return cached;
+    const record = { status: 'loading', image: new Image() };
+    record.image.decoding = 'async';
+    record.image.onload = () => { record.status = 'ready'; scheduleMapDraw(); };
+    record.image.onerror = () => { record.status = 'error'; };
+    record.image.src = `${WORLD_TILE_ROOT}/${level.z}/${column}-${row}.webp`;
+    mapTileCache.set(key, record);
+    return record;
+}
+
+function mapCanvasPoint(x, y, width, height) {
+    return {
+        x: (x * mapView.scale + mapView.x) / WORLD_MAP_WIDTH * width,
+        y: (y * mapView.scale + mapView.y) / WORLD_MAP_HEIGHT * height,
+    };
+}
+
+function drawMapLabel(context, label, x, y, options = {}) {
+    const size = options.size || 12;
+    context.save();
+    context.font = `${options.weight || 650} ${size}px Inter, system-ui, sans-serif`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.lineJoin = 'round';
+    context.strokeStyle = options.stroke || 'rgba(4, 13, 17, .88)';
+    context.lineWidth = Math.max(3, size * .28);
+    context.strokeText(label, x, y);
+    context.fillStyle = options.color || '#f5f2df';
+    context.fillText(label, x, y);
+    context.restore();
+}
+
+function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), state = getState()) {
+    const canvas = panel?.querySelector('.tretaresia-world-map');
+    if (!(canvas instanceof HTMLCanvasElement)) return;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const pixelRatio = Math.min(1.5, globalThis.devicePixelRatio || 1);
+    const targetWidth = Math.max(1, Math.round(rect.width * pixelRatio));
+    const targetHeight = Math.max(1, Math.round(rect.height * pixelRatio));
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+    }
+    const context = canvas.getContext('2d', { alpha: false, desynchronized: true });
+    if (!context) return;
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.fillStyle = '#102f3b';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    const transformX = canvas.width / WORLD_MAP_WIDTH;
+    const transformY = canvas.height / WORLD_MAP_HEIGHT;
+    context.setTransform(transformX * mapView.scale, 0, 0, transformY * mapView.scale, transformX * mapView.x, transformY * mapView.y);
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'high';
+
+    const fallback = worldTile(WORLD_TILE_LEVELS[0], 0, 0);
+    if (fallback.status === 'ready') context.drawImage(fallback.image, 0, 0, WORLD_MAP_WIDTH, WORLD_MAP_HEIGHT);
+
+    const level = worldTileLevel();
     const lod = mapLod();
     const bounds = mapVisibleBounds();
+    const sourceLeft = Math.max(0, bounds.left / WORLD_MAP_WIDTH * level.width);
+    const sourceTop = Math.max(0, bounds.top / WORLD_MAP_HEIGHT * level.height);
+    const sourceRight = Math.min(level.width, bounds.right / WORLD_MAP_WIDTH * level.width);
+    const sourceBottom = Math.min(level.height, bounds.bottom / WORLD_MAP_HEIGHT * level.height);
+    const firstColumn = Math.max(0, Math.floor(sourceLeft / WORLD_TILE_SIZE));
+    const lastColumn = Math.min(level.columns - 1, Math.floor(Math.max(0, sourceRight - 1) / WORLD_TILE_SIZE));
+    const firstRow = Math.max(0, Math.floor(sourceTop / WORLD_TILE_SIZE));
+    const lastRow = Math.min(level.rows - 1, Math.floor(Math.max(0, sourceBottom - 1) / WORLD_TILE_SIZE));
+    for (let row = firstRow; row <= lastRow; row += 1) {
+        for (let column = firstColumn; column <= lastColumn; column += 1) {
+            const tile = worldTile(level, column, row);
+            if (tile.status !== 'ready') continue;
+            const worldX = column * WORLD_TILE_SIZE / level.width * WORLD_MAP_WIDTH;
+            const worldY = row * WORLD_TILE_SIZE / level.height * WORLD_MAP_HEIGHT;
+            const worldWidth = tile.image.naturalWidth / level.width * WORLD_MAP_WIDTH;
+            const worldHeight = tile.image.naturalHeight / level.height * WORLD_MAP_HEIGHT;
+            context.drawImage(tile.image, worldX, worldY, worldWidth, worldHeight);
+        }
+    }
+
+    context.setTransform(1, 0, 0, 1, 0, 0);
     const discovered = new Set(state.location.discovered);
     const pinIds = new Set(state.location.pins.map(pin => pin.locationId));
     const visible = WORLD_LOCATIONS.filter(location => (
         (location.tier <= lod || location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name))
         && location.x >= bounds.left && location.x <= bounds.right && location.y >= bounds.top && location.y <= bounds.bottom
     ));
-    const markers = visible.map(location => renderMapMarker(location, state, mapSelectionId, discovered, pinIds)).join('');
-    const pins = state.location.pins.map(pin => {
+    mapRenderedPoints = [];
+    if (lod === 0) {
+        for (const continent of WORLD_CONTINENTS) {
+            const point = mapCanvasPoint(continent.label[0], continent.label[1], canvas.width, canvas.height);
+            drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, { size: Math.max(9, canvas.width / 90), weight: 800, color: 'rgba(248,243,220,.78)', stroke: 'rgba(4,13,17,.72)' });
+        }
+    }
+    for (const location of visible) {
+        const point = mapCanvasPoint(location.x, location.y, canvas.width, canvas.height);
+        if (point.x < -80 || point.y < -40 || point.x > canvas.width + 80 || point.y > canvas.height + 40) continue;
+        const selected = location.id === mapSelectionId;
+        const known = discovered.has(location.name);
+        const pinned = pinIds.has(location.id);
+        context.beginPath();
+        context.arc(point.x, point.y, selected ? 9 : 6, 0, Math.PI * 2);
+        context.fillStyle = selected ? '#ffd370' : pinned ? '#c58bd6' : known ? '#8fd8bd' : '#d7dfd4';
+        context.fill();
+        context.lineWidth = selected ? 3 : 2;
+        context.strokeStyle = 'rgba(5,18,23,.9)';
+        context.stroke();
+        if (selected) {
+            context.beginPath(); context.arc(point.x, point.y, 15, 0, Math.PI * 2);
+            context.strokeStyle = 'rgba(255,211,112,.72)'; context.lineWidth = 2; context.stroke();
+        }
+        drawMapLabel(context, location.name, point.x, point.y + 17, { size: location.tier === 0 ? 12 : location.tier === 1 ? 10 : 9 });
+        mapRenderedPoints.push({ type: 'location', id: location.id, x: point.x, y: point.y, radius: 22 });
+    }
+    for (const pin of state.location.pins) {
         const site = mapLocation(pin.locationId);
         const x = pin.x ?? site?.x;
         const y = pin.y ?? site?.y;
-        if (!Number.isFinite(x) || !Number.isFinite(y) || x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) return '';
-        return `<g class="tretaresia-free-pin" data-action="select-pin" data-pin-id="${html(pin.id)}" transform="translate(${x} ${y})"><path d="M0-18c-8 0-14 6-14 14 0 11 14 25 14 25S14 7 14-4c0-8-6-14-14-14Z"/><circle cy="-4" r="4"/><text y="37">${html(pin.label)}</text></g>`;
-    }).join('');
-    const draft = mapDraftPoint ? `<g class="tretaresia-coordinate-target" transform="translate(${mapDraftPoint.x} ${mapDraftPoint.y})"><circle r="19"/><path d="M-28 0H28M0-28V28"/><text y="43">${html(mapDraftPoint.name || 'Selected coordinate')}</text></g>` : '';
+        if (!Number.isFinite(x) || !Number.isFinite(y) || x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) continue;
+        const point = mapCanvasPoint(x, y, canvas.width, canvas.height);
+        context.fillStyle = '#e0a85a'; context.strokeStyle = '#21150c'; context.lineWidth = 2;
+        context.beginPath(); context.arc(point.x, point.y - 5, 7, 0, Math.PI * 2); context.fill(); context.stroke();
+        context.beginPath(); context.moveTo(point.x - 5, point.y); context.lineTo(point.x, point.y + 11); context.lineTo(point.x + 5, point.y); context.fill();
+        if (!site || lod > 0) drawMapLabel(context, pin.label, point.x, point.y + 24, { size: 10, color: '#ffe0a5' });
+        mapRenderedPoints.push({ type: 'pin', id: pin.id, x: point.x, y: point.y, radius: 22 });
+    }
+    if (mapDraftPoint) {
+        const point = mapCanvasPoint(mapDraftPoint.x, mapDraftPoint.y, canvas.width, canvas.height);
+        context.strokeStyle = '#ffd370'; context.lineWidth = 2; context.setLineDash([5, 4]);
+        context.beginPath(); context.arc(point.x, point.y, 15, 0, Math.PI * 2); context.moveTo(point.x - 23, point.y); context.lineTo(point.x + 23, point.y); context.moveTo(point.x, point.y - 23); context.lineTo(point.x, point.y + 23); context.stroke(); context.setLineDash([]);
+        drawMapLabel(context, mapDraftPoint.name || 'Selected coordinate', point.x, point.y + 29, { size: 10, color: '#ffd370' });
+    }
     const current = currentMapPoint(state);
-    const exact = `<g class="tretaresia-exact-marker" transform="translate(${current.x} ${current.y})"><circle class="pulse" r="23"/><circle class="ring" r="14"/><path class="heading" style="transform:rotate(${current.heading}deg)" d="M0-27 8-8 0-12-8-8Z"/><circle r="6"/><text y="38">YOU · ${html(current.name)}</text></g>`;
-    layer.innerHTML = `${markers}${pins}${draft}${exact}`;
+    const player = mapCanvasPoint(current.x, current.y, canvas.width, canvas.height);
+    context.beginPath(); context.arc(player.x, player.y, 13, 0, Math.PI * 2); context.fillStyle = 'rgba(5,35,40,.88)'; context.fill(); context.strokeStyle = '#71f4dd'; context.lineWidth = 3; context.stroke();
+    context.beginPath(); context.arc(player.x, player.y, 5, 0, Math.PI * 2); context.fillStyle = '#eafffa'; context.fill();
+    const heading = (current.heading - 90) * Math.PI / 180;
+    context.beginPath(); context.moveTo(player.x + Math.cos(heading) * 24, player.y + Math.sin(heading) * 24); context.lineTo(player.x + Math.cos(heading + 2.5) * 10, player.y + Math.sin(heading + 2.5) * 10); context.lineTo(player.x + Math.cos(heading - 2.5) * 10, player.y + Math.sin(heading - 2.5) * 10); context.closePath(); context.fillStyle = '#71f4dd'; context.fill();
+    drawMapLabel(context, `YOU · ${current.name}`, player.x, player.y + 25, { size: 11, color: '#dffff9' });
     const lodText = panel.querySelector('[data-map-lod]');
     const zoomText = panel.querySelector('[data-map-zoom]');
     if (lodText) lodText.textContent = ['World overview', 'Regional detail', 'Local detail'][lod];
-    if (zoomText) zoomText.textContent = `${Math.round(mapView.scale * 100)}% · ${visible.length} places`;
+    if (zoomText) zoomText.textContent = `${Math.round(mapView.scale * 100)}% · ${visible.length} places · tiles ${level.z}`;
+}
+
+function scheduleMapDraw(panel, state) {
+    cancelAnimationFrame(mapDrawFrame);
+    mapDrawFrame = requestAnimationFrame(() => drawWorldMap(panel, state));
 }
 
 function scheduleMapDetailRender() {
-    cancelAnimationFrame(mapDetailFrame);
-    mapDetailFrame = requestAnimationFrame(() => renderMapVisibleLocations());
+    scheduleMapDraw();
 }
 
 const textareaField = (label, name, value, rows = 4, extra = '') =>
@@ -2623,7 +2744,7 @@ async function onSubmit(event) {
             break;
         }
         case 'quest': {
-            const nextQuest = quest(values);
+            const nextQuest = quest({ ...values, receivedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
             if (!nextQuest) return notify('warning', 'Enter a quest name first.');
             state.quests.push(nextQuest);
             await persistState(state);
@@ -3190,7 +3311,12 @@ function setMapZoom(scale, anchorX = WORLD_MAP_WIDTH / 2, anchorY = WORLD_MAP_HE
 
 function setupMapInteractions(panel) {
     const svg = panel.querySelector('.tretaresia-world-map');
-    if (!(svg instanceof SVGElement)) return;
+    if (!(svg instanceof HTMLCanvasElement)) return;
+    mapResizeObserver?.disconnect();
+    if (typeof ResizeObserver === 'function') {
+        mapResizeObserver = new ResizeObserver(() => scheduleMapDraw(panel, getState()));
+        mapResizeObserver.observe(svg);
+    }
     const pointers = new Map();
     let previous = null;
     let pinchDistance = 0;
@@ -3208,7 +3334,6 @@ function setupMapInteractions(panel) {
         setMapZoom(mapView.scale * (event.deltaY < 0 ? 1.15 : .87), point.screenX, point.screenY);
     }, { passive: false });
     svg.addEventListener('pointerdown', event => {
-        if (event.target.closest?.('[data-map-location], [data-action="select-pin"]')) return;
         svg.setPointerCapture?.(event.pointerId);
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         previous = { x: event.clientX, y: event.clientY };
@@ -3242,10 +3367,36 @@ function setupMapInteractions(panel) {
         pinchDistance = 0;
         if (!pointers.size) svg.classList.remove('is-dragging');
         if (wasClick) {
+            const rect = svg.getBoundingClientRect();
+            const hitX = (event.clientX - rect.left) / rect.width * svg.width;
+            const hitY = (event.clientY - rect.top) / rect.height * svg.height;
+            const hit = [...mapRenderedPoints].reverse().find(entry => Math.hypot(entry.x - hitX, entry.y - hitY) <= entry.radius * Math.min(1.5, globalThis.devicePixelRatio || 1));
+            if (hit?.type === 'location') {
+                mapDraftPoint = null;
+                mapSelectionId = hit.id;
+                renderMap(panel, getState());
+                pointerStart = null;
+                return;
+            }
+            if (hit?.type === 'pin') {
+                const state = getState();
+                const pin = state.location.pins.find(entry => entry.id === hit.id);
+                if (pin?.locationId && mapLocation(pin.locationId)) {
+                    mapDraftPoint = null;
+                    mapSelectionId = pin.locationId;
+                } else if (pin) {
+                    const continent = continentAtPoint(pin.x, pin.y);
+                    mapSelectionId = null;
+                    mapDraftPoint = { x: pin.x, y: pin.y, continent: pin.continent || continent?.name || 'Open Ocean', region: pin.region || 'Marked Reach', zone: 'Unknown Zone', name: pin.label };
+                }
+                renderMap(panel, state);
+                pointerStart = null;
+                return;
+            }
             const point = mapPoint(event);
             const x = number(point.x, 0, 0, WORLD_MAP_WIDTH);
             const y = number(point.y, 0, 0, WORLD_MAP_HEIGHT);
-            const hintedId = pointerStart.continentId || event.target.closest?.('[data-continent-id]')?.dataset.continentId || '';
+            const hintedId = pointerStart.continentId || '';
             const continent = continentAtPoint(x, y, hintedId);
             const nearest = nearestMapLocation(x, y, continent?.name || '');
             mapSelectionId = null;
@@ -3571,6 +3722,10 @@ function applyPatchOperation(state, operation) {
         const candidate = { ...(index >= 0 ? collection[index] : {}), ...value };
         if (!candidate.id) candidate.id = uid();
         if (path === 'npcs') candidate.updatedAt = new Date().toISOString();
+        if (path === 'quests') {
+            if (!candidate.receivedAt) candidate.receivedAt = new Date().toISOString();
+            candidate.updatedAt = new Date().toISOString();
+        }
         if (index >= 0) collection[index] = candidate;
         else collection.push(candidate);
         return true;
@@ -3628,6 +3783,19 @@ function derivePatchNotifications(current, next, operations, levelUps) {
         const meta = operationMeta(proficiencyOp);
         const name = meta.label || String(proficiencyOp[1]).split('.').at(-1).replaceAll('-', ' ');
         events.push({ kind: meta.category === 'combat' ? 'combat' : 'learning', eyebrow: meta.category === 'combat' ? 'COMBAT MASTERY' : 'TRAINING', title: meta.reason || `${name} improved`, value: `+${number(proficiencyOp[2], 0, 0, 100)}%` });
+    }
+    const questOps = operations.filter(operation => operation[0] === 'upsert' && operation[1] === 'quests');
+    for (const operation of questOps.slice(-3)) {
+        const value = operation[2] || {};
+        const before = current.quests.find(entry => matchesPatchIdentity(entry, value));
+        const after = next.quests.find(entry => matchesPatchIdentity(entry, value));
+        if (!after) continue;
+        if (!before) {
+            events.push({ kind: 'quest', eyebrow: after.status === 'Offered' ? 'NEW QUEST OFFER' : 'NEW MISSION', title: after.name, detail: after.objective || `Received from ${after.giver || after.source || 'an unknown source'}.`, value: after.status.toUpperCase() });
+        } else if (before.status !== after.status) {
+            const complete = after.status === 'Completed';
+            events.push({ kind: 'quest', eyebrow: complete ? 'MISSION COMPLETE' : 'QUEST UPDATED', title: after.name, detail: after.objective || `Status changed from ${before.status} to ${after.status}.`, value: after.status.toUpperCase() });
+        }
     }
     for (const denomination of ['gold', 'silver', 'copper']) {
         const delta = next.progression.currency[denomination] - current.progression.currency[denomination];
@@ -3930,6 +4098,7 @@ async function addSettingsDrawer() {
     bindCheckbox('tretaresia-rpg-notify-combat', 'notifyCombat', settings);
     bindCheckbox('tretaresia-rpg-notify-kills', 'notifyKills', settings);
     bindCheckbox('tretaresia-rpg-notify-currency', 'notifyCurrency', settings);
+    bindCheckbox('tretaresia-rpg-notify-quests', 'notifyQuests', settings);
     bindSettingControl('tretaresia-rpg-language', 'language', settings, rebuildInterface);
     bindSettingControl('tretaresia-rpg-interaction-mode', 'interactionMode', settings, updateActionModeHelp);
     bindSettingControl('tretaresia-rpg-activity-indicator', 'activityIndicator', settings, syncActivityIndicator);
@@ -3984,7 +4153,7 @@ async function initialize() {
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape') closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.2.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.3.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
