@@ -234,6 +234,19 @@ const WORLD = Object.fromEntries([...new Set(WORLD_LOCATIONS.map(location => loc
     continent, WORLD_LOCATIONS.filter(location => location.continent === continent).map(location => location.name),
 ]));
 const LOCATION_REGIONS = Object.fromEntries(WORLD_LOCATIONS.map(location => [location.name, location.region]));
+const COLOR_PRESETS = {
+    forge: { accent: '#d6b458', alt: '#f4dc93', ink: '#ece7da', surface: '#040404' },
+    abyss: { accent: '#4fb8d8', alt: '#a8ecff', ink: '#e2eef2', surface: '#03080c' },
+    ember: { accent: '#d2624a', alt: '#ffb096', ink: '#f4e7e2', surface: '#0a0403' },
+    verdant: { accent: '#79b463', alt: '#c6f0a8', ink: '#e8f0e2', surface: '#030704' },
+    amethyst: { accent: '#a077d4', alt: '#dcc2ff', ink: '#ebe6f2', surface: '#06040a' },
+    frost: { accent: '#8fa8c8', alt: '#dbe8f8', ink: '#e9eef4', surface: '#04060a' },
+    bloodmoon: { accent: '#b8434f', alt: '#ff8f9c', ink: '#f2e2e4', surface: '#080203' },
+    parchment: { accent: '#9a7d2e', alt: '#c9a94a', ink: '#26241d', surface: '#e8e4d8' },
+    daylight: { accent: '#8a6a1f', alt: '#b8933a', ink: '#22242a', surface: '#eceef1' },
+    seafoam: { accent: '#3f8f7a', alt: '#8fd8c2', ink: '#1e2725', surface: '#e6efec' },
+};
+
 const DEFAULT_SETTINGS = Object.freeze({
     showWandLauncher: true,
     autoTrack: true,
@@ -241,7 +254,11 @@ const DEFAULT_SETTINGS = Object.freeze({
     language: 'en',
     interactionMode: 'hidden',
     activityIndicator: 'full',
+    themePreset: 'forge',
     accentColor: '#d6b458',
+    accentAltColor: '#f4dc93',
+    inkColor: '#ece7da',
+    surfaceColor: '#040404',
     glassOpacity: 86,
     glowStrength: 38,
     density: 'compact',
@@ -255,8 +272,19 @@ const DEFAULT_SETTINGS = Object.freeze({
     notifyCurrency: true,
     notifyQuests: true,
     autoContinuity: true,
-    visualVersion: 3,
+    mapArtwork: 'procedural',
+    visualVersion: 5,
 });
+
+const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'map', 'npcs', 'mail', 'music'];
+const TAB_META = {
+    status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
+    inventory: ['fa-solid fa-box-open', 'Inventory'], skills: ['fa-solid fa-layer-group', 'Skills'],
+    techniques: ['fa-solid fa-fire-flame-curved', 'Powers'], quests: ['fa-solid fa-scroll', 'Quests'],
+    rank: ['fa-solid fa-medal', 'Rank'], map: ['fa-solid fa-map', 'World Map'],
+    npcs: ['fa-solid fa-users', 'NPCs'], mail: ['fa-solid fa-envelope', 'Mailbox'], music: ['fa-solid fa-music', 'Music'],
+};
+let activeTabIndex = 0;
 
 const TRANSLATIONS = {
     th: {
@@ -387,22 +415,58 @@ function tr(value) {
 }
 
 function hexToRgb(hex) {
-    const value = /^#[0-9a-f]{6}$/i.test(hex) ? hex.slice(1) : DEFAULT_SETTINGS.accentColor.slice(1);
-    return `${parseInt(value.slice(0, 2), 16)}, ${parseInt(value.slice(2, 4), 16)}, ${parseInt(value.slice(4, 6), 16)}`;
+    const source = /^#[0-9a-f]{6}$/i.test(hex) ? hex.slice(1) : DEFAULT_SETTINGS.accentColor.slice(1);
+    return `${parseInt(source.slice(0, 2), 16)}, ${parseInt(source.slice(2, 4), 16)}, ${parseInt(source.slice(4, 6), 16)}`;
+}
+
+function luminance(hex) {
+    const channels = hexToRgb(hex).split(',').map(part => Number(part) / 255)
+        .map(channel => channel <= .03928 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4);
+    return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+}
+
+function readableOn(hex) {
+    return luminance(hex) > .38 ? '#12100a' : '#f8f3e6';
+}
+
+function rgbaOf(hex, alpha) {
+    return `rgba(${hexToRgb(hex)}, ${alpha})`;
 }
 
 function applyAppearance() {
     const settings = getSettings();
     const root = document.documentElement;
-    root.style.setProperty('--tretaresia-accent', settings.accentColor);
-    root.style.setProperty('--tretaresia-accent-rgb', hexToRgb(settings.accentColor));
-    root.style.setProperty('--tretaresia-glass-opacity', String(settings.glassOpacity / 100));
-    root.style.setProperty('--tretaresia-glow-strength', String(settings.glowStrength / 100));
+    const pairs = {
+        '--tretaresia-accent': settings.accentColor,
+        '--tretaresia-accent-rgb': hexToRgb(settings.accentColor),
+        '--tretaresia-accent-alt': settings.accentAltColor,
+        '--tretaresia-accent-alt-rgb': hexToRgb(settings.accentAltColor),
+        '--tretaresia-ink': settings.inkColor,
+        '--tretaresia-ink-rgb': hexToRgb(settings.inkColor),
+        '--tretaresia-surface': settings.surfaceColor,
+        '--tretaresia-surface-rgb': hexToRgb(settings.surfaceColor),
+        '--tretaresia-on-accent': readableOn(settings.accentAltColor),
+        '--tretaresia-glass-opacity': String(settings.glassOpacity / 100),
+        '--tretaresia-glow-strength': String(settings.glowStrength / 100),
+    };
+    for (const [key, value] of Object.entries(pairs)) root.style.setProperty(key, value);
+    const light = luminance(settings.surfaceColor) > .45;
+    root.style.setProperty('--tretaresia-panel',
+        light ? `color-mix(in srgb, ${settings.surfaceColor} 62%, #fff)` : `color-mix(in srgb, ${settings.surfaceColor} 88%, ${settings.inkColor})`);
+    for (const node of [
+        document.getElementById('tretaresia-rpg-overlay'),
+        document.getElementById('tretaresia-control-dialog'),
+        document.getElementById('tretaresia-activity-island'),
+        document.getElementById('tretaresia-event-stack'),
+    ]) node?.setAttribute('data-theme', light ? 'light' : 'dark');
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (overlay) {
         overlay.dataset.density = settings.density;
         overlay.dataset.language = settings.language;
     }
+    const dialog = document.getElementById('tretaresia-control-dialog');
+    if (dialog) dialog.dataset.density = settings.density;
+    scheduleMapDetailRender();
 }
 
 function defaultState() {
@@ -450,12 +514,16 @@ function getSettings() {
     }
     const settings = extensionSettings[SETTINGS_KEY];
     if (!hadVisualVersion && settings.accentColor === '#8fb4a3') settings.accentColor = DEFAULT_SETTINGS.accentColor;
-    settings.visualVersion = Math.max(3, number(settings.visualVersion, 3, 1, 99));
+    settings.visualVersion = Math.max(5, number(settings.visualVersion, 5, 1, 99));
     if (!['en', 'th'].includes(settings.language)) settings.language = DEFAULT_SETTINGS.language;
     if (!['hidden', 'visible', 'draft'].includes(settings.interactionMode)) settings.interactionMode = DEFAULT_SETTINGS.interactionMode;
     if (!['full', 'compact', 'off'].includes(settings.activityIndicator)) settings.activityIndicator = DEFAULT_SETTINGS.activityIndicator;
     if (!['compact', 'comfortable'].includes(settings.density)) settings.density = DEFAULT_SETTINGS.density;
-    if (!/^#[0-9a-f]{6}$/i.test(settings.accentColor)) settings.accentColor = DEFAULT_SETTINGS.accentColor;
+    for (const key of ['accentColor', 'accentAltColor', 'inkColor', 'surfaceColor']) {
+        if (!/^#[0-9a-f]{6}$/i.test(settings[key])) settings[key] = DEFAULT_SETTINGS[key];
+    }
+    if (settings.themePreset !== 'custom' && !Object.hasOwn(COLOR_PRESETS, settings.themePreset)) settings.themePreset = DEFAULT_SETTINGS.themePreset;
+    if (!['procedural', 'tiles'].includes(settings.mapArtwork)) settings.mapArtwork = DEFAULT_SETTINGS.mapArtwork;
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
