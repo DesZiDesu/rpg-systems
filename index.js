@@ -276,7 +276,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 5,
 });
 
-const LAUNCHER_BIND_VERSION = '0.7.1';
+const LAUNCHER_BIND_VERSION = '0.7.2';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
