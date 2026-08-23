@@ -1362,12 +1362,17 @@ const tabButton = (id, icon, label, active = false) => `
     <button class="tretaresia-tab-button${active ? ' is-active' : ''}" type="button" role="tab"
         data-tab="${id}" aria-selected="${active}"><i class="${icon}"></i><span>${html(tr(label))}</span></button>`;
 
-function controlCenterMenu() {
+function controlCenterTrigger() {
+    return `<button id="tretaresia-control-trigger" class="tretaresia-header-button tretaresia-control-trigger" type="button"
+        data-action="toggle-control-center" aria-label="${html(tr('Control center'))}" title="${html(tr('Control center'))}"
+        aria-controls="tretaresia-control-layer" aria-expanded="false"><i class="fa-solid fa-sliders"></i></button>`;
+}
+
+function controlCenterLayer() {
     const settings = getSettings();
-    return `<details class="tretaresia-control-center">
-        <summary aria-label="${html(tr('Control center'))}" title="${html(tr('Control center'))}"><i class="fa-solid fa-sliders"></i></summary>
+    return `<div id="tretaresia-control-layer" class="tretaresia-control-layer" hidden>
         <button class="tretaresia-control-scrim" type="button" data-action="close-control-center" aria-label="${html(tr('Close'))}"></button>
-        <div class="tretaresia-control-panel" role="dialog" aria-label="${html(tr('Control center'))}">
+        <section class="tretaresia-control-panel" role="dialog" aria-modal="true" aria-label="${html(tr('Control center'))}" tabindex="-1">
             <header class="tretaresia-control-head">
                 <span class="tretaresia-control-sigil"><i class="fa-solid fa-compass-drafting"></i></span>
                 <div><small>TRETARESIA / UI 3.0</small><h3>${html(tr('Control center'))}</h3></div>
@@ -1407,8 +1412,8 @@ function controlCenterMenu() {
                     </div>
                 </section>
             </div>
-        </div>
-    </details>`;
+        </section>
+    </div>`;
 }
 
 function buildInterface() {
@@ -1433,7 +1438,7 @@ function buildInterface() {
                     <div class="tretaresia-header-actions">
                         <div id="tretaresia-rpg-sync-state" class="tretaresia-sync-state" data-mode="ready">
                             <i class="fa-solid fa-circle"></i><span>${html(tr('Ready'))}</span></div>
-                        ${controlCenterMenu()}
+                        ${controlCenterTrigger()}
                         <button id="tretaresia-rpg-close" class="tretaresia-header-button" type="button" aria-label="Close">
                             <i class="fa-solid fa-xmark"></i></button>
                     </div>
@@ -1479,7 +1484,8 @@ function buildInterface() {
             <div id="tretaresia-letter-reader" class="tretaresia-submodal" hidden></div>
             <input id="tretaresia-npc-avatar-input" type="file" accept="image/*" hidden>
             <input id="tretaresia-state-import" type="file" accept="application/json,.json" hidden>
-        </section>`;
+        </section>
+        ${controlCenterLayer()}`;
     document.body.appendChild(overlay);
     overlay.querySelector('.tretaresia-rpg-backdrop')?.addEventListener('click', closeInterface);
     overlay.querySelector('#tretaresia-rpg-close')?.addEventListener('click', closeInterface);
@@ -1505,6 +1511,18 @@ function rebuildInterface() {
         overlay?.classList.add('is-open', 'is-ready');
         overlay?.setAttribute('aria-hidden', 'false');
     }
+}
+
+function setControlCenterOpen(open) {
+    const overlay = document.getElementById('tretaresia-rpg-overlay');
+    const layer = overlay?.querySelector('#tretaresia-control-layer');
+    const trigger = overlay?.querySelector('#tretaresia-control-trigger');
+    if (!layer || !trigger) return;
+    layer.hidden = !open;
+    layer.classList.toggle('is-open', open);
+    trigger.classList.toggle('is-active', open);
+    trigger.setAttribute('aria-expanded', String(open));
+    if (open) requestAnimationFrame(() => layer.querySelector('.tretaresia-control-panel')?.focus({ preventScroll: true }));
 }
 
 function onInterfaceSettingChange(event) {
@@ -3163,8 +3181,11 @@ async function onPanelClick(event) {
     const state = clone(getState());
     const id = button.dataset.id;
     switch (button.dataset.action) {
+        case 'toggle-control-center':
+            setControlCenterOpen(document.getElementById('tretaresia-control-layer')?.hidden !== false);
+            break;
         case 'close-control-center':
-            document.querySelector('.tretaresia-control-center')?.removeAttribute('open');
+            setControlCenterOpen(false);
             break;
         case 'export-state':
             exportStatePackage();
@@ -4215,7 +4236,7 @@ function closeInterface() {
     clearTimeout(introTimer);
     overlay.classList.add('is-closing');
     overlay.classList.remove('is-open', 'is-ready', 'is-opening');
-    overlay.querySelector('.tretaresia-control-center')?.removeAttribute('open');
+    setControlCenterOpen(false);
     overlay.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('tretaresia-rpg-open');
     introTimer = setTimeout(() => overlay.classList.remove('is-closing'), 460);
@@ -4369,9 +4390,12 @@ async function initialize() {
         else await restoreContinuityForCurrentChat();
         updatePrompt();
         document.addEventListener('keydown', event => {
-            if (event.key === 'Escape') closeInterface();
+            if (event.key !== 'Escape') return;
+            const controlLayer = document.getElementById('tretaresia-control-layer');
+            if (controlLayer && !controlLayer.hidden) setControlCenterOpen(false);
+            else closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.5.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.5.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

@@ -40,9 +40,11 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
 
-## Version 0.5.0
+## Version 0.5.1
 
 Replaces the extension shell with a complete responsive command-console design: grouped desktop navigation, a mobile module strip below the header, reframed content surfaces, redesigned status/music/notification views, and a bounded control center that can always scroll and close on small screens. Every existing module and interaction remains available. The loading sequence is replaced by a smooth ease-in/ease-out reveal with a single opening color pulse, while automatic new-chat continuity and portable JSON export/import keep the same character across chats.
+
+The control center is mounted outside the transformed application panel so its settings dialog displays reliably on iOS Safari instead of being clipped behind the interface.
 
 ## License
 

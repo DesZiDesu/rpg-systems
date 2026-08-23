@@ -646,8 +646,7 @@
     letter-spacing: .22em;
 }
 
-.tretaresia-header-button,
-.tretaresia-control-center > summary {
+.tretaresia-header-button {
     display: grid;
     place-items: center;
     width: 2.55rem;
@@ -659,13 +658,10 @@
     border: 1px solid rgba(255, 255, 255, .08);
     border-radius: 0;
     cursor: pointer;
-    list-style: none;
     font-size: .84rem;
 }
 
-.tretaresia-control-center { position: relative; }
-.tretaresia-control-center > summary::-webkit-details-marker { display: none; }
-.tretaresia-control-center[open] > summary,
+.tretaresia-control-trigger.is-active,
 .tretaresia-header-button:hover {
     color: #171105;
     background: var(--tretaresia-accent);
@@ -973,9 +969,18 @@
 
 /* New bounded control center. It never uses page-flow height and therefore
    cannot cover controls without its own close affordance. */
-.tretaresia-control-scrim {
+.tretaresia-control-layer {
     position: fixed;
-    z-index: 80;
+    z-index: 120;
+    inset: 0;
+    display: block;
+}
+
+.tretaresia-control-layer[hidden] { display: none !important; }
+
+.tretaresia-control-scrim {
+    position: absolute;
+    z-index: 0;
     inset: 0;
     width: 100%;
     height: 100%;
@@ -987,8 +992,8 @@
 }
 
 .tretaresia-control-panel {
-    position: fixed;
-    z-index: 81;
+    position: absolute;
+    z-index: 1;
     top: max(82px, calc(env(safe-area-inset-top) + 64px));
     right: max(24px, env(safe-area-inset-right));
     display: grid;
@@ -1001,6 +1006,12 @@
     border: 1px solid rgba(var(--tretaresia-accent-rgb), .58);
     box-shadow: 0 28px 90px rgba(0, 0, 0, .8), inset 0 0 70px rgba(var(--tretaresia-accent-rgb), .025);
 }
+
+.tretaresia-control-layer.is-open .tretaresia-control-scrim { animation: tretaresia-control-scrim-in 180ms ease-out both; }
+.tretaresia-control-layer.is-open .tretaresia-control-panel { animation: tretaresia-control-panel-in 220ms cubic-bezier(.2, .82, .22, 1) both; }
+
+@keyframes tretaresia-control-scrim-in { from { opacity: 0; } }
+@keyframes tretaresia-control-panel-in { from { opacity: 0; transform: translateY(-8px) scale(.985); } }
 
 .tretaresia-control-head {
     display: grid;
@@ -1094,8 +1105,7 @@
     .tretaresia-header-actions { gap: .3rem; }
     .tretaresia-sync-state { min-height: 2.2rem; padding: 0 .48rem; }
     .tretaresia-sync-state span { display: none; }
-    .tretaresia-header-button,
-    .tretaresia-control-center > summary { width: 2.2rem; min-width: 2.2rem; }
+    .tretaresia-header-button { width: 2.2rem; min-width: 2.2rem; }
     .tretaresia-module-bar {
         min-height: 42px;
         padding: .38rem .65rem;
@@ -1207,4 +1217,6 @@
     .tretaresia-tab-button,
     .tretaresia-control-panel,
     .tretaresia-control-scrim { transition: none; }
+    .tretaresia-control-layer.is-open .tretaresia-control-panel,
+    .tretaresia-control-layer.is-open .tretaresia-control-scrim { animation: none; }
 }
