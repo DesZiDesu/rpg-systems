@@ -276,7 +276,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 5,
 });
 
-const LAUNCHER_BIND_VERSION = '0.7.2';
+const LAUNCHER_BIND_VERSION = '0.7.3';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -1988,6 +1988,26 @@ function activateTab(id) {
     else setTimeout(finish, 130);
 }
 
+
+const input = (label, name, value, type = 'text', extra = '') =>
+    `<label class="tretaresia-field"><span>${html(tr(label))}</span><input name="${name}" type="${type}" value="${html(value)}" ${extra}></label>`;
+const select = (label, name, options, selected) =>
+    `<label class="tretaresia-field"><span>${html(tr(label))}</span><select name="${name}">${options.map(value =>
+        `<option value="${html(value)}"${value === selected ? ' selected' : ''}>${html(tr(value))}</option>`).join('')}</select></label>`;
+const heading = (title, subtitle, icon) =>
+    `<div class="tretaresia-section-heading"><div><span class="tretaresia-eyebrow">${html(tr('System interface'))}</span>
+        <h3>${html(tr(title))}</h3><p>${html(tr(subtitle))}</p></div><i class="${icon} tretaresia-heading-icon"></i></div>`;
+const empty = message => `<div class="tretaresia-empty-state"><i class="fa-regular fa-compass"></i><p>${html(tr(message))}</p></div>`;
+
+function meterView(label, value, icon, tone) {
+    const percent = Math.round(value.current / Math.max(1, value.max) * 100);
+    const cappedPercent = Math.min(100, Math.max(0, percent));
+    return `<article class="tretaresia-vital tretaresia-vital-${tone}">
+        <div class="tretaresia-vital-line"><span><i class="${icon}"></i>${html(tr(label))}</span><strong>${value.current} <em>/ ${value.max}</em></strong></div>
+        <div class="tretaresia-vital-track" role="meter" aria-valuenow="${value.current}" aria-valuemax="${value.max}" aria-label="${html(tr(label))}">
+            <span style="width:${cappedPercent}%"></span><i style="left:${cappedPercent}%"></i>
+        </div><small>${percent}%</small></article>`;
+}
 
 function renderAll(state = getState()) {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
@@ -4793,11 +4813,16 @@ function openInterface() {
     if (!overlay || !panel) return;
     clearTimeout(introTimer);
     previousFocusedElement = document.activeElement;
-    renderAll();
     overlay.classList.remove('is-closing');
     overlay.classList.add('is-open', 'is-opening');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.classList.add('tretaresia-rpg-open');
+    try {
+        renderAll();
+    } catch (error) {
+        console.error('[Tretaresia RPG] Could not render the interface.', error);
+        notify('error', 'Tretaresia RPG opened, but one of its modules could not render. Check the browser console.');
+    }
     requestAnimationFrame(() => panel.focus());
     if (introGateDone || matchMedia('(prefers-reduced-motion: reduce)').matches) finishIntroGate();
     else runIntroGate(overlay);
@@ -4985,7 +5010,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.7.2 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.7.3 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
