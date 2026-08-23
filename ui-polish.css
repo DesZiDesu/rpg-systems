@@ -2274,3 +2274,16 @@
         transition-duration: .01ms !important;
     }
 }
+
+/* Mobile portrait framing: respect the crop saved by the portrait editor. */
+@media (max-width: 800px) {
+    .tretaresia-avatar-photo img {
+        object-position:
+            var(--portrait-mobile-x, var(--portrait-desktop-x, 50%))
+            var(--portrait-mobile-y, var(--portrait-desktop-y, 50%));
+        transform: scale(var(--portrait-mobile-zoom, var(--portrait-desktop-zoom, 1)));
+        transform-origin:
+            var(--portrait-mobile-x, var(--portrait-desktop-x, 50%))
+            var(--portrait-mobile-y, var(--portrait-desktop-y, 50%));
+    }
+}
