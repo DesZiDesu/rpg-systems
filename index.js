@@ -79,6 +79,7 @@ const WORLD_MAP_WIDTH = 2400;
 const WORLD_MAP_HEIGHT = 1800;
 const WORLD_TILE_SIZE = 512;
 const WORLD_TILE_ROOT = `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles`;
+const WORLD_MAP_ZOOM_LEVELS = Object.freeze({ regional: 1.35, local: 2.4 });
 const WORLD_TILE_LEVELS = [
     { z: 0, width: 512, height: 384, columns: 1, rows: 1 },
     { z: 1, width: 1024, height: 768, columns: 2, rows: 2 },
@@ -2762,7 +2763,8 @@ function renderMap(panel, state) {
 }
 
 function mapLod() {
-    return mapView.scale < 1.35 ? 0 : mapView.scale < 2.4 ? 1 : 2;
+    return mapView.scale < WORLD_MAP_ZOOM_LEVELS.regional ? 0
+        : mapView.scale < WORLD_MAP_ZOOM_LEVELS.local ? 1 : 2;
 }
 
 function mapVisibleBounds() {
@@ -2880,7 +2882,12 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     drawGraticule(context, canvas, palette, detail);
     drawVignette(context, canvas, palette);
 
-    if (detail === 0) {
+    // Keep the full-world view readable: continents are the only labels at this LOD.
+    // Regional and local place labels are progressively revealed as the user zooms in.
+    const showContinentLabels = detail === 0;
+    const showPlaceLabels = detail > 0;
+
+    if (showContinentLabels) {
         for (const continent of WORLD_CONTINENTS) {
             const point = mapCanvasPoint(continent.label[0], continent.label[1], canvas.width, canvas.height);
             drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, {
@@ -2893,7 +2900,9 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     const pinIds = new Set(state.location.pins.map(pin => pin.locationId));
     mapRenderedPoints = [];
     const visible = WORLD_LOCATIONS.filter(location =>
-        (location.tier <= detail || location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name))
+        (showPlaceLabels
+            ? location.tier <= detail || location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name)
+            : location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name))
         && location.x >= bounds.left && location.x <= bounds.right
         && location.y >= bounds.top && location.y <= bounds.bottom);
 
@@ -2916,10 +2925,12 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         drawMarkerGlyph(context, point.x, point.y, location.tier,
             selected ? palette.alt : known ? palette.accent : 'rgba(238,229,190,.78)',
             'rgba(7,17,20,.94)', size);
-        drawMapLabel(context, location.name, point.x, point.y + size + 10 * pixelRatio, {
-            size: (location.tier === 0 ? 11.5 : location.tier === 1 ? 10 : 8.6) * pixelRatio,
-            color: selected ? palette.alt : 'rgba(255,250,229,.94)', stroke: 'rgba(5,14,18,.94)',
-        });
+        if (showPlaceLabels && (location.tier <= detail || selected)) {
+            drawMapLabel(context, location.name, point.x, point.y + size + 10 * pixelRatio, {
+                size: (location.tier === 0 ? 11.5 : location.tier === 1 ? 10 : 8.6) * pixelRatio,
+                color: selected ? palette.alt : 'rgba(255,250,229,.94)', stroke: 'rgba(5,14,18,.94)',
+            });
+        }
         mapRenderedPoints.push({ type: 'location', id: location.id, x: point.x, y: point.y, radius: 24 * pixelRatio });
     }
 
@@ -2946,7 +2957,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         context.fill();
         context.stroke();
         context.restore();
-        if (!site || detail > 0) drawMapLabel(context, pin.label, point.x, point.y + 24, {
+        if (showPlaceLabels) drawMapLabel(context, pin.label, point.x, point.y + 24, {
             size: 10, color: palette.label, stroke: palette.halo,
         });
         mapRenderedPoints.push({ type: 'pin', id: pin.id, x: point.x, y: point.y, radius: 22 });
@@ -2966,7 +2977,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         context.lineTo(point.x, point.y + 25);
         context.stroke();
         context.restore();
-        drawMapLabel(context, mapDraftPoint.name || 'Selected coordinate', point.x, point.y + 32, {
+        if (showPlaceLabels) drawMapLabel(context, mapDraftPoint.name || 'Selected coordinate', point.x, point.y + 32, {
             size: 10, color: palette.alt, stroke: palette.halo,
         });
     }
@@ -2996,7 +3007,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     context.fillStyle = palette.alt;
     context.fill();
     context.restore();
-    drawMapLabel(context, current.name.toUpperCase(), player.x, player.y + 26, {
+    if (showPlaceLabels) drawMapLabel(context, current.name.toUpperCase(), player.x, player.y + 26, {
         size: 10.5, weight: 800, color: palette.alt, stroke: palette.halo,
     });
 
