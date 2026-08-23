@@ -364,6 +364,7 @@ const TRANSLATIONS = {
         'Control center': 'ศูนย์ควบคุม', Interface: 'อินเทอร์เฟซ', Continuity: 'ความต่อเนื่อง', 'Active module': 'โมดูลปัจจุบัน',
         'Visual controls': 'การตั้งค่าหน้าจอ', 'Character transfer': 'การย้ายข้อมูลตัวละคร', 'Archive index': 'สารบัญระบบ',
         'State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device.': 'รวมข้อมูลและรูปผู้เล่นไว้แล้ว ส่วนรูป NPC และเสียงที่เก็บในอุปกรณ์จะถูกคัดลอกอัตโนมัติเฉพาะเมื่อสานต่อบนอุปกรณ์นี้',
+        Custom: 'กำหนดเอง',
         'Locate me': 'หาตำแหน่งฉัน', 'Full map view': 'ดูแผนที่ทั้งหมด',
         Palette: 'ชุดสี', 'Fully customizable': 'ปรับได้ทั้งหมด', 'Theme preset': 'ชุดสีสำเร็จ',
         Accent: 'สีหลัก', Highlight: 'สีเน้น', Text: 'สีตัวอักษร', Surface: 'สีพื้น',
@@ -1651,7 +1652,8 @@ function controlCenterMarkup() {
     const settings = getSettings();
     const presetOptions = Object.keys(COLOR_PRESETS).map(key =>
         '<option value="' + key + '"' + (settings.themePreset === key ? ' selected' : '') + '>' +
-        key.replace(/^./, value => value.toUpperCase()) + '</option>').join('');
+        key.replace(/^./, value => value.toUpperCase()) + '</option>').join('') +
+        '<option value="custom"' + (settings.themePreset === 'custom' ? ' selected' : '') + '>' + html(tr('Custom')) + '</option>';
     const colorField = (label, key) =>
         '<label class="tretaresia-control-field color"><span>' + html(tr(label)) + '</span>' +
         '<input type="color" data-ui-setting="' + key + '" value="' + settings[key] + '"></label>';
@@ -1916,6 +1918,10 @@ function onInterfaceSettingChange(event) {
         return;
     }
     applyAppearance();
+    if (['accentColor', 'accentAltColor', 'inkColor', 'surfaceColor'].includes(key)) {
+        const preset = document.querySelector('#tretaresia-control-dialog [data-ui-setting="themePreset"]');
+        if (preset) preset.value = settings.themePreset;
+    }
     if (key === 'themePreset' && event.type === 'change') {
         const reopen = controlCenterOpen();
         buildControlCenter();
