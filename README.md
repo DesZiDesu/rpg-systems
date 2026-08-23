@@ -40,7 +40,7 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
 
-## Version 0.7.1
+## Version 0.7.2
 
 Adds the themeable mobile-first command console: palette presets, a top-layer native control center, a swipeable module slider, a rank plate that wraps long names, a procedural world atlas with cartographic instruments, and a one-shot intro gate. Every existing module and interaction remains available, while automatic continuity and portable JSON export/import keep the same character across chats.
 
