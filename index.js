@@ -272,11 +272,11 @@ const DEFAULT_SETTINGS = Object.freeze({
     notifyCurrency: true,
     notifyQuests: true,
     autoContinuity: true,
-    mapArtwork: 'procedural',
-    visualVersion: 5,
+    mapArtwork: 'tiles',
+    visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.7.3';
+const LAUNCHER_BIND_VERSION = '0.7.4';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -517,12 +517,14 @@ function getSettings() {
     const { extensionSettings } = SillyTavern.getContext();
     extensionSettings[SETTINGS_KEY] ||= clone(DEFAULT_SETTINGS);
     const hadVisualVersion = Object.hasOwn(extensionSettings[SETTINGS_KEY], 'visualVersion');
+    const previousVisualVersion = number(extensionSettings[SETTINGS_KEY].visualVersion, 0, 0, 99);
     for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
         if (!Object.hasOwn(extensionSettings[SETTINGS_KEY], key)) extensionSettings[SETTINGS_KEY][key] = value;
     }
     const settings = extensionSettings[SETTINGS_KEY];
     if (!hadVisualVersion && settings.accentColor === '#8fb4a3') settings.accentColor = DEFAULT_SETTINGS.accentColor;
-    settings.visualVersion = Math.max(5, number(settings.visualVersion, 5, 1, 99));
+    if (previousVisualVersion < 6) settings.mapArtwork = 'tiles';
+    settings.visualVersion = Math.max(6, number(settings.visualVersion, 6, 1, 99));
     if (!['en', 'th'].includes(settings.language)) settings.language = DEFAULT_SETTINGS.language;
     if (!['hidden', 'visible', 'draft'].includes(settings.interactionMode)) settings.interactionMode = DEFAULT_SETTINGS.interactionMode;
     if (!['full', 'compact', 'off'].includes(settings.activityIndicator)) settings.activityIndicator = DEFAULT_SETTINGS.activityIndicator;
@@ -1756,7 +1758,7 @@ function buildInterface() {
         '<button class="tretaresia-rpg-backdrop" type="button" aria-label="Close Tretaresia RPG"></button>' +
         '<section id="tretaresia-rpg-panel" class="tretaresia-rpg-panel" role="dialog" aria-modal="true" aria-labelledby="tretaresia-rpg-title" tabindex="-1">' +
         '<div class="tretaresia-app-shell"><header class="tretaresia-rpg-panel-header"><div class="tretaresia-brand-lockup">' +
-        '<div class="tretaresia-rpg-panel-heading"><span class="tretaresia-rpg-kicker">' + html(tr('Tretaresia Role-play')) + '</span><h2 id="tretaresia-rpg-title">Tretaresia RPG</h2></div></div>' +
+        '<div class="tretaresia-rpg-panel-heading"><span class="tretaresia-rpg-kicker">' + html(tr('Tretaresia Role-play')) + '</span><h2 id="tretaresia-rpg-title">Tretaresia</h2></div></div>' +
         '<div class="tretaresia-header-actions"><div id="tretaresia-rpg-sync-state" class="tretaresia-sync-state" data-mode="ready"><i class="fa-solid fa-circle"></i><span>' + html(tr('Ready')) + '</span></div>' +
         controlCenterTrigger() + '<button id="tretaresia-rpg-close" class="tretaresia-header-button" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div></header>' +
         moduleSlider() +
@@ -2675,8 +2677,6 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
             context.fillStyle = shade;
             context.fill(path);
             drawTerrain(context, continent, palette, detail, hair);
-        }
-        if (path) {
             context.strokeStyle = rgbaOf(palette.accent, .18);
             context.lineWidth = hair * 9;
             context.stroke(path);
@@ -2690,7 +2690,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     drawGraticule(context, canvas, palette, detail);
     drawVignette(context, canvas, palette);
 
-    if (detail === 0) {
+    if (!tilesDrawn && detail === 0) {
         for (const continent of WORLD_CONTINENTS) {
             const point = mapCanvasPoint(continent.label[0], continent.label[1], canvas.width, canvas.height);
             drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, {
@@ -2713,23 +2713,25 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         const selected = location.id === mapSelectionId;
         const known = discovered.has(location.name);
         const size = location.tier === 0 ? 9 : location.tier === 1 ? 7 : 5.5;
-        if (selected) {
-            context.save();
-            context.strokeStyle = rgbaOf(palette.alt, .8);
-            context.lineWidth = 2;
-            context.setLineDash([5, 4]);
-            context.beginPath();
-            context.arc(point.x, point.y, size + 10, 0, Math.PI * 2);
-            context.stroke();
-            context.restore();
+        if (!tilesDrawn) {
+            if (selected) {
+                context.save();
+                context.strokeStyle = rgbaOf(palette.alt, .8);
+                context.lineWidth = 2;
+                context.setLineDash([5, 4]);
+                context.beginPath();
+                context.arc(point.x, point.y, size + 10, 0, Math.PI * 2);
+                context.stroke();
+                context.restore();
+            }
+            drawMarkerGlyph(context, point.x, point.y, location.tier,
+                selected ? palette.alt : known ? palette.accent : palette.faint,
+                palette.halo, size);
+            drawMapLabel(context, location.name, point.x, point.y + size + 12, {
+                size: location.tier === 0 ? 12 : location.tier === 1 ? 10.5 : 9.5,
+                color: palette.label, stroke: palette.halo,
+            });
         }
-        drawMarkerGlyph(context, point.x, point.y, location.tier,
-            selected ? palette.alt : known ? palette.accent : palette.faint,
-            palette.halo, size);
-        drawMapLabel(context, location.name, point.x, point.y + size + 12, {
-            size: location.tier === 0 ? 12 : location.tier === 1 ? 10.5 : 9.5,
-            color: palette.label, stroke: palette.halo,
-        });
         mapRenderedPoints.push({ type: 'location', id: location.id, x: point.x, y: point.y, radius: 22 });
     }
 
@@ -4792,15 +4794,15 @@ function runIntroGate(overlay) {
 }
 
 function finishIntroGate() {
+    const overlay = document.getElementById('tretaresia-rpg-overlay');
+    overlay?.classList.add('is-ready');
     if (introGateDone) return;
     introGateDone = true;
     clearInterval(introGateTimer);
     clearTimeout(introFinishTimer);
     introGateTimer = null;
     introFinishTimer = null;
-    const overlay = document.getElementById('tretaresia-rpg-overlay');
     const gate = overlay?.querySelector('#tretaresia-intro-gate');
-    overlay?.classList.add('is-ready');
     if (!gate) return;
     gate.classList.add('is-gone');
     gate.addEventListener('transitionend', () => gate.remove(), { once: true });
@@ -5010,7 +5012,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.7.3 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.7.4 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

@@ -3884,3 +3884,65 @@
     }
     .tretaresia-rpg-overlay.is-opening .tretaresia-rpg-panel-body::after { display: none; }
 }
+
+/* ==========================================================================
+   TRETARESIA UI 7.0.4 — repeat-open state and mobile map polish
+   ========================================================================== */
+
+.tretaresia-exact-position {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    align-items: start;
+    gap: .62rem;
+    margin: 1rem 0 0;
+    padding: .85rem 0 0;
+    color: var(--tf-dim);
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--tf-line-soft);
+    border-radius: 0;
+}
+
+.tretaresia-exact-position i {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--tf-gold2);
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line-soft);
+    font-size: .68rem;
+}
+
+.tretaresia-exact-position span {
+    display: grid;
+    gap: .22rem;
+    min-width: 0;
+    color: var(--tf-dim);
+    font-size: .64rem;
+    line-height: 1.45;
+}
+
+.tretaresia-exact-position b {
+    color: var(--tf-gold2);
+    font-family: var(--tf-disp);
+    font-size: .58rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 440px) {
+    .tretaresia-rpg-panel-heading {
+        max-width: none;
+        min-width: 0;
+    }
+
+    .tretaresia-rpg-panel-heading h2 {
+        overflow: visible;
+        font-size: clamp(1rem, 5.2vw, 1.22rem);
+        letter-spacing: .025em;
+        text-overflow: clip;
+        white-space: nowrap;
+    }
+}
