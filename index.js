@@ -276,6 +276,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 5,
 });
 
+const LAUNCHER_BIND_VERSION = '0.7.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -1734,8 +1735,17 @@ globalThis.TRETARESIA_SETTINGS = () => setControlCenterOpen(true);
 function buildInterface() {
     buildActivityIndicator();
     buildEventNotificationStack();
-    buildControlCenter();
-    if (document.getElementById('tretaresia-rpg-overlay')) return;
+    const existing = document.getElementById('tretaresia-rpg-overlay');
+    if (existing) {
+        if (!document.getElementById('tretaresia-control-dialog')) {
+            try {
+                buildControlCenter();
+            } catch (error) {
+                console.error('[Tretaresia RPG] Could not rebuild the control center.', error);
+            }
+        }
+        return;
+    }
     const overlay = document.createElement('div');
     overlay.id = 'tretaresia-rpg-overlay';
     overlay.className = 'tretaresia-rpg-overlay';
@@ -1757,6 +1767,11 @@ function buildInterface() {
         (typeof buildIntroGate === 'function' ? buildIntroGate() : '') +
         '</section>';
     document.body.appendChild(overlay);
+    try {
+        buildControlCenter();
+    } catch (error) {
+        console.error('[Tretaresia RPG] Could not build the control center; the main interface will still open.', error);
+    }
     overlay.querySelector('.tretaresia-rpg-backdrop')?.addEventListener('click', closeInterface);
     overlay.querySelector('#tretaresia-rpg-close')?.addEventListener('click', closeInterface);
     overlay.querySelector('#tretaresia-sync-now')?.addEventListener('click', () => queueAnalyze({ manual: true }));
@@ -4804,28 +4819,41 @@ function syncLauncherVisibility() {
 }
 
 function createWandLauncher() {
-    if (document.getElementById('tretaresia-rpg-wand-launcher')) return true;
     const menu = document.getElementById('extensionsMenu');
     if (!menu) return false;
-    const launcher = document.createElement('div');
+
+    let launcher = document.getElementById('tretaresia-rpg-wand-launcher');
+    if (launcher && launcher.dataset.tretaresiaBound !== LAUNCHER_BIND_VERSION) {
+        const replacement = launcher.cloneNode(true);
+        launcher.replaceWith(replacement);
+        launcher = replacement;
+    }
+    if (!launcher) {
+        launcher = document.createElement('div');
+        menu.appendChild(launcher);
+    }
+
     launcher.id = 'tretaresia-rpg-wand-launcher';
     launcher.className = 'list-group-item flex-container flexGap5 interactable';
     launcher.tabIndex = 0;
     launcher.setAttribute('role', 'button');
+    launcher.setAttribute('aria-label', 'Open Tretaresia RPG');
     launcher.title = 'Open Tretaresia RPG';
     launcher.innerHTML = '<i class="fa-solid fa-book-open"></i><span>Tretaresia RPG</span>';
+
     const activate = event => {
         if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
+        event.stopPropagation();
         openInterface();
     };
-    launcher.addEventListener('click', activate);
-    launcher.addEventListener('keydown', activate);
-    menu.appendChild(launcher);
+    launcher.onclick = activate;
+    launcher.onkeydown = activate;
+    launcher.dataset.tretaresiaBound = LAUNCHER_BIND_VERSION;
+    if (!menu.contains(launcher)) menu.appendChild(launcher);
     syncLauncherVisibility();
     return true;
 }
-
 function observeWandMenu() {
     if (createWandLauncher() || menuObserver) return;
     menuObserver = new MutationObserver(() => {
@@ -4937,9 +4965,9 @@ async function initialize() {
         getSettings();
         applyAppearance();
         buildActivityIndicator();
+        observeWandMenu();
         buildInterface();
         await addSettingsDrawer();
-        observeWandMenu();
         bindChatEvents();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
@@ -4949,7 +4977,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.7.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.7.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
