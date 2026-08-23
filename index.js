@@ -4353,6 +4353,54 @@ function setSync(mode, label, detail = '', options = {}) {
     }, duration);
 }
 
+let introGateDone = false;
+
+function buildIntroGate() {
+    return '<div class="tretaresia-intro-gate" id="tretaresia-intro-gate">' +
+        '<span class="tretaresia-intro-lattice"></span><div class="tretaresia-intro-sigil">' +
+        '<span class="hex"></span><svg viewBox="0 0 206 232" aria-hidden="true"><polygon points="103,2 204,60 204,172 103,230 2,172 2,60"/></svg>' +
+        '<span class="ring ring-a"></span><span class="ring ring-b"></span><span class="arc arc-a"></span><span class="arc arc-b"></span><span class="core"></span></div>' +
+        '<strong>TRETARESIA</strong><small data-intro-sub>' + html(tr('Connecting to the active role-play...')) + '</small><span class="tretaresia-intro-rule"></span>' +
+        '<div class="tretaresia-intro-load"><span data-intro-label>UNSEALING THE WORLD GATE</span><span class="bar"><i data-intro-bar></i></span><span class="pct" data-intro-pct>0%</span></div>' +
+        '<button type="button" data-action="skip-intro">SKIP <i class="fa-solid fa-angles-right"></i></button></div>';
+}
+
+function runIntroGate(overlay) {
+    const gate = overlay.querySelector('#tretaresia-intro-gate');
+    if (!gate) return finishIntroGate();
+    const bar = gate.querySelector('[data-intro-bar]');
+    const pct = gate.querySelector('[data-intro-pct]');
+    const label = gate.querySelector('[data-intro-label]');
+    const stages = ['UNSEALING THE WORLD GATE', 'CALIBRATING AURA FIELD', 'READING THE WORLD LEDGER', 'LINK ESTABLISHED'];
+    let progress = 0;
+    clearInterval(introTimer);
+    clearTimeout(introTimer);
+    introTimer = setInterval(() => {
+        progress = Math.min(100, progress + Math.random() * 13 + 6);
+        if (bar) bar.style.width = progress + '%';
+        if (pct) pct.textContent = Math.floor(progress) + '%';
+        if (label) label.textContent = stages[Math.min(stages.length - 1, Math.floor(progress / 26))];
+        if (progress >= 100) {
+            clearInterval(introTimer);
+            introTimer = setTimeout(finishIntroGate, 300);
+        }
+    }, 110);
+}
+
+function finishIntroGate() {
+    if (introGateDone) return;
+    introGateDone = true;
+    clearInterval(introTimer);
+    clearTimeout(introTimer);
+    const overlay = document.getElementById('tretaresia-rpg-overlay');
+    const gate = overlay?.querySelector('#tretaresia-intro-gate');
+    overlay?.classList.add('is-ready');
+    if (!gate) return;
+    gate.classList.add('is-gone');
+    gate.addEventListener('transitionend', () => gate.remove(), { once: true });
+    setTimeout(() => gate.remove(), 900);
+}
+
 function openInterface() {
     buildInterface();
     const overlay = document.getElementById('tretaresia-rpg-overlay');
@@ -4362,10 +4410,12 @@ function openInterface() {
     previousFocusedElement = document.activeElement;
     renderAll();
     overlay.classList.remove('is-closing');
-    overlay.classList.add('is-open', 'is-ready', 'is-opening');
+    overlay.classList.add('is-open', 'is-opening');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.classList.add('tretaresia-rpg-open');
     requestAnimationFrame(() => panel.focus());
+    if (introGateDone || matchMedia('(prefers-reduced-motion: reduce)').matches) finishIntroGate();
+    else runIntroGate(overlay);
     introTimer = setTimeout(() => overlay.classList.remove('is-opening'), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 720);
 }
 
@@ -4530,9 +4580,8 @@ async function initialize() {
         updatePrompt();
         document.addEventListener('keydown', event => {
             if (event.key !== 'Escape') return;
-            const controlLayer = document.getElementById('tretaresia-control-layer');
-            if (controlLayer && !controlLayer.hidden) setControlCenterOpen(false);
-            else closeInterface();
+            if (controlCenterOpen()) return;
+            closeInterface();
         });
         console.info('[Tretaresia RPG] Role-play interface v0.5.1 loaded.');
     } catch (error) {
