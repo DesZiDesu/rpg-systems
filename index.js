@@ -377,6 +377,8 @@ let initialized = false;
 let previousFocusedElement = null;
 let menuObserver = null;
 let introTimer = null;
+let introGateTimer = null;
+let introFinishTimer = null;
 let aiSyncInProgress = false;
 let pendingSave = Promise.resolve();
 let syncQueue = Promise.resolve();
@@ -4754,16 +4756,17 @@ function runIntroGate(overlay) {
     const label = gate.querySelector('[data-intro-label]');
     const stages = ['UNSEALING THE WORLD GATE', 'CALIBRATING AURA FIELD', 'READING THE WORLD LEDGER', 'LINK ESTABLISHED'];
     let progress = 0;
-    clearInterval(introTimer);
-    clearTimeout(introTimer);
-    introTimer = setInterval(() => {
+    clearInterval(introGateTimer);
+    clearTimeout(introFinishTimer);
+    introGateTimer = setInterval(() => {
         progress = Math.min(100, progress + Math.random() * 13 + 6);
         if (bar) bar.style.width = progress + '%';
         if (pct) pct.textContent = Math.floor(progress) + '%';
         if (label) label.textContent = stages[Math.min(stages.length - 1, Math.floor(progress / 26))];
         if (progress >= 100) {
-            clearInterval(introTimer);
-            introTimer = setTimeout(finishIntroGate, 300);
+            clearInterval(introGateTimer);
+            introGateTimer = null;
+            introFinishTimer = setTimeout(finishIntroGate, 300);
         }
     }, 110);
 }
@@ -4771,8 +4774,10 @@ function runIntroGate(overlay) {
 function finishIntroGate() {
     if (introGateDone) return;
     introGateDone = true;
-    clearInterval(introTimer);
-    clearTimeout(introTimer);
+    clearInterval(introGateTimer);
+    clearTimeout(introFinishTimer);
+    introGateTimer = null;
+    introFinishTimer = null;
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     const gate = overlay?.querySelector('#tretaresia-intro-gate');
     overlay?.classList.add('is-ready');
@@ -4781,7 +4786,6 @@ function finishIntroGate() {
     gate.addEventListener('transitionend', () => gate.remove(), { once: true });
     setTimeout(() => gate.remove(), 900);
 }
-
 function openInterface() {
     buildInterface();
     const overlay = document.getElementById('tretaresia-rpg-overlay');
@@ -4804,6 +4808,10 @@ function closeInterface() {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (!overlay?.classList.contains('is-open')) return;
     clearTimeout(introTimer);
+    clearInterval(introGateTimer);
+    clearTimeout(introFinishTimer);
+    introGateTimer = null;
+    introFinishTimer = null;
     overlay.classList.add('is-closing');
     overlay.classList.remove('is-open', 'is-ready', 'is-opening');
     setControlCenterOpen(false);
@@ -4977,7 +4985,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.7.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.7.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
