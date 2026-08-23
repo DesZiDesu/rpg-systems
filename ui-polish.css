@@ -1,4 +1,6 @@
 @import url("./style.css");
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&display=swap");
 
 /* Tretaresia RPG UI polish layer.
    Kept separate from the core stylesheet so these targeted visual fixes stay
@@ -2286,4 +2288,783 @@
             var(--portrait-mobile-x, var(--portrait-desktop-x, 50%))
             var(--portrait-mobile-y, var(--portrait-desktop-y, 50%));
     }
+}
+
+/* ==========================================================================
+   TRETARESIA UI 5.0 — "Character Forge" direction
+   Orbitron/Chakra Petch, black-gold, hairline grid, numbered sections,
+   corner brackets, gold-gradient active states. Structure untouched.
+   ========================================================================== */
+
+/* --- 00 · tokens ------------------------------------------------------- */
+.tretaresia-rpg-overlay,
+#tretaresia-activity-island,
+#tretaresia-event-stack {
+    --tf-bg: #040404;
+    --tf-panel: #0a0a0a;
+    --tf-field: rgba(255, 255, 255, .04);
+    --tf-hov: rgba(var(--tretaresia-accent-rgb), .10);
+    --tf-line: rgba(var(--tretaresia-accent-rgb), .45);
+    --tf-line-soft: rgba(255, 255, 255, .10);
+    --tf-txt: #ece7da;
+    --tf-dim: rgba(236, 231, 218, .55);
+    --tf-faint: rgba(236, 231, 218, .30);
+    --tf-gold: var(--tretaresia-accent);
+    --tf-gold2: #f4dc93;
+    --tf-goldd: #7c6526;
+    --tf-grid: rgba(var(--tretaresia-accent-rgb), .10);
+    --tf-disp: 'Orbitron', 'Chakra Petch', ui-sans-serif, sans-serif;
+    --tf-body: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+}
+
+.tretaresia-rpg-overlay {
+    font-family: var(--tf-body);
+    color: var(--tf-txt);
+}
+
+.tretaresia-rpg-overlay button,
+.tretaresia-rpg-overlay input,
+.tretaresia-rpg-overlay select,
+.tretaresia-rpg-overlay textarea,
+.tretaresia-rpg-overlay output {
+    font-family: var(--tf-body);
+}
+
+/* --- 01 · shell, brackets, grid ---------------------------------------- */
+.tretaresia-rpg-backdrop {
+    background:
+        radial-gradient(120% 70% at 50% 0, rgba(var(--tretaresia-accent-rgb), .07), transparent 62%),
+        rgba(0, 0, 0, .86);
+    backdrop-filter: blur(6px) saturate(85%);
+}
+
+.tretaresia-rpg-panel {
+    color: var(--tf-txt);
+    background:
+        radial-gradient(120% 58% at 50% 0, rgba(var(--tretaresia-accent-rgb), .05), transparent 60%),
+        var(--tf-bg);
+    border: 1px solid var(--tf-line);
+    border-radius: 0;
+    box-shadow: 0 18px 52px rgba(0, 0, 0, .62), inset 0 0 0 1px rgba(255, 255, 255, .012);
+}
+
+/* Four 24px corner brackets: panel handles TL/BR, shell handles TR/BL. */
+.tretaresia-rpg-panel::before,
+.tretaresia-rpg-panel::after,
+.tretaresia-app-shell::before,
+.tretaresia-app-shell::after {
+    content: "";
+    position: absolute;
+    z-index: 6;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--tf-line);
+    background: none;
+    opacity: 1;
+    pointer-events: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+    animation: none;
+}
+
+.tretaresia-rpg-panel::before { inset: 12px auto auto 10px; border-right: 0; border-bottom: 0; }
+.tretaresia-rpg-panel::after  { inset: auto 10px 12px auto; border-left: 0; border-top: 0; }
+.tretaresia-app-shell::before { inset: 12px 10px auto auto; border-left: 0; border-bottom: 0; }
+.tretaresia-app-shell::after  { inset: auto auto 12px 10px; border-right: 0; border-top: 0; }
+
+/* Hairline 34px grid, faded downward — lives on the scroll body. */
+.tretaresia-rpg-panel-body::before {
+    background-image:
+        linear-gradient(var(--tf-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--tf-grid) 1px, transparent 1px);
+    background-size: 34px 34px;
+    -webkit-mask-image: linear-gradient(#000, transparent 74%);
+    mask-image: linear-gradient(#000, transparent 74%);
+}
+
+/* --- 02 · opening sigil ------------------------------------------------- */
+.tretaresia-rpg-overlay.is-opening .tretaresia-rpg-panel-body::after {
+    content: "";
+    position: absolute;
+    z-index: 7;
+    left: 50%;
+    top: 34%;
+    width: 148px;
+    height: 148px;
+    margin: -74px 0 0 -74px;
+    border: 2px solid transparent;
+    border-top-color: var(--tf-gold2);
+    border-left-color: rgba(var(--tretaresia-accent-rgb), .34);
+    border-radius: 50%;
+    pointer-events: none;
+    filter: drop-shadow(0 0 8px rgba(var(--tretaresia-accent-rgb), .48));
+    animation: tf-sigil-spin 900ms linear 1, tf-sigil-out 900ms ease forwards;
+}
+
+@keyframes tf-sigil-spin { to { transform: rotate(720deg); } }
+@keyframes tf-sigil-out { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+
+/* --- 03 · header -------------------------------------------------------- */
+.tretaresia-rpg-panel-header {
+    background: linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .07), transparent 34%), rgba(4, 4, 4, .96);
+    border-bottom: 1px solid var(--tf-line);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .24);
+}
+
+.tretaresia-rpg-brand-mark {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    border: 1px solid var(--tf-line);
+    border-radius: 0;
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    transform: none;
+    box-shadow: 0 0 26px rgba(var(--tretaresia-accent-rgb), .2);
+}
+
+.tretaresia-rpg-brand-mark i { transform: none; }
+
+.tretaresia-rpg-panel-heading h2 {
+    font-family: var(--tf-disp);
+    font-weight: 900;
+    letter-spacing: .16em;
+    background: linear-gradient(180deg, #fff, var(--tf-gold2) 60%, var(--tf-goldd));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+}
+
+.tretaresia-rpg-kicker,
+.tretaresia-eyebrow {
+    font-family: var(--tf-body);
+    font-weight: 700;
+    color: var(--tf-gold);
+    letter-spacing: .26em;
+    text-transform: uppercase;
+}
+
+.tretaresia-header-button,
+.tretaresia-sync-state {
+    color: var(--tf-gold);
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line);
+    border-radius: 3px;
+}
+
+.tretaresia-header-button:hover,
+.tretaresia-header-button:focus-visible,
+.tretaresia-control-trigger.is-active {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    border-color: var(--tf-gold);
+    box-shadow: none;
+}
+
+/* --- 04 · module bar ---------------------------------------------------- */
+.tretaresia-module-bar {
+    background: rgba(6, 6, 6, .96);
+    border-bottom: 1px solid var(--tf-line-soft);
+}
+
+.tretaresia-module-readout small { color: var(--tf-gold); letter-spacing: .28em; }
+.tretaresia-module-readout strong { font-family: var(--tf-disp); font-weight: 700; letter-spacing: .1em; }
+.tretaresia-module-code { font-family: var(--tf-disp); color: var(--tf-faint); letter-spacing: .18em; }
+
+/* --- 05 · nav rail / tabs ---------------------------------------------- */
+.tretaresia-tab-list {
+    background: linear-gradient(180deg, rgba(var(--tretaresia-accent-rgb), .06), transparent 30%), rgba(0, 0, 0, .5);
+    border-right: 1px solid var(--tf-line-soft);
+}
+
+.tretaresia-rail-head { border-bottom: 1px solid var(--tf-line-soft); }
+.tretaresia-rail-head > span {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    font-family: var(--tf-disp);
+    font-weight: 800;
+    letter-spacing: .12em;
+}
+.tretaresia-rail-head strong { font-family: var(--tf-disp); font-weight: 700; letter-spacing: .12em; }
+.tretaresia-rail-head small,
+.tretaresia-nav-group > small { font-family: var(--tf-body); color: var(--tf-gold); letter-spacing: .26em; }
+
+.tretaresia-tab-button {
+    color: var(--tf-dim);
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line-soft);
+    border-bottom: 2px solid var(--tf-line-soft);
+    border-radius: 0;
+    transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+    transform: none;
+}
+
+.tretaresia-tab-button::before { color: var(--tf-faint); font-family: var(--tf-disp); }
+.tretaresia-tab-button::after { display: none; }
+.tretaresia-tab-button span { font-family: var(--tf-disp); font-weight: 700; letter-spacing: .16em; }
+.tretaresia-tab-button i { color: var(--tf-gold); }
+
+.tretaresia-tab-button:hover { color: var(--tf-txt); background: var(--tf-hov); transform: none; }
+
+.tretaresia-tab-button.is-active {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    border-color: var(--tf-gold);
+    box-shadow: none;
+}
+.tretaresia-tab-button.is-active i,
+.tretaresia-tab-button.is-active::before { color: #1a1407; text-shadow: none; }
+
+/* --- 06 · body & numbered section headings ----------------------------- */
+.tretaresia-rpg-panel-body { background: transparent; }
+
+.tretaresia-section-heading {
+    align-items: flex-start;
+    min-height: 0;
+    padding: 0 0 11px;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--tf-line-soft);
+    box-shadow: none;
+}
+
+.tretaresia-section-heading::before,
+.tretaresia-section-heading::after { display: none; }
+
+.tretaresia-section-heading .tretaresia-eyebrow {
+    display: inline-block;
+    margin-bottom: 7px;
+    padding: 2px 7px;
+    color: var(--tf-goldd);
+    border: 1px solid var(--tf-line);
+    font-family: var(--tf-disp);
+    font-size: .55rem;
+    letter-spacing: .14em;
+}
+
+.tretaresia-section-heading h3 {
+    font-family: var(--tf-disp);
+    font-weight: 700;
+    font-size: clamp(.95rem, 2.4vw, 1.15rem);
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--tf-txt);
+}
+
+.tretaresia-section-heading p { color: var(--tf-dim); letter-spacing: .04em; }
+.tretaresia-heading-icon { color: var(--tf-gold); filter: none; }
+
+/* --- 07 · surfaces ----------------------------------------------------- */
+.tretaresia-card,
+.tretaresia-list-card,
+.tretaresia-quest-card,
+.tretaresia-rank-row,
+.tretaresia-rank-hero,
+.tretaresia-location-dossier,
+.tretaresia-travel-form,
+.tretaresia-pin-form,
+.tretaresia-pin-list,
+.tretaresia-editor,
+.tretaresia-mastery-section,
+.tretaresia-technique-section,
+.tretaresia-skill-storage,
+.tretaresia-contact-rail,
+.tretaresia-letter-desk,
+.tretaresia-playlist,
+.tretaresia-npc-index,
+.tretaresia-npc-dossier,
+.tretaresia-npc-abilities,
+.tretaresia-npc-diary,
+.tretaresia-npc-stats,
+.tretaresia-proficiency-section,
+.tretaresia-local-map,
+.tretaresia-progress-deck {
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line-soft);
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
+}
+
+.tretaresia-card:hover,
+.tretaresia-list-card:hover,
+.tretaresia-quest-card:hover,
+.tretaresia-rank-row:hover,
+.tretaresia-location-dossier:hover,
+.tretaresia-travel-form:hover,
+.tretaresia-pin-form:hover,
+.tretaresia-pin-list:hover,
+.tretaresia-mastery-section:hover,
+.tretaresia-technique-section:hover,
+.tretaresia-skill-storage:hover,
+.tretaresia-contact-rail:hover,
+.tretaresia-letter-desk:hover,
+.tretaresia-playlist:hover {
+    border-color: var(--tf-line);
+    box-shadow: none;
+    transform: none;
+}
+
+.tretaresia-card-title,
+.tretaresia-section-label {
+    border-bottom: 1px solid var(--tf-line-soft);
+}
+
+.tretaresia-card-title > span,
+.tretaresia-section-label strong {
+    font-family: var(--tf-disp);
+    font-weight: 700;
+    font-size: .62rem;
+    color: var(--tf-txt);
+    letter-spacing: .2em;
+}
+.tretaresia-card-title i,
+.tretaresia-section-label > i { color: var(--tf-gold); }
+
+.tretaresia-empty-state {
+    border: 1px dashed var(--tf-line);
+    color: var(--tf-faint);
+}
+.tretaresia-empty-state i { color: var(--tf-gold); }
+
+/* --- 08 · hero, portrait, seal ---------------------------------------- */
+.tretaresia-character-hero,
+.tretaresia-npc-hero {
+    background:
+        linear-gradient(100deg, rgba(var(--tretaresia-accent-rgb), .10), transparent 52%),
+        var(--tf-panel);
+    border: 1px solid var(--tf-line);
+    box-shadow: none;
+    animation: none;
+}
+.tretaresia-character-hero::after { display: none; }
+
+.tretaresia-avatar,
+.tretaresia-npc-avatar {
+    border: 1px solid var(--tf-line);
+    border-radius: 0;
+    background: var(--tf-panel);
+    box-shadow: none;
+}
+.tretaresia-avatar::before {
+    border: 1px solid rgba(var(--tretaresia-accent-rgb), .55);
+    border-radius: 0;
+    box-shadow: none;
+}
+.tretaresia-magic-ring { display: none; }
+
+.tretaresia-avatar-initial,
+.tretaresia-npc-initial {
+    font-family: var(--tf-disp);
+    font-weight: 700;
+    color: var(--tf-gold2);
+    background: radial-gradient(circle at 42% 34%, rgba(var(--tretaresia-accent-rgb), .18), var(--tf-panel) 72%);
+}
+
+.tretaresia-avatar-edit {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    border: 2px solid var(--tf-bg);
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.tretaresia-character-copy h3,
+.tretaresia-npc-hero h3 {
+    font-family: var(--tf-disp);
+    font-weight: 800;
+    letter-spacing: .08em;
+    background: linear-gradient(180deg, #fff, var(--tf-gold2) 62%, var(--tf-goldd));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.tretaresia-character-title,
+.tretaresia-npc-hero p {
+    color: var(--tf-gold);
+    font-style: normal;
+    letter-spacing: .1em;
+}
+
+.tretaresia-identity-chips span {
+    color: var(--tf-dim);
+    background: transparent;
+    border: 1px solid var(--tf-line-soft);
+    border-radius: 0;
+}
+.tretaresia-identity-chips i { color: var(--tf-gold); }
+
+.tretaresia-rank-seal {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    box-shadow: none;
+}
+.tretaresia-rank-seal small { color: rgba(26, 20, 7, .62); }
+.tretaresia-rank-seal b { font-family: var(--tf-disp); font-weight: 800; color: #1a1407; }
+
+/* --- 09 · tracks & meters --------------------------------------------- */
+.tretaresia-exp-track,
+.tretaresia-vital-track,
+.tretaresia-proficiency-track,
+.tretaresia-quest-progress > span,
+.tretaresia-npc-meter > div,
+.tretaresia-technique-meter > span,
+.tretaresia-npc-ability-rank > span {
+    background: var(--tf-line-soft);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.tretaresia-exp-track span,
+.tretaresia-quest-progress i {
+    background: linear-gradient(90deg, var(--tf-goldd), var(--tf-gold2), #fff);
+    box-shadow: 0 0 12px rgba(var(--tretaresia-accent-rgb), .55);
+}
+.tretaresia-exp-track i { display: none; }
+
+.tretaresia-vital { border-radius: 0; border-left: 2px solid var(--vital); }
+.tretaresia-vital-line span { font-family: var(--tf-disp); font-size: .56rem; letter-spacing: .16em; }
+.tretaresia-vital-line strong { font-family: var(--tf-disp); font-weight: 700; }
+
+.tretaresia-fact-list > div {
+    background: transparent;
+    border: 1px solid var(--tf-line-soft);
+    border-left: 2px solid var(--tf-line);
+}
+.tretaresia-fact-list dt { color: var(--tf-faint); letter-spacing: .08em; text-transform: uppercase; font-size: .56rem; }
+.tretaresia-fact-list dd { color: var(--tf-txt); }
+
+/* --- 10 · forms & buttons -------------------------------------------- */
+.tretaresia-field > span,
+.tretaresia-control-field > span,
+.tretaresia-portrait-device label > span {
+    color: var(--tf-dim);
+    font-size: .58rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.tretaresia-field input,
+.tretaresia-field select,
+.tretaresia-field textarea,
+.tretaresia-control-field select,
+.tretaresia-editor input,
+.tretaresia-editor select,
+.tretaresia-editor textarea,
+.tretaresia-map-picker select {
+    color: var(--tf-txt);
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line-soft);
+    border-left: 2px solid var(--tf-line);
+    border-radius: 0;
+}
+
+.tretaresia-field input:focus,
+.tretaresia-field select:focus,
+.tretaresia-field textarea:focus,
+.tretaresia-control-field select:focus {
+    border-color: var(--tf-gold);
+    background: var(--tf-hov);
+    box-shadow: none;
+}
+
+.tretaresia-field input::placeholder,
+.tretaresia-field textarea::placeholder { color: var(--tf-faint); }
+
+.tretaresia-primary-button,
+.tretaresia-secondary-button,
+.tretaresia-small-button,
+.tretaresia-text-button,
+.tretaresia-continuity-actions button,
+.tretaresia-map-editor-actions button,
+.tretaresia-floor-tabs button,
+.tretaresia-map-lock {
+    font-family: var(--tf-disp);
+    font-weight: 700;
+    letter-spacing: .18em;
+    border-radius: 0;
+}
+
+.tretaresia-primary-button {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    border: 1px solid var(--tf-gold);
+    box-shadow: 0 0 22px rgba(var(--tretaresia-accent-rgb), .2);
+}
+
+.tretaresia-secondary-button,
+.tretaresia-small-button,
+.tretaresia-continuity-actions button,
+.tretaresia-map-editor-actions button,
+.tretaresia-floor-tabs button,
+.tretaresia-map-lock {
+    color: var(--tf-dim);
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line);
+}
+
+.tretaresia-secondary-button:hover,
+.tretaresia-small-button:hover,
+.tretaresia-continuity-actions button:hover,
+.tretaresia-map-editor-actions button:hover,
+.tretaresia-floor-tabs button:hover,
+.tretaresia-map-lock:hover { color: var(--tf-gold2); background: var(--tf-hov); }
+
+.tretaresia-floor-tabs button.is-active {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    border-color: var(--tf-gold);
+}
+
+.tretaresia-text-button { color: var(--tf-gold); letter-spacing: .14em; }
+
+.tretaresia-editor summary,
+.tretaresia-tracking-explainer summary {
+    font-family: var(--tf-disp);
+    font-weight: 700;
+    color: var(--tf-gold);
+    letter-spacing: .16em;
+}
+
+.tretaresia-addrow,
+.tretaresia-npc-add,
+.tretaresia-map-first-editor { border-style: dashed; border-color: var(--tf-line); }
+
+/* --- 11 · lists, quests, chips --------------------------------------- */
+.tretaresia-list-card,
+.tretaresia-quest-card,
+.tretaresia-diary-entry,
+.tretaresia-npc-ability,
+.tretaresia-skill-card,
+.tretaresia-technique-card,
+.tretaresia-letter-row,
+.tretaresia-track-row,
+.tretaresia-contact-card,
+.tretaresia-npc-list-row {
+    border-left: 2px solid var(--tf-gold);
+    border-radius: 0;
+}
+
+.tretaresia-list-card::before,
+.tretaresia-quest-card::before { display: none; }
+
+.tretaresia-item-icon,
+.tretaresia-discipline-icon,
+.tretaresia-skill-rank,
+.tretaresia-contact-sigil,
+.tretaresia-npc-thumb,
+.tretaresia-wax-seal,
+.tretaresia-scene-grid i,
+.tretaresia-scene-weather > i,
+.tretaresia-proficiency-section > header > div > i {
+    color: var(--tf-gold);
+    background: rgba(var(--tretaresia-accent-rgb), .07);
+    border: 1px solid var(--tf-line);
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.tretaresia-item-copy strong,
+.tretaresia-quest-card h4,
+.tretaresia-skill-card h4,
+.tretaresia-technique-card strong,
+.tretaresia-npc-ability strong,
+.tretaresia-letter-summary b,
+.tretaresia-npc-list-row strong,
+.tretaresia-contact-open strong,
+.tretaresia-proficiency-card-copy h4 {
+    font-family: var(--tf-disp);
+    font-weight: 700;
+    color: var(--tf-gold2);
+    letter-spacing: .04em;
+}
+
+.tretaresia-quest-status {
+    font-family: var(--tf-disp);
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    border: 0;
+    border-radius: 0;
+    letter-spacing: .14em;
+}
+
+.tretaresia-card-actions button,
+.tretaresia-npc-ability > button,
+.tretaresia-diary-entry > button,
+.tretaresia-skill-card > button,
+.tretaresia-technique-card > button {
+    color: var(--tf-faint);
+    background: transparent;
+    border: 1px solid var(--tf-line-soft);
+    border-radius: 0;
+}
+.tretaresia-card-actions button:hover { color: var(--tf-gold2); border-color: var(--tf-line); background: var(--tf-hov); }
+
+.tretaresia-zone-badge,
+.tretaresia-npc-list-row small,
+.tretaresia-proficiency-overview > span { border-radius: 0; }
+
+/* --- 12 · proficiency ------------------------------------------------- */
+.tretaresia-proficiency-overview {
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line-soft);
+    border-left: 2px solid var(--tf-gold);
+}
+.tretaresia-proficiency-overview > div strong { font-family: var(--tf-disp); font-weight: 800; }
+.tretaresia-proficiency-section > header {
+    background: linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .07), transparent 46%);
+    border-bottom: 1px solid var(--tf-line-soft);
+}
+.tretaresia-proficiency-section > header strong { font-family: var(--tf-disp); letter-spacing: .14em; }
+
+.tretaresia-proficiency-card {
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line-soft);
+    border-radius: 0;
+}
+.tretaresia-proficiency-card:hover { border-color: var(--tf-line); transform: none; }
+.tretaresia-proficiency-card::before { background: var(--tf-gold); opacity: 1; }
+.tretaresia-proficiency-orbit::after { background: var(--tf-bg); border-color: var(--tf-line-soft); }
+.tretaresia-proficiency-orbit > b { font-family: var(--tf-disp); font-weight: 700; }
+.tretaresia-proficiency-rank strong { font-family: var(--tf-disp); letter-spacing: .1em; }
+
+.tretaresia-icon-picker > div { background: rgba(0, 0, 0, .3); border: 1px solid var(--tf-line-soft); }
+.tretaresia-icon-picker button { border-radius: 0; background: var(--tf-field); border-color: var(--tf-line-soft); }
+.tretaresia-icon-picker button.is-selected { border-color: var(--tf-gold); background: var(--tf-hov); }
+
+/* --- 13 · rank, wallet, scene ---------------------------------------- */
+.tretaresia-rank-hero strong {
+    font-family: var(--tf-disp);
+    font-weight: 900;
+    letter-spacing: .04em;
+    background: linear-gradient(180deg, #fff, var(--tf-gold2) 58%, var(--tf-goldd));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+}
+.tretaresia-rank-hero::after { color: rgba(var(--tretaresia-accent-rgb), .07); }
+.tretaresia-rank-row strong { font-family: var(--tf-disp); color: var(--tf-gold2); }
+.tretaresia-wallet > div { border-right: 1px solid var(--tf-line-soft); }
+.tretaresia-wallet strong { font-family: var(--tf-disp); font-weight: 700; color: var(--tf-gold2); }
+
+.tretaresia-scene-time,
+.tretaresia-scene-weather,
+.tretaresia-scene-cycle,
+.tretaresia-scene-grid article {
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line-soft);
+    border-radius: 0;
+    box-shadow: none;
+}
+.tretaresia-scene-time > strong,
+.tretaresia-scene-weather output { font-family: var(--tf-disp); font-weight: 700; letter-spacing: .06em; }
+.tretaresia-scene-grid strong { font-family: var(--tf-disp); font-weight: 700; letter-spacing: .06em; }
+.tretaresia-cycle-stop.is-current i {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    border-color: var(--tf-gold);
+}
+
+/* --- 14 · map --------------------------------------------------------- */
+.tretaresia-map-frame { border: 1px solid var(--tf-line); border-radius: 0; box-shadow: none; }
+.tretaresia-map-toolbar button,
+.tretaresia-map-lod,
+.tretaresia-world-compass {
+    color: var(--tf-gold2);
+    background: rgba(4, 4, 4, .9);
+    border: 1px solid var(--tf-line);
+    border-radius: 0;
+    box-shadow: none;
+}
+.tretaresia-world-compass { border-radius: 50%; }
+.tretaresia-map-legend { background: var(--tf-panel); border-top: 1px solid var(--tf-line-soft); }
+.tretaresia-location-dossier h4 { font-family: var(--tf-disp); font-weight: 700; letter-spacing: .1em; }
+.tretaresia-floor-svg { border: 1px solid var(--tf-line-soft); }
+.tretaresia-floor-room text { font-family: var(--tf-body); }
+
+/* --- 15 · control center --------------------------------------------- */
+.tretaresia-control-panel {
+    background: var(--tf-bg);
+    border: 1px solid var(--tf-line);
+    box-shadow: 0 28px 90px rgba(0, 0, 0, .8);
+}
+.tretaresia-control-head {
+    background: linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .1), transparent);
+    border-bottom: 1px solid var(--tf-line);
+}
+.tretaresia-control-sigil {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    transform: none;
+}
+.tretaresia-control-sigil i { transform: none; }
+.tretaresia-control-head h3 { font-family: var(--tf-disp); font-weight: 800; letter-spacing: .14em; }
+.tretaresia-control-head small { color: var(--tf-gold); letter-spacing: .24em; }
+.tretaresia-control-section { background: var(--tf-field); border: 1px solid var(--tf-line-soft); }
+.tretaresia-control-section-title { border-bottom: 1px solid var(--tf-line-soft); }
+.tretaresia-control-section-title > b {
+    color: #1a1407;
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    font-family: var(--tf-disp);
+}
+.tretaresia-control-section-title strong { font-family: var(--tf-disp); letter-spacing: .16em; }
+.tretaresia-control-field output { color: var(--tf-gold2); font-family: var(--tf-disp); }
+.tretaresia-control-field input[type="range"] { accent-color: var(--tf-gold); }
+.tretaresia-control-field.color input[type="color"] { border: 1px solid var(--tf-line); border-radius: 0; }
+.tretaresia-control-panel .tretaresia-continuity-toggle { border: 1px solid var(--tf-line-soft); background: var(--tf-field); }
+
+/* --- 16 · toasts & activity island ---------------------------------- */
+.tretaresia-activity-island {
+    font-family: var(--tf-body);
+    background: var(--tf-bg);
+    border: 1px solid var(--tf-line);
+    border-left: 3px solid var(--tf-gold);
+    border-radius: 0;
+    box-shadow: 0 14px 42px rgba(0, 0, 0, .6);
+}
+.tretaresia-activity-orb {
+    color: var(--tf-gold);
+    background: rgba(var(--tretaresia-accent-rgb), .1);
+    border: 1px solid var(--tf-line);
+    border-radius: 0;
+    transform: none;
+}
+.tretaresia-activity-orb i { transform: none; }
+.tretaresia-activity-copy strong { font-family: var(--tf-disp); font-weight: 700; letter-spacing: .1em; }
+
+.tretaresia-event-toast {
+    font-family: var(--tf-body);
+    background: linear-gradient(100deg, color-mix(in srgb, var(--event-color) 9%, var(--tf-bg)), var(--tf-bg) 60%);
+    border: 1px solid color-mix(in srgb, var(--event-color) 40%, var(--tf-line));
+    border-left: 3px solid var(--event-color);
+    border-radius: 0;
+}
+.tretaresia-event-icon { border-radius: 0; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.tretaresia-event-toast small { font-family: var(--tf-disp); letter-spacing: .2em; }
+.tretaresia-event-toast strong { font-family: var(--tf-disp); font-weight: 700; letter-spacing: .04em; }
+.tretaresia-event-toast > b { font-family: var(--tf-disp); font-weight: 700; }
+
+/* --- 17 · mobile ----------------------------------------------------- */
+@media (max-width: 800px) {
+    .tretaresia-rpg-panel { border: 0; }
+    .tretaresia-rpg-panel::before,
+    .tretaresia-rpg-panel::after,
+    .tretaresia-app-shell::before,
+    .tretaresia-app-shell::after { display: none; }
+    .tretaresia-rpg-panel-heading h2 { letter-spacing: .08em; }
+    .tretaresia-tab-button span { font-size: .5rem; letter-spacing: .1em; }
+    .tretaresia-section-heading h3 { font-size: .95rem; letter-spacing: .12em; }
+}
+
+@media (max-width: 440px) {
+    .tretaresia-rpg-panel-heading h2 { letter-spacing: .04em; }
+    .tretaresia-section-heading h3 { letter-spacing: .08em; }
+}
+
+/* --- 18 · reduced motion -------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .tretaresia-rpg-overlay.is-opening .tretaresia-rpg-panel-body::after { display: none; }
 }
