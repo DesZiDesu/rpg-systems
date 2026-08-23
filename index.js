@@ -1775,6 +1775,16 @@ function renderAll(state = getState()) {
     void hydrateNpcPortraits(overlay, state);
 }
 
+function rankInsignia(progression) {
+    const label = progression.adventurerRank === 'Custom Rank' && progression.customRankName
+        ? progression.customRankName : progression.adventurerRank;
+    const tier = Math.max(0, RANKS.indexOf(progression.adventurerRank));
+    const bars = RANKS.map((_, index) => '<i' + (index <= tier ? ' class="on"' : '') + '></i>').join('');
+    return '<div class="tretaresia-rank-insignia" role="img" aria-label="' + html(tr('Guild rank')) + ': ' + html(label) + ', tier ' + (tier + 1) + ' of ' + RANKS.length + '">' +
+        '<span class="tretaresia-rank-bars">' + bars + '</span><small>' + html(tr('Guild rank')) + '</small><b>' + html(label) + '</b>' +
+        '<em>' + String(tier + 1).padStart(2, '0') + '<span>/ ' + String(RANKS.length).padStart(2, '0') + '</span></em></div>';
+}
+
 function renderStatus(panel, state) {
     if (!panel) return;
     const persona = currentPersonaName(state);
@@ -1790,7 +1800,7 @@ function renderStatus(panel, state) {
                 <p class="tretaresia-character-title">${html(state.player.title)}</p><div class="tretaresia-identity-chips">
                 <span><i class="fa-solid fa-dna"></i>${html(state.player.race)}</span><span><i class="fa-solid fa-shield-halved"></i>${html(state.player.guild)}</span>
                 <span><i class="fa-solid fa-briefcase"></i>${html(state.player.profession)}</span><span><i class="fa-solid fa-people-group"></i>${html(state.player.party)}</span></div></div>
-            <span class="tretaresia-rank-seal"><small>${html(tr('Guild rank'))}</small><b>${html(state.progression.adventurerRank)}</b></span></section>
+            ${rankInsignia(state.progression)}</section>
         <section class="tretaresia-progress-deck"><div class="tretaresia-exp-line"><div class="tretaresia-exp-track"><span style="width:${expPercent}%"></span><i style="left:${expPercent}%"></i></div>
             <p><strong>${state.progression.experience} / ${state.progression.experienceMax} EXP</strong><span>Lv. ${state.player.level} · ${html(state.progression.adventurerRank)} Rank</span></p></div></section>
         <div class="tretaresia-dashboard-grid">
