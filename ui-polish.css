@@ -3068,3 +3068,819 @@
 @media (prefers-reduced-motion: reduce) {
     .tretaresia-rpg-overlay.is-opening .tretaresia-rpg-panel-body::after { display: none; }
 }
+
+
+
+/* ==========================================================================
+   TRETARESIA UI 6.0 — themeable tokens, module slider, rank plate
+   Appended after UI 5 so the new shell and user palette win the cascade.
+   ========================================================================== */
+
+.tretaresia-rpg-overlay,
+.tretaresia-control-dialog,
+#tretaresia-activity-island,
+#tretaresia-event-stack {
+    --tf-gold: var(--tretaresia-accent, #d6b458);
+    --tf-gold2: var(--tretaresia-accent-alt, #f4dc93);
+    --tf-goldd: color-mix(in srgb, var(--tretaresia-accent, #d6b458) 56%, #000);
+    --tf-on: var(--tretaresia-on-accent, #12100a);
+    --tf-txt: var(--tretaresia-ink, #ece7da);
+    --tf-bg: var(--tretaresia-surface, #040404);
+    --tf-panel: color-mix(in srgb, var(--tf-bg) 90%, var(--tf-txt));
+    --tf-field: color-mix(in srgb, var(--tf-txt) 5%, transparent);
+    --tf-hov: color-mix(in srgb, var(--tf-gold) 12%, transparent);
+    --tf-line: color-mix(in srgb, var(--tf-gold) 46%, transparent);
+    --tf-line-soft: color-mix(in srgb, var(--tf-txt) 11%, transparent);
+    --tf-dim: color-mix(in srgb, var(--tf-txt) 58%, transparent);
+    --tf-faint: color-mix(in srgb, var(--tf-txt) 34%, transparent);
+    --tf-grid: color-mix(in srgb, var(--tf-gold) 11%, transparent);
+    color: var(--tf-txt);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+.tretaresia-rpg-overlay .tretaresia-header-button:hover,
+.tretaresia-rpg-overlay .tretaresia-header-button:focus-visible,
+.tretaresia-rpg-overlay .tretaresia-control-trigger.is-active,
+.tretaresia-rail-head > span,
+.tretaresia-primary-button,
+.tretaresia-quest-status,
+.tretaresia-avatar-edit,
+.tretaresia-floor-tabs button.is-active,
+.tretaresia-control-dialog .tretaresia-control-sigil,
+.tretaresia-control-dialog .tretaresia-control-section-title > b {
+    color: var(--tf-on);
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+    border-color: var(--tf-gold);
+}
+
+.tretaresia-rpg-panel-heading h2,
+.tretaresia-character-copy h3,
+.tretaresia-npc-hero h3,
+.tretaresia-rank-hero strong {
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--tf-gold2) 30%, var(--tf-txt)),
+        var(--tf-gold2) 62%, var(--tf-goldd));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.tretaresia-avatar-initial,
+.tretaresia-npc-initial {
+    color: var(--tf-gold2);
+    background: radial-gradient(circle at 42% 34%, color-mix(in srgb, var(--tf-gold) 20%, transparent), var(--tf-panel) 72%);
+}
+
+.tretaresia-exp-track span,
+.tretaresia-quest-progress i {
+    background: linear-gradient(90deg, var(--tf-goldd), var(--tf-gold2), color-mix(in srgb, var(--tf-gold2) 40%, var(--tf-txt)));
+}
+
+.tretaresia-app-shell {
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+.tretaresia-app-shell > .tretaresia-rpg-panel-body {
+    grid-row: auto;
+    min-height: 0;
+}
+
+.tretaresia-module-bar { display: none; }
+.tretaresia-brand-lockup { gap: 0; }
+.tretaresia-rpg-panel-header { min-height: 70px; }
+
+.tretaresia-module-slider {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) 46px;
+    grid-template-areas: "prev window next" "dots dots dots";
+    align-items: stretch;
+    gap: 0;
+    padding: .55rem .62rem .5rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tf-gold) 7%, transparent), transparent 62%), rgba(0, 0, 0, .22);
+    border-bottom: 1px solid var(--tf-line);
+    contain: layout paint;
+}
+
+.tretaresia-slider-arrow {
+    display: grid;
+    place-items: center;
+    min-height: 52px;
+    padding: 0;
+    color: var(--tf-gold);
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line);
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 1rem;
+    touch-action: manipulation;
+    transition: color 160ms ease, background 160ms ease, transform 160ms ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.tretaresia-slider-arrow:first-of-type { grid-area: prev; border-right: 0; }
+.tretaresia-slider-arrow:last-of-type { grid-area: next; border-left: 0; }
+.tretaresia-slider-arrow:hover,
+.tretaresia-slider-arrow:focus-visible {
+    color: var(--tf-on);
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+}
+.tretaresia-slider-arrow:active { transform: scale(.94); }
+.tretaresia-slider-arrow:disabled { color: var(--tf-faint); background: transparent; cursor: default; }
+
+.tretaresia-module-window {
+    grid-area: window;
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    border-block: 1px solid var(--tf-line);
+    background: color-mix(in srgb, var(--tf-gold) 5%, transparent);
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: grab;
+}
+.tretaresia-module-window:active { cursor: grabbing; }
+
+.tretaresia-module-track {
+    display: flex;
+    width: 100%;
+    transform: translate3d(calc(var(--tab-index, 0) * -100% + var(--tab-drag, 0px)), 0, 0);
+    transition: transform 320ms cubic-bezier(.2, .82, .22, 1);
+    will-change: transform;
+}
+.tretaresia-module-track > .tretaresia-tab-button {
+    flex: 0 0 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .7rem;
+    width: 100%;
+    min-width: 100%;
+    min-height: 52px;
+    padding: .5rem .85rem;
+    color: var(--tf-dim);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    text-align: left;
+    cursor: pointer;
+    transform: none;
+    pointer-events: none;
+}
+.tretaresia-module-track > .tretaresia-tab-button::before,
+.tretaresia-module-track > .tretaresia-tab-button::after { display: none; }
+.tretaresia-module-track > .tretaresia-tab-button i { color: var(--tf-gold); font-size: 1rem; }
+.tretaresia-module-track > .tretaresia-tab-button span {
+    overflow: hidden;
+    font-family: var(--tf-disp);
+    font-weight: 700;
+    font-size: .8rem;
+    letter-spacing: .18em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+.tretaresia-module-track > .tretaresia-tab-button em {
+    color: var(--tf-faint);
+    font-family: var(--tf-disp);
+    font-size: .52rem;
+    font-style: normal;
+    letter-spacing: .12em;
+    white-space: nowrap;
+}
+.tretaresia-module-track > .tretaresia-tab-button.is-active {
+    color: var(--tf-txt);
+    background: transparent;
+    border: 0;
+}
+.tretaresia-module-track > .tretaresia-tab-button.is-active i {
+    color: var(--tf-gold2);
+    text-shadow: 0 0 14px color-mix(in srgb, var(--tf-gold) 48%, transparent);
+}
+.tretaresia-module-dots {
+    grid-area: dots;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding-top: .48rem;
+}
+.tretaresia-module-dots i {
+    width: 14px;
+    height: 2px;
+    background: var(--tf-line-soft);
+    transition: background 200ms ease, width 200ms ease;
+}
+.tretaresia-module-dots i.on {
+    width: 26px;
+    background: var(--tf-gold2);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--tf-gold) 60%, transparent);
+}
+
+.tretaresia-rank-insignia {
+    position: relative;
+    display: grid;
+    justify-items: end;
+    align-content: center;
+    gap: .16rem;
+    min-width: 8.4rem;
+    max-width: 12rem;
+    padding: .68rem .8rem .68rem 1rem;
+    text-align: right;
+    background: linear-gradient(115deg, transparent, color-mix(in srgb, var(--tf-gold) 12%, transparent));
+    border: 1px solid var(--tf-line);
+    border-right: 3px solid var(--tf-gold);
+    overflow-wrap: anywhere;
+}
+.tretaresia-rank-insignia::before,
+.tretaresia-rank-insignia::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 9px;
+    height: 9px;
+    border-left: 1px solid var(--tf-gold);
+}
+.tretaresia-rank-insignia::before { top: 0; border-top: 1px solid var(--tf-gold); }
+.tretaresia-rank-insignia::after { bottom: 0; border-bottom: 1px solid var(--tf-gold); }
+.tretaresia-rank-bars { display: flex; gap: 3px; margin-bottom: .14rem; }
+.tretaresia-rank-bars i {
+    width: 13px;
+    height: 4px;
+    background: var(--tf-line-soft);
+    transform: skewX(-22deg);
+}
+.tretaresia-rank-bars i.on {
+    background: linear-gradient(90deg, var(--tf-goldd), var(--tf-gold2));
+    box-shadow: 0 0 7px color-mix(in srgb, var(--tf-gold) 55%, transparent);
+}
+.tretaresia-rank-insignia small {
+    color: var(--tf-faint);
+    font-size: .44rem;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+}
+.tretaresia-rank-insignia b {
+    max-width: 100%;
+    font-family: var(--tf-disp);
+    font-weight: 800;
+    font-size: clamp(.82rem, 1.9vw, 1.05rem);
+    line-height: 1.1;
+    letter-spacing: .05em;
+    color: var(--tf-gold2);
+}
+.tretaresia-rank-insignia em {
+    color: var(--tf-faint);
+    font-family: var(--tf-disp);
+    font-size: .5rem;
+    font-style: normal;
+    letter-spacing: .1em;
+}
+.tretaresia-rank-insignia em span { opacity: .6; }
+
+.tretaresia-control-dialog {
+    width: min(440px, calc(100vw - 24px));
+    max-width: none;
+    max-height: min(760px, calc(100dvh - 64px));
+    margin: auto;
+    padding: 0;
+    overflow: visible;
+    color: var(--tf-txt);
+    background: transparent;
+    border: 0;
+}
+.tretaresia-control-dialog::backdrop {
+    background: rgba(0, 0, 0, .72);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+}
+.tretaresia-control-dialog .tretaresia-control-panel {
+    position: static;
+    inset: auto;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    width: 100%;
+    max-height: min(760px, calc(100dvh - 64px));
+    overflow: hidden;
+    background: var(--tf-bg);
+    border: 1px solid var(--tf-line);
+    box-shadow: 0 28px 90px rgba(0, 0, 0, .8);
+    animation: tf-control-in 200ms cubic-bezier(.2, .82, .22, 1) both;
+}
+@keyframes tf-control-in {
+    from { opacity: 0; transform: translateY(-10px) scale(.985); }
+}
+.tretaresia-control-dialog .tretaresia-control-head > button {
+    display: grid;
+    place-items: center;
+    width: 2.3rem;
+    aspect-ratio: 1;
+    color: var(--tf-dim);
+    background: transparent;
+    border: 1px solid var(--tf-line-soft);
+    cursor: pointer;
+}
+.tretaresia-control-dialog .tretaresia-control-field.color {
+    grid-template-columns: 1fr;
+}
+.tretaresia-control-dialog .tretaresia-control-field.color > span {
+    grid-column: 1;
+}
+.tretaresia-control-dialog .tretaresia-control-field.color input[type="color"] {
+    grid-column: 1;
+    grid-row: auto;
+    width: 100%;
+    height: 40px;
+    padding: 3px;
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line);
+    border-radius: 0;
+    cursor: pointer;
+}
+.tretaresia-control-dialog .tretaresia-control-panel,
+.tretaresia-control-dialog .tretaresia-control-scroll {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+.tretaresia-control-dialog .tretaresia-control-scroll {
+    min-height: 0;
+    overflow-y: auto;
+}
+.tretaresia-control-dialog button,
+.tretaresia-control-dialog select,
+.tretaresia-control-dialog input {
+    touch-action: manipulation;
+}
+
+@media (max-width: 800px) {
+    .tretaresia-module-slider { padding: .48rem .5rem .44rem; }
+    .tretaresia-module-track > .tretaresia-tab-button span {
+        font-size: .7rem;
+        letter-spacing: .12em;
+    }
+    .tretaresia-character-copy { padding-right: 0; }
+    .tretaresia-character-hero { grid-template-columns: 94px minmax(0, 1fr); }
+    .tretaresia-rank-insignia {
+        grid-column: 1 / -1;
+        justify-items: start;
+        min-width: 0;
+        max-width: none;
+        padding: .58rem .7rem;
+        text-align: left;
+        border-right: 1px solid var(--tf-line);
+        border-left: 3px solid var(--tf-gold);
+    }
+    .tretaresia-rank-insignia::before,
+    .tretaresia-rank-insignia::after { display: none; }
+}
+@media (max-width: 600px) {
+    .tretaresia-control-dialog {
+        width: calc(100vw - 16px);
+        max-height: calc(100dvh - 32px);
+    }
+    .tretaresia-control-dialog .tretaresia-control-panel {
+        max-height: calc(100dvh - 32px);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .tretaresia-module-track,
+    .tretaresia-control-dialog .tretaresia-control-panel {
+        transition: none;
+        animation: none;
+    }
+}
+
+/* ==========================================================================
+   TRETARESIA UI 7.0 — cartographic instrument, light mode, intro gate
+   ========================================================================== */
+
+.tretaresia-rpg-overlay[data-theme="light"],
+.tretaresia-control-dialog[data-theme="light"],
+#tretaresia-activity-island[data-theme="light"],
+#tretaresia-event-stack[data-theme="light"] {
+    --tf-panel: var(--tretaresia-panel, #fff);
+    --tf-goldd: color-mix(in srgb, var(--tretaresia-accent) 76%, #000);
+    --tf-field: color-mix(in srgb, #fff 62%, transparent);
+    --tf-line-soft: color-mix(in srgb, var(--tf-txt) 16%, transparent);
+    --tf-grid: color-mix(in srgb, var(--tf-gold) 14%, transparent);
+}
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-rpg-backdrop {
+    background:
+        radial-gradient(120% 70% at 50% 0, color-mix(in srgb, var(--tf-gold) 10%, transparent), transparent 62%),
+        rgba(120, 126, 136, .5);
+}
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-rpg-panel {
+    background: radial-gradient(120% 90% at 50% 0,
+        color-mix(in srgb, var(--tf-bg) 40%, #fff), var(--tf-bg));
+    box-shadow: 0 18px 52px rgba(60, 66, 78, .3);
+}
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-rpg-panel-header,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-rpg-panel-footer,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-module-slider {
+    background: color-mix(in srgb, var(--tf-bg) 55%, #fff);
+}
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-tab-list,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-character-hero,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-npc-hero {
+    background: linear-gradient(100deg, color-mix(in srgb, var(--tf-gold) 12%, transparent), transparent 52%), var(--tf-panel);
+}
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-card,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-list-card,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-quest-card,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-rank-row,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-rank-hero,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-editor,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-proficiency-section,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-scene-time,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-scene-weather,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-scene-grid article,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-progress-deck,
+.tretaresia-control-dialog[data-theme="light"] .tretaresia-control-section {
+    background: var(--tf-panel);
+}
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-vital,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-field input,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-field select,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-field textarea,
+.tretaresia-control-dialog[data-theme="light"] .tretaresia-control-field select {
+    background: #fff;
+}
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-fact-list > div,
+.tretaresia-rpg-overlay[data-theme="light"] .tretaresia-wallet {
+    background: color-mix(in srgb, var(--tf-bg) 40%, #fff);
+}
+.tretaresia-control-dialog[data-theme="light"]::backdrop { background: rgba(120, 126, 136, .55); }
+.tretaresia-control-dialog[data-theme="light"] .tretaresia-control-panel {
+    background: color-mix(in srgb, var(--tf-bg) 40%, #fff);
+    box-shadow: 0 28px 80px rgba(60, 66, 78, .34);
+}
+#tretaresia-activity-island[data-theme="light"],
+#tretaresia-event-stack[data-theme="light"] .tretaresia-event-toast {
+    background: color-mix(in srgb, var(--tf-bg) 30%, #fff);
+    box-shadow: 0 14px 38px rgba(60, 66, 78, .26);
+}
+
+.tretaresia-map-frame {
+    position: relative;
+    overflow: hidden;
+    background: var(--tf-bg);
+    border: 1px solid var(--tf-line);
+}
+.tretaresia-map-frame::before,
+.tretaresia-map-frame::after {
+    content: "";
+    position: absolute;
+    z-index: 3;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--tf-gold);
+    pointer-events: none;
+}
+.tretaresia-map-frame::before { top: 7px; left: 7px; border-right: 0; border-bottom: 0; }
+.tretaresia-map-frame::after { bottom: 7px; right: 7px; border-left: 0; border-top: 0; }
+
+.tretaresia-world-map {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    min-height: 0;
+    filter: none;
+    cursor: crosshair;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    background: var(--tf-bg);
+}
+.tretaresia-world-map.is-dragging { cursor: grabbing; }
+
+.tretaresia-map-instruments {
+    position: absolute;
+    z-index: 5;
+    left: .68rem;
+    top: .68rem;
+    display: grid;
+    gap: 0;
+    border: 1px solid var(--tf-line);
+    background: color-mix(in srgb, var(--tf-bg) 82%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+.tretaresia-map-instruments button {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: var(--tf-gold);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--tf-line-soft);
+    cursor: pointer;
+    font-size: .82rem;
+    touch-action: manipulation;
+}
+.tretaresia-map-instruments button:last-child { border-bottom: 0; }
+.tretaresia-map-instruments button:hover,
+.tretaresia-map-instruments button:focus-visible {
+    color: var(--tf-on);
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+}
+
+.tretaresia-compass-rose {
+    position: absolute;
+    z-index: 5;
+    right: .68rem;
+    top: .68rem;
+    display: grid;
+    place-items: center;
+    width: 88px;
+    height: 88px;
+    padding: 0;
+    background: radial-gradient(circle, color-mix(in srgb, var(--tf-bg) 72%, transparent), color-mix(in srgb, var(--tf-bg) 94%, transparent));
+    border: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+.tretaresia-compass-rose svg { width: 88px; height: 88px; overflow: visible; }
+.tretaresia-compass-rose .cr-dial { fill: none; stroke: var(--tf-line); stroke-width: 1; }
+.tretaresia-compass-rose .cr-inner { fill: none; stroke: var(--tf-line-soft); stroke-width: 1; stroke-dasharray: 3 4; }
+.tretaresia-compass-rose .cr-ticks path { stroke: var(--tf-gold); stroke-width: 1.4; opacity: .6; }
+.tretaresia-compass-rose .cr-n { fill: var(--tf-gold2); }
+.tretaresia-compass-rose .cr-s { fill: color-mix(in srgb, var(--tf-txt) 44%, transparent); }
+.tretaresia-compass-rose .cr-hub { fill: var(--tf-bg); stroke: var(--tf-gold); stroke-width: 1.4; }
+.tretaresia-compass-rose [data-compass-needle] { transition: transform 340ms cubic-bezier(.2, .82, .22, 1); }
+.tretaresia-compass-rose b {
+    position: absolute;
+    top: -2px;
+    color: var(--tf-gold2);
+    font-family: var(--tf-disp);
+    font-size: .5rem;
+    letter-spacing: .1em;
+}
+.tretaresia-compass-rose em {
+    position: absolute;
+    bottom: 2px;
+    padding: 1px 6px;
+    color: var(--tf-txt);
+    background: color-mix(in srgb, var(--tf-bg) 88%, transparent);
+    border: 1px solid var(--tf-line-soft);
+    font-family: var(--tf-disp);
+    font-size: .48rem;
+    font-style: normal;
+    letter-spacing: .08em;
+}
+
+.tretaresia-map-hud {
+    position: absolute;
+    z-index: 5;
+    left: .68rem;
+    bottom: 2.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+    pointer-events: none;
+}
+.tretaresia-map-hud span {
+    display: inline-flex;
+    align-items: center;
+    gap: .34rem;
+    padding: .26rem .46rem;
+    color: var(--tf-dim);
+    background: color-mix(in srgb, var(--tf-bg) 84%, transparent);
+    border: 1px solid var(--tf-line-soft);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    font-size: .52rem;
+}
+.tretaresia-map-hud i { color: var(--tf-gold); font-size: .5rem; }
+.tretaresia-map-hud b {
+    color: var(--tf-gold2);
+    font-family: var(--tf-disp);
+    font-size: .54rem;
+    letter-spacing: .08em;
+}
+
+.tretaresia-map-ping {
+    position: absolute;
+    z-index: 4;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border: 2px solid var(--tf-gold2);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: tf-map-ping 2s ease-out infinite;
+}
+.tretaresia-map-ping[hidden] { display: none; }
+@keyframes tf-map-ping {
+    from { transform: scale(.7); opacity: .9; }
+    to { transform: scale(3.6); opacity: 0; }
+}
+
+.tretaresia-map-legend {
+    position: relative;
+    z-index: 4;
+    background: color-mix(in srgb, var(--tf-bg) 92%, transparent);
+    border-top: 1px solid var(--tf-line);
+}
+.tretaresia-map-legend i { border-radius: 0; background: var(--tf-faint); }
+.tretaresia-map-legend i.known { background: var(--tf-gold); }
+.tretaresia-map-legend i.current,
+.tretaresia-map-legend i.marked { background: var(--tf-gold2); }
+.tretaresia-map-legend i.current { transform: rotate(45deg); }
+
+@media (max-width: 800px) {
+    .tretaresia-world-map { aspect-ratio: 4 / 3; }
+    .tretaresia-compass-rose,
+    .tretaresia-compass-rose svg { width: 66px; height: 66px; }
+    .tretaresia-map-instruments button { width: 40px; height: 40px; }
+    .tretaresia-map-hud { bottom: 2.4rem; }
+    .tretaresia-map-hud span:nth-child(2) { display: none; }
+}
+
+.tretaresia-intro-gate {
+    position: absolute;
+    z-index: 60;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0;
+    padding: 1.4rem;
+    overflow: hidden;
+    background: radial-gradient(110% 80% at 50% 36%, var(--tf-panel), var(--tf-bg) 60%);
+    transition: opacity 640ms ease, visibility 640ms;
+}
+.tretaresia-intro-gate.is-gone {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.tretaresia-intro-lattice {
+    position: absolute;
+    inset: -40px;
+    opacity: .42;
+    background-image:
+        linear-gradient(60deg, var(--tf-grid) 1px, transparent 1px),
+        linear-gradient(120deg, var(--tf-grid) 1px, transparent 1px);
+    background-size: 56px 96px;
+    -webkit-mask-image: radial-gradient(58% 50% at 50% 40%, #000 24%, transparent 78%);
+    mask-image: radial-gradient(58% 50% at 50% 40%, #000 24%, transparent 78%);
+}
+.tretaresia-intro-sigil {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: min(230px, 54vw);
+    aspect-ratio: 1;
+    margin-bottom: .5rem;
+}
+.tretaresia-intro-sigil > * { position: absolute; }
+.tretaresia-intro-sigil .hex {
+    width: 84%;
+    height: 94%;
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tf-gold) 16%, transparent), transparent);
+}
+.tretaresia-intro-sigil svg { width: 84%; height: 94%; }
+.tretaresia-intro-sigil polygon { fill: none; stroke: var(--tf-gold2); stroke-width: 2; }
+.tretaresia-intro-sigil .ring { border-radius: 50%; }
+.tretaresia-intro-sigil .ring-a {
+    width: 72%;
+    aspect-ratio: 1;
+    border: 1.5px solid color-mix(in srgb, var(--tf-txt) 60%, transparent);
+}
+.tretaresia-intro-sigil .ring-b {
+    width: 53%;
+    aspect-ratio: 1;
+    border: 1px dashed var(--tf-gold);
+}
+.tretaresia-intro-sigil .arc {
+    border-radius: 50%;
+    border: 3px solid transparent;
+}
+.tretaresia-intro-sigil .arc-a {
+    width: 64%;
+    aspect-ratio: 1;
+    border-top-color: var(--tf-gold2);
+    border-left-color: color-mix(in srgb, var(--tf-gold) 36%, transparent);
+    animation: tf-intro-spin 3.4s linear infinite;
+}
+.tretaresia-intro-sigil .arc-b {
+    width: 48%;
+    aspect-ratio: 1;
+    border-width: 2px;
+    border-bottom-color: color-mix(in srgb, var(--tf-txt) 66%, transparent);
+    animation: tf-intro-spin 5s linear infinite reverse;
+}
+.tretaresia-intro-sigil .core {
+    width: 21%;
+    aspect-ratio: 1;
+    transform: rotate(45deg);
+    border: 2px solid var(--tf-gold2);
+    animation: tf-intro-pulse 2.2s ease-in-out infinite;
+}
+@keyframes tf-intro-spin { to { transform: rotate(360deg); } }
+@keyframes tf-intro-pulse {
+    0%, 100% { box-shadow: 0 0 12px color-mix(in srgb, var(--tf-gold) 40%, transparent); }
+    50% { box-shadow: 0 0 30px color-mix(in srgb, var(--tf-gold) 72%, transparent); }
+}
+.tretaresia-intro-gate strong {
+    font-family: var(--tf-disp);
+    font-weight: 900;
+    font-size: clamp(1.3rem, 7vw, 2.3rem);
+    letter-spacing: clamp(.1em, 1.2vw, .3em);
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--tf-gold2) 34%, var(--tf-txt)), var(--tf-gold2) 56%, var(--tf-goldd));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.tretaresia-intro-gate small {
+    margin-top: .5rem;
+    color: var(--tf-dim);
+    font-size: .62rem;
+    letter-spacing: .2em;
+    text-align: center;
+}
+.tretaresia-intro-rule {
+    width: 150px;
+    height: 1px;
+    margin: .8rem 0 1.1rem;
+    background: linear-gradient(90deg, transparent, var(--tf-gold2), transparent);
+}
+.tretaresia-intro-load {
+    display: grid;
+    justify-items: center;
+    gap: .5rem;
+    width: min(280px, 82vw);
+}
+.tretaresia-intro-load > span:first-child {
+    color: var(--tf-gold2);
+    font-family: var(--tf-disp);
+    font-size: .55rem;
+    letter-spacing: .18em;
+    text-align: center;
+}
+.tretaresia-intro-load .bar {
+    position: relative;
+    width: 100%;
+    height: 3px;
+    overflow: hidden;
+    background: var(--tf-line-soft);
+}
+.tretaresia-intro-load .bar i {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--tf-goldd), var(--tf-gold2), color-mix(in srgb, var(--tf-gold2) 40%, var(--tf-txt)));
+    box-shadow: 0 0 12px color-mix(in srgb, var(--tf-gold) 70%, transparent);
+    transition: width 180ms linear;
+}
+.tretaresia-intro-load .pct {
+    color: var(--tf-faint);
+    font-family: var(--tf-disp);
+    font-size: .5rem;
+    letter-spacing: .16em;
+}
+.tretaresia-intro-gate > button {
+    position: absolute;
+    right: max(1.4rem, env(safe-area-inset-right));
+    bottom: max(1.6rem, calc(env(safe-area-inset-bottom) + 1rem));
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 42px;
+    padding: 0 1.2rem;
+    color: var(--tf-gold2);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tf-gold) 12%, transparent), transparent);
+    border: 1px solid var(--tf-line);
+    cursor: pointer;
+    font-family: var(--tf-disp);
+    font-weight: 700;
+    font-size: .6rem;
+    letter-spacing: .24em;
+    touch-action: manipulation;
+}
+.tretaresia-intro-gate > button:hover,
+.tretaresia-intro-gate > button:focus-visible {
+    color: var(--tf-on);
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+}
+.tretaresia-rpg-overlay.is-open:not(.is-ready) .tretaresia-app-shell { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    .tretaresia-module-track,
+    .tretaresia-control-dialog .tretaresia-control-panel,
+    .tretaresia-intro-gate,
+    .tretaresia-intro-sigil .arc,
+    .tretaresia-intro-sigil .core,
+    .tretaresia-map-ping,
+    .tretaresia-compass-rose [data-compass-needle] {
+        animation: none;
+        transition: none;
+    }
+    .tretaresia-rpg-overlay.is-opening .tretaresia-rpg-panel-body::after { display: none; }
+}
