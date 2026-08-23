@@ -19,6 +19,7 @@ A persistent, responsive SillyTavern RPG interface built specifically for the wo
 - Broad action-based EXP tracking for studying, learning, training, crafting practice, combat, kills, discoveries, quests, and other genuine growth; level rollover happens when EXP is exactly equal to or greater than the current requirement.
 - Main-chat system notifications for EXP, learning, training, combat, kills, level-ups, mission/quest receipt and status changes, and money changes. Every tracked currency notification identifies why money was gained or spent, with configurable event types and auto-dismiss time.
 - Inventory, quests, NPC Codex, relationship meters, abilities, revealed stats, private diary entries, contacts, physical letters, and local-device music playlists.
+- Friendly-only NPC Codex plus per-chat Party, paid Guild, and Household rosters. Parties are free; creating a Guild costs 10 Gold; Household members can be assigned roles such as partner, spouse, child, parent, sibling, or guardian.
 - English and Thai interface/action support, hidden/visible/draft action delivery, mobile safe-area layout, touch controls, and configurable appearance.
 - Automatic same-character continuity when starting a new chat, including same-device copying for locally stored NPC portraits and music.
 - Portable JSON state export/import from the interface header. Player state and the embedded player portrait travel with the file; device-only NPC media stays local.
@@ -39,6 +40,10 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 4. Reload SillyTavern if prompted.
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
+
+## Version 0.9.0
+
+Adds the social systems layer: friendly NPC filtering, Party create/invite/dissolve, Guild create/invite/dissolve with a 10 Gold creation fee, three-denomination currency display, and a Household family roster. Hostile NPCs remain story encounters but are excluded from the visible NPC Codex and social invitation lists.
 
 ## Version 0.8.0
 

@@ -12,6 +12,9 @@ const PATCH_TAG_PATTERN = /<tretaresia_patch>\s*([\s\S]*?)\s*<\/tretaresia_patch
 const RANKS = ['Rookie', 'Basic', 'Intermediate', 'Ember', 'Custom Rank'];
 const MASTERY = ['Dormant', 'Initiate', 'Practiced', 'Adept', 'Expert', 'Master', 'Grandmaster', 'Mythic'];
 const DUNGEON_RANKS = ['Unranked', 'E-', 'E', 'E+', 'D-', 'D', 'D+', 'C-', 'C', 'C+', 'B-', 'B', 'B+', 'A-', 'A', 'A+', 'S-', 'S', 'S+', 'SS'];
+const GUILD_CREATION_FEE = Object.freeze({ gold: 10, silver: 0, copper: 0 });
+const HOUSEHOLD_ROLES = ['Partner', 'Spouse', 'Child', 'Mother', 'Father', 'Sibling', 'Relative', 'Guardian', 'Other'];
+const HOSTILE_NPC_TERMS = new Set(['hostile', 'enemy', 'enemies', 'foe', 'foes', 'opponent', 'opponents', 'antagonist', 'antagonists', 'aggressor', 'aggressors', 'villain', 'villains', 'threat', 'threatening', 'hostile npc', 'enemy npc', 'dangerous enemy']);
 const MAGIC_DISCIPLINES = [
     { id: 'falseMagic', name: 'False Magic', icon: 'fa-solid fa-wand-sparkles', tone: '#789ac7' },
     { id: 'trueMagic', name: 'True Magic', icon: 'fa-solid fa-hand-sparkles', tone: '#d8bb72' },
@@ -349,13 +352,14 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.8.0';
-const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'map', 'npcs', 'mail', 'music'];
+const LAUNCHER_BIND_VERSION = '0.9.0';
+const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
     inventory: ['fa-solid fa-box-open', 'Inventory'], skills: ['fa-solid fa-layer-group', 'Skills'],
     techniques: ['fa-solid fa-fire-flame-curved', 'Powers'], quests: ['fa-solid fa-scroll', 'Quests'],
     rank: ['fa-solid fa-medal', 'Rank'], map: ['fa-solid fa-map', 'World Map'],
+    groups: ['fa-solid fa-people-group', 'Party & Guild'], household: ['fa-solid fa-house-chimney-user', 'Household'],
     npcs: ['fa-solid fa-users', 'NPCs'], mail: ['fa-solid fa-envelope', 'Mailbox'], music: ['fa-solid fa-music', 'Music'],
 };
 let activeTabIndex = 0;
@@ -368,6 +372,7 @@ const TRANSLATIONS = {
         'Connecting to the active role-play...': 'กำลังเชื่อมต่อกับโรลเพลย์ปัจจุบัน...',
         Ready: 'พร้อม', Status: 'สถานะ', Scene: 'ฉาก', Inventory: 'คลังสิ่งของ', Skills: 'ทักษะ', Quests: 'ภารกิจ', Rank: 'อันดับ', 'World Map': 'แผนที่โลก',
         Music: 'เพลง', Mailbox: 'กล่องจดหมาย', Contacts: 'รายชื่อ', Letters: 'จดหมาย', NPCs: 'ตัวละคร NPC', 'NPC Codex': 'สารบบ NPC', Techniques: 'วิชา',
+        'Party & Guild': 'ปาร์ตี้และกิลด์', Household: 'ครอบครัว', 'Friendly NPCs': 'NPC ฝ่ายมิตร', 'Choose a friendly NPC': 'เลือก NPC ฝ่ายมิตร', Member: 'สมาชิก', party: 'ปาร์ตี้', guilds: 'กิลด์',
         'Waiting for chat': 'กำลังรอแชต', 'Sync latest turn': 'ซิงก์เหตุการณ์ล่าสุด', 'System interface': 'ข้อมูลระบบ',
         'Current persona': 'ตัวตนปัจจุบัน', 'Guild rank': 'อันดับกิลด์', 'Vital status': 'สถานะพลังชีวิต', Identity: 'ข้อมูลส่วนตัว',
         Health: 'พลังชีวิต', Mana: 'มานา', 'Aura / Mana': 'ออร่า / มานา', Stamina: 'พละกำลัง', Race: 'เผ่าพันธุ์', Age: 'อายุ', Guild: 'กิลด์', Party: 'ปาร์ตี้',
@@ -429,6 +434,10 @@ const TRANSLATIONS = {
         'Add NPC': 'เพิ่ม NPC', 'Edit NPC': 'แก้ไข NPC', 'Save NPC': 'บันทึก NPC', Faction: 'ฝ่าย', Alignment: 'จุดยืน', Occupation: 'อาชีพ', Gender: 'เพศ',
         'Current location': 'ตำแหน่งปัจจุบัน', 'Last seen': 'พบล่าสุด', Affection: 'ความชอบพอ', Trust: 'ความไว้ใจ', Loyalty: 'ความภักดี', Fear: 'ความกลัว', Corruption: 'ความเสื่อมทราม', Lust: 'แรงปรารถนา',
         'Relationship state': 'สถานะความสัมพันธ์', Partner: 'คู่ครอง', 'Marital status': 'สถานภาพ', Children: 'บุตร', 'Family & bonds': 'ครอบครัวและสายสัมพันธ์',
+        'Party management': 'จัดการปาร์ตี้', 'Guild management': 'จัดการกิลด์', 'Household management': 'จัดการครอบครัว', 'Create party': 'สร้างปาร์ตี้', 'Dissolve party': 'ยุบปาร์ตี้', 'Invite to party': 'เชิญเข้าปาร์ตี้', 'Create guild': 'สร้างกิลด์', 'Dissolve guild': 'ยุบกิลด์', 'Invite to guild': 'เชิญเข้ากิลด์',
+        'Party name': 'ชื่อปาร์ตี้', 'Guild name': 'ชื่อกิลด์', 'Guild description': 'รายละเอียดกิลด์', Members: 'สมาชิก', Leader: 'หัวหน้า', 'No active party': 'ยังไม่มีปาร์ตี้', 'No guilds yet': 'ยังไม่มีกิลด์', 'No household members': 'ยังไม่มีสมาชิกในครอบครัว',
+        'Guild creation fee': 'ค่าก่อตั้งกิลด์', 'Creation fee': 'ค่าก่อตั้ง', 'Guild treasury': 'คลังกิลด์', 'Current balance': 'ยอดเงินปัจจุบัน', 'Not enough currency': 'เงินไม่พอ', 'Friendly NPCs only': 'เชิญได้เฉพาะ NPC ฝ่ายมิตร', 'Only friendly NPCs appear here.': 'หน้านี้จะแสดงเฉพาะ NPC ฝ่ายมิตรเท่านั้น', 'Hostile NPCs are excluded from the list.': 'NPC ฝ่ายศัตรูจะไม่แสดงในรายชื่อนี้',
+        'Household name': 'ชื่อครอบครัว', 'Add household member': 'เพิ่มสมาชิกครอบครัว', 'Family role': 'บทบาทในครอบครัว', 'Remove member': 'นำสมาชิกออก', 'Save household': 'บันทึกครอบครัว', 'Dissolve this party?': 'ต้องการยุบปาร์ตี้นี้หรือไม่?', 'Dissolve this guild?': 'ต้องการยุบกิลด์นี้หรือไม่?',
         'Core stats': 'ค่าสถานะหลัก', Strength: 'พละกำลัง', Agility: 'ความคล่องตัว', Intelligence: 'สติปัญญา', Endurance: 'ความอดทน',
         Abilities: 'สกิลและความสามารถ', 'Add ability': 'เพิ่มความสามารถ', 'Ability name': 'ชื่อความสามารถ', 'Ability level': 'ระดับความสามารถ',
         Diary: 'ไดอารี', 'Add diary entry': 'เพิ่มบันทึกไดอารี', Thought: 'ความคิด', Mood: 'อารมณ์', 'Custom meters': 'ค่าสถานะกำหนดเอง', 'Add custom meter': 'เพิ่มค่ากำหนดเอง',
@@ -580,6 +589,7 @@ function defaultState() {
         npcs: [],
         contacts: [],
         letters: [],
+        social: defaultSocialState(),
         music: { tracks: [], currentId: '', repeat: false, shuffle: false },
         journal: [],
         syncCursor: { user: null, assistant: null },
@@ -723,6 +733,112 @@ function npcDiaryEntry(value) {
     };
 }
 
+function defaultSocialState() {
+    return {
+        party: null,
+        guilds: [],
+        household: { id: uid(), name: 'Household', members: [] },
+    };
+}
+
+function socialMember(value, fallback = {}) {
+    if (!value || typeof value !== 'object') return null;
+    const name = text(value.name, text(fallback.name, '', 140), 140);
+    if (!name) return null;
+    return {
+        id: text(value.id, text(fallback.id, uid(), 100), 100),
+        npcId: text(value.npcId, text(fallback.npcId, '', 100), 100),
+        name,
+        role: text(value.role, text(fallback.role, 'Other', 80), 80),
+        notes: text(value.notes, text(fallback.notes, '', 400), 400),
+        addedAt: text(value.addedAt, text(fallback.addedAt, new Date().toISOString(), 60), 60),
+    };
+}
+
+function partyProfile(value, fallback = null) {
+    if (!value || typeof value !== 'object' || !text(value.name, text(fallback?.name))) return null;
+    const memberIds = [...new Set((Array.isArray(value.memberIds) ? value.memberIds : fallback?.memberIds || [])
+        .map(entry => text(entry, '', 100)).filter(entry => entry && entry !== 'player'))].slice(0, 24);
+    return {
+        id: text(value.id, text(fallback?.id, uid(), 100), 100),
+        name: text(value.name, text(fallback?.name, 'Unnamed Party', 140), 140),
+        leaderId: text(value.leaderId, text(fallback?.leaderId, 'player', 100), 100),
+        memberIds,
+        createdAt: text(value.createdAt, text(fallback?.createdAt, new Date().toISOString(), 60), 60),
+    };
+}
+
+function guildProfile(value, fallback = {}) {
+    if (!value || typeof value !== 'object' || !text(value.name, text(fallback.name))) return null;
+    const memberIds = [...new Set((Array.isArray(value.memberIds) ? value.memberIds : fallback.memberIds || [])
+        .map(entry => text(entry, '', 100)).filter(entry => entry && entry !== 'player'))].slice(0, 100);
+    const treasury = value.treasury && typeof value.treasury === 'object' ? value.treasury : fallback.treasury || {};
+    return {
+        id: text(value.id, text(fallback.id, uid(), 100), 100),
+        name: text(value.name, text(fallback.name, 'Unnamed Guild', 140), 140),
+        description: text(value.description, text(fallback.description, '', 600), 600),
+        rank: text(value.rank, text(fallback.rank, 'Unranked', 80), 80),
+        leaderId: text(value.leaderId, text(fallback.leaderId, 'player', 100), 100),
+        memberIds,
+        treasury: {
+            gold: number(treasury.gold, number(fallback.treasury?.gold, 0), 0, 999999999),
+            silver: number(treasury.silver, number(fallback.treasury?.silver, 0), 0, 999999999),
+            copper: number(treasury.copper, number(fallback.treasury?.copper, 0), 0, 999999999),
+        },
+        createdAt: text(value.createdAt, text(fallback.createdAt, new Date().toISOString(), 60), 60),
+    };
+}
+
+function householdProfile(value, fallback = {}) {
+    const source = value && typeof value === 'object' ? value : {};
+    const base = fallback && typeof fallback === 'object' ? fallback : {};
+    const fallbackMembers = Array.isArray(base.members) ? base.members : [];
+    const members = (Array.isArray(source.members) ? source.members : fallbackMembers)
+        .map(entry => socialMember(entry, fallbackMembers.find(current => current.id === entry?.id || current.npcId === entry?.npcId) || {}))
+        .filter(Boolean).slice(0, 100);
+    return {
+        id: text(source.id, text(base.id, uid(), 100), 100),
+        name: text(source.name, text(base.name, 'Household', 140), 140),
+        members,
+    };
+}
+
+function isFriendlyNpc(entry) {
+    if (!entry || entry.isHostile === true || entry.hostile === true) return false;
+    const source = [entry.relationship, entry.alignment, entry.relationshipState, entry.faction]
+        .map(value => text(value, '', 300).toLocaleLowerCase()).filter(Boolean).join(' ');
+    if (!source) return true;
+    if (/\b(not hostile|no hostility|friendly|friend|ally|allied|trusted|family|partner|lover|spouse|child|parent)\b/i.test(source)) return true;
+    return ![...HOSTILE_NPC_TERMS].some(term => source.includes(term));
+}
+
+function friendlyNpcs(state) {
+    return (Array.isArray(state?.npcs) ? state.npcs : []).filter(isFriendlyNpc);
+}
+
+function resolveFriendlyNpc(state, value) {
+    const id = text(value?.npcId, text(value?.id, typeof value === 'string' ? value : '', 100), 100);
+    const name = text(value?.npcName, text(value?.name, typeof value === 'string' ? value : '', 140), 140).toLocaleLowerCase();
+    return friendlyNpcs(state).find(entry => (id && entry.id === id) || (name && entry.name.toLocaleLowerCase() === name)) || null;
+}
+
+function socialMemberName(state, id) {
+    if (id === 'player') return state.player.name || 'Player';
+    return state.npcs.find(entry => entry.id === id)?.name || 'Unknown member';
+}
+
+function currencyLabel(value) {
+    const currency = value || {};
+    const parts = [
+        [currency.gold, 'Gold'], [currency.silver, 'Silver'], [currency.copper, 'Copper'],
+    ].filter(([amount]) => Number(amount) > 0).map(([amount, label]) => `${Number(amount)} ${label}`);
+    return parts.length ? parts.join(' · ') : '0 Copper';
+}
+
+function canAffordCurrency(balance, cost) {
+    return ['gold', 'silver', 'copper'].every(key => number(balance?.[key], 0, 0, 999999999) >= number(cost?.[key], 0, 0, 999999999));
+}
+
 function npcProfile(value, fallback = {}) {
     if (!value || typeof value !== 'object' || !text(value.name, text(fallback.name))) return null;
     const baseFrame = fallback.portraitView || defaultState().player.portraitView;
@@ -738,7 +854,8 @@ function npcProfile(value, fallback = {}) {
         race: text(value.race, text(fallback.race, 'Unknown', 80), 80), age: text(value.age, text(fallback.age, '', 40), 40),
         gender: text(value.gender, text(fallback.gender, '', 60), 60), occupation: text(value.occupation, text(fallback.occupation, '', 120), 120),
         faction: text(value.faction, text(fallback.faction, text(value.affiliation, text(fallback.affiliation, '', 120), 120), 120), 120),
-        alignment: text(value.alignment, text(fallback.alignment, '', 100), 100), relationship: text(value.relationship, text(fallback.relationship, 'Acquaintance', 100), 100),
+        alignment: text(value.alignment, text(fallback.alignment, '', 100), 100), isHostile: Boolean(value.isHostile ?? value.hostile ?? fallback.isHostile ?? fallback.hostile),
+        relationship: text(value.relationship, text(fallback.relationship, 'Acquaintance', 100), 100),
         relationshipState: text(value.relationshipState, text(fallback.relationshipState, '', 160), 160),
         affection: number(value.affection, number(fallback.affection, 0, 0, 100), 0, 100), trust: number(value.trust, number(fallback.trust, 0, 0, 100), 0, 100),
         loyalty: number(value.loyalty, number(fallback.loyalty, 0, 0, 100), 0, 100), fear: number(value.fear, number(fallback.fear, 0, 0, 100), 0, 100),
@@ -1036,6 +1153,26 @@ function normalize(candidate, base = defaultState()) {
         else if (entry.contactId) entry.contactId = '';
     });
     result.npcs = result.npcs.slice(0, 200);
+    const socialSource = source.social && typeof source.social === 'object' ? source.social : {};
+    const legacyParty = !socialSource.party && text(player.party, '', 140) && !['Solo', 'None'].includes(text(player.party, '', 140))
+        ? { name: player.party } : null;
+    const friendlyIds = new Set(friendlyNpcs(result).map(entry => entry.id));
+    const cleanSocialIds = values => [...new Set((Array.isArray(values) ? values : [])
+        .map(value => text(value, '', 100)).filter(value => value === 'player' || friendlyIds.has(value)))].slice(0, 100);
+    const party = partyProfile(socialSource.party || legacyParty, result.social.party);
+    if (party) party.memberIds = cleanSocialIds(party.memberIds).filter(value => value !== 'player');
+    const sourceGuilds = Array.isArray(socialSource.guilds) ? socialSource.guilds : result.social.guilds;
+    const guildsByName = new Map();
+    sourceGuilds.map((value, index) => guildProfile(value, result.social.guilds[index] || {})).filter(Boolean).forEach(entry => {
+        entry.memberIds = cleanSocialIds(entry.memberIds).filter(value => value !== 'player');
+        const key = entry.name.toLocaleLowerCase();
+        guildsByName.set(key, guildsByName.has(key) ? { ...guildsByName.get(key), ...entry, id: guildsByName.get(key).id } : entry);
+    });
+    const household = householdProfile(socialSource.household, result.social.household);
+    household.members = household.members.filter(entry => !entry.npcId || friendlyIds.has(entry.npcId));
+    result.social = { party, guilds: [...guildsByName.values()].slice(0, 30), household };
+    if (party) result.player.party = party.name;
+    if (result.social.guilds.length) result.player.guild = result.social.guilds[0].name;
     if (Array.isArray(source.letters)) {
         const signatures = new Set();
         result.letters = source.letters.map(letter).filter(Boolean).filter(entry => {
@@ -1263,7 +1400,8 @@ function aiState(state) {
     delete safePlayer.portrait;
     delete safePlayer.portraitView;
     const recentTranscript = SillyTavern.getContext().chat.slice(-6).map(message => text(message?.mes, '', 4000)).join(' ').toLocaleLowerCase();
-    const recentNpcs = [...state.npcs].sort((a, b) => {
+    const friendly = friendlyNpcs(state);
+    const recentNpcs = [...friendly].sort((a, b) => {
         const aActive = recentTranscript.includes(a.name.toLocaleLowerCase()) ? 1 : 0;
         const bActive = recentTranscript.includes(b.name.toLocaleLowerCase()) ? 1 : 0;
         return bActive - aActive || String(b.updatedAt).localeCompare(String(a.updatedAt));
@@ -1280,7 +1418,12 @@ function aiState(state) {
         skills: state.skills.map(({ id, name, rank, type }) => ({ id, name, rank, type })),
         proficiencies: state.proficiencies,
         quests: state.quests,
-        npcIndex: state.npcs.slice(0, 100).map(({ id, name, relationship, location, faction }) => ({ id, name, relationship, location, faction })),
+        social: {
+            party: state.social.party ? { id: state.social.party.id, name: state.social.party.name, leaderId: state.social.party.leaderId, memberIds: state.social.party.memberIds } : null,
+            guilds: state.social.guilds.map(({ id, name, description, rank, leaderId, memberIds, treasury }) => ({ id, name, description, rank, leaderId, memberIds, treasury })),
+            household: { id: state.social.household.id, name: state.social.household.name, members: state.social.household.members },
+        },
+        npcIndex: friendly.slice(0, 100).map(({ id, name, relationship, location, faction }) => ({ id, name, relationship, location, faction })),
         npcs: recentNpcs.map(entry => ({
             id: entry.id, name: entry.name, title: entry.title, race: entry.race, age: entry.age, faction: entry.faction,
             relationship: entry.relationship, relationshipState: entry.relationshipState, affection: entry.affection,
@@ -1307,7 +1450,8 @@ function patchInstructions() {
     return [
         'After the role-play reply, append one invisible HTML comment only when confirmed state changed:',
         '<!--tretaresia_patch:{"ops":[["upsert","quests",{"id":"academy-escort","name":"Escort the Academy Caravan","type":"Mission","status":"Active","objective":"Protect the caravan until it reaches Eastwatch","reward":"12 silver","giver":"Quartermaster Lysa","source":"Great Academy mission board","progress":0}],["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}]],"summary":"Mission, training, payment, and combat progress recorded."}-->',
-        'Allowed verbs: set or inc for scalar paths; upsert or delete for inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters; set or inc npcValues; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
+        'Allowed verbs: set or inc for scalar paths; upsert or delete for inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers, guildMembers, and householdMembers; set or inc npcValues; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
+        'Party, Guild, and Household rules: The player is always the leader of a party or guild created from the UI unless the story explicitly confirms a leadership change. Party membership is free; guild creation requires the configured creation fee already deducted by the player-facing system. Use the established gold, silver, and copper denominations and never invent an exchange rate. Record confirmed invitations, departures, dissolutions, family roles, marriage, children, parents, guardians, and other household changes in the social state. A Household is the player\'s family roster, not a generic faction.',
         'Use canonical paths shown in the state JSON. For a new incoming physical letter include contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not a letter.',
         'Create or update a named NPC dossier with an upsert on npcs only when that NPC becomes relevant or a confirmed fact changes. Use partial NPC objects and preserve the canonical id from npcIndex. When a relationship becomes a correspondence, also upsert contacts with npcId; do not make every incidental NPC a contact.',
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. NPC portraits and portrait framing are local-only and forbidden in patches.',
@@ -1323,7 +1467,7 @@ function patchInstructions() {
         'Dungeon and rank rules: dungeonRank must be one of Unranked, E-, E, E+, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+, S-, S, S+, SS. Adventurer ranks are Rookie, Basic, Intermediate, Ember, and Custom Rank; a Custom Rank name is individually invented by an assessor and should be recorded in progression.customRankName.',
         'Currency rules: the Central Continent generally shares a common currency, but other regions and non-human lands may use different money. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
-        'NPC update rules: for every named NPC who directly participates, consider relationship, location, lastSeen, abilities, custom meters, diary, and revealed stats. A substantive friendly/helpful exchange may change affection or trust by 1-3; hostility, deception, fear, romance, loyalty, or corruption should adjust only the relevant meters in proportion to what actually occurred. Use ["inc","npcValues",{"npcId":"...","field":"trust","amount":2}] for deltas or ["set","npcValues",{"npcId":"...","field":"stats.level","value":12}] for revealed absolute values. Valid relationship fields are affection, trust, loyalty, fear, corruption, lust. Valid stat fields are stats.level, stats.rank, stats.hp, stats.mp, stats.stamina, stats.strength, stats.agility, stats.intelligence, stats.endurance. Zero numeric NPC core stats mean unknown, not literal zero. Conversation alone does not increase NPC level or combat stats.',
+        'NPC update rules: for every named friendly NPC who directly participates, consider relationship, location, lastSeen, abilities, custom meters, diary, and revealed stats. A substantive friendly/helpful exchange may change affection or trust by 1-3; hostility, deception, fear, romance, loyalty, or corruption should adjust only the relevant meters in proportion to what actually occurred. Use ["inc","npcValues",{"npcId":"...","field":"trust","amount":2}] for deltas or ["set","npcValues",{"npcId":"...","field":"stats.level","value":12}] for revealed absolute values. Valid relationship fields are affection, trust, loyalty, fear, corruption, lust. Valid stat fields are stats.level, stats.rank, stats.hp, stats.mp, stats.stamina, stats.strength, stats.agility, stats.intelligence, stats.endurance. Zero numeric NPC core stats mean unknown, not literal zero. Conversation alone does not increase NPC level or combat stats. Hostile, enemy, foe, antagonist, villain, aggressor, or threat NPCs must not be added to the visible NPC Codex, party invitations, guild invitations, or household roster; keep hostile encounters in the story only.',
         'Track the active scene when confirmed: time, phase, day/dayName, continent, region, place, location detail, exact world mapX/mapY coordinates, compass heading, scene position, weather, and temperature. Named atlas destinations already provide exact coordinates in state; for newly discovered nearby places use a reasonable nearby coordinate and keep it consistent. Do not invent weather or temperature when the reply provides no evidence.',
         'Maintain a sparse overhead local map only from confirmed or strongly implied spatial facts. Create a sceneMaps record, then its sceneFloors, sceneRooms, and sceneConnections. Room coordinates use x 0-100, y 0-70, width 8-70, height 7-50. Reveal or add rooms gradually; never invent a complete unseen building. Use canonical mapId/floorId/room ids, set the active ids and playerRoomId as the player moves, and preserve all locked maps, rooms, and connections.',
         'Handle all story genres and mature or NSFW scenes neutrally. Do not censor, rewrite, omit, or classify confirmed state merely because the scene is adult; follow the active SillyTavern, model, and provider settings.',
@@ -1338,7 +1482,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
     lines.push('World canon: about one thousand years ago the Great War shattered the land and opened the oceans; hero Ars died and the Primordial Demon was sealed in a timeless dimension. Civilizations later rebuilt an uneasy harmony while war, invasion, prejudice, slavery, crime, kindness and cruelty continued together. The Great Academy charges steep tuition and admits every race, though prejudice remains. Human entry into the Great Forest is taboo and may bring punishment upon an entire family. Khaduzar is marked by the colossal stone hand gripping its own wrist. Drinovia plants the weapons and remains of the fallen where they died. The North can fall below -300 degrees. Baluguria is an exile, slave, gambling, pleasure-trade and underworld center.');
     if (includeState) {
         lines.push('Canonical role-play state. Preserve it unless the story confirms a change.');
-        lines.push('Current scene, location, inventory, ranks, conditions, skills, quests, NPC dossiers, contacts, and physical letters are established facts.');
+        lines.push('Current scene, location, inventory, ranks, conditions, skills, quests, NPC dossiers, contacts, physical letters, party, guilds, currency, and Household members are established facts. The NPC Codex and social invitations contain friendly NPCs only; hostile NPCs are excluded from those lists.');
         lines.push(JSON.stringify(aiState(state)));
     }
     if (track) lines.push(patchInstructions());
@@ -2101,6 +2245,8 @@ function renderAll(state = getState()) {
     renderTechniques(overlay.querySelector('[data-panel="techniques"]'), state);
     renderQuests(overlay.querySelector('[data-panel="quests"]'), state);
     renderRank(overlay.querySelector('[data-panel="rank"]'), state);
+    renderGroups(overlay.querySelector('[data-panel="groups"]'), state);
+    renderHousehold(overlay.querySelector('[data-panel="household"]'), state);
     renderMap(overlay.querySelector('[data-panel="map"]'), state);
     renderNpcs(overlay.querySelector('[data-panel="npcs"]'), state);
     renderMailbox(overlay.querySelector('[data-panel="mail"]'), state);
@@ -2906,18 +3052,69 @@ function npcMeterView(label, value, tone = 'accent') {
         <div><i style="width:${value}%"></i></div></article>`;
 }
 
+function socialNpcOptions(state, placeholder = 'Choose a friendly NPC') {
+    const options = friendlyNpcs(state).map(entry => `<option value="${html(entry.id)}">${html(entry.name)} · ${html(entry.relationship)}</option>`).join('');
+    return `<option value="">${html(tr(placeholder))}</option>${options}`;
+}
+
+function socialMemberCards(state, memberIds, removeAction = '', groupId = '') {
+    const ids = ['player', ...(memberIds || []).filter(id => id !== 'player')];
+    return ids.length ? ids.map(id => `<article class="tretaresia-social-member${id === 'player' ? ' is-player' : ''}">
+        <span class="tretaresia-social-member-icon"><i class="fa-solid ${id === 'player' ? 'fa-user' : 'fa-user-astronaut'}"></i></span>
+        <span><strong>${html(socialMemberName(state, id))}</strong><small>${html(id === 'player' ? tr('Leader') : (state.npcs.find(entry => entry.id === id)?.relationship || tr('Member')))}</small></span>
+        ${removeAction && id !== 'player' ? `<button type="button" data-action="${removeAction}" data-id="${html(id)}"${groupId ? ` data-group-id="${html(groupId)}"` : ''} title="${html(tr('Remove member'))}"><i class="fa-solid fa-user-minus"></i></button>` : '<i class="fa-solid fa-check social-member-check"></i>'}
+    </article>`).join('') : `<div class="tretaresia-social-empty">${html(tr('No household members'))}</div>`;
+}
+
+function renderGroups(panel, state) {
+    if (!panel) return;
+    const party = state.social.party;
+    const guilds = state.social.guilds;
+    const partyMarkup = party ? `<article class="tretaresia-social-card tretaresia-party-card">
+        <header><div><span class="tretaresia-eyebrow">${html(tr('Party management'))}</span><h4>${html(party.name)}</h4></div><button type="button" class="tretaresia-danger-button" data-action="dissolve-party"><i class="fa-solid fa-xmark"></i>${html(tr('Dissolve party'))}</button></header>
+        <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'ปาร์ตี้ไม่มีค่าก่อตั้ง สมาชิกทำงานร่วมกันในแชตปัจจุบัน' : 'Party membership is free and follows the current role-play chat.')}</p>
+        <div class="tretaresia-social-member-list">${socialMemberCards(state, party.memberIds, 'remove-party-member')}</div>
+        <form data-form="party-invite" class="tretaresia-social-invite"><input type="hidden" name="partyId" value="${html(party.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to party'))}</button></form>
+    </article>` : `<article class="tretaresia-social-card"><header><div><span class="tretaresia-eyebrow">${html(tr('Party management'))}</span><h4>${html(tr('No active party'))}</h4></div><i class="fa-solid fa-people-group tretaresia-social-card-icon"></i></header>
+        <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'สร้างปาร์ตี้เพื่อรวม NPC ฝ่ายมิตรไว้ร่วมเดินทางหรือทำภารกิจ' : 'Create a party to organize friendly NPCs for travel and missions.')}</p>
+        <form data-form="party-create" class="tretaresia-social-form">${input('Party name', 'name', '')}<button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-plus"></i>${html(tr('Create party'))}</button></form>
+    </article>`;
+    const guildCards = guilds.length ? guilds.map(guild => `<article class="tretaresia-social-card tretaresia-guild-card">
+        <header><div><span class="tretaresia-eyebrow">${html(tr('Guild management'))}</span><h4>${html(guild.name)}</h4><small>${html(guild.rank)} · ${guild.memberIds.length + 1} ${html(tr('Members').toLowerCase())}</small></div><button type="button" class="tretaresia-danger-button" data-action="dissolve-guild" data-id="${html(guild.id)}"><i class="fa-solid fa-xmark"></i>${html(tr('Dissolve guild'))}</button></header>
+        ${guild.description ? `<p class="tretaresia-social-description">${html(guild.description)}</p>` : ''}<div class="tretaresia-social-treasury"><span><i class="fa-solid fa-coins"></i>${html(tr('Guild treasury'))}</span><strong>${html(currencyLabel(guild.treasury))}</strong></div>
+        <div class="tretaresia-social-member-list">${socialMemberCards(state, guild.memberIds, 'remove-guild-member', guild.id)}</div>
+        <form data-form="guild-invite" class="tretaresia-social-invite"><input type="hidden" name="guildId" value="${html(guild.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to guild'))}</button></form>
+    </article>`).join('') : `<article class="tretaresia-social-card tretaresia-social-empty-card"><i class="fa-solid fa-landmark-dome"></i><strong>${html(tr('No guilds yet'))}</strong><p>${html(getSettings().language === 'th' ? 'กิลด์ต้องเสียค่าก่อตั้งเป็นเงิน 10 เหรียญทอง' : 'A guild costs 10 gold to establish.')}</p></article>`;
+    panel.innerHTML = `${heading('Party & Guild', `${party ? 1 : 0} ${tr('party')} · ${guilds.length} ${tr('guilds')}`, 'fa-solid fa-people-group')}
+        <p class="tretaresia-social-note"><i class="fa-solid fa-circle-info"></i>${html(tr('Friendly NPCs only'))} · ${html(tr('Hostile NPCs are excluded from the list.'))}</p>
+        <div class="tretaresia-social-grid">${partyMarkup}<section class="tretaresia-social-stack"><div class="tretaresia-social-subheading"><span><i class="fa-solid fa-landmark"></i>${html(tr('Guild management'))}</span><small>${html(tr('Current balance'))}: ${html(currencyLabel(state.progression.currency))}</small></div>
+        <article class="tretaresia-social-card tretaresia-guild-create"><form data-form="guild-create" class="tretaresia-social-form">${input('Guild name', 'name', '')}${input('Guild description', 'description', '')}<div class="tretaresia-fee-line"><span>${html(tr('Guild creation fee'))}</span><strong>${html(currencyLabel(GUILD_CREATION_FEE))}</strong></div><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-plus"></i>${html(tr('Create guild'))}</button></form></article>${guildCards}</section></div>`;
+}
+
+function renderHousehold(panel, state) {
+    if (!panel) return;
+    const household = state.social.household;
+    const members = household.members.length ? household.members.map(member => `<article class="tretaresia-household-member"><span class="tretaresia-social-member-icon"><i class="fa-solid fa-user-group"></i></span><span><strong>${html(member.name)}</strong><small>${html(member.role)}${member.notes ? ` · ${html(member.notes)}` : ''}</small></span><button type="button" data-action="remove-household-member" data-id="${html(member.id)}" title="${html(tr('Remove member'))}"><i class="fa-solid fa-user-minus"></i></button></article>`).join('') : `<div class="tretaresia-social-empty">${html(tr('No household members'))}</div>`;
+    panel.innerHTML = `${heading('Household', `${household.members.length} ${tr('Members').toLowerCase()}`, 'fa-solid fa-house-chimney-user')}
+        <p class="tretaresia-social-note"><i class="fa-solid fa-heart"></i>${html(getSettings().language === 'th' ? 'ใช้ดูสมาชิกในครอบครัวของผู้เล่น เช่น คู่ครอง ลูก พ่อ แม่ และญาติ' : 'Track the player\'s partner, children, parents, relatives, and other family bonds.')}</p>
+        <section class="tretaresia-household-card"><form data-form="household-save" class="tretaresia-household-header"><div><span class="tretaresia-eyebrow">${html(tr('Household management'))}</span><h4>${html(household.name)}</h4></div>${input('Household name', 'name', household.name)}<button class="tretaresia-secondary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i>${html(tr('Save household'))}</button></form>
+        <div class="tretaresia-household-list">${members}</div><form data-form="household-add" class="tretaresia-social-invite"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label>${select('Family role', 'role', HOUSEHOLD_ROLES, 'Other')}${input('Notes', 'notes', '')}<button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Add household member'))}</button></form></section>`;
+}
+
 function renderNpcs(panel, state) {
     if (!panel) return;
-    if (!state.npcs.some(entry => entry.id === selectedNpcId)) selectedNpcId = state.npcs[0]?.id || null;
-    const selected = state.npcs.find(entry => entry.id === selectedNpcId);
+    const visibleNpcs = friendlyNpcs(state);
+    if (!visibleNpcs.some(entry => entry.id === selectedNpcId)) selectedNpcId = visibleNpcs[0]?.id || null;
+    const selected = visibleNpcs.find(entry => entry.id === selectedNpcId);
     const linkedContact = selected ? state.contacts.find(entry => entry.id === selected.contactId || entry.npcId === selected.id) : null;
-    const list = state.npcs.length ? state.npcs.map(entry => `<article class="tretaresia-npc-list-row${entry.id === selectedNpcId ? ' is-active' : ''}">
+    const list = visibleNpcs.length ? visibleNpcs.map(entry => `<article class="tretaresia-npc-list-row${entry.id === selectedNpcId ? ' is-active' : ''}">
         <button type="button" data-action="select-npc" data-id="${html(entry.id)}">${npcPortraitSlot(entry)}<span><strong>${html(entry.name)}</strong>
         <em>${html(entry.title || entry.faction || tr('No description'))}</em><small>${html(entry.relationship)} · ${html(entry.location)}</small></span></button>
         <button type="button" data-action="delete-npc" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button></article>`).join('')
-        : `<div class="tretaresia-mail-empty large"><i class="fa-solid fa-users-viewfinder"></i><p>${getSettings().language === 'th' ? 'NPC ที่ AI ตรวจพบหรือคุณเพิ่มเองจะปรากฏที่นี่' : 'NPCs discovered by the AI or added manually will appear here.'}</p></div>`;
-    const detail = selected ? renderNpcDossier(selected, linkedContact) : `<section class="tretaresia-npc-empty-dossier"><i class="fa-solid fa-address-card"></i><p>${getSettings().language === 'th' ? 'เพิ่ม NPC คนแรกเพื่อเริ่มสร้างสารบบ' : 'Add the first NPC to begin the codex.'}</p></section>`;
-    panel.innerHTML = `${heading('NPC Codex', `${state.npcs.length} ${tr('NPCs').toLowerCase()}`, 'fa-solid fa-users')}
+        : `<div class="tretaresia-mail-empty large"><i class="fa-solid fa-users-viewfinder"></i><p>${html(tr('Only friendly NPCs appear here.'))}</p></div>`;
+    const detail = selected ? renderNpcDossier(selected, linkedContact) : `<section class="tretaresia-npc-empty-dossier"><i class="fa-solid fa-address-card"></i><p>${html(tr('Only friendly NPCs appear here.'))}</p></section>`;
+    panel.innerHTML = `${heading('NPC Codex', `${visibleNpcs.length} ${tr('Friendly NPCs').toLowerCase()}`, 'fa-solid fa-users')}
+        <p class="tretaresia-social-note"><i class="fa-solid fa-shield-heart"></i>${html(tr('Hostile NPCs are excluded from the list.'))}</p>
         <div class="tretaresia-npc-layout"><aside class="tretaresia-npc-index"><div class="tretaresia-section-label"><i class="fa-solid fa-list"></i><span>${html(tr('NPCs'))}</span></div>
             <div class="tretaresia-npc-list">${list}</div><details class="tretaresia-editor tretaresia-npc-add"><summary><i class="fa-solid fa-user-plus"></i> ${html(tr('Add NPC'))}</summary>
             <form data-form="npc-new" class="tretaresia-form-grid">${input('Name', 'name', '')}${input('Title', 'title', '')}${input('Faction', 'faction', '')}${input('Relationship', 'relationship', 'Acquaintance')}
@@ -3537,9 +3734,71 @@ async function onSubmit(event) {
             notify('success', `${nextQuest.name} added to the quest log.`);
             break;
         }
+        case 'party-create': {
+            if (state.social.party) return notify('warning', getSettings().language === 'th' ? 'มีปาร์ตี้อยู่แล้ว' : 'A party already exists.');
+            const name = text(values.name, '', 140);
+            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อปาร์ตี้' : 'Enter a party name first.');
+            state.social.party = partyProfile({ name, leaderId: 'player', memberIds: [] });
+            state.player.party = state.social.party.name;
+            await persistState(state, 'party');
+            notify('success', `${state.social.party.name} created.`);
+            break;
+        }
+        case 'party-invite': {
+            const party = state.social.party;
+            const npc = resolveFriendlyNpc(state, { npcId: values.npcId });
+            if (!party || !npc) return notify('warning', getSettings().language === 'th' ? 'เลือก NPC ฝ่ายมิตรที่ถูกต้อง' : 'Choose a valid friendly NPC.');
+            if (party.memberIds.includes(npc.id)) return notify('info', getSettings().language === 'th' ? 'NPC อยู่ในปาร์ตี้แล้ว' : 'That NPC is already in the party.');
+            party.memberIds.push(npc.id);
+            await persistState(state, 'party');
+            notify('success', `${npc.name} invited to ${party.name}.`);
+            break;
+        }
+        case 'guild-create': {
+            const name = text(values.name, '', 140);
+            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อกิลด์' : 'Enter a guild name first.');
+            if (state.social.guilds.some(entry => entry.name.toLocaleLowerCase() === name.toLocaleLowerCase())) return notify('warning', getSettings().language === 'th' ? 'มีกิลด์ชื่อนี้อยู่แล้ว' : 'A guild with this name already exists.');
+            if (!canAffordCurrency(state.progression.currency, GUILD_CREATION_FEE)) return notify('warning', `${tr('Not enough currency')}: ${currencyLabel(GUILD_CREATION_FEE)}`);
+            state.progression.currency.gold -= GUILD_CREATION_FEE.gold;
+            const guild = guildProfile({ name, description: values.description, leaderId: 'player', memberIds: [], treasury: { ...GUILD_CREATION_FEE } });
+            if (!guild) return notify('warning', getSettings().language === 'th' ? 'สร้างกิลด์ไม่สำเร็จ' : 'The guild could not be created.');
+            state.social.guilds.push(guild);
+            state.player.guild = guild.name;
+            await persistState(state, 'guild');
+            notify('success', `${guild.name} created. ${currencyLabel(GUILD_CREATION_FEE)} deducted.`);
+            break;
+        }
+        case 'guild-invite': {
+            const guild = state.social.guilds.find(entry => entry.id === values.guildId);
+            const npc = resolveFriendlyNpc(state, { npcId: values.npcId });
+            if (!guild || !npc) return notify('warning', getSettings().language === 'th' ? 'เลือกกิลด์และ NPC ฝ่ายมิตรให้ถูกต้อง' : 'Choose a guild and a valid friendly NPC.');
+            if (guild.memberIds.includes(npc.id)) return notify('info', getSettings().language === 'th' ? 'NPC อยู่ในกิลด์แล้ว' : 'That NPC is already in the guild.');
+            guild.memberIds.push(npc.id);
+            await persistState(state, 'guild');
+            notify('success', `${npc.name} invited to ${guild.name}.`);
+            break;
+        }
+        case 'household-save': {
+            const name = text(values.name, '', 140);
+            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อครอบครัว' : 'Enter a household name first.');
+            state.social.household.name = name;
+            await persistState(state, 'household');
+            notify('success', getSettings().language === 'th' ? 'บันทึกชื่อครอบครัวแล้ว' : 'Household name saved.');
+            break;
+        }
+        case 'household-add': {
+            const npc = resolveFriendlyNpc(state, { npcId: values.npcId });
+            if (!npc) return notify('warning', getSettings().language === 'th' ? 'เลือก NPC ฝ่ายมิตรที่ถูกต้อง' : 'Choose a valid friendly NPC.');
+            if (state.social.household.members.some(entry => entry.npcId === npc.id)) return notify('info', getSettings().language === 'th' ? 'สมาชิกคนนี้อยู่ในครอบครัวแล้ว' : 'That NPC is already in the household.');
+            state.social.household.members.push(socialMember({ npcId: npc.id, name: npc.name, role: values.role, notes: values.notes }));
+            await persistState(state, 'household');
+            notify('success', `${npc.name} added to ${state.social.household.name}.`);
+            break;
+        }
         case 'npc-new': {
             const nextNpc = npcProfile(values);
             if (!nextNpc) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อ NPC' : 'Enter the NPC name first.');
+            if (!isFriendlyNpc(nextNpc)) return notify('warning', getSettings().language === 'th' ? 'NPC ฝ่ายศัตรูจะไม่ถูกเพิ่มในสารบบ NPC' : 'Hostile NPCs are excluded from the NPC Codex.');
             if (state.npcs.some(entry => entry.name.toLocaleLowerCase() === nextNpc.name.toLocaleLowerCase())) {
                 return notify('warning', getSettings().language === 'th' ? 'มี NPC ชื่อนี้อยู่แล้ว' : 'An NPC with this name already exists.');
             }
@@ -3927,6 +4186,36 @@ async function onPanelClick(event) {
         case 'delete-quest':
             state.quests = state.quests.filter(entry => entry.id !== id);
             await persistState(state);
+            break;
+        case 'dissolve-party':
+            if (!state.social.party || globalThis.confirm?.(tr('Dissolve this party?')) === false) break;
+            state.social.party = null;
+            state.player.party = 'Solo';
+            await persistState(state, 'party');
+            break;
+        case 'remove-party-member':
+            if (!state.social.party) break;
+            state.social.party.memberIds = state.social.party.memberIds.filter(memberId => memberId !== id);
+            await persistState(state, 'party');
+            break;
+        case 'dissolve-guild': {
+            const guild = state.social.guilds.find(entry => entry.id === id);
+            if (!guild || globalThis.confirm?.(tr('Dissolve this guild?')) === false) break;
+            state.social.guilds = state.social.guilds.filter(entry => entry.id !== id);
+            if (state.player.guild === guild.name) state.player.guild = state.social.guilds[0]?.name || 'Unaffiliated';
+            await persistState(state, 'guild');
+            break;
+        }
+        case 'remove-guild-member': {
+            const guild = state.social.guilds.find(entry => entry.id === button.dataset.groupId);
+            if (!guild) break;
+            guild.memberIds = guild.memberIds.filter(memberId => memberId !== id);
+            await persistState(state, 'guild');
+            break;
+        }
+        case 'remove-household-member':
+            state.social.household.members = state.social.household.members.filter(entry => entry.id !== id);
+            await persistState(state, 'household');
             break;
         case 'select-npc':
             selectedNpcId = id;
@@ -4472,9 +4761,108 @@ function applySceneMapPatchOperation(state, verb, path, value) {
     return true;
 }
 
+function applySocialPatchOperation(state, verb, path, value) {
+    state.social ||= defaultSocialState();
+    if (path === 'household') {
+        if (verb !== 'upsert' || !value || typeof value !== 'object') return false;
+        const next = householdProfile({ ...state.social.household, ...value }, state.social.household);
+        next.members = next.members.filter(member => !member.npcId || resolveFriendlyNpc(state, member.npcId));
+        state.social.household = next;
+        return true;
+    }
+    if (path === 'party') {
+        if (verb === 'delete') {
+            if (!state.social.party) return false;
+            state.social.party = null;
+            state.player.party = 'Solo';
+            return true;
+        }
+        if (verb !== 'upsert' || !value || typeof value !== 'object') return false;
+        const next = partyProfile(value, state.social.party);
+        if (!next) return false;
+        next.memberIds = next.memberIds.filter(id => resolveFriendlyNpc(state, id));
+        state.social.party = next;
+        state.player.party = next.name;
+        return true;
+    }
+    if (path === 'guilds') {
+        if (verb === 'delete') {
+            const existing = state.social.guilds.find(entry => matchesPatchIdentity(entry, value));
+            if (!existing) return false;
+            state.social.guilds = state.social.guilds.filter(entry => entry.id !== existing.id);
+            if (state.player.guild === existing.name) state.player.guild = state.social.guilds[0]?.name || 'Unaffiliated';
+            return true;
+        }
+        if (verb !== 'upsert' || !value || typeof value !== 'object') return false;
+        const existing = state.social.guilds.find(entry => matchesPatchIdentity(entry, value));
+        const next = guildProfile(value, existing || {});
+        if (!next) return false;
+        next.memberIds = next.memberIds.filter(id => resolveFriendlyNpc(state, id));
+        if (existing) state.social.guilds[state.social.guilds.indexOf(existing)] = next;
+        else state.social.guilds.push(next);
+        state.player.guild = state.social.guilds[0]?.name || 'Unaffiliated';
+        return true;
+    }
+    if (path === 'partyMembers') {
+        const party = state.social.party;
+        const npc = resolveFriendlyNpc(state, value);
+        if (!party || !npc) return false;
+        if (verb === 'upsert') {
+            if (party.memberIds.includes(npc.id)) return false;
+            party.memberIds.push(npc.id);
+            return true;
+        }
+        if (verb === 'delete') {
+            const previous = party.memberIds.length;
+            party.memberIds = party.memberIds.filter(id => id !== npc.id);
+            return party.memberIds.length !== previous;
+        }
+        return false;
+    }
+    if (path === 'guildMembers') {
+        const guildId = text(value?.guildId, text(value?.groupId, '', 100), 100);
+        const guild = state.social.guilds.find(entry => entry.id === guildId || entry.name.toLocaleLowerCase() === text(value?.guildName, '', 140).toLocaleLowerCase());
+        const npc = resolveFriendlyNpc(state, value);
+        if (!guild || !npc) return false;
+        if (verb === 'upsert') {
+            if (guild.memberIds.includes(npc.id)) return false;
+            guild.memberIds.push(npc.id);
+            return true;
+        }
+        if (verb === 'delete') {
+            const previous = guild.memberIds.length;
+            guild.memberIds = guild.memberIds.filter(id => id !== npc.id);
+            return guild.memberIds.length !== previous;
+        }
+        return false;
+    }
+    if (path === 'householdMembers') {
+        const household = state.social.household;
+        if (verb === 'delete') {
+            const identity = patchIdentity(value) || text(value?.npcId, text(value?.npcName, '', 100), 100);
+            const previous = household.members.length;
+            household.members = household.members.filter(entry => !(matchesPatchIdentity(entry, value) || (identity && entry.npcId === identity)));
+            return household.members.length !== previous && Boolean(identity);
+        }
+        if (verb !== 'upsert') return false;
+        const npc = resolveFriendlyNpc(state, value);
+        if (!npc) return false;
+        const next = socialMember({ ...value, npcId: npc.id, name: npc.name }, {});
+        if (!next) return false;
+        const index = household.members.findIndex(entry => matchesPatchIdentity(entry, next) || entry.npcId === npc.id);
+        if (index >= 0) household.members[index] = { ...household.members[index], ...next, id: household.members[index].id };
+        else household.members.push(next);
+        return true;
+    }
+    return false;
+}
+
 function applyPatchOperation(state, operation) {
     if (!Array.isArray(operation) || operation.length < 3) return false;
     const [verb, path, value] = operation;
+    if (['party', 'guilds', 'household', 'partyMembers', 'guildMembers', 'householdMembers'].includes(path)) {
+        return applySocialPatchOperation(state, verb, path, value);
+    }
     if ((verb === 'set' || verb === 'inc') && SCALAR_PATCH_PATHS.has(path)) {
         const parts = path.split('.');
         const key = parts.pop();
