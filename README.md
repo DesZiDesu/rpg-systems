@@ -40,9 +40,9 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
 
-## Version 0.4.0
+## Version 0.5.0
 
-Rebuilds the interface in a restrained black-and-gold world-ledger style based on the Tretaresia Character Forge aesthetic while preserving every existing tab and interaction. Removes the loading sequence in favor of a smooth ease-in/ease-out reveal with a single opening color pulse, redesigns the menu and main-chat notifications, and adds automatic new-chat continuity plus portable JSON export/import.
+Replaces the extension shell with a complete responsive command-console design: grouped desktop navigation, a mobile module strip below the header, reframed content surfaces, redesigned status/music/notification views, and a bounded control center that can always scroll and close on small screens. Every existing module and interaction remains available. The loading sequence is replaced by a smooth ease-in/ease-out reveal with a single opening color pulse, while automatic new-chat continuity and portable JSON export/import keep the same character across chats.
 
 ## License
 

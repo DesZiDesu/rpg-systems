@@ -569,3 +569,642 @@
     .tretaresia-app-shell { transition: none; }
     .tretaresia-rpg-overlay.is-opening .tretaresia-rpg-panel { animation: none; }
 }
+
+/* Tretaresia Interface 3.0
+   This is a structural redesign of the shell, module navigation, control
+   center, information cards, player console, and event surfaces. */
+.tretaresia-rpg-panel {
+    width: min(1240px, calc(100vw - 36px));
+    height: calc(100dvh - 24px);
+    margin: 12px;
+    color: #eee8d9;
+    background:
+        radial-gradient(110% 85% at 76% -12%, rgba(var(--tretaresia-accent-rgb), .1), transparent 48%),
+        linear-gradient(118deg, #050505, #090806 56%, #030303);
+    border: 1px solid rgba(var(--tretaresia-accent-rgb), .48);
+    box-shadow: -32px 0 100px rgba(0, 0, 0, .78), inset 0 0 0 1px rgba(255, 255, 255, .018);
+}
+
+.tretaresia-rpg-panel::before {
+    width: 76px;
+    height: 76px;
+    inset: 7px auto auto 7px;
+    border-width: 2px 0 0 2px;
+    opacity: .86;
+}
+
+.tretaresia-rpg-panel::after {
+    width: 76px;
+    height: 76px;
+    inset: auto 7px 7px auto;
+    border-width: 0 2px 2px 0;
+    opacity: .86;
+}
+
+.tretaresia-app-shell {
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    min-height: 0;
+}
+
+.tretaresia-rpg-panel-header {
+    position: relative;
+    z-index: 45;
+    justify-content: space-between;
+    min-height: 74px;
+    padding: .75rem 1.05rem;
+    background: linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .075), transparent 32%), rgba(3, 3, 3, .96);
+    border-bottom: 1px solid rgba(var(--tretaresia-accent-rgb), .34);
+}
+
+.tretaresia-brand-lockup,
+.tretaresia-header-actions {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.tretaresia-brand-lockup { gap: .82rem; }
+.tretaresia-header-actions { gap: .48rem; }
+
+.tretaresia-rpg-brand-mark {
+    position: relative;
+    width: 2.7rem;
+    color: #171105;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--tretaresia-accent) 72%, white), var(--tretaresia-accent));
+    border: 0;
+    box-shadow: 0 0 0 1px rgba(var(--tretaresia-accent-rgb), .45), 0 0 0 6px rgba(var(--tretaresia-accent-rgb), .045), 0 0 24px rgba(var(--tretaresia-accent-rgb), .16);
+}
+
+.tretaresia-rpg-panel-heading h2 {
+    margin-top: .16rem;
+    font: 650 clamp(1.08rem, 2vw, 1.42rem)/1 Georgia, serif;
+    letter-spacing: .035em;
+}
+
+.tretaresia-rpg-kicker {
+    font-size: .52rem;
+    letter-spacing: .22em;
+}
+
+.tretaresia-header-button,
+.tretaresia-control-center > summary {
+    display: grid;
+    place-items: center;
+    width: 2.55rem;
+    min-width: 2.55rem;
+    aspect-ratio: 1;
+    padding: 0;
+    color: #c9c0ad;
+    background: rgba(255, 255, 255, .018);
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 0;
+    cursor: pointer;
+    list-style: none;
+    font-size: .84rem;
+}
+
+.tretaresia-control-center { position: relative; }
+.tretaresia-control-center > summary::-webkit-details-marker { display: none; }
+.tretaresia-control-center[open] > summary,
+.tretaresia-header-button:hover {
+    color: #171105;
+    background: var(--tretaresia-accent);
+    border-color: var(--tretaresia-accent);
+}
+
+.tretaresia-sync-state {
+    min-height: 2.55rem;
+    padding: 0 .72rem;
+    color: #bfb6a4;
+    background: rgba(255, 255, 255, .018);
+    border-color: rgba(255, 255, 255, .07);
+}
+
+.tretaresia-sync-state i {
+    width: 7px;
+    height: 7px;
+    color: transparent;
+    background: var(--tretaresia-success);
+    border-radius: 50%;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.tretaresia-module-bar {
+    position: relative;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+    padding: .46rem 1.08rem .46rem calc(210px + 1.08rem);
+    background: rgba(8, 7, 5, .94);
+    border-bottom: 1px solid rgba(255, 255, 255, .055);
+}
+
+.tretaresia-module-readout { display: flex; align-items: baseline; gap: .65rem; min-width: 0; }
+.tretaresia-module-readout small {
+    color: rgba(var(--tretaresia-accent-rgb), .65);
+    font-size: .48rem;
+    font-weight: 750;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+.tretaresia-module-readout strong {
+    overflow: hidden;
+    color: #f1eadb;
+    font: 600 .86rem Georgia, serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tretaresia-module-code { display: flex; align-items: center; gap: .55rem; color: #6f685b; font-size: .49rem; letter-spacing: .12em; }
+.tretaresia-module-code i { width: 42px; height: 1px; background: linear-gradient(90deg, var(--tretaresia-accent), transparent); }
+.tretaresia-module-code em { color: #958b77; font-style: normal; text-transform: uppercase; }
+
+.tretaresia-app-layout {
+    grid-template-columns: 210px minmax(0, 1fr);
+    min-height: 0;
+}
+
+.tretaresia-tab-list {
+    display: flex;
+    flex-direction: column;
+    gap: .72rem;
+    padding: .8rem .68rem;
+    overflow: auto;
+    background:
+        linear-gradient(rgba(var(--tretaresia-accent-rgb), .026) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .026) 1px, transparent 1px),
+        rgba(3, 3, 3, .84);
+    background-size: 24px 24px;
+    border-right: 1px solid rgba(var(--tretaresia-accent-rgb), .2);
+}
+
+.tretaresia-tab-list::before { display: none; }
+.tretaresia-rail-head { display: flex; align-items: center; gap: .58rem; padding: .18rem .32rem .72rem; border-bottom: 1px solid rgba(var(--tretaresia-accent-rgb), .17); }
+.tretaresia-rail-head > span {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    aspect-ratio: 1;
+    color: #171105;
+    background: var(--tretaresia-accent);
+    font: 800 .55rem ui-monospace, monospace;
+}
+.tretaresia-rail-head > div { display: grid; gap: .08rem; }
+.tretaresia-rail-head strong { color: #d9d0bf; font: 600 .68rem Georgia, serif; }
+.tretaresia-rail-head small { color: #6f685b; font-size: .42rem; letter-spacing: .13em; }
+
+.tretaresia-nav-group { display: grid; gap: .18rem; }
+.tretaresia-nav-group > small {
+    padding: .14rem .44rem .28rem;
+    color: rgba(var(--tretaresia-accent-rgb), .47);
+    font-size: .43rem;
+    font-weight: 750;
+    letter-spacing: .2em;
+}
+
+.tretaresia-tab-button {
+    grid-template-columns: 1.35rem 1.25rem minmax(0, 1fr);
+    gap: .45rem;
+    min-height: 40px;
+    padding: .46rem .5rem;
+    color: #81796b;
+    border: 1px solid transparent;
+    background: transparent;
+}
+
+.tretaresia-tab-button::before { color: #514a3f; font-size: .45rem; }
+.tretaresia-tab-button::after { inset: 7px auto 7px 0; width: 2px; }
+.tretaresia-tab-button i { color: #8e7b44; font-size: .73rem; }
+.tretaresia-tab-button span { font-size: .65rem; font-weight: 620; }
+.tretaresia-tab-button:hover { color: #d7cebd; background: rgba(255, 255, 255, .018); }
+.tretaresia-tab-button.is-active {
+    color: #f1e9da;
+    background: linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .18), rgba(var(--tretaresia-accent-rgb), .025));
+    border-color: rgba(var(--tretaresia-accent-rgb), .28);
+}
+.tretaresia-tab-button.is-active i { color: var(--tretaresia-accent); }
+
+.tretaresia-rpg-panel-body {
+    position: relative;
+    grid-row: auto;
+    padding: 1rem;
+    background:
+        radial-gradient(80% 65% at 72% 0, rgba(var(--tretaresia-accent-rgb), .045), transparent 66%),
+        #070706;
+}
+
+.tretaresia-rpg-panel-body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent 0 47px, rgba(255, 255, 255, .008) 48px);
+}
+
+.tretaresia-tab-panel { width: min(100%, 1080px); margin: 0 auto; }
+.tretaresia-section-heading {
+    min-height: 82px;
+    margin-bottom: .82rem;
+    padding: .85rem 1rem .82rem 1.15rem;
+    background: linear-gradient(105deg, rgba(var(--tretaresia-accent-rgb), .13), rgba(255, 255, 255, .012) 58%, transparent);
+    border: 1px solid rgba(var(--tretaresia-accent-rgb), .22);
+    border-left: 3px solid var(--tretaresia-accent);
+}
+.tretaresia-section-heading::before {
+    content: "ACTIVE / LEDGER";
+    position: absolute;
+    right: 3.7rem;
+    top: .75rem;
+    color: rgba(var(--tretaresia-accent-rgb), .28);
+    font: 700 .4rem ui-monospace, monospace;
+    letter-spacing: .16em;
+}
+.tretaresia-section-heading::after { content: ""; right: 3.75rem; top: 1.65rem; width: 56px; height: 1px; background: linear-gradient(90deg, var(--tretaresia-accent), transparent); }
+.tretaresia-section-heading h3 { margin: .14rem 0; font: 650 clamp(1.2rem, 2.8vw, 1.65rem)/1 Georgia, serif; letter-spacing: .025em; }
+.tretaresia-section-heading p { font-size: .6rem; letter-spacing: .025em; }
+.tretaresia-heading-icon { margin-top: 1rem; color: var(--tretaresia-accent); font-size: 1.12rem; }
+
+.tretaresia-card,
+.tretaresia-list-card,
+.tretaresia-quest-card,
+.tretaresia-rank-row,
+.tretaresia-rank-hero,
+.tretaresia-location-dossier,
+.tretaresia-travel-form,
+.tretaresia-pin-form,
+.tretaresia-pin-list,
+.tretaresia-editor,
+.tretaresia-mastery-section,
+.tretaresia-technique-section,
+.tretaresia-skill-storage,
+.tretaresia-contact-rail,
+.tretaresia-letter-desk,
+.tretaresia-playlist,
+.tretaresia-npc-index,
+.tretaresia-npc-dossier,
+.tretaresia-npc-abilities,
+.tretaresia-npc-diary,
+.tretaresia-npc-stats {
+    background: linear-gradient(125deg, rgba(var(--tretaresia-accent-rgb), .035), rgba(255, 255, 255, .009));
+    border: 1px solid rgba(255, 255, 255, .065);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .018);
+}
+
+.tretaresia-card-title,
+.tretaresia-section-label {
+    min-height: 42px;
+    padding: .58rem .72rem;
+    border-bottom: 1px solid rgba(var(--tretaresia-accent-rgb), .16);
+}
+
+.tretaresia-card-title > span,
+.tretaresia-section-label strong { color: #d8c99f; letter-spacing: .09em; }
+
+.tretaresia-character-hero {
+    grid-template-columns: 98px minmax(0, 1fr) auto;
+    gap: 1.2rem;
+    min-height: 148px;
+    padding: 1rem 1.1rem;
+    background:
+        linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .16), transparent 42%),
+        repeating-linear-gradient(90deg, transparent 0 31px, rgba(var(--tretaresia-accent-rgb), .02) 32px),
+        #090806;
+    border: 1px solid rgba(var(--tretaresia-accent-rgb), .34);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .35);
+}
+
+.tretaresia-character-hero::after {
+    content: "IDENTITY / ACTIVE RECORD";
+    right: 1rem;
+    top: .75rem;
+    color: rgba(var(--tretaresia-accent-rgb), .24);
+    font: 700 .42rem ui-monospace, monospace;
+    letter-spacing: .16em;
+}
+
+.tretaresia-avatar {
+    width: 90px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border: 1px solid rgba(var(--tretaresia-accent-rgb), .64);
+    border-radius: 0;
+    background: #050505;
+}
+.tretaresia-avatar::before { inset: 5px; border-radius: 0; }
+.tretaresia-avatar img,
+.tretaresia-avatar-initial { width: 100%; height: 100%; border-radius: 0; }
+.tretaresia-magic-ring { inset: -1px; border: 0; border-radius: 0; animation: none; }
+.tretaresia-magic-ring::before { content: ""; inset: 5px auto auto 5px; width: 15px; height: 15px; border-top: 2px solid var(--tretaresia-accent); border-left: 2px solid var(--tretaresia-accent); transform: none; }
+.tretaresia-magic-ring.ring-two { inset: -1px; opacity: 1; }
+.tretaresia-magic-ring.ring-two::before { inset: auto 5px 5px auto; border: 0; border-right: 2px solid var(--tretaresia-accent); border-bottom: 2px solid var(--tretaresia-accent); }
+.tretaresia-avatar-edit { right: 5px; bottom: 5px; width: 23px; border-radius: 0; border: 1px solid #080604; }
+
+.tretaresia-character-copy h3 { font-size: clamp(1.45rem, 3vw, 2rem); }
+.tretaresia-character-title { color: var(--tretaresia-accent); font-style: normal; letter-spacing: .04em; }
+.tretaresia-identity-chips span { border-radius: 0; background: rgba(0, 0, 0, .34); border-color: rgba(var(--tretaresia-accent-rgb), .15); }
+.tretaresia-rank-seal { border-radius: 0; transform: rotate(45deg); background: rgba(var(--tretaresia-accent-rgb), .1); }
+.tretaresia-rank-seal > * { transform: rotate(-45deg); }
+.tretaresia-rank-seal > b { font: inherit; }
+
+.tretaresia-vital {
+    padding: .68rem .72rem;
+    background: #070706;
+    border: 1px solid rgba(255, 255, 255, .06);
+    border-left: 2px solid var(--vital);
+    border-radius: 0;
+}
+.tretaresia-vital-track { height: 6px; border: 0; box-shadow: none; background: rgba(255, 255, 255, .055); }
+.tretaresia-vital-track span { box-shadow: 0 0 12px color-mix(in srgb, var(--vital) 48%, transparent); }
+.tretaresia-fact-list > div { min-height: 44px; align-items: center; padding: .55rem .62rem; background: rgba(0, 0, 0, .28); border-color: rgba(255, 255, 255, .055); }
+
+.tretaresia-field input,
+.tretaresia-field select,
+.tretaresia-field textarea,
+.tretaresia-editor input,
+.tretaresia-editor select,
+.tretaresia-editor textarea {
+    min-height: 42px;
+    color: #eee8d9;
+    background: #070706;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-left: 2px solid rgba(var(--tretaresia-accent-rgb), .48);
+    outline: none;
+}
+.tretaresia-field input:focus,
+.tretaresia-field select:focus,
+.tretaresia-field textarea:focus { border-color: var(--tretaresia-accent); box-shadow: 0 0 0 2px rgba(var(--tretaresia-accent-rgb), .08); }
+
+.tretaresia-primary-button,
+.tretaresia-secondary-button,
+.tretaresia-small-button {
+    min-height: 40px;
+    border-radius: 0;
+    letter-spacing: .05em;
+}
+
+.tretaresia-music-console {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, .7fr);
+    align-items: center;
+    gap: 1rem 1.4rem;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(105deg, rgba(var(--tretaresia-accent-rgb), .12), transparent 48%), #070706;
+    border: 1px solid rgba(var(--tretaresia-accent-rgb), .28);
+}
+.tretaresia-now-playing { grid-row: 1 / 3; }
+.tretaresia-record { width: 70px; color: var(--tretaresia-accent); filter: none; }
+.tretaresia-record.is-playing { animation-duration: 8s; }
+.tretaresia-now-playing h3 { font-size: 1.3rem; }
+.tretaresia-player-progress { align-self: end; }
+.tretaresia-player-controls { justify-content: flex-start; }
+.tretaresia-player-controls button { width: 2.45rem; border-radius: 0; }
+.tretaresia-player-controls .tretaresia-play-button { width: 3.2rem; }
+.tretaresia-playlist { border-color: rgba(var(--tretaresia-accent-rgb), .18); }
+
+.tretaresia-rpg-panel-footer {
+    position: relative;
+    z-index: 9;
+    min-height: 44px;
+    padding: .5rem 1rem;
+    background: #030303;
+    border-top: 1px solid rgba(var(--tretaresia-accent-rgb), .22);
+}
+.tretaresia-text-button { min-height: 34px; color: var(--tretaresia-accent); }
+
+/* New bounded control center. It never uses page-flow height and therefore
+   cannot cover controls without its own close affordance. */
+.tretaresia-control-scrim {
+    position: fixed;
+    z-index: 80;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    background: rgba(0, 0, 0, .68);
+    border: 0;
+    backdrop-filter: blur(5px);
+    cursor: default;
+}
+
+.tretaresia-control-panel {
+    position: fixed;
+    z-index: 81;
+    top: max(82px, calc(env(safe-area-inset-top) + 64px));
+    right: max(24px, env(safe-area-inset-right));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    width: min(430px, calc(100vw - 28px));
+    max-height: min(720px, calc(100dvh - 106px - env(safe-area-inset-bottom)));
+    overflow: hidden;
+    color: #eee8d9;
+    background: #060605;
+    border: 1px solid rgba(var(--tretaresia-accent-rgb), .58);
+    box-shadow: 0 28px 90px rgba(0, 0, 0, .8), inset 0 0 70px rgba(var(--tretaresia-accent-rgb), .025);
+}
+
+.tretaresia-control-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .72rem;
+    min-height: 68px;
+    padding: .72rem .78rem;
+    background: linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .13), transparent);
+    border-bottom: 1px solid rgba(var(--tretaresia-accent-rgb), .3);
+}
+.tretaresia-control-sigil { display: grid; place-items: center; width: 2.35rem; aspect-ratio: 1; color: #171105; background: var(--tretaresia-accent); transform: rotate(45deg); }
+.tretaresia-control-sigil i { transform: rotate(-45deg); }
+.tretaresia-control-head > div { display: grid; gap: .1rem; }
+.tretaresia-control-head small { color: var(--tretaresia-accent); font-size: .43rem; letter-spacing: .18em; }
+.tretaresia-control-head h3 { margin: 0; font: 650 1.08rem Georgia, serif; letter-spacing: .03em; }
+.tretaresia-control-head > button { display: grid; place-items: center; width: 2.25rem; aspect-ratio: 1; color: #aaa08e; background: transparent; border: 1px solid rgba(255, 255, 255, .09); cursor: pointer; }
+
+.tretaresia-control-scroll { min-height: 0; padding: .78rem; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: rgba(var(--tretaresia-accent-rgb), .5) transparent; }
+.tretaresia-control-section { padding: .75rem; background: rgba(255, 255, 255, .012); border: 1px solid rgba(255, 255, 255, .065); }
+.tretaresia-control-section + .tretaresia-control-section { margin-top: .7rem; }
+.tretaresia-control-section-title { display: flex; align-items: center; gap: .65rem; margin-bottom: .7rem; padding-bottom: .58rem; border-bottom: 1px solid rgba(var(--tretaresia-accent-rgb), .18); }
+.tretaresia-control-section-title > b { display: grid; place-items: center; width: 1.7rem; height: 1.35rem; color: #171105; background: var(--tretaresia-accent); font: 800 .48rem ui-monospace, monospace; }
+.tretaresia-control-section-title > span { display: grid; gap: .05rem; }
+.tretaresia-control-section-title strong { color: #e5dccb; font: 600 .75rem Georgia, serif; letter-spacing: .05em; text-transform: uppercase; }
+.tretaresia-control-section-title small { color: #777062; font-size: .47rem; letter-spacing: .08em; }
+.tretaresia-control-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .58rem; }
+.tretaresia-control-field { display: grid; gap: .3rem; min-width: 0; }
+.tretaresia-control-field.full,
+.tretaresia-action-mode-help.full { grid-column: 1 / -1; }
+.tretaresia-control-field > span { display: flex; justify-content: space-between; gap: .5rem; color: #a99f8c; font-size: .57rem; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; }
+.tretaresia-control-field output { color: var(--tretaresia-accent); }
+.tretaresia-control-field select {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: .42rem .55rem;
+    color: #eee8d9;
+    background: #090908;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-left: 2px solid rgba(var(--tretaresia-accent-rgb), .48);
+    border-radius: 0;
+    font-size: .68rem;
+}
+.tretaresia-control-field input[type="range"] { width: 100%; min-height: 26px; accent-color: var(--tretaresia-accent); }
+.tretaresia-control-field.color { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.tretaresia-control-field.color > span { grid-column: 1; }
+.tretaresia-control-field.color input[type="color"] { grid-column: 2; grid-row: 1; width: 40px; height: 40px; padding: 3px; background: #090908; border: 1px solid rgba(var(--tretaresia-accent-rgb), .45); border-radius: 0; }
+.tretaresia-control-panel .tretaresia-action-mode-help { padding: .45rem .5rem; color: #756e62; background: rgba(0, 0, 0, .25); border: 1px dashed rgba(var(--tretaresia-accent-rgb), .16); font-size: .55rem; }
+.tretaresia-control-panel .tretaresia-continuity-toggle { padding: .6rem; background: rgba(var(--tretaresia-accent-rgb), .045); border: 1px solid rgba(var(--tretaresia-accent-rgb), .17); }
+.tretaresia-control-note { margin: .55rem 0; color: #777062; font-size: .56rem; line-height: 1.5; }
+.tretaresia-control-panel .tretaresia-continuity-actions button { min-height: 42px; }
+
+.tretaresia-activity-island {
+    grid-template-columns: 34px minmax(0, 1fr);
+    width: min(350px, calc(100vw - 24px));
+    min-height: 48px;
+    padding: .42rem .65rem;
+    background: #050505;
+    border: 1px solid rgba(var(--tretaresia-accent-rgb), .46);
+    border-left: 3px solid var(--tretaresia-accent);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, .62);
+}
+.tretaresia-activity-orb { width: 28px; border: 0; background: rgba(var(--tretaresia-accent-rgb), .1); }
+.tretaresia-activity-copy strong { color: #e5dccb; font: 600 .67rem Georgia, serif; }
+.tretaresia-event-toast {
+    min-height: 64px;
+    padding: .64rem;
+    background: linear-gradient(100deg, color-mix(in srgb, var(--event-color) 8%, #050505), #050505 62%);
+    border-left-width: 3px;
+}
+.tretaresia-event-icon { width: 34px; height: 34px; }
+.tretaresia-event-toast strong { font-size: .83rem; }
+
+@media (max-width: 800px) {
+    .tretaresia-rpg-panel {
+        width: 100vw;
+        height: 100dvh;
+        margin: 0;
+        border: 0;
+    }
+    .tretaresia-app-shell { grid-template-rows: auto auto minmax(0, 1fr) auto; }
+    .tretaresia-rpg-panel-header {
+        min-height: 64px;
+        padding: max(.55rem, env(safe-area-inset-top)) .62rem .52rem;
+    }
+    .tretaresia-brand-lockup { gap: .58rem; }
+    .tretaresia-rpg-brand-mark { width: 2.1rem; }
+    .tretaresia-rpg-panel-heading h2 { font-size: 1.02rem; }
+    .tretaresia-rpg-kicker { font-size: .4rem; letter-spacing: .15em; }
+    .tretaresia-header-actions { gap: .3rem; }
+    .tretaresia-sync-state { min-height: 2.2rem; padding: 0 .48rem; }
+    .tretaresia-sync-state span { display: none; }
+    .tretaresia-header-button,
+    .tretaresia-control-center > summary { width: 2.2rem; min-width: 2.2rem; }
+    .tretaresia-module-bar {
+        min-height: 42px;
+        padding: .38rem .65rem;
+    }
+    .tretaresia-module-readout { gap: .42rem; }
+    .tretaresia-module-readout small { font-size: .39rem; }
+    .tretaresia-module-readout strong { font-size: .75rem; }
+    .tretaresia-module-code em { display: none; }
+    .tretaresia-module-code i { width: 24px; }
+    .tretaresia-app-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto minmax(0, 1fr);
+        min-height: 0;
+    }
+    .tretaresia-tab-list {
+        grid-row: 1;
+        z-index: 12;
+        display: flex;
+        flex-direction: row;
+        gap: .25rem;
+        padding: .42rem .48rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        background: #040404;
+        border: 0;
+        border-bottom: 1px solid rgba(var(--tretaresia-accent-rgb), .22);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, .36);
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+    }
+    .tretaresia-tab-list::-webkit-scrollbar { display: none; }
+    .tretaresia-rail-head,
+    .tretaresia-nav-group > small { display: none; }
+    .tretaresia-nav-group { display: contents; }
+    .tretaresia-tab-button {
+        flex: 0 0 68px;
+        display: grid;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: .2rem;
+        min-width: 68px;
+        min-height: 51px;
+        padding: .38rem .25rem .32rem;
+        text-align: center;
+        scroll-snap-align: center;
+    }
+    .tretaresia-tab-button::before { display: none; }
+    .tretaresia-tab-button::after { inset: auto 15% 0; width: auto; height: 2px; transform: scaleX(0); }
+    .tretaresia-tab-button.is-active::after { transform: scaleX(1); }
+    .tretaresia-tab-button i { font-size: .78rem; }
+    .tretaresia-tab-button span { font-size: .47rem; }
+    .tretaresia-rpg-panel-body {
+        grid-row: 2;
+        padding: .65rem;
+        overscroll-behavior: contain;
+    }
+    .tretaresia-section-heading { min-height: 70px; padding: .68rem .72rem .65rem .82rem; }
+    .tretaresia-section-heading::before,
+    .tretaresia-section-heading::after { display: none; }
+    .tretaresia-section-heading h3 { font-size: 1.2rem; }
+    .tretaresia-heading-icon { margin-top: 0; }
+    .tretaresia-character-hero {
+        grid-template-columns: 72px minmax(0, 1fr);
+        gap: .8rem;
+        min-height: 124px;
+        padding: .78rem;
+    }
+    .tretaresia-character-hero::after { display: none; }
+    .tretaresia-avatar { width: 68px; }
+    .tretaresia-character-copy h3 { padding-right: 2.8rem; font-size: 1.22rem; }
+    .tretaresia-rank-seal { right: .65rem; top: .65rem; width: 2.35rem; }
+    .tretaresia-dashboard-grid,
+    .tretaresia-rank-layout,
+    .tretaresia-map-layout { grid-template-columns: 1fr; }
+    .tretaresia-form-grid { grid-template-columns: 1fr; }
+    .tretaresia-music-console { grid-template-columns: 1fr; gap: .8rem; }
+    .tretaresia-now-playing { grid-row: auto; }
+    .tretaresia-player-controls { justify-content: center; }
+    .tretaresia-control-panel {
+        inset: max(70px, calc(env(safe-area-inset-top) + 58px)) 10px max(10px, env(safe-area-inset-bottom));
+        width: auto;
+        max-height: none;
+    }
+    .tretaresia-control-scroll { padding: .62rem; }
+    .tretaresia-control-grid { gap: .52rem; }
+    .tretaresia-control-field select { font-size: 16px; }
+    .tretaresia-rpg-panel-footer { min-height: 42px; padding: .42rem .65rem max(.42rem, env(safe-area-inset-bottom)); }
+    .tretaresia-rpg-panel-footer #tretaresia-context-label { max-width: 58%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+@media (max-width: 440px) {
+    .tretaresia-rpg-panel-heading { max-width: 150px; }
+    .tretaresia-rpg-panel-heading h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tretaresia-module-code span { display: none; }
+    .tretaresia-module-code i { width: 18px; }
+    .tretaresia-control-head { min-height: 60px; padding: .62rem .68rem; }
+    .tretaresia-control-sigil { width: 2rem; }
+    .tretaresia-control-head h3 { font-size: .95rem; }
+    .tretaresia-control-section { padding: .62rem; }
+    .tretaresia-control-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tretaresia-control-field.full,
+    .tretaresia-action-mode-help.full { grid-column: 1 / -1; }
+    .tretaresia-continuity-actions { grid-template-columns: 1fr; }
+    .tretaresia-fact-list { grid-template-columns: 1fr; }
+    .tretaresia-event-stack { top: max(58px, env(safe-area-inset-top)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tretaresia-tab-button,
+    .tretaresia-control-panel,
+    .tretaresia-control-scrim { transition: none; }
+}
