@@ -1220,3 +1220,1057 @@
     .tretaresia-control-layer.is-open .tretaresia-control-panel,
     .tretaresia-control-layer.is-open .tretaresia-control-scrim { animation: none; }
 }
+
+
+/* ==========================================================================
+   TRETARESIA UI 4.0 — black/gold world-console direction
+   Final visual layer: mobile-first, portrait-safe, iOS-friendly.
+   ========================================================================== */
+
+.tretaresia-rpg-overlay {
+    --tr-gold: var(--tretaresia-accent, #d6b458);
+    --tr-gold-rgb: var(--tretaresia-accent-rgb, 214, 180, 88);
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+}
+
+.tretaresia-rpg-overlay button,
+.tretaresia-rpg-overlay input,
+.tretaresia-rpg-overlay select,
+.tretaresia-rpg-overlay textarea {
+    font: inherit;
+}
+
+.tretaresia-rpg-panel {
+    width: min(1280px, calc(100vw - 32px));
+    height: min(900px, calc(100dvh - 32px));
+    margin: 16px;
+    border-radius: 0;
+    background:
+        radial-gradient(90% 48% at 50% 0, rgba(var(--tr-gold-rgb), .09), transparent 66%),
+        linear-gradient(135deg, rgba(var(--tr-gold-rgb), .045), transparent 28%),
+        #040404;
+    border-color: rgba(var(--tr-gold-rgb), .58);
+    box-shadow:
+        -28px 0 76px rgba(0, 0, 0, .72),
+        inset 0 0 0 1px rgba(255, 238, 179, .045),
+        inset 0 0 110px rgba(var(--tr-gold-rgb), .045);
+    will-change: transform, opacity;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.tretaresia-app-shell {
+    position: relative;
+    isolation: isolate;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.tretaresia-app-shell::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    pointer-events: none;
+    opacity: .28;
+    background-image:
+        linear-gradient(30deg, transparent 24%, rgba(var(--tr-gold-rgb), .18) 25%, rgba(var(--tr-gold-rgb), .18) 26%, transparent 27%, transparent 74%, rgba(var(--tr-gold-rgb), .18) 75%, rgba(var(--tr-gold-rgb), .18) 76%, transparent 77%),
+        linear-gradient(150deg, transparent 24%, rgba(var(--tr-gold-rgb), .18) 25%, rgba(var(--tr-gold-rgb), .18) 26%, transparent 27%, transparent 74%, rgba(var(--tr-gold-rgb), .18) 75%, rgba(var(--tr-gold-rgb), .18) 76%, transparent 77%),
+        linear-gradient(30deg, transparent 24%, rgba(var(--tr-gold-rgb), .12) 25%, rgba(var(--tr-gold-rgb), .12) 26%, transparent 27%, transparent 74%, rgba(var(--tr-gold-rgb), .12) 75%, rgba(var(--tr-gold-rgb), .12) 76%, transparent 77%),
+        linear-gradient(150deg, transparent 24%, rgba(var(--tr-gold-rgb), .12) 25%, rgba(var(--tr-gold-rgb), .12) 26%, transparent 27%, transparent 74%, rgba(var(--tr-gold-rgb), .12) 75%, rgba(var(--tr-gold-rgb), .12) 76%, transparent 77%),
+        linear-gradient(60deg, rgba(var(--tr-gold-rgb), .12) 1px, transparent 1px),
+        linear-gradient(120deg, rgba(var(--tr-gold-rgb), .12) 1px, transparent 1px);
+    background-position: 0 0, 0 0, 35px 60px, 35px 60px, 0 0, 0 0;
+    background-size: 70px 120px;
+    -webkit-mask-image: linear-gradient(#000, transparent 88%);
+    mask-image: linear-gradient(#000, transparent 88%);
+}
+
+.tretaresia-rpg-panel-header {
+    position: relative;
+    z-index: 45;
+    min-height: 88px;
+    padding: 1rem 1.25rem;
+    background:
+        linear-gradient(90deg, rgba(var(--tr-gold-rgb), .105), transparent 34%),
+        rgba(3, 3, 3, .97);
+    border-bottom: 1px solid rgba(var(--tr-gold-rgb), .52);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .26);
+    overflow: visible;
+}
+
+.tretaresia-brand-lockup {
+    gap: 1.12rem;
+    flex: 1 1 auto;
+}
+
+.tretaresia-rpg-brand-mark {
+    flex: 0 0 auto;
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 0;
+    transform: rotate(45deg);
+    background: linear-gradient(145deg, #f6dd99, #9d7928);
+    border: 1px solid rgba(255, 242, 185, .78);
+    box-shadow:
+        0 0 0 5px rgba(var(--tr-gold-rgb), .05),
+        0 0 30px rgba(var(--tr-gold-rgb), .24);
+}
+
+.tretaresia-rpg-brand-mark i {
+    transform: rotate(-45deg);
+    color: #211707;
+    font-size: 1.1rem;
+}
+
+.tretaresia-rpg-panel-heading {
+    min-width: 0;
+}
+
+.tretaresia-rpg-panel-heading h2 {
+    margin-top: .2rem;
+    color: #f4eee1;
+    font: 600 clamp(1.35rem, 2.8vw, 2rem)/1 Georgia, "Times New Roman", serif;
+    letter-spacing: .045em;
+    text-shadow: 0 0 24px rgba(var(--tr-gold-rgb), .18);
+}
+
+.tretaresia-rpg-kicker,
+.tretaresia-eyebrow {
+    color: color-mix(in srgb, var(--tr-gold) 82%, white);
+    font-size: .58rem;
+    font-weight: 800;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+}
+
+.tretaresia-header-actions {
+    flex: 0 0 auto;
+    gap: .58rem;
+    position: relative;
+    z-index: 100;
+}
+
+.tretaresia-header-button,
+.tretaresia-sync-state {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.tretaresia-header-button {
+    padding: 0;
+    border-color: rgba(var(--tr-gold-rgb), .46);
+    background: rgba(var(--tr-gold-rgb), .055);
+    box-shadow: inset 0 0 18px rgba(var(--tr-gold-rgb), .035);
+}
+
+.tretaresia-header-button:hover,
+.tretaresia-header-button:focus-visible,
+.tretaresia-control-trigger.is-active {
+    color: #fff1c7;
+    background: rgba(var(--tr-gold-rgb), .16);
+    border-color: var(--tr-gold);
+    box-shadow: 0 0 20px rgba(var(--tr-gold-rgb), .16);
+}
+
+.tretaresia-sync-state {
+    justify-content: center;
+    padding: 0 .65rem;
+    border-color: rgba(var(--tr-gold-rgb), .38);
+    background: rgba(var(--tr-gold-rgb), .045);
+}
+
+.tretaresia-module-bar {
+    min-height: 66px;
+    padding: .8rem 1.25rem .8rem calc(224px + 1.25rem);
+    background: rgba(4, 4, 4, .95);
+    border-bottom-color: rgba(var(--tr-gold-rgb), .28);
+}
+
+.tretaresia-module-readout {
+    gap: .72rem;
+}
+
+.tretaresia-module-readout small {
+    color: rgba(var(--tr-gold-rgb), .72);
+    font-size: .55rem;
+    letter-spacing: .25em;
+}
+
+.tretaresia-module-readout strong {
+    color: #f1e9d7;
+    font: 600 1.15rem/1 Georgia, serif;
+    letter-spacing: .03em;
+}
+
+.tretaresia-module-code {
+    color: rgba(var(--tr-gold-rgb), .58);
+}
+
+.tretaresia-app-layout {
+    grid-template-columns: 224px minmax(0, 1fr);
+    min-height: 0;
+}
+
+.tretaresia-tab-list {
+    gap: .42rem;
+    padding: 1.1rem .82rem;
+    background:
+        linear-gradient(180deg, rgba(var(--tr-gold-rgb), .09), transparent 34%),
+        rgba(0, 0, 0, .56);
+    border-right-color: rgba(var(--tr-gold-rgb), .24);
+}
+
+.tretaresia-rail-head {
+    min-height: 58px;
+    margin: 0 0 .45rem;
+    padding: .6rem .7rem;
+    border-bottom: 1px solid rgba(var(--tr-gold-rgb), .24);
+}
+
+.tretaresia-rail-head > span {
+    color: #f1cf77;
+    font-size: .9rem;
+    letter-spacing: .18em;
+}
+
+.tretaresia-rail-head strong {
+    color: #ece3d2;
+    font: 600 .72rem Georgia, serif;
+    letter-spacing: .08em;
+}
+
+.tretaresia-rail-head small {
+    color: rgba(var(--tr-gold-rgb), .56);
+    font-size: .46rem;
+    letter-spacing: .18em;
+}
+
+.tretaresia-nav-group {
+    display: grid;
+    gap: .24rem;
+    margin-top: .5rem;
+}
+
+.tretaresia-nav-group > small {
+    padding: .45rem .62rem .18rem;
+    color: rgba(var(--tr-gold-rgb), .54);
+    font-size: .46rem;
+    font-weight: 800;
+    letter-spacing: .22em;
+}
+
+.tretaresia-tab-button {
+    min-height: 48px;
+    padding: .68rem .72rem;
+    gap: .7rem;
+    border-radius: 0;
+    border-color: transparent;
+    color: #938b7c;
+    transition:
+        color 180ms ease,
+        background 220ms ease,
+        border-color 220ms ease,
+        transform 220ms cubic-bezier(.2, .8, .2, 1);
+    will-change: transform;
+    touch-action: manipulation;
+}
+
+.tretaresia-tab-button::after {
+    width: 3px;
+    background: linear-gradient(var(--tr-gold), transparent);
+}
+
+.tretaresia-tab-button i {
+    color: rgba(var(--tr-gold-rgb), .7);
+    font-size: .9rem;
+}
+
+.tretaresia-tab-button span {
+    font-size: .72rem;
+    letter-spacing: .035em;
+}
+
+.tretaresia-tab-button:hover {
+    color: #f1e9da;
+    background: rgba(var(--tr-gold-rgb), .08);
+    transform: translateX(3px);
+}
+
+.tretaresia-tab-button.is-active {
+    color: #fff3d0;
+    background:
+        linear-gradient(90deg, rgba(var(--tr-gold-rgb), .2), rgba(var(--tr-gold-rgb), .025)),
+        rgba(0, 0, 0, .28);
+    border-color: rgba(var(--tr-gold-rgb), .34);
+    box-shadow: inset 0 0 22px rgba(var(--tr-gold-rgb), .035);
+}
+
+.tretaresia-tab-button.is-active i {
+    color: #f0c968;
+    text-shadow: 0 0 14px rgba(var(--tr-gold-rgb), .48);
+}
+
+.tretaresia-rpg-panel-body {
+    position: relative;
+    padding: 1.35rem clamp(1rem, 2.2vw, 2rem);
+    background:
+        radial-gradient(70% 38% at 76% 0, rgba(var(--tr-gold-rgb), .075), transparent 72%),
+        rgba(4, 4, 4, .84);
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+}
+
+.tretaresia-tab-panel {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 1120px);
+}
+
+.tretaresia-section-heading {
+    min-height: 96px;
+    margin-bottom: 1rem;
+    padding: 1rem 1.2rem 1rem 1.35rem;
+    background:
+        linear-gradient(105deg, rgba(var(--tr-gold-rgb), .15), rgba(255, 255, 255, .012) 56%, transparent),
+        rgba(0, 0, 0, .28);
+    border: 1px solid rgba(var(--tr-gold-rgb), .34);
+    border-left: 3px solid var(--tr-gold);
+    box-shadow: inset 0 0 30px rgba(var(--tr-gold-rgb), .035);
+}
+
+.tretaresia-section-heading h3 {
+    margin: .16rem 0 .24rem;
+    color: #f5ecdc;
+    font: 600 clamp(1.45rem, 3vw, 2.05rem)/1 Georgia, "Times New Roman", serif;
+    letter-spacing: .02em;
+}
+
+.tretaresia-section-heading p {
+    color: rgba(236, 231, 218, .58);
+    font-size: .7rem;
+}
+
+.tretaresia-heading-icon {
+    color: #e4bd5e;
+    font-size: 1.35rem;
+    filter: drop-shadow(0 0 10px rgba(var(--tr-gold-rgb), .24));
+}
+
+.tretaresia-card,
+.tretaresia-list-card,
+.tretaresia-quest-card,
+.tretaresia-rank-row,
+.tretaresia-rank-hero,
+.tretaresia-location-dossier,
+.tretaresia-travel-form,
+.tretaresia-pin-form,
+.tretaresia-pin-list,
+.tretaresia-editor,
+.tretaresia-mastery-section,
+.tretaresia-technique-section,
+.tretaresia-skill-storage,
+.tretaresia-contact-rail,
+.tretaresia-letter-desk,
+.tretaresia-playlist,
+.tretaresia-npc-index,
+.tretaresia-npc-dossier,
+.tretaresia-npc-abilities,
+.tretaresia-npc-diary,
+.tretaresia-npc-stats {
+    border-radius: 0;
+    border-color: rgba(var(--tr-gold-rgb), .24);
+    background:
+        linear-gradient(135deg, rgba(var(--tr-gold-rgb), .06), transparent 42%),
+        rgba(5, 5, 5, .82);
+    box-shadow:
+        inset 0 1px rgba(255, 245, 204, .035),
+        0 14px 34px rgba(0, 0, 0, .2);
+    transition:
+        border-color 220ms ease,
+        box-shadow 220ms ease,
+        transform 220ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.tretaresia-card:hover,
+.tretaresia-list-card:hover,
+.tretaresia-quest-card:hover,
+.tretaresia-rank-row:hover,
+.tretaresia-location-dossier:hover,
+.tretaresia-travel-form:hover,
+.tretaresia-pin-form:hover,
+.tretaresia-pin-list:hover,
+.tretaresia-mastery-section:hover,
+.tretaresia-technique-section:hover,
+.tretaresia-skill-storage:hover,
+.tretaresia-contact-rail:hover,
+.tretaresia-letter-desk:hover,
+.tretaresia-playlist:hover {
+    border-color: rgba(var(--tr-gold-rgb), .42);
+    box-shadow:
+        inset 0 1px rgba(255, 245, 204, .045),
+        0 16px 38px rgba(0, 0, 0, .28);
+}
+
+.tretaresia-card-title,
+.tretaresia-section-label {
+    min-height: 50px;
+    padding: .72rem .82rem;
+    border-bottom-color: rgba(var(--tr-gold-rgb), .22);
+}
+
+.tretaresia-card-title > span,
+.tretaresia-section-label strong {
+    color: #e1c272;
+    letter-spacing: .13em;
+}
+
+.tretaresia-character-hero {
+    grid-template-columns: 122px minmax(0, 1fr) 9rem;
+    gap: 1.3rem;
+    min-height: 188px;
+    margin-bottom: .9rem;
+    padding: 1.28rem 1.45rem;
+    overflow: visible;
+    background:
+        linear-gradient(90deg, rgba(var(--tr-gold-rgb), .2), transparent 43%),
+        repeating-linear-gradient(90deg, transparent 0 31px, rgba(var(--tr-gold-rgb), .025) 32px),
+        #070707;
+    border: 1px solid rgba(var(--tr-gold-rgb), .5);
+    box-shadow:
+        inset 0 0 64px rgba(var(--tr-gold-rgb), .045),
+        0 18px 42px rgba(0, 0, 0, .3);
+}
+
+.tretaresia-character-hero::after {
+    content: "IDENTITY / ACTIVE RECORD";
+    right: 1.2rem;
+    top: .9rem;
+    color: rgba(var(--tr-gold-rgb), .35);
+    font: 800 .44rem ui-monospace, SFMono-Regular, monospace;
+    letter-spacing: .18em;
+}
+
+.tretaresia-avatar {
+    width: 122px;
+    aspect-ratio: 3 / 4;
+    padding: 7px;
+    overflow: visible;
+    border: 1px solid rgba(var(--tr-gold-rgb), .76);
+    border-radius: 0;
+    background:
+        linear-gradient(145deg, rgba(var(--tr-gold-rgb), .2), transparent 32%),
+        #050505;
+    box-shadow:
+        0 0 0 5px rgba(var(--tr-gold-rgb), .035),
+        0 0 26px rgba(var(--tr-gold-rgb), .14);
+}
+
+.tretaresia-avatar::before {
+    inset: 6px;
+    border: 1px solid rgba(255, 235, 168, .84);
+    border-radius: 0;
+    box-shadow: inset 0 0 22px rgba(var(--tr-gold-rgb), .12);
+}
+
+.tretaresia-avatar-photo,
+.tretaresia-avatar-initial {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 0;
+}
+
+.tretaresia-avatar-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
+    object-position: var(--portrait-desktop-x, 50%) var(--portrait-desktop-y, 50%);
+    transform: scale(var(--portrait-desktop-zoom, 1));
+    transform-origin: var(--portrait-desktop-x, 50%) var(--portrait-desktop-y, 50%);
+    image-rendering: auto;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.tretaresia-avatar-initial {
+    color: #f2d582;
+    font-size: 2.25rem;
+    background: radial-gradient(circle at 40% 35%, rgba(var(--tr-gold-rgb), .28), #090909 72%);
+}
+
+.tretaresia-avatar-edit {
+    right: 5px;
+    bottom: 5px;
+    width: 31px;
+    border-radius: 0;
+    border: 2px solid #050505;
+    box-shadow: 0 0 14px rgba(var(--tr-gold-rgb), .28);
+}
+
+.tretaresia-magic-ring {
+    inset: -7px;
+    border-color: rgba(var(--tr-gold-rgb), .56);
+    animation-duration: 14s;
+}
+
+.tretaresia-magic-ring.ring-two {
+    inset: -14px;
+    animation-duration: 20s;
+}
+
+.tretaresia-character-copy {
+    min-width: 0;
+}
+
+.tretaresia-character-copy h3 {
+    max-width: 100%;
+    color: #f6efe1;
+    font-size: clamp(1.65rem, 3vw, 2.5rem);
+    letter-spacing: .02em;
+}
+
+.tretaresia-character-title {
+    color: #d6b458;
+    font-size: .88rem;
+}
+
+.tretaresia-identity-chips {
+    gap: .42rem;
+}
+
+.tretaresia-identity-chips span {
+    padding: .34rem .52rem;
+    color: #d8cfbf;
+    background: rgba(0, 0, 0, .48);
+    border-color: rgba(var(--tr-gold-rgb), .28);
+    border-radius: 0;
+    font-size: .67rem;
+}
+
+.tretaresia-rank-seal {
+    position: relative;
+    inset: auto;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    align-content: center;
+    justify-items: center;
+    align-self: center;
+    width: 9rem;
+    min-height: 5.8rem;
+    aspect-ratio: auto;
+    padding: .72rem 1.15rem;
+    overflow: visible;
+    color: #f4dda0;
+    background:
+        linear-gradient(145deg, rgba(var(--tr-gold-rgb), .25), rgba(var(--tr-gold-rgb), .055)),
+        rgba(0, 0, 0, .52);
+    border: 0;
+    border-radius: 0;
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    box-shadow: 0 0 0 1px rgba(var(--tr-gold-rgb), .55), 0 0 28px rgba(var(--tr-gold-rgb), .13);
+    transform: none;
+}
+
+.tretaresia-rank-seal > * {
+    transform: none;
+}
+
+.tretaresia-rank-seal small {
+    position: static;
+    width: auto;
+    color: rgba(242, 226, 179, .68);
+    font-size: .45rem;
+    letter-spacing: .15em;
+    white-space: nowrap;
+}
+
+.tretaresia-rank-seal b {
+    display: block;
+    max-width: 100%;
+    color: #f6df9c;
+    font: 600 clamp(1.12rem, 2.2vw, 1.7rem)/1 Georgia, serif;
+    letter-spacing: .015em;
+    white-space: nowrap;
+}
+
+.tretaresia-progress-deck {
+    min-height: 64px;
+    padding: .9rem 1rem .82rem;
+    margin-bottom: .95rem;
+    background: rgba(0, 0, 0, .4);
+    border-color: rgba(var(--tr-gold-rgb), .3);
+    border-radius: 0;
+}
+
+.tretaresia-exp-track {
+    height: 8px;
+    border-color: rgba(var(--tr-gold-rgb), .25);
+    box-shadow: 0 0 16px rgba(var(--tr-gold-rgb), .08);
+}
+
+.tretaresia-exp-line p {
+    margin-top: .55rem;
+    font-size: .68rem;
+}
+
+.tretaresia-exp-line strong {
+    color: #e8c96f;
+}
+
+.tretaresia-vital {
+    min-height: 88px;
+    padding: .82rem .88rem;
+    border-radius: 0;
+}
+
+.tretaresia-vital-track {
+    height: 7px;
+}
+
+.tretaresia-field input,
+.tretaresia-field select,
+.tretaresia-field textarea,
+.tretaresia-primary-button,
+.tretaresia-secondary-button,
+.tretaresia-small-button,
+.tretaresia-text-button {
+    min-height: 42px;
+    border-radius: 0;
+    touch-action: manipulation;
+}
+
+.tretaresia-tab-panel.is-entering {
+    animation: tretaresia-ui-panel-in 420ms cubic-bezier(.16, .84, .2, 1) both;
+    will-change: opacity, transform;
+}
+
+.tretaresia-tab-panel.is-leaving {
+    animation: tretaresia-ui-panel-out 150ms ease both;
+}
+
+@keyframes tretaresia-ui-panel-in {
+    from {
+        opacity: 0;
+        transform: translate3d(14px, 0, 0);
+        filter: blur(2px);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+        filter: blur(0);
+    }
+}
+
+@keyframes tretaresia-ui-panel-out {
+    to {
+        opacity: 0;
+        transform: translate3d(-8px, 0, 0);
+    }
+}
+
+@keyframes tretaresia-ui-gold-breathe {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(var(--tr-gold-rgb), .42), 0 0 18px rgba(var(--tr-gold-rgb), .08); }
+    50% { box-shadow: 0 0 0 1px rgba(var(--tr-gold-rgb), .76), 0 0 28px rgba(var(--tr-gold-rgb), .2); }
+}
+
+.tretaresia-rpg-overlay.is-opening .tretaresia-rpg-panel {
+    animation: tretaresia-ui-panel-open 520ms cubic-bezier(.16, .84, .2, 1) both;
+}
+
+.tretaresia-character-hero {
+    animation: tretaresia-ui-gold-breathe 4.8s ease-in-out infinite;
+}
+
+@keyframes tretaresia-ui-panel-open {
+    from { transform: translate3d(0, 34px, 0) scale(.985); opacity: .25; }
+    to { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+
+@media (max-width: 800px) {
+    .tretaresia-rpg-panel {
+        width: 100vw;
+        min-width: 100vw;
+        height: 100dvh;
+        min-height: 100svh;
+        max-height: none;
+        margin: 0;
+        border-width: 0;
+        border-radius: 0;
+        transform: translate3d(0, 100%, 0);
+    }
+
+    .tretaresia-rpg-overlay.is-open .tretaresia-rpg-panel {
+        transform: translate3d(0, 0, 0);
+    }
+
+    .tretaresia-rpg-panel-header {
+        min-height: 76px;
+        padding: max(.8rem, calc(env(safe-area-inset-top) + .55rem)) .82rem .78rem;
+    }
+
+    .tretaresia-brand-lockup {
+        gap: .78rem;
+    }
+
+    .tretaresia-rpg-brand-mark {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .tretaresia-rpg-panel-heading h2 {
+        font-size: clamp(1.08rem, 5.8vw, 1.45rem);
+        letter-spacing: .02em;
+    }
+
+    .tretaresia-rpg-kicker {
+        font-size: .43rem;
+        letter-spacing: .16em;
+    }
+
+    .tretaresia-header-actions {
+        gap: .28rem;
+    }
+
+    .tretaresia-header-button,
+    .tretaresia-sync-state {
+        min-width: 44px;
+        width: 44px;
+        min-height: 44px;
+        height: 44px;
+    }
+
+    .tretaresia-sync-state {
+        padding: 0;
+    }
+
+    .tretaresia-sync-state span {
+        display: none;
+    }
+
+    .tretaresia-module-bar {
+        min-height: 58px;
+        padding: .76rem .9rem;
+    }
+
+    .tretaresia-module-readout {
+        gap: .5rem;
+    }
+
+    .tretaresia-module-readout small {
+        font-size: .44rem;
+        letter-spacing: .17em;
+    }
+
+    .tretaresia-module-readout strong {
+        font-size: 1rem;
+    }
+
+    .tretaresia-module-code span,
+    .tretaresia-module-code em {
+        display: none;
+    }
+
+    .tretaresia-module-code i {
+        width: 26px;
+    }
+
+    .tretaresia-app-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) auto;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .tretaresia-rpg-panel-body {
+        grid-row: 1;
+        min-height: 0;
+        padding: 1rem .88rem 1.2rem;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        scroll-padding-block: 1rem;
+    }
+
+    .tretaresia-tab-list {
+        grid-row: 2;
+        z-index: 20;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: .28rem;
+        min-height: 76px;
+        padding: .48rem .45rem max(.48rem, env(safe-area-inset-bottom));
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        background:
+            linear-gradient(180deg, rgba(var(--tr-gold-rgb), .1), transparent 45%),
+            rgba(4, 4, 4, .98);
+        border-top: 1px solid rgba(var(--tr-gold-rgb), .5);
+        border-right: 0;
+        box-shadow: 0 -14px 34px rgba(0, 0, 0, .4);
+    }
+
+    .tretaresia-tab-list::before {
+        display: none;
+    }
+
+    .tretaresia-tab-button {
+        flex: 0 0 clamp(76px, 20vw, 96px);
+        min-width: 76px;
+        min-height: 62px;
+        padding: .55rem .35rem;
+        gap: .35rem;
+        justify-items: center;
+        text-align: center;
+        scroll-snap-align: center;
+        border-color: rgba(var(--tr-gold-rgb), .08);
+    }
+
+    .tretaresia-tab-button::after {
+        inset: auto 14% 0;
+        width: auto;
+        height: 3px;
+        transform: scaleX(0);
+    }
+
+    .tretaresia-tab-button.is-active::after {
+        transform: scaleX(1);
+    }
+
+    .tretaresia-tab-button i {
+        font-size: 1.05rem;
+    }
+
+    .tretaresia-tab-button span {
+        font-size: .59rem;
+        letter-spacing: .03em;
+    }
+
+    .tretaresia-section-heading {
+        min-height: 80px;
+        margin-bottom: .86rem;
+        padding: .82rem .88rem .78rem 1rem;
+    }
+
+    .tretaresia-section-heading::before,
+    .tretaresia-section-heading::after {
+        display: none;
+    }
+
+    .tretaresia-section-heading h3 {
+        font-size: 1.36rem;
+    }
+
+    .tretaresia-character-hero {
+        grid-template-columns: 94px minmax(0, 1fr);
+        gap: .92rem;
+        min-height: 180px;
+        padding: 1rem;
+    }
+
+    .tretaresia-character-hero::after {
+        display: none;
+    }
+
+    .tretaresia-avatar {
+        width: 94px;
+        aspect-ratio: 3 / 4;
+    }
+
+    .tretaresia-avatar-edit {
+        right: 4px;
+        bottom: 4px;
+        width: 30px;
+    }
+
+    .tretaresia-character-copy {
+        padding-right: 6.7rem;
+    }
+
+    .tretaresia-character-copy h3 {
+        padding-right: 0;
+        font-size: clamp(1.15rem, 6vw, 1.55rem);
+        line-height: 1.08;
+        white-space: normal;
+    }
+
+    .tretaresia-character-title {
+        margin-bottom: .58rem;
+        font-size: .72rem;
+    }
+
+    .tretaresia-identity-chips {
+        gap: .3rem;
+    }
+
+    .tretaresia-identity-chips span {
+        padding: .3rem .38rem;
+        font-size: .56rem;
+    }
+
+    .tretaresia-rank-seal {
+        position: absolute;
+        top: .78rem;
+        right: .78rem;
+        align-self: auto;
+        width: 7rem;
+        min-height: 4.55rem;
+        padding: .55rem .8rem;
+    }
+
+    .tretaresia-rank-seal small {
+        font-size: .39rem;
+    }
+
+    .tretaresia-rank-seal b {
+        font-size: 1.08rem;
+    }
+
+    .tretaresia-progress-deck {
+        min-height: 62px;
+        padding: .78rem .82rem .72rem;
+    }
+
+    .tretaresia-dashboard-grid,
+    .tretaresia-rank-layout,
+    .tretaresia-map-layout,
+    .tretaresia-mail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .tretaresia-vitals-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tretaresia-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tretaresia-card,
+    .tretaresia-list-card,
+    .tretaresia-quest-card,
+    .tretaresia-rank-row,
+    .tretaresia-rank-hero,
+    .tretaresia-location-dossier,
+    .tretaresia-travel-form,
+    .tretaresia-pin-form,
+    .tretaresia-pin-list,
+    .tretaresia-editor,
+    .tretaresia-mastery-section,
+    .tretaresia-technique-section,
+    .tretaresia-skill-storage,
+    .tretaresia-contact-rail,
+    .tretaresia-letter-desk,
+    .tretaresia-playlist {
+        box-shadow: inset 0 1px rgba(255, 245, 204, .035), 0 10px 24px rgba(0, 0, 0, .2);
+    }
+
+    .tretaresia-portrait-previews {
+        grid-template-columns: 1fr;
+    }
+
+    .tretaresia-portrait-editor-card {
+        width: min(100%, calc(100vw - 1rem));
+        max-height: calc(100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    }
+
+    .tretaresia-control-panel {
+        inset: max(76px, calc(env(safe-area-inset-top) + 68px)) .65rem max(.65rem, env(safe-area-inset-bottom));
+        width: auto;
+        max-height: none;
+    }
+
+    .tretaresia-rpg-panel-footer {
+        min-height: 52px;
+        padding: .66rem .82rem max(.66rem, env(safe-area-inset-bottom));
+    }
+
+    .tretaresia-rpg-panel-footer #tretaresia-context-label {
+        max-width: 56%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 380px) {
+    .tretaresia-rpg-panel-heading h2 {
+        font-size: 1rem;
+    }
+
+    .tretaresia-rpg-brand-mark {
+        width: 2.72rem;
+        height: 2.72rem;
+    }
+
+    .tretaresia-character-hero {
+        grid-template-columns: 86px minmax(0, 1fr);
+        gap: .72rem;
+    }
+
+    .tretaresia-avatar {
+        width: 86px;
+    }
+
+    .tretaresia-character-copy {
+        padding-right: 6.15rem;
+    }
+
+    .tretaresia-rank-seal {
+        width: 6.4rem;
+        min-height: 4.2rem;
+    }
+
+    .tretaresia-rank-seal b {
+        font-size: .98rem;
+    }
+
+    .tretaresia-tab-button {
+        flex-basis: 72px;
+        min-width: 72px;
+    }
+}
+
+@supports (-webkit-touch-callout: none) {
+    .tretaresia-rpg-panel,
+    .tretaresia-rpg-panel-body,
+    .tretaresia-tab-list {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tretaresia-rpg-panel,
+    .tretaresia-app-shell,
+    .tretaresia-tab-panel,
+    .tretaresia-tab-button {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+
+    .tretaresia-rpg-panel-header,
+    .tretaresia-header-button,
+    .tretaresia-tab-button {
+        touch-action: manipulation;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tretaresia-rpg-overlay *,
+    .tretaresia-rpg-overlay *::before,
+    .tretaresia-rpg-overlay *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+}
