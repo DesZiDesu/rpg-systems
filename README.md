@@ -20,6 +20,8 @@ A persistent, responsive SillyTavern RPG interface built specifically for the wo
 - Main-chat system notifications for EXP, learning, training, combat, kills, level-ups, mission/quest receipt and status changes, and money changes. Every tracked currency notification identifies why money was gained or spent, with configurable event types and auto-dismiss time.
 - Inventory, quests, NPC Codex, relationship meters, abilities, revealed stats, private diary entries, contacts, physical letters, and local-device music playlists.
 - English and Thai interface/action support, hidden/visible/draft action delivery, mobile safe-area layout, touch controls, and configurable appearance.
+- Automatic same-character continuity when starting a new chat, including same-device copying for locally stored NPC portraits and music.
+- Portable JSON state export/import from the interface header. Player state and the embedded player portrait travel with the file; device-only NPC media stays local.
 
 ## Tretaresia-aware behavior
 
@@ -38,9 +40,9 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
 
-## Version 0.3.0
+## Version 0.4.0
 
-Replaces the SVG atlas with a tiled Canvas map built from the supplied Tretaresia artwork. Adds immediate mission/quest receipt tracking, offered and active states, progress and source metadata, and main-chat quest notifications while preserving the exact-location compass, freeform map marking, EXP, level-up, kill, and currency systems.
+Rebuilds the interface in a restrained black-and-gold world-ledger style based on the Tretaresia Character Forge aesthetic while preserving every existing tab and interaction. Removes the loading sequence in favor of a smooth ease-in/ease-out reveal with a single opening color pulse, redesigns the menu and main-chat notifications, and adds automatic new-chat continuity plus portable JSON export/import.
 
 ## License
 

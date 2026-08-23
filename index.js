@@ -5,6 +5,8 @@ const SETTINGS_KEY = 'tretaresia_rpg';
 const METADATA_KEY = 'tretaresia_rpg_state';
 const PROMPT_KEY = 'tretaresia_rpg_roleplay_state';
 const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
+const STATE_PACKAGE_FORMAT = 'tretaresia-rpg-state';
+const CONTINUITY_STORAGE_PREFIX = 'tretaresia-rpg:continuity:';
 const PATCH_COMMENT_PATTERN = /<!--\s*tretaresia_patch\s*:\s*([\s\S]*?)\s*-->/gi;
 const PATCH_TAG_PATTERN = /<tretaresia_patch>\s*([\s\S]*?)\s*<\/tretaresia_patch>/gi;
 const RANKS = ['Rookie', 'Basic', 'Intermediate', 'Ember', 'Custom Rank'];
@@ -239,7 +241,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     language: 'en',
     interactionMode: 'hidden',
     activityIndicator: 'full',
-    accentColor: '#8fb4a3',
+    accentColor: '#d6b458',
     glassOpacity: 86,
     glowStrength: 38,
     density: 'compact',
@@ -252,6 +254,8 @@ const DEFAULT_SETTINGS = Object.freeze({
     notifyKills: true,
     notifyCurrency: true,
     notifyQuests: true,
+    autoContinuity: true,
+    visualVersion: 2,
 });
 
 const TRANSLATIONS = {
@@ -327,13 +331,16 @@ const TRANSLATIONS = {
         Abilities: 'สกิลและความสามารถ', 'Add ability': 'เพิ่มความสามารถ', 'Ability name': 'ชื่อความสามารถ', 'Ability level': 'ระดับความสามารถ',
         Diary: 'ไดอารี', 'Add diary entry': 'เพิ่มบันทึกไดอารี', Thought: 'ความคิด', Mood: 'อารมณ์', 'Custom meters': 'ค่าสถานะกำหนดเอง', 'Add custom meter': 'เพิ่มค่ากำหนดเอง',
         'Link to Mailbox': 'เชื่อมกับ Mailbox', 'Open Mailbox': 'เปิดกล่องจดหมาย', 'Remove portrait': 'ลบรูปตัวละคร',
+        'Character continuity': 'การสานต่อตัวละคร', 'Carry this character into new chats automatically': 'นำตัวละครนี้ไปยังแชตใหม่โดยอัตโนมัติ',
+        'Export state': 'ส่งออกข้อมูล', 'Import state': 'นำเข้าข้อมูล', 'Portable backup': 'ข้อมูลสำรองแบบพกพา',
+        'State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device.': 'รวมข้อมูลและรูปผู้เล่นไว้แล้ว ส่วนรูป NPC และเสียงที่เก็บในอุปกรณ์จะถูกคัดลอกอัตโนมัติเฉพาะเมื่อสานต่อบนอุปกรณ์นี้',
     },
 };
 
 let initialized = false;
 let previousFocusedElement = null;
 let menuObserver = null;
-let bootTimer = null;
+let introTimer = null;
 let aiSyncInProgress = false;
 let pendingSave = Promise.resolve();
 let syncQueue = Promise.resolve();
@@ -355,6 +362,7 @@ let pendingComposerDraft = null;
 let audioPlayer = null;
 let audioObjectUrl = '';
 const mapView = { scale: .78, x: 264, y: 154 };
+let continuityRestoreInProgress = false;
 
 const uid = () => globalThis.crypto?.randomUUID?.() || `tretaresia-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const clone = value => globalThis.structuredClone ? structuredClone(value) : JSON.parse(JSON.stringify(value));
@@ -434,10 +442,12 @@ function defaultState() {
 function getSettings() {
     const { extensionSettings } = SillyTavern.getContext();
     extensionSettings[SETTINGS_KEY] ||= clone(DEFAULT_SETTINGS);
+    const hadVisualVersion = Object.hasOwn(extensionSettings[SETTINGS_KEY], 'visualVersion');
     for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
         if (!Object.hasOwn(extensionSettings[SETTINGS_KEY], key)) extensionSettings[SETTINGS_KEY][key] = value;
     }
     const settings = extensionSettings[SETTINGS_KEY];
+    if (!hadVisualVersion && settings.accentColor === '#8fb4a3') settings.accentColor = DEFAULT_SETTINGS.accentColor;
     if (!['en', 'th'].includes(settings.language)) settings.language = DEFAULT_SETTINGS.language;
     if (!['hidden', 'visible', 'draft'].includes(settings.interactionMode)) settings.interactionMode = DEFAULT_SETTINGS.interactionMode;
     if (!['full', 'compact', 'off'].includes(settings.activityIndicator)) settings.activityIndicator = DEFAULT_SETTINGS.activityIndicator;
@@ -446,7 +456,7 @@ function getSettings() {
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
-    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests']) settings[key] = Boolean(settings[key]);
+    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'autoContinuity']) settings[key] = Boolean(settings[key]);
     return settings;
 }
 
@@ -907,6 +917,138 @@ function getState() {
     return saved && typeof saved === 'object' ? normalize(saved) : defaultState();
 }
 
+function activeContinuityKey(context = SillyTavern.getContext()) {
+    const groupId = context.groupId ?? context.selectedGroup ?? context.group?.id;
+    if (groupId !== null && groupId !== undefined && groupId !== '') return `group:${groupId}`;
+    const characterId = context.characterId ?? context.chid;
+    const character = context.characters?.[characterId] || context.character || {};
+    const identity = text(character.avatar || character.filename || character.name || context.name2 || String(characterId ?? ''), '', 240);
+    return identity ? `character:${identity}` : '';
+}
+
+function continuityStorageKey(identity = activeContinuityKey()) {
+    return identity ? `${CONTINUITY_STORAGE_PREFIX}${encodeURIComponent(identity)}` : '';
+}
+
+function writeContinuitySnapshot(state) {
+    if (!getSettings().autoContinuity) return;
+    const context = SillyTavern.getContext();
+    const key = continuityStorageKey(activeContinuityKey(context));
+    const chatId = context.getCurrentChatId?.();
+    if (!key || !chatId) return;
+    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), state: normalize(state) };
+    try {
+        localStorage.setItem(key, JSON.stringify(record));
+    } catch (error) {
+        // A large embedded player portrait can exceed Safari's storage quota. The
+        // structured RPG state is still more important than failing continuity.
+        record.state.player.portrait = '';
+        try { localStorage.setItem(key, JSON.stringify(record)); }
+        catch (storageError) { console.warn('[Tretaresia RPG] Could not cache character continuity.', storageError); }
+    }
+}
+
+async function copyContinuityMedia(state, sourceChatId, targetChatId) {
+    if (!sourceChatId || !targetChatId || sourceChatId === targetChatId) return state;
+    const store = SillyTavern.libs?.localforage;
+    if (!store) {
+        state.npcs.forEach(entry => { entry.hasPortrait = false; });
+        state.music = { tracks: [], currentId: '', repeat: false, shuffle: false };
+        return state;
+    }
+    for (const entry of state.npcs) {
+        if (!entry.hasPortrait) continue;
+        try {
+            const blob = await store.getItem(npcPortraitStorageKey(entry.id, sourceChatId));
+            if (blob) await store.setItem(npcPortraitStorageKey(entry.id, targetChatId), blob);
+            else entry.hasPortrait = false;
+        } catch (error) {
+            entry.hasPortrait = false;
+        }
+    }
+    const copiedTracks = [];
+    for (const track of state.music.tracks) {
+        try {
+            const blob = await store.getItem(audioStorageKey(track.id, sourceChatId));
+            if (!blob) continue;
+            await store.setItem(audioStorageKey(track.id, targetChatId), blob);
+            copiedTracks.push(track);
+        } catch (error) { /* Keep continuity usable even when one local file fails. */ }
+    }
+    state.music.tracks = copiedTracks;
+    if (!copiedTracks.some(track => track.id === state.music.currentId)) state.music.currentId = copiedTracks[0]?.id || '';
+    return state;
+}
+
+async function restoreContinuityForCurrentChat() {
+    const settings = getSettings();
+    const context = SillyTavern.getContext();
+    const chatId = context.getCurrentChatId?.();
+    if (!settings.autoContinuity || continuityRestoreInProgress || !chatId || context.chatMetadata?.[METADATA_KEY] || hasUserReply()) return false;
+    const key = continuityStorageKey(activeContinuityKey(context));
+    if (!key) return false;
+    let record;
+    try { record = JSON.parse(localStorage.getItem(key) || 'null'); }
+    catch (error) { return false; }
+    if (!record?.state || record.format !== STATE_PACKAGE_FORMAT || record.sourceChatId === chatId) return false;
+    continuityRestoreInProgress = true;
+    try {
+        const continued = await copyContinuityMedia(normalize(record.state), record.sourceChatId, chatId);
+        continued.syncCursor = { user: null, assistant: null };
+        continued.updatedAt = null;
+        continued.updateSource = 'continuity';
+        const saved = await persistState(continued, 'continuity');
+        if (saved) notify('success', settings.language === 'th' ? 'สานต่อข้อมูลตัวละครในแชตใหม่แล้ว' : 'Character state continued into this new chat.');
+        return saved;
+    } finally {
+        continuityRestoreInProgress = false;
+    }
+}
+
+function portableState(state) {
+    const portable = normalize(state);
+    portable.npcs.forEach(entry => { entry.hasPortrait = false; });
+    portable.music = { tracks: [], currentId: '', repeat: portable.music.repeat, shuffle: portable.music.shuffle };
+    portable.syncCursor = { user: null, assistant: null };
+    return portable;
+}
+
+function exportStatePackage() {
+    const context = SillyTavern.getContext();
+    if (!context.getCurrentChatId?.()) return notify('warning', getSettings().language === 'th' ? 'เปิดแชตก่อนส่งออกข้อมูล' : 'Open a chat before exporting state.');
+    const state = getState();
+    const payload = {
+        format: STATE_PACKAGE_FORMAT, version: 1, exportedAt: new Date().toISOString(),
+        character: { key: activeContinuityKey(context), name: state.player.name },
+        localMediaIncluded: false, state: portableState(state),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    const safeName = (state.player.name || 'character').replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'character';
+    anchor.href = url;
+    anchor.download = `tretaresia-${safeName}-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    notify('success', getSettings().language === 'th' ? 'ส่งออกข้อมูลตัวละครแล้ว' : 'Character state exported.');
+}
+
+async function importStatePackage(file) {
+    if (!file) return;
+    const context = SillyTavern.getContext();
+    if (!context.getCurrentChatId?.()) throw new Error(getSettings().language === 'th' ? 'เปิดแชตก่อนนำเข้าข้อมูล' : 'Open a chat before importing state.');
+    const parsed = JSON.parse(await file.text());
+    const candidate = parsed?.format === STATE_PACKAGE_FORMAT ? parsed.state : parsed?.state || parsed;
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('This is not a valid Tretaresia RPG state file.');
+    const confirmed = globalThis.confirm?.(getSettings().language === 'th' ? 'แทนที่ข้อมูล RPG ของแชตนี้ด้วยไฟล์ที่เลือก?' : 'Replace this chat\'s RPG state with the selected file?');
+    if (confirmed === false) return;
+    const imported = portableState(candidate);
+    await persistState(imported, 'import');
+    notify('success', getSettings().language === 'th' ? 'นำเข้าข้อมูลตัวละครแล้ว' : 'Character state imported.');
+}
+
 function resolveLevelProgression(state) {
     let levelUps = 0;
     while (state.progression.experience >= state.progression.experienceMax && levelUps < 100) {
@@ -933,6 +1075,7 @@ async function persistState(candidate, source = 'manual') {
     renderAll(state);
     pendingSave = pendingSave.catch(() => undefined).then(() => context.saveMetadata());
     await pendingSave;
+    writeContinuitySnapshot(state);
     return true;
 }
 
@@ -1221,7 +1364,7 @@ function appearanceMenu() {
     return `<details class="tretaresia-appearance-menu">
         <summary aria-label="${html(tr('Appearance'))}" title="${html(tr('Appearance'))}"><i class="fa-solid fa-sliders"></i></summary>
         <div class="tretaresia-appearance-popover">
-            <div class="tretaresia-popover-heading"><span>${html(tr('Appearance'))}</span><small>UI 1.1</small></div>
+            <div class="tretaresia-popover-heading"><span>${html(tr('Appearance'))}</span><small>UI 2.0</small></div>
             <label class="tretaresia-setting-row"><span>${html(tr('Accent'))}</span><input type="color" data-ui-setting="accentColor" value="${settings.accentColor}"></label>
             <label class="tretaresia-setting-row"><span>${html(tr('Glass'))}</span><input type="range" data-ui-setting="glassOpacity" min="55" max="98" value="${settings.glassOpacity}"></label>
             <label class="tretaresia-setting-row"><span>${html(tr('Glow'))}</span><input type="range" data-ui-setting="glowStrength" min="0" max="100" value="${settings.glowStrength}"></label>
@@ -1243,6 +1386,21 @@ function appearanceMenu() {
         </div></details>`;
 }
 
+function continuityMenu() {
+    const settings = getSettings();
+    return `<details class="tretaresia-continuity-menu">
+        <summary aria-label="${html(tr('Character continuity'))}" title="${html(tr('Character continuity'))}"><i class="fa-solid fa-file-arrow-down"></i></summary>
+        <div class="tretaresia-continuity-popover">
+            <div class="tretaresia-popover-heading"><span>${html(tr('Character continuity'))}</span><small>${html(tr('Portable backup'))}</small></div>
+            <label class="tretaresia-continuity-toggle"><input type="checkbox" data-ui-setting="autoContinuity"${settings.autoContinuity ? ' checked' : ''}><span>${html(tr('Carry this character into new chats automatically'))}</span></label>
+            <p>${html(tr('State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device.'))}</p>
+            <div class="tretaresia-continuity-actions">
+                <button type="button" data-action="export-state"><i class="fa-solid fa-file-export"></i>${html(tr('Export state'))}</button>
+                <button type="button" data-action="import-state"><i class="fa-solid fa-file-import"></i>${html(tr('Import state'))}</button>
+            </div>
+        </div></details>`;
+}
+
 function buildInterface() {
     buildActivityIndicator();
     buildEventNotificationStack();
@@ -1255,13 +1413,6 @@ function buildInterface() {
         <button class="tretaresia-rpg-backdrop" type="button" aria-label="Close Tretaresia RPG"></button>
         <section id="tretaresia-rpg-panel" class="tretaresia-rpg-panel" role="dialog" aria-modal="true"
             aria-labelledby="tretaresia-rpg-title" tabindex="-1">
-            <div class="tretaresia-boot" aria-live="polite">
-                <div class="tretaresia-boot-rune"><i class="fa-solid fa-compass"></i></div>
-                <span class="tretaresia-boot-kicker">${html(tr('World ledger'))}</span>
-                <strong>${html(tr('Synchronizing world state'))}</strong>
-                <div class="tretaresia-boot-track"><span></span></div>
-                <small>${html(tr('Connecting to the active role-play...'))}</small>
-            </div>
             <div class="tretaresia-app-shell">
                 <header class="tretaresia-rpg-panel-header">
                     <div class="tretaresia-rpg-brand-mark"><i class="fa-solid fa-compass"></i></div>
@@ -1269,6 +1420,7 @@ function buildInterface() {
                         <h2 id="tretaresia-rpg-title">Tretaresia RPG</h2></div>
                     <div id="tretaresia-rpg-sync-state" class="tretaresia-sync-state" data-mode="ready">
                         <i class="fa-solid fa-circle"></i><span>${html(tr('Ready'))}</span></div>
+                    ${continuityMenu()}
                     ${appearanceMenu()}
                     <button id="tretaresia-rpg-close" class="menu_button menu_button_icon" type="button" aria-label="Close">
                         <i class="fa-solid fa-xmark"></i></button>
@@ -1302,6 +1454,7 @@ function buildInterface() {
             <div id="tretaresia-portrait-editor" class="tretaresia-submodal" hidden></div>
             <div id="tretaresia-letter-reader" class="tretaresia-submodal" hidden></div>
             <input id="tretaresia-npc-avatar-input" type="file" accept="image/*" hidden>
+            <input id="tretaresia-state-import" type="file" accept="application/json,.json" hidden>
         </section>`;
     document.body.appendChild(overlay);
     overlay.querySelector('.tretaresia-rpg-backdrop')?.addEventListener('click', closeInterface);
@@ -1364,8 +1517,15 @@ function onInterfaceSettingChange(event) {
     if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
     const key = control.dataset.uiSetting;
     const settings = getSettings();
-    settings[key] = control.type === 'range' ? Number(control.value) : control.value;
+    settings[key] = control.type === 'checkbox' ? control.checked : control.type === 'range' ? Number(control.value) : control.value;
     SillyTavern.getContext().saveSettingsDebounced();
+    if (key === 'autoContinuity') {
+        if (settings.autoContinuity) writeContinuitySnapshot(getState());
+        else {
+            const storageKey = continuityStorageKey();
+            if (storageKey) localStorage.removeItem(storageKey);
+        }
+    }
     if (key === 'language' && event.type === 'change') rebuildInterface();
     else {
         applyAppearance();
@@ -2400,8 +2560,7 @@ async function prefillLetterReply(entry) {
     });
 }
 
-function audioStorageKey(trackId) {
-    const chatId = SillyTavern.getContext().getCurrentChatId?.() || 'no-chat';
+function audioStorageKey(trackId, chatId = SillyTavern.getContext().getCurrentChatId?.() || 'no-chat') {
     return `tretaresia-rpg:audio:${chatId}:${trackId}`;
 }
 
@@ -2887,6 +3046,13 @@ async function onSubmit(event) {
 }
 
 async function onPanelChange(event) {
+    const stateImport = event.target.closest('#tretaresia-state-import');
+    if (stateImport instanceof HTMLInputElement && stateImport.files?.[0]) {
+        try { await importStatePackage(stateImport.files[0]); }
+        catch (error) { notify('error', error.message || 'Could not import that state file.'); }
+        finally { stateImport.value = ''; }
+        return;
+    }
     const portrait = event.target.closest('#tretaresia-avatar-input');
     if (portrait instanceof HTMLInputElement && portrait.files?.[0]) {
         try {
@@ -2965,6 +3131,12 @@ async function onPanelClick(event) {
     const state = clone(getState());
     const id = button.dataset.id;
     switch (button.dataset.action) {
+        case 'export-state':
+            exportStatePackage();
+            break;
+        case 'import-state':
+            document.getElementById('tretaresia-state-import')?.click();
+            break;
         case 'select-proficiency-icon': {
             const picker = button.closest('.tretaresia-icon-picker');
             const field = picker?.querySelector('input[name="iconKey"]');
@@ -3991,28 +4163,26 @@ function openInterface() {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     const panel = document.getElementById('tretaresia-rpg-panel');
     if (!overlay || !panel) return;
-    clearTimeout(bootTimer);
+    clearTimeout(introTimer);
     previousFocusedElement = document.activeElement;
     renderAll();
-    overlay.classList.remove('is-ready');
-    overlay.classList.add('is-open', 'is-booting');
+    overlay.classList.remove('is-closing');
+    overlay.classList.add('is-open', 'is-ready', 'is-opening');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.classList.add('tretaresia-rpg-open');
     requestAnimationFrame(() => panel.focus());
-    const delay = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 820;
-    bootTimer = setTimeout(() => {
-        overlay.classList.remove('is-booting');
-        overlay.classList.add('is-ready');
-    }, delay);
+    introTimer = setTimeout(() => overlay.classList.remove('is-opening'), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 720);
 }
 
 function closeInterface() {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (!overlay?.classList.contains('is-open')) return;
-    clearTimeout(bootTimer);
-    overlay.classList.remove('is-open', 'is-ready', 'is-booting');
+    clearTimeout(introTimer);
+    overlay.classList.add('is-closing');
+    overlay.classList.remove('is-open', 'is-ready', 'is-opening');
     overlay.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('tretaresia-rpg-open');
+    introTimer = setTimeout(() => overlay.classList.remove('is-closing'), 460);
     if (previousFocusedElement instanceof HTMLElement) previousFocusedElement.focus({ preventScroll: true });
 }
 
@@ -4091,6 +4261,13 @@ async function addSettingsDrawer() {
         setSync(settings.autoTrack ? 'ready' : 'disabled', settings.autoTrack ? tr('Ready') : tr('Tracking is off'), '', { show: !settings.autoTrack });
     });
     bindCheckbox('tretaresia-rpg-inject-state', 'injectState', settings, updatePrompt);
+    bindCheckbox('tretaresia-rpg-auto-continuity', 'autoContinuity', settings, () => {
+        if (settings.autoContinuity) writeContinuitySnapshot(getState());
+        else {
+            const storageKey = continuityStorageKey();
+            if (storageKey) localStorage.removeItem(storageKey);
+        }
+    });
     bindCheckbox('tretaresia-rpg-event-notifications', 'eventNotifications', settings);
     bindCheckbox('tretaresia-rpg-notify-exp', 'notifyExperience', settings);
     bindCheckbox('tretaresia-rpg-notify-level', 'notifyLevel', settings);
@@ -4115,14 +4292,17 @@ async function addSettingsDrawer() {
 
 function bindChatEvents() {
     const { eventSource, eventTypes } = SillyTavern.getContext();
-    eventSource.on(eventTypes.CHAT_CHANGED, () => {
+    eventSource.on(eventTypes.CHAT_CHANGED, async () => {
         cleanupAudio();
         clearNpcPortraitObjectUrls();
         closePortraitEditor();
         openedLetterId = null;
         selectedNpcId = null;
-        updatePrompt();
-        renderAll();
+        const restored = await restoreContinuityForCurrentChat();
+        if (!restored) {
+            updatePrompt();
+            renderAll();
+        }
         if (SillyTavern.getContext().getCurrentChatId?.() && !hasUserReply()) {
             setSync('ready', tr('Waiting for first reply'), getSettings().language === 'th' ? 'First Message จะยังไม่ถูกอ่านหรือบันทึก' : 'The First Message is not read or stored by the extension.');
         } else setSync('ready', tr('Ready'), '', { show: false });
@@ -4149,11 +4329,13 @@ async function initialize() {
         await addSettingsDrawer();
         observeWandMenu();
         bindChatEvents();
+        if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
+        else await restoreContinuityForCurrentChat();
         updatePrompt();
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape') closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.3.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.4.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
