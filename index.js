@@ -1581,6 +1581,69 @@ function rebuildInterface() {
 }
 
 
+function moduleSlider() {
+    return '<div class="tretaresia-module-slider" id="tretaresia-module-slider" role="tablist" aria-label="Tretaresia RPG modules">' +
+        '<button class="tretaresia-slider-arrow" type="button" data-action="tab-prev" aria-label="Previous module"><i class="fa-solid fa-angle-left"></i></button>' +
+        '<div class="tretaresia-module-window"><div class="tretaresia-module-track" id="tretaresia-module-track" style="--tab-index:0">' +
+        TAB_ORDER.map((id, index) => '<button class="tretaresia-tab-button' + (index ? '' : ' is-active') + '" type="button" role="tab" data-tab="' + id + '" aria-selected="' + String(!index) + '" tabindex="' + (index ? '-1' : '0') + '">' +
+            '<i class="' + TAB_META[id][0] + '"></i><span>' + html(tr(TAB_META[id][1])) + '</span><em>' + String(index + 1).padStart(2, '0') + ' / ' + String(TAB_ORDER.length).padStart(2, '0') + '</em></button>').join('') +
+        '</div></div><button class="tretaresia-slider-arrow" type="button" data-action="tab-next" aria-label="Next module"><i class="fa-solid fa-angle-right"></i></button>' +
+        '<span class="tretaresia-module-dots" aria-hidden="true">' + TAB_ORDER.map((_, index) => '<i' + (index ? '' : ' class="on"') + '></i>').join('') + '</span></div>';
+}
+
+function stepTab(direction) {
+    const next = Math.min(TAB_ORDER.length - 1, Math.max(0, activeTabIndex + direction));
+    if (next !== activeTabIndex) activateTab(TAB_ORDER[next]);
+}
+
+function bindModuleSlider(overlay) {
+    const slider = overlay.querySelector('#tretaresia-module-slider');
+    const window_ = overlay.querySelector('.tretaresia-module-window');
+    const track = overlay.querySelector('#tretaresia-module-track');
+    if (!slider || !window_ || !track) return;
+    let startX = 0;
+    let startY = 0;
+    let dragging = false;
+    let locked = false;
+    const release = event => {
+        if (!dragging) return;
+        dragging = false;
+        track.style.transition = '';
+        track.style.setProperty('--tab-drag', '0px');
+        const delta = (Number.isFinite(event.clientX) ? event.clientX : startX) - startX;
+        if (locked && Math.abs(delta) > 44) stepTab(delta < 0 ? 1 : -1);
+    };
+    window_.addEventListener('pointerdown', event => {
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+        dragging = true;
+        locked = false;
+        startX = event.clientX;
+        startY = event.clientY;
+        track.style.transition = 'none';
+    });
+    window_.addEventListener('pointermove', event => {
+        if (!dragging) return;
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+        if (!locked) {
+            if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) return release(event);
+            if (Math.abs(dx) < 8) return;
+            locked = true;
+        }
+        const limit = (window_.getBoundingClientRect().width || 1) * .3;
+        track.style.setProperty('--tab-drag', String(Math.max(-limit, Math.min(limit, dx))) + 'px');
+    });
+    window_.addEventListener('pointerup', release);
+    window_.addEventListener('pointercancel', release);
+    window_.addEventListener('pointerleave', release);
+    slider.addEventListener('keydown', event => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        stepTab(event.key === 'ArrowRight' ? 1 : -1);
+        overlay.querySelector('.tretaresia-tab-button.is-active')?.focus({ preventScroll: true });
+    });
+}
+
 function onInterfaceSettingChange(event) {
     const portraitControl = event.target.closest('[data-portrait-control]');
     if (portraitControl instanceof HTMLInputElement) {
