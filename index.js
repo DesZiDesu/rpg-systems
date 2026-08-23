@@ -1412,10 +1412,218 @@ function currentMapPoint(state) {
     };
 }
 
+
+const mapContinentPaths = new Map();
+let mapHitContext = null;
+
+function continentPath(continent) {
+    if (typeof Path2D !== 'function') return null;
+    if (!mapContinentPaths.has(continent.id)) mapContinentPaths.set(continent.id, new Path2D(continent.path));
+    return mapContinentPaths.get(continent.id);
+}
+
+function hitContext() {
+    if (!mapHitContext) mapHitContext = document.createElement('canvas').getContext('2d');
+    return mapHitContext;
+}
+
 function continentAtPoint(x, y, hintedId = '') {
     const hinted = WORLD_CONTINENTS.find(entry => entry.id === hintedId);
     if (hinted) return hinted;
-    return WORLD_CONTINENTS.find(entry => x >= entry.bounds[0] && x <= entry.bounds[2] && y >= entry.bounds[1] && y <= entry.bounds[3]) || null;
+    const context = hitContext();
+    if (context) {
+        const match = WORLD_CONTINENTS.find(entry => {
+            const path = continentPath(entry);
+            return path && context.isPointInPath(path, x, y);
+        });
+        if (match) return match;
+    }
+    return WORLD_CONTINENTS.find(entry =>
+        x >= entry.bounds[0] && x <= entry.bounds[2] && y >= entry.bounds[1] && y <= entry.bounds[3]) || null;
+}
+
+function hashString(value) {
+    let hash = 2166136261;
+    for (let index = 0; index < value.length; index += 1) {
+        hash ^= value.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+}
+
+function seededRandom(seed) {
+    let value = (seed >>> 0) || 1;
+    return () => {
+        value = (value * 1664525 + 1013904223) >>> 0;
+        return value / 4294967296;
+    };
+}
+
+function mapPalette() {
+    const styles = getComputedStyle(document.documentElement);
+    const read = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
+    const accent = read('--tretaresia-accent', '#d6b458');
+    const alt = read('--tretaresia-accent-alt', '#f4dc93');
+    const ink = read('--tretaresia-ink', '#ece7da');
+    const surface = read('--tretaresia-surface', '#040404');
+    const light = luminance(surface) > .45;
+    return {
+        accent, alt, ink, surface, light,
+        ocean: light ? '#ccd9e0' : '#070d12',
+        oceanDeep: light ? '#aebfca' : '#03070a',
+        land: light ? '#e8e3d3' : '#16160f',
+        landHigh: light ? '#f4efdf' : '#23231a',
+        graticule: rgbaOf(ink, light ? .13 : .085),
+        label: rgbaOf(ink, light ? .74 : .7),
+        halo: light ? 'rgba(255,255,255,.9)' : 'rgba(2,6,9,.88)',
+        faint: rgbaOf(ink, light ? .4 : .34),
+    };
+}
+
+function drawTerrain(context, continent, palette, detail, hair) {
+    const path = continentPath(continent);
+    if (!path) return;
+    context.save();
+    context.clip(path);
+    const random = seededRandom(hashString(continent.id));
+    const [left, top, right, bottom] = continent.bounds;
+    const width = right - left;
+    const height = bottom - top;
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    context.strokeStyle = rgbaOf(palette.ink, palette.light ? .17 : .14);
+    context.lineWidth = hair * 2.3;
+    const ridges = detail === 0 ? 24 : detail === 1 ? 52 : 96;
+    for (let index = 0; index < ridges; index += 1) {
+        const x = left + random() * width;
+        const y = top + random() * height;
+        const span = 14 + random() * 24;
+        context.beginPath();
+        context.moveTo(x - span, y + span * .52);
+        context.lineTo(x, y - span * .48);
+        context.lineTo(x + span, y + span * .52);
+        context.stroke();
+    }
+    if (detail >= 1) {
+        context.strokeStyle = rgbaOf(palette.light ? '#3f7f96' : '#55a7b8', .5);
+        context.lineWidth = hair * 2.8;
+        const rivers = detail === 1 ? 3 : 6;
+        for (let index = 0; index < rivers; index += 1) {
+            let x = left + random() * width;
+            let y = top + random() * height * .3;
+            context.beginPath();
+            context.moveTo(x, y);
+            for (let step = 0; step < 7; step += 1) {
+                x += (random() - .5) * width * .16;
+                y += height * .11;
+                context.lineTo(x, y);
+            }
+            context.stroke();
+        }
+    }
+    context.restore();
+}
+
+function drawGraticule(context, canvas, palette, detail) {
+    const step = detail === 0 ? 400 : detail === 1 ? 200 : 100;
+    const bounds = mapVisibleBounds();
+    context.save();
+    context.lineWidth = 1;
+    context.strokeStyle = palette.graticule;
+    context.beginPath();
+    for (let x = Math.ceil(bounds.left / step) * step; x <= bounds.right; x += step) {
+        const point = mapCanvasPoint(x, 0, canvas.width, canvas.height);
+        context.moveTo(point.x, 0);
+        context.lineTo(point.x, canvas.height);
+    }
+    for (let y = Math.ceil(bounds.top / step) * step; y <= bounds.bottom; y += step) {
+        const point = mapCanvasPoint(0, y, canvas.width, canvas.height);
+        context.moveTo(0, point.y);
+        context.lineTo(canvas.width, point.y);
+    }
+    context.stroke();
+    context.strokeStyle = rgbaOf(palette.accent, .55);
+    context.lineWidth = 2;
+    context.beginPath();
+    for (let x = Math.ceil(bounds.left / step) * step; x <= bounds.right; x += step) {
+        const point = mapCanvasPoint(x, 0, canvas.width, canvas.height);
+        context.moveTo(point.x, 0);
+        context.lineTo(point.x, 9);
+        context.moveTo(point.x, canvas.height);
+        context.lineTo(point.x, canvas.height - 9);
+    }
+    for (let y = Math.ceil(bounds.top / step) * step; y <= bounds.bottom; y += step) {
+        const point = mapCanvasPoint(0, y, canvas.width, canvas.height);
+        context.moveTo(0, point.y);
+        context.lineTo(9, point.y);
+        context.moveTo(canvas.width, point.y);
+        context.lineTo(canvas.width - 9, point.y);
+    }
+    context.stroke();
+    context.restore();
+}
+
+function drawScaleBar(context, canvas, palette) {
+    const perUnit = canvas.width / WORLD_MAP_WIDTH * mapView.scale;
+    const target = canvas.width * .16;
+    const units = [50, 100, 200, 400, 800, 1600].reduce((best, value) =>
+        Math.abs(value * perUnit - target) < Math.abs(best * perUnit - target) ? value : best, 50);
+    const length = units * perUnit;
+    const x = 16;
+    const y = canvas.height - 18;
+    context.save();
+    context.strokeStyle = rgbaOf(palette.accent, .85);
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(x, y - 6);
+    context.lineTo(x, y);
+    context.lineTo(x + length, y);
+    context.lineTo(x + length, y - 6);
+    context.moveTo(x + length / 2, y);
+    context.lineTo(x + length / 2, y - 4);
+    context.stroke();
+    context.restore();
+    drawMapLabel(context, units + ' u', x + length / 2, y - 14, {
+        size: 10, color: palette.label, stroke: palette.halo,
+    });
+}
+
+function drawVignette(context, canvas, palette) {
+    const gradient = context.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * .3,
+        canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * .78);
+    gradient.addColorStop(0, 'rgba(0,0,0,0)');
+    gradient.addColorStop(1, palette.light ? 'rgba(40,50,60,.16)' : 'rgba(0,0,0,.42)');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawMarkerGlyph(context, x, y, tier, fill, ring, size) {
+    context.save();
+    context.fillStyle = fill;
+    context.strokeStyle = ring;
+    context.lineWidth = 2;
+    context.beginPath();
+    if (tier === 0) {
+        context.moveTo(x, y - size);
+        context.lineTo(x + size, y);
+        context.lineTo(x, y + size);
+        context.lineTo(x - size, y);
+        context.closePath();
+    } else if (tier === 1) {
+        context.arc(x, y, size * .85, 0, Math.PI * 2);
+    } else {
+        context.rect(x - size * .62, y - size * .62, size * 1.24, size * 1.24);
+    }
+    context.fill();
+    context.stroke();
+    if (tier === 1) {
+        context.beginPath();
+        context.arc(x, y, size * .3, 0, Math.PI * 2);
+        context.fillStyle = ring;
+        context.fill();
+    }
+    context.restore();
 }
 
 function nearestMapLocation(x, y, continentName = '') {
@@ -2231,17 +2439,45 @@ function renderMap(panel, state) {
         ? state.location.pins.some(pin => pin.x !== null && Math.hypot(pin.x - selected.x, pin.y - selected.y) < 12)
         : pinIds.has(selected.id);
     panel.innerHTML = `${heading('Tretaresia World Atlas', `${state.location.continent} · ${state.location.region}`, 'fa-solid fa-earth-asia')}
-        <div class="tretaresia-map-layout"><div class="tretaresia-map-frame"><div class="tretaresia-map-toolbar" aria-label="Map controls">
-            <button type="button" data-action="map-zoom-in" title="Zoom in"><i class="fa-solid fa-plus"></i></button>
-            <button type="button" data-action="map-zoom-out" title="Zoom out"><i class="fa-solid fa-minus"></i></button>
-            <button type="button" data-action="map-center" title="Center current location"><i class="fa-solid fa-crosshairs"></i></button>
-            <button type="button" data-action="map-reset" title="Show whole world"><i class="fa-solid fa-expand"></i></button></div>
-            <div class="tretaresia-map-lod"><i class="fa-solid fa-layer-group"></i><span data-map-lod>World overview</span><b data-map-zoom>${Math.round(mapView.scale * 100)}%</b></div>
-            <button class="tretaresia-world-compass" type="button" data-action="map-compass-north" title="Center your location on the north-up world map" aria-label="World compass, current heading ${Math.round(current.heading)} degrees">
-                <span class="north">N</span><span class="east">E</span><span class="south">S</span><span class="west">W</span>
-                <i class="tretaresia-compass-needle" style="transform:rotate(${current.heading}deg)"></i><em>${Math.round(current.heading)}°</em></button>
-            <canvas class="tretaresia-world-map" role="img" aria-label="Interactive tiled map of Tretaresia; click anywhere to select exact coordinates"></canvas>
-            <div class="tretaresia-map-legend"><span><i class="current"></i>${html(tr('Current'))}</span><span><i class="known"></i>${html(tr('Discovered'))}</span><span><i class="marked"></i>${html(tr('Marked'))}</span><small>Click anywhere to select · ${html(tr('Drag to pan · Pinch or scroll to zoom'))}</small></div></div>
+        
+<div class="tretaresia-map-layout"><div class="tretaresia-map-frame">
+    <div class="tretaresia-map-instruments">
+        <button type="button" data-action="map-zoom-in" title="Zoom in" aria-label="Zoom in"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+        <button type="button" data-action="map-zoom-out" title="Zoom out" aria-label="Zoom out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+        <button type="button" data-action="map-center" title="${html(tr('Locate me'))}" aria-label="${html(tr('Locate me'))}"><i class="fa-solid fa-location-crosshairs"></i></button>
+        <button type="button" data-action="map-reset" title="${html(tr('Full map view'))}" aria-label="${html(tr('Full map view'))}"><i class="fa-solid fa-expand"></i></button>
+    </div>
+    <button class="tretaresia-compass-rose" type="button" data-action="map-compass-north"
+        title="${html(tr('Locate me'))}" aria-label="${html(tr('Locate me'))}">
+        <svg viewBox="0 0 88 88" aria-hidden="true">
+            <circle class="cr-dial" cx="44" cy="44" r="41"/>
+            <circle class="cr-inner" cx="44" cy="44" r="30"/>
+            <g class="cr-ticks">
+                <path d="M44 5v7M44 76v7M5 44h7M76 44h7"/>
+                <path d="M17 17l5 5M71 17l-5 5M17 71l5-5M71 71l-5-5"/>
+            </g>
+            <g data-compass-needle transform="rotate(0 44 44)">
+                <path class="cr-n" d="M44 12 51 44 44 38 37 44Z"/>
+                <path class="cr-s" d="M44 76 37 44 44 50 51 44Z"/>
+            </g>
+            <circle class="cr-hub" cx="44" cy="44" r="3.4"/>
+        </svg>
+        <b>N</b><em data-compass-bearing>000°</em>
+    </button>
+    <div class="tretaresia-map-hud">
+        <span><i class="fa-solid fa-layer-group"></i><b data-map-lod>WORLD</b></span>
+        <span><i class="fa-solid fa-magnifying-glass"></i><b data-map-zoom>78%</b></span>
+        <span><i class="fa-solid fa-crosshairs"></i><b data-map-readout>0000 E · 0000 S</b></span>
+    </div>
+    <canvas class="tretaresia-world-map" role="img" aria-label="Interactive map of Tretaresia; click anywhere to select exact coordinates"></canvas>
+    <span class="tretaresia-map-ping" data-map-ping hidden></span>
+    <div class="tretaresia-map-legend">
+        <span><i class="current"></i>${html(tr('Current'))}</span>
+        <span><i class="known"></i>${html(tr('Discovered'))}</span>
+        <span><i class="marked"></i>${html(tr('Marked'))}</span>
+        <small>${html(tr('Drag to pan · Pinch or scroll to zoom'))}</small>
+    </div>
+</div>
             <aside class="tretaresia-map-sidebar"><article class="tretaresia-location-dossier"><span class="tretaresia-eyebrow">${html(tr('Selected location'))}</span><h4>${html(selected.name)}</h4>
                 <p>${html(selected.continent)}</p><div class="tretaresia-zone-badge" data-zone="${html(selected.zone)}"><i class="fa-solid fa-shield"></i>${html(tr(selected.zone))}</div>
                 <dl><div><dt>${html(tr('Region'))}</dt><dd>${html(selected.region || LOCATION_REGIONS[selected.name] || selected.name)}</dd></div>
@@ -2321,12 +2557,13 @@ function drawMapLabel(context, label, x, y, options = {}) {
     context.restore();
 }
 
+
 function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), state = getState()) {
     const canvas = panel?.querySelector('.tretaresia-world-map');
     if (!(canvas instanceof HTMLCanvasElement)) return;
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-    const pixelRatio = Math.min(1.5, globalThis.devicePixelRatio || 1);
+    const pixelRatio = Math.min(1.6, globalThis.devicePixelRatio || 1);
     const targetWidth = Math.max(1, Math.round(rect.width * pixelRatio));
     const targetHeight = Math.max(1, Math.round(rect.height * pixelRatio));
     if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
@@ -2335,105 +2572,224 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     }
     const context = canvas.getContext('2d', { alpha: false, desynchronized: true });
     if (!context) return;
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    context.fillStyle = '#102f3b';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
+    const palette = mapPalette();
+    const detail = mapLod();
+    const bounds = mapVisibleBounds();
     const transformX = canvas.width / WORLD_MAP_WIDTH;
     const transformY = canvas.height / WORLD_MAP_HEIGHT;
-    context.setTransform(transformX * mapView.scale, 0, 0, transformY * mapView.scale, transformX * mapView.x, transformY * mapView.y);
+    const hair = 1 / (mapView.scale * Math.min(transformX, transformY));
+
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    const ocean = context.createLinearGradient(0, 0, 0, canvas.height);
+    ocean.addColorStop(0, palette.ocean);
+    ocean.addColorStop(1, palette.oceanDeep);
+    context.fillStyle = ocean;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.setTransform(transformX * mapView.scale, 0, 0, transformY * mapView.scale,
+        transformX * mapView.x, transformY * mapView.y);
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
 
-    const fallback = worldTile(WORLD_TILE_LEVELS[0], 0, 0);
-    if (fallback.status === 'ready') context.drawImage(fallback.image, 0, 0, WORLD_MAP_WIDTH, WORLD_MAP_HEIGHT);
+    let tilesDrawn = false;
+    if (getSettings().mapArtwork === 'tiles') {
+        const fallback = worldTile(WORLD_TILE_LEVELS[0], 0, 0);
+        if (fallback.status === 'ready') {
+            context.drawImage(fallback.image, 0, 0, WORLD_MAP_WIDTH, WORLD_MAP_HEIGHT);
+            tilesDrawn = true;
+        }
+        const level = worldTileLevel();
+        const sourceLeft = Math.max(0, bounds.left / WORLD_MAP_WIDTH * level.width);
+        const sourceTop = Math.max(0, bounds.top / WORLD_MAP_HEIGHT * level.height);
+        const sourceRight = Math.min(level.width, bounds.right / WORLD_MAP_WIDTH * level.width);
+        const sourceBottom = Math.min(level.height, bounds.bottom / WORLD_MAP_HEIGHT * level.height);
+        const firstColumn = Math.max(0, Math.floor(sourceLeft / WORLD_TILE_SIZE));
+        const lastColumn = Math.min(level.columns - 1, Math.floor(Math.max(0, sourceRight - 1) / WORLD_TILE_SIZE));
+        const firstRow = Math.max(0, Math.floor(sourceTop / WORLD_TILE_SIZE));
+        const lastRow = Math.min(level.rows - 1, Math.floor(Math.max(0, sourceBottom - 1) / WORLD_TILE_SIZE));
+        for (let row = firstRow; row <= lastRow; row += 1) {
+            for (let column = firstColumn; column <= lastColumn; column += 1) {
+                const tile = worldTile(level, column, row);
+                if (tile.status !== 'ready') continue;
+                context.drawImage(tile.image,
+                    column * WORLD_TILE_SIZE / level.width * WORLD_MAP_WIDTH,
+                    row * WORLD_TILE_SIZE / level.height * WORLD_MAP_HEIGHT,
+                    tile.image.naturalWidth / level.width * WORLD_MAP_WIDTH,
+                    tile.image.naturalHeight / level.height * WORLD_MAP_HEIGHT);
+                tilesDrawn = true;
+            }
+        }
+    }
 
-    const level = worldTileLevel();
-    const lod = mapLod();
-    const bounds = mapVisibleBounds();
-    const sourceLeft = Math.max(0, bounds.left / WORLD_MAP_WIDTH * level.width);
-    const sourceTop = Math.max(0, bounds.top / WORLD_MAP_HEIGHT * level.height);
-    const sourceRight = Math.min(level.width, bounds.right / WORLD_MAP_WIDTH * level.width);
-    const sourceBottom = Math.min(level.height, bounds.bottom / WORLD_MAP_HEIGHT * level.height);
-    const firstColumn = Math.max(0, Math.floor(sourceLeft / WORLD_TILE_SIZE));
-    const lastColumn = Math.min(level.columns - 1, Math.floor(Math.max(0, sourceRight - 1) / WORLD_TILE_SIZE));
-    const firstRow = Math.max(0, Math.floor(sourceTop / WORLD_TILE_SIZE));
-    const lastRow = Math.min(level.rows - 1, Math.floor(Math.max(0, sourceBottom - 1) / WORLD_TILE_SIZE));
-    for (let row = firstRow; row <= lastRow; row += 1) {
-        for (let column = firstColumn; column <= lastColumn; column += 1) {
-            const tile = worldTile(level, column, row);
-            if (tile.status !== 'ready') continue;
-            const worldX = column * WORLD_TILE_SIZE / level.width * WORLD_MAP_WIDTH;
-            const worldY = row * WORLD_TILE_SIZE / level.height * WORLD_MAP_HEIGHT;
-            const worldWidth = tile.image.naturalWidth / level.width * WORLD_MAP_WIDTH;
-            const worldHeight = tile.image.naturalHeight / level.height * WORLD_MAP_HEIGHT;
-            context.drawImage(tile.image, worldX, worldY, worldWidth, worldHeight);
+    for (const continent of WORLD_CONTINENTS) {
+        if (continent.bounds[2] < bounds.left || continent.bounds[0] > bounds.right
+            || continent.bounds[3] < bounds.top || continent.bounds[1] > bounds.bottom) continue;
+        const path = continentPath(continent);
+        if (!tilesDrawn && path) {
+            const shade = context.createLinearGradient(0, continent.bounds[1], 0, continent.bounds[3]);
+            shade.addColorStop(0, palette.landHigh);
+            shade.addColorStop(1, palette.land);
+            context.fillStyle = shade;
+            context.fill(path);
+            drawTerrain(context, continent, palette, detail, hair);
+        }
+        if (path) {
+            context.strokeStyle = rgbaOf(palette.accent, .18);
+            context.lineWidth = hair * 9;
+            context.stroke(path);
+            context.strokeStyle = rgbaOf(palette.alt, .78);
+            context.lineWidth = hair * 2;
+            context.stroke(path);
         }
     }
 
     context.setTransform(1, 0, 0, 1, 0, 0);
-    const discovered = new Set(state.location.discovered);
-    const pinIds = new Set(state.location.pins.map(pin => pin.locationId));
-    const visible = WORLD_LOCATIONS.filter(location => (
-        (location.tier <= lod || location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name))
-        && location.x >= bounds.left && location.x <= bounds.right && location.y >= bounds.top && location.y <= bounds.bottom
-    ));
-    mapRenderedPoints = [];
-    if (lod === 0) {
+    drawGraticule(context, canvas, palette, detail);
+    drawVignette(context, canvas, palette);
+
+    if (detail === 0) {
         for (const continent of WORLD_CONTINENTS) {
             const point = mapCanvasPoint(continent.label[0], continent.label[1], canvas.width, canvas.height);
-            drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, { size: Math.max(9, canvas.width / 90), weight: 800, color: 'rgba(248,243,220,.78)', stroke: 'rgba(4,13,17,.72)' });
+            drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, {
+                size: Math.max(10, canvas.width / 88), weight: 800, color: palette.label, stroke: palette.halo,
+            });
         }
     }
+
+    const discovered = new Set(state.location.discovered);
+    const pinIds = new Set(state.location.pins.map(pin => pin.locationId));
+    mapRenderedPoints = [];
+    const visible = WORLD_LOCATIONS.filter(location =>
+        (location.tier <= detail || location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name))
+        && location.x >= bounds.left && location.x <= bounds.right
+        && location.y >= bounds.top && location.y <= bounds.bottom);
+
     for (const location of visible) {
         const point = mapCanvasPoint(location.x, location.y, canvas.width, canvas.height);
-        if (point.x < -80 || point.y < -40 || point.x > canvas.width + 80 || point.y > canvas.height + 40) continue;
+        if (point.x < -80 || point.y < -50 || point.x > canvas.width + 80 || point.y > canvas.height + 50) continue;
         const selected = location.id === mapSelectionId;
         const known = discovered.has(location.name);
-        const pinned = pinIds.has(location.id);
-        context.beginPath();
-        context.arc(point.x, point.y, selected ? 9 : 6, 0, Math.PI * 2);
-        context.fillStyle = selected ? '#ffd370' : pinned ? '#c58bd6' : known ? '#8fd8bd' : '#d7dfd4';
-        context.fill();
-        context.lineWidth = selected ? 3 : 2;
-        context.strokeStyle = 'rgba(5,18,23,.9)';
-        context.stroke();
+        const size = location.tier === 0 ? 9 : location.tier === 1 ? 7 : 5.5;
         if (selected) {
-            context.beginPath(); context.arc(point.x, point.y, 15, 0, Math.PI * 2);
-            context.strokeStyle = 'rgba(255,211,112,.72)'; context.lineWidth = 2; context.stroke();
+            context.save();
+            context.strokeStyle = rgbaOf(palette.alt, .8);
+            context.lineWidth = 2;
+            context.setLineDash([5, 4]);
+            context.beginPath();
+            context.arc(point.x, point.y, size + 10, 0, Math.PI * 2);
+            context.stroke();
+            context.restore();
         }
-        drawMapLabel(context, location.name, point.x, point.y + 17, { size: location.tier === 0 ? 12 : location.tier === 1 ? 10 : 9 });
+        drawMarkerGlyph(context, point.x, point.y, location.tier,
+            selected ? palette.alt : known ? palette.accent : palette.faint,
+            palette.halo, size);
+        drawMapLabel(context, location.name, point.x, point.y + size + 12, {
+            size: location.tier === 0 ? 12 : location.tier === 1 ? 10.5 : 9.5,
+            color: palette.label, stroke: palette.halo,
+        });
         mapRenderedPoints.push({ type: 'location', id: location.id, x: point.x, y: point.y, radius: 22 });
     }
+
     for (const pin of state.location.pins) {
         const site = mapLocation(pin.locationId);
         const x = pin.x ?? site?.x;
         const y = pin.y ?? site?.y;
-        if (!Number.isFinite(x) || !Number.isFinite(y) || x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) continue;
+        if (!Number.isFinite(x) || !Number.isFinite(y)
+            || x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) continue;
         const point = mapCanvasPoint(x, y, canvas.width, canvas.height);
-        context.fillStyle = '#e0a85a'; context.strokeStyle = '#21150c'; context.lineWidth = 2;
-        context.beginPath(); context.arc(point.x, point.y - 5, 7, 0, Math.PI * 2); context.fill(); context.stroke();
-        context.beginPath(); context.moveTo(point.x - 5, point.y); context.lineTo(point.x, point.y + 11); context.lineTo(point.x + 5, point.y); context.fill();
-        if (!site || lod > 0) drawMapLabel(context, pin.label, point.x, point.y + 24, { size: 10, color: '#ffe0a5' });
+        context.save();
+        context.fillStyle = palette.alt;
+        context.strokeStyle = palette.halo;
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(point.x, point.y + 12);
+        context.lineTo(point.x - 6, point.y - 2);
+        context.lineTo(point.x + 6, point.y - 2);
+        context.closePath();
+        context.fill();
+        context.stroke();
+        context.beginPath();
+        context.arc(point.x, point.y - 6, 6, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+        context.restore();
+        if (!site || detail > 0) drawMapLabel(context, pin.label, point.x, point.y + 24, {
+            size: 10, color: palette.label, stroke: palette.halo,
+        });
         mapRenderedPoints.push({ type: 'pin', id: pin.id, x: point.x, y: point.y, radius: 22 });
     }
+
     if (mapDraftPoint) {
         const point = mapCanvasPoint(mapDraftPoint.x, mapDraftPoint.y, canvas.width, canvas.height);
-        context.strokeStyle = '#ffd370'; context.lineWidth = 2; context.setLineDash([5, 4]);
-        context.beginPath(); context.arc(point.x, point.y, 15, 0, Math.PI * 2); context.moveTo(point.x - 23, point.y); context.lineTo(point.x + 23, point.y); context.moveTo(point.x, point.y - 23); context.lineTo(point.x, point.y + 23); context.stroke(); context.setLineDash([]);
-        drawMapLabel(context, mapDraftPoint.name || 'Selected coordinate', point.x, point.y + 29, { size: 10, color: '#ffd370' });
+        context.save();
+        context.strokeStyle = palette.alt;
+        context.lineWidth = 2;
+        context.setLineDash([5, 4]);
+        context.beginPath();
+        context.arc(point.x, point.y, 16, 0, Math.PI * 2);
+        context.moveTo(point.x - 25, point.y);
+        context.lineTo(point.x + 25, point.y);
+        context.moveTo(point.x, point.y - 25);
+        context.lineTo(point.x, point.y + 25);
+        context.stroke();
+        context.restore();
+        drawMapLabel(context, mapDraftPoint.name || 'Selected coordinate', point.x, point.y + 32, {
+            size: 10, color: palette.alt, stroke: palette.halo,
+        });
     }
+
     const current = currentMapPoint(state);
     const player = mapCanvasPoint(current.x, current.y, canvas.width, canvas.height);
-    context.beginPath(); context.arc(player.x, player.y, 13, 0, Math.PI * 2); context.fillStyle = 'rgba(5,35,40,.88)'; context.fill(); context.strokeStyle = '#71f4dd'; context.lineWidth = 3; context.stroke();
-    context.beginPath(); context.arc(player.x, player.y, 5, 0, Math.PI * 2); context.fillStyle = '#eafffa'; context.fill();
     const heading = (current.heading - 90) * Math.PI / 180;
-    context.beginPath(); context.moveTo(player.x + Math.cos(heading) * 24, player.y + Math.sin(heading) * 24); context.lineTo(player.x + Math.cos(heading + 2.5) * 10, player.y + Math.sin(heading + 2.5) * 10); context.lineTo(player.x + Math.cos(heading - 2.5) * 10, player.y + Math.sin(heading - 2.5) * 10); context.closePath(); context.fillStyle = '#71f4dd'; context.fill();
-    drawMapLabel(context, `YOU · ${current.name}`, player.x, player.y + 25, { size: 11, color: '#dffff9' });
+    context.save();
+    const cone = context.createRadialGradient(player.x, player.y, 4, player.x, player.y, 46);
+    cone.addColorStop(0, rgbaOf(palette.alt, .5));
+    cone.addColorStop(1, rgbaOf(palette.alt, 0));
+    context.fillStyle = cone;
+    context.beginPath();
+    context.moveTo(player.x, player.y);
+    context.arc(player.x, player.y, 46, heading - .42, heading + .42);
+    context.closePath();
+    context.fill();
+    context.beginPath();
+    context.arc(player.x, player.y, 12, 0, Math.PI * 2);
+    context.fillStyle = palette.halo;
+    context.fill();
+    context.lineWidth = 3;
+    context.strokeStyle = palette.alt;
+    context.stroke();
+    context.beginPath();
+    context.arc(player.x, player.y, 4.5, 0, Math.PI * 2);
+    context.fillStyle = palette.alt;
+    context.fill();
+    context.restore();
+    drawMapLabel(context, current.name.toUpperCase(), player.x, player.y + 26, {
+        size: 10.5, weight: 800, color: palette.alt, stroke: palette.halo,
+    });
+
+    drawScaleBar(context, canvas, palette);
+
+    const ping = panel.querySelector('[data-map-ping]');
+    if (ping instanceof HTMLElement) {
+        const inside = player.x > 0 && player.y > 0 && player.x < canvas.width && player.y < canvas.height;
+        ping.hidden = !inside;
+        ping.style.left = player.x / pixelRatio + 'px';
+        ping.style.top = player.y / pixelRatio + 'px';
+    }
+    const readout = panel.querySelector('[data-map-readout]');
     const lodText = panel.querySelector('[data-map-lod]');
     const zoomText = panel.querySelector('[data-map-zoom]');
-    if (lodText) lodText.textContent = ['World overview', 'Regional detail', 'Local detail'][lod];
-    if (zoomText) zoomText.textContent = `${Math.round(mapView.scale * 100)}% · ${visible.length} places · tiles ${level.z}`;
+    const centre = {
+        x: (canvas.width / 2 / transformX - mapView.x) / mapView.scale,
+        y: (canvas.height / 2 / transformY - mapView.y) / mapView.scale,
+    };
+    if (readout) readout.textContent = coordinatesLabel(centre.x, centre.y);
+    if (lodText) lodText.textContent = ['WORLD', 'REGIONAL', 'LOCAL'][detail];
+    if (zoomText) zoomText.textContent = Math.round(mapView.scale * 100) + '%';
+    const needle = panel.querySelector('[data-compass-needle]');
+    if (needle instanceof SVGElement) needle.setAttribute('transform', 'rotate(' + current.heading + ' 44 44)');
+    const bearing = panel.querySelector('[data-compass-bearing]');
+    if (bearing) bearing.textContent = String(Math.round(current.heading)).padStart(3, '0') + '°';
 }
 
 function scheduleMapDraw(panel, state) {
