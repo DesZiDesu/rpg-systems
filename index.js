@@ -1431,139 +1431,134 @@ const tabButton = (id, icon, label, active = false) => `
         data-tab="${id}" aria-selected="${active}"><i class="${icon}"></i><span>${html(tr(label))}</span></button>`;
 
 function controlCenterTrigger() {
-    return `<button id="tretaresia-control-trigger" class="tretaresia-header-button tretaresia-control-trigger" type="button"
-        data-action="toggle-control-center" aria-label="${html(tr('Control center'))}" title="${html(tr('Control center'))}"
-        aria-controls="tretaresia-control-layer" aria-expanded="false"><i class="fa-solid fa-sliders"></i></button>`;
+    return '<button id="tretaresia-control-trigger" class="tretaresia-header-button tretaresia-control-trigger" type="button" data-action="toggle-control-center" aria-label="' +
+        html(tr('Control center')) + '" title="' + html(tr('Control center')) + '" aria-expanded="false"><i class="fa-solid fa-sliders"></i></button>';
 }
 
-function controlCenterLayer() {
+function controlCenterMarkup() {
     const settings = getSettings();
-    return `<div id="tretaresia-control-layer" class="tretaresia-control-layer" hidden>
-        <button class="tretaresia-control-scrim" type="button" data-action="close-control-center" aria-label="${html(tr('Close'))}"></button>
-        <section class="tretaresia-control-panel" role="dialog" aria-modal="true" aria-label="${html(tr('Control center'))}" tabindex="-1">
-            <header class="tretaresia-control-head">
-                <span class="tretaresia-control-sigil"><i class="fa-solid fa-compass-drafting"></i></span>
-                <div><small>TRETARESIA / UI 3.0</small><h3>${html(tr('Control center'))}</h3></div>
-                <button type="button" data-action="close-control-center" aria-label="${html(tr('Close'))}"><i class="fa-solid fa-xmark"></i></button>
-            </header>
-            <div class="tretaresia-control-scroll">
-                <section class="tretaresia-control-section">
-                    <div class="tretaresia-control-section-title"><b>01</b><span><strong>${html(tr('Interface'))}</strong><small>${html(tr('Visual controls'))}</small></span></div>
-                    <div class="tretaresia-control-grid">
-                        <label class="tretaresia-control-field color"><span>${html(tr('Accent'))}</span><input type="color" data-ui-setting="accentColor" value="${settings.accentColor}"></label>
-                        <label class="tretaresia-control-field full"><span>${html(tr('Glass'))}<output>${settings.glassOpacity}%</output></span><input type="range" data-ui-setting="glassOpacity" min="55" max="98" value="${settings.glassOpacity}"></label>
-                        <label class="tretaresia-control-field full"><span>${html(tr('Glow'))}<output>${settings.glowStrength}%</output></span><input type="range" data-ui-setting="glowStrength" min="0" max="100" value="${settings.glowStrength}"></label>
-                        <label class="tretaresia-control-field"><span>${html(tr('Density'))}</span><select data-ui-setting="density">
-                            <option value="compact"${settings.density === 'compact' ? ' selected' : ''}>${html(tr('Compact'))}</option>
-                            <option value="comfortable"${settings.density === 'comfortable' ? ' selected' : ''}>${html(tr('Comfortable'))}</option></select></label>
-                        <label class="tretaresia-control-field"><span>${html(tr('Language'))}</span><select data-ui-setting="language">
-                            <option value="en"${settings.language === 'en' ? ' selected' : ''}>English</option>
-                            <option value="th"${settings.language === 'th' ? ' selected' : ''}>ไทย</option></select></label>
-                        <label class="tretaresia-control-field full"><span>${html(tr('Action delivery'))}</span><select data-ui-setting="interactionMode">
-                            <option value="hidden"${settings.interactionMode === 'hidden' ? ' selected' : ''}>${html(tr('Hidden'))} · no bubble</option>
-                            <option value="visible"${settings.interactionMode === 'visible' ? ' selected' : ''}>${html(tr('Visible'))} · send now</option>
-                            <option value="draft"${settings.interactionMode === 'draft' ? ' selected' : ''}>${html(tr('Draft only'))} · review</option></select></label>
-                        <small class="tretaresia-action-mode-help full" data-action-mode-help>${html(activityCopy())}</small>
-                        <label class="tretaresia-control-field full"><span>${html(tr('Activity indicator'))}</span><select data-ui-setting="activityIndicator">
-                            <option value="full"${settings.activityIndicator === 'full' ? ' selected' : ''}>${html(tr('Full'))}</option>
-                            <option value="compact"${settings.activityIndicator === 'compact' ? ' selected' : ''}>${html(tr('Compact'))}</option>
-                            <option value="off"${settings.activityIndicator === 'off' ? ' selected' : ''}>${html(tr('Off'))}</option></select></label>
-                    </div>
-                </section>
-                <section class="tretaresia-control-section">
-                    <div class="tretaresia-control-section-title"><b>02</b><span><strong>${html(tr('Continuity'))}</strong><small>${html(tr('Character transfer'))}</small></span></div>
-                    <label class="tretaresia-continuity-toggle"><input type="checkbox" data-ui-setting="autoContinuity"${settings.autoContinuity ? ' checked' : ''}><span>${html(tr('Carry this character into new chats automatically'))}</span></label>
-                    <p class="tretaresia-control-note">${html(tr('State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device.'))}</p>
-                    <div class="tretaresia-continuity-actions">
-                        <button type="button" data-action="export-state"><i class="fa-solid fa-arrow-up-from-bracket"></i>${html(tr('Export state'))}</button>
-                        <button type="button" data-action="import-state"><i class="fa-solid fa-arrow-down-to-bracket"></i>${html(tr('Import state'))}</button>
-                    </div>
-                </section>
-            </div>
-        </section>
-    </div>`;
+    const presetOptions = Object.keys(COLOR_PRESETS).map(key =>
+        '<option value="' + key + '"' + (settings.themePreset === key ? ' selected' : '') + '>' +
+        key.replace(/^./, value => value.toUpperCase()) + '</option>').join('');
+    const colorField = (label, key) =>
+        '<label class="tretaresia-control-field color"><span>' + html(tr(label)) + '</span>' +
+        '<input type="color" data-ui-setting="' + key + '" value="' + settings[key] + '"></label>';
+    return '<section class="tretaresia-control-panel" aria-label="' + html(tr('Control center')) + '">' +
+        '<header class="tretaresia-control-head"><span class="tretaresia-control-sigil"><i class="fa-solid fa-compass-drafting"></i></span>' +
+        '<div><small>TRETARESIA / CONSOLE</small><h3>' + html(tr('Control center')) + '</h3></div>' +
+        '<button type="button" data-action="close-control-center" aria-label="' + html(tr('Close')) + '"><i class="fa-solid fa-xmark"></i></button></header>' +
+        '<div class="tretaresia-control-scroll">' +
+        '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>01</b><span><strong>' + html(tr('Palette')) + '</strong><small>' + html(tr('Fully customizable')) + '</small></span></div>' +
+        '<label class="tretaresia-control-field full"><span>' + html(tr('Theme preset')) + '</span><select data-ui-setting="themePreset">' + presetOptions + '</select></label>' +
+        '<div class="tretaresia-control-grid">' + colorField('Accent', 'accentColor') + colorField('Highlight', 'accentAltColor') +
+        colorField('Text', 'inkColor') + colorField('Surface', 'surfaceColor') + '</div>' +
+        '<p class="tretaresia-control-note">' + html(tr('A preset overwrites all four colors. Adjust any swatch afterwards to make it your own.')) + '</p></section>' +
+        '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>02</b><span><strong>' + html(tr('Interface')) + '</strong><small>' + html(tr('Visual controls')) + '</small></span></div>' +
+        '<div class="tretaresia-control-grid">' +
+        '<label class="tretaresia-control-field full"><span>' + html(tr('Glass')) + '<output>' + settings.glassOpacity + '%</output></span><input type="range" data-ui-setting="glassOpacity" min="55" max="98" value="' + settings.glassOpacity + '"></label>' +
+        '<label class="tretaresia-control-field full"><span>' + html(tr('Glow')) + '<output>' + settings.glowStrength + '%</output></span><input type="range" data-ui-setting="glowStrength" min="0" max="100" value="' + settings.glowStrength + '"></label>' +
+        '<label class="tretaresia-control-field"><span>' + html(tr('Density')) + '</span><select data-ui-setting="density"><option value="compact"' + (settings.density === 'compact' ? ' selected' : '') + '>' + html(tr('Compact')) + '</option><option value="comfortable"' + (settings.density === 'comfortable' ? ' selected' : '') + '>' + html(tr('Comfortable')) + '</option></select></label>' +
+        '<label class="tretaresia-control-field"><span>' + html(tr('Language')) + '</span><select data-ui-setting="language"><option value="en"' + (settings.language === 'en' ? ' selected' : '') + '>English</option><option value="th"' + (settings.language === 'th' ? ' selected' : '') + '>ไทย</option></select></label>' +
+        '<label class="tretaresia-control-field full"><span>' + html(tr('Action delivery')) + '</span><select data-ui-setting="interactionMode"><option value="hidden"' + (settings.interactionMode === 'hidden' ? ' selected' : '') + '>' + html(tr('Hidden')) + '</option><option value="visible"' + (settings.interactionMode === 'visible' ? ' selected' : '') + '>' + html(tr('Visible')) + '</option><option value="draft"' + (settings.interactionMode === 'draft' ? ' selected' : '') + '>' + html(tr('Draft only')) + '</option></select></label>' +
+        '<small class="tretaresia-action-mode-help full" data-action-mode-help>' + html(activityCopy()) + '</small>' +
+        '<label class="tretaresia-control-field full"><span>' + html(tr('Activity indicator')) + '</span><select data-ui-setting="activityIndicator"><option value="full"' + (settings.activityIndicator === 'full' ? ' selected' : '') + '>' + html(tr('Full')) + '</option><option value="compact"' + (settings.activityIndicator === 'compact' ? ' selected' : '') + '>' + html(tr('Compact')) + '</option><option value="off"' + (settings.activityIndicator === 'off' ? ' selected' : '') + '>' + html(tr('Off')) + '</option></select></label>' +
+        '<label class="tretaresia-control-field full"><span>' + html(tr('Map artwork')) + '</span><select data-ui-setting="mapArtwork"><option value="procedural"' + (settings.mapArtwork === 'procedural' ? ' selected' : '') + '>' + html(tr('Procedural')) + '</option><option value="tiles"' + (settings.mapArtwork === 'tiles' ? ' selected' : '') + '>' + html(tr('Tile images')) + '</option></select></label>' +
+        '</div></section>' +
+        '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>03</b><span><strong>' + html(tr('Continuity')) + '</strong><small>' + html(tr('Character transfer')) + '</small></span></div>' +
+        '<label class="tretaresia-continuity-toggle"><input type="checkbox" data-ui-setting="autoContinuity"' + (settings.autoContinuity ? ' checked' : '') + '><span>' + html(tr('Carry this character into new chats automatically')) + '</span></label>' +
+        '<p class="tretaresia-control-note">' + html(tr('State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device.')) + '</p>' +
+        '<div class="tretaresia-continuity-actions"><button type="button" data-action="export-state"><i class="fa-solid fa-arrow-up-from-bracket"></i>' + html(tr('Export state')) + '</button><button type="button" data-action="import-state"><i class="fa-solid fa-arrow-down-to-bracket"></i>' + html(tr('Import state')) + '</button></div></section>' +
+        '</div></section>';
 }
+
+function buildControlCenter() {
+    document.getElementById('tretaresia-control-dialog')?.remove();
+    const dialog = document.createElement('dialog');
+    dialog.id = 'tretaresia-control-dialog';
+    dialog.className = 'tretaresia-control-dialog';
+    dialog.innerHTML = controlCenterMarkup();
+    document.body.appendChild(dialog);
+    dialog.addEventListener('click', event => {
+        if (event.target === dialog) setControlCenterOpen(false);
+    });
+    dialog.addEventListener('close', () => {
+        const trigger = document.getElementById('tretaresia-control-trigger');
+        trigger?.classList.remove('is-active');
+        trigger?.setAttribute('aria-expanded', 'false');
+    });
+    dialog.addEventListener('click', onPanelClick);
+    dialog.addEventListener('input', onInterfaceSettingChange);
+    dialog.addEventListener('change', onInterfaceSettingChange);
+    return dialog;
+}
+
+function controlCenterOpen() {
+    return document.getElementById('tretaresia-control-dialog')?.open === true;
+}
+
+function setControlCenterOpen(open) {
+    const dialog = document.getElementById('tretaresia-control-dialog') || buildControlCenter();
+    const trigger = document.getElementById('tretaresia-control-trigger');
+    if (open && !dialog.open) {
+        try {
+            dialog.showModal();
+        } catch (error) {
+            dialog.setAttribute('open', '');
+            console.warn('[Tretaresia RPG] showModal() unavailable; using fallback.', error);
+        }
+        requestAnimationFrame(() => dialog.querySelector('.tretaresia-control-panel')?.scrollTo({ top: 0 }));
+    } else if (!open && dialog.open) {
+        dialog.close();
+    }
+    trigger?.classList.toggle('is-active', dialog.open);
+    trigger?.setAttribute('aria-expanded', String(dialog.open));
+}
+
+globalThis.TRETARESIA_SETTINGS = () => setControlCenterOpen(true);
+
 
 function buildInterface() {
     buildActivityIndicator();
     buildEventNotificationStack();
+    buildControlCenter();
     if (document.getElementById('tretaresia-rpg-overlay')) return;
     const overlay = document.createElement('div');
     overlay.id = 'tretaresia-rpg-overlay';
     overlay.className = 'tretaresia-rpg-overlay';
     overlay.setAttribute('aria-hidden', 'true');
-    overlay.innerHTML = `
-        <button class="tretaresia-rpg-backdrop" type="button" aria-label="Close Tretaresia RPG"></button>
-        <section id="tretaresia-rpg-panel" class="tretaresia-rpg-panel" role="dialog" aria-modal="true"
-            aria-labelledby="tretaresia-rpg-title" tabindex="-1">
-            <div class="tretaresia-app-shell">
-                <header class="tretaresia-rpg-panel-header">
-                    <div class="tretaresia-brand-lockup">
-                        <div class="tretaresia-rpg-brand-mark"><i class="fa-solid fa-compass"></i></div>
-                        <div class="tretaresia-rpg-panel-heading"><span class="tretaresia-rpg-kicker">${html(tr('Tretaresia Role-play'))}</span>
-                            <h2 id="tretaresia-rpg-title">Tretaresia RPG</h2></div>
-                    </div>
-                    <div class="tretaresia-header-actions">
-                        <div id="tretaresia-rpg-sync-state" class="tretaresia-sync-state" data-mode="ready">
-                            <i class="fa-solid fa-circle"></i><span>${html(tr('Ready'))}</span></div>
-                        ${controlCenterTrigger()}
-                        <button id="tretaresia-rpg-close" class="tretaresia-header-button" type="button" aria-label="Close">
-                            <i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                </header>
-                <div class="tretaresia-module-bar">
-                    <div class="tretaresia-module-readout"><small>${html(tr('Active module'))}</small><strong data-current-section>${html(tr('Status'))}</strong></div>
-                    <div class="tretaresia-module-code"><span>TR / 03</span><i></i><em>${html(tr('World ledger'))}</em></div>
-                </div>
-                <div class="tretaresia-app-layout">
-                    <nav class="tretaresia-tab-list" aria-label="Tretaresia RPG sections">
-                        <div class="tretaresia-rail-head"><span>TR</span><div><strong>${html(tr('Archive index'))}</strong><small>11 MODULES</small></div></div>
-                        <div class="tretaresia-nav-group"><small>CHARACTER</small>
-                            ${tabButton('status', 'fa-solid fa-user', 'Status', true)}
-                            ${tabButton('scene', 'fa-solid fa-cloud-sun', 'Scene')}
-                            ${tabButton('inventory', 'fa-solid fa-box-open', 'Inventory')}
-                        </div>
-                        <div class="tretaresia-nav-group"><small>PROGRESSION</small>
-                            ${tabButton('skills', 'fa-solid fa-layer-group', 'Skills')}
-                            ${tabButton('techniques', 'fa-solid fa-fire-flame-curved', 'Powers')}
-                            ${tabButton('quests', 'fa-solid fa-scroll', 'Quests')}
-                            ${tabButton('rank', 'fa-solid fa-medal', 'Rank')}
-                        </div>
-                        <div class="tretaresia-nav-group"><small>WORLD</small>
-                            ${tabButton('map', 'fa-solid fa-map', 'World Map')}
-                            ${tabButton('npcs', 'fa-solid fa-users', 'NPCs')}
-                            ${tabButton('mail', 'fa-solid fa-envelope', 'Mailbox')}
-                            ${tabButton('music', 'fa-solid fa-music', 'Music')}
-                        </div>
-                    </nav>
-                    <main class="tretaresia-rpg-panel-body">
-                        ${['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'map', 'npcs', 'mail', 'music'].map((id, index) =>
-                            `<section class="tretaresia-tab-panel${index === 0 ? ' is-active' : ''}" data-panel="${id}"
-                                ${index ? 'hidden' : ''}></section>`).join('')}
-                    </main>
-                </div>
-                <footer class="tretaresia-rpg-panel-footer">
-                    <span id="tretaresia-context-label"><i class="fa-solid fa-link"></i> ${html(tr('Waiting for chat'))}</span>
-                    <button id="tretaresia-sync-now" class="tretaresia-text-button" type="button">
-                        <i class="fa-solid fa-rotate"></i> ${html(tr('Sync latest turn'))}</button>
-                </footer>
-            </div>
-            <div id="tretaresia-portrait-editor" class="tretaresia-submodal" hidden></div>
-            <div id="tretaresia-letter-reader" class="tretaresia-submodal" hidden></div>
-            <input id="tretaresia-npc-avatar-input" type="file" accept="image/*" hidden>
-            <input id="tretaresia-state-import" type="file" accept="application/json,.json" hidden>
-        </section>
-        ${controlCenterLayer()}`;
+    overlay.innerHTML =
+        '<button class="tretaresia-rpg-backdrop" type="button" aria-label="Close Tretaresia RPG"></button>' +
+        '<section id="tretaresia-rpg-panel" class="tretaresia-rpg-panel" role="dialog" aria-modal="true" aria-labelledby="tretaresia-rpg-title" tabindex="-1">' +
+        '<div class="tretaresia-app-shell"><header class="tretaresia-rpg-panel-header"><div class="tretaresia-brand-lockup">' +
+        '<div class="tretaresia-rpg-panel-heading"><span class="tretaresia-rpg-kicker">' + html(tr('Tretaresia Role-play')) + '</span><h2 id="tretaresia-rpg-title">Tretaresia RPG</h2></div></div>' +
+        '<div class="tretaresia-header-actions"><div id="tretaresia-rpg-sync-state" class="tretaresia-sync-state" data-mode="ready"><i class="fa-solid fa-circle"></i><span>' + html(tr('Ready')) + '</span></div>' +
+        controlCenterTrigger() + '<button id="tretaresia-rpg-close" class="tretaresia-header-button" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div></header>' +
+        moduleSlider() +
+        '<main class="tretaresia-rpg-panel-body">' +
+        TAB_ORDER.map((id, index) => '<section class="tretaresia-tab-panel' + (index ? '' : ' is-active') + '" data-panel="' + id + '"' + (index ? ' hidden' : '') + '></section>').join('') +
+        '</main><footer class="tretaresia-rpg-panel-footer"><span id="tretaresia-context-label"><i class="fa-solid fa-link"></i> ' + html(tr('Waiting for chat')) + '</span>' +
+        '<button id="tretaresia-sync-now" class="tretaresia-text-button" type="button"><i class="fa-solid fa-rotate"></i> ' + html(tr('Sync latest turn')) + '</button></footer></div>' +
+        '<div id="tretaresia-portrait-editor" class="tretaresia-submodal" hidden></div><div id="tretaresia-letter-reader" class="tretaresia-submodal" hidden></div>' +
+        '<input id="tretaresia-npc-avatar-input" type="file" accept="image/*" hidden><input id="tretaresia-state-import" type="file" accept="application/json,.json" hidden>' +
+        (typeof buildIntroGate === 'function' ? buildIntroGate() : '') +
+        '</section>';
     document.body.appendChild(overlay);
     overlay.querySelector('.tretaresia-rpg-backdrop')?.addEventListener('click', closeInterface);
     overlay.querySelector('#tretaresia-rpg-close')?.addEventListener('click', closeInterface);
     overlay.querySelector('#tretaresia-sync-now')?.addEventListener('click', () => queueAnalyze({ manual: true }));
+    overlay.querySelector('#tretaresia-control-trigger')?.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        setControlCenterOpen(!controlCenterOpen());
+    });
     overlay.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => activateTab(button.dataset.tab)));
     overlay.addEventListener('submit', onSubmit);
     overlay.addEventListener('click', onPanelClick);
     overlay.addEventListener('change', onPanelChange);
     overlay.addEventListener('input', onInterfaceSettingChange);
     overlay.addEventListener('change', onInterfaceSettingChange);
+    bindModuleSlider(overlay);
+    activeTabIndex = 0;
     applyAppearance();
     syncActivityIndicator();
 }
@@ -1571,27 +1566,20 @@ function buildInterface() {
 function rebuildInterface() {
     const previous = document.getElementById('tretaresia-rpg-overlay');
     const wasOpen = previous?.classList.contains('is-open');
+    const controlWasOpen = controlCenterOpen();
     previous?.remove();
+    document.getElementById('tretaresia-control-dialog')?.remove();
     buildInterface();
     renderAll();
     if (wasOpen) {
         const overlay = document.getElementById('tretaresia-rpg-overlay');
         overlay?.classList.add('is-open', 'is-ready');
         overlay?.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('tretaresia-rpg-open');
     }
+    if (controlWasOpen) setControlCenterOpen(true);
 }
 
-function setControlCenterOpen(open) {
-    const overlay = document.getElementById('tretaresia-rpg-overlay');
-    const layer = overlay?.querySelector('#tretaresia-control-layer');
-    const trigger = overlay?.querySelector('#tretaresia-control-trigger');
-    if (!layer || !trigger) return;
-    layer.hidden = !open;
-    layer.classList.toggle('is-open', open);
-    trigger.classList.toggle('is-active', open);
-    trigger.setAttribute('aria-expanded', String(open));
-    if (open) requestAnimationFrame(() => layer.querySelector('.tretaresia-control-panel')?.focus({ preventScroll: true }));
-}
 
 function onInterfaceSettingChange(event) {
     const portraitControl = event.target.closest('[data-portrait-control]');
@@ -1600,8 +1588,8 @@ function onInterfaceSettingChange(event) {
         const preview = device?.querySelector('img');
         const output = portraitControl.closest('label')?.querySelector('output');
         const property = portraitControl.dataset.portraitControl;
-        if (preview) preview.style.setProperty(`--preview-${property}`, property === 'zoom' ? portraitControl.value : `${portraitControl.value}%`);
-        if (output) output.textContent = property === 'zoom' ? `${Number(portraitControl.value).toFixed(2)}×` : `${Math.round(Number(portraitControl.value))}%`;
+        if (preview) preview.style.setProperty('--preview-' + property, property === 'zoom' ? portraitControl.value : portraitControl.value + '%');
+        if (output) output.textContent = property === 'zoom' ? Number(portraitControl.value).toFixed(2) + '×' : Math.round(Number(portraitControl.value)) + '%';
         return;
     }
     const proficiency = event.target.closest('.tretaresia-proficiency-card input[type="range"]');
@@ -1611,8 +1599,8 @@ function onInterfaceSettingChange(event) {
         const score = card?.querySelector('.tretaresia-proficiency-orbit b');
         const rankCopy = card?.querySelector('.tretaresia-proficiency-rank strong');
         const rank = tr(proficiencyRank(proficiency.value));
-        if (fill) fill.style.width = `${proficiency.value}%`;
-        if (score) score.innerHTML = `${proficiency.value}<small>%</small>`;
+        if (fill) fill.style.width = proficiency.value + '%';
+        if (score) score.innerHTML = proficiency.value + '<small>%</small>';
         if (rankCopy) rankCopy.textContent = rank;
         if (card) card.style.setProperty('--proficiency', proficiency.value);
         return;
@@ -1628,11 +1616,19 @@ function onInterfaceSettingChange(event) {
     const key = control.dataset.uiSetting;
     const settings = getSettings();
     settings[key] = control.type === 'checkbox' ? control.checked : control.type === 'range' ? Number(control.value) : control.value;
+    if (key === 'themePreset' && COLOR_PRESETS[settings.themePreset]) {
+        const preset = COLOR_PRESETS[settings.themePreset];
+        settings.accentColor = preset.accent;
+        settings.accentAltColor = preset.alt;
+        settings.inkColor = preset.ink;
+        settings.surfaceColor = preset.surface;
+    }
+    if (['accentColor', 'accentAltColor', 'inkColor', 'surfaceColor'].includes(key)) settings.themePreset = 'custom';
+    SillyTavern.getContext().saveSettingsDebounced();
     if (control.type === 'range') {
         const output = control.closest('.tretaresia-control-field')?.querySelector('output');
-        if (output) output.textContent = `${control.value}%`;
+        if (output) output.textContent = control.value + '%';
     }
-    SillyTavern.getContext().saveSettingsDebounced();
     if (key === 'autoContinuity') {
         if (settings.autoContinuity) writeContinuitySnapshot(getState());
         else {
@@ -1640,30 +1636,41 @@ function onInterfaceSettingChange(event) {
             if (storageKey) localStorage.removeItem(storageKey);
         }
     }
-    if (key === 'language' && event.type === 'change') rebuildInterface();
-    else {
-        applyAppearance();
-        if (key === 'interactionMode') updateActionModeHelp();
-        if (key === 'activityIndicator') syncActivityIndicator();
+    if (key === 'language' && event.type === 'change') {
+        rebuildInterface();
+        return;
     }
+    applyAppearance();
+    if (key === 'themePreset' && event.type === 'change') {
+        const reopen = controlCenterOpen();
+        buildControlCenter();
+        if (reopen) setControlCenterOpen(true);
+        return;
+    }
+    if (key === 'interactionMode') updateActionModeHelp();
+    if (key === 'activityIndicator') syncActivityIndicator();
+    if (key === 'mapArtwork') scheduleMapDetailRender();
 }
+
 
 function activateTab(id) {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (!overlay) return;
-    const next = overlay.querySelector(`[data-panel="${id}"]`);
+    const index = TAB_ORDER.indexOf(id);
+    const next = overlay.querySelector('[data-panel="' + id + '"]');
+    if (index < 0 || !next) return;
     const current = overlay.querySelector('[data-panel].is-active');
-    if (!next || next === current) return;
-    const transition = ++tabTransitionToken;
-    overlay?.querySelectorAll('[data-tab]').forEach(button => {
+    activeTabIndex = index;
+    overlay.querySelector('#tretaresia-module-track')?.style.setProperty('--tab-index', String(index));
+    overlay.querySelectorAll('[data-tab]').forEach(button => {
         const active = button.dataset.tab === id;
         button.classList.toggle('is-active', active);
         button.setAttribute('aria-selected', String(active));
+        button.tabIndex = active ? 0 : -1;
     });
-    const activeButton = overlay.querySelector(`[data-tab="${id}"]`);
-    const currentSection = overlay.querySelector('[data-current-section]');
-    if (currentSection && activeButton) currentSection.textContent = activeButton.querySelector('span')?.textContent || id;
-    if (activeButton && matchMedia('(max-width: 800px)').matches) activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    overlay.querySelectorAll('.tretaresia-module-dots i').forEach((dot, dotIndex) => dot.classList.toggle('on', dotIndex === index));
+    if (next === current) return;
+    const transition = ++tabTransitionToken;
     current?.classList.add('is-leaving');
     const finish = () => {
         if (transition !== tabTransitionToken) return;
@@ -1683,24 +1690,6 @@ function activateTab(id) {
     else setTimeout(finish, 130);
 }
 
-const input = (label, name, value, type = 'text', extra = '') =>
-    `<label class="tretaresia-field"><span>${html(tr(label))}</span><input name="${name}" type="${type}" value="${html(value)}" ${extra}></label>`;
-const select = (label, name, options, selected) =>
-    `<label class="tretaresia-field"><span>${html(tr(label))}</span><select name="${name}">${options.map(value =>
-        `<option value="${html(value)}"${value === selected ? ' selected' : ''}>${html(tr(value))}</option>`).join('')}</select></label>`;
-const heading = (title, subtitle, icon) =>
-    `<div class="tretaresia-section-heading"><div><span class="tretaresia-eyebrow">${html(tr('System interface'))}</span>
-        <h3>${html(tr(title))}</h3><p>${html(tr(subtitle))}</p></div><i class="${icon} tretaresia-heading-icon"></i></div>`;
-const empty = message => `<div class="tretaresia-empty-state"><i class="fa-regular fa-compass"></i><p>${html(tr(message))}</p></div>`;
-
-function meterView(label, value, icon, tone) {
-    const percent = Math.round(value.current / Math.max(1, value.max) * 100);
-    return `<article class="tretaresia-vital tretaresia-vital-${tone}">
-        <div class="tretaresia-vital-line"><span><i class="${icon}"></i>${html(tr(label))}</span><strong>${value.current} <em>/ ${value.max}</em></strong></div>
-        <div class="tretaresia-vital-track" role="meter" aria-valuenow="${value.current}" aria-valuemax="${value.max}" aria-label="${html(tr(label))}">
-            <span style="width:${Math.min(100, percent)}%"></span><i style="left:${Math.min(100, percent)}%"></i>
-        </div><small>${percent}%</small></article>`;
-}
 
 function renderAll(state = getState()) {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
@@ -3250,7 +3239,16 @@ async function onPanelClick(event) {
     const id = button.dataset.id;
     switch (button.dataset.action) {
         case 'toggle-control-center':
-            setControlCenterOpen(document.getElementById('tretaresia-control-layer')?.hidden !== false);
+            setControlCenterOpen(!controlCenterOpen());
+            break;
+        case 'tab-prev':
+            stepTab(-1);
+            break;
+        case 'tab-next':
+            stepTab(1);
+            break;
+        case 'skip-intro':
+            finishIntroGate();
             break;
         case 'close-control-center':
             setControlCenterOpen(false);
