@@ -70,32 +70,106 @@ const DAY_PHASES = ['Morning', 'Afternoon', 'Evening', 'Night'];
 const ZONE_TYPES = ['Safe Zone', 'Neutral Zone', 'Danger Zone', 'Unknown Zone'];
 const ROOM_TYPES = ['Room', 'Hall', 'Corridor', 'Stairs', 'Entrance', 'Garden', 'Utility', 'Unknown'];
 const CONNECTION_TYPES = ['Door', 'Passage', 'Stairs', 'Archway', 'Window'];
+const SOURCE_MAP_WIDTH = 1448;
+const SOURCE_MAP_HEIGHT = 1086;
 const WORLD_MAP_WIDTH = 2400;
-const WORLD_MAP_HEIGHT = 1400;
+const WORLD_MAP_HEIGHT = 1800;
 const WORLD_TILE_SIZE = 512;
 const WORLD_TILE_ROOT = `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles`;
 const WORLD_TILE_LEVELS = [
-    { z: 0, width: 512, height: 288, columns: 1, rows: 1 },
-    { z: 1, width: 1024, height: 576, columns: 2, rows: 2 },
-    { z: 2, width: 2048, height: 1152, columns: 4, rows: 3 },
-    { z: 3, width: 4096, height: 2304, columns: 8, rows: 5 },
+    { z: 0, width: 512, height: 384, columns: 1, rows: 1 },
+    { z: 1, width: 1024, height: 768, columns: 2, rows: 2 },
+    { z: 2, width: 2048, height: 1536, columns: 4, rows: 3 },
+    { z: 3, width: 4096, height: 3072, columns: 8, rows: 6 },
 ];
+const atlasPoint = (x, y) => [
+    Math.round(x / SOURCE_MAP_WIDTH * WORLD_MAP_WIDTH),
+    Math.round(y / SOURCE_MAP_HEIGHT * WORLD_MAP_HEIGHT),
+];
+const atlasPolygon = points => points.map(([x, y]) => atlasPoint(x, y));
+const atlasBounds = polygons => {
+    const points = polygons.flat();
+    const xs = points.map(point => point[0]);
+    const ys = points.map(point => point[1]);
+    return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+};
+const atlasContinent = (id, name, className, label, sourcePolygons) => {
+    const polygons = sourcePolygons.map(atlasPolygon);
+    return { id, name, className, label: atlasPoint(...label), polygons, bounds: atlasBounds(polygons) };
+};
 const WORLD_CONTINENTS = [
-    { id: 'central', name: 'Central Continent', className: 'central', label: [1120, 710], bounds: [620, 310, 1660, 1135],
-        path: 'M690 390 830 325 1030 350 1180 315 1370 370 1515 470 1580 620 1540 770 1615 900 1510 1045 1325 1110 1130 1075 950 1125 785 1030 670 880 705 720 625 555Z' },
-    { id: 'forest', name: 'The Great Forest', className: 'forest', label: [2030, 985], bounds: [1660, 650, 2370, 1370],
-        path: 'M1710 760 1810 680 1980 705 2120 660 2270 735 2360 875 2330 1040 2380 1185 2265 1335 2075 1370 1900 1315 1740 1220 1680 1070 1730 920Z' },
-    { id: 'titan', name: 'Great Land of Titan', className: 'titan', label: [350, 1090], bounds: [25, 710, 720, 1380],
-        path: 'M75 900 170 785 335 735 510 770 645 890 710 1050 655 1215 535 1345 350 1380 175 1330 45 1200 20 1040Z' },
-    { id: 'drinovia', name: 'Drinovia Continent', className: 'drinovia', label: [2050, 370], bounds: [1640, 60, 2380, 680],
-        path: 'M1680 180 1805 85 1985 65 2160 120 2310 235 2380 390 2305 540 2165 650 1975 620 1810 555 1660 420 1625 285Z' },
-    { id: 'north', name: 'North Continent', className: 'north', label: [1120, 145], bounds: [650, 10, 1660, 315],
-        path: 'M675 155 820 55 1035 15 1240 35 1435 80 1620 175 1540 275 1350 310 1130 275 940 305 755 250Z' },
-    { id: 'baluguria', name: 'Baluguria Continent', className: 'baluguria', label: [1260, 1270], bounds: [850, 1110, 1690, 1390],
-        path: 'M890 1235 1010 1145 1185 1110 1370 1135 1530 1190 1670 1300 1575 1380 1390 1395 1195 1365 1030 1390 875 1325Z' },
+    atlasContinent('central', 'Central Continent', 'central', [455, 430], [[
+        [205, 290], [260, 245], [320, 220], [420, 225], [520, 230], [620, 250], [675, 320],
+        [660, 430], [630, 520], [680, 620], [655, 725], [600, 665], [520, 650], [450, 620],
+        [375, 590], [310, 550], [270, 490], [230, 420], [220, 350],
+    ]]),
+    atlasContinent('forest', 'The Great Forest', 'forest', [1185, 680], [[
+        [990, 600], [1030, 555], [1120, 520], [1220, 500], [1310, 530], [1340, 620], [1320, 710],
+        [1300, 800], [1220, 835], [1120, 820], [1030, 780], [960, 750], [900, 770], [940, 680],
+    ]]),
+    atlasContinent('titan', 'Great Land of Titan', 'titan', [375, 765], [[
+        [145, 555], [205, 540], [290, 585], [350, 650], [430, 700], [520, 745], [610, 800],
+        [665, 880], [620, 915], [510, 900], [400, 900], [300, 880], [230, 850], [175, 810], [155, 730],
+    ]]),
+    atlasContinent('drinovia', 'Drinovia Continent', 'drinovia', [1180, 245], [[
+        [1020, 85], [1110, 75], [1210, 90], [1300, 110], [1320, 185], [1305, 265], [1295, 350],
+        [1250, 425], [1170, 405], [1120, 370], [1080, 300], [1050, 220],
+    ]]),
+    atlasContinent('north', 'North Continent', 'north', [425, 145], [[
+        [145, 150], [180, 110], [300, 85], [430, 70], [560, 85], [690, 130], [675, 215],
+        [610, 245], [500, 240], [400, 235], [300, 230], [220, 215], [150, 195],
+    ]]),
+    atlasContinent('baluguria', 'Baluguria Continent', 'baluguria', [780, 875], [
+        [[505, 680], [540, 670], [580, 675], [610, 700], [605, 735], [575, 755], [535, 750], [505, 725]],
+        [[635, 720], [680, 730], [730, 750], [780, 760], [830, 750], [880, 720], [920, 690],
+            [930, 735], [880, 770], [820, 790], [760, 795], [700, 780], [655, 755]],
+        [[740, 920], [800, 900], [860, 925], [920, 910], [990, 925], [1030, 965], [980, 1005],
+            [900, 995], [830, 1000], [760, 980]],
+    ]),
 ];
+// These coordinates are hand-placed against the supplied atlas artwork. The order mirrors
+// WORLD_LOCATIONS below, keeping every named destination on visible land or a visible island.
+const WORLD_LOCATION_POINTS = {
+    'Central Continent': [
+        [535, 250], [265, 335], [485, 435], [560, 560], [310, 415], [430, 350], [560, 360],
+        [340, 500], [510, 300], [575, 510], [285, 370], [390, 460], [380, 535], [600, 430],
+        [475, 555], [530, 590], [320, 450], [500, 600], [430, 570], [560, 520], [470, 385],
+    ],
+    'The Great Forest': [
+        [1210, 610], [1200, 650], [1030, 700], [1250, 550], [1120, 700], [1290, 730], [1110, 780],
+        [1190, 580], [1260, 670], [1140, 620], [1240, 790], [1290, 620], [1180, 720], [1080, 730],
+        [1160, 800], [1310, 680], [1040, 650], [1220, 560], [1300, 780], [1100, 810], [1250, 820],
+    ],
+    'Great Land of Titan': [
+        [380, 815], [300, 720], [250, 760], [335, 675], [250, 650], [460, 730], [500, 790],
+        [320, 830], [420, 755], [410, 870], [230, 700], [500, 850], [280, 860], [520, 840],
+        [470, 850], [250, 800], [520, 880], [360, 780], [220, 840], [440, 800], [490, 875],
+    ],
+    'Drinovia Continent': [
+        [1250, 130], [1160, 260], [1280, 250], [1200, 180], [1100, 220], [1190, 120], [1240, 330],
+        [1110, 320], [1210, 300], [1270, 190], [1110, 150], [1190, 280], [1140, 330], [1270, 340],
+        [1080, 180], [1260, 220], [1170, 350], [1240, 380], [1080, 250], [1270, 300], [1160, 380],
+    ],
+    'North Continent': [
+        [333, 152], [470, 125], [580, 145], [540, 105], [620, 175], [650, 210], [400, 160],
+        [575, 210], [270, 175], [455, 210], [235, 150], [600, 105], [350, 205], [500, 85],
+        [420, 190], [560, 90], [475, 180], [390, 215], [300, 110], [530, 200], [360, 95],
+    ],
+    'Baluguria Continent': [
+        [533, 718], [815, 760], [814, 940], [920, 918], [515, 732], [689, 748], [791, 758],
+        [782, 924], [836, 950], [874, 946], [926, 964], [535, 696], [551, 710], [515, 712],
+        [795, 780], [777, 776], [819, 786], [735, 786], [853, 774], [776, 962], [958, 942],
+    ],
+};
+const worldLocationPointCursor = {};
 const mapSite = (id, name, continent, region, x, y, tier = 2, kind = 'landmark', zone = 'Neutral Zone') => (
-    { id, name, continent, region, x, y, tier, kind, zone }
+    (() => {
+        const cursor = worldLocationPointCursor[continent] || 0;
+        const sourcePoint = WORLD_LOCATION_POINTS[continent]?.[cursor];
+        worldLocationPointCursor[continent] = cursor + 1;
+        const [mapX, mapY] = sourcePoint ? atlasPoint(...sourcePoint) : [x, y];
+        return { id, name, continent, region, x: mapX, y: mapY, tier, kind, zone };
+    })()
 );
 const WORLD_LOCATIONS = [
     mapSite('central-capital', 'Central Crown', 'Central Continent', 'Crown Heartlands', 1135, 690, 0, 'capital', 'Safe Zone'),
@@ -272,11 +346,10 @@ const DEFAULT_SETTINGS = Object.freeze({
     notifyCurrency: true,
     notifyQuests: true,
     autoContinuity: true,
-    mapArtwork: 'tiles',
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.7.4';
+const LAUNCHER_BIND_VERSION = '0.8.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -367,6 +440,7 @@ const TRANSLATIONS = {
         'State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device.': 'รวมข้อมูลและรูปผู้เล่นไว้แล้ว ส่วนรูป NPC และเสียงที่เก็บในอุปกรณ์จะถูกคัดลอกอัตโนมัติเฉพาะเมื่อสานต่อบนอุปกรณ์นี้',
         Custom: 'กำหนดเอง',
         'Locate me': 'หาตำแหน่งฉัน', 'Full map view': 'ดูแผนที่ทั้งหมด',
+        'Open fullscreen map': 'เปิดแผนที่เต็มหน้าจอ', 'Close fullscreen map': 'ปิดแผนที่เต็มหน้าจอ',
         Palette: 'ชุดสี', 'Fully customizable': 'ปรับได้ทั้งหมด', 'Theme preset': 'ชุดสีสำเร็จ',
         Accent: 'สีหลัก', Highlight: 'สีเน้น', Text: 'สีตัวอักษร', Surface: 'สีพื้น',
         'Map artwork': 'ลายเส้นแผนที่', Procedural: 'วาดโดยระบบ', 'Tile images': 'ภาพไทล์',
@@ -388,6 +462,7 @@ let mapDraftPoint = null;
 let mapDrawFrame = 0;
 let mapRenderedPoints = [];
 let mapResizeObserver = null;
+let mapFullscreen = false;
 const mapTileCache = new Map();
 let openedLetterId = null;
 let selectedNpcId = null;
@@ -399,7 +474,7 @@ let activityState = { mode: 'ready', label: 'Ready', detail: '', visible: false 
 let pendingComposerDraft = null;
 let audioPlayer = null;
 let audioObjectUrl = '';
-const mapView = { scale: .78, x: 264, y: 154 };
+const mapView = { scale: 1, x: 0, y: 0 };
 let continuityRestoreInProgress = false;
 
 const uid = () => globalThis.crypto?.randomUUID?.() || `tretaresia-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -494,7 +569,7 @@ function defaultState() {
             currency: { name: 'Central Common Currency', gold: 0, silver: 0, copper: 0 },
         },
         worldClock: { day: 1, dayName: 'Day 1', time: '08:00', phase: 'Morning' },
-        location: { continent: 'Central Continent', region: 'Crown Heartlands', place: 'Central Crown', detail: '', zoneType: 'Safe Zone', mapX: 1135, mapY: 690, heading: 0, discovered: ['Central Crown'], pins: [] },
+        location: { atlasVersion: 2, continent: 'Central Continent', region: 'Crown Heartlands', place: 'Central Crown', detail: '', zoneType: 'Safe Zone', mapX: WORLD_LOCATIONS[0].x, mapY: WORLD_LOCATIONS[0].y, heading: 0, discovered: ['Central Crown'], pins: [] },
         travel: { status: 'Idle', origin: '', destination: '', route: 'Road', totalDays: 0, remainingDays: 0, notes: '' },
         scene: { position: 'Unknown', weather: 'Unknown', temperature: null },
         sceneMap: { activeMapId: '', activeFloorId: '', playerRoomId: '', maps: [] },
@@ -517,13 +592,11 @@ function getSettings() {
     const { extensionSettings } = SillyTavern.getContext();
     extensionSettings[SETTINGS_KEY] ||= clone(DEFAULT_SETTINGS);
     const hadVisualVersion = Object.hasOwn(extensionSettings[SETTINGS_KEY], 'visualVersion');
-    const previousVisualVersion = number(extensionSettings[SETTINGS_KEY].visualVersion, 0, 0, 99);
     for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
         if (!Object.hasOwn(extensionSettings[SETTINGS_KEY], key)) extensionSettings[SETTINGS_KEY][key] = value;
     }
     const settings = extensionSettings[SETTINGS_KEY];
     if (!hadVisualVersion && settings.accentColor === '#8fb4a3') settings.accentColor = DEFAULT_SETTINGS.accentColor;
-    if (previousVisualVersion < 6) settings.mapArtwork = 'tiles';
     settings.visualVersion = Math.max(6, number(settings.visualVersion, 6, 1, 99));
     if (!['en', 'th'].includes(settings.language)) settings.language = DEFAULT_SETTINGS.language;
     if (!['hidden', 'visible', 'draft'].includes(settings.interactionMode)) settings.interactionMode = DEFAULT_SETTINGS.interactionMode;
@@ -533,7 +606,6 @@ function getSettings() {
         if (!/^#[0-9a-f]{6}$/i.test(settings[key])) settings[key] = DEFAULT_SETTINGS[key];
     }
     if (settings.themePreset !== 'custom' && !Object.hasOwn(COLOR_PRESETS, settings.themePreset)) settings.themePreset = DEFAULT_SETTINGS.themePreset;
-    if (!['procedural', 'tiles'].includes(settings.mapArtwork)) settings.mapArtwork = DEFAULT_SETTINGS.mapArtwork;
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
@@ -868,21 +940,24 @@ function normalize(candidate, base = defaultState()) {
         time: /^([01]\d|2[0-3]):[0-5]\d$/.test(worldClock.time) ? worldClock.time : result.worldClock.time,
         phase: DAY_PHASES.includes(worldClock.phase) ? worldClock.phase : result.worldClock.phase,
     };
+    const migrateAtlas = number(location.atlasVersion, 1, 1, 99) < 2;
     result.location = {
+        atlasVersion: 2,
         continent: text(location.continent, result.location.continent, 100),
         region: text(location.region, result.location.region, 120),
         place: text(location.place, result.location.place, 160),
         detail: text(location.detail, result.location.detail, 300),
         zoneType: ZONE_TYPES.includes(location.zoneType) ? location.zoneType : result.location.zoneType,
-        mapX: number(location.mapX, migratedMapSite?.x ?? result.location.mapX, 0, WORLD_MAP_WIDTH),
-        mapY: number(location.mapY, migratedMapSite?.y ?? result.location.mapY, 0, WORLD_MAP_HEIGHT),
+        mapX: migrateAtlas && migratedMapSite ? migratedMapSite.x : number(location.mapX, migratedMapSite?.x ?? result.location.mapX, 0, WORLD_MAP_WIDTH),
+        mapY: migrateAtlas && migratedMapSite ? migratedMapSite.y : number(location.mapY, migratedMapSite?.y ?? result.location.mapY, 0, WORLD_MAP_HEIGHT),
         heading: number(location.heading, result.location.heading, 0, 359.999),
         discovered: Array.isArray(location.discovered)
             ? [...new Set(location.discovered.map(x => text(x, '', 120)).filter(Boolean))].slice(0, 100)
             : result.location.discovered,
         pins: Array.isArray(location.pins) ? location.pins.map(pin => ({
             id: text(pin?.id, uid(), 100), locationId: text(pin?.locationId, '', 100),
-            x: optionalNumber(pin?.x, null, 0, WORLD_MAP_WIDTH), y: optionalNumber(pin?.y, null, 0, WORLD_MAP_HEIGHT),
+            x: migrateAtlas && mapLocation(pin?.locationId) ? mapLocation(pin.locationId).x : optionalNumber(pin?.x, null, 0, WORLD_MAP_WIDTH),
+            y: migrateAtlas && mapLocation(pin?.locationId) ? mapLocation(pin.locationId).y : optionalNumber(pin?.y, null, 0, WORLD_MAP_HEIGHT),
             continent: text(pin?.continent, '', 100), region: text(pin?.region, '', 120),
             label: text(pin?.label, 'Marked location', 100), note: text(pin?.note, '', 300),
         })).filter(pin => pin.locationId || (pin.x !== null && pin.y !== null)).slice(0, 250) : result.location.pins,
@@ -1244,7 +1319,7 @@ function patchInstructions() {
         'Proficiency rules: increment a used or trained power system or combat discipline by 1-3 when the reply confirms genuine practice or successful use; use 4-8 only for a breakthrough. Do not increase unused proficiencies. When a confirmed power or combat style is not in the preset lists, upsert proficiencies.customMagic or proficiencies.customSword with {id,name,proficiency,description,iconKey}; later upserts may contain only id/name and changed fields.',
         'Tretaresia sensing rule: a power can normally be sensed only by someone who wields the same kind. Formless Aura cannot be sensed by anyone. Divine Mana can be perceived only by another Divine Mana wielder. Never let observers identify a hidden power without valid same-kind perception or direct evidence.',
         'Power canon: False Magic is learnable structured human magic that normally needs a staff, wand, or medium. True Magic is a lost stronger art requiring deep mana understanding and no medium. Aura is innate and commonly carries one birth-given Origin skill. Formless Aura is exceptionally rare and wholly undetectable. Blood Aura is vampiric and a turning may preserve, mutate, split, or erase the prior power. Sage Mana is lost transformative training that can refill from natural energy. Divine Mana may switch among power modes. Constructs allow those without usable Aura to wield a forged ability; primordial Divine Constructs choose one owner and cannot be copied, remade, or manufactured.',
-        'Travel rules: Tretaresia distances take days, months, or years. Roads can produce villages, towns, waystations and caravans; off-road travel may reveal secret dungeons, lost villages, cults or worse. Almost the entire 2400 by 1400 world-coordinate atlas is travelable, including unnamed wilderness and sea routes. While travel.status is Traveling or Delayed, reduce travel.remainingDays only by elapsed story days and update worldClock. Do not change the current continent/place to the destination until arrival is confirmed. At arrival set travel.status to Arrived, remainingDays to 0, update location fields including location.mapX and location.mapY when the destination coordinates are known, and add location.discovered. Update location.heading from 0 north clockwise when a clear travel direction is established.',
+        'Travel rules: Tretaresia distances take days, months, or years. Roads can produce villages, towns, waystations and caravans; off-road travel may reveal secret dungeons, lost villages, cults or worse. Almost the entire 2400 by 1800 world-coordinate atlas is travelable, including unnamed wilderness and sea routes. While travel.status is Traveling or Delayed, reduce travel.remainingDays only by elapsed story days and update worldClock. Do not change the current continent/place to the destination until arrival is confirmed. At arrival set travel.status to Arrived, remainingDays to 0, update location fields including location.mapX and location.mapY when the destination coordinates are known, and add location.discovered. Update location.heading from 0 north clockwise when a clear travel direction is established.',
         'Dungeon and rank rules: dungeonRank must be one of Unranked, E-, E, E+, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+, S-, S, S+, SS. Adventurer ranks are Rookie, Basic, Intermediate, Ember, and Custom Rank; a Custom Rank name is individually invented by an assessor and should be recorded in progression.customRankName.',
         'Currency rules: the Central Continent generally shares a common currency, but other regions and non-human lands may use different money. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
@@ -1424,7 +1499,14 @@ let mapHitContext = null;
 
 function continentPath(continent) {
     if (typeof Path2D !== 'function') return null;
-    if (!mapContinentPaths.has(continent.id)) mapContinentPaths.set(continent.id, new Path2D(continent.path));
+    if (!mapContinentPaths.has(continent.id)) {
+        const path = new Path2D();
+        for (const polygon of continent.polygons) {
+            polygon.forEach(([x, y], index) => index ? path.lineTo(x, y) : path.moveTo(x, y));
+            path.closePath();
+        }
+        mapContinentPaths.set(continent.id, path);
+    }
     return mapContinentPaths.get(continent.id);
 }
 
@@ -1681,7 +1763,6 @@ function controlCenterMarkup() {
         '<label class="tretaresia-control-field full"><span>' + html(tr('Action delivery')) + '</span><select data-ui-setting="interactionMode"><option value="hidden"' + (settings.interactionMode === 'hidden' ? ' selected' : '') + '>' + html(tr('Hidden')) + '</option><option value="visible"' + (settings.interactionMode === 'visible' ? ' selected' : '') + '>' + html(tr('Visible')) + '</option><option value="draft"' + (settings.interactionMode === 'draft' ? ' selected' : '') + '>' + html(tr('Draft only')) + '</option></select></label>' +
         '<small class="tretaresia-action-mode-help full" data-action-mode-help>' + html(activityCopy()) + '</small>' +
         '<label class="tretaresia-control-field full"><span>' + html(tr('Activity indicator')) + '</span><select data-ui-setting="activityIndicator"><option value="full"' + (settings.activityIndicator === 'full' ? ' selected' : '') + '>' + html(tr('Full')) + '</option><option value="compact"' + (settings.activityIndicator === 'compact' ? ' selected' : '') + '>' + html(tr('Compact')) + '</option><option value="off"' + (settings.activityIndicator === 'off' ? ' selected' : '') + '>' + html(tr('Off')) + '</option></select></label>' +
-        '<label class="tretaresia-control-field full"><span>' + html(tr('Map artwork')) + '</span><select data-ui-setting="mapArtwork"><option value="procedural"' + (settings.mapArtwork === 'procedural' ? ' selected' : '') + '>' + html(tr('Procedural')) + '</option><option value="tiles"' + (settings.mapArtwork === 'tiles' ? ' selected' : '') + '>' + html(tr('Tile images')) + '</option></select></label>' +
         '</div></section>' +
         '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>03</b><span><strong>' + html(tr('Continuity')) + '</strong><small>' + html(tr('Character transfer')) + '</small></span></div>' +
         '<label class="tretaresia-continuity-toggle"><input type="checkbox" data-ui-setting="autoContinuity"' + (settings.autoContinuity ? ' checked' : '') + '><span>' + html(tr('Carry this character into new chats automatically')) + '</span></label>' +
@@ -1949,7 +2030,6 @@ function onInterfaceSettingChange(event) {
     }
     if (key === 'interactionMode') updateActionModeHelp();
     if (key === 'activityIndicator') syncActivityIndicator();
-    if (key === 'mapArtwork') scheduleMapDetailRender();
 }
 
 
@@ -2485,29 +2565,17 @@ function renderMap(panel, state) {
         : pinIds.has(selected.id);
     panel.innerHTML = `${heading('Tretaresia World Atlas', `${state.location.continent} · ${state.location.region}`, 'fa-solid fa-earth-asia')}
         
-<div class="tretaresia-map-layout"><div class="tretaresia-map-frame">
+<div class="tretaresia-map-layout"><div class="tretaresia-map-frame${mapFullscreen ? ' is-fullscreen' : ''}"${mapFullscreen ? ' role="dialog" aria-modal="true" aria-label="Tretaresia fullscreen world map"' : ''}>
     <div class="tretaresia-map-instruments">
         <button type="button" data-action="map-zoom-in" title="Zoom in" aria-label="Zoom in"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
         <button type="button" data-action="map-zoom-out" title="Zoom out" aria-label="Zoom out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
         <button type="button" data-action="map-center" title="${html(tr('Locate me'))}" aria-label="${html(tr('Locate me'))}"><i class="fa-solid fa-location-crosshairs"></i></button>
-        <button type="button" data-action="map-reset" title="${html(tr('Full map view'))}" aria-label="${html(tr('Full map view'))}"><i class="fa-solid fa-expand"></i></button>
+        <button type="button" data-action="map-reset" title="${html(tr('Full map view'))}" aria-label="${html(tr('Full map view'))}"><i class="fa-solid fa-border-all"></i></button>
     </div>
-    <button class="tretaresia-compass-rose" type="button" data-action="map-compass-north"
-        title="${html(tr('Locate me'))}" aria-label="${html(tr('Locate me'))}">
-        <svg viewBox="0 0 88 88" aria-hidden="true">
-            <circle class="cr-dial" cx="44" cy="44" r="41"/>
-            <circle class="cr-inner" cx="44" cy="44" r="30"/>
-            <g class="cr-ticks">
-                <path d="M44 5v7M44 76v7M5 44h7M76 44h7"/>
-                <path d="M17 17l5 5M71 17l-5 5M17 71l5-5M71 71l-5-5"/>
-            </g>
-            <g data-compass-needle transform="rotate(0 44 44)">
-                <path class="cr-n" d="M44 12 51 44 44 38 37 44Z"/>
-                <path class="cr-s" d="M44 76 37 44 44 50 51 44Z"/>
-            </g>
-            <circle class="cr-hub" cx="44" cy="44" r="3.4"/>
-        </svg>
-        <b>N</b><em data-compass-bearing>000°</em>
+    <button class="tretaresia-map-fullscreen-toggle" type="button" data-action="map-fullscreen"
+        title="${html(tr(mapFullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}"
+        aria-label="${html(tr(mapFullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}">
+        <i class="fa-solid fa-${mapFullscreen ? 'xmark' : 'up-right-and-down-left-from-center'}"></i>
     </button>
     <div class="tretaresia-map-hud">
         <span><i class="fa-solid fa-layer-group"></i><b data-map-lod>WORLD</b></span>
@@ -2622,7 +2690,6 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     const bounds = mapVisibleBounds();
     const transformX = canvas.width / WORLD_MAP_WIDTH;
     const transformY = canvas.height / WORLD_MAP_HEIGHT;
-    const hair = 1 / (mapView.scale * Math.min(transformX, transformY));
 
     context.setTransform(1, 0, 0, 1, 0, 0);
     const ocean = context.createLinearGradient(0, 0, 0, canvas.height);
@@ -2636,12 +2703,10 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
 
-    let tilesDrawn = false;
-    if (getSettings().mapArtwork === 'tiles') {
+    {
         const fallback = worldTile(WORLD_TILE_LEVELS[0], 0, 0);
         if (fallback.status === 'ready') {
             context.drawImage(fallback.image, 0, 0, WORLD_MAP_WIDTH, WORLD_MAP_HEIGHT);
-            tilesDrawn = true;
         }
         const level = worldTileLevel();
         const sourceLeft = Math.max(0, bounds.left / WORLD_MAP_WIDTH * level.width);
@@ -2661,28 +2726,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
                     row * WORLD_TILE_SIZE / level.height * WORLD_MAP_HEIGHT,
                     tile.image.naturalWidth / level.width * WORLD_MAP_WIDTH,
                     tile.image.naturalHeight / level.height * WORLD_MAP_HEIGHT);
-                tilesDrawn = true;
             }
-        }
-    }
-
-    for (const continent of WORLD_CONTINENTS) {
-        if (continent.bounds[2] < bounds.left || continent.bounds[0] > bounds.right
-            || continent.bounds[3] < bounds.top || continent.bounds[1] > bounds.bottom) continue;
-        const path = continentPath(continent);
-        if (!tilesDrawn && path) {
-            const shade = context.createLinearGradient(0, continent.bounds[1], 0, continent.bounds[3]);
-            shade.addColorStop(0, palette.landHigh);
-            shade.addColorStop(1, palette.land);
-            context.fillStyle = shade;
-            context.fill(path);
-            drawTerrain(context, continent, palette, detail, hair);
-            context.strokeStyle = rgbaOf(palette.accent, .18);
-            context.lineWidth = hair * 9;
-            context.stroke(path);
-            context.strokeStyle = rgbaOf(palette.alt, .78);
-            context.lineWidth = hair * 2;
-            context.stroke(path);
         }
     }
 
@@ -2690,11 +2734,11 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     drawGraticule(context, canvas, palette, detail);
     drawVignette(context, canvas, palette);
 
-    if (!tilesDrawn && detail === 0) {
+    if (detail === 0) {
         for (const continent of WORLD_CONTINENTS) {
             const point = mapCanvasPoint(continent.label[0], continent.label[1], canvas.width, canvas.height);
             drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, {
-                size: Math.max(10, canvas.width / 88), weight: 800, color: palette.label, stroke: palette.halo,
+                size: Math.max(14 * pixelRatio, canvas.width / 74), weight: 800, color: 'rgba(255,248,218,.94)', stroke: 'rgba(7,17,20,.92)',
             });
         }
     }
@@ -2712,27 +2756,25 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         if (point.x < -80 || point.y < -50 || point.x > canvas.width + 80 || point.y > canvas.height + 50) continue;
         const selected = location.id === mapSelectionId;
         const known = discovered.has(location.name);
-        const size = location.tier === 0 ? 9 : location.tier === 1 ? 7 : 5.5;
-        if (!tilesDrawn) {
-            if (selected) {
-                context.save();
-                context.strokeStyle = rgbaOf(palette.alt, .8);
-                context.lineWidth = 2;
-                context.setLineDash([5, 4]);
-                context.beginPath();
-                context.arc(point.x, point.y, size + 10, 0, Math.PI * 2);
-                context.stroke();
-                context.restore();
-            }
-            drawMarkerGlyph(context, point.x, point.y, location.tier,
-                selected ? palette.alt : known ? palette.accent : palette.faint,
-                palette.halo, size);
-            drawMapLabel(context, location.name, point.x, point.y + size + 12, {
-                size: location.tier === 0 ? 12 : location.tier === 1 ? 10.5 : 9.5,
-                color: palette.label, stroke: palette.halo,
-            });
+        const size = (location.tier === 0 ? 8 : location.tier === 1 ? 6.5 : 5) * pixelRatio;
+        if (selected) {
+            context.save();
+            context.strokeStyle = rgbaOf(palette.alt, .9);
+            context.lineWidth = 2 * pixelRatio;
+            context.setLineDash([5 * pixelRatio, 4 * pixelRatio]);
+            context.beginPath();
+            context.arc(point.x, point.y, size + 8 * pixelRatio, 0, Math.PI * 2);
+            context.stroke();
+            context.restore();
         }
-        mapRenderedPoints.push({ type: 'location', id: location.id, x: point.x, y: point.y, radius: 22 });
+        drawMarkerGlyph(context, point.x, point.y, location.tier,
+            selected ? palette.alt : known ? palette.accent : 'rgba(238,229,190,.78)',
+            'rgba(7,17,20,.94)', size);
+        drawMapLabel(context, location.name, point.x, point.y + size + 10 * pixelRatio, {
+            size: (location.tier === 0 ? 11.5 : location.tier === 1 ? 10 : 8.6) * pixelRatio,
+            color: selected ? palette.alt : 'rgba(255,250,229,.94)', stroke: 'rgba(5,14,18,.94)',
+        });
+        mapRenderedPoints.push({ type: 'location', id: location.id, x: point.x, y: point.y, radius: 24 * pixelRatio });
     }
 
     for (const pin of state.location.pins) {
@@ -2818,8 +2860,12 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     if (ping instanceof HTMLElement) {
         const inside = player.x > 0 && player.y > 0 && player.x < canvas.width && player.y < canvas.height;
         ping.hidden = !inside;
-        ping.style.left = player.x / pixelRatio + 'px';
-        ping.style.top = player.y / pixelRatio + 'px';
+        const frameRect = canvas.parentElement?.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        const offsetX = frameRect ? canvasRect.left - frameRect.left : 0;
+        const offsetY = frameRect ? canvasRect.top - frameRect.top : 0;
+        ping.style.left = offsetX + player.x / pixelRatio + 'px';
+        ping.style.top = offsetY + player.y / pixelRatio + 'px';
     }
     const readout = panel.querySelector('[data-map-readout]');
     const lodText = panel.querySelector('[data-map-lod]');
@@ -2831,10 +2877,6 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     if (readout) readout.textContent = coordinatesLabel(centre.x, centre.y);
     if (lodText) lodText.textContent = ['WORLD', 'REGIONAL', 'LOCAL'][detail];
     if (zoomText) zoomText.textContent = Math.round(mapView.scale * 100) + '%';
-    const needle = panel.querySelector('[data-compass-needle]');
-    if (needle instanceof SVGElement) needle.setAttribute('transform', 'rotate(' + current.heading + ' 44 44)');
-    const bearing = panel.querySelector('[data-compass-bearing]');
-    if (bearing) bearing.textContent = String(Math.round(current.heading)).padStart(3, '0') + '°';
 }
 
 function scheduleMapDraw(panel, state) {
@@ -3780,20 +3822,14 @@ async function onPanelClick(event) {
             setMapZoom(mapView.scale / 1.25);
             break;
         case 'map-reset':
-            Object.assign(mapView, { scale: .78, x: 264, y: 154 });
-            updateMapTransform();
+            resetMapView();
+            break;
+        case 'map-fullscreen':
+            setMapFullscreen(!mapFullscreen);
             break;
         case 'map-center': {
             const location = currentMapPoint(state);
             mapView.scale = 2.45;
-            mapView.x = WORLD_MAP_WIDTH / 2 - location.x * mapView.scale;
-            mapView.y = WORLD_MAP_HEIGHT / 2 - location.y * mapView.scale;
-            updateMapTransform();
-            break;
-        }
-        case 'map-compass-north': {
-            const location = currentMapPoint(state);
-            mapView.scale = Math.max(mapView.scale, 2.45);
             mapView.x = WORLD_MAP_WIDTH / 2 - location.x * mapView.scale;
             mapView.y = WORLD_MAP_HEIGHT / 2 - location.y * mapView.scale;
             updateMapTransform();
@@ -4067,17 +4103,37 @@ function resizePortrait(file) {
 }
 
 function updateMapTransform() {
+    clampMapView();
     const camera = document.querySelector('.tretaresia-map-camera');
     if (camera) camera.setAttribute('transform', `translate(${mapView.x} ${mapView.y}) scale(${mapView.scale})`);
     scheduleMapDetailRender();
 }
 
+function clampMapView() {
+    mapView.scale = Math.min(8, Math.max(1, mapView.scale));
+    mapView.x = Math.min(0, Math.max(WORLD_MAP_WIDTH * (1 - mapView.scale), mapView.x));
+    mapView.y = Math.min(0, Math.max(WORLD_MAP_HEIGHT * (1 - mapView.scale), mapView.y));
+}
+
+function resetMapView() {
+    Object.assign(mapView, { scale: 1, x: 0, y: 0 });
+    updateMapTransform();
+}
+
+function setMapFullscreen(open) {
+    mapFullscreen = Boolean(open);
+    document.body.classList.toggle('tretaresia-map-fullscreen-open', mapFullscreen);
+    const panel = document.querySelector('[data-panel="map"]');
+    if (panel) renderMap(panel, getState());
+}
+
 function setMapZoom(scale, anchorX = WORLD_MAP_WIDTH / 2, anchorY = WORLD_MAP_HEIGHT / 2) {
-    const next = Math.min(7, Math.max(.72, scale));
+    const next = Math.min(8, Math.max(1, scale));
     const ratio = next / mapView.scale;
     mapView.x = anchorX - (anchorX - mapView.x) * ratio;
     mapView.y = anchorY - (anchorY - mapView.y) * ratio;
     mapView.scale = next;
+    clampMapView();
     updateMapTransform();
 }
 
@@ -4834,6 +4890,8 @@ function openInterface() {
 function closeInterface() {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (!overlay?.classList.contains('is-open')) return;
+    mapFullscreen = false;
+    document.body.classList.remove('tretaresia-map-fullscreen-open');
     clearTimeout(introTimer);
     clearInterval(introGateTimer);
     clearTimeout(introFinishTimer);
@@ -5009,10 +5067,14 @@ async function initialize() {
         updatePrompt();
         document.addEventListener('keydown', event => {
             if (event.key !== 'Escape') return;
+            if (mapFullscreen) {
+                setMapFullscreen(false);
+                return;
+            }
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.7.4 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.8.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

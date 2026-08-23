@@ -80,7 +80,8 @@ body {
 .preview-map-canvas {
     display:block;
     width:100%;
-    height:360px;
+    height:auto;
+    aspect-ratio:4/3;
     background:#070d12;
 }
 .preview-dialog {
@@ -132,7 +133,7 @@ body {
         min-height:560px;
     }
     #preview-note { display:none; }
-    .preview-map-canvas { height:300px; }
+    .preview-map-canvas { height:auto; }
 }
 </style>
 </head>
@@ -184,11 +185,11 @@ body {
                     <div class="tretaresia-card preview-card"><div class="tretaresia-card-title"><span>Vital status</span><i class="fa-solid fa-heart-pulse"></i></div><div class="tretaresia-vital"><div class="tretaresia-vital-line"><span>HP</span><strong>100 / 100</strong></div><div class="tretaresia-vital-track"><i style="width:82%"></i></div></div><div class="tretaresia-vital"><div class="tretaresia-vital-line"><span>AURA</span><strong>78 / 100</strong></div><div class="tretaresia-vital-track"><i style="width:64%"></i></div></div></div>
                 </section>
                 <section class="tretaresia-tab-panel preview-panel" data-preview-panel="map" hidden>
-                    <div class="tretaresia-section-heading"><div><span class="tretaresia-eyebrow">08 · Active module</span><h3>World Map</h3><p>Procedural cartographic instrument preview.</p></div><i class="tretaresia-heading-icon fa-solid fa-earth-asia"></i></div>
-                    <div class="tretaresia-map-frame">
-                        <div class="tretaresia-map-instruments"><button type="button"><i class="fa-solid fa-magnifying-glass-plus"></i></button><button type="button"><i class="fa-solid fa-magnifying-glass-minus"></i></button><button type="button"><i class="fa-solid fa-location-crosshairs"></i></button><button type="button"><i class="fa-solid fa-expand"></i></button></div>
-                        <button class="tretaresia-compass-rose" type="button"><svg viewBox="0 0 88 88" aria-hidden="true"><circle class="cr-dial" cx="44" cy="44" r="41"/><circle class="cr-inner" cx="44" cy="44" r="30"/><g class="cr-ticks"><path d="M44 5v7M44 76v7M5 44h7M76 44h7"/><path d="M17 17l5 5M71 17l-5 5M17 71l5-5M71 71l-5-5"/></g><g data-compass-needle><path class="cr-n" d="M44 12 51 44 44 38 37 44Z"/><path class="cr-s" d="M44 76 37 44 44 50 51 44Z"/></g><circle class="cr-hub" cx="44" cy="44" r="3.4"/></svg><b>N</b><em>000°</em></button>
-                        <div class="tretaresia-map-hud"><span><i class="fa-solid fa-layer-group"></i><b>WORLD</b></span><span><i class="fa-solid fa-magnifying-glass"></i><b>78%</b></span><span><i class="fa-solid fa-crosshairs"></i><b>1135 E · 0690 S</b></span></div>
+                    <div class="tretaresia-section-heading"><div><span class="tretaresia-eyebrow">08 · Active module</span><h3>World Map</h3><p>Supplied image atlas with all 126 interactive destinations.</p></div><i class="tretaresia-heading-icon fa-solid fa-earth-asia"></i></div>
+                    <div class="tretaresia-map-frame" id="preview-map-frame">
+                        <div class="tretaresia-map-instruments"><button type="button"><i class="fa-solid fa-magnifying-glass-plus"></i></button><button type="button"><i class="fa-solid fa-magnifying-glass-minus"></i></button><button type="button"><i class="fa-solid fa-location-crosshairs"></i></button><button type="button"><i class="fa-solid fa-border-all"></i></button></div>
+                        <button class="tretaresia-map-fullscreen-toggle" id="preview-map-fullscreen" type="button" aria-label="Open fullscreen map"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                        <div class="tretaresia-map-hud"><span><i class="fa-solid fa-layer-group"></i><b>WORLD</b></span><span><i class="fa-solid fa-magnifying-glass"></i><b>100%</b></span><span><i class="fa-solid fa-crosshairs"></i><b>0887 E · 0414 S</b></span></div>
                         <canvas id="preview-map" class="preview-map-canvas" aria-label="Static world map preview"></canvas><span class="tretaresia-map-ping" data-map-ping></span>
                         <div class="tretaresia-map-legend"><span><i class="current"></i>Current</span><span><i class="known"></i>Discovered</span><span><i class="marked"></i>Marked</span><small>Drag to pan · Pinch or scroll to zoom</small></div>
                     </div>
@@ -266,6 +267,10 @@ body {
         });
     });
     var canvas = document.getElementById('preview-map');
+    var mapFrame = document.getElementById('preview-map-frame');
+    var fullscreenButton = document.getElementById('preview-map-fullscreen');
+    var mapImage = new Image();
+    mapImage.src = 'assets/world-map/tretaresia-world-map.webp';
     function drawMap(){
         var rect = canvas.getBoundingClientRect();
         var ratio = window.devicePixelRatio || 1;
@@ -274,27 +279,43 @@ body {
         var context = canvas.getContext('2d');
         context.scale(ratio, ratio);
         var width = rect.width, height = rect.height;
-        var gradient = context.createLinearGradient(0,0,0,height);
-        gradient.addColorStop(0,'#0c1820'); gradient.addColorStop(1,'#03070a');
-        context.fillStyle = gradient; context.fillRect(0,0,width,height);
-        context.strokeStyle = 'rgba(214,180,88,.14)'; context.lineWidth = 1;
-        for (var x=0;x<width;x+=Math.max(42,width/12)){ context.beginPath(); context.moveTo(x,0); context.lineTo(x,height); context.stroke(); }
-        for (var y=0;y<height;y+=Math.max(42,height/8)){ context.beginPath(); context.moveTo(0,y); context.lineTo(width,y); context.stroke(); }
-        var continents = [
-            [[.08,.55],[.14,.32],[.29,.25],[.4,.38],[.36,.7],[.2,.82]],
-            [[.43,.3],[.57,.18],[.72,.25],[.78,.55],[.64,.7],[.47,.62]],
-            [[.8,.2],[.95,.28],[.9,.58],[.75,.65],[.7,.42]]
+        context.fillStyle='#07151d'; context.fillRect(0,0,width,height);
+        if (mapImage.complete && mapImage.naturalWidth) context.drawImage(mapImage,0,0,width,height);
+        var labels = [
+            ['NORTH CONTINENT',.293,.134], ['CENTRAL CONTINENT',.314,.396],
+            ['GREAT LAND OF TITAN',.259,.704], ['DRINOVIA CONTINENT',.815,.226],
+            ['THE GREAT FOREST',.818,.626], ['BALUGURIA CONTINENT',.539,.806]
         ];
-        continents.forEach(function(points){
-            context.beginPath(); points.forEach(function(point,pointIndex){ var px=point[0]*width, py=point[1]*height; if(!pointIndex) context.moveTo(px,py); else context.lineTo(px,py); }); context.closePath();
-            var land=context.createLinearGradient(0,0,0,height); land.addColorStop(0,'#f4efdf'); land.addColorStop(1,'#23231a');
-            context.fillStyle=land; context.fill(); context.strokeStyle='#f4dc93'; context.lineWidth=1.5; context.stroke();
+        context.textAlign='center'; context.textBaseline='middle'; context.lineJoin='round';
+        labels.forEach(function(label){
+            var size=Math.max(10,width/70); context.font='800 '+size+'px Inter, sans-serif';
+            context.lineWidth=Math.max(3,size*.3); context.strokeStyle='rgba(5,14,18,.94)';
+            context.strokeText(label[0],label[1]*width,label[2]*height);
+            context.fillStyle='rgba(255,248,218,.94)'; context.fillText(label[0],label[1]*width,label[2]*height);
         });
-        [[.51,.45],[.26,.5],[.84,.4],[.68,.52]].forEach(function(point){
-            var px=point[0]*width,py=point[1]*height;
-            context.save(); context.translate(px,py); context.rotate(Math.PI/4); context.fillStyle='#f4dc93'; context.shadowColor='#d6b458'; context.shadowBlur=12; context.fillRect(-5,-5,10,10); context.restore();
+        var places = [
+            ['Frostgate',.23,.14], ['Central Crown',.369,.23], ['Grand Crossroads',.335,.40],
+            ['Khaduzar',.262,.75], ['Duel Crown',.863,.12], ['Verdant Court',.863,.51],
+            ['Exile Port',.373,.635], ['Gilded Vice',.408,.635], ['Chainmarket',.456,.67]
+        ];
+        places.forEach(function(point){
+            var px=point[1]*width,py=point[2]*height;
+            context.save(); context.translate(px,py); context.rotate(Math.PI/4); context.fillStyle='#f4dc93'; context.strokeStyle='#07141a'; context.lineWidth=2; context.fillRect(-4,-4,8,8); context.strokeRect(-4,-4,8,8); context.restore();
+            context.font='650 '+Math.max(8,width/95)+'px Inter, sans-serif'; context.lineWidth=3; context.strokeStyle='#07141a'; context.strokeText(point[0],px,py+14); context.fillStyle='#fff8df'; context.fillText(point[0],px,py+14);
         });
     }
+    mapImage.addEventListener('load',drawMap);
+    fullscreenButton.addEventListener('click',function(){
+        var open=!mapFrame.classList.contains('is-fullscreen');
+        mapFrame.classList.toggle('is-fullscreen',open);
+        document.body.classList.toggle('tretaresia-map-fullscreen-open',open);
+        fullscreenButton.setAttribute('aria-label',open?'Close fullscreen map':'Open fullscreen map');
+        fullscreenButton.querySelector('i').className='fa-solid fa-'+(open?'xmark':'up-right-and-down-left-from-center');
+        requestAnimationFrame(drawMap);
+    });
+    document.addEventListener('keydown',function(event){
+        if(event.key==='Escape'&&mapFrame.classList.contains('is-fullscreen')) fullscreenButton.click();
+    });
     window.addEventListener('resize', drawMap);
     drawMap();
 }());

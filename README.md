@@ -14,7 +14,7 @@ A persistent, responsive SillyTavern RPG interface built specifically for the wo
 - Long-distance journey tracking with origin, destination, road/caravan/sea/off-road route, estimated duration, remaining days, delays, and arrival state. Selecting a destination begins a journey instead of teleporting the scene.
 - Region-aware currency ledger with a named local currency and three flexible denominations.
 - Scene tracker with time, day, continent, region, exact place, position, weather, extreme temperatures, and AI-assisted multi-floor local maps.
-- A completely rebuilt world atlas with procedural Tretaresia terrain by default and optional supplied tile artwork, with all six continents, 126 named locations, coordinate-level selection, freeform pins, an exact player-position beacon, and a heading-aware world compass.
+- A huge image-tile world atlas using the supplied fantasy map, with all six continents, 126 named locations, coordinate-level selection, bounded pan/zoom, freeform pins, an exact player-position beacon, and a dedicated fullscreen viewer.
 - iOS-friendly Canvas tile rendering: four WebP detail levels load only the visible 512 px tiles and visible place labels while zooming or panning, avoiding one enormous SVG scene.
 - Broad action-based EXP tracking for studying, learning, training, crafting practice, combat, kills, discoveries, quests, and other genuine growth; level rollover happens when EXP is exactly equal to or greater than the current requirement.
 - Main-chat system notifications for EXP, learning, training, combat, kills, level-ups, mission/quest receipt and status changes, and money changes. Every tracked currency notification identifies why money was gained or spent, with configurable event types and auto-dismiss time.
@@ -40,9 +40,9 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
 
-## Version 0.7.4
+## Version 0.8.0
 
-Adds the themeable mobile-first command console: palette presets, a top-layer native control center, a swipeable module slider, a rank plate that wraps long names, an image-tile world atlas with cartographic instruments and a procedural loading fallback, and a one-shot intro gate. Every existing module and interaction remains available, while automatic continuity and portable JSON export/import keep the same character across chats.
+Replaces the former map artwork with the supplied 4:3 fantasy atlas and a new 4096×3072 tile pyramid. All 126 travel destinations are hand-positioned on visible land or islands and appear progressively across world, regional, and local zoom levels. Panning is clamped to the atlas edges, the compass has been removed, and the map now includes an iOS-friendly fullscreen viewer with an X close button and Escape support.
 
 The control center is mounted outside the transformed application panel so its settings dialog displays reliably on iOS Safari instead of being clipped behind the interface.
 

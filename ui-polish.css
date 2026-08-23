@@ -572,6 +572,115 @@
     .tretaresia-rpg-overlay.is-opening .tretaresia-rpg-panel { animation: none; }
 }
 
+/* ==========================================================================
+   TRETARESIA UI 8.0 — image atlas, bounded navigation, fullscreen viewer
+   ========================================================================== */
+
+.tretaresia-world-map {
+    aspect-ratio: 4 / 3;
+}
+
+.tretaresia-map-fullscreen-toggle {
+    position: absolute;
+    z-index: 8;
+    top: .68rem;
+    right: .68rem;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    color: var(--tf-gold2);
+    background: color-mix(in srgb, var(--tf-bg) 86%, transparent);
+    border: 1px solid var(--tf-line);
+    cursor: pointer;
+    font-size: .9rem;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    touch-action: manipulation;
+}
+
+.tretaresia-map-fullscreen-toggle:hover,
+.tretaresia-map-fullscreen-toggle:focus-visible {
+    color: var(--tf-on);
+    background: linear-gradient(180deg, var(--tf-gold2), var(--tf-goldd));
+}
+
+body.tretaresia-map-fullscreen-open {
+    overflow: hidden !important;
+}
+
+body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    transform: none !important;
+}
+
+.tretaresia-map-frame.is-fullscreen {
+    --map-full-width: min(100vw, calc((100dvh - 48px) * 4 / 3));
+    --map-full-height: min(calc(100dvh - 48px), 75vw);
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100dvh;
+    background: #031019;
+    border: 0;
+    overscroll-behavior: contain;
+}
+
+.tretaresia-map-frame.is-fullscreen .tretaresia-world-map {
+    flex: 0 0 var(--map-full-height);
+    width: var(--map-full-width);
+    height: var(--map-full-height);
+    max-width: 100vw;
+    max-height: calc(100dvh - 48px);
+    aspect-ratio: 4 / 3;
+}
+
+.tretaresia-map-frame.is-fullscreen .tretaresia-map-legend {
+    width: var(--map-full-width);
+    max-width: 100vw;
+    min-height: 48px;
+    box-sizing: border-box;
+}
+
+.tretaresia-map-frame.is-fullscreen .tretaresia-map-fullscreen-toggle {
+    position: fixed;
+    top: max(.75rem, env(safe-area-inset-top));
+    right: max(.75rem, env(safe-area-inset-right));
+    width: 46px;
+    height: 46px;
+    color: #fff4c7;
+    background: rgba(4, 14, 19, .9);
+    border-color: rgba(255, 231, 154, .62);
+    border-radius: 50%;
+}
+
+.tretaresia-map-frame.is-fullscreen .tretaresia-map-instruments {
+    position: fixed;
+    top: max(.75rem, env(safe-area-inset-top));
+    left: max(.75rem, env(safe-area-inset-left));
+}
+
+.tretaresia-map-frame.is-fullscreen .tretaresia-map-hud {
+    position: fixed;
+    left: max(.75rem, env(safe-area-inset-left));
+    bottom: max(3.4rem, calc(env(safe-area-inset-bottom) + 3.1rem));
+}
+
+@media (max-width: 800px) {
+    .tretaresia-world-map { aspect-ratio: 4 / 3; }
+    .tretaresia-map-frame.is-fullscreen .tretaresia-map-instruments button { width: 42px; height: 42px; }
+    .tretaresia-map-frame.is-fullscreen .tretaresia-map-legend { padding-right: 3.2rem; }
+}
+
 /* Tretaresia Interface 3.0
    This is a structural redesign of the shell, module navigation, control
    center, information cards, player console, and event surfaces. */
@@ -3946,3 +4055,6 @@
         white-space: nowrap;
     }
 }
+
+/* Keep the supplied 4:3 atlas undistorted after all legacy map rules. */
+.tretaresia-world-map { aspect-ratio: 4 / 3; }
