@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tretaresia UI 7.0 Preview</title>
+<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./ui-polish.css">
+<style>
+:root {
+    --tretaresia-accent:#d6b458;
+    --tretaresia-accent-rgb:214,180,88;
+    --tretaresia-accent-alt:#f4dc93;
+    --tretaresia-accent-alt-rgb:244,220,147;
+    --tretaresia-ink:#ece7da;
+    --tretaresia-surface:#040404;
+    --tretaresia-panel:#0b0b0a;
+    --tretaresia-on-accent:#12100a;
+    --tretaresia-glass-opacity:.86;
+    --tretaresia-glow-strength:.38;
+}
+html,body { min-height:100%; background:#010101; }
+body {
+    min-height:100vh;
+    margin:0;
+    padding:clamp(10px,3vw,34px);
+    display:grid;
+    place-items:center;
+    color:#ece7da;
+    font-family:'Chakra Petch',system-ui,sans-serif;
+}
+#preview-note {
+    position:fixed;
+    left:12px;
+    bottom:10px;
+    z-index:100;
+    color:rgba(236,231,218,.5);
+    font:10px/1.3 'Chakra Petch',sans-serif;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+}
+#tretaresia-rpg-overlay {
+    position:relative!important;
+    inset:auto!important;
+    display:block!important;
+    width:min(1120px,100%);
+    height:min(900px,calc(100vh - 40px));
+    min-height:620px;
+    overflow:hidden;
+    background:transparent!important;
+    opacity:1!important;
+    visibility:visible!important;
+}
+#tretaresia-rpg-overlay .tretaresia-rpg-backdrop { display:none!important; }
+#tretaresia-rpg-overlay .tretaresia-rpg-panel {
+    position:relative;
+    width:100%;
+    height:100%;
+    max-width:none;
+    max-height:none;
+    overflow:hidden;
+}
+#tretaresia-rpg-overlay .tretaresia-app-shell {
+    height:100%;
+    min-height:0;
+}
+.preview-panel {
+    min-height:100%;
+}
+.preview-placeholder {
+    display:grid;
+    place-items:center;
+    min-height:340px;
+    border:1px dashed var(--tf-line);
+    color:var(--tf-dim);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+}
+.preview-panel .tretaresia-section-heading { margin-bottom:1rem; }
+.preview-map-canvas {
+    display:block;
+    width:100%;
+    height:360px;
+    background:#070d12;
+}
+.preview-dialog {
+    width:min(440px,calc(100vw - 24px));
+    max-width:none;
+    padding:0;
+    color:var(--tf-txt);
+    background:transparent;
+    border:0;
+}
+.preview-dialog::backdrop {
+    background:rgba(0,0,0,.72);
+    backdrop-filter:blur(5px);
+    -webkit-backdrop-filter:blur(5px);
+}
+.preview-dialog .tretaresia-control-panel {
+    position:static;
+    display:block;
+    max-height:min(760px,calc(100dvh - 32px));
+    overflow:auto;
+    background:var(--tf-bg);
+}
+.preview-dialog .tretaresia-control-scroll { display:block; max-height:none; }
+.preview-dialog .preview-control-content { padding:1rem; }
+.preview-dialog .preview-swatches {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.65rem;
+}
+.preview-dialog label {
+    display:grid;
+    gap:.35rem;
+    color:var(--tf-dim);
+    font-size:.62rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+}
+.preview-dialog input[type=color] {
+    width:100%;
+    height:42px;
+    padding:3px;
+    background:var(--tf-field);
+    border:1px solid var(--tf-line);
+}
+@media (max-width:700px) {
+    body { padding:8px; }
+    #tretaresia-rpg-overlay {
+        height:calc(100vh - 16px);
+        min-height:560px;
+    }
+    #preview-note { display:none; }
+    .preview-map-canvas { height:300px; }
+}
+</style>
+</head>
+<body>
+<div id="tretaresia-rpg-overlay" class="tretaresia-rpg-overlay is-open is-ready" data-theme="dark">
+    <section class="tretaresia-rpg-panel" role="dialog" aria-label="Tretaresia RPG preview">
+        <div class="tretaresia-app-shell">
+            <header class="tretaresia-rpg-panel-header">
+                <div class="tretaresia-brand-lockup">
+                    <div class="tretaresia-rpg-panel-heading">
+                        <span class="tretaresia-rpg-kicker">Tretaresia Role-play</span>
+                        <h2>Tretaresia RPG</h2>
+                    </div>
+                </div>
+                <div class="tretaresia-header-actions">
+                    <div class="tretaresia-sync-state" data-mode="ready"><i class="fa-solid fa-circle"></i><span>Ready</span></div>
+                    <button id="preview-settings" class="tretaresia-header-button" type="button" aria-label="Control center"><i class="fa-solid fa-sliders"></i></button>
+                    <button class="tretaresia-header-button" type="button" aria-label="Close preview" onclick="document.body.classList.toggle('preview-dim')"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </header>
+            <div class="tretaresia-module-slider" id="preview-slider" role="tablist" aria-label="Tretaresia RPG modules">
+                <button class="tretaresia-slider-arrow" type="button" data-preview-step="-1" aria-label="Previous module"><i class="fa-solid fa-angle-left"></i></button>
+                <div class="tretaresia-module-window">
+                    <div class="tretaresia-module-track" id="preview-track" style="--tab-index:0">
+                        <button class="tretaresia-tab-button is-active" type="button" data-preview-tab="status"><i class="fa-solid fa-user"></i><span>Status</span><em>01 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="scene"><i class="fa-solid fa-cloud-sun"></i><span>Scene</span><em>02 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="inventory"><i class="fa-solid fa-box-open"></i><span>Inventory</span><em>03 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="skills"><i class="fa-solid fa-layer-group"></i><span>Skills</span><em>04 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="techniques"><i class="fa-solid fa-fire-flame-curved"></i><span>Powers</span><em>05 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="quests"><i class="fa-solid fa-scroll"></i><span>Quests</span><em>06 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="rank"><i class="fa-solid fa-medal"></i><span>Rank</span><em>07 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="map"><i class="fa-solid fa-map"></i><span>World Map</span><em>08 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="npcs"><i class="fa-solid fa-users"></i><span>NPCs</span><em>09 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="mail"><i class="fa-solid fa-envelope"></i><span>Mailbox</span><em>10 / 11</em></button>
+                        <button class="tretaresia-tab-button" type="button" data-preview-tab="music"><i class="fa-solid fa-music"></i><span>Music</span><em>11 / 11</em></button>
+                    </div>
+                </div>
+                <button class="tretaresia-slider-arrow" type="button" data-preview-step="1" aria-label="Next module"><i class="fa-solid fa-angle-right"></i></button>
+                <span class="tretaresia-module-dots" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            </div>
+            <main class="tretaresia-rpg-panel-body">
+                <section class="tretaresia-tab-panel is-active preview-panel" data-preview-panel="status">
+                    <div class="tretaresia-section-heading"><div><span class="tretaresia-eyebrow">01 · Active module</span><h3>Status</h3><p>The current persona and progression state.</p></div><i class="tretaresia-heading-icon fa-solid fa-user"></i></div>
+                    <article class="tretaresia-character-hero">
+                        <div class="tretaresia-avatar"><div class="tretaresia-avatar-initial">C</div></div>
+                        <div class="tretaresia-character-copy"><span class="tretaresia-eyebrow">Current persona</span><h3>Chaos</h3><p class="tretaresia-character-title">Untitled</p><div class="tretaresia-identity-chips"><span><i class="fa-solid fa-dna"></i> Human</span><span><i class="fa-solid fa-shield-halved"></i> Unaffiliated</span><span><i class="fa-solid fa-briefcase"></i> Adventurer</span></div></div>
+                        <div class="tretaresia-rank-insignia"><span class="tretaresia-rank-bars"><i class="on"></i><i></i><i></i><i></i><i></i></span><small>Guild rank</small><b>Rookie</b><em>01<span>/ 05</span></em></div>
+                    </article>
+                    <div class="tretaresia-card preview-card"><div class="tretaresia-card-title"><span>Vital status</span><i class="fa-solid fa-heart-pulse"></i></div><div class="tretaresia-vital"><div class="tretaresia-vital-line"><span>HP</span><strong>100 / 100</strong></div><div class="tretaresia-vital-track"><i style="width:82%"></i></div></div><div class="tretaresia-vital"><div class="tretaresia-vital-line"><span>AURA</span><strong>78 / 100</strong></div><div class="tretaresia-vital-track"><i style="width:64%"></i></div></div></div>
+                </section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="map" hidden>
+                    <div class="tretaresia-section-heading"><div><span class="tretaresia-eyebrow">08 · Active module</span><h3>World Map</h3><p>Procedural cartographic instrument preview.</p></div><i class="tretaresia-heading-icon fa-solid fa-earth-asia"></i></div>
+                    <div class="tretaresia-map-frame">
+                        <div class="tretaresia-map-instruments"><button type="button"><i class="fa-solid fa-magnifying-glass-plus"></i></button><button type="button"><i class="fa-solid fa-magnifying-glass-minus"></i></button><button type="button"><i class="fa-solid fa-location-crosshairs"></i></button><button type="button"><i class="fa-solid fa-expand"></i></button></div>
+                        <button class="tretaresia-compass-rose" type="button"><svg viewBox="0 0 88 88" aria-hidden="true"><circle class="cr-dial" cx="44" cy="44" r="41"/><circle class="cr-inner" cx="44" cy="44" r="30"/><g class="cr-ticks"><path d="M44 5v7M44 76v7M5 44h7M76 44h7"/><path d="M17 17l5 5M71 17l-5 5M17 71l5-5M71 71l-5-5"/></g><g data-compass-needle><path class="cr-n" d="M44 12 51 44 44 38 37 44Z"/><path class="cr-s" d="M44 76 37 44 44 50 51 44Z"/></g><circle class="cr-hub" cx="44" cy="44" r="3.4"/></svg><b>N</b><em>000°</em></button>
+                        <div class="tretaresia-map-hud"><span><i class="fa-solid fa-layer-group"></i><b>WORLD</b></span><span><i class="fa-solid fa-magnifying-glass"></i><b>78%</b></span><span><i class="fa-solid fa-crosshairs"></i><b>1135 E · 0690 S</b></span></div>
+                        <canvas id="preview-map" class="preview-map-canvas" aria-label="Static world map preview"></canvas><span class="tretaresia-map-ping" data-map-ping></span>
+                        <div class="tretaresia-map-legend"><span><i class="current"></i>Current</span><span><i class="known"></i>Discovered</span><span><i class="marked"></i>Marked</span><small>Drag to pan · Pinch or scroll to zoom</small></div>
+                    </div>
+                </section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="scene" hidden><div class="preview-placeholder">Scene instrument preview</div></section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="inventory" hidden><div class="preview-placeholder">Inventory module preview</div></section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="skills" hidden><div class="preview-placeholder">Skills module preview</div></section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="techniques" hidden><div class="preview-placeholder">Powers module preview</div></section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="quests" hidden><div class="preview-placeholder">Quest module preview</div></section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="rank" hidden><div class="preview-placeholder">Rank module preview</div></section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="npcs" hidden><div class="preview-placeholder">NPC module preview</div></section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="mail" hidden><div class="preview-placeholder">Mailbox module preview</div></section>
+                <section class="tretaresia-tab-panel preview-panel" data-preview-panel="music" hidden><div class="preview-placeholder">Music module preview</div></section>
+            </main>
+            <footer class="tretaresia-rpg-panel-footer"><span><i class="fa-solid fa-link"></i> Standalone visual preview</span><button class="tretaresia-text-button" type="button" onclick="document.getElementById('preview-settings').click()"><i class="fa-solid fa-sliders"></i> Control center</button></footer>
+        </div>
+    </section>
+</div>
+<div id="preview-note">Standalone preview · extension runtime remains in index.js</div>
+
+<dialog id="preview-dialog" class="preview-dialog">
+    <section class="tretaresia-control-panel">
+        <header class="tretaresia-control-head"><span class="tretaresia-control-sigil"><i class="fa-solid fa-compass-drafting"></i></span><div><small>TRETARESIA / CONSOLE</small><h3>Control center</h3></div><button type="button" id="preview-dialog-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></header>
+        <div class="tretaresia-control-scroll preview-control-content">
+            <section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>01</b><span><strong>Palette</strong><small>Fully customizable</small></span></div><div class="preview-swatches"><label>Accent<input type="color" data-preview-color="accent" value="#d6b458"></label><label>Highlight<input type="color" data-preview-color="alt" value="#f4dc93"></label></div></section>
+            <section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>02</b><span><strong>Interface</strong><small>Visual controls</small></span></div><label>Density<select><option>Compact</option><option>Comfortable</option></select></label><label style="margin-top:.8rem">Map artwork<select><option>Procedural</option><option>Tile images</option></select></label></section>
+        </div>
+    </section>
+</dialog>
+
+<script>
+(function(){
+    var tabs = ['status','scene','inventory','skills','techniques','quests','rank','map','npcs','mail','music'];
+    var index = 0;
+    var track = document.getElementById('preview-track');
+    var buttons = Array.prototype.slice.call(document.querySelectorAll('[data-preview-tab]'));
+    var dots = Array.prototype.slice.call(document.querySelectorAll('.tretaresia-module-dots i'));
+    function activate(id) {
+        var next = tabs.indexOf(id);
+        if (next < 0) return;
+        index = next;
+        track.style.setProperty('--tab-index', String(index));
+        buttons.forEach(function(button, buttonIndex){
+            var active = buttonIndex === index;
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-selected', String(active));
+        });
+        dots.forEach(function(dot, dotIndex){ dot.classList.toggle('on', dotIndex === index); });
+        document.querySelectorAll('[data-preview-panel]').forEach(function(panel){
+            panel.hidden = panel.dataset.previewPanel !== id;
+            panel.classList.toggle('is-active', panel.dataset.previewPanel === id);
+        });
+    }
+    document.querySelectorAll('[data-preview-step]').forEach(function(button){
+        button.addEventListener('click', function(){
+            activate(tabs[Math.max(0, Math.min(tabs.length - 1, index + Number(button.dataset.previewStep)))]);
+        });
+    });
+    buttons.forEach(function(button){
+        button.addEventListener('click', function(){ activate(button.dataset.previewTab); });
+    });
+    var dialog = document.getElementById('preview-dialog');
+    document.getElementById('preview-settings').addEventListener('click', function(){ dialog.showModal(); });
+    document.getElementById('preview-dialog-close').addEventListener('click', function(){ dialog.close(); });
+    dialog.addEventListener('click', function(event){ if (event.target === dialog) dialog.close(); });
+    function rgb(hex) {
+        var value = hex.replace('#','');
+        return parseInt(value.slice(0,2),16) + ',' + parseInt(value.slice(2,4),16) + ',' + parseInt(value.slice(4,6),16);
+    }
+    document.querySelectorAll('[data-preview-color]').forEach(function(input){
+        input.addEventListener('input', function(){
+            var key = input.dataset.previewColor === 'alt' ? 'alt' : 'accent';
+            document.documentElement.style.setProperty('--tretaresia-' + (key === 'alt' ? 'accent-alt' : 'accent'), input.value);
+            if (key === 'accent') document.documentElement.style.setProperty('--tretaresia-accent-rgb', rgb(input.value));
+        });
+    });
+    var canvas = document.getElementById('preview-map');
+    function drawMap(){
+        var rect = canvas.getBoundingClientRect();
+        var ratio = window.devicePixelRatio || 1;
+        canvas.width = Math.max(1, Math.round(rect.width * ratio));
+        canvas.height = Math.max(1, Math.round(rect.height * ratio));
+        var context = canvas.getContext('2d');
+        context.scale(ratio, ratio);
+        var width = rect.width, height = rect.height;
+        var gradient = context.createLinearGradient(0,0,0,height);
+        gradient.addColorStop(0,'#0c1820'); gradient.addColorStop(1,'#03070a');
+        context.fillStyle = gradient; context.fillRect(0,0,width,height);
+        context.strokeStyle = 'rgba(214,180,88,.14)'; context.lineWidth = 1;
+        for (var x=0;x<width;x+=Math.max(42,width/12)){ context.beginPath(); context.moveTo(x,0); context.lineTo(x,height); context.stroke(); }
+        for (var y=0;y<height;y+=Math.max(42,height/8)){ context.beginPath(); context.moveTo(0,y); context.lineTo(width,y); context.stroke(); }
+        var continents = [
+            [[.08,.55],[.14,.32],[.29,.25],[.4,.38],[.36,.7],[.2,.82]],
+            [[.43,.3],[.57,.18],[.72,.25],[.78,.55],[.64,.7],[.47,.62]],
+            [[.8,.2],[.95,.28],[.9,.58],[.75,.65],[.7,.42]]
+        ];
+        continents.forEach(function(points){
+            context.beginPath(); points.forEach(function(point,pointIndex){ var px=point[0]*width, py=point[1]*height; if(!pointIndex) context.moveTo(px,py); else context.lineTo(px,py); }); context.closePath();
+            var land=context.createLinearGradient(0,0,0,height); land.addColorStop(0,'#f4efdf'); land.addColorStop(1,'#23231a');
+            context.fillStyle=land; context.fill(); context.strokeStyle='#f4dc93'; context.lineWidth=1.5; context.stroke();
+        });
+        [[.51,.45],[.26,.5],[.84,.4],[.68,.52]].forEach(function(point){
+            var px=point[0]*width,py=point[1]*height;
+            context.save(); context.translate(px,py); context.rotate(Math.PI/4); context.fillStyle='#f4dc93'; context.shadowColor='#d6b458'; context.shadowBlur=12; context.fillRect(-5,-5,10,10); context.restore();
+        });
+    }
+    window.addEventListener('resize', drawMap);
+    drawMap();
+}());
+</script>
+</body>
+</html>
