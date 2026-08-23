@@ -364,6 +364,10 @@ const TRANSLATIONS = {
         'Control center': 'ศูนย์ควบคุม', Interface: 'อินเทอร์เฟซ', Continuity: 'ความต่อเนื่อง', 'Active module': 'โมดูลปัจจุบัน',
         'Visual controls': 'การตั้งค่าหน้าจอ', 'Character transfer': 'การย้ายข้อมูลตัวละคร', 'Archive index': 'สารบัญระบบ',
         'State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device.': 'รวมข้อมูลและรูปผู้เล่นไว้แล้ว ส่วนรูป NPC และเสียงที่เก็บในอุปกรณ์จะถูกคัดลอกอัตโนมัติเฉพาะเมื่อสานต่อบนอุปกรณ์นี้',
+        'Locate me': 'หาตำแหน่งฉัน', 'Full map view': 'ดูแผนที่ทั้งหมด',
+        Palette: 'ชุดสี', 'Fully customizable': 'ปรับได้ทั้งหมด', 'Theme preset': 'ชุดสีสำเร็จ',
+        Accent: 'สีหลัก', Highlight: 'สีเน้น', Text: 'สีตัวอักษร', Surface: 'สีพื้น',
+        'Map artwork': 'ลายเส้นแผนที่', Procedural: 'วาดโดยระบบ', 'Tile images': 'ภาพไทล์',
     },
 };
 
@@ -4583,7 +4587,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.5.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.7.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
