@@ -14,6 +14,14 @@ const MASTERY = ['Dormant', 'Initiate', 'Practiced', 'Adept', 'Expert', 'Master'
 const DUNGEON_RANKS = ['Unranked', 'E-', 'E', 'E+', 'D-', 'D', 'D+', 'C-', 'C', 'C+', 'B-', 'B', 'B+', 'A-', 'A', 'A+', 'S-', 'S', 'S+', 'SS'];
 const GUILD_CREATION_FEE = Object.freeze({ gold: 10, silver: 0, copper: 0 });
 const HOUSEHOLD_ROLES = ['Partner', 'Spouse', 'Child', 'Mother', 'Father', 'Sibling', 'Relative', 'Guardian', 'Other'];
+const QUEST_TYPES = ['Story', 'Side-Story', 'Mission', 'Quest', 'Dungeon', 'Contract', 'Personal'];
+const QUEST_SECTIONS = Object.freeze([
+    { id: 'story', label: 'STORY' },
+    { id: 'side-story', label: 'SIDE-STORY' },
+    { id: 'active', label: 'ACTIVE MISSION' },
+    { id: 'completed', label: 'COMPLETED MISSION' },
+    { id: 'failed', label: 'FAILED MISSION' },
+]);
 const HOSTILE_NPC_TERMS = new Set(['hostile', 'enemy', 'enemies', 'foe', 'foes', 'opponent', 'opponents', 'antagonist', 'antagonists', 'aggressor', 'aggressors', 'villain', 'villains', 'threat', 'threatening', 'hostile npc', 'enemy npc', 'dangerous enemy']);
 const MAGIC_DISCIPLINES = [
     { id: 'falseMagic', name: 'False Magic', icon: 'fa-solid fa-wand-sparkles', tone: '#789ac7' },
@@ -350,10 +358,11 @@ const DEFAULT_SETTINGS = Object.freeze({
     notifyCurrency: true,
     notifyQuests: true,
     autoContinuity: true,
+    showNpcMapMarkers: true,
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.9.1';
+const LAUNCHER_BIND_VERSION = '0.12.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -364,6 +373,8 @@ const TAB_META = {
     npcs: ['fa-solid fa-users', 'NPCs'], mail: ['fa-solid fa-envelope', 'Mailbox'], music: ['fa-solid fa-music', 'Music'],
 };
 let activeTabIndex = 0;
+let activeQuestSection = 'active';
+let characterLifeSkillSyncTimer = null;
 
 const TRANSLATIONS = {
     th: {
@@ -396,6 +407,8 @@ const TRANSLATIONS = {
         'Add inventory item': 'เพิ่มสิ่งของ', 'Item name': 'ชื่อสิ่งของ', Quantity: 'จำนวน', Category: 'หมวดหมู่', Description: 'รายละเอียด', 'Add item': 'เพิ่มสิ่งของ',
         'Skill Storage': 'คลังทักษะ', 'All acquired user skills': 'ทักษะทั้งหมดของผู้เล่น', 'Add skill': 'เพิ่มทักษะ', 'Skill name': 'ชื่อทักษะ', Type: 'ประเภท',
         'Quest Log': 'บันทึกภารกิจ', 'Add quest': 'เพิ่มภารกิจ', 'Quest name': 'ชื่อภารกิจ', 'Quest type': 'ประเภทภารกิจ', 'Dungeon rank': 'ระดับดันเจี้ยน', Objective: 'เป้าหมาย', Reward: 'รางวัล',
+        STORY: 'เนื้อเรื่องหลัก', 'SIDE-STORY': 'เนื้อเรื่องรอง', 'ACTIVE MISSION': 'ภารกิจที่กำลังทำ', 'COMPLETED MISSION': 'ภารกิจสำเร็จ', 'FAILED MISSION': 'ภารกิจล้มเหลว',
+        'Reward claimed': 'รับรางวัลแล้ว', 'Mission archive': 'คลังบันทึกภารกิจ',
         'Ranks & Progression': 'อันดับและความก้าวหน้า', 'Guild and mastery record': 'บันทึกอันดับกิลด์และความชำนาญ', 'Adventurer Rank': 'อันดับนักผจญภัย', 'Custom rank name': 'ชื่ออันดับเฉพาะตัว',
         'Power mastery': 'ความชำนาญพลัง', 'Combat mastery': 'ความชำนาญการต่อสู้', 'Power & Combat': 'พลังและการต่อสู้', 'Power systems': 'ระบบพลัง', 'Combat disciplines': 'ศาสตร์การต่อสู้',
         'Recognized guild classification': 'ระดับที่กิลด์รับรอง', 'Magic mastery': 'ความชำนาญเวทมนตร์', 'Sword mastery': 'ความชำนาญดาบ', Experience: 'ค่าประสบการณ์', Reputation: 'ชื่อเสียง',
@@ -407,6 +420,8 @@ const TRANSLATIONS = {
         Recorded: 'บันทึกแล้ว', Unexplored: 'ยังไม่สำรวจ', Pinned: 'ปักหมุดแล้ว', None: 'ไม่มี', Destination: 'จุดหมาย', 'Exact place / scene': 'สถานที่หรือฉากโดยละเอียด',
         'Location detail': 'รายละเอียดสถานที่', 'Travel and notify chat': 'เดินทางและแจ้งในโรลเพลย์', 'Marker label': 'ชื่อหมุด', 'Marker note': 'บันทึกหมุด', 'Mark location': 'ปักหมุดสถานที่',
         Current: 'ปัจจุบัน', Discovered: 'ค้นพบแล้ว', Marked: 'ปักหมุด', 'Drag to pan · Pinch or scroll to zoom': 'ลากเพื่อเลื่อน · จีบนิ้วหรือเลื่อนเพื่อซูม',
+        'Living NPCs': 'NPC ที่มีชีวิต', 'Show NPC markers': 'แสดงตำแหน่ง NPC', 'Hide NPC markers': 'ซ่อนตำแหน่ง NPC', 'Life mode': 'โหมดการใช้ชีวิต', Activity: 'กิจกรรมปัจจุบัน',
+        'Active life': 'ใช้ชีวิตอัตโนมัติ', 'Story only': 'อัปเดตเมื่ออยู่ในเรื่อง', Paused: 'หยุดการอัปเดต', 'Show on World Map': 'แสดงบนแผนที่โลก', 'Open NPC dossier': 'เปิดข้อมูล NPC',
         Morning: 'เช้า', Afternoon: 'บ่าย', Evening: 'เย็น', Night: 'กลางคืน', 'Safe Zone': 'เขตปลอดภัย', 'Neutral Zone': 'เขตเป็นกลาง', 'Danger Zone': 'เขตอันตราย', 'Unknown Zone': 'เขตไม่ทราบข้อมูล',
         Rookie: 'มือใหม่', Basic: 'พื้นฐาน', Ember: 'เอมเบอร์', 'Custom Rank': 'อันดับเฉพาะตัว', Dormant: 'หลับใหล', Initiate: 'เริ่มฝึก', Practiced: 'ฝึกฝนแล้ว', Adept: 'ชำนาญ', Expert: 'เชี่ยวชาญ', Master: 'ปรมาจารย์', Grandmaster: 'มหาปรมาจารย์', Mythic: 'ระดับตำนาน',
         Active: 'กำลังดำเนินการ', Completed: 'สำเร็จ', Failed: 'ล้มเหลว', 'On Hold': 'พักไว้', Beginner: 'เริ่มต้น', Intermediate: 'กลาง', Advanced: 'ขั้นสูง', Saint: 'เซนต์', King: 'คิง', Emperor: 'จักรพรรดิ', God: 'เทพ',
@@ -581,7 +596,11 @@ function defaultState() {
         },
         worldClock: { day: 1, dayName: 'Day 1', time: '08:00', phase: 'Morning' },
         location: { atlasVersion: 2, continent: 'Central Continent', region: 'Crown Heartlands', place: 'Central Crown', detail: '', zoneType: 'Safe Zone', mapX: WORLD_LOCATIONS[0].x, mapY: WORLD_LOCATIONS[0].y, heading: 0, discovered: ['Central Crown'], pins: [] },
-        travel: { status: 'Idle', origin: '', destination: '', route: 'Road', totalDays: 0, remainingDays: 0, notes: '' },
+        travel: {
+            status: 'Idle', origin: '', destination: '', route: 'Road', totalDays: 0, remainingDays: 0, notes: '',
+            originX: null, originY: null, originContinent: '', originRegion: '', destinationX: null, destinationY: null,
+            destinationContinent: '', destinationRegion: '', destinationPlace: '', startedAtWorldMinutes: null, lastWorldMinutes: null,
+        },
         scene: { position: 'Unknown', weather: 'Unknown', temperature: null },
         sceneMap: { activeMapId: '', activeFloorId: '', playerRoomId: '', maps: [] },
         inventory: [{ id: uid(), name: "Traveler's Clothes", quantity: 1, category: 'Equipment', description: '' }],
@@ -621,7 +640,7 @@ function getSettings() {
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
-    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'autoContinuity']) settings[key] = Boolean(settings[key]);
+    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'autoContinuity', 'showNpcMapMarkers']) settings[key] = Boolean(settings[key]);
     return settings;
 }
 
@@ -856,8 +875,28 @@ function resolveFriendlyNpc(state, value) {
     return friendlyNpcs(state).find(entry => (id && entry.id === id) || (name && entry.name.toLocaleLowerCase() === name)) || null;
 }
 
+function resolveOrCreateFriendlyNpc(state, value) {
+    const existing = resolveFriendlyNpc(state, value);
+    if (existing) return existing;
+    const name = text(value?.npcName, text(value?.name, '', 140), 140);
+    if (!name || !value || typeof value !== 'object') return null;
+    const candidate = npcProfile({
+        id: text(value.npcId, text(value.id, uid(), 100), 100),
+        name,
+        title: value.title || value.role,
+        occupation: value.occupation || value.role,
+        faction: value.faction || value.affiliation,
+        relationship: value.relationship || value.relationshipToUser || 'Acquaintance',
+        isHostile: value.isHostile ?? value.hostile,
+        location: value.location,
+    });
+    if (!candidate || !isFriendlyNpc(candidate)) return null;
+    state.npcs.push(candidate);
+    return candidate;
+}
+
 function socialMemberName(state, id) {
-    if (id === 'player') return state.player.name || 'Player';
+    if (id === 'player') return currentPersonaName(state);
     return state.npcs.find(entry => entry.id === id)?.name || 'Unknown member';
 }
 
@@ -895,8 +934,18 @@ function npcProfile(value, fallback = {}) {
         loyalty: number(value.loyalty, number(fallback.loyalty, 0, 0, 100), 0, 100), fear: number(value.fear, number(fallback.fear, 0, 0, 100), 0, 100),
         corruption: number(value.corruption, number(fallback.corruption, 0, 0, 100), 0, 100), lust: number(value.lust, number(fallback.lust, 0, 0, 100), 0, 100),
         location: text(value.location, text(fallback.location, 'Unknown', 200), 200), lastSeen: text(value.lastSeen, text(fallback.lastSeen, '', 120), 120),
+        mapX: optionalNumber(value.mapX, optionalNumber(fallback.mapX, null, 0, WORLD_MAP_WIDTH), 0, WORLD_MAP_WIDTH),
+        mapY: optionalNumber(value.mapY, optionalNumber(fallback.mapY, null, 0, WORLD_MAP_HEIGHT), 0, WORLD_MAP_HEIGHT),
+        mapVisible: value.mapVisible === undefined ? Boolean(fallback.mapVisible) : Boolean(value.mapVisible),
+        lifeMode: ['Active', 'Story only', 'Paused'].includes(value.lifeMode) ? value.lifeMode : ['Active', 'Story only', 'Paused'].includes(fallback.lifeMode) ? fallback.lifeMode : 'Active',
+        activity: text(value.activity, text(fallback.activity, 'Living their daily life', 240), 240),
+        activityUpdatedDay: number(value.activityUpdatedDay, number(fallback.activityUpdatedDay, 0, 0, 999999), 0, 999999),
         maritalStatus: text(value.maritalStatus, text(fallback.maritalStatus, 'Unknown', 100), 100), partner: text(value.partner, text(fallback.partner, '', 160), 160),
         children: text(value.children, text(fallback.children, '', 400), 400), notes: text(value.notes, text(fallback.notes, '', 1000), 1000),
+        characterLifeId: text(value.characterLifeId, text(fallback.characterLifeId, '', 120), 120),
+        characterLifeScope: ['global', 'character', 'chat'].includes(value.characterLifeScope) ? value.characterLifeScope
+            : ['global', 'character', 'chat'].includes(fallback.characterLifeScope) ? fallback.characterLifeScope : '',
+        characterLifePortraitId: text(value.characterLifePortraitId, text(fallback.characterLifePortraitId, '', 180), 180),
         stats: {
             level: number(stats.level, number(baseStats.level, 0, 0, 9999), 0, 9999), rank: text(stats.rank, text(baseStats.rank, 'Unknown', 80), 80),
             hp: number(stats.hp, number(baseStats.hp, 0, 0, 999999), 0, 999999), mp: number(stats.mp, number(baseStats.mp, 0, 0, 999999), 0, 999999),
@@ -936,15 +985,23 @@ function musicTrack(value) {
 function quest(value) {
     if (!value || typeof value !== 'object' || !text(value.name)) return null;
     const statuses = ['Offered', 'Active', 'Completed', 'Failed', 'On Hold'];
+    const status = statuses.includes(value.status) ? value.status : 'Active';
+    const completed = status === 'Completed';
+    const failed = status === 'Failed';
+    const updatedAt = text(value.updatedAt, '', 60);
     return {
         id: text(value.id, uid(), 100), name: text(value.name, '', 120),
-        type: ['Mission', 'Quest', 'Dungeon', 'Contract', 'Personal'].includes(value.type) ? value.type : 'Quest',
+        type: QUEST_TYPES.includes(value.type) ? value.type : 'Quest',
         dungeonRank: DUNGEON_RANKS.includes(value.dungeonRank) ? value.dungeonRank : 'Unranked',
-        status: statuses.includes(value.status) ? value.status : 'Active',
+        status,
         objective: text(value.objective, '', 500), reward: text(value.reward, '', 160),
         giver: text(value.giver, '', 120), source: text(value.source, '', 160),
-        progress: number(value.progress, value.status === 'Completed' ? 100 : 0, 0, 100),
-        receivedAt: text(value.receivedAt, '', 60), updatedAt: text(value.updatedAt, '', 60),
+        progress: completed ? 100 : number(value.progress, 0, 0, 100),
+        rewardClaimed: completed || Boolean(value.rewardClaimed),
+        rewardClaimedAt: completed ? text(value.rewardClaimedAt, text(value.completedAt, updatedAt, 60), 60) : '',
+        completedAt: completed ? text(value.completedAt, updatedAt, 60) : '',
+        failedAt: failed ? text(value.failedAt, updatedAt, 60) : '',
+        receivedAt: text(value.receivedAt, '', 60), updatedAt,
         notes: text(value.notes, '', 1000),
     };
 }
@@ -1027,7 +1084,7 @@ function normalizeSceneMap(value, fallback) {
     const maps = sourceMaps.map(entry => sceneStructure(entry, mapsById.get(entry?.id) || mapsByName.get(text(entry?.name).toLocaleLowerCase()) || {}))
         .filter(Boolean).slice(0, 30);
     let activeMapId = text(source.activeMapId, text(base.activeMapId, '', 100), 100);
-    if (!maps.some(entry => entry.id === activeMapId)) activeMapId = maps[0]?.id || '';
+    if (activeMapId && !maps.some(entry => entry.id === activeMapId)) activeMapId = maps[0]?.id || '';
     const activeMap = maps.find(entry => entry.id === activeMapId);
     let activeFloorId = text(source.activeFloorId, text(base.activeFloorId, '', 100), 100);
     if (!activeMap?.floors.some(entry => entry.id === activeFloorId)) activeFloorId = activeMap?.floors[0]?.id || '';
@@ -1114,6 +1171,8 @@ function normalize(candidate, base = defaultState()) {
         })).filter(pin => pin.locationId || (pin.x !== null && pin.y !== null)).slice(0, 250) : result.location.pins,
     };
     const travel = source.travel && typeof source.travel === 'object' ? source.travel : {};
+    const namedTravelDestination = mapLocationByName(travel.destinationPlace || travel.destination);
+    const currentWorldMinutes = worldClockMinutes(result.worldClock);
     result.travel = {
         status: ['Idle', 'Preparing', 'Traveling', 'Delayed', 'Arrived'].includes(travel.status) ? travel.status : result.travel.status,
         origin: text(travel.origin, result.travel.origin, 160), destination: text(travel.destination, result.travel.destination, 160),
@@ -1121,6 +1180,17 @@ function normalize(candidate, base = defaultState()) {
         totalDays: number(travel.totalDays, result.travel.totalDays, 0, 999999),
         remainingDays: number(travel.remainingDays, result.travel.remainingDays, 0, 999999),
         notes: text(travel.notes, result.travel.notes, 500),
+        originX: optionalNumber(travel.originX, result.location.mapX, 0, WORLD_MAP_WIDTH),
+        originY: optionalNumber(travel.originY, result.location.mapY, 0, WORLD_MAP_HEIGHT),
+        originContinent: text(travel.originContinent, result.location.continent, 100),
+        originRegion: text(travel.originRegion, result.location.region, 120),
+        destinationX: optionalNumber(travel.destinationX, namedTravelDestination?.x ?? null, 0, WORLD_MAP_WIDTH),
+        destinationY: optionalNumber(travel.destinationY, namedTravelDestination?.y ?? null, 0, WORLD_MAP_HEIGHT),
+        destinationContinent: text(travel.destinationContinent, namedTravelDestination?.continent || '', 100),
+        destinationRegion: text(travel.destinationRegion, namedTravelDestination?.region || '', 120),
+        destinationPlace: text(travel.destinationPlace, namedTravelDestination?.name || travel.destination, 160),
+        startedAtWorldMinutes: optionalNumber(travel.startedAtWorldMinutes, currentWorldMinutes, 0, 9999999999),
+        lastWorldMinutes: optionalNumber(travel.lastWorldMinutes, currentWorldMinutes, 0, 9999999999),
     };
     const scene = source.scene && typeof source.scene === 'object' ? source.scene : {};
     result.scene = {
@@ -1393,8 +1463,16 @@ async function persistState(candidate, source = 'manual') {
         notify('warning', 'Open a character or group chat before changing the role-play state.');
         return false;
     }
-    const state = normalize(candidate, getState());
+    const previous = getState();
+    let state = normalize(candidate, previous);
+    synchronizeWorldState(state, previous);
+    state = normalize(state, previous);
+    syncCharacterLifeLinks(state);
     resolveLevelProgression(state);
+    if (state.quests.some(entry => entry.status === 'Completed'
+        && previous.quests.find(candidate => candidate.id === entry.id)?.status !== 'Completed')) activeQuestSection = 'completed';
+    else if (state.quests.some(entry => entry.status === 'Failed'
+        && previous.quests.find(candidate => candidate.id === entry.id)?.status !== 'Failed')) activeQuestSection = 'failed';
     state.updatedAt = new Date().toISOString();
     state.updateSource = source;
     context.chatMetadata[METADATA_KEY] = state;
@@ -1403,6 +1481,7 @@ async function persistState(candidate, source = 'manual') {
     pendingSave = pendingSave.catch(() => undefined).then(() => context.saveMetadata());
     await pendingSave;
     writeContinuitySnapshot(state);
+    queueCharacterLifeSkillSync(state);
     return true;
 }
 
@@ -1441,20 +1520,24 @@ function aiState(state) {
         ...state.social.household.members.map(entry => entry.id),
     ]);
     const rankedNpcs = [...friendly].sort((a, b) => {
-        const aActive = (recentTranscript.includes(a.name.toLocaleLowerCase()) ? 4 : 0) + (socialNpcIds.has(a.id) ? 2 : 0);
-        const bActive = (recentTranscript.includes(b.name.toLocaleLowerCase()) ? 4 : 0) + (socialNpcIds.has(b.id) ? 2 : 0);
+        const score = entry => (recentTranscript.includes(entry.name.toLocaleLowerCase()) ? 8 : 0)
+            + (socialNpcIds.has(entry.id) ? 5 : 0) + (entry.mapVisible ? 3 : 0) + (entry.lifeMode === 'Active' ? 1 : 0);
+        const aActive = score(a);
+        const bActive = score(b);
         return bActive - aActive || String(b.updatedAt).localeCompare(String(a.updatedAt));
     });
-    const recentNpcs = rankedNpcs.slice(0, 4);
+    const recentNpcs = rankedNpcs.slice(0, 6);
     const relevantEntries = (values, limit) => [...values].sort((a, b) => {
         const score = value => recentTranscript.includes(text(value?.name, '', 160).toLocaleLowerCase()) ? 1 : 0;
         return score(b) - score(a);
     }).slice(0, limit);
-    const activeQuests = [...state.quests].sort((a, b) => {
+    const activeQuests = state.quests.filter(entry => !['Completed', 'Failed'].includes(entry.status)).sort((a, b) => {
         const active = value => /active|offered|in progress|ongoing/i.test(text(value?.status));
         const mentioned = value => recentTranscript.includes(text(value?.name, '', 180).toLocaleLowerCase());
         return Number(mentioned(b)) - Number(mentioned(a)) || Number(active(b)) - Number(active(a)) || String(b.updatedAt || b.receivedAt || '').localeCompare(String(a.updatedAt || a.receivedAt || ''));
     }).slice(0, 12);
+    const questArchive = state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status))
+        .sort((a, b) => String(b.completedAt || b.failedAt || b.updatedAt || '').localeCompare(String(a.completedAt || a.failedAt || a.updatedAt || ''))).slice(0, 16);
     return {
         player: safePlayer,
         progression: state.progression,
@@ -1473,17 +1556,21 @@ function aiState(state) {
             techniques: state.proficiencies.techniques.slice(0, 40).map(({ id, name, category, proficiency }) => [id, name, category, proficiency]),
         },
         quests: activeQuests.map(({ id, name, type, status, objective, reward, giver, progress }) => [id, name, type, status, objective, reward, giver, progress]),
+        questArchive: questArchive.map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
         social: {
             party: state.social.party ? { id: state.social.party.id, name: state.social.party.name, leaderId: state.social.party.leaderId, memberIds: state.social.party.memberIds } : null,
             guilds: state.social.guilds.map(({ id, name, description, rank, leaderId, memberIds, treasury }) => ({ id, name, description, rank, leaderId, memberIds, treasury })),
             household: { id: state.social.household.id, name: state.social.household.name, members: state.social.household.members },
         },
         npcIndex: rankedNpcs.slice(0, 24).map(({ id, name, relationship, location, faction }) => [id, name, relationship, location, faction]),
+        npcWorld: rankedNpcs.filter(entry => entry.lifeMode === 'Active' || entry.mapVisible || socialNpcIds.has(entry.id)).slice(0, 12)
+            .map(({ id, name, location, mapX, mapY, mapVisible, lifeMode, activity, activityUpdatedDay }) => [id, name, location, mapX, mapY, mapVisible, lifeMode, activity, activityUpdatedDay]),
         npcs: recentNpcs.map(entry => ({
             id: entry.id, name: entry.name, title: entry.title, race: entry.race, age: entry.age, faction: entry.faction,
             relationship: entry.relationship, relationshipState: entry.relationshipState, affection: entry.affection,
             trust: entry.trust, loyalty: entry.loyalty, fear: entry.fear, corruption: entry.corruption, lust: entry.lust,
             location: entry.location, lastSeen: entry.lastSeen, maritalStatus: entry.maritalStatus, partner: entry.partner, children: entry.children,
+            mapX: entry.mapX, mapY: entry.mapY, mapVisible: entry.mapVisible, lifeMode: entry.lifeMode, activity: entry.activity, activityUpdatedDay: entry.activityUpdatedDay,
             stats: entry.stats,
             abilities: entry.abilities.slice(0, 4).map(({ id, name, category, level, proficiency }) => [id, name, category, level, proficiency]),
             customMeters: entry.customMeters.slice(0, 8).map(({ id, name, value }) => [id, name, value]),
@@ -1506,13 +1593,13 @@ function legacyPatchInstructions() {
         'After the role-play reply, append one invisible HTML comment only when confirmed state changed:',
         '<!--tretaresia_patch:{"ops":[["upsert","quests",{"id":"academy-escort","name":"Escort the Academy Caravan","type":"Mission","status":"Active","objective":"Protect the caravan until it reaches Eastwatch","reward":"12 silver","giver":"Quartermaster Lysa","source":"Great Academy mission board","progress":0}],["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}]],"summary":"Mission, training, payment, and combat progress recorded."}-->',
         'Allowed verbs: set or inc for scalar paths; upsert or delete for inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers, guildMembers, and householdMembers; set or inc npcValues; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
-        'Party, Guild, and Household rules: The player is always the leader of a party or guild created from the UI unless the story explicitly confirms a leadership change. Party membership is free; guild creation requires the configured creation fee already deducted by the player-facing system. Use the established gold, silver, and copper denominations and never invent an exchange rate. Record confirmed invitations, departures, dissolutions, family roles, marriage, children, parents, guardians, and other household changes in the social state. A Household is the player\'s family roster, not a generic faction.',
+        'Party, Guild, and Household rules: The player is always the leader of a party or guild created from the UI unless the story explicitly confirms a leadership change. Party membership is free. The UI already deducts the Guild fee; a newly confirmed story-created Guild is accepted only when the player can afford it and the patch parser deducts the configured fee automatically. Role-play changes are automatic: whenever a completed reply confirms joining, accepting an invitation, leaving, expulsion, creation, dissolution, marriage, partnership, a child, parent, guardian, or another family role, update social state in this same patch even when no UI button was used. For a friendly person absent from npcIndex, first upsert npcs with a stable id/name, then use that id in partyMembers, guildMembers, or householdMembers. A Household is the player\'s family roster, not a generic faction.',
         'Use canonical paths shown in the state JSON. For a new incoming physical letter include contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not a letter.',
         'Create or update a named NPC dossier with an upsert on npcs only when that NPC becomes relevant or a confirmed fact changes. Use partial NPC objects and preserve the canonical id from npcIndex. When a relationship becomes a correspondence, also upsert contacts with npcId; do not make every incidental NPC a contact.',
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. NPC portraits and portrait framing are local-only and forbidden in patches.',
         'Evaluate every relevant subsystem after every reply, not only scene/location. Update every materially affected value in the same patch; leave a value unchanged only when this reply provides no reasonable story basis for changing it.',
         'Full checklist: player HP/Aura-or-Mana/stamina/condition, profession, power type, Origin skill and identity; EXP/adventurer rank/custom title/reputation/local currency; inventory, Constructs and learned skills; power/combat/technique proficiency; quests and dungeons; time/location/travel/weather/local map; every participating NPC dossier, relationship meter, location, lastSeen, abilities, diary, and revealed stats; contacts and actual physical letters. Emit only fields affected by this completed reply.',
-        'Mission and quest receipt rules: immediately upsert every named mission, quest, contract, dungeon task, or personal objective when this reply formally offers, assigns, gives, or confirms the player has received it. Do not wait for completion or for the user to open the Quest tab. Use status "Offered" when acceptance is optional and not yet confirmed; use "Active" when accepted or assigned automatically. Include a stable id, name, type, status, objective, reward when known, giver, source, progress 0-100, and receivedAt when the story provides a timestamp. If the user accepts an offered task, upsert it as Active in this reply. Update progress/objective/status as confirmed events occur and set Completed only when completion is confirmed. Do not turn casual advice, rumors, possibilities, or rejected work into quests.',
+        'Mission and quest receipt rules: immediately upsert every named mission, quest, contract, dungeon task, or personal objective when this reply formally offers, assigns, gives, or confirms receipt. Type must be Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Use Offered when optional and unaccepted; Active when accepted or assigned. Include stable id/name/type/status/objective/reward/giver/source/progress. Progress must reflect confirmed objective completion and Completed always means progress 100. Failed is terminal unless the story explicitly reopens the mission. On the first transition to Completed, grant the established reward once in the SAME patch and tag every reward operation metadata with {"category":"quest-reward","questId":"canonical quest id","reason":"specific reward"}. Completed questArchive entries with rewardClaimed=true are historical records: never grant their reward, EXP, item, currency, rank, or loot again and never reset their progress. Do not turn rumors, possibilities, rejected work, or casual advice into quests.',
         'EXP rules: award EXP for every completed action that materially counts as studying, reading with understanding, taking a lesson, researching, learning, spell or skill practice, crafting practice, physical training, sparring, combat participation, surviving danger, killing a hostile creature, discovery, quest progress, or another genuine growth action. Use inc progression.experience and always add fourth-position metadata {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical gain: 1-3 routine study/practice, 4-8 meaningful success, 9-20 combat or major challenge, 21-40 exceptional milestone. Do not award EXP for passive narration, merely intending to act, failed non-instructive attempts, or ordinary small talk. The extension levels up automatically the instant accumulated EXP is greater than or exactly equal to experienceMax.',
         'Kill rules: whenever the player personally kills or decisively finishes a hostile person or creature, inc progression.kills by the confirmed count with fourth-position metadata naming the defeated target, for example ["inc","progression.kills",1,{"reason":"Defeated the cave troll","category":"kill"}]. Also award appropriate combat EXP in the same patch. Do not count knockouts, uncertain deaths, assists without a kill, practice targets, or environmental deaths not caused by the player.',
         'Proficiency rules: increment a used or trained power system or combat discipline by 1-3 when the reply confirms genuine practice or successful use; use 4-8 only for a breakthrough. Do not increase unused proficiencies. When a confirmed power or combat style is not in the preset lists, upsert proficiencies.customMagic or proficiencies.customSword with {id,name,proficiency,description,iconKey}; later upserts may contain only id/name and changed fields.',
@@ -1537,16 +1624,17 @@ function patchInstructions() {
         'TRETARESIA PATCH PROTOCOL — use the SAME normal reply; never start another generation. Append one invisible comment only when confirmed state changed:',
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded"}-->',
         'Allowed ops: set/inc scalar paths; upsert/delete inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
-        'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
+        'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, or explanation.',
         'Check affected systems: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit only affected values.',
         'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
         'Money: record confirmed gains/spending immediately on gold/silver/copper with {"reason":"specific cause","category":"currency"}. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
-        'Quests: upsert a named mission/contract/objective when formally offered, assigned, or received. Offered=optional not accepted; Active=accepted/assigned. Preserve id and known objective/reward/giver/source/progress; update progress/status and use Completed only when confirmed. Rumors and casual advice are not quests.',
+        'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
         'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Formless Aura is undetectable; Divine Mana only by Divine Mana; other powers normally require the same kind to sense. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
         'NPCs: upsert only relevant named friendly NPCs or confirmed changes; preserve npcIndex id. Hostile/enemy/foe/antagonist/villain/threat NPCs stay out of Codex and social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
-        'Social: player leads UI-created Party/Guild unless story changes it. Party is free; Guild fee is already deducted locally. Track confirmed invites, departures, dissolutions, ranks, marriage, partners, children, parents, guardians, and family roles. Household is family, not a faction.',
-        'Travel/scene: journeys take days/months/years. While Traveling/Delayed reduce remainingDays only by elapsed story time; do not move to the destination before confirmed arrival. On arrival set Arrived/0, update known coordinates, and add discovered. Track confirmed day/time/phase/place/detail/mapX/mapY/heading/position/weather/temperature; never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
+        'Living NPC world: when the world clock meaningfully advances, update 1-3 plausible off-screen Active NPC lives with a partial npcs upsert using id plus location,mapX,mapY,activity,activityUpdatedDay. Prioritize mapVisible, Party/Household/Guild, recently mentioned NPCs; Story only changes only when involved, Paused never changes automatically. Respect occupation, home, duties, relationships, distance, travel time, danger, and established events. Do not teleport or manufacture dramatic events. Party members normally follow the player unless separation is established. A new location needs atlas-consistent coordinates; if only activity changes, preserve coordinates.',
+        'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/accepted invite/leave/expulsion/create/dissolve/rank/marriage/partner/child/parent/guardian/family-role change must update this same patch. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first ["upsert","npcs",{"id":"lysa","name":"Lysa","relationship":"Ally"}], then the membership op. Guild member includes guildId or exact guildName. Household member includes npcId plus role; delete the same collection when a member leaves. Party is free. UI Guild creation already charges locally; a story-created Guild op charges the fee automatically and fails when unaffordable. Household is family, not a faction.',
+        'Travel/scene: journeys take days/months/years. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates, new places use a consistent plausible point. Every reply that advances a journey must update worldClock day/time and remainingDays by elapsed story time. The extension interpolates the player marker from stored endpoints, so never keep the clock frozen after narrated travel and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed phase/place/detail/heading/position/weather/temperature; never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
     ].join('\n');
 }
@@ -1687,6 +1775,128 @@ function currentPersonaName(state = getState()) {
     return text(SillyTavern.getContext().name1, state.player.name, 100) || state.player.name;
 }
 
+function characterLifeBridge() {
+    return globalThis.CharacterLifeRpgBridge && typeof globalThis.CharacterLifeRpgBridge === 'object'
+        ? globalThis.CharacterLifeRpgBridge : null;
+}
+
+function characterLifeNpcFor(entry) {
+    const bridge = characterLifeBridge();
+    if (!bridge || !entry) return null;
+    try {
+        return bridge.findNpc?.({ id: entry.characterLifeId, scope: entry.characterLifeScope, name: entry.name }) || null;
+    } catch (error) {
+        console.warn('[Tretaresia RPG] Character Life NPC lookup failed safely.', error);
+        return null;
+    }
+}
+
+function characterLifeSkillsForOwner(owner) {
+    const bridge = characterLifeBridge();
+    if (!bridge) return [];
+    try {
+        const skills = bridge.listSkills?.(owner);
+        return Array.isArray(skills) ? skills : [];
+    }
+    catch (error) {
+        console.warn('[Tretaresia RPG] Character Life skill lookup failed safely.', error);
+        return [];
+    }
+}
+
+function syncCharacterLifeLinks(state) {
+    const bridge = characterLifeBridge();
+    if (!bridge || !Array.isArray(state?.npcs)) return 0;
+    let changed = 0;
+    for (const entry of state.npcs) {
+        const linked = characterLifeNpcFor(entry);
+        if (!linked || linked.enabled === false || linked.isDead === true || linked.lifeStatus === 'dead') continue;
+        const before = JSON.stringify([
+            entry.characterLifeId, entry.characterLifeScope, entry.characterLifePortraitId,
+            entry.title, entry.race, entry.age, entry.gender, entry.occupation, entry.faction, entry.relationship,
+        ]);
+        entry.characterLifeId = text(linked.id, entry.characterLifeId, 120);
+        entry.characterLifeScope = ['global', 'character', 'chat'].includes(linked.scope) ? linked.scope : entry.characterLifeScope;
+        const forms = Array.isArray(linked.forms) ? linked.forms : [];
+        const form = forms.find(value => value?.id === linked.activeFormId) || forms[0];
+        entry.characterLifePortraitId = text(form?.portraitId, '', 180);
+        const missing = (value, defaults = []) => !text(value) || defaults.includes(text(value).toLocaleLowerCase());
+        if (missing(entry.title)) entry.title = text(linked.role, entry.title, 120);
+        if (missing(entry.race, ['unknown'])) entry.race = text(linked.species, entry.race, 80);
+        if (missing(entry.age, ['unknown'])) entry.age = text(linked.age, entry.age, 40);
+        if (missing(entry.gender, ['unknown'])) entry.gender = text(linked.gender, entry.gender, 60);
+        if (missing(entry.occupation)) entry.occupation = text(linked.role, entry.occupation, 120);
+        if (missing(entry.faction, ['unaffiliated'])) entry.faction = text(linked.affiliation, entry.faction, 120);
+        if (missing(entry.relationship, ['acquaintance', 'unknown'])) {
+            entry.relationship = text(linked.relationshipToUser, text(linked.relationship, entry.relationship, 100), 100);
+        }
+        if (!entry.notes && linked.notes) entry.notes = text(linked.notes, '', 1000);
+        const after = JSON.stringify([
+            entry.characterLifeId, entry.characterLifeScope, entry.characterLifePortraitId,
+            entry.title, entry.race, entry.age, entry.gender, entry.occupation, entry.faction, entry.relationship,
+        ]);
+        if (before !== after) changed += 1;
+    }
+    return changed;
+}
+
+async function syncRpgSkillsToCharacterLife(state) {
+    const api = globalThis.CharacterLifeSkills;
+    if (!api || typeof api.list !== 'function' || typeof api.upsert !== 'function') return;
+    const saved = api.list();
+    const existing = new Map(saved.map(skill => [
+        `${text(skill.ownerName).toLocaleLowerCase()}::${text(skill.name).toLocaleLowerCase()}`,
+        `${text(skill.category)}::${text(skill.rank)}::${text(skill.description)}`,
+    ]));
+    const candidates = [
+        ...state.skills.map(skill => ({
+            ownerType: 'user', ownerName: currentPersonaName(state), name: skill.name,
+            category: skill.type, rank: skill.rank, description: skill.description,
+        })),
+        ...state.npcs.flatMap(npc => npc.abilities.map(ability => ({
+            ownerType: 'npc', ownerName: npc.name, ownerNpcId: npc.characterLifeId || npc.id,
+            name: ability.name, category: ability.category, rank: ability.level, description: ability.description,
+        }))),
+    ];
+    for (const skill of candidates.slice(0, 160)) {
+        const key = `${text(skill.ownerName).toLocaleLowerCase()}::${text(skill.name).toLocaleLowerCase()}`;
+        const signature = `${text(skill.category)}::${text(skill.rank)}::${text(skill.description)}`;
+        if (!key.includes('::') || existing.get(key) === signature) continue;
+        try {
+            await api.upsert({ ...skill, source: 'rpg-systems' });
+            existing.set(key, signature);
+        } catch (error) {
+            console.warn('[Tretaresia RPG] Skill Storage sync failed safely.', error);
+        }
+    }
+}
+
+function queueCharacterLifeSkillSync(state = getState()) {
+    clearTimeout(characterLifeSkillSyncTimer);
+    const snapshot = clone(state);
+    characterLifeSkillSyncTimer = setTimeout(() => {
+        characterLifeSkillSyncTimer = null;
+        void syncRpgSkillsToCharacterLife(snapshot);
+    }, 120);
+}
+
+async function refreshCharacterLifeCompatibility({ save = true } = {}) {
+    const context = SillyTavern.getContext();
+    const state = getState();
+    const changed = syncCharacterLifeLinks(state);
+    if (changed && save && context.getCurrentChatId?.()) await persistState(state, 'character-life-link');
+    else {
+        updatePrompt(state);
+        renderAll(state);
+        queueCharacterLifeSkillSync(state);
+    }
+}
+
+function queueCharacterLifeCompatibilityRefresh(options) {
+    void refreshCharacterLifeCompatibility(options).catch(error =>
+        console.warn('[Tretaresia RPG] Character Life refresh failed safely.', error));
+}
+
 function currentMapLocation(state) {
     return WORLD_LOCATIONS.find(location => location.name === state.location.place)
         || WORLD_LOCATIONS.find(location => location.name === state.location.region)
@@ -1710,6 +1920,161 @@ function currentMapPoint(state) {
         y: number(state.location.mapY, known.y, 0, WORLD_MAP_HEIGHT),
         heading: number(state.location.heading, 0, 0, 359.999),
     };
+}
+
+function mapLocationByName(value) {
+    const requested = text(value, '', 180).toLocaleLowerCase();
+    if (!requested) return null;
+    return WORLD_LOCATIONS.find(entry => entry.name.toLocaleLowerCase() === requested)
+        || [...WORLD_LOCATIONS].sort((a, b) => b.name.length - a.name.length)
+            .find(entry => requested.includes(entry.name.toLocaleLowerCase()) || entry.name.toLocaleLowerCase().includes(requested));
+}
+
+function worldClockMinutes(clock) {
+    const [hours, minutes] = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(text(clock?.time, '00:00', 5))?.slice(1).map(Number) || [0, 0];
+    return Math.max(0, (number(clock?.day, 1, 1, 999999) - 1) * 1440 + hours * 60 + minutes);
+}
+
+function travelProgress(state) {
+    const total = number(state?.travel?.totalDays, 0, 0, 999999);
+    if (!total) return state?.travel?.status === 'Arrived' ? 1 : 0;
+    return Math.min(1, Math.max(0, (total - number(state.travel.remainingDays, total, 0, total)) / total));
+}
+
+function formatTravelDays(value) {
+    const days = number(value, 0, 0, 999999);
+    if (Number.isInteger(days)) return String(days);
+    return days >= 10 ? days.toFixed(1) : days.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function npcMapPoint(entry, state) {
+    const site = mapLocationByName(entry?.location);
+    const partyMember = state?.social?.party?.memberIds?.includes(entry?.id);
+    const player = partyMember ? currentMapPoint(state) : null;
+    const x = optionalNumber(entry?.mapX, player?.x ?? site?.x ?? null, 0, WORLD_MAP_WIDTH);
+    const y = optionalNumber(entry?.mapY, player?.y ?? site?.y ?? null, 0, WORLD_MAP_HEIGHT);
+    return x === null || y === null ? null : { x, y, site, partyMember };
+}
+
+function synchronizeWorldState(state, previous = state) {
+    const travel = state.travel;
+    const previousTravel = previous?.travel || {};
+    const now = worldClockMinutes(state.worldClock);
+    if (state.worldClock.day !== previous?.worldClock?.day && state.worldClock.dayName === previous?.worldClock?.dayName) {
+        state.worldClock.dayName = `Day ${state.worldClock.day}`;
+    }
+    const destinationSite = mapLocationByName(travel.destinationPlace || travel.destination);
+    travel.originX ??= optionalNumber(previousTravel.originX, previous?.location?.mapX ?? state.location.mapX, 0, WORLD_MAP_WIDTH);
+    travel.originY ??= optionalNumber(previousTravel.originY, previous?.location?.mapY ?? state.location.mapY, 0, WORLD_MAP_HEIGHT);
+    travel.originContinent ||= text(previousTravel.originContinent, previous?.location?.continent || state.location.continent, 100);
+    travel.originRegion ||= text(previousTravel.originRegion, previous?.location?.region || state.location.region, 120);
+    travel.destinationX ??= destinationSite?.x ?? null;
+    travel.destinationY ??= destinationSite?.y ?? null;
+    travel.destinationContinent ||= destinationSite?.continent || '';
+    travel.destinationRegion ||= destinationSite?.region || '';
+    travel.destinationPlace ||= destinationSite?.name || travel.destination;
+    travel.startedAtWorldMinutes ??= optionalNumber(previousTravel.startedAtWorldMinutes, now, 0, 9999999999);
+
+    const moving = ['Preparing', 'Traveling', 'Delayed'].includes(travel.status);
+    if (moving) {
+        const previousClock = optionalNumber(previousTravel.lastWorldMinutes, now, 0, 9999999999);
+        const elapsedDays = Math.max(0, now - previousClock) / 1440;
+        if (elapsedDays > 0 && ['Preparing', 'Traveling', 'Delayed'].includes(previousTravel.status)) {
+            const clockRemaining = Math.max(0, number(previousTravel.remainingDays, travel.remainingDays, 0, 999999) - elapsedDays);
+            travel.remainingDays = Math.min(number(travel.remainingDays, clockRemaining, 0, 999999), clockRemaining);
+        }
+        travel.lastWorldMinutes = now;
+        const progress = travelProgress(state);
+        if (travel.originX !== null && travel.originY !== null && travel.destinationX !== null && travel.destinationY !== null) {
+            state.location.mapX = travel.originX + (travel.destinationX - travel.originX) * progress;
+            state.location.mapY = travel.originY + (travel.destinationY - travel.originY) * progress;
+            const dx = travel.destinationX - travel.originX;
+            const dy = travel.destinationY - travel.originY;
+            if (dx || dy) state.location.heading = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
+        }
+        state.location.continent = progress >= .5 && travel.destinationContinent ? travel.destinationContinent : travel.originContinent || state.location.continent;
+        const nearest = nearestMapLocation(state.location.mapX, state.location.mapY, state.location.continent);
+        state.location.region = progress >= .5 && travel.destinationRegion ? travel.destinationRegion : nearest?.region || travel.originRegion || state.location.region;
+        if (nearest?.zone) state.location.zoneType = nearest.zone;
+        state.location.place = `En route to ${travel.destinationPlace || travel.destination || 'destination'}`;
+        state.location.detail = `${Math.round(progress * 100)}% via ${travel.route} · ${coordinatesLabel(state.location.mapX, state.location.mapY)}`;
+        if (!previous?.scene?.position || state.scene.position === previous.scene.position || /^Traveling|^En route/i.test(state.scene.position)) {
+            state.scene.position = `Traveling via ${travel.route} toward ${travel.destinationPlace || travel.destination}`;
+        }
+    }
+
+    if (travel.status === 'Arrived' || (moving && travel.remainingDays <= 0)) {
+        travel.status = 'Arrived';
+        travel.remainingDays = 0;
+        if (travel.destinationX !== null) state.location.mapX = travel.destinationX;
+        if (travel.destinationY !== null) state.location.mapY = travel.destinationY;
+        state.location.continent = travel.destinationContinent || destinationSite?.continent || state.location.continent;
+        state.location.region = travel.destinationRegion || destinationSite?.region || state.location.region;
+        state.location.place = travel.destinationPlace || destinationSite?.name || travel.destination || state.location.place;
+        state.location.zoneType = destinationSite?.zone || state.location.zoneType;
+        if (state.location.place) state.location.discovered = [...new Set([...state.location.discovered, state.location.place])];
+        if (!previous?.scene?.position || state.scene.position === previous.scene.position || /^Traveling|^En route/i.test(state.scene.position)) {
+            state.scene.position = `Arrived at ${state.location.place}`;
+        }
+    }
+
+    if (!moving && travel.status !== 'Arrived') {
+        const directSite = mapLocationByName(state.location.place) || mapLocationByName(state.location.region);
+        const placeChanged = state.location.place !== previous?.location?.place || state.location.region !== previous?.location?.region;
+        const coordinatesUnchanged = state.location.mapX === previous?.location?.mapX && state.location.mapY === previous?.location?.mapY;
+        if (directSite && placeChanged && coordinatesUnchanged) {
+            state.location.mapX = directSite.x;
+            state.location.mapY = directSite.y;
+            state.location.continent = directSite.continent;
+            state.location.region = directSite.region;
+            state.location.place = directSite.name;
+            state.location.zoneType = directSite.zone;
+            state.location.discovered = [...new Set([...state.location.discovered, directSite.name])];
+        }
+    }
+
+    const playerLocationChanged = state.location.place !== previous?.location?.place || state.location.region !== previous?.location?.region;
+    if (playerLocationChanged) {
+        const locationNames = [state.location.place, state.location.region].map(value => text(value, '', 180).toLocaleLowerCase()).filter(Boolean);
+        const matchesPlace = map => {
+            const place = text(map?.place, '', 180).toLocaleLowerCase();
+            return place && locationNames.some(name => name === place || name.includes(place) || place.includes(name));
+        };
+        const matchingMap = state.sceneMap.maps.find(matchesPlace);
+        if (matchingMap) {
+            state.sceneMap.activeMapId = matchingMap.id;
+            const floor = matchingMap.floors.find(entry => entry.id === state.sceneMap.activeFloorId) || matchingMap.floors[0];
+            state.sceneMap.activeFloorId = floor?.id || '';
+            if (!floor?.rooms.some(entry => entry.id === state.sceneMap.playerRoomId)) state.sceneMap.playerRoomId = '';
+        } else {
+            const activeMap = state.sceneMap.maps.find(entry => entry.id === state.sceneMap.activeMapId);
+            if (activeMap?.place && !matchesPlace(activeMap)) {
+                state.sceneMap.activeMapId = '';
+                state.sceneMap.activeFloorId = '';
+                state.sceneMap.playerRoomId = '';
+            }
+        }
+    }
+
+    const partyIds = new Set(state.social?.party?.memberIds || []);
+    for (const entry of state.npcs) {
+        const prior = previous?.npcs?.find(value => value.id === entry.id) || previous?.npcs?.find(value => value.name.toLocaleLowerCase() === entry.name.toLocaleLowerCase());
+        const site = mapLocationByName(entry.location);
+        const locationChanged = prior && entry.location !== prior.location;
+        if (partyIds.has(entry.id)) {
+            entry.mapX = state.location.mapX;
+            entry.mapY = state.location.mapY;
+            entry.location = moving ? state.location.place : state.location.place || state.location.region;
+            entry.activity = moving ? `Traveling with ${state.player.name}` : `Accompanying ${state.player.name}`;
+            entry.activityUpdatedDay = state.worldClock.day;
+        } else if (site && (entry.mapX === null || entry.mapY === null || locationChanged)) {
+            entry.mapX = site.x;
+            entry.mapY = site.y;
+        }
+        const lifeChanged = prior && (entry.location !== prior.location || entry.activity !== prior.activity || entry.mapX !== prior.mapX || entry.mapY !== prior.mapY);
+        if (lifeChanged && entry.lifeMode !== 'Paused') entry.activityUpdatedDay = state.worldClock.day;
+    }
+    return state;
 }
 
 
@@ -2541,6 +2906,8 @@ function setupSceneMapInteractions(panel, state) {
 function renderScene(panel, state) {
     if (!panel) return;
     const phaseIndex = Math.max(0, DAY_PHASES.indexOf(state.worldClock.phase));
+    const moving = ['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status);
+    const journeyProgress = travelProgress(state);
     const exactLocation = state.location.detail || state.location.place || state.location.region;
     const temperature = state.scene.temperature === null ? '—' : `${Number(state.scene.temperature).toLocaleString()}°C`;
     panel.innerHTML = `${heading('Scene Tracker', 'Live environment and position', 'fa-solid fa-cloud-sun')}
@@ -2553,7 +2920,7 @@ function renderScene(panel, state) {
             ${DAY_PHASES.map((phase, index) => `<div class="tretaresia-cycle-stop${index === phaseIndex ? ' is-current' : ''}"><i class="${['fa-solid fa-sun','fa-regular fa-sun','fa-solid fa-cloud-sun','fa-solid fa-moon'][index]}"></i><span>${html(tr(phase))}</span></div>`).join('')}</section>
         <section class="tretaresia-scene-grid">
             <article><i class="fa-solid fa-earth-americas"></i><span>${html(tr('Current region'))}</span><strong>${html(state.location.continent)}</strong><small>${html(state.location.region)}</small></article>
-            <article><i class="fa-solid fa-location-dot"></i><span>${html(tr('Current place'))}</span><strong>${html(state.location.place)}</strong><small>${html(exactLocation)}</small></article>
+            <article><i class="fa-solid fa-location-dot"></i><span>${html(tr('Current place'))}</span><strong>${html(moving ? `En route to ${state.travel.destinationPlace || state.travel.destination}` : state.location.place)}</strong><small>${html(exactLocation)}</small></article>
             <article><i class="fa-solid fa-street-view"></i><span>${html(tr('Scene position'))}</span><strong>${html(state.scene.position)}</strong><small>${html(tr(state.location.zoneType))}</small></article>
         </section>
         ${state.travel.status !== 'Idle' ? `<section class="tretaresia-card tretaresia-travel-status" data-status="${html(state.travel.status.toLowerCase())}">
@@ -2561,7 +2928,9 @@ function renderScene(panel, state) {
             <dl class="tretaresia-fact-list"><div><dt>${html(tr('Origin'))}</dt><dd>${html(state.travel.origin || 'Unknown')}</dd></div>
             <div><dt>${html(tr('Destination'))}</dt><dd>${html(state.travel.destination || 'Unknown')}</dd></div>
             <div><dt>${html(tr('Travel route'))}</dt><dd>${html(state.travel.route)}</dd></div>
-            <div><dt>${html(tr('Remaining travel'))}</dt><dd>${state.travel.remainingDays} / ${state.travel.totalDays} ${html(tr('days'))}</dd></div></dl>
+            <div><dt>${html(tr('Remaining travel'))}</dt><dd>${formatTravelDays(state.travel.remainingDays)} / ${formatTravelDays(state.travel.totalDays)} ${html(tr('days'))}</dd></div>
+            <div><dt>${html(tr('Current'))}</dt><dd>${Math.round(journeyProgress * 100)}% · ${coordinatesLabel(state.location.mapX, state.location.mapY)}</dd></div></dl>
+            <div class="tretaresia-travel-progress" style="--journey-progress:${Math.round(journeyProgress * 100)}%"><span></span><b>${Math.round(journeyProgress * 100)}%</b></div>
             ${state.travel.notes ? `<p>${html(state.travel.notes)}</p>` : ''}</section>` : ''}
         ${renderLocalStructure(state)}
         <details class="tretaresia-editor"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Save scene'))}</summary>
@@ -2645,12 +3014,21 @@ function proficiencyRank(value) {
 
 function renderSkillStorage(panel, state) {
     if (!panel) return;
-    panel.innerHTML = `${heading('Skill Storage', `${state.skills.length} ${tr('Skills').toLowerCase()}`, 'fa-solid fa-layer-group')}
+    const rpgKeys = new Set(state.skills.map(entry => entry.name.toLocaleLowerCase()));
+    const linkedSkills = characterLifeSkillsForOwner(currentPersonaName(state))
+        .filter(entry => text(entry?.name) && !rpgKeys.has(text(entry.name).toLocaleLowerCase()));
+    const total = state.skills.length + linkedSkills.length;
+    const localCards = state.skills.map(entry => `<article class="tretaresia-skill-card">
+        <div class="tretaresia-skill-rank"><strong>${html(tr(entry.rank))}</strong><small>${html(tr('Proficiency rank'))}</small></div>
+        <div><span>${html(entry.type)}</span><h4>${html(entry.name)}</h4><p>${html(entry.description || tr('No description'))}</p></div>
+        <button type="button" data-action="delete-skill" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button></article>`).join('');
+    const linkedCards = linkedSkills.map(entry => `<article class="tretaresia-skill-card is-character-life-linked">
+        <div class="tretaresia-skill-rank"><strong>${html(entry.rank || 'Unranked')}</strong><small>Character Life</small></div>
+        <div><span>${html(entry.category || 'General')}</span><h4>${html(entry.name)}</h4><p>${html(entry.description || tr('No description'))}</p></div>
+        <i class="fa-solid fa-link" title="Character Life Skill Storage"></i></article>`).join('');
+    panel.innerHTML = `${heading('Skill Storage', `${total} ${tr('Skills').toLowerCase()}`, 'fa-solid fa-layer-group')}
         <section class="tretaresia-skill-storage"><div class="tretaresia-section-label"><i class="fa-solid fa-box-archive"></i><span>${html(tr('All acquired user skills'))}</span></div>
-            <div class="tretaresia-skill-storage-grid">${state.skills.length ? state.skills.map(entry => `<article class="tretaresia-skill-card">
-                <div class="tretaresia-skill-rank"><strong>${html(tr(entry.rank))}</strong><small>${html(tr('Proficiency rank'))}</small></div>
-                <div><span>${html(entry.type)}</span><h4>${html(entry.name)}</h4><p>${html(entry.description || tr('No description'))}</p></div>
-                <button type="button" data-action="delete-skill" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button></article>`).join('') : empty('Skills learned during role-play will appear here.')}</div>
+            <div class="tretaresia-skill-storage-grid">${total ? localCards + linkedCards : empty('Skills learned during role-play will appear here.')}</div>
             <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add skill'))}</summary>
                 <form data-form="skill" class="tretaresia-form-grid">${input('Skill name', 'name', '')}${input('Type', 'type', 'General')}
                     ${select('Proficiency rank', 'rank', MASTERY, 'Beginner')}${input('Description', 'description', '')}
@@ -2720,24 +3098,45 @@ function renderTechniques(panel, state) {
                     <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add technique'))}</button></form></details></section>`;
 }
 
+function questSectionId(entry) {
+    if (entry.status === 'Completed') return 'completed';
+    if (entry.status === 'Failed') return 'failed';
+    if (entry.type === 'Story') return 'story';
+    if (entry.type === 'Side-Story') return 'side-story';
+    return 'active';
+}
+
+function renderQuestCard(entry) {
+    const terminal = ['Completed', 'Failed'].includes(entry.status);
+    const progress = entry.status === 'Completed' ? 100 : number(entry.progress, 0, 0, 100);
+    const rewardLabel = entry.status === 'Completed' && entry.rewardClaimed ? tr('Reward claimed') : tr('Reward');
+    return `<article class="tretaresia-quest-card" data-status="${html(entry.status.toLowerCase())}"><div>
+        <span class="tretaresia-quest-status">${html(entry.status)} · ${html(entry.type)}${entry.type === 'Dungeon' ? ` ${html(entry.dungeonRank)}` : ''}</span><h4>${html(entry.name)}</h4>
+        <p>${html(entry.objective || tr('No objective recorded'))}</p>
+        <div class="tretaresia-quest-progress" style="--quest-progress:${progress}%"><span><i></i></span><b>${progress}%</b></div>
+        ${(entry.giver || entry.source) ? `<small><i class="fa-solid fa-user-tag"></i> ${html(entry.giver || tr('Unknown giver'))}${entry.source ? ` · ${html(entry.source)}` : ''}</small>` : ''}
+        ${entry.reward ? `<small class="tretaresia-quest-reward${entry.rewardClaimed ? ' is-claimed' : ''}"><i class="fa-solid ${entry.rewardClaimed ? 'fa-circle-check' : 'fa-gift'}"></i> ${html(rewardLabel)}: ${html(entry.reward)}</small>` : ''}
+        ${entry.receivedAt ? `<small><i class="fa-solid fa-clock"></i> ${html(tr('Received'))}: ${html(formatDate(entry.receivedAt))}</small>` : ''}</div>
+        <div class="tretaresia-card-actions">${terminal ? '' : `<button type="button" data-action="pursue-quest" data-id="${html(entry.id)}" title="${html(tr('Pursue in role-play'))}"><i class="fa-solid fa-comment-dots"></i></button>`}
+        <button type="button" data-action="delete-quest" data-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></article>`;
+}
+
 function renderQuests(panel, state) {
     if (!panel) return;
-    const activeCount = state.quests.filter(entry => entry.status === 'Active').length;
-    const offeredCount = state.quests.filter(entry => entry.status === 'Offered').length;
-    panel.innerHTML = `${heading('Mission & Quest Log', `${activeCount} active · ${offeredCount} offered`, 'fa-solid fa-scroll')}
-        <div class="tretaresia-quest-list">${state.quests.length ? state.quests.map(entry => `
-            <article class="tretaresia-quest-card" data-status="${html(entry.status.toLowerCase())}"><div>
-                <span class="tretaresia-quest-status">${html(entry.status)} · ${html(entry.type)}${entry.type === 'Dungeon' ? ` ${html(entry.dungeonRank)}` : ''}</span><h4>${html(entry.name)}</h4>
-                <p>${html(entry.objective || tr('No objective recorded'))}</p>
-                <div class="tretaresia-quest-progress"><span><i style="width:${entry.progress}%"></i></span><b>${entry.progress}%</b></div>
-                ${(entry.giver || entry.source) ? `<small><i class="fa-solid fa-user-tag"></i> ${html(entry.giver || tr('Unknown giver'))}${entry.source ? ` · ${html(entry.source)}` : ''}</small>` : ''}
-                ${entry.reward ? `<small><i class="fa-solid fa-gift"></i> ${html(tr('Reward'))}: ${html(entry.reward)}</small>` : ''}
-                ${entry.receivedAt ? `<small><i class="fa-solid fa-clock"></i> ${html(tr('Received'))}: ${html(formatDate(entry.receivedAt))}</small>` : ''}</div>
-                <div class="tretaresia-card-actions"><button type="button" data-action="pursue-quest" data-id="${html(entry.id)}" title="${html(tr('Pursue in role-play'))}"><i class="fa-solid fa-comment-dots"></i></button>
-                <button type="button" data-action="delete-quest" data-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></article>`).join('') : empty('No quests have been recorded yet.')}</div>
+    const grouped = Object.fromEntries(QUEST_SECTIONS.map(section => [section.id, []]));
+    state.quests.forEach(entry => grouped[questSectionId(entry)].push(entry));
+    for (const entries of Object.values(grouped)) entries.sort((a, b) => String(b.completedAt || b.failedAt || b.updatedAt || b.receivedAt || '').localeCompare(String(a.completedAt || a.failedAt || a.updatedAt || a.receivedAt || '')));
+    if (!grouped[activeQuestSection]) activeQuestSection = 'active';
+    const section = QUEST_SECTIONS.find(entry => entry.id === activeQuestSection) || QUEST_SECTIONS[2];
+    const visible = grouped[section.id];
+    const openCount = grouped.story.length + grouped['side-story'].length + grouped.active.length;
+    panel.innerHTML = `${heading('Mission & Quest Log', `${openCount} open · ${grouped.completed.length} completed · ${grouped.failed.length} failed`, 'fa-solid fa-scroll')}
+        <nav class="tretaresia-quest-sections" aria-label="${html(tr('Mission archive'))}">${QUEST_SECTIONS.map(entry => `<button type="button" data-action="quest-section" data-section="${entry.id}" class="${entry.id === section.id ? 'is-active' : ''}"><span>${html(tr(entry.label))}</span><b>${grouped[entry.id].length}</b></button>`).join('')}</nav>
+        <section class="tretaresia-quest-section"><header><span>${html(tr(section.label))}</span><small>${visible.length}</small></header>
+            <div class="tretaresia-quest-list">${visible.length ? visible.map(renderQuestCard).join('') : empty('No quests have been recorded yet.')}</div></section>
         <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add mission or quest'))}</summary>
             <form data-form="quest" class="tretaresia-form-grid">${input('Mission / quest name', 'name', '')}
-                ${select('Type', 'type', ['Mission', 'Quest', 'Dungeon', 'Contract', 'Personal'], 'Quest')}${select('Dungeon rank', 'dungeonRank', DUNGEON_RANKS, 'Unranked')}
+                ${select('Type', 'type', QUEST_TYPES, 'Quest')}${select('Dungeon rank', 'dungeonRank', DUNGEON_RANKS, 'Unranked')}
                 ${select('Status', 'status', ['Offered', 'Active', 'Completed', 'Failed', 'On Hold'], 'Active')}
                 ${input('Objective', 'objective', '')}${input('Reward', 'reward', '')}${input('Quest giver', 'giver', '')}${input('Source', 'source', 'Manual entry')}
                 ${input('Progress', 'progress', 0, 'number', 'min="0" max="100"')}${input('Notes', 'notes', '')}
@@ -2765,6 +3164,20 @@ function renderRank(panel, state) {
                 ${input('Currency / region', 'currencyName', p.currency.name)}${input('High denomination', 'gold', p.currency.gold, 'number', 'min="0"')}${input('Standard denomination', 'silver', p.currency.silver, 'number', 'min="0"')}
                 ${input('Fractional denomination', 'copper', p.currency.copper, 'number', 'min="0"')}
                 <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save progression'))}</button></form></details>`;
+}
+
+function renderNpcMapControls(state) {
+    const settings = getSettings();
+    const entries = friendlyNpcs(state);
+    const rows = entries.length ? entries.map(entry => {
+        const point = npcMapPoint(entry, state);
+        return `<button type="button" class="tretaresia-npc-map-row${entry.mapVisible ? ' is-visible' : ''}" data-action="toggle-npc-map" data-id="${html(entry.id)}" aria-pressed="${entry.mapVisible}">
+            <span class="tretaresia-npc-map-avatar">${html(entry.name.charAt(0).toUpperCase() || '?')}</span><span><strong>${html(entry.name)}</strong><small>${html(entry.activity || entry.location)}${point ? ` · ${coordinatesLabel(point.x, point.y)}` : ' · Unknown coordinates'}</small></span>
+            <i class="fa-solid fa-${entry.mapVisible ? 'eye' : 'eye-slash'}"></i></button>`;
+    }).join('') : `<p class="tretaresia-npc-map-empty">${html(tr('Only friendly NPCs appear here.'))}</p>`;
+    return `<section class="tretaresia-npc-map-controls"><header><span><i class="fa-solid fa-person-walking"></i>${html(tr('Living NPCs'))}</span>
+        <button type="button" data-action="toggle-npc-markers" aria-pressed="${settings.showNpcMapMarkers}" title="${html(tr(settings.showNpcMapMarkers ? 'Hide NPC markers' : 'Show NPC markers'))}"><i class="fa-solid fa-${settings.showNpcMapMarkers ? 'eye' : 'eye-slash'}"></i></button></header>
+        <div>${rows}</div></section>`;
 }
 
 function renderMap(panel, state) {
@@ -2809,6 +3222,7 @@ function renderMap(panel, state) {
         <span><i class="current"></i>${html(tr('Current'))}</span>
         <span><i class="known"></i>${html(tr('Discovered'))}</span>
         <span><i class="marked"></i>${html(tr('Marked'))}</span>
+        <span><i class="npc"></i>${html(tr('Living NPCs'))}</span>
         <small>${html(tr('Drag to pan · Pinch or scroll to zoom'))}</small>
     </div>
 </div>
@@ -2819,6 +3233,7 @@ function renderMap(panel, state) {
                 <div><dt>${html(tr('Discovery'))}</dt><dd>${html(tr(selectedRecorded ? 'Recorded' : 'Unexplored'))}</dd></div>
                 <div><dt>${html(tr('Marker'))}</dt><dd>${html(tr(selectedPinned ? 'Pinned' : 'None'))}</dd></div></dl>
                 <p class="tretaresia-exact-position"><i class="fa-solid fa-location-crosshairs"></i><span><b>Your exact location</b>${html(current.name)} · ${coordinatesLabel(current.x, current.y)} · ${Math.round(current.heading)}°</span></p></article>
+                ${renderNpcMapControls(state)}
                 <form data-form="travel" class="tretaresia-travel-form"><label class="tretaresia-field"><span>${html(tr('Destination'))}</span><select name="destination">
                     ${exactSelected ? `<option value="__coordinates__" selected>${html(selected.name)} (${coordinatesLabel(selected.x, selected.y)})</option>` : ''}
                     ${Object.entries(WORLD).map(([continent]) => `<optgroup label="${html(continent)}">${WORLD_LOCATIONS.filter(location => location.continent === continent).map(location =>
@@ -3008,6 +3423,27 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         mapRenderedPoints.push({ type: 'location', id: location.id, x: point.x, y: point.y, radius: 24 * pixelRatio });
     }
 
+    if (['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status)
+        && state.travel.originX !== null && state.travel.originY !== null
+        && state.travel.destinationX !== null && state.travel.destinationY !== null) {
+        const origin = mapCanvasPoint(state.travel.originX, state.travel.originY, canvas.width, canvas.height);
+        const destination = mapCanvasPoint(state.travel.destinationX, state.travel.destinationY, canvas.width, canvas.height);
+        context.save();
+        context.strokeStyle = rgbaOf(palette.alt, .78);
+        context.lineWidth = Math.max(2, 2 * pixelRatio);
+        context.setLineDash([8 * pixelRatio, 7 * pixelRatio]);
+        context.beginPath();
+        context.moveTo(origin.x, origin.y);
+        context.lineTo(destination.x, destination.y);
+        context.stroke();
+        context.setLineDash([]);
+        context.fillStyle = palette.alt;
+        context.beginPath();
+        context.arc(destination.x, destination.y, 5 * pixelRatio, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
+    }
+
     for (const pin of state.location.pins) {
         const site = mapLocation(pin.locationId);
         const x = pin.x ?? site?.x;
@@ -3035,6 +3471,34 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
             size: 10, color: palette.label, stroke: palette.halo,
         });
         mapRenderedPoints.push({ type: 'pin', id: pin.id, x: point.x, y: point.y, radius: 22 });
+    }
+
+    if (getSettings().showNpcMapMarkers) {
+        const visibleNpcs = friendlyNpcs(state).filter(entry => entry.mapVisible).slice(0, 40);
+        for (const entry of visibleNpcs) {
+            const npcPoint = npcMapPoint(entry, state);
+            if (!npcPoint || npcPoint.x < bounds.left || npcPoint.x > bounds.right || npcPoint.y < bounds.top || npcPoint.y > bounds.bottom) continue;
+            const point = mapCanvasPoint(npcPoint.x, npcPoint.y, canvas.width, canvas.height);
+            const size = 8 * pixelRatio;
+            context.save();
+            context.fillStyle = npcPoint.partyMember ? palette.alt : palette.accent;
+            context.strokeStyle = palette.halo;
+            context.lineWidth = 2 * pixelRatio;
+            context.beginPath();
+            context.arc(point.x, point.y, size, 0, Math.PI * 2);
+            context.fill();
+            context.stroke();
+            context.fillStyle = readableOn(npcPoint.partyMember ? palette.alt : palette.accent);
+            context.font = `800 ${Math.max(8, 8.5 * pixelRatio)}px system-ui, sans-serif`;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(entry.name.charAt(0).toUpperCase() || '?', point.x, point.y + .5 * pixelRatio);
+            context.restore();
+            if (showPlaceLabels) drawMapLabel(context, entry.name, point.x, point.y + 19 * pixelRatio, {
+                size: 9.5 * pixelRatio, weight: 750, color: npcPoint.partyMember ? palette.alt : palette.accent, stroke: palette.halo,
+            });
+            mapRenderedPoints.push({ type: 'npc', id: entry.id, x: point.x, y: point.y, radius: 22 * pixelRatio });
+        }
     }
 
     if (mapDraftPoint) {
@@ -3128,7 +3592,7 @@ function npcPortraitStyle(entry) {
 }
 
 function npcPortraitSlot(entry, className = 'tretaresia-npc-thumb') {
-    return `<span class="${className}${entry.hasPortrait ? ' has-photo' : ''}" data-npc-portrait="${html(entry.id)}" style="${npcPortraitStyle(entry)}">
+    return `<span class="${className}${entry.hasPortrait || entry.characterLifePortraitId ? ' has-photo' : ''}" data-npc-portrait="${html(entry.id)}" style="${npcPortraitStyle(entry)}">
         <span class="tretaresia-npc-initial">${html(entry.name.charAt(0).toUpperCase() || '?')}</span></span>`;
 }
 
@@ -3142,11 +3606,11 @@ function socialNpcOptions(state, placeholder = 'Choose a friendly NPC') {
     return `<option value="">${html(tr(placeholder))}</option>${options}`;
 }
 
-function socialMemberCards(state, memberIds, removeAction = '', groupId = '') {
-    const ids = ['player', ...(memberIds || []).filter(id => id !== 'player')];
+function socialMemberCards(state, memberIds, removeAction = '', groupId = '', leaderId = 'player') {
+    const ids = [...new Set(['player', ...(memberIds || []).filter(id => id !== 'player'), ...(leaderId && leaderId !== 'player' ? [leaderId] : [])])];
     return ids.length ? ids.map(id => `<article class="tretaresia-social-member${id === 'player' ? ' is-player' : ''}">
         <span class="tretaresia-social-member-icon"><i class="fa-solid ${id === 'player' ? 'fa-user' : 'fa-user-astronaut'}"></i></span>
-        <span><strong>${html(socialMemberName(state, id))}</strong><small>${html(id === 'player' ? tr('Leader') : (state.npcs.find(entry => entry.id === id)?.relationship || tr('Member')))}</small></span>
+        <span><strong>${html(socialMemberName(state, id))}</strong><small>${html(id === leaderId ? tr('Leader') : (state.npcs.find(entry => entry.id === id)?.relationship || tr('Member')))}</small></span>
         ${removeAction && id !== 'player' ? `<button type="button" data-action="${removeAction}" data-id="${html(id)}"${groupId ? ` data-group-id="${html(groupId)}"` : ''} title="${html(tr('Remove member'))}"><i class="fa-solid fa-user-minus"></i></button>` : '<i class="fa-solid fa-check social-member-check"></i>'}
     </article>`).join('') : `<div class="tretaresia-social-empty">${html(tr('No household members'))}</div>`;
 }
@@ -3158,7 +3622,7 @@ function renderGroups(panel, state) {
     const partyMarkup = party ? `<article class="tretaresia-social-card tretaresia-party-card">
         <header><div><span class="tretaresia-eyebrow">${html(tr('Party management'))}</span><h4>${html(party.name)}</h4></div><button type="button" class="tretaresia-danger-button" data-action="dissolve-party"><i class="fa-solid fa-xmark"></i>${html(tr('Dissolve party'))}</button></header>
         <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'ปาร์ตี้ไม่มีค่าก่อตั้ง สมาชิกทำงานร่วมกันในแชตปัจจุบัน' : 'Party membership is free and follows the current role-play chat.')}</p>
-        <div class="tretaresia-social-member-list">${socialMemberCards(state, party.memberIds, 'remove-party-member')}</div>
+        <div class="tretaresia-social-member-list">${socialMemberCards(state, party.memberIds, 'remove-party-member', '', party.leaderId)}</div>
         <form data-form="party-invite" class="tretaresia-social-invite"><input type="hidden" name="partyId" value="${html(party.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to party'))}</button></form>
     </article>` : `<article class="tretaresia-social-card"><header><div><span class="tretaresia-eyebrow">${html(tr('Party management'))}</span><h4>${html(tr('No active party'))}</h4></div><i class="fa-solid fa-people-group tretaresia-social-card-icon"></i></header>
         <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'สร้างปาร์ตี้เพื่อรวม NPC ฝ่ายมิตรไว้ร่วมเดินทางหรือทำภารกิจ' : 'Create a party to organize friendly NPCs for travel and missions.')}</p>
@@ -3167,7 +3631,7 @@ function renderGroups(panel, state) {
     const guildCards = guilds.length ? guilds.map(guild => `<article class="tretaresia-social-card tretaresia-guild-card">
         <header><div><span class="tretaresia-eyebrow">${html(tr('Guild management'))}</span><h4>${html(guild.name)}</h4><small>${html(guild.rank)} · ${guild.memberIds.length + 1} ${html(tr('Members').toLowerCase())}</small></div><button type="button" class="tretaresia-danger-button" data-action="dissolve-guild" data-id="${html(guild.id)}"><i class="fa-solid fa-xmark"></i>${html(tr('Dissolve guild'))}</button></header>
         ${guild.description ? `<p class="tretaresia-social-description">${html(guild.description)}</p>` : ''}<div class="tretaresia-social-treasury"><span><i class="fa-solid fa-coins"></i>${html(tr('Guild treasury'))}</span><strong>${html(currencyLabel(guild.treasury))}</strong></div>
-        <div class="tretaresia-social-member-list">${socialMemberCards(state, guild.memberIds, 'remove-guild-member', guild.id)}</div>
+        <div class="tretaresia-social-member-list">${socialMemberCards(state, guild.memberIds, 'remove-guild-member', guild.id, guild.leaderId)}</div>
         <form data-form="guild-invite" class="tretaresia-social-invite"><input type="hidden" name="guildId" value="${html(guild.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to guild'))}</button></form>
     </article>`).join('') : `<article class="tretaresia-social-card tretaresia-social-empty-card"><i class="fa-solid fa-landmark-dome"></i><strong>${html(tr('No guilds yet'))}</strong><p>${html(getSettings().language === 'th' ? 'กิลด์ต้องเสียค่าก่อตั้งเป็นเงิน 10 เหรียญทอง' : 'A guild costs 10 gold to establish.')}</p></article>`;
     panel.innerHTML = `${heading('Party & Guild', `${party ? 1 : 0} ${tr('party')} · ${guilds.length} ${tr('guilds')}`, 'fa-solid fa-people-group')}
@@ -3183,7 +3647,13 @@ function renderHousehold(panel, state) {
     panel.innerHTML = `${heading('Household', `${household.members.length} ${tr('Members').toLowerCase()}`, 'fa-solid fa-house-chimney-user')}
         <p class="tretaresia-social-note"><i class="fa-solid fa-heart"></i>${html(getSettings().language === 'th' ? 'ใช้ดูสมาชิกในครอบครัวของผู้เล่น เช่น คู่ครอง ลูก พ่อ แม่ และญาติ' : 'Track the player\'s partner, children, parents, relatives, and other family bonds.')}</p>
         <section class="tretaresia-household-card"><form data-form="household-save" class="tretaresia-household-header"><div><span class="tretaresia-eyebrow">${html(tr('Household management'))}</span><h4>${html(household.name)}</h4></div>${input('Household name', 'name', household.name)}<button class="tretaresia-secondary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i>${html(tr('Save household'))}</button></form>
-        <div class="tretaresia-household-list">${members}</div><form data-form="household-add" class="tretaresia-social-invite"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label>${select('Family role', 'role', HOUSEHOLD_ROLES, 'Other')}${input('Notes', 'notes', '')}<button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Add household member'))}</button></form></section>`;
+        <div class="tretaresia-household-list"><article class="tretaresia-household-member is-player"><span class="tretaresia-social-member-icon"><i class="fa-solid fa-user"></i></span><span><strong>${html(currentPersonaName(state))}</strong><small>${html(getSettings().language === 'th' ? 'เจ้าของครอบครัว' : 'Household head')}</small></span><i class="fa-solid fa-check social-member-check"></i></article>${members}</div><form data-form="household-add" class="tretaresia-social-invite"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label>${select('Family role', 'role', HOUSEHOLD_ROLES, 'Other')}${input('Notes', 'notes', '')}<button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Add household member'))}</button></form></section>`;
+}
+
+function npcLifeModeField(selected = 'Active') {
+    const labels = { Active: 'Active life', 'Story only': 'Story only', Paused: 'Paused' };
+    return `<label class="tretaresia-field"><span>${html(tr('Life mode'))}</span><select name="lifeMode">${Object.entries(labels).map(([value, label]) =>
+        `<option value="${html(value)}"${value === selected ? ' selected' : ''}>${html(tr(label))}</option>`).join('')}</select></label>`;
 }
 
 function renderNpcs(panel, state) {
@@ -3202,7 +3672,8 @@ function renderNpcs(panel, state) {
         <p class="tretaresia-social-note"><i class="fa-solid fa-shield-heart"></i>${html(tr('Hostile NPCs are excluded from the list.'))}</p>
         <div class="tretaresia-npc-layout"><aside class="tretaresia-npc-index"><div class="tretaresia-section-label"><i class="fa-solid fa-list"></i><span>${html(tr('NPCs'))}</span></div>
             <div class="tretaresia-npc-list">${list}</div><details class="tretaresia-editor tretaresia-npc-add"><summary><i class="fa-solid fa-user-plus"></i> ${html(tr('Add NPC'))}</summary>
-            <form data-form="npc-new" class="tretaresia-form-grid">${input('Name', 'name', '')}${input('Title', 'title', '')}${input('Faction', 'faction', '')}${input('Relationship', 'relationship', 'Acquaintance')}
+            <form data-form="npc-new" class="tretaresia-form-grid">${input('Name', 'name', '')}${input('Title', 'title', '')}${input('Faction', 'faction', '')}${input('Relationship', 'relationship', 'Acquaintance')}${input('Current location', 'location', 'Unknown')}${npcLifeModeField('Active')}
+            <label class="tretaresia-checkbox-field"><input type="checkbox" name="mapVisible"><span>${html(tr('Show on World Map'))}</span></label>
             <label class="tretaresia-checkbox-field"><input type="checkbox" name="linkContact" value="yes"><span>${html(tr('Link to Mailbox'))}</span></label>
             <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add NPC'))}</button></form></details></aside>
             <div class="tretaresia-npc-dossier">${detail}</div></div>`;
@@ -3215,9 +3686,15 @@ function renderNpcDossier(entry, linkedContact) {
         ['Affection', entry.affection, 'rose'], ['Trust', entry.trust, 'blue'], ['Loyalty', entry.loyalty, 'gold'],
         ['Fear', entry.fear, 'violet'], ['Corruption', entry.corruption, 'dark'], ['Lust', entry.lust, 'crimson'],
     ];
-    const abilities = entry.abilities.length ? entry.abilities.map(ability => `<article class="tretaresia-npc-ability"><div><span>${html(ability.category)}</span><strong>${html(ability.name)}</strong>
+    const characterLifeSkills = characterLifeSkillsForOwner({ id: entry.characterLifeId, name: entry.name });
+    const linkedNames = new Set(characterLifeSkills.map(skill => text(skill?.name).toLocaleLowerCase()));
+    const rpgAbilities = entry.abilities.filter(ability => !linkedNames.has(ability.name.toLocaleLowerCase()));
+    const abilityCards = rpgAbilities.map(ability => `<article class="tretaresia-npc-ability"><div><span>${html(ability.category)}</span><strong>${html(ability.name)}</strong>
         <p>${html(ability.description || tr('No description'))}</p></div><div class="tretaresia-npc-ability-rank"><b>${html(ability.level)}</b><span><i style="width:${ability.proficiency}%"></i></span><small>${ability.proficiency}%</small></div>
-        <button type="button" data-action="delete-npc-ability" data-id="${html(ability.id)}" data-npc-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></article>`).join('') : empty('Skills learned during role-play will appear here.');
+        <button type="button" data-action="delete-npc-ability" data-id="${html(ability.id)}" data-npc-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></article>`).join('');
+    const linkedAbilityCards = characterLifeSkills.map(skill => `<article class="tretaresia-npc-ability is-character-life-linked"><div><span>${html(skill.category || 'General')} · Character Life</span><strong>${html(skill.name)}</strong>
+        <p>${html(skill.description || tr('No description'))}</p></div><div class="tretaresia-npc-ability-rank"><b>${html(skill.rank || 'Unranked')}</b><i class="fa-solid fa-link"></i></div></article>`).join('');
+    const abilities = abilityCards || linkedAbilityCards ? linkedAbilityCards + abilityCards : empty('Skills learned during role-play will appear here.');
     const diary = entry.diary.length ? [...entry.diary].reverse().map(note => `<article class="tretaresia-diary-entry"><span><i class="fa-solid fa-feather-pointed"></i>${html(note.mood || tr('Diary'))}<small>${html(formatDate(note.at))}</small></span>
         <p>${html(note.text).replaceAll('\n', '<br>')}</p><button type="button" data-action="delete-npc-diary" data-id="${html(note.id)}" data-npc-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></article>`).join('')
         : `<div class="tretaresia-mail-empty"><i class="fa-solid fa-feather"></i><p>${getSettings().language === 'th' ? 'ยังไม่มีความคิดที่ถูกบันทึก' : 'No private thoughts have been recorded.'}</p></div>`;
@@ -3234,6 +3711,7 @@ function renderNpcDossier(entry, linkedContact) {
         <section class="tretaresia-npc-meter-grid">${relationshipMeters.map(args => npcMeterView(...args)).join('')}${customMeters}</section>
         <div class="tretaresia-npc-info-grid"><article class="tretaresia-card"><div class="tretaresia-card-title"><span>${html(tr('Relationship state'))}</span><i class="fa-solid fa-heart"></i></div><dl class="tretaresia-fact-list">
             <div><dt>${html(tr('Relationship'))}</dt><dd>${html(entry.relationship)}</dd></div><div><dt>${html(tr('Current location'))}</dt><dd>${html(entry.location)}</dd></div>
+            <div><dt>${html(tr('Activity'))}</dt><dd>${html(entry.activity)}</dd></div><div><dt>${html(tr('Life mode'))}</dt><dd>${html(tr(entry.lifeMode === 'Active' ? 'Active life' : entry.lifeMode))}</dd></div>
             <div><dt>${html(tr('Last seen'))}</dt><dd>${html(entry.lastSeen || 'Unknown')}</dd></div><div><dt>${html(tr('Alignment'))}</dt><dd>${html(entry.alignment || 'Unknown')}</dd></div></dl>
             ${entry.relationshipState ? `<p class="tretaresia-npc-note">${html(entry.relationshipState)}</p>` : ''}</article>
         <article class="tretaresia-card"><div class="tretaresia-card-title"><span>${html(tr('Family & bonds'))}</span><i class="fa-solid fa-ring"></i></div><dl class="tretaresia-fact-list">
@@ -3256,6 +3734,9 @@ function renderNpcDossier(entry, linkedContact) {
         <details class="tretaresia-editor tretaresia-npc-edit"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Edit NPC'))}</summary><form data-form="npc-profile" class="tretaresia-form-grid"><input type="hidden" name="id" value="${html(entry.id)}">
             ${input('Name', 'name', entry.name)}${input('Title', 'title', entry.title)}${input('Race', 'race', entry.race)}${input('Age', 'age', entry.age)}${input('Gender', 'gender', entry.gender)}${input('Occupation', 'occupation', entry.occupation)}
             ${input('Faction', 'faction', entry.faction)}${input('Alignment', 'alignment', entry.alignment)}${input('Relationship', 'relationship', entry.relationship)}${input('Current location', 'location', entry.location)}
+            ${npcLifeModeField(entry.lifeMode)}${input('Activity', 'activity', entry.activity)}
+            ${input('World map X', 'mapX', entry.mapX ?? '', 'number', `min="0" max="${WORLD_MAP_WIDTH}" step="1"`)}${input('World map Y', 'mapY', entry.mapY ?? '', 'number', `min="0" max="${WORLD_MAP_HEIGHT}" step="1"`)}
+            <label class="tretaresia-checkbox-field"><input type="checkbox" name="mapVisible"${entry.mapVisible ? ' checked' : ''}><span>${html(tr('Show on World Map'))}</span></label>
             ${input('Last seen', 'lastSeen', entry.lastSeen)}${input('Marital status', 'maritalStatus', entry.maritalStatus)}${input('Partner', 'partner', entry.partner)}${input('Children', 'children', entry.children)}
             ${input('Affection', 'affection', entry.affection, 'number', 'min="0" max="100"')}${input('Trust', 'trust', entry.trust, 'number', 'min="0" max="100"')}${input('Loyalty', 'loyalty', entry.loyalty, 'number', 'min="0" max="100"')}${input('Fear', 'fear', entry.fear, 'number', 'min="0" max="100"')}
             ${input('Corruption', 'corruption', entry.corruption, 'number', 'min="0" max="100"')}${input('Lust', 'lust', entry.lust, 'number', 'min="0" max="100"')}${input('Level', 'level', entry.stats.level, 'number', 'min="0"')}${input('Rank', 'rank', entry.stats.rank)}
@@ -3278,13 +3759,26 @@ async function hydrateNpcPortraits(root, state = getState()) {
     const token = ++npcPortraitRenderToken;
     clearNpcPortraitObjectUrls();
     const store = SillyTavern.libs?.localforage;
-    if (!store) return;
     const nodes = [...root.querySelectorAll('[data-npc-portrait]')];
     await Promise.all(nodes.map(async node => {
         const entry = state.npcs.find(value => value.id === node.dataset.npcPortrait);
-        if (!entry?.hasPortrait) return;
+        if (!entry) return;
         try {
-            const blob = await store.getItem(npcPortraitStorageKey(entry.id));
+            let blob = null;
+            const bridge = characterLifeBridge();
+            if (bridge && (entry.characterLifeId || entry.characterLifePortraitId || entry.name)) {
+                const linked = await bridge.portrait?.({ id: entry.characterLifeId, scope: entry.characterLifeScope, name: entry.name });
+                if (linked?.blob instanceof Blob) {
+                    blob = linked.blob;
+                    const frame = linked.frame || {};
+                    for (const mode of ['desktop', 'mobile']) {
+                        node.style.setProperty(`--portrait-${mode}-x`, `${number(frame.x, 50, 0, 100)}%`);
+                        node.style.setProperty(`--portrait-${mode}-y`, `${number(frame.y, 18, 0, 100)}%`);
+                        node.style.setProperty(`--portrait-${mode}-zoom`, number(frame.zoom, 1, 1, 3));
+                    }
+                }
+            }
+            if (!blob && entry.hasPortrait && store) blob = await store.getItem(npcPortraitStorageKey(entry.id));
             if (!(blob instanceof Blob) || token !== npcPortraitRenderToken || !node.isConnected) return;
             const url = URL.createObjectURL(blob);
             npcPortraitObjectUrls.set(`${entry.id}:${npcPortraitObjectUrls.size}`, url);
@@ -3897,7 +4391,7 @@ async function onSubmit(event) {
             const index = state.npcs.findIndex(entry => entry.id === values.id);
             if (index < 0) break;
             const previous = state.npcs[index];
-            const nextNpc = npcProfile({ ...previous, ...values, stats: {
+            const nextNpc = npcProfile({ ...previous, ...values, mapVisible: values.mapVisible === 'on', stats: {
                 ...previous.stats, level: values.level, rank: values.rank, hp: values.hp, mp: values.mp, stamina: values.stamina,
                 ...Object.fromEntries(NPC_CORE_STATS.map(stat => [stat.id, values[stat.id]])),
             }, updatedAt: new Date().toISOString() }, previous);
@@ -3982,9 +4476,14 @@ async function onSubmit(event) {
             };
             const origin = state.location.place !== 'Unknown' ? state.location.place : state.location.region;
             const totalDays = Math.max(1, Number(values.totalDays) || 1);
+            const now = worldClockMinutes(state.worldClock);
             state.travel = {
                 status: 'Traveling', origin, destination: values.place || destination.name, route: values.route || 'Road',
                 totalDays, remainingDays: totalDays, notes: values.detail || '',
+                originX: state.location.mapX, originY: state.location.mapY, originContinent: state.location.continent, originRegion: state.location.region,
+                destinationX: destination.x, destinationY: destination.y, destinationContinent: destination.continent,
+                destinationRegion: destination.region, destinationPlace: values.place || destination.name,
+                startedAtWorldMinutes: now, lastWorldMinutes: now,
             };
             state.journal.push({ id: uid(), text: `Began a ${totalDays}-day journey from ${origin} to ${destination.name}.`, at: new Date().toISOString() });
             if (await persistState(state, 'travel')) {
@@ -4268,6 +4767,10 @@ async function onPanelClick(event) {
             await persistState(state, 'proficiency');
             break;
         }
+        case 'quest-section':
+            if (QUEST_SECTIONS.some(entry => entry.id === button.dataset.section)) activeQuestSection = button.dataset.section;
+            renderQuests(document.querySelector('[data-panel="quests"]'), state);
+            break;
         case 'delete-quest':
             state.quests = state.quests.filter(entry => entry.id !== id);
             await persistState(state);
@@ -4302,6 +4805,31 @@ async function onPanelClick(event) {
             state.social.household.members = state.social.household.members.filter(entry => entry.id !== id);
             await persistState(state, 'household');
             break;
+        case 'toggle-npc-markers':
+            getSettings().showNpcMapMarkers = !getSettings().showNpcMapMarkers;
+            SillyTavern.getContext().saveSettingsDebounced();
+            if (document.getElementById('tretaresia-rpg-show-npc-map-markers') instanceof HTMLInputElement) {
+                document.getElementById('tretaresia-rpg-show-npc-map-markers').checked = getSettings().showNpcMapMarkers;
+            }
+            renderMap(document.querySelector('[data-panel="map"]'), state);
+            break;
+        case 'toggle-npc-map': {
+            const entry = state.npcs.find(value => value.id === id);
+            if (!entry) break;
+            entry.mapVisible = !entry.mapVisible;
+            if (entry.mapVisible) {
+                const point = npcMapPoint(entry, state);
+                if (point) {
+                    entry.mapX = point.x;
+                    entry.mapY = point.y;
+                } else {
+                    notify('info', getSettings().language === 'th' ? `เปิด marker ของ ${entry.name} แล้ว แต่ยังไม่มีพิกัด ให้แก้ Current location หรือ World Map X/Y ในข้อมูล NPC` : `${entry.name}'s marker is enabled, but its coordinates are unknown. Edit Current location or World Map X/Y in the NPC dossier.`);
+                }
+            }
+            entry.updatedAt = new Date().toISOString();
+            await persistState(state, 'npc-map');
+            break;
+        }
         case 'select-npc':
             selectedNpcId = id;
             renderNpcs(document.querySelector('[data-panel="npcs"]'), getState());
@@ -4573,6 +5101,13 @@ function setupMapInteractions(panel) {
             const hitX = (event.clientX - rect.left) / rect.width * svg.width;
             const hitY = (event.clientY - rect.top) / rect.height * svg.height;
             const hit = [...mapRenderedPoints].reverse().find(entry => Math.hypot(entry.x - hitX, entry.y - hitY) <= entry.radius * Math.min(1.5, globalThis.devicePixelRatio || 1));
+            if (hit?.type === 'npc') {
+                selectedNpcId = hit.id;
+                if (mapFullscreen) mapFullscreen = false;
+                activateTab('npcs');
+                pointerStart = null;
+                return;
+            }
             if (hit?.type === 'location') {
                 mapDraftPoint = null;
                 mapSelectionId = hit.id;
@@ -4700,6 +5235,8 @@ const SCALAR_PATCH_PATHS = new Set([
     'progression.currency.name', 'progression.currency.copper', 'worldClock.day', 'worldClock.dayName', 'worldClock.time', 'worldClock.phase', 'location.continent',
     'location.region', 'location.place', 'location.detail', 'location.zoneType', 'location.mapX', 'location.mapY', 'location.heading', 'scene.position', 'scene.weather', 'scene.temperature',
     'travel.status', 'travel.origin', 'travel.destination', 'travel.route', 'travel.totalDays', 'travel.remainingDays', 'travel.notes',
+    'travel.originX', 'travel.originY', 'travel.originContinent', 'travel.originRegion', 'travel.destinationX', 'travel.destinationY',
+    'travel.destinationContinent', 'travel.destinationRegion', 'travel.destinationPlace',
     'sceneMap.activeMapId', 'sceneMap.activeFloorId', 'sceneMap.playerRoomId',
     ...MAGIC_DISCIPLINES.map(entry => `proficiencies.magic.${entry.id}`),
     ...SWORD_STYLES.map(entry => `proficiencies.sword.${entry.id}`),
@@ -4775,7 +5312,10 @@ function applySceneMapPatchOperation(state, verb, path, value) {
         }, existing || {});
         if (!next) return false;
         if (existing) state.sceneMap.maps[state.sceneMap.maps.indexOf(existing)] = next;
-        else state.sceneMap.maps.push(next);
+        else {
+            state.sceneMap.maps.push(next);
+            if (!state.sceneMap.activeMapId) state.sceneMap.activeMapId = next.id;
+        }
         return true;
     }
 
@@ -4867,7 +5407,7 @@ function applySocialPatchOperation(state, verb, path, value) {
         if (verb !== 'upsert' || !value || typeof value !== 'object') return false;
         const next = partyProfile(value, state.social.party);
         if (!next) return false;
-        next.memberIds = next.memberIds.filter(id => resolveFriendlyNpc(state, id));
+        next.memberIds = [...new Set(next.memberIds.map(id => resolveFriendlyNpc(state, id)?.id).filter(Boolean))];
         state.social.party = next;
         state.player.party = next.name;
         return true;
@@ -4882,17 +5422,26 @@ function applySocialPatchOperation(state, verb, path, value) {
         }
         if (verb !== 'upsert' || !value || typeof value !== 'object') return false;
         const existing = state.social.guilds.find(entry => matchesPatchIdentity(entry, value));
+        if (!existing && !canAffordCurrency(state.progression.currency, GUILD_CREATION_FEE)) return false;
         const next = guildProfile(value, existing || {});
         if (!next) return false;
-        next.memberIds = next.memberIds.filter(id => resolveFriendlyNpc(state, id));
+        next.memberIds = [...new Set(next.memberIds.map(id => resolveFriendlyNpc(state, id)?.id).filter(Boolean))];
         if (existing) state.social.guilds[state.social.guilds.indexOf(existing)] = next;
-        else state.social.guilds.push(next);
+        else {
+            state.progression.currency.gold -= GUILD_CREATION_FEE.gold;
+            next.treasury = {
+                gold: number(value.treasury?.gold, GUILD_CREATION_FEE.gold, 0, 999999999),
+                silver: number(value.treasury?.silver, GUILD_CREATION_FEE.silver, 0, 999999999),
+                copper: number(value.treasury?.copper, GUILD_CREATION_FEE.copper, 0, 999999999),
+            };
+            state.social.guilds.push(next);
+        }
         state.player.guild = state.social.guilds[0]?.name || 'Unaffiliated';
         return true;
     }
     if (path === 'partyMembers') {
         const party = state.social.party;
-        const npc = resolveFriendlyNpc(state, value);
+        const npc = verb === 'upsert' ? resolveOrCreateFriendlyNpc(state, value) : resolveFriendlyNpc(state, value);
         if (!party || !npc) return false;
         if (verb === 'upsert') {
             if (party.memberIds.includes(npc.id)) return false;
@@ -4909,7 +5458,7 @@ function applySocialPatchOperation(state, verb, path, value) {
     if (path === 'guildMembers') {
         const guildId = text(value?.guildId, text(value?.groupId, '', 100), 100);
         const guild = state.social.guilds.find(entry => entry.id === guildId || entry.name.toLocaleLowerCase() === text(value?.guildName, '', 140).toLocaleLowerCase());
-        const npc = resolveFriendlyNpc(state, value);
+        const npc = verb === 'upsert' ? resolveOrCreateFriendlyNpc(state, value) : resolveFriendlyNpc(state, value);
         if (!guild || !npc) return false;
         if (verb === 'upsert') {
             if (guild.memberIds.includes(npc.id)) return false;
@@ -4932,7 +5481,7 @@ function applySocialPatchOperation(state, verb, path, value) {
             return household.members.length !== previous && Boolean(identity);
         }
         if (verb !== 'upsert') return false;
-        const npc = resolveFriendlyNpc(state, value);
+        const npc = resolveOrCreateFriendlyNpc(state, value);
         if (!npc) return false;
         const next = socialMember({ ...value, npcId: npc.id, name: npc.name }, {});
         if (!next) return false;
@@ -5022,12 +5571,22 @@ function applyPatchOperation(state, operation) {
         const identity = patchIdentity(value);
         if (!identity && path !== 'letters') return false;
         const index = collection.findIndex(entry => matchesPatchIdentity(entry, value));
-        const candidate = { ...(index >= 0 ? collection[index] : {}), ...value };
+        let candidate = { ...(index >= 0 ? collection[index] : {}), ...value };
         if (!candidate.id) candidate.id = uid();
-        if (path === 'npcs') candidate.updatedAt = new Date().toISOString();
+        if (path === 'npcs') {
+            candidate = npcProfile({ ...candidate, updatedAt: new Date().toISOString() }, index >= 0 ? collection[index] : {});
+            if (!candidate) return false;
+        }
         if (path === 'quests') {
+            const previousQuest = index >= 0 ? collection[index] : null;
+            if (previousQuest && ['Completed', 'Failed'].includes(previousQuest.status)
+                && value.status && value.status !== previousQuest.status && value.reopen !== true) {
+                candidate.status = previousQuest.status;
+            }
             if (!candidate.receivedAt) candidate.receivedAt = new Date().toISOString();
             candidate.updatedAt = new Date().toISOString();
+            candidate = quest(candidate);
+            if (!candidate) return false;
         }
         if (index >= 0) collection[index] = candidate;
         else collection.push(candidate);
@@ -5055,7 +5614,20 @@ function operationMeta(operation) {
         reason: text(raw.reason, text(raw.label, '', 180), 180),
         category: text(raw.category, '', 40).toLocaleLowerCase(),
         label: text(raw.label, '', 100),
+        questId: text(raw.questId, text(raw.missionId, '', 100), 100),
     } : { reason: '', category: '', label: '' };
+}
+
+function isDuplicateQuestRewardOperation(state, operation) {
+    const meta = operationMeta(operation);
+    if (!['quest-reward', 'mission-reward', 'reward'].includes(meta.category)) return false;
+    const reason = meta.reason.toLocaleLowerCase();
+    const claimed = state.quests.find(entry => entry.rewardClaimed && entry.status === 'Completed'
+        && (meta.questId && entry.id === meta.questId || reason && reason.includes(entry.name.toLocaleLowerCase())));
+    if (!claimed) return false;
+    const [verb, path, value] = operation;
+    if (verb === 'inc') return Number(value) > 0 && (path === 'progression.experience' || path === 'progression.reputation' || path.startsWith('progression.currency.'));
+    return verb === 'upsert' && ['inventory', 'skills', 'proficiencies.techniques'].includes(path);
 }
 
 function derivePatchNotifications(current, next, operations, levelUps) {
@@ -5118,10 +5690,20 @@ function applyStatePatch(current, patch) {
     if (!patch || typeof patch !== 'object' || !Array.isArray(patch.ops)) throw new Error('State patch is missing an ops array.');
     const candidate = clone(current);
     const acceptedOps = [];
+    const rewardOps = new Set();
     for (const operation of patch.ops.slice(0, 75)) {
+        if (isDuplicateQuestRewardOperation(current, operation)) continue;
+        const meta = operationMeta(operation);
+        if (['quest-reward', 'mission-reward', 'reward'].includes(meta.category)) {
+            const rewardKey = `${meta.questId || meta.reason.toLocaleLowerCase()}::${operation[0]}::${operation[1]}::${patchIdentity(operation[2])}`;
+            if (rewardOps.has(rewardKey)) continue;
+            rewardOps.add(rewardKey);
+        }
         if (applyPatchOperation(candidate, operation)) acceptedOps.push(operation);
     }
-    const next = normalize(candidate, current);
+    let next = normalize(candidate, current);
+    synchronizeWorldState(next, current);
+    next = normalize(next, current);
     const levelUps = resolveLevelProgression(next);
     next.player.portrait = current.player.portrait;
     next.player.portraitView = clone(current.player.portraitView);
@@ -5360,6 +5942,7 @@ function openInterface() {
     document.body.classList.add('tretaresia-rpg-open');
     try {
         renderAll();
+        queueCharacterLifeCompatibilityRefresh({ save: true });
     } catch (error) {
         console.error('[Tretaresia RPG] Could not render the interface.', error);
         notify('error', 'Tretaresia RPG opened, but one of its modules could not render. Check the browser console.');
@@ -5484,6 +6067,9 @@ async function addSettingsDrawer() {
             if (storageKey) localStorage.removeItem(storageKey);
         }
     });
+    bindCheckbox('tretaresia-rpg-show-npc-map-markers', 'showNpcMapMarkers', settings, () => {
+        renderMap(document.querySelector('[data-panel="map"]'), getState());
+    });
     bindCheckbox('tretaresia-rpg-event-notifications', 'eventNotifications', settings);
     bindCheckbox('tretaresia-rpg-notify-exp', 'notifyExperience', settings);
     bindCheckbox('tretaresia-rpg-notify-level', 'notifyLevel', settings);
@@ -5520,6 +6106,7 @@ function bindChatEvents() {
             updatePrompt();
             renderAll();
         }
+        await refreshCharacterLifeCompatibility({ save: true });
         if (SillyTavern.getContext().getCurrentChatId?.() && !hasUserReply()) {
             setSync('ready', tr('Waiting for first reply'), getSettings().language === 'th' ? 'First Message จะยังไม่ถูกอ่านหรือบันทึก' : 'The First Message is not read or stored by the extension.');
         } else setSync('ready', tr('Ready'), '', { show: false });
@@ -5533,6 +6120,10 @@ function bindChatEvents() {
         else setSync('disabled', tr('Tracking is off'), settings.language === 'th' ? 'คำตอบนี้จะไม่อัปเดต Tretaresia RPG อัตโนมัติ' : 'This reply will not update Tretaresia RPG automatically.');
     });
     eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => processAssistantPatch(messageId, generationType));
+    globalThis.addEventListener('character-life:rpg-bridge-ready', () => queueCharacterLifeCompatibilityRefresh({ save: true }));
+    globalThis.addEventListener('character-life:skills-ready', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
+    globalThis.addEventListener('character-life:skill-updated', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
+    globalThis.addEventListener('character-life:portrait-replaced', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
 }
 
 async function initialize() {
@@ -5558,7 +6149,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.9.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.12.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

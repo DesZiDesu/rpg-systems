@@ -235,10 +235,21 @@
 /* Mission receipt and progress */
 .tretaresia-quest-progress { display: flex; align-items: center; gap: .55rem; margin: .5rem 0 .35rem; }
 .tretaresia-quest-progress > span { flex: 1; height: 5px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.08); }
-.tretaresia-quest-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--tretaresia-accent), #d9c37c); }
+.tretaresia-quest-progress i { display: block; width: var(--quest-progress, 0%); height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--tretaresia-accent), #d9c37c); }
 .tretaresia-quest-progress b { min-width: 2.4rem; color: var(--tretaresia-accent); font-size: .62rem; text-align: right; }
 .tretaresia-quest-card small { display: block; margin-top: .22rem; color: var(--tretaresia-muted); }
 .tretaresia-quest-card small i { width: 1rem; color: color-mix(in srgb, var(--tretaresia-accent) 72%, white); }
+.tretaresia-quest-sections { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .35rem; margin: 0 0 .7rem; }
+.tretaresia-quest-sections button { display: flex; align-items: center; justify-content: space-between; gap: .4rem; min-height: 42px; padding: .48rem .55rem; color: var(--tretaresia-muted); background: rgba(0,0,0,.24); border: 1px solid var(--tretaresia-line-soft); cursor: pointer; }
+.tretaresia-quest-sections button span { overflow: hidden; font-size: .5rem; font-weight: 700; letter-spacing: .08em; text-overflow: ellipsis; white-space: nowrap; }
+.tretaresia-quest-sections button b { min-width: 1.25rem; padding: .12rem .25rem; color: var(--tretaresia-soft); background: rgba(255,255,255,.05); font-size: .5rem; text-align: center; }
+.tretaresia-quest-sections button.is-active { color: var(--tretaresia-accent); border-color: var(--tretaresia-line); background: rgba(var(--tretaresia-accent-rgb),.1); }
+.tretaresia-quest-section { margin-bottom: .72rem; border: 1px solid var(--tretaresia-line-soft); }
+.tretaresia-quest-section > header { display: flex; align-items: center; justify-content: space-between; padding: .5rem .65rem; color: var(--tretaresia-accent); border-bottom: 1px solid var(--tretaresia-line-soft); font-size: .58rem; font-weight: 700; letter-spacing: .12em; }
+.tretaresia-quest-section > header small { color: var(--tretaresia-muted); }
+.tretaresia-quest-section .tretaresia-quest-list { padding: .58rem; }
+.tretaresia-quest-reward.is-claimed { color: var(--tretaresia-success); }
+@media (max-width: 800px) { .tretaresia-quest-sections { display: flex; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; } .tretaresia-quest-sections::-webkit-scrollbar { display: none; } .tretaresia-quest-sections button { flex: 0 0 auto; min-width: 132px; min-height: 46px; } }
 
 /* Main-chat system events */
 .tretaresia-event-stack { position: fixed; z-index: 30010; right: max(18px, env(safe-area-inset-right)); top: max(72px, env(safe-area-inset-top)); width: min(390px, calc(100vw - 28px)); display: grid; gap: .65rem; pointer-events: none; }
@@ -3010,6 +3021,22 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 }
 .tretaresia-card-actions button:hover { color: var(--tf-gold2); border-color: var(--tf-line); background: var(--tf-hov); }
 
+.tretaresia-skill-card.is-character-life-linked,
+.tretaresia-npc-ability.is-character-life-linked {
+    border-left-color: #b99cff;
+    background: linear-gradient(110deg, rgba(185, 156, 255, .09), rgba(var(--tretaresia-accent-rgb), .025));
+}
+
+.tretaresia-skill-card.is-character-life-linked > i,
+.tretaresia-npc-ability.is-character-life-linked .fa-link {
+    color: #cbb8ff;
+}
+
+.tretaresia-household-member.is-player {
+    border-color: rgba(var(--tretaresia-accent-rgb), .28);
+    background: rgba(var(--tretaresia-accent-rgb), .07);
+}
+
 .tretaresia-zone-badge,
 .tretaresia-npc-list-row small,
 .tretaresia-proficiency-overview > span { border-radius: 0; }
@@ -4058,3 +4085,114 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 
 /* Keep the supplied 4:3 atlas undistorted after all legacy map rules. */
 .tretaresia-world-map { aspect-ratio: 4 / 3; }
+
+/* Living-world travel and NPC map controls. */
+.tretaresia-map-legend i.npc { background: var(--tretaresia-accent); box-shadow: 0 0 0 2px rgba(var(--tretaresia-accent-rgb), .22); }
+
+.tretaresia-travel-progress {
+    position: relative;
+    height: .42rem;
+    margin: .8rem 0 .2rem;
+    overflow: visible;
+    background: rgba(255,255,255,.07);
+    border: 1px solid var(--tf-line-soft);
+}
+.tretaresia-travel-progress span {
+    display: block;
+    width: var(--journey-progress);
+    height: 100%;
+    background: linear-gradient(90deg, var(--tretaresia-accent), var(--tretaresia-accent-alt));
+    box-shadow: 0 0 12px rgba(var(--tretaresia-accent-rgb), .34);
+    transition: width .35s ease;
+}
+.tretaresia-travel-progress b {
+    position: absolute;
+    right: 0;
+    bottom: .62rem;
+    color: var(--tf-gold2);
+    font-size: .55rem;
+    letter-spacing: .08em;
+}
+
+.tretaresia-npc-map-controls {
+    min-width: 0;
+    padding: .68rem;
+    background: linear-gradient(120deg, rgba(var(--tretaresia-accent-rgb),.035), rgba(255,255,255,.012));
+    border: 1px solid var(--tretaresia-line-soft);
+    border-radius: 3px;
+}
+.tretaresia-npc-map-controls > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-bottom: .48rem;
+    padding-bottom: .42rem;
+    border-bottom: 1px solid var(--tf-line-soft);
+}
+.tretaresia-npc-map-controls > header > span {
+    display: inline-flex;
+    align-items: center;
+    gap: .42rem;
+    color: var(--tf-gold2);
+    font: 700 .62rem var(--tf-disp);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+.tretaresia-npc-map-controls > header button {
+    display: grid;
+    place-items: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    color: var(--tf-gold2);
+    background: var(--tf-field);
+    border: 1px solid var(--tf-line-soft);
+    border-radius: 2px;
+}
+.tretaresia-npc-map-controls > div {
+    display: grid;
+    gap: .28rem;
+    max-height: 14rem;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+.tretaresia-npc-map-row {
+    display: grid;
+    grid-template-columns: 1.8rem minmax(0,1fr) 1.2rem;
+    align-items: center;
+    gap: .48rem;
+    min-width: 0;
+    padding: .42rem;
+    color: var(--tf-dim);
+    text-align: left;
+    background: rgba(255,255,255,.018);
+    border: 1px solid transparent;
+    border-radius: 2px;
+}
+.tretaresia-npc-map-row.is-visible {
+    color: var(--tf-text);
+    background: rgba(var(--tretaresia-accent-rgb),.07);
+    border-color: rgba(var(--tretaresia-accent-rgb),.24);
+}
+.tretaresia-npc-map-avatar {
+    display: grid;
+    place-items: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    color: var(--tretaresia-on-accent);
+    background: var(--tretaresia-accent);
+    border-radius: 50%;
+    font-size: .68rem;
+    font-weight: 800;
+}
+.tretaresia-npc-map-row > span:nth-child(2) { display: grid; gap: .12rem; min-width: 0; }
+.tretaresia-npc-map-row strong,
+.tretaresia-npc-map-row small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tretaresia-npc-map-row strong { font-size: .66rem; }
+.tretaresia-npc-map-row small { color: var(--tf-dim); font-size: .54rem; }
+.tretaresia-npc-map-row > i { justify-self: end; color: var(--tf-gold2); font-size: .62rem; }
+.tretaresia-npc-map-empty { margin: .4rem; color: var(--tf-dim); font-size: .6rem; }
+
+@media (max-width: 760px) {
+    .tretaresia-npc-map-controls > div { max-height: 11rem; }
+}
