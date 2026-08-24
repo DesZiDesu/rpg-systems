@@ -7,6 +7,7 @@ const PROMPT_KEY = 'tretaresia_rpg_roleplay_state';
 const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
 const STATE_PACKAGE_FORMAT = 'tretaresia-rpg-state';
 const CONTINUITY_STORAGE_PREFIX = 'tretaresia-rpg:continuity:';
+const SUMMARY_NEW_CHAT_MENU_ID = 'st_new_chat_with_summary_wand_button';
 const PATCH_COMMENT_PATTERN = /<!--\s*tretaresia_patch\s*:\s*([\s\S]*?)\s*-->/gi;
 const PATCH_TAG_PATTERN = /<tretaresia_patch>\s*([\s\S]*?)\s*<\/tretaresia_patch>/gi;
 const RANKS = ['Rookie', 'Basic', 'Intermediate', 'Ember', 'Custom Rank'];
@@ -362,7 +363,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.12.0';
+const LAUNCHER_BIND_VERSION = '0.13.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -1395,11 +1396,48 @@ async function restoreContinuityForCurrentChat() {
         continued.updatedAt = null;
         continued.updateSource = 'continuity';
         const saved = await persistState(continued, 'continuity');
-        if (saved) notify('success', settings.language === 'th' ? 'สานต่อข้อมูลตัวละครในแชตใหม่แล้ว' : 'Character state continued into this new chat.');
+        if (saved) {
+            globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:continuity-restored', {
+                detail: {
+                    sourceChatId: record.sourceChatId,
+                    targetChatId: chatId,
+                    characterKey: activeContinuityKey(context),
+                    summaryExtensionCompatible: true,
+                },
+            }));
+            notify('success', settings.language === 'th' ? 'สานต่อข้อมูลตัวละครในแชตใหม่แล้ว' : 'Character state continued into this new chat.');
+        }
         return saved;
     } finally {
         continuityRestoreInProgress = false;
     }
+}
+
+function captureContinuityBeforeNewChat(trigger = 'native-new-chat') {
+    const context = SillyTavern.getContext();
+    const chatId = context.getCurrentChatId?.();
+    if (!getSettings().autoContinuity || !chatId) return false;
+    writeContinuitySnapshot(getState());
+    globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:continuity-captured', {
+        detail: { sourceChatId: chatId, characterKey: activeContinuityKey(context), trigger },
+    }));
+    return true;
+}
+
+function bindNewChatSummaryCompatibility() {
+    document.addEventListener('click', event => {
+        const target = event.target instanceof Element
+            ? event.target.closest(`#option_start_new_chat, #${SUMMARY_NEW_CHAT_MENU_ID}`) : null;
+        if (!target) return;
+        captureContinuityBeforeNewChat(target.id === SUMMARY_NEW_CHAT_MENU_ID ? 'nutho-summary-new-chat' : 'native-new-chat');
+    }, true);
+
+    globalThis.TretaresiaRpgContinuity = Object.freeze({
+        version: LAUNCHER_BIND_VERSION,
+        summaryExtension: 'nutho-start-new-chat-with-summary',
+        capture: captureContinuityBeforeNewChat,
+        restore: restoreContinuityForCurrentChat,
+    });
 }
 
 function portableState(state) {
@@ -6137,6 +6175,7 @@ async function initialize() {
         buildInterface();
         await addSettingsDrawer();
         bindChatEvents();
+        bindNewChatSummaryCompatibility();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
         updatePrompt();
@@ -6149,7 +6188,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.12.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.13.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

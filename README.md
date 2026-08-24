@@ -2,7 +2,7 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.12.0**
+**Current version: 0.13.0**
 
 The tracking protocol uses a compact, relevance-prioritized state payload instead of repeatedly sending the entire archive. Settings show extension-started request attempts, and repeated Manual Sync taps are deduplicated.
 
@@ -29,6 +29,7 @@ The tracking protocol uses a compact, relevance-prioritized state payload instea
 - Character Life compatibility: exact NPC links reuse Character Life portraits and framing, Character Life skills appear in RPG skill views, and RPG-tracked skills sync back to Skill Storage without an extra model request.
 - English and Thai interface/action support, hidden/visible/draft action delivery, mobile safe-area layout, touch controls, and configurable appearance.
 - Automatic same-character continuity when starting a new chat, including same-device copying for locally stored NPC portraits and music.
+- Direct compatibility with `nutho-start-new-chat-with-summary`: RPG state is captured before its summary/new-chat flow, restored after `CHAT_CHANGED`, and kept separate from the carried memory summary.
 - Portable JSON state export/import from the interface header. Player state and the embedded player portrait travel with the file; device-only NPC media stays local.
 
 ## Tretaresia-aware behavior
@@ -47,6 +48,12 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 4. Reload SillyTavern if prompted.
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
+
+## Version 0.13.0
+
+- Added an explicit pre-capture hook for both SillyTavern's native New Chat button and the Nutho Start New Chat With Summary wand item.
+- Restored RPG metadata remains independent from Nutho's summary backup and delayed memory write.
+- Added local continuity lifecycle events/API so Character Life and other compatible extensions can coordinate without additional AI requests.
 
 ## Version 0.12.0
 
