@@ -2,6 +2,10 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
+**Current version: 0.9.1**
+
+The tracking protocol uses a compact, relevance-prioritized state payload instead of repeatedly sending the entire archive. Settings show extension-started request attempts, and repeated Manual Sync taps are deduplicated.
+
 ## Core features
 
 - One-normal-reply automatic tracking: the extension asks the active role-play model to append a hidden, validated state patch to its normal response. This adds no background generation and no extra API call.
@@ -40,6 +44,11 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 4. Reload SillyTavern if prompted.
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
+
+## Version 0.9.1
+
+- Compact full-feature tracking protocol and relevance-prioritized state payload.
+- Extension-started request counter and duplicate Manual Sync protection.
 
 ## Version 0.9.0
 

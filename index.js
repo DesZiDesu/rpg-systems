@@ -353,7 +353,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.9.0';
+const LAUNCHER_BIND_VERSION = '0.9.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -466,6 +466,7 @@ let introFinishTimer = null;
 let aiSyncInProgress = false;
 let pendingSave = Promise.resolve();
 let syncQueue = Promise.resolve();
+let manualSyncQueued = false;
 let tabTransitionToken = 0;
 let mapSelectionId = null;
 let mapDraftPoint = null;
@@ -622,6 +623,38 @@ function getSettings() {
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
     for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'autoContinuity']) settings[key] = Boolean(settings[key]);
     return settings;
+}
+
+function requestUsage() {
+    const settings = getSettings();
+    const source = settings.requestUsage && typeof settings.requestUsage === 'object' ? settings.requestUsage : {};
+    settings.requestUsage = {
+        total: Math.max(0, Math.trunc(number(source.total, 0, 0, Number.MAX_SAFE_INTEGER))),
+        manualSync: Math.max(0, Math.trunc(number(source.manualSync, 0, 0, Number.MAX_SAFE_INTEGER))),
+        hiddenAction: Math.max(0, Math.trunc(number(source.hiddenAction, 0, 0, Number.MAX_SAFE_INTEGER))),
+        visibleAction: Math.max(0, Math.trunc(number(source.visibleAction, 0, 0, Number.MAX_SAFE_INTEGER))),
+        lastReason: text(source.lastReason, '', 120),
+        lastAt: text(source.lastAt, '', 80),
+    };
+    return settings.requestUsage;
+}
+
+function renderRequestUsage() {
+    const usage = requestUsage();
+    document.querySelectorAll('[data-tretaresia-request-usage]').forEach(output => {
+        output.textContent = `${usage.total} extension-started request${usage.total === 1 ? '' : 's'}`;
+        output.title = usage.lastAt ? `Last: ${usage.lastReason || 'unknown'} · ${usage.lastAt}` : 'No separate extension request recorded yet.';
+    });
+}
+
+function recordExtensionRequest(kind, reason) {
+    const usage = requestUsage();
+    usage.total += 1;
+    if (Object.hasOwn(usage, kind)) usage[kind] += 1;
+    usage.lastReason = text(reason, kind, 120);
+    usage.lastAt = new Date().toISOString();
+    SillyTavern.getContext().saveSettingsDebounced?.();
+    renderRequestUsage();
 }
 
 function meter(value, fallback) {
@@ -1400,13 +1433,28 @@ function aiState(state) {
     const safePlayer = { ...state.player };
     delete safePlayer.portrait;
     delete safePlayer.portraitView;
-    const recentTranscript = SillyTavern.getContext().chat.slice(-6).map(message => text(message?.mes, '', 4000)).join(' ').toLocaleLowerCase();
+    const recentTranscript = SillyTavern.getContext().chat.slice(-8).map(message => text(message?.mes, '', 3000)).join(' ').toLocaleLowerCase();
     const friendly = friendlyNpcs(state);
-    const recentNpcs = [...friendly].sort((a, b) => {
-        const aActive = recentTranscript.includes(a.name.toLocaleLowerCase()) ? 1 : 0;
-        const bActive = recentTranscript.includes(b.name.toLocaleLowerCase()) ? 1 : 0;
+    const socialNpcIds = new Set([
+        ...(state.social.party?.memberIds || []),
+        ...state.social.guilds.flatMap(entry => entry.memberIds || []),
+        ...state.social.household.members.map(entry => entry.id),
+    ]);
+    const rankedNpcs = [...friendly].sort((a, b) => {
+        const aActive = (recentTranscript.includes(a.name.toLocaleLowerCase()) ? 4 : 0) + (socialNpcIds.has(a.id) ? 2 : 0);
+        const bActive = (recentTranscript.includes(b.name.toLocaleLowerCase()) ? 4 : 0) + (socialNpcIds.has(b.id) ? 2 : 0);
         return bActive - aActive || String(b.updatedAt).localeCompare(String(a.updatedAt));
-    }).slice(0, 16);
+    });
+    const recentNpcs = rankedNpcs.slice(0, 4);
+    const relevantEntries = (values, limit) => [...values].sort((a, b) => {
+        const score = value => recentTranscript.includes(text(value?.name, '', 160).toLocaleLowerCase()) ? 1 : 0;
+        return score(b) - score(a);
+    }).slice(0, limit);
+    const activeQuests = [...state.quests].sort((a, b) => {
+        const active = value => /active|offered|in progress|ongoing/i.test(text(value?.status));
+        const mentioned = value => recentTranscript.includes(text(value?.name, '', 180).toLocaleLowerCase());
+        return Number(mentioned(b)) - Number(mentioned(a)) || Number(active(b)) - Number(active(a)) || String(b.updatedAt || b.receivedAt || '').localeCompare(String(a.updatedAt || a.receivedAt || ''));
+    }).slice(0, 12);
     return {
         player: safePlayer,
         progression: state.progression,
@@ -1415,29 +1463,35 @@ function aiState(state) {
         travel: state.travel,
         scene: state.scene,
         sceneMap: aiSceneMap(state),
-        inventory: state.inventory.map(({ id, name, quantity, category }) => ({ id, name, quantity, category })),
-        skills: state.skills.map(({ id, name, rank, type }) => ({ id, name, rank, type })),
-        proficiencies: state.proficiencies,
-        quests: state.quests,
+        inventory: relevantEntries(state.inventory, 20).map(({ id, name, quantity, category }) => [id, name, quantity, category]),
+        skills: relevantEntries(state.skills, 16).map(({ id, name, rank, type }) => [id, name, rank, type]),
+        proficiencies: {
+            magic: state.proficiencies.magic,
+            sword: state.proficiencies.sword,
+            customMagic: state.proficiencies.customMagic.slice(0, 30).map(({ id, name, proficiency, iconKey }) => [id, name, proficiency, iconKey]),
+            customSword: state.proficiencies.customSword.slice(0, 30).map(({ id, name, proficiency, iconKey }) => [id, name, proficiency, iconKey]),
+            techniques: state.proficiencies.techniques.slice(0, 40).map(({ id, name, category, proficiency }) => [id, name, category, proficiency]),
+        },
+        quests: activeQuests.map(({ id, name, type, status, objective, reward, giver, progress }) => [id, name, type, status, objective, reward, giver, progress]),
         social: {
             party: state.social.party ? { id: state.social.party.id, name: state.social.party.name, leaderId: state.social.party.leaderId, memberIds: state.social.party.memberIds } : null,
             guilds: state.social.guilds.map(({ id, name, description, rank, leaderId, memberIds, treasury }) => ({ id, name, description, rank, leaderId, memberIds, treasury })),
             household: { id: state.social.household.id, name: state.social.household.name, members: state.social.household.members },
         },
-        npcIndex: friendly.slice(0, 100).map(({ id, name, relationship, location, faction }) => ({ id, name, relationship, location, faction })),
+        npcIndex: rankedNpcs.slice(0, 24).map(({ id, name, relationship, location, faction }) => [id, name, relationship, location, faction]),
         npcs: recentNpcs.map(entry => ({
             id: entry.id, name: entry.name, title: entry.title, race: entry.race, age: entry.age, faction: entry.faction,
             relationship: entry.relationship, relationshipState: entry.relationshipState, affection: entry.affection,
             trust: entry.trust, loyalty: entry.loyalty, fear: entry.fear, corruption: entry.corruption, lust: entry.lust,
             location: entry.location, lastSeen: entry.lastSeen, maritalStatus: entry.maritalStatus, partner: entry.partner, children: entry.children,
             stats: entry.stats,
-            abilities: entry.abilities.slice(0, 8).map(({ id, name, category, level, proficiency }) => ({ id, name, category, level, proficiency })),
-            customMeters: entry.customMeters,
+            abilities: entry.abilities.slice(0, 4).map(({ id, name, category, level, proficiency }) => [id, name, category, level, proficiency]),
+            customMeters: entry.customMeters.slice(0, 8).map(({ id, name, value }) => [id, name, value]),
             diaryLatest: entry.diary.at(-1) ? { mood: entry.diary.at(-1).mood, text: entry.diary.at(-1).text.slice(0, 240) } : undefined,
         })),
-        contacts: state.contacts.map(({ id, name, title, affiliation, relationship }) => ({ id, name, title, affiliation, relationship })),
+        contacts: relevantEntries(state.contacts, 12).map(({ id, name, title, affiliation, relationship }) => [id, name, title, affiliation, relationship]),
         letters: state.letters.slice(-5).map(({ id, contactId, fromName, toName, subject, direction, status, createdAt }) => (
-            { id, contactId, fromName, toName, subject, direction, status, createdAt }
+            [id, contactId, fromName, toName, subject, direction, status, createdAt]
         )),
     };
 }
@@ -1446,7 +1500,7 @@ function hasUserReply(context = SillyTavern.getContext()) {
     return context.chat.some(message => message?.is_user && !message.is_system && text(message.mes));
 }
 
-function patchInstructions() {
+function legacyPatchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     return [
         'After the role-play reply, append one invisible HTML comment only when confirmed state changed:',
@@ -1474,6 +1528,26 @@ function patchInstructions() {
         'Handle all story genres and mature or NSFW scenes neutrally. Do not censor, rewrite, omit, or classify confirmed state merely because the scene is adult; follow the active SillyTavern, model, and provider settings.',
         'Record only outcomes confirmed by this reply. Never record plans, attempts, questions, hypotheticals, rejected actions, or out-of-character discussion. Keep proficiency changes conservative.',
         'Omit the comment when nothing changed. Never print a full state, Markdown fence, explanation, or visible system text.',
+    ].join('\n');
+}
+
+function patchInstructions() {
+    const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
+    return [
+        'TRETARESIA PATCH PROTOCOL — use the SAME normal reply; never start another generation. Append one invisible comment only when confirmed state changed:',
+        '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded"}-->',
+        'Allowed ops: set/inc scalar paths; upsert/delete inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
+        'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
+        'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, or explanation.',
+        'Check affected systems: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit only affected values.',
+        'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
+        'Money: record confirmed gains/spending immediately on gold/silver/copper with {"reason":"specific cause","category":"currency"}. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
+        'Quests: upsert a named mission/contract/objective when formally offered, assigned, or received. Offered=optional not accepted; Active=accepted/assigned. Preserve id and known objective/reward/giver/source/progress; update progress/status and use Completed only when confirmed. Rumors and casual advice are not quests.',
+        'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Formless Aura is undetectable; Divine Mana only by Divine Mana; other powers normally require the same kind to sense. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
+        'NPCs: upsert only relevant named friendly NPCs or confirmed changes; preserve npcIndex id. Hostile/enemy/foe/antagonist/villain/threat NPCs stay out of Codex and social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
+        'Social: player leads UI-created Party/Guild unless story changes it. Party is free; Guild fee is already deducted locally. Track confirmed invites, departures, dissolutions, ranks, marriage, partners, children, parents, guardians, and family roles. Household is family, not a faction.',
+        'Travel/scene: journeys take days/months/years. While Traveling/Delayed reduce remainingDays only by elapsed story time; do not move to the destination before confirmed arrival. On arrival set Arrived/0, update known coordinates, and add discovered. Track confirmed day/time/phase/place/detail/mapX/mapY/heading/position/weather/temperature; never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
+        'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
     ].join('\n');
 }
 
@@ -4572,6 +4646,7 @@ async function sendChatAction(message, modeOverride = '') {
         closeInterface();
         setSync('working', tr('Hidden action sent'), settings.language === 'th' ? 'กำลังรอคำตอบของ AI โดยไม่สร้างข้อความผู้เล่น' : 'Waiting for the AI without creating a user bubble.');
         try {
+            recordExtensionRequest('hiddenAction', 'RPG hidden role-play action');
             await context.generate('normal');
         } catch (error) {
             console.error('[Tretaresia RPG] Hidden action failed.', error);
@@ -4612,6 +4687,7 @@ async function sendChatAction(message, modeOverride = '') {
     composer.focus();
     closeInterface();
     setSync('working', tr('Visible message sent'), settings.language === 'th' ? 'กำลังรอคำตอบและตรวจการเปลี่ยนแปลงของระบบ' : 'Waiting for the reply and its confirmed state changes.');
+    recordExtensionRequest('visibleAction', 'RPG visible role-play action');
     send.click();
     if (hadDraft) setTimeout(() => { if (pendingComposerDraft) restoreComposerDraft(); }, 1200);
 }
@@ -5148,7 +5224,14 @@ Return ONLY the JSON object that would appear after "tretaresia_patch:". Do not 
 }
 
 function queueAnalyze(options = {}) {
-    syncQueue = syncQueue.catch(() => undefined).then(() => analyzeChat(options));
+    if (options.manual && (manualSyncQueued || aiSyncInProgress)) {
+        notify('info', getSettings().language === 'th' ? 'Manual Sync กำลังทำงานอยู่' : 'Manual Sync is already running.');
+        return syncQueue;
+    }
+    if (options.manual) manualSyncQueued = true;
+    syncQueue = syncQueue.catch(() => undefined).then(() => analyzeChat(options)).finally(() => {
+        if (options.manual) manualSyncQueued = false;
+    });
     return syncQueue;
 }
 
@@ -5174,6 +5257,7 @@ async function analyzeChat({ manual = false } = {}) {
     setSync('working', tr('Reading latest turn'));
     try {
         const current = getState();
+        recordExtensionRequest('manualSync', 'RPG Manual Sync');
         const response = await context.generateQuietPrompt({
             quietPrompt: analyzerPrompt(current, transcript),
             skipWIAN: true,
@@ -5420,6 +5504,7 @@ async function addSettingsDrawer() {
     document.getElementById('tretaresia-rpg-sync-from-settings')?.addEventListener('click', () => queueAnalyze({ manual: true }));
     updateActionModeHelp();
     syncActivityIndicator();
+    renderRequestUsage();
 }
 
 function bindChatEvents() {
@@ -5473,7 +5558,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.8.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.9.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
