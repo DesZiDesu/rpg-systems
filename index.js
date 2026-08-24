@@ -10,6 +10,8 @@ const CONTINUITY_STORAGE_PREFIX = 'tretaresia-rpg:continuity:';
 const SUMMARY_NEW_CHAT_MENU_ID = 'st_new_chat_with_summary_wand_button';
 const PATCH_COMMENT_PATTERN = /<!--\s*tretaresia_patch\s*:\s*([\s\S]*?)\s*-->/gi;
 const PATCH_TAG_PATTERN = /<tretaresia_patch>\s*([\s\S]*?)\s*<\/tretaresia_patch>/gi;
+const PATCH_BRACKET_PATTERN = /\[\[?\s*tretaresia[_ -]?patch\s*\]?\]\s*([\s\S]*?)\s*\[\[?\s*\/\s*tretaresia[_ -]?patch\s*\]?\]/gi;
+const PATCH_FENCE_PATTERN = /```(?:tretaresia[_ -]?patch|json\s+tretaresia[_ -]?patch)\s*([\s\S]*?)```/gi;
 const RANKS = ['Rookie', 'Basic', 'Intermediate', 'Ember', 'Custom Rank'];
 const MASTERY = ['Dormant', 'Initiate', 'Practiced', 'Adept', 'Expert', 'Master', 'Grandmaster', 'Mythic'];
 const DUNGEON_RANKS = ['Unranked', 'E-', 'E', 'E+', 'D-', 'D', 'D+', 'C-', 'C', 'C+', 'B-', 'B', 'B+', 'A-', 'A', 'A+', 'S-', 'S', 'S+', 'SS'];
@@ -363,7 +365,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.13.0';
+const LAUNCHER_BIND_VERSION = '0.13.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -1663,7 +1665,7 @@ function patchInstructions() {
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded"}-->',
         'Allowed ops: set/inc scalar paths; upsert/delete inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
-        'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, or explanation.',
+        'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, or explanation.',
         'Check affected systems: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit only affected values.',
         'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
         'Money: record confirmed gains/spending immediately on gold/silver/copper with {"reason":"specific cause","category":"currency"}. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
@@ -2348,6 +2350,85 @@ function coordinatesLabel(x, y) {
     return `${Math.round(x).toString().padStart(4, '0')} E · ${Math.round(y).toString().padStart(4, '0')} S`;
 }
 
+function inferUserTravelIntent(message) {
+    const source = text(message, '', 6000);
+    if (!source || /(?:\b(?:do not|don't|won't|not going)\b|(?:ไม่|ไม่ได้|อย่า)\s*(?:ออกเดินทาง|เดินทาง|มุ่งหน้า|มุ่งตรง|กลับ|ไป))/i.test(source)) return null;
+    const lower = source.toLocaleLowerCase();
+    const actionPatterns = [
+        /\b(?:travel(?:ling|ing)?|head(?:ing)?|go(?:ing)?|walk(?:ing)?|ride|riding|sail(?:ing)?|depart(?:ing)?|return(?:ing)?|move|moving|set\s+out)\b/gi,
+        /(?:ออกเดินทาง|เดินทาง|มุ่งหน้า|มุ่งตรง|ขี่ม้า|นั่งรถ|ล่องเรือ|แล่นเรือ|กลับไป|ไปยัง|ไปที่|ไปสู่)/gi,
+    ];
+    let actionIndex = -1;
+    for (const pattern of actionPatterns) {
+        const match = pattern.exec(lower);
+        if (match && (actionIndex < 0 || match.index < actionIndex)) actionIndex = match.index;
+    }
+    if (actionIndex < 0) return null;
+    const candidates = WORLD_LOCATIONS.flatMap(site => {
+        const names = [site.name, site.name.replace(/^the\s+/i, '')].filter((value, index, all) => value && all.indexOf(value) === index);
+        return names.map(name => ({ site, index: lower.lastIndexOf(name.toLocaleLowerCase()), length: name.length }));
+    }).filter(candidate => candidate.index >= actionIndex);
+    candidates.sort((a, b) => b.index - a.index || b.length - a.length);
+    const destination = candidates[0]?.site;
+    if (!destination) return null;
+    const route = /(?:เรือ|ล่อง|แล่น|\b(?:ship|boat|sail|sea)\b)/i.test(source) ? 'Sea'
+        : /(?:คาราวาน|\bcaravan\b)/i.test(source) ? 'Caravan'
+            : /(?:นอกเส้นทาง|ป่า|\boff[- ]?road\b|\bwilderness\b)/i.test(source) ? 'Off-road' : 'Road';
+    return { destination, route };
+}
+
+function estimatedTravelDays(state, destination, route) {
+    const distance = Math.hypot(destination.x - state.location.mapX, destination.y - state.location.mapY);
+    const speed = { Road: 70, Caravan: 58, Sea: 95, 'Off-road': 38 }[route] || 55;
+    return Math.max(1, Math.ceil(distance / speed));
+}
+
+async function processUserTravelIntent(messageId) {
+    const settings = getSettings();
+    if (!settings.autoTrack) return false;
+    const context = SillyTavern.getContext();
+    const numericId = Number(messageId);
+    const message = Number.isInteger(numericId) && numericId >= 0 ? context.chat?.[numericId]
+        : [...(context.chat || [])].reverse().find(entry => entry?.is_user && !entry?.is_system);
+    if (!message?.is_user || message.is_system) return false;
+    const intent = inferUserTravelIntent(message.mes);
+    if (!intent) return false;
+    const current = getState();
+    const alreadyHeadingThere = ['Preparing', 'Traveling', 'Delayed'].includes(current.travel.status)
+        && mapLocationByName(current.travel.destinationPlace || current.travel.destination)?.id === intent.destination.id;
+    const alreadyThere = current.location.place === intent.destination.name && !alreadyHeadingThere;
+    if (alreadyHeadingThere || alreadyThere) return false;
+    const next = clone(current);
+    const totalDays = estimatedTravelDays(next, intent.destination, intent.route);
+    const origin = next.location.place || next.location.region || 'Unknown';
+    next.travel = {
+        status: 'Traveling',
+        origin,
+        destination: intent.destination.name,
+        route: intent.route,
+        totalDays,
+        remainingDays: totalDays,
+        notes: settings.language === 'th' ? 'เริ่มอัตโนมัติจากข้อความโรลเพลย์ของผู้ใช้' : 'Started automatically from the user role-play message.',
+        originX: next.location.mapX,
+        originY: next.location.mapY,
+        originContinent: next.location.continent,
+        originRegion: next.location.region,
+        destinationX: intent.destination.x,
+        destinationY: intent.destination.y,
+        destinationContinent: intent.destination.continent,
+        destinationRegion: intent.destination.region,
+        destinationPlace: intent.destination.name,
+        startedAtWorldMinutes: worldClockMinutes(next.worldClock),
+        lastWorldMinutes: worldClockMinutes(next.worldClock),
+    };
+    next.journal.push({
+        id: uid(),
+        text: `Began a ${totalDays}-day ${intent.route.toLocaleLowerCase()} journey from ${origin} to ${intent.destination.name} from the user's role-play action.`,
+        at: new Date().toISOString(),
+    });
+    return persistState(next, 'user-travel-intent');
+}
+
 const tabButton = (id, icon, label, active = false) => `
     <button class="tretaresia-tab-button${active ? ' is-active' : ''}" type="button" role="tab"
         data-tab="${id}" aria-selected="${active}"><i class="${icon}"></i><span>${html(tr(label))}</span></button>`;
@@ -2946,7 +3027,9 @@ function renderScene(panel, state) {
     const phaseIndex = Math.max(0, DAY_PHASES.indexOf(state.worldClock.phase));
     const moving = ['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status);
     const journeyProgress = travelProgress(state);
-    const exactLocation = state.location.detail || state.location.place || state.location.region;
+    const coordinate = coordinatesLabel(state.location.mapX, state.location.mapY);
+    const locationDetail = state.location.detail || state.location.place || state.location.region;
+    const exactLocation = locationDetail.includes(coordinate) ? locationDetail : `${locationDetail} · ${coordinate}`;
     const temperature = state.scene.temperature === null ? '—' : `${Number(state.scene.temperature).toLocaleString()}°C`;
     panel.innerHTML = `${heading('Scene Tracker', 'Live environment and position', 'fa-solid fa-cloud-sun')}
         <section class="tretaresia-scene-hero">
@@ -5758,35 +5841,133 @@ function applyStatePatch(current, patch) {
     return { next, accepted, summary, notifications: derivePatchNotifications(current, next, acceptedOps, levelUps) };
 }
 
+function balancedJsonRange(source, from = 0) {
+    const start = source.indexOf('{', from);
+    if (start < 0) return null;
+    let depth = 0;
+    let quoted = false;
+    let escaped = false;
+    for (let index = start; index < source.length; index += 1) {
+        const character = source[index];
+        if (quoted) {
+            if (escaped) escaped = false;
+            else if (character === '\\') escaped = true;
+            else if (character === '"') quoted = false;
+            continue;
+        }
+        if (character === '"') quoted = true;
+        else if (character === '{') depth += 1;
+        else if (character === '}' && --depth === 0) return { start, end: index + 1, json: source.slice(start, index + 1) };
+    }
+    return null;
+}
+
+function coerceStatePatch(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const source = raw.patch && typeof raw.patch === 'object' ? raw.patch : raw;
+    let operations = Array.isArray(source.ops) ? source.ops
+        : Array.isArray(source.operations) ? source.operations
+            : Array.isArray(source.updates) ? source.updates : null;
+    if (operations) {
+        operations = operations.map(operation => {
+            if (Array.isArray(operation)) return operation;
+            if (!operation || typeof operation !== 'object') return null;
+            const verb = operation.op || operation.verb || operation.action;
+            const path = operation.path || operation.field || operation.collection;
+            if (!verb || !path) return null;
+            const value = Object.hasOwn(operation, 'value') ? operation.value
+                : Object.hasOwn(operation, 'data') ? operation.data : operation.item;
+            return operation.meta === undefined ? [verb, path, value] : [verb, path, value, operation.meta];
+        }).filter(Boolean);
+    } else {
+        operations = [];
+        const delta = source.state && typeof source.state === 'object' ? source.state
+            : source.changes && typeof source.changes === 'object' ? source.changes
+                : source.delta && typeof source.delta === 'object' ? source.delta : source;
+        const walk = (value, prefix = '', depth = 0) => {
+            if (!value || typeof value !== 'object' || Array.isArray(value) || depth > 5) return;
+            for (const [key, child] of Object.entries(value)) {
+                if (['summary', 'version', 'format'].includes(key) && !prefix) continue;
+                const path = prefix ? `${prefix}.${key}` : key;
+                if (SCALAR_PATCH_PATHS.has(path) && (child === null || typeof child !== 'object')) operations.push(['set', path, child]);
+                else if (PATCH_COLLECTIONS.has(path) && Array.isArray(child)) child.forEach(item => operations.push(['upsert', path, item]));
+                else walk(child, path, depth + 1);
+            }
+        };
+        walk(delta);
+    }
+    if (!operations.length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates)) return null;
+    return { ops: operations.slice(0, 75), summary: text(source.summary || raw.summary, '', 300) };
+}
+
 function extractStatePatch(message) {
     const patches = [];
     let found = false;
-    const strip = pattern => message.replace(pattern, (_match, payload) => {
+    const accept = payload => {
         found = true;
         try {
-            const parsed = parseJson(payload);
-            if (parsed && typeof parsed === 'object') patches.push(parsed);
+            const parsed = coerceStatePatch(parseJson(payload));
+            if (parsed) patches.push(parsed);
         } catch (error) {
             console.warn('[Tretaresia RPG] Ignored malformed inline state patch.', error);
         }
+    };
+    const strip = (source, pattern) => source.replace(pattern, (_match, payload) => {
+        accept(payload);
         return '';
     });
-    let visible = strip(PATCH_COMMENT_PATTERN);
-    visible = visible.replace(PATCH_TAG_PATTERN, (_match, payload) => {
+    let visible = String(message || '');
+    for (const pattern of [PATCH_COMMENT_PATTERN, PATCH_TAG_PATTERN, PATCH_BRACKET_PATTERN, PATCH_FENCE_PATTERN]) {
+        pattern.lastIndex = 0;
+        visible = strip(visible, pattern);
+    }
+
+    // Recover JSON from a marker whose closing comment/tag was truncated. The
+    // balanced scanner removes the protocol even when the model omits its closer.
+    const dangling = /(?:<!--\s*)?tretaresia[_ -]?patch\s*:|<tretaresia_patch>|\[\[?\s*tretaresia[_ -]?patch\s*\]?\]/ig;
+    let match;
+    while ((match = dangling.exec(visible))) {
         found = true;
-        try {
-            const parsed = parseJson(payload);
-            if (parsed && typeof parsed === 'object') patches.push(parsed);
-        } catch (error) {
-            console.warn('[Tretaresia RPG] Ignored malformed inline state patch.', error);
+        const range = balancedJsonRange(visible, match.index + match[0].length);
+        if (!range) {
+            visible = visible.slice(0, match.index).trimEnd();
+            break;
         }
-        return '';
-    });
+        accept(range.json);
+        let end = range.end;
+        const suffix = visible.slice(end).match(/^\s*(?:-->|<\/tretaresia_patch>|\[\[?\s*\/\s*tretaresia[_ -]?patch\s*\]?\]|\x60{3})/i);
+        if (suffix) end += suffix[0].length;
+        visible = `${visible.slice(0, match.index)}${visible.slice(end)}`;
+        dangling.lastIndex = match.index;
+    }
     const combined = patches.length ? {
-        ops: patches.flatMap(patch => Array.isArray(patch.ops) ? patch.ops : []).slice(0, 75),
+        ops: patches.flatMap(patch => patch.ops).slice(0, 75),
         summary: patches.map(patch => text(patch.summary, '', 300)).filter(Boolean).join('; ').slice(0, 300),
     } : null;
     return { visible: visible.trimEnd(), patch: combined, found };
+}
+
+function cleanInlinePatchSurfaces(message) {
+    const sources = [{ get: () => message.mes, set: value => { message.mes = value; } }];
+    if (Array.isArray(message.swipes) && Number.isInteger(message.swipe_id) && typeof message.swipes[message.swipe_id] === 'string') {
+        sources.push({ get: () => message.swipes[message.swipe_id], set: value => { message.swipes[message.swipe_id] = value; } });
+    }
+    if (typeof message.extra?.display_text === 'string') {
+        sources.push({ get: () => message.extra.display_text, set: value => { message.extra.display_text = value; } });
+    }
+    let patch = null;
+    let found = false;
+    let visible = String(message.mes || '');
+    for (const source of sources) {
+        const extracted = extractStatePatch(source.get());
+        if (extracted.found) {
+            found = true;
+            source.set(extracted.visible);
+            if (!patch && extracted.patch) patch = extracted.patch;
+            if (source === sources[0]) visible = extracted.visible;
+        }
+    }
+    return { visible, patch, found };
 }
 
 async function processAssistantPatch(messageId, generationType = '') {
@@ -5801,7 +5982,7 @@ async function processAssistantPatch(messageId, generationType = '') {
         return;
     }
     setSync('working', tr('Checking reply'), settings.language === 'th' ? 'กำลังอ่านเฉพาะข้อมูลที่เปลี่ยนแปลงจากคำตอบนี้' : 'Reading this reply for confirmed state changes.');
-    const extracted = extractStatePatch(message.mes);
+    const extracted = cleanInlinePatchSurfaces(message);
     if (!extracted.found) {
         setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'ระบบทำงานแล้ว แต่ไม่มีเหตุการณ์ที่ยืนยันให้บันทึก' : 'The extension checked this reply; there was nothing confirmed to record.');
         return;
@@ -6150,12 +6331,17 @@ function bindChatEvents() {
         } else setSync('ready', tr('Ready'), '', { show: false });
     });
     if (eventTypes.PERSONA_CHANGED) eventSource.on(eventTypes.PERSONA_CHANGED, () => renderAll());
-    if (eventTypes.MESSAGE_SENT) eventSource.on(eventTypes.MESSAGE_SENT, () => {
+    if (eventTypes.MESSAGE_SENT) eventSource.on(eventTypes.MESSAGE_SENT, async messageId => {
         restoreComposerDraft();
+        try { await processUserTravelIntent(messageId); }
+        catch (error) { console.warn('[Tretaresia RPG] Could not apply user travel intent.', error); }
         updatePrompt();
         const settings = getSettings();
         if (settings.autoTrack) setSync('working', tr('Waiting for AI'), settings.language === 'th' ? 'จะตรวจและอัปเดตจากคำตอบหลักโดยไม่เรียก AI เพิ่ม' : 'The normal reply will be checked with no extra AI request.');
         else setSync('disabled', tr('Tracking is off'), settings.language === 'th' ? 'คำตอบนี้จะไม่อัปเดต Tretaresia RPG อัตโนมัติ' : 'This reply will not update Tretaresia RPG automatically.');
+    });
+    if (eventTypes.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, generationType => {
+        if (!generationType || generationType === 'normal') updatePrompt();
     });
     eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => processAssistantPatch(messageId, generationType));
     globalThis.addEventListener('character-life:rpg-bridge-ready', () => queueCharacterLifeCompatibilityRefresh({ save: true }));
@@ -6188,7 +6374,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.13.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.13.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

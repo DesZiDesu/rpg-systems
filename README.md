@@ -2,7 +2,7 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.13.0**
+**Current version: 0.13.1**
 
 The tracking protocol uses a compact, relevance-prioritized state payload instead of repeatedly sending the entire archive. Settings show extension-started request attempts, and repeated Manual Sync taps are deduplicated.
 
@@ -48,6 +48,12 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 4. Reload SillyTavern if prompted.
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
+
+## Version 0.13.1
+
+- Fixed normal-reply patch recovery so scene, NPC, quest, clock, map, and other confirmed updates accept paired, bracketed, fenced, truncated, and object-operation payload variants.
+- Direct travel actions in the user's main-chat role-play now begin known-atlas journeys automatically without an extra model request.
+- Scene cards always show the exact world coordinates; protocol cleanup now also covers the active swipe and `extra.display_text`.
 
 ## Version 0.13.0
 
