@@ -752,7 +752,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.21.0';
+const LAUNCHER_BIND_VERSION = '0.22.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -878,6 +878,9 @@ let pendingSave = Promise.resolve();
 let syncQueue = Promise.resolve();
 let manualSyncQueued = false;
 let tabTransitionToken = 0;
+const panelScrollPositions = new Map();
+const nestedScrollPositions = new Map();
+let panelScrollRestoreToken = 0;
 let mapSelectionId = null;
 let mapDraftPoint = null;
 let mapDrawFrame = 0;
@@ -2057,7 +2060,7 @@ function aiSceneMap(state) {
     };
 }
 
-function aiState(state) {
+function aiState(state, { privateTracker = false } = {}) {
     const safePlayer = { ...state.player };
     delete safePlayer.portrait;
     delete safePlayer.portraitView;
@@ -2087,7 +2090,7 @@ function aiState(state) {
     }).slice(0, 12);
     const questArchive = state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status))
         .sort((a, b) => String(b.completedAt || b.failedAt || b.updatedAt || '').localeCompare(String(a.completedAt || a.failedAt || a.updatedAt || ''))).slice(0, 16);
-    return {
+    const snapshot = {
         player: safePlayer,
         world: state.world,
         progression: state.progression,
@@ -2097,8 +2100,6 @@ function aiState(state) {
         scene: state.scene,
         sceneMap: aiSceneMap(state),
         inventory: relevantEntries(state.inventory, 20).map(({ id, name, quantity, category }) => [id, name, quantity, category]),
-        transactions: state.transactions.slice(-30).map(({ at, currencyName, amounts, balance, reason, source }) => ({ at, currencyName, amounts, balance, reason, source })),
-        journeyLogs: state.journeyLogs.slice(-20).map(({ at, place, day, kind, text: entryText }) => ({ at, place, day, kind, text: entryText })),
         skills: relevantEntries(state.skills, 16).map(({ id, name, rank, type }) => [id, name, rank, type]),
         proficiencies: {
             magic: state.proficiencies.magic,
@@ -2126,12 +2127,57 @@ function aiState(state) {
             stats: entry.stats,
             abilities: entry.abilities.slice(0, 4).map(({ id, name, category, level, proficiency }) => [id, name, category, level, proficiency]),
             customMeters: entry.customMeters.slice(0, 8).map(({ id, name, value }) => [id, name, value]),
-            diaryLatest: entry.diary.at(-1) ? { mood: entry.diary.at(-1).mood, text: entry.diary.at(-1).text.slice(0, 240) } : undefined,
         })),
         contacts: relevantEntries(state.contacts, 12).map(({ id, name, title, affiliation, relationship }) => [id, name, title, affiliation, relationship]),
         letters: state.letters.slice(-5).map(({ id, contactId, fromName, toName, subject, direction, status, createdAt }) => (
             [id, contactId, fromName, toName, subject, direction, status, createdAt]
         )),
+    };
+    if (privateTracker) {
+        snapshot.transactions = state.transactions.slice(-30).map(({ at, currencyName, amounts, balance, reason, source }) => ({ at, currencyName, amounts, balance, reason, source }));
+        snapshot.journeyLogs = state.journeyLogs.slice(-20).map(({ at, place, day, kind, text: entryText }) => ({ at, place, day, kind, text: entryText }));
+        snapshot.npcs.forEach(entry => {
+            const source = state.npcs.find(candidate => candidate.id === entry.id);
+            if (source?.diary.at(-1)) entry.diaryLatest = { mood: source.diary.at(-1).mood, text: source.diary.at(-1).text.slice(0, 240) };
+        });
+    }
+    return snapshot;
+}
+
+function roleplayState(state) {
+    const friendly = friendlyNpcs(state);
+    return {
+        sceneContext: {
+            world: { id: state.world.id, name: state.world.name, era: state.world.era },
+            worldClock: state.worldClock,
+            location: {
+                continent: state.location.continent,
+                region: state.location.region,
+                place: state.location.place,
+                detail: state.location.detail,
+                heading: state.location.heading,
+            },
+            travel: {
+                status: state.travel.status,
+                origin: state.travel.origin,
+                destination: state.travel.destination,
+                route: state.travel.route,
+            },
+            scene: state.scene,
+            localMap: {
+                activeMapId: state.sceneMap.activeMapId,
+                activeFloorId: state.sceneMap.activeFloorId,
+                playerRoomId: state.sceneMap.playerRoomId,
+            },
+        },
+        privateTrackerReferenceIndex: {
+            inventory: state.inventory.slice(-20).map(({ id, name }) => [id, name]),
+            skills: state.skills.slice(-16).map(({ id, name }) => [id, name]),
+            quests: state.quests.filter(entry => !['Completed', 'Failed'].includes(entry.status)).slice(-12).map(({ id, name, type, status }) => [id, name, type, status]),
+            questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
+            npcs: friendly.slice(-24).map(({ id, name }) => [id, name]),
+            contacts: state.contacts.slice(-12).map(({ id, name }) => [id, name]),
+        },
     };
 }
 
@@ -2177,7 +2223,8 @@ function patchInstructions() {
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
-        'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, or explanation.',
+        'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
+        'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit only affected values.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
@@ -2188,7 +2235,7 @@ function patchInstructions() {
         'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
         'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Formless Aura is undetectable; Divine Mana only by Divine Mana; other powers normally require the same kind to sense. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
         'NPCs: upsert only relevant named friendly NPCs or confirmed changes; preserve npcIndex id. Hostile/enemy/foe/antagonist/villain/threat NPCs stay out of Codex and social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
-        'Living NPC world: when the world clock meaningfully advances, update 1-3 plausible off-screen Active NPC lives with a partial npcs upsert using id plus location,mapX,mapY,activity,activityUpdatedDay. Prioritize mapVisible, Party/Household/Guild, recently mentioned NPCs; Story only changes only when involved, Paused never changes automatically. Respect occupation, home, duties, relationships, distance, travel time, danger, and established events. Do not teleport or manufacture dramatic events. Party members normally follow the player unless separation is established. A new location needs atlas-consistent coordinates; if only activity changes, preserve coordinates.',
+        'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
         'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/accepted invite/leave/expulsion/create/dissolve/rank/marriage/partner/child/parent/guardian/family-role change must update this same patch. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first ["upsert","npcs",{"id":"lysa","name":"Lysa","relationship":"Ally"}], then the membership op. Guild member includes guildId or exact guildName. Household member includes npcId plus role; delete the same collection when a member leaves. Party is free. UI Guild creation already charges locally; a story-created Guild op charges the fee automatically and fails when unaffordable. Household is family, not a faction.',
         'Travel/scene: journeys take days/months/years. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates, new places use a consistent plausible point. Read both the latest user role-play action and your completed reply for movement, elapsed hours/days, stated percentages, delays, resumptions, reroutes, and arrival. Every reply that narratively advances an active journey must update worldClock day/time and remainingDays; never repeat stale travel values merely because no map UI button was pressed. The extension also applies a deterministic turn fallback and interpolates the player marker from stored endpoints, so preserve any newer/lower remainingDays already present, never move progress backwards, and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed phase/place/detail/heading/position/weather/temperature; never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
@@ -2206,12 +2253,13 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
         lines.push('The active setting is Present World Tretaresia, a morally mixed, enormous world of six ocean-separated continents: Central Continent, The Great Forest, Great Land of Titan, Drinovia Continent, North Continent, and Baluguria Continent. Preserve established geography, long travel times, social prejudice, regional laws, power secrecy, and regional currencies. Most common monsters can speak understandable but broken human language.');
         lines.push('Present World canon: about one thousand years ago the Great War shattered the land and opened the oceans; hero Ars died and the Primordial Demon was sealed in a timeless dimension. Civilizations later rebuilt an uneasy harmony while war, invasion, prejudice, slavery, crime, kindness and cruelty continued together. The Great Academy charges steep tuition and admits every race, though prejudice remains. Human entry into the Great Forest is taboo and may bring punishment upon an entire family. Khaduzar is marked by the colossal stone hand gripping its own wrist. Drinovia plants the weapons and remains of the fallen where they died. The North can fall below -300 degrees. Baluguria is an exile, slave, gambling, pleasure-trade and underworld center.');
     }
-    lines.push('NPC Atlas Knowledge is strictly scoped to the active world below. A destination absent from this catalog is not established in the current timeline. Never leak or infer another timeline\'s geography through ordinary NPC knowledge.');
+    lines.push('AUTHOR-ONLY ATLAS REFERENCE is strictly scoped to the active world below. A destination absent from this catalog is not established in the current timeline. This catalog is not automatically known by any NPC: geography knowledge requires credible upbringing, travel, study, occupation, or information established in the story. Never leak or infer another timeline\'s geography through ordinary NPC knowledge.');
     lines.push(JSON.stringify(npcAtlasKnowledge(state)));
     if (includeState) {
-        lines.push('Canonical role-play state. Preserve it unless the story confirms a change.');
-        lines.push('Current scene, location, inventory, ranks, conditions, skills, quests, NPC dossiers, contacts, physical letters, party, guilds, currency, and Household members are established facts. The NPC Codex and social invitations contain friendly NPCs only; hostile NPCs are excluded from those lists.');
-        lines.push(JSON.stringify(aiState(state)));
+        lines.push('EPISTEMIC FIREWALL — HIGHEST PRIORITY FOR CHARACTER KNOWLEDGE: sceneContext describes author-level continuity, while privateTrackerReferenceIndex is hidden tool memory. No NPC can see or read either object. A character knows only what they personally witnessed, were explicitly told, can publicly observe now, or could credibly learn through an established role. Presence, friendship, party/guild/household membership, Character Life records, NPC dossiers, and model access to this prompt do not grant knowledge. Never reveal or have an NPC react to exact level, EXP, vitals, stats, power identity, money/balance, inventory, quest/UI status, relationship meters, private diary, coordinates, travel percentage, transaction history, journey log, or companions unless the story independently established that specific fact. When uncertain, the NPC does not know. Never use UI/system terminology in narration or dialogue.');
+        lines.push('Canonical role-play continuity follows. Preserve it silently unless the story confirms a change. The tracker may use private reference IDs for bookkeeping, but visible prose and NPC behavior must obey the firewall above.');
+        lines.push(JSON.stringify(roleplayState(state)));
+        lines.push('END PRIVATE TRACKER REFERENCE INDEX. Do not quote, summarize, expose, or turn hidden reference values into character knowledge.');
     }
     if (track) lines.push(patchInstructions());
     lines.push('</tretaresia_rpg_state>');
@@ -3242,6 +3290,7 @@ function buildInterface() {
     buildEventNotificationStack();
     const existing = document.getElementById('tretaresia-rpg-overlay');
     if (existing) {
+        installAstraSurfaceCompatibility(existing);
         if (!document.getElementById('tretaresia-control-dialog')) {
             try {
                 buildControlCenter();
@@ -3254,6 +3303,8 @@ function buildInterface() {
     const overlay = document.createElement('div');
     overlay.id = 'tretaresia-rpg-overlay';
     overlay.className = 'tretaresia-rpg-overlay';
+    overlay.setAttribute('data-vaul-no-drag', '');
+    overlay.setAttribute('data-astra-extension-surface', 'tretaresia-rpg');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.innerHTML =
         '<button class="tretaresia-rpg-backdrop" type="button" aria-label="Close Tretaresia RPG"></button>' +
@@ -3272,6 +3323,7 @@ function buildInterface() {
         (typeof buildIntroGate === 'function' ? buildIntroGate() : '') +
         '</section>';
     document.body.appendChild(overlay);
+    installAstraSurfaceCompatibility(overlay);
     try {
         buildControlCenter();
     } catch (error) {
@@ -3295,6 +3347,59 @@ function buildInterface() {
     activeTabIndex = 0;
     applyAppearance();
     syncActivityIndicator();
+}
+
+function installAstraSurfaceCompatibility(overlay) {
+    if (!overlay || overlay.dataset.astraCompatibilityBound === 'true') return;
+    overlay.dataset.astraCompatibilityBound = 'true';
+    const panel = overlay.querySelector('#tretaresia-rpg-panel');
+    const body = overlay.querySelector('.tretaresia-rpg-panel-body');
+    for (const element of [panel, body]) {
+        element?.setAttribute('data-vaul-no-drag', '');
+        element?.setAttribute('data-astra-scroll-affordance', 'surface');
+    }
+    const syncViewport = () => {
+        const height = globalThis.visualViewport?.height || globalThis.innerHeight;
+        if (height > 0) overlay.style.setProperty('--tretaresia-viewport-height', `${Math.round(height)}px`);
+    };
+    syncViewport();
+    globalThis.visualViewport?.addEventListener('resize', syncViewport, { passive: true });
+    const stopHostGesture = event => {
+        if (event.target instanceof Element && event.target.closest('.tretaresia-rpg-panel-body, .tretaresia-npc-list, .tretaresia-npc-dossier, .tretaresia-module-window, [data-rpg-scroll-key]')) event.stopPropagation();
+    };
+    overlay.addEventListener('touchmove', stopHostGesture, { passive: true });
+    overlay.addEventListener('wheel', stopHostGesture, { passive: true });
+    body?.addEventListener('scroll', () => {
+        const id = overlay.querySelector('[data-panel].is-active')?.dataset.panel;
+        if (id) panelScrollPositions.set(id, { top: body.scrollTop, left: body.scrollLeft });
+    }, { passive: true });
+}
+
+function capturePanelScroll(id, panel) {
+    const body = panel?.closest('.tretaresia-rpg-panel-body');
+    if (id && panel?.classList.contains('is-active') && body) panelScrollPositions.set(id, { top: body.scrollTop, left: body.scrollLeft });
+    panel?.querySelectorAll('[data-rpg-scroll-key]').forEach(element => {
+        nestedScrollPositions.set(`${id}:${element.dataset.rpgScrollKey}`, { top: element.scrollTop, left: element.scrollLeft });
+    });
+}
+
+function restorePanelScroll(id, panel, { restoreBody = true } = {}) {
+    const token = ++panelScrollRestoreToken;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (token !== panelScrollRestoreToken || !panel?.isConnected) return;
+        const body = panel.closest('.tretaresia-rpg-panel-body');
+        const bodyPosition = panelScrollPositions.get(id) || { top: 0, left: 0 };
+        if (restoreBody && panel.classList.contains('is-active') && body) {
+            body.scrollTop = bodyPosition.top;
+            body.scrollLeft = bodyPosition.left;
+        }
+        panel.querySelectorAll('[data-rpg-scroll-key]').forEach(element => {
+            const position = nestedScrollPositions.get(`${id}:${element.dataset.rpgScrollKey}`);
+            if (!position) return;
+            element.scrollTop = position.top;
+            element.scrollLeft = position.left;
+        });
+    }));
 }
 
 function rebuildInterface() {
@@ -3460,6 +3565,7 @@ function activateTab(id) {
     const next = overlay.querySelector('[data-panel="' + id + '"]');
     if (index < 0 || !next) return;
     const current = overlay.querySelector('[data-panel].is-active');
+    if (current?.dataset.panel) capturePanelScroll(current.dataset.panel, current);
     activeTabIndex = index;
     overlay.querySelector('#tretaresia-module-track')?.style.setProperty('--tab-index', String(index));
     overlay.querySelectorAll('[data-tab]').forEach(button => {
@@ -3487,7 +3593,7 @@ function activateTab(id) {
         next.classList.remove('is-entering');
         void next.offsetWidth;
         next.classList.add('is-entering');
-        overlay.querySelector('.tretaresia-rpg-panel-body')?.scrollTo({ top: 0, behavior: 'smooth' });
+        restorePanelScroll(id, next);
         if (id === 'map') requestAnimationFrame(() => {
             setupMapInteractions(next);
             scheduleMapDraw(next, getState());
@@ -3524,7 +3630,9 @@ function renderPanel(id, panel, state) {
         techniques: renderTechniques, quests: renderQuests, rank: renderRank, groups: renderGroups,
         household: renderHousehold, map: renderMap, npcs: renderNpcs, mail: renderMailbox, music: renderMusic,
     };
+    capturePanelScroll(id, panel);
     renderers[id]?.(panel, state);
+    restorePanelScroll(id, panel);
 }
 
 function renderAll(state = getState()) {
@@ -4625,13 +4733,13 @@ function renderNpcs(panel, state) {
     const detail = selected ? renderNpcDossier(selected, linkedContact) : `<section class="tretaresia-npc-empty-dossier"><i class="fa-solid fa-address-card"></i><p>${html(tr('Only friendly NPCs appear here.'))}</p></section>`;
     panel.innerHTML = `${heading('NPC Codex', `${visibleNpcs.length} ${tr('Friendly NPCs').toLowerCase()}`, 'fa-solid fa-users')}
         <p class="tretaresia-social-note"><i class="fa-solid fa-shield-heart"></i>${html(tr('Hostile NPCs are excluded from the list.'))}</p>
-        <div class="tretaresia-npc-layout"><aside class="tretaresia-npc-index"><div class="tretaresia-section-label"><i class="fa-solid fa-list"></i><span>${html(tr('NPCs'))}</span></div>
-            <div class="tretaresia-npc-list">${list}</div><details class="tretaresia-editor tretaresia-npc-add"><summary><i class="fa-solid fa-user-plus"></i> ${html(tr('Add NPC'))}</summary>
+        <div class="tretaresia-npc-layout"><aside class="tretaresia-npc-index" data-rpg-scroll-key="npc-index"><div class="tretaresia-section-label"><i class="fa-solid fa-list"></i><span>${html(tr('NPCs'))}</span></div>
+            <div class="tretaresia-npc-list" data-rpg-scroll-key="npc-list">${list}</div><details class="tretaresia-editor tretaresia-npc-add"><summary><i class="fa-solid fa-user-plus"></i> ${html(tr('Add NPC'))}</summary>
             <form data-form="npc-new" class="tretaresia-form-grid">${input('Name', 'name', '')}${input('Title', 'title', '')}${input('Faction', 'faction', '')}${input('Relationship', 'relationship', 'Acquaintance')}${input('Current location', 'location', 'Unknown')}${npcLifeModeField('Active')}
             <label class="tretaresia-checkbox-field"><input type="checkbox" name="mapVisible"><span>${html(tr('Show on World Map'))}</span></label>
             <label class="tretaresia-checkbox-field"><input type="checkbox" name="linkContact" value="yes"><span>${html(tr('Link to Mailbox'))}</span></label>
             <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add NPC'))}</button></form></details></aside>
-            <div class="tretaresia-npc-dossier">${detail}</div></div>`;
+            <div class="tretaresia-npc-dossier" data-rpg-scroll-key="npc-dossier">${detail}</div></div>`;
     void hydrateNpcPortraits(panel, state);
 }
 
@@ -5840,7 +5948,7 @@ async function onPanelClick(event) {
         }
         case 'select-npc':
             selectedNpcId = id;
-            renderNpcs(document.querySelector('[data-panel="npcs"]'), getState());
+            renderPanel('npcs', document.querySelector('[data-panel="npcs"]'), getState());
             break;
         case 'delete-npc': {
             const entry = state.npcs.find(value => value.id === id);
@@ -7008,7 +7116,7 @@ function analyzerPrompt(state, transcript) {
     return `Review only the latest completed Tretaresia role-play turn and return a small state patch.
 
 CURRENT STATE:
-${JSON.stringify(aiState(state))}
+${JSON.stringify(aiState(state, { privateTracker: true }))}
 
 LATEST TURN:
 ${transcript}
@@ -7143,12 +7251,14 @@ function finishIntroGate() {
 }
 function openInterface() {
     buildInterface();
+    closeHostWandMenu();
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     const panel = document.getElementById('tretaresia-rpg-panel');
     if (!overlay || !panel) return;
     clearTimeout(introTimer);
     previousFocusedElement = document.activeElement;
     overlay.classList.remove('is-closing');
+    installAstraSurfaceCompatibility(overlay);
     overlay.classList.add('is-open', 'is-opening');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.classList.add('tretaresia-rpg-open');
@@ -7159,7 +7269,11 @@ function openInterface() {
         console.error('[Tretaresia RPG] Could not render the interface.', error);
         notify('error', 'Tretaresia RPG opened, but one of its modules could not render. Check the browser console.');
     }
-    requestAnimationFrame(() => panel.focus());
+    requestAnimationFrame(() => {
+        panel.focus({ preventScroll: true });
+        const active = overlay.querySelector('[data-panel].is-active');
+        if (active?.dataset.panel) restorePanelScroll(active.dataset.panel, active);
+    });
     if (introGateDone || matchMedia('(prefers-reduced-motion: reduce)').matches) finishIntroGate();
     else runIntroGate(overlay);
     introTimer = setTimeout(() => overlay.classList.remove('is-opening'), matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 720);
@@ -7413,7 +7527,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.21.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.22.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

@@ -4844,6 +4844,47 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
     }
 }
 
+/* v0.22.0 — AstraProjecta/Vaul gesture isolation and stable native scrolling. */
+#tretaresia-rpg-overlay[data-astra-extension-surface="tretaresia-rpg"] {
+    height: var(--tretaresia-viewport-height, 100dvh) !important;
+    max-height: var(--tretaresia-viewport-height, 100dvh) !important;
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+    isolation: isolate;
+}
+
+#tretaresia-rpg-overlay #tretaresia-rpg-panel,
+#tretaresia-rpg-overlay .tretaresia-app-shell {
+    min-height: 0 !important;
+    max-height: var(--tretaresia-viewport-height, 100dvh) !important;
+}
+
+#tretaresia-rpg-overlay .tretaresia-rpg-panel-body {
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: auto !important;
+    overflow-anchor: none;
+}
+
+#tretaresia-rpg-overlay .tretaresia-module-window {
+    touch-action: pan-x !important;
+    overscroll-behavior-x: contain !important;
+}
+
+#tretaresia-rpg-overlay [data-rpg-scroll-key] {
+    min-height: 0;
+    touch-action: pan-y !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: auto !important;
+    overflow-anchor: none;
+}
+
 /* v0.19.3 — compact atlas chrome and one-canvas mobile rendering */
 .tretaresia-map-layout.has-fullscreen-map {
     display: none !important;
