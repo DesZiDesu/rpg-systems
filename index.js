@@ -112,9 +112,14 @@ const WORLD_TILE_LEVELS = [
     { z: 3, width: 4096, height: 3072, columns: 8, rows: 6 },
 ];
 const MAP_COARSE_POINTER = Boolean(globalThis.matchMedia?.('(pointer: coarse)')?.matches);
-const MAP_TILE_CACHE_LIMIT = MAP_COARSE_POINTER ? 18 : 48;
-const MAP_TILE_LOAD_LIMIT = MAP_COARSE_POINTER ? 4 : 8;
-const MAP_DRAW_INTERVAL = MAP_COARSE_POINTER ? 32 : 16;
+// Mobile Safari is far more sensitive to decoded image memory and concurrent
+// image decodes than desktop browsers. Keep only the active atlas/lighting
+// context, use a deliberately small LRU, and never decode a wall of tiles at
+// once while the user is trying to pan.
+const MAP_TILE_CACHE_LIMIT = MAP_COARSE_POINTER ? 8 : 32;
+const MAP_TILE_LOAD_LIMIT = MAP_COARSE_POINTER ? 2 : 6;
+const MAP_DRAW_INTERVAL = 16;
+const MAP_INTERACTION_SETTLE = 140;
 const atlasPoint = (x, y) => [
     Math.round(x / SOURCE_MAP_WIDTH * WORLD_MAP_WIDTH),
     Math.round(y / SOURCE_MAP_HEIGHT * WORLD_MAP_HEIGHT),
@@ -743,10 +748,11 @@ const DEFAULT_SETTINGS = Object.freeze({
     notifyQuests: true,
     autoContinuity: true,
     showNpcMapMarkers: true,
+    mapHdMode: false,
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.19.3';
+const LAUNCHER_BIND_VERSION = '0.20.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -881,6 +887,7 @@ let mapQueuedPanel = null;
 let mapQueuedState = null;
 let mapInteracting = false;
 let mapInteractionEndTimer = 0;
+let mapGestureBase = null;
 let mapRenderedPoints = [];
 let mapResizeObserver = null;
 let mapFullscreen = false;
@@ -1000,6 +1007,7 @@ function defaultState() {
             status: 'Idle', origin: '', destination: '', route: 'Road', totalDays: 0, remainingDays: 0, notes: '',
             originX: null, originY: null, originContinent: '', originRegion: '', destinationX: null, destinationY: null,
             destinationContinent: '', destinationRegion: '', destinationPlace: '', startedAtWorldMinutes: null, lastWorldMinutes: null,
+            trackedUserTurns: 0, lastUserProgressMessage: '',
         },
         scene: { position: 'Unknown', weather: 'Unknown', temperature: null },
         sceneMap: { activeMapId: '', activeFloorId: '', playerRoomId: '', maps: [] },
@@ -1042,7 +1050,7 @@ function getSettings() {
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
-    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'autoContinuity', 'showNpcMapMarkers']) settings[key] = Boolean(settings[key]);
+    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'autoContinuity', 'showNpcMapMarkers', 'mapHdMode']) settings[key] = Boolean(settings[key]);
     return settings;
 }
 
@@ -1684,6 +1692,8 @@ function normalize(candidate, base = defaultState()) {
         destinationPlace: text(travel.destinationPlace, namedTravelDestination?.name || travel.destination, 160),
         startedAtWorldMinutes: optionalNumber(travel.startedAtWorldMinutes, currentWorldMinutes, 0, 9999999999),
         lastWorldMinutes: optionalNumber(travel.lastWorldMinutes, currentWorldMinutes, 0, 9999999999),
+        trackedUserTurns: number(travel.trackedUserTurns, 0, 0, 999999),
+        lastUserProgressMessage: text(travel.lastUserProgressMessage, '', 180),
     };
     const scene = source.scene && typeof source.scene === 'object' ? source.scene : {};
     result.scene = {
@@ -2146,7 +2156,7 @@ function legacyPatchInstructions() {
         'Proficiency rules: increment a used or trained power system or combat discipline by 1-3 when the reply confirms genuine practice or successful use; use 4-8 only for a breakthrough. Do not increase unused proficiencies. When a confirmed power or combat style is not in the preset lists, upsert proficiencies.customMagic or proficiencies.customSword with {id,name,proficiency,description,iconKey}; later upserts may contain only id/name and changed fields.',
         'Tretaresia sensing rule: a power can normally be sensed only by someone who wields the same kind. Formless Aura cannot be sensed by anyone. Divine Mana can be perceived only by another Divine Mana wielder. Never let observers identify a hidden power without valid same-kind perception or direct evidence.',
         'Power canon: False Magic is learnable structured human magic that normally needs a staff, wand, or medium. True Magic is a lost stronger art requiring deep mana understanding and no medium. Aura is innate and commonly carries one birth-given Origin skill. Formless Aura is exceptionally rare and wholly undetectable. Blood Aura is vampiric and a turning may preserve, mutate, split, or erase the prior power. Sage Mana is lost transformative training that can refill from natural energy. Divine Mana may switch among power modes. Constructs allow those without usable Aura to wield a forged ability; primordial Divine Constructs choose one owner and cannot be copied, remade, or manufactured.',
-        'Travel rules: Tretaresia distances take days, months, or years. Roads can produce villages, towns, waystations and caravans; off-road travel may reveal secret dungeons, lost villages, cults or worse. Almost the entire 2400 by 1800 world-coordinate atlas is travelable, including unnamed wilderness and sea routes. While travel.status is Traveling or Delayed, reduce travel.remainingDays only by elapsed story days and update worldClock. Do not change the current continent/place to the destination until arrival is confirmed. At arrival set travel.status to Arrived, remainingDays to 0, update location fields including location.mapX and location.mapY when the destination coordinates are known, and add location.discovered. Update location.heading from 0 north clockwise when a clear travel direction is established.',
+        'Travel rules: Tretaresia distances take days, months, or years. Roads can produce villages, towns, waystations and caravans; off-road travel may reveal secret dungeons, lost villages, cults or worse. Almost the entire 2400 by 1800 world-coordinate atlas is travelable, including unnamed wilderness and sea routes. Read the latest user role-play action as well as the completed reply. While travel.status is Traveling or Delayed, update worldClock and reduce travel.remainingDays whenever narration confirms elapsed time or continued movement; never copy a stale remainingDays over newer progress already stored by the local main-chat tracker. Do not change the current continent/place to the destination until arrival is confirmed. At arrival set travel.status to Arrived, remainingDays to 0, update location fields including location.mapX and location.mapY when the destination coordinates are known, and add location.discovered. Update location.heading from 0 north clockwise when a clear travel direction is established.',
         'Dungeon and rank rules: dungeonRank must be one of Unranked, E-, E, E+, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+, S-, S, S+, SS. Adventurer ranks are Rookie, Basic, Intermediate, Ember, and Custom Rank; a Custom Rank name is individually invented by an assessor and should be recorded in progression.customRankName.',
         'Currency rules: the Central Continent generally shares a common currency, but other regions and non-human lands may use different money. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
@@ -2179,7 +2189,7 @@ function patchInstructions() {
         'NPCs: upsert only relevant named friendly NPCs or confirmed changes; preserve npcIndex id. Hostile/enemy/foe/antagonist/villain/threat NPCs stay out of Codex and social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
         'Living NPC world: when the world clock meaningfully advances, update 1-3 plausible off-screen Active NPC lives with a partial npcs upsert using id plus location,mapX,mapY,activity,activityUpdatedDay. Prioritize mapVisible, Party/Household/Guild, recently mentioned NPCs; Story only changes only when involved, Paused never changes automatically. Respect occupation, home, duties, relationships, distance, travel time, danger, and established events. Do not teleport or manufacture dramatic events. Party members normally follow the player unless separation is established. A new location needs atlas-consistent coordinates; if only activity changes, preserve coordinates.',
         'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/accepted invite/leave/expulsion/create/dissolve/rank/marriage/partner/child/parent/guardian/family-role change must update this same patch. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first ["upsert","npcs",{"id":"lysa","name":"Lysa","relationship":"Ally"}], then the membership op. Guild member includes guildId or exact guildName. Household member includes npcId plus role; delete the same collection when a member leaves. Party is free. UI Guild creation already charges locally; a story-created Guild op charges the fee automatically and fails when unaffordable. Household is family, not a faction.',
-        'Travel/scene: journeys take days/months/years. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates, new places use a consistent plausible point. Every reply that advances a journey must update worldClock day/time and remainingDays by elapsed story time. The extension interpolates the player marker from stored endpoints, so never keep the clock frozen after narrated travel and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed phase/place/detail/heading/position/weather/temperature; never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
+        'Travel/scene: journeys take days/months/years. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates, new places use a consistent plausible point. Read both the latest user role-play action and your completed reply for movement, elapsed hours/days, stated percentages, delays, resumptions, reroutes, and arrival. Every reply that narratively advances an active journey must update worldClock day/time and remainingDays; never repeat stale travel values merely because no map UI button was pressed. The extension also applies a deterministic turn fallback and interpolates the player marker from stored endpoints, so preserve any newer/lower remainingDays already present, never move progress backwards, and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed phase/place/detail/heading/position/weather/temperature; never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
     ].join('\n');
 }
@@ -2559,6 +2569,12 @@ function synchronizeWorldState(state, previous = state) {
     if (moving) {
         const previousClock = optionalNumber(previousTravel.lastWorldMinutes, now, 0, 9999999999);
         const elapsedDays = Math.max(0, now - previousClock) / 1440;
+        if (['Preparing', 'Traveling', 'Delayed'].includes(previousTravel.status)) {
+            travel.remainingDays = Math.min(
+                number(travel.remainingDays, previousTravel.remainingDays, 0, 999999),
+                number(previousTravel.remainingDays, travel.remainingDays, 0, 999999),
+            );
+        }
         if (elapsedDays > 0 && ['Preparing', 'Traveling', 'Delayed'].includes(previousTravel.status)) {
             const clockRemaining = Math.max(0, number(previousTravel.remainingDays, travel.remainingDays, 0, 999999) - elapsedDays);
             travel.remainingDays = Math.min(number(travel.remainingDays, clockRemaining, 0, 999999), clockRemaining);
@@ -2925,6 +2941,129 @@ function estimatedTravelDays(state, destination, route) {
     return Math.max(1, Math.ceil(distance / speed));
 }
 
+function userTravelMessageKey(messageId, message) {
+    return text(`${messageId ?? ''}:${message?.send_date || message?.mes || ''}`, '', 180);
+}
+
+function normalizedTravelText(value) {
+    const thaiDigits = '๐๑๒๓๔๕๖๗๘๙';
+    return text(value, '', 12000).replace(/[๐-๙]/g, digit => String(thaiDigits.indexOf(digit)));
+}
+
+function travelElapsedDaysFromText(source) {
+    const pattern = /(\d+(?:\.\d+)?)\s*(hours?|hrs?|days?|weeks?|months?|ชั่วโมง|ชม\.?|วัน|สัปดาห์|อาทิตย์|เดือน)/gi;
+    let elapsed = 0;
+    for (const match of source.matchAll(pattern)) {
+        const amount = Number(match[1]);
+        if (!Number.isFinite(amount) || amount <= 0) continue;
+        const unit = match[2].toLocaleLowerCase();
+        elapsed += /hour|hr|ชั่วโมง|ชม/.test(unit) ? amount / 24
+            : /week|สัปดาห์|อาทิตย์/.test(unit) ? amount * 7
+                : /month|เดือน/.test(unit) ? amount * 30 : amount;
+    }
+    return elapsed;
+}
+
+function advanceActiveTravelFromUserMessage(messageId, message, current = getState()) {
+    if (!['Preparing', 'Traveling', 'Delayed'].includes(current.travel.status)) return null;
+    const source = normalizedTravelText(message?.mes);
+    if (!source || /^\s*(?:ooc\b|\/|#|<\/?.+?>\s*$)/i.test(source)) return null;
+    const key = userTravelMessageKey(messageId, message);
+    if (key && current.travel.lastUserProgressMessage === key) return null;
+
+    const next = clone(current);
+    const travel = next.travel;
+    const total = Math.max(.01, number(travel.totalDays, 0, 0, 999999));
+    const remaining = number(travel.remainingDays, total, 0, total);
+    const destination = text(travel.destinationPlace || travel.destination, '', 180);
+    const escapedDestination = destination.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const destinationMentioned = escapedDestination ? new RegExp(escapedDestination, 'i').test(source) : false;
+    const arrivalWords = /\b(?:arrive[ds]?|reache[ds]?|reaching|entered?)\b|(?:มาถึง|เดินทางถึง|ไปถึง|เข้าสู่|เข้าเขต|ถึงจุดหมาย|ถึงปลายทาง)/i.test(source);
+    const deniedArrival = /\b(?:not|haven't|hasn't|didn't)\s+(?:arrive|reach)|(?:ยังไม่ถึง|ไม่ได้ไปถึง|ไม่ได้มาถึง)/i.test(source);
+    const genericDestination = /\b(?:destination|destination point)\b|(?:จุดหมาย|ปลายทาง)/i.test(source);
+    const arrived = arrivalWords && !deniedArrival && (destinationMentioned || genericDestination);
+    const stopWords = /\b(?:stop|pause|halt)(?:ping|ped)?\s+(?:the\s+)?(?:trip|journey|travel)\b|(?:หยุด|พัก|ชะลอ)(?:การ)?เดินทาง/i.test(source);
+    const resumeWords = /\b(?:resume[ds]?|continue[ds]?)\s+(?:the\s+)?(?:trip|journey|travel)|(?:เดินทางต่อ|ออกเดินทางต่อ|ไปต่อ|มุ่งหน้าต่อ)/i.test(source);
+    const movementWords = /\b(?:walk|ride|sail|travel|journey|continue|proceed|advance|cross|pass)(?:s|ed|ing)?\b|(?:เดิน|ขี่|ล่อง|แล่น|เดินทาง|มุ่งหน้า|เคลื่อน|ผ่าน|ข้าม|ไปต่อ)/i.test(source);
+    const travelContext = movementWords || destinationMentioned || genericDestination
+        || /\b(?:trip|journey|route)\b|(?:การเดินทาง|เส้นทาง)/i.test(source);
+    const percentMatch = travelContext ? source.match(/(\d{1,3}(?:\.\d+)?)\s*(?:%|เปอร์เซ็นต์)/i) : null;
+    const explicitProgress = percentMatch ? Math.min(100, Math.max(0, Number(percentMatch[1]))) : null;
+    const timePassage = movementWords || /\b(?:after|later|passed|elapsed)\b|(?:ผ่านไป|ล่วงเลย|เวลาผ่าน|ต่อมา)/i.test(source);
+    const elapsedDays = timePassage ? travelElapsedDaysFromText(source) : 0;
+
+    travel.lastUserProgressMessage = key;
+    travel.trackedUserTurns = number(travel.trackedUserTurns, 0, 0, 999999) + 1;
+    if (stopWords && !resumeWords) travel.status = 'Delayed';
+    else if (resumeWords && travel.status === 'Delayed') travel.status = 'Traveling';
+
+    if (arrived) {
+        travel.status = 'Arrived';
+        travel.remainingDays = 0;
+    } else {
+        let nextRemaining = remaining;
+        if (explicitProgress !== null) nextRemaining = Math.min(nextRemaining, total * (1 - explicitProgress / 100));
+        if (elapsedDays > 0) nextRemaining = Math.max(0, nextRemaining - elapsedDays);
+        // Narrative movement advances faster. Every other substantive main-chat
+        // role-play turn still advances one percent, so a journey can never stay
+        // frozen for hundreds of messages when the model omits clock fields.
+        const turnAdvance = stopWords && !resumeWords ? 0 : total * (movementWords || resumeWords ? .03 : .01);
+        nextRemaining = Math.max(0, nextRemaining - turnAdvance);
+        travel.remainingDays = Math.min(remaining, nextRemaining);
+        if (travel.remainingDays <= .0001) {
+            travel.remainingDays = 0;
+            travel.status = 'Arrived';
+        }
+    }
+    travel.notes = getSettings().language === 'th'
+        ? 'ติดตามอัตโนมัติจากข้อความโรลเพลย์ใน main chat โดยไม่เรียก API เพิ่ม'
+        : 'Automatically tracked from main-chat role-play with no extra API call.';
+    synchronizeWorldState(next, current);
+    const justArrived = current.travel.status !== 'Arrived' && next.travel.status === 'Arrived';
+    if (justArrived) appendJourneyLog(next, {
+        text: `Arrived at ${next.travel.destinationPlace || next.travel.destination || next.location.place}.`,
+        place: next.location.place,
+        day: next.worldClock.dayName || `Day ${next.worldClock.day}`,
+        kind: 'travel',
+    });
+    return next;
+}
+
+function catchUpActiveTravelFromChat(current, context, currentMessageId) {
+    if (!['Preparing', 'Traveling', 'Delayed'].includes(current.travel.status)
+        || current.travel.trackedUserTurns > 0 || current.travel.lastUserProgressMessage) return null;
+    const numericId = Number(currentMessageId);
+    const end = Number.isInteger(numericId) && numericId >= 0 ? numericId + 1 : context.chat?.length || 0;
+    const history = (context.chat || []).slice(0, end).map((message, index) => ({ message, index }))
+        .filter(entry => entry.message?.is_user && !entry.message?.is_system);
+    const destinationId = mapLocationByName(current.travel.destinationPlace || current.travel.destination, current)?.id;
+    let start = -1;
+    for (let index = history.length - 1; index >= 0; index -= 1) {
+        const intent = inferUserTravelIntent(history[index].message.mes, current);
+        if (intent && (!destinationId || intent.destination.id === destinationId)) {
+            start = index;
+            break;
+        }
+    }
+    const backlog = history.slice(start >= 0 ? start + 1 : Math.max(0, history.length - 100)).slice(-100);
+    let next = current;
+    for (const entry of backlog) {
+        const advanced = advanceActiveTravelFromUserMessage(entry.index, entry.message, next);
+        if (advanced) next = advanced;
+        if (next.travel.status === 'Arrived') break;
+    }
+    return next === current ? null : next;
+}
+
+async function catchUpTravelHistory() {
+    const settings = getSettings();
+    const context = SillyTavern.getContext();
+    if (!settings.autoTrack || !context.getCurrentChatId?.() || !context.chat?.length) return false;
+    const current = getState();
+    const caughtUp = catchUpActiveTravelFromChat(current, context, context.chat.length - 1);
+    return caughtUp ? persistState(caughtUp, 'user-travel-history-catchup') : false;
+}
+
 async function processUserTravelIntent(messageId) {
     const settings = getSettings();
     if (!settings.autoTrack) return false;
@@ -2933,13 +3072,22 @@ async function processUserTravelIntent(messageId) {
     const message = Number.isInteger(numericId) && numericId >= 0 ? context.chat?.[numericId]
         : [...(context.chat || [])].reverse().find(entry => entry?.is_user && !entry?.is_system);
     if (!message?.is_user || message.is_system) return false;
-    const intent = inferUserTravelIntent(message.mes, getState());
-    if (!intent) return false;
     const current = getState();
+    const intent = inferUserTravelIntent(message.mes, current);
+    if (!intent) {
+        const caughtUp = catchUpActiveTravelFromChat(current, context, messageId);
+        if (caughtUp) return persistState(caughtUp, 'user-travel-history-catchup');
+        const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
+        return advanced ? persistState(advanced, 'user-travel-progress') : false;
+    }
     const alreadyHeadingThere = ['Preparing', 'Traveling', 'Delayed'].includes(current.travel.status)
         && mapLocationByName(current.travel.destinationPlace || current.travel.destination, current)?.id === intent.destination.id;
     const alreadyThere = current.location.place === intent.destination.name && !alreadyHeadingThere;
-    if (alreadyHeadingThere || alreadyThere) return false;
+    if (alreadyHeadingThere) {
+        const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
+        return advanced ? persistState(advanced, 'user-travel-progress') : false;
+    }
+    if (alreadyThere) return false;
     const next = clone(current);
     const totalDays = estimatedTravelDays(next, intent.destination, intent.route);
     const origin = next.location.place || next.location.region || 'Unknown';
@@ -2962,6 +3110,8 @@ async function processUserTravelIntent(messageId) {
         destinationPlace: intent.destination.name,
         startedAtWorldMinutes: worldClockMinutes(next.worldClock),
         lastWorldMinutes: worldClockMinutes(next.worldClock),
+        trackedUserTurns: 0,
+        lastUserProgressMessage: userTravelMessageKey(messageId, message),
     };
     next.journal.push({
         id: uid(),
@@ -3881,18 +4031,13 @@ function renderNpcMapControls(state) {
 
 function mapWorldToolbar(state, selected, fullscreen = false) {
     const atlas = viewedAtlas(state);
-    const variant = worldMapVariant(state);
     return `<div class="tretaresia-map-toolbar" data-map-toolbar>
         <label class="tretaresia-map-world-select" title="${html(atlas.name)}"><i class="fa-solid fa-earth-asia"></i><span>${html(tr('World'))}</span>
             <select data-map-world-select aria-label="${html(tr('World map'))}">${Object.values(WORLD_ATLASES).map(entry =>
                 `<option value="${entry.id}"${entry.id === atlas.id ? ' selected' : ''}>${html(entry.id === 'present-world' ? tr('Present World') : 'ALTERNATE')}</option>`).join('')}</select>
         </label>
         <div class="tretaresia-map-toolbar-readouts">
-            <span class="tretaresia-map-time"><i class="fa-solid fa-${variant === 'night' ? 'moon' : 'sun'}"></i><b>${html(tr(variant === 'night' ? 'Night map' : 'Day map'))}</b></span>
-            <span><i class="fa-solid fa-layer-group"></i><b data-map-lod>WORLD</b></span>
             <span><i class="fa-solid fa-magnifying-glass"></i><b data-map-zoom>100%</b></span>
-            <span><i class="fa-solid fa-crosshairs"></i><b data-map-readout>1200 E · 0900 S</b></span>
-            <span class="tretaresia-map-selected-readout"><i class="fa-solid fa-location-dot"></i><b>${html(selected.name)}</b></span>
         </div>
         <button class="tretaresia-map-fullscreen-icon" type="button" data-action="map-fullscreen"
             title="${html(tr(fullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}" aria-label="${html(tr(fullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}">
@@ -3906,8 +4051,7 @@ function mapSurfaceMarkup(state, selected, fullscreen = false) {
     const variant = worldMapVariant(state);
     return `<div class="tretaresia-map-surface${fullscreen ? ' is-viewer' : ''}">
         <div class="tretaresia-map-frame${fullscreen ? ' is-viewer' : ''}" data-map-variant="${variant}" data-map-world="${atlas.id}" data-map-surface="${fullscreen ? 'fullscreen' : 'embedded'}">
-            <canvas class="tretaresia-world-map" role="img" aria-label="${html(`Interactive map of ${atlas.name}; tap or click anywhere to select exact coordinates`)}"></canvas>
-            <span class="tretaresia-map-ping" data-map-ping hidden></span>
+            <canvas class="tretaresia-world-map" role="img" aria-label="${html(`Interactive atlas of ${atlas.name}; drag to pan and pinch to zoom`)}"></canvas>
         </div>
         <div class="tretaresia-map-control-panel" aria-label="${html(tr('Map controls'))}">${mapWorldToolbar(state, selected, fullscreen)}</div>
     </div>`;
@@ -3927,61 +4071,27 @@ function selectViewedWorld(nextWorldId, state = getState()) {
 function renderMap(panel, state) {
     if (!panel) return;
     const atlas = viewedAtlas(state);
-    const locations = worldLocationsFor(state, true);
     const viewingCurrentWorld = atlas.id === storyWorldId(state);
-    const storyCurrent = currentMapPoint(state);
-    const current = viewingCurrentWorld ? storyCurrent : locations[0];
-    if (!mapLocation(mapSelectionId, state, true) && !mapDraftPoint) mapSelectionId = current.id;
-    const selectedLocation = mapLocation(mapSelectionId, state, true);
-    const selected = mapDraftPoint ? {
-        id: '__coordinates__', name: mapDraftPoint.name || 'Uncharted coordinate', x: mapDraftPoint.x, y: mapDraftPoint.y,
-        continent: mapDraftPoint.continent || 'Open Ocean', region: mapDraftPoint.region || 'Uncharted Reach',
-        zone: mapDraftPoint.zone || 'Unknown Zone', kind: 'coordinate', tier: 0,
-    } : selectedLocation || current;
-    const mapVariant = worldMapVariant(state);
-    const viewedPins = state.location.pins.filter(pin => (pin.worldId || WORLD_ATLAS.id) === atlas.id);
-    const discovered = new Set(discoveredLocationsFor(state, atlas.id));
-    const pinIds = new Set(viewedPins.map(pin => pin.locationId));
-    const exactSelected = selected.id === '__coordinates__';
-    const selectedRecorded = exactSelected || discovered.has(selected.name);
-    const selectedPinned = exactSelected
-        ? viewedPins.some(pin => pin.x !== null && Math.hypot(pin.x - selected.x, pin.y - selected.y) < 12)
-        : pinIds.has(selected.id);
-    const continents = [...new Set(locations.map(location => location.continent))];
-    const travelMarkup = viewingCurrentWorld ? `
-        <form data-form="travel" class="tretaresia-travel-form"><label class="tretaresia-field"><span>${html(tr('Destination'))}</span><select name="destination">
-            ${exactSelected ? `<option value="__coordinates__" selected>${html(selected.name)} (${coordinatesLabel(selected.x, selected.y)})</option>` : ''}
-            ${continents.map(continent => `<optgroup label="${html(continent)}">${locations.filter(location => location.continent === continent).map(location =>
-                `<option value="${location.id}"${location.id === selected.id ? ' selected' : ''}>${html(location.name)}</option>`).join('')}</optgroup>`).join('')}</select></label>
-            ${input('Exact place / scene', 'place', selected.name)}${input('Location detail', 'detail', state.location.detail)}
-            ${select('Travel route', 'route', ['Road', 'Caravan', 'Sea', 'Off-road', 'Unknown'], 'Road')}${input('Estimated travel days', 'totalDays', 7, 'number', 'min="1" max="999999"')}
-            <input type="hidden" name="mapX" value="${selected.x}"><input type="hidden" name="mapY" value="${selected.y}"><input type="hidden" name="continent" value="${html(selected.continent)}"><input type="hidden" name="region" value="${html(selected.region)}">
-            <button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-route"></i> ${html(tr('Begin journey'))}</button></form>`
-        : `<div class="tretaresia-map-browse-note"><i class="fa-solid fa-eye"></i><span><b>${html(tr('Atlas browsing mode'))}</b>${html(tr('Travel becomes available when the story enters this world.'))}</span></div>`;
+    const selected = viewingCurrentWorld ? currentMapPoint(state) : worldLocationsFor(state, true)[0];
+    const moving = viewingCurrentWorld && ['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status);
+    const progress = Math.round(travelProgress(state) * 100);
+    // Location catalogs stay in canonical state and in the AI prompt, but the
+    // atlas DOM no longer creates hundreds of destination options, pin rows,
+    // or location controls. Main-chat role-play is the travel controller.
+    const travelMarkup = moving || viewingCurrentWorld && state.travel.status === 'Arrived' ? `
+        <section class="tretaresia-map-journey-strip" data-status="${html(state.travel.status.toLowerCase())}">
+            <span><i class="fa-solid fa-route"></i><b>${html(state.travel.origin || 'Unknown')}</b><i class="fa-solid fa-arrow-right-long"></i><b>${html(state.travel.destinationPlace || state.travel.destination || state.location.place)}</b></span>
+            <div class="tretaresia-map-journey-track" style="--journey-progress:${progress}%"><i></i><strong>${progress}%</strong></div>
+            <small>${html(moving ? `${formatTravelDays(state.travel.remainingDays)} ${tr('days')} ${tr('Remaining travel').toLocaleLowerCase()}` : state.travel.status)}</small>
+        </section>` : '';
 
     panel.innerHTML = `${heading(atlas.name, `${tr(atlas.era)} · ${viewingCurrentWorld ? state.location.continent + ' · ' + state.location.region : tr('Atlas browsing mode')}`, 'fa-solid fa-earth-asia')}
-<div class="tretaresia-map-layout${mapFullscreen ? ' has-fullscreen-map' : ''}">
+<div class="tretaresia-map-layout tretaresia-performance-map${mapFullscreen ? ' has-fullscreen-map' : ''}">
     ${mapFullscreen ? '' : mapSurfaceMarkup(state, selected, false)}
-    <aside class="tretaresia-map-sidebar"><article class="tretaresia-location-dossier"><span class="tretaresia-eyebrow">${html(tr('Selected location'))}</span><h4>${html(selected.name)}</h4>
-        <p>${html(selected.continent)}</p><div class="tretaresia-zone-badge" data-zone="${html(selected.zone)}"><i class="fa-solid fa-shield"></i>${html(tr(selected.zone))}</div>
-        <dl><div><dt>${html(tr('World'))}</dt><dd>${html(atlas.name)}</dd></div>
-        <div><dt>${html(tr('Era'))}</dt><dd>${html(tr(atlas.era))}</dd></div>
-        <div><dt>${html(tr('Map lighting'))}</dt><dd>${html(tr(mapVariant === 'night' ? 'Night map' : 'Day map'))}</dd></div>
-        <div><dt>${html(tr('Region'))}</dt><dd>${html(selected.region || LOCATION_REGIONS[selected.name] || selected.name)}</dd></div>
-        <div><dt>World coordinates</dt><dd>${coordinatesLabel(selected.x, selected.y)}</dd></div>
-        <div><dt>${html(tr('Discovery'))}</dt><dd>${html(tr(selectedRecorded ? 'Recorded' : 'Unexplored'))}</dd></div>
-        <div><dt>${html(tr('Marker'))}</dt><dd>${html(tr(selectedPinned ? 'Pinned' : 'None'))}</dd></div></dl>
-        ${viewingCurrentWorld ? `<p class="tretaresia-exact-position"><i class="fa-solid fa-location-crosshairs"></i><span><b>Your exact location</b>${html(storyCurrent.name)} · ${coordinatesLabel(storyCurrent.x, storyCurrent.y)} · ${Math.round(storyCurrent.heading)}°</span></p>` : ''}</article>
-        ${viewingCurrentWorld ? renderNpcMapControls(state) : ''}
-        ${travelMarkup}
-        <form data-form="map-pin" class="tretaresia-pin-form">${input('Marker label', 'label', selected.name)}${input('Marker note', 'note', '')}
-            <input type="hidden" name="worldId" value="${atlas.id}"><input type="hidden" name="locationId" value="${exactSelected ? '' : selected.id}"><input type="hidden" name="mapX" value="${selected.x}"><input type="hidden" name="mapY" value="${selected.y}">
-            <input type="hidden" name="continent" value="${html(selected.continent)}"><input type="hidden" name="region" value="${html(selected.region)}"><button class="tretaresia-secondary-button" type="submit"><i class="fa-solid fa-map-pin"></i> ${html(tr('Mark location'))}</button></form>
-        ${viewedPins.length ? `<div class="tretaresia-pin-list">${viewedPins.map(pin => `<button type="button" data-action="select-pin" data-pin-id="${html(pin.id)}" data-location-id="${html(pin.locationId)}">
-            <i class="fa-solid fa-map-pin"></i><span>${html(pin.label)}<small>${html(pin.note || mapLocation(pin.locationId, state, true)?.name || coordinatesLabel(pin.x, pin.y))}</small></span></button>`).join('')}</div>` : ''}</aside>
+    ${travelMarkup}
 </div>
 ${mapFullscreen ? `<section class="tretaresia-map-window" role="dialog" aria-modal="true" aria-label="${html(atlas.name)}">
-    <header><div><span>${html(tr('World map'))}</span><h3>${html(atlas.name)}</h3><small>${html(selected.name)} · ${coordinatesLabel(selected.x, selected.y)}</small></div>
+    <header><div><span>${html(tr('World map'))}</span><h3>${html(atlas.name)}</h3><small>${html(viewingCurrentWorld ? state.location.continent : tr('Atlas browsing mode'))}</small></div>
         <button type="button" data-action="map-fullscreen" title="${html(tr('Close fullscreen map'))}" aria-label="${html(tr('Close fullscreen map'))}"><i class="fa-solid fa-xmark"></i></button></header>
     <div class="tretaresia-map-window-body">${mapSurfaceMarkup(state, selected, true)}</div>
 </section>` : ''}`;
@@ -4017,7 +4127,9 @@ function worldTileLevel() {
     if (mapView.scale < .82) return WORLD_TILE_LEVELS[0];
     if (mapView.scale < 1.35) return WORLD_TILE_LEVELS[1];
     if (mapView.scale < 2.55) return WORLD_TILE_LEVELS[2];
-    return WORLD_TILE_LEVELS[3];
+    // z3 is 4096x3072. On coarse-pointer/mobile devices it is opt-in so the
+    // default path remains inside Safari's practical decoded-image budget.
+    return MAP_COARSE_POINTER && !getSettings().mapHdMode ? WORLD_TILE_LEVELS[2] : WORLD_TILE_LEVELS[3];
 }
 
 function trimMapTileCache(protectedKey = '') {
@@ -4175,12 +4287,9 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     const worldId = viewedWorldId(state);
     activateMapTileContext(worldId, variant);
     const viewingCurrentWorld = worldId === storyWorldId(state);
-    const locations = worldLocationsFor(state, true);
     const continents = worldContinentsFor(state, true);
-    const viewedPins = state.location.pins.filter(pin => (pin.worldId || WORLD_ATLAS.id) === worldId);
     canvas.dataset.mapVariant = variant;
     canvas.dataset.mapWorld = worldId;
-    const detail = mapLod();
     const bounds = mapVisibleBounds();
     const transformX = canvas.width / WORLD_MAP_WIDTH;
     const transformY = canvas.height / WORLD_MAP_HEIGHT;
@@ -4225,119 +4334,17 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     }
 
     context.setTransform(1, 0, 0, 1, 0, 0);
+    mapRenderedPoints = [];
+    // The atlas deliberately renders only continent names plus lightweight
+    // player/NPC positions. All 124/306 destination records remain available
+    // to travel, quests, NPC knowledge and the main-chat state prompt.
     if (!mapInteracting) {
-        drawGraticule(context, canvas, palette, detail);
-        drawVignette(context, canvas, palette);
-    }
-
-    // Keep interaction light on mobile. Full labels and decoration return as soon as
-    // the drag or pinch ends, while the atlas itself continues moving responsively.
-    const showContinentLabels = detail === 0 && !mapInteracting;
-    const showPlaceLabels = detail > 0 && !mapInteracting;
-
-    if (showContinentLabels) {
         for (const continent of continents) {
             const point = mapCanvasPoint(continent.label[0], continent.label[1], canvas.width, canvas.height);
             drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, {
                 size: Math.max(14 * pixelRatio, canvas.width / 74), weight: 800, color: 'rgba(255,248,218,.94)', stroke: 'rgba(7,17,20,.92)',
             });
         }
-    }
-
-    const discovered = new Set(discoveredLocationsFor(state, worldId));
-    const pinIds = new Set(viewedPins.map(pin => pin.locationId));
-    mapRenderedPoints = [];
-    const markerBudget = mapInteracting ? 36 : MAP_COARSE_POINTER ? 64 : 110;
-    const markerPriority = location =>
-        (location.id === mapSelectionId ? 1000 : 0)
-        + (pinIds.has(location.id) ? 500 : 0)
-        + (discovered.has(location.name) ? 250 : 0)
-        + Math.max(0, 3 - location.tier) * 50;
-    const visible = locations.filter(location =>
-        (showPlaceLabels
-            ? location.tier <= detail || location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name)
-            : location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name))
-        && location.x >= bounds.left && location.x <= bounds.right
-        && location.y >= bounds.top && location.y <= bounds.bottom)
-        .sort((a, b) => markerPriority(b) - markerPriority(a))
-        .slice(0, markerBudget);
-
-    for (const location of visible) {
-        const point = mapCanvasPoint(location.x, location.y, canvas.width, canvas.height);
-        if (point.x < -80 || point.y < -50 || point.x > canvas.width + 80 || point.y > canvas.height + 50) continue;
-        const selected = location.id === mapSelectionId;
-        const known = discovered.has(location.name);
-        const size = (location.tier === 0 ? 8 : location.tier === 1 ? 6.5 : 5) * pixelRatio;
-        if (selected) {
-            context.save();
-            context.strokeStyle = rgbaOf(palette.alt, .9);
-            context.lineWidth = 2 * pixelRatio;
-            context.setLineDash([5 * pixelRatio, 4 * pixelRatio]);
-            context.beginPath();
-            context.arc(point.x, point.y, size + 8 * pixelRatio, 0, Math.PI * 2);
-            context.stroke();
-            context.restore();
-        }
-        drawMarkerGlyph(context, point.x, point.y, location.tier,
-            selected ? palette.alt : known ? palette.accent : 'rgba(238,229,190,.78)',
-            'rgba(7,17,20,.94)', size);
-        if (showPlaceLabels && (location.tier <= detail || selected)) {
-            drawMapLabel(context, location.name, point.x, point.y + size + 10 * pixelRatio, {
-                size: (location.tier === 0 ? 11.5 : location.tier === 1 ? 10 : 8.6) * pixelRatio,
-                color: selected ? palette.alt : 'rgba(255,250,229,.94)', stroke: 'rgba(5,14,18,.94)',
-            });
-        }
-        mapRenderedPoints.push({ type: 'location', id: location.id, x: point.x, y: point.y, radius: 24 * pixelRatio });
-    }
-
-    if (viewingCurrentWorld && ['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status)
-        && state.travel.originX !== null && state.travel.originY !== null
-        && state.travel.destinationX !== null && state.travel.destinationY !== null) {
-        const origin = mapCanvasPoint(state.travel.originX, state.travel.originY, canvas.width, canvas.height);
-        const destination = mapCanvasPoint(state.travel.destinationX, state.travel.destinationY, canvas.width, canvas.height);
-        context.save();
-        context.strokeStyle = rgbaOf(palette.alt, .78);
-        context.lineWidth = Math.max(2, 2 * pixelRatio);
-        context.setLineDash([8 * pixelRatio, 7 * pixelRatio]);
-        context.beginPath();
-        context.moveTo(origin.x, origin.y);
-        context.lineTo(destination.x, destination.y);
-        context.stroke();
-        context.setLineDash([]);
-        context.fillStyle = palette.alt;
-        context.beginPath();
-        context.arc(destination.x, destination.y, 5 * pixelRatio, 0, Math.PI * 2);
-        context.fill();
-        context.restore();
-    }
-
-    for (const pin of viewedPins) {
-        const site = mapLocation(pin.locationId, state, true);
-        const x = pin.x ?? site?.x;
-        const y = pin.y ?? site?.y;
-        if (!Number.isFinite(x) || !Number.isFinite(y)
-            || x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) continue;
-        const point = mapCanvasPoint(x, y, canvas.width, canvas.height);
-        context.save();
-        context.fillStyle = palette.alt;
-        context.strokeStyle = palette.halo;
-        context.lineWidth = 2;
-        context.beginPath();
-        context.moveTo(point.x, point.y + 12);
-        context.lineTo(point.x - 6, point.y - 2);
-        context.lineTo(point.x + 6, point.y - 2);
-        context.closePath();
-        context.fill();
-        context.stroke();
-        context.beginPath();
-        context.arc(point.x, point.y - 6, 6, 0, Math.PI * 2);
-        context.fill();
-        context.stroke();
-        context.restore();
-        if (showPlaceLabels) drawMapLabel(context, pin.label, point.x, point.y + 24, {
-            size: 10, color: palette.label, stroke: palette.halo,
-        });
-        mapRenderedPoints.push({ type: 'pin', id: pin.id, x: point.x, y: point.y, radius: 22 });
     }
 
     if (viewingCurrentWorld && getSettings().showNpcMapMarkers) {
@@ -4361,90 +4368,29 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
             context.textBaseline = 'middle';
             context.fillText(entry.name.charAt(0).toUpperCase() || '?', point.x, point.y + .5 * pixelRatio);
             context.restore();
-            if (showPlaceLabels) drawMapLabel(context, entry.name, point.x, point.y + 19 * pixelRatio, {
-                size: 9.5 * pixelRatio, weight: 750, color: npcPoint.partyMember ? palette.alt : palette.accent, stroke: palette.halo,
-            });
             mapRenderedPoints.push({ type: 'npc', id: entry.id, x: point.x, y: point.y, radius: 22 * pixelRatio });
         }
-    }
-
-    if (mapDraftPoint) {
-        const point = mapCanvasPoint(mapDraftPoint.x, mapDraftPoint.y, canvas.width, canvas.height);
-        context.save();
-        context.strokeStyle = palette.alt;
-        context.lineWidth = 2;
-        context.setLineDash([5, 4]);
-        context.beginPath();
-        context.arc(point.x, point.y, 16, 0, Math.PI * 2);
-        context.moveTo(point.x - 25, point.y);
-        context.lineTo(point.x + 25, point.y);
-        context.moveTo(point.x, point.y - 25);
-        context.lineTo(point.x, point.y + 25);
-        context.stroke();
-        context.restore();
-        if (showPlaceLabels) drawMapLabel(context, mapDraftPoint.name || 'Selected coordinate', point.x, point.y + 32, {
-            size: 10, color: palette.alt, stroke: palette.halo,
-        });
     }
 
     let player = null;
     if (viewingCurrentWorld) {
         const current = currentMapPoint(state);
         player = mapCanvasPoint(current.x, current.y, canvas.width, canvas.height);
-        const heading = (current.heading - 90) * Math.PI / 180;
         context.save();
-        if (!mapInteracting) {
-            const cone = context.createRadialGradient(player.x, player.y, 4, player.x, player.y, 46);
-            cone.addColorStop(0, rgbaOf(palette.alt, .5));
-            cone.addColorStop(1, rgbaOf(palette.alt, 0));
-            context.fillStyle = cone;
-            context.beginPath();
-            context.moveTo(player.x, player.y);
-            context.arc(player.x, player.y, 46, heading - .42, heading + .42);
-            context.closePath();
-            context.fill();
-        }
         context.beginPath();
-        context.arc(player.x, player.y, 12, 0, Math.PI * 2);
+        context.arc(player.x, player.y, 10 * pixelRatio, 0, Math.PI * 2);
         context.fillStyle = palette.halo;
         context.fill();
-        context.lineWidth = 3;
+        context.lineWidth = 2.5 * pixelRatio;
         context.strokeStyle = palette.alt;
         context.stroke();
         context.beginPath();
-        context.arc(player.x, player.y, 4.5, 0, Math.PI * 2);
+        context.arc(player.x, player.y, 4 * pixelRatio, 0, Math.PI * 2);
         context.fillStyle = palette.alt;
         context.fill();
         context.restore();
-        if (showPlaceLabels) drawMapLabel(context, current.name.toUpperCase(), player.x, player.y + 26, {
-            size: 10.5, weight: 800, color: palette.alt, stroke: palette.halo,
-        });
     }
-
-    drawScaleBar(context, canvas, palette);
-
-    const ping = scope.querySelector('[data-map-ping]');
-    if (ping instanceof HTMLElement) {
-        const inside = player && player.x > 0 && player.y > 0 && player.x < canvas.width && player.y < canvas.height;
-        ping.hidden = !inside;
-        if (inside) {
-            const frameRect = canvas.parentElement?.getBoundingClientRect();
-            const canvasRect = canvas.getBoundingClientRect();
-            const offsetX = frameRect ? canvasRect.left - frameRect.left : 0;
-            const offsetY = frameRect ? canvasRect.top - frameRect.top : 0;
-            ping.style.left = offsetX + player.x / pixelRatio + 'px';
-            ping.style.top = offsetY + player.y / pixelRatio + 'px';
-        }
-    }
-    const readout = scope.querySelector('[data-map-readout]');
-    const lodText = scope.querySelector('[data-map-lod]');
     const zoomText = scope.querySelector('[data-map-zoom]');
-    const centre = {
-        x: (canvas.width / 2 / transformX - mapView.x) / mapView.scale,
-        y: (canvas.height / 2 / transformY - mapView.y) / mapView.scale,
-    };
-    if (readout) readout.textContent = coordinatesLabel(centre.x, centre.y);
-    if (lodText) lodText.textContent = ['WORLD', 'REGIONAL', 'LOCAL'][detail];
     if (zoomText) zoomText.textContent = Math.round(mapView.scale * 100) + '%';
 }
 
@@ -4491,6 +4437,11 @@ function suspendMapRendering(releaseTiles = false) {
     mapQueuedPanel = null;
     mapQueuedState = null;
     mapInteracting = false;
+    if (mapGestureBase?.canvas) {
+        mapGestureBase.canvas.style.transform = '';
+        mapGestureBase.canvas.classList.remove('is-compositing');
+    }
+    mapGestureBase = null;
     globalThis.clearTimeout(mapInteractionEndTimer);
     mapResizeObserver?.disconnect();
     mapResizeObserver = null;
@@ -5962,9 +5913,44 @@ function resizePortrait(file) {
 
 function updateMapTransform() {
     clampMapView();
-    const camera = document.querySelector('.tretaresia-map-camera');
-    if (camera) camera.setAttribute('transform', `translate(${mapView.x} ${mapView.y}) scale(${mapView.scale})`);
+    if (mapInteracting && applyMapCompositorPreview()) return;
     scheduleMapDetailRender();
+}
+
+function beginMapCompositorPreview(canvas) {
+    if (!(canvas instanceof HTMLCanvasElement) || mapGestureBase) return;
+    const frameRect = canvas.parentElement?.getBoundingClientRect();
+    if (!frameRect?.width || !frameRect?.height) return;
+    mapGestureBase = {
+        canvas,
+        scale: mapView.scale,
+        x: mapView.x,
+        y: mapView.y,
+        width: frameRect.width,
+        height: frameRect.height,
+    };
+    canvas.classList.add('is-compositing');
+}
+
+function applyMapCompositorPreview() {
+    const base = mapGestureBase;
+    if (!base?.canvas?.isConnected || !base.scale) return false;
+    const ratio = mapView.scale / base.scale;
+    const tx = (mapView.x - base.x * ratio) / WORLD_MAP_WIDTH * base.width;
+    const ty = (mapView.y - base.y * ratio) / WORLD_MAP_HEIGHT * base.height;
+    base.canvas.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${ratio})`;
+    return true;
+}
+
+function finishMapCompositorPreview(panel, state = getState()) {
+    const canvas = mapGestureBase?.canvas;
+    if (canvas) {
+        canvas.style.transform = '';
+        canvas.classList.remove('is-compositing');
+    }
+    mapGestureBase = null;
+    mapInteracting = false;
+    drawWorldMap(panel, state);
 }
 
 function clampMapView() {
@@ -6018,7 +6004,7 @@ function setupMapInteractions(panel) {
     let pointerStart = null;
     let gestureHadMultiplePointers = false;
     const mapPoint = event => {
-        const rect = svg.getBoundingClientRect();
+        const rect = svg.parentElement?.getBoundingClientRect() || svg.getBoundingClientRect();
         if (!rect.width || !rect.height || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return null;
         const screenX = (event.clientX - rect.left) / rect.width * WORLD_MAP_WIDTH;
         const screenY = (event.clientY - rect.top) / rect.height * WORLD_MAP_HEIGHT;
@@ -6030,21 +6016,25 @@ function setupMapInteractions(panel) {
     } : null;
     svg.addEventListener('wheel', event => {
         event.preventDefault();
+        beginMapCompositorPreview(svg);
         mapInteracting = true;
         globalThis.clearTimeout(mapInteractionEndTimer);
         const point = mapPoint(event);
-        if (!point) return;
+        if (!point) {
+            finishMapCompositorPreview(panel, getState());
+            return;
+        }
         setMapZoom(mapView.scale * (event.deltaY < 0 ? 1.15 : .87), point.screenX, point.screenY);
         mapInteractionEndTimer = globalThis.setTimeout(() => {
-            mapInteracting = false;
-            scheduleMapDraw(panel, getState());
-        }, 120);
+            finishMapCompositorPreview(panel, getState());
+        }, MAP_INTERACTION_SETTLE);
     }, { passive: false });
     svg.addEventListener('pointerdown', event => {
         if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
         event.preventDefault();
         mapInteracting = true;
         globalThis.clearTimeout(mapInteractionEndTimer);
+        if (!pointers.size) beginMapCompositorPreview(svg);
         svg.setPointerCapture?.(event.pointerId);
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         gestureHadMultiplePointers ||= pointers.size > 1;
@@ -6060,7 +6050,7 @@ function setupMapInteractions(panel) {
         event.preventDefault();
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         const points = [...pointers.values()];
-        const rect = svg.getBoundingClientRect();
+        const rect = svg.parentElement?.getBoundingClientRect() || svg.getBoundingClientRect();
         if (!rect.width || !rect.height) return;
         const centroid = pointerCentroid(points);
         if (points.length === 1 && previousCentroid && centroid) {
@@ -6094,12 +6084,11 @@ function setupMapInteractions(panel) {
         pinchDistance = 0;
         if (!pointers.size) {
             svg.classList.remove('is-dragging');
-            mapInteracting = false;
             gestureHadMultiplePointers = false;
-            scheduleMapDraw(panel, getState());
+            finishMapCompositorPreview(panel, getState());
         }
         if (wasClick) {
-            const rect = svg.getBoundingClientRect();
+            const rect = svg.parentElement?.getBoundingClientRect() || svg.getBoundingClientRect();
             const hitX = (event.clientX - rect.left) / rect.width * svg.width;
             const hitY = (event.clientY - rect.top) / rect.height * svg.height;
             const hit = [...mapRenderedPoints].reverse().find(entry => Math.hypot(entry.x - hitX, entry.y - hitY) <= entry.radius * Math.min(1.5, globalThis.devicePixelRatio || 1));
@@ -6110,45 +6099,6 @@ function setupMapInteractions(panel) {
                 pointerStart = null;
                 return;
             }
-            if (hit?.type === 'location') {
-                mapDraftPoint = null;
-                mapSelectionId = hit.id;
-                renderMap(panel, getState());
-                pointerStart = null;
-                return;
-            }
-            if (hit?.type === 'pin') {
-                const state = getState();
-                const pin = state.location.pins.find(entry => entry.id === hit.id);
-                if (pin?.locationId && mapLocation(pin.locationId, state, true)) {
-                    mapDraftPoint = null;
-                    mapSelectionId = pin.locationId;
-                } else if (pin) {
-                    const continent = continentAtPoint(pin.x, pin.y);
-                    mapSelectionId = null;
-                    mapDraftPoint = { x: pin.x, y: pin.y, continent: pin.continent || continent?.name || 'Open Ocean', region: pin.region || 'Marked Reach', zone: 'Unknown Zone', name: pin.label };
-                }
-                renderMap(panel, state);
-                pointerStart = null;
-                return;
-            }
-            const point = mapPoint(event);
-            if (!point) {
-                pointerStart = null;
-                return;
-            }
-            const x = number(point.x, 0, 0, WORLD_MAP_WIDTH);
-            const y = number(point.y, 0, 0, WORLD_MAP_HEIGHT);
-            const hintedId = pointerStart.continentId || '';
-            const continent = continentAtPoint(x, y, hintedId);
-            const nearest = nearestMapLocation(x, y, continent?.name || '');
-            mapSelectionId = null;
-            mapDraftPoint = {
-                x, y, continent: continent?.name || 'Open Ocean',
-                region: continent ? nearest.region : 'Uncharted Sea', zone: continent ? nearest.zone : 'Unknown Zone',
-                name: continent && Math.hypot(nearest.x - x, nearest.y - y) < 42 ? nearest.name : continent ? `Uncharted ${nearest.region}` : 'Open-ocean coordinate',
-            };
-            renderMap(panel, getState());
         }
         pointerStart = null;
     };
@@ -7260,6 +7210,10 @@ async function addSettingsDrawer() {
     bindCheckbox('tretaresia-rpg-show-npc-map-markers', 'showNpcMapMarkers', settings, () => {
         renderMap(document.querySelector('[data-panel="map"]'), getState());
     });
+    bindCheckbox('tretaresia-rpg-map-hd-mode', 'mapHdMode', settings, () => {
+        if (!settings.mapHdMode) clearMapTileCache(key => key.includes('/3/'));
+        renderMap(document.querySelector('[data-panel="map"]'), getState());
+    });
     bindCheckbox('tretaresia-rpg-event-notifications', 'eventNotifications', settings);
     bindCheckbox('tretaresia-rpg-notify-exp', 'notifyExperience', settings);
     bindCheckbox('tretaresia-rpg-notify-level', 'notifyLevel', settings);
@@ -7300,6 +7254,8 @@ function bindChatEvents() {
             updatePrompt();
             renderAll();
         }
+        try { await catchUpTravelHistory(); }
+        catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
         await refreshCharacterLifeCompatibility({ save: true });
         if (SillyTavern.getContext().getCurrentChatId?.() && !hasUserReply()) {
             setSync('ready', tr('Waiting for first reply'), getSettings().language === 'th' ? 'First Message จะยังไม่ถูกอ่านหรือบันทึก' : 'The First Message is not read or stored by the extension.');
@@ -7350,6 +7306,8 @@ async function initialize() {
         bindNewChatSummaryCompatibility();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
+        try { await catchUpTravelHistory(); }
+        catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
         updatePrompt();
         document.addEventListener('keydown', event => {
             if (event.key !== 'Escape') return;
@@ -7360,7 +7318,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.19.3 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.20.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

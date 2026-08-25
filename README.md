@@ -58,7 +58,7 @@ Open it through **Extensions → Tretaresia RPG** or the wand menu.
 ## Version 0.13.1
 
 - Fixed normal-reply patch recovery so scene, NPC, quest, clock, map, and other confirmed updates accept paired, bracketed, fenced, truncated, and object-operation payload variants.
-- Direct travel actions in the user's main-chat role-play now begin known-atlas journeys automatically without an extra model request.
+- Direct travel actions in the user's main-chat role-play begin known-atlas journeys without an extra model request. Active journeys also read elapsed time, percentages, movement, delays, resumptions and arrival from user messages, with a one-percent-per-role-turn fallback and a bounded history catch-up so old journeys cannot remain frozen indefinitely.
 - Scene cards always show the exact world coordinates; protocol cleanup now also covers the active swipe and `extra.display_text`.
 
 ## Version 0.13.0
@@ -88,7 +88,7 @@ Open it through **Extensions → Tretaresia RPG** or the wand menu.
 - Continuous journeys now store origin/destination coordinates and move the player marker according to elapsed world time and remaining travel days.
 - Scene and World Map location stay synchronized while traveling and snap to the destination only after confirmed arrival.
 - Friendly NPC dossiers now include a living-world mode, current activity, map coordinates, and an individual World Map visibility toggle.
-- The World Map can show tappable NPC markers, Party members follow the player unless separated by the story, and all NPC markers have a master visibility control.
+- The World Map keeps lightweight tappable NPC positions and the player position; Party members follow the player unless separated by the story, and all NPC markers have a master visibility control.
 - The zero-extra-call tracking prompt advances plausible off-screen NPC routines when world time changes while respecting occupation, distance, duties, danger, relationships, and paused/story-only modes.
 
 ## Version 0.9.1
@@ -102,7 +102,7 @@ Adds the social systems layer: friendly NPC filtering, Party create/invite/disso
 
 ## Version 0.8.0
 
-Each of the four 4:3 atlases uses its own 4096×3072 tile pyramid. Present World keeps 126 hand-positioned travel destinations. Alternate Present World carries those same 126 places into corresponding expanded regions and combines them with 180 timeline-exclusive sites for 306 destinations total. World-scale zoom shows major locations first; regional and local zoom progressively reveal the denser tier-1 and tier-2 destinations. The map has unobstructed touch navigation, a bottom world/coordinate control bar, and a dedicated mobile fullscreen window that remains open until explicitly closed.
+Each of the four 4:3 atlases uses its own tile pyramid and retains its full canonical destination catalog for AI knowledge, quests, NPC movement and travel. The visual canvas intentionally draws only continent names plus player and enabled NPC positions; it no longer builds or paints hundreds of destination markers, labels, pin controls or travel-option nodes. During pan and pinch the current frame moves through a GPU compositor at the display refresh rate, tile loading and canvas redraw pause, and one sharp frame is rendered after release. Mobile defaults to DPR 1, two concurrent tile decodes, an eight-tile active-context cache and z2 maximum detail; z3 HD tiles are opt-in in extension settings. Switching world or day/night context immediately releases the inactive tile context.
 
 The control center is mounted outside the transformed application panel so its settings dialog displays reliably on iOS Safari instead of being clipped behind the interface.
 

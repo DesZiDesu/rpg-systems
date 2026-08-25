@@ -16,6 +16,93 @@
     border-left: 2px solid var(--tretaresia-accent);
 }
 
+/* v0.20 mobile atlas performance path */
+.tretaresia-performance-map {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: .65rem;
+}
+
+.tretaresia-world-map {
+    transform-origin: 0 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    touch-action: none !important;
+}
+
+.tretaresia-world-map.is-compositing {
+    will-change: transform;
+    image-rendering: auto;
+}
+
+.tretaresia-map-frame {
+    contain: layout paint style;
+    isolation: isolate;
+}
+
+.tretaresia-map-journey-strip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .45rem .7rem;
+    align-items: center;
+    padding: .7rem .8rem;
+    border: 1px solid rgba(var(--tretaresia-accent-rgb), .28);
+    background: rgba(0, 0, 0, .34);
+}
+
+.tretaresia-map-journey-strip > span {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+}
+
+.tretaresia-map-journey-strip > span b {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tretaresia-map-journey-strip > small {
+    color: var(--tf-muted);
+    white-space: nowrap;
+}
+
+.tretaresia-map-journey-track {
+    --journey-progress: 0%;
+    grid-column: 1 / -1;
+    position: relative;
+    height: 7px;
+    overflow: visible;
+    background: rgba(255, 255, 255, .08);
+}
+
+.tretaresia-map-journey-track > i {
+    display: block;
+    width: var(--journey-progress);
+    height: 100%;
+    background: var(--tretaresia-accent-alt);
+}
+
+.tretaresia-map-journey-track > strong {
+    position: absolute;
+    right: 0;
+    bottom: .62rem;
+    color: var(--tf-ink);
+    font-size: .72rem;
+}
+
+@media (max-width: 800px) {
+    .tretaresia-map-journey-strip {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tretaresia-map-journey-strip > small {
+        white-space: normal;
+    }
+}
+
 .tretaresia-travel-status .tretaresia-fact-list {
     margin-top: .55rem;
 }
