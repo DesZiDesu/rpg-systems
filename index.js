@@ -111,6 +111,9 @@ const WORLD_TILE_LEVELS = [
     { z: 2, width: 2048, height: 1536, columns: 4, rows: 3 },
     { z: 3, width: 4096, height: 3072, columns: 8, rows: 6 },
 ];
+const MAP_COARSE_POINTER = Boolean(globalThis.matchMedia?.('(pointer: coarse)')?.matches);
+const MAP_TILE_CACHE_LIMIT = MAP_COARSE_POINTER ? 36 : 72;
+const MAP_DRAW_INTERVAL = MAP_COARSE_POINTER ? 32 : 16;
 const atlasPoint = (x, y) => [
     Math.round(x / SOURCE_MAP_WIDTH * WORLD_MAP_WIDTH),
     Math.round(y / SOURCE_MAP_HEIGHT * WORLD_MAP_HEIGHT),
@@ -742,7 +745,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.19.1';
+const LAUNCHER_BIND_VERSION = '0.19.2';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -871,6 +874,12 @@ let tabTransitionToken = 0;
 let mapSelectionId = null;
 let mapDraftPoint = null;
 let mapDrawFrame = 0;
+let mapDrawTimer = 0;
+let mapLastDrawAt = 0;
+let mapQueuedPanel = null;
+let mapQueuedState = null;
+let mapInteracting = false;
+let mapInteractionEndTimer = 0;
 let mapRenderedPoints = [];
 let mapResizeObserver = null;
 let mapFullscreen = false;
@@ -3996,16 +4005,38 @@ function worldTileLevel() {
     return WORLD_TILE_LEVELS[3];
 }
 
+function trimMapTileCache(protectedKey = '') {
+    let guard = mapTileCache.size * 2;
+    while (mapTileCache.size > MAP_TILE_CACHE_LIMIT && guard-- > 0) {
+        const candidate = [...mapTileCache.entries()].find(([key, record]) =>
+            key !== protectedKey && record.status !== 'loading' && !key.includes('/0/'));
+        if (!candidate) break;
+        const [key, record] = candidate;
+        record.image.onload = null;
+        record.image.onerror = null;
+        record.image.removeAttribute('src');
+        mapTileCache.delete(key);
+    }
+}
+
 function worldTile(level, column, row, worldId = WORLD_ATLAS.id, variant = 'day') {
     const safeWorldId = WORLD_ATLASES[worldId] ? worldId : WORLD_ATLAS.id;
     const safeVariant = variant === 'night' ? 'night' : 'day';
     const roots = WORLD_TILE_ROOTS[safeWorldId];
     const key = `${safeWorldId}/${safeVariant}/${level.z}/${column}-${row}`;
     const cached = mapTileCache.get(key);
-    if (cached) return cached;
+    if (cached) {
+        mapTileCache.delete(key);
+        mapTileCache.set(key, cached);
+        return cached;
+    }
     const record = { status: 'loading', image: new Image(), worldId: safeWorldId, variant: safeVariant, fallbackAttempted: false };
     record.image.decoding = 'async';
-    record.image.onload = () => { record.status = 'ready'; scheduleMapDraw(); };
+    record.image.onload = () => {
+        record.status = 'ready';
+        trimMapTileCache(key);
+        scheduleMapDraw();
+    };
     record.image.onerror = () => {
         if (safeVariant === 'night' && !record.fallbackAttempted) {
             record.fallbackAttempted = true;
@@ -4014,9 +4045,11 @@ function worldTile(level, column, row, worldId = WORLD_ATLAS.id, variant = 'day'
             return;
         }
         record.status = 'error';
+        trimMapTileCache();
     };
     record.image.src = `${roots[safeVariant]}/${level.z}/${column}-${row}.webp`;
     mapTileCache.set(key, record);
+    trimMapTileCache(key);
     return record;
 }
 
@@ -4049,7 +4082,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     if (!(canvas instanceof HTMLCanvasElement)) return;
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-    const pixelRatio = Math.min(1.6, globalThis.devicePixelRatio || 1);
+    const pixelRatio = MAP_COARSE_POINTER ? 1 : Math.min(1.35, globalThis.devicePixelRatio || 1);
     const targetWidth = Math.max(1, Math.round(rect.width * pixelRatio));
     const targetHeight = Math.max(1, Math.round(rect.height * pixelRatio));
     if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
@@ -4082,7 +4115,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     context.setTransform(transformX * mapView.scale, 0, 0, transformY * mapView.scale,
         transformX * mapView.x, transformY * mapView.y);
     context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = 'high';
+    context.imageSmoothingQuality = mapInteracting ? 'low' : 'medium';
 
     {
         const fallback = worldTile(WORLD_TILE_LEVELS[0], 0, 0, worldId, variant);
@@ -4112,13 +4145,15 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     }
 
     context.setTransform(1, 0, 0, 1, 0, 0);
-    drawGraticule(context, canvas, palette, detail);
-    drawVignette(context, canvas, palette);
+    if (!mapInteracting) {
+        drawGraticule(context, canvas, palette, detail);
+        drawVignette(context, canvas, palette);
+    }
 
-    // Keep the full-world view readable: continents are the only labels at this LOD.
-    // Regional and local place labels are progressively revealed as the user zooms in.
-    const showContinentLabels = detail === 0;
-    const showPlaceLabels = detail > 0;
+    // Keep interaction light on mobile. Full labels and decoration return as soon as
+    // the drag or pinch ends, while the atlas itself continues moving responsively.
+    const showContinentLabels = detail === 0 && !mapInteracting;
+    const showPlaceLabels = detail > 0 && !mapInteracting;
 
     if (showContinentLabels) {
         for (const continent of continents) {
@@ -4132,12 +4167,20 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     const discovered = new Set(discoveredLocationsFor(state, worldId));
     const pinIds = new Set(viewedPins.map(pin => pin.locationId));
     mapRenderedPoints = [];
+    const markerBudget = mapInteracting ? 36 : MAP_COARSE_POINTER ? 64 : 110;
+    const markerPriority = location =>
+        (location.id === mapSelectionId ? 1000 : 0)
+        + (pinIds.has(location.id) ? 500 : 0)
+        + (discovered.has(location.name) ? 250 : 0)
+        + Math.max(0, 3 - location.tier) * 50;
     const visible = locations.filter(location =>
         (showPlaceLabels
             ? location.tier <= detail || location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name)
             : location.id === mapSelectionId || pinIds.has(location.id) || discovered.has(location.name))
         && location.x >= bounds.left && location.x <= bounds.right
-        && location.y >= bounds.top && location.y <= bounds.bottom);
+        && location.y >= bounds.top && location.y <= bounds.bottom)
+        .sort((a, b) => markerPriority(b) - markerPriority(a))
+        .slice(0, markerBudget);
 
     for (const location of visible) {
         const point = mapCanvasPoint(location.x, location.y, canvas.width, canvas.height);
@@ -4323,9 +4366,28 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     if (zoomText) zoomText.textContent = Math.round(mapView.scale * 100) + '%';
 }
 
+function flushScheduledMapDraw() {
+    mapDrawTimer = 0;
+    if (mapDrawFrame) return;
+    mapDrawFrame = requestAnimationFrame(() => {
+        mapDrawFrame = 0;
+        mapLastDrawAt = globalThis.performance?.now?.() || Date.now();
+        const panel = mapQueuedPanel;
+        const state = mapQueuedState;
+        mapQueuedPanel = null;
+        mapQueuedState = null;
+        drawWorldMap(panel || undefined, state || undefined);
+    });
+}
+
 function scheduleMapDraw(panel, state) {
-    cancelAnimationFrame(mapDrawFrame);
-    mapDrawFrame = requestAnimationFrame(() => drawWorldMap(panel, state));
+    if (panel) mapQueuedPanel = panel;
+    if (state) mapQueuedState = state;
+    if (mapDrawFrame || mapDrawTimer) return;
+    const now = globalThis.performance?.now?.() || Date.now();
+    const wait = Math.max(0, MAP_DRAW_INTERVAL - (now - mapLastDrawAt));
+    if (wait > 1) mapDrawTimer = globalThis.setTimeout(flushScheduledMapDraw, wait);
+    else flushScheduledMapDraw();
 }
 
 function scheduleMapDetailRender() {
@@ -5556,10 +5618,24 @@ async function onPanelClick(event) {
             await persistState(state, 'proficiency');
             break;
         }
-        case 'quest-section':
+        case 'quest-section': {
+            const questPanel = document.querySelector('[data-panel="quests"]');
+            const previousNav = questPanel?.querySelector('.tretaresia-quest-sections');
+            const previousScroll = previousNav?.scrollLeft || 0;
             if (QUEST_SECTIONS.some(entry => entry.id === button.dataset.section)) activeQuestSection = button.dataset.section;
-            renderQuests(document.querySelector('[data-panel="quests"]'), state);
+            renderQuests(questPanel, state);
+            const nextNav = questPanel?.querySelector('.tretaresia-quest-sections');
+            const activeButton = nextNav?.querySelector(`[data-section="${activeQuestSection}"]`);
+            if (nextNav) {
+                nextNav.scrollLeft = previousScroll;
+                requestAnimationFrame(() => {
+                    if (!nextNav.isConnected || !activeButton) return;
+                    const left = activeButton.offsetLeft - Math.max(0, (nextNav.clientWidth - activeButton.offsetWidth) / 2);
+                    nextNav.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+                });
+            }
             break;
+        }
         case 'delete-quest':
             state.quests = state.quests.filter(entry => entry.id !== id);
             await persistState(state);
@@ -5836,10 +5912,18 @@ function setupMapInteractions(panel) {
     };
     svg.addEventListener('wheel', event => {
         event.preventDefault();
+        mapInteracting = true;
+        globalThis.clearTimeout(mapInteractionEndTimer);
         const point = mapPoint(event);
         setMapZoom(mapView.scale * (event.deltaY < 0 ? 1.15 : .87), point.screenX, point.screenY);
+        mapInteractionEndTimer = globalThis.setTimeout(() => {
+            mapInteracting = false;
+            scheduleMapDraw(panel, getState());
+        }, 120);
     }, { passive: false });
     svg.addEventListener('pointerdown', event => {
+        mapInteracting = true;
+        globalThis.clearTimeout(mapInteractionEndTimer);
         svg.setPointerCapture?.(event.pointerId);
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         previous = { x: event.clientX, y: event.clientY };
@@ -5871,7 +5955,11 @@ function setupMapInteractions(panel) {
         pointers.delete(event.pointerId);
         previous = pointers.size === 1 ? [...pointers.values()][0] : null;
         pinchDistance = 0;
-        if (!pointers.size) svg.classList.remove('is-dragging');
+        if (!pointers.size) {
+            svg.classList.remove('is-dragging');
+            mapInteracting = false;
+            scheduleMapDraw(panel, getState());
+        }
         if (wasClick) {
             const rect = svg.getBoundingClientRect();
             const hitX = (event.clientX - rect.left) / rect.width * svg.width;
@@ -7120,7 +7208,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.19.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.19.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
