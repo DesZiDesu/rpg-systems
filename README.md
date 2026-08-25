@@ -2,7 +2,7 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.13.1**
+**Current version: 0.14.0**
 
 The tracking protocol uses a compact, relevance-prioritized state payload instead of repeatedly sending the entire archive. Settings show extension-started request attempts, and repeated Manual Sync taps are deduplicated.
 
@@ -17,16 +17,18 @@ The tracking protocol uses a compact, relevance-prioritized state payload instea
 - Mission, quest, contract, and dungeon records supporting every grade from E- through SS. New tasks are captured as soon as the story offers, assigns, or confirms receipt of them, then updated through accepted, active, progress, completion, failure, or hold states.
 - Five responsive quest archives: Story, Side-Story, Active Mission, Completed Mission, and Failed Mission. Completed missions are locked to 100% and their rewards are claim-once records.
 - Long-distance journey tracking with origin, destination, road/caravan/sea/off-road route, estimated duration, remaining days, delays, and arrival state. Selecting a destination begins a journey instead of teleporting the scene.
-- Region-aware currency ledger with a named local currency and three flexible denominations.
+- Region-aware currency ledger with clearly labeled Gold, Silver, and Copper balances plus a reasoned transaction history for every tracked gain, expense, and manual adjustment.
 - Scene tracker with time, day, continent, region, exact place, position, weather, extreme temperatures, and AI-assisted multi-floor local maps.
 - A huge image-tile world atlas using the supplied fantasy map, with all six continents, 126 named locations, coordinate-level selection, bounded pan/zoom, freeform pins, an exact player-position beacon, and a dedicated fullscreen viewer.
 - iOS-friendly Canvas tile rendering: four WebP detail levels load only the visible 512 px tiles and visible place labels while zooming or panning, avoiding one enormous SVG scene.
 - Broad action-based EXP tracking for studying, learning, training, crafting practice, combat, kills, discoveries, quests, and other genuine growth; level rollover happens when EXP is exactly equal to or greater than the current requirement.
 - Main-chat system notifications for EXP, learning, training, combat, kills, level-ups, mission/quest receipt and status changes, and money changes. Every tracked currency notification identifies why money was gained or spent, with configurable event types and auto-dismiss time.
+- Inventory lifecycle tracking follows pickups, purchases, crafting, consumption, drops, gifts, and sales from the normal role-play reply—including acquire-and-consume actions in one turn.
+- Editable Journey Logs automatically capture significant story milestones in concise entries of up to 500 characters; entries can also be added, edited, or deleted manually.
 - Inventory, quests, NPC Codex, relationship meters, abilities, revealed stats, private diary entries, contacts, physical letters, and local-device music playlists.
 - Friendly-only NPC Codex plus per-chat Party, paid Guild, and Household rosters. Parties are free; creating a Guild costs 10 Gold; Household members can be assigned roles such as partner, spouse, child, parent, sibling, or guardian.
 - Automatic social roster updates from confirmed role-play outcomes, including joins, departures, invitations, dissolutions, and family changes without requiring UI buttons.
-- Character Life compatibility: exact NPC links reuse Character Life portraits and framing, Character Life skills appear in RPG skill views, and RPG-tracked skills sync back to Skill Storage without an extra model request.
+- Character Life compatibility: exact NPC links reuse Character Life portraits and framing, NPC dossier fields synchronize safely in both extensions, Character Life skills appear in RPG skill views, and RPG-tracked skills sync back to Skill Storage without an extra model request.
 - English and Thai interface/action support, hidden/visible/draft action delivery, mobile safe-area layout, touch controls, and configurable appearance.
 - Automatic same-character continuity when starting a new chat, including same-device copying for locally stored NPC portraits and music.
 - Direct compatibility with `nutho-start-new-chat-with-summary`: RPG state is captured before its summary/new-chat flow, restored after `CHAT_CHANGED`, and kept separate from the carried memory summary.

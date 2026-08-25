@@ -4196,3 +4196,226 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 @media (max-width: 760px) {
     .tretaresia-npc-map-controls > div { max-height: 11rem; }
 }
+
+
+/* v0.14.0 — transaction ledger and editable journey milestones */
+.tretaresia-journey-logs,
+.tretaresia-transactions {
+    margin: 16px 0;
+    overflow: visible;
+}
+
+.tretaresia-journey-logs > header,
+.tretaresia-transactions > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--tretaresia-accent) 24%, transparent);
+}
+
+.tretaresia-journey-logs > header > div,
+.tretaresia-transactions > header > div {
+    display: grid;
+    gap: 3px;
+}
+
+.tretaresia-journey-logs > header span,
+.tretaresia-transactions > header span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 750;
+}
+
+.tretaresia-journey-logs > header small,
+.tretaresia-transactions > header small,
+.tretaresia-journey-entry small,
+.tretaresia-transactions article small {
+    color: var(--tretaresia-muted);
+}
+
+.tretaresia-journey-add {
+    position: relative;
+}
+
+.tretaresia-journey-add > summary,
+.tretaresia-journey-actions summary,
+.tretaresia-journey-actions > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 8px 11px;
+    border: 1px solid color-mix(in srgb, var(--tretaresia-accent) 32%, transparent);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--tretaresia-surface) 90%, transparent);
+    color: var(--tretaresia-text);
+    cursor: pointer;
+    list-style: none;
+}
+
+.tretaresia-journey-add > summary::-webkit-details-marker,
+.tretaresia-journey-actions summary::-webkit-details-marker {
+    display: none;
+}
+
+.tretaresia-journey-add[open] > form {
+    position: absolute;
+    z-index: 4;
+    inset-inline-end: 0;
+    top: calc(100% + 8px);
+    width: min(420px, 82vw);
+}
+
+.tretaresia-journey-add form,
+.tretaresia-journey-actions form {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid color-mix(in srgb, var(--tretaresia-accent) 30%, transparent);
+    border-radius: 12px;
+    background: var(--tretaresia-panel);
+    box-shadow: 0 16px 44px rgba(0, 0, 0, .34);
+}
+
+.tretaresia-journey-list {
+    display: grid;
+}
+
+.tretaresia-journey-entry {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--tretaresia-text) 9%, transparent);
+}
+
+.tretaresia-journey-entry:last-child {
+    border-bottom: 0;
+}
+
+.tretaresia-journey-mark {
+    display: grid;
+    place-items: start center;
+    padding-top: 4px;
+    color: var(--tretaresia-accent);
+    font-size: 9px;
+}
+
+.tretaresia-journey-copy {
+    min-width: 0;
+}
+
+.tretaresia-journey-copy p {
+    margin: 5px 0 0;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.tretaresia-journey-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.tretaresia-journey-actions details {
+    position: relative;
+}
+
+.tretaresia-journey-actions details[open] form {
+    position: absolute;
+    z-index: 5;
+    inset-inline-end: 0;
+    top: calc(100% + 8px);
+    width: min(440px, 80vw);
+}
+
+.tretaresia-journey-empty,
+.tretaresia-transaction-empty {
+    margin: 0;
+    padding: 18px 16px;
+    color: var(--tretaresia-muted);
+    text-align: center;
+}
+
+.tretaresia-transactions > div {
+    max-height: 360px;
+    overflow: auto;
+}
+
+.tretaresia-transactions article {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--tretaresia-text) 9%, transparent);
+}
+
+.tretaresia-transactions article:last-child {
+    border-bottom: 0;
+}
+
+.tretaresia-transactions article > div:first-child,
+.tretaresia-transaction-amounts {
+    display: grid;
+    gap: 4px;
+}
+
+.tretaresia-transaction-amounts {
+    justify-items: end;
+    text-align: end;
+}
+
+.tretaresia-transaction-amounts > span {
+    font-weight: 800;
+}
+
+.tretaresia-transaction-amounts > span[data-sign="gain"] {
+    color: #76d993;
+}
+
+.tretaresia-transaction-amounts > span[data-sign="loss"] {
+    color: #f08d94;
+}
+
+@media (max-width: 700px) {
+    .tretaresia-journey-logs > header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .tretaresia-journey-add > summary {
+        width: 100%;
+    }
+
+    .tretaresia-journey-add[open] > form,
+    .tretaresia-journey-actions details[open] form {
+        position: fixed;
+        z-index: 10015;
+        inset: auto 12px 16px;
+        width: auto;
+        max-height: min(70vh, 520px);
+        overflow: auto;
+    }
+
+    .tretaresia-journey-entry {
+        grid-template-columns: 22px minmax(0, 1fr);
+    }
+
+    .tretaresia-journey-actions {
+        grid-column: 2;
+    }
+
+    .tretaresia-transactions article {
+        grid-template-columns: 1fr;
+    }
+
+    .tretaresia-transaction-amounts {
+        justify-items: start;
+        text-align: start;
+    }
+}

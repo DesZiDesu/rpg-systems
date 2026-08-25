@@ -7,7 +7,7 @@
     "js": "index.js",
     "css": "ui-polish.css",
     "author": "DesZiDesu",
-    "version": "0.13.1",
+    "version": "0.14.0",
     "homePage": "https://github.com/DesZiDesu/rpg-systems",
     "auto_update": true
 }

@@ -365,7 +365,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.13.1';
+const LAUNCHER_BIND_VERSION = '0.14.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -415,7 +415,11 @@ const TRANSLATIONS = {
         'Ranks & Progression': 'อันดับและความก้าวหน้า', 'Guild and mastery record': 'บันทึกอันดับกิลด์และความชำนาญ', 'Adventurer Rank': 'อันดับนักผจญภัย', 'Custom rank name': 'ชื่ออันดับเฉพาะตัว',
         'Power mastery': 'ความชำนาญพลัง', 'Combat mastery': 'ความชำนาญการต่อสู้', 'Power & Combat': 'พลังและการต่อสู้', 'Power systems': 'ระบบพลัง', 'Combat disciplines': 'ศาสตร์การต่อสู้',
         'Recognized guild classification': 'ระดับที่กิลด์รับรอง', 'Magic mastery': 'ความชำนาญเวทมนตร์', 'Sword mastery': 'ความชำนาญดาบ', Experience: 'ค่าประสบการณ์', Reputation: 'ชื่อเสียง',
-        Gold: 'เหรียญทอง', Silver: 'เหรียญเงิน', Copper: 'เหรียญทองแดง', 'Edit progression': 'แก้ไขความก้าวหน้า', 'Adventurer rank': 'อันดับนักผจญภัย',
+        Gold: 'เหรียญทอง', Silver: 'เหรียญเงิน', Copper: 'เหรียญทองแดง', 'Gold coins': 'เหรียญทอง', 'Silver coins': 'เหรียญเงิน', 'Copper coins': 'เหรียญทองแดง',
+        'Transaction history': 'ประวัติธุรกรรม', 'No transactions recorded yet.': 'ยังไม่มีธุรกรรม', 'Balance after': 'ยอดคงเหลือหลังรายการ',
+        'Journey Logs': 'บันทึกการเดินทาง', 'Story milestones': 'หมุดหมายเรื่องราว', 'No journey logs yet.': 'ยังไม่มีบันทึกการเดินทาง',
+        'Add journey log': 'เพิ่มบันทึก', 'Edit log': 'แก้ไขบันทึก', 'Delete log': 'ลบบันทึก', 'Save log': 'บันทึก', 'What happened': 'เกิดอะไรขึ้น', 'Journey log saved.': 'บันทึกการเดินทางแล้ว',
+        'Edit progression': 'แก้ไขความก้าวหน้า', 'Adventurer rank': 'อันดับนักผจญภัย',
         'Magic rank': 'ระดับเวทมนตร์', 'Sword rank': 'ระดับดาบ', 'EXP to next level': 'EXP สำหรับเลเวลถัดไป', 'Save progression': 'บันทึกความก้าวหน้า',
         'Tretaresia World Atlas': 'แผนที่โลก Tretaresia', 'Selected location': 'สถานที่ที่เลือก', Region: 'ภูมิภาค', Discovery: 'การค้นพบ', Marker: 'หมุด',
         Journey: 'การเดินทาง', Origin: 'ต้นทาง', 'Travel route': 'เส้นทางเดินทาง', 'Remaining travel': 'เวลาที่เหลือ', days: 'วัน', 'Estimated travel days': 'จำนวนวันเดินทางโดยประมาณ', 'Begin journey': 'เริ่มออกเดินทาง',
@@ -616,6 +620,8 @@ function defaultState() {
         social: defaultSocialState(),
         music: { tracks: [], currentId: '', repeat: false, shuffle: false },
         journal: [],
+        transactions: [],
+        journeyLogs: [],
         syncCursor: { user: null, assistant: null },
         updatedAt: null,
         updateSource: 'initial',
@@ -690,6 +696,77 @@ function item(value, fallbackCategory = 'Other') {
         id: text(value.id, uid(), 100), name: text(value.name, '', 100),
         quantity: number(value.quantity, 1, 0, 99999), category: text(value.category, fallbackCategory, 60),
         description: text(value.description, '', 300),
+    };
+}
+
+function currencyTransaction(value) {
+    if (!value || typeof value !== 'object') return null;
+    const amounts = {
+        gold: number(value.amounts?.gold, 0, -999999999, 999999999),
+        silver: number(value.amounts?.silver, 0, -999999999, 999999999),
+        copper: number(value.amounts?.copper, 0, -999999999, 999999999),
+    };
+    if (!amounts.gold && !amounts.silver && !amounts.copper) return null;
+    return {
+        id: text(value.id, uid(), 100),
+        at: text(value.at, new Date().toISOString(), 60),
+        currencyName: text(value.currencyName, 'Unknown currency', 120),
+        amounts,
+        balance: {
+            gold: number(value.balance?.gold, 0, 0, 999999999),
+            silver: number(value.balance?.silver, 0, 0, 999999999),
+            copper: number(value.balance?.copper, 0, 0, 999999999),
+        },
+        reason: text(value.reason, 'Unspecified transaction', 300),
+        source: text(value.source, 'roleplay', 60),
+    };
+}
+
+function journeyLogEntry(value) {
+    if (!value || typeof value !== 'object') return null;
+    const content = text(value.text, '', 500);
+    if (!content) return null;
+    return {
+        id: text(value.id, uid(), 100),
+        text: content,
+        at: text(value.at, new Date().toISOString(), 60),
+        place: text(value.place, '', 160),
+        day: text(value.day, '', 80),
+        kind: text(value.kind, 'story', 40),
+    };
+}
+
+function appendJourneyLog(state, value) {
+    const entry = journeyLogEntry(value);
+    if (!entry) return null;
+    state.journeyLogs ||= [];
+    const duplicate = [...state.journeyLogs].reverse().find(current =>
+        current.text.toLocaleLowerCase() === entry.text.toLocaleLowerCase()
+        && current.place === entry.place && current.day === entry.day);
+    if (duplicate) return null;
+    state.journeyLogs = [...state.journeyLogs, entry].slice(-100);
+    return entry;
+}
+
+function appendCurrencyTransaction(state, amounts, reason, source = 'roleplay', balance = state.progression.currency) {
+    const entry = currencyTransaction({
+        currencyName: state.progression.currency.name,
+        amounts,
+        balance,
+        reason,
+        source,
+    });
+    if (!entry) return null;
+    state.transactions ||= [];
+    state.transactions = [...state.transactions, entry].slice(-250);
+    return entry;
+}
+
+function currencyDelta(before, after) {
+    return {
+        gold: number(after?.gold, 0, -999999999, 999999999) - number(before?.gold, 0, -999999999, 999999999),
+        silver: number(after?.silver, 0, -999999999, 999999999) - number(before?.silver, 0, -999999999, 999999999),
+        copper: number(after?.copper, 0, -999999999, 999999999) - number(before?.copper, 0, -999999999, 999999999),
     };
 }
 
@@ -1203,6 +1280,8 @@ function normalize(candidate, base = defaultState()) {
     };
     result.sceneMap = normalizeSceneMap(source.sceneMap, result.sceneMap);
     if (Array.isArray(source.inventory)) result.inventory = source.inventory.map(item).filter(Boolean).slice(0, 200);
+    if (Array.isArray(source.transactions)) result.transactions = source.transactions.map(currencyTransaction).filter(Boolean).slice(-250);
+    if (Array.isArray(source.journeyLogs)) result.journeyLogs = source.journeyLogs.map(journeyLogEntry).filter(Boolean).slice(-100);
     if (Array.isArray(source.skills)) result.skills = source.skills.map(skill).filter(Boolean).slice(0, 100);
     const proficiencies = source.proficiencies && typeof source.proficiencies === 'object' ? source.proficiencies : {};
     result.proficiencies.magic = Object.fromEntries(MAGIC_DISCIPLINES.map(entry => [
@@ -1587,6 +1666,8 @@ function aiState(state) {
         scene: state.scene,
         sceneMap: aiSceneMap(state),
         inventory: relevantEntries(state.inventory, 20).map(({ id, name, quantity, category }) => [id, name, quantity, category]),
+        transactions: state.transactions.slice(-30).map(({ at, currencyName, amounts, balance, reason, source }) => ({ at, currencyName, amounts, balance, reason, source })),
+        journeyLogs: state.journeyLogs.slice(-20).map(({ at, place, day, kind, text: entryText }) => ({ at, place, day, kind, text: entryText })),
         skills: relevantEntries(state.skills, 16).map(({ id, name, rank, type }) => [id, name, rank, type]),
         proficiencies: {
             magic: state.proficiencies.magic,
@@ -1632,13 +1713,13 @@ function legacyPatchInstructions() {
     return [
         'After the role-play reply, append one invisible HTML comment only when confirmed state changed:',
         '<!--tretaresia_patch:{"ops":[["upsert","quests",{"id":"academy-escort","name":"Escort the Academy Caravan","type":"Mission","status":"Active","objective":"Protect the caravan until it reaches Eastwatch","reward":"12 silver","giver":"Quartermaster Lysa","source":"Great Academy mission board","progress":0}],["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}]],"summary":"Mission, training, payment, and combat progress recorded."}-->',
-        'Allowed verbs: set or inc for scalar paths; upsert or delete for inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers, guildMembers, and householdMembers; set or inc npcValues; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
+        'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers, guildMembers, and householdMembers; set or inc npcValues; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
         'Party, Guild, and Household rules: The player is always the leader of a party or guild created from the UI unless the story explicitly confirms a leadership change. Party membership is free. The UI already deducts the Guild fee; a newly confirmed story-created Guild is accepted only when the player can afford it and the patch parser deducts the configured fee automatically. Role-play changes are automatic: whenever a completed reply confirms joining, accepting an invitation, leaving, expulsion, creation, dissolution, marriage, partnership, a child, parent, guardian, or another family role, update social state in this same patch even when no UI button was used. For a friendly person absent from npcIndex, first upsert npcs with a stable id/name, then use that id in partyMembers, guildMembers, or householdMembers. A Household is the player\'s family roster, not a generic faction.',
         'Use canonical paths shown in the state JSON. For a new incoming physical letter include contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not a letter.',
         'Create or update a named NPC dossier with an upsert on npcs only when that NPC becomes relevant or a confirmed fact changes. Use partial NPC objects and preserve the canonical id from npcIndex. When a relationship becomes a correspondence, also upsert contacts with npcId; do not make every incidental NPC a contact.',
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. NPC portraits and portrait framing are local-only and forbidden in patches.',
         'Evaluate every relevant subsystem after every reply, not only scene/location. Update every materially affected value in the same patch; leave a value unchanged only when this reply provides no reasonable story basis for changing it.',
-        'Full checklist: player HP/Aura-or-Mana/stamina/condition, profession, power type, Origin skill and identity; EXP/adventurer rank/custom title/reputation/local currency; inventory, Constructs and learned skills; power/combat/technique proficiency; quests and dungeons; time/location/travel/weather/local map; every participating NPC dossier, relationship meter, location, lastSeen, abilities, diary, and revealed stats; contacts and actual physical letters. Emit only fields affected by this completed reply.',
+        'Full checklist: player HP/Aura-or-Mana/stamina/condition, profession, power type, Origin skill and identity; EXP/adventurer rank/custom title/reputation/local currency; inventory, Constructs and learned skills; power/combat/technique proficiency; quests and dungeons; time/location/travel/weather/local map; every participating NPC dossier, relationship meter, location, lastSeen, abilities, diary, and revealed stats; contacts and actual physical letters. For inventory use inc with positive quantity for pickup/receipt and negative quantity for consumption/drop/gift/sale; acquisition and immediate consumption require both ordered ops. Add top-level journey (maximum 500 characters) only for a significant story milestone. Emit only fields affected by this completed reply.',
         'Mission and quest receipt rules: immediately upsert every named mission, quest, contract, dungeon task, or personal objective when this reply formally offers, assigns, gives, or confirms receipt. Type must be Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Use Offered when optional and unaccepted; Active when accepted or assigned. Include stable id/name/type/status/objective/reward/giver/source/progress. Progress must reflect confirmed objective completion and Completed always means progress 100. Failed is terminal unless the story explicitly reopens the mission. On the first transition to Completed, grant the established reward once in the SAME patch and tag every reward operation metadata with {"category":"quest-reward","questId":"canonical quest id","reason":"specific reward"}. Completed questArchive entries with rewardClaimed=true are historical records: never grant their reward, EXP, item, currency, rank, or loot again and never reset their progress. Do not turn rumors, possibilities, rejected work, or casual advice into quests.',
         'EXP rules: award EXP for every completed action that materially counts as studying, reading with understanding, taking a lesson, researching, learning, spell or skill practice, crafting practice, physical training, sparring, combat participation, surviving danger, killing a hostile creature, discovery, quest progress, or another genuine growth action. Use inc progression.experience and always add fourth-position metadata {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical gain: 1-3 routine study/practice, 4-8 meaningful success, 9-20 combat or major challenge, 21-40 exceptional milestone. Do not award EXP for passive narration, merely intending to act, failed non-instructive attempts, or ordinary small talk. The extension levels up automatically the instant accumulated EXP is greater than or exactly equal to experienceMax.',
         'Kill rules: whenever the player personally kills or decisively finishes a hostile person or creature, inc progression.kills by the confirmed count with fourth-position metadata naming the defeated target, for example ["inc","progression.kills",1,{"reason":"Defeated the cave troll","category":"kill"}]. Also award appropriate combat EXP in the same patch. Do not count knockouts, uncertain deaths, assists without a kill, practice targets, or environmental deaths not caused by the player.',
@@ -1662,13 +1743,15 @@ function patchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     return [
         'TRETARESIA PATCH PROTOCOL — use the SAME normal reply; never start another generation. Append one invisible comment only when confirmed state changed:',
-        '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded"}-->',
-        'Allowed ops: set/inc scalar paths; upsert/delete inventory, skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
+        '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
+        'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, or explanation.',
         'Check affected systems: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit only affected values.',
+        'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
         'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
-        'Money: record confirmed gains/spending immediately on gold/silver/copper with {"reason":"specific cause","category":"currency"}. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
+        'Money: record every confirmed gain or expense immediately on progression.currency.gold/silver/copper with {"reason":"what the money came from or was spent on","category":"currency"}. Every currency op needs a specific reason so Transaction History can explain it. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
+        'Inventory lifecycle: pick up, receive, buy, craft, or loot an item with ["inc","inventory",{"id":"stable-id","name":"Item","quantity":positive,"category":"...","description":"..."}]. Drink, eat, consume, use up, drop, give away, or sell it with the same operation and a negative quantity. If acquired and consumed in the same turn, emit the positive op followed by the negative op so the final count is correct. Do not decrement reusable tools, weapons, armor, keys, or equipment merely because they were used. Use upsert only to correct item metadata or set an exact known quantity; delete only when explicitly removed wholesale.',
         'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
         'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Formless Aura is undetectable; Divine Mana only by Divine Mana; other powers normally require the same kind to sense. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
         'NPCs: upsert only relevant named friendly NPCs or confirmed changes; preserve npcIndex id. Hostile/enemy/foe/antagonist/villain/threat NPCs stay out of Codex and social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
@@ -1881,6 +1964,29 @@ function syncCharacterLifeLinks(state) {
 }
 
 async function syncRpgSkillsToCharacterLife(state) {
+    const bridge = globalThis.CharacterLifeRpgBridge;
+    if (typeof bridge?.applyRpgNpcUpdates === 'function') {
+        try {
+            await bridge.applyRpgNpcUpdates(state.npcs.map(npc => ({
+                id: npc.id,
+                characterLifeId: npc.characterLifeId,
+                name: npc.name,
+                aliases: npc.aliases,
+                title: npc.title,
+                occupation: npc.occupation,
+                faction: npc.faction,
+                race: npc.race,
+                age: npc.age,
+                gender: npc.gender,
+                relationship: npc.relationship,
+                location: npc.location,
+                activity: npc.activity,
+                abilities: npc.abilities,
+            })));
+        } catch (error) {
+            console.warn('[Tretaresia RPG] Character Life NPC compatibility sync failed safely.', error);
+        }
+    }
     const api = globalThis.CharacterLifeSkills;
     if (!api || typeof api.list !== 'function' || typeof api.upsert !== 'function') return;
     const saved = api.list();
@@ -2426,6 +2532,7 @@ async function processUserTravelIntent(messageId) {
         text: `Began a ${totalDays}-day ${intent.route.toLocaleLowerCase()} journey from ${origin} to ${intent.destination.name} from the user's role-play action.`,
         at: new Date().toISOString(),
     });
+    appendJourneyLog(next, { text: `Set out from ${origin} toward ${intent.destination.name} via ${intent.route}.`, place: origin, day: next.worldClock.dayName || `Day ${next.worldClock.day}`, kind: 'travel' });
     return persistState(next, 'user-travel-intent');
 }
 
@@ -3022,6 +3129,25 @@ function setupSceneMapInteractions(panel, state) {
     });
 }
 
+function renderJourneyLogs(state) {
+    const entries = [...state.journeyLogs].reverse();
+    return `<section class="tretaresia-card tretaresia-journey-logs">
+        <header><div><span><i class="fa-solid fa-book-open"></i> ${html(tr('Journey Logs'))}</span><small>${html(tr('Story milestones'))} · ${entries.length}</small></div>
+            <details class="tretaresia-journey-add"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add journey log'))}</summary>
+                <form data-form="journey-log-add">${textareaField('What happened', 'text', '', 3, 'maxlength="500" required')}
+                    <button class="tretaresia-primary-button" type="submit">${html(tr('Save log'))}</button></form></details></header>
+        <div class="tretaresia-journey-list">${entries.length ? entries.map(entry => `
+            <article class="tretaresia-journey-entry"><div class="tretaresia-journey-mark"><i class="fa-solid fa-diamond"></i></div>
+                <div class="tretaresia-journey-copy"><small>${html(entry.day || '')}${entry.place ? ` · ${html(entry.place)}` : ''}${entry.at ? ` · ${html(formatDate(entry.at))}` : ''}</small><p>${html(entry.text)}</p></div>
+                <div class="tretaresia-journey-actions"><details><summary title="${html(tr('Edit log'))}"><i class="fa-solid fa-pen"></i></summary>
+                    <form data-form="journey-log-edit"><input type="hidden" name="id" value="${html(entry.id)}">
+                        ${textareaField('What happened', 'text', entry.text, 3, 'maxlength="500" required')}
+                        <button class="tretaresia-primary-button" type="submit">${html(tr('Save log'))}</button></form></details>
+                    <button type="button" data-action="delete-journey-log" data-id="${html(entry.id)}" title="${html(tr('Delete log'))}"><i class="fa-solid fa-trash"></i></button></div>
+            </article>`).join('') : `<p class="tretaresia-journey-empty">${html(tr('No journey logs yet.'))}</p>`}</div>
+    </section>`;
+}
+
 function renderScene(panel, state) {
     if (!panel) return;
     const phaseIndex = Math.max(0, DAY_PHASES.indexOf(state.worldClock.phase));
@@ -3053,6 +3179,7 @@ function renderScene(panel, state) {
             <div><dt>${html(tr('Current'))}</dt><dd>${Math.round(journeyProgress * 100)}% · ${coordinatesLabel(state.location.mapX, state.location.mapY)}</dd></div></dl>
             <div class="tretaresia-travel-progress" style="--journey-progress:${Math.round(journeyProgress * 100)}%"><span></span><b>${Math.round(journeyProgress * 100)}%</b></div>
             ${state.travel.notes ? `<p>${html(state.travel.notes)}</p>` : ''}</section>` : ''}
+        ${renderJourneyLogs(state)}
         ${renderLocalStructure(state)}
         <details class="tretaresia-editor"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Save scene'))}</summary>
             <form data-form="scene" class="tretaresia-form-grid">
@@ -3112,7 +3239,6 @@ function renderInventory(panel, state) {
             <article class="tretaresia-list-card"><div class="tretaresia-item-icon"><i class="fa-solid fa-cube"></i></div>
                 <div class="tretaresia-item-copy"><strong>${html(entry.name)}</strong><span>${html(entry.category)} · ×${entry.quantity}</span>
                 <p>${html(entry.description || tr('No description'))}</p></div><div class="tretaresia-card-actions">
-                <button type="button" data-action="use-item" data-id="${html(entry.id)}" title="${html(tr('Use in role-play'))}"><i class="fa-solid fa-comment-dots"></i></button>
                 <button type="button" data-action="delete-item" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button></div></article>`).join('') : empty('Your inventory is empty.')}</div>
         <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add inventory item'))}</summary>
             <form data-form="inventory" class="tretaresia-form-grid">${input('Item name', 'name', '')}
@@ -3228,7 +3354,6 @@ function questSectionId(entry) {
 }
 
 function renderQuestCard(entry) {
-    const terminal = ['Completed', 'Failed'].includes(entry.status);
     const progress = entry.status === 'Completed' ? 100 : number(entry.progress, 0, 0, 100);
     const rewardLabel = entry.status === 'Completed' && entry.rewardClaimed ? tr('Reward claimed') : tr('Reward');
     return `<article class="tretaresia-quest-card" data-status="${html(entry.status.toLowerCase())}"><div>
@@ -3238,8 +3363,7 @@ function renderQuestCard(entry) {
         ${(entry.giver || entry.source) ? `<small><i class="fa-solid fa-user-tag"></i> ${html(entry.giver || tr('Unknown giver'))}${entry.source ? ` · ${html(entry.source)}` : ''}</small>` : ''}
         ${entry.reward ? `<small class="tretaresia-quest-reward${entry.rewardClaimed ? ' is-claimed' : ''}"><i class="fa-solid ${entry.rewardClaimed ? 'fa-circle-check' : 'fa-gift'}"></i> ${html(rewardLabel)}: ${html(entry.reward)}</small>` : ''}
         ${entry.receivedAt ? `<small><i class="fa-solid fa-clock"></i> ${html(tr('Received'))}: ${html(formatDate(entry.receivedAt))}</small>` : ''}</div>
-        <div class="tretaresia-card-actions">${terminal ? '' : `<button type="button" data-action="pursue-quest" data-id="${html(entry.id)}" title="${html(tr('Pursue in role-play'))}"><i class="fa-solid fa-comment-dots"></i></button>`}
-        <button type="button" data-action="delete-quest" data-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></article>`;
+        <div class="tretaresia-card-actions"><button type="button" data-action="delete-quest" data-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></article>`;
 }
 
 function renderQuests(panel, state) {
@@ -3266,6 +3390,19 @@ function renderQuests(panel, state) {
 
 const rankRow = (label, value, icon) => `<article class="tretaresia-rank-row"><i class="${icon}"></i><span>${html(tr(label))}</span><strong>${html(tr(String(value)))}</strong></article>`;
 
+function transactionAmounts(entry) {
+    return ['gold', 'silver', 'copper'].filter(key => entry.amounts?.[key])
+        .map(key => `<span data-kind="${key}" data-sign="${entry.amounts[key] > 0 ? 'gain' : 'loss'}">${entry.amounts[key] > 0 ? '+' : ''}${entry.amounts[key]} ${html(tr(`${key[0].toUpperCase() + key.slice(1)} coins`))}</span>`).join('');
+}
+
+function renderTransactions(state) {
+    const entries = [...state.transactions].reverse();
+    return `<section class="tretaresia-card tretaresia-transactions"><header><div><span><i class="fa-solid fa-receipt"></i> ${html(tr('Transaction history'))}</span><small>${html(state.progression.currency.name)}</small></div><b>${entries.length}</b></header>
+        <div>${entries.length ? entries.map(entry => `<article><div><strong>${html(entry.reason)}</strong><small>${html(formatDate(entry.at))} · ${html(entry.source)}</small></div>
+            <div class="tretaresia-transaction-amounts">${transactionAmounts(entry)}<small>${html(tr('Balance after'))}: ${entry.balance.gold} / ${entry.balance.silver} / ${entry.balance.copper}</small></div></article>`).join('')
+            : `<p class="tretaresia-transaction-empty">${html(tr('No transactions recorded yet.'))}</p>`}</div></section>`;
+}
+
 function renderRank(panel, state) {
     if (!panel) return;
     const p = state.progression;
@@ -3275,15 +3412,16 @@ function renderRank(panel, state) {
             <div class="tretaresia-rank-stack">${rankRow('Power mastery', p.magicRank, 'fa-solid fa-fire-flame-curved')}
                 ${rankRow('Combat mastery', p.swordRank, 'fa-solid fa-khanda')}${rankRow('Experience', `${p.experience} / ${p.experienceMax}`, 'fa-solid fa-star')}
                 ${rankRow('Reputation', p.reputation, 'fa-solid fa-people-group')}${rankRow('Confirmed kills', p.kills, 'fa-solid fa-skull')}</div></div>
-        <article class="tretaresia-card tretaresia-wallet" title="${html(p.currency.name)}"><div><span>${html(tr('High denomination'))}</span><strong>${p.currency.gold}</strong></div>
-            <div><span>${html(tr('Standard denomination'))}</span><strong>${p.currency.silver}</strong></div><div><span>${html(tr('Fractional denomination'))}</span><strong>${p.currency.copper}</strong></div></article>
+        <article class="tretaresia-card tretaresia-wallet" title="${html(p.currency.name)}"><div><span>${html(tr('Gold coins'))}</span><strong>${p.currency.gold}</strong></div>
+            <div><span>${html(tr('Silver coins'))}</span><strong>${p.currency.silver}</strong></div><div><span>${html(tr('Copper coins'))}</span><strong>${p.currency.copper}</strong></div></article>
+        ${renderTransactions(state)}
         <details class="tretaresia-editor"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Edit progression'))}</summary>
             <form data-form="rank" class="tretaresia-form-grid">${select('Adventurer rank', 'adventurerRank', RANKS, p.adventurerRank)}${input('Custom rank name', 'customRankName', p.customRankName)}
                 ${select('Power mastery', 'magicRank', MASTERY, p.magicRank)}${select('Combat mastery', 'swordRank', MASTERY, p.swordRank)}
                 ${input('Experience', 'experience', p.experience, 'number', 'min="0"')}${input('EXP to next level', 'experienceMax', p.experienceMax, 'number', 'min="1"')}
                 ${input('Reputation', 'reputation', p.reputation, 'number')}${input('Confirmed kills', 'kills', p.kills, 'number', 'min="0"')}
-                ${input('Currency / region', 'currencyName', p.currency.name)}${input('High denomination', 'gold', p.currency.gold, 'number', 'min="0"')}${input('Standard denomination', 'silver', p.currency.silver, 'number', 'min="0"')}
-                ${input('Fractional denomination', 'copper', p.currency.copper, 'number', 'min="0"')}
+                ${input('Currency / region', 'currencyName', p.currency.name)}${input('Gold coins', 'gold', p.currency.gold, 'number', 'min="0"')}${input('Silver coins', 'silver', p.currency.silver, 'number', 'min="0"')}
+                ${input('Copper coins', 'copper', p.currency.copper, 'number', 'min="0"')}
                 <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save progression'))}</button></form></details>`;
 }
 
@@ -4291,6 +4429,24 @@ async function onSubmit(event) {
             await persistState(state);
             notify('success', 'Character status saved.');
             break;
+        case 'journey-log-add': {
+            const entry = journeyLogEntry({ text: values.text, place: state.location.place, day: state.worldClock.dayName || `Day ${state.worldClock.day}`, kind: 'manual' });
+            if (!entry) return notify('warning', tr('What happened'));
+            appendJourneyLog(state, entry);
+            await persistState(state, 'journey-log');
+            notify('success', tr('Journey log saved.'));
+            break;
+        }
+        case 'journey-log-edit': {
+            const entry = state.journeyLogs.find(value => value.id === values.id);
+            const nextText = text(values.text, '', 500);
+            if (!entry || !nextText) return notify('warning', tr('What happened'));
+            entry.text = nextText;
+            entry.at = new Date().toISOString();
+            await persistState(state, 'journey-log');
+            notify('success', tr('Journey log saved.'));
+            break;
+        }
         case 'scene':
             {
             const knownPlace = WORLD_LOCATIONS.find(entry => entry.name === values.place) || WORLD_LOCATIONS.find(entry => entry.name === values.region);
@@ -4460,6 +4616,7 @@ async function onSubmit(event) {
             if (state.social.guilds.some(entry => entry.name.toLocaleLowerCase() === name.toLocaleLowerCase())) return notify('warning', getSettings().language === 'th' ? 'มีกิลด์ชื่อนี้อยู่แล้ว' : 'A guild with this name already exists.');
             if (!canAffordCurrency(state.progression.currency, GUILD_CREATION_FEE)) return notify('warning', `${tr('Not enough currency')}: ${currencyLabel(GUILD_CREATION_FEE)}`);
             state.progression.currency.gold -= GUILD_CREATION_FEE.gold;
+            appendCurrencyTransaction(state, { gold: -GUILD_CREATION_FEE.gold }, `Guild creation fee: ${name}`, 'guild');
             const guild = guildProfile({ name, description: values.description, leaderId: 'player', memberIds: [], treasury: { ...GUILD_CREATION_FEE } });
             if (!guild) return notify('warning', getSettings().language === 'th' ? 'สร้างกิลด์ไม่สำเร็จ' : 'The guild could not be created.');
             state.social.guilds.push(guild);
@@ -4576,15 +4733,20 @@ async function onSubmit(event) {
             }
             break;
         }
-        case 'rank':
+        case 'rank': {
+            const previousCurrency = clone(state.progression.currency);
             state.progression = {
                 ...state.progression, adventurerRank: values.adventurerRank, customRankName: values.customRankName, magicRank: values.magicRank,
                 swordRank: values.swordRank, experience: values.experience, experienceMax: values.experienceMax, reputation: values.reputation, kills: values.kills,
                 currency: { name: values.currencyName, gold: values.gold, silver: values.silver, copper: values.copper },
             };
+            state.progression.currency = normalize(state).progression.currency;
+            const balanceChange = currencyDelta(previousCurrency, state.progression.currency);
+            if (balanceChange.gold || balanceChange.silver || balanceChange.copper) appendCurrencyTransaction(state, balanceChange, 'Manual balance adjustment', 'manual');
             await persistState(state);
             notify('success', 'Progression saved.');
             break;
+        }
         case 'travel': {
             const namedDestination = mapLocation(values.destination);
             const isCoordinate = values.destination === '__coordinates__';
@@ -4607,6 +4769,7 @@ async function onSubmit(event) {
                 startedAtWorldMinutes: now, lastWorldMinutes: now,
             };
             state.journal.push({ id: uid(), text: `Began a ${totalDays}-day journey from ${origin} to ${destination.name}.`, at: new Date().toISOString() });
+            appendJourneyLog(state, { text: `Began a ${totalDays}-day journey from ${origin} to ${destination.name} via ${values.route || 'Road'}.`, place: origin, day: state.worldClock.dayName || `Day ${state.worldClock.day}`, kind: 'travel' });
             if (await persistState(state, 'travel')) {
                 const exact = values.place && values.place !== destination.name ? values.place : '';
                 await sendChatAction(getSettings().language === 'th'
@@ -4874,6 +5037,10 @@ async function onPanelClick(event) {
             state.inventory = state.inventory.filter(entry => entry.id !== id);
             await persistState(state);
             break;
+        case 'delete-journey-log':
+            state.journeyLogs = state.journeyLogs.filter(entry => entry.id !== id);
+            await persistState(state, 'journey-log');
+            break;
         case 'delete-skill':
             state.skills = state.skills.filter(entry => entry.id !== id);
             await persistState(state);
@@ -5083,20 +5250,6 @@ async function onPanelClick(event) {
         case 'delete-track':
             await removeAudioTrack(id);
             break;
-        case 'use-item': {
-            const entry = state.inventory.find(value => value.id === id);
-            if (entry) await sendChatAction(getSettings().language === 'th'
-                ? `ผู้เล่นใช้ ${entry.name} จากคลังสิ่งของ ตอบสนองต่อการใช้งานตามบริบทของฉากและยืนยันผลลัพธ์ในเนื้อเรื่อง`
-                : `The user used ${entry.name} from inventory. Resolve its use naturally in the current scene and confirm the outcome in the story.`, 'hidden');
-            break;
-        }
-        case 'pursue-quest': {
-            const entry = state.quests.find(value => value.id === id);
-            if (entry) await sendChatAction(getSettings().language === 'th'
-                ? `*ตัวผมมุ่งทำภารกิจ “${entry.name}” โดยมีเป้าหมายคือ ${entry.objective || 'ดำเนินภารกิจต่อ'}*`
-                : `*I focus on the quest "${entry.name}" and work toward this objective: ${entry.objective || 'continue the quest'}.*`);
-            break;
-        }
     }
 }
 
@@ -5685,6 +5838,29 @@ function applyPatchOperation(state, operation) {
         }
         return false;
     }
+    if (path === 'inventory' && verb === 'inc' && value && typeof value === 'object') {
+        const delta = number(value.quantity ?? value.amount ?? value.delta, 0, -99999, 99999);
+        if (!delta) return false;
+        const index = state.inventory.findIndex(entry => matchesPatchIdentity(entry, value));
+        if (index >= 0) {
+            const currentItem = state.inventory[index];
+            const nextQuantity = number(currentItem.quantity, 0, 0, 99999) + delta;
+            if (nextQuantity <= 0) state.inventory.splice(index, 1);
+            else state.inventory[index] = item({
+                ...currentItem,
+                ...(text(value.name) ? { name: value.name } : {}),
+                ...(text(value.category) ? { category: value.category } : {}),
+                ...(text(value.description) ? { description: value.description } : {}),
+                quantity: nextQuantity,
+            });
+            return true;
+        }
+        if (delta < 0) return false;
+        const candidate = item({ ...value, quantity: delta });
+        if (!candidate) return false;
+        state.inventory.push(candidate);
+        return true;
+    }
     if (!PATCH_COLLECTIONS.has(path)) return false;
     const collection = collectionForPatch(state, path);
     if (!Array.isArray(collection)) return false;
@@ -5747,7 +5923,10 @@ function isDuplicateQuestRewardOperation(state, operation) {
         && (meta.questId && entry.id === meta.questId || reason && reason.includes(entry.name.toLocaleLowerCase())));
     if (!claimed) return false;
     const [verb, path, value] = operation;
-    if (verb === 'inc') return Number(value) > 0 && (path === 'progression.experience' || path === 'progression.reputation' || path.startsWith('progression.currency.'));
+    if (verb === 'inc') {
+        if (path === 'inventory') return number(value?.quantity ?? value?.amount ?? value?.delta, 0, -99999, 99999) > 0;
+        return Number(value) > 0 && (path === 'progression.experience' || path === 'progression.reputation' || path.startsWith('progression.currency.'));
+    }
     return verb === 'upsert' && ['inventory', 'skills', 'proficiencies.techniques'].includes(path);
 }
 
@@ -5807,6 +5986,48 @@ function derivePatchNotifications(current, next, operations, levelUps) {
     return events.slice(0, 8);
 }
 
+function recordPatchTransactions(next, current, operations, summary) {
+    const running = {
+        gold: current.progression.currency.gold,
+        silver: current.progression.currency.silver,
+        copper: current.progression.currency.copper,
+    };
+    for (const operation of operations) {
+        const [verb, path, value] = operation;
+        const denomination = String(path || '').match(/^progression\.currency\.(gold|silver|copper)$/)?.[1];
+        if (!denomination || !['set', 'inc'].includes(verb)) continue;
+        const before = running[denomination];
+        const after = verb === 'inc'
+            ? Math.max(0, before + number(value, 0, -999999999, 999999999))
+            : Math.max(0, number(value, before, 0, 999999999));
+        running[denomination] = after;
+        const delta = after - before;
+        if (!delta) continue;
+        const meta = operationMeta(operation);
+        appendCurrencyTransaction(next, { [denomination]: delta }, meta.reason || summary || 'Role-play transaction', meta.category || 'roleplay', running);
+    }
+    const residual = currencyDelta(running, next.progression.currency);
+    if (residual.gold || residual.silver || residual.copper) {
+        const guildCreated = operations.some(operation => operation[0] === 'upsert' && operation[1] === 'guilds');
+        appendCurrencyTransaction(next, residual, guildCreated ? 'Guild creation fee' : summary || 'Role-play balance change', 'roleplay');
+    }
+}
+
+function significantJourneyOperation(current, next, operation) {
+    const [verb, path, value] = operation;
+    if (['player.level', 'player.profession', 'player.powerType', 'player.originSkill', 'progression.adventurerRank', 'progression.customRankName', 'progression.kills',
+        'location.place', 'location.region', 'location.continent', 'travel.status', 'travel.destination', 'travel.destinationPlace'].includes(path)) return true;
+    if (['skills', 'proficiencies.customMagic', 'proficiencies.customSword', 'proficiencies.techniques',
+        'party', 'guilds', 'household', 'partyMembers', 'guildMembers', 'householdMembers'].includes(path)) return ['upsert', 'delete'].includes(verb);
+    if (path === 'quests' && verb === 'upsert') {
+        const before = current.quests.find(entry => matchesPatchIdentity(entry, value));
+        const after = next.quests.find(entry => matchesPatchIdentity(entry, value));
+        return !before || before.status !== after?.status;
+    }
+    if (path === 'location.discovered') return true;
+    return false;
+}
+
 function applyStatePatch(current, patch) {
     if (!patch || typeof patch !== 'object' || !Array.isArray(patch.ops)) throw new Error('State patch is missing an ops array.');
     const candidate = clone(current);
@@ -5837,7 +6058,19 @@ function applyStatePatch(current, patch) {
     next.location.pins = clone(current.location.pins);
     const accepted = acceptedOps.length;
     const summary = text(patch.summary, accepted ? 'Role-play state updated.' : '', 300);
-    if (accepted && summary) next.journal = [...current.journal, { id: uid(), text: summary, at: new Date().toISOString() }].slice(-30);
+    if (accepted) {
+        recordPatchTransactions(next, current, acceptedOps, summary);
+        if (summary) next.journal = [...current.journal, { id: uid(), text: summary, at: new Date().toISOString() }].slice(-30);
+        const explicitJourney = text(patch.journey, '', 500);
+        const inferredJourney = acceptedOps.some(operation => significantJourneyOperation(current, next, operation)) ? summary : '';
+        const journeyText = explicitJourney || inferredJourney;
+        if (journeyText) appendJourneyLog(next, {
+            text: journeyText,
+            place: next.location.place,
+            day: next.worldClock.dayName || `Day ${next.worldClock.day}`,
+            kind: explicitJourney ? 'story' : 'milestone',
+        });
+    }
     return { next, accepted, summary, notifications: derivePatchNotifications(current, next, acceptedOps, levelUps) };
 }
 
@@ -5897,7 +6130,11 @@ function coerceStatePatch(raw) {
         walk(delta);
     }
     if (!operations.length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates)) return null;
-    return { ops: operations.slice(0, 75), summary: text(source.summary || raw.summary, '', 300) };
+    return {
+        ops: operations.slice(0, 75),
+        summary: text(source.summary || raw.summary, '', 300),
+        journey: text(source.journey || source.journeyLog || raw.journey || raw.journeyLog, '', 500),
+    };
 }
 
 function extractStatePatch(message) {
@@ -5943,6 +6180,7 @@ function extractStatePatch(message) {
     const combined = patches.length ? {
         ops: patches.flatMap(patch => patch.ops).slice(0, 75),
         summary: patches.map(patch => text(patch.summary, '', 300)).filter(Boolean).join('; ').slice(0, 300),
+        journey: [...patches].reverse().map(patch => text(patch.journey, '', 500)).find(Boolean) || '',
     } : null;
     return { visible: visible.trimEnd(), patch: combined, found };
 }
@@ -6348,6 +6586,7 @@ function bindChatEvents() {
     globalThis.addEventListener('character-life:skills-ready', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
     globalThis.addEventListener('character-life:skill-updated', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
     globalThis.addEventListener('character-life:portrait-replaced', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
+    globalThis.addEventListener('character-life:rpg-compatibility-updated', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
 }
 
 async function initialize() {
@@ -6374,7 +6613,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.13.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.14.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
