@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tretaresia — Dual World Map Mobile Preview</title>
+<style>
+:root{color-scheme:dark;--gold:#d6b458;--gold2:#f1d98b;--line:rgba(214,180,88,.34);--soft:rgba(214,180,88,.16);--ink:#eee8d9;--muted:#938c80;--bg:#030303;--panel:#090806}
+*{box-sizing:border-box}html,body{min-height:100%;margin:0;background:#111;color:var(--ink);font-family:inherit,system-ui,-apple-system,sans-serif}
+body{display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 0,#312914 0,transparent 34%),#0a0a0a}
+button{font:inherit}.phone{position:relative;width:min(393px,100vw);height:min(852px,calc(100dvh - 24px));overflow:hidden;background:linear-gradient(145deg,#080806,#020202 68%);border:1px solid #3d3420;border-radius:42px;box-shadow:0 32px 90px #000,inset 0 0 0 7px #000}
+.phone:before{content:"";position:absolute;z-index:20;top:8px;left:50%;width:116px;height:27px;transform:translateX(-50%);background:#000;border-radius:18px;pointer-events:none}
+.screen{height:100%;overflow:auto;scrollbar-width:none}.screen::-webkit-scrollbar{display:none}
+.status{position:sticky;z-index:12;top:0;display:flex;justify-content:space-between;align-items:center;height:48px;padding:10px 26px 0;background:#030303;font-size:13px;font-weight:800}.status-icons{display:flex;gap:6px;align-items:center}.battery{display:inline-grid;place-items:center;width:26px;height:12px;border:1px solid #ddd;border-radius:3px;font-size:8px}
+.app-header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 14px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(214,180,88,.08),transparent 48%)}
+.kicker{color:var(--gold);font-size:9px;font-weight:850;letter-spacing:.25em}.brand{margin:4px 0 0;font-family:Georgia,serif;font-size:27px;letter-spacing:.02em}.round{display:grid;place-items:center;width:39px;height:39px;color:var(--gold2);background:#111;border:1px solid var(--line)}
+.content{padding:15px 14px 36px}.module{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:11px 13px;border:1px solid var(--line);background:rgba(214,180,88,.025)}.module span{font-size:9px;color:var(--gold);letter-spacing:.2em}.module b{font-size:13px;letter-spacing:.08em}.module em{color:#635c50;font-size:10px;font-style:normal}
+.heading{margin:18px 2px 12px}.heading span{display:inline-block;padding:4px 8px;color:var(--gold);border:1px solid var(--line);font-size:8px;letter-spacing:.18em}.heading h1{margin:10px 0 3px;font-size:19px;letter-spacing:.06em}.heading p{margin:0;color:var(--muted);font-size:11px}
+.world-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}.world-tab{min-width:0;padding:10px 7px;color:#8f887d;background:#070707;border:1px solid var(--soft);font-size:9px;font-weight:800;letter-spacing:.04em}.world-tab span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.world-tab.active{color:#171105;background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:var(--gold2)}
+.time-tabs{display:flex;gap:6px;margin-bottom:8px}.time-tab{flex:1;padding:7px;color:var(--muted);background:#080808;border:1px solid var(--soft);font-size:9px}.time-tab.active{color:var(--gold2);border-color:var(--line);box-shadow:inset 0 -2px var(--gold)}
+.map-frame{overflow:hidden;border:1px solid var(--line);background:#031019}.map-stage{position:relative;overflow:hidden}.map-stage:before,.map-stage:after{content:"";position:absolute;z-index:3;width:18px;height:18px;pointer-events:none}.map-stage:before{top:7px;left:7px;border-top:1px solid var(--gold);border-left:1px solid var(--gold)}.map-stage:after{right:7px;bottom:7px;border-right:1px solid var(--gold);border-bottom:1px solid var(--gold)}
+.map-image{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;transition:opacity .2s ease}.markers{position:absolute;z-index:4;inset:0;pointer-events:none}.marker{position:absolute;display:grid;place-items:center;width:12px;height:12px;transform:translate(-50%,-50%) rotate(45deg);background:#eee2b8;border:2px solid #17140c;box-shadow:0 0 0 1px #d9b95c}.marker.current{width:17px;height:17px;background:var(--gold2);box-shadow:0 0 0 5px rgba(214,180,88,.18)}.marker-label{position:absolute;transform:translate(-50%,10px);max-width:110px;color:#fff8df;font-size:8px;font-weight:850;text-align:center;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:10px;padding:7px 9px;color:#847d71;background:#070707;border-top:1px solid var(--soft);font-size:8px}.legend i{display:inline-block;width:7px;height:7px;margin-right:4px;background:var(--gold2);transform:rotate(45deg)}
+.map-toolbar{display:grid;gap:7px;padding:8px;background:linear-gradient(180deg,#0d0c09,#050505);border-top:1px solid var(--line)}.readouts{display:grid;grid-template-columns:1fr 1fr;gap:5px}.readout{overflow:hidden;padding:7px;color:#9f9788;background:#020202;border:1px solid var(--soft);font-size:8px;white-space:nowrap;text-overflow:ellipsis}.readout b{color:var(--gold2)}
+.fullscreen-button{width:100%;padding:9px;color:var(--gold2);background:rgba(214,180,88,.06);border:1px solid var(--line);font-size:9px;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
+.dossier{margin-top:10px;padding:14px;background:#080808;border:1px solid var(--soft)}.eyebrow{color:var(--gold);font-size:8px;font-weight:800;letter-spacing:.2em}.dossier h2{margin:8px 0 3px;font-family:Georgia,serif;font-size:20px}.dossier p{margin:0;color:var(--muted);font-size:10px}.facts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}.fact{padding:8px;background:#030303;border:1px solid rgba(255,255,255,.05)}.fact small{display:block;color:#777065;font-size:7px;text-transform:uppercase}.fact b{display:block;overflow:hidden;margin-top:3px;color:#dcd4c4;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.difference{margin-top:10px;padding:12px;color:#bcb4a5;background:rgba(214,180,88,.035);border-left:2px solid var(--gold);font-size:9px;line-height:1.55}.difference b{color:var(--gold2)}
+.viewer{position:absolute;z-index:40;inset:0;display:none;grid-template-rows:auto minmax(0,1fr);padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);background:#020608}.viewer.open{display:grid}.viewer-head{display:grid;gap:3px;padding:18px 15px 10px;background:#050505;border-bottom:1px solid var(--line)}.viewer-head span{color:var(--gold);font-size:8px;letter-spacing:.2em}.viewer-head h3{overflow:hidden;margin:0;font-size:15px;text-overflow:ellipsis;white-space:nowrap}.viewer-head small{color:var(--muted);font-size:9px}.viewer-body{display:flex;flex-direction:column;min-height:0;overflow:auto}.viewer .map-frame{margin:auto 0 0;border-right:0;border-left:0}.viewer .map-image{aspect-ratio:4/3}.viewer .map-toolbar{position:sticky;bottom:0}.viewer-close{width:100%;padding:13px;color:#080603;background:var(--gold);border:0;font-size:10px;font-weight:900;letter-spacing:.15em}
+@media(max-height:720px){.phone{height:100dvh;border-radius:0}.content{padding-top:8px}.app-header{padding-top:10px}.heading{margin-top:10px}}
+@media(max-width:410px){body{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}.phone:before{top:5px}}
+</style>
+</head>
+<body>
+<main class="phone" aria-label="iPhone vertical preview">
+  <div class="screen">
+    <div class="status"><span>9:41</span><span class="status-icons">▮▮▮ ◉ <span class="battery">76</span></span></div>
+    <header class="app-header"><div><div class="kicker">TRETARESIA ROLE-PLAY</div><div class="brand">Tretaresia</div></div><button class="round" aria-label="Settings">☷</button></header>
+    <div class="content">
+      <div class="module"><span>WORLD ATLAS</span><b>DUAL WORLD MAP</b><em>09 / 13</em></div>
+      <section class="heading"><span>SYSTEM INTERFACE</span><h1 id="worldTitle">PRESENT WORLD</h1><p id="worldSubtitle">Present Era · six separated continents</p></section>
+      <div class="world-tabs" role="tablist">
+        <button class="world-tab active" data-world="present"><span>Present World</span></button>
+        <button class="world-tab" data-world="alternate"><span>Alternate Present World</span></button>
+      </div>
+      <div class="time-tabs"><button class="time-tab active" data-time="day">☀ DAY</button><button class="time-tab" data-time="night">☾ NIGHT</button></div>
+      <section class="map-frame" id="mapFrame">
+        <div class="map-stage"><img class="map-image" id="mapImage" src="assets/world-map/tiles/0/0-0.webp" alt="Present World daytime map"><div class="markers" id="markers"></div></div>
+        <div class="legend"><span><i></i>Current</span><span><i></i>Discovered</span><span><i></i>Marked</span><span>Drag · Pinch to zoom</span></div>
+        <div class="map-toolbar">
+          <div class="readouts"><span class="readout">WORLD · <b id="worldReadout">PRESENT</b></span><span class="readout">COORD · <b id="coordReadout">1200 E · 0900 S</b></span><span class="readout">LIGHT · <b id="lightReadout">DAY</b></span><span class="readout">SELECTED · <b id="selectedReadout">Central Crown</b></span></div>
+          <button class="fullscreen-button" id="openViewer">⛶ Open Fullscreen Map</button>
+        </div>
+      </section>
+      <section class="dossier"><div class="eyebrow">SELECTED LOCATION</div><h2 id="selectedTitle">Central Crown</h2><p id="selectedRegion">Central Continent · Crown Heartlands</p><div class="facts"><div class="fact"><small>Destinations</small><b id="destinationCount">126</b></div><div class="fact"><small>Geography</small><b id="geography">Separated continents</b></div><div class="fact"><small>World</small><b id="dossierWorld">Present World</b></div><div class="fact"><small>Lighting</small><b id="dossierLight">Day map</b></div></div></section>
+      <div class="difference" id="difference"><b>Present World:</b> พื้นที่หลักแยกออกเป็นหลายทวีป มีมหาสมุทรกว้างและเส้นทางเดินเรือเป็นแกนสำคัญ</div>
+    </div>
+  </div>
+  <section class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Fullscreen world map">
+    <header class="viewer-head"><span>FULLSCREEN WORLD VIEWER</span><h3 id="viewerTitle">Present World</h3><small id="viewerSubtitle">Day map · 1200 E · 0900 S</small></header>
+    <div class="viewer-body"><section class="map-frame"><div class="map-stage"><img class="map-image" id="viewerImage" src="assets/world-map/tiles/0/0-0.webp" alt="Fullscreen map"><div class="markers" id="viewerMarkers"></div></div><div class="legend"><span><i></i>Current</span><span><i></i>Discovered</span><span><i></i>Marked</span></div><div class="map-toolbar"><div class="readouts"><span class="readout">WORLD · <b id="viewerWorld">PRESENT</b></span><span class="readout">LIGHT · <b id="viewerLight">DAY</b></span></div><button class="viewer-close" id="closeViewer">CLOSE FULLSCREEN</button></div></section></div>
+  </section>
+</main>
+<script>
+const worlds={
+ present:{title:'PRESENT WORLD',name:'Present World',subtitle:'Present Era · six separated continents',short:'PRESENT',count:126,geo:'Separated continents',region:'Central Continent · Crown Heartlands',selected:'Central Crown',difference:'<b>Present World:</b> พื้นที่หลักแยกออกเป็นหลายทวีป มีมหาสมุทรกว้างและเส้นทางเดินเรือเป็นแกนสำคัญ',paths:{day:'assets/world-map/tiles/0/0-0.webp',night:'assets/world-map/tiles-night/0/0-0.webp'},markers:[['Central Crown',37,31,1],['Grand Crossroads',34,40],['Sunscar Port',18,70],['Verdant Court',84,63],['Duel Crown',86,17]]},
+ alternate:{title:'ALTERNATE PRESENT WORLD TRETARESIA',name:'Alternate Present World TRETARESIA',subtitle:'Alternate Present Era · expanded connected geography',short:'ALTERNATE',count:64,geo:'Expanded supercontinent',region:"Kaliasna Oryu's Sky Dominion",selected:'Chaos Breaker',difference:'<b>Alternate Present World:</b> ผืนดินเชื่อมต่อกันมากขึ้น มีเขตซากุระ–หิมะ ป่ายักษ์ อาณาจักรตะวันออก ทะเลทราย เมืองชายฝั่ง และ Chaos Breaker อยู่กลางแผ่นดิน',paths:{day:'assets/world-map/tiles-alternate/0/0-0.webp',night:'assets/world-map/tiles-alternate-night/0/0-0.webp'},markers:[['Chaos Breaker',45,44,1],['Eastern Tradition Kingdom',53,20],['Giantwood Sanctuary',62,27],['Aurelian Sand Crown',86,12],['Worldtree Court',88,58],['Blackwood Crown',26,74]]}
+};
+let activeWorld='present',activeTime='day';
+const $=id=>document.getElementById(id);
+function markerMarkup(entries){return entries.map(([name,x,y,current])=>`<span class="marker${current?' current':''}" style="left:${x}%;top:${y}%"></span><span class="marker-label" style="left:${x}%;top:${y}%">${name}</span>`).join('')}
+function render(){const w=worlds[activeWorld],src=w.paths[activeTime],light=activeTime==='day'?'DAY':'NIGHT';$('worldTitle').textContent=w.title;$('worldSubtitle').textContent=w.subtitle;$('mapImage').src=src;$('mapImage').alt=`${w.name} ${activeTime} map`;$('viewerImage').src=src;$('worldReadout').textContent=w.short;$('lightReadout').textContent=light;$('selectedReadout').textContent=w.selected;$('selectedTitle').textContent=w.selected;$('selectedRegion').textContent=w.region;$('destinationCount').textContent=w.count;$('geography').textContent=w.geo;$('dossierWorld').textContent=w.name;$('dossierLight').textContent=`${activeTime==='day'?'Day':'Night'} map`;$('difference').innerHTML=w.difference;$('markers').innerHTML=markerMarkup(w.markers);$('viewerMarkers').innerHTML=markerMarkup(w.markers);$('viewerTitle').textContent=w.name;$('viewerSubtitle').textContent=`${activeTime==='day'?'Day':'Night'} map · 1200 E · 0900 S`;$('viewerWorld').textContent=w.short;$('viewerLight').textContent=light;document.querySelectorAll('.world-tab').forEach(b=>b.classList.toggle('active',b.dataset.world===activeWorld));document.querySelectorAll('.time-tab').forEach(b=>b.classList.toggle('active',b.dataset.time===activeTime))}
+document.querySelectorAll('.world-tab').forEach(b=>b.onclick=()=>{activeWorld=b.dataset.world;render()});document.querySelectorAll('.time-tab').forEach(b=>b.onclick=()=>{activeTime=b.dataset.time;render()});$('openViewer').onclick=()=>{$('viewer').classList.add('open');$('closeViewer').focus()};$('closeViewer').onclick=()=>{$('viewer').classList.remove('open');$('openViewer').focus()};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('viewer').classList.remove('open')});render();
+</script>
+</body>
+</html>
