@@ -642,6 +642,64 @@ function worldContinentsFor(state, viewed = true) {
 function allMapLocation(id) {
     return ALL_WORLD_LOCATIONS.find(location => location.id === id);
 }
+
+function cleanDiscoveredLocations(values) {
+    return Array.isArray(values)
+        ? [...new Set(values.map(value => String(value || '').trim().slice(0, 120)).filter(Boolean))].slice(0, 500)
+        : [];
+}
+
+function discoveredLocationsFor(state, worldId = storyWorldId(state)) {
+    const location = state?.location || {};
+    const scoped = location.discoveredByWorld?.[worldId];
+    if (Array.isArray(scoped)) return cleanDiscoveredLocations(scoped);
+    return worldId === storyWorldId(state) ? cleanDiscoveredLocations(location.discovered) : [];
+}
+
+function setDiscoveredLocations(state, values, worldId = storyWorldId(state)) {
+    if (!state?.location || !WORLD_ATLASES[worldId]) return [];
+    const next = cleanDiscoveredLocations(values);
+    state.location.discoveredByWorld = {
+        ...(state.location.discoveredByWorld && typeof state.location.discoveredByWorld === 'object' ? state.location.discoveredByWorld : {}),
+        [worldId]: next,
+    };
+    if (worldId === storyWorldId(state)) state.location.discovered = [...next];
+    return next;
+}
+
+function addDiscoveredLocation(state, value, worldId = storyWorldId(state)) {
+    const name = String(value || '').trim().slice(0, 120);
+    if (!name) return false;
+    setDiscoveredLocations(state, [...discoveredLocationsFor(state, worldId), name], worldId);
+    return true;
+}
+
+function synchronizeActiveWorldDiscovery(state) {
+    if (!state?.location) return;
+    const worldId = storyWorldId(state);
+    setDiscoveredLocations(state, discoveredLocationsFor(state, worldId), worldId);
+}
+
+function npcAtlasKnowledge(state) {
+    const atlas = atlasById(state?.world?.id);
+    const locations = worldLocationsFor(state, false);
+    const regions = {};
+    for (const location of locations) {
+        regions[location.continent] ||= {};
+        regions[location.continent][location.region] ||= [];
+        regions[location.continent][location.region].push(location.name);
+    }
+    return {
+        activeWorld: { id: atlas.id, name: atlas.name, era: atlas.era },
+        isolationRule: 'This catalog contains only the active timeline. Never give an NPC knowledge of destinations from another world unless the story explicitly establishes that NPC has crossed worlds or received reliable inter-world information.',
+        knowledgeRule: 'These names are canonical geography, not universal personal knowledge. Judge what an individual NPC knows from origin, occupation, travel, education and established discoveries; do not reveal secret or dangerous sites without a plausible source.',
+        currentLocation: {
+            continent: state.location.continent, region: state.location.region, place: state.location.place,
+            discovered: discoveredLocationsFor(state, atlas.id),
+        },
+        regions,
+    };
+}
 const COLOR_PRESETS = {
     forge: { accent: '#d6b458', alt: '#f4dc93', ink: '#ece7da', surface: '#040404' },
     abyss: { accent: '#4fb8d8', alt: '#a8ecff', ink: '#e2eef2', surface: '#03080c' },
@@ -684,7 +742,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.18.1';
+const LAUNCHER_BIND_VERSION = '0.19.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -924,7 +982,7 @@ function defaultState() {
             currency: { name: 'Central Common Currency', gold: 0, silver: 0, copper: 0 },
         },
         worldClock: { day: 1, dayName: 'Day 1', time: '08:00', phase: 'Morning' },
-        location: { atlasVersion: 4, continent: 'Central Continent', region: 'Crown Heartlands', place: 'Central Crown', detail: '', zoneType: 'Safe Zone', mapX: PRESENT_WORLD_LOCATIONS[0].x, mapY: PRESENT_WORLD_LOCATIONS[0].y, heading: 0, discovered: ['Central Crown'], pins: [] },
+        location: { atlasVersion: 4, continent: 'Central Continent', region: 'Crown Heartlands', place: 'Central Crown', detail: '', zoneType: 'Safe Zone', mapX: PRESENT_WORLD_LOCATIONS[0].x, mapY: PRESENT_WORLD_LOCATIONS[0].y, heading: 0, discovered: ['Central Crown'], discoveredByWorld: { 'present-world': ['Central Crown'], 'alternate-present-world': [] }, pins: [] },
         travel: {
             status: 'Idle', origin: '', destination: '', route: 'Road', totalDays: 0, remainingDays: 0, notes: '',
             originX: null, originY: null, originContinent: '', originRegion: '', destinationX: null, destinationY: null,
@@ -1558,6 +1616,19 @@ function normalize(candidate, base = defaultState()) {
         phase: DAY_PHASES.includes(worldClock.phase) ? worldClock.phase : result.worldClock.phase,
     };
     const migrateAtlas = number(location.atlasVersion, 1, 1, 99) < 2;
+    const legacyDiscovered = cleanDiscoveredLocations(location.discovered);
+    const incomingDiscoveredByWorld = location.discoveredByWorld && typeof location.discoveredByWorld === 'object'
+        ? location.discoveredByWorld : null;
+    const fallbackDiscoveredByWorld = result.location.discoveredByWorld && typeof result.location.discoveredByWorld === 'object'
+        ? result.location.discoveredByWorld : {};
+    const discoveredByWorld = Object.fromEntries(Object.keys(WORLD_ATLASES).map(worldId => {
+        const scoped = incomingDiscoveredByWorld?.[worldId];
+        const fallbackScoped = fallbackDiscoveredByWorld[worldId];
+        const values = Array.isArray(scoped) ? scoped
+            : !incomingDiscoveredByWorld && worldId === requestedAtlas.id ? legacyDiscovered
+                : Array.isArray(fallbackScoped) ? fallbackScoped : [];
+        return [worldId, cleanDiscoveredLocations(values)];
+    }));
     result.location = {
         atlasVersion: 4,
         continent: text(location.continent, result.location.continent, 100),
@@ -1568,9 +1639,8 @@ function normalize(candidate, base = defaultState()) {
         mapX: migrateAtlas && migratedMapSite ? migratedMapSite.x : number(location.mapX, migratedMapSite?.x ?? result.location.mapX, 0, WORLD_MAP_WIDTH),
         mapY: migrateAtlas && migratedMapSite ? migratedMapSite.y : number(location.mapY, migratedMapSite?.y ?? result.location.mapY, 0, WORLD_MAP_HEIGHT),
         heading: number(location.heading, result.location.heading, 0, 359.999),
-        discovered: Array.isArray(location.discovered)
-            ? [...new Set(location.discovered.map(x => text(x, '', 120)).filter(Boolean))].slice(0, 100)
-            : result.location.discovered,
+        discovered: [...discoveredByWorld[requestedAtlas.id]],
+        discoveredByWorld,
         pins: Array.isArray(location.pins) ? location.pins.map(pin => ({
             id: text(pin?.id, uid(), 100), locationId: text(pin?.locationId, '', 100),
             worldId: WORLD_ATLASES[pin?.worldId] ? pin.worldId : WORLD_ATLAS.id,
@@ -1998,7 +2068,7 @@ function aiState(state) {
         world: state.world,
         progression: state.progression,
         worldClock: state.worldClock,
-        location: { ...state.location, pins: undefined },
+        location: { ...state.location, discovered: discoveredLocationsFor(state), discoveredByWorld: undefined, pins: undefined },
         travel: state.travel,
         scene: state.scene,
         sceneMap: aiSceneMap(state),
@@ -2086,6 +2156,7 @@ function patchInstructions() {
         'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, or explanation.',
         'Check affected systems: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit only affected values.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
+        'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
         'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
         'Money: record every confirmed gain or expense immediately on progression.currency.gold/silver/copper with {"reason":"what the money came from or was spent on","category":"currency"}. Every currency op needs a specific reason so Transaction History can explain it. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
@@ -2111,6 +2182,8 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
         lines.push('The active setting is Present World Tretaresia, a morally mixed, enormous world of six ocean-separated continents: Central Continent, The Great Forest, Great Land of Titan, Drinovia Continent, North Continent, and Baluguria Continent. Preserve established geography, long travel times, social prejudice, regional laws, power secrecy, and regional currencies. Most common monsters can speak understandable but broken human language.');
         lines.push('Present World canon: about one thousand years ago the Great War shattered the land and opened the oceans; hero Ars died and the Primordial Demon was sealed in a timeless dimension. Civilizations later rebuilt an uneasy harmony while war, invasion, prejudice, slavery, crime, kindness and cruelty continued together. The Great Academy charges steep tuition and admits every race, though prejudice remains. Human entry into the Great Forest is taboo and may bring punishment upon an entire family. Khaduzar is marked by the colossal stone hand gripping its own wrist. Drinovia plants the weapons and remains of the fallen where they died. The North can fall below -300 degrees. Baluguria is an exile, slave, gambling, pleasure-trade and underworld center.');
     }
+    lines.push('NPC Atlas Knowledge is strictly scoped to the active world below. A destination absent from this catalog is not established in the current timeline. Never leak or infer another timeline\'s geography through ordinary NPC knowledge.');
+    lines.push(JSON.stringify(npcAtlasKnowledge(state)));
     if (includeState) {
         lines.push('Canonical role-play state. Preserve it unless the story confirms a change.');
         lines.push('Current scene, location, inventory, ranks, conditions, skills, quests, NPC dossiers, contacts, physical letters, party, guilds, currency, and Household members are established facts. The NPC Codex and social invitations contain friendly NPCs only; hostile NPCs are excluded from those lists.');
@@ -2450,6 +2523,7 @@ function npcMapPoint(entry, state) {
 }
 
 function synchronizeWorldState(state, previous = state) {
+    synchronizeActiveWorldDiscovery(state);
     const travel = state.travel;
     const previousTravel = previous?.travel || {};
     const now = worldClockMinutes(state.worldClock);
@@ -2505,7 +2579,7 @@ function synchronizeWorldState(state, previous = state) {
         state.location.region = travel.destinationRegion || destinationSite?.region || state.location.region;
         state.location.place = travel.destinationPlace || destinationSite?.name || travel.destination || state.location.place;
         state.location.zoneType = destinationSite?.zone || state.location.zoneType;
-        if (state.location.place) state.location.discovered = [...new Set([...state.location.discovered, state.location.place])];
+        if (state.location.place) addDiscoveredLocation(state, state.location.place);
         if (!previous?.scene?.position || state.scene.position === previous.scene.position || /^Traveling|^En route/i.test(state.scene.position)) {
             state.scene.position = `Arrived at ${state.location.place}`;
         }
@@ -2522,7 +2596,7 @@ function synchronizeWorldState(state, previous = state) {
             state.location.region = directSite.region;
             state.location.place = directSite.name;
             state.location.zoneType = directSite.zone;
-            state.location.discovered = [...new Set([...state.location.discovered, directSite.name])];
+            addDiscoveredLocation(state, directSite.name);
         }
     }
 
@@ -3843,7 +3917,7 @@ function renderMap(panel, state) {
     } : selectedLocation || current;
     const mapVariant = worldMapVariant(state);
     const viewedPins = state.location.pins.filter(pin => (pin.worldId || WORLD_ATLAS.id) === atlas.id);
-    const discovered = new Set(state.location.discovered);
+    const discovered = new Set(discoveredLocationsFor(state, atlas.id));
     const pinIds = new Set(viewedPins.map(pin => pin.locationId));
     const exactSelected = selected.id === '__coordinates__';
     const selectedRecorded = exactSelected || discovered.has(selected.name);
@@ -4051,7 +4125,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         }
     }
 
-    const discovered = new Set(state.location.discovered);
+    const discovered = new Set(discoveredLocationsFor(state, worldId));
     const pinIds = new Set(viewedPins.map(pin => pin.locationId));
     mapRenderedPoints = [];
     const visible = locations.filter(location =>
@@ -5204,7 +5278,7 @@ async function onSubmit(event) {
                 label: values.label || destination?.name || 'Marked coordinate', note: values.note,
             };
             state.location.pins = [...state.location.pins.filter(pin => pin.id !== existing?.id), nextPin];
-            if (destination) state.location.discovered = [...new Set([...state.location.discovered, destination.name])];
+            if (destination) addDiscoveredLocation(state, destination.name, worldId);
             await persistState(state, 'map');
             notify('success', `${nextPin.label} marked at ${coordinatesLabel(x, y)}.`);
             break;
@@ -6212,8 +6286,7 @@ function applyPatchOperation(state, operation) {
         return true;
     }
     if (verb === 'add' && path === 'location.discovered' && typeof value === 'string') {
-        state.location.discovered = [...new Set([...state.location.discovered, text(value, '', 120)])].filter(Boolean);
-        return true;
+        return addDiscoveredLocation(state, text(value, '', 120));
     }
     if (SCENE_MAP_PATCH_COLLECTIONS.has(path)) return applySceneMapPatchOperation(state, verb, path, value);
     if (path === 'npcValues' && ['set', 'inc'].includes(verb) && value && typeof value === 'object') {
@@ -7043,7 +7116,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.18.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.19.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
