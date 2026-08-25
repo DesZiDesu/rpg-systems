@@ -742,7 +742,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.19.0';
+const LAUNCHER_BIND_VERSION = '0.19.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -3887,17 +3887,21 @@ function mapWorldToolbar(state, selected, fullscreen = false) {
 function mapSurfaceMarkup(state, selected, fullscreen = false) {
     const atlas = viewedAtlas(state);
     const variant = worldMapVariant(state);
-    return `<div class="tretaresia-map-frame${fullscreen ? ' is-viewer' : ''}" data-map-variant="${variant}" data-map-world="${atlas.id}" data-map-surface="${fullscreen ? 'fullscreen' : 'embedded'}">
-        <canvas class="tretaresia-world-map" role="img" aria-label="${html(`Interactive map of ${atlas.name}; tap or click anywhere to select exact coordinates`)}"></canvas>
-        <span class="tretaresia-map-ping" data-map-ping hidden></span>
-        <div class="tretaresia-map-legend">
-            <span><i class="current"></i>${html(tr('Current'))}</span>
-            <span><i class="known"></i>${html(tr('Discovered'))}</span>
-            <span><i class="marked"></i>${html(tr('Marked'))}</span>
-            <span><i class="npc"></i>${html(tr('Living NPCs'))}</span>
-            <small>${html(tr('Drag to pan · Pinch or scroll to zoom'))}</small>
+    return `<div class="tretaresia-map-surface${fullscreen ? ' is-viewer' : ''}">
+        <div class="tretaresia-map-frame${fullscreen ? ' is-viewer' : ''}" data-map-variant="${variant}" data-map-world="${atlas.id}" data-map-surface="${fullscreen ? 'fullscreen' : 'embedded'}">
+            <canvas class="tretaresia-world-map" role="img" aria-label="${html(`Interactive map of ${atlas.name}; tap or click anywhere to select exact coordinates`)}"></canvas>
+            <span class="tretaresia-map-ping" data-map-ping hidden></span>
         </div>
-        ${mapWorldToolbar(state, selected, fullscreen)}
+        <div class="tretaresia-map-control-panel" aria-label="${html(tr('Map controls'))}">
+            <div class="tretaresia-map-legend">
+                <span><i class="current"></i>${html(tr('Current'))}</span>
+                <span><i class="known"></i>${html(tr('Discovered'))}</span>
+                <span><i class="marked"></i>${html(tr('Marked'))}</span>
+                <span><i class="npc"></i>${html(tr('Living NPCs'))}</span>
+                <small>${html(tr('Drag to pan · Pinch or scroll to zoom'))}</small>
+            </div>
+            ${mapWorldToolbar(state, selected, fullscreen)}
+        </div>
     </div>`;
 }
 
@@ -7116,7 +7120,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.19.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.19.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

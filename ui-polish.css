@@ -4756,3 +4756,114 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
         z-index: 5;
     }
 }
+
+/* v0.19.1 — keep the atlas canvas completely unobstructed.
+   The legacy core stylesheet positions the toolbar absolutely; the map surface
+   now owns a separate sibling panel and these resets make that separation
+   explicit in embedded and fullscreen layouts. */
+.tretaresia-map-surface {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    gap: .55rem;
+}
+
+.tretaresia-map-surface > .tretaresia-map-frame {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* The canvas layer contains only the map and its non-interactive coordinate ping. */
+.tretaresia-map-surface > .tretaresia-map-frame > .tretaresia-map-toolbar,
+.tretaresia-map-surface > .tretaresia-map-frame > .tretaresia-map-legend,
+.tretaresia-map-surface > .tretaresia-map-frame > button {
+    display: none !important;
+}
+
+.tretaresia-map-control-panel {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto;
+    display: grid;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--tf-panel);
+    border: 1px solid var(--tf-line-soft);
+}
+
+.tretaresia-map-control-panel > .tretaresia-map-legend {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto;
+    width: auto;
+    margin: 0;
+    border-top: 0;
+    border-bottom: 1px solid var(--tf-line-soft);
+}
+
+.tretaresia-map-control-panel > .tretaresia-map-toolbar {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    transform: none !important;
+    border-top: 0;
+}
+
+/* Fullscreen is a dedicated viewport, but its controls remain below the map. */
+.tretaresia-map-window-body {
+    place-items: start center;
+    align-content: start;
+    padding: .65rem;
+}
+
+.tretaresia-map-window .tretaresia-map-surface.is-viewer {
+    width: min(100%, calc((100dvh - 275px) * 4 / 3));
+    max-width: 100%;
+    margin: auto;
+}
+
+.tretaresia-map-window .tretaresia-map-surface.is-viewer > .tretaresia-map-frame.is-viewer {
+    display: block;
+    width: 100%;
+    max-height: none;
+    margin: 0;
+    border: 1px solid var(--tf-line-soft);
+}
+
+.tretaresia-map-window .tretaresia-map-control-panel,
+.tretaresia-map-window .tretaresia-map-toolbar {
+    position: static !important;
+    inset: auto !important;
+    bottom: auto !important;
+}
+
+@media (max-width: 680px) {
+    .tretaresia-map-surface {
+        gap: .45rem;
+    }
+
+    .tretaresia-map-window-body {
+        padding: .35rem;
+    }
+
+    .tretaresia-map-window .tretaresia-map-surface.is-viewer {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .tretaresia-map-control-panel > .tretaresia-map-legend {
+        padding: .48rem .55rem;
+    }
+}
+
