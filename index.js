@@ -752,7 +752,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.20.0';
+const LAUNCHER_BIND_VERSION = '0.21.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -901,6 +901,7 @@ let selectedNpcId = null;
 let npcPortraitRenderToken = 0;
 let npcEditorObjectUrl = '';
 const npcPortraitObjectUrls = new Map();
+let characterLifeMapMarkerCache = null;
 let activityHideTimer = null;
 let activityState = { mode: 'ready', label: 'Ready', detail: '', visible: false };
 let pendingComposerDraft = null;
@@ -2355,6 +2356,29 @@ function characterLifeNpcFor(entry) {
     }
 }
 
+function characterLifeMapMarkers(force = false) {
+    const bridge = characterLifeBridge();
+    if (!bridge || typeof bridge.listMapMarkers !== 'function') return [];
+    if (!force && characterLifeMapMarkerCache) return characterLifeMapMarkerCache;
+    try {
+        const markers = bridge.listMapMarkers({ includeHidden: true, includeDisabled: false, includeDead: false });
+        characterLifeMapMarkerCache = Array.isArray(markers) ? markers : [];
+        return characterLifeMapMarkerCache;
+    } catch (error) {
+        console.warn('[Tretaresia RPG] Character Life map marker lookup failed safely.', error);
+        return characterLifeMapMarkerCache || [];
+    }
+}
+
+function invalidateCharacterLifeMapMarkers() {
+    characterLifeMapMarkerCache = null;
+}
+
+function mapNpcIdentity(entry) {
+    return [entry?.name, ...(Array.isArray(entry?.aliases) ? entry.aliases : [])]
+        .map(value => text(value, '', 120).toLocaleLowerCase()).filter(Boolean);
+}
+
 function characterLifeSkillsForOwner(owner) {
     const bridge = characterLifeBridge();
     if (!bridge) return [];
@@ -3447,6 +3471,9 @@ function activateTab(id) {
     overlay.querySelectorAll('.tretaresia-module-dots i').forEach((dot, dotIndex) => dot.classList.toggle('on', dotIndex === index));
     if (next === current) return;
     if (current?.dataset.panel === 'map' && id !== 'map') suspendMapRendering(false);
+    const state = getState();
+    renderPanel(id, next, state);
+    if (id === 'npcs') void hydrateNpcPortraits(next, state);
     const transition = ++tabTransitionToken;
     current?.classList.add('is-leaving');
     const finish = () => {
@@ -3491,27 +3518,27 @@ function meterView(label, value, icon, tone) {
         </div><small>${percent}%</small></article>`;
 }
 
+function renderPanel(id, panel, state) {
+    const renderers = {
+        status: renderStatus, scene: renderScene, inventory: renderInventory, skills: renderSkillStorage,
+        techniques: renderTechniques, quests: renderQuests, rank: renderRank, groups: renderGroups,
+        household: renderHousehold, map: renderMap, npcs: renderNpcs, mail: renderMailbox, music: renderMusic,
+    };
+    renderers[id]?.(panel, state);
+}
+
 function renderAll(state = getState()) {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
-    if (!overlay) return;
-    renderStatus(overlay.querySelector('[data-panel="status"]'), state);
-    renderScene(overlay.querySelector('[data-panel="scene"]'), state);
-    renderInventory(overlay.querySelector('[data-panel="inventory"]'), state);
-    renderSkillStorage(overlay.querySelector('[data-panel="skills"]'), state);
-    renderTechniques(overlay.querySelector('[data-panel="techniques"]'), state);
-    renderQuests(overlay.querySelector('[data-panel="quests"]'), state);
-    renderRank(overlay.querySelector('[data-panel="rank"]'), state);
-    renderGroups(overlay.querySelector('[data-panel="groups"]'), state);
-    renderHousehold(overlay.querySelector('[data-panel="household"]'), state);
-    renderMap(overlay.querySelector('[data-panel="map"]'), state);
-    renderNpcs(overlay.querySelector('[data-panel="npcs"]'), state);
-    renderMailbox(overlay.querySelector('[data-panel="mail"]'), state);
-    renderMusic(overlay.querySelector('[data-panel="music"]'), state);
+    if (!overlay?.classList.contains('is-open')) return;
+    const panel = overlay.querySelector('[data-panel].is-active')
+        || overlay.querySelector(`[data-panel="${TAB_ORDER[activeTabIndex] || 'status'}"]`);
+    const id = panel?.dataset.panel;
+    if (id) renderPanel(id, panel, state);
     const label = overlay.querySelector('#tretaresia-context-label');
     if (label) label.innerHTML = SillyTavern.getContext().getCurrentChatId?.()
         ? `<i class="fa-solid fa-location-dot"></i> ${html(state.location.region)} · ${html(state.location.place)}`
         : `<i class="fa-solid fa-triangle-exclamation"></i> ${html(tr('Open a chat to activate this system'))}`;
-    void hydrateNpcPortraits(overlay, state);
+    if (id === 'npcs') void hydrateNpcPortraits(panel, state);
 }
 
 function rankInsignia(progression) {
@@ -4244,6 +4271,12 @@ function worldTile(level, column, row, worldId = WORLD_ATLAS.id, variant = 'day'
     return record;
 }
 
+function cachedWorldTile(level, column, row, worldId = WORLD_ATLAS.id, variant = 'day') {
+    const safeWorldId = WORLD_ATLASES[worldId] ? worldId : WORLD_ATLAS.id;
+    const safeVariant = variant === 'night' ? 'night' : 'day';
+    return mapTileCache.get(`${safeWorldId}/${safeVariant}/${level.z}/${column}-${row}`) || null;
+}
+
 function mapCanvasPoint(x, y, width, height) {
     return {
         x: (x * mapView.scale + mapView.x) / WORLD_MAP_WIDTH * width,
@@ -4307,8 +4340,10 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     context.imageSmoothingQuality = mapInteracting ? 'low' : 'medium';
 
     {
-        const fallback = worldTile(WORLD_TILE_LEVELS[0], 0, 0, worldId, variant);
-        if (fallback.status === 'ready') {
+        const fallback = mapInteracting
+            ? cachedWorldTile(WORLD_TILE_LEVELS[0], 0, 0, worldId, variant)
+            : worldTile(WORLD_TILE_LEVELS[0], 0, 0, worldId, variant);
+        if (fallback?.status === 'ready') {
             context.drawImage(fallback.image, 0, 0, WORLD_MAP_WIDTH, WORLD_MAP_HEIGHT);
         }
         const level = worldTileLevel();
@@ -4322,8 +4357,8 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         const lastRow = Math.min(level.rows - 1, Math.floor(Math.max(0, sourceBottom - 1) / WORLD_TILE_SIZE));
         for (let row = firstRow; row <= lastRow; row += 1) {
             for (let column = firstColumn; column <= lastColumn; column += 1) {
-                const tile = worldTile(level, column, row, worldId, variant);
-                if (tile.status !== 'ready') continue;
+                const tile = mapInteracting ? cachedWorldTile(level, column, row, worldId, variant) : worldTile(level, column, row, worldId, variant);
+                if (tile?.status !== 'ready') continue;
                 context.drawImage(tile.image,
                     column * WORLD_TILE_SIZE / level.width * WORLD_MAP_WIDTH,
                     row * WORLD_TILE_SIZE / level.height * WORLD_MAP_HEIGHT,
@@ -4338,18 +4373,40 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     // The atlas deliberately renders only continent names plus lightweight
     // player/NPC positions. All 124/306 destination records remain available
     // to travel, quests, NPC knowledge and the main-chat state prompt.
-    if (!mapInteracting) {
-        for (const continent of continents) {
-            const point = mapCanvasPoint(continent.label[0], continent.label[1], canvas.width, canvas.height);
-            drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, {
-                size: Math.max(14 * pixelRatio, canvas.width / 74), weight: 800, color: 'rgba(255,248,218,.94)', stroke: 'rgba(7,17,20,.92)',
-            });
-        }
+    for (const continent of continents) {
+        const point = mapCanvasPoint(continent.label[0], continent.label[1], canvas.width, canvas.height);
+        drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, {
+            size: Math.max(14 * pixelRatio, canvas.width / 74), weight: 800, color: 'rgba(255,248,218,.94)', stroke: 'rgba(7,17,20,.92)',
+        });
     }
 
     if (viewingCurrentWorld && getSettings().showNpcMapMarkers) {
-        const visibleNpcs = friendlyNpcs(state).filter(entry => entry.mapVisible).slice(0, 40);
-        for (const entry of visibleNpcs) {
+        const characterLifeMarkers = characterLifeMapMarkers();
+        const matchedCharacterLifeKeys = new Set();
+        const nativeNpcs = friendlyNpcs(state).filter(entry => entry.mapVisible);
+        const characterLifeById = new Map();
+        const characterLifeByName = new Map();
+        for (const marker of characterLifeMarkers) {
+            characterLifeById.set(`${marker.scope}:${marker.id}`, marker);
+            mapNpcIdentity(marker).forEach(name => characterLifeByName.set(name, marker));
+        }
+        const markerForNative = entry => {
+            if (entry.characterLifeId && entry.characterLifeScope) {
+                const linked = characterLifeById.get(`${entry.characterLifeScope}:${entry.characterLifeId}`);
+                if (linked) return linked;
+            }
+            if (entry.characterLifeId) {
+                const linked = characterLifeMarkers.find(marker => marker.id === entry.characterLifeId);
+                if (linked) return linked;
+            }
+            return mapNpcIdentity(entry).map(name => characterLifeByName.get(name)).find(Boolean) || null;
+        };
+        for (const entry of nativeNpcs) {
+            const linkedMarker = markerForNative(entry);
+            if (linkedMarker) {
+                matchedCharacterLifeKeys.add(linkedMarker.key || `${linkedMarker.scope}:${linkedMarker.id}`);
+                if (linkedMarker.mapVisible === false) continue;
+            }
             const npcPoint = npcMapPoint(entry, state);
             if (!npcPoint || npcPoint.x < bounds.left || npcPoint.x > bounds.right || npcPoint.y < bounds.top || npcPoint.y > bounds.bottom) continue;
             const point = mapCanvasPoint(npcPoint.x, npcPoint.y, canvas.width, canvas.height);
@@ -4369,6 +4426,36 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
             context.fillText(entry.name.charAt(0).toUpperCase() || '?', point.x, point.y + .5 * pixelRatio);
             context.restore();
             mapRenderedPoints.push({ type: 'npc', id: entry.id, x: point.x, y: point.y, radius: 22 * pixelRatio });
+        }
+        for (const marker of characterLifeMarkers) {
+            const markerKey = marker.key || `${marker.scope}:${marker.id}`;
+            if (marker.mapVisible === false || matchedCharacterLifeKeys.has(markerKey)) continue;
+            const npcPoint = npcMapPoint({
+                ...marker,
+                location: marker.location || marker.currentState,
+                mapVisible: true,
+            }, state);
+            if (!npcPoint || npcPoint.x < bounds.left || npcPoint.x > bounds.right || npcPoint.y < bounds.top || npcPoint.y > bounds.bottom) continue;
+            const point = mapCanvasPoint(npcPoint.x, npcPoint.y, canvas.width, canvas.height);
+            const size = 7 * pixelRatio;
+            context.save();
+            context.fillStyle = palette.accent;
+            context.strokeStyle = palette.halo;
+            context.lineWidth = 2 * pixelRatio;
+            context.beginPath();
+            context.arc(point.x, point.y, size, 0, Math.PI * 2);
+            context.fill();
+            context.stroke();
+            context.fillStyle = readableOn(palette.accent);
+            context.font = `800 ${Math.max(8, 8 * pixelRatio)}px system-ui, sans-serif`;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text(marker.name, '?', 120).charAt(0).toUpperCase() || '?', point.x, point.y + .5 * pixelRatio);
+            context.restore();
+            mapRenderedPoints.push({
+                type: 'character-life-npc', id: marker.id, scope: marker.scope,
+                x: point.x, y: point.y, radius: 22 * pixelRatio,
+            });
         }
     }
 
@@ -5913,44 +6000,25 @@ function resizePortrait(file) {
 
 function updateMapTransform() {
     clampMapView();
-    if (mapInteracting && applyMapCompositorPreview()) return;
-    scheduleMapDetailRender();
+    scheduleMapDraw();
 }
 
 function beginMapCompositorPreview(canvas) {
-    if (!(canvas instanceof HTMLCanvasElement) || mapGestureBase) return;
-    const frameRect = canvas.parentElement?.getBoundingClientRect();
-    if (!frameRect?.width || !frameRect?.height) return;
-    mapGestureBase = {
-        canvas,
-        scale: mapView.scale,
-        x: mapView.x,
-        y: mapView.y,
-        width: frameRect.width,
-        height: frameRect.height,
-    };
-    canvas.classList.add('is-compositing');
+    if (!(canvas instanceof HTMLCanvasElement)) return;
+    // Redraw the existing decoded tiles on each animation frame. Transforming
+    // one frozen canvas bitmap was fast on desktop but stalls on iOS WebKit.
+    mapGestureBase = null;
+    mapInteracting = true;
 }
 
 function applyMapCompositorPreview() {
-    const base = mapGestureBase;
-    if (!base?.canvas?.isConnected || !base.scale) return false;
-    const ratio = mapView.scale / base.scale;
-    const tx = (mapView.x - base.x * ratio) / WORLD_MAP_WIDTH * base.width;
-    const ty = (mapView.y - base.y * ratio) / WORLD_MAP_HEIGHT * base.height;
-    base.canvas.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${ratio})`;
-    return true;
+    return false;
 }
 
 function finishMapCompositorPreview(panel, state = getState()) {
-    const canvas = mapGestureBase?.canvas;
-    if (canvas) {
-        canvas.style.transform = '';
-        canvas.classList.remove('is-compositing');
-    }
     mapGestureBase = null;
     mapInteracting = false;
-    drawWorldMap(panel, state);
+    scheduleMapDraw(panel, state);
 }
 
 function clampMapView() {
@@ -6096,6 +6164,11 @@ function setupMapInteractions(panel) {
                 selectedNpcId = hit.id;
                 if (mapFullscreen) setMapFullscreen(false);
                 activateTab('npcs');
+                pointerStart = null;
+                return;
+            }
+            if (hit?.type === 'character-life-npc') {
+                characterLifeBridge()?.openNpcLibrary?.({ scope: hit.scope, id: hit.id });
                 pointerStart = null;
                 return;
             }
@@ -7117,6 +7190,16 @@ function syncLauncherVisibility() {
     if (launcher) launcher.hidden = !getSettings().showWandLauncher;
 }
 
+function closeHostWandMenu() {
+    requestAnimationFrame(() => {
+        const menu = document.getElementById('extensionsMenu');
+        if (!menu || !menu.getClientRects().length) return;
+        const toggle = document.querySelector('#extensionsMenuButton, [data-drawer-id="extensionsMenu"], [aria-controls="extensionsMenu"]');
+        if (toggle instanceof HTMLElement) toggle.click();
+        else globalThis.jQuery?.(menu).stop(true, true).slideUp(0);
+    });
+}
+
 function createWandLauncher() {
     const menu = document.getElementById('extensionsMenu');
     if (!menu) return false;
@@ -7143,8 +7226,8 @@ function createWandLauncher() {
     const activate = event => {
         if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
-        event.stopPropagation();
         openInterface();
+        closeHostWandMenu();
     };
     launcher.onclick = activate;
     launcher.onkeydown = activate;
@@ -7241,6 +7324,7 @@ function bindChatEvents() {
     const { eventSource, eventTypes } = SillyTavern.getContext();
     eventSource.on(eventTypes.CHAT_CHANGED, async () => {
         cleanupAudio();
+        invalidateCharacterLifeMapMarkers();
         suspendMapRendering(true);
         clearNpcPortraitObjectUrls();
         closePortraitEditor();
@@ -7275,11 +7359,22 @@ function bindChatEvents() {
         if (!generationType || generationType === 'normal') updatePrompt();
     });
     eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => processAssistantPatch(messageId, generationType));
-    globalThis.addEventListener('character-life:rpg-bridge-ready', () => queueCharacterLifeCompatibilityRefresh({ save: true }));
+    globalThis.addEventListener('character-life:rpg-bridge-ready', () => {
+        invalidateCharacterLifeMapMarkers();
+        queueCharacterLifeCompatibilityRefresh({ save: true });
+    });
     globalThis.addEventListener('character-life:skills-ready', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
     globalThis.addEventListener('character-life:skill-updated', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
     globalThis.addEventListener('character-life:portrait-replaced', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
-    globalThis.addEventListener('character-life:rpg-compatibility-updated', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
+    globalThis.addEventListener('character-life:rpg-compatibility-updated', () => {
+        invalidateCharacterLifeMapMarkers();
+        queueCharacterLifeCompatibilityRefresh({ save: false });
+    });
+    globalThis.addEventListener('character-life:map-markers-updated', () => {
+        invalidateCharacterLifeMapMarkers();
+        const panel = document.querySelector('[data-panel="map"].is-active');
+        if (panel) scheduleMapDraw(panel, getState());
+    });
 }
 
 async function initialize() {
@@ -7318,7 +7413,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.20.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.21.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
