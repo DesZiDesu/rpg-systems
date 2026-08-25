@@ -90,8 +90,8 @@ const WORLD_MAP_WIDTH = 2400;
 const WORLD_MAP_HEIGHT = 1800;
 const WORLD_TILE_SIZE = 512;
 const WORLD_ATLASES = Object.freeze({
-    'present-world': Object.freeze({ id: 'present-world', name: 'Present World', era: 'Present Era', atlasVersion: 3 }),
-    'alternate-present-world': Object.freeze({ id: 'alternate-present-world', name: 'Alternate Present World TRETARESIA', era: 'Alternate Present Era', atlasVersion: 3 }),
+    'present-world': Object.freeze({ id: 'present-world', name: 'Present World', era: 'Present Era', atlasVersion: 4 }),
+    'alternate-present-world': Object.freeze({ id: 'alternate-present-world', name: 'Alternate Present World TRETARESIA', era: 'Alternate Present Era', atlasVersion: 4 }),
 });
 const WORLD_ATLAS = WORLD_ATLASES['present-world'];
 const WORLD_TILE_ROOTS = Object.freeze({
@@ -433,6 +433,133 @@ const ALTERNATE_WORLD_LOCATIONS = [
     exactMapSite('alt-black-compass-atoll', 'Black Compass Atoll', 'Inner Sea Archipelago', 'Black Compass Sea', 1464, 1278, 2, 'atoll', 'Danger Zone'),
     exactMapSite('alt-central-tideway', 'Central Tideway', 'Inner Sea Archipelago', 'Central Passage', 1344, 1152, 2, 'sea-route', 'Neutral Zone'),
     exactMapSite('alt-glassbell-island', 'Glassbell Island', 'Inner Sea Archipelago', 'Western Inner Sea', 840, 936, 2, 'island', 'Neutral Zone'),
+    // Westreach Crownlands — dense heartland, coast, mountain and sky-domain routes.
+    exactMapSite('alt-ironbell-city', 'Ironbell City', 'Westreach Crownlands', 'Iron Vale', 720, 540, 1, 'city', 'Safe Zone'),
+    exactMapSite('alt-crownroad-market', 'Crownroad Market', 'Westreach Crownlands', 'Kingroads', 840, 684, 1, 'market', 'Safe Zone'),
+    exactMapSite('alt-whitecliff-watch', 'Whitecliff Watch', 'Westreach Crownlands', 'Northern Crown', 696, 306, 2, 'tower', 'Neutral Zone'),
+    exactMapSite('alt-northstar-village', 'Northstar Village', 'Westreach Crownlands', 'Northern Crown', 768, 342, 2, 'village', 'Safe Zone'),
+    exactMapSite('alt-hollow-crown-mine', 'Hollow Crown Mine', 'Westreach Crownlands', 'Graypine Range', 864, 522, 2, 'mine', 'Danger Zone'),
+    exactMapSite('alt-graypine-monastery', 'Graypine Monastery', 'Westreach Crownlands', 'Graypine Range', 936, 594, 2, 'monastery', 'Safe Zone'),
+    exactMapSite('alt-old-king-road', 'Old King Road', 'Westreach Crownlands', 'Old Kingdom Basin', 648, 612, 2, 'road', 'Neutral Zone'),
+    exactMapSite('alt-mirrorfen', 'Mirrorfen', 'Westreach Crownlands', 'Bluewater Vale', 480, 756, 2, 'swamp', 'Danger Zone'),
+    exactMapSite('alt-liongate', 'Liongate', 'Westreach Crownlands', 'Pilgrim Downs', 792, 846, 1, 'gate', 'Safe Zone'),
+    exactMapSite('alt-western-windmill', 'Western Windmill', 'Westreach Crownlands', 'Pilgrim Downs', 552, 702, 2, 'village', 'Safe Zone'),
+    exactMapSite('alt-moonbridge', 'Moonbridge', 'Westreach Crownlands', 'Bluewater Vale', 672, 882, 2, 'bridge', 'Neutral Zone'),
+    exactMapSite('alt-ravenwatch', 'Ravenwatch', 'Westreach Crownlands', 'Southern March', 960, 864, 2, 'tower', 'Danger Zone'),
+    exactMapSite('alt-cinderfield', 'Cinderfield', 'Westreach Crownlands', 'Southern March', 984, 990, 2, 'battlefield', 'Danger Zone'),
+    exactMapSite('alt-stormharbor', 'Stormharbor', 'Westreach Crownlands', 'Western Coast', 312, 612, 1, 'port', 'Safe Zone'),
+    exactMapSite('alt-drowned-cathedral', 'Drowned Cathedral', 'Westreach Crownlands', 'Western Sea', 336, 792, 2, 'ruin', 'Danger Zone'),
+    exactMapSite('alt-cloudfall-steps', 'Cloudfall Steps', 'Westreach Crownlands', "Kaliasna Oryu's Sky Dominion", 1008, 720, 2, 'mountain-pass', 'Danger Zone'),
+    exactMapSite('alt-dragons-shadow-village', "Dragon's Shadow Village", 'Westreach Crownlands', "Kaliasna Oryu's Sky Dominion", 984, 774, 1, 'village', 'Neutral Zone'),
+
+    // Sakura-Frost Dominion — cities, sacred sites, snowfields and giantwood settlements.
+    exactMapSite('alt-crimson-torii-city', 'Crimson Torii City', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1392, 396, 1, 'city', 'Safe Zone'),
+    exactMapSite('alt-shirogane-keep', 'Shirogane Keep', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1512, 342, 1, 'fortress', 'Safe Zone'),
+    exactMapSite('alt-hanakage-village', 'Hanakage Village', 'Sakura-Frost Dominion', 'Blossom Coast', 1272, 594, 2, 'village', 'Safe Zone'),
+    exactMapSite('alt-yukimori-fort', 'Yukimori Fort', 'Sakura-Frost Dominion', 'Eastern Snowwall', 1632, 432, 1, 'fortress', 'Neutral Zone'),
+    exactMapSite('alt-kitsune-falls', 'Kitsune Falls', 'Sakura-Frost Dominion', 'Petal Snowfields', 1440, 540, 2, 'waterfall', 'Neutral Zone'),
+    exactMapSite('alt-sakura-road', 'Sakura Road', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1320, 468, 2, 'road', 'Safe Zone'),
+    exactMapSite('alt-snow-lantern-port', 'Snow Lantern Port', 'Sakura-Frost Dominion', 'Blossom Coast', 1152, 558, 1, 'port', 'Safe Zone'),
+    exactMapSite('alt-ice-petal-lake', 'Ice-Petal Lake', 'Sakura-Frost Dominion', 'Petal Snowfields', 1488, 450, 2, 'lake', 'Neutral Zone'),
+    exactMapSite('alt-cedar-sword-dojo', 'Cedar Sword Dojo', 'Sakura-Frost Dominion', 'White Cedar Heights', 1536, 288, 2, 'dojo', 'Safe Zone'),
+    exactMapSite('alt-thousand-bells', 'Temple of a Thousand Bells', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1344, 324, 2, 'temple', 'Safe Zone'),
+    exactMapSite('alt-oni-gate', 'Oni Gate', 'Sakura-Frost Dominion', 'Eastern Snowwall', 1680, 504, 2, 'gate', 'Danger Zone'),
+    exactMapSite('alt-moon-rabbit-fields', 'Moon-Rabbit Fields', 'Sakura-Frost Dominion', 'Petal Snowfields', 1368, 684, 2, 'farmland', 'Safe Zone'),
+    exactMapSite('alt-frost-dragon-cave', 'Frost Dragon Cave', 'Sakura-Frost Dominion', 'Eastern Snowwall', 1608, 594, 2, 'lair', 'Danger Zone'),
+    exactMapSite('alt-pink-snow-basin', 'Pink-Snow Basin', 'Sakura-Frost Dominion', 'Petal Snowfields', 1248, 666, 2, 'wilderness', 'Neutral Zone'),
+    exactMapSite('alt-great-tree-village', 'Great-Tree Village', 'Sakura-Frost Dominion', 'Colossal Forest', 1512, 648, 1, 'hidden-village', 'Neutral Zone'),
+    exactMapSite('alt-shogun-grave', "Last Shogun's Grave", 'Sakura-Frost Dominion', 'White Cedar Heights', 1440, 216, 2, 'graveyard', 'Danger Zone'),
+    exactMapSite('alt-white-fox-shrine', 'White Fox Shrine', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1296, 414, 2, 'shrine', 'Safe Zone'),
+    exactMapSite('alt-eastern-cloud-port', 'Eastern Cloud Port', 'Sakura-Frost Dominion', 'Blossom Coast', 1668, 648, 1, 'port', 'Safe Zone'),
+    exactMapSite('alt-celestial-bamboo-grove', 'Celestial Bamboo Grove', 'Sakura-Frost Dominion', 'Colossal Forest', 1560, 720, 2, 'grove', 'Neutral Zone'),
+
+    // Sunscorched East — desert kingdoms, caravan arteries, volcanic ruins and oases.
+    exactMapSite('alt-solaris-gate', 'Solaris Gate', 'Sunscorched East', 'Golden Throne', 1992, 288, 1, 'gate', 'Safe Zone'),
+    exactMapSite('alt-brasshaven', 'Brasshaven', 'Sunscorched East', 'Ash Meridian', 1872, 342, 1, 'city', 'Safe Zone'),
+    exactMapSite('alt-scorpion-crown', 'Scorpion Crown', 'Sunscorched East', 'Red Dunes', 2112, 378, 2, 'fortress', 'Danger Zone'),
+    exactMapSite('alt-copper-sun-market', 'Copper Sun Market', 'Sunscorched East', 'Golden Throne', 2040, 342, 2, 'market', 'Safe Zone'),
+    exactMapSite('alt-blackglass-dunes', 'Blackglass Dunes', 'Sunscorched East', 'Red Dunes', 1920, 540, 2, 'desert', 'Danger Zone'),
+    exactMapSite('alt-phoenix-well', 'Phoenix Well', 'Sunscorched East', 'Cinder Basin', 2016, 612, 2, 'oasis', 'Safe Zone'),
+    exactMapSite('alt-sunwheel-observatory', 'Sunwheel Observatory', 'Sunscorched East', 'Golden Throne', 2136, 252, 2, 'observatory', 'Neutral Zone'),
+    exactMapSite('alt-ember-road', 'Ember Road', 'Sunscorched East', 'Ash Meridian', 1824, 486, 2, 'road', 'Neutral Zone'),
+    exactMapSite('alt-saffron-caravanserai', 'Saffron Caravanserai', 'Sunscorched East', 'Eastern Steppe', 2064, 594, 2, 'caravan', 'Safe Zone'),
+    exactMapSite('alt-red-moon-oasis', 'Red Moon Oasis', 'Sunscorched East', 'Red Dunes', 2136, 486, 2, 'oasis', 'Neutral Zone'),
+    exactMapSite('alt-ash-kings-tomb', "Ash King's Tomb", 'Sunscorched East', 'Ash Meridian', 1776, 306, 2, 'tomb', 'Danger Zone'),
+    exactMapSite('alt-furnace-depths', 'Furnace Depths', 'Sunscorched East', 'Cinder Basin', 1848, 666, 2, 'dungeon', 'Danger Zone'),
+    exactMapSite('alt-golden-vulture-roost', 'Golden Vulture Roost', 'Sunscorched East', 'Eastern Steppe', 2160, 630, 2, 'lair', 'Danger Zone'),
+    exactMapSite('alt-dry-river-city', 'Dry River City', 'Sunscorched East', 'Saltwind Coast', 2112, 720, 1, 'city', 'Safe Zone'),
+    exactMapSite('alt-smoldering-bridge', 'Smoldering Bridge', 'Sunscorched East', 'Ash Meridian', 1896, 594, 2, 'bridge', 'Neutral Zone'),
+    exactMapSite('alt-bronze-lion-fort', 'Bronze Lion Fort', 'Sunscorched East', 'Golden Throne', 2184, 324, 1, 'fortress', 'Neutral Zone'),
+    exactMapSite('alt-singing-sand-village', 'Singing Sand Village', 'Sunscorched East', 'Red Dunes', 2040, 504, 2, 'village', 'Safe Zone'),
+    exactMapSite('alt-coalwind-mine', 'Coalwind Mine', 'Sunscorched East', 'Cinder Basin', 1800, 630, 2, 'mine', 'Danger Zone'),
+    exactMapSite('alt-eastfire-lighthouse', 'Eastfire Lighthouse', 'Sunscorched East', 'Saltwind Coast', 2184, 684, 2, 'lighthouse', 'Safe Zone'),
+    exactMapSite('alt-mirage-burial-ground', 'Mirage Burial Ground', 'Sunscorched East', 'Red Dunes', 1968, 450, 2, 'graveyard', 'Danger Zone'),
+
+    // Verdant Southeast — river cities, worldtree settlements, wetlands and deep-forest ruins.
+    exactMapSite('alt-emerald-bridge', 'Emerald Bridge', 'Verdant Southeast', 'River Country', 1776, 1008, 1, 'bridge-city', 'Safe Zone'),
+    exactMapSite('alt-canopy-crown', 'Canopy Crown', 'Verdant Southeast', 'Elder Canopy', 2016, 972, 1, 'city', 'Safe Zone'),
+    exactMapSite('alt-rainbell-village', 'Rainbell Village', 'Verdant Southeast', 'Greenwake Basin', 1944, 900, 2, 'village', 'Safe Zone'),
+    exactMapSite('alt-jade-delta', 'Jade Delta', 'Verdant Southeast', 'Southern Delta', 1920, 1314, 2, 'wetland', 'Neutral Zone'),
+    exactMapSite('alt-rootbound-library', 'Rootbound Library', 'Verdant Southeast', 'Elder Canopy', 2088, 1116, 2, 'library', 'Safe Zone'),
+    exactMapSite('alt-violet-pass', 'Violet Pass', 'Verdant Southeast', 'Amethyst Range', 1752, 1026, 2, 'pass', 'Danger Zone'),
+    exactMapSite('alt-thornwall-fort', 'Thornwall Fort', 'Verdant Southeast', 'Western Wetlands', 1584, 936, 1, 'fortress', 'Neutral Zone'),
+    exactMapSite('alt-lotus-market', 'Lotus Market', 'Verdant Southeast', 'River Country', 1728, 1188, 2, 'market', 'Safe Zone'),
+    exactMapSite('alt-deepmoss-ruins', 'Deepmoss Ruins', 'Verdant Southeast', 'Mosslight Woods', 1848, 1188, 2, 'ruin', 'Danger Zone'),
+    exactMapSite('alt-green-dragon-falls', 'Green Dragon Falls', 'Verdant Southeast', 'Greenwake Basin', 2112, 918, 2, 'waterfall', 'Neutral Zone'),
+    exactMapSite('alt-sunleaf-monastery', 'Sunleaf Monastery', 'Verdant Southeast', 'Dawn Coast', 2160, 1260, 2, 'monastery', 'Safe Zone'),
+    exactMapSite('alt-mangrove-gate', 'Mangrove Gate', 'Verdant Southeast', 'Western Wetlands', 1512, 1080, 2, 'gate', 'Neutral Zone'),
+    exactMapSite('alt-river-serpent-lair', 'River Serpent Lair', 'Verdant Southeast', 'River Country', 1680, 1242, 2, 'lair', 'Danger Zone'),
+    exactMapSite('alt-glowfern-hollow', 'Glowfern Hollow', 'Verdant Southeast', 'Mosslight Woods', 1800, 1146, 2, 'grove', 'Neutral Zone'),
+    exactMapSite('alt-southern-jade-port', 'Southern Jade Port', 'Verdant Southeast', 'Southern Delta', 2088, 1332, 1, 'port', 'Safe Zone'),
+    exactMapSite('alt-elderbark-sanctum', 'Elderbark Sanctum', 'Verdant Southeast', 'Elder Canopy', 2160, 1080, 2, 'sanctuary', 'Danger Zone'),
+    exactMapSite('alt-cloudvine-tower', 'Cloudvine Tower', 'Verdant Southeast', 'Amethyst Range', 1848, 1008, 2, 'tower', 'Neutral Zone'),
+    exactMapSite('alt-flooded-palace', 'Flooded Palace', 'Verdant Southeast', 'Western Wetlands', 1584, 1152, 2, 'dungeon', 'Danger Zone'),
+    exactMapSite('alt-dawn-orchid-city', 'Dawn Orchid City', 'Verdant Southeast', 'Dawn Coast', 2208, 1188, 1, 'city', 'Safe Zone'),
+    exactMapSite('alt-silverroot-mine', 'Silverroot Mine', 'Verdant Southeast', 'Amethyst Range', 1776, 1104, 2, 'mine', 'Danger Zone'),
+
+    // Southern Wildlands — forest realms, caldera towns, frontier roads and lost strongholds.
+    exactMapSite('alt-nightpine-city', 'Nightpine City', 'Southern Wildlands', 'Blackwood Interior', 552, 1260, 1, 'city', 'Neutral Zone'),
+    exactMapSite('alt-blue-crater-village', 'Blue Crater Village', 'Southern Wildlands', 'Western Caldera', 432, 1332, 2, 'village', 'Safe Zone'),
+    exactMapSite('alt-ashen-wyrm-fort', 'Ashen Wyrm Fort', 'Southern Wildlands', 'Ashen Peninsula', 1080, 1422, 1, 'fortress', 'Danger Zone'),
+    exactMapSite('alt-wild-king-road', 'Wild King Road', 'Southern Wildlands', 'Wyrmroad', 816, 1320, 2, 'road', 'Neutral Zone'),
+    exactMapSite('alt-obsidian-lake', 'Obsidian Lake', 'Southern Wildlands', 'Western Caldera', 504, 1386, 2, 'lake', 'Danger Zone'),
+    exactMapSite('alt-wolfroot-village', 'Wolfroot Village', 'Southern Wildlands', 'Duskpine Forest', 456, 1458, 2, 'village', 'Neutral Zone'),
+    exactMapSite('alt-giant-antler-grove', 'Giant Antler Grove', 'Southern Wildlands', 'Duskpine Forest', 624, 1458, 2, 'grove', 'Danger Zone'),
+    exactMapSite('alt-dustwind-market', 'Dustwind Market', 'Southern Wildlands', 'Eastern Dustmarch', 984, 1386, 2, 'market', 'Neutral Zone'),
+    exactMapSite('alt-lost-titan-watch', 'Lost Titan Watch', 'Southern Wildlands', 'Eastern Dustmarch', 1128, 1278, 2, 'ruin', 'Danger Zone'),
+    exactMapSite('alt-black-feather-abbey', 'Black Feather Abbey', 'Southern Wildlands', 'Blackwood Interior', 672, 1242, 2, 'abbey', 'Neutral Zone'),
+    exactMapSite('alt-greenfire-swamp', 'Greenfire Swamp', 'Southern Wildlands', 'Duskpine Forest', 744, 1422, 2, 'swamp', 'Danger Zone'),
+    exactMapSite('alt-caldera-crown', 'Caldera Crown', 'Southern Wildlands', 'Western Caldera', 384, 1206, 1, 'fortress', 'Danger Zone'),
+    exactMapSite('alt-southtail-lighthouse', 'Southtail Lighthouse', 'Southern Wildlands', 'Ashen Peninsula', 1128, 1512, 2, 'lighthouse', 'Safe Zone'),
+    exactMapSite('alt-ironbark-quarry', 'Ironbark Quarry', 'Southern Wildlands', 'Blackwood Interior', 744, 1278, 2, 'mine', 'Danger Zone'),
+    exactMapSite('alt-bone-road-camp', 'Bone Road Camp', 'Southern Wildlands', 'Wyrmroad', 864, 1458, 2, 'camp', 'Neutral Zone'),
+    exactMapSite('alt-thunder-mesa', 'Thunder Mesa', 'Southern Wildlands', 'Eastern Dustmarch', 1032, 1242, 2, 'mesa', 'Danger Zone'),
+    exactMapSite('alt-deepwood-shrine', 'Deepwood Shrine', 'Southern Wildlands', 'Duskpine Forest', 576, 1512, 2, 'shrine', 'Neutral Zone'),
+    exactMapSite('alt-crimson-tail-port', 'Crimson Tail Port', 'Southern Wildlands', 'Ashen Peninsula', 984, 1530, 1, 'port', 'Safe Zone'),
+    exactMapSite('alt-hollow-beast-den', 'Hollow Beast Den', 'Southern Wildlands', 'Blackwood Interior', 816, 1206, 2, 'lair', 'Danger Zone'),
+    exactMapSite('alt-old-caldera-aqueduct', 'Old Caldera Aqueduct', 'Southern Wildlands', 'Western Caldera', 552, 1332, 2, 'ruin', 'Neutral Zone'),
+
+    // Inner Sea Archipelago — ports, island cities, reefs, shrines, prisons and sea lanes.
+    exactMapSite('alt-coral-crown-city', 'Coral Crown City', 'Inner Sea Archipelago', 'Pearlchain Isles', 1512, 1440, 1, 'island-city', 'Safe Zone'),
+    exactMapSite('alt-stormglass-harbor', 'Stormglass Harbor', 'Inner Sea Archipelago', 'Crosswind Channel', 1200, 1368, 1, 'port', 'Safe Zone'),
+    exactMapSite('alt-seven-sails-market', 'Seven Sails Market', 'Inner Sea Archipelago', 'Central Passage', 1392, 1260, 2, 'market', 'Safe Zone'),
+    exactMapSite('alt-moonwake-island', 'Moonwake Island', 'Inner Sea Archipelago', 'Western Inner Sea', 960, 1080, 2, 'island', 'Neutral Zone'),
+    exactMapSite('alt-turtleback-fort', 'Turtleback Fort', 'Inner Sea Archipelago', 'Roundhold Waters', 984, 1224, 1, 'island-fortress', 'Neutral Zone'),
+    exactMapSite('alt-siren-bone-reef', 'Siren Bone Reef', 'Inner Sea Archipelago', 'Whispering Reefs', 1680, 1512, 2, 'reef', 'Danger Zone'),
+    exactMapSite('alt-pearl-diver-village', 'Pearl Diver Village', 'Inner Sea Archipelago', 'Pearlchain Isles', 1584, 1530, 2, 'village', 'Safe Zone'),
+    exactMapSite('alt-drowned-oracle-temple', 'Drowned Oracle Temple', 'Inner Sea Archipelago', 'Oracle Waters', 1248, 1224, 2, 'ruin', 'Danger Zone'),
+    exactMapSite('alt-black-sail-prison', 'Black Sail Prison', 'Inner Sea Archipelago', 'Black Compass Sea', 1488, 1350, 1, 'prison', 'Danger Zone'),
+    exactMapSite('alt-lantern-tideway', 'Lantern Tideway', 'Inner Sea Archipelago', 'Lantern Sea', 1320, 1566, 2, 'sea-route', 'Neutral Zone'),
+    exactMapSite('alt-whale-song-sanctuary', 'Whale-Song Sanctuary', 'Inner Sea Archipelago', 'Southsea Isles', 1800, 1620, 2, 'sanctuary', 'Neutral Zone'),
+    exactMapSite('alt-ruby-atoll', 'Ruby Atoll', 'Inner Sea Archipelago', 'Southsea Isles', 1920, 1656, 2, 'atoll', 'Neutral Zone'),
+    exactMapSite('alt-gullwatch-tower', 'Gullwatch Tower', 'Inner Sea Archipelago', 'Crosswind Channel', 1296, 1320, 2, 'tower', 'Safe Zone'),
+    exactMapSite('alt-dead-mariners-cove', "Dead Mariners' Cove", 'Inner Sea Archipelago', 'Black Compass Sea', 1536, 1404, 2, 'cove', 'Danger Zone'),
+    exactMapSite('alt-blue-bell-isle', 'Blue Bell Isle', 'Inner Sea Archipelago', 'Western Inner Sea', 888, 1026, 2, 'island', 'Safe Zone'),
+    exactMapSite('alt-sea-dragon-gate', 'Sea Dragon Gate', 'Inner Sea Archipelago', 'Central Passage', 1440, 1170, 1, 'sea-gate', 'Neutral Zone'),
+    exactMapSite('alt-far-south-lighthouse', 'Far South Lighthouse', 'Inner Sea Archipelago', 'Southsea Isles', 1728, 1692, 2, 'lighthouse', 'Safe Zone'),
+    exactMapSite('alt-shattered-compass-wreck', 'Shattered Compass Wreck', 'Inner Sea Archipelago', 'Black Compass Sea', 1608, 1458, 2, 'shipwreck', 'Danger Zone'),
+    exactMapSite('alt-sunrise-pearl-port', 'Sunrise Pearl Port', 'Inner Sea Archipelago', 'Pearlchain Isles', 1656, 1566, 1, 'port', 'Safe Zone'),
+    exactMapSite('alt-mist-chain-islands', 'Mist Chain Islands', 'Inner Sea Archipelago', 'Lantern Sea', 1200, 1602, 2, 'archipelago', 'Neutral Zone'),
 ];
 
 const ALL_WORLD_LOCATIONS = [...PRESENT_WORLD_LOCATIONS, ...ALTERNATE_WORLD_LOCATIONS];
@@ -513,7 +640,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.17.0';
+const LAUNCHER_BIND_VERSION = '0.18.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -753,7 +880,7 @@ function defaultState() {
             currency: { name: 'Central Common Currency', gold: 0, silver: 0, copper: 0 },
         },
         worldClock: { day: 1, dayName: 'Day 1', time: '08:00', phase: 'Morning' },
-        location: { atlasVersion: 3, continent: 'Central Continent', region: 'Crown Heartlands', place: 'Central Crown', detail: '', zoneType: 'Safe Zone', mapX: PRESENT_WORLD_LOCATIONS[0].x, mapY: PRESENT_WORLD_LOCATIONS[0].y, heading: 0, discovered: ['Central Crown'], pins: [] },
+        location: { atlasVersion: 4, continent: 'Central Continent', region: 'Crown Heartlands', place: 'Central Crown', detail: '', zoneType: 'Safe Zone', mapX: PRESENT_WORLD_LOCATIONS[0].x, mapY: PRESENT_WORLD_LOCATIONS[0].y, heading: 0, discovered: ['Central Crown'], pins: [] },
         travel: {
             status: 'Idle', origin: '', destination: '', route: 'Road', totalDays: 0, remainingDays: 0, notes: '',
             originX: null, originY: null, originContinent: '', originRegion: '', destinationX: null, destinationY: null,
@@ -1388,7 +1515,7 @@ function normalize(candidate, base = defaultState()) {
     };
     const migrateAtlas = number(location.atlasVersion, 1, 1, 99) < 2;
     result.location = {
-        atlasVersion: 3,
+        atlasVersion: 4,
         continent: text(location.continent, result.location.continent, 100),
         region: text(location.region, result.location.region, 120),
         place: text(migratedPlace, result.location.place, 160),
@@ -1914,7 +2041,7 @@ function patchInstructions() {
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, or explanation.',
         'Check affected systems: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit only affected values.',
-        'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. Never switch worlds from speculation, dreams, maps, or casual mentions. Set world.id together with confirmed location fields when an actual crossing occurs.',
+        'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
         'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
         'Money: record every confirmed gain or expense immediately on progression.currency.gold/silver/copper with {"reason":"what the money came from or was spent on","category":"currency"}. Every currency op needs a specific reason so Transaction History can explain it. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
@@ -1931,8 +2058,14 @@ function patchInstructions() {
 
 function statePrompt(state, { includeState = true, track = true } = {}) {
     const lines = ['<tretaresia_rpg_state>'];
-    lines.push('Tretaresia is a morally mixed, enormous world of six ocean-separated continents: Central Continent, The Great Forest, Great Land of Titan, Drinovia Continent, North Continent, and Baluguria Continent. Preserve established geography, long travel times, social prejudice, regional laws, power secrecy, and regional currencies. Most common monsters can speak understandable but broken human language.');
-    lines.push('World canon: about one thousand years ago the Great War shattered the land and opened the oceans; hero Ars died and the Primordial Demon was sealed in a timeless dimension. Civilizations later rebuilt an uneasy harmony while war, invasion, prejudice, slavery, crime, kindness and cruelty continued together. The Great Academy charges steep tuition and admits every race, though prejudice remains. Human entry into the Great Forest is taboo and may bring punishment upon an entire family. Khaduzar is marked by the colossal stone hand gripping its own wrist. Drinovia plants the weapons and remains of the fallen where they died. The North can fall below -300 degrees. Baluguria is an exile, slave, gambling, pleasure-trade and underworld center.');
+    const activeAtlas = atlasById(state?.world?.id);
+    if (activeAtlas.id === 'alternate-present-world') {
+        lines.push('The active setting is Alternate Present World TRETARESIA: an expanded, more connected geography formed by Westreach Crownlands, Sakura-Frost Dominion, Sunscorched East, Verdant Southeast, Southern Wildlands, and Inner Sea Archipelago. Preserve its denser roads, inland borders, coastlines, island chains, long travel times, regional laws, power secrecy, and local currencies. Most common monsters can speak understandable but broken human language.');
+        lines.push("Alternate World canon: Chaos Breaker is the white floating castle of Dragon King Kaliasna Oryu, encircled by the Dragonfang Ring in Kaliasna Oryu's Sky Dominion. The northeast holds a Japanese-tradition kingdom across sakura fields, snow country and colossal forest. The eastern lands include desert crowns, volcanic basins and caravan routes; the southeast contains worldtree courts, rivers and wetlands; the south contains calderas, black forests and wild frontiers; the Inner Sea is filled with ports, island cities, reefs, shrines and dangerous sea lanes.");
+    } else {
+        lines.push('The active setting is Present World Tretaresia, a morally mixed, enormous world of six ocean-separated continents: Central Continent, The Great Forest, Great Land of Titan, Drinovia Continent, North Continent, and Baluguria Continent. Preserve established geography, long travel times, social prejudice, regional laws, power secrecy, and regional currencies. Most common monsters can speak understandable but broken human language.');
+        lines.push('Present World canon: about one thousand years ago the Great War shattered the land and opened the oceans; hero Ars died and the Primordial Demon was sealed in a timeless dimension. Civilizations later rebuilt an uneasy harmony while war, invasion, prejudice, slavery, crime, kindness and cruelty continued together. The Great Academy charges steep tuition and admits every race, though prejudice remains. Human entry into the Great Forest is taboo and may bring punishment upon an entire family. Khaduzar is marked by the colossal stone hand gripping its own wrist. Drinovia plants the weapons and remains of the fallen where they died. The North can fall below -300 degrees. Baluguria is an exile, slave, gambling, pleasure-trade and underworld center.');
+    }
     if (includeState) {
         lines.push('Canonical role-play state. Preserve it unless the story confirms a change.');
         lines.push('Current scene, location, inventory, ranks, conditions, skills, quests, NPC dossiers, contacts, physical letters, party, guilds, currency, and Household members are established facts. The NPC Codex and social invitations contain friendly NPCs only; hostile NPCs are excluded from those lists.');
@@ -6865,7 +6998,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.17.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.18.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
