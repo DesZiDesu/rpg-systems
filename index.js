@@ -89,7 +89,7 @@ const SOURCE_MAP_HEIGHT = 1086;
 const WORLD_MAP_WIDTH = 2400;
 const WORLD_MAP_HEIGHT = 1800;
 const WORLD_TILE_SIZE = 512;
-const WORLD_ATLAS = Object.freeze({ id: 'present-world', name: 'Present World', era: 'Present Era', atlasVersion: 1 });
+const WORLD_ATLAS = Object.freeze({ id: 'present-world', name: 'Present World', era: 'Present Era', atlasVersion: 2 });
 const WORLD_TILE_ROOTS = Object.freeze({
     day: `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles`,
     night: `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles-night`,
@@ -190,7 +190,12 @@ const mapSite = (id, name, continent, region, x, y, tier = 2, kind = 'landmark',
         return { id, name, continent, region, x: mapX, y: mapY, tier, kind, zone };
     })()
 );
+const exactMapSite = (id, name, continent, region, x, y, tier = 0, kind = 'landmark', zone = 'Neutral Zone') => (
+    { id, name, continent, region, x, y, tier, kind, zone }
+);
 const WORLD_LOCATIONS = [
+    exactMapSite('kaliasna-oryu-sky-castle', "Kaliasna Oryu's Floating Castle", 'Central Continent', "Dragon King's Skyhold", 1080, 792, 0, 'sky-castle', 'Neutral Zone'),
+    exactMapSite('eastern-tradition-kingdom', 'Eastern Tradition Kingdom', 'Central Continent', 'Japanese-Tradition Realm', 1272, 360, 0, 'kingdom', 'Neutral Zone'),
     mapSite('central-capital', 'Central Crown', 'Central Continent', 'Crown Heartlands', 1135, 690, 0, 'capital', 'Safe Zone'),
     mapSite('great-academy', 'The Great Academy', 'Central Continent', 'Academy March', 1010, 600, 0, 'academy', 'Safe Zone'),
     mapSite('grand-crossroads', 'Grand Crossroads', 'Central Continent', 'Kingroads', 1250, 790, 0, 'city', 'Safe Zone'),
@@ -369,7 +374,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.15.0';
+const LAUNCHER_BIND_VERSION = '0.16.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -6650,7 +6655,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.15.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.16.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
