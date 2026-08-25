@@ -362,7 +362,50 @@ const PRESENT_WORLD_LOCATIONS = [
     mapSite('golden-cage', 'Golden Cage', 'Baluguria Continent', 'Pleasure District', 1360, 1210, 2, 'estate', 'Danger Zone'),
     mapSite('last-freeman', "Last Freeman's Shrine", 'Baluguria Continent', 'Balugurian Coast', 900, 1260, 2, 'shrine', 'Neutral Zone'),
 ];
-const ALTERNATE_WORLD_LOCATIONS = [
+const ALTERNATE_PRESENT_TARGET_BOUNDS = Object.freeze({
+    'Central Continent': Object.freeze({ continent: 'Westreach Crownlands', bounds: [300, 260, 1120, 1080] }),
+    'North Continent': Object.freeze({ continent: 'Sakura-Frost Dominion', bounds: [1120, 120, 1660, 740] }),
+    'Drinovia Continent': Object.freeze({ continent: 'Sunscorched East', bounds: [1740, 180, 2160, 720] }),
+    'The Great Forest': Object.freeze({ continent: 'Verdant Southeast', bounds: [1560, 800, 2180, 1320] }),
+    'Great Land of Titan': Object.freeze({ continent: 'Southern Wildlands', bounds: [260, 980, 1120, 1490] }),
+    'Baluguria Continent': Object.freeze({ continent: 'Inner Sea Archipelago', bounds: [900, 1000, 1920, 1650] }),
+});
+const ALTERNATE_PRESENT_COORDINATE_OVERRIDES = Object.freeze({
+    'grand-crossroads': Object.freeze([810, 720]),
+    'copper-den': Object.freeze([920, 1025]),
+    'amber-hive': Object.freeze([1700, 1115]),
+    'howling-vault': Object.freeze([1000, 1450]),
+    'cinder-lance': Object.freeze([2085, 415]),
+    'wolfglass': Object.freeze([1530, 690]),
+    'gilded-vice': Object.freeze([1620, 1125]),
+});
+const ALTERNATE_PRESENT_SOURCE_BOUNDS = Object.freeze(Object.fromEntries(Object.keys(ALTERNATE_PRESENT_TARGET_BOUNDS).map(continent => {
+    const entries = PRESENT_WORLD_LOCATIONS.filter(location => location.continent === continent);
+    return [continent, Object.freeze([
+        Math.min(...entries.map(location => location.x)), Math.min(...entries.map(location => location.y)),
+        Math.max(...entries.map(location => location.x)), Math.max(...entries.map(location => location.y)),
+    ])];
+})));
+function alternatePresentSite(site) {
+    const target = ALTERNATE_PRESENT_TARGET_BOUNDS[site.continent];
+    const sourceBounds = ALTERNATE_PRESENT_SOURCE_BOUNDS[site.continent];
+    if (!target || !sourceBounds) return { ...site, id: `alt-present-${site.id}` };
+    const [sourceLeft, sourceTop, sourceRight, sourceBottom] = sourceBounds;
+    const [targetLeft, targetTop, targetRight, targetBottom] = target.bounds;
+    const ratioX = (site.x - sourceLeft) / Math.max(1, sourceRight - sourceLeft);
+    const ratioY = (site.y - sourceTop) / Math.max(1, sourceBottom - sourceTop);
+    return {
+        ...site,
+        id: `alt-present-${site.id}`,
+        continent: target.continent,
+        x: ALTERNATE_PRESENT_COORDINATE_OVERRIDES[site.id]?.[0] ?? Math.round(targetLeft + ratioX * (targetRight - targetLeft)),
+        y: ALTERNATE_PRESENT_COORDINATE_OVERRIDES[site.id]?.[1] ?? Math.round(targetTop + ratioY * (targetBottom - targetTop)),
+    };
+}
+// Every named Present World destination still exists in the Alternate timeline.
+// It is remapped onto the corresponding expanded landmass, then combined with Alternate-exclusive sites.
+const ALTERNATE_PRESENT_LOCATIONS = PRESENT_WORLD_LOCATIONS.map(alternatePresentSite);
+const ALTERNATE_NEW_LOCATIONS = [
     exactMapSite('alt-chaos-breaker', 'Chaos Breaker', 'Westreach Crownlands', "Kaliasna Oryu's Sky Dominion", 1080, 792, 0, 'sky-castle', 'Neutral Zone'),
     exactMapSite('alt-eastern-tradition-kingdom', 'Eastern Tradition Kingdom', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1272, 360, 0, 'capital', 'Safe Zone'),
 
@@ -561,6 +604,7 @@ const ALTERNATE_WORLD_LOCATIONS = [
     exactMapSite('alt-sunrise-pearl-port', 'Sunrise Pearl Port', 'Inner Sea Archipelago', 'Pearlchain Isles', 1656, 1566, 1, 'port', 'Safe Zone'),
     exactMapSite('alt-mist-chain-islands', 'Mist Chain Islands', 'Inner Sea Archipelago', 'Lantern Sea', 1200, 1602, 2, 'archipelago', 'Neutral Zone'),
 ];
+const ALTERNATE_WORLD_LOCATIONS = [...ALTERNATE_PRESENT_LOCATIONS, ...ALTERNATE_NEW_LOCATIONS];
 
 const ALL_WORLD_LOCATIONS = [...PRESENT_WORLD_LOCATIONS, ...ALTERNATE_WORLD_LOCATIONS];
 const WORLD_LOCATIONS = PRESENT_WORLD_LOCATIONS;
@@ -640,7 +684,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.18.0';
+const LAUNCHER_BIND_VERSION = '0.18.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -2062,6 +2106,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
     if (activeAtlas.id === 'alternate-present-world') {
         lines.push('The active setting is Alternate Present World TRETARESIA: an expanded, more connected geography formed by Westreach Crownlands, Sakura-Frost Dominion, Sunscorched East, Verdant Southeast, Southern Wildlands, and Inner Sea Archipelago. Preserve its denser roads, inland borders, coastlines, island chains, long travel times, regional laws, power secrecy, and local currencies. Most common monsters can speak understandable but broken human language.');
         lines.push("Alternate World canon: Chaos Breaker is the white floating castle of Dragon King Kaliasna Oryu, encircled by the Dragonfang Ring in Kaliasna Oryu's Sky Dominion. The northeast holds a Japanese-tradition kingdom across sakura fields, snow country and colossal forest. The eastern lands include desert crowns, volcanic basins and caravan routes; the southeast contains worldtree courts, rivers and wetlands; the south contains calderas, black forests and wild frontiers; the Inner Sea is filled with ports, island cities, reefs, shrines and dangerous sea lanes.");
+        lines.push('Timeline continuity: every named Present World destination also exists in the Alternate timeline, remapped onto its corresponding expanded region. Preserve those shared names and established functions; the Alternate atlas adds many exclusive destinations without deleting Sunscar Port, Central Crown, the Great Academy, or any other Present World place.');
     } else {
         lines.push('The active setting is Present World Tretaresia, a morally mixed, enormous world of six ocean-separated continents: Central Continent, The Great Forest, Great Land of Titan, Drinovia Continent, North Continent, and Baluguria Continent. Preserve established geography, long travel times, social prejudice, regional laws, power secrecy, and regional currencies. Most common monsters can speak understandable but broken human language.');
         lines.push('Present World canon: about one thousand years ago the Great War shattered the land and opened the oceans; hero Ars died and the Primordial Demon was sealed in a timeless dimension. Civilizations later rebuilt an uneasy harmony while war, invasion, prejudice, slavery, crime, kindness and cruelty continued together. The Great Academy charges steep tuition and admits every race, though prejudice remains. Human entry into the Great Forest is taboo and may bring punishment upon an entire family. Khaduzar is marked by the colossal stone hand gripping its own wrist. Drinovia plants the weapons and remains of the fallen where they died. The North can fall below -300 degrees. Baluguria is an exile, slave, gambling, pleasure-trade and underworld center.');
@@ -6998,7 +7043,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.18.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.18.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
