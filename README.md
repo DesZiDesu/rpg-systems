@@ -2,7 +2,7 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.16.0**
+**Current version: 0.17.0**
 
 The tracking protocol uses a compact, relevance-prioritized state payload instead of repeatedly sending the entire archive. Settings show extension-started request attempts, and repeated Manual Sync taps are deduplicated.
 
@@ -19,8 +19,8 @@ The tracking protocol uses a compact, relevance-prioritized state payload instea
 - Long-distance journey tracking with origin, destination, road/caravan/sea/off-road route, estimated duration, remaining days, delays, and arrival state. Selecting a destination begins a journey instead of teleporting the scene.
 - Region-aware currency ledger with clearly labeled Gold, Silver, and Copper balances plus a reasoned transaction history for every tracked gain, expense, and manual adjustment.
 - Scene tracker with time, day, continent, region, exact place, position, weather, extreme temperatures, and AI-assisted multi-floor local maps.
-- The current atlas is identified as **Present World / Present Era**, now including **Kaliasna Oryu's Floating Castle** and the **Eastern Tradition Kingdom** while preserving the shared coordinates, pins, routes, and discoveries used by both day and night artwork.
-- A huge image-tile world atlas using the supplied fantasy map, with automatic day/night artwork switching from the Scene world clock. Both visual variants share the exact same location data and coordinate system, with coordinate-level selection, bounded pan/zoom, freeform pins, an exact player-position beacon, and a dedicated fullscreen viewer.
+- The atlas now contains two independent geographies: **Present World / Present Era** retains its original 126 destinations, while **Alternate Present World TRETARESIA / Alternate Present Era** adds 64 separately positioned regions, cities, landmarks, islands, and routes. The alternate floating castle is named **Chaos Breaker**, domain of Dragon King Kaliasna Oryu.
+- Four world-map artworks are available: Present World day/night and Alternate Present World day/night. Day/night changes automatically from the Scene clock; each world's two lighting variants share that world's location data and coordinates without leaking destinations into the other geography.
 - iOS-friendly Canvas tile rendering: four WebP detail levels load only the visible 512 px tiles and visible place labels while zooming or panning, avoiding one enormous SVG scene.
 - Broad action-based EXP tracking for studying, learning, training, crafting practice, combat, kills, discoveries, quests, and other genuine growth; level rollover happens when EXP is exactly equal to or greater than the current requirement.
 - Main-chat system notifications for EXP, learning, training, combat, kills, level-ups, mission/quest receipt and status changes, and money changes. Every tracked currency notification identifies why money was gained or spent, with configurable event types and auto-dismiss time.
@@ -99,7 +99,7 @@ Adds the social systems layer: friendly NPC filtering, Party create/invite/disso
 
 ## Version 0.8.0
 
-Replaces the former map artwork with the supplied 4:3 fantasy atlas and a new 4096×3072 tile pyramid. All 128 travel destinations are hand-positioned on visible land or islands and appear progressively across world, regional, and local zoom levels. Panning is clamped to the atlas edges, the compass has been removed, and the map now includes an iOS-friendly fullscreen viewer with an X close button and Escape support.
+Each of the four 4:3 atlases uses its own 4096×3072 tile pyramid. Present World keeps 126 hand-positioned travel destinations and Alternate Present World contains 64 new destinations matched to its expanded terrain. The map has unobstructed touch navigation, a bottom world/coordinate control bar, and a dedicated mobile fullscreen window that remains open until explicitly closed.
 
 The control center is mounted outside the transformed application panel so its settings dialog displays reliably on iOS Safari instead of being clipped behind the interface.
 
