@@ -752,7 +752,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.22.0';
+const LAUNCHER_BIND_VERSION = '0.23.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -765,6 +765,8 @@ const TAB_META = {
 let activeTabIndex = 0;
 let activeQuestSection = 'active';
 let characterLifeSkillSyncTimer = null;
+let characterLifeCompatibilityTimer = null;
+let characterLifeCompatibilityOptions = { save: false };
 
 const TRANSLATIONS = {
     th: {
@@ -881,6 +883,7 @@ let tabTransitionToken = 0;
 const panelScrollPositions = new Map();
 const nestedScrollPositions = new Map();
 let panelScrollRestoreToken = 0;
+let restoringPanelScroll = false;
 let mapSelectionId = null;
 let mapDraftPoint = null;
 let mapDrawFrame = 0;
@@ -912,6 +915,8 @@ let audioPlayer = null;
 let audioObjectUrl = '';
 const mapView = { scale: 1, x: 0, y: 0 };
 let continuityRestoreInProgress = false;
+const processedAssistantMessages = new WeakSet();
+const assistantPatchTimers = new Map();
 
 const uid = () => globalThis.crypto?.randomUUID?.() || `tretaresia-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const clone = value => globalThis.structuredClone ? structuredClone(value) : JSON.parse(JSON.stringify(value));
@@ -2223,9 +2228,9 @@ function patchInstructions() {
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
-        'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Omit the comment if nothing changed. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
+        'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. EVERY completed normal reply must append exactly one comment; use {"ops":[],"summary":"No confirmed changes."} when nothing beyond the locally tracked turn clock changed. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
-        'Check affected systems: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit only affected values.',
+        'Check affected systems on every reply: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this one patch, not only scene fields.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
@@ -2237,7 +2242,7 @@ function patchInstructions() {
         'NPCs: upsert only relevant named friendly NPCs or confirmed changes; preserve npcIndex id. Hostile/enemy/foe/antagonist/villain/threat NPCs stay out of Codex and social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
         'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/accepted invite/leave/expulsion/create/dissolve/rank/marriage/partner/child/parent/guardian/family-role change must update this same patch. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first ["upsert","npcs",{"id":"lysa","name":"Lysa","relationship":"Ally"}], then the membership op. Guild member includes guildId or exact guildName. Household member includes npcId plus role; delete the same collection when a member leaves. Party is free. UI Guild creation already charges locally; a story-created Guild op charges the fee automatically and fails when unaffordable. Household is family, not a faction.',
-        'Travel/scene: journeys take days/months/years. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates, new places use a consistent plausible point. Read both the latest user role-play action and your completed reply for movement, elapsed hours/days, stated percentages, delays, resumptions, reroutes, and arrival. Every reply that narratively advances an active journey must update worldClock day/time and remainingDays; never repeat stale travel values merely because no map UI button was pressed. The extension also applies a deterministic turn fallback and interpolates the player marker from stored endpoints, so preserve any newer/lower remainingDays already present, never move progress backwards, and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed phase/place/detail/heading/position/weather/temperature; never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
+        'Travel/scene: journeys take days/months/years. The extension advances a conservative base clock as soon as each user role-play message is sent; preserve that newer time and add any further elapsed time confirmed by the completed reply. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates, new places use a consistent plausible point. Read both the latest user role-play action and your completed reply for movement, elapsed hours/days, stated percentages, delays, resumptions, reroutes, and arrival. Every reply that narratively advances an active journey must update worldClock day/time and remainingDays; never repeat stale travel values merely because no map UI button was pressed. The extension also applies a deterministic turn fallback and interpolates the player marker from stored endpoints, so preserve any newer/lower remainingDays already present, never move progress backwards, and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed continent/region/place/detail/heading/position/weather/temperature whenever they change; keep established values when the story stays in place and never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
     ].join('\n');
 }
@@ -2275,6 +2280,13 @@ function updatePrompt(state = getState()) {
         ? statePrompt(state, { includeState: settings.injectState || settings.autoTrack, track: settings.autoTrack })
         : '', 1, 1, false, 0);
 }
+
+globalThis.TretaresiaRpgGenerateInterceptor = async function () {
+    // Refresh at SillyTavern's official generation interception point. This
+    // protects hosts that replace their extension-prompt collection after
+    // MESSAGE_SENT while keeping tracking inside the one normal reply.
+    updatePrompt(getState());
+};
 
 function notify(type, message) {
     if (typeof toastr !== 'undefined' && typeof toastr[type] === 'function') toastr[type](message, 'Tretaresia RPG');
@@ -2544,7 +2556,7 @@ async function refreshCharacterLifeCompatibility({ save = true } = {}) {
     const state = getState();
     const changed = syncCharacterLifeLinks(state);
     if (changed && save && context.getCurrentChatId?.()) await persistState(state, 'character-life-link');
-    else {
+    else if (changed) {
         updatePrompt(state);
         renderAll(state);
         queueCharacterLifeSkillSync(state);
@@ -2552,8 +2564,17 @@ async function refreshCharacterLifeCompatibility({ save = true } = {}) {
 }
 
 function queueCharacterLifeCompatibilityRefresh(options) {
-    void refreshCharacterLifeCompatibility(options).catch(error =>
-        console.warn('[Tretaresia RPG] Character Life refresh failed safely.', error));
+    characterLifeCompatibilityOptions = {
+        save: Boolean(characterLifeCompatibilityOptions.save || options?.save),
+    };
+    clearTimeout(characterLifeCompatibilityTimer);
+    characterLifeCompatibilityTimer = setTimeout(() => {
+        const queued = characterLifeCompatibilityOptions;
+        characterLifeCompatibilityOptions = { save: false };
+        characterLifeCompatibilityTimer = null;
+        void refreshCharacterLifeCompatibility(queued).catch(error =>
+            console.warn('[Tretaresia RPG] Character Life refresh failed safely.', error));
+    }, 180);
 }
 
 function currentMapLocation(state) {
@@ -2594,6 +2615,60 @@ function mapLocationByName(value, state = getState()) {
 function worldClockMinutes(clock) {
     const [hours, minutes] = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(text(clock?.time, '00:00', 5))?.slice(1).map(Number) || [0, 0];
     return Math.max(0, (number(clock?.day, 1, 1, 999999) - 1) * 1440 + hours * 60 + minutes);
+}
+
+function dayPhaseForHour(hour) {
+    if (hour >= 5 && hour < 12) return 'Morning';
+    if (hour >= 12 && hour < 17) return 'Afternoon';
+    if (hour >= 17 && hour < 21) return 'Evening';
+    return 'Night';
+}
+
+function nextDayName(value, elapsedDays, day) {
+    if (!elapsedDays) return text(value, `Day ${day}`, 80);
+    const names = [
+        ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+        ['วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์', 'วันอาทิตย์'],
+    ];
+    for (const list of names) {
+        const index = list.findIndex(name => name.toLocaleLowerCase() === text(value).toLocaleLowerCase());
+        if (index >= 0) return list[(index + elapsedDays) % list.length];
+    }
+    return `Day ${day}`;
+}
+
+function userTurnDurationMinutes(message) {
+    const source = text(message, '', 12000);
+    if (!source || /^\s*(?:ooc\b|\[ooc\]|\(\(|\/|#|<\/?.+?>\s*$)/i.test(source)) return 0;
+    if (/(?:\b(?:sleep|slept|rest(?:ed)? overnight|camp(?:ed)? overnight)\b|(?:นอนหลับ|หลับไป|พักค้างคืน|นอนพัก))/i.test(source)) return 480;
+    if (/(?:\b(?:train|study|practice|research|craft|cook|bathe|shop)(?:s|ed|ing)?\b|(?:ฝึก|เรียน|ศึกษา|ค้นคว้า|ประดิษฐ์|ทำอาหาร|อาบน้ำ|ซื้อของ))/i.test(source)) return 10;
+    if (/(?:\b(?:walk|run|ride|sail|travel|search|explore|fight|battle)(?:s|ed|ing)?\b|(?:เดิน|วิ่ง|ขี่|ล่องเรือ|เดินทาง|ค้นหา|สำรวจ|ต่อสู้))/i.test(source)) return 5;
+    return source.length <= 120 ? 1 : 3;
+}
+
+function advanceWorldClockFromUserMessage(messageId, message, current = getState()) {
+    const numericId = Number(messageId);
+    const messageKey = Number.isInteger(numericId) ? numericId : text(message?.send_date || message?.mes, '', 180);
+    if (current.syncCursor?.user === messageKey) return null;
+    const next = clone(current);
+    next.syncCursor ||= { user: null, assistant: null };
+    next.syncCursor.user = messageKey;
+    const duration = userTurnDurationMinutes(message?.mes);
+    if (!duration) return next;
+    const previousMinutes = worldClockMinutes(next.worldClock);
+    const totalMinutes = previousMinutes + duration;
+    const previousDay = next.worldClock.day;
+    const day = Math.floor(totalMinutes / 1440) + 1;
+    const minuteOfDay = totalMinutes % 1440;
+    const hour = Math.floor(minuteOfDay / 60);
+    const minute = minuteOfDay % 60;
+    next.worldClock = {
+        day,
+        dayName: nextDayName(next.worldClock.dayName, Math.max(0, day - previousDay), day),
+        time: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
+        phase: dayPhaseForHour(hour),
+    };
+    return next;
 }
 
 function travelProgress(state) {
@@ -3144,22 +3219,26 @@ async function processUserTravelIntent(messageId) {
     const message = Number.isInteger(numericId) && numericId >= 0 ? context.chat?.[numericId]
         : [...(context.chat || [])].reverse().find(entry => entry?.is_user && !entry?.is_system);
     if (!message?.is_user || message.is_system) return false;
-    const current = getState();
+    const stored = getState();
+    const clockAdvanced = advanceWorldClockFromUserMessage(messageId, message, stored);
+    const current = clockAdvanced || stored;
     const intent = inferUserTravelIntent(message.mes, current);
     if (!intent) {
         const caughtUp = catchUpActiveTravelFromChat(current, context, messageId);
         if (caughtUp) return persistState(caughtUp, 'user-travel-history-catchup');
         const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
-        return advanced ? persistState(advanced, 'user-travel-progress') : false;
+        if (advanced) return persistState(advanced, 'user-travel-progress');
+        return clockAdvanced ? persistState(current, 'user-turn-clock') : false;
     }
     const alreadyHeadingThere = ['Preparing', 'Traveling', 'Delayed'].includes(current.travel.status)
         && mapLocationByName(current.travel.destinationPlace || current.travel.destination, current)?.id === intent.destination.id;
     const alreadyThere = current.location.place === intent.destination.name && !alreadyHeadingThere;
     if (alreadyHeadingThere) {
         const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
-        return advanced ? persistState(advanced, 'user-travel-progress') : false;
+        if (advanced) return persistState(advanced, 'user-travel-progress');
+        return clockAdvanced ? persistState(current, 'user-turn-clock') : false;
     }
-    if (alreadyThere) return false;
+    if (alreadyThere) return clockAdvanced ? persistState(current, 'user-turn-clock') : false;
     const next = clone(current);
     const totalDays = estimatedTravelDays(next, intent.destination, intent.route);
     const origin = next.location.place || next.location.region || 'Unknown';
@@ -3370,9 +3449,21 @@ function installAstraSurfaceCompatibility(overlay) {
     overlay.addEventListener('touchmove', stopHostGesture, { passive: true });
     overlay.addEventListener('wheel', stopHostGesture, { passive: true });
     body?.addEventListener('scroll', () => {
+        if (restoringPanelScroll) return;
         const id = overlay.querySelector('[data-panel].is-active')?.dataset.panel;
         if (id) panelScrollPositions.set(id, { top: body.scrollTop, left: body.scrollLeft });
     }, { passive: true });
+}
+
+function bindNestedScrollMemory(id, panel) {
+    panel?.querySelectorAll('[data-rpg-scroll-key]').forEach(element => {
+        if (element.dataset.rpgScrollBound === 'true') return;
+        element.dataset.rpgScrollBound = 'true';
+        element.addEventListener('scroll', () => {
+            if (restoringPanelScroll) return;
+            nestedScrollPositions.set(`${id}:${element.dataset.rpgScrollKey}`, { top: element.scrollTop, left: element.scrollLeft });
+        }, { passive: true });
+    });
 }
 
 function capturePanelScroll(id, panel) {
@@ -3385,10 +3476,11 @@ function capturePanelScroll(id, panel) {
 
 function restorePanelScroll(id, panel, { restoreBody = true } = {}) {
     const token = ++panelScrollRestoreToken;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    const restore = () => {
         if (token !== panelScrollRestoreToken || !panel?.isConnected) return;
         const body = panel.closest('.tretaresia-rpg-panel-body');
         const bodyPosition = panelScrollPositions.get(id) || { top: 0, left: 0 };
+        restoringPanelScroll = true;
         if (restoreBody && panel.classList.contains('is-active') && body) {
             body.scrollTop = bodyPosition.top;
             body.scrollLeft = bodyPosition.left;
@@ -3399,7 +3491,12 @@ function restorePanelScroll(id, panel, { restoreBody = true } = {}) {
             element.scrollTop = position.top;
             element.scrollLeft = position.left;
         });
-    }));
+        restoringPanelScroll = false;
+        bindNestedScrollMemory(id, panel);
+    };
+    // Restore before the browser paints replacement markup, then repeat after layout.
+    restore();
+    requestAnimationFrame(() => requestAnimationFrame(restore));
 }
 
 function rebuildInterface() {
@@ -7078,6 +7175,7 @@ async function processAssistantPatch(messageId, generationType = '') {
     if (!hasUserReply(context) || !Number.isInteger(messageId)) return;
     const message = context.chat[messageId];
     if (!message || message.is_user || message.is_system || typeof message.mes !== 'string') return;
+    if (processedAssistantMessages.has(message)) return;
     if (!settings.autoTrack) {
         setSync('disabled', tr('Reply received'), tr('Tracking is off'));
         return;
@@ -7093,9 +7191,11 @@ async function processAssistantPatch(messageId, generationType = '') {
         message.swipes[message.swipe_id] = extracted.visible;
     }
     if (!extracted.patch) {
+        processedAssistantMessages.add(message);
         setSync('error', tr('Sync unavailable'));
         return;
     }
+    processedAssistantMessages.add(message);
     try {
         const { next, accepted, notifications } = applyStatePatch(getState(), extracted.patch);
         if (accepted) {
@@ -7110,6 +7210,27 @@ async function processAssistantPatch(messageId, generationType = '') {
         console.error('[Tretaresia RPG] Inline state patch failed.', error);
         setSync('error', tr('Sync unavailable'));
     }
+}
+
+function latestAssistantMessageId() {
+    const chat = SillyTavern.getContext().chat || [];
+    for (let index = chat.length - 1; index >= 0; index -= 1) {
+        const message = chat[index];
+        if (message && !message.is_user && !message.is_system && typeof message.mes === 'string') return index;
+    }
+    return null;
+}
+
+function scheduleAssistantPatch(messageId, generationType = '', delay = 0) {
+    const numericId = Number(messageId);
+    const id = Number.isInteger(numericId) ? numericId : latestAssistantMessageId();
+    if (!Number.isInteger(id)) return;
+    const key = `${id}:${delay}`;
+    clearTimeout(assistantPatchTimers.get(key));
+    assistantPatchTimers.set(key, setTimeout(() => {
+        assistantPatchTimers.delete(key);
+        void processAssistantPatch(id, generationType);
+    }, delay));
 }
 
 function analyzerPrompt(state, transcript) {
@@ -7472,7 +7593,19 @@ function bindChatEvents() {
     if (eventTypes.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, generationType => {
         if (!generationType || generationType === 'normal') updatePrompt();
     });
-    eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => processAssistantPatch(messageId, generationType));
+    eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => {
+        scheduleAssistantPatch(messageId, generationType, 0);
+        scheduleAssistantPatch(messageId, generationType, 120);
+    });
+    if (eventTypes.CHARACTER_MESSAGE_RENDERED) eventSource.on(eventTypes.CHARACTER_MESSAGE_RENDERED, messageId => {
+        scheduleAssistantPatch(messageId, '', 0);
+        scheduleAssistantPatch(messageId, '', 180);
+    });
+    if (eventTypes.GENERATION_ENDED) eventSource.on(eventTypes.GENERATION_ENDED, () => {
+        const messageId = latestAssistantMessageId();
+        scheduleAssistantPatch(messageId, '', 0);
+        scheduleAssistantPatch(messageId, '', 240);
+    });
     globalThis.addEventListener('character-life:rpg-bridge-ready', () => {
         invalidateCharacterLifeMapMarkers();
         queueCharacterLifeCompatibilityRefresh({ save: true });
@@ -7527,7 +7660,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.22.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.23.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
