@@ -4757,6 +4757,211 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
     }
 }
 
+/* v0.19.3 — compact atlas chrome and one-canvas mobile rendering */
+.tretaresia-map-layout.has-fullscreen-map {
+    display: none !important;
+}
+
+.tretaresia-map-surface {
+    gap: .32rem;
+}
+
+.tretaresia-map-control-panel {
+    isolation: auto;
+    background: color-mix(in srgb, var(--tf-bg2) 97%, #000);
+    border-color: var(--tf-line-soft);
+    box-shadow: none;
+}
+
+.tretaresia-map-control-panel > .tretaresia-map-legend,
+.tretaresia-map-world-switcher,
+.tretaresia-map-bottom-fullscreen {
+    display: none !important;
+}
+
+.tretaresia-map-control-panel > .tretaresia-map-toolbar {
+    display: grid;
+    grid-template-columns: minmax(112px, auto) minmax(0, 1fr) 34px !important;
+    grid-template-rows: 34px;
+    gap: .35rem;
+    align-items: stretch;
+    padding: .38rem !important;
+}
+
+.tretaresia-map-world-select {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    min-width: 0;
+    height: 34px;
+    padding: 0 .42rem;
+    color: var(--tf-gold2);
+    background: color-mix(in srgb, var(--tf-gold2) 7%, transparent);
+    border: 1px solid var(--tf-line-soft);
+}
+
+.tretaresia-map-world-select > span {
+    color: var(--tf-muted);
+    font-size: .5rem;
+    font-weight: 750;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.tretaresia-map-world-select select {
+    min-width: 0;
+    height: 100%;
+    padding: 0 1.15rem 0 .1rem;
+    overflow: hidden;
+    color: var(--tf-on);
+    background-color: transparent;
+    border: 0;
+    outline: 0;
+    font: 750 .58rem/1 var(--tf-disp);
+    letter-spacing: .04em;
+    text-overflow: ellipsis;
+}
+
+.tretaresia-map-control-panel .tretaresia-map-toolbar-readouts {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: .2rem;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.tretaresia-map-control-panel .tretaresia-map-toolbar-readouts > span {
+    flex: 0 1 auto;
+    min-width: 0;
+    min-height: 34px;
+    padding: .2rem .35rem;
+    overflow: hidden;
+    background: rgba(0, 0, 0, .18);
+    border-color: rgba(255, 255, 255, .045);
+    font-size: .55rem;
+    white-space: nowrap;
+}
+
+.tretaresia-map-control-panel .tretaresia-map-toolbar-readouts b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tretaresia-map-control-panel .tretaresia-map-selected-readout {
+    flex: 1 1 120px;
+    max-width: none;
+}
+
+.tretaresia-map-fullscreen-icon,
+.tretaresia-map-window > header > button {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+    color: var(--tf-gold2);
+    background: transparent;
+    border: 1px solid var(--tf-line-soft);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.tretaresia-map-fullscreen-icon {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.tretaresia-map-window {
+    background: #020608;
+}
+
+.tretaresia-map-window > header {
+    justify-content: space-between;
+    gap: .55rem;
+}
+
+.tretaresia-map-window-body {
+    place-items: center;
+    align-content: center;
+    overflow: hidden;
+    padding: .4rem;
+}
+
+.tretaresia-map-window .tretaresia-map-surface.is-viewer {
+    width: min(100%, calc((100dvh - 120px) * 4 / 3)) !important;
+    max-width: 920px !important;
+}
+
+.tretaresia-map-window .tretaresia-map-control-panel > .tretaresia-map-toolbar {
+    position: static !important;
+}
+
+@media (max-width: 680px) {
+    .tretaresia-map-control-panel > .tretaresia-map-toolbar {
+        grid-template-columns: minmax(108px, 1fr) minmax(0, 1.2fr) 34px !important;
+        padding: .32rem !important;
+    }
+
+    .tretaresia-map-control-panel .tretaresia-map-toolbar-readouts > span:nth-child(1),
+    .tretaresia-map-control-panel .tretaresia-map-toolbar-readouts > span:nth-child(2),
+    .tretaresia-map-control-panel .tretaresia-map-selected-readout {
+        display: none;
+    }
+
+    .tretaresia-map-control-panel .tretaresia-map-toolbar-readouts > span {
+        flex: 1 1 50%;
+        justify-content: center;
+    }
+
+    .tretaresia-map-world-select > span {
+        display: none;
+    }
+
+    .tretaresia-map-world-select select {
+        width: 100%;
+    }
+
+    .tretaresia-map-window {
+        padding:
+            max(.2rem, env(safe-area-inset-top))
+            max(.2rem, env(safe-area-inset-right))
+            max(.2rem, env(safe-area-inset-bottom))
+            max(.2rem, env(safe-area-inset-left));
+    }
+
+    .tretaresia-map-window > header {
+        min-height: 48px;
+        padding: .35rem .45rem;
+    }
+
+    .tretaresia-map-window .tretaresia-map-surface.is-viewer {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+    .tretaresia-map-frame,
+    .tretaresia-map-control-panel,
+    .tretaresia-map-window,
+    .tretaresia-world-map {
+        box-shadow: none !important;
+        filter: none !important;
+    }
+
+    .tretaresia-map-window {
+        background-image: none !important;
+    }
+
+    .tretaresia-map-ping {
+        animation: none !important;
+    }
+}
+
 /* v0.19.1 — keep the atlas canvas completely unobstructed.
    The legacy core stylesheet positions the toolbar absolutely; the map surface
    now owns a separate sibling panel and these resets make that separation
@@ -5049,3 +5254,62 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
     }
 }
 
+/* v0.19.3 final precedence — the compact bar replaces the legacy mobile block above. */
+.tretaresia-map-control-panel {
+    isolation: auto;
+    gap: 0;
+    background: color-mix(in srgb, var(--tf-bg2) 97%, #000);
+    border-color: var(--tf-line-soft);
+    box-shadow: none;
+}
+
+.tretaresia-map-control-panel > .tretaresia-map-legend,
+.tretaresia-map-world-switcher,
+.tretaresia-map-bottom-fullscreen {
+    display: none !important;
+}
+
+.tretaresia-map-control-panel > .tretaresia-map-toolbar {
+    grid-template-columns: minmax(112px, auto) minmax(0, 1fr) 34px !important;
+    grid-template-rows: 34px !important;
+    gap: .35rem;
+    padding: .38rem !important;
+    background: transparent;
+}
+
+.tretaresia-map-control-panel .tretaresia-map-toolbar-readouts {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: flex !important;
+    grid-template-columns: none !important;
+    flex-wrap: nowrap;
+}
+
+.tretaresia-map-fullscreen-icon {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.tretaresia-map-window-body {
+    place-items: center;
+    align-content: center;
+    overflow: hidden;
+    padding: .4rem;
+}
+
+.tretaresia-map-window .tretaresia-map-surface.is-viewer {
+    width: min(100%, calc((100dvh - 120px) * 4 / 3)) !important;
+    max-width: 920px !important;
+}
+
+@media (max-width: 680px) {
+    .tretaresia-map-control-panel > .tretaresia-map-toolbar {
+        grid-template-columns: minmax(108px, 1fr) minmax(0, 1.2fr) 34px !important;
+        padding: .32rem !important;
+    }
+
+    .tretaresia-map-window .tretaresia-map-surface.is-viewer {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}

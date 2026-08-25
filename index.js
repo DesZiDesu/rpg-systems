@@ -112,7 +112,8 @@ const WORLD_TILE_LEVELS = [
     { z: 3, width: 4096, height: 3072, columns: 8, rows: 6 },
 ];
 const MAP_COARSE_POINTER = Boolean(globalThis.matchMedia?.('(pointer: coarse)')?.matches);
-const MAP_TILE_CACHE_LIMIT = MAP_COARSE_POINTER ? 36 : 72;
+const MAP_TILE_CACHE_LIMIT = MAP_COARSE_POINTER ? 18 : 48;
+const MAP_TILE_LOAD_LIMIT = MAP_COARSE_POINTER ? 4 : 8;
 const MAP_DRAW_INTERVAL = MAP_COARSE_POINTER ? 32 : 16;
 const atlasPoint = (x, y) => [
     Math.round(x / SOURCE_MAP_WIDTH * WORLD_MAP_WIDTH),
@@ -745,7 +746,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.19.2';
+const LAUNCHER_BIND_VERSION = '0.19.3';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -885,6 +886,9 @@ let mapResizeObserver = null;
 let mapFullscreen = false;
 let mapAtlasSelection = '';
 const mapTileCache = new Map();
+const mapTileQueue = [];
+let mapTileLoads = 0;
+let mapTileContext = '';
 let openedLetterId = null;
 let selectedNpcId = null;
 let npcPortraitRenderToken = 0;
@@ -3292,6 +3296,7 @@ function activateTab(id) {
     });
     overlay.querySelectorAll('.tretaresia-module-dots i').forEach((dot, dotIndex) => dot.classList.toggle('on', dotIndex === index));
     if (next === current) return;
+    if (current?.dataset.panel === 'map' && id !== 'map') suspendMapRendering(false);
     const transition = ++tabTransitionToken;
     current?.classList.add('is-leaving');
     const finish = () => {
@@ -3306,7 +3311,10 @@ function activateTab(id) {
         void next.offsetWidth;
         next.classList.add('is-entering');
         overlay.querySelector('.tretaresia-rpg-panel-body')?.scrollTo({ top: 0, behavior: 'smooth' });
-        if (id === 'map') requestAnimationFrame(() => scheduleMapDraw(next, getState()));
+        if (id === 'map') requestAnimationFrame(() => {
+            setupMapInteractions(next);
+            scheduleMapDraw(next, getState());
+        });
     };
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) finish();
     else setTimeout(finish, 130);
@@ -3875,9 +3883,10 @@ function mapWorldToolbar(state, selected, fullscreen = false) {
     const atlas = viewedAtlas(state);
     const variant = worldMapVariant(state);
     return `<div class="tretaresia-map-toolbar" data-map-toolbar>
-        <div class="tretaresia-map-world-switcher" role="group" aria-label="${html(tr('World map'))}">
-            ${Object.values(WORLD_ATLASES).map(entry => `<button type="button" data-action="map-world" data-world-id="${entry.id}" class="${entry.id === atlas.id ? 'is-active' : ''}" aria-pressed="${entry.id === atlas.id}"><i class="fa-solid fa-earth-asia"></i><span>${html(entry.name)}</span></button>`).join('')}
-        </div>
+        <label class="tretaresia-map-world-select" title="${html(atlas.name)}"><i class="fa-solid fa-earth-asia"></i><span>${html(tr('World'))}</span>
+            <select data-map-world-select aria-label="${html(tr('World map'))}">${Object.values(WORLD_ATLASES).map(entry =>
+                `<option value="${entry.id}"${entry.id === atlas.id ? ' selected' : ''}>${html(entry.id === 'present-world' ? tr('Present World') : 'ALTERNATE')}</option>`).join('')}</select>
+        </label>
         <div class="tretaresia-map-toolbar-readouts">
             <span class="tretaresia-map-time"><i class="fa-solid fa-${variant === 'night' ? 'moon' : 'sun'}"></i><b>${html(tr(variant === 'night' ? 'Night map' : 'Day map'))}</b></span>
             <span><i class="fa-solid fa-layer-group"></i><b data-map-lod>WORLD</b></span>
@@ -3885,10 +3894,9 @@ function mapWorldToolbar(state, selected, fullscreen = false) {
             <span><i class="fa-solid fa-crosshairs"></i><b data-map-readout>1200 E · 0900 S</b></span>
             <span class="tretaresia-map-selected-readout"><i class="fa-solid fa-location-dot"></i><b>${html(selected.name)}</b></span>
         </div>
-        <button class="tretaresia-map-bottom-fullscreen" type="button" data-action="map-fullscreen"
-            aria-label="${html(tr(fullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}">
+        <button class="tretaresia-map-fullscreen-icon" type="button" data-action="map-fullscreen"
+            title="${html(tr(fullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}" aria-label="${html(tr(fullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}">
             <i class="fa-solid fa-${fullscreen ? 'xmark' : 'up-right-and-down-left-from-center'}"></i>
-            <span>${html(tr(fullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}</span>
         </button>
     </div>`;
 }
@@ -3901,17 +3909,19 @@ function mapSurfaceMarkup(state, selected, fullscreen = false) {
             <canvas class="tretaresia-world-map" role="img" aria-label="${html(`Interactive map of ${atlas.name}; tap or click anywhere to select exact coordinates`)}"></canvas>
             <span class="tretaresia-map-ping" data-map-ping hidden></span>
         </div>
-        <div class="tretaresia-map-control-panel" aria-label="${html(tr('Map controls'))}">
-            <div class="tretaresia-map-legend">
-                <span><i class="current"></i>${html(tr('Current'))}</span>
-                <span><i class="known"></i>${html(tr('Discovered'))}</span>
-                <span><i class="marked"></i>${html(tr('Marked'))}</span>
-                <span><i class="npc"></i>${html(tr('Living NPCs'))}</span>
-                <small>${html(tr('Drag to pan · Pinch or scroll to zoom'))}</small>
-            </div>
-            ${mapWorldToolbar(state, selected, fullscreen)}
-        </div>
+        <div class="tretaresia-map-control-panel" aria-label="${html(tr('Map controls'))}">${mapWorldToolbar(state, selected, fullscreen)}</div>
     </div>`;
+}
+
+function selectViewedWorld(nextWorldId, state = getState()) {
+    if (!WORLD_ATLASES[nextWorldId] || nextWorldId === viewedWorldId(state)) return false;
+    mapAtlasSelection = nextWorldId;
+    mapSelectionId = null;
+    mapDraftPoint = null;
+    Object.assign(mapView, { scale: 1, x: 0, y: 0 });
+    activateMapTileContext(nextWorldId, worldMapVariant(state));
+    renderMap(document.querySelector('[data-panel="map"]'), getState());
+    return true;
 }
 
 function renderMap(panel, state) {
@@ -3950,8 +3960,8 @@ function renderMap(panel, state) {
         : `<div class="tretaresia-map-browse-note"><i class="fa-solid fa-eye"></i><span><b>${html(tr('Atlas browsing mode'))}</b>${html(tr('Travel becomes available when the story enters this world.'))}</span></div>`;
 
     panel.innerHTML = `${heading(atlas.name, `${tr(atlas.era)} · ${viewingCurrentWorld ? state.location.continent + ' · ' + state.location.region : tr('Atlas browsing mode')}`, 'fa-solid fa-earth-asia')}
-<div class="tretaresia-map-layout">
-    ${mapSurfaceMarkup(state, selected, false)}
+<div class="tretaresia-map-layout${mapFullscreen ? ' has-fullscreen-map' : ''}">
+    ${mapFullscreen ? '' : mapSurfaceMarkup(state, selected, false)}
     <aside class="tretaresia-map-sidebar"><article class="tretaresia-location-dossier"><span class="tretaresia-eyebrow">${html(tr('Selected location'))}</span><h4>${html(selected.name)}</h4>
         <p>${html(selected.continent)}</p><div class="tretaresia-zone-badge" data-zone="${html(selected.zone)}"><i class="fa-solid fa-shield"></i>${html(tr(selected.zone))}</div>
         <dl><div><dt>${html(tr('World'))}</dt><dd>${html(atlas.name)}</dd></div>
@@ -3971,11 +3981,16 @@ function renderMap(panel, state) {
             <i class="fa-solid fa-map-pin"></i><span>${html(pin.label)}<small>${html(pin.note || mapLocation(pin.locationId, state, true)?.name || coordinatesLabel(pin.x, pin.y))}</small></span></button>`).join('')}</div>` : ''}</aside>
 </div>
 ${mapFullscreen ? `<section class="tretaresia-map-window" role="dialog" aria-modal="true" aria-label="${html(atlas.name)}">
-    <header><div><span>${html(tr('World map'))}</span><h3>${html(atlas.name)}</h3><small>${html(selected.name)} · ${coordinatesLabel(selected.x, selected.y)}</small></div></header>
+    <header><div><span>${html(tr('World map'))}</span><h3>${html(atlas.name)}</h3><small>${html(selected.name)} · ${coordinatesLabel(selected.x, selected.y)}</small></div>
+        <button type="button" data-action="map-fullscreen" title="${html(tr('Close fullscreen map'))}" aria-label="${html(tr('Close fullscreen map'))}"><i class="fa-solid fa-xmark"></i></button></header>
     <div class="tretaresia-map-window-body">${mapSurfaceMarkup(state, selected, true)}</div>
 </section>` : ''}`;
-    setupMapInteractions(panel);
-    scheduleMapDraw(panel, state);
+    const visible = mapFullscreen || (!panel.hidden && panel.classList.contains('is-active')
+        && document.getElementById('tretaresia-rpg-overlay')?.classList.contains('is-open'));
+    if (visible) {
+        setupMapInteractions(panel);
+        scheduleMapDraw(panel, state);
+    }
 }
 
 function mapLod() {
@@ -3984,7 +3999,7 @@ function mapLod() {
 }
 
 function mapVisibleBounds() {
-    const margin = 150 / mapView.scale;
+    const margin = (MAP_COARSE_POINTER ? 48 : 100) / mapView.scale;
     return {
         left: -mapView.x / mapView.scale - margin, top: -mapView.y / mapView.scale - margin,
         right: (WORLD_MAP_WIDTH - mapView.x) / mapView.scale + margin,
@@ -4012,11 +4027,63 @@ function trimMapTileCache(protectedKey = '') {
             key !== protectedKey && record.status !== 'loading' && !key.includes('/0/'));
         if (!candidate) break;
         const [key, record] = candidate;
-        record.image.onload = null;
-        record.image.onerror = null;
-        record.image.removeAttribute('src');
+        releaseMapTileRecord(record);
         mapTileCache.delete(key);
     }
+}
+
+function releaseMapTileRecord(record) {
+    if (!record || record.cancelled) return;
+    record.cancelled = true;
+    if (record.active) {
+        record.active = false;
+        mapTileLoads = Math.max(0, mapTileLoads - 1);
+    }
+    record.image.onload = null;
+    record.image.onerror = null;
+    try { record.image.removeAttribute('src'); } catch {}
+}
+
+function pumpMapTileQueue() {
+    while (mapTileLoads < MAP_TILE_LOAD_LIMIT && mapTileQueue.length) {
+        const queued = mapTileQueue.shift();
+        const { key, record } = queued || {};
+        if (!record || record.cancelled || mapTileCache.get(key) !== record || record.status !== 'queued') continue;
+        record.status = 'loading';
+        record.active = true;
+        mapTileLoads += 1;
+        record.image.src = record.src;
+    }
+}
+
+function finishMapTileLoad(record) {
+    if (record?.active) {
+        record.active = false;
+        mapTileLoads = Math.max(0, mapTileLoads - 1);
+    }
+    pumpMapTileQueue();
+}
+
+function clearMapTileCache(predicate = () => true) {
+    for (const [key, record] of mapTileCache) {
+        if (!predicate(key, record)) continue;
+        releaseMapTileRecord(record);
+        mapTileCache.delete(key);
+    }
+    for (let index = mapTileQueue.length - 1; index >= 0; index -= 1) {
+        const queued = mapTileQueue[index];
+        if (queued?.record?.cancelled || !mapTileCache.has(queued?.key)) mapTileQueue.splice(index, 1);
+    }
+    pumpMapTileQueue();
+}
+
+function activateMapTileContext(worldId, variant) {
+    const safeWorldId = WORLD_ATLASES[worldId] ? worldId : WORLD_ATLAS.id;
+    const safeVariant = variant === 'night' ? 'night' : 'day';
+    const nextContext = `${safeWorldId}/${safeVariant}/`;
+    if (nextContext === mapTileContext) return;
+    mapTileContext = nextContext;
+    clearMapTileCache(key => !key.startsWith(nextContext));
 }
 
 function worldTile(level, column, row, worldId = WORLD_ATLAS.id, variant = 'day') {
@@ -4030,26 +4097,38 @@ function worldTile(level, column, row, worldId = WORLD_ATLAS.id, variant = 'day'
         mapTileCache.set(key, cached);
         return cached;
     }
-    const record = { status: 'loading', image: new Image(), worldId: safeWorldId, variant: safeVariant, fallbackAttempted: false };
+    const record = {
+        status: 'queued', image: new Image(), worldId: safeWorldId, variant: safeVariant,
+        fallbackAttempted: false, cancelled: false, active: false,
+        src: `${roots[safeVariant]}/${level.z}/${column}-${row}.webp`,
+    };
     record.image.decoding = 'async';
     record.image.onload = () => {
+        if (record.cancelled) return;
         record.status = 'ready';
+        finishMapTileLoad(record);
         trimMapTileCache(key);
         scheduleMapDraw();
     };
     record.image.onerror = () => {
+        if (record.cancelled) return;
+        finishMapTileLoad(record);
         if (safeVariant === 'night' && !record.fallbackAttempted) {
             record.fallbackAttempted = true;
             record.variant = 'day-fallback';
-            record.image.src = `${roots.day}/${level.z}/${column}-${row}.webp`;
+            record.status = 'queued';
+            record.src = `${roots.day}/${level.z}/${column}-${row}.webp`;
+            mapTileQueue.push({ key, record });
+            pumpMapTileQueue();
             return;
         }
         record.status = 'error';
         trimMapTileCache();
     };
-    record.image.src = `${roots[safeVariant]}/${level.z}/${column}-${row}.webp`;
     mapTileCache.set(key, record);
+    mapTileQueue.push({ key, record });
     trimMapTileCache(key);
+    pumpMapTileQueue();
     return record;
 }
 
@@ -4094,6 +4173,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     const palette = mapPalette();
     const variant = worldMapVariant(state);
     const worldId = viewedWorldId(state);
+    activateMapTileContext(worldId, variant);
     const viewingCurrentWorld = worldId === storyWorldId(state);
     const locations = worldLocationsFor(state, true);
     const continents = worldContinentsFor(state, true);
@@ -4114,7 +4194,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
 
     context.setTransform(transformX * mapView.scale, 0, 0, transformY * mapView.scale,
         transformX * mapView.x, transformY * mapView.y);
-    context.imageSmoothingEnabled = true;
+    context.imageSmoothingEnabled = !mapInteracting;
     context.imageSmoothingQuality = mapInteracting ? 'low' : 'medium';
 
     {
@@ -4313,15 +4393,17 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         player = mapCanvasPoint(current.x, current.y, canvas.width, canvas.height);
         const heading = (current.heading - 90) * Math.PI / 180;
         context.save();
-        const cone = context.createRadialGradient(player.x, player.y, 4, player.x, player.y, 46);
-        cone.addColorStop(0, rgbaOf(palette.alt, .5));
-        cone.addColorStop(1, rgbaOf(palette.alt, 0));
-        context.fillStyle = cone;
-        context.beginPath();
-        context.moveTo(player.x, player.y);
-        context.arc(player.x, player.y, 46, heading - .42, heading + .42);
-        context.closePath();
-        context.fill();
+        if (!mapInteracting) {
+            const cone = context.createRadialGradient(player.x, player.y, 4, player.x, player.y, 46);
+            cone.addColorStop(0, rgbaOf(palette.alt, .5));
+            cone.addColorStop(1, rgbaOf(palette.alt, 0));
+            context.fillStyle = cone;
+            context.beginPath();
+            context.moveTo(player.x, player.y);
+            context.arc(player.x, player.y, 46, heading - .42, heading + .42);
+            context.closePath();
+            context.fill();
+        }
         context.beginPath();
         context.arc(player.x, player.y, 12, 0, Math.PI * 2);
         context.fillStyle = palette.halo;
@@ -4380,7 +4462,14 @@ function flushScheduledMapDraw() {
     });
 }
 
+function mapCanRender(panel = document.querySelector('[data-panel="map"]')) {
+    if (!panel || !document.getElementById('tretaresia-rpg-overlay')?.classList.contains('is-open')) return false;
+    return mapFullscreen || (!panel.hidden && panel.classList.contains('is-active'));
+}
+
 function scheduleMapDraw(panel, state) {
+    const targetPanel = panel || mapQueuedPanel || document.querySelector('[data-panel="map"]');
+    if (!mapCanRender(targetPanel)) return;
     if (panel) mapQueuedPanel = panel;
     if (state) mapQueuedState = state;
     if (mapDrawFrame || mapDrawTimer) return;
@@ -4392,6 +4481,23 @@ function scheduleMapDraw(panel, state) {
 
 function scheduleMapDetailRender() {
     scheduleMapDraw();
+}
+
+function suspendMapRendering(releaseTiles = false) {
+    if (mapDrawFrame) cancelAnimationFrame(mapDrawFrame);
+    if (mapDrawTimer) globalThis.clearTimeout(mapDrawTimer);
+    mapDrawFrame = 0;
+    mapDrawTimer = 0;
+    mapQueuedPanel = null;
+    mapQueuedState = null;
+    mapInteracting = false;
+    globalThis.clearTimeout(mapInteractionEndTimer);
+    mapResizeObserver?.disconnect();
+    mapResizeObserver = null;
+    if (releaseTiles) {
+        clearMapTileCache();
+        mapTileContext = '';
+    }
 }
 
 const textareaField = (label, name, value, rows = 4, extra = '') =>
@@ -5404,6 +5510,11 @@ async function onPanelChange(event) {
         audioInput.value = '';
         return;
     }
+    const worldSelect = event.target.closest('[data-map-world-select]');
+    if (worldSelect instanceof HTMLSelectElement) {
+        selectViewedWorld(worldSelect.value, getState());
+        return;
+    }
     const sceneMapPicker = event.target.closest('#tretaresia-scene-map-picker');
     if (sceneMapPicker instanceof HTMLSelectElement) {
         const state = clone(getState());
@@ -5496,13 +5607,7 @@ async function onPanelClick(event) {
             break;
         }
         case 'map-world': {
-            const nextWorldId = button.dataset.worldId;
-            if (!WORLD_ATLASES[nextWorldId] || nextWorldId === viewedWorldId(state)) break;
-            mapAtlasSelection = nextWorldId;
-            mapSelectionId = null;
-            mapDraftPoint = null;
-            resetMapView();
-            renderMap(document.querySelector('[data-panel="map"]'), getState());
+            selectViewedWorld(button.dataset.worldId, state);
             break;
         }
         case 'map-zoom-in':
@@ -5863,7 +5968,9 @@ function updateMapTransform() {
 }
 
 function clampMapView() {
-    mapView.scale = Math.min(8, Math.max(1, mapView.scale));
+    mapView.scale = Number.isFinite(mapView.scale) ? Math.min(8, Math.max(1, mapView.scale)) : 1;
+    mapView.x = Number.isFinite(mapView.x) ? mapView.x : 0;
+    mapView.y = Number.isFinite(mapView.y) ? mapView.y : 0;
     mapView.x = Math.min(0, Math.max(WORLD_MAP_WIDTH * (1 - mapView.scale), mapView.x));
     mapView.y = Math.min(0, Math.max(WORLD_MAP_HEIGHT * (1 - mapView.scale), mapView.y));
 }
@@ -5881,10 +5988,13 @@ function setMapFullscreen(open) {
 }
 
 function setMapZoom(scale, anchorX = WORLD_MAP_WIDTH / 2, anchorY = WORLD_MAP_HEIGHT / 2) {
-    const next = Math.min(8, Math.max(1, scale));
-    const ratio = next / mapView.scale;
-    mapView.x = anchorX - (anchorX - mapView.x) * ratio;
-    mapView.y = anchorY - (anchorY - mapView.y) * ratio;
+    const current = Number.isFinite(mapView.scale) ? mapView.scale : 1;
+    const next = Number.isFinite(scale) ? Math.min(8, Math.max(1, scale)) : current;
+    const safeAnchorX = Number.isFinite(anchorX) ? anchorX : WORLD_MAP_WIDTH / 2;
+    const safeAnchorY = Number.isFinite(anchorY) ? anchorY : WORLD_MAP_HEIGHT / 2;
+    const ratio = next / current;
+    mapView.x = safeAnchorX - (safeAnchorX - mapView.x) * ratio;
+    mapView.y = safeAnchorY - (safeAnchorY - mapView.y) * ratio;
     mapView.scale = next;
     clampMapView();
     updateMapTransform();
@@ -5899,22 +6009,31 @@ function setupMapInteractions(panel) {
         mapResizeObserver = new ResizeObserver(() => scheduleMapDraw(panel, getState()));
         mapResizeObserver.observe(svg);
     }
+    if (svg.dataset.mapInteractionsBound === 'true') return;
+    svg.dataset.mapInteractionsBound = 'true';
     const pointers = new Map();
-    let previous = null;
+    let previousCentroid = null;
     let pinchDistance = 0;
     let dragDistance = 0;
     let pointerStart = null;
+    let gestureHadMultiplePointers = false;
     const mapPoint = event => {
         const rect = svg.getBoundingClientRect();
+        if (!rect.width || !rect.height || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return null;
         const screenX = (event.clientX - rect.left) / rect.width * WORLD_MAP_WIDTH;
         const screenY = (event.clientY - rect.top) / rect.height * WORLD_MAP_HEIGHT;
         return { x: (screenX - mapView.x) / mapView.scale, y: (screenY - mapView.y) / mapView.scale, screenX, screenY };
     };
+    const pointerCentroid = points => points.length ? {
+        x: points.reduce((sum, point) => sum + point.x, 0) / points.length,
+        y: points.reduce((sum, point) => sum + point.y, 0) / points.length,
+    } : null;
     svg.addEventListener('wheel', event => {
         event.preventDefault();
         mapInteracting = true;
         globalThis.clearTimeout(mapInteractionEndTimer);
         const point = mapPoint(event);
+        if (!point) return;
         setMapZoom(mapView.scale * (event.deltaY < 0 ? 1.15 : .87), point.screenX, point.screenY);
         mapInteractionEndTimer = globalThis.setTimeout(() => {
             mapInteracting = false;
@@ -5922,42 +6041,61 @@ function setupMapInteractions(panel) {
         }, 120);
     }, { passive: false });
     svg.addEventListener('pointerdown', event => {
+        if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
+        event.preventDefault();
         mapInteracting = true;
         globalThis.clearTimeout(mapInteractionEndTimer);
         svg.setPointerCapture?.(event.pointerId);
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        previous = { x: event.clientX, y: event.clientY };
+        gestureHadMultiplePointers ||= pointers.size > 1;
+        previousCentroid = pointerCentroid([...pointers.values()]);
+        pinchDistance = 0;
         pointerStart = { x: event.clientX, y: event.clientY, continentId: event.target.closest?.('[data-continent-id]')?.dataset.continentId || '' };
         dragDistance = 0;
         svg.classList.add('is-dragging');
     });
     svg.addEventListener('pointermove', event => {
         if (!pointers.has(event.pointerId)) return;
+        if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
+        event.preventDefault();
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         const points = [...pointers.values()];
         const rect = svg.getBoundingClientRect();
-        if (points.length === 1 && previous) {
-            const dx = event.clientX - previous.x;
-            const dy = event.clientY - previous.y;
+        if (!rect.width || !rect.height) return;
+        const centroid = pointerCentroid(points);
+        if (points.length === 1 && previousCentroid && centroid) {
+            const dx = centroid.x - previousCentroid.x;
+            const dy = centroid.y - previousCentroid.y;
+            const jumpLimit = Math.max(42, Math.min(rect.width, rect.height) * .22);
+            previousCentroid = centroid;
+            if (Math.abs(dx) > jumpLimit || Math.abs(dy) > jumpLimit) return;
             dragDistance += Math.hypot(dx, dy);
             mapView.x += dx / rect.width * WORLD_MAP_WIDTH;
             mapView.y += dy / rect.height * WORLD_MAP_HEIGHT;
-            previous = { x: event.clientX, y: event.clientY };
             updateMapTransform();
         } else if (points.length >= 2) {
             const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
-            if (pinchDistance) setMapZoom(mapView.scale * distance / pinchDistance);
+            if (pinchDistance > 0 && Number.isFinite(distance) && centroid) {
+                const frameRatio = Math.min(1.22, Math.max(.82, distance / pinchDistance));
+                const anchorX = (centroid.x - rect.left) / rect.width * WORLD_MAP_WIDTH;
+                const anchorY = (centroid.y - rect.top) / rect.height * WORLD_MAP_HEIGHT;
+                setMapZoom(mapView.scale * frameRatio, anchorX, anchorY);
+            }
             pinchDistance = distance;
+            previousCentroid = centroid;
         }
-    });
+    }, { passive: false });
     const end = event => {
-        const wasClick = pointers.size === 1 && dragDistance < 7 && pointerStart;
+        if (!pointers.has(event.pointerId)) return;
+        const wasClick = event.type === 'pointerup' && !gestureHadMultiplePointers && pointers.size === 1 && dragDistance < 7 && pointerStart;
         pointers.delete(event.pointerId);
-        previous = pointers.size === 1 ? [...pointers.values()][0] : null;
+        try { svg.releasePointerCapture?.(event.pointerId); } catch {}
+        previousCentroid = pointerCentroid([...pointers.values()]);
         pinchDistance = 0;
         if (!pointers.size) {
             svg.classList.remove('is-dragging');
             mapInteracting = false;
+            gestureHadMultiplePointers = false;
             scheduleMapDraw(panel, getState());
         }
         if (wasClick) {
@@ -5967,10 +6105,7 @@ function setupMapInteractions(panel) {
             const hit = [...mapRenderedPoints].reverse().find(entry => Math.hypot(entry.x - hitX, entry.y - hitY) <= entry.radius * Math.min(1.5, globalThis.devicePixelRatio || 1));
             if (hit?.type === 'npc') {
                 selectedNpcId = hit.id;
-                if (mapFullscreen) {
-                    mapFullscreen = false;
-                    document.body.classList.remove('tretaresia-map-fullscreen-open');
-                }
+                if (mapFullscreen) setMapFullscreen(false);
                 activateTab('npcs');
                 pointerStart = null;
                 return;
@@ -5998,6 +6133,10 @@ function setupMapInteractions(panel) {
                 return;
             }
             const point = mapPoint(event);
+            if (!point) {
+                pointerStart = null;
+                return;
+            }
             const x = number(point.x, 0, 0, WORLD_MAP_WIDTH);
             const y = number(point.y, 0, 0, WORLD_MAP_HEIGHT);
             const hintedId = pointerStart.continentId || '';
@@ -6015,6 +6154,7 @@ function setupMapInteractions(panel) {
     };
     svg.addEventListener('pointerup', end);
     svg.addEventListener('pointercancel', end);
+    svg.addEventListener('lostpointercapture', end);
 }
 
 function restoreComposerDraft() {
@@ -7006,6 +7146,7 @@ function closeInterface() {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (!overlay?.classList.contains('is-open')) return;
     mapFullscreen = false;
+    suspendMapRendering(true);
     document.body.classList.remove('tretaresia-map-fullscreen-open');
     clearTimeout(introTimer);
     clearInterval(introGateTimer);
@@ -7146,6 +7287,7 @@ function bindChatEvents() {
     const { eventSource, eventTypes } = SillyTavern.getContext();
     eventSource.on(eventTypes.CHAT_CHANGED, async () => {
         cleanupAudio();
+        suspendMapRendering(true);
         clearNpcPortraitObjectUrls();
         closePortraitEditor();
         openedLetterId = null;
@@ -7195,6 +7337,16 @@ async function initialize() {
         buildInterface();
         await addSettingsDrawer();
         bindChatEvents();
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) suspendMapRendering(true);
+            else {
+                const panel = document.querySelector('[data-panel="map"].is-active');
+                if (panel && document.getElementById('tretaresia-rpg-overlay')?.classList.contains('is-open')) {
+                    setupMapInteractions(panel);
+                    scheduleMapDraw(panel, getState());
+                }
+            }
+        });
         bindNewChatSummaryCompatibility();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
@@ -7208,7 +7360,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.19.2 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.19.3 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
