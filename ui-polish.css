@@ -3831,7 +3831,7 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
     .tretaresia-compass-rose svg { width: 66px; height: 66px; }
     .tretaresia-map-instruments button { width: 40px; height: 40px; }
     .tretaresia-map-hud { bottom: 2.4rem; }
-    .tretaresia-map-hud span:nth-child(2) { display: none; }
+    .tretaresia-map-hud span:nth-child(4) { display: none; }
 }
 
 .tretaresia-intro-gate {
@@ -4417,5 +4417,44 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
     .tretaresia-transaction-amounts {
         justify-items: start;
         text-align: start;
+    }
+}
+
+
+/* v0.15.0 — Present World day/night atlas */
+.tretaresia-map-frame[data-map-variant="night"] .tretaresia-map-time {
+    border-color: color-mix(in srgb, #77a9da 44%, var(--tf-line-soft));
+    background: color-mix(in srgb, #06182b 82%, transparent);
+}
+
+.tretaresia-map-frame[data-map-variant="night"] .tretaresia-map-time i,
+.tretaresia-map-frame[data-map-variant="night"] .tretaresia-map-time b {
+    color: #a9cff2;
+}
+
+.tretaresia-map-world {
+    max-width: min(210px, 38vw);
+}
+
+.tretaresia-map-world b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+    .tretaresia-map-hud {
+        right: .5rem;
+        left: .5rem;
+    }
+
+    .tretaresia-map-hud .tretaresia-map-world,
+    .tretaresia-map-hud .tretaresia-map-time {
+        display: inline-flex;
+    }
+
+    .tretaresia-map-hud span:nth-child(3),
+    .tretaresia-map-hud span:nth-child(4) {
+        display: none;
     }
 }

@@ -2,7 +2,7 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.14.0**
+**Current version: 0.15.0**
 
 The tracking protocol uses a compact, relevance-prioritized state payload instead of repeatedly sending the entire archive. Settings show extension-started request attempts, and repeated Manual Sync taps are deduplicated.
 
@@ -19,7 +19,8 @@ The tracking protocol uses a compact, relevance-prioritized state payload instea
 - Long-distance journey tracking with origin, destination, road/caravan/sea/off-road route, estimated duration, remaining days, delays, and arrival state. Selecting a destination begins a journey instead of teleporting the scene.
 - Region-aware currency ledger with clearly labeled Gold, Silver, and Copper balances plus a reasoned transaction history for every tracked gain, expense, and manual adjustment.
 - Scene tracker with time, day, continent, region, exact place, position, weather, extreme temperatures, and AI-assisted multi-floor local maps.
-- A huge image-tile world atlas using the supplied fantasy map, with all six continents, 126 named locations, coordinate-level selection, bounded pan/zoom, freeform pins, an exact player-position beacon, and a dedicated fullscreen viewer.
+- The current atlas is identified as **Present World / Present Era**, providing a stable world identity for future terrain expansion while preserving the existing six continents, 126 named locations, coordinates, pins, routes, and discoveries.
+- A huge image-tile world atlas using the supplied fantasy map, with automatic day/night artwork switching from the Scene world clock. Both visual variants share the exact same location data and coordinate system, with coordinate-level selection, bounded pan/zoom, freeform pins, an exact player-position beacon, and a dedicated fullscreen viewer.
 - iOS-friendly Canvas tile rendering: four WebP detail levels load only the visible 512 px tiles and visible place labels while zooming or panning, avoiding one enormous SVG scene.
 - Broad action-based EXP tracking for studying, learning, training, crafting practice, combat, kills, discoveries, quests, and other genuine growth; level rollover happens when EXP is exactly equal to or greater than the current requirement.
 - Main-chat system notifications for EXP, learning, training, combat, kills, level-ups, mission/quest receipt and status changes, and money changes. Every tracked currency notification identifies why money was gained or spent, with configurable event types and auto-dismiss time.

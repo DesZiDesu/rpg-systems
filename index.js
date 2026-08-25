@@ -89,7 +89,11 @@ const SOURCE_MAP_HEIGHT = 1086;
 const WORLD_MAP_WIDTH = 2400;
 const WORLD_MAP_HEIGHT = 1800;
 const WORLD_TILE_SIZE = 512;
-const WORLD_TILE_ROOT = `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles`;
+const WORLD_ATLAS = Object.freeze({ id: 'present-world', name: 'Present World', era: 'Present Era', atlasVersion: 1 });
+const WORLD_TILE_ROOTS = Object.freeze({
+    day: `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles`,
+    night: `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles-night`,
+});
 const WORLD_MAP_ZOOM_LEVELS = Object.freeze({ regional: 1.35, local: 2.4 });
 const WORLD_TILE_LEVELS = [
     { z: 0, width: 512, height: 384, columns: 1, rows: 1 },
@@ -365,7 +369,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.14.0';
+const LAUNCHER_BIND_VERSION = '0.15.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -421,7 +425,8 @@ const TRANSLATIONS = {
         'Add journey log': 'เพิ่มบันทึก', 'Edit log': 'แก้ไขบันทึก', 'Delete log': 'ลบบันทึก', 'Save log': 'บันทึก', 'What happened': 'เกิดอะไรขึ้น', 'Journey log saved.': 'บันทึกการเดินทางแล้ว',
         'Edit progression': 'แก้ไขความก้าวหน้า', 'Adventurer rank': 'อันดับนักผจญภัย',
         'Magic rank': 'ระดับเวทมนตร์', 'Sword rank': 'ระดับดาบ', 'EXP to next level': 'EXP สำหรับเลเวลถัดไป', 'Save progression': 'บันทึกความก้าวหน้า',
-        'Tretaresia World Atlas': 'แผนที่โลก Tretaresia', 'Selected location': 'สถานที่ที่เลือก', Region: 'ภูมิภาค', Discovery: 'การค้นพบ', Marker: 'หมุด',
+        'Tretaresia World Atlas': 'แผนที่โลก Tretaresia', 'Present World': 'โลกปัจจุบัน', 'Present Era': 'ยุคปัจจุบัน', World: 'โลก', Era: 'ยุค',
+        'Map lighting': 'ช่วงเวลาของแผนที่', 'Day map': 'แผนที่กลางวัน', 'Night map': 'แผนที่กลางคืน', 'Selected location': 'สถานที่ที่เลือก', Region: 'ภูมิภาค', Discovery: 'การค้นพบ', Marker: 'หมุด',
         Journey: 'การเดินทาง', Origin: 'ต้นทาง', 'Travel route': 'เส้นทางเดินทาง', 'Remaining travel': 'เวลาที่เหลือ', days: 'วัน', 'Estimated travel days': 'จำนวนวันเดินทางโดยประมาณ', 'Begin journey': 'เริ่มออกเดินทาง',
         'Currency / region': 'สกุลเงิน / ภูมิภาค', 'High denomination': 'หน่วยมูลค่าสูง', 'Standard denomination': 'หน่วยมาตรฐาน', 'Fractional denomination': 'หน่วยย่อย',
         Recorded: 'บันทึกแล้ว', Unexplored: 'ยังไม่สำรวจ', Pinned: 'ปักหมุดแล้ว', None: 'ไม่มี', Destination: 'จุดหมาย', 'Exact place / scene': 'สถานที่หรือฉากโดยละเอียด',
@@ -596,6 +601,7 @@ function defaultState() {
             portraitView: { desktop: { x: 50, y: 50, zoom: 1 }, mobile: { x: 50, y: 50, zoom: 1 } },
             hp: { current: 100, max: 100 }, mp: { current: 100, max: 100 }, stamina: { current: 100, max: 100 },
         },
+        world: { ...WORLD_ATLAS },
         progression: {
             adventurerRank: 'Rookie', customRankName: '', magicRank: 'Dormant', swordRank: 'Dormant', experience: 0, experienceMax: 100, reputation: 0,
             kills: 0,
@@ -1179,6 +1185,7 @@ function normalize(candidate, base = defaultState()) {
     const migratingLegacyNpcs = !Array.isArray(source.npcs);
     const result = clone(base);
     const player = source.player && typeof source.player === 'object' ? source.player : {};
+    const sourceWorld = source.world && typeof source.world === 'object' ? source.world : {};
     const progress = source.progression && typeof source.progression === 'object' ? source.progression : {};
     const currency = progress.currency && typeof progress.currency === 'object' ? progress.currency : {};
     const location = source.location && typeof source.location === 'object' ? source.location : {};
@@ -1187,6 +1194,12 @@ function normalize(candidate, base = defaultState()) {
         || WORLD_LOCATIONS.find(entry => entry.continent === location.continent);
 
     result.version = 1;
+    result.world = {
+        id: text(sourceWorld.id, WORLD_ATLAS.id, 100),
+        name: text(sourceWorld.name, WORLD_ATLAS.name, 140),
+        era: text(sourceWorld.era, WORLD_ATLAS.era, 120),
+        atlasVersion: number(sourceWorld.atlasVersion, WORLD_ATLAS.atlasVersion, 1, 99),
+    };
     const portraitView = player.portraitView && typeof player.portraitView === 'object' ? player.portraitView : {};
     result.player = {
         name: text(player.name, result.player.name, 100), portrait: text(player.portrait, result.player.portrait, 1500000),
@@ -1659,6 +1672,7 @@ function aiState(state) {
         .sort((a, b) => String(b.completedAt || b.failedAt || b.updatedAt || '').localeCompare(String(a.completedAt || a.failedAt || a.updatedAt || ''))).slice(0, 16);
     return {
         player: safePlayer,
+        world: state.world,
         progression: state.progression,
         worldClock: state.worldClock,
         location: { ...state.location, pins: undefined },
@@ -3456,9 +3470,10 @@ function renderMap(panel, state) {
     const selectedPinned = exactSelected
         ? state.location.pins.some(pin => pin.x !== null && Math.hypot(pin.x - selected.x, pin.y - selected.y) < 12)
         : pinIds.has(selected.id);
-    panel.innerHTML = `${heading('Tretaresia World Atlas', `${state.location.continent} · ${state.location.region}`, 'fa-solid fa-earth-asia')}
+    const mapVariant = worldMapVariant(state);
+    panel.innerHTML = `${heading(state.world.name || 'Present World', `${tr(state.world.era || 'Present Era')} · ${state.location.continent} · ${state.location.region}`, 'fa-solid fa-earth-asia')}
         
-<div class="tretaresia-map-layout"><div class="tretaresia-map-frame${mapFullscreen ? ' is-fullscreen' : ''}"${mapFullscreen ? ' role="dialog" aria-modal="true" aria-label="Tretaresia fullscreen world map"' : ''}>
+<div class="tretaresia-map-layout"><div class="tretaresia-map-frame${mapFullscreen ? ' is-fullscreen' : ''}" data-map-variant="${mapVariant}"${mapFullscreen ? ' role="dialog" aria-modal="true" aria-label="Tretaresia fullscreen world map"' : ''}>
     <div class="tretaresia-map-instruments">
         <button type="button" data-action="map-zoom-in" title="Zoom in" aria-label="Zoom in"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
         <button type="button" data-action="map-zoom-out" title="Zoom out" aria-label="Zoom out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
@@ -3471,6 +3486,8 @@ function renderMap(panel, state) {
         <i class="fa-solid fa-${mapFullscreen ? 'xmark' : 'up-right-and-down-left-from-center'}"></i>
     </button>
     <div class="tretaresia-map-hud">
+        <span class="tretaresia-map-world"><i class="fa-solid fa-earth-asia"></i><b>${html(state.world.name || 'Present World')}</b></span>
+        <span class="tretaresia-map-time"><i class="fa-solid fa-${mapVariant === 'night' ? 'moon' : 'sun'}"></i><b>${html(tr(mapVariant === 'night' ? 'Night map' : 'Day map'))}</b></span>
         <span><i class="fa-solid fa-layer-group"></i><b data-map-lod>WORLD</b></span>
         <span><i class="fa-solid fa-magnifying-glass"></i><b data-map-zoom>78%</b></span>
         <span><i class="fa-solid fa-crosshairs"></i><b data-map-readout>0000 E · 0000 S</b></span>
@@ -3487,7 +3504,10 @@ function renderMap(panel, state) {
 </div>
             <aside class="tretaresia-map-sidebar"><article class="tretaresia-location-dossier"><span class="tretaresia-eyebrow">${html(tr('Selected location'))}</span><h4>${html(selected.name)}</h4>
                 <p>${html(selected.continent)}</p><div class="tretaresia-zone-badge" data-zone="${html(selected.zone)}"><i class="fa-solid fa-shield"></i>${html(tr(selected.zone))}</div>
-                <dl><div><dt>${html(tr('Region'))}</dt><dd>${html(selected.region || LOCATION_REGIONS[selected.name] || selected.name)}</dd></div>
+                <dl><div><dt>${html(tr('World'))}</dt><dd>${html(state.world.name || 'Present World')}</dd></div>
+                <div><dt>${html(tr('Era'))}</dt><dd>${html(tr(state.world.era || 'Present Era'))}</dd></div>
+                <div><dt>${html(tr('Map lighting'))}</dt><dd>${html(tr(mapVariant === 'night' ? 'Night map' : 'Day map'))}</dd></div>
+                <div><dt>${html(tr('Region'))}</dt><dd>${html(selected.region || LOCATION_REGIONS[selected.name] || selected.name)}</dd></div>
                 <div><dt>World coordinates</dt><dd>${coordinatesLabel(selected.x, selected.y)}</dd></div>
                 <div><dt>${html(tr('Discovery'))}</dt><dd>${html(tr(selectedRecorded ? 'Recorded' : 'Unexplored'))}</dd></div>
                 <div><dt>${html(tr('Marker'))}</dt><dd>${html(tr(selectedPinned ? 'Pinned' : 'None'))}</dd></div></dl>
@@ -3524,6 +3544,12 @@ function mapVisibleBounds() {
     };
 }
 
+function worldMapVariant(state) {
+    const phase = text(state?.worldClock?.phase, '', 20);
+    const hour = Number(text(state?.worldClock?.time, '12:00', 5).split(':')[0]);
+    return phase === 'Night' || Number.isFinite(hour) && (hour >= 18 || hour < 6) ? 'night' : 'day';
+}
+
 function worldTileLevel() {
     if (mapView.scale < .82) return WORLD_TILE_LEVELS[0];
     if (mapView.scale < 1.35) return WORLD_TILE_LEVELS[1];
@@ -3531,15 +3557,24 @@ function worldTileLevel() {
     return WORLD_TILE_LEVELS[3];
 }
 
-function worldTile(level, column, row) {
-    const key = `${level.z}/${column}-${row}`;
+function worldTile(level, column, row, variant = 'day') {
+    const safeVariant = variant === 'night' ? 'night' : 'day';
+    const key = `${safeVariant}/${level.z}/${column}-${row}`;
     const cached = mapTileCache.get(key);
     if (cached) return cached;
-    const record = { status: 'loading', image: new Image() };
+    const record = { status: 'loading', image: new Image(), variant: safeVariant, fallbackAttempted: false };
     record.image.decoding = 'async';
     record.image.onload = () => { record.status = 'ready'; scheduleMapDraw(); };
-    record.image.onerror = () => { record.status = 'error'; };
-    record.image.src = `${WORLD_TILE_ROOT}/${level.z}/${column}-${row}.webp`;
+    record.image.onerror = () => {
+        if (safeVariant === 'night' && !record.fallbackAttempted) {
+            record.fallbackAttempted = true;
+            record.variant = 'day-fallback';
+            record.image.src = `${WORLD_TILE_ROOTS.day}/${level.z}/${column}-${row}.webp`;
+            return;
+        }
+        record.status = 'error';
+    };
+    record.image.src = `${WORLD_TILE_ROOTS[safeVariant]}/${level.z}/${column}-${row}.webp`;
     mapTileCache.set(key, record);
     return record;
 }
@@ -3582,6 +3617,8 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     const context = canvas.getContext('2d', { alpha: false, desynchronized: true });
     if (!context) return;
     const palette = mapPalette();
+    const variant = worldMapVariant(state);
+    canvas.dataset.mapVariant = variant;
     const detail = mapLod();
     const bounds = mapVisibleBounds();
     const transformX = canvas.width / WORLD_MAP_WIDTH;
@@ -3600,7 +3637,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     context.imageSmoothingQuality = 'high';
 
     {
-        const fallback = worldTile(WORLD_TILE_LEVELS[0], 0, 0);
+        const fallback = worldTile(WORLD_TILE_LEVELS[0], 0, 0, variant);
         if (fallback.status === 'ready') {
             context.drawImage(fallback.image, 0, 0, WORLD_MAP_WIDTH, WORLD_MAP_HEIGHT);
         }
@@ -3615,7 +3652,7 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         const lastRow = Math.min(level.rows - 1, Math.floor(Math.max(0, sourceBottom - 1) / WORLD_TILE_SIZE));
         for (let row = firstRow; row <= lastRow; row += 1) {
             for (let column = firstColumn; column <= lastColumn; column += 1) {
-                const tile = worldTile(level, column, row);
+                const tile = worldTile(level, column, row, variant);
                 if (tile.status !== 'ready') continue;
                 context.drawImage(tile.image,
                     column * WORLD_TILE_SIZE / level.width * WORLD_MAP_WIDTH,
@@ -6613,7 +6650,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.14.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.15.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
