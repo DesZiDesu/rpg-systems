@@ -3,6 +3,7 @@
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
 const SETTINGS_KEY = 'tretaresia_rpg';
 const METADATA_KEY = 'tretaresia_rpg_state';
+const TURN_HISTORY_KEY = 'tretaresia_rpg_turn_history';
 const PROMPT_KEY = 'tretaresia_rpg_roleplay_state';
 const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
 const STATE_PACKAGE_FORMAT = 'tretaresia-rpg-state';
@@ -752,7 +753,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.23.0';
+const LAUNCHER_BIND_VERSION = '0.24.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -915,11 +916,20 @@ let audioPlayer = null;
 let audioObjectUrl = '';
 const mapView = { scale: 1, x: 0, y: 0 };
 let continuityRestoreInProgress = false;
-const processedAssistantMessages = new WeakSet();
+let processedAssistantMessages = new WeakMap();
 const assistantPatchTimers = new Map();
+let assistantRollbackQueue = Promise.resolve();
 
 const uid = () => globalThis.crypto?.randomUUID?.() || `tretaresia-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const clone = value => globalThis.structuredClone ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+const shortHash = value => {
+    let hash = 2166136261;
+    for (const character of String(value ?? '')) {
+        hash ^= character.charCodeAt(0);
+        hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36);
+};
 const text = (value, fallback = '', max = 300) => typeof value === 'string' ? value.trim().slice(0, max) : fallback;
 const number = (value, fallback = 0, min = 0, max = 999999999) => {
     const parsed = Number(value);
@@ -2040,6 +2050,115 @@ async function persistState(candidate, source = 'manual') {
     writeContinuitySnapshot(state);
     queueCharacterLifeSkillSync(state);
     return true;
+}
+
+function assistantTurnKey(messageId, context = SillyTavern.getContext()) {
+    const id = Number(messageId);
+    if (!Number.isInteger(id) || id < 0) return '';
+    let userIndex = -1;
+    let userFingerprint = '';
+    for (let index = Math.min(id - 1, (context.chat?.length || 0) - 1); index >= 0; index -= 1) {
+        const message = context.chat[index];
+        if (!message?.is_user || message.is_system) continue;
+        userIndex = index;
+        userFingerprint = shortHash(`${message.send_date || ''}|${message.mes || ''}`);
+        break;
+    }
+    return `${id}:${userIndex}:${userFingerprint}`;
+}
+
+function assistantVariantKey(message) {
+    if (!message) return '';
+    const swipe = Number.isInteger(Number(message.swipe_id)) ? Number(message.swipe_id) : -1;
+    return `${swipe}:${shortHash(message.mes || '')}`;
+}
+
+function turnHistory(context = SillyTavern.getContext(), create = true) {
+    if (!context?.getCurrentChatId?.()) return null;
+    context.chatMetadata ||= {};
+    if (create) context.chatMetadata[TURN_HISTORY_KEY] ||= { version: 1, entries: [] };
+    const history = context.chatMetadata[TURN_HISTORY_KEY];
+    if (!history || typeof history !== 'object') return null;
+    history.version = 1;
+    history.entries = Array.isArray(history.entries) ? history.entries : [];
+    return history;
+}
+
+function assistantCheckpoint(messageId, { create = false } = {}) {
+    const context = SillyTavern.getContext();
+    const key = assistantTurnKey(messageId, context);
+    const history = turnHistory(context, create);
+    if (!key || !history) return null;
+    let entry = history.entries.find(candidate => candidate?.key === key)
+        || (!create ? [...history.entries].reverse().find(candidate => Number(candidate?.messageId) === Number(messageId)) : null);
+    if (!entry && create) {
+        entry = {
+            key,
+            messageId: Number(messageId),
+            baseState: clone(getState()),
+            variants: {},
+            activeVariant: '',
+            applied: false,
+            createdAt: new Date().toISOString(),
+        };
+        history.entries.push(entry);
+        history.entries = history.entries.slice(-3);
+    }
+    if (entry) {
+        entry.variants = entry.variants && typeof entry.variants === 'object' ? entry.variants : {};
+        entry.messageId = Number(messageId);
+    }
+    return entry || null;
+}
+
+async function persistExactState(snapshot, source) {
+    const context = SillyTavern.getContext();
+    if (!context.getCurrentChatId?.() || !snapshot) return false;
+    const state = normalize(clone(snapshot));
+    state.updatedAt = new Date().toISOString();
+    state.updateSource = source;
+    context.chatMetadata[METADATA_KEY] = state;
+    updatePrompt(state);
+    renderAll(state);
+    pendingSave = pendingSave.catch(() => undefined).then(() => context.saveMetadata());
+    await pendingSave;
+    writeContinuitySnapshot(state);
+    queueCharacterLifeSkillSync(state);
+    return true;
+}
+
+async function replaceAssistantTurnState(messageId, { reuseVariant = false, reason = 'swipe' } = {}) {
+    const context = SillyTavern.getContext();
+    const entry = assistantCheckpoint(messageId);
+    if (!entry?.baseState) return false;
+    const message = context.chat?.[Number(messageId)];
+    const variantKey = reuseVariant ? assistantVariantKey(message) : '';
+    const storedVariant = variantKey ? entry.variants?.[variantKey] : null;
+    await persistExactState(entry.baseState, `turn-rollback-${reason}`);
+    entry.activeVariant = '';
+    entry.applied = false;
+    if (storedVariant?.state) {
+        await persistExactState(storedVariant.state, `turn-variant-${reason}`);
+        entry.activeVariant = variantKey;
+        entry.applied = true;
+    }
+    await SillyTavern.getContext().saveMetadata?.();
+    globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:turn-rollback', {
+        detail: { messageId: Number(messageId), reason, restoredVariant: Boolean(storedVariant?.state) },
+    }));
+    return true;
+}
+
+function queueAssistantTurnReplacement(messageId, options) {
+    assistantRollbackQueue = assistantRollbackQueue.catch(() => undefined)
+        .then(() => replaceAssistantTurnState(messageId, options))
+        .catch(error => console.warn('[Tretaresia RPG] Could not roll back the replaced assistant turn.', error));
+    return assistantRollbackQueue;
+}
+
+function isReplacementGeneration(generationType) {
+    const value = typeof generationType === 'string' ? generationType : JSON.stringify(generationType || '');
+    return /regenerat|swipe/i.test(value);
 }
 
 function aiSceneMap(state) {
@@ -7173,9 +7292,11 @@ async function processAssistantPatch(messageId, generationType = '') {
     if (['first_message', 'quiet', 'impersonate'].includes(generationType)) return;
     const context = SillyTavern.getContext();
     if (!hasUserReply(context) || !Number.isInteger(messageId)) return;
+    await assistantRollbackQueue.catch(() => undefined);
     const message = context.chat[messageId];
     if (!message || message.is_user || message.is_system || typeof message.mes !== 'string') return;
-    if (processedAssistantMessages.has(message)) return;
+    const incomingVariant = assistantVariantKey(message);
+    if (processedAssistantMessages.get(message) === incomingVariant) return;
     if (!settings.autoTrack) {
         setSync('disabled', tr('Reply received'), tr('Tracking is off'));
         return;
@@ -7183,6 +7304,7 @@ async function processAssistantPatch(messageId, generationType = '') {
     setSync('working', tr('Checking reply'), settings.language === 'th' ? 'กำลังอ่านเฉพาะข้อมูลที่เปลี่ยนแปลงจากคำตอบนี้' : 'Reading this reply for confirmed state changes.');
     const extracted = cleanInlinePatchSurfaces(message);
     if (!extracted.found) {
+        processedAssistantMessages.set(message, assistantVariantKey(message));
         setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'ระบบทำงานแล้ว แต่ไม่มีเหตุการณ์ที่ยืนยันให้บันทึก' : 'The extension checked this reply; there was nothing confirmed to record.');
         return;
     }
@@ -7191,19 +7313,37 @@ async function processAssistantPatch(messageId, generationType = '') {
         message.swipes[message.swipe_id] = extracted.visible;
     }
     if (!extracted.patch) {
-        processedAssistantMessages.add(message);
+        processedAssistantMessages.set(message, assistantVariantKey(message));
         setSync('error', tr('Sync unavailable'));
         return;
     }
-    processedAssistantMessages.add(message);
+    const checkpoint = assistantCheckpoint(messageId, { create: true });
+    const variantKey = assistantVariantKey(message);
+    processedAssistantMessages.set(message, variantKey);
     try {
         const { next, accepted, notifications } = applyStatePatch(getState(), extracted.patch);
         if (accepted) {
             await persistState(next, 'inline-patch');
+            if (checkpoint) {
+                checkpoint.variants[variantKey] = { state: clone(getState()), savedAt: new Date().toISOString() };
+                const variantKeys = Object.keys(checkpoint.variants);
+                for (const stale of variantKeys.slice(0, Math.max(0, variantKeys.length - 6))) delete checkpoint.variants[stale];
+                checkpoint.activeVariant = variantKey;
+                checkpoint.applied = true;
+                await SillyTavern.getContext().saveMetadata?.();
+            }
             showEventNotifications(notifications);
             setSync('success', tr('State updated'), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${accepted} รายการแล้ว` : `${accepted} confirmed change${accepted === 1 ? '' : 's'} saved.`);
             console.info(`[Tretaresia RPG] Applied ${accepted} inline state operation(s).`);
         } else {
+            if (checkpoint) {
+                checkpoint.variants[variantKey] = { state: clone(getState()), savedAt: new Date().toISOString() };
+                const variantKeys = Object.keys(checkpoint.variants);
+                for (const stale of variantKeys.slice(0, Math.max(0, variantKeys.length - 6))) delete checkpoint.variants[stale];
+                checkpoint.activeVariant = variantKey;
+                checkpoint.applied = false;
+                await SillyTavern.getContext().saveMetadata?.();
+            }
             setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'พบข้อมูล Patch แต่ไม่มีคำสั่งที่อนุญาตให้บันทึก' : 'A patch was present, but it contained no permitted changes.');
         }
     } catch (error) {
@@ -7558,6 +7698,8 @@ async function addSettingsDrawer() {
 function bindChatEvents() {
     const { eventSource, eventTypes } = SillyTavern.getContext();
     eventSource.on(eventTypes.CHAT_CHANGED, async () => {
+        processedAssistantMessages = new WeakMap();
+        assistantRollbackQueue = Promise.resolve();
         cleanupAudio();
         invalidateCharacterLifeMapMarkers();
         suspendMapRendering(true);
@@ -7591,14 +7733,44 @@ function bindChatEvents() {
         else setSync('disabled', tr('Tracking is off'), settings.language === 'th' ? 'คำตอบนี้จะไม่อัปเดต Tretaresia RPG อัตโนมัติ' : 'This reply will not update Tretaresia RPG automatically.');
     });
     if (eventTypes.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, generationType => {
+        if (isReplacementGeneration(generationType)) {
+            const context = SillyTavern.getContext();
+            const ledger = turnHistory(context, false);
+            const tail = context.chat?.[context.chat.length - 1];
+            const latestEntry = [...(ledger?.entries || [])].reverse().find(entry => entry?.baseState);
+            const messageId = tail?.is_user ? Number(latestEntry?.messageId) : latestAssistantMessageId();
+            if (Number.isInteger(messageId) && assistantCheckpoint(messageId)) {
+                void queueAssistantTurnReplacement(messageId, { reuseVariant: false, reason: 'regenerate' });
+            }
+        }
         if (!generationType || generationType === 'normal') updatePrompt();
     });
     if (eventTypes.GENERATION_AFTER_COMMANDS) eventSource.on(eventTypes.GENERATION_AFTER_COMMANDS, generationType => {
         if (!generationType || generationType === 'normal') updatePrompt();
     });
     eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => {
+        assistantCheckpoint(Number(messageId), { create: true });
+        pendingSave = pendingSave.catch(() => undefined).then(() => SillyTavern.getContext().saveMetadata());
         scheduleAssistantPatch(messageId, generationType, 0);
         scheduleAssistantPatch(messageId, generationType, 120);
+    });
+    if (eventTypes.MESSAGE_SWIPED) eventSource.on(eventTypes.MESSAGE_SWIPED, messageId => {
+        void queueAssistantTurnReplacement(Number(messageId), { reuseVariant: true, reason: 'swipe' }).then(() => {
+            scheduleAssistantPatch(messageId, 'swipe', 0);
+            scheduleAssistantPatch(messageId, 'swipe', 140);
+        });
+    });
+    if (eventTypes.MESSAGE_DELETED) eventSource.on(eventTypes.MESSAGE_DELETED, messageId => {
+        const context = SillyTavern.getContext();
+        const history = turnHistory(context, false);
+        const numericId = Number(messageId);
+        const tail = context.chat?.[context.chat.length - 1];
+        if (!tail?.is_user) return;
+        const removed = [...(history?.entries || [])].filter(entry => entry?.baseState
+            && (!Number.isInteger(numericId) || Number(entry.messageId) >= numericId)).reverse();
+        for (const entry of removed) {
+            void queueAssistantTurnReplacement(entry.messageId, { reuseVariant: false, reason: 'delete-or-group-regenerate' });
+        }
     });
     if (eventTypes.CHARACTER_MESSAGE_RENDERED) eventSource.on(eventTypes.CHARACTER_MESSAGE_RENDERED, messageId => {
         scheduleAssistantPatch(messageId, '', 0);
@@ -7663,7 +7835,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.23.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.24.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
