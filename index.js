@@ -7593,6 +7593,9 @@ function bindChatEvents() {
     if (eventTypes.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, generationType => {
         if (!generationType || generationType === 'normal') updatePrompt();
     });
+    if (eventTypes.GENERATION_AFTER_COMMANDS) eventSource.on(eventTypes.GENERATION_AFTER_COMMANDS, generationType => {
+        if (!generationType || generationType === 'normal') updatePrompt();
+    });
     eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => {
         scheduleAssistantPatch(messageId, generationType, 0);
         scheduleAssistantPatch(messageId, generationType, 120);
