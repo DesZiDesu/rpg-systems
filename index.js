@@ -2899,15 +2899,19 @@ function requestMapPortrait(key, query, directSource = '', directFrame = null) {
     const record = { status: 'loading', image: new Image(), url: '', frame: directFrame || null, owned: false, lastUsed: ++mapPortraitUseClock };
     mapPortraitCache.set(key, record);
     trimMapPortraitCache();
-    const load = async (source, frame = null, sourceOwned = false) => {
+    const load = async (source, frame = null, sourceOwned = false, alreadyThumbnail = false) => {
         if (!source) { record.status = 'empty'; return; }
         let thumbnail = null;
-        try {
-            thumbnail = await createMapPortraitThumbnail(source);
-            if (sourceOwned) URL.revokeObjectURL(source);
-        } catch (error) {
+        if (alreadyThumbnail) {
             thumbnail = { url: source, owned: sourceOwned };
-            console.warn('[Tretaresia RPG] Map portrait thumbnail fallback used.', error);
+        } else {
+            try {
+                thumbnail = await createMapPortraitThumbnail(source);
+                if (sourceOwned) URL.revokeObjectURL(source);
+            } catch (error) {
+                thumbnail = { url: source, owned: sourceOwned };
+                console.warn('[Tretaresia RPG] Map portrait thumbnail fallback used.', error);
+            }
         }
         if (mapPortraitCache.get(key) !== record) {
             if (thumbnail.owned && thumbnail.url) URL.revokeObjectURL(thumbnail.url);
@@ -2926,7 +2930,7 @@ function requestMapPortrait(key, query, directSource = '', directFrame = null) {
     Promise.resolve(bridge.portrait(query)).then(result => {
         if (!result) { record.status = 'empty'; return; }
         const source = result.blob ? URL.createObjectURL(result.blob) : result.path || '';
-        return load(source, result.frame || null, Boolean(result.blob));
+        return load(source, result.frame || null, Boolean(result.blob), result.thumbnail === true);
     }).catch(error => {
         record.status = 'error';
         console.warn('[Tretaresia RPG] Map portrait load failed safely.', error);
