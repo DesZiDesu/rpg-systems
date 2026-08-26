@@ -2502,7 +2502,8 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 /* --- 00 · tokens ------------------------------------------------------- */
 .tretaresia-rpg-overlay,
 #tretaresia-activity-island,
-#tretaresia-event-stack {
+#tretaresia-event-stack,
+#tretaresia-travel-tracker {
     --tf-bg: #040404;
     --tf-panel: #0a0a0a;
     --tf-field: rgba(255, 255, 255, .04);
@@ -4842,6 +4843,95 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
         bottom: 0;
         z-index: 5;
     }
+}
+
+/* v0.25 · live resource conditioning and draggable journey HUD */
+.tretaresia-fitness-capacity {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .16rem .7rem;
+    align-items: center;
+    margin-top: .25rem;
+    padding: .62rem .72rem;
+    border: 1px solid var(--tf-line-soft);
+    border-left: 3px solid var(--tf-gold);
+    background: linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .08), transparent 72%);
+}
+
+.tretaresia-fitness-capacity > span {
+    color: var(--tf-dim);
+    font-family: var(--tf-disp);
+    font-size: .62rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.tretaresia-fitness-capacity > span i { width: 1.35rem; color: var(--tf-gold); }
+.tretaresia-fitness-capacity > strong { grid-row: 1 / 3; grid-column: 2; color: var(--tf-gold2); font-family: var(--tf-disp); font-size: 1.12rem; }
+.tretaresia-fitness-capacity > strong small { color: var(--tf-dim); font-size: .5rem; letter-spacing: .1em; }
+.tretaresia-fitness-capacity > em { color: var(--tf-dim); font-size: .62rem; font-style: normal; }
+
+.tretaresia-travel-tracker {
+    position: fixed;
+    z-index: 30008;
+    top: max(68px, calc(env(safe-area-inset-top) + 10px));
+    left: 50%;
+    width: min(420px, calc(100vw - 20px));
+    min-width: 240px;
+    padding: .58rem .68rem .52rem;
+    color: var(--tf-txt, #ece7da);
+    border: 1px solid var(--tf-line, rgba(214, 180, 88, .46));
+    border-left: 3px solid var(--tf-gold, #d6b458);
+    border-radius: 0;
+    background: linear-gradient(112deg, rgba(var(--tretaresia-accent-rgb), .1), transparent 46%), color-mix(in srgb, var(--tf-bg, #050505) 94%, transparent);
+    box-shadow: 0 14px 38px rgba(0, 0, 0, .58), inset 0 1px rgba(255, 255, 255, .04);
+    backdrop-filter: blur(15px);
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+    transform: translateX(-50%);
+    overflow: hidden;
+}
+
+.tretaresia-travel-tracker[hidden] { display: none !important; }
+.tretaresia-travel-tracker.is-dragging { cursor: grabbing; box-shadow: 0 18px 46px rgba(0, 0, 0, .72), 0 0 24px rgba(var(--tretaresia-accent-rgb), .12); }
+.tretaresia-travel-tracker[data-status="Delayed"] { border-left-color: #d37b62; }
+.tretaresia-travel-tracker[data-status="Arrived"] { border-left-color: #7fbe82; }
+
+.tretaresia-travel-route,
+.tretaresia-travel-distance { display: flex; align-items: center; min-width: 0; }
+.tretaresia-travel-route { gap: .48rem; }
+.tretaresia-travel-route > i { color: var(--tf-dim, #8f8b7f); font-size: .72rem; }
+.tretaresia-travel-route > strong { display: flex; gap: .35rem; min-width: 0; flex: 1; align-items: center; font-family: var(--tf-disp); font-size: .72rem; letter-spacing: .045em; }
+.tretaresia-travel-route > strong span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tretaresia-travel-route > strong b { flex: 0 0 auto; color: var(--tf-gold, #d6b458); }
+.tretaresia-travel-route > em { color: var(--tf-gold2, #f4dc93); font-family: var(--tf-disp); font-size: .76rem; font-style: normal; font-weight: 800; }
+
+.tretaresia-travel-progress { height: 4px; margin: .48rem 0 .42rem; overflow: hidden; background: rgba(255, 255, 255, .09); }
+.tretaresia-travel-progress > i { display: block; height: 100%; background: linear-gradient(90deg, var(--tf-gold, #d6b458), var(--tf-gold2, #f4dc93)); box-shadow: 0 0 14px rgba(var(--tretaresia-accent-rgb), .42); transition: width 240ms ease; }
+.tretaresia-travel-tracker[data-status="Arrived"] .tretaresia-travel-progress > i { background: #7fbe82; }
+
+.tretaresia-travel-distance { gap: .6rem; color: var(--tf-dim, #9a968a); font-size: .58rem; }
+.tretaresia-travel-distance > span { white-space: nowrap; }
+.tretaresia-travel-distance > span i { margin-right: .28rem; color: var(--tf-gold, #d6b458); }
+.tretaresia-travel-distance > b { min-width: 0; flex: 1; overflow: hidden; color: var(--tf-txt, #ece7da); font-weight: 600; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.tretaresia-travel-distance > small { white-space: nowrap; color: var(--tf-gold, #d6b458); font-size: inherit; }
+
+.tretaresia-travel-tracker[data-theme="light"] {
+    color: #26241d;
+    background: color-mix(in srgb, var(--tretaresia-surface) 88%, rgba(255, 255, 255, .88));
+    box-shadow: 0 14px 34px rgba(35, 30, 16, .2);
+}
+
+@media (max-width: 600px) {
+    .tretaresia-travel-tracker { top: max(54px, calc(env(safe-area-inset-top) + 6px)); width: calc(100vw - 16px); padding: .52rem .58rem .46rem; }
+    .tretaresia-travel-route > strong { font-size: .66rem; }
+    .tretaresia-travel-distance { gap: .35rem; font-size: .54rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tretaresia-travel-progress > i { transition: none; }
 }
 
 /* v0.22.0 — AstraProjecta/Vaul gesture isolation and stable native scrolling. */

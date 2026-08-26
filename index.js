@@ -747,13 +747,15 @@ const DEFAULT_SETTINGS = Object.freeze({
     notifyKills: true,
     notifyCurrency: true,
     notifyQuests: true,
+    showTravelTracker: true,
+    travelTrackerPosition: { x: null, y: null },
     autoContinuity: true,
     showNpcMapMarkers: true,
     mapHdMode: false,
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.24.0';
+const LAUNCHER_BIND_VERSION = '0.25.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -992,6 +994,7 @@ function applyAppearance() {
         document.getElementById('tretaresia-control-dialog'),
         document.getElementById('tretaresia-activity-island'),
         document.getElementById('tretaresia-event-stack'),
+        document.getElementById('tretaresia-travel-tracker'),
     ]) node?.setAttribute('data-theme', light ? 'light' : 'dark');
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (overlay) {
@@ -1013,6 +1016,7 @@ function defaultState() {
             condition: 'Stable', level: 1, powerType: 'Aura', originSkill: 'Unknown / Undiscovered',
             portraitView: { desktop: { x: 50, y: 50, zoom: 1 }, mobile: { x: 50, y: 50, zoom: 1 } },
             hp: { current: 100, max: 100 }, mp: { current: 100, max: 100 }, stamina: { current: 100, max: 100 },
+            fitness: { lungCapacity: 100, aerobicSessions: 0, lastTrainingMessage: '' },
         },
         world: { ...WORLD_ATLAS },
         progression: {
@@ -1069,7 +1073,12 @@ function getSettings() {
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
-    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'autoContinuity', 'showNpcMapMarkers', 'mapHdMode']) settings[key] = Boolean(settings[key]);
+    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'showTravelTracker', 'autoContinuity', 'showNpcMapMarkers', 'mapHdMode']) settings[key] = Boolean(settings[key]);
+    const trackerPosition = settings.travelTrackerPosition && typeof settings.travelTrackerPosition === 'object' ? settings.travelTrackerPosition : {};
+    settings.travelTrackerPosition = {
+        x: optionalNumber(trackerPosition.x, null),
+        y: optionalNumber(trackerPosition.y, null),
+    };
     return settings;
 }
 
@@ -1630,6 +1639,11 @@ function normalize(candidate, base = defaultState()) {
         level: number(player.level, result.player.level, 1, 9999),
         hp: meter(player.hp, result.player.hp), mp: meter(player.mp, result.player.mp),
         stamina: meter(player.stamina, result.player.stamina),
+        fitness: {
+            lungCapacity: number(player.fitness?.lungCapacity, result.player.fitness.lungCapacity, 1, 999999),
+            aerobicSessions: number(player.fitness?.aerobicSessions, result.player.fitness.aerobicSessions, 0, 999999),
+            lastTrainingMessage: text(player.fitness?.lastTrainingMessage, result.player.fitness.lastTrainingMessage, 180),
+        },
     };
     result.progression = {
         adventurerRank: RANKS.includes(progress.adventurerRank) ? progress.adventurerRank : result.progression.adventurerRank,
@@ -2286,6 +2300,13 @@ function roleplayState(state) {
                 origin: state.travel.origin,
                 destination: state.travel.destination,
                 route: state.travel.route,
+                totalDays: state.travel.totalDays,
+                remainingDays: state.travel.remainingDays,
+                originX: state.travel.originX,
+                originY: state.travel.originY,
+                destinationX: state.travel.destinationX,
+                destinationY: state.travel.destinationY,
+                destinationPlace: state.travel.destinationPlace,
             },
             scene: state.scene,
             localMap: {
@@ -2295,6 +2316,16 @@ function roleplayState(state) {
             },
         },
         privateTrackerReferenceIndex: {
+            playerResources: {
+                condition: state.player.condition,
+                hp: state.player.hp,
+                auraOrMana: state.player.mp,
+                stamina: state.player.stamina,
+                fitness: {
+                    lungCapacity: state.player.fitness.lungCapacity,
+                    aerobicSessions: state.player.fitness.aerobicSessions,
+                },
+            },
             inventory: state.inventory.slice(-20).map(({ id, name }) => [id, name]),
             skills: state.skills.slice(-16).map(({ id, name }) => [id, name]),
             quests: state.quests.filter(entry => !['Completed', 'Failed'].includes(entry.status)).slice(-12).map(({ id, name, type, status }) => [id, name, type, status]),
@@ -2350,6 +2381,7 @@ function patchInstructions() {
         'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. EVERY completed normal reply must append exactly one comment; use {"ops":[],"summary":"No confirmed changes."} when nothing beyond the locally tracked turn clock changed. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems on every reply: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this one patch, not only scene fields.',
+        'Resource and capacity rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; confirmed healing, treatment, food, sleep, or recovery may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower player.stamina.current; confirmed rest restores it. A power or spell with an established cost lowers player.mp.current; confirmed meditation, rest, absorption, or canon recovery restores it. Never spend or restore a resource merely because an action was planned. Capacity gains are gradual and require genuine repeated training or a breakthrough: aerobic/endurance training may raise player.fitness.lungCapacity and occasionally player.stamina.max; vitality conditioning may occasionally raise player.hp.max; mana/aura control training may occasionally raise player.mp.max. Do not raise a maximum on every casual use, and never refill current automatically just because its maximum increased. The local tracker may already deduct stamina and record aerobic capacity from the latest user message; preserve those current values and do not duplicate that same cost or gain in this patch.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
@@ -2451,6 +2483,101 @@ function showEventNotification(event) {
 
 function showEventNotifications(events) {
     events.forEach((event, index) => setTimeout(() => showEventNotification(event), index * 180));
+}
+
+function clampTravelTrackerPosition(tracker, x, y) {
+    const margin = 8;
+    const width = tracker.offsetWidth || Math.min(420, Math.max(240, globalThis.innerWidth - margin * 2));
+    const height = tracker.offsetHeight || 92;
+    return {
+        x: Math.min(Math.max(margin, x), Math.max(margin, globalThis.innerWidth - width - margin)),
+        y: Math.min(Math.max(margin, y), Math.max(margin, globalThis.innerHeight - height - margin)),
+    };
+}
+
+function applyTravelTrackerPosition(tracker = document.getElementById('tretaresia-travel-tracker')) {
+    if (!tracker) return;
+    const position = getSettings().travelTrackerPosition;
+    if (position.x === null || position.y === null) {
+        tracker.style.removeProperty('left');
+        tracker.style.removeProperty('top');
+        tracker.style.removeProperty('transform');
+        return;
+    }
+    const clamped = clampTravelTrackerPosition(tracker, position.x, position.y);
+    tracker.style.left = `${clamped.x}px`;
+    tracker.style.top = `${clamped.y}px`;
+    tracker.style.transform = 'none';
+}
+
+function buildTravelTracker() {
+    if (document.getElementById('tretaresia-travel-tracker')) return;
+    const tracker = document.createElement('section');
+    tracker.id = 'tretaresia-travel-tracker';
+    tracker.className = 'tretaresia-travel-tracker';
+    tracker.setAttribute('role', 'status');
+    tracker.setAttribute('aria-live', 'polite');
+    tracker.setAttribute('aria-label', 'Active journey progress');
+    tracker.hidden = true;
+    let drag = null;
+    tracker.addEventListener('pointerdown', event => {
+        if (!event.isPrimary || event.button > 0) return;
+        const rect = tracker.getBoundingClientRect();
+        drag = { pointerId: event.pointerId, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top };
+        tracker.setPointerCapture?.(event.pointerId);
+        tracker.classList.add('is-dragging');
+        tracker.style.left = `${rect.left}px`;
+        tracker.style.top = `${rect.top}px`;
+        tracker.style.transform = 'none';
+        event.preventDefault();
+    });
+    tracker.addEventListener('pointermove', event => {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        const next = clampTravelTrackerPosition(tracker, event.clientX - drag.offsetX, event.clientY - drag.offsetY);
+        tracker.style.left = `${next.x}px`;
+        tracker.style.top = `${next.y}px`;
+        event.preventDefault();
+    });
+    const finishDrag = event => {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        const rect = tracker.getBoundingClientRect();
+        const next = clampTravelTrackerPosition(tracker, rect.left, rect.top);
+        const settings = getSettings();
+        settings.travelTrackerPosition = next;
+        SillyTavern.getContext().saveSettingsDebounced();
+        tracker.releasePointerCapture?.(event.pointerId);
+        tracker.classList.remove('is-dragging');
+        drag = null;
+    };
+    tracker.addEventListener('pointerup', finishDrag);
+    tracker.addEventListener('pointercancel', finishDrag);
+    document.body.appendChild(tracker);
+    globalThis.addEventListener('resize', () => applyTravelTrackerPosition(tracker), { passive: true });
+    applyAppearance();
+}
+
+function syncTravelTracker(state = getState()) {
+    buildTravelTracker();
+    const tracker = document.getElementById('tretaresia-travel-tracker');
+    if (!tracker) return;
+    const travel = state?.travel || {};
+    const origin = text(travel.origin, '', 180) || text(state?.location?.place, '', 180);
+    const destination = text(travel.destinationPlace || travel.destination, '', 180);
+    const visible = getSettings().showTravelTracker && ['Preparing', 'Traveling', 'Delayed', 'Arrived'].includes(travel.status)
+        && Boolean(origin && destination);
+    tracker.hidden = !visible;
+    if (!visible) return;
+    const progress = Math.round(travelProgress(state) * 100);
+    const distance = travelDistance(state);
+    const thai = getSettings().language === 'th';
+    const remainingLabel = distance.remaining <= .05
+        ? (thai ? 'ถึงจุดหมายแล้ว' : 'Destination reached')
+        : `${formatTravelDistance(distance.remaining)} km ${thai ? 'คงเหลือ' : 'remaining'}`;
+    tracker.dataset.status = travel.status;
+    tracker.innerHTML = `<div class="tretaresia-travel-route"><i class="fa-solid fa-grip-lines" aria-hidden="true"></i><strong title="${html(origin)} → ${html(destination)}"><span>${html(origin)}</span><b>→</b><span>${html(destination)}</span></strong><em>${progress}%</em></div>
+        <div class="tretaresia-travel-progress" aria-label="${progress}%"><i style="width:${progress}%"></i></div>
+        <div class="tretaresia-travel-distance"><span><i class="fa-solid fa-route"></i>${formatTravelDistance(distance.travelled)} / ${formatTravelDistance(distance.total)} km</span><b>${remainingLabel}</b><small>${formatTravelDays(travel.remainingDays)} ${thai ? 'วัน' : 'days'} · ${html(travel.status)}</small></div>`;
+    applyTravelTrackerPosition(tracker);
 }
 
 function activityCopy(mode = getSettings().interactionMode) {
@@ -2794,6 +2921,27 @@ function travelProgress(state) {
     const total = number(state?.travel?.totalDays, 0, 0, 999999);
     if (!total) return state?.travel?.status === 'Arrived' ? 1 : 0;
     return Math.min(1, Math.max(0, (total - number(state.travel.remainingDays, total, 0, total)) / total));
+}
+
+function travelRouteSpeed(route) {
+    return { Road: 70, Caravan: 58, Sea: 95, 'Off-road': 38 }[route] || 55;
+}
+
+function travelDistance(state) {
+    const travel = state?.travel || {};
+    const coordinates = [travel.originX, travel.originY, travel.destinationX, travel.destinationY]
+        .map(value => optionalNumber(value, null));
+    const coordinateDistance = coordinates.every(value => value !== null)
+        ? Math.hypot(coordinates[2] - coordinates[0], coordinates[3] - coordinates[1]) : 0;
+    const total = coordinateDistance || number(travel.totalDays, 0, 0, 999999) * travelRouteSpeed(travel.route);
+    const progress = travelProgress(state);
+    return { total, travelled: total * progress, remaining: total * (1 - progress) };
+}
+
+function formatTravelDistance(value) {
+    const distance = number(value, 0, 0, 999999999);
+    if (distance < 10) return distance.toFixed(1);
+    return Math.round(distance).toLocaleString();
 }
 
 function formatTravelDays(value) {
@@ -3203,8 +3351,7 @@ function inferUserTravelIntent(message, state = getState()) {
 
 function estimatedTravelDays(state, destination, route) {
     const distance = Math.hypot(destination.x - state.location.mapX, destination.y - state.location.mapY);
-    const speed = { Road: 70, Caravan: 58, Sea: 95, 'Off-road': 38 }[route] || 55;
-    return Math.max(1, Math.ceil(distance / speed));
+    return Math.max(1, Math.ceil(distance / travelRouteSpeed(route)));
 }
 
 function userTravelMessageKey(messageId, message) {
@@ -3321,6 +3468,34 @@ function catchUpActiveTravelFromChat(current, context, currentMessageId) {
     return next === current ? null : next;
 }
 
+function advanceAerobicTrainingFromUserMessage(messageId, message, current = getState()) {
+    const source = normalizedTravelText(message?.mes);
+    if (!source || /^\s*(?:ooc\b|\/|#|<\/?[^>]+>\s*$)/i.test(source)) return null;
+    if (/(?:\b(?:do not|don't|didn't|won't|cannot|can't|never)\b.{0,24}\b(?:run|jog|sprint|exercise|work\s*out|swim|cycle)\b)|(?:(?:ไม่|ไม่ได้|ไม่ต้อง|อย่า).{0,20}(?:วิ่ง|ออกกำลังกาย|ว่ายน้ำ|ปั่นจักรยาน))/i.test(source)) return null;
+    const aerobic = /\b(?:run|running|jog|jogging|sprint|sprinting|cardio|exercise|exercising|work\s*out|working\s*out|swim|swimming|cycle|cycling)\b|(?:วิ่ง|จ๊อกกิ้ง|สปรินต์|ออกกำลังกาย|คาร์ดิโอ|ว่ายน้ำ|ปั่นจักรยาน)/i.test(source);
+    if (!aerobic) return null;
+    const onlyPlanned = /\b(?:plan|intend|want|hope|might|may|could)\b.{0,28}\b(?:run|jog|sprint|exercise|work\s*out|swim|cycle)\b|(?:วางแผน|ตั้งใจ|อยาก|อาจจะ).{0,24}(?:วิ่ง|ออกกำลังกาย|ว่ายน้ำ|ปั่นจักรยาน)/i.test(source);
+    const performed = /\b(?:i|we)\s+(?:(?:am|are|was|were)\s+|(?:start|started|begin|began|continue|continued|go|went)\s+(?:to\s+|for\s+a\s+)?)?(?:run|running|jog|jogging|sprint|sprinting|exercise|exercising|work\s*out|working\s*out|swim|swimming|cycle|cycling)\b|\*[^*]{0,28}\b(?:run|running|jog|jogging|sprint|sprinting|exercise|exercising|work\s*out|working\s*out|swim|swimming|cycle|cycling)\b|(?:(?:ฉัน|ผม|เรา|ข้า|ตัวละคร).{0,28}(?:วิ่ง|จ๊อกกิ้ง|สปรินต์|ออกกำลังกาย|คาร์ดิโอ|ว่ายน้ำ|ปั่นจักรยาน))|(?:^|[.!?*]\s*)(?:เริ่ม|ออก|ไป|กำลัง)?\s*(?:วิ่ง|จ๊อกกิ้ง|สปรินต์|ออกกำลังกาย|คาร์ดิโอ|ว่ายน้ำ|ปั่นจักรยาน)/i.test(source);
+    if (onlyPlanned || !performed) return null;
+    const key = userTravelMessageKey(messageId, message);
+    if (key && current.player.fitness?.lastTrainingMessage === key) return null;
+    if (current.player.stamina.current <= 0) return null;
+
+    const next = clone(current);
+    const intense = /\b(?:sprint|sprinting|intense|hard|exhaustive)\b|(?:เต็มแรง|อย่างหนัก|หนักหน่วง|สุดกำลัง)/i.test(source);
+    const light = /\b(?:jog|jogging|light|easy|warmup|warm-up)\b|(?:เบาๆ|วอร์ม|เหยาะ)/i.test(source);
+    const staminaCost = Math.min(next.player.stamina.current, intense ? 12 : light ? 5 : 8);
+    const priorSessions = number(next.player.fitness.aerobicSessions, 0, 0, 999999);
+    const sessions = priorSessions + 1;
+    const staminaCapacityGain = Math.floor(sessions / 3) - Math.floor(priorSessions / 3);
+    next.player.stamina.current = Math.max(0, next.player.stamina.current - staminaCost);
+    next.player.stamina.max += staminaCapacityGain;
+    next.player.fitness.lungCapacity += intense ? 2 : 1;
+    next.player.fitness.aerobicSessions = sessions;
+    next.player.fitness.lastTrainingMessage = key;
+    return next;
+}
+
 async function catchUpTravelHistory() {
     const settings = getSettings();
     const context = SillyTavern.getContext();
@@ -3340,14 +3515,17 @@ async function processUserTravelIntent(messageId) {
     if (!message?.is_user || message.is_system) return false;
     const stored = getState();
     const clockAdvanced = advanceWorldClockFromUserMessage(messageId, message, stored);
-    const current = clockAdvanced || stored;
+    const clockState = clockAdvanced || stored;
+    const trainingAdvanced = advanceAerobicTrainingFromUserMessage(messageId, message, clockState);
+    const current = trainingAdvanced || clockState;
+    const localChanged = Boolean(clockAdvanced || trainingAdvanced);
     const intent = inferUserTravelIntent(message.mes, current);
     if (!intent) {
         const caughtUp = catchUpActiveTravelFromChat(current, context, messageId);
         if (caughtUp) return persistState(caughtUp, 'user-travel-history-catchup');
         const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
         if (advanced) return persistState(advanced, 'user-travel-progress');
-        return clockAdvanced ? persistState(current, 'user-turn-clock') : false;
+        return localChanged ? persistState(current, trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
     }
     const alreadyHeadingThere = ['Preparing', 'Traveling', 'Delayed'].includes(current.travel.status)
         && mapLocationByName(current.travel.destinationPlace || current.travel.destination, current)?.id === intent.destination.id;
@@ -3355,9 +3533,9 @@ async function processUserTravelIntent(messageId) {
     if (alreadyHeadingThere) {
         const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
         if (advanced) return persistState(advanced, 'user-travel-progress');
-        return clockAdvanced ? persistState(current, 'user-turn-clock') : false;
+        return localChanged ? persistState(current, trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
     }
-    if (alreadyThere) return clockAdvanced ? persistState(current, 'user-turn-clock') : false;
+    if (alreadyThere) return localChanged ? persistState(current, trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
     const next = clone(current);
     const totalDays = estimatedTravelDays(next, intent.destination, intent.route);
     const origin = next.location.place || next.location.region || 'Unknown';
@@ -3852,6 +4030,7 @@ function renderPanel(id, panel, state) {
 }
 
 function renderAll(state = getState()) {
+    syncTravelTracker(state);
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (!overlay?.classList.contains('is-open')) return;
     const panel = overlay.querySelector('[data-panel].is-active')
@@ -3898,7 +4077,9 @@ function renderStatus(panel, state) {
                 <em><i class="fa-solid fa-wave-square"></i> ${html(state.player.condition)}</em></div><div class="tretaresia-vitals-grid">
                 ${meterView('Health', state.player.hp, 'fa-solid fa-heart', 'health')}
                 ${meterView('Aura / Mana', state.player.mp, 'fa-solid fa-fire-flame-curved', 'mana')}
-                ${meterView('Stamina', state.player.stamina, 'fa-solid fa-bolt', 'stamina')}</div></article>
+                ${meterView('Stamina', state.player.stamina, 'fa-solid fa-bolt', 'stamina')}</div>
+                <div class="tretaresia-fitness-capacity"><span><i class="fa-solid fa-lungs"></i>${html(tr('Lung capacity'))}</span>
+                    <strong>${state.player.fitness.lungCapacity.toLocaleString()} <small>CAP</small></strong><em>${state.player.fitness.aerobicSessions.toLocaleString()} ${html(tr('aerobic sessions'))}</em></div></article>
             <article class="tretaresia-card"><div class="tretaresia-card-title"><span>${html(tr('Identity'))}</span>
                 <i class="fa-solid fa-feather"></i></div><dl class="tretaresia-fact-list">
                 <div><dt>${html(tr('Race'))}</dt><dd>${html(state.player.race)}</dd></div>
@@ -3921,6 +4102,7 @@ function renderStatus(panel, state) {
                 ${input('HP', 'hpCurrent', state.player.hp.current, 'number', 'min="0"')}${input('HP max', 'hpMax', state.player.hp.max, 'number', 'min="1"')}
                 ${input('MP', 'mpCurrent', state.player.mp.current, 'number', 'min="0"')}${input('MP max', 'mpMax', state.player.mp.max, 'number', 'min="1"')}
                 ${input('Stamina', 'staminaCurrent', state.player.stamina.current, 'number', 'min="0"')}${input('Stamina max', 'staminaMax', state.player.stamina.max, 'number', 'min="1"')}
+                ${input('Lung capacity', 'lungCapacity', state.player.fitness.lungCapacity, 'number', 'min="1"')}
                 <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save status'))}</button>
             </form></details>`;
 }
@@ -5445,6 +5627,7 @@ async function onSubmit(event) {
                 hp: { current: values.hpCurrent, max: values.hpMax },
                 mp: { current: values.mpCurrent, max: values.mpMax },
                 stamina: { current: values.staminaCurrent, max: values.staminaMax },
+                fitness: { ...state.player.fitness, lungCapacity: values.lungCapacity },
             };
             await persistState(state);
             notify('success', 'Character status saved.');
@@ -6584,6 +6767,7 @@ async function sendChatAction(message, modeOverride = '') {
 const SCALAR_PATCH_PATHS = new Set([
     'player.name', 'player.race', 'player.age', 'player.title', 'player.profession', 'player.guild', 'player.party', 'player.condition', 'player.level', 'player.powerType', 'player.originSkill',
     'player.hp.current', 'player.hp.max', 'player.mp.current', 'player.mp.max', 'player.stamina.current', 'player.stamina.max',
+    'player.fitness.lungCapacity', 'player.fitness.aerobicSessions',
     'progression.adventurerRank', 'progression.customRankName', 'progression.magicRank', 'progression.swordRank', 'progression.experience',
     'progression.experienceMax', 'progression.reputation', 'progression.kills', 'progression.currency.gold', 'progression.currency.silver',
     'progression.currency.name', 'progression.currency.copper', 'world.id', 'worldClock.day', 'worldClock.dayName', 'worldClock.time', 'worldClock.phase', 'location.continent',
@@ -7672,6 +7856,7 @@ async function addSettingsDrawer() {
         if (!settings.mapHdMode) clearMapTileCache(key => key.includes('/3/'));
         renderMap(document.querySelector('[data-panel="map"]'), getState());
     });
+    bindCheckbox('tretaresia-rpg-show-travel-tracker', 'showTravelTracker', settings, () => syncTravelTracker(getState()));
     bindCheckbox('tretaresia-rpg-event-notifications', 'eventNotifications', settings);
     bindCheckbox('tretaresia-rpg-notify-exp', 'notifyExperience', settings);
     bindCheckbox('tretaresia-rpg-notify-level', 'notifyLevel', settings);
@@ -7806,6 +7991,7 @@ async function initialize() {
         getSettings();
         applyAppearance();
         buildActivityIndicator();
+        buildTravelTracker();
         observeWandMenu();
         buildInterface();
         await addSettingsDrawer();
@@ -7826,6 +8012,7 @@ async function initialize() {
         try { await catchUpTravelHistory(); }
         catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
         updatePrompt();
+        syncTravelTracker(getState());
         document.addEventListener('keydown', event => {
             if (event.key !== 'Escape') return;
             if (mapFullscreen) {
@@ -7835,7 +8022,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.24.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.25.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
