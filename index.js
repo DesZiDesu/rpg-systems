@@ -9,6 +9,7 @@ const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
 const STATE_PACKAGE_FORMAT = 'tretaresia-rpg-state';
 const CONTINUITY_STORAGE_PREFIX = 'tretaresia-rpg:continuity:';
 const SUMMARY_NEW_CHAT_MENU_ID = 'st_new_chat_with_summary_wand_button';
+const TURN_RECONCILE_VERSION = 1;
 const PATCH_COMMENT_PATTERN = /<!--\s*tretaresia_patch\s*:\s*([\s\S]*?)\s*-->/gi;
 const PATCH_TAG_PATTERN = /<tretaresia_patch>\s*([\s\S]*?)\s*<\/tretaresia_patch>/gi;
 const PATCH_BRACKET_PATTERN = /\[\[?\s*tretaresia[_ -]?patch\s*\]?\]\s*([\s\S]*?)\s*\[\[?\s*\/\s*tretaresia[_ -]?patch\s*\]?\]/gi;
@@ -654,6 +655,61 @@ function worldContinentsFor(state, viewed = true) {
     return id === 'alternate-present-world' ? ALTERNATE_WORLD_CONTINENTS : PRESENT_WORLD_CONTINENTS;
 }
 
+function pointInsidePolygon(x, y, polygon) {
+    let inside = false;
+    for (let index = 0, previous = polygon.length - 1; index < polygon.length; previous = index++) {
+        const [xi, yi] = polygon[index];
+        const [xj, yj] = polygon[previous];
+        const crosses = yi > y !== yj > y && x < (xj - xi) * (y - yi) / ((yj - yi) || Number.EPSILON) + xi;
+        if (crosses) inside = !inside;
+    }
+    return inside;
+}
+
+function pointIsOnAtlasLand(x, y, worldId = WORLD_ATLAS.id, continentName = '') {
+    if (!Number.isFinite(Number(x)) || !Number.isFinite(Number(y))) return false;
+    const continents = worldId === 'alternate-present-world' ? ALTERNATE_WORLD_CONTINENTS : PRESENT_WORLD_CONTINENTS;
+    const candidates = continentName ? continents.filter(entry => entry.name === continentName) : continents;
+    return candidates.some(entry => entry.polygons.some(polygon => pointInsidePolygon(Number(x), Number(y), polygon)));
+}
+
+function atlasLocationsByWorld(worldId = WORLD_ATLAS.id) {
+    return worldId === 'alternate-present-world' ? ALTERNATE_WORLD_LOCATIONS : PRESENT_WORLD_LOCATIONS;
+}
+
+function namedAtlasSite(value, worldId = WORLD_ATLAS.id) {
+    const requested = text(value, '', 240).toLocaleLowerCase();
+    if (!requested || /^(?:unknown|ไม่ทราบ|ไม่แน่ชัด)$/i.test(requested)) return null;
+    const locations = atlasLocationsByWorld(worldId);
+    return locations.find(entry => entry.name.toLocaleLowerCase() === requested)
+        || [...locations].sort((a, b) => b.name.length - a.name.length)
+            .find(entry => requested.includes(entry.name.toLocaleLowerCase()));
+}
+
+// AI/Character Life coordinates are accepted only when they are on the declared
+// atlas landmass. Ocean mistakes fall back to a canonical named destination;
+// genuinely unknown records stay hidden instead of receiving a random point.
+function landSafeMapPoint({ worldId = WORLD_ATLAS.id, x = null, y = null, location = '', continent = '' } = {}) {
+    const safeWorldId = WORLD_ATLASES[worldId] ? worldId : WORLD_ATLAS.id;
+    const site = namedAtlasSite(location, safeWorldId);
+    const numericX = optionalNumber(x, null, 0, WORLD_MAP_WIDTH);
+    const numericY = optionalNumber(y, null, 0, WORLD_MAP_HEIGHT);
+    const continentName = text(continent, site?.continent || '', 120);
+    if (numericX !== null && numericY !== null && pointIsOnAtlasLand(numericX, numericY, safeWorldId, continentName)) {
+        return { x: numericX, y: numericY, site };
+    }
+    if (site) return { x: site.x, y: site.y, site };
+    if (numericX === null || numericY === null) return null;
+    const locations = atlasLocationsByWorld(safeWorldId)
+        .filter(entry => pointIsOnAtlasLand(entry.x, entry.y, safeWorldId, entry.continent));
+    const pool = continentName ? locations.filter(entry => entry.continent === continentName) : locations;
+    const nearest = (pool.length ? pool : locations).reduce((best, entry) => {
+        const distance = Math.hypot(entry.x - numericX, entry.y - numericY);
+        return !best || distance < best.distance ? { entry, distance } : best;
+    }, null)?.entry;
+    return nearest ? { x: nearest.x, y: nearest.y, site: nearest } : null;
+}
+
 function allMapLocation(id) {
     return ALL_WORLD_LOCATIONS.find(location => location.id === id);
 }
@@ -761,7 +817,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.27.0';
+const LAUNCHER_BIND_VERSION = '0.28.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -1061,7 +1117,7 @@ function defaultState() {
         journal: [],
         transactions: [],
         journeyLogs: [],
-        onboarding: { loadoutSeeded: false, characterMapSeeded: false },
+        onboarding: { loadoutSeeded: false, characterMapSeeded: false, locationSeeded: false },
         syncCursor: { user: null, assistant: null },
         updatedAt: null,
         updateSource: 'initial',
@@ -1162,15 +1218,22 @@ function characterLifeMapActor(value, fallback = {}) {
     if (!value || typeof value !== 'object') return null;
     const name = text(value.name, text(fallback.name, '', 120), 120);
     if (!name) return null;
+    const worldId = WORLD_ATLASES[value.worldId] ? value.worldId : WORLD_ATLASES[fallback.worldId] ? fallback.worldId : WORLD_ATLAS.id;
+    const location = text(value.location, text(fallback.location, 'Unknown', 200), 200);
+    const safePoint = landSafeMapPoint({
+        worldId, location,
+        x: optionalNumber(value.mapX, optionalNumber(fallback.mapX, null, 0, WORLD_MAP_WIDTH), 0, WORLD_MAP_WIDTH),
+        y: optionalNumber(value.mapY, optionalNumber(fallback.mapY, null, 0, WORLD_MAP_HEIGHT), 0, WORLD_MAP_HEIGHT),
+    });
     return {
         id: text(value.id, text(fallback.id, `character-map-${shortHash(name)}`, 100), 100),
         characterLifeId: text(value.characterLifeId, text(fallback.characterLifeId, '', 120), 120),
         characterLifeScope: 'character',
         name,
-        location: text(value.location, text(fallback.location, 'Unknown', 200), 200),
-        worldId: WORLD_ATLASES[value.worldId] ? value.worldId : WORLD_ATLASES[fallback.worldId] ? fallback.worldId : WORLD_ATLAS.id,
-        mapX: optionalNumber(value.mapX, optionalNumber(fallback.mapX, null, 0, WORLD_MAP_WIDTH), 0, WORLD_MAP_WIDTH),
-        mapY: optionalNumber(value.mapY, optionalNumber(fallback.mapY, null, 0, WORLD_MAP_HEIGHT), 0, WORLD_MAP_HEIGHT),
+        location,
+        worldId,
+        mapX: safePoint?.x ?? null,
+        mapY: safePoint?.y ?? null,
         portraitId: text(value.portraitId, text(fallback.portraitId, '', 180), 180),
         updatedAt: text(value.updatedAt, new Date().toISOString(), 60),
     };
@@ -1832,6 +1895,7 @@ function normalize(candidate, base = defaultState()) {
     result.onboarding = {
         loadoutSeeded: Object.hasOwn(onboarding, 'loadoutSeeded') ? Boolean(onboarding.loadoutSeeded) : Boolean(result.inventory.length || result.skills.length),
         characterMapSeeded: Boolean(onboarding.characterMapSeeded),
+        locationSeeded: Boolean(onboarding.locationSeeded),
     };
     const proficiencies = source.proficiencies && typeof source.proficiencies === 'object' ? source.proficiencies : {};
     result.proficiencies.magic = Object.fromEntries(MAGIC_DISCIPLINES.map(entry => [
@@ -2135,6 +2199,7 @@ async function persistState(candidate, source = 'manual') {
     const previous = getState();
     let state = normalize(candidate, previous);
     synchronizeWorldState(state, previous);
+    synchronizeDerivedPlayerState(state);
     state = normalize(state, previous);
     syncCharacterLifeLinks(state);
     resolveLevelProgression(state);
@@ -2458,7 +2523,7 @@ function legacyPatchInstructions() {
         'After the role-play reply, append one invisible HTML comment only when confirmed state changed:',
         '<!--tretaresia_patch:{"ops":[["upsert","quests",{"id":"academy-escort","name":"Escort the Academy Caravan","type":"Mission","status":"Active","objective":"Protect the caravan until it reaches Eastwatch","reward":"12 silver","giver":"Quartermaster Lysa","source":"Great Academy mission board","progress":0}],["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}]],"summary":"Mission, training, payment, and combat progress recorded."}-->',
         'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers, guildMembers, and householdMembers; set or inc npcValues; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
-        'Party, Guild, and Household rules: The player is always the leader of a party or guild created from the UI unless the story explicitly confirms a leadership change. Party membership is free. The UI already deducts the Guild fee; a newly confirmed story-created Guild is accepted only when the player can afford it and the patch parser deducts the configured fee automatically. Role-play changes are automatic: whenever a completed reply confirms joining, accepting an invitation, leaving, expulsion, creation, dissolution, marriage, partnership, a child, parent, guardian, or another family role, update social state in this same patch even when no UI button was used. For a friendly person absent from npcIndex, first upsert npcs with a stable id/name, then use that id in partyMembers, guildMembers, or householdMembers. A Household is the player\'s family roster, not a generic faction.',
+        'Party, Guild, and Household rules: The player is always the leader of a party or guild created from the UI unless the story explicitly confirms a leadership change. Party membership is free. The UI already deducts the Guild fee. For a guild newly created by the player in the story, set createdByPlayer:true on the guild upsert; the parser accepts it only when the player can afford the fee and deducts the fee automatically. Merely joining an existing guild never charges a creation fee. Role-play changes are automatic: whenever a completed reply confirms joining, accepting an invitation, leaving, expulsion, creation, dissolution, marriage, partnership, a child, parent, guardian, or another family role, update social state in this same patch even when no UI button was used. For a friendly person absent from npcIndex, first upsert npcs with a stable id/name, then use that id in partyMembers, guildMembers, or householdMembers. A Household is the player\'s family roster, not a generic faction.',
         'Use canonical paths shown in the state JSON. For a new incoming physical letter include contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not a letter.',
         'Create or update a named NPC dossier with an upsert on npcs only when that NPC becomes relevant or a confirmed fact changes. Use partial NPC objects and preserve the canonical id from npcIndex. When a relationship becomes a correspondence, also upsert contacts with npcId; do not make every incidental NPC a contact.',
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. NPC portraits and portrait framing are local-only and forbidden in patches.',
@@ -2496,7 +2561,7 @@ function patchInstructions() {
         'Resource and capacity rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; confirmed healing, treatment, food, sleep, or recovery may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower player.stamina.current; confirmed rest restores it. A power or spell with an established cost lowers player.mp.current; confirmed meditation, rest, absorption, or canon recovery restores it. Never spend or restore a resource merely because an action was planned. Capacity gains are gradual and require genuine repeated training or a breakthrough: aerobic/endurance training may raise player.fitness.lungCapacity and occasionally player.stamina.max; vitality conditioning may occasionally raise player.hp.max; mana/aura control training may occasionally raise player.mp.max. Do not raise a maximum on every casual use, and never refill current automatically just because its maximum increased. The local tracker may already deduct stamina and record aerobic capacity from the latest user message; preserve those current values and do not duplicate that same cost or gain in this patch.',
         'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
         'Aura mechanics: set player.aura.color to a #RRGGBB color when the user profile or role-play establishes the Aura/Mana color, and preserve it otherwise. The UI renders Divine Aura or Divine Mana as pure white with a flowing rainbow spectrum automatically. Set player.aura.infinite=true ONLY when the completed role-play explicitly confirms that the player has genuinely unlocked or possesses boundless/infinite/never-depleting Aura or Mana; never infer it from a high level, large maximum, settings, OOC requests, or a merely attempted unlock. While true, do not decrease player.mp.current and use the infinity display. Set it false only after an explicit loss, seal, or limitation in the story.',
-        'First-reply bootstrap: when onboarding.loadoutSeeded is false, the first completed normal reply after a real user message must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId, and when coordinates are absent choose a plausible stable point in the correct atlas from the profile/story, then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
+        'First-reply bootstrap: when onboarding.loadoutSeeded is false, the first completed normal reply after a real user message must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the first user message and completed reply; use exact atlas coordinates for a named atlas destination. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId. Never guess random coordinates: use exact coordinates only for a known atlas destination, preserve established on-land coordinates, or leave mapX/mapY null until a location is established. Then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
@@ -2508,8 +2573,8 @@ function patchInstructions() {
         'Teleport and warp canon: teleportation/warp magic is inaccessible and most people believe it does not exist. Do not grant, teach, create, or casually use such a spell, item, skill, route, or world crossing unless the visible story explicitly establishes an extraordinary canon exception. A map browse or travel request is never such an exception.',
         'NPCs: upsert only relevant named friendly NPCs or confirmed changes; preserve npcIndex id. Hostile/enemy/foe/antagonist/villain/threat NPCs stay out of Codex and social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
-        'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/accepted invite/leave/expulsion/create/dissolve/rank/marriage/partner/child/parent/guardian/family-role change must update this same patch. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first ["upsert","npcs",{"id":"lysa","name":"Lysa","relationship":"Ally"}], then the membership op. Guild member includes guildId or exact guildName. Household member includes npcId plus role; delete the same collection when a member leaves. Party is free. UI Guild creation already charges locally; a story-created Guild op charges the fee automatically and fails when unaffordable. Household is family, not a faction.',
-        'Travel/scene: journeys take days/months/years. The extension advances a conservative base clock as soon as each user role-play message is sent; preserve that newer time and add any further elapsed time confirmed by the completed reply. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates, new places use a consistent plausible point. Read both the latest user role-play action and your completed reply for movement, elapsed hours/days, stated percentages, delays, resumptions, reroutes, and arrival. Every reply must re-evaluate the exact scene and world-map position; whenever movement or scene continuity changes, update location.mapX/mapY plus continent/region/place/detail/heading/position and the active journey values. Every reply that narratively advances an active journey must update worldClock day/time and remainingDays; never repeat stale travel values merely because no map UI button was pressed. The extension also applies a deterministic turn fallback and interpolates the player marker from stored endpoints, so preserve any newer/lower remainingDays already present, never move progress backwards, and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed weather/temperature whenever they change; keep established values when the story stays in place and never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
+        'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/accepted invite/leave/expulsion/create/dissolve/rank/marriage/partner/child/parent/guardian/family-role change must update this same patch. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first ["upsert","npcs",{"id":"lysa","name":"Lysa","relationship":"Ally"}], then the membership op. Guild member includes guildId or exact guildName. Household member includes npcId plus role; delete the same collection when a member leaves. Party is free. UI Guild creation already charges locally. A story-created player-led Guild upsert must include createdByPlayer:true so the parser charges the fee; joining an existing guild omits that flag and is free. Household is family, not a faction.',
+        'Travel/scene: journeys take days/months/years. The extension advances a conservative base clock as soon as each user role-play message is sent; preserve that newer time and add any further elapsed time confirmed by the completed reply. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates. Unknown places may use coordinates only when the reply establishes a nearby on-land position; never scatter the player or NPCs randomly and never place a land character in ocean water. Read both the latest user role-play action and your completed reply for movement, elapsed hours/days, stated percentages, delays, resumptions, reroutes, and arrival. Every reply must re-evaluate the exact scene and world-map position; whenever movement or scene continuity changes, update location.mapX/mapY plus continent/region/place/detail/heading/position and the active journey values. Every reply that narratively advances an active journey must update worldClock day/time and remainingDays; never repeat stale travel values merely because no map UI button was pressed. The extension also applies a deterministic turn fallback and interpolates the player marker from stored endpoints, so preserve any newer/lower remainingDays already present, never move progress backwards, and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed weather/temperature whenever they change; keep established values when the story stays in place and never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
     ].join('\n');
 }
@@ -3126,14 +3191,23 @@ function mapLocation(id, state = getState(), viewed = true) {
 
 function currentMapPoint(state) {
     const known = currentMapLocation(state);
+    let safe = landSafeMapPoint({
+        worldId: storyWorldId(state), x: state.location.mapX, y: state.location.mapY,
+        location: state.location.place || state.location.region, continent: state.location.continent,
+    });
+    const exactSite = namedAtlasSite(state.location.place, storyWorldId(state));
+    if (!['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status) && exactSite?.name === state.location.place
+        && (!safe || Math.hypot(exactSite.x - safe.x, exactSite.y - safe.y) > 180)) {
+        safe = { x: exactSite.x, y: exactSite.y, site: exactSite };
+    }
     return {
         ...known,
         name: state.location.place || known.name,
         continent: state.location.continent || known.continent,
         region: state.location.region || known.region,
         zone: state.location.zoneType || known.zone,
-        x: number(state.location.mapX, known.x, 0, WORLD_MAP_WIDTH),
-        y: number(state.location.mapY, known.y, 0, WORLD_MAP_HEIGHT),
+        x: safe?.x ?? known.x,
+        y: safe?.y ?? known.y,
         heading: number(state.location.heading, 0, 0, 359.999),
     };
 }
@@ -3243,9 +3317,14 @@ function npcMapPoint(entry, state) {
     const site = mapLocationByName(entry?.location, state);
     const partyMember = state?.social?.party?.memberIds?.includes(entry?.id);
     const player = partyMember ? currentMapPoint(state) : null;
-    const x = optionalNumber(entry?.mapX, player?.x ?? site?.x ?? null, 0, WORLD_MAP_WIDTH);
-    const y = optionalNumber(entry?.mapY, player?.y ?? site?.y ?? null, 0, WORLD_MAP_HEIGHT);
-    return x === null || y === null ? null : { x, y, site, partyMember };
+    const point = landSafeMapPoint({
+        worldId: storyWorldId(state),
+        x: optionalNumber(entry?.mapX, player?.x ?? site?.x ?? null, 0, WORLD_MAP_WIDTH),
+        y: optionalNumber(entry?.mapY, player?.y ?? site?.y ?? null, 0, WORLD_MAP_HEIGHT),
+        location: entry?.location,
+        continent: entry?.continent || site?.continent || (partyMember ? state.location.continent : ''),
+    });
+    return point ? { ...point, site: point.site || site, partyMember } : null;
 }
 
 function synchronizeWorldState(state, previous = state) {
@@ -3321,7 +3400,10 @@ function synchronizeWorldState(state, previous = state) {
         const directSite = mapLocationByName(state.location.place, state) || mapLocationByName(state.location.region, state);
         const placeChanged = state.location.place !== previous?.location?.place || state.location.region !== previous?.location?.region;
         const coordinatesUnchanged = state.location.mapX === previous?.location?.mapX && state.location.mapY === previous?.location?.mapY;
-        if (directSite && placeChanged && coordinatesUnchanged) {
+        const unsafeCoordinates = !pointIsOnAtlasLand(state.location.mapX, state.location.mapY, storyWorldId(state), state.location.continent);
+        const staleNamedCoordinates = directSite && directSite.name === state.location.place
+            && Math.hypot(directSite.x - state.location.mapX, directSite.y - state.location.mapY) > 180;
+        if (directSite && (placeChanged && coordinatesUnchanged || unsafeCoordinates || staleNamedCoordinates)) {
             state.location.mapX = directSite.x;
             state.location.mapY = directSite.y;
             state.location.continent = directSite.continent;
@@ -3370,8 +3452,31 @@ function synchronizeWorldState(state, previous = state) {
             entry.mapX = site.x;
             entry.mapY = site.y;
         }
+        const safePoint = landSafeMapPoint({
+            worldId: storyWorldId(state), x: entry.mapX, y: entry.mapY,
+            location: entry.location, continent: site?.continent || '',
+        });
+        entry.mapX = safePoint?.x ?? null;
+        entry.mapY = safePoint?.y ?? null;
         const lifeChanged = prior && (entry.location !== prior.location || entry.activity !== prior.activity || entry.mapX !== prior.mapX || entry.mapY !== prior.mapY);
         if (lifeChanged && entry.lifeMode !== 'Paused') entry.activityUpdatedDay = state.worldClock.day;
+    }
+    state.characterLifeMapActors = (state.characterLifeMapActors || []).map(actor => characterLifeMapActor(actor)).filter(Boolean);
+    return state;
+}
+
+function synchronizeDerivedPlayerState(state) {
+    const automaticConditions = new Set(['Stable', 'Critical', 'Unconscious', 'Exhausted', 'Starving', 'Dehydrated']);
+    if (automaticConditions.has(state.player.condition)) {
+        if (state.player.hp.current <= 0) state.player.condition = 'Unconscious';
+        else if (state.player.hp.current / state.player.hp.max <= .2) state.player.condition = 'Critical';
+        else if (state.player.survival.thirst <= 10) state.player.condition = 'Dehydrated';
+        else if (state.player.survival.hunger <= 10) state.player.condition = 'Starving';
+        else if (state.player.stamina.current <= 0) state.player.condition = 'Exhausted';
+        else state.player.condition = 'Stable';
+    }
+    if (/\bdivine\s+(?:aura|mana)\b|(?:ออร่า|มานา).*(?:เทพ|ศักดิ์สิทธิ์)/i.test(state.player.powerType)) {
+        state.player.aura.color = '#ffffff';
     }
     return state;
 }
@@ -3785,6 +3890,187 @@ function advanceAerobicTrainingFromUserMessage(messageId, message, current = get
     return next;
 }
 
+function advanceTurnResourcesFromUserMessage(message, current, elapsedMinutes = userTurnDurationMinutes(message?.mes)) {
+    const source = normalizedTravelText(message?.mes);
+    if (!source || !elapsedMinutes) return null;
+    const next = clone(current);
+    const hours = elapsedMinutes / 60;
+    const physical = /\b(?:walk|run|jog|sprint|climb|swim|fight|battle|train|exercise|work\s*out)(?:s|ed|ing)?\b|(?:เดิน|วิ่ง|ปีน|ว่ายน้ำ|ต่อสู้|ฝึก|ออกกำลังกาย)/i.test(source);
+    const sleeping = /\b(?:sleep|slept|rest(?:ed)? overnight|camp(?:ed)? overnight)\b|(?:นอนหลับ|หลับไป|พักค้างคืน|นอนพัก)/i.test(source);
+    const hungerCost = Math.max(.1, hours * (physical ? 2.1 : 1.25));
+    const thirstCost = Math.max(.1, hours * (physical ? 3.2 : 1.8));
+    next.player.survival.hunger = Math.max(0, Math.round((next.player.survival.hunger - hungerCost) * 10) / 10);
+    next.player.survival.thirst = Math.max(0, Math.round((next.player.survival.thirst - thirstCost) * 10) / 10);
+    if (sleeping) {
+        next.player.stamina.current = Math.min(next.player.stamina.max, next.player.stamina.current + Math.max(12, Math.round(next.player.stamina.max * .3)));
+        if (!next.player.aura.infinite) next.player.mp.current = Math.min(next.player.mp.max, next.player.mp.current + Math.max(5, Math.round(next.player.mp.max * .12)));
+    } else if (physical && !/\b(?:run|jog|sprint|exercise|work\s*out|swim|cycle)(?:s|ed|ing)?\b|(?:วิ่ง|จ๊อกกิ้ง|สปรินต์|ออกกำลังกาย|คาร์ดิโอ|ว่ายน้ำ|ปั่นจักรยาน)/i.test(source)) {
+        const cost = /\b(?:fight|battle|climb)(?:s|ed|ing)?\b|(?:ต่อสู้|ปีน)/i.test(source) ? 7 : 3;
+        next.player.stamina.current = Math.max(0, next.player.stamina.current - Math.min(cost, next.player.stamina.current));
+    }
+    return next;
+}
+
+function latestMentionedAtlasSite(source, state) {
+    const lower = text(source, '', 20000).toLocaleLowerCase();
+    if (!lower) return null;
+    return worldLocationsFor(state, false).reduce((latest, site) => {
+        const index = lower.lastIndexOf(site.name.toLocaleLowerCase());
+        return index >= 0 && (!latest || index > latest.index || index === latest.index && site.name.length > latest.site.name.length)
+            ? { site, index } : latest;
+    }, null)?.site || null;
+}
+
+function inferredWeather(source) {
+    const entries = [
+        [/\b(?:thunderstorm|storm|tempest)\b|(?:พายุฝนฟ้าคะนอง|พายุ)/i, 'Storm'],
+        [/\b(?:blizzard|snowing|snowfall|snow)\b|(?:พายุหิมะ|หิมะตก|หิมะ)/i, 'Snow'],
+        [/\b(?:raining|rainfall|drizzle|rain)\b|(?:ฝนตก|ฝนพรำ|ฝน)/i, 'Rain'],
+        [/\b(?:foggy|misty|fog|mist|haze)\b|(?:หมอกลง|มีหมอก|หมอก)/i, 'Fog'],
+        [/\b(?:overcast|cloudy|clouds gather)\b|(?:เมฆครึ้ม|ท้องฟ้าครึ้ม|มีเมฆ)/i, 'Cloudy'],
+        [/\b(?:clear sky|sunny|sunlit)\b|(?:ท้องฟ้าแจ่มใส|อากาศแจ่มใส|แดดออก)/i, 'Clear'],
+    ];
+    return entries.find(([pattern]) => pattern.test(source))?.[1] || '';
+}
+
+function explicitResourceValue(source, aliases) {
+    const label = `(?:${aliases.join('|')})`;
+    const patterns = [
+        new RegExp(`${label}\\s*(?:is|=|เหลือ|อยู่ที่)?\\s*(\\d+(?:\\.\\d+)?)\\s*(?:\\/\\s*(\\d+(?:\\.\\d+)?))?`, 'i'),
+        new RegExp(`(?:lose|lost|เสีย|ลด)\\s*(\\d+(?:\\.\\d+)?)\\s*${label}`, 'i'),
+        new RegExp(`${label}\\s*[-–—]\\s*(\\d+(?:\\.\\d+)?)`, 'i'),
+    ];
+    for (let index = 0; index < patterns.length; index += 1) {
+        const match = source.match(patterns[index]);
+        if (!match) continue;
+        if (index === 0) return { set: Number(match[1]), max: match[2] === undefined ? null : Number(match[2]) };
+        return { delta: -Number(match[1]), max: null };
+    }
+    return null;
+}
+
+function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage) {
+    const next = clone(candidate);
+    const user = normalizedTravelText(userMessage?.mes || userMessage || '');
+    const assistant = normalizedTravelText(assistantMessage?.mes || assistantMessage || '');
+    const combined = `${user}\n${assistant}`;
+    let changes = 0;
+    const unchanged = selector => JSON.stringify(selector(base)) === JSON.stringify(selector(candidate));
+    const setIfChanged = (target, key, value) => {
+        if (value === undefined || target[key] === value) return;
+        target[key] = value;
+        changes += 1;
+    };
+
+    const weather = inferredWeather(assistant);
+    if (weather && unchanged(state => state.scene.weather)) setIfChanged(next.scene, 'weather', weather);
+    const temperature = assistant.match(/(-?\d+(?:\.\d+)?)\s*(?:°\s*[CF]|degrees?\s*(?:celsius|fahrenheit)|องศา)/i);
+    if (temperature && unchanged(state => state.scene.temperature)) setIfChanged(next.scene, 'temperature', Number(temperature[1]));
+
+    const moving = ['Preparing', 'Traveling', 'Delayed'].includes(next.travel.status);
+    const mentionedSite = latestMentionedAtlasSite(assistant, next) || latestMentionedAtlasSite(user, next);
+    const escapedSite = mentionedSite?.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const presenceConfirmed = mentionedSite && (new RegExp(`(?:arriv(?:e|ed|es|ing)|reach(?:ed|es|ing)|enter(?:ed|s|ing)|at|inside|อยู่(?:ที่|ใน)|มาถึง|ถึง|เข้า(?:สู่|ไปใน)?)\\s+(?:the\\s+)?${escapedSite}`, 'i').test(combined)
+        || !base.onboarding?.locationSeeded || /^initial$/.test(base.updateSource || ''));
+    if (!moving && mentionedSite && presenceConfirmed && unchanged(state => [state.location.continent, state.location.region, state.location.place, state.location.mapX, state.location.mapY])) {
+        setIfChanged(next.location, 'continent', mentionedSite.continent);
+        setIfChanged(next.location, 'region', mentionedSite.region);
+        setIfChanged(next.location, 'place', mentionedSite.name);
+        setIfChanged(next.location, 'zoneType', mentionedSite.zone);
+        setIfChanged(next.location, 'mapX', mentionedSite.x);
+        setIfChanged(next.location, 'mapY', mentionedSite.y);
+        setIfChanged(next.onboarding, 'locationSeeded', true);
+        addDiscoveredLocation(next, mentionedSite.name);
+    }
+    if (!next.onboarding.locationSeeded && !unchanged(state => [state.location.continent, state.location.region, state.location.place, state.location.mapX, state.location.mapY])) {
+        setIfChanged(next.onboarding, 'locationSeeded', true);
+    }
+
+    if (unchanged(state => state.scene.position)) {
+        const positions = [
+            [/\b(?:inside|indoors|within)\b|(?:ภายใน|ข้างใน|อยู่ในห้อง)/i, 'Indoors'],
+            [/\b(?:road|path|trail)\b|(?:ถนน|เส้นทาง)/i, 'On the road'],
+            [/\b(?:forest|woods|grove)\b|(?:ป่า|พงไพร)/i, 'In the wilderness'],
+            [/\b(?:outside|outdoors|open air)\b|(?:ด้านนอก|กลางแจ้ง)/i, 'Outdoors'],
+        ];
+        const position = positions.find(([pattern]) => pattern.test(assistant))?.[1];
+        if (position) setIfChanged(next.scene, 'position', position);
+        else if (mentionedSite && presenceConfirmed && /^Unknown$/i.test(next.scene.position)) setIfChanged(next.scene, 'position', `At ${mentionedSite.name}`);
+    }
+
+    const resourceSpecs = [
+        ['hp', ['HP', 'health', 'พลังชีวิต']],
+        ['mp', ['MP', 'mana', 'aura', 'มานา', 'ออร่า']],
+        ['stamina', ['stamina', 'เรี่ยวแรง', 'ความอึด']],
+    ];
+    for (const [key, aliases] of resourceSpecs) {
+        if (!unchanged(state => state.player[key])) continue;
+        const explicit = explicitResourceValue(assistant, aliases);
+        if (!explicit) continue;
+        if (explicit.max !== null) setIfChanged(next.player[key], 'max', Math.max(1, explicit.max));
+        const current = explicit.set === undefined ? next.player[key].current + explicit.delta : explicit.set;
+        setIfChanged(next.player[key], 'current', Math.max(0, Math.min(next.player[key].max, current)));
+    }
+
+    if (unchanged(state => state.player.hp) && !explicitResourceValue(assistant, ['HP', 'health', 'พลังชีวิต'])) {
+        const injury = /\b(?:wounded|injured|bleeding|struck|hit|slashed|stabbed|burned|fractured)\b|(?:บาดเจ็บ|เลือดออก|ถูกฟัน|ถูกแทง|ถูกโจมตี|กระดูกหัก|ไหม้)/i.test(assistant);
+        const healing = /\b(?:healed|treated|bandaged|recovered health|wound(?:s)? closed)\b|(?:รักษา|สมานแผล|ทำแผล|ฟื้นพลังชีวิต)/i.test(assistant);
+        if (injury && !/\b(?:dodg|miss|blocked|unharmed|no damage)\b|(?:หลบได้|พลาด|ป้องกันได้|ไม่บาดเจ็บ)/i.test(assistant)) {
+            const damage = /\b(?:critical|severe|deep|grave)\b|(?:สาหัส|รุนแรง|แผลลึก)/i.test(assistant) ? 15 : 7;
+            setIfChanged(next.player.hp, 'current', Math.max(0, next.player.hp.current - damage));
+        } else if (healing) setIfChanged(next.player.hp, 'current', Math.min(next.player.hp.max, next.player.hp.current + 8));
+    }
+
+    const ate = /\b(?:ate|eaten|finished (?:the )?(?:meal|food)|had (?:a )?meal)\b|(?:กิน|รับประทาน|ทานอาหาร|กินเสร็จ)/i.test(assistant);
+    const drank = /\b(?:drank|drunk|finished (?:the )?(?:water|drink))\b|(?:ดื่ม|กินน้ำ)/i.test(assistant);
+    if (ate && unchanged(state => state.player.survival.hunger)) setIfChanged(next.player.survival, 'hunger', Math.min(100, next.player.survival.hunger + 24));
+    if (drank && unchanged(state => state.player.survival.thirst)) setIfChanged(next.player.survival, 'thirst', Math.min(100, next.player.survival.thirst + 30));
+
+    const successfulPowerUse = /\b(?:cast|casts|casted|activated|released|channeled|summoned|invoked|used)\b|(?:ร่าย|ใช้พลัง|ปลดปล่อย|เปิดใช้งาน|เรียกใช้)/i.test(assistant)
+        && !/\b(?:failed|fizzled|could not|unable)\b|(?:ล้มเหลว|ใช้ไม่ได้|ไม่สำเร็จ)/i.test(assistant);
+    const discipline = MAGIC_DISCIPLINES.find(entry => new RegExp(entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(combined));
+    if (discipline && successfulPowerUse) {
+        if (unchanged(state => state.proficiencies.magic[discipline.id])) {
+            const previous = next.proficiencies.magic[discipline.id];
+            setIfChanged(next.proficiencies.magic, discipline.id, Math.min(100, previous + (previous ? 1 : 2)));
+        }
+        if (discipline.id === 'divineMana') {
+            if (unchanged(state => state.player.powerType)) setIfChanged(next.player, 'powerType', 'Divine Mana');
+            if (unchanged(state => state.player.aura.color)) setIfChanged(next.player.aura, 'color', '#ffffff');
+        }
+        if (!next.player.aura.infinite && unchanged(state => state.player.mp) && !explicitResourceValue(assistant, ['MP', 'mana', 'aura', 'มานา', 'ออร่า'])) {
+            setIfChanged(next.player.mp, 'current', Math.max(0, next.player.mp.current - 4));
+        }
+    }
+    if (/\b(?:boundless|infinite|never[- ]deplet(?:ing|es)|unlimited)\s+(?:aura|mana)\b|(?:ออร่า|มานา).*(?:ไร้ขีดจำกัด|ไม่มีวันหมด|อนันต์)/i.test(assistant)
+        && unchanged(state => state.player.aura.infinite)) setIfChanged(next.player.aura, 'infinite', true);
+
+    const partyConfirmed = /\b(?:join(?:ed|s|ing)?|form(?:ed|s|ing)?|became (?:a )?member)\b.{0,80}\bparty\b|\bparty\b.{0,80}\b(?:join(?:ed|s|ing)?|member)\b|(?:เข้าร่วม|ร่วม|ตั้ง|ก่อตั้ง).{0,50}(?:ปาร์ตี้|กลุ่มผจญภัย)|(?:ปาร์ตี้|กลุ่มผจญภัย).{0,50}(?:มีสมาชิก|เข้าร่วม|ร่วมทีม)/i.test(assistant);
+    if (partyConfirmed) {
+        const candidates = [...friendlyNpcs(next), ...characterLifeCharacterReferences().map(entry => ({
+            id: entry.id, name: entry.name, relationship: entry.relationshipToUser || 'Companion', characterLifeId: entry.id, characterLifeScope: 'character',
+        }))];
+        const mentioned = candidates.filter(entry => entry.name && combined.toLocaleLowerCase().includes(entry.name.toLocaleLowerCase()));
+        if (mentioned.length) {
+            if (!next.social.party) {
+                next.social.party = partyProfile({ name: 'Adventuring Party', leaderId: 'player', memberIds: [] });
+                next.player.party = next.social.party.name;
+                changes += 1;
+            }
+            for (const record of mentioned) {
+                const npc = resolveOrCreateFriendlyNpc(next, record);
+                if (npc && !next.social.party.memberIds.includes(npc.id)) {
+                    next.social.party.memberIds.push(npc.id);
+                    changes += 1;
+                }
+            }
+        }
+    }
+
+    synchronizeWorldState(next, candidate);
+    return { next: normalize(next, candidate), changes };
+}
+
 async function catchUpTravelHistory() {
     const settings = getSettings();
     const context = SillyTavern.getContext();
@@ -3805,9 +4091,11 @@ async function processUserTravelIntent(messageId) {
     const stored = getState();
     const clockAdvanced = advanceWorldClockFromUserMessage(messageId, message, stored);
     const clockState = clockAdvanced || stored;
-    const trainingAdvanced = advanceAerobicTrainingFromUserMessage(messageId, message, clockState);
-    const current = trainingAdvanced || clockState;
-    const localChanged = Boolean(clockAdvanced || trainingAdvanced);
+    const resourcesAdvanced = clockAdvanced ? advanceTurnResourcesFromUserMessage(message, clockState) : null;
+    const resourcesState = resourcesAdvanced || clockState;
+    const trainingAdvanced = advanceAerobicTrainingFromUserMessage(messageId, message, resourcesState);
+    const current = trainingAdvanced || resourcesState;
+    const localChanged = Boolean(clockAdvanced || resourcesAdvanced || trainingAdvanced);
     const intent = inferUserTravelIntent(message.mes, current);
     if (!intent) {
         const caughtUp = catchUpActiveTravelFromChat(current, context, messageId);
@@ -5600,7 +5888,16 @@ async function hydrateNpcPortraits(root, state = getState()) {
             let blob = null;
             const bridge = characterLifeBridge();
             if (bridge && (entry.characterLifeId || entry.characterLifePortraitId || entry.name)) {
-                const linked = await bridge.portrait?.({ id: entry.characterLifeId, scope: entry.characterLifeScope, name: entry.name });
+                // The selected dossier needs the original asset at phone width.
+                // Roster cards stay on Character Life's small cached thumbnail so
+                // opening the NPC tab does not decode every full-size portrait.
+                const wantsOriginal = node.classList.contains('tretaresia-npc-portrait');
+                const linked = await bridge.portrait?.({
+                    id: entry.characterLifeId,
+                    scope: entry.characterLifeScope,
+                    name: entry.name,
+                    ...(wantsOriginal ? { original: true } : {}),
+                });
                 if (linked?.blob instanceof Blob) {
                     blob = linked.blob;
                     const frame = linked.frame || {};
@@ -6122,12 +6419,23 @@ async function onSubmit(event) {
         case 'proficiencies': {
             const kind = form.dataset.kind;
             if (kind === 'magic') {
+                const previousMagic = { ...state.proficiencies.magic };
                 MAGIC_DISCIPLINES.forEach(entry => {
                     if (values[`magic-${entry.id}`] !== undefined) state.proficiencies.magic[entry.id] = values[`magic-${entry.id}`];
                 });
                 state.proficiencies.customMagic.forEach(entry => {
                     if (values[`custom-magic-${entry.id}`] !== undefined) entry.proficiency = values[`custom-magic-${entry.id}`];
                 });
+                const changed = MAGIC_DISCIPLINES.filter(entry =>
+                    number(previousMagic[entry.id], 0, 0, 100) !== number(state.proficiencies.magic[entry.id], 0, 0, 100));
+                const selected = changed.reduce((best, entry) => {
+                    const value = number(state.proficiencies.magic[entry.id], 0, 0, 100);
+                    return value > best.value ? { entry, value } : best;
+                }, { entry: null, value: 0 });
+                if (selected.entry && selected.value > 0) {
+                    state.player.powerType = selected.entry.name;
+                    if (selected.entry.id === 'divineMana') state.player.aura.color = '#ffffff';
+                }
             } else if (kind === 'sword') {
                 SWORD_STYLES.forEach(entry => {
                     if (values[`sword-${entry.id}`] !== undefined) state.proficiencies.sword[entry.id] = values[`sword-${entry.id}`];
@@ -7148,7 +7456,7 @@ const SCALAR_PATCH_PATHS = new Set([
     'player.hp.current', 'player.hp.max', 'player.mp.current', 'player.mp.max', 'player.stamina.current', 'player.stamina.max',
     'player.survival.hunger', 'player.survival.thirst', 'player.aura.color', 'player.aura.infinite',
     'player.fitness.lungCapacity', 'player.fitness.aerobicSessions',
-    'onboarding.loadoutSeeded', 'onboarding.characterMapSeeded',
+    'onboarding.loadoutSeeded', 'onboarding.characterMapSeeded', 'onboarding.locationSeeded',
     'progression.adventurerRank', 'progression.customRankName', 'progression.magicRank', 'progression.swordRank', 'progression.experience',
     'progression.experienceMax', 'progression.reputation', 'progression.kills', 'progression.currency.gold', 'progression.currency.silver',
     'progression.currency.name', 'progression.currency.copper', 'world.id', 'worldClock.day', 'worldClock.dayName', 'worldClock.time', 'worldClock.phase', 'location.continent',
@@ -7164,6 +7472,51 @@ const PATCH_COLLECTIONS = new Set(['inventory', 'skills', 'proficiencies.customM
 const SCENE_MAP_PATCH_COLLECTIONS = new Set(['sceneMaps', 'sceneFloors', 'sceneRooms', 'sceneConnections']);
 const NPC_RELATIONSHIP_FIELDS = new Set(['affection', 'trust', 'loyalty', 'fear', 'corruption', 'lust']);
 const NPC_STAT_FIELDS = new Set(['level', 'hp', 'mp', 'stamina', 'strength', 'agility', 'intelligence', 'endurance']);
+
+const PATCH_PATH_ALIASES = Object.freeze({
+    'status.hp.current': 'player.hp.current', 'status.hp.max': 'player.hp.max',
+    'vitals.hp.current': 'player.hp.current', 'vitals.hp.max': 'player.hp.max',
+    'player.health.current': 'player.hp.current', 'player.health.max': 'player.hp.max',
+    'status.mp.current': 'player.mp.current', 'status.mp.max': 'player.mp.max',
+    'vitals.mp.current': 'player.mp.current', 'vitals.mp.max': 'player.mp.max',
+    'player.mana.current': 'player.mp.current', 'player.mana.max': 'player.mp.max',
+    'player.aura.current': 'player.mp.current', 'player.aura.max': 'player.mp.max',
+    'status.stamina.current': 'player.stamina.current', 'status.stamina.max': 'player.stamina.max',
+    'status.hunger': 'player.survival.hunger', 'vitals.hunger': 'player.survival.hunger',
+    'status.thirst': 'player.survival.thirst', 'vitals.thirst': 'player.survival.thirst',
+    'scene.currentRegion': 'location.region', 'scene.currentPlace': 'location.place',
+    'scene.scenePosition': 'scene.position', 'scene.currentPosition': 'scene.position',
+    'scene.mapX': 'location.mapX', 'scene.mapY': 'location.mapY',
+    'powers.falseMagic': 'proficiencies.magic.falseMagic', 'powers.trueMagic': 'proficiencies.magic.trueMagic',
+    'powers.aura': 'proficiencies.magic.aura', 'powers.formlessAura': 'proficiencies.magic.formlessAura',
+    'powers.bloodAura': 'proficiencies.magic.bloodAura', 'powers.sageMana': 'proficiencies.magic.sageMana',
+    'powers.divineMana': 'proficiencies.magic.divineMana', 'powers.construct': 'proficiencies.magic.construct',
+    'powers.divineConstruct': 'proficiencies.magic.divineConstruct',
+});
+
+function canonicalPatchOperations(operation) {
+    if (!Array.isArray(operation) || operation.length < 3) return [];
+    let [verb, path, value, meta] = operation;
+    path = PATCH_PATH_ALIASES[path] || path;
+    if (path === 'social.party') path = 'party';
+    if (path === 'social.guilds') path = 'guilds';
+    if (['social.party.memberIds', 'party.memberIds', 'party.members'].includes(path) && Array.isArray(value)) {
+        return value.map(member => ['upsert', 'partyMembers', typeof member === 'object' ? member : { npcId: member }, meta]);
+    }
+    if (['social.guildMembers', 'guild.members'].includes(path) && Array.isArray(value)) {
+        return value.map(member => ['upsert', 'guildMembers', typeof member === 'object' ? member : { npcId: member }, meta]);
+    }
+    if (path === 'player.aura.type' || path === 'player.mana.type') {
+        return [['set', 'player.powerType', value, meta]];
+    }
+    if (path === 'player.aura.divine' && Boolean(value)) return [['set', 'player.powerType', 'Divine Mana', meta]];
+    if (path === 'player.aura.color' && typeof value === 'string') {
+        const colors = { white: '#ffffff', divine: '#ffffff', red: '#ef4444', blue: '#3b82f6', green: '#22c55e', purple: '#a855f7', gold: '#f5c451', black: '#111111' };
+        value = colors[value.trim().toLocaleLowerCase()] || value;
+    }
+    if (path === 'player.aura.infinite' && typeof value === 'string') value = /^(?:true|yes|1|infinite|boundless)$/i.test(value.trim());
+    return [[verb, path, value, meta]];
+}
 
 function parseJson(response) {
     const cleaned = String(response || '').trim().replace(/^\`\`\`(?:json)?\s*/i, '').replace(/\s*\`\`\`$/, '');
@@ -7341,17 +7694,18 @@ function applySocialPatchOperation(state, verb, path, value) {
         }
         if (verb !== 'upsert' || !value || typeof value !== 'object') return false;
         const existing = state.social.guilds.find(entry => matchesPatchIdentity(entry, value));
-        if (!existing && !canAffordCurrency(state.progression.currency, GUILD_CREATION_FEE)) return false;
+        const playerCreated = !existing && value.createdByPlayer === true;
+        if (playerCreated && !canAffordCurrency(state.progression.currency, GUILD_CREATION_FEE)) return false;
         const next = guildProfile(value, existing || {});
         if (!next) return false;
         next.memberIds = [...new Set(next.memberIds.map(id => resolveFriendlyNpc(state, id)?.id).filter(Boolean))];
         if (existing) state.social.guilds[state.social.guilds.indexOf(existing)] = next;
         else {
-            state.progression.currency.gold -= GUILD_CREATION_FEE.gold;
+            if (playerCreated) state.progression.currency.gold -= GUILD_CREATION_FEE.gold;
             next.treasury = {
-                gold: number(value.treasury?.gold, GUILD_CREATION_FEE.gold, 0, 999999999),
-                silver: number(value.treasury?.silver, GUILD_CREATION_FEE.silver, 0, 999999999),
-                copper: number(value.treasury?.copper, GUILD_CREATION_FEE.copper, 0, 999999999),
+                gold: number(value.treasury?.gold, playerCreated ? GUILD_CREATION_FEE.gold : 0, 0, 999999999),
+                silver: number(value.treasury?.silver, playerCreated ? GUILD_CREATION_FEE.silver : 0, 0, 999999999),
+                copper: number(value.treasury?.copper, playerCreated ? GUILD_CREATION_FEE.copper : 0, 0, 999999999),
             };
             state.social.guilds.push(next);
         }
@@ -7681,7 +8035,8 @@ function applyStatePatch(current, patch) {
     const candidate = clone(current);
     const acceptedOps = [];
     const rewardOps = new Set();
-    for (const operation of patch.ops.slice(0, 75)) {
+    const operations = patch.ops.slice(0, 75).flatMap(canonicalPatchOperations).slice(0, 100);
+    for (const operation of operations) {
         if (isDuplicateQuestRewardOperation(current, operation)) continue;
         const meta = operationMeta(operation);
         if (['quest-reward', 'mission-reward', 'reward'].includes(meta.category)) {
@@ -7693,6 +8048,7 @@ function applyStatePatch(current, patch) {
     }
     let next = normalize(candidate, current);
     synchronizeWorldState(next, current);
+    synchronizeDerivedPlayerState(next);
     next = normalize(next, current);
     const levelUps = resolveLevelProgression(next);
     next.player.portrait = current.player.portrait;
@@ -7770,7 +8126,21 @@ function coerceStatePatch(raw) {
             for (const [key, child] of Object.entries(value)) {
                 if (['summary', 'version', 'format'].includes(key) && !prefix) continue;
                 const path = prefix ? `${prefix}.${key}` : key;
-                if (SCALAR_PATCH_PATHS.has(path) && (child === null || typeof child !== 'object')) operations.push(['set', path, child]);
+                if (path === 'social.party' && child && typeof child === 'object' && !Array.isArray(child)) {
+                    const { memberIds = [], members = [], ...profile } = child;
+                    operations.push(['upsert', 'party', profile]);
+                    [...(Array.isArray(memberIds) ? memberIds : []), ...(Array.isArray(members) ? members : [])]
+                        .forEach(member => operations.push(['upsert', 'partyMembers', typeof member === 'object' ? member : { npcId: member }]));
+                } else if (path === 'social.guilds' && Array.isArray(child)) {
+                    child.forEach(guild => {
+                        const { memberIds = [], members = [], ...profile } = guild || {};
+                        operations.push(['upsert', 'guilds', profile]);
+                        [...(Array.isArray(memberIds) ? memberIds : []), ...(Array.isArray(members) ? members : [])]
+                            .forEach(member => operations.push(['upsert', 'guildMembers', {
+                                ...(typeof member === 'object' ? member : { npcId: member }), guildId: profile.id, guildName: profile.name,
+                            }]));
+                    });
+                } else if (SCALAR_PATCH_PATHS.has(path) && (child === null || typeof child !== 'object')) operations.push(['set', path, child]);
                 else if (PATCH_COLLECTIONS.has(path) && Array.isArray(child)) child.forEach(item => operations.push(['upsert', path, item]));
                 else walk(child, path, depth + 1);
             }
@@ -7872,29 +8242,48 @@ async function processAssistantPatch(messageId, generationType = '') {
     }
     setSync('working', tr('Checking reply'), settings.language === 'th' ? 'กำลังอ่านเฉพาะข้อมูลที่เปลี่ยนแปลงจากคำตอบนี้' : 'Reading this reply for confirmed state changes.');
     const extracted = cleanInlinePatchSurfaces(message);
-    if (!extracted.found) {
-        processedAssistantMessages.set(message, assistantVariantKey(message));
-        setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'ระบบทำงานแล้ว แต่ไม่มีเหตุการณ์ที่ยืนยันให้บันทึก' : 'The extension checked this reply; there was nothing confirmed to record.');
-        return;
-    }
-    message.mes = extracted.visible;
-    if (Array.isArray(message.swipes) && Number.isInteger(message.swipe_id) && message.swipes[message.swipe_id] !== undefined) {
-        message.swipes[message.swipe_id] = extracted.visible;
-    }
-    if (!extracted.patch) {
-        processedAssistantMessages.set(message, assistantVariantKey(message));
-        setSync('error', tr('Sync unavailable'));
-        return;
+    if (extracted.found) {
+        message.mes = extracted.visible;
+        if (Array.isArray(message.swipes) && Number.isInteger(message.swipe_id) && message.swipes[message.swipe_id] !== undefined) {
+            message.swipes[message.swipe_id] = extracted.visible;
+        }
     }
     const checkpoint = assistantCheckpoint(messageId, { create: true });
     const variantKey = assistantVariantKey(message);
+    const recordedVariant = checkpoint?.variants?.[variantKey];
+    if (checkpoint?.activeVariant === variantKey && recordedVariant?.state
+        && recordedVariant.reconcileVersion === TURN_RECONCILE_VERSION) {
+        processedAssistantMessages.set(message, variantKey);
+        setSync('unchanged', tr('State updated'), settings.language === 'th' ? 'คำตอบเวอร์ชันนี้ถูกบันทึกแล้ว จึงไม่หักค่าซ้ำ' : 'This reply variant is already recorded; no values were applied twice.');
+        return;
+    }
     processedAssistantMessages.set(message, variantKey);
     try {
-        const { next, accepted, notifications } = applyStatePatch(getState(), extracted.patch);
-        if (accepted) {
-            await persistState(next, 'inline-patch');
+        const base = getState();
+        let patched = base;
+        let accepted = 0;
+        let notifications = [];
+        if (extracted.patch) {
+            const result = applyStatePatch(base, extracted.patch);
+            patched = result.next;
+            accepted = result.accepted;
+            notifications = result.notifications;
+        }
+        let userMessage = null;
+        for (let index = messageId - 1; index >= 0; index -= 1) {
+            if (context.chat[index]?.is_user && !context.chat[index]?.is_system) {
+                userMessage = context.chat[index];
+                break;
+            }
+        }
+        const reconciled = reconcileCompletedTurn(base, patched, userMessage, message);
+        const totalChanges = accepted + reconciled.changes;
+        if (totalChanges) {
+            await persistState(reconciled.next, accepted ? 'inline-patch+turn-reconcile' : 'turn-reconcile-fallback');
             if (checkpoint) {
-                checkpoint.variants[variantKey] = { state: clone(getState()), savedAt: new Date().toISOString() };
+                checkpoint.variants[variantKey] = {
+                    state: clone(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
+                };
                 const variantKeys = Object.keys(checkpoint.variants);
                 for (const stale of variantKeys.slice(0, Math.max(0, variantKeys.length - 6))) delete checkpoint.variants[stale];
                 checkpoint.activeVariant = variantKey;
@@ -7902,18 +8291,20 @@ async function processAssistantPatch(messageId, generationType = '') {
                 await SillyTavern.getContext().saveMetadata?.();
             }
             showEventNotifications(notifications);
-            setSync('success', tr('State updated'), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${accepted} รายการแล้ว` : `${accepted} confirmed change${accepted === 1 ? '' : 's'} saved.`);
-            console.info(`[Tretaresia RPG] Applied ${accepted} inline state operation(s).`);
+            setSync('success', tr('State updated'), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${totalChanges} รายการแล้ว` : `${totalChanges} confirmed change${totalChanges === 1 ? '' : 's'} saved.`);
+            console.info(`[Tretaresia RPG] Applied ${accepted} inline operation(s) plus ${reconciled.changes} deterministic reconciliation change(s).`);
         } else {
             if (checkpoint) {
-                checkpoint.variants[variantKey] = { state: clone(getState()), savedAt: new Date().toISOString() };
+                checkpoint.variants[variantKey] = {
+                    state: clone(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
+                };
                 const variantKeys = Object.keys(checkpoint.variants);
                 for (const stale of variantKeys.slice(0, Math.max(0, variantKeys.length - 6))) delete checkpoint.variants[stale];
                 checkpoint.activeVariant = variantKey;
                 checkpoint.applied = false;
                 await SillyTavern.getContext().saveMetadata?.();
             }
-            setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'พบข้อมูล Patch แต่ไม่มีคำสั่งที่อนุญาตให้บันทึก' : 'A patch was present, but it contained no permitted changes.');
+            setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
         }
     } catch (error) {
         console.error('[Tretaresia RPG] Inline state patch failed.', error);
@@ -8413,7 +8804,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.27.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.28.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

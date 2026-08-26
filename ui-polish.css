@@ -5473,6 +5473,82 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 }
 
 /* v0.19.3 final precedence — the compact bar replaces the legacy mobile block above. */
+
+/* v0.28.0 — NPC dossier containment and readable iPhone portrait/details. */
+.tretaresia-npc-dossier,
+.tretaresia-npc-dossier *,
+.tretaresia-npc-hero > div,
+.tretaresia-npc-info-grid,
+.tretaresia-npc-info-grid > *,
+.tretaresia-fact-list,
+.tretaresia-fact-list > div,
+.tretaresia-fact-list dd {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.tretaresia-npc-hero h3,
+.tretaresia-npc-hero p,
+.tretaresia-npc-note,
+.tretaresia-fact-list dd,
+.tretaresia-npc-ability p,
+.tretaresia-diary-entry p {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.tretaresia-npc-info-grid .tretaresia-fact-list > div {
+    align-items: flex-start;
+}
+
+.tretaresia-npc-info-grid .tretaresia-fact-list dd {
+    overflow: visible;
+    white-space: normal;
+    text-overflow: clip;
+    line-height: 1.45;
+}
+
+@media (max-width: 680px) {
+    .tretaresia-npc-hero {
+        grid-template-columns: 92px minmax(0, 1fr) !important;
+        gap: .65rem;
+    }
+
+    .tretaresia-npc-avatar {
+        width: 92px !important;
+        min-width: 92px;
+        aspect-ratio: 3 / 4;
+    }
+
+    .tretaresia-npc-hero .tretaresia-identity-chips {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tretaresia-npc-hero .tretaresia-identity-chips span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tretaresia-npc-info-grid .tretaresia-fact-list > div {
+        display: grid;
+        grid-template-columns: minmax(7.5rem, .42fr) minmax(0, 1fr);
+        gap: .55rem;
+    }
+
+    .tretaresia-npc-info-grid .tretaresia-fact-list dd {
+        text-align: start;
+    }
+}
+
+@media (max-width: 390px) {
+    .tretaresia-npc-info-grid .tretaresia-fact-list > div {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
 .tretaresia-map-control-panel {
     isolation: auto;
     gap: 0;
