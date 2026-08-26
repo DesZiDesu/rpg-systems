@@ -737,6 +737,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     surfaceColor: '#040404',
     glassOpacity: 86,
     glowStrength: 38,
+    auraColor: '#6f8fe8',
     density: 'compact',
     eventNotifications: true,
     notificationDuration: 6000,
@@ -755,7 +756,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.25.0';
+const LAUNCHER_BIND_VERSION = '0.26.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -770,6 +771,7 @@ let activeQuestSection = 'active';
 let characterLifeSkillSyncTimer = null;
 let characterLifeCompatibilityTimer = null;
 let characterLifeCompatibilityOptions = { save: false };
+let auraColorSettingTimer = 0;
 
 const TRANSLATIONS = {
     th: {
@@ -782,7 +784,7 @@ const TRANSLATIONS = {
         'Party & Guild': 'ปาร์ตี้และกิลด์', Household: 'ครอบครัว', 'Friendly NPCs': 'NPC ฝ่ายมิตร', 'Choose a friendly NPC': 'เลือก NPC ฝ่ายมิตร', Member: 'สมาชิก', party: 'ปาร์ตี้', guilds: 'กิลด์',
         'Waiting for chat': 'กำลังรอแชต', 'Sync latest turn': 'ซิงก์เหตุการณ์ล่าสุด', 'System interface': 'ข้อมูลระบบ',
         'Current persona': 'ตัวตนปัจจุบัน', 'Guild rank': 'อันดับกิลด์', 'Vital status': 'สถานะพลังชีวิต', Identity: 'ข้อมูลส่วนตัว',
-        Health: 'พลังชีวิต', Mana: 'มานา', 'Aura / Mana': 'ออร่า / มานา', Stamina: 'พละกำลัง', Race: 'เผ่าพันธุ์', Age: 'อายุ', Guild: 'กิลด์', Party: 'ปาร์ตี้',
+        Health: 'พลังชีวิต', Mana: 'มานา', 'Aura / Mana': 'ออร่า / มานา', Stamina: 'พละกำลัง', Hunger: 'ความอิ่ม', Thirst: 'ความชุ่มชื้น', 'Aura color': 'สีออร่า', Boundless: 'ไร้ขีดจำกัด', Race: 'เผ่าพันธุ์', Age: 'อายุ', Guild: 'กิลด์', Party: 'ปาร์ตี้',
         Profession: 'อาชีพ', 'Power type': 'ประเภทพลัง', 'Origin skill': 'สกิลกำเนิด',
         'Current region': 'ภูมิภาคปัจจุบัน', 'Exact place': 'สถานที่ปัจจุบัน', 'Edit status': 'แก้ไขสถานะ', Name: 'ชื่อ', Title: 'ฉายา',
         Condition: 'สภาพร่างกาย', Level: 'เลเวล', 'Day phase': 'ช่วงเวลา', 'World time': 'เวลาโลก', 'World day': 'วันที่', 'Zone type': 'ประเภทเขต',
@@ -809,11 +811,13 @@ const TRANSLATIONS = {
         'Recognized guild classification': 'ระดับที่กิลด์รับรอง', 'Magic mastery': 'ความชำนาญเวทมนตร์', 'Sword mastery': 'ความชำนาญดาบ', Experience: 'ค่าประสบการณ์', Reputation: 'ชื่อเสียง',
         Gold: 'เหรียญทอง', Silver: 'เหรียญเงิน', Copper: 'เหรียญทองแดง', 'Gold coins': 'เหรียญทอง', 'Silver coins': 'เหรียญเงิน', 'Copper coins': 'เหรียญทองแดง',
         'Transaction history': 'ประวัติธุรกรรม', 'No transactions recorded yet.': 'ยังไม่มีธุรกรรม', 'Balance after': 'ยอดคงเหลือหลังรายการ',
+        'Inventory Logs': 'ประวัติคลังสิ่งของ', 'Item changes': 'การเปลี่ยนแปลงไอเทม', 'No inventory changes recorded yet.': 'ยังไม่มีการเปลี่ยนแปลงไอเทม',
+        Journal: 'บันทึกระบบ', 'System history': 'ประวัติระบบ', 'No journal entries yet.': 'ยังไม่มีบันทึกระบบ', 'State updated': 'อัปเดตข้อมูลแล้ว',
         'Journey Logs': 'บันทึกการเดินทาง', 'Story milestones': 'หมุดหมายเรื่องราว', 'No journey logs yet.': 'ยังไม่มีบันทึกการเดินทาง',
         'Add journey log': 'เพิ่มบันทึก', 'Edit log': 'แก้ไขบันทึก', 'Delete log': 'ลบบันทึก', 'Save log': 'บันทึก', 'What happened': 'เกิดอะไรขึ้น', 'Journey log saved.': 'บันทึกการเดินทางแล้ว',
         'Edit progression': 'แก้ไขความก้าวหน้า', 'Adventurer rank': 'อันดับนักผจญภัย',
         'Magic rank': 'ระดับเวทมนตร์', 'Sword rank': 'ระดับดาบ', 'EXP to next level': 'EXP สำหรับเลเวลถัดไป', 'Save progression': 'บันทึกความก้าวหน้า',
-        'Tretaresia World Atlas': 'แผนที่โลก Tretaresia', 'Present World': 'โลกปัจจุบัน', 'Present Era': 'ยุคปัจจุบัน', 'Alternate Present World TRETARESIA': 'โลกปัจจุบันคู่ขนาน TRETARESIA', 'Alternate Present Era': 'ยุคปัจจุบันคู่ขนาน', 'World map': 'แผนที่โลก', 'Atlas browsing mode': 'โหมดดูแผนที่', 'Travel becomes available when the story enters this world.': 'จะเดินทางในแผนที่นี้ได้เมื่อเนื้อเรื่องเข้าสู่โลกนี้', World: 'โลก', Era: 'ยุค',
+        'Tretaresia World Atlas': 'แผนที่โลก Tretaresia', 'Present World': 'โลกปัจจุบัน', 'Present Era': 'ยุคปัจจุบัน', 'Alternate Present World TRETARESIA': 'โลกปัจจุบันคู่ขนาน TRETARESIA', 'Alternate Present Era': 'ยุคปัจจุบันคู่ขนาน', 'World map': 'แผนที่โลก', 'Atlas browsing mode': 'โหมดดูแผนที่', 'Travel becomes available when the story enters this world.': 'จะเดินทางในแผนที่นี้ได้เมื่อเนื้อเรื่องเข้าสู่โลกนี้', World: 'โลก', Era: 'ยุค', 'Character positions': 'ตำแหน่งตัวละคร', You: 'คุณ', 'Unknown coordinates': 'ไม่ทราบพิกัด', 'No Character Life positions yet.': 'ยังไม่มีตำแหน่งจาก Character Life',
         'Map lighting': 'ช่วงเวลาของแผนที่', 'Day map': 'แผนที่กลางวัน', 'Night map': 'แผนที่กลางคืน', 'Selected location': 'สถานที่ที่เลือก', Region: 'ภูมิภาค', Discovery: 'การค้นพบ', Marker: 'หมุด',
         Journey: 'การเดินทาง', Origin: 'ต้นทาง', 'Travel route': 'เส้นทางเดินทาง', 'Remaining travel': 'เวลาที่เหลือ', days: 'วัน', 'Estimated travel days': 'จำนวนวันเดินทางโดยประมาณ', 'Begin journey': 'เริ่มออกเดินทาง',
         'Currency / region': 'สกุลเงิน / ภูมิภาค', 'High denomination': 'หน่วยมูลค่าสูง', 'Standard denomination': 'หน่วยมาตรฐาน', 'Fractional denomination': 'หน่วยย่อย',
@@ -911,6 +915,7 @@ let npcPortraitRenderToken = 0;
 let npcEditorObjectUrl = '';
 const npcPortraitObjectUrls = new Map();
 let characterLifeMapMarkerCache = null;
+const mapPortraitCache = new Map();
 let activityHideTimer = null;
 let activityState = { mode: 'ready', label: 'Ready', detail: '', visible: false };
 let pendingComposerDraft = null;
@@ -1016,6 +1021,8 @@ function defaultState() {
             condition: 'Stable', level: 1, powerType: 'Aura', originSkill: 'Unknown / Undiscovered',
             portraitView: { desktop: { x: 50, y: 50, zoom: 1 }, mobile: { x: 50, y: 50, zoom: 1 } },
             hp: { current: 100, max: 100 }, mp: { current: 100, max: 100 }, stamina: { current: 100, max: 100 },
+            survival: { hunger: 100, thirst: 100 },
+            aura: { color: '#6f8fe8', infinite: false },
             fitness: { lungCapacity: 100, aerobicSessions: 0, lastTrainingMessage: '' },
         },
         world: { ...WORLD_ATLAS },
@@ -1034,8 +1041,10 @@ function defaultState() {
         },
         scene: { position: 'Unknown', weather: 'Unknown', temperature: null },
         sceneMap: { activeMapId: '', activeFloorId: '', playerRoomId: '', maps: [] },
-        inventory: [{ id: uid(), name: "Traveler's Clothes", quantity: 1, category: 'Equipment', description: '' }],
+        inventory: [],
+        inventoryLogs: [],
         skills: [],
+        characterLifeMapActors: [],
         proficiencies: { magic, sword, customMagic: [], customSword: [], techniques: [] },
         quests: [],
         npcs: [],
@@ -1046,6 +1055,7 @@ function defaultState() {
         journal: [],
         transactions: [],
         journeyLogs: [],
+        onboarding: { loadoutSeeded: false, characterMapSeeded: false },
         syncCursor: { user: null, assistant: null },
         updatedAt: null,
         updateSource: 'initial',
@@ -1066,7 +1076,7 @@ function getSettings() {
     if (!['hidden', 'visible', 'draft'].includes(settings.interactionMode)) settings.interactionMode = DEFAULT_SETTINGS.interactionMode;
     if (!['full', 'compact', 'off'].includes(settings.activityIndicator)) settings.activityIndicator = DEFAULT_SETTINGS.activityIndicator;
     if (!['compact', 'comfortable'].includes(settings.density)) settings.density = DEFAULT_SETTINGS.density;
-    for (const key of ['accentColor', 'accentAltColor', 'inkColor', 'surfaceColor']) {
+    for (const key of ['accentColor', 'accentAltColor', 'inkColor', 'surfaceColor', 'auraColor']) {
         if (!/^#[0-9a-f]{6}$/i.test(settings[key])) settings[key] = DEFAULT_SETTINGS[key];
     }
     if (settings.themePreset !== 'custom' && !Object.hasOwn(COLOR_PRESETS, settings.themePreset)) settings.themePreset = DEFAULT_SETTINGS.themePreset;
@@ -1117,6 +1127,47 @@ function recordExtensionRequest(kind, reason) {
 function meter(value, fallback) {
     const max = number(value?.max, fallback.max, 1, 999999);
     return { current: number(value?.current, fallback.current, 0, max), max };
+}
+
+function survivalMeter(value, fallback = 100) {
+    return number(value, fallback, 0, 100);
+}
+
+function auraColor(value, fallback = '#6f8fe8') {
+    const candidate = text(value, fallback, 20);
+    return /^#[0-9a-f]{6}$/i.test(candidate) ? candidate.toLowerCase() : fallback;
+}
+
+function inventoryLogEntry(value) {
+    if (!value || typeof value !== 'object') return null;
+    const name = text(value.name, '', 140);
+    const delta = number(value.delta, 0, -99999, 99999);
+    if (!name || !delta) return null;
+    return {
+        id: text(value.id, uid(), 100), name, delta,
+        quantity: number(value.quantity, 0, 0, 99999),
+        reason: text(value.reason, delta > 0 ? 'Item acquired' : 'Item removed', 240),
+        source: text(value.source, 'roleplay', 80),
+        at: text(value.at, new Date().toISOString(), 60),
+    };
+}
+
+function characterLifeMapActor(value, fallback = {}) {
+    if (!value || typeof value !== 'object') return null;
+    const name = text(value.name, text(fallback.name, '', 120), 120);
+    if (!name) return null;
+    return {
+        id: text(value.id, text(fallback.id, `character-map-${shortHash(name)}`, 100), 100),
+        characterLifeId: text(value.characterLifeId, text(fallback.characterLifeId, '', 120), 120),
+        characterLifeScope: 'character',
+        name,
+        location: text(value.location, text(fallback.location, 'Unknown', 200), 200),
+        worldId: WORLD_ATLASES[value.worldId] ? value.worldId : WORLD_ATLASES[fallback.worldId] ? fallback.worldId : WORLD_ATLAS.id,
+        mapX: optionalNumber(value.mapX, optionalNumber(fallback.mapX, null, 0, WORLD_MAP_WIDTH), 0, WORLD_MAP_WIDTH),
+        mapY: optionalNumber(value.mapY, optionalNumber(fallback.mapY, null, 0, WORLD_MAP_HEIGHT), 0, WORLD_MAP_HEIGHT),
+        portraitId: text(value.portraitId, text(fallback.portraitId, '', 180), 180),
+        updatedAt: text(value.updatedAt, new Date().toISOString(), 60),
+    };
 }
 
 function item(value, fallbackCategory = 'Other') {
@@ -1189,6 +1240,26 @@ function appendCurrencyTransaction(state, amounts, reason, source = 'roleplay', 
     state.transactions ||= [];
     state.transactions = [...state.transactions, entry].slice(-250);
     return entry;
+}
+
+function recordInventoryDiff(state, previous, source = 'roleplay') {
+    const before = new Map((previous?.inventory || []).map(entry => [entry.id || entry.name.toLocaleLowerCase(), entry]));
+    const after = new Map((state?.inventory || []).map(entry => [entry.id || entry.name.toLocaleLowerCase(), entry]));
+    const keys = new Set([...before.keys(), ...after.keys()]);
+    const additions = [];
+    for (const key of keys) {
+        const oldEntry = before.get(key);
+        const nextEntry = after.get(key);
+        const delta = number(nextEntry?.quantity, 0, 0, 99999) - number(oldEntry?.quantity, 0, 0, 99999);
+        if (!delta) continue;
+        const name = nextEntry?.name || oldEntry?.name;
+        const entry = inventoryLogEntry({
+            name, delta, quantity: nextEntry?.quantity || 0, source,
+            reason: delta > 0 ? `${name} added to inventory` : `${name} removed from inventory`,
+        });
+        if (entry) additions.push(entry);
+    }
+    if (additions.length) state.inventoryLogs = [...(state.inventoryLogs || []), ...additions].slice(-250);
 }
 
 function currencyDelta(before, after) {
@@ -1639,6 +1710,14 @@ function normalize(candidate, base = defaultState()) {
         level: number(player.level, result.player.level, 1, 9999),
         hp: meter(player.hp, result.player.hp), mp: meter(player.mp, result.player.mp),
         stamina: meter(player.stamina, result.player.stamina),
+        survival: {
+            hunger: survivalMeter(player.survival?.hunger, result.player.survival.hunger),
+            thirst: survivalMeter(player.survival?.thirst, result.player.survival.thirst),
+        },
+        aura: {
+            color: auraColor(player.aura?.color, result.player.aura.color),
+            infinite: Boolean(player.aura?.infinite ?? result.player.aura.infinite),
+        },
         fitness: {
             lungCapacity: number(player.fitness?.lungCapacity, result.player.fitness.lungCapacity, 1, 999999),
             aerobicSessions: number(player.fitness?.aerobicSessions, result.player.fitness.aerobicSessions, 0, 999999),
@@ -1735,10 +1814,19 @@ function normalize(candidate, base = defaultState()) {
         temperature: optionalNumber(scene.temperature, result.scene.temperature, -1000, 1000),
     };
     result.sceneMap = normalizeSceneMap(source.sceneMap, result.sceneMap);
-    if (Array.isArray(source.inventory)) result.inventory = source.inventory.map(item).filter(Boolean).slice(0, 200);
+    if (Array.isArray(source.inventory)) result.inventory = source.inventory.map(item).filter(Boolean)
+        .filter(entry => !/^traveler['’]s clothes$/i.test(entry.name.trim())).slice(0, 200);
+    if (Array.isArray(source.inventoryLogs)) result.inventoryLogs = source.inventoryLogs.map(inventoryLogEntry).filter(Boolean).slice(-250);
     if (Array.isArray(source.transactions)) result.transactions = source.transactions.map(currencyTransaction).filter(Boolean).slice(-250);
     if (Array.isArray(source.journeyLogs)) result.journeyLogs = source.journeyLogs.map(journeyLogEntry).filter(Boolean).slice(-100);
     if (Array.isArray(source.skills)) result.skills = source.skills.map(skill).filter(Boolean).slice(0, 100);
+    if (Array.isArray(source.characterLifeMapActors)) result.characterLifeMapActors = source.characterLifeMapActors
+        .map(value => characterLifeMapActor(value)).filter(Boolean).slice(0, 80);
+    const onboarding = source.onboarding && typeof source.onboarding === 'object' ? source.onboarding : {};
+    result.onboarding = {
+        loadoutSeeded: Object.hasOwn(onboarding, 'loadoutSeeded') ? Boolean(onboarding.loadoutSeeded) : Boolean(result.inventory.length || result.skills.length),
+        characterMapSeeded: Boolean(onboarding.characterMapSeeded),
+    };
     const proficiencies = source.proficiencies && typeof source.proficiencies === 'object' ? source.proficiencies : {};
     result.proficiencies.magic = Object.fromEntries(MAGIC_DISCIPLINES.map(entry => [
         entry.id, number(proficiencies.magic?.[entry.id], result.proficiencies.magic[entry.id], 0, 100),
@@ -2044,12 +2132,21 @@ async function persistState(candidate, source = 'manual') {
     state = normalize(state, previous);
     syncCharacterLifeLinks(state);
     resolveLevelProgression(state);
+    recordInventoryDiff(state, previous, source);
+    state = normalize(state, previous);
     if (state.quests.some(entry => entry.status === 'Completed'
         && previous.quests.find(candidate => candidate.id === entry.id)?.status !== 'Completed')) activeQuestSection = 'completed';
     else if (state.quests.some(entry => entry.status === 'Failed'
         && previous.quests.find(candidate => candidate.id === entry.id)?.status !== 'Failed')) activeQuestSection = 'failed';
     state.updatedAt = new Date().toISOString();
     state.updateSource = source;
+    const settings = getSettings();
+    if (settings.auraColor !== state.player.aura.color) {
+        settings.auraColor = state.player.aura.color;
+        context.saveSettingsDebounced?.();
+        const auraControl = document.getElementById('tretaresia-rpg-aura-color');
+        if (auraControl instanceof HTMLInputElement) auraControl.value = state.player.aura.color;
+    }
     if (storyWorldId(state) !== storyWorldId(previous)) {
         mapAtlasSelection = '';
         mapSelectionId = null;
@@ -2284,6 +2381,7 @@ function aiState(state, { privateTracker = false } = {}) {
 
 function roleplayState(state) {
     const friendly = friendlyNpcs(state);
+    const characterLifeCharacters = characterLifeCharacterReferences();
     return {
         sceneContext: {
             world: { id: state.world.id, name: state.world.name, era: state.world.era },
@@ -2294,6 +2392,8 @@ function roleplayState(state) {
                 place: state.location.place,
                 detail: state.location.detail,
                 heading: state.location.heading,
+                mapX: state.location.mapX,
+                mapY: state.location.mapY,
             },
             travel: {
                 status: state.travel.status,
@@ -2321,6 +2421,9 @@ function roleplayState(state) {
                 hp: state.player.hp,
                 auraOrMana: state.player.mp,
                 stamina: state.player.stamina,
+                hunger: state.player.survival.hunger,
+                thirst: state.player.survival.thirst,
+                aura: state.player.aura,
                 fitness: {
                     lungCapacity: state.player.fitness.lungCapacity,
                     aerobicSessions: state.player.fitness.aerobicSessions,
@@ -2328,6 +2431,9 @@ function roleplayState(state) {
             },
             inventory: state.inventory.slice(-20).map(({ id, name }) => [id, name]),
             skills: state.skills.slice(-16).map(({ id, name }) => [id, name]),
+            onboarding: state.onboarding,
+            characterLifeCharacters,
+            characterLifeMapActors: state.characterLifeMapActors,
             quests: state.quests.filter(entry => !['Completed', 'Failed'].includes(entry.status)).slice(-12).map(({ id, name, type, status }) => [id, name, type, status]),
             questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
             npcs: friendly.slice(-24).map(({ id, name }) => [id, name]),
@@ -2376,12 +2482,15 @@ function patchInstructions() {
     return [
         'TRETARESIA PATCH PROTOCOL — use the SAME normal reply; never start another generation. Append one invisible comment only when confirmed state changed:',
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
-        'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
+        'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. EVERY completed normal reply must append exactly one comment; use {"ops":[],"summary":"No confirmed changes."} when nothing beyond the locally tracked turn clock changed. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
-        'Check affected systems on every reply: player condition/resources/identity; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this one patch, not only scene fields.',
+        'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this one patch, not only scene fields.',
         'Resource and capacity rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; confirmed healing, treatment, food, sleep, or recovery may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower player.stamina.current; confirmed rest restores it. A power or spell with an established cost lowers player.mp.current; confirmed meditation, rest, absorption, or canon recovery restores it. Never spend or restore a resource merely because an action was planned. Capacity gains are gradual and require genuine repeated training or a breakthrough: aerobic/endurance training may raise player.fitness.lungCapacity and occasionally player.stamina.max; vitality conditioning may occasionally raise player.hp.max; mana/aura control training may occasionally raise player.mp.max. Do not raise a maximum on every casual use, and never refill current automatically just because its maximum increased. The local tracker may already deduct stamina and record aerobic capacity from the latest user message; preserve those current values and do not duplicate that same cost or gain in this patch.',
+        'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
+        'Aura mechanics: set player.aura.color to a #RRGGBB color when the user profile or role-play establishes the Aura/Mana color, and preserve it otherwise. The UI renders Divine Aura or Divine Mana as pure white with a flowing rainbow spectrum automatically. Set player.aura.infinite=true ONLY when the completed role-play explicitly confirms that the player has genuinely unlocked or possesses boundless/infinite/never-depleting Aura or Mana; never infer it from a high level, large maximum, settings, OOC requests, or a merely attempted unlock. While true, do not decrease player.mp.current and use the infinity display. Set it false only after an explicit loss, seal, or limitation in the story.',
+        'First-reply bootstrap: when onboarding.loadoutSeeded is false, the first completed normal reply after a real user message must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId, and when coordinates are absent choose a plausible stable point in the correct atlas from the profile/story, then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
@@ -2389,11 +2498,12 @@ function patchInstructions() {
         'Money: record every confirmed gain or expense immediately on progression.currency.gold/silver/copper with {"reason":"what the money came from or was spent on","category":"currency"}. Every currency op needs a specific reason so Transaction History can explain it. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
         'Inventory lifecycle: pick up, receive, buy, craft, or loot an item with ["inc","inventory",{"id":"stable-id","name":"Item","quantity":positive,"category":"...","description":"..."}]. Drink, eat, consume, use up, drop, give away, or sell it with the same operation and a negative quantity. If acquired and consumed in the same turn, emit the positive op followed by the negative op so the final count is correct. Do not decrement reusable tools, weapons, armor, keys, or equipment merely because they were used. Use upsert only to correct item metadata or set an exact known quantity; delete only when explicitly removed wholesale.',
         'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
-        'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Formless Aura is undetectable; Divine Mana only by Divine Mana; other powers normally require the same kind to sense. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
+        'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Mana is not easily detected: non-sensing characters perceive nothing and even sensing specialists normally notice only a faint presence, while explicitly godlike beings with major lore may be exceptional. Formless Aura is wholly undetectable. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
+        'Teleport and warp canon: teleportation/warp magic is inaccessible and most people believe it does not exist. Do not grant, teach, create, or casually use such a spell, item, skill, route, or world crossing unless the visible story explicitly establishes an extraordinary canon exception. A map browse or travel request is never such an exception.',
         'NPCs: upsert only relevant named friendly NPCs or confirmed changes; preserve npcIndex id. Hostile/enemy/foe/antagonist/villain/threat NPCs stay out of Codex and social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
         'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/accepted invite/leave/expulsion/create/dissolve/rank/marriage/partner/child/parent/guardian/family-role change must update this same patch. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first ["upsert","npcs",{"id":"lysa","name":"Lysa","relationship":"Ally"}], then the membership op. Guild member includes guildId or exact guildName. Household member includes npcId plus role; delete the same collection when a member leaves. Party is free. UI Guild creation already charges locally; a story-created Guild op charges the fee automatically and fails when unaffordable. Household is family, not a faction.',
-        'Travel/scene: journeys take days/months/years. The extension advances a conservative base clock as soon as each user role-play message is sent; preserve that newer time and add any further elapsed time confirmed by the completed reply. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates, new places use a consistent plausible point. Read both the latest user role-play action and your completed reply for movement, elapsed hours/days, stated percentages, delays, resumptions, reroutes, and arrival. Every reply that narratively advances an active journey must update worldClock day/time and remainingDays; never repeat stale travel values merely because no map UI button was pressed. The extension also applies a deterministic turn fallback and interpolates the player marker from stored endpoints, so preserve any newer/lower remainingDays already present, never move progress backwards, and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed continent/region/place/detail/heading/position/weather/temperature whenever they change; keep established values when the story stays in place and never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
+        'Travel/scene: journeys take days/months/years. The extension advances a conservative base clock as soon as each user role-play message is sent; preserve that newer time and add any further elapsed time confirmed by the completed reply. When a journey begins through chat, set travel status/origin/destination/route/totalDays/remainingDays and destinationX/destinationY/destinationContinent/destinationRegion/destinationPlace; known atlas names must use their exact coordinates, new places use a consistent plausible point. Read both the latest user role-play action and your completed reply for movement, elapsed hours/days, stated percentages, delays, resumptions, reroutes, and arrival. Every reply must re-evaluate the exact scene and world-map position; whenever movement or scene continuity changes, update location.mapX/mapY plus continent/region/place/detail/heading/position and the active journey values. Every reply that narratively advances an active journey must update worldClock day/time and remainingDays; never repeat stale travel values merely because no map UI button was pressed. The extension also applies a deterministic turn fallback and interpolates the player marker from stored endpoints, so preserve any newer/lower remainingDays already present, never move progress backwards, and never teleport to the destination early. On confirmed arrival set Arrived/0; the extension snaps location/Scene to destination and adds discovered. Track confirmed weather/temperature whenever they change; keep established values when the story stays in place and never invent weather. Keep local maps sparse and gradual; preserve locked maps. Rooms use x 0-100,y 0-70,width 8-70,height 7-50.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
     ].join('\n');
 }
@@ -2676,6 +2786,30 @@ function characterLifeMapMarkers(force = false) {
     }
 }
 
+function characterLifeCharacterReferences() {
+    const bridge = characterLifeBridge();
+    if (!bridge || typeof bridge.listMapMarkers !== 'function') return [];
+    try {
+        const markers = bridge.listMapMarkers({ includeHidden: true, includeDisabled: false, includeDead: false });
+        const records = typeof bridge.listNpcs === 'function' ? bridge.listNpcs({ includeDisabled: false, includeDead: false }) : [];
+        return (Array.isArray(markers) ? markers : []).filter(entry => entry?.scope === 'character').slice(0, 60).map(marker => {
+            const entry = (Array.isArray(records) ? records : []).find(value => value?.id === marker.id && value?.scope === 'character') || marker;
+            return {
+                id: text(marker.id, '', 120), scope: 'character', name: text(marker.name, '', 120),
+                aliases: Array.isArray(marker.aliases) ? marker.aliases.map(value => text(value, '', 120)).filter(Boolean).slice(0, 8) : [],
+                role: text(entry.role, '', 160), species: text(entry.species, '', 100), affiliation: text(entry.affiliation, '', 160),
+                relationshipToUser: text(entry.relationshipToUser, '', 160), currentState: text(marker.currentState || entry.currentState, '', 400),
+                location: text(marker.location || entry.location || entry.currentLocation, '', 200),
+                mapX: optionalNumber(marker.mapX, null, 0, WORLD_MAP_WIDTH), mapY: optionalNumber(marker.mapY, null, 0, WORLD_MAP_HEIGHT),
+                activeFormId: text(entry.activeFormId, '', 120),
+            };
+        }).filter(entry => entry.id && entry.name);
+    } catch (error) {
+        console.warn('[Tretaresia RPG] Character Life character reference lookup failed safely.', error);
+        return [];
+    }
+}
+
 function invalidateCharacterLifeMapMarkers() {
     characterLifeMapMarkerCache = null;
 }
@@ -2683,6 +2817,86 @@ function invalidateCharacterLifeMapMarkers() {
 function mapNpcIdentity(entry) {
     return [entry?.name, ...(Array.isArray(entry?.aliases) ? entry.aliases : [])]
         .map(value => text(value, '', 120).toLocaleLowerCase()).filter(Boolean);
+}
+
+function mergedCharacterLifeMapMarkers(state) {
+    const source = characterLifeMapMarkers();
+    const actors = Array.isArray(state.characterLifeMapActors) ? state.characterLifeMapActors : [];
+    const used = new Set();
+    const merged = source.map(marker => {
+        const actor = actors.find(entry => entry.characterLifeId === marker.id)
+            || actors.find(entry => entry.name.toLocaleLowerCase() === text(marker.name).toLocaleLowerCase());
+        if (actor) used.add(actor.id);
+        return actor ? { ...marker, ...actor, id: marker.id, scope: 'character', key: `character:${marker.id}`, mapVisible: true } : marker;
+    });
+    for (const actor of actors) {
+        if (used.has(actor.id)) continue;
+        merged.push({ ...actor, id: actor.characterLifeId || actor.id, scope: 'character', key: `character:${actor.characterLifeId || actor.id}`, mapVisible: true });
+    }
+    return merged;
+}
+
+function requestMapPortrait(key, query, directSource = '', directFrame = null) {
+    if (!key || mapPortraitCache.has(key)) return;
+    const record = { status: 'loading', image: new Image(), url: '', frame: null };
+    mapPortraitCache.set(key, record);
+    const load = (url, frame = null, owned = false) => {
+        if (!url) { record.status = 'empty'; return; }
+        record.url = url;
+        record.frame = frame;
+        record.owned = owned;
+        record.image.onload = () => { record.status = 'ready'; scheduleMapDraw(); };
+        record.image.onerror = () => { record.status = 'error'; };
+        record.image.src = url;
+    };
+    if (directSource) { load(directSource, directFrame); return; }
+    const bridge = characterLifeBridge();
+    if (!bridge?.portrait) { record.status = 'empty'; return; }
+    Promise.resolve(bridge.portrait(query)).then(result => {
+        if (!result) { record.status = 'empty'; return; }
+        const url = result.blob ? URL.createObjectURL(result.blob) : result.path || '';
+        load(url, result.frame || null, Boolean(result.blob));
+    }).catch(error => {
+        record.status = 'error';
+        console.warn('[Tretaresia RPG] Map portrait load failed safely.', error);
+    });
+}
+
+function clearMapPortraitCache() {
+    for (const record of mapPortraitCache.values()) if (record.owned && record.url) URL.revokeObjectURL(record.url);
+    mapPortraitCache.clear();
+}
+
+function drawMapAvatar(context, point, record, initial, size, fill, stroke, pixelRatio) {
+    context.save();
+    context.beginPath();
+    context.arc(point.x, point.y, size, 0, Math.PI * 2);
+    context.clip();
+    context.fillStyle = fill;
+    context.fillRect(point.x - size, point.y - size, size * 2, size * 2);
+    if (record?.status === 'ready') {
+        const image = record.image;
+        const scale = Math.max(size * 2 / image.naturalWidth, size * 2 / image.naturalHeight) * number(record.frame?.zoom, 1, 1, 4);
+        const width = image.naturalWidth * scale;
+        const height = image.naturalHeight * scale;
+        const focusX = number(record.frame?.x, 50, 0, 100) / 100;
+        const focusY = number(record.frame?.y, 50, 0, 100) / 100;
+        context.drawImage(image, point.x - width * focusX, point.y - height * focusY, width, height);
+    } else {
+        context.fillStyle = readableOn(fill);
+        context.font = `800 ${Math.max(8, size * .9)}px system-ui, sans-serif`;
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(initial || '?', point.x, point.y + .5 * pixelRatio);
+    }
+    context.restore();
+    context.save();
+    context.strokeStyle = stroke;
+    context.lineWidth = 2 * pixelRatio;
+    context.beginPath();
+    context.arc(point.x, point.y, size, 0, Math.PI * 2);
+    context.stroke();
+    context.restore();
 }
 
 function characterLifeSkillsForOwner(owner) {
@@ -3596,7 +3810,7 @@ function controlCenterMarkup() {
         '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>01</b><span><strong>' + html(tr('Palette')) + '</strong><small>' + html(tr('Fully customizable')) + '</small></span></div>' +
         '<label class="tretaresia-control-field full"><span>' + html(tr('Theme preset')) + '</span><select data-ui-setting="themePreset">' + presetOptions + '</select></label>' +
         '<div class="tretaresia-control-grid">' + colorField('Accent', 'accentColor') + colorField('Highlight', 'accentAltColor') +
-        colorField('Text', 'inkColor') + colorField('Surface', 'surfaceColor') + '</div>' +
+        colorField('Text', 'inkColor') + colorField('Surface', 'surfaceColor') + colorField('Aura / Mana', 'auraColor') + '</div>' +
         '<p class="tretaresia-control-note">' + html(tr('A preset overwrites all four colors. Adjust any swatch afterwards to make it your own.')) + '</p></section>' +
         '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>02</b><span><strong>' + html(tr('Interface')) + '</strong><small>' + html(tr('Visual controls')) + '</small></span></div>' +
         '<div class="tretaresia-control-grid">' +
@@ -3949,6 +4163,18 @@ function onInterfaceSettingChange(event) {
     }
     if (key === 'interactionMode') updateActionModeHelp();
     if (key === 'activityIndicator') syncActivityIndicator();
+    if (key === 'auraColor') scheduleAuraColorSetting();
+}
+
+function scheduleAuraColorSetting() {
+    clearTimeout(auraColorSettingTimer);
+    auraColorSettingTimer = setTimeout(() => {
+        const context = SillyTavern.getContext();
+        if (!context.getCurrentChatId?.()) return;
+        const state = clone(getState());
+        state.player.aura.color = getSettings().auraColor;
+        void persistState(state, 'aura-color-setting');
+    }, 120);
 }
 
 
@@ -4008,14 +4234,17 @@ const heading = (title, subtitle, icon) =>
         <h3>${html(tr(title))}</h3><p>${html(tr(subtitle))}</p></div><i class="${icon} tretaresia-heading-icon"></i></div>`;
 const empty = message => `<div class="tretaresia-empty-state"><i class="fa-regular fa-compass"></i><p>${html(tr(message))}</p></div>`;
 
-function meterView(label, value, icon, tone) {
-    const percent = Math.round(value.current / Math.max(1, value.max) * 100);
+function meterView(label, value, icon, tone, options = {}) {
+    const infinite = Boolean(options.infinite);
+    const percent = infinite ? 100 : Math.round(value.current / Math.max(1, value.max) * 100);
     const cappedPercent = Math.min(100, Math.max(0, percent));
-    return `<article class="tretaresia-vital tretaresia-vital-${tone}">
-        <div class="tretaresia-vital-line"><span><i class="${icon}"></i>${html(tr(label))}</span><strong>${value.current} <em>/ ${value.max}</em></strong></div>
-        <div class="tretaresia-vital-track" role="meter" aria-valuenow="${value.current}" aria-valuemax="${value.max}" aria-label="${html(tr(label))}">
+    const style = options.color ? ` style="--vital:${html(auraColor(options.color))}"` : '';
+    const classes = `${options.divine ? ' is-divine' : ''}${infinite ? ' is-infinite' : ''}`;
+    return `<article class="tretaresia-vital tretaresia-vital-${tone}${classes}"${style}>
+        <div class="tretaresia-vital-line"><span><i class="${icon}"></i>${html(tr(label))}</span><strong>${infinite ? '&infin;' : value.current} <em>${infinite ? html(tr('Boundless')) : `/ ${value.max}`}</em></strong></div>
+        <div class="tretaresia-vital-track" role="meter" aria-valuenow="${infinite ? value.max : value.current}" aria-valuemax="${value.max}" aria-label="${html(tr(label))}">
             <span style="width:${cappedPercent}%"></span><i style="left:${cappedPercent}%"></i>
-        </div><small>${percent}%</small></article>`;
+        </div><small>${infinite ? '&infin;' : `${percent}%`}</small></article>`;
 }
 
 function renderPanel(id, panel, state) {
@@ -4059,6 +4288,7 @@ function renderStatus(panel, state) {
     const persona = currentPersonaName(state);
     const expPercent = Math.min(100, Math.round(state.progression.experience / Math.max(1, state.progression.experienceMax) * 100));
     const initial = html((persona || '?').charAt(0).toUpperCase());
+    const divineAura = /\bdivine\s+(?:aura|mana)\b|(?:ออร่า|มานา).*(?:เทพ|ศักดิ์สิทธิ์)|(?:เทพ|ศักดิ์สิทธิ์).*(?:ออร่า|มานา)/i.test(state.player.powerType);
     panel.innerHTML = `
         <section class="tretaresia-character-hero"><button class="tretaresia-avatar" type="button" data-action="${state.player.portrait ? 'open-portrait-editor' : 'choose-portrait'}" aria-label="${html(tr(state.player.portrait ? 'Adjust portrait' : 'Choose profile picture'))}">
             <span class="tretaresia-magic-ring ring-one"></span><span class="tretaresia-magic-ring ring-two"></span>
@@ -4076,8 +4306,10 @@ function renderStatus(panel, state) {
             <article class="tretaresia-card tretaresia-vitals-card"><div class="tretaresia-card-title"><span>${html(tr('Vital status'))}</span>
                 <em><i class="fa-solid fa-wave-square"></i> ${html(state.player.condition)}</em></div><div class="tretaresia-vitals-grid">
                 ${meterView('Health', state.player.hp, 'fa-solid fa-heart', 'health')}
-                ${meterView('Aura / Mana', state.player.mp, 'fa-solid fa-fire-flame-curved', 'mana')}
-                ${meterView('Stamina', state.player.stamina, 'fa-solid fa-bolt', 'stamina')}</div>
+                ${meterView('Aura / Mana', state.player.mp, 'fa-solid fa-fire-flame-curved', 'mana', { color: state.player.aura.color, infinite: state.player.aura.infinite, divine: divineAura })}
+                ${meterView('Stamina', state.player.stamina, 'fa-solid fa-bolt', 'stamina')}
+                ${meterView('Hunger', { current: state.player.survival.hunger, max: 100 }, 'fa-solid fa-drumstick-bite', 'hunger')}
+                ${meterView('Thirst', { current: state.player.survival.thirst, max: 100 }, 'fa-solid fa-droplet', 'thirst')}</div>
                 <div class="tretaresia-fitness-capacity"><span><i class="fa-solid fa-lungs"></i>${html(tr('Lung capacity'))}</span>
                     <strong>${state.player.fitness.lungCapacity.toLocaleString()} <small>CAP</small></strong><em>${state.player.fitness.aerobicSessions.toLocaleString()} ${html(tr('aerobic sessions'))}</em></div></article>
             <article class="tretaresia-card"><div class="tretaresia-card-title"><span>${html(tr('Identity'))}</span>
@@ -4088,6 +4320,7 @@ function renderStatus(panel, state) {
                 <div><dt>${html(tr('Party'))}</dt><dd>${html(state.player.party)}</dd></div>
                 <div><dt>${html(tr('Profession'))}</dt><dd>${html(state.player.profession)}</dd></div>
                 <div><dt>${html(tr('Power type'))}</dt><dd>${html(state.player.powerType)}</dd></div>
+                <div><dt>${html(tr('Aura color'))}</dt><dd><span class="tretaresia-aura-swatch" style="--aura-color:${html(state.player.aura.color)}"></span>${html(state.player.aura.color)}${state.player.aura.infinite ? ` · ${html(tr('Boundless'))}` : ''}</dd></div>
                 <div><dt>${html(tr('Origin skill'))}</dt><dd>${html(state.player.originSkill)}</dd></div>
                 <div><dt>${html(tr('Condition'))}</dt><dd>${html(state.player.condition)}</dd></div>
                 <div><dt>${html(tr('Level'))}</dt><dd>${state.player.level}</dd></div></dl></article>
@@ -4102,6 +4335,8 @@ function renderStatus(panel, state) {
                 ${input('HP', 'hpCurrent', state.player.hp.current, 'number', 'min="0"')}${input('HP max', 'hpMax', state.player.hp.max, 'number', 'min="1"')}
                 ${input('MP', 'mpCurrent', state.player.mp.current, 'number', 'min="0"')}${input('MP max', 'mpMax', state.player.mp.max, 'number', 'min="1"')}
                 ${input('Stamina', 'staminaCurrent', state.player.stamina.current, 'number', 'min="0"')}${input('Stamina max', 'staminaMax', state.player.stamina.max, 'number', 'min="1"')}
+                ${input('Hunger', 'hunger', state.player.survival.hunger, 'number', 'min="0" max="100"')}${input('Thirst', 'thirst', state.player.survival.thirst, 'number', 'min="0" max="100"')}
+                ${input('Aura color', 'auraColor', state.player.aura.color, 'color')}
                 ${input('Lung capacity', 'lungCapacity', state.player.fitness.lungCapacity, 'number', 'min="1"')}
                 <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save status'))}</button>
             </form></details>`;
@@ -4254,11 +4489,11 @@ function setupSceneMapInteractions(panel, state) {
 
 function renderJourneyLogs(state) {
     const entries = [...state.journeyLogs].reverse();
-    return `<section class="tretaresia-card tretaresia-journey-logs">
-        <header><div><span><i class="fa-solid fa-book-open"></i> ${html(tr('Journey Logs'))}</span><small>${html(tr('Story milestones'))} · ${entries.length}</small></div>
-            <details class="tretaresia-journey-add"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add journey log'))}</summary>
+    return `<details class="tretaresia-card tretaresia-journey-logs tretaresia-log-disclosure">
+        <summary><span><i class="fa-solid fa-book-open"></i><b>${html(tr('Journey Logs'))}</b><small>${html(tr('Story milestones'))}</small></span><em>${entries.length}</em><i class="fa-solid fa-chevron-down"></i></summary>
+        <div class="tretaresia-log-body"><details class="tretaresia-journey-add"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add journey log'))}</summary>
                 <form data-form="journey-log-add">${textareaField('What happened', 'text', '', 3, 'maxlength="500" required')}
-                    <button class="tretaresia-primary-button" type="submit">${html(tr('Save log'))}</button></form></details></header>
+                    <button class="tretaresia-primary-button" type="submit">${html(tr('Save log'))}</button></form></details>
         <div class="tretaresia-journey-list">${entries.length ? entries.map(entry => `
             <article class="tretaresia-journey-entry"><div class="tretaresia-journey-mark"><i class="fa-solid fa-diamond"></i></div>
                 <div class="tretaresia-journey-copy"><small>${html(entry.day || '')}${entry.place ? ` · ${html(entry.place)}` : ''}${entry.at ? ` · ${html(formatDate(entry.at))}` : ''}</small><p>${html(entry.text)}</p></div>
@@ -4267,8 +4502,8 @@ function renderJourneyLogs(state) {
                         ${textareaField('What happened', 'text', entry.text, 3, 'maxlength="500" required')}
                         <button class="tretaresia-primary-button" type="submit">${html(tr('Save log'))}</button></form></details>
                     <button type="button" data-action="delete-journey-log" data-id="${html(entry.id)}" title="${html(tr('Delete log'))}"><i class="fa-solid fa-trash"></i></button></div>
-            </article>`).join('') : `<p class="tretaresia-journey-empty">${html(tr('No journey logs yet.'))}</p>`}</div>
-    </section>`;
+            </article>`).join('') : `<p class="tretaresia-journey-empty">${html(tr('No journey logs yet.'))}</p>`}</div></div>
+    </details>`;
 }
 
 function renderScene(panel, state) {
@@ -4355,6 +4590,18 @@ function closePortraitEditor() {
     npcEditorObjectUrl = '';
 }
 
+function renderInventoryLogs(state) {
+    const entries = [...state.inventoryLogs].reverse();
+    return `<details class="tretaresia-card tretaresia-log-disclosure tretaresia-inventory-logs"><summary><span><i class="fa-solid fa-boxes-stacked"></i><b>${html(tr('Inventory Logs'))}</b><small>${html(tr('Item changes'))}</small></span><em>${entries.length}</em><i class="fa-solid fa-chevron-down"></i></summary>
+        <div class="tretaresia-log-body tretaresia-compact-log">${entries.length ? entries.map(entry => `<article><i class="fa-solid fa-${entry.delta > 0 ? 'plus' : 'minus'}"></i><span><strong>${html(entry.name)}</strong><small>${html(entry.reason)} · ${html(formatDate(entry.at))}</small></span><b>${entry.delta > 0 ? '+' : ''}${entry.delta}</b></article>`).join('') : `<p>${html(tr('No inventory changes recorded yet.'))}</p>`}</div></details>`;
+}
+
+function renderJournal(state) {
+    const entries = [...state.journal].reverse();
+    return `<details class="tretaresia-card tretaresia-log-disclosure tretaresia-journal-log"><summary><span><i class="fa-solid fa-book"></i><b>${html(tr('Journal'))}</b><small>${html(tr('System history'))}</small></span><em>${entries.length}</em><i class="fa-solid fa-chevron-down"></i></summary>
+        <div class="tretaresia-log-body tretaresia-compact-log">${entries.length ? entries.map(entry => `<article><i class="fa-solid fa-feather-pointed"></i><span><strong>${html(entry.text || entry.summary || tr('State updated'))}</strong><small>${html(formatDate(entry.at))}</small></span></article>`).join('') : `<p>${html(tr('No journal entries yet.'))}</p>`}</div></details>`;
+}
+
 function renderInventory(panel, state) {
     if (!panel) return;
     panel.innerHTML = `${heading('Inventory', `${state.inventory.length} item types`, 'fa-solid fa-box-open')}
@@ -4367,7 +4614,7 @@ function renderInventory(panel, state) {
             <form data-form="inventory" class="tretaresia-form-grid">${input('Item name', 'name', '')}
                 ${input('Quantity', 'quantity', 1, 'number', 'min="0"')}${input('Category', 'category', 'Other')}
                 ${input('Description', 'description', '')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add item'))}</button>
-            </form></details>`;
+            </form></details>${renderInventoryLogs(state)}${renderJournal(state)}`;
 }
 
 function proficiencyRank(value) {
@@ -4520,10 +4767,10 @@ function transactionAmounts(entry) {
 
 function renderTransactions(state) {
     const entries = [...state.transactions].reverse();
-    return `<section class="tretaresia-card tretaresia-transactions"><header><div><span><i class="fa-solid fa-receipt"></i> ${html(tr('Transaction history'))}</span><small>${html(state.progression.currency.name)}</small></div><b>${entries.length}</b></header>
-        <div>${entries.length ? entries.map(entry => `<article><div><strong>${html(entry.reason)}</strong><small>${html(formatDate(entry.at))} · ${html(entry.source)}</small></div>
+    return `<details class="tretaresia-card tretaresia-transactions tretaresia-log-disclosure"><summary><span><i class="fa-solid fa-receipt"></i><b>${html(tr('Transaction history'))}</b><small>${html(state.progression.currency.name)}</small></span><em>${entries.length}</em><i class="fa-solid fa-chevron-down"></i></summary>
+        <div class="tretaresia-log-body">${entries.length ? entries.map(entry => `<article><div><strong>${html(entry.reason)}</strong><small>${html(formatDate(entry.at))} · ${html(entry.source)}</small></div>
             <div class="tretaresia-transaction-amounts">${transactionAmounts(entry)}<small>${html(tr('Balance after'))}: ${entry.balance.gold} / ${entry.balance.silver} / ${entry.balance.copper}</small></div></article>`).join('')
-            : `<p class="tretaresia-transaction-empty">${html(tr('No transactions recorded yet.'))}</p>`}</div></section>`;
+            : `<p class="tretaresia-transaction-empty">${html(tr('No transactions recorded yet.'))}</p>`}</div></details>`;
 }
 
 function renderRank(panel, state) {
@@ -4560,6 +4807,28 @@ function renderNpcMapControls(state) {
     return `<section class="tretaresia-npc-map-controls"><header><span><i class="fa-solid fa-person-walking"></i>${html(tr('Living NPCs'))}</span>
         <button type="button" data-action="toggle-npc-markers" aria-pressed="${settings.showNpcMapMarkers}" title="${html(tr(settings.showNpcMapMarkers ? 'Hide NPC markers' : 'Show NPC markers'))}"><i class="fa-solid fa-${settings.showNpcMapMarkers ? 'eye' : 'eye-slash'}"></i></button></header>
         <div>${rows}</div></section>`;
+}
+
+function mapPresenceAvatar(key, name, directSource = '', directFrame = null) {
+    if (directSource) requestMapPortrait(key, null, directSource, directFrame);
+    const record = mapPortraitCache.get(key);
+    if (record && directFrame) record.frame = directFrame;
+    return record?.status === 'ready' && record.url
+        ? `<span class="tretaresia-map-presence-avatar"><img src="${html(record.url)}" alt="" style="object-position:${number(record.frame?.x, 50, 0, 100)}% ${number(record.frame?.y, 50, 0, 100)}%;transform:scale(${number(record.frame?.zoom, 1, 1, 4)})"></span>`
+        : `<span class="tretaresia-map-presence-avatar">${html(text(name, '?', 120).charAt(0).toUpperCase() || '?')}</span>`;
+}
+
+function renderMapPresenceRoster(state, atlas) {
+    const playerPoint = currentMapPoint(state);
+    const playerName = currentPersonaName(state);
+    const characters = mergedCharacterLifeMapMarkers(state).filter(entry => entry.scope === 'character' && (!entry.worldId || entry.worldId === atlas.id));
+    const rows = characters.map(entry => {
+        const point = npcMapPoint(entry, state);
+        requestMapPortrait(`character:${entry.id}`, { id: entry.id, scope: 'character', name: entry.name });
+        return `<article>${mapPresenceAvatar(`character:${entry.id}`, entry.name)}<span><strong>${html(entry.name)}</strong><small>${html(entry.location || entry.currentState || tr('Unknown'))}${point ? ` · ${html(coordinatesLabel(point.x, point.y))}` : ` · ${html(tr('Unknown coordinates'))}`}</small></span></article>`;
+    }).join('');
+    return `<section class="tretaresia-card tretaresia-map-presence"><header><span><i class="fa-solid fa-location-crosshairs"></i>${html(tr('Character positions'))}</span><b>${characters.length + 1}</b></header><div>
+        <article class="is-player">${mapPresenceAvatar(`player:${shortHash(state.player.portrait)}`, playerName, state.player.portrait, state.player.portraitView.mobile)}<span><strong>${html(playerName)} · ${html(tr('You'))}</strong><small>${html(state.location.place)} · ${html(coordinatesLabel(playerPoint.x, playerPoint.y))}</small></span></article>${rows || `<p>${html(tr('No Character Life positions yet.'))}</p>`}</div></section>`;
 }
 
 function mapWorldToolbar(state, selected, fullscreen = false) {
@@ -4623,6 +4892,7 @@ function renderMap(panel, state) {
     ${mapFullscreen ? '' : mapSurfaceMarkup(state, selected, false)}
     ${travelMarkup}
 </div>
+${mapFullscreen ? '' : renderMapPresenceRoster(state, atlas)}
 ${mapFullscreen ? `<section class="tretaresia-map-window" role="dialog" aria-modal="true" aria-label="${html(atlas.name)}">
     <header><div><span>${html(tr('World map'))}</span><h3>${html(atlas.name)}</h3><small>${html(viewingCurrentWorld ? state.location.continent : tr('Atlas browsing mode'))}</small></div>
         <button type="button" data-action="map-fullscreen" title="${html(tr('Close fullscreen map'))}" aria-label="${html(tr('Close fullscreen map'))}"><i class="fa-solid fa-xmark"></i></button></header>
@@ -4886,10 +5156,10 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         });
     }
 
-    if (viewingCurrentWorld && getSettings().showNpcMapMarkers) {
-        const characterLifeMarkers = characterLifeMapMarkers();
+    if (getSettings().showNpcMapMarkers) {
+        const characterLifeMarkers = mergedCharacterLifeMapMarkers(state).filter(marker => !marker.worldId || marker.worldId === worldId);
         const matchedCharacterLifeKeys = new Set();
-        const nativeNpcs = friendlyNpcs(state).filter(entry => entry.mapVisible);
+        const nativeNpcs = viewingCurrentWorld ? friendlyNpcs(state).filter(entry => entry.mapVisible) : [];
         const characterLifeById = new Map();
         const characterLifeByName = new Map();
         for (const marker of characterLifeMarkers) {
@@ -4917,20 +5187,10 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
             if (!npcPoint || npcPoint.x < bounds.left || npcPoint.x > bounds.right || npcPoint.y < bounds.top || npcPoint.y > bounds.bottom) continue;
             const point = mapCanvasPoint(npcPoint.x, npcPoint.y, canvas.width, canvas.height);
             const size = 8 * pixelRatio;
-            context.save();
-            context.fillStyle = npcPoint.partyMember ? palette.alt : palette.accent;
-            context.strokeStyle = palette.halo;
-            context.lineWidth = 2 * pixelRatio;
-            context.beginPath();
-            context.arc(point.x, point.y, size, 0, Math.PI * 2);
-            context.fill();
-            context.stroke();
-            context.fillStyle = readableOn(npcPoint.partyMember ? palette.alt : palette.accent);
-            context.font = `800 ${Math.max(8, 8.5 * pixelRatio)}px system-ui, sans-serif`;
-            context.textAlign = 'center';
-            context.textBaseline = 'middle';
-            context.fillText(entry.name.charAt(0).toUpperCase() || '?', point.x, point.y + .5 * pixelRatio);
-            context.restore();
+            const portraitKey = linkedMarker ? `character:${linkedMarker.id}` : '';
+            if (linkedMarker) requestMapPortrait(portraitKey, { id: linkedMarker.id, scope: linkedMarker.scope, name: linkedMarker.name });
+            drawMapAvatar(context, point, mapPortraitCache.get(portraitKey), entry.name.charAt(0).toUpperCase(), size,
+                npcPoint.partyMember ? palette.alt : palette.accent, palette.halo, pixelRatio);
             mapRenderedPoints.push({ type: 'npc', id: entry.id, x: point.x, y: point.y, radius: 22 * pixelRatio });
         }
         for (const marker of characterLifeMarkers) {
@@ -4944,20 +5204,10 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
             if (!npcPoint || npcPoint.x < bounds.left || npcPoint.x > bounds.right || npcPoint.y < bounds.top || npcPoint.y > bounds.bottom) continue;
             const point = mapCanvasPoint(npcPoint.x, npcPoint.y, canvas.width, canvas.height);
             const size = 7 * pixelRatio;
-            context.save();
-            context.fillStyle = palette.accent;
-            context.strokeStyle = palette.halo;
-            context.lineWidth = 2 * pixelRatio;
-            context.beginPath();
-            context.arc(point.x, point.y, size, 0, Math.PI * 2);
-            context.fill();
-            context.stroke();
-            context.fillStyle = readableOn(palette.accent);
-            context.font = `800 ${Math.max(8, 8 * pixelRatio)}px system-ui, sans-serif`;
-            context.textAlign = 'center';
-            context.textBaseline = 'middle';
-            context.fillText(text(marker.name, '?', 120).charAt(0).toUpperCase() || '?', point.x, point.y + .5 * pixelRatio);
-            context.restore();
+            const portraitKey = `character:${marker.id}`;
+            requestMapPortrait(portraitKey, { id: marker.id, scope: marker.scope, name: marker.name });
+            drawMapAvatar(context, point, mapPortraitCache.get(portraitKey), text(marker.name, '?', 120).charAt(0).toUpperCase(), size,
+                palette.accent, palette.halo, pixelRatio);
             mapRenderedPoints.push({
                 type: 'character-life-npc', id: marker.id, scope: marker.scope,
                 x: point.x, y: point.y, radius: 22 * pixelRatio,
@@ -4965,24 +5215,14 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         }
     }
 
-    let player = null;
-    if (viewingCurrentWorld) {
-        const current = currentMapPoint(state);
-        player = mapCanvasPoint(current.x, current.y, canvas.width, canvas.height);
-        context.save();
-        context.beginPath();
-        context.arc(player.x, player.y, 10 * pixelRatio, 0, Math.PI * 2);
-        context.fillStyle = palette.halo;
-        context.fill();
-        context.lineWidth = 2.5 * pixelRatio;
-        context.strokeStyle = palette.alt;
-        context.stroke();
-        context.beginPath();
-        context.arc(player.x, player.y, 4 * pixelRatio, 0, Math.PI * 2);
-        context.fillStyle = palette.alt;
-        context.fill();
-        context.restore();
-    }
+    const current = currentMapPoint(state);
+    const player = mapCanvasPoint(current.x, current.y, canvas.width, canvas.height);
+    const playerPortraitKey = `player:${shortHash(state.player.portrait)}`;
+    requestMapPortrait(playerPortraitKey, null, state.player.portrait, state.player.portraitView.mobile);
+    const playerPortrait = mapPortraitCache.get(playerPortraitKey);
+    if (playerPortrait) playerPortrait.frame = state.player.portraitView.mobile;
+    drawMapAvatar(context, player, playerPortrait, currentPersonaName(state).charAt(0).toUpperCase(), 10 * pixelRatio,
+        palette.alt, palette.halo, pixelRatio);
     const zoomText = scope.querySelector('[data-map-zoom]');
     if (zoomText) zoomText.textContent = Math.round(mapView.scale * 100) + '%';
 }
@@ -5627,6 +5867,8 @@ async function onSubmit(event) {
                 hp: { current: values.hpCurrent, max: values.hpMax },
                 mp: { current: values.mpCurrent, max: values.mpMax },
                 stamina: { current: values.staminaCurrent, max: values.staminaMax },
+                survival: { hunger: values.hunger, thirst: values.thirst },
+                aura: { ...state.player.aura, color: values.auraColor },
                 fitness: { ...state.player.fitness, lungCapacity: values.lungCapacity },
             };
             await persistState(state);
@@ -6767,7 +7009,9 @@ async function sendChatAction(message, modeOverride = '') {
 const SCALAR_PATCH_PATHS = new Set([
     'player.name', 'player.race', 'player.age', 'player.title', 'player.profession', 'player.guild', 'player.party', 'player.condition', 'player.level', 'player.powerType', 'player.originSkill',
     'player.hp.current', 'player.hp.max', 'player.mp.current', 'player.mp.max', 'player.stamina.current', 'player.stamina.max',
+    'player.survival.hunger', 'player.survival.thirst', 'player.aura.color', 'player.aura.infinite',
     'player.fitness.lungCapacity', 'player.fitness.aerobicSessions',
+    'onboarding.loadoutSeeded', 'onboarding.characterMapSeeded',
     'progression.adventurerRank', 'progression.customRankName', 'progression.magicRank', 'progression.swordRank', 'progression.experience',
     'progression.experienceMax', 'progression.reputation', 'progression.kills', 'progression.currency.gold', 'progression.currency.silver',
     'progression.currency.name', 'progression.currency.copper', 'world.id', 'worldClock.day', 'worldClock.dayName', 'worldClock.time', 'worldClock.phase', 'location.continent',
@@ -6779,7 +7023,7 @@ const SCALAR_PATCH_PATHS = new Set([
     ...MAGIC_DISCIPLINES.map(entry => `proficiencies.magic.${entry.id}`),
     ...SWORD_STYLES.map(entry => `proficiencies.sword.${entry.id}`),
 ]);
-const PATCH_COLLECTIONS = new Set(['inventory', 'skills', 'proficiencies.customMagic', 'proficiencies.customSword', 'proficiencies.techniques', 'quests', 'npcs', 'contacts', 'letters']);
+const PATCH_COLLECTIONS = new Set(['inventory', 'skills', 'proficiencies.customMagic', 'proficiencies.customSword', 'proficiencies.techniques', 'quests', 'npcs', 'contacts', 'letters', 'characterLifeMapActors']);
 const SCENE_MAP_PATCH_COLLECTIONS = new Set(['sceneMaps', 'sceneFloors', 'sceneRooms', 'sceneConnections']);
 const NPC_RELATIONSHIP_FIELDS = new Set(['affection', 'trust', 'loyalty', 'fear', 'corruption', 'lust']);
 const NPC_STAT_FIELDS = new Set(['level', 'hp', 'mp', 'stamina', 'strength', 'agility', 'intelligence', 'endurance']);
@@ -7135,6 +7379,10 @@ function applyPatchOperation(state, operation) {
         if (!candidate.id) candidate.id = uid();
         if (path === 'npcs') {
             candidate = npcProfile({ ...candidate, updatedAt: new Date().toISOString() }, index >= 0 ? collection[index] : {});
+            if (!candidate) return false;
+        }
+        if (path === 'characterLifeMapActors') {
+            candidate = characterLifeMapActor({ ...candidate, updatedAt: new Date().toISOString() }, index >= 0 ? collection[index] : {});
             if (!candidate) return false;
         }
         if (path === 'quests') {
@@ -7869,6 +8117,7 @@ async function addSettingsDrawer() {
     bindSettingControl('tretaresia-rpg-interaction-mode', 'interactionMode', settings, updateActionModeHelp);
     bindSettingControl('tretaresia-rpg-activity-indicator', 'activityIndicator', settings, syncActivityIndicator);
     bindSettingControl('tretaresia-rpg-accent', 'accentColor', settings, applyAppearance);
+    bindSettingControl('tretaresia-rpg-aura-color', 'auraColor', settings, scheduleAuraColorSetting);
     bindSettingControl('tretaresia-rpg-density', 'density', settings, applyAppearance);
     bindSettingControl('tretaresia-rpg-glass', 'glassOpacity', settings, applyAppearance);
     bindSettingControl('tretaresia-rpg-glow', 'glowStrength', settings, applyAppearance);
@@ -7887,6 +8136,7 @@ function bindChatEvents() {
         assistantRollbackQueue = Promise.resolve();
         cleanupAudio();
         invalidateCharacterLifeMapMarkers();
+        clearMapPortraitCache();
         suspendMapRendering(true);
         clearNpcPortraitObjectUrls();
         closePortraitEditor();
@@ -7968,11 +8218,15 @@ function bindChatEvents() {
     });
     globalThis.addEventListener('character-life:rpg-bridge-ready', () => {
         invalidateCharacterLifeMapMarkers();
+        clearMapPortraitCache();
         queueCharacterLifeCompatibilityRefresh({ save: true });
     });
     globalThis.addEventListener('character-life:skills-ready', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
     globalThis.addEventListener('character-life:skill-updated', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
-    globalThis.addEventListener('character-life:portrait-replaced', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
+    globalThis.addEventListener('character-life:portrait-replaced', () => {
+        clearMapPortraitCache();
+        queueCharacterLifeCompatibilityRefresh({ save: false });
+    });
     globalThis.addEventListener('character-life:rpg-compatibility-updated', () => {
         invalidateCharacterLifeMapMarkers();
         queueCharacterLifeCompatibilityRefresh({ save: false });
@@ -8022,7 +8276,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.25.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.26.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
