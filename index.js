@@ -119,6 +119,11 @@ const MAP_COARSE_POINTER = Boolean(globalThis.matchMedia?.('(pointer: coarse)')?
 // once while the user is trying to pan.
 const MAP_TILE_CACHE_LIMIT = MAP_COARSE_POINTER ? 8 : 32;
 const MAP_TILE_LOAD_LIMIT = MAP_COARSE_POINTER ? 2 : 6;
+const MAP_PORTRAIT_THUMBNAIL_SIZE = MAP_COARSE_POINTER ? 64 : 96;
+const MAP_PORTRAIT_CACHE_LIMIT = MAP_COARSE_POINTER ? 40 : 56;
+const MAP_VISIBLE_PORTRAIT_LIMIT = MAP_COARSE_POINTER ? 24 : 40;
+const MAP_ROSTER_PORTRAIT_LIMIT = MAP_COARSE_POINTER ? 18 : 32;
+const MAP_CLUSTER_THRESHOLD = MAP_COARSE_POINTER ? 30 : 48;
 const MAP_DRAW_INTERVAL = 16;
 const MAP_INTERACTION_SETTLE = 140;
 const atlasPoint = (x, y) => [
@@ -756,7 +761,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.26.1';
+const LAUNCHER_BIND_VERSION = '0.27.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -916,6 +921,7 @@ let npcEditorObjectUrl = '';
 const npcPortraitObjectUrls = new Map();
 let characterLifeMapMarkerCache = null;
 const mapPortraitCache = new Map();
+let mapPortraitUseClock = 0;
 let activityHideTimer = null;
 let activityState = { mode: 'ready', label: 'Ready', detail: '', visible: false };
 let pendingComposerDraft = null;
@@ -2836,26 +2842,91 @@ function mergedCharacterLifeMapMarkers(state) {
     return merged;
 }
 
+function releaseMapPortrait(record) {
+    if (!record) return;
+    if (record.image instanceof HTMLImageElement) record.image.src = '';
+    if (record.owned && record.url) URL.revokeObjectURL(record.url);
+}
+
+function trimMapPortraitCache() {
+    if (mapPortraitCache.size <= MAP_PORTRAIT_CACHE_LIMIT) return;
+    const candidates = [...mapPortraitCache.entries()].sort((left, right) => number(left[1]?.lastUsed, 0) - number(right[1]?.lastUsed, 0));
+    for (const [key, record] of candidates) {
+        if (mapPortraitCache.size <= MAP_PORTRAIT_CACHE_LIMIT) break;
+        mapPortraitCache.delete(key);
+        releaseMapPortrait(record);
+    }
+}
+
+function mapPortraitRecord(key) {
+    const record = key ? mapPortraitCache.get(key) : null;
+    if (record) record.lastUsed = ++mapPortraitUseClock;
+    return record || null;
+}
+
+function decodeMapPortraitSource(source) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.decoding = 'async';
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Map portrait source could not be decoded.'));
+        image.src = source;
+    });
+}
+
+async function createMapPortraitThumbnail(source) {
+    const sourceImage = await decodeMapPortraitSource(source);
+    const width = Math.max(1, sourceImage.naturalWidth || sourceImage.width || 1);
+    const height = Math.max(1, sourceImage.naturalHeight || sourceImage.height || 1);
+    const ratio = Math.min(1, MAP_PORTRAIT_THUMBNAIL_SIZE / Math.max(width, height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(width * ratio));
+    canvas.height = Math.max(1, Math.round(height * ratio));
+    const context = canvas.getContext('2d', { alpha: false });
+    if (!context) throw new Error('Map thumbnail canvas is unavailable.');
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'medium';
+    context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
+    sourceImage.src = '';
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', .78));
+    if (!blob) throw new Error('Map thumbnail encoding failed.');
+    return { url: URL.createObjectURL(blob), owned: true };
+}
+
 function requestMapPortrait(key, query, directSource = '', directFrame = null) {
-    if (!key || mapPortraitCache.has(key)) return;
-    const record = { status: 'loading', image: new Image(), url: '', frame: null };
+    if (!key) return;
+    if (mapPortraitCache.has(key)) { mapPortraitRecord(key); return; }
+    const record = { status: 'loading', image: new Image(), url: '', frame: directFrame || null, owned: false, lastUsed: ++mapPortraitUseClock };
     mapPortraitCache.set(key, record);
-    const load = (url, frame = null, owned = false) => {
-        if (!url) { record.status = 'empty'; return; }
-        record.url = url;
+    trimMapPortraitCache();
+    const load = async (source, frame = null, sourceOwned = false) => {
+        if (!source) { record.status = 'empty'; return; }
+        let thumbnail = null;
+        try {
+            thumbnail = await createMapPortraitThumbnail(source);
+            if (sourceOwned) URL.revokeObjectURL(source);
+        } catch (error) {
+            thumbnail = { url: source, owned: sourceOwned };
+            console.warn('[Tretaresia RPG] Map portrait thumbnail fallback used.', error);
+        }
+        if (mapPortraitCache.get(key) !== record) {
+            if (thumbnail.owned && thumbnail.url) URL.revokeObjectURL(thumbnail.url);
+            return;
+        }
+        record.url = thumbnail.url;
         record.frame = frame;
-        record.owned = owned;
-        record.image.onload = () => { record.status = 'ready'; scheduleMapDraw(); };
+        record.owned = thumbnail.owned;
+        record.image.onload = () => { record.status = 'ready'; record.lastUsed = ++mapPortraitUseClock; trimMapPortraitCache(); scheduleMapDraw(); };
         record.image.onerror = () => { record.status = 'error'; };
-        record.image.src = url;
+        record.image.src = thumbnail.url;
     };
-    if (directSource) { load(directSource, directFrame); return; }
+    if (directSource) { void load(directSource, directFrame, false); return; }
     const bridge = characterLifeBridge();
     if (!bridge?.portrait) { record.status = 'empty'; return; }
     Promise.resolve(bridge.portrait(query)).then(result => {
         if (!result) { record.status = 'empty'; return; }
-        const url = result.blob ? URL.createObjectURL(result.blob) : result.path || '';
-        load(url, result.frame || null, Boolean(result.blob));
+        const source = result.blob ? URL.createObjectURL(result.blob) : result.path || '';
+        return load(source, result.frame || null, Boolean(result.blob));
     }).catch(error => {
         record.status = 'error';
         console.warn('[Tretaresia RPG] Map portrait load failed safely.', error);
@@ -2863,7 +2934,7 @@ function requestMapPortrait(key, query, directSource = '', directFrame = null) {
 }
 
 function clearMapPortraitCache() {
-    for (const record of mapPortraitCache.values()) if (record.owned && record.url) URL.revokeObjectURL(record.url);
+    for (const record of mapPortraitCache.values()) releaseMapPortrait(record);
     mapPortraitCache.clear();
 }
 
@@ -4811,7 +4882,7 @@ function renderNpcMapControls(state) {
 
 function mapPresenceAvatar(key, name, directSource = '', directFrame = null) {
     if (directSource) requestMapPortrait(key, null, directSource, directFrame);
-    const record = mapPortraitCache.get(key);
+    const record = mapPortraitRecord(key);
     if (record && directFrame) record.frame = directFrame;
     return record?.status === 'ready' && record.url
         ? `<span class="tretaresia-map-presence-avatar"><img src="${html(record.url)}" alt="" style="object-position:${number(record.frame?.x, 50, 0, 100)}% ${number(record.frame?.y, 50, 0, 100)}%;transform:scale(${number(record.frame?.zoom, 1, 1, 4)})"></span>`
@@ -4822,9 +4893,9 @@ function renderMapPresenceRoster(state, atlas) {
     const playerPoint = currentMapPoint(state);
     const playerName = currentPersonaName(state);
     const characters = mergedCharacterLifeMapMarkers(state).filter(entry => entry.scope === 'character' && (!entry.worldId || entry.worldId === atlas.id));
-    const rows = characters.map(entry => {
+    const rows = characters.map((entry, index) => {
         const point = npcMapPoint(entry, state);
-        requestMapPortrait(`character:${entry.id}`, { id: entry.id, scope: 'character', name: entry.name });
+        if (index < MAP_ROSTER_PORTRAIT_LIMIT) requestMapPortrait(`character:${entry.id}`, { id: entry.id, scope: 'character', name: entry.name });
         return `<article>${mapPresenceAvatar(`character:${entry.id}`, entry.name)}<span><strong>${html(entry.name)}</strong><small>${html(entry.location || entry.currentState || tr('Unknown'))}${point ? ` · ${html(coordinatesLabel(point.x, point.y))}` : ` · ${html(tr('Unknown coordinates'))}`}</small></span></article>`;
     }).join('');
     return `<section class="tretaresia-card tretaresia-map-presence"><header><span><i class="fa-solid fa-location-crosshairs"></i>${html(tr('Character positions'))}</span><b>${characters.length + 1}</b></header><div>
@@ -5075,6 +5146,48 @@ function drawMapLabel(context, label, x, y, options = {}) {
     context.restore();
 }
 
+function clusterMapMarkerEntries(entries, pixelRatio) {
+    if (entries.length <= MAP_CLUSTER_THRESHOLD) return entries.map(entry => ({ entries: [entry], point: entry.point, worldPoint: entry.worldPoint }));
+    const cellSize = 36 * pixelRatio;
+    const cells = new Map();
+    for (const entry of entries) {
+        const key = `${Math.floor(entry.point.x / cellSize)}:${Math.floor(entry.point.y / cellSize)}`;
+        const cell = cells.get(key) || [];
+        cell.push(entry);
+        cells.set(key, cell);
+    }
+    return [...cells.values()].map(group => ({
+        entries: group,
+        point: {
+            x: group.reduce((sum, entry) => sum + entry.point.x, 0) / group.length,
+            y: group.reduce((sum, entry) => sum + entry.point.y, 0) / group.length,
+        },
+        worldPoint: {
+            x: group.reduce((sum, entry) => sum + entry.worldPoint.x, 0) / group.length,
+            y: group.reduce((sum, entry) => sum + entry.worldPoint.y, 0) / group.length,
+        },
+    }));
+}
+
+function drawMapMarkerCluster(context, cluster, palette, pixelRatio) {
+    const radius = 9 * pixelRatio;
+    context.save();
+    context.beginPath();
+    context.arc(cluster.point.x, cluster.point.y, radius, 0, Math.PI * 2);
+    context.fillStyle = palette.accent;
+    context.fill();
+    context.strokeStyle = palette.halo;
+    context.lineWidth = 2 * pixelRatio;
+    context.stroke();
+    context.fillStyle = readableOn(palette.accent);
+    context.font = `850 ${Math.max(8, 7.5 * pixelRatio)}px system-ui, sans-serif`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(`+${cluster.entries.length}`, cluster.point.x, cluster.point.y + .35 * pixelRatio);
+    context.restore();
+    return radius;
+}
+
 
 function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), state = getState()) {
     const scope = mapFullscreen ? panel?.querySelector('.tretaresia-map-window') || panel : panel;
@@ -5162,6 +5275,15 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
         const nativeNpcs = viewingCurrentWorld ? friendlyNpcs(state).filter(entry => entry.mapVisible) : [];
         const characterLifeById = new Map();
         const characterLifeByName = new Map();
+        let visiblePortraitRequests = 0;
+        const visiblePortrait = (key, query) => {
+            const existing = mapPortraitRecord(key);
+            if (existing) return existing;
+            if (visiblePortraitRequests >= MAP_VISIBLE_PORTRAIT_LIMIT) return null;
+            visiblePortraitRequests += 1;
+            requestMapPortrait(key, query);
+            return mapPortraitRecord(key);
+        };
         for (const marker of characterLifeMarkers) {
             characterLifeById.set(`${marker.scope}:${marker.id}`, marker);
             mapNpcIdentity(marker).forEach(name => characterLifeByName.set(name, marker));
@@ -5186,13 +5308,14 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
             const npcPoint = npcMapPoint(entry, state);
             if (!npcPoint || npcPoint.x < bounds.left || npcPoint.x > bounds.right || npcPoint.y < bounds.top || npcPoint.y > bounds.bottom) continue;
             const point = mapCanvasPoint(npcPoint.x, npcPoint.y, canvas.width, canvas.height);
-            const size = 8 * pixelRatio;
-            const portraitKey = linkedMarker ? `character:${linkedMarker.id}` : '';
-            if (linkedMarker) requestMapPortrait(portraitKey, { id: linkedMarker.id, scope: linkedMarker.scope, name: linkedMarker.name });
-            drawMapAvatar(context, point, mapPortraitCache.get(portraitKey), entry.name.charAt(0).toUpperCase(), size,
+            const size = 7 * pixelRatio;
+            const portraitKey = linkedMarker ? `${linkedMarker.scope}:${linkedMarker.id}` : '';
+            const portrait = linkedMarker ? visiblePortrait(portraitKey, { id: linkedMarker.id, scope: linkedMarker.scope, name: linkedMarker.name }) : null;
+            drawMapAvatar(context, point, portrait, entry.name.charAt(0).toUpperCase(), size,
                 npcPoint.partyMember ? palette.alt : palette.accent, palette.halo, pixelRatio);
             mapRenderedPoints.push({ type: 'npc', id: entry.id, x: point.x, y: point.y, radius: 22 * pixelRatio });
         }
+        const standaloneMarkers = [];
         for (const marker of characterLifeMarkers) {
             const markerKey = marker.key || `${marker.scope}:${marker.id}`;
             if (marker.mapVisible === false || matchedCharacterLifeKeys.has(markerKey)) continue;
@@ -5203,15 +5326,20 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
             }, state);
             if (!npcPoint || npcPoint.x < bounds.left || npcPoint.x > bounds.right || npcPoint.y < bounds.top || npcPoint.y > bounds.bottom) continue;
             const point = mapCanvasPoint(npcPoint.x, npcPoint.y, canvas.width, canvas.height);
-            const size = 7 * pixelRatio;
-            const portraitKey = `character:${marker.id}`;
-            requestMapPortrait(portraitKey, { id: marker.id, scope: marker.scope, name: marker.name });
-            drawMapAvatar(context, point, mapPortraitCache.get(portraitKey), text(marker.name, '?', 120).charAt(0).toUpperCase(), size,
+            standaloneMarkers.push({ marker, point, worldPoint: npcPoint });
+        }
+        for (const cluster of clusterMapMarkerEntries(standaloneMarkers, pixelRatio)) {
+            if (cluster.entries.length > 1) {
+                const radius = drawMapMarkerCluster(context, cluster, palette, pixelRatio);
+                mapRenderedPoints.push({ type: 'cluster', x: cluster.point.x, y: cluster.point.y, radius: Math.max(22 * pixelRatio, radius), worldX: cluster.worldPoint.x, worldY: cluster.worldPoint.y });
+                continue;
+            }
+            const { marker, point } = cluster.entries[0];
+            const portraitKey = `${marker.scope}:${marker.id}`;
+            const portrait = visiblePortrait(portraitKey, { id: marker.id, scope: marker.scope, name: marker.name });
+            drawMapAvatar(context, point, portrait, text(marker.name, '?', 120).charAt(0).toUpperCase(), 6 * pixelRatio,
                 palette.accent, palette.halo, pixelRatio);
-            mapRenderedPoints.push({
-                type: 'character-life-npc', id: marker.id, scope: marker.scope,
-                x: point.x, y: point.y, radius: 22 * pixelRatio,
-            });
+            mapRenderedPoints.push({ type: 'character-life-npc', id: marker.id, scope: marker.scope, x: point.x, y: point.y, radius: 22 * pixelRatio });
         }
     }
 
@@ -5219,9 +5347,9 @@ function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), stat
     const player = mapCanvasPoint(current.x, current.y, canvas.width, canvas.height);
     const playerPortraitKey = `player:${shortHash(state.player.portrait)}`;
     requestMapPortrait(playerPortraitKey, null, state.player.portrait, state.player.portraitView.mobile);
-    const playerPortrait = mapPortraitCache.get(playerPortraitKey);
+    const playerPortrait = mapPortraitRecord(playerPortraitKey);
     if (playerPortrait) playerPortrait.frame = state.player.portraitView.mobile;
-    drawMapAvatar(context, player, playerPortrait, currentPersonaName(state).charAt(0).toUpperCase(), 10 * pixelRatio,
+    drawMapAvatar(context, player, playerPortrait, currentPersonaName(state).charAt(0).toUpperCase(), 9 * pixelRatio,
         palette.alt, palette.halo, pixelRatio);
     const zoomText = scope.querySelector('[data-map-zoom]');
     if (zoomText) zoomText.textContent = Math.round(mapView.scale * 100) + '%';
@@ -6921,6 +7049,11 @@ function setupMapInteractions(panel) {
                 pointerStart = null;
                 return;
             }
+            if (hit?.type === 'cluster') {
+                setMapZoom(mapView.scale * 1.55, hit.worldX, hit.worldY);
+                pointerStart = null;
+                return;
+            }
         }
         pointerStart = null;
     };
@@ -8276,7 +8409,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.26.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.27.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

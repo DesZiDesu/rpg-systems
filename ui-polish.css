@@ -5582,7 +5582,7 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 .tretaresia-map-presence article strong,.tretaresia-map-presence article small { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .tretaresia-map-presence article strong { color:var(--tretaresia-ink);font-size:.62rem; }
 .tretaresia-map-presence article small { color:var(--tretaresia-muted);font-size:.54rem; }
-.tretaresia-map-presence-avatar { display:grid;place-items:center;flex:0 0 2rem;width:2rem;aspect-ratio:1;overflow:hidden;color:#071013;background:var(--tretaresia-accent);border:1px solid var(--tretaresia-accent-alt);border-radius:50%;font-size:.7rem;font-weight:800; }
+.tretaresia-map-presence-avatar { display:grid;place-items:center;flex:0 0 1.75rem;width:1.75rem;aspect-ratio:1;overflow:hidden;color:#071013;background:var(--tretaresia-accent);border:1px solid var(--tretaresia-accent-alt);border-radius:50%;font-size:.66rem;font-weight:800; }
 .tretaresia-map-presence-avatar img { width:100%;height:100%;object-fit:cover; }
 .tretaresia-map-presence article.is-player { border-color:rgba(var(--tretaresia-accent-rgb),.38); }
 
