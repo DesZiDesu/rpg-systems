@@ -2,7 +2,7 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.17.0**
+**Current version: 0.29.0**
 
 The tracking protocol uses a compact, relevance-prioritized state payload instead of repeatedly sending the entire archive. Settings show extension-started request attempts, and repeated Manual Sync taps are deduplicated.
 
@@ -54,6 +54,15 @@ Tretaresia RPG uses SillyTavern's active provider and selected model. It never r
 4. Reload SillyTavern if prompted.
 
 Open it through **Extensions → Tretaresia RPG** or the wand menu.
+
+## Version 0.29.0
+
+- Added a per-turn State Inspector with before/after values, source, confidence, turn rollback, variant reapply, and a one-tap extension health repair.
+- Added persistent injuries and status effects, turn-based damage/stamina costs, treatment, and full combat damage breakdown logs.
+- Added player-versus-NPC combat comparison with unknown-stat protection, plus NPC-specific knowledge records that obey the epistemic firewall.
+- Expanded Aura/Mana into output, control, efficiency, recovery, color, Divine rainbow presentation, and Boundless/Infinite behavior.
+- Expanded Party formation, roles, and shared funds; expanded Guild level, reputation, headquarters, alliances, enemies, treasury, and guild quests.
+- Added land-safe travel checkpoints, visible atlas route lines, regional weather memory, and synchronized journey progress across Scene and World Map.
 
 ## Version 0.13.1
 
