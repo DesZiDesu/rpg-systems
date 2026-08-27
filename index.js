@@ -824,7 +824,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.29.2';
+const LAUNCHER_BIND_VERSION = '0.29.3';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -853,7 +853,7 @@ const TRANSLATIONS = {
         'Party & Guild': 'ปาร์ตี้และกิลด์', Household: 'ครอบครัว', 'Friendly NPCs': 'NPC ฝ่ายมิตร', 'Choose a friendly NPC': 'เลือก NPC ฝ่ายมิตร', Member: 'สมาชิก', party: 'ปาร์ตี้', guilds: 'กิลด์',
         'Waiting for chat': 'กำลังรอแชต', 'Sync latest turn': 'ซิงก์เหตุการณ์ล่าสุด', 'System interface': 'ข้อมูลระบบ',
         'Current persona': 'ตัวตนปัจจุบัน', 'Guild rank': 'อันดับกิลด์', 'Vital status': 'สถานะพลังชีวิต', Identity: 'ข้อมูลส่วนตัว',
-        Health: 'พลังชีวิต', Mana: 'มานา', 'Aura / Mana': 'ออร่า / มานา', 'Divine Mana': 'มานาเทพ', Stamina: 'พละกำลัง', Hunger: 'ความอิ่ม', Thirst: 'ความชุ่มชื้น', 'Aura color': 'สีออร่า', Boundless: 'ไร้ขีดจำกัด', Race: 'เผ่าพันธุ์', Age: 'อายุ', Guild: 'กิลด์', Party: 'ปาร์ตี้',
+        Health: 'พลังชีวิต', Mana: 'มานา', 'Aura / Mana': 'ออร่า / มานา', 'Divine Mana': 'มานาเทพ', Stamina: 'พละกำลัง', Hunger: 'ความอิ่ม', Thirst: 'ความชุ่มชื้น', 'Aura color': 'สีออร่า', 'Mana limit': 'ขีดจำกัดมานา', Auto: 'อัตโนมัติตามเนื้อเรื่อง', Finite: 'มีขีดจำกัด', Infinite: 'ไร้ขีดจำกัด', Boundless: 'ไร้ขีดจำกัด', Race: 'เผ่าพันธุ์', Age: 'อายุ', Guild: 'กิลด์', Party: 'ปาร์ตี้',
         'Home continent': 'ทวีปบ้านเกิด', Standing: 'ฐานะ', Hair: 'เส้นผม', Eyes: 'ดวงตา', Height: 'ส่วนสูง', Build: 'รูปร่าง',
         Profession: 'อาชีพ', 'Power type': 'ประเภทพลัง', 'Origin skill': 'สกิลกำเนิด', 'Active effects': 'สถานะผิดปกติ', 'Combat comparison': 'เปรียบเทียบการต่อสู้',
         'Turn Inspector': 'ตัวตรวจสอบแต่ละเทิร์น', Diagnostics: 'วินิจฉัยระบบ', 'Repair current state': 'ซ่อมข้อมูลปัจจุบัน', 'Rollback latest turn': 'ย้อนเทิร์นล่าสุด',
@@ -1097,7 +1097,7 @@ function defaultState() {
             portraitView: { desktop: { x: 50, y: 50, zoom: 1 }, mobile: { x: 50, y: 50, zoom: 1 } },
             hp: { current: 100, max: 100 }, mp: { current: 100, max: 100 }, stamina: { current: 100, max: 100 },
             survival: { hunger: 100, thirst: 100 },
-            aura: { color: '#6f8fe8', infinite: false, output: 0, control: 0, efficiency: 0, recovery: 0 },
+            aura: { color: '#6f8fe8', infinite: false, infiniteMode: 'Auto', output: 0, control: 0, efficiency: 0, recovery: 0 },
             fitness: { lungCapacity: 100, aerobicSessions: 0, lastTrainingMessage: '' },
         },
         world: { ...WORLD_ATLAS },
@@ -1212,6 +1212,13 @@ function survivalMeter(value, fallback = 100) {
 function auraColor(value, fallback = '#6f8fe8') {
     const candidate = text(value, fallback, 20);
     return /^#[0-9a-f]{6}$/i.test(candidate) ? candidate.toLowerCase() : fallback;
+}
+
+function auraInfiniteMode(value, fallback = 'Auto') {
+    const candidate = text(value, fallback, 20).toLocaleLowerCase();
+    if (candidate === 'infinite') return 'Infinite';
+    if (candidate === 'finite') return 'Finite';
+    return 'Auto';
 }
 
 function inventoryLogEntry(value) {
@@ -1861,6 +1868,8 @@ function normalize(candidate, base = defaultState()) {
     const migratingLegacyNpcs = !Array.isArray(source.npcs);
     const result = clone(base);
     const player = source.player && typeof source.player === 'object' ? source.player : {};
+    const infiniteMode = auraInfiniteMode(player.aura?.infiniteMode, result.player.aura.infiniteMode);
+    const trackedInfinite = Boolean(player.aura?.infinite ?? result.player.aura.infinite);
     const sourceWorld = source.world && typeof source.world === 'object' ? source.world : {};
     const progress = source.progression && typeof source.progression === 'object' ? source.progression : {};
     const currency = progress.currency && typeof progress.currency === 'object' ? progress.currency : {};
@@ -1908,7 +1917,8 @@ function normalize(candidate, base = defaultState()) {
         },
         aura: {
             color: auraColor(player.aura?.color, result.player.aura.color),
-            infinite: Boolean(player.aura?.infinite ?? result.player.aura.infinite),
+            infinite: infiniteMode === 'Infinite' || (infiniteMode === 'Auto' && trackedInfinite),
+            infiniteMode,
             output: number(player.aura?.output, result.player.aura.output, 0, 100),
             control: number(player.aura?.control, result.player.aura.control, 0, 100),
             efficiency: number(player.aura?.efficiency, result.player.aura.efficiency, 0, 100),
@@ -2352,6 +2362,7 @@ function trackedStateSnapshot(state) {
         'player.powerType': state.player.powerType,
         'player.identity': [state.player.race, state.player.gender, state.player.age, state.player.homeContinent, state.player.standing, state.player.affiliation].filter(Boolean).join(' · '),
         'player.appearance': Object.values(state.player.appearance || {}).filter(Boolean).join(' · '),
+        'aura.limitMode': state.player.aura.infiniteMode,
         'aura.output': state.player.aura.output,
         'aura.control': state.player.aura.control,
         'aura.efficiency': state.player.aura.efficiency,
@@ -2882,7 +2893,7 @@ function patchInstructions() {
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this one patch, not only scene fields.',
         'Resource, injury, and damage rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
         'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
-        'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. Treat Limitless, Boundless, Unlimited, and Infinite Aura/Mana as aliases for the same infinite state. Set infinite=true only when the completed assistant story or resolved roll explicitly confirms genuinely inexhaustible power—never from level, settings, an OOC request, a user claim alone, or an unresolved attempt. While true, do not decrease MP; set false only after explicit loss/seal/limitation.',
+        'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. player.aura.infiniteMode is user-owned: Auto permits story tracking, Finite forces finite Mana, and Infinite forces inexhaustible Mana; never alter infiniteMode from AI output. In Auto mode, treat Limitless, Boundless, Unlimited, and Infinite Aura/Mana as aliases for the same infinite state. Set infinite=true only when the completed assistant story or resolved roll explicitly confirms genuinely inexhaustible power—never from level, an OOC request, a user claim alone, or an unresolved attempt. While true, do not decrease MP; in Auto mode set false only after explicit loss/seal/limitation.',
         'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the first user message and completed reply; use exact atlas coordinates for a named atlas destination. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId. Never guess random coordinates: use exact coordinates only for a known atlas destination, preserve established on-land coordinates, or leave mapX/mapY null until a location is established. Then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
@@ -4507,7 +4518,8 @@ function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage) 
         const key = /output|ปล่อย/i.test(combined) ? 'output' : /efficien|ประสิทธิภาพ/i.test(combined) ? 'efficiency' : /recover|ฟื้นฟู/i.test(combined) ? 'recovery' : 'control';
         if (unchanged(state => state.player.aura[key])) setIfChanged(next.player.aura, key, Math.min(100, next.player.aura[key] + 1));
     }
-    if (/\b(?:boundless|limitless|infinite|never[- ]deplet(?:ing|es)|unlimited)\s+(?:aura|mana)\b|\b(?:aura|mana)\b.{0,32}\b(?:is\s+)?(?:boundless|limitless|infinite|unlimited|never[- ]deplet(?:ing|es))\b|(?:ออร่า|มานา).{0,40}(?:ไร้ขีดจำกัด|ไร้ขอบเขต|ไม่มีขีดจำกัด|ไม่มีวันหมด|อนันต์)|(?:ไร้ขีดจำกัด|ไร้ขอบเขต|ไม่มีขีดจำกัด|ไม่มีวันหมด|อนันต์).{0,40}(?:ออร่า|มานา)/i.test(assistant)
+    if (next.player.aura.infiniteMode === 'Auto'
+        && /\b(?:boundless|limitless|infinite|never[- ]deplet(?:ing|es)|unlimited)\s+(?:aura|mana)\b|\b(?:aura|mana)\b.{0,32}\b(?:is\s+)?(?:boundless|limitless|infinite|unlimited|never[- ]deplet(?:ing|es))\b|(?:ออร่า|มานา).{0,40}(?:ไร้ขีดจำกัด|ไร้ขอบเขต|ไม่มีขีดจำกัด|ไม่มีวันหมด|อนันต์)|(?:ไร้ขีดจำกัด|ไร้ขอบเขต|ไม่มีขีดจำกัด|ไม่มีวันหมด|อนันต์).{0,40}(?:ออร่า|มานา)/i.test(assistant)
         && unchanged(state => state.player.aura.infinite)) setIfChanged(next.player.aura, 'infinite', true);
 
     const partyConfirmed = /\b(?:join(?:ed|s|ing)?|form(?:ed|s|ing)?|became (?:a )?member)\b.{0,80}\bparty\b|\bparty\b.{0,80}\b(?:join(?:ed|s|ing)?|member)\b|(?:เข้าร่วม|ร่วม|ตั้ง|ก่อตั้ง).{0,50}(?:ปาร์ตี้|กลุ่มผจญภัย)|(?:ปาร์ตี้|กลุ่มผจญภัย).{0,50}(?:มีสมาชิก|เข้าร่วม|ร่วมทีม)/i.test(assistant);
@@ -5290,6 +5302,7 @@ function renderStatus(panel, state) {
                 <div><dt>${html(tr('Profession'))}</dt><dd>${html(state.player.profession)}</dd></div>
                 <div><dt>${html(tr('Power type'))}</dt><dd>${html(state.player.powerType)}</dd></div>
                 <div><dt>${html(tr('Aura color'))}</dt><dd><span class="tretaresia-aura-swatch" style="--aura-color:${html(state.player.aura.color)}"></span>${html(state.player.aura.color)}${state.player.aura.infinite ? ` · ${html(tr('Boundless'))}` : ''}</dd></div>
+                <div><dt>${html(tr('Mana limit'))}</dt><dd>${html(tr(state.player.aura.infinite ? 'Infinite' : 'Finite'))} · ${html(tr(state.player.aura.infiniteMode))}</dd></div>
                 <div><dt>${html(tr('Origin skill'))}</dt><dd>${html(state.player.originSkill)}</dd></div>
                 <div><dt>${html(tr('Condition'))}</dt><dd>${html(state.player.condition)}</dd></div>
                 <div><dt>${html(tr('Level'))}</dt><dd>${state.player.level}</dd></div></dl></article>
@@ -5313,7 +5326,7 @@ function renderStatus(panel, state) {
                 ${input('MP', 'mpCurrent', state.player.mp.current, 'number', 'min="0"')}${input('MP max', 'mpMax', state.player.mp.max, 'number', 'min="1"')}
                 ${input('Stamina', 'staminaCurrent', state.player.stamina.current, 'number', 'min="0"')}${input('Stamina max', 'staminaMax', state.player.stamina.max, 'number', 'min="1"')}
                 ${input('Hunger', 'hunger', state.player.survival.hunger, 'number', 'min="0" max="100"')}${input('Thirst', 'thirst', state.player.survival.thirst, 'number', 'min="0" max="100"')}
-                ${input('Aura color', 'auraColor', state.player.aura.color, 'color')}
+                ${input('Aura color', 'auraColor', state.player.aura.color, 'color')}${select('Mana limit', 'auraInfiniteMode', ['Auto', 'Finite', 'Infinite'], state.player.aura.infiniteMode)}
                 ${input('Aura output', 'auraOutput', state.player.aura.output, 'number', 'min="0" max="100"')}${input('Aura control', 'auraControl', state.player.aura.control, 'number', 'min="0" max="100"')}
                 ${input('Aura efficiency', 'auraEfficiency', state.player.aura.efficiency, 'number', 'min="0" max="100"')}${input('Aura recovery', 'auraRecovery', state.player.aura.recovery, 'number', 'min="0" max="100"')}
                 ${input('Lung capacity', 'lungCapacity', state.player.fitness.lungCapacity, 'number', 'min="1"')}
@@ -6959,7 +6972,10 @@ async function onSubmit(event) {
                 mp: { current: values.mpCurrent, max: values.mpMax },
                 stamina: { current: values.staminaCurrent, max: values.staminaMax },
                 survival: { hunger: values.hunger, thirst: values.thirst },
-                aura: { ...state.player.aura, color: values.auraColor, output: values.auraOutput, control: values.auraControl,
+                aura: { ...state.player.aura, color: values.auraColor,
+                    infiniteMode: auraInfiniteMode(values.auraInfiniteMode, state.player.aura.infiniteMode),
+                    infinite: values.auraInfiniteMode === 'Infinite' ? true : values.auraInfiniteMode === 'Finite' ? false : state.player.aura.infinite,
+                    output: values.auraOutput, control: values.auraControl,
                     efficiency: values.auraEfficiency, recovery: values.auraRecovery },
                 fitness: { ...state.player.fitness, lungCapacity: values.lungCapacity },
             };
@@ -9594,7 +9610,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.29.2 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.29.3 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
