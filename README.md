@@ -2,7 +2,9 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.29.0**
+**Current version: 0.29.1**
+
+- v0.29.1 imports structured player registration data from existing chat history, repairs stale Identity fields, recognizes Divine Mana from registration/proficiency/confirmed use, and renders its flowing rainbow bar immediately.
 
 The tracking protocol uses a compact, relevance-prioritized state payload instead of repeatedly sending the entire archive. Settings show extension-started request attempts, and repeated Manual Sync taps are deduplicated.
 

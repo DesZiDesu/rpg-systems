@@ -9,7 +9,7 @@ const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
 const STATE_PACKAGE_FORMAT = 'tretaresia-rpg-state';
 const CONTINUITY_STORAGE_PREFIX = 'tretaresia-rpg:continuity:';
 const SUMMARY_NEW_CHAT_MENU_ID = 'st_new_chat_with_summary_wand_button';
-const TURN_RECONCILE_VERSION = 2;
+const TURN_RECONCILE_VERSION = 3;
 const PATCH_COMMENT_PATTERN = /<!--\s*tretaresia_patch\s*:\s*([\s\S]*?)\s*-->/gi;
 const PATCH_TAG_PATTERN = /<tretaresia_patch>\s*([\s\S]*?)\s*<\/tretaresia_patch>/gi;
 const PATCH_BRACKET_PATTERN = /\[\[?\s*tretaresia[_ -]?patch\s*\]?\]\s*([\s\S]*?)\s*\[\[?\s*\/\s*tretaresia[_ -]?patch\s*\]?\]/gi;
@@ -824,7 +824,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.29.0';
+const LAUNCHER_BIND_VERSION = '0.29.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -853,7 +853,8 @@ const TRANSLATIONS = {
         'Party & Guild': 'ปาร์ตี้และกิลด์', Household: 'ครอบครัว', 'Friendly NPCs': 'NPC ฝ่ายมิตร', 'Choose a friendly NPC': 'เลือก NPC ฝ่ายมิตร', Member: 'สมาชิก', party: 'ปาร์ตี้', guilds: 'กิลด์',
         'Waiting for chat': 'กำลังรอแชต', 'Sync latest turn': 'ซิงก์เหตุการณ์ล่าสุด', 'System interface': 'ข้อมูลระบบ',
         'Current persona': 'ตัวตนปัจจุบัน', 'Guild rank': 'อันดับกิลด์', 'Vital status': 'สถานะพลังชีวิต', Identity: 'ข้อมูลส่วนตัว',
-        Health: 'พลังชีวิต', Mana: 'มานา', 'Aura / Mana': 'ออร่า / มานา', Stamina: 'พละกำลัง', Hunger: 'ความอิ่ม', Thirst: 'ความชุ่มชื้น', 'Aura color': 'สีออร่า', Boundless: 'ไร้ขีดจำกัด', Race: 'เผ่าพันธุ์', Age: 'อายุ', Guild: 'กิลด์', Party: 'ปาร์ตี้',
+        Health: 'พลังชีวิต', Mana: 'มานา', 'Aura / Mana': 'ออร่า / มานา', 'Divine Mana': 'มานาเทพ', Stamina: 'พละกำลัง', Hunger: 'ความอิ่ม', Thirst: 'ความชุ่มชื้น', 'Aura color': 'สีออร่า', Boundless: 'ไร้ขีดจำกัด', Race: 'เผ่าพันธุ์', Age: 'อายุ', Guild: 'กิลด์', Party: 'ปาร์ตี้',
+        'Home continent': 'ทวีปบ้านเกิด', Standing: 'ฐานะ', Hair: 'เส้นผม', Eyes: 'ดวงตา', Height: 'ส่วนสูง', Build: 'รูปร่าง',
         Profession: 'อาชีพ', 'Power type': 'ประเภทพลัง', 'Origin skill': 'สกิลกำเนิด', 'Active effects': 'สถานะผิดปกติ', 'Combat comparison': 'เปรียบเทียบการต่อสู้',
         'Turn Inspector': 'ตัวตรวจสอบแต่ละเทิร์น', Diagnostics: 'วินิจฉัยระบบ', 'Repair current state': 'ซ่อมข้อมูลปัจจุบัน', 'Rollback latest turn': 'ย้อนเทิร์นล่าสุด',
         'Damage breakdown': 'รายละเอียดความเสียหาย', 'Regional weather': 'สภาพอากาศรายภูมิภาค', 'NPC knowledge': 'ข้อมูลที่ NPC รู้',
@@ -1090,6 +1091,8 @@ function defaultState() {
         version: 1,
         player: {
             name: 'Adventurer', portrait: '', race: 'Human', age: '', title: 'Untitled', profession: 'Adventurer', guild: 'Unaffiliated', party: 'Solo',
+            gender: '', homeContinent: '', standing: '', affiliation: '',
+            appearance: { hair: '', eyes: '', height: '', build: '' },
             condition: 'Stable', level: 1, powerType: 'Aura', originSkill: 'Unknown / Undiscovered',
             portraitView: { desktop: { x: 50, y: 50, zoom: 1 }, mobile: { x: 50, y: 50, zoom: 1 } },
             hp: { current: 100, max: 100 }, mp: { current: 100, max: 100 }, stamina: { current: 100, max: 100 },
@@ -1128,7 +1131,7 @@ function defaultState() {
         transactions: [],
         journeyLogs: [],
         systems: defaultSystemsState(),
-        onboarding: { loadoutSeeded: false, characterMapSeeded: false, locationSeeded: false },
+        onboarding: { identitySeeded: false, loadoutSeeded: false, characterMapSeeded: false, locationSeeded: false },
         syncCursor: { user: null, assistant: null },
         updatedAt: null,
         updateSource: 'initial',
@@ -1882,6 +1885,16 @@ function normalize(candidate, base = defaultState()) {
         },
         race: text(player.race, result.player.race, 80),
         age: text(player.age, result.player.age, 40), title: text(player.title, result.player.title, 100),
+        gender: text(player.gender, result.player.gender, 80),
+        homeContinent: text(player.homeContinent, result.player.homeContinent, 160),
+        standing: text(player.standing, result.player.standing, 120),
+        affiliation: text(player.affiliation, result.player.affiliation, 160),
+        appearance: {
+            hair: text(player.appearance?.hair, result.player.appearance.hair, 120),
+            eyes: text(player.appearance?.eyes, result.player.appearance.eyes, 120),
+            height: text(player.appearance?.height, result.player.appearance.height, 80),
+            build: text(player.appearance?.build, result.player.appearance.build, 160),
+        },
         profession: text(player.profession, result.player.profession, 100),
         guild: text(player.guild, result.player.guild, 100), party: text(player.party, result.player.party, 100),
         condition: text(player.condition, result.player.condition, 120),
@@ -2022,6 +2035,7 @@ function normalize(candidate, base = defaultState()) {
         .map(value => characterLifeMapActor(value)).filter(Boolean).slice(0, 80);
     const onboarding = source.onboarding && typeof source.onboarding === 'object' ? source.onboarding : {};
     result.onboarding = {
+        identitySeeded: Boolean(onboarding.identitySeeded),
         loadoutSeeded: Object.hasOwn(onboarding, 'loadoutSeeded') ? Boolean(onboarding.loadoutSeeded) : Boolean(result.inventory.length || result.skills.length),
         characterMapSeeded: Boolean(onboarding.characterMapSeeded),
         locationSeeded: Boolean(onboarding.locationSeeded),
@@ -2336,6 +2350,8 @@ function trackedStateSnapshot(state) {
         'player.thirst': state.player.survival.thirst,
         'player.condition': state.player.condition,
         'player.powerType': state.player.powerType,
+        'player.identity': [state.player.race, state.player.gender, state.player.age, state.player.homeContinent, state.player.standing, state.player.affiliation].filter(Boolean).join(' · '),
+        'player.appearance': Object.values(state.player.appearance || {}).filter(Boolean).join(' · '),
         'aura.output': state.player.aura.output,
         'aura.control': state.player.aura.control,
         'aura.efficiency': state.player.aura.efficiency,
@@ -2712,6 +2728,117 @@ function hasUserReply(context = SillyTavern.getContext()) {
     return context.chat.some(message => message?.is_user && !message.is_system && text(message.mes));
 }
 
+const REGISTRATION_LABELS = Object.freeze({
+    race: ['race', 'เผ่าพันธุ์'], gender: ['gender', 'เพศ'], age: ['age', 'อายุ'],
+    homeContinent: ['home continent', 'continent of origin', 'ทวีปบ้านเกิด', 'ทวีปต้นกำเนิด'],
+    standing: ['standing', 'social standing', 'ฐานะ', 'สถานะทางสังคม'],
+    hair: ['hair', 'hair color', 'ผม', 'สีผม'], eyes: ['eyes', 'eye color', 'ดวงตา', 'สีตา'],
+    height: ['height', 'ส่วนสูง'], build: ['build', 'body type', 'รูปร่าง'],
+    powerSystem: ['power system', 'power systems', 'ระบบพลัง'],
+    affiliation: ['affiliation', 'faction', 'สังกัด', 'ฝ่าย'],
+});
+
+function registrationPlainText(value) {
+    return normalizedTravelText(value)
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/(?:div|p|li|section|article|header|footer|h[1-6]|span|strong|b|em|button|label|dt|dd|td|th)>/gi, '\n')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;|&#160;/gi, ' ')
+        .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'")
+        .split(/\r?\n/).map(line => line.replace(/^[\s◆◇•·|]+|[\s|]+$/g, '').replace(/\s+/g, ' ').trim())
+        .filter(Boolean).join('\n');
+}
+
+function parseRegistrationMessage(raw) {
+    const source = registrationPlainText(raw);
+    if (!source) return null;
+    const lines = source.split('\n');
+    const allAliases = Object.values(REGISTRATION_LABELS).flat().sort((a, b) => b.length - a.length);
+    const aliasPattern = allAliases.map(value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    const isLabel = line => new RegExp(`^(?:${aliasPattern})(?:\s*[:：-])?$`, 'i').test(line.trim());
+    const result = {};
+    for (const [key, aliases] of Object.entries(REGISTRATION_LABELS)) {
+        const ownPattern = aliases.map(value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+        for (let index = 0; index < lines.length; index += 1) {
+            const match = lines[index].match(new RegExp(`^(?:${ownPattern})(?:\s*[:：-]\s*|\s+)?(.*)$`, 'i'));
+            if (!match) continue;
+            let value = match[1].trim();
+            if (!value) {
+                for (let cursor = index + 1; cursor < Math.min(lines.length, index + 4); cursor += 1) {
+                    if (isLabel(lines[cursor]) || /^(?:identity|origin|appearance|path|power system)$/i.test(lines[cursor])) continue;
+                    value = lines[cursor];
+                    break;
+                }
+            }
+            if (value && !isLabel(value)) result[key] = text(value, '', key === 'powerSystem' ? 240 : 160);
+            break;
+        }
+    }
+    const structured = /(?:^|\n)(?:identity|origin|appearance|power system|path)(?:\n|$)/i.test(source);
+    const divine = /\bdivine\s+(?:mana|aura)\b|(?:มานา|ออร่า).{0,24}(?:เทพ|ศักดิ์สิทธิ์)|(?:เทพ|ศักดิ์สิทธิ์).{0,24}(?:มานา|ออร่า)/i.test(source);
+    const aura = /(?:^|\n)aura(?:\n|$)|(?:^|\n)ออร่า(?:\n|$)/i.test(source);
+    const score = Object.keys(result).filter(key => key !== 'powerSystem').length + (result.powerSystem || divine ? 1 : 0);
+    if (score < 2 || (!structured && score < 3)) return null;
+    return { ...result, divine, aura, score };
+}
+
+function findPlayerRegistration(context = SillyTavern.getContext()) {
+    const messages = (context.chat || []).filter(message => message?.is_user && !message?.is_system && text(message.mes)).slice(0, 40);
+    let best = null;
+    for (const message of messages) {
+        const parsed = parseRegistrationMessage(message.mes);
+        if (parsed && (!best || parsed.score > best.score)) best = parsed;
+    }
+    return best;
+}
+
+function hasDivinePower(state) {
+    return /\bdivine\s+(?:aura|mana)\b|(?:ออร่า|มานา).*(?:เทพ|ศักดิ์สิทธิ์)|(?:เทพ|ศักดิ์สิทธิ์).*(?:ออร่า|มานา)/i.test(state?.player?.powerType || '')
+        || number(state?.proficiencies?.magic?.divineMana, 0, 0, 100) > 0;
+}
+
+function bootstrapPlayerIdentityFromChat(current, context = SillyTavern.getContext()) {
+    if (current.onboarding?.identitySeeded) return null;
+    const registration = findPlayerRegistration(context);
+    if (!registration) return null;
+    const next = clone(current);
+    let changed = false;
+    const setDefault = (target, key, value, defaults = []) => {
+        if (!value) return;
+        const existing = text(target[key], '', 180);
+        if (existing && !defaults.some(entry => existing.toLocaleLowerCase() === entry.toLocaleLowerCase())) return;
+        if (existing === value) return;
+        target[key] = value;
+        changed = true;
+    };
+    setDefault(next.player, 'race', registration.race, ['Human', 'Unknown']);
+    setDefault(next.player, 'age', registration.age, ['Unknown']);
+    setDefault(next.player, 'gender', registration.gender, ['Unknown']);
+    setDefault(next.player, 'homeContinent', registration.homeContinent, ['Unknown']);
+    setDefault(next.player, 'standing', registration.standing, ['Unknown']);
+    setDefault(next.player, 'affiliation', registration.affiliation, ['Unknown', 'Unaffiliated']);
+    setDefault(next.player.appearance, 'hair', registration.hair, ['Unknown']);
+    setDefault(next.player.appearance, 'eyes', registration.eyes, ['Unknown']);
+    setDefault(next.player.appearance, 'height', registration.height, ['Unknown']);
+    setDefault(next.player.appearance, 'build', registration.build, ['Unknown']);
+    if (registration.divine) {
+        if (next.player.powerType !== 'Divine Mana') { next.player.powerType = 'Divine Mana'; changed = true; }
+        if (next.player.aura.color !== '#ffffff') { next.player.aura.color = '#ffffff'; changed = true; }
+        if (next.proficiencies.magic.divineMana < 1) { next.proficiencies.magic.divineMana = 1; changed = true; }
+    }
+    if (registration.aura && next.proficiencies.magic.aura < 1) { next.proficiencies.magic.aura = 1; changed = true; }
+    next.onboarding.identitySeeded = true;
+    changed = true;
+    return changed ? normalize(next, current) : null;
+}
+
+async function catchUpPlayerIdentity() {
+    const context = SillyTavern.getContext();
+    if (!context.getCurrentChatId?.() || !context.chat?.length) return false;
+    const seeded = bootstrapPlayerIdentityFromChat(getState(), context);
+    return seeded ? persistState(seeded, 'user-registration-bootstrap') : false;
+}
+
 function legacyPatchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     return [
@@ -2756,7 +2883,7 @@ function patchInstructions() {
         'Resource, injury, and damage rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
         'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
         'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. Set infinite=true only when the completed story explicitly confirms genuinely boundless/never-depleting power—never from level, settings, OOC requests, or an attempt. While true, do not decrease MP; set false only after explicit loss/seal/limitation.',
-        'First-reply bootstrap: when onboarding.loadoutSeeded is false, the first completed normal reply after a real user message must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the first user message and completed reply; use exact atlas coordinates for a named atlas destination. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId. Never guess random coordinates: use exact coordinates only for a known atlas destination, preserve established on-land coordinates, or leave mapX/mapY null until a location is established. Then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
+        'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the first user message and completed reply; use exact atlas coordinates for a named atlas destination. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId. Never guess random coordinates: use exact coordinates only for a known atlas destination, preserve established on-land coordinates, or leave mapX/mapY null until a location is established. Then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
@@ -3727,7 +3854,8 @@ function synchronizeDerivedPlayerState(state) {
         else if (state.player.stamina.current <= 0) state.player.condition = 'Exhausted';
         else state.player.condition = 'Stable';
     }
-    if (/\bdivine\s+(?:aura|mana)\b|(?:ออร่า|มานา).*(?:เทพ|ศักดิ์สิทธิ์)/i.test(state.player.powerType)) {
+    if (hasDivinePower(state)) {
+        state.player.powerType = 'Divine Mana';
         state.player.aura.color = '#ffffff';
     }
     return state;
@@ -4354,9 +4482,12 @@ function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage) 
     if (ate && unchanged(state => state.player.survival.hunger)) setIfChanged(next.player.survival, 'hunger', Math.min(100, next.player.survival.hunger + 24));
     if (drank && unchanged(state => state.player.survival.thirst)) setIfChanged(next.player.survival, 'thirst', Math.min(100, next.player.survival.thirst + 30));
 
-    const successfulPowerUse = /\b(?:cast|casts|casted|activated|released|channeled|summoned|invoked|used)\b|(?:ร่าย|ใช้พลัง|ปลดปล่อย|เปิดใช้งาน|เรียกใช้)/i.test(assistant)
+    const powerAction = /\b(?:cast|casts|casted|activated|released|channeled|summoned|invoked|used)\b|(?:ร่าย|ใช้พลัง|ปลดปล่อย|เปิดใช้งาน|เรียกใช้)/i;
+    const successfulPowerUse = (powerAction.test(assistant) || powerAction.test(user))
         && !/\b(?:failed|fizzled|could not|unable)\b|(?:ล้มเหลว|ใช้ไม่ได้|ไม่สำเร็จ)/i.test(assistant);
-    const discipline = MAGIC_DISCIPLINES.find(entry => new RegExp(entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(combined));
+    const divineMentioned = /\bdivine\s+(?:mana|aura)\b|(?:มานา|ออร่า).{0,24}(?:เทพ|ศักดิ์สิทธิ์)|(?:เทพ|ศักดิ์สิทธิ์).{0,24}(?:มานา|ออร่า)/i.test(combined);
+    const discipline = divineMentioned ? MAGIC_DISCIPLINES.find(entry => entry.id === 'divineMana')
+        : MAGIC_DISCIPLINES.find(entry => new RegExp(entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(combined));
     if (discipline && successfulPowerUse) {
         if (unchanged(state => state.proficiencies.magic[discipline.id])) {
             const previous = next.proficiencies.magic[discipline.id];
@@ -4423,20 +4554,22 @@ async function processUserTravelIntent(messageId) {
         : [...(context.chat || [])].reverse().find(entry => entry?.is_user && !entry?.is_system);
     if (!message?.is_user || message.is_system) return false;
     const stored = getState();
-    const clockAdvanced = advanceWorldClockFromUserMessage(messageId, message, stored);
-    const clockState = clockAdvanced || stored;
+    const identitySeeded = bootstrapPlayerIdentityFromChat(stored, context);
+    const identityState = identitySeeded || stored;
+    const clockAdvanced = advanceWorldClockFromUserMessage(messageId, message, identityState);
+    const clockState = clockAdvanced || identityState;
     const resourcesAdvanced = clockAdvanced ? advanceTurnResourcesFromUserMessage(message, clockState) : null;
     const resourcesState = resourcesAdvanced || clockState;
     const trainingAdvanced = advanceAerobicTrainingFromUserMessage(messageId, message, resourcesState);
     const current = trainingAdvanced || resourcesState;
-    const localChanged = Boolean(clockAdvanced || resourcesAdvanced || trainingAdvanced);
+    const localChanged = Boolean(identitySeeded || clockAdvanced || resourcesAdvanced || trainingAdvanced);
     const intent = inferUserTravelIntent(message.mes, current);
     if (!intent) {
         const caughtUp = catchUpActiveTravelFromChat(current, context, messageId);
         if (caughtUp) return persistState(caughtUp, 'user-travel-history-catchup');
         const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
         if (advanced) return persistState(advanced, 'user-travel-progress');
-        return localChanged ? persistState(current, trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
+        return localChanged ? persistState(current, identitySeeded ? 'user-registration-bootstrap' : trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
     }
     const alreadyHeadingThere = ['Preparing', 'Traveling', 'Delayed'].includes(current.travel.status)
         && mapLocationByName(current.travel.destinationPlace || current.travel.destination, current)?.id === intent.destination.id;
@@ -4444,9 +4577,9 @@ async function processUserTravelIntent(messageId) {
     if (alreadyHeadingThere) {
         const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
         if (advanced) return persistState(advanced, 'user-travel-progress');
-        return localChanged ? persistState(current, trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
+        return localChanged ? persistState(current, identitySeeded ? 'user-registration-bootstrap' : trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
     }
-    if (alreadyThere) return localChanged ? persistState(current, trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
+    if (alreadyThere) return localChanged ? persistState(current, identitySeeded ? 'user-registration-bootstrap' : trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
     const next = clone(current);
     const totalDays = estimatedTravelDays(next, intent.destination, intent.route);
     const origin = next.location.place || next.location.region || 'Unknown';
@@ -5105,7 +5238,7 @@ function renderStatus(panel, state) {
     const persona = currentPersonaName(state);
     const expPercent = Math.min(100, Math.round(state.progression.experience / Math.max(1, state.progression.experienceMax) * 100));
     const initial = html((persona || '?').charAt(0).toUpperCase());
-    const divineAura = /\bdivine\s+(?:aura|mana)\b|(?:ออร่า|มานา).*(?:เทพ|ศักดิ์สิทธิ์)|(?:เทพ|ศักดิ์สิทธิ์).*(?:ออร่า|มานา)/i.test(state.player.powerType);
+    const divineAura = hasDivinePower(state);
     panel.innerHTML = `
         <section class="tretaresia-character-hero"><button class="tretaresia-avatar" type="button" data-action="${state.player.portrait ? 'open-portrait-editor' : 'choose-portrait'}" aria-label="${html(tr(state.player.portrait ? 'Adjust portrait' : 'Choose profile picture'))}">
             <span class="tretaresia-magic-ring ring-one"></span><span class="tretaresia-magic-ring ring-two"></span>
@@ -5123,7 +5256,7 @@ function renderStatus(panel, state) {
             <article class="tretaresia-card tretaresia-vitals-card"><div class="tretaresia-card-title"><span>${html(tr('Vital status'))}</span>
                 <em><i class="fa-solid fa-wave-square"></i> ${html(state.player.condition)}</em></div><div class="tretaresia-vitals-grid">
                 ${meterView('Health', state.player.hp, 'fa-solid fa-heart', 'health')}
-                ${meterView('Aura / Mana', state.player.mp, 'fa-solid fa-fire-flame-curved', 'mana', { color: state.player.aura.color, infinite: state.player.aura.infinite, divine: divineAura })}
+                ${meterView(divineAura ? 'Divine Mana' : 'Aura / Mana', state.player.mp, 'fa-solid fa-fire-flame-curved', 'mana', { color: state.player.aura.color, infinite: state.player.aura.infinite, divine: divineAura })}
                 ${meterView('Stamina', state.player.stamina, 'fa-solid fa-bolt', 'stamina')}
                 ${meterView('Hunger', { current: state.player.survival.hunger, max: 100 }, 'fa-solid fa-drumstick-bite', 'hunger')}
                 ${meterView('Thirst', { current: state.player.survival.thirst, max: 100 }, 'fa-solid fa-droplet', 'thirst')}</div>
@@ -5132,7 +5265,15 @@ function renderStatus(panel, state) {
             <article class="tretaresia-card"><div class="tretaresia-card-title"><span>${html(tr('Identity'))}</span>
                 <i class="fa-solid fa-feather"></i></div><dl class="tretaresia-fact-list">
                 <div><dt>${html(tr('Race'))}</dt><dd>${html(state.player.race)}</dd></div>
+                <div><dt>${html(tr('Gender'))}</dt><dd>${html(state.player.gender || 'Unknown')}</dd></div>
                 <div><dt>${html(tr('Age'))}</dt><dd>${html(state.player.age || 'Unknown')}</dd></div>
+                <div><dt>${html(tr('Home continent'))}</dt><dd>${html(state.player.homeContinent || 'Unknown')}</dd></div>
+                <div><dt>${html(tr('Standing'))}</dt><dd>${html(state.player.standing || 'Unknown')}</dd></div>
+                <div><dt>${html(tr('Affiliation'))}</dt><dd>${html(state.player.affiliation || 'Unaffiliated')}</dd></div>
+                <div><dt>${html(tr('Hair'))}</dt><dd>${html(state.player.appearance.hair || 'Unknown')}</dd></div>
+                <div><dt>${html(tr('Eyes'))}</dt><dd>${html(state.player.appearance.eyes || 'Unknown')}</dd></div>
+                <div><dt>${html(tr('Height'))}</dt><dd>${html(state.player.appearance.height || 'Unknown')}</dd></div>
+                <div><dt>${html(tr('Build'))}</dt><dd>${html(state.player.appearance.build || 'Unknown')}</dd></div>
                 <div><dt>${html(tr('Guild'))}</dt><dd>${html(state.player.guild)}</dd></div>
                 <div><dt>${html(tr('Party'))}</dt><dd>${html(state.player.party)}</dd></div>
                 <div><dt>${html(tr('Profession'))}</dt><dd>${html(state.player.profession)}</dd></div>
@@ -5150,6 +5291,10 @@ function renderStatus(panel, state) {
             <form data-form="status" class="tretaresia-form-grid">
                 ${input('Name', 'name', state.player.name)}${input('Title', 'title', state.player.title)}
                 ${input('Race', 'race', state.player.race)}${input('Age', 'age', state.player.age)}
+                ${input('Gender', 'gender', state.player.gender)}${input('Home continent', 'homeContinent', state.player.homeContinent)}
+                ${input('Standing', 'standing', state.player.standing)}${input('Affiliation', 'affiliation', state.player.affiliation)}
+                ${input('Hair', 'hair', state.player.appearance.hair)}${input('Eyes', 'eyes', state.player.appearance.eyes)}
+                ${input('Height', 'height', state.player.appearance.height)}${input('Build', 'build', state.player.appearance.build)}
                 ${input('Profession', 'profession', state.player.profession)}${input('Guild', 'guild', state.player.guild)}${input('Party', 'party', state.player.party)}
                 ${input('Power type', 'powerType', state.player.powerType)}${input('Origin skill', 'originSkill', state.player.originSkill)}
                 ${input('Condition', 'condition', state.player.condition)}${input('Level', 'level', state.player.level, 'number', 'min="1"')}
@@ -6796,6 +6941,8 @@ async function onSubmit(event) {
             state.player = {
                 ...state.player, name: values.name, title: values.title, race: values.race,
                 age: values.age, profession: values.profession, guild: values.guild, party: values.party,
+                gender: values.gender, homeContinent: values.homeContinent, standing: values.standing, affiliation: values.affiliation,
+                appearance: { hair: values.hair, eyes: values.eyes, height: values.height, build: values.build },
                 powerType: values.powerType, originSkill: values.originSkill, condition: values.condition, level: values.level,
                 hp: { current: values.hpCurrent, max: values.hpMax },
                 mp: { current: values.mpCurrent, max: values.mpMax },
@@ -6805,6 +6952,7 @@ async function onSubmit(event) {
                     efficiency: values.auraEfficiency, recovery: values.auraRecovery },
                 fitness: { ...state.player.fitness, lungCapacity: values.lungCapacity },
             };
+            state.onboarding.identitySeeded = true;
             await persistState(state);
             notify('success', 'Character status saved.');
             break;
@@ -8037,11 +8185,13 @@ async function sendChatAction(message, modeOverride = '') {
 
 const SCALAR_PATCH_PATHS = new Set([
     'player.name', 'player.race', 'player.age', 'player.title', 'player.profession', 'player.guild', 'player.party', 'player.condition', 'player.level', 'player.powerType', 'player.originSkill',
+    'player.gender', 'player.homeContinent', 'player.standing', 'player.affiliation',
+    'player.appearance.hair', 'player.appearance.eyes', 'player.appearance.height', 'player.appearance.build',
     'player.hp.current', 'player.hp.max', 'player.mp.current', 'player.mp.max', 'player.stamina.current', 'player.stamina.max',
     'player.survival.hunger', 'player.survival.thirst', 'player.aura.color', 'player.aura.infinite',
     'player.aura.output', 'player.aura.control', 'player.aura.efficiency', 'player.aura.recovery',
     'player.fitness.lungCapacity', 'player.fitness.aerobicSessions',
-    'onboarding.loadoutSeeded', 'onboarding.characterMapSeeded', 'onboarding.locationSeeded',
+    'onboarding.identitySeeded', 'onboarding.loadoutSeeded', 'onboarding.characterMapSeeded', 'onboarding.locationSeeded',
     'progression.adventurerRank', 'progression.customRankName', 'progression.magicRank', 'progression.swordRank', 'progression.experience',
     'progression.experienceMax', 'progression.reputation', 'progression.kills', 'progression.currency.gold', 'progression.currency.silver',
     'progression.currency.name', 'progression.currency.copper', 'world.id', 'worldClock.day', 'worldClock.dayName', 'worldClock.time', 'worldClock.phase', 'location.continent',
@@ -9303,6 +9453,8 @@ function bindChatEvents() {
             updatePrompt();
             renderAll();
         }
+        try { await catchUpPlayerIdentity(); }
+        catch (error) { console.warn('[Tretaresia RPG] Could not import player registration.', error); }
         try { await catchUpTravelHistory(); }
         catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
         await refreshCharacterLifeCompatibility({ save: true });
@@ -9416,6 +9568,8 @@ async function initialize() {
         bindNewChatSummaryCompatibility();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
+        try { await catchUpPlayerIdentity(); }
+        catch (error) { console.warn('[Tretaresia RPG] Could not import player registration.', error); }
         try { await catchUpTravelHistory(); }
         catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
         updatePrompt();
@@ -9429,7 +9583,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.29.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.29.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
