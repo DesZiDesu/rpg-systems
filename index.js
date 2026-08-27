@@ -824,7 +824,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.29.1';
+const LAUNCHER_BIND_VERSION = '0.29.2';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -2882,7 +2882,7 @@ function patchInstructions() {
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this one patch, not only scene fields.',
         'Resource, injury, and damage rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
         'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
-        'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. Set infinite=true only when the completed story explicitly confirms genuinely boundless/never-depleting power—never from level, settings, OOC requests, or an attempt. While true, do not decrease MP; set false only after explicit loss/seal/limitation.',
+        'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. Treat Limitless, Boundless, Unlimited, and Infinite Aura/Mana as aliases for the same infinite state. Set infinite=true only when the completed assistant story or resolved roll explicitly confirms genuinely inexhaustible power—never from level, settings, an OOC request, a user claim alone, or an unresolved attempt. While true, do not decrease MP; set false only after explicit loss/seal/limitation.',
         'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the first user message and completed reply; use exact atlas coordinates for a named atlas destination. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId. Never guess random coordinates: use exact coordinates only for a known atlas destination, preserve established on-land coordinates, or leave mapX/mapY null until a location is established. Then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
@@ -4507,7 +4507,7 @@ function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage) 
         const key = /output|ปล่อย/i.test(combined) ? 'output' : /efficien|ประสิทธิภาพ/i.test(combined) ? 'efficiency' : /recover|ฟื้นฟู/i.test(combined) ? 'recovery' : 'control';
         if (unchanged(state => state.player.aura[key])) setIfChanged(next.player.aura, key, Math.min(100, next.player.aura[key] + 1));
     }
-    if (/\b(?:boundless|infinite|never[- ]deplet(?:ing|es)|unlimited)\s+(?:aura|mana)\b|(?:ออร่า|มานา).*(?:ไร้ขีดจำกัด|ไม่มีวันหมด|อนันต์)/i.test(assistant)
+    if (/\b(?:boundless|limitless|infinite|never[- ]deplet(?:ing|es)|unlimited)\s+(?:aura|mana)\b|\b(?:aura|mana)\b.{0,32}\b(?:is\s+)?(?:boundless|limitless|infinite|unlimited|never[- ]deplet(?:ing|es))\b|(?:ออร่า|มานา).{0,40}(?:ไร้ขีดจำกัด|ไร้ขอบเขต|ไม่มีขีดจำกัด|ไม่มีวันหมด|อนันต์)|(?:ไร้ขีดจำกัด|ไร้ขอบเขต|ไม่มีขีดจำกัด|ไม่มีวันหมด|อนันต์).{0,40}(?:ออร่า|มานา)/i.test(assistant)
         && unchanged(state => state.player.aura.infinite)) setIfChanged(next.player.aura, 'infinite', true);
 
     const partyConfirmed = /\b(?:join(?:ed|s|ing)?|form(?:ed|s|ing)?|became (?:a )?member)\b.{0,80}\bparty\b|\bparty\b.{0,80}\b(?:join(?:ed|s|ing)?|member)\b|(?:เข้าร่วม|ร่วม|ตั้ง|ก่อตั้ง).{0,50}(?:ปาร์ตี้|กลุ่มผจญภัย)|(?:ปาร์ตี้|กลุ่มผจญภัย).{0,50}(?:มีสมาชิก|เข้าร่วม|ร่วมทีม)/i.test(assistant);
@@ -5133,9 +5133,20 @@ function diagnosticReport(state) {
     const friendlyIds = new Set(friendlyNpcs(state).map(entry => entry.id));
     const danglingParty = (state.social.party?.memberIds || []).filter(id => !friendlyIds.has(id));
     const seaTravel = state.travel.route === 'Sea' && ['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status);
+    const knownSceneValue = value => Boolean(String(value || '').trim()) && !/^unknown$/i.test(String(value).trim());
+    const weatherKnown = knownSceneValue(state.scene.weather);
+    const positionKnown = knownSceneValue(state.scene.position);
+    const sceneReady = weatherKnown && positionKnown;
+    const sceneDetail = sceneReady
+        ? 'Weather and exact scene position are established'
+        : !weatherKnown && !positionKnown
+            ? 'Weather and exact scene position are still unknown'
+            : !weatherKnown
+                ? 'Weather is still unknown'
+                : 'Exact scene position is still unknown';
     const checks = [
         ['Vitals', state.player.hp.current <= state.player.hp.max && state.player.mp.current <= state.player.mp.max && state.player.stamina.current <= state.player.stamina.max, 'Current values are within capacity'],
-        ['Scene', !/^unknown$/i.test(state.scene.weather) && !/^unknown$/i.test(state.scene.position), 'Weather and exact scene position are established'],
+        ['Scene', sceneReady, sceneDetail],
         ['Player map', seaTravel || pointIsOnAtlasLand(state.location.mapX, state.location.mapY, storyWorldId(state), state.location.continent), seaTravel ? 'Sea-route position is valid' : 'Player marker is on atlas land'],
         ['NPC map', unsafeNpcs.length === 0, unsafeNpcs.length ? `${unsafeNpcs.length} marker(s) need repair` : 'Visible NPC markers are on land'],
         ['NPC identity', duplicates.length === 0, duplicates.length ? `${duplicates.length} duplicate id(s)` : 'NPC IDs are unique'],
@@ -8249,7 +8260,7 @@ function canonicalPatchOperations(operation) {
         const colors = { white: '#ffffff', divine: '#ffffff', red: '#ef4444', blue: '#3b82f6', green: '#22c55e', purple: '#a855f7', gold: '#f5c451', black: '#111111' };
         value = colors[value.trim().toLocaleLowerCase()] || value;
     }
-    if (path === 'player.aura.infinite' && typeof value === 'string') value = /^(?:true|yes|1|infinite|boundless)$/i.test(value.trim());
+    if (path === 'player.aura.infinite' && typeof value === 'string') value = /^(?:true|yes|1|infinite|boundless|limitless|unlimited)$/i.test(value.trim());
     return [[verb, path, value, meta]];
 }
 
@@ -9583,7 +9594,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.29.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.29.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

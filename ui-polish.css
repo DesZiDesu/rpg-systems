@@ -5616,9 +5616,9 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 .tretaresia-vital-mana.is-divine .tretaresia-vital-line span,
 .tretaresia-vital-mana.is-divine .tretaresia-vital-line strong { color: #fff; text-shadow: 0 0 9px rgba(255,255,255,.86); }
 .tretaresia-vital-mana.is-divine .tretaresia-vital-track {
-    background: #fff;
-    border-color: rgba(255,255,255,.94);
-    box-shadow: inset 0 0 7px rgba(255,255,255,.96), 0 0 12px rgba(255,255,255,.48);
+    background: rgba(255,255,255,.055);
+    border-color: rgba(255,255,255,.12);
+    box-shadow: inset 0 0 4px rgba(0,0,0,.84);
 }
 .tretaresia-vital-mana.is-divine .tretaresia-vital-track > span {
     background: linear-gradient(105deg,#fff 0 12%,#ff6b6b 22%,#ffd76b 34%,#76ff9d 47%,#72ddff 60%,#7894ff 72%,#d68cff 84%,#fff 100%);

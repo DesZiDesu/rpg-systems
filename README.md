@@ -2,7 +2,9 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.29.1**
+**Current version: 0.29.2**
+
+- v0.29.2 gives partially depleted Divine Mana a normal dark empty track, explains the exact missing Scene diagnostic field, and recognizes Limitless, Boundless, Unlimited, and Infinite Aura/Mana as roll-confirmed aliases of the same inexhaustible state.
 
 - v0.29.1 imports structured player registration data from existing chat history, repairs stale Identity fields, recognizes Divine Mana from registration/proficiency/confirmed use, and renders its flowing rainbow bar immediately.
 
