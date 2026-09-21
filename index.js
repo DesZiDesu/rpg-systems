@@ -1,7 +1,8 @@
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.31.0';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.31.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey } from './npc-scopes.js?v=0.31.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.32.0';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.32.0';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.32.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey } from './npc-scopes.js?v=0.32.0';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
@@ -833,7 +834,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.31.0';
+const LAUNCHER_BIND_VERSION = '0.32.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -6606,6 +6607,21 @@ function npcPortraitStorageKey(npcId, chatId = SillyTavern.getContext().getCurre
     return `tretaresia-rpg:npc-portrait:${chatId}:${npcId}`;
 }
 
+async function readNpcPortrait(entry) {
+    if(entry.portraitSource==='none')return null;
+    if(entry.portraitSource==='server' && entry.portraitPath)return readServerPortrait(entry);
+    const key=entry.portraitChatId ? npcPortraitStorageKey(entry.id,entry.portraitChatId)
+        : scopedPortraitKey(entry,SillyTavern.getContext().getCurrentChatId?.());
+    const blob=await SillyTavern.libs?.localforage?.getItem(key);
+    if(blob instanceof Blob)return blob;
+    if(entry.portraitSource==='local')return null;
+    const linked=await characterLifeBridge()?.portrait?.({id:entry.characterLifeId,scope:entry.characterLifeScope,name:entry.name,original:true});
+    return linked?.blob instanceof Blob ? linked.blob : null;
+}
+function saveNpcPortrait(blob) {
+    return uploadPortrait(blob,{headers:SillyTavern.getContext().getRequestHeaders()});
+}
+
 function clearNpcPortraitObjectUrls() {
     npcPortraitObjectUrls.forEach(url => URL.revokeObjectURL(url));
     npcPortraitObjectUrls.clear();
@@ -6624,7 +6640,7 @@ async function hydrateNpcPortraits(root, state = getState()) {
             if (entry.portraitSource === 'none') return;
             const key = entry.portraitChatId ? npcPortraitStorageKey(entry.id, entry.portraitChatId)
                 : scopedPortraitKey(entry, SillyTavern.getContext().getCurrentChatId?.());
-            let blob = entry.portraitSource === 'local' && store ? await store.getItem(key) : null;
+            let blob = entry.portraitSource === 'server' ? await readServerPortrait(entry) : entry.portraitSource === 'local' && store ? await store.getItem(key) : null;
             const bridge = characterLifeBridge();
             if (!blob && entry.portraitSource !== 'local' && bridge && (entry.characterLifeId || entry.characterLifePortraitId || entry.name)) {
                 // The selected dossier needs the original asset at phone width.
@@ -6699,7 +6715,9 @@ async function openNpcPortraitEditor(npcId) {
         inputElement?.click();
         return;
     }
-    const blob = await SillyTavern.libs?.localforage?.getItem(npcPortraitStorageKey(entry.id));
+    let blob;
+    try { blob = await readNpcPortrait(entry); }
+    catch(error) { notify('error',error.message || 'Could not load the NPC portrait from the server.'); return; }
     if (!(blob instanceof Blob)) {
         notify('warning', getSettings().language === 'th' ? 'รูป NPC นี้ไม่ได้อยู่ในอุปกรณ์นี้ กรุณาเลือกไฟล์ใหม่' : 'This NPC portrait is not stored on this device. Choose it again here.');
         const inputElement = document.getElementById('tretaresia-npc-avatar-input');
@@ -7490,16 +7508,14 @@ async function onPanelChange(event) {
     if (npcPortrait instanceof HTMLInputElement && npcPortrait.files?.[0]) {
         const npcId = npcPortrait.dataset.npcId;
         try {
-            const store = SillyTavern.libs?.localforage;
-            if (!store) throw new Error('Local image storage is unavailable in this SillyTavern build.');
+            const expectedChat = SillyTavern.getContext().getCurrentChatId?.();
+            if (!getState().npcs.some(value => value.id === npcId)) throw new Error('NPC profile was not found.');
+            const reference = await saveNpcPortrait(npcPortrait.files[0]);
+            if(expectedChat!==SillyTavern.getContext().getCurrentChatId?.())throw Error('Chat changed; please reopen the NPC before saving.');
             const state = clone(getState());
             const entry = state.npcs.find(value => value.id === npcId);
-            if (!entry) throw new Error('NPC profile was not found.');
-            const blob = await resizeImageBlob(npcPortrait.files[0]);
-            await store.setItem(npcPortraitStorageKey(entry.id), blob);
-            entry.hasPortrait = true;
-            entry.portraitSource = 'local';
-            entry.portraitChatId = SillyTavern.getContext().getCurrentChatId?.() || '';
+            if (!entry) throw new Error('NPC profile was removed during upload.');
+            Object.assign(entry,reference);
             entry.portraitView = clone(defaultState().player.portraitView);
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc-portrait');
@@ -8929,6 +8945,7 @@ function applyStatePatch(current, patch) {
         entry.hasPortrait = Boolean(previous?.hasPortrait);
         entry.portraitView = clone(previous?.portraitView || defaultState().player.portraitView);
         entry.portraitSource = previous?.portraitSource || '';
+        entry.portraitPath = previous?.portraitPath || '';
         entry.npcScope = previous?.npcScope || 'chat';
         entry.npcOwner = previous?.npcOwner || '';
         entry.portraitChatId = previous?.portraitChatId || '';
@@ -9668,21 +9685,10 @@ async function initialize() {
             persistScope: persistNpcScope,
             portraitKey: (profile, chatId, owner) => scopedPortraitKey(profile, chatId, owner),
             storage: () => SillyTavern.libs?.localforage, notify, parseJson,
+            savePortrait: saveNpcPortrait,
             visible: source => extractStatePatch(source).visible, updatePrompt,
             recordRequest: recordExtensionRequest,
-            async portrait(entry) {
-                if (entry.portraitSource === 'none') return null;
-                const key = entry.portraitChatId ? npcPortraitStorageKey(entry.id, entry.portraitChatId)
-                    : scopedPortraitKey(entry, SillyTavern.getContext().getCurrentChatId?.());
-                const store = SillyTavern.libs?.localforage;
-                if (entry.hasPortrait && store) {
-                    const blob = await store.getItem(key);
-                    if (blob instanceof Blob) return blob;
-                }
-                if (entry.portraitSource === 'local') return null;
-                const linked = await characterLifeBridge()?.portrait?.({ id: entry.characterLifeId, scope: entry.characterLifeScope, name: entry.name, original: true });
-                return linked?.blob instanceof Blob ? linked.blob : null;
-            },
+            portrait: readNpcPortrait,
         });
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) suspendMapRendering(true);
@@ -9712,7 +9718,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.31.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.32.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

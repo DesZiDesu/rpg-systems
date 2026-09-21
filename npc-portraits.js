@@ -1,4 +1,4 @@
-import { clamp, cropGeometry } from './npc-core.js?v=0.31.0';
+import { clamp, cropGeometry } from './npc-core.js?v=0.32.0';
 
 export async function decodePortrait(blob) {
     if (!(blob instanceof Blob) || blob.size > 16 * 1024 * 1024) throw Error('ภาพต้องมีขนาดไม่เกิน 16 MB');
@@ -18,11 +18,17 @@ export async function decodePortrait(blob) {
 
 export async function preparePortrait(blob) {
     const image = await decodePortrait(blob);
-    const scale = Math.min(1, 2048 / Math.max(image.naturalWidth, image.naturalHeight));
     const canvas = document.createElement('canvas');
-    canvas.width = Math.round(image.naturalWidth * scale); canvas.height = Math.round(image.naturalHeight * scale);
-    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
-    return new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(Error('บันทึกภาพไม่ได้')), 'image/webp', .9));
+    for (const edge of [1024,768,512,384]) {
+        const scale=Math.min(1,edge/Math.max(image.naturalWidth,image.naturalHeight));
+        canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+        canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+        const encode=type=>new Promise(resolve=>canvas.toBlob(resolve,type,.8));
+        let output=await encode('image/webp');
+        if(output?.type!=='image/webp')output=await encode('image/jpeg');
+        if(output && output.size<=256*1024)return output;
+    }
+    throw Error('ไม่สามารถย่อภาพให้เล็กกว่า 256 KB ได้');
 }
 
 export async function croppedPortrait(blob, frame) {

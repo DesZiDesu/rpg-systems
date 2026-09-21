@@ -1,6 +1,7 @@
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, importCharacters, readCharacterFile, keyName, clean } from './npc-core.js?v=0.31.0';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.31.0';
-import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.31.0';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, importCharacters, readCharacterFile, keyName, clean } from './npc-core.js?v=0.32.0';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.32.0';
+import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.32.0';
+import { collectPortraitBackups } from './npc-media.js?v=0.32.0';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -10,7 +11,7 @@ export function createNpcWorkspace(api) {
     let dialog,form,roster,status,editor,base={},draftId='',chatId='',ownerKey='',scope='chat',view='list',page=0,token=0,busy=false,dirty=false,photoBlob=null,photoDirty=false,frameDirty=false,previewUrl=null,previewGeneration=0;
     const changed=new Set();
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('./npc-ui.css?v=0.31.0',import.meta.url).href;document.head.append(sheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('./npc-ui.css?v=0.32.0',import.meta.url).href;document.head.append(sheet);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
     const valid=t=>dialog?.open && token===t && chatId===currentChat() && ownerKey===(api.scopeInfo()?.key||'');
@@ -38,8 +39,10 @@ export function createNpcWorkspace(api) {
             <div class="trpg-manager-layout"><section class="trpg-roster trpg-browser"><div class="trpg-browser-tools"><label>ค้นหาตัวละคร<input type="search" data-search placeholder="ค้นหาชื่อ บทบาท หรือสังกัด"></label>
             <div class="trpg-roster-actions"><button type="button" data-new data-lock>＋ สร้าง NPC</button><button type="button" data-import data-lock>นำเข้า Character Life</button><input type="file" data-import-file accept=".json,.zip,application/json,application/zip" hidden></div></div><div class="trpg-list-heading"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class="trpg-pagination" data-pagination></div></section>
             <section class="trpg-record" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form novalidate hidden><fieldset></fieldset></form></section></div>
-            <footer class="trpg-manager-footer"><span role="status" aria-live="polite"></span><span>SCOPED ARCHIVE · v0.31.0</span></footer>`;
+            <footer class="trpg-manager-footer"><span role="status" aria-live="polite"></span><span>SCOPED ARCHIVE · v0.32.0</span></footer>`;
         document.body.append(dialog);form=dialog.querySelector('form');roster=dialog.querySelector('[data-list]');status=dialog.querySelector('[role=status]');
+        const backup=element('button','','สำรองภาพเก่าไปยังเซิร์ฟเวอร์');backup.type='button';backup.dataset.lock='';
+        backup.addEventListener('click',()=>void migratePortraits());dialog.querySelector('.trpg-roster-actions').append(backup);
         dialog.querySelector('[data-close]').addEventListener('click',()=>close());
         dialog.querySelector('[data-back]').addEventListener('click',()=>{if(canLeave())showList();});
         dialog.querySelector('[data-scope-select]').addEventListener('change',e=>{if(busy)return;scope=e.target.value;page=0;showList();});
@@ -96,10 +99,21 @@ export function createNpcWorkspace(api) {
             const original=records().find(n=>n.id===p.id);if(!original)throw Error('ไม่พบตัวละครต้นฉบับ');
             const copy=api.profile({...original,id:uuid(),contactId:'',npcScope:target,npcOwner:target==='character'?ownerKey:'',portraitChatId:'',hasPortrait:false,portraitSource:'none',updatedAt:new Date().toISOString()});
             const blob=await api.portrait(original);if(!valid(ticket))return;
-            if(blob){if(!api.storage()?.setItem)throw Error('พื้นที่เก็บภาพไม่พร้อม');await api.storage().setItem(api.portraitKey(copy,chatId,ownerKey),blob);copy.hasPortrait=true;copy.portraitSource='local';}
+            if(blob)Object.assign(copy,original.portraitSource==='server'?{portraitPath:original.portraitPath,portraitSource:'server',hasPortrait:true}:await api.savePortrait(blob));
             if(!valid(ticket))return;const destination=api.listScope(target);if(destination.length>=200)throw Error('Scope ปลายทางมี NPC ครบ 200 ตัว');if(destination.some(n=>keyName(n.name)===keyName(copy.name)))throw Error('มีชื่อนี้ใน Scope ปลายทางแล้ว ไม่ได้เขียนทับ');
             if(!await api.persistScope(target,[...destination,copy],'npc-management',chatId,ownerKey))throw Error('บันทึกสำเนาไม่สำเร็จ');
             if(!valid(ticket))return;scope=target;page=0;showList();say('สร้างสำเนาแล้ว · หากชื่อซ้ำกันในสอง Scope แชตนี้จะใช้ข้อมูลจาก Chat ก่อน');
+        }catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
+    }
+    async function migratePortraits(){
+        if(busy)return;const ticket=token;lock(true);
+        try{
+            const {updates,missing,aborted}=await collectPortraitBackups(records(),{read:api.portrait,upload:api.savePortrait,valid:()=>valid(ticket),onProgress:(n,total)=>say(`กำลังสำรองภาพ ${n}/${total}…`)});
+            if(aborted||!valid(ticket))return;
+            // Re-read profiles: never replace an edit made while uploads were running.
+            let applied=0;const next=records().map(p=>{const update=updates.get(p.id);if(!update||JSON.stringify(p)!==update.original)return p;applied++;return {...p,...update.reference,updatedAt:new Date().toISOString()};});
+            if(applied&&!await persistRecords(next,'npc-management'))throw Error('บันทึกลิงก์ภาพไม่สำเร็จ กรุณาลองอีกครั้ง');
+            if(valid(ticket)){list();say(`สำรองภาพ ${applied} ภาพใน ${scope==='character'?'Character':'Chat'} แล้ว · ไม่สำเร็จ/ข้อมูลเปลี่ยน ${missing+updates.size-applied} · ภาพเดิมยังอยู่ เปิดแชตอื่นเพื่อสำรองภาพของแชตนั้นด้วย`);}
         }catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
     }
     function field(key,label,value,long=false,type='text'){
@@ -124,7 +138,7 @@ export function createNpcWorkspace(api) {
         const fileLabel=element('label','','ภาพสี่เหลี่ยม 1:1 · JPG / PNG / WebP / GIF / AVIF'),file=element('input');file.type='file';file.accept='image/png,image/jpeg,image/webp,image/gif,image/avif';fileLabel.append(file);appearance.body.append(fileLabel);
         const photoActions=element('div','trpg-wide trpg-actions'),remove=element('button','','นำภาพออก');remove.type='button';photoActions.append(remove);appearance.body.append(photoActions);
         const crop=element('div','trpg-crop trpg-wide');crop.hidden=true;appearance.body.append(crop);
-        editor=portraitEditor(crop,frame=>{frameDirty=true;photoDirty=Boolean(photoBlob);dirty=true;base.portraitView={desktop:frame,mobile:{...frame}};void preview();});
+        editor=portraitEditor(crop,frame=>{frameDirty=true;dirty=true;base.portraitView={desktop:frame,mobile:{...frame}};void preview();});
         file.addEventListener('change',async()=>{
             const blob=file.files[0];file.value='';if(!blob)return;const ticket=token;lock(true);say('กำลังเตรียมภาพ…');
             try{const ready=await preparePortrait(blob);if(!valid(ticket))return;photoBlob=ready;photoDirty=true;frameDirty=true;dirty=true;base.portraitView={desktop:{x:50,y:50,zoom:1},mobile:{x:50,y:50,zoom:1}};await editor.set(photoBlob,base.portraitView.mobile);await preview();say('จัดภาพได้ด้วยการลากหรือใช้สองนิ้วซูม แล้วกดบันทึก');}catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
@@ -185,7 +199,7 @@ export function createNpcWorkspace(api) {
             if(!draftId&&state.npcs.length>=200)throw Error('แชตนี้มี NPC ครบ 200 ตัวแล้ว');
             let existing=state.npcs.find(n=>n.id===draftId);if(draftId&&!existing)throw Error('ตัวละครนี้ถูกลบระหว่างแก้ไข กรุณาเปิดรายการใหม่');
             const id=draftId||uuid();
-            if(photoDirty&&photoBlob){if(!api.storage()?.setItem)throw Error('พื้นที่เก็บภาพไม่พร้อมใช้งาน');await api.storage().setItem(api.portraitKey({id,npcScope:scope},chatId,ownerKey),photoBlob);}
+            const reference=photoDirty&&photoBlob?await api.savePortrait(photoBlob):null;
             if(!valid(ticket))return;
             // Read again after image IO: keep concurrent AI changes to untouched fields.
             state=scopeState();existing=state.npcs.find(n=>n.id===draftId);
@@ -193,7 +207,7 @@ export function createNpcWorkspace(api) {
             if(state.npcs.some(n=>n.id!==draftId&&keyName(n.name)===keyName(v.name)))throw Error('มีตัวละครชื่อนี้เพิ่มเข้ามาระหว่างบันทึก กรุณาเลือกตัวเดิม');
             const next=existing?{...existing}:{...v,id};
             for(const key of changed){if(key.startsWith('stats.'))next.stats={...next.stats,[key.slice(6)]:v.stats[key.slice(6)]};else if(Object.hasOwn(v,key))next[key]=v[key];}
-            if(photoDirty){next.hasPortrait=Boolean(photoBlob);next.portraitSource=photoBlob?'local':'none';next.portraitChatId='';}
+            if(photoDirty)Object.assign(next,reference||{hasPortrait:false,portraitSource:'none',portraitPath:'',portraitChatId:''});
             next.npcScope=scope;next.npcOwner=scope==='character'?ownerKey:'';
             if(frameDirty)next.portraitView=base.portraitView;
             next.updatedAt=new Date().toISOString();const normalized=api.profile(next,existing||{});
@@ -240,7 +254,7 @@ export function createNpcWorkspace(api) {
                         prepared.push({profile:api.profile({...record.profile,id:uuid(),npcScope:scope,npcOwner:scope==='character'?ownerKey:'',hasPortrait:Boolean(ready),portraitSource:ready?'local':'none',updatedAt:new Date().toISOString()}),blob:ready});
                     }
                     if(!valid(ticket))return;const count=api.listScope(scope).length;if(count+prepared.length>200)throw Error('จำนวน NPC รวมจะเกิน 200 ตัว กรุณาเลือกให้น้อยลง');
-                    for(const item of prepared){if(!valid(ticket))return;if(item.blob){if(!api.storage()?.setItem)throw Error('พื้นที่เก็บภาพไม่พร้อมใช้งาน');await api.storage().setItem(api.portraitKey(item.profile,chatId,ownerKey),item.blob);}}
+                    for(const item of prepared){if(!valid(ticket))return;if(item.blob)Object.assign(item.profile,await api.savePortrait(item.blob));}
                     if(!valid(ticket))return;const state=scopeState(),names=new Set(state.npcs.map(n=>keyName(n.name)));let added=0;
                     for(const item of prepared){const name=keyName(item.profile.name);if(names.has(name))continue;if(state.npcs.length>=200)throw Error('มี NPC เพิ่มระหว่างนำเข้า กรุณาลองใหม่');names.add(name);state.npcs.push(item.profile);added++;}
                     if(added&&!await persistRecords(state.npcs,'character-life-import'))throw Error('บันทึกข้อมูลนำเข้าไม่สำเร็จ');

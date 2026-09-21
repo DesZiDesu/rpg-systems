@@ -44,8 +44,8 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.31.0');
- for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.32.0');
+ for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
  context.characters=[{name:'Same display name',avatar:'first.png'},{name:'Same display name',avatar:'second.png'}];context.characterId=0;
@@ -54,6 +54,14 @@ test('host getState merges only the current card library and leaves legacy NPCs 
  const state=host.getState();assert.equal(state.npcs.length,2);assert.equal(state.npcs[0].npcScope,'chat');assert.equal(state.npcs[1].npcScope,'character');
  context.characterId=1;assert.equal(host.getState().npcs.length,1);
  context.characterId=0;context.chatMetadata={};assert.equal(host.getState().npcs.length,1);assert.equal(host.getState().npcs[0].name,'Shared');
+});
+
+test('AI cannot replace a server portrait and image paths stay outside model context',()=>{
+ const p=host.npcProfile({id:'server-photo',name:'Photo NPC',hasPortrait:true,portraitSource:'server',portraitPath:'/user/images/tretaresia-npc/abc.webp'});
+ const state={...host.defaultState(),npcs:[p]};
+ const changed=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:p.id,name:p.name,portraitSource:'none',portraitPath:'/user/images/tretaresia-npc/evil.webp'}]]});
+ assert.equal(changed.next.npcs[0].portraitSource,'server');assert.equal(changed.next.npcs[0].portraitPath,p.portraitPath);
+ assert.ok(!JSON.stringify(host.roleplayState(state)).includes(p.portraitPath));
 });
 test('real AI patch cannot choose Character scope or modify the shared library',()=>{
  context.characterId=0;context.chatMetadata={};const current=host.getState();

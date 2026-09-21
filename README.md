@@ -2,13 +2,24 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.31.0**
+**Current version: 0.32.0**
+
+### v0.32.0 — Fresh-release loading and server-backed NPC portraits
+
+- A stable `loader.js` checks the installed server manifest with `cache: no-store` and a unique request URL, then imports the versioned main runtime and styles. All release assets must have their version bumped together. No browser storage is cleared.
+- SillyTavern's extension update hook offers **Apply update**. Save drafts and finish generation before accepting the reload; hot-importing a second runtime would duplicate listeners. On the first upgrade from an older release, use the host's Update action and reload the page normally once to activate the new loader. Already-running old JavaScript cannot upgrade itself retroactively. The NPC Management footer displays the running version.
+- New, imported and copied NPC portraits are saved through SillyTavern's authenticated `/api/images/upload` endpoint in the current user's `user/images/tretaresia-npc` folder. Profiles contain a small same-server path, not image bytes. They survive Safari website-data deletion, provided the server files and chat/settings data remain intact. They are not publicly hosted and are not automatically portable to another server.
+- Uploads are re-encoded (metadata removed), at most 1024 pixels on the long edge and **256 KiB per file**, WebP with JPEG fallback. Large images are downscaled further as needed. Content-addressed filenames reuse identical encoded bytes on HTTPS/localhost; plain-HTTP LAN connections use random filenames when Web Crypto hashing is unavailable. Copies reuse existing server references, and adjusting the crop alone does not upload another image. Original high-resolution source files are not stored on the server.
+- For existing local images: open **NPC Management → สำรองภาพเก่าไปยังเซิร์ฟเวอร์** in each Chat and Character scope that contains portraits. Wait for the success count before deleting any browser data. Each old chat must be opened to migrate its records. Upload failures/missing images are reported; original local files are never deleted by migration. Images whose only local copy was already deleted cannot be recovered by this update.
+- Back up the SillyTavern user data directory as well as chats/settings. Removing a portrait from a profile does not delete its server file (other profiles may share it). Music remains device-local; this migration concerns NPC portraits.
+
+Automated coverage includes the existing scope and Safari-safe-mode regressions, server upload/path validation, size limits, empty browser storage, release URLs and loader behavior. Real iOS Safari acceptance is a separate manual check.
 
 ### v0.31.0 — List-first NPC Management and isolated scopes
 
 - Management opens to a full-width **vertical list**, including an empty state when no NPC exists. Search covers names, aliases, roles and factions; pagination shows 20 records per page. Select a row to read its dossier, then choose **Edit**. Creation is an explicit separate action. Mobile no longer turns NPCs into horizontal tabs above an editor.
 - The scope selector chooses **Chat** (this chat only) or **Character** (every chat using the same character card). Character ownership uses the card's avatar/filename, not its display name or array index. Group chats have Chat scope only because no single card is selected. Existing NPCs stay in their original Chat scope without automatic promotion.
-- Character libraries are persisted in TRETARESIA extension settings under the card file identity. They are not embedded in an exported character-card PNG. Renaming/replacing the card file changes that binding; identical display names do not share a library. Portraits remain local browser storage, with separate Chat and Character storage keys.
+- Character libraries are persisted in TRETARESIA extension settings under the card file identity. They are not embedded in an exported character-card PNG. Renaming/replacing the card file changes that binding; identical display names do not share a library. Older portraits use separate Chat and Character browser keys; v0.32.0 adds server storage and migration.
 - Both scopes are available to chat headers, model context and the existing Codex. A same-name Chat record wins **in that chat only**; it does not overwrite the Character record. The dossier offers **Create a copy in Character/Chat**, with confirmation, duplicate checks and portrait copying; the source remains unchanged.
 - New AI-created NPCs always enter Chat scope. Story changes to an existing Character NPC are stored as per-chat differences; they do not rewrite the shared card library or leak into another chat. Explicit edits in Character Management update the shared template. The Character dossier displays that template; live scene/relationship differences can be inspected in the current chat's Codex.
 - Automatic new-chat continuity now excludes Chat NPCs and their linked social/contact references, including when restoring an older continuity cache. It keeps other player/world continuity features. An AI may still introduce an NPC mentioned in a new story/summary as a new Chat record.
@@ -78,7 +89,7 @@ The tracking protocol uses a compact, relevance-prioritized state payload instea
 - English and Thai interface/action support, hidden/visible/draft action delivery, mobile safe-area layout, touch controls, and configurable appearance.
 - Automatic same-character continuity when starting a new chat, including same-device copying for locally stored NPC portraits and music.
 - Direct compatibility with `nutho-start-new-chat-with-summary`: RPG state is captured before its summary/new-chat flow, restored after `CHAT_CHANGED`, and kept separate from the carried memory summary.
-- Portable JSON state export/import from the interface header. Player state and the embedded player portrait travel with the file; device-only NPC media stays local.
+- Portable JSON state export/import from the interface header. Player state and the embedded player portrait travel with the file; server-backed NPC paths work on the same server. Copy server image files separately when moving servers.
 
 ## Tretaresia-aware behavior
 
@@ -86,7 +97,7 @@ The injected rules preserve the setting's power-sensing restrictions, the rarity
 
 ## API and privacy
 
-Tretaresia RPG uses SillyTavern's active provider and selected model. It never requests or stores a separate API key. Automatic tracking shares the normal character response, so there is no second quota-consuming request. Portraits and music remain local to the device and are excluded from prompts.
+Tretaresia RPG uses SillyTavern's active provider and selected model. It never requests or stores a separate API key. Automatic tracking shares the normal character response, so there is no second quota-consuming request. NPC portraits are stored on your SillyTavern server from v0.32.0; older local images need migration. Music remains device-local. Image bytes are excluded from prompts.
 
 ## Install
 

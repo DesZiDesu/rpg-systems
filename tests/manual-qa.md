@@ -25,3 +25,13 @@ Automated Node tests exercise the production schema, patch parser, prompt integr
 8. At 390px and 320px widths, editor fields, archive list and sticky save controls must remain accessible. Test portrait and landscape, keyboard open, safe-area insets, dialog focus/escape and reduced motion. Header gradient animation must stop under reduced-motion preference.
 
 Known boundaries: images are device-local browser storage, not embedded into model prompts or server chat metadata. ID-only imports cannot recreate absent image bytes without Character Life's bridge. Model-generated NPC data depends on the model returning the documented valid patch. New module assets have versioned URLs; server/host caching of the entry script remains controlled by SillyTavern.
+# v0.32.0 update and server-media acceptance
+
+- Update from v0.31.0, then normal reload once (do not clear Safari data). Verify footer v0.32.0, list-first manager and Chat/Character picker.
+- On a later version bump, update through SillyTavern and verify Apply update appears. An open draft must remain untouched until the user confirms the reload. After reload verify fresh runtime, base styles and NPC styles; no duplicate event listeners/UI.
+- Temporarily disconnect the server during startup: visible loader error, no cache deletion and no stale-runtime fallback. Restore connection and normal reload.
+- Upload JPEG/PNG/WebP from iPhone Photos, including a large photo and a transparent PNG. Inspect stored file <=256 KiB, long edge <=1024. Test an HTTP LAN URL (without crypto.subtle) as well as HTTPS. Pan/pinch, save, reopen and verify crop.
+- Migrate legacy Chat and Character portraits with the backup button. Confirm successes and missing-image count. Switch chat during migration: no profile changes in the destination chat. Original local images remain available on failure.
+- Using a disposable test profile/server backup only, clear browser website data **after successful migration**, sign back into the same server account and verify portraits plus framing return in both scopes. Never do this to the user's real cache for routine updates.
+- Interrupt image upload: no false server reference is saved. Retry works. Copy a server-backed NPC to the other scope: same server path, independent profile/frame.
+- Delete a portrait from one profile: another profile using that path retains its image. Moving to a different SillyTavern server requires copying server images too.
