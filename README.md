@@ -2,7 +2,19 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.30.2**
+**Current version: 0.31.0**
+
+### v0.31.0 — List-first NPC Management and isolated scopes
+
+- Management opens to a full-width **vertical list**, including an empty state when no NPC exists. Search covers names, aliases, roles and factions; pagination shows 20 records per page. Select a row to read its dossier, then choose **Edit**. Creation is an explicit separate action. Mobile no longer turns NPCs into horizontal tabs above an editor.
+- The scope selector chooses **Chat** (this chat only) or **Character** (every chat using the same character card). Character ownership uses the card's avatar/filename, not its display name or array index. Group chats have Chat scope only because no single card is selected. Existing NPCs stay in their original Chat scope without automatic promotion.
+- Character libraries are persisted in TRETARESIA extension settings under the card file identity. They are not embedded in an exported character-card PNG. Renaming/replacing the card file changes that binding; identical display names do not share a library. Portraits remain local browser storage, with separate Chat and Character storage keys.
+- Both scopes are available to chat headers, model context and the existing Codex. A same-name Chat record wins **in that chat only**; it does not overwrite the Character record. The dossier offers **Create a copy in Character/Chat**, with confirmation, duplicate checks and portrait copying; the source remains unchanged.
+- New AI-created NPCs always enter Chat scope. Story changes to an existing Character NPC are stored as per-chat differences; they do not rewrite the shared card library or leak into another chat. Explicit edits in Character Management update the shared template. The Character dossier displays that template; live scene/relationship differences can be inspected in the current chat's Codex.
+- Automatic new-chat continuity now excludes Chat NPCs and their linked social/contact references, including when restoring an older continuity cache. It keeps other player/world continuity features. An AI may still introduce an NPC mentioned in a new story/summary as a new Chat record.
+- Imports go to the scope selected before opening the import dialog. All NPC fields, mobile portrait controls, AI assistance and Character Life JSON/ZIP import remain available. Each scope supports up to 200 records.
+
+The scope regression suite covers card isolation, legacy Chat records, same-name precedence, per-chat AI overrides, portrait keys, continuity and swipe rollback. Browser/iPhone visual acceptance remains a separate manual check.
 
 ### v0.30.2 — Safari recovery URL
 

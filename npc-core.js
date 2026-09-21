@@ -21,6 +21,9 @@ export function identity(raw={}, base={}) {
  result.roleIcon=Object.hasOwn(ROLE_ICONS,raw.roleIcon)?raw.roleIcon:Object.hasOwn(ROLE_ICONS,base.roleIcon)?base.roleIcon:'book';
  result.portraitSize=clamp(raw.portraitSize ?? base.portraitSize ?? 72,48,144);
  result.portraitSource=['local','none','character-life'].includes(raw.portraitSource)?raw.portraitSource:['local','none','character-life'].includes(base.portraitSource)?base.portraitSource:'';
+ result.npcScope=(raw.npcScope??base.npcScope)==='character'?'character':'chat';
+ result.npcOwner=result.npcScope==='character'?clean(raw.npcOwner??base.npcOwner,500):'';
+ result.portraitChatId=clean(raw.portraitChatId??base.portraitChatId,500);
  return result;
 }
 export function profileFields(raw={}) {

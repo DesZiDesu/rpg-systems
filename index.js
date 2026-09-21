@@ -1,6 +1,7 @@
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.30.2';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.30.2';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.31.0';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.31.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey } from './npc-scopes.js?v=0.31.0';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
@@ -832,7 +833,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.30.2';
+const LAUNCHER_BIND_VERSION = '0.31.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -2084,7 +2085,7 @@ function normalize(candidate, base = defaultState()) {
             const key = entry.name.toLocaleLowerCase();
             byName.set(key, byName.has(key) ? npcProfile(entry, byName.get(key)) : entry);
         });
-        result.npcs = [...byName.values()].slice(0, 200);
+        result.npcs = [...byName.values()].slice(0, 400);
     }
     if (Array.isArray(source.contacts)) {
         const byName = new Map();
@@ -2117,7 +2118,7 @@ function normalize(candidate, base = defaultState()) {
         if (linked) linked.npcId = entry.id;
         else if (entry.contactId) entry.contactId = '';
     });
-    result.npcs = result.npcs.slice(0, 200);
+    result.npcs = result.npcs.slice(0, 400);
     const socialSource = source.social && typeof source.social === 'object' ? source.social : {};
     const legacyParty = !socialSource.party && text(player.party, '', 140) && !['Solo', 'None'].includes(text(player.party, '', 140))
         ? { name: player.party } : null;
@@ -2160,6 +2161,7 @@ function normalize(candidate, base = defaultState()) {
         })).filter(entry => entry.text).slice(-30);
     }
     result.updatedAt = typeof source.updatedAt === 'string' ? source.updatedAt : result.updatedAt;
+    result.npcScopes = scopeEnvelope(source.npcScopes ?? result.npcScopes);
     result.updateSource = text(source.updateSource, result.updateSource, 40);
     result.syncCursor = {
         user: Number.isInteger(source.syncCursor?.user) ? source.syncCursor.user : result.syncCursor.user,
@@ -2172,7 +2174,37 @@ function getState() {
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.()) return defaultState();
     const saved = context.chatMetadata[METADATA_KEY];
-    return saved && typeof saved === 'object' ? normalize(saved) : defaultState();
+    const source = saved && typeof saved === 'object' ? (Array.isArray(saved.npcs) ? saved : normalize(saved)) : defaultState();
+    return normalize(hydrateScopedNpcs(source, characterNpcLibrary(), characterOwner(context)?.key));
+}
+
+function characterNpcLibrary(owner = characterOwner(SillyTavern.getContext())?.key) {
+    if (!owner) return [];
+    const saved = getSettings().npcCharacterLibraries?.[owner];
+    return (Array.isArray(saved) ? saved : []).slice(0, 200)
+        .map(npc => npcProfile({ ...npc, npcScope: 'character', npcOwner: owner })).filter(Boolean);
+}
+
+function storedNpcState(state) {
+    return packScopedNpcs(state, characterNpcLibrary(), characterOwner(SillyTavern.getContext())?.key);
+}
+
+async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner) {
+    const context = SillyTavern.getContext(), owner = characterOwner(context)?.key || '';
+    if (context.getCurrentChatId?.() !== expectedChat || owner !== expectedOwner) throw new Error('แชตหรือการ์ดเปลี่ยนแล้ว กรุณาเปิดรายการใหม่');
+    if (npcs.length > 200) throw new Error('แต่ละ Scope รองรับ NPC สูงสุด 200 ตัว');
+    if (scope === 'character') {
+        if (!owner) throw new Error('Character Scope ต้องเปิดแชตของการ์ดตัวละครเดี่ยว');
+        const settings = getSettings();
+        settings.npcCharacterLibraries ||= {};
+        settings.npcCharacterLibraries[owner] = npcs.map(npc => npcProfile({ ...npc, npcScope: 'character', npcOwner: owner }));
+        context.saveSettingsDebounced();
+        updatePrompt(); renderAll(); npcWorkspace?.refresh();
+        return true;
+    }
+    const stored = storedNpcState(getState());
+    stored.npcs = npcs.map(npc => npcProfile({ ...npc, npcScope: 'chat', npcOwner: '' }));
+    return persistState(hydrateScopedNpcs(stored, characterNpcLibrary(), owner), source);
 }
 
 function activeContinuityKey(context = SillyTavern.getContext()) {
@@ -2194,7 +2226,7 @@ function writeContinuitySnapshot(state) {
     const key = continuityStorageKey(activeContinuityKey(context));
     const chatId = context.getCurrentChatId?.();
     if (!key || !chatId) return;
-    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), state: normalize(state) };
+    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), state: withoutChatNpcContinuity(normalize(state)) };
     try {
         localStorage.setItem(key, JSON.stringify(record));
     } catch (error) {
@@ -2251,11 +2283,12 @@ async function restoreContinuityForCurrentChat() {
     if (!record?.state || record.format !== STATE_PACKAGE_FORMAT || record.sourceChatId === chatId) return false;
     continuityRestoreInProgress = true;
     try {
-        const continued = await copyContinuityMedia(normalize(record.state), record.sourceChatId, chatId);
+        // Also sanitize pre-0.31 continuity caches; never silently migrate old Chat NPCs.
+        const continued = await copyContinuityMedia(withoutChatNpcContinuity(normalize(record.state)), record.sourceChatId, chatId);
         continued.syncCursor = { user: null, assistant: null };
         continued.updatedAt = null;
         continued.updateSource = 'continuity';
-        const saved = await persistState(continued, 'continuity');
+        const saved = await persistState(hydrateScopedNpcs(continued, characterNpcLibrary(), characterOwner(context)?.key), 'continuity');
         if (saved) {
             globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:continuity-restored', {
                 detail: {
@@ -2302,7 +2335,8 @@ function bindNewChatSummaryCompatibility() {
 
 function portableState(state) {
     const portable = normalize(state);
-    portable.npcs.forEach(entry => { entry.hasPortrait = false; });
+    portable.npcs.forEach(entry => { entry.hasPortrait = false; entry.npcScope = 'chat'; entry.npcOwner = ''; entry.portraitChatId = ''; });
+    portable.npcScopes = {};
     portable.music = { tracks: [], currentId: '', repeat: portable.music.repeat, shuffle: portable.music.shuffle };
     portable.syncCursor = { user: null, assistant: null };
     return portable;
@@ -2449,7 +2483,7 @@ async function persistState(candidate, source = 'manual') {
     if (['npc-management', 'character-life-import'].includes(source)) {
         retainManualNpcEdits(turnHistory(context, false), previous, state);
     }
-    context.chatMetadata[METADATA_KEY] = state;
+    context.chatMetadata[METADATA_KEY] = storedNpcState(state);
     updatePrompt(state);
     renderAll(state);
     npcWorkspace?.refresh();
@@ -2525,9 +2559,9 @@ async function persistExactState(snapshot, source) {
     const state = normalize(clone(snapshot));
     state.updatedAt = new Date().toISOString();
     state.updateSource = source;
-    context.chatMetadata[METADATA_KEY] = state;
-    updatePrompt(state);
-    renderAll(state);
+    context.chatMetadata[METADATA_KEY] = storedNpcState(state);
+    updatePrompt();
+    renderAll();
     npcWorkspace?.refresh();
     pendingSave = pendingSave.catch(() => undefined).then(() => context.saveMetadata());
     await pendingSave;
@@ -6588,7 +6622,9 @@ async function hydrateNpcPortraits(root, state = getState()) {
         if (!entry) return;
         try {
             if (entry.portraitSource === 'none') return;
-            let blob = entry.portraitSource === 'local' && store ? await store.getItem(npcPortraitStorageKey(entry.id)) : null;
+            const key = entry.portraitChatId ? npcPortraitStorageKey(entry.id, entry.portraitChatId)
+                : scopedPortraitKey(entry, SillyTavern.getContext().getCurrentChatId?.());
+            let blob = entry.portraitSource === 'local' && store ? await store.getItem(key) : null;
             const bridge = characterLifeBridge();
             if (!blob && entry.portraitSource !== 'local' && bridge && (entry.characterLifeId || entry.characterLifePortraitId || entry.name)) {
                 // The selected dossier needs the original asset at phone width.
@@ -6611,7 +6647,7 @@ async function hydrateNpcPortraits(root, state = getState()) {
                     }
                 }
             }
-            if (!blob && entry.hasPortrait && store) blob = await store.getItem(npcPortraitStorageKey(entry.id));
+            if (!blob && entry.hasPortrait && store) blob = await store.getItem(key);
             if (!(blob instanceof Blob) || token !== npcPortraitRenderToken || !node.isConnected) return;
             const url = URL.createObjectURL(blob);
             npcPortraitObjectUrls.set(`${entry.id}:${npcPortraitObjectUrls.size}`, url);
@@ -7463,6 +7499,7 @@ async function onPanelChange(event) {
             await store.setItem(npcPortraitStorageKey(entry.id), blob);
             entry.hasPortrait = true;
             entry.portraitSource = 'local';
+            entry.portraitChatId = SillyTavern.getContext().getCurrentChatId?.() || '';
             entry.portraitView = clone(defaultState().player.portraitView);
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc-portrait');
@@ -8892,6 +8929,9 @@ function applyStatePatch(current, patch) {
         entry.hasPortrait = Boolean(previous?.hasPortrait);
         entry.portraitView = clone(previous?.portraitView || defaultState().player.portraitView);
         entry.portraitSource = previous?.portraitSource || '';
+        entry.npcScope = previous?.npcScope || 'chat';
+        entry.npcOwner = previous?.npcOwner || '';
+        entry.portraitChatId = previous?.portraitChatId || '';
         if (previous) {
             entry.identityColor = previous.identityColor;
             entry.roleIcon = previous.roleIcon;
@@ -9622,13 +9662,18 @@ async function initialize() {
         bindChatEvents();
         npcWorkspace = createNpcWorkspace({
             context: () => SillyTavern.getContext(), state: getState, settings: getSettings,
-            profile: npcProfile, persist: persistState, portraitKey: npcPortraitStorageKey,
+            profile: npcProfile, persist: persistState,
+            scopeInfo: () => characterOwner(SillyTavern.getContext()),
+            listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
+            persistScope: persistNpcScope,
+            portraitKey: (profile, chatId, owner) => scopedPortraitKey(profile, chatId, owner),
             storage: () => SillyTavern.libs?.localforage, notify, parseJson,
             visible: source => extractStatePatch(source).visible, updatePrompt,
             recordRequest: recordExtensionRequest,
             async portrait(entry) {
                 if (entry.portraitSource === 'none') return null;
-                const key = npcPortraitStorageKey(entry.id);
+                const key = entry.portraitChatId ? npcPortraitStorageKey(entry.id, entry.portraitChatId)
+                    : scopedPortraitKey(entry, SillyTavern.getContext().getCurrentChatId?.());
                 const store = SillyTavern.libs?.localforage;
                 if (entry.hasPortrait && store) {
                     const blob = await store.getItem(key);
@@ -9667,7 +9712,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.30.2 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.31.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

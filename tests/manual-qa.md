@@ -1,5 +1,18 @@
 # Host and iOS acceptance checks
 
+## v0.31 list navigation and scopes
+
+1. Open Management with an empty chat and again with existing NPCs. Only the list/empty state should be visible; no editor should open automatically. Selecting a row opens a read-only dossier. Edit and Create are explicit actions. Back returns to the list and warns before abandoning an edited draft.
+2. Load 45 NPCs, search by alias/name/role, and use the three pages. At 320px and 390px widths, records must remain stacked vertical rows, never a horizontal tab strip. The scope selector and Back must remain accessible.
+3. Create one Chat NPC and one Character NPC on card A, with portraits. Open a different chat on card A: only the Character record should follow. Return to the original chat: both records must still exist. Switch to card B (also give it the same display name): A's Character record must not appear. A group chat must disable Character scope.
+4. Edit the Character template on card A. Reopen its other chat and check shared biography/color/portrait updates. Change the same NPC's location in a normal AI reply: that scene change must remain local to that chat and leave the Character dossier/template unchanged. New AI NPCs must always be Chat-scoped.
+5. Copy a Chat NPC into Character with the dossier action. Confirm both records remain, with copied image/framing. Same-name Chat takes precedence only in its own chat. Duplicate destination names must be reported without overwrite. Copy back to another chat and verify image storage is independent.
+6. Enable auto-continuity and start a new chat from an old pre-0.31 chat. Player/world continuity may carry over but Chat NPCs/linked contact memberships must not. Existing old chats must keep their own records.
+7. Import Character Life in each scope; verify the destination heading, fields, images and duplicate checks. Switch chats/cards or press Back during slow file/AI/image work: late results must not write into the newly selected scope/chat.
+8. Swipe an AI reply after saving a Character template edit or creating a new Character NPC. Shared changes must survive; per-chat story deltas should follow the selected reply.
+
+## Existing chat / portrait features
+
 Automated Node tests exercise the production schema, patch parser, prompt integration, image geometry and Character Life import. They do not replace a live SillyTavern/iPhone test.
 
 1. Update the extension, reload SillyTavern normally, open an existing chat. Open NPC Management from both the NPC Codex and settings. Existing NPCs must appear without migration or cache clearing.

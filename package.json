@@ -1,10 +1,10 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.30.2",
+  "version": "0.31.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check index.js && node --check npc-core.js && node --check npc-chat.js && node --check npc-workspace.js && node --check npc-portraits.js"
+    "check": "node --check index.js && node --check npc-core.js && node --check npc-scopes.js && node --check npc-chat.js && node --check npc-workspace.js && node --check npc-portraits.js"
   }
 }
