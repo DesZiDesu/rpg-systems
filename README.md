@@ -2,7 +2,13 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.30.1**
+**Current version: 0.30.2**
+
+### v0.30.2 — Safari recovery URL
+
+- Append `?tretaresia-safe=1` to the SillyTavern address to load the host without starting Tretaresia's UI, event handlers, prompts or generation interceptor.
+- Safe mode does not clear Safari storage, NPC records, chat metadata, portraits or extension preferences. Remove the parameter to start Tretaresia normally.
+- This provides a recovery path for opening Extension Manager and disabling, updating or reinstalling Tretaresia when its normal startup cannot complete.
 
 ### v0.30.1 — iOS settings-save hotfix
 
