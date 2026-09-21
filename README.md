@@ -2,7 +2,13 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.30.0**
+**Current version: 0.30.1**
+
+### v0.30.1 — iOS settings-save hotfix
+
+- NPC Management, Character Life import and AI profile assistance no longer persist diagnostic request counters through SillyTavern's global settings endpoint. This stops repeated **Settings could not be saved** notifications caused by those nonessential writes.
+- The counter remains available for the current page session. NPC records, chat metadata, portraits and existing extension preferences are not cleared or migrated.
+- All NPC module URLs are versioned at `v0.30.1`, so using **Update** in SillyTavern followed by a normal page reload is sufficient; deleting Safari website data is not required.
 
 ### v0.30.0 — NPC archive and engraved chat
 
