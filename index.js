@@ -1,8 +1,9 @@
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.30.0';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.30.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.30.1';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.30.1';
 
 let npcWorkspace = null;
+let runtimeRequestUsage = null;
 
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
 const SETTINGS_KEY = 'tretaresia_rpg';
@@ -830,7 +831,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.30.0';
+const LAUNCHER_BIND_VERSION = '0.30.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -1175,9 +1176,10 @@ function getSettings() {
 }
 
 function requestUsage() {
+    if (runtimeRequestUsage) return runtimeRequestUsage;
     const settings = getSettings();
     const source = settings.requestUsage && typeof settings.requestUsage === 'object' ? settings.requestUsage : {};
-    settings.requestUsage = {
+    runtimeRequestUsage = {
         total: Math.max(0, Math.trunc(number(source.total, 0, 0, Number.MAX_SAFE_INTEGER))),
         manualSync: Math.max(0, Math.trunc(number(source.manualSync, 0, 0, Number.MAX_SAFE_INTEGER))),
         hiddenAction: Math.max(0, Math.trunc(number(source.hiddenAction, 0, 0, Number.MAX_SAFE_INTEGER))),
@@ -1185,7 +1187,7 @@ function requestUsage() {
         lastReason: text(source.lastReason, '', 120),
         lastAt: text(source.lastAt, '', 80),
     };
-    return settings.requestUsage;
+    return runtimeRequestUsage;
 }
 
 function renderRequestUsage() {
@@ -1202,7 +1204,9 @@ function recordExtensionRequest(kind, reason) {
     if (Object.hasOwn(usage, kind)) usage[kind] += 1;
     usage.lastReason = text(reason, kind, 120);
     usage.lastAt = new Date().toISOString();
-    SillyTavern.getContext().saveSettingsDebounced?.();
+    // Diagnostics are session-only. Saving this counter through SillyTavern's
+    // global settings endpoint caused repeated "Settings could not be saved"
+    // notifications when that unrelated endpoint was unavailable.
     renderRequestUsage();
 }
 
@@ -9661,7 +9665,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.30.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.30.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
