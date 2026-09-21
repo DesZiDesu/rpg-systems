@@ -1,9 +1,10 @@
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.30.1';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.30.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.30.2';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.30.2';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
+const SAFE_MODE = /(?:^|[?&])tretaresia-safe=(?:1|true)(?:&|$)/i.test(globalThis.location?.search || '');
 
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
 const SETTINGS_KEY = 'tretaresia_rpg';
@@ -831,7 +832,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.30.1';
+const LAUNCHER_BIND_VERSION = '0.30.2';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -2973,6 +2974,7 @@ function updatePrompt(state = getState()) {
 }
 
 globalThis.TretaresiaRpgGenerateInterceptor = async function () {
+    if (SAFE_MODE) return;
     // Refresh at SillyTavern's official generation interception point. This
     // protects hosts that replace their extension-prompt collection after
     // MESSAGE_SENT while keeping tracking inside the one normal reply.
@@ -9665,7 +9667,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.30.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.30.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
@@ -9673,7 +9675,9 @@ async function initialize() {
     }
 }
 
-if (document.readyState === 'loading') {
+if (SAFE_MODE) {
+    console.warn('[Tretaresia RPG] Safe mode active. Remove ?tretaresia-safe=1 from the URL to start the extension.');
+} else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize, { once: true });
 } else {
     void initialize();
