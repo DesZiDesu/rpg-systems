@@ -2,7 +2,19 @@
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.29.3**
+**Current version: 0.30.0**
+
+### v0.30.0 — NPC archive and engraved chat
+
+- Open **NPC Management** from the NPC Codex tab or extension settings. Manual and AI-created NPCs use the same per-chat records; hostile characters are visible in Management but remain excluded from friendly/social rosters.
+- Borderless gradient character headers, optional framed square portraits, character-colored parchment dialogue with quotation marks, and unboxed engraved-gold narration. Click a header to edit that character. New model replies use `<tr-narrative>` and `<tr-dialogue name="Exact Name">` blocks; existing untagged messages are left unchanged. Presentation/effects can be disabled separately in extension settings; reduced-motion preferences are respected.
+- Edit identity, profile details, aliases, 12 role-icon presets, color, portrait size, attributes and abilities. Existing diary, knowledge, map and relationship systems are preserved. A local uploaded portrait takes priority over Character Life; removing it does not silently restore a linked image.
+- Portrait editor: one-finger/mouse dragging, two-finger pinch zoom, keyboard arrows and accessible X/Y/zoom sliders. Images remain 1:1 in chat, and no empty frame is rendered. Framing from this editor is shared across desktop/mobile. Requires modern Safari with Pointer Events and native dialog support (iOS 15.4+); real-device Safari verification is still recommended.
+- **AI เติมช่องว่าง** uses one explicit quiet generation to fill missing profile details from the form and recent main chat. It preserves supplied values and produces an editable draft, not an automatic save. Automatic NPC creation uses the normal reply's existing validated state patch; **Auto Track must be enabled**. There are no polling generations.
+- Import Character Life JSON (single record, arrays, `npcs`, or backup libraries) and the uncompressed v3 backup ZIP. A selection screen skips existing names without overwriting them. Only shared fields are mapped; settings, custom CSS and unrelated profile fields are ignored. Embedded raster portraits and ZIP portrait files are supported; ID-only references can be resolved through an installed Character Life bridge when available. Missing/invalid images are reported rather than replaced with fabricated URLs. Limits: 200 NPCs, JSON 24 MB, archive 100 MB, portrait 16 MB / 40 MP.
+- NPC modules and their stylesheet have versioned URLs so future version bumps refresh those assets after a normal reload. No cache/storage-clearing operation is performed. A host that keeps serving an old entry script still needs its own extension-update/reload flow.
+
+Run the regression suite with `npm test` (Node 20+). `npm run check` checks production JavaScript syntax. See `tests/manual-qa.md` for host/iPhone checks.
 
 - v0.29.3 adds a mobile-friendly Mana limit editor with Auto, forced Finite, and forced Infinite modes. Manual modes override story detection until the user changes the mode.
 

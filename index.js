@@ -1,4 +1,8 @@
 /* global SillyTavern, toastr */
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.30.0';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.30.0';
+
+let npcWorkspace = null;
 
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
 const SETTINGS_KEY = 'tretaresia_rpg';
@@ -792,6 +796,8 @@ const COLOR_PRESETS = {
 };
 
 const DEFAULT_SETTINGS = Object.freeze({
+    chatPresentation: true,
+    chatEffects: true,
     showWandLauncher: true,
     autoTrack: true,
     injectState: true,
@@ -824,7 +830,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.29.3';
+const LAUNCHER_BIND_VERSION = '0.30.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -1688,6 +1694,7 @@ function npcProfile(value, fallback = {}) {
     const sourceMeters = Array.isArray(value.customMeters) ? value.customMeters : Array.isArray(fallback.customMeters) ? fallback.customMeters : [];
     const sourceDiary = Array.isArray(value.diary) ? value.diary : Array.isArray(fallback.diary) ? fallback.diary : [];
     return {
+        ...npcIdentity(value, fallback),
         id: text(value.id, text(fallback.id, uid(), 100), 100), contactId: text(value.contactId, text(fallback.contactId, '', 100), 100),
         name: text(value.name, text(fallback.name, 'Unknown NPC', 120), 120), title: text(value.title, text(fallback.title, '', 120), 120),
         race: text(value.race, text(fallback.race, 'Unknown', 80), 80), age: text(value.age, text(fallback.age, '', 40), 40),
@@ -2434,9 +2441,13 @@ async function persistState(candidate, source = 'manual') {
         mapDraftPoint = null;
         Object.assign(mapView, { scale: 1, x: 0, y: 0 });
     }
+    if (['npc-management', 'character-life-import'].includes(source)) {
+        retainManualNpcEdits(turnHistory(context, false), previous, state);
+    }
     context.chatMetadata[METADATA_KEY] = state;
     updatePrompt(state);
     renderAll(state);
+    npcWorkspace?.refresh();
     pendingSave = pendingSave.catch(() => undefined).then(() => context.saveMetadata());
     await pendingSave;
     writeContinuitySnapshot(state);
@@ -2512,6 +2523,7 @@ async function persistExactState(snapshot, source) {
     context.chatMetadata[METADATA_KEY] = state;
     updatePrompt(state);
     renderAll(state);
+    npcWorkspace?.refresh();
     pendingSave = pendingSave.catch(() => undefined).then(() => context.saveMetadata());
     await pendingSave;
     writeContinuitySnapshot(state);
@@ -2647,6 +2659,8 @@ function aiState(state, { privateTracker = false } = {}) {
             .map(({ id, name, location, mapX, mapY, mapVisible, lifeMode, activity, activityUpdatedDay }) => [id, name, location, mapX, mapY, mapVisible, lifeMode, activity, activityUpdatedDay]),
         npcs: recentNpcs.map(entry => ({
             id: entry.id, name: entry.name, title: entry.title, race: entry.race, age: entry.age, faction: entry.faction,
+            occupation: entry.occupation, personality: entry.personality, appearance: entry.appearance,
+            background: entry.background, goals: entry.goals, speechStyle: entry.speechStyle, aliases: entry.aliases,
             relationship: entry.relationship, relationshipState: entry.relationshipState, affection: entry.affection,
             trust: entry.trust, loyalty: entry.loyalty, fear: entry.fear, corruption: entry.corruption, lust: entry.lust,
             location: entry.location, lastSeen: entry.lastSeen, maritalStatus: entry.maritalStatus, partner: entry.partner, children: entry.children,
@@ -2729,7 +2743,14 @@ function roleplayState(state) {
             characterLifeMapActors: state.characterLifeMapActors,
             quests: state.quests.filter(entry => !['Completed', 'Failed'].includes(entry.status)).slice(-12).map(({ id, name, type, status }) => [id, name, type, status]),
             questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
-            npcs: friendly.slice(-24).map(({ id, name }) => [id, name]),
+            npcs: state.npcs.map(({ id, name }) => [id, name]),
+            npcProfiles: state.npcs.slice(-16).map(entry => ({
+                id: entry.id, name: entry.name, title: entry.title, occupation: entry.occupation,
+                race: entry.race, age: entry.age, gender: entry.gender, faction: entry.faction,
+                relationship: entry.relationship, isHostile: entry.isHostile,
+                appearance: entry.appearance.slice(0, 600), personality: entry.personality.slice(0, 600),
+                background: entry.background.slice(0, 600), goals: entry.goals.slice(0, 400), speechStyle: entry.speechStyle.slice(0, 400),
+            })),
             contacts: state.contacts.slice(-12).map(({ id, name }) => [id, name]),
         },
     };
@@ -2904,7 +2925,7 @@ function patchInstructions() {
         'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
         'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Mana is not easily detected: non-sensing characters perceive nothing and even sensing specialists normally notice only a faint presence, while explicitly godlike beings with major lore may be exceptional. Formless Aura is wholly undetectable. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
         'Teleport and warp canon: teleportation/warp magic is inaccessible and most people believe it does not exist. Do not grant, teach, create, or casually use such a spell, item, skill, route, or world crossing unless the visible story explicitly establishes an extraordinary canon exception. A map browse or travel request is never such an exception.',
-        'NPCs and knowledge: upsert only relevant named friendly NPCs or confirmed changes; preserve npcIndex id. Hostile/enemy/foe/antagonist/villain/threat NPCs stay out of Codex/social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Record only facts an NPC actually learns using npcKnowledge {npcId,id,fact,source,confidence,learnedDay}; do not copy private tracker facts. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
+        'NPCs and knowledge: upsert relevant named NPCs or confirmed changes; preserve npcIndex id. Set isHostile:true for hostile/enemy/foe/antagonist/villain/threat NPCs; they remain in NPC Management, but stay out of friendly Codex/social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Zero stats mean unknown. Never raise combat stats from conversation alone. Record only facts an NPC actually learns using npcKnowledge {npcId,id,fact,source,confidence,learnedDay}; do not copy private tracker facts. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
         'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/invite/leave/expulsion/create/dissolve/rank/family-role change must update this patch. Party upserts can maintain formation, roles keyed by NPC id (Vanguard/Tank/Striker/Support/Healer/Scout/Rear Guard/Companion), and sharedFunds. Guild upserts can maintain rank, level, reputation, headquarters, alliances, enemies, treasury and quests. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first upsert npcs, then membership. Guild member includes guildId/name. Household member includes npcId/role. Party is free. UI Guild creation already charges locally. A story-created player-led Guild must include createdByPlayer:true; parser charges only when affordable. Joining or editing an existing guild is free. Household is family, not a faction.',
         'Travel/scene: journeys take days/months/years. Preserve the local per-message clock and add further confirmed elapsed time. At journey start set status/endpoints/route/days and exact known atlas coordinates. Unknown coordinates must be nearby and on land. Re-evaluate position on every reply with movement; update remainingDays, location, scene.position, heading, weather and temperature without moving progress backward or teleporting early. The local route planner generates land-safe checkpoints and interpolates the marker. At arrival set Arrived/0 and destination location. When weather is established for any visited/mentioned region, upsert regionalWeather {id,region,weather,temperature,hazard,updatedDay}; preserve other regions. Keep local maps sparse and gradual; preserve locked maps.',
@@ -2932,6 +2953,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
         lines.push('END PRIVATE TRACKER REFERENCE INDEX. Do not quote, summarize, expose, or turn hidden reference values into character knowledge.');
     }
     if (track) lines.push(patchInstructions());
+    if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split('After the story,')[0]);
     lines.push('</tretaresia_rpg_state>');
     return lines.join('\n');
 }
@@ -2940,7 +2962,7 @@ function updatePrompt(state = getState()) {
     const context = SillyTavern.getContext();
     const settings = getSettings();
     const activeChat = Boolean(context.getCurrentChatId?.() && hasUserReply(context));
-    const enabled = activeChat && (settings.injectState || settings.autoTrack);
+    const enabled = activeChat && (settings.injectState || settings.autoTrack || settings.chatPresentation);
     context.setExtensionPrompt(PROMPT_KEY, enabled
         ? statePrompt(state, { includeState: settings.injectState || settings.autoTrack, track: settings.autoTrack })
         : '', 1, 1, false, 0);
@@ -6452,6 +6474,7 @@ function renderNpcs(panel, state) {
         : `<div class="tretaresia-mail-empty large"><i class="fa-solid fa-users-viewfinder"></i><p>${html(tr('Only friendly NPCs appear here.'))}</p></div>`;
     const detail = selected ? renderNpcDossier(selected, linkedContact) : `<section class="tretaresia-npc-empty-dossier"><i class="fa-solid fa-address-card"></i><p>${html(tr('Only friendly NPCs appear here.'))}</p></section>`;
     panel.innerHTML = `${heading('NPC Codex', `${visibleNpcs.length} ${tr('Friendly NPCs').toLowerCase()}`, 'fa-solid fa-users')}
+        <button type="button" class="tretaresia-primary-button" data-trpg-open><i class="fa-solid fa-address-book"></i> NPC Management · จัดการตัวละครทั้งหมด</button>
         <p class="tretaresia-social-note"><i class="fa-solid fa-shield-heart"></i>${html(tr('Hostile NPCs are excluded from the list.'))}</p>
         <div class="tretaresia-npc-layout"><aside class="tretaresia-npc-index" data-rpg-scroll-key="npc-index"><div class="tretaresia-section-label"><i class="fa-solid fa-list"></i><span>${html(tr('NPCs'))}</span></div>
             <div class="tretaresia-npc-list" data-rpg-scroll-key="npc-list">${list}</div><details class="tretaresia-editor tretaresia-npc-add"><summary><i class="fa-solid fa-user-plus"></i> ${html(tr('Add NPC'))}</summary>
@@ -6558,9 +6581,10 @@ async function hydrateNpcPortraits(root, state = getState()) {
         const entry = state.npcs.find(value => value.id === node.dataset.npcPortrait);
         if (!entry) return;
         try {
-            let blob = null;
+            if (entry.portraitSource === 'none') return;
+            let blob = entry.portraitSource === 'local' && store ? await store.getItem(npcPortraitStorageKey(entry.id)) : null;
             const bridge = characterLifeBridge();
-            if (bridge && (entry.characterLifeId || entry.characterLifePortraitId || entry.name)) {
+            if (!blob && entry.portraitSource !== 'local' && bridge && (entry.characterLifeId || entry.characterLifePortraitId || entry.name)) {
                 // The selected dossier needs the original asset at phone width.
                 // Roster cards stay on Character Life's small cached thumbnail so
                 // opening the NPC tab does not decode every full-size portrait.
@@ -7432,6 +7456,7 @@ async function onPanelChange(event) {
             const blob = await resizeImageBlob(npcPortrait.files[0]);
             await store.setItem(npcPortraitStorageKey(entry.id), blob);
             entry.hasPortrait = true;
+            entry.portraitSource = 'local';
             entry.portraitView = clone(defaultState().player.portraitView);
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc-portrait');
@@ -7586,6 +7611,7 @@ async function onPanelClick(event) {
             if (!entry) break;
             await SillyTavern.libs?.localforage?.removeItem(npcPortraitStorageKey(entry.id));
             entry.hasPortrait = false;
+            entry.portraitSource = 'none';
             entry.portraitView = clone(defaultState().player.portraitView);
             entry.updatedAt = new Date().toISOString();
             closePortraitEditor();
@@ -8859,6 +8885,12 @@ function applyStatePatch(current, patch) {
         const previous = current.npcs.find(value => value.id === entry.id) || current.npcs.find(value => value.name.toLocaleLowerCase() === entry.name.toLocaleLowerCase());
         entry.hasPortrait = Boolean(previous?.hasPortrait);
         entry.portraitView = clone(previous?.portraitView || defaultState().player.portraitView);
+        entry.portraitSource = previous?.portraitSource || '';
+        if (previous) {
+            entry.identityColor = previous.identityColor;
+            entry.roleIcon = previous.roleIcon;
+            entry.portraitSize = previous.portraitSize;
+        }
     });
     next.music = clone(current.music);
     next.location.pins = clone(current.location.pins);
@@ -9582,6 +9614,25 @@ async function initialize() {
         buildInterface();
         await addSettingsDrawer();
         bindChatEvents();
+        npcWorkspace = createNpcWorkspace({
+            context: () => SillyTavern.getContext(), state: getState, settings: getSettings,
+            profile: npcProfile, persist: persistState, portraitKey: npcPortraitStorageKey,
+            storage: () => SillyTavern.libs?.localforage, notify, parseJson,
+            visible: source => extractStatePatch(source).visible, updatePrompt,
+            recordRequest: recordExtensionRequest,
+            async portrait(entry) {
+                if (entry.portraitSource === 'none') return null;
+                const key = npcPortraitStorageKey(entry.id);
+                const store = SillyTavern.libs?.localforage;
+                if (entry.hasPortrait && store) {
+                    const blob = await store.getItem(key);
+                    if (blob instanceof Blob) return blob;
+                }
+                if (entry.portraitSource === 'local') return null;
+                const linked = await characterLifeBridge()?.portrait?.({ id: entry.characterLifeId, scope: entry.characterLifeScope, name: entry.name, original: true });
+                return linked?.blob instanceof Blob ? linked.blob : null;
+            },
+        });
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) suspendMapRendering(true);
             else {
@@ -9610,7 +9661,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.29.3 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.30.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
