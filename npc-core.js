@@ -7,6 +7,24 @@ export const FIELDS = {
 };
 export const RELATIONS = ['affection','trust','loyalty','fear','corruption','lust'];
 export const STATS = ['level','hp','mp','stamina','strength','agility','intelligence','endurance'];
+export const NPC_STARTING_STATS = Object.freeze({level:1,rank:'Unranked',hp:100,mp:30,stamina:100,strength:10,agility:10,intelligence:10,endurance:10});
+export const NPC_STARTING_RELATIONS = Object.freeze({affection:0,trust:10,loyalty:0,fear:0,corruption:0,lust:0});
+export const ATTRIBUTE_INSTRUCTIONS = `Every new NPC needs complete stats {level,rank,hp,mp,stamina,strength,agility,intelligence,endurance} and affection,trust,loyalty,fear,corruption,lust (numbers 0-100). Choose fictional starting values consistent with role, power and relationships, not all-zero placeholders. Level and core attributes should normally be positive; HP/stamina are positive for healthy active NPCs. Zero HP for death, zero MP for no magic and zero relationship meters where appropriate are valid. Never increase existing combat stats just for conversation. These are private bookkeeping values, not knowledge visible to characters.`;
+// Missing numbers are not the same as intentional zero (death/no magic/no trust).
+export function npcAttributeDefaults(raw={}, base={}) {
+ const valid=v=>(typeof v==='number'||typeof v==='string'&&v.trim()!=='')&&Number.isFinite(Number(v));
+ const pick=(v,b,d)=>valid(v)?Number(v):valid(b)?Number(b):d;
+ return {...Object.fromEntries(RELATIONS.map(k=>[k,pick(raw[k],base[k],NPC_STARTING_RELATIONS[k])])),stats:{
+  ...Object.fromEntries(STATS.map(k=>[k,pick(raw.stats?.[k],base.stats?.[k],NPC_STARTING_STATS[k])])),
+  rank:usable(raw.stats?.rank)?raw.stats.rank:usable(base.stats?.rank)?base.stats.rank:NPC_STARTING_STATS.rank,
+ }};
+}
+export function generatedAttributes(raw) {
+ if(!raw||typeof raw!=='object'||RELATIONS.some(k=>!Number.isFinite(raw[k]))||STATS.some(k=>!Number.isFinite(raw.stats?.[k]))||!usable(raw.stats?.rank))throw Error('AI returned incomplete stats/relationships. Your draft was not changed.');
+ const fields=profileFields(raw);
+ if(STATS.every(k=>fields.stats[k]===0))throw Error('AI returned all-zero placeholder stats. Your draft was not changed.');
+ return {...Object.fromEntries(RELATIONS.map(k=>[k,fields[k]])),stats:fields.stats};
+}
 export const ROLE_ICONS = {book:'book-open',compass:'compass',mage:'wand-magic-sparkles',warrior:'shield-halved',healer:'hand-holding-heart',merchant:'coins',noble:'crown',artisan:'hammer',scholar:'graduation-cap',guard:'shield',ranger:'bullseye',performer:'music'};
 export const keyName = s => String(s || '').trim().normalize('NFKC').toLowerCase();
 export const clean = (s, max=1000) => ['string','number'].includes(typeof s) ? String(s).trim().slice(0,max) : '';
@@ -174,5 +192,5 @@ export function generatedDraft(raw) {
  if(!Object.hasOwn(ROLE_ICONS,raw.roleIcon))missing.push('roleIcon');
  if(!Number.isFinite(raw.portraitSize))missing.push('portraitSize');
  if(missing.length)throw Error(`AI returned an incomplete NPC (${missing.join(', ')}). Your draft was not changed; try again.`);
- return {...profileFields(raw),isHostile:raw.isHostile,portraitSize:clamp(raw.portraitSize,48,144)};
+ return {...profileFields(raw),...generatedAttributes(raw),isHostile:raw.isHostile,portraitSize:clamp(raw.portraitSize,48,144)};
 }

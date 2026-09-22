@@ -172,6 +172,17 @@ The control center is mounted outside the transformed application panel so its s
 
 MIT
 
+### 0.33.0 — Portrait-aware NPC generation and reliable archives
+
+- Upload a portrait, optionally describe your NPC, then **Generate NPC from description**. The prepared image is attached through SillyTavern's `quietImage` API to describe visible appearance. Requires Chat Completion, a vision-capable model, and Image inlining. Unsupported configurations stop with an explanation; no silent text-only fallback. Uploading alone does not contact AI. Portrait bytes are not added to settings or chat metadata.
+- **เก็บ NPC ใหม่จากเนื้อเรื่องใน** chooses Chat or Characters for newly generated story NPCs. Characters is the existing per-card NPC archive, not a new SillyTavern character card. It persists across chats of that card; group chats use Chat. Existing records are not moved. Shared records' later story changes remain per-chat overrides. A full Character archive falls back to Chat with a warning.
+- New manual drafts also have a destination selector. Scope lists show record counts. Known header clicks resolve the actual record by ID before name/aliases. An old unsaved header opens a named recovery draft instead of an unrelated empty list.
+- With Auto tracking enabled, completed tagged dialogue registers missing named speakers when the AI omitted its NPC patch. It adds a provisional record without inventing biography or making an extra AI request. Player/narrator names and records deliberately removed that turn are excluded. Names appearing only in unstructured prose cannot be reliably recovered this way.
+- Prompts request complete starting stats and relationship values. Missing values receive provisional baseline attributes (level 1, HP/stamina 100, MP 30, core stats 10, trust 10; other relationship meters 0), not inferred canon. Explicit zero remains valid and is displayed as zero. Existing zero-valued records are not silently rewritten.
+- To repair an existing record, open **Edit → ATTRIBUTES → AI จัดค่าสถานะและความสัมพันธ์ใหม่**, review the proposal, then Save. This only replaces numeric attributes/rank in the draft, preserves other fields and portraits, and rejects incomplete/all-zero AI responses atomically. It is a deliberate per-NPC action, not an automatic bulk rewrite of old records.
+- Versioned imports/CSS now include the scope and generation helpers. Update the extension and reload normally; no cache deletion is required by the update mechanism.
+- Validation: Node regressions cover image transport/capability errors, scope routing, archive reload, missing speaker registration, numeric defaults, intentional zeros and existing behavior. The optional browser fixture also covers image-only generation, scope selection, record listing and attribute repair. It uses a mocked AI, not a live provider; real iOS Safari and provider image interpretation still require on-device verification.
+
 ### 0.32.1 — NPC creation and mobile workspace
 
 - **Tretaresia NPC Manager** is available directly in the wand menu and follows the existing **Show launcher** setting.
