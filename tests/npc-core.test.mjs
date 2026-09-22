@@ -65,3 +65,11 @@ test('saved user edits survive swipes without copying unrelated AI state between
  retainManualNpcEdits(history,before,after);
  const result=history.entries[0].baseState.npcs;assert.equal(result[0].personality,'edited');assert.equal(result[0].location,'Turn 1');assert.equal(result[0].stats.hp,10);assert.equal(result[0].stats.level,3);assert.equal(result[1].name,'Manual NPC');assert.equal(history.entries[0].variants.first.state.npcs.length,2);
 });
+
+test('NPC resolution uses IDs and aliases first, rejects ambiguous transliterations',async()=>{
+ const {resolveNpc}=await import('../npc-core.js');const a={id:'a',name:'Kohaku',aliases:['Amber']},b={id:'b',name:'โคฮาคุ'};
+ assert.equal(resolveNpc([a],{name:'โคฮาคุ'}),a);assert.equal(resolveNpc([a],{name:'Amber'}),a);
+ assert.equal(resolveNpc([a,b],{id:'b',name:'Kohaku'}),b);
+ assert.equal(resolveNpc([a,{id:'c',name:'Kohaku'}],{name:'โคฮาคุ'}),null);
+ assert.equal(resolveNpc([a],{name:'Koharu'}),null);assert.equal(resolveNpc([a],{name:'โคฮาคุอื่น'}),null);
+});

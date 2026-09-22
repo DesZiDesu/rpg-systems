@@ -11,11 +11,11 @@ const launchers=source.slice(source.indexOf('function syncLauncherVisibility()')
 const fixture=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><div id="extensionsMenu"></div><div id="chat"></div><script type="module">
 import {createNpcWorkspace} from '/npc-workspace.js';
 import {FIELDS,STATS,RELATIONS} from '/npc-core.js';
-import {characterLore,lorePrompt,writeCharacterLore} from '/lore-core.js';
+import {characterLore,lorePrompt,writeCharacterLore,loreOptions,writeLoreOptions} from '/lore-core.js';
 let stored=[],shared=[],savedPhoto=null,saves=0,requests=0;const settings={showWandLauncher:true,chatPresentation:false,npcGenerationScope:'chat'};
 const generated={...Object.fromEntries(Object.keys(FIELDS).map(k=>[k,k+' detail'])),name:'Lysa',age:'120',aliases:['Forest healer'],abilities:[{name:'Heal',category:'Magic',level:'2',description:'Restore health',proficiency:75}],isHostile:false,identityColor:'#abcdef',roleIcon:'healer',portraitSize:96,...Object.fromEntries(RELATIONS.map(k=>[k,25])),stats:{rank:'Basic',...Object.fromEntries(STATS.map(k=>[k,10]))}};
 const context={mainApi:'openai',getCurrentChatId:()=> 'chat-1',chat:[],generateQuietPrompt:async options=>{requests++;window.lastPrompt=options.quietPrompt;window.lastImage=options.quietImage;if(window.waitForAI)await new Promise(r=>window.resolveAI=r);return JSON.stringify(window.badAI?{name:'Bad'}:generated);}};
-const api={listLore:()=>characterLore(settings,'card-1'),lorePrompt:()=>lorePrompt(characterLore(settings,'card-1')),persistLore:(entries,owner)=>writeCharacterLore(settings,entries,owner,'card-1'),context:()=>context,scopeInfo:()=>({key:'card-1',label:'Card'}),settings:()=>settings,state:()=>({npcs:[...stored,...shared]}),listScope:scope=>scope==='character'?shared:stored,portrait:async p=>p.hasPortrait?savedPhoto:null,profile:v=>v,supportsPortraitVision:async()=>!window.noVision,savePortrait:async blob=>{savedPhoto=blob;return{hasPortrait:true,portraitSource:'server',portraitPath:'/user/images/tretaresia-npc/test.webp'}},persistScope:async(scope,npcs)=>{if(scope==='character')shared=npcs;else stored=npcs;saves++;return true},visible:s=>s,parseJson:JSON.parse,recordRequest(){},notify(){},updatePrompt(){}};
+const api={loreOptions:()=>loreOptions(settings,'card-1'),persistLoreOptions:(options,owner)=>writeLoreOptions(settings,options,owner,'card-1'),listLore:()=>characterLore(settings,'card-1'),lorePrompt:()=>lorePrompt(characterLore(settings,'card-1')),persistLore:(entries,owner)=>writeCharacterLore(settings,entries,owner,'card-1'),context:()=>context,scopeInfo:()=>({key:'card-1',label:'Card'}),settings:()=>settings,state:()=>({npcs:[...stored,...shared]}),listScope:scope=>scope==='character'?shared:stored,portrait:async p=>p.hasPortrait?savedPhoto:null,profile:v=>v,supportsPortraitVision:async()=>!window.noVision,savePortrait:async blob=>{savedPhoto=blob;return{hasPortrait:true,portraitSource:'server',portraitPath:'/user/images/tretaresia-npc/test.webp'}},persistScope:async(scope,npcs)=>{if(scope==='character')shared=npcs;else stored=npcs;saves++;return true},visible:s=>s,parseJson:JSON.parse,recordRequest(){},notify(){},updatePrompt(){}};
 const npcWorkspace=createNpcWorkspace(api);window.workspace=npcWorkspace;
 const getSettings=()=>settings,LAUNCHER_BIND_VERSION='test',notify=()=>{},openInterface=()=>{};
 ${launchers}
@@ -38,6 +38,7 @@ try{
  await page.evaluate(()=>toggle(false));assert.equal(await page.locator('#tretaresia-npc-wand-launcher').isVisible(),false);
  await page.evaluate(()=>toggle(true));await page.locator('#tretaresia-npc-wand-launcher').press('Enter');
  await page.locator('[data-management-tab=lore]').click();
+ await page.locator('[name=loreBudget]').fill('2000000');await page.getByRole('button',{name:'บันทึกงบและโหมด',exact:true}).click();assert.equal(await page.locator('[name=loreBudget]').inputValue(),'2000000');
  await page.getByRole('button',{name:'＋ สร้าง Lore ใหม่',exact:true}).click();
  await page.locator('[name=loreTitle]').fill('Moon law');await page.locator('[name=loreContent]').fill('The moon is a blue crystal.');
  await page.getByRole('button',{name:'บันทึก Lore',exact:true}).click();
@@ -52,8 +53,10 @@ try{
  assert.equal(await page.locator('[name=age]').inputValue(),'120');assert.equal(await page.locator('[name="stats.level"]').inputValue(),'10');
  assert.equal(await page.locator('[name=roleIcon]').inputValue(),'healer');assert.equal(await page.locator('[data-ability=name]').inputValue(),'Heal');
  assert.equal((await page.evaluate(()=>counts())).saves,0);
+ async function assertFooter(){const dialog=await page.locator('dialog').boundingBox(),actions=await page.locator('[data-editor-actions]').boundingBox(),record=await page.locator('.trpg-record').boundingBox();assert.ok(Math.abs(actions.y+actions.height-(dialog.y+dialog.height))<3);assert.ok(record.y+record.height<=actions.y+1);assert.equal(await page.locator('[data-editor-actions] button[type=submit]').getAttribute('form'),'trpg-npc-form');}
+ await assertFooter();await page.locator('[name=name]').fill('Lysa');await assertFooter();
  let box=await page.locator('dialog').boundingBox();assert.ok(Math.abs(box.y)<2);assert.ok(Math.abs(box.height-844)<2);
- await page.setViewportSize({width:390,height:480});await page.waitForTimeout(100);box=await page.locator('dialog').boundingBox();assert.ok(Math.abs(box.height-480)<2);
+ await page.setViewportSize({width:390,height:480});await page.waitForTimeout(100);box=await page.locator('dialog').boundingBox();assert.ok(Math.abs(box.height-480)<2);await assertFooter();
  await page.locator('button[type=submit]').click();await page.waitForFunction(()=>window.counts().saves===1);assert.equal((await page.evaluate(()=>counts())).stored[0].name,'Lysa');
  await page.locator('[data-back]').click();await page.locator('[data-new]').click();await page.locator('[name=name]').fill('Keep me');await page.locator('[data-npc-brief]').fill('Another healer');
  await page.evaluate(()=>window.badAI=true);await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>document.querySelector('[role=status]').textContent.includes('incomplete'));
@@ -83,6 +86,10 @@ try{
  await page.locator('[data-close]').click();await page.evaluate(()=>workspace.open({name:'Previously unsaved speaker'}));
  await page.waitForFunction(()=>document.querySelector('[name=name]')?.value==='Previously unsaved speaker');
  assert.equal(await page.locator('[data-draft-scope]').inputValue(),'character');
+ await page.locator('[data-back]').click();await page.locator('.trpg-person').click();
+ await page.getByRole('button',{name:'ลบตัวละคร',exact:true}).click();await page.waitForFunction(()=>window.counts().shared.length===0);assert.equal((await page.evaluate(()=>counts())).stored.length,1);
+ await page.locator('[data-scope-select]').selectOption('chat');await page.locator('.trpg-person').click();await page.getByRole('button',{name:'ลบตัวละคร',exact:true}).click();await page.waitForFunction(()=>window.counts().stored.length===0);
+ assert.equal(await page.locator('[data-editor-actions]').isVisible(),false);
  assert.deepEqual(errors,[]);
  console.log('PASS: wand, draft/save/stale responses, viewport, image-only vision, unsupported vision preservation, Character destination/list, attribute repair, unsaved header recovery.');
 }finally{await browser?.close();server.close();}

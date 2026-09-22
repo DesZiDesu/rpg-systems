@@ -194,3 +194,32 @@ export function generatedDraft(raw) {
  if(missing.length)throw Error(`AI returned an incomplete NPC (${missing.join(', ')}). Your draft was not changed; try again.`);
  return {...profileFields(raw),...generatedAttributes(raw),isHostile:raw.isHostile,portraitSize:clamp(raw.portraitSize,48,144)};
 }
+
+// Conservative fallback for fully vowel-marked Thai transliterations. Unparsed
+// syllables and ambiguous matches are rejected; explicit IDs/aliases take priority.
+function thaiNameRomanization(value) {
+ const s=keyName(value).replace(/[\s-]/g,'');
+ const consonants={ก:'k',ค:'k',ข:'k',ฆ:'k',ง:'ng',จ:'j',ช:'ch',ซ:'s',ส:'s',ศ:'s',ษ:'s',ด:'d',ต:'t',ท:'t',ธ:'t',ถ:'t',น:'n',ณ:'n',บ:'b',ป:'p',พ:'p',ผ:'p',ฟ:'f',ม:'m',ย:'y',ร:'r',ล:'l',ว:'w',ฮ:'h',ห:'h'};
+ const vowels={'า':'a','ะ':'a','ิ':'i','ี':'i','ุ':'u','ู':'u'};
+ let result='',offset=0;
+ while(offset<s.length){
+  const leading=s[offset]==='โ'?'o':s[offset]==='เ'?'e':'';
+  if(leading)offset++;
+  const consonant=consonants[s[offset++]];if(!consonant)return '';
+  const vowel=leading||vowels[s[offset++]];if(!vowel)return '';
+  result+=consonant+vowel;
+ }
+ return result.length>=4?result:'';
+}
+export function resolveNpc(records, value) {
+ const raw=typeof value==='string'?{name:value}:value||{};
+ const id=raw.npcId||raw.id;
+ const exact=id&&records.find(p=>p.id===id);if(exact)return exact;
+ const requested=[raw.npcName||raw.name,...(Array.isArray(raw.aliases)?raw.aliases:[])].filter(Boolean).map(keyName);
+ const names=p=>[p.name,...(p.aliases||[])].filter(Boolean).map(keyName);
+ const direct=records.filter(p=>names(p).some(n=>requested.includes(n)));
+ if(direct.length)return direct.length===1?direct[0]:null;
+ const matches=records.filter(p=>names(p).some(n=>requested.some(r=>
+  (/^[a-z]+$/.test(n)&&thaiNameRomanization(r)===n)||(/^[a-z]+$/.test(r)&&thaiNameRomanization(n)===r))));
+ return matches.length===1?matches[0]:null;
+}

@@ -146,3 +146,10 @@
 .trpg-lore-editor textarea{min-height:260px;resize:vertical;line-height:1.7}
 .trpg-lore-panel input:not([type=checkbox]),.trpg-lore-panel textarea{box-sizing:border-box;width:100%;border:1px solid #524326;border-radius:0;background:#101112;color:#ede6d5;padding:12px;font:inherit}
 @media(max-width:650px){.trpg-lore-panel{padding:16px}.trpg-management-tabs button{font-size:13px}.trpg-lore-row{gap:8px}.trpg-lore-tools button{min-height:44px}}
+
+/* Dedicated footer: actions never overlap the scrolling dossier. */
+.trpg-manager .trpg-editor-actions{flex-shrink:0;margin:0;padding:12px 20px max(12px,env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:#090a0b}
+.trpg-editor-actions button{flex:1;min-height:44px}
+.trpg-manager .trpg-danger{color:#ffb6aa;border-color:#ad645c}
+.trpg-lore-panel select{max-width:100%;font:inherit;background:#101112;color:#ede6d5;padding:12px}
+@media(max-width:650px){.trpg-manager[data-view="edit"] .trpg-manager-footer{padding-bottom:6px;font-size:11px;max-height:64px;overflow:auto}.trpg-manager .trpg-editor-actions{padding-top:10px}}

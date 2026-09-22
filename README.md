@@ -1,17 +1,25 @@
 # Tretaresia RPG System
 
-### v0.34.0 — Character Lore Management
+### v0.35.0 — Lore budgets and NPC management fixes
+
+- **NPC Management → Lore Management → งบ Lore** accepts 1,000–8,000,000 **characters**, independently per card. The default remains 60,000 characters; this is not a model token limit. A 2,000,000-token model still needs space for instructions, history and output. The budget covers title/content, not JSON/prompt overhead. Existing lore is preserved.
+- Choose **เฉพาะที่เกี่ยวข้อง** to send entries whose title or comma-separated keywords appear in the last eight messages or the current NPC request. **ให้ความสำคัญก่อนเสมอ** prioritizes essential entries within the budget. No extra AI calls are made. Disabled, duplicate-content and over-budget entries are omitted; whole entries are used, never cut mid-fact. This is keyword retrieval, not semantic search: use aliases/Thai keywords and pin essential world rules. The all-enabled mode remains the default.
+- NPC editor Save/AI actions have their own bottom footer outside the scrolling form, including mobile safe-area spacing. **ลบตัวละคร** is available in the dossier for both Chat and Character, with scope-specific confirmation. Copies in the other scope, message history, correspondence and shared portrait files remain. Deleted IDs are unlinked from social rosters and current turn snapshots; a later story can introduce a character again.
+- NPC patches and chat headers resolve stable IDs and aliases consistently. The model receives a compact complete name/alias index, even for NPCs outside the detail window. Fully vowel-marked Thai transliterations such as **โคฮาคุ / Kohaku** have a conservative unique-match fallback; arbitrary translations still need explicit aliases. An alias-based creation cannot rename/reset an existing dossier. Existing duplicate records are not automatically merged; inspect and delete unwanted copies in Management.
+- Update the extension and reload normally to load v0.35.0. No browser-data clearing is required.
+
+### v0.34.0 — Character Lore Management (original release)
 
 Open **NPC Management → Lore Management** to create, edit, search, delete, or toggle lore entries. Each entry has a title and content. Enabled entries are included on every generation (no keyword trigger), in main chat, NPC generation/fill/attribute repair, and manual RPG sync. Disabled entries remain stored but are excluded from future prompts; toggling cannot remove facts already present in chat history.
 
 Lore is saved in extension settings, bound to the selected character card's filename, and shared across its chats. Other cards and group chats do not receive it. It is not embedded in exported character PNGs. A changed card filename has a different binding. Existing lore starts empty; add your world's facts rather than loading invented canon.
 
-Limits: 200 entries per card, 12,000 characters per entry, 60,000 active title/content characters in total. Over-limit saves report an error without replacing saved data. Lore drafts warn before closing/switching tabs; a card change prevents a stale save. The UI displays the active count and context size. Model context limits still apply.
+Storage limits: 200 entries per card and 12,000 characters per entry. The active title/content budget now defaults to 60,000 characters and is configurable in v0.35.0. Over-limit saves report an error without replacing saved data. Lore drafts warn before closing/switching tabs; a card change prevents a stale save. The UI displays the active count and context size. Model context limits still apply.
 
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.32.0**
+**Current version: 0.35.0**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 

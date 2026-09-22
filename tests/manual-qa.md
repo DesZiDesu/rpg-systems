@@ -35,3 +35,10 @@ Known boundaries: images are device-local browser storage, not embedded into mod
 - Using a disposable test profile/server backup only, clear browser website data **after successful migration**, sign back into the same server account and verify portraits plus framing return in both scopes. Never do this to the user's real cache for routine updates.
 - Interrupt image upload: no false server reference is saved. Retry works. Copy a server-backed NPC to the other scope: same server path, independent profile/frame.
 - Delete a portrait from one profile: another profile using that path retains its image. Moving to a different SillyTavern server requires copying server images too.
+
+
+## v0.35.0 acceptance
+- On iPhone Safari, open an NPC editor with a long status message. Scroll to both ends, expand all sections, focus a textarea to open the keyboard, and rotate the phone. Save/AI must remain below the status, outside the form scroller, with no fields covered. Save still submits; both actions disable during AI work.
+- In each scope, cancel deletion and verify the dossier remains; then confirm. Reopen, reload, and swipe the current turn: the deleted dossier and social links must not return from saved snapshots. A distinct copy in the other scope stays intact. Inspect a second chat after deleting a shared NPC.
+- Set Lore budget to 2,000,000 characters, save >60,000 characters across entries, reopen and switch cards. Verify budget isolation. Enable relevant mode, set Thai keywords and a pinned rule, and inspect the prompt on a matching/nonmatching message and NPC-generation request. Disabled/duplicate/over-budget entries should be omitted without extra model calls. This budget is not an exact token count.
+- Send a simulated new-ID upsert for โคฮาคุ when Kohaku exists: one ID, unchanged canonical biography/stats/portrait, Thai alias added. Click Thai dialogue and confirm it opens that dossier. Explicit aliases support other translations; ambiguous or unsupported transliterations must not guess a match.
