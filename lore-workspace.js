@@ -1,0 +1,53 @@
+import { element } from './npc-chat.js?v=0.34.0';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT } from './lore-core.js?v=0.34.0';
+
+export function createLoreWorkspace(panel, api, say) {
+    let owner = '', dirty = false, query = '', editing = null;
+    const canLeave = () => !dirty || confirm('ยังมี Lore ที่ไม่ได้บันทึก ต้องการทิ้งการแก้ไขนี้หรือไม่?');
+    const entries = () => api.listLore?.() || [];
+    const button = (label, action) => {const b=element('button','',label);b.type='button';b.addEventListener('click',action);return b;};
+    function save(next) {
+        if(owner !== api.scopeInfo()?.key) throw Error('การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่');
+        api.persistLore(next,owner);
+    }
+    function attempt(action){try{action();}catch(error){say(error.message);}}
+    function list() {
+        editing=null;dirty=false;panel.replaceChildren();
+        const info=api.scopeInfo(), all=entries();
+        panel.append(element('h3','','Lore Management'),element('p','trpg-muted',info?`Character · ${info.label} — ใช้ร่วมกันทุกแชทของการ์ดนี้`:'เปิดแชทของการ์ดตัวละครเดี่ยวเพื่อจัดการ Lore'));
+        if(!info)return;
+        const active=all.filter(item=>item.enabled),count=active.reduce((n,item)=>n+item.title.length+item.content.length,0);
+        panel.append(element('p','trpg-muted',`เปิด ${active.length} / ${all.length} รายการ · ${count.toLocaleString()} / ${LORE_ACTIVE_LIMIT.toLocaleString()} ตัวอักษร — ส่งรายการที่เปิดให้ AI ทั้งในแชทและ UI ทุกครั้ง`));
+        const tools=element('div','trpg-lore-tools'),label=element('label','','ค้นหา Lore'),search=element('input');search.type='search';search.value=query;search.placeholder='ชื่อหรือเนื้อหา';label.append(search);
+        tools.append(label,button('＋ สร้าง Lore ใหม่',()=>edit({id:'',title:'',content:'',enabled:true})));panel.append(tools);
+        const rows=element('div','trpg-lore-rows');panel.append(rows);
+        function renderRows(){rows.replaceChildren();const shown=all.filter(item=>`${item.title} ${item.content}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+            for(const item of shown){
+                const row=element('article','trpg-lore-row'),toggleLabel=element('label','trpg-lore-toggle'),toggle=element('input');toggle.type='checkbox';toggle.checked=item.enabled;toggle.setAttribute('aria-label',`เปิด Lore ${item.title}`);
+                toggle.addEventListener('change',()=>attempt(()=>{save(entries().map(v=>v.id===item.id?{...v,enabled:toggle.checked}:v));list();say('บันทึกการเปิด–ปิด Lore แล้ว');}));
+                toggle.addEventListener('change',()=>{toggle.checked=entries().find(v=>v.id===item.id)?.enabled===true;});
+                toggleLabel.append(toggle,document.createTextNode(item.enabled?'เปิด':'ปิด'));
+                const open=button(item.title,()=>edit(item));open.className='trpg-lore-title';
+                row.append(toggleLabel,open,element('p','trpg-lore-excerpt',item.content.slice(0,180)),button('ลบ',()=>{if(confirm(`ลบ Lore “${item.title}”?`))attempt(()=>{save(entries().filter(v=>v.id!==item.id));list();say('ลบ Lore แล้ว');});}));rows.append(row);
+            }
+            if(!shown.length)rows.append(element('p','trpg-empty',query?'ไม่พบ Lore ที่ค้นหา':'ยังไม่มี Lore — กดสร้าง Lore ใหม่เพื่อเพิ่มข้อมูลโลก สถานที่ กฎ หรือประวัติ'));
+        }
+        search.addEventListener('input',()=>{query=search.value;renderRows();});renderRows();
+    }
+    function edit(item) {
+        editing=item.id;dirty=false;panel.replaceChildren();say('');
+        const form=element('form','trpg-lore-editor'),titleLabel=element('label','','ชื่อ Lore'),title=element('input'),bodyLabel=element('label','','เนื้อหา Lore'),body=element('textarea'),enabledLabel=element('label','trpg-lore-toggle'),enabled=element('input');
+        title.value=item.title;title.required=true;title.maxLength=160;title.name='loreTitle';body.value=item.content;body.required=true;body.maxLength=LORE_CONTENT_LIMIT;body.rows=14;body.name='loreContent';enabled.type='checkbox';enabled.checked=item.enabled;
+        titleLabel.append(title);bodyLabel.append(body);enabledLabel.append(enabled,document.createTextNode('เปิดใช้งาน · ส่งให้ AI ทุกครั้ง'));
+        const counter=element('small','trpg-muted');const update=()=>counter.textContent=`${body.value.length.toLocaleString()} / ${LORE_CONTENT_LIMIT.toLocaleString()} ตัวอักษร`;update();
+        form.addEventListener('input',()=>{dirty=true;update();});form.addEventListener('change',()=>dirty=true);
+        const actions=element('div','trpg-lore-tools'),submit=element('button','trpg-primary','บันทึก Lore');submit.type='submit';actions.append(submit,button('กลับรายการ',()=>{if(canLeave())list();}));
+        form.append(element('h3','',item.id?'แก้ไข Lore':'สร้าง Lore ใหม่'),titleLabel,bodyLabel,counter,enabledLabel,actions);panel.append(form);
+        form.addEventListener('submit',event=>{event.preventDefault();attempt(()=>{
+            const all=entries();if(item.id&&!all.some(v=>v.id===item.id))throw Error('Lore นี้ถูกลบแล้ว กรุณากลับรายการ');
+            const next={id:item.id||(globalThis.crypto?.randomUUID?.()||`lore-${Date.now()}-${Math.random().toString(36).slice(2)}`),title:title.value.trim(),content:body.value.trim(),enabled:enabled.checked};
+            save(item.id?all.map(v=>v.id===item.id?next:v):[...all,next]);dirty=false;list();say('บันทึก Lore แล้ว — มีผลกับการเจนครั้งถัดไป');
+        });});title.focus();
+    }
+    return {canLeave,open(){owner=api.scopeInfo()?.key||'';query='';list();},reset(){dirty=false;editing=null;},refresh(){if(editing===null&&!dirty)list();}};
+}
