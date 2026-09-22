@@ -1,4 +1,4 @@
-import { keyName } from './npc-core.js?v=0.34.0';
+import { keyName } from './npc-core.js?v=0.35.0';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -31,7 +31,9 @@ export function scopeEnvelope(value) {
 }
 
 export function hydrateScopedNpcs(state, library, owner) {
-    const result = clone(state), scope = scopeEnvelope(state.npcScopes);
+    const scope = scopeEnvelope(state.npcScopes);
+    const retired = scope.owner === owner ? (scope.sharedIds || []).filter(id => !library.some(p => p.id === id)) : [];
+    const result = pruneNpcReferences(state, retired);
     const local = (state.npcs || []).filter(p => p.npcScope !== 'character').map(p => ({ ...clone(p), npcScope: 'chat', npcOwner: '' }));
     const names = new Set(local.map(p => keyName(p.name))), ids = new Set(local.map(p => p.id));
     const active = owner && scope.owner === owner ? scope : { overrides: {}, hidden: [] };
@@ -122,4 +124,31 @@ export function routeNewStoryNpcs(state, previous, library, owner, destination) 
   p.npcScope='character';p.npcOwner=owner;archive.push(clone(p));added++;
  }
  return {state:next,library:archive,added,overflow};
+}
+
+// Remove links to deleted dossiers without deleting correspondence/history or
+// portraits, which may still be used by a copy in the other scope.
+export function pruneNpcReferences(state, removedIds) {
+ const removed=new Set(removedIds), next=clone(state);
+ for(const contact of next.contacts||[])if(removed.has(contact.npcId))contact.npcId='';
+ const cleanGroup=group=>{
+  if(!group)return;
+  if(Array.isArray(group.memberIds))group.memberIds=group.memberIds.filter(id=>!removed.has(id));
+  if(removed.has(group.leaderId))group.leaderId='player';
+  if(group.roles)for(const id of removed)delete group.roles[id];
+ };
+ cleanGroup(next.social?.party);for(const guild of next.social?.guilds||[])cleanGroup(guild);
+ if(next.social?.household)next.social.household.members=(next.social.household.members||[]).filter(p=>!removed.has(p.npcId));
+ return next;
+}
+
+export function retainNpcDeletions(history, removedIds) {
+    const removed = new Set(removedIds);
+    for (const entry of history?.entries || []) {
+        for (const snapshot of [entry.baseState, ...Object.values(entry.variants || {}).map(v => v.state)]) {
+            if (!snapshot || !Array.isArray(snapshot.npcs)) continue;
+            Object.assign(snapshot, pruneNpcReferences(snapshot, removedIds));
+            snapshot.npcs = snapshot.npcs.filter(p => !removed.has(p.id));
+        }
+    }
 }

@@ -64,3 +64,11 @@ test('scope metadata refuses prototype keys and scope spoofing',()=>{
  const result=scopeEnvelope(JSON.parse('{"owner":"card:first.png","overrides":{"__proto__":{"polluted":true},"s1":{"id":"evil","npcScope":"chat","personality":"Calm"}}}'));
  assert.deepEqual(result.overrides,{s1:{personality:'Calm'}});assert.equal({}.polluted,undefined);
 });
+
+test('deletion unlinks references and snapshots; deleted Character contacts cannot resurrect dossiers',async()=>{
+ const {pruneNpcReferences,retainNpcDeletions}=await import('../npc-scopes.js');
+ const state={npcs:[local,...library],contacts:[{id:'c',npcId:'s1',name:'Archivist'}],social:{party:{memberIds:['l1','s1'],roles:{s1:'Mage'},leaderId:'s1'},guilds:[{memberIds:['s1']}],household:{members:[{npcId:'s1'}]}}};
+ const clean=pruneNpcReferences(state,['s1']);assert.equal(clean.contacts[0].npcId,'');assert.deepEqual(clean.social.party.memberIds,['l1']);assert.deepEqual(clean.social.party.roles,{});assert.equal(state.contacts[0].npcId,'s1');
+ const history={entries:[{baseState:structuredClone(state),variants:{one:{state:structuredClone(state)}}}]};retainNpcDeletions(history,['s1']);assert.equal(history.entries[0].baseState.npcs.length,1);assert.equal(history.entries[0].variants.one.state.contacts[0].npcId,'');
+ const packed=packScopedNpcs(hydrateScopedNpcs(state,library,owner),library,owner);const restored=hydrateScopedNpcs(packed,[],owner);assert.equal(restored.contacts[0].npcId,'');assert.deepEqual(restored.social.party.memberIds,['l1']);
+});
