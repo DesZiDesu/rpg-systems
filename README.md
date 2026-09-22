@@ -171,3 +171,11 @@ The control center is mounted outside the transformed application panel so its s
 ## License
 
 MIT
+
+### 0.32.1 — NPC creation and mobile workspace
+
+- **Tretaresia NPC Manager** is available directly in the wand menu and follows the existing **Show launcher** setting.
+- In **Create NPC**, describe the character and select **Generate NPC from description**. The connected SillyTavern AI fills the textual profile, aliases, abilities, relationship values, stats, hostility, color, role icon, and portrait size. Uploaded portrait images and framing are retained; this is not an image generator. Review the draft and press Save to persist it. Generating over an existing or edited profile asks before replacing its fields.
+- Incomplete AI replies leave the current draft intact. Closing the manager or changing chats discards late AI results. The existing **AI fill empty fields** action remains available.
+- Mobile dialog sizing follows the visual viewport, includes safe-area padding within its height, and removes the empty footer strip. Text controls use 16px text to avoid iOS focus zoom.
+- Run `npm test` and `npm run check`. Optional rendered UI check: install Playwright/Chromium and run `node tests/npc-workspace.browser.mjs`. This simulated mobile check does not replace on-device iOS Safari verification.
