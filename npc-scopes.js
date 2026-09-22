@@ -1,4 +1,4 @@
-import { keyName } from './npc-core.js?v=0.33.0';
+import { keyName } from './npc-core.js?v=0.34.0';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
