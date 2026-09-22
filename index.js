@@ -1,8 +1,8 @@
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.32.1';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.32.1';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.32.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey } from './npc-scopes.js?v=0.32.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.32.2';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.32.2';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.32.2';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey } from './npc-scopes.js?v=0.32.2';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
@@ -834,7 +834,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.32.1';
+const LAUNCHER_BIND_VERSION = '0.32.2';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -9742,7 +9742,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.32.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.32.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
