@@ -1,5 +1,14 @@
 # Tretaresia RPG System
 
+### v0.36.0 — Scene Tracker, NPC baselines, and lighter generation
+
+- The former **World Map** tab is replaced by the **Scene Tracker**. The chosen horizontal archive panel appears above each new AI reply, fits the width of a mobile chat, expands for details, and follows the configured Tretaresia accent, background, and text colors. Turn and swipe variants keep separate compact scene snapshots in chat metadata. The existing Scene tab still edits the location and clock. Old map data remains in saved chats so upgrading does not erase it.
+- An arrived journey no longer reapplies its old destination on later saves. Before the opening location is confirmed, the default Central Crown coordinates are treated as internal placeholders, not established story canon. The tracker only displays confirmed location data.
+- Both Chat and Character dossiers can be enabled or disabled. A Character dossier is the reusable default; changes during play are saved as chat-specific deltas. The dossier shows which fields differ in the current chat and offers **คืนข้อมูลแชทนี้เป็นค่าเริ่มต้น**. A new chat hydrates the original Character default. Disabled profiles remain stored, cannot be reactivated by an AI patch, and remain in the identity index to block translated-name duplicates.
+- Lore's **เฉพาะที่เกี่ยวข้อง** mode now finds distinctive terms in titles and content even when the keyword box is empty. Manual aliases and pinned entries still work. Select this recommended mode in Lore Management to reduce prompt usage; the existing all-enabled setting is preserved for current users. The per-card budget is still adjustable up to 8,000,000 characters.
+- Text-only NPC generation uses SillyTavern's raw generation API when available, with a short explicit story excerpt only for fill/attribute modes. Image reference is optional and is sent only when its checkbox is selected. Generation errors distinguish upstream HTTP 524 from malformed/truncated JSON and leave the draft intact. Color/range changes save on release instead of every input movement, reducing repeated global settings writes; other SillyTavern or provider save failures may still need separate diagnosis.
+- Update the extension and reload to load v0.36.0. Existing chats, portraits, and Character archives are retained.
+
 ### v0.35.0 — Lore budgets and NPC management fixes
 
 - **NPC Management → Lore Management → งบ Lore** accepts 1,000–8,000,000 **characters**, independently per card. The default remains 60,000 characters; this is not a model token limit. A 2,000,000-token model still needs space for instructions, history and output. The budget covers title/content, not JSON/prompt overhead. Existing lore is preserved.
@@ -19,7 +28,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.35.0**
+**Current version: 0.36.0**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 

@@ -71,6 +71,7 @@ try{
  const image=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=8;const g=c.getContext('2d');g.fillStyle='red';g.fillRect(0,0,8,8);return c.toDataURL('image/png').split(',')[1];});
  await page.locator('form input[type=file]').setInputFiles({name:'portrait.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')});
  await page.waitForFunction(()=>!document.querySelector('fieldset').disabled);
+ await page.locator('[data-send-portrait]').check();
  await page.evaluate(()=>window.noVision=true);const priorRequests=(await page.evaluate(()=>counts())).requests;
  await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>document.querySelector('[role=status]').textContent.includes('Image inlining'));
  assert.equal((await page.evaluate(()=>counts())).requests,priorRequests);

@@ -1,5 +1,6 @@
-import { identity, resolveNpc, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.35.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.35.0';
+import { identity, resolveNpc, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.36.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.36.0';
+import { renderSceneTracker } from './scene-tracker.js?v=0.36.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -83,23 +84,25 @@ export function createChatPresentation(api, open) {
         timer=null;const context=api.context(),chatId=context.getCurrentChatId?.()||'';
         if(chatId!==currentChat){currentChat=chatId;clearPortraits();for(const [host,entry]of mounted)restore(host,entry);}
         const settings=api.settings();
-        if(!settings.chatPresentation){for(const [host,entry]of mounted)restore(host,entry);return;}
         const npcs=api.state().npcs||[], lookup=new Map();
         for(const npc of npcs)for(const name of [npc.name,...(npc.aliases||[])])if(!lookup.has(keyName(name)))lookup.set(keyName(name),npc);
         for(const [host]of mounted)if(!host.isConnected)mounted.delete(host);
         for(const host of document.querySelectorAll('#chat .mes .mes_text')){
             const mes=host.closest('.mes'), id=Number(mes.getAttribute('mesid')), message=context.chat?.[id];
             if(!message || message.is_user || message.is_system || mes.querySelector('.mes_edit_textarea'))continue;
-            const source=api.visible(message.mes||''),blocks=parseStory(source),old=mounted.get(host);
-            if(!blocks){if(old)restore(host,old);continue;}
+            const source=api.visible(message.mes||''),blocks=settings.chatPresentation?parseStory(source):null,old=mounted.get(host);
+            const scene=settings.showSceneTracker?api.sceneForMessage?.(id,message):null;
+            if(!blocks&&!scene){if(old)restore(host,old);continue;}
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
-            const signature=`${revision}:${settings.chatEffects}:${previousKey}:${source}`;
+            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${source}`;
             if(old?.signature===signature && old.root.parentNode===host)continue;
             const original=old?.root.parentNode===host?old.original:[...host.childNodes];
             const root=element('div','trpg-chat');root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
-            renderStoryBlocks(root, blocks, lookup, message.name, open, imageFor, previousSpeaker);
+            if(scene)root.append(renderSceneTracker(scene,settings.language));
+            if(blocks)renderStoryBlocks(root, blocks, lookup, message.name, open, imageFor, previousSpeaker);
+            else root.append(...original);
             mounted.set(host,{root,original,signature});host.replaceChildren(root);
         }
     }

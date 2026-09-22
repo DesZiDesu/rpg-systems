@@ -5,14 +5,15 @@ import { readFileSync } from 'node:fs';
 import { identity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from '../npc-core.js';
 import * as scopes from '../npc-scopes.js';
 import * as lore from '../lore-core.js';
+import {sceneSnapshot} from '../scene-tracker.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
+const sandbox={...scopes,...lore,sceneSnapshot,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
-vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore};`,sandbox);
+vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -45,7 +46,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.35.0');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.36.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -147,4 +148,43 @@ test('Thai duplicate creation reuses canonical NPC without resetting its dossier
 test('full name index includes NPCs outside the detailed context shortlist',()=>{
  const state={...host.defaultState(),npcs:Array.from({length:40},(_,i)=>host.npcProfile({id:`npc-${i}`,name:`NPC ${i}`,aliases:[`Alias ${i}`]}))};
  assert.equal(host.roleplayState(state).privateTrackerReferenceIndex.npcNames.length,40);assert.ok(JSON.stringify(host.roleplayState(state).privateTrackerReferenceIndex.npcNames).includes('Alias 39'));
+});
+test('disabled NPC remains identifiable but an AI patch cannot reactivate or duplicate them',()=>{
+ const state={...host.defaultState(),npcs:[host.npcProfile({id:'kohaku',name:'Kohaku',enabled:false})]};
+ const next=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'thai-id',name:'โคฮาคุ',enabled:true,personality:'Overwrite'}],['upsert','partyMembers',{npcName:'โคฮาคุ'}]]});
+ assert.equal(next.next.npcs.length,1);assert.equal(next.next.npcs[0].enabled,false);
+ assert.equal(host.friendlyNpcs(next.next).length,0);
+});
+test('completed travel does not reset a later scene to the old destination',()=>{
+ const old=host.defaultState();old.travel.status='Arrived';old.travel.destination='Central Crown';old.travel.destinationPlace='Central Crown';
+ const next=structuredClone(old);next.location.place='The Great Academy';next.location.region='Crown Heartlands';
+ host.synchronizeWorldState(next,old);
+ assert.equal(next.location.place,'The Great Academy');
+});
+test('unconfirmed opening coordinates are hidden from the roleplay prompt',()=>{
+ const scene=host.roleplayState(host.defaultState()).sceneContext;
+ assert.equal(scene.location.place,'Unknown');assert.equal(scene.location.mapX,null);
+ const confirmed=host.defaultState();confirmed.onboarding.locationSeeded=true;
+ assert.equal(host.roleplayState(confirmed).sceneContext.location.place,'Central Crown');
+});
+test('JSON parser accepts one balanced object with trailing model commentary',()=>{
+ assert.equal(host.parseJson('```json\n{"name":"Lysa"}\n```\nextra text').name,'Lysa');
+ assert.throws(()=>host.parseJson('{"name":'),/valid JSON/);
+});
+test('scene snapshots survive swipes without showing another reply variant',async()=>{
+ const previousChat=context.chat,previousMetadata=context.chatMetadata;
+ try{
+  const message={mes:'<tr-dialogue name="Kohaku">Hello</tr-dialogue>',swipe_id:0};
+  context.chat=[{is_user:true,mes:'Hello'},message];context.chatMetadata={};
+  const state=host.defaultState();state.onboarding.locationSeeded=true;state.location.place='Academy';
+  await host.rememberScene(1,message,state,{participants:['Kohaku']});
+  assert.equal(host.sceneForMessage(1,message).location,'Academy');
+  assert.equal(host.sceneForMessage(1,message).sequence,1);
+  message.swipe_id=1;message.mes='<tr-dialogue name="Lysa">Goodbye</tr-dialogue>';state.location.place='Library';
+  assert.equal(host.sceneForMessage(1,message),null);
+  await host.rememberScene(1,message,state,{participants:['Lysa']});
+  assert.equal(host.sceneForMessage(1,message).location,'Library');
+  message.swipe_id=0;message.mes='<tr-dialogue name="Kohaku">Hello</tr-dialogue>';
+  assert.equal(host.sceneForMessage(1,message).location,'Academy');
+ }finally{context.chat=previousChat;context.chatMetadata=previousMetadata;}
 });

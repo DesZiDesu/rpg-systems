@@ -1,0 +1,73 @@
+// Small, per-reply scene records. Never send a second request to build a card.
+const value = (source, limit = 180) => typeof source === 'string' ? source.trim().slice(0, limit) : '';
+const known = source => source && !/^(?:unknown|none|n\/a|ไม่ทราบ|—)$/i.test(source) ? source : '';
+
+export function sceneSnapshot(state, supplement = {}, speakers = []) {
+    const clock = state?.worldClock || {}, location = state?.onboarding?.locationSeeded === false ? {} : state?.location || {}, scene = state?.scene || {};
+    const extra = supplement && typeof supplement === 'object' && !Array.isArray(supplement) ? supplement : {};
+    const read = (key, fallback, limit) => known(value(extra[key], limit)) || known(value(fallback, limit)) || '';
+    const participants = Array.isArray(extra.participants) ? extra.participants : speakers;
+    const names = [...new Set(participants.filter(name => typeof name === 'string').map(name => value(name, 70)).filter(Boolean))].slice(0, 8);
+    return {
+        day: Number.isFinite(Number(clock.day)) ? Math.max(1, Math.floor(Number(clock.day))) : null,
+        dayName: read('dayName', clock.dayName, 50), time: read('time', clock.time, 20),
+        period: read('period', clock.phase, 50), location: read('location', location.place || location.detail, 180),
+        region: read('region', [location.region,location.continent].filter(Boolean).filter((part,index,all) => all.indexOf(part) === index).join(' · '), 120),
+        weather: read('weather', scene.weather, 100),
+        temperature: Number.isFinite(Number(scene.temperature)) && scene.temperature !== null ? Number(scene.temperature) : null,
+        participants: names, position: read('position', scene.position, 120),
+        objective: read('objective', '', 180), atmosphere: read('atmosphere', '', 180),
+        lighting: read('lighting', '', 100), safety: read('safety', '', 120),
+        season: read('season', '', 80), elapsed: read('elapsed', '', 60),
+    };
+}
+
+function node(tag, className = '', content = '') {
+    const element = document.createElement(tag);
+    element.className = className;
+    element.textContent = content;
+    return element;
+}
+
+export function renderSceneTracker(snapshot, language = 'en') {
+    const thai = language === 'th';
+    const word = (en, th) => thai ? th : en;
+    const card = node('section', 'trpg-scene-ledger');
+    card.setAttribute('aria-label', word('Scene Tracker', 'ข้อมูลฉาก'));
+    const side = node('div', 'trpg-scene-side');
+    const number = snapshot.sequence ?? snapshot.day;
+    side.append(node('span', '', '✦'), node('small', '', word('SCENE', 'ฉาก')),
+        node('strong', '', number == null ? '—' : String(number).padStart(2, '0')));
+    const body = node('div', 'trpg-scene-body');
+    const top = node('div', 'trpg-scene-top');
+    top.append(node('span', '', 'SCENE STATUS / LIVE'),
+        node('span', '', [snapshot.dayName,snapshot.day == null ? '' : `${word('Day', 'วันที่')} ${snapshot.day}`].filter(Boolean).join(' · ') || '—'));
+    const hero = node('div', 'trpg-scene-hero'), place = node('div');
+    place.append(node('small', '', word('CURRENT LOCATION', 'ตำแหน่งในเนื้อเรื่อง')),
+        node('strong', '', snapshot.location || '—'), node('span', '', snapshot.region || '—'));
+    const hour = node('div', 'trpg-scene-hour');
+    hour.append(node('strong', '', snapshot.time || '—'), node('small', '', snapshot.period || '—'));
+    hero.append(place, hour);
+    const weather = node('div', 'trpg-scene-weather');
+    for (const [label, info] of [[word('WEATHER', 'อากาศ'), snapshot.weather || '—'],
+        [word('TEMPERATURE', 'อุณหภูมิ'), snapshot.temperature == null ? '—' : `${snapshot.temperature}°C`]]) {
+        const cell = node('div'); cell.append(node('small', '', label), node('strong', '', info)); weather.append(cell);
+    }
+    const people = node('div', 'trpg-scene-people');
+    people.append(node('small', '', word('IN SCENE', 'ในฉาก')),
+        node('strong', '', snapshot.participants?.join(', ') || '—'));
+    const details = node('details', 'trpg-scene-details'), summary = node('summary', '', word('Scene details', 'ดูรายละเอียดทั้งหมด'));
+    if (snapshot.elapsed) summary.append(node('span', '', ` · ${snapshot.elapsed}`));
+    const fields = node('dl');
+    for (const [label, info] of [
+        [word('Position', 'ตำแหน่ง'), snapshot.position], [word('Season', 'ฤดูกาล'), snapshot.season],
+        [word('Lighting', 'แสงสว่าง'), snapshot.lighting], [word('Safety', 'ความปลอดภัย'), snapshot.safety],
+        [word('Objective', 'เป้าหมาย'), snapshot.objective], [word('Atmosphere', 'บรรยากาศ'), snapshot.atmosphere],
+    ]) {
+        if (!info) continue;
+        const row = node('div'); row.append(node('dt', '', label), node('dd', '', info)); fields.append(row);
+    }
+    if (!fields.childElementCount) fields.append(node('div', '', word('No extra scene details yet', 'ยังไม่มีรายละเอียดฉากเพิ่มเติม')));
+    details.append(summary, fields);body.append(top, hero, weather, people, details);card.append(side, body);
+    return card;
+}

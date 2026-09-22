@@ -1,9 +1,10 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.35.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.36.0';
+import { sceneSnapshot } from './scene-tracker.js?v=0.36.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.35.0';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.35.0';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.35.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.35.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.36.0';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.36.0';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.36.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.36.0';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
@@ -13,6 +14,7 @@ const EXTENSION_FOLDER = 'third-party/rpg-systems';
 const SETTINGS_KEY = 'tretaresia_rpg';
 const METADATA_KEY = 'tretaresia_rpg_state';
 const TURN_HISTORY_KEY = 'tretaresia_rpg_turn_history';
+const SCENE_HISTORY_KEY = 'tretaresia_rpg_scene_history';
 const PROMPT_KEY = 'tretaresia_rpg_roleplay_state';
 const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
 const STATE_PACKAGE_FORMAT = 'tretaresia-rpg-state';
@@ -781,8 +783,10 @@ function npcAtlasKnowledge(state) {
         isolationRule: 'This catalog contains only the active timeline. Never give an NPC knowledge of destinations from another world unless the story explicitly establishes that NPC has crossed worlds or received reliable inter-world information.',
         knowledgeRule: 'These names are canonical geography, not universal personal knowledge. Judge what an individual NPC knows from origin, occupation, travel, education and established discoveries; do not reveal secret or dangerous sites without a plausible source.',
         currentLocation: {
-            continent: state.location.continent, region: state.location.region, place: state.location.place,
-            discovered: discoveredLocationsFor(state, atlas.id),
+            continent: state.onboarding?.locationSeeded ? state.location.continent : 'Unknown',
+            region: state.onboarding?.locationSeeded ? state.location.region : 'Unknown',
+            place: state.onboarding?.locationSeeded ? state.location.place : 'Unknown',
+            discovered: state.onboarding?.locationSeeded ? discoveredLocationsFor(state, atlas.id) : [],
         },
         regions,
     };
@@ -802,6 +806,7 @@ const COLOR_PRESETS = {
 
 const DEFAULT_SETTINGS = Object.freeze({
     chatPresentation: true,
+    showSceneTracker: true,
     npcGenerationScope: 'chat',
     chatEffects: true,
     showWandLauncher: true,
@@ -836,8 +841,8 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.35.0';
-const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
+const LAUNCHER_BIND_VERSION = '0.36.0';
+const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
     inventory: ['fa-solid fa-box-open', 'Inventory'], skills: ['fa-solid fa-layer-group', 'Skills'],
@@ -1171,7 +1176,7 @@ function getSettings() {
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
-    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'showTravelTracker', 'autoContinuity', 'showNpcMapMarkers', 'mapHdMode']) settings[key] = Boolean(settings[key]);
+    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'showTravelTracker', 'autoContinuity', 'showNpcMapMarkers', 'mapHdMode', 'showSceneTracker']) settings[key] = Boolean(settings[key]);
     const trackerPosition = settings.travelTrackerPosition && typeof settings.travelTrackerPosition === 'object' ? settings.travelTrackerPosition : {};
     settings.travelTrackerPosition = {
         x: optionalNumber(trackerPosition.x, null),
@@ -1638,7 +1643,7 @@ function householdProfile(value, fallback = {}) {
 }
 
 function isFriendlyNpc(entry) {
-    if (!entry || entry.isHostile === true || entry.hostile === true) return false;
+    if (!entry || entry.enabled === false || entry.isHostile === true || entry.hostile === true) return false;
     const source = [entry.relationship, entry.alignment, entry.relationshipState, entry.faction]
         .map(value => text(value, '', 300).toLocaleLowerCase()).filter(Boolean).join(' ');
     if (!source) return true;
@@ -1659,6 +1664,7 @@ function resolveFriendlyNpc(state, value) {
 function resolveOrCreateFriendlyNpc(state, value) {
     const existing = resolveFriendlyNpc(state, value);
     if (existing) return existing;
+    if (resolveNpc(state.npcs, value)?.enabled === false) return null;
     const name = text(value?.npcName, text(value?.name, '', 140), 140);
     if (!name || !value || typeof value !== 'object') return null;
     const candidate = npcProfile({
@@ -1712,6 +1718,7 @@ function npcProfile(value, fallback = {}) {
         gender: text(value.gender, text(fallback.gender, '', 60), 60), occupation: text(value.occupation, text(fallback.occupation, '', 120), 120),
         faction: text(value.faction, text(fallback.faction, text(value.affiliation, text(fallback.affiliation, '', 120), 120), 120), 120),
         alignment: text(value.alignment, text(fallback.alignment, '', 100), 100), isHostile: Boolean(value.isHostile ?? value.hostile ?? fallback.isHostile ?? fallback.hostile),
+        enabled: value.enabled === undefined ? fallback.enabled !== false : value.enabled !== false,
         relationship: text(value.relationship, text(fallback.relationship, 'Acquaintance', 100), 100),
         relationshipState: text(value.relationshipState, text(fallback.relationshipState, '', 160), 160),
         affection: number(value.affection, number(fallback.affection, 0, 0, 100), 0, 100), trust: number(value.trust, number(fallback.trust, 0, 0, 100), 0, 100),
@@ -2066,7 +2073,8 @@ function normalize(candidate, base = defaultState()) {
         identitySeeded: Boolean(onboarding.identitySeeded),
         loadoutSeeded: Object.hasOwn(onboarding, 'loadoutSeeded') ? Boolean(onboarding.loadoutSeeded) : Boolean(result.inventory.length || result.skills.length),
         characterMapSeeded: Boolean(onboarding.characterMapSeeded),
-        locationSeeded: Boolean(onboarding.locationSeeded),
+        locationSeeded: Boolean(onboarding.locationSeeded || (!Object.hasOwn(onboarding,'locationSeeded')
+            && source.location?.place && !['Central Crown','Unknown'].includes(source.location.place))),
     };
     const proficiencies = source.proficiencies && typeof source.proficiencies === 'object' ? source.proficiencies : {};
     result.proficiencies.magic = Object.fromEntries(MAGIC_DISCIPLINES.map(entry => [
@@ -2187,10 +2195,11 @@ function activeCharacterLore() {
     return characterLore(getSettings(), characterOwner(SillyTavern.getContext())?.key);
 }
 
-function activeLorePrompt(request = '') {
+function activeLorePrompt(request = '', overrides = {}) {
     const context = SillyTavern.getContext(), owner = characterOwner(context)?.key;
-    const recent = (context.chat || []).filter(m => !m.is_system).slice(-8).map(m => extractStatePatch(m.mes || '').visible).join('\n');
-    return lorePrompt(activeCharacterLore(), loreOptions(getSettings(), owner), `${recent}\n${request}`);
+    const recent = (context.chat || []).filter(m => !m.is_system).slice(-8)
+        .map(m => extractStatePatch(m.mes || '').visible.slice(-2000)).join('\n');
+    return lorePrompt(activeCharacterLore(), {...loreOptions(getSettings(), owner),...overrides}, `${recent}\n${request}`);
 }
 function persistCharacterLoreOptions(options, expectedOwner) {
     const context = SillyTavern.getContext();
@@ -2584,6 +2593,33 @@ function assistantVariantKey(message) {
     return `${swipe}:${shortHash(message.mes || '')}`;
 }
 
+function sceneForMessage(messageId, message) {
+    const key = assistantTurnKey(messageId);
+    return key && SillyTavern.getContext().chatMetadata?.[SCENE_HISTORY_KEY]?.[key]?.[assistantVariantKey(message)] || null;
+}
+
+async function rememberScene(messageId, message, state, details = {}) {
+    const key = assistantTurnKey(messageId);
+    if (!key) return;
+    const context = SillyTavern.getContext();
+    const history = context.chatMetadata[SCENE_HISTORY_KEY] && typeof context.chatMetadata[SCENE_HISTORY_KEY] === 'object'
+        && !Array.isArray(context.chatMetadata[SCENE_HISTORY_KEY])
+        ? context.chatMetadata[SCENE_HISTORY_KEY] : (context.chatMetadata[SCENE_HISTORY_KEY] = {});
+    const blocks = parseStory(extractStatePatch(message.mes || '').visible) || [];
+    const speakers = blocks.filter(part => part.type === 'dialogue').map(part => part.name).filter(Boolean);
+    history[key] ||= {};
+    history[key][assistantVariantKey(message)] = {
+        ...sceneSnapshot(state, details, speakers),
+        sequence: context.chat.slice(0, messageId + 1).filter(entry => entry && !entry.is_user && !entry.is_system).length,
+    };
+    const variants = Object.keys(history[key]);
+    for (const stale of variants.slice(0, Math.max(0, variants.length - 6))) delete history[key][stale];
+    // Keep enough history for a long story while bounding metadata size.
+    const keys = Object.keys(history);
+    for (const stale of keys.slice(0, Math.max(0, keys.length - 300))) delete history[stale];
+    npcWorkspace?.refresh();
+}
+
 function turnHistory(context = SillyTavern.getContext(), create = true) {
     if (!context?.getCurrentChatId?.()) return null;
     context.chatMetadata ||= {};
@@ -2731,8 +2767,10 @@ function aiState(state, { privateTracker = false } = {}) {
         world: state.world,
         progression: state.progression,
         worldClock: state.worldClock,
-        location: { ...state.location, discovered: discoveredLocationsFor(state), discoveredByWorld: undefined, pins: undefined },
-        travel: state.travel,
+        location: state.onboarding?.locationSeeded
+            ? { ...state.location, discovered: discoveredLocationsFor(state), discoveredByWorld: undefined, pins: undefined }
+            : {continent:'Unknown',region:'Unknown',place:'Unknown',detail:'',mapX:null,mapY:null},
+        travel: state.onboarding?.locationSeeded ? state.travel : {status:state.travel.status,destination:state.travel.destination},
         scene: state.scene,
         sceneMap: aiSceneMap(state),
         inventory: relevantEntries(state.inventory, 20).map(({ id, name, quantity, category }) => [id, name, quantity, category]),
@@ -2763,7 +2801,7 @@ function aiState(state, { privateTracker = false } = {}) {
             regionalWeather: state.systems.regionalWeather.slice(-16),
         },
         npcIndex: rankedNpcs.slice(0, 24).map(({ id, name, relationship, location, faction }) => [id, name, relationship, location, faction]),
-        npcNames: state.npcs.map(({id,name,aliases}) => [id,name,aliases || []]),
+        npcNames: state.npcs.map(({id,name,aliases,enabled}) => [id,name,aliases || [],enabled !== false]),
         npcWorld: rankedNpcs.filter(entry => entry.lifeMode === 'Active' || entry.mapVisible || socialNpcIds.has(entry.id)).slice(0, 12)
             .map(({ id, name, location, mapX, mapY, mapVisible, lifeMode, activity, activityUpdatedDay }) => [id, name, location, mapX, mapY, mapVisible, lifeMode, activity, activityUpdatedDay]),
         npcs: recentNpcs.map(entry => ({
@@ -2803,13 +2841,13 @@ function roleplayState(state) {
             world: { id: state.world.id, name: state.world.name, era: state.world.era },
             worldClock: state.worldClock,
             location: {
-                continent: state.location.continent,
-                region: state.location.region,
-                place: state.location.place,
-                detail: state.location.detail,
-                heading: state.location.heading,
-                mapX: state.location.mapX,
-                mapY: state.location.mapY,
+                continent: state.onboarding?.locationSeeded ? state.location.continent : 'Unknown',
+                region: state.onboarding?.locationSeeded ? state.location.region : 'Unknown',
+                place: state.onboarding?.locationSeeded ? state.location.place : 'Unknown',
+                detail: state.onboarding?.locationSeeded ? state.location.detail : '',
+                heading: state.onboarding?.locationSeeded ? state.location.heading : null,
+                mapX: state.onboarding?.locationSeeded ? state.location.mapX : null,
+                mapY: state.onboarding?.locationSeeded ? state.location.mapY : null,
             },
             travel: {
                 status: state.travel.status,
@@ -2852,7 +2890,7 @@ function roleplayState(state) {
             characterLifeMapActors: state.characterLifeMapActors,
             quests: state.quests.filter(entry => !['Completed', 'Failed'].includes(entry.status)).slice(-12).map(({ id, name, type, status }) => [id, name, type, status]),
             questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
-            npcNames: state.npcs.map(({ id, name, aliases }) => [id, name, aliases || []]),
+            npcNames: state.npcs.map(({ id, name, aliases, enabled }) => [id, name, aliases || [], enabled !== false]),
             npcProfiles: state.npcs.slice(-16).map(entry => ({
                 id: entry.id, name: entry.name, title: entry.title, occupation: entry.occupation,
                 race: entry.race, age: entry.age, gender: entry.gender, faction: entry.faction,
@@ -3018,6 +3056,7 @@ function patchInstructions() {
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
+        'Optional sceneTracker in the same patch: {"participants":["names present"],"season":"only if known","lighting":"only if known","safety":"only if known","objective":"only if known","atmosphere":"only if known","elapsed":"confirmed time passed"}. Use it only for scene facts shown by this reply; omit unknown fields. It is display-only and must never change canonical state. Never send a separate request for it.',
         'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. EVERY completed normal reply must append exactly one comment; use {"ops":[],"summary":"No confirmed changes."} when nothing beyond the locally tracked turn clock changed. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this one patch, not only scene fields.',
@@ -3034,7 +3073,7 @@ function patchInstructions() {
         'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
         'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Mana is not easily detected: non-sensing characters perceive nothing and even sensing specialists normally notice only a faint presence, while explicitly godlike beings with major lore may be exceptional. Formless Aura is wholly undetectable. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
         'Teleport and warp canon: teleportation/warp magic is inaccessible and most people believe it does not exist. Do not grant, teach, create, or casually use such a spell, item, skill, route, or world crossing unless the visible story explicitly establishes an extraordinary canon exception. A map browse or travel request is never such an exception.',
-        'NPC identity: npcNames=[id,canonicalName,aliases] lists ALL saved NPC identities. Before creating anyone, check it including translated/transliterated names (for example Kohaku and โคฮาคุ). Reuse the canonical id and name; add the translated name to aliases. Never invent a new id for an existing person or replace their established dossier. Do not merge distinct people merely because their names sound similar.',
+        'NPC identity: npcNames=[id,canonicalName,aliases,enabled] lists ALL saved NPC identities. Before creating anyone, check it including translated/transliterated names (for example Kohaku and โคฮาคุ). Reuse the canonical id and name; add the translated name to aliases. Never invent a new id for an existing person or replace their established dossier. Disabled NPCs remain in this identity index: never reactivate or create a copy of one. Do not merge distinct people merely because their names sound similar.',
         'NPCs and knowledge: upsert relevant named NPCs or confirmed changes; preserve npcIndex id. Set isHostile:true for hostile/enemy/foe/antagonist/villain/threat NPCs; they remain in NPC Management, but stay out of friendly Codex/social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Supply complete plausible starting stats and relationship values for new NPCs; zero is a real value, never an unknown placeholder. Never raise existing combat stats from conversation alone. Record only facts an NPC actually learns using npcKnowledge {npcId,id,fact,source,confidence,learnedDay}; do not copy private tracker facts. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
         'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/invite/leave/expulsion/create/dissolve/rank/family-role change must update this patch. Party upserts can maintain formation, roles keyed by NPC id (Vanguard/Tank/Striker/Support/Healer/Scout/Rear Guard/Companion), and sharedFunds. Guild upserts can maintain rank, level, reputation, headquarters, alliances, enemies, treasury and quests. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first upsert npcs, then membership. Guild member includes guildId/name. Household member includes npcId/role. Party is free. UI Guild creation already charges locally. A story-created player-led Guild must include createdByPlayer:true; parser charges only when affordable. Joining or editing an existing guild is free. Household is family, not a faction.',
@@ -3907,7 +3946,11 @@ function synchronizeWorldState(state, previous = state) {
         }
     }
 
-    if (travel.status === 'Arrived' || (moving && travel.remainingDays <= 0)) {
+    // A completed journey is history. Reapplying its endpoint on every later
+    // save would pin the player at that old destination forever.
+    const justArrived = travel.status === 'Arrived' && (previousTravel.status !== 'Arrived'
+        || travel.destinationPlace !== previousTravel.destinationPlace || travel.destination !== previousTravel.destination);
+    if (justArrived || (moving && travel.remainingDays <= 0)) {
         travel.status = 'Arrived';
         travel.remainingDays = 0;
         if (travel.destinationX !== null) state.location.mapX = travel.destinationX;
@@ -7168,6 +7211,7 @@ async function onSubmit(event) {
                 mapX: values.mapX || knownPlace?.x || state.location.mapX, mapY: values.mapY || knownPlace?.y || state.location.mapY, heading: values.heading,
             };
             state.scene = { position: values.position, weather: values.weather, temperature: values.temperature };
+            if (values.place) state.onboarding.locationSeeded = true;
             await persistState(state, 'scene');
             notify('success', getSettings().language === 'th' ? 'บันทึกข้อมูลฉากแล้ว' : 'Scene tracking saved.');
             break;
@@ -8443,9 +8487,13 @@ function parseJson(response) {
     try {
         return JSON.parse(cleaned);
     } catch {
-        const start = cleaned.indexOf('{');
-        const end = cleaned.lastIndexOf('}');
-        if (start >= 0 && end > start) return JSON.parse(cleaned.slice(start, end + 1));
+        let cursor = 0;
+        while (cursor < cleaned.length) {
+            const range = balancedJsonRange(cleaned, cursor);
+            if (!range) break;
+            try { return JSON.parse(range.json); }
+            catch { cursor = range.start + 1; }
+        }
         throw new Error('The AI response did not contain valid JSON.');
     }
 }
@@ -8822,6 +8870,9 @@ function applyPatchOperation(state, operation) {
                 candidate.id = existing.id; candidate.name = existing.name;
                 candidate.aliases = [...new Set([...(existing.aliases || []), ...(Array.isArray(value.aliases) ? value.aliases : []), ...(value.name && keyName(value.name) !== keyName(existing.name) ? [value.name] : [])])];
             }
+            if (index >= 0 && collection[index].enabled === false) return false;
+            // Enabled state belongs to the user, including on new NPCs.
+            candidate.enabled = index >= 0 ? collection[index].enabled : true;
             candidate = npcProfile({ ...candidate, updatedAt: new Date().toISOString() }, index >= 0 ? collection[index] : {});
             if (!candidate) return false;
         }
@@ -9127,6 +9178,8 @@ function coerceStatePatch(raw) {
         ops: operations.slice(0, 75),
         summary: text(source.summary || raw.summary, '', 300),
         journey: text(source.journey || source.journeyLog || raw.journey || raw.journeyLog, '', 500),
+        sceneTracker: source.sceneTracker && typeof source.sceneTracker === 'object' && !Array.isArray(source.sceneTracker)
+            ? source.sceneTracker : {},
     };
 }
 
@@ -9174,6 +9227,7 @@ function extractStatePatch(message) {
         ops: patches.flatMap(patch => patch.ops).slice(0, 75),
         summary: patches.map(patch => text(patch.summary, '', 300)).filter(Boolean).join('; ').slice(0, 300),
         journey: [...patches].reverse().map(patch => text(patch.journey, '', 500)).find(Boolean) || '',
+        sceneTracker: [...patches].reverse().find(patch => Object.keys(patch.sceneTracker || {}).length)?.sceneTracker || {},
     } : null;
     return { visible: visible.trimEnd(), patch: combined, found };
 }
@@ -9212,6 +9266,9 @@ async function processAssistantPatch(messageId, generationType = '') {
     const incomingVariant = assistantVariantKey(message);
     if (processedAssistantMessages.get(message) === incomingVariant) return;
     if (!settings.autoTrack) {
+        processedAssistantMessages.set(message, incomingVariant);
+        await rememberScene(messageId, message, getState());
+        await context.saveMetadata?.();
         setSync('disabled', tr('Reply received'), tr('Tracking is off'));
         return;
     }
@@ -9229,6 +9286,10 @@ async function processAssistantPatch(messageId, generationType = '') {
     if (checkpoint?.activeVariant === variantKey && recordedVariant?.state
         && recordedVariant.reconcileVersion === TURN_RECONCILE_VERSION) {
         processedAssistantMessages.set(message, variantKey);
+        if (!sceneForMessage(messageId, message)) {
+            await rememberScene(messageId, message, recordedVariant.state, extracted.patch?.sceneTracker);
+            await context.saveMetadata?.();
+        }
         setSync('unchanged', tr('State updated'), settings.language === 'th' ? 'คำตอบเวอร์ชันนี้ถูกบันทึกแล้ว จึงไม่หักค่าซ้ำ' : 'This reply variant is already recorded; no values were applied twice.');
         return;
     }
@@ -9256,6 +9317,7 @@ async function processAssistantPatch(messageId, generationType = '') {
         const totalChanges = accepted + reconciled.changes;
         if (totalChanges) {
             await persistState(reconciled.next, accepted ? 'inline-patch+turn-reconcile' : 'turn-reconcile-fallback');
+            await rememberScene(messageId, message, getState(), extracted.patch?.sceneTracker);
             if (checkpoint) {
                 checkpoint.variants[variantKey] = {
                     state: clone(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
@@ -9270,6 +9332,7 @@ async function processAssistantPatch(messageId, generationType = '') {
             setSync('success', tr('State updated'), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${totalChanges} รายการแล้ว` : `${totalChanges} confirmed change${totalChanges === 1 ? '' : 's'} saved.`);
             console.info(`[Tretaresia RPG] Applied ${accepted} inline operation(s) plus ${reconciled.changes} deterministic reconciliation change(s).`);
         } else {
+            await rememberScene(messageId, message, reconciled.next, extracted.patch?.sceneTracker);
             if (checkpoint) {
                 checkpoint.variants[variantKey] = {
                     state: clone(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
@@ -9602,11 +9665,14 @@ function bindSettingControl(id, key, settings, callback) {
     if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
     control.value = String(settings[key]);
     const update = () => {
-        settings[key] = ['range', 'number'].includes(control.type) ? Number(control.value) : control.value;
-        SillyTavern.getContext().saveSettingsDebounced();
+        const next = ['range', 'number'].includes(control.type) ? Number(control.value) : control.value;
+        if (settings[key] === next) return;
+        settings[key] = next;
         callback?.();
+        if (control.type !== 'range' && control.type !== 'color') SillyTavern.getContext().saveSettingsDebounced();
     };
     control.addEventListener(control.type === 'range' || control.type === 'color' ? 'input' : 'change', update);
+    if (control.type === 'range' || control.type === 'color') control.addEventListener('change', () => SillyTavern.getContext().saveSettingsDebounced());
 }
 
 async function addSettingsDrawer() {
@@ -9622,19 +9688,13 @@ async function addSettingsDrawer() {
         setSync(settings.autoTrack ? 'ready' : 'disabled', settings.autoTrack ? tr('Ready') : tr('Tracking is off'), '', { show: !settings.autoTrack });
     });
     bindCheckbox('tretaresia-rpg-inject-state', 'injectState', settings, updatePrompt);
+    bindCheckbox('tretaresia-rpg-show-scene-tracker', 'showSceneTracker', settings, () => npcWorkspace?.refresh());
     bindCheckbox('tretaresia-rpg-auto-continuity', 'autoContinuity', settings, () => {
         if (settings.autoContinuity) writeContinuitySnapshot(getState());
         else {
             const storageKey = continuityStorageKey();
             if (storageKey) localStorage.removeItem(storageKey);
         }
-    });
-    bindCheckbox('tretaresia-rpg-show-npc-map-markers', 'showNpcMapMarkers', settings, () => {
-        renderMap(document.querySelector('[data-panel="map"]'), getState());
-    });
-    bindCheckbox('tretaresia-rpg-map-hd-mode', 'mapHdMode', settings, () => {
-        if (!settings.mapHdMode) clearMapTileCache(key => key.includes('/3/'));
-        renderMap(document.querySelector('[data-panel="map"]'), getState());
     });
     bindCheckbox('tretaresia-rpg-show-travel-tracker', 'showTravelTracker', settings, () => syncTravelTracker(getState()));
     bindCheckbox('tretaresia-rpg-event-notifications', 'eventNotifications', settings);
@@ -9786,11 +9846,19 @@ async function initialize() {
         bindChatEvents();
         npcWorkspace = createNpcWorkspace({
             context: () => SillyTavern.getContext(), state: getState, settings: getSettings,
+            sceneForMessage,
             profile: npcProfile, persist: persistState,
             scopeInfo: () => characterOwner(SillyTavern.getContext()),
             listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
             persistScope: persistNpcScope,
-            listLore: activeCharacterLore, persistLore: persistCharacterLore, lorePrompt: activeLorePrompt,
+            resetNpcInChat: async baseline => {
+                const state = getState();
+                if (!state.npcs.some(npc => npc.id === baseline.id && npc.npcScope === 'character')) return false;
+                state.npcs = state.npcs.map(npc => npc.id === baseline.id ? clone(baseline) : npc);
+                return persistState(state, 'npc-management');
+            },
+            listLore: activeCharacterLore, persistLore: persistCharacterLore,
+            lorePrompt: request => activeLorePrompt(request, {mode:'relevant',budget:Math.min(12000,loreOptions(getSettings(),characterOwner(SillyTavern.getContext())?.key).budget)}),
             loreOptions: () => loreOptions(getSettings(), characterOwner(SillyTavern.getContext())?.key), persistLoreOptions: persistCharacterLoreOptions,
             supportsPortraitVision: async () => {
                 const host = await import('/scripts/openai.js');
@@ -9831,7 +9899,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.35.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.36.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

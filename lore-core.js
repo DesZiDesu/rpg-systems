@@ -15,12 +15,28 @@ export function writeLoreOptions(settings, options, expectedOwner, currentOwner)
     settings.loreCharacterOptions ||= {};
     Object.defineProperty(settings.loreCharacterOptions, currentOwner, {value:{budget:options.budget,mode:options.mode},enumerable:true,configurable:true,writable:true});
 }
+const STOP = new Set(['about','after','before','with','from','into','their','there','this','that','have','been','would','could','where','while','the','and','for','are','you','your','was','were','คือ','และ','ของ','เป็น','ใน','ที่','จาก','ให้','แล้ว','ด้วย','เมื่อ','หรือ','ได้','เขา','เธอ','มัน','ฉัน','นี้','นั้น']);
+const SEGMENTER = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter(undefined, {granularity:'word'}) : null;
+function terms(value) {
+    const source = String(value).normalize('NFKC').toLocaleLowerCase();
+    const parts = SEGMENTER ? [...SEGMENTER.segment(source)].filter(part => part.isWordLike).map(part => part.segment)
+        : source.match(/[\p{L}\p{N}]+/gu) || [];
+    return [...new Set(parts.filter(part => part.length >= 2 && !STOP.has(part) && !/^\d+$/.test(part)))];
+}
 export function selectLore(entries, options = {}, query = '') {
     const budget = options.budget ?? LORE_ACTIVE_LIMIT, mode = options.mode || 'all';
     const search = String(query).normalize('NFKC').toLocaleLowerCase();
+    const queryTerms = mode === 'relevant' ? new Set(terms(search)) : new Set();
     const candidates = loreEntries(entries).filter(item => item.enabled && item.content.trim()).map(item => {
-        const keys = item.keywords.length ? item.keywords : [item.title];
-        const score = keys.filter(key => search.includes(key.normalize('NFKC').toLocaleLowerCase())).length;
+        if (mode !== 'relevant' || item.always || !queryTerms.size) return {item,score:0};
+        const keys = [item.title,...item.keywords];
+        const explicit = keys.filter(key => key.length >= 2 && search.includes(key.normalize('NFKC').toLocaleLowerCase())).length;
+        const headline = terms(item.title).filter(term => queryTerms.has(term) && term.length >= 3).length;
+        const contentTerms = terms(item.content.slice(0, 4000));
+        const overlap = contentTerms.filter(term => queryTerms.has(term) && (term.length >= 4 || /\p{Script=Thai}/u.test(term))).length;
+        // A single long distinctive term or two shorter terms can identify a record.
+        const evidence = overlap >= 2 || contentTerms.some(term => term.length >= 5 && queryTerms.has(term)) ? overlap : 0;
+        const score = explicit * 12 + headline * 4 + evidence;
         return {item, score};
     }).filter(({item,score}) => mode === 'all' || item.always || score > 0);
     if (mode === 'relevant') candidates.sort((a,b) => Number(b.item.always)-Number(a.item.always) || b.score-a.score);
