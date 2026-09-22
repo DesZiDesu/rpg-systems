@@ -1,8 +1,8 @@
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.32.0';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.32.0';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.32.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey } from './npc-scopes.js?v=0.32.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, retainManualNpcEdits } from './npc-core.js?v=0.32.1';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.32.1';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.32.1';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey } from './npc-scopes.js?v=0.32.1';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
@@ -834,7 +834,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.32.0';
+const LAUNCHER_BIND_VERSION = '0.32.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -9420,6 +9420,8 @@ function closeInterface() {
 function syncLauncherVisibility() {
     const launcher = document.getElementById('tretaresia-rpg-wand-launcher');
     if (launcher) launcher.hidden = !getSettings().showWandLauncher;
+    const npcLauncher = document.getElementById('tretaresia-npc-wand-launcher');
+    if (npcLauncher) npcLauncher.hidden = !getSettings().showWandLauncher;
 }
 
 function closeHostWandMenu() {
@@ -9465,6 +9467,28 @@ function createWandLauncher() {
     launcher.onkeydown = activate;
     launcher.dataset.tretaresiaBound = LAUNCHER_BIND_VERSION;
     if (!menu.contains(launcher)) menu.appendChild(launcher);
+    let npcLauncher = document.getElementById('tretaresia-npc-wand-launcher');
+    if (!npcLauncher) {
+        npcLauncher = document.createElement('div');
+        npcLauncher.id = 'tretaresia-npc-wand-launcher';
+        menu.appendChild(npcLauncher);
+    }
+    npcLauncher.className = 'list-group-item flex-container flexGap5 interactable';
+    npcLauncher.tabIndex = 0;
+    npcLauncher.setAttribute('role', 'button');
+    npcLauncher.setAttribute('aria-label', 'Open Tretaresia NPC Manager');
+    npcLauncher.innerHTML = '<i class="fa-solid fa-address-book"></i><span>Tretaresia NPC Manager</span>';
+    const openNpcs = event => {
+        if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        if (!getSettings().showWandLauncher) return;
+        if (!npcWorkspace) { notify('info', 'NPC Manager is still loading. Please try again.'); return; }
+        closeHostWandMenu();
+        npcWorkspace.open();
+    };
+    npcLauncher.onclick = openNpcs;
+    npcLauncher.onkeydown = openNpcs;
+    if (!menu.contains(npcLauncher)) menu.appendChild(npcLauncher);
     syncLauncherVisibility();
     return true;
 }
@@ -9718,7 +9742,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.32.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.32.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

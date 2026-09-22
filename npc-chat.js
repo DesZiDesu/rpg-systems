@@ -1,5 +1,5 @@
-import { identity, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.32.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.32.0';
+import { identity, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.32.1';
+import { croppedPortrait } from './npc-portraits.js?v=0.32.1';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;

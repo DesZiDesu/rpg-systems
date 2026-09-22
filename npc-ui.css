@@ -107,3 +107,21 @@
  .trpg-read-fields{gap:0 18px}.trpg-read-fields dd{font-size:14px}.trpg-detail-actions button{flex:1;font-size:12px}.trpg-manager .trpg-savebar{bottom:-18px}
 }
 @media(max-width:390px){.trpg-read-fields{grid-template-columns:1fr}.trpg-list-copy strong{font-size:15px}.trpg-manager .trpg-person{gap:8px}}
+
+
+/* NPC creation and viewport sizing: safe area belongs inside the dialog. */
+.trpg-manager{box-sizing:border-box}
+.trpg-generator{display:grid;gap:12px;margin:0 0 24px;padding:18px;border:1px solid var(--line);background:#d6b45809}
+.trpg-generator p{margin:0;line-height:1.6}
+.trpg-manager-top{flex-shrink:0}
+@media(max-width:650px){
+ .trpg-manager{position:fixed;inset:var(--trpg-viewport-top,0px) 0 auto;margin:0;width:100%;max-width:100%;height:var(--trpg-viewport-height,100dvh);max-height:var(--trpg-viewport-height,100dvh);padding:env(safe-area-inset-top,0px) 0 0}
+ .trpg-manager .trpg-manager-layout{flex:1 1 0;min-height:0}
+ .trpg-manager .trpg-record,.trpg-manager .trpg-browser{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+ .trpg-manager .trpg-savebar{bottom:0;margin-bottom:0}
+ .trpg-manager-footer{min-height:0;padding:9px 15px max(9px,env(safe-area-inset-bottom,0px))}
+ .trpg-manager-footer:has([role=status]:empty){display:none}
+ .trpg-manager .trpg-record,.trpg-manager .trpg-browser{padding-bottom:max(18px,env(safe-area-inset-bottom,0px))}
+ .trpg-generator{padding:14px}
+ .trpg-manager input,.trpg-manager textarea,.trpg-manager select{font-size:16px!important}
+}

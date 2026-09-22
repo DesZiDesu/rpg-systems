@@ -158,3 +158,21 @@ export const CHAT_INSTRUCTIONS = `TRETARESIA CHAT PRESENTATION: Write the visibl
 <tr-dialogue name="Exact NPC Name">Only words spoken by this character, without quotation marks.</tr-dialogue>
 Do not emit HTML, Markdown fences, thought labels or role metadata inside blocks. Do not invent portrait URLs.
 After the story, emit the existing tretaresia_patch as usual, outside these blocks. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;
+
+
+// All-or-nothing AI form replacement. Never accept storage IDs, image paths or scope.
+export function generatedDraft(raw) {
+ if(!raw || typeof raw!=='object' || Array.isArray(raw))throw Error('AI did not return an NPC object.');
+ const missing=Object.keys(FIELDS).filter(k=>typeof raw[k]!=='string'||!raw[k].trim());
+ for(const k of RELATIONS)if(!Number.isFinite(raw[k]))missing.push(k);
+ for(const k of STATS)if(!Number.isFinite(raw.stats?.[k]))missing.push(`stats.${k}`);
+ if(typeof raw.stats?.rank!=='string'||!raw.stats.rank.trim())missing.push('stats.rank');
+ if(!Array.isArray(raw.aliases))missing.push('aliases');
+ if(!Array.isArray(raw.abilities)||raw.abilities.some(v=>!v||!clean(v.name)||!clean(v.category)||!clean(v.level)||!clean(v.description)||!Number.isFinite(v.proficiency)))missing.push('abilities');
+ if(typeof raw.isHostile!=='boolean')missing.push('isHostile');
+ if(!/^#[0-9a-f]{6}$/i.test(raw.identityColor))missing.push('identityColor');
+ if(!Object.hasOwn(ROLE_ICONS,raw.roleIcon))missing.push('roleIcon');
+ if(!Number.isFinite(raw.portraitSize))missing.push('portraitSize');
+ if(missing.length)throw Error(`AI returned an incomplete NPC (${missing.join(', ')}). Your draft was not changed; try again.`);
+ return {...profileFields(raw),isHostile:raw.isHostile,portraitSize:clamp(raw.portraitSize,48,144)};
+}
