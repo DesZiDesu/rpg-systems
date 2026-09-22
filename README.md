@@ -179,3 +179,7 @@ MIT
 - Incomplete AI replies leave the current draft intact. Closing the manager or changing chats discards late AI results. The existing **AI fill empty fields** action remains available.
 - Mobile dialog sizing follows the visual viewport, includes safe-area padding within its height, and removes the empty footer strip. Text controls use 16px text to avoid iOS focus zoom.
 - Run `npm test` and `npm run check`. Optional rendered UI check: install Playwright/Chromium and run `node tests/npc-workspace.browser.mjs`. This simulated mobile check does not replace on-device iOS Safari verification.
+
+### 0.32.2 — Consecutive dialogue headers
+
+NPC dialogue now displays one header for the current speaker within each assistant message. Further dialogue from that speaker keeps its text and colors without repeating the header or portrait, even when narrative or plain prose intervenes. Switching A → B → A shows all three headers. Known aliases resolve to the same profile. An immediately preceding structured assistant message can continue the same speaker without a header. User/system turns and unstructured messages reset the sequence. Streaming/swipe rerenders recalculate the sequence, including changes to the previous speaker.

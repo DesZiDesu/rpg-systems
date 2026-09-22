@@ -1,7 +1,7 @@
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, generatedDraft, importCharacters, readCharacterFile, keyName, clean } from './npc-core.js?v=0.32.1';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.32.1';
-import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.32.1';
-import { collectPortraitBackups } from './npc-media.js?v=0.32.1';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, generatedDraft, importCharacters, readCharacterFile, keyName, clean } from './npc-core.js?v=0.32.2';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.32.2';
+import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.32.2';
+import { collectPortraitBackups } from './npc-media.js?v=0.32.2';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -26,7 +26,7 @@ export function createNpcWorkspace(api) {
     }
     const changed=new Set();
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('./npc-ui.css?v=0.32.1',import.meta.url).href;document.head.append(sheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('./npc-ui.css?v=0.32.2',import.meta.url).href;document.head.append(sheet);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
     const valid=t=>dialog?.open && token===t && chatId===currentChat() && ownerKey===(api.scopeInfo()?.key||'');
@@ -54,7 +54,7 @@ export function createNpcWorkspace(api) {
             <div class="trpg-manager-layout"><section class="trpg-roster trpg-browser"><div class="trpg-browser-tools"><label>ค้นหาตัวละคร<input type="search" data-search placeholder="ค้นหาชื่อ บทบาท หรือสังกัด"></label>
             <div class="trpg-roster-actions"><button type="button" data-new data-lock>＋ สร้าง NPC</button><button type="button" data-import data-lock>นำเข้า Character Life</button><input type="file" data-import-file accept=".json,.zip,application/json,application/zip" hidden></div></div><div class="trpg-list-heading"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class="trpg-pagination" data-pagination></div></section>
             <section class="trpg-record" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form novalidate hidden><fieldset></fieldset></form></section></div>
-            <footer class="trpg-manager-footer"><span role="status" aria-live="polite"></span><span>SCOPED ARCHIVE · v0.32.1</span></footer>`;
+            <footer class="trpg-manager-footer"><span role="status" aria-live="polite"></span><span>SCOPED ARCHIVE · v0.32.2</span></footer>`;
         document.body.append(dialog);form=dialog.querySelector('form');roster=dialog.querySelector('[data-list]');status=dialog.querySelector('[role=status]');
         const backup=element('button','','สำรองภาพเก่าไปยังเซิร์ฟเวอร์');backup.type='button';backup.dataset.lock='';
         backup.addEventListener('click',()=>void migratePortraits());dialog.querySelector('.trpg-roster-actions').append(backup);

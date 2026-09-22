@@ -1,5 +1,5 @@
-import { identity, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.32.1';
-import { croppedPortrait } from './npc-portraits.js?v=0.32.1';
+import { identity, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.32.2';
+import { croppedPortrait } from './npc-portraits.js?v=0.32.2';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -22,6 +22,49 @@ export function speakerHeader(profile, open) {
     const meta=element('span','trpg-meta');for(const value of [p.race,p.relationship,p.faction].filter(usable))meta.append(element('span','',value));details.append(meta);
     const action=element('span','trpg-open-record');action.append(icon('address-card'),element('small','','ข้อมูลตัวละคร'));
     header.append(details,action);header.addEventListener('click',()=>open(p));return header;
+}
+
+// Group headers by dialogue speaker, including assistant continuations. Narrative
+// and untagged prose retain their exact order without ending a speaker's turn.
+export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imageFor, previousSpeaker = null) {
+    for (const block of blocks) {
+        if (block.type === 'narrative') { root.append(narrative(block.text)); continue; }
+        if (block.type === 'plain') { root.append(element('div', 'trpg-plain', block.text)); continue; }
+        const name = block.name || fallbackName || 'NPC';
+        const profile = lookup.get(keyName(name));
+        // Canonical profile object also unifies aliases, without conflating
+        // distinct records with the same display label or different scopes.
+        const speaker = profile || keyName(name);
+        const p = profile || { name };
+        const section = element('section', 'trpg-speaker');
+        section.style.setProperty('--speaker', identity(p).identityColor);
+        if (speaker !== previousSpeaker) {
+            const header = speakerHeader(p, open);
+            section.append(header);
+            if (p.id) void imageFor(p).then(url => {
+                if (!url || !header.isConnected) return;
+                const image = element('img', 'trpg-photo');
+                image.alt = p.name; image.src = url;
+                image.width = image.height = p.portraitSize || 72;
+                header.prepend(image);
+            });
+        }
+        section.append(element('div', 'trpg-dialogue', block.text));
+        root.append(section);
+        previousSpeaker = speaker;
+    }
+}
+
+// Only an immediately preceding structured assistant message can continue a
+// speaker. User/system turns or unstructured responses start a new sequence.
+export function priorDialogueSpeaker(messages, id, lookup, visible) {
+    const prior = messages?.[id - 1];
+    if (!prior || prior.is_user || prior.is_system) return null;
+    const blocks = parseStory(visible(prior.mes || ''));
+    const last = blocks?.findLast(block => block.type === 'dialogue');
+    if (!last) return null;
+    const name = last.name || prior.name || 'NPC';
+    return lookup.get(keyName(name)) || keyName(name);
 }
 
 export function createChatPresentation(api, open) {
@@ -49,18 +92,14 @@ export function createChatPresentation(api, open) {
             if(!message || message.is_user || message.is_system || mes.querySelector('.mes_edit_textarea'))continue;
             const source=api.visible(message.mes||''),blocks=parseStory(source),old=mounted.get(host);
             if(!blocks){if(old)restore(host,old);continue;}
-            const signature=`${revision}:${settings.chatEffects}:${source}`;
+            const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
+            const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
+                ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
+            const signature=`${revision}:${settings.chatEffects}:${previousKey}:${source}`;
             if(old?.signature===signature && old.root.parentNode===host)continue;
             const original=old?.root.parentNode===host?old.original:[...host.childNodes];
             const root=element('div','trpg-chat');root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
-            for(const block of blocks){
-                if(block.type==='narrative'){root.append(narrative(block.text));continue;}
-                if(block.type==='plain'){root.append(element('div','trpg-plain',block.text));continue;}
-                const p=lookup.get(keyName(block.name))||{name:block.name||message.name||'NPC'};
-                const section=element('section','trpg-speaker');section.style.setProperty('--speaker',identity(p).identityColor);
-                const header=speakerHeader(p,open);section.append(header,element('div','trpg-dialogue',block.text));root.append(section);
-                if(p.id)void imageFor(p).then(url=>{if(!url||!header.isConnected)return;const image=element('img','trpg-photo');image.alt=p.name;image.src=url;image.width=image.height=p.portraitSize||72;header.prepend(image);});
-            }
+            renderStoryBlocks(root, blocks, lookup, message.name, open, imageFor, previousSpeaker);
             mounted.set(host,{root,original,signature});host.replaceChildren(root);
         }
     }
