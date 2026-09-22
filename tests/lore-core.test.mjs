@@ -40,3 +40,10 @@ test('relevant lore is bounded, deduplicated and matches Thai keywords with pinn
  writeCharacterLore(settings,[{...entry('Large'),content:'a'.repeat(2000)}],'a','a');assert.equal(lorePrompt(characterLore(settings,'a'),{budget:1000,mode:'relevant'},'Large'),'');
  assert.deepEqual(selectLore(entries,{budget:1000,mode:'relevant'},'').entries.map(p=>p.id),['Rule']);
 });
+test('relevant lore finds distinctive words in content without manually entered keywords',async()=>{
+ const {selectLore}=await import('../lore-core.js');
+ const records=[{...entry('Archive'),content:'Kohaku keeps the silver map in the Moon Hall.',keywords:[]},
+  {...entry('Other'),content:'A different hall with different rules.',keywords:[]}];
+ assert.deepEqual(selectLore(records,{mode:'relevant',budget:3000},'Where is Kohaku?').entries.map(item=>item.id),['Archive']);
+ assert.deepEqual(selectLore(records,{mode:'relevant',budget:3000},'Where?').entries.map(item=>item.id),[]);
+});

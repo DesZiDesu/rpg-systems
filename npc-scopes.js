@@ -1,4 +1,4 @@
-import { keyName } from './npc-core.js?v=0.35.0';
+import { keyName, resolveNpc } from './npc-core.js?v=0.36.0';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -118,8 +118,8 @@ export function routeNewStoryNpcs(state, previous, library, owner, destination) 
  if(destination!=='character'||!owner)return {state:next,library:archive,added,overflow};
  const ids=new Set(previous.npcs.map(p=>p.id)),names=new Set(previous.npcs.flatMap(p=>[p.name,...(p.aliases||[])]).map(keyName));
  for(const p of next.npcs){
-  if(ids.has(p.id)||names.has(keyName(p.name))||p.npcScope==='character')continue;
-  if(archive.some(n=>n.id===p.id||keyName(n.name)===keyName(p.name)))continue;
+  if(ids.has(p.id)||names.has(keyName(p.name))||resolveNpc(previous.npcs,p)||p.npcScope==='character')continue;
+  if(resolveNpc(archive,p))continue;
   if(archive.length>=200){overflow++;continue;}
   p.npcScope='character';p.npcOwner=owner;archive.push(clone(p));added++;
  }

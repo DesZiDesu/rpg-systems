@@ -1,5 +1,5 @@
-import { element } from './npc-chat.js?v=0.35.0';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.35.0';
+import { element } from './npc-chat.js?v=0.36.0';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.36.0';
 
 export function createLoreWorkspace(panel, api, say) {
     let owner = '', dirty = false, query = '', editing = null;
@@ -18,13 +18,13 @@ export function createLoreWorkspace(panel, api, say) {
         if(!info)return;
         const options=api.loreOptions?.()||{budget:LORE_ACTIVE_LIMIT,mode:'all'};
         const active=all.filter(item=>item.enabled),count=active.reduce((n,item)=>n+item.title.length+item.content.length,0);
-        panel.append(element('p','trpg-muted',`เปิด ${active.length} / ${all.length} รายการ · ${count.toLocaleString()} / ${options.budget.toLocaleString()} ตัวอักษร — ${options.mode==='all'?'ส่งรายการที่เปิดภายในงบ':'เลือกจากชื่อ/คำค้นในบทสนทนาล่าสุดและคำขอ'}`));
+        panel.append(element('p','trpg-muted',`เปิด ${active.length} / ${all.length} รายการ · คลัง ${count.toLocaleString()} ตัวอักษร · งบส่งครั้งละ ${options.budget.toLocaleString()} ตัวอักษร — ${options.mode==='all'?'ส่งรายการที่เปิดภายในงบ':'เลือกจากชื่อ คำค้น และเนื้อหาอัตโนมัติ'}`));
         const preferences=element('div','trpg-lore-tools'),budgetLabel=element('label','','งบ Lore (ตัวอักษร ไม่ใช่ tokens)'),budget=element('input'),modeLabel=element('label','','การส่ง Lore'),mode=element('select');
         budget.type='number';budget.name='loreBudget';budget.min=1000;budget.max=LORE_BUDGET_MAX;budget.step=1000;budget.value=options.budget;budgetLabel.append(budget);
-        for(const [value,label] of [['all','รายการที่เปิดทั้งหมด'],['relevant','เฉพาะที่เกี่ยวข้อง · ประหยัด context']]){const option=element('option','',label);option.value=value;mode.append(option);}mode.value=options.mode;mode.name='loreMode';modeLabel.append(mode);
+        for(const [value,label] of [['relevant','อัตโนมัติเฉพาะที่เกี่ยวข้อง · แนะนำ'],['all','รายการที่เปิดทั้งหมด']]){const option=element('option','',label);option.value=value;mode.append(option);}mode.value=options.mode;mode.name='loreMode';modeLabel.append(mode);
         preferences.addEventListener('input',()=>dirty=true);preferences.addEventListener('change',()=>dirty=true);
         preferences.append(budgetLabel,modeLabel,button('บันทึกงบและโหมด',()=>attempt(()=>{api.persistLoreOptions({budget:Number(budget.value),mode:mode.value},owner);dirty=false;list();say('บันทึกงบและโหมด Lore แล้ว');})));
-        if(api.persistLoreOptions)panel.append(preferences,element('p','trpg-muted','Context 2,000,000 tokens ไม่เท่ากับ 2,000,000 ตัวอักษร ต้องเผื่อประวัติแชท คำสั่ง และคำตอบด้วย โหมดเฉพาะที่เกี่ยวข้องใช้ชื่อ/คำค้นจาก 8 ข้อความล่าสุดและคำขอ ไม่เรียก AI เพิ่ม; รายการซ้ำหรือเกินงบจะไม่ถูกส่ง'));
+        if(api.persistLoreOptions)panel.append(preferences,element('p','trpg-muted','Context 2,000,000 tokens ไม่เท่ากับ 2,000,000 ตัวอักษร ควรเผื่อประวัติแชทและคำตอบ โหมดเฉพาะที่เกี่ยวข้องเลือกจากชื่อ คำค้น และคำในเนื้อหา Lore อัตโนมัติจาก 8 ข้อความล่าสุด โดยไม่เรียก AI เพิ่ม; ตรึงรายการที่จำเป็นได้'));
         const tools=element('div','trpg-lore-tools'),label=element('label','','ค้นหา Lore'),search=element('input');search.type='search';search.value=query;search.placeholder='ชื่อหรือเนื้อหา';label.append(search);
         tools.append(label,button('＋ สร้าง Lore ใหม่',()=>{if(canLeave())edit({id:'',title:'',content:'',enabled:true});}));panel.append(tools);
         const rows=element('div','trpg-lore-rows');panel.append(rows);
@@ -46,7 +46,7 @@ export function createLoreWorkspace(panel, api, say) {
         const form=element('form','trpg-lore-editor'),titleLabel=element('label','','ชื่อ Lore'),title=element('input'),bodyLabel=element('label','','เนื้อหา Lore'),body=element('textarea'),enabledLabel=element('label','trpg-lore-toggle'),enabled=element('input');
         title.value=item.title;title.required=true;title.maxLength=160;title.name='loreTitle';body.value=item.content;body.required=true;body.maxLength=LORE_CONTENT_LIMIT;body.rows=14;body.name='loreContent';enabled.type='checkbox';enabled.checked=item.enabled;
         titleLabel.append(title);bodyLabel.append(body);enabledLabel.append(enabled,document.createTextNode('เปิดใช้งาน · ตามโหมดและงบที่ตั้งไว้'));
-        const keywordsLabel=element('label','','คำค้น (คั่นด้วย ,) · เว้นว่างใช้ชื่อ Lore'),keywords=element('input'),alwaysLabel=element('label','trpg-lore-toggle'),always=element('input');keywords.name='loreKeywords';keywords.value=(item.keywords||[]).join(', ');keywordsLabel.append(keywords);always.type='checkbox';always.name='loreAlways';always.checked=item.always===true;alwaysLabel.append(always,document.createTextNode('ให้ความสำคัญก่อนเสมอในโหมดเฉพาะที่เกี่ยวข้อง (ยังอยู่ภายในงบ)'));
+        const keywordsLabel=element('label','','คำค้นเสริม (ไม่จำเป็น · ระบบอ่านชื่อและเนื้อหาเอง)'),keywords=element('input'),alwaysLabel=element('label','trpg-lore-toggle'),always=element('input');keywords.name='loreKeywords';keywords.value=(item.keywords||[]).join(', ');keywordsLabel.append(keywords);always.type='checkbox';always.name='loreAlways';always.checked=item.always===true;alwaysLabel.append(always,document.createTextNode('ส่งรายการนี้ก่อนเสมอในโหมดเฉพาะที่เกี่ยวข้อง (ยังอยู่ภายในงบ)'));
         const counter=element('small','trpg-muted');const update=()=>counter.textContent=`${body.value.length.toLocaleString()} / ${LORE_CONTENT_LIMIT.toLocaleString()} ตัวอักษร`;update();
         form.addEventListener('input',()=>{dirty=true;update();});form.addEventListener('change',()=>dirty=true);
         const actions=element('div','trpg-lore-tools'),submit=element('button','trpg-primary','บันทึก Lore');submit.type='submit';actions.append(submit,button('กลับรายการ',()=>{if(canLeave())list();}));
