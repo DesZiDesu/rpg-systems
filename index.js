@@ -1,9 +1,9 @@
-import { characterLore, lorePrompt, writeCharacterLore } from './lore-core.js?v=0.34.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions, selectLore } from './lore-core.js?v=0.35.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.34.0';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.34.0';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.34.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs } from './npc-scopes.js?v=0.34.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.35.0';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.35.0';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.35.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs } from './npc-scopes.js?v=0.35.0';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
@@ -836,7 +836,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.34.0';
+const LAUNCHER_BIND_VERSION = '0.35.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'map', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -2187,8 +2187,24 @@ function activeCharacterLore() {
     return characterLore(getSettings(), characterOwner(SillyTavern.getContext())?.key);
 }
 
-function activeLorePrompt() {
-    return lorePrompt(activeCharacterLore());
+function loreQuery(extra = '') {
+    const context = SillyTavern.getContext();
+    return [extra, ...(context.chat || []).filter(m => !m.is_system).slice(-6).map(m => extractStatePatch(m.mes || '').visible.slice(-6000))].join('\n');
+}
+
+function activeLoreOptions() {
+    return loreOptions(getSettings(), characterOwner(SillyTavern.getContext())?.key);
+}
+
+function activeLorePrompt(extra = '') {
+    return lorePrompt(activeCharacterLore(), activeLoreOptions(), loreQuery(extra));
+}
+
+function persistLoreOptions(options, expectedOwner) {
+    const context = SillyTavern.getContext();
+    writeLoreOptions(getSettings(), options, expectedOwner, characterOwner(context)?.key);
+    context.saveSettingsDebounced();
+    updatePrompt();
 }
 
 function persistCharacterLore(entries, expectedOwner) {
@@ -9766,6 +9782,8 @@ async function initialize() {
             listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
             persistScope: persistNpcScope,
             listLore: activeCharacterLore, persistLore: persistCharacterLore, lorePrompt: activeLorePrompt,
+            loreOptions: activeLoreOptions, persistLoreOptions,
+            loreSelection: () => selectLore(activeCharacterLore(), activeLoreOptions(), loreQuery()),
             supportsPortraitVision: async () => {
                 const host = await import('/scripts/openai.js');
                 return typeof host.isImageInliningSupported === 'function' && host.isImageInliningSupported();
@@ -9805,7 +9823,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.34.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.35.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

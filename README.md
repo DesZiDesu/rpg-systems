@@ -1,5 +1,13 @@
 # Tretaresia RPG System
 
+### v0.35.0 — Configurable Lore budget and Smart selection
+
+Lore Management now has per-character **All / Smart** selection and a configurable **character budget per request**. Set **0 for unlimited**; values such as 2,000,000 are accepted. This is serialized Lore data in characters, **not model tokens** or the model context setting. Reserve model context for chat history, instructions and output. Small framing instructions are additional to the displayed data size.
+
+The previous 60,000-character storage restriction is removed. The default request budget remains 60,000 until changed, preserving existing settings; storage supports 200 entries per card and up to 1,000,000 characters per entry. Large archives increase settings size and save latency. Budgeting never deletes stored Lore or truncates a selected entry.
+
+**Smart** matches titles and comma-separated keywords against the last six non-system chat messages (last 6,000 characters each), plus the concept and NPC draft for UI generation. Matching is case-insensitive and normalized, with English word boundaries and literal Thai substring matching. It is deterministic keyword retrieval, not semantic AI search. Add synonyms and mark essential world rules **Always send**. There are no extra AI calls and no recursive activation from Lore text. Disabled entries never participate. Always-send entries go first, then priority (-100 to 100), match count and stable archive order. All selected entries still obey the budget; over-budget entries are skipped whole and listed in the current-chat preview. A new turn or UI concept can select a different set. Smart may miss facts without matching keywords; use All/Always for facts that must remain available.
+
 ### v0.34.0 — Character Lore Management
 
 Open **NPC Management → Lore Management** to create, edit, search, delete, or toggle lore entries. Each entry has a title and content. Enabled entries are included on every generation (no keyword trigger), in main chat, NPC generation/fill/attribute repair, and manual RPG sync. Disabled entries remain stored but are excluded from future prompts; toggling cannot remove facts already present in chat history.

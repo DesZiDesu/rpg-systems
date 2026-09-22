@@ -12,7 +12,7 @@ const sandbox={...scopes,...lore,console,structuredClone,setTimeout,clearTimeout
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
-vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore};`,sandbox);
+vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,persistLoreOptions};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -45,7 +45,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.34.0');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.35.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -135,4 +135,13 @@ test('Character Lore feeds main generation independently and stops immediately w
  context.characterId=1;host.updatePrompt(host.defaultState());assert.equal(context.lastPrompt[1],'');
  assert.throws(()=>host.persistCharacterLore([],'card:lore-a.png'));
  context.characterId=0;host.persistCharacterLore([{id:'moon',title:'Moon law',content:'The moon is a blue crystal.',enabled:false}],'card:lore-a.png');assert.equal(context.lastPrompt[1],'');
+});
+test('Smart lore uses recent main chat and UI draft query, never unrelated entries or another card settings',()=>{
+ context.characterId=0;context.characters=[{avatar:'smart.png'},{avatar:'other.png'}];context.groupId=null;
+ host.persistCharacterLore([{id:'a',title:'Moon law',content:'MOON_FACT',enabled:true,keywords:['moon']},{id:'b',title:'River law',content:'RIVER_FACT',enabled:true,keywords:['river']}],'card:smart.png');
+ host.persistLoreOptions({mode:'smart',budget:2000000},'card:smart.png');context.chat=[{is_user:true,mes:'Visit the moon'}];host.updatePrompt(host.defaultState());
+ assert.match(context.lastPrompt[1],/MOON_FACT/);assert.doesNotMatch(context.lastPrompt[1],/RIVER_FACT/);
+ assert.match(host.activeLorePrompt('Create a river spirit'),/RIVER_FACT/);
+ context.characterId=1;assert.equal(host.activeLorePrompt('moon river'),'');
+ context.characterId=0;context.chat=Array.from({length:7},(_,i)=>({is_user:true,mes:i?'Nothing relevant':'moon'}));assert.equal(host.activeLorePrompt(),'');
 });

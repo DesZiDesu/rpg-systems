@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLoreWorkspace} from '../lore-workspace.js';
-import {characterLore,writeCharacterLore} from '../lore-core.js';
+import {characterLore,writeCharacterLore,loreOptions,writeLoreOptions} from '../lore-core.js';
 class Node {
  constructor(tag){this.tag=tag;this.children=[];this.listeners={};}
  append(...nodes){this.children.push(...nodes);}
@@ -15,7 +15,7 @@ globalThis.document={createElement:tag=>new Node(tag),createTextNode:text=>({tex
 globalThis.confirm=()=>true;
 function find(root,predicate){return [root,...root.children.flatMap(n=>n.children?find(n,predicate):[])].filter(predicate);}
 const click=(root,label)=>find(root,n=>n.tag==='button'&&n.textContent===label)[0].fire('click');
-function fixture(){const panel=new Node('section'),settings={};let owner='card:a',status='';const api={scopeInfo:()=>({key:owner,label:owner}),listLore:()=>characterLore(settings,owner),persistLore:(entries,expected)=>writeCharacterLore(settings,entries,expected,owner)};const ui=createLoreWorkspace(panel,api,value=>status=value);ui.open();return {panel,settings,ui,setOwner:value=>owner=value,status:()=>status};}
+function fixture(){const panel=new Node('section'),settings={};let owner='card:a',status='';const api={scopeInfo:()=>({key:owner,label:owner}),listLore:()=>characterLore(settings,owner),persistLore:(entries,expected)=>writeCharacterLore(settings,entries,expected,owner),loreOptions:()=>loreOptions(settings,owner),persistLoreOptions:(value,expected)=>writeLoreOptions(settings,value,expected,owner)};const ui=createLoreWorkspace(panel,api,value=>status=value);ui.open();return {panel,settings,ui,setOwner:value=>owner=value,status:()=>status};}
 test('Lore UI creates, edits, toggles, searches and deletes saved records',()=>{
  const {panel,settings,ui}=fixture();click(panel,'＋ สร้าง Lore ใหม่');
  find(panel,n=>n.name==='loreTitle')[0].value='Moon';find(panel,n=>n.name==='loreContent')[0].value='Blue crystal';find(panel,n=>n.tag==='form')[0].fire('submit');
@@ -32,4 +32,12 @@ test('Lore UI protects unsaved work and rejects saves after switching cards',()=
  globalThis.confirm=()=>false;assert.equal(ui.canLeave(),false);globalThis.confirm=()=>true;
  ui.refresh();assert.equal(find(panel,n=>n.name==='loreTitle')[0].value,'Moon');
  setOwner('card:b');form.fire('submit');assert.match(status(),/การ์ดเปลี่ยน/);assert.deepEqual(characterLore(settings,'card:b'),[]);assert.deepEqual(characterLore(settings,'card:a'),[]);
+});
+test('UI saves Smart mode and a two-million-character budget, supports unlimited and preserves activation fields',()=>{
+ const {panel,settings,ui}=fixture();find(panel,n=>n.name==='loreMode')[0].value='smart';find(panel,n=>n.name==='loreBudget')[0].value='2000000';find(panel,n=>n.tag==='form')[0].fire('submit');
+ assert.deepEqual(loreOptions(settings,'card:a'),{mode:'smart',budget:2000000});
+ find(panel,n=>n.name==='loreBudget')[0].value='0';find(panel,n=>n.tag==='form')[0].fire('submit');assert.equal(loreOptions(settings,'card:a').budget,0);
+ click(panel,'＋ สร้าง Lore ใหม่');for(const [name,value]of [['loreTitle','City'],['loreContent','Lore'],['loreKeywords','Bangkok, กรุงเทพ'],['lorePriority','50']])find(panel,n=>n.name===name)[0].value=value;
+ find(panel,n=>n.name==='loreAlways')[0].checked=true;find(panel,n=>n.tag==='form')[0].fire('submit');ui.open();click(panel,'City');
+ assert.equal(find(panel,n=>n.name==='loreKeywords')[0].value,'Bangkok, กรุงเทพ');assert.equal(find(panel,n=>n.name==='loreAlways')[0].checked,true);assert.equal(find(panel,n=>n.name==='lorePriority')[0].value,50);
 });

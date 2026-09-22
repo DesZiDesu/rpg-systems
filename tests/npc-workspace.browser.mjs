@@ -54,7 +54,7 @@ try{
  assert.equal((await page.evaluate(()=>counts())).saves,0);
  let box=await page.locator('dialog').boundingBox();assert.ok(Math.abs(box.y)<2);assert.ok(Math.abs(box.height-844)<2);
  await page.setViewportSize({width:390,height:480});await page.waitForTimeout(100);box=await page.locator('dialog').boundingBox();assert.ok(Math.abs(box.height-480)<2);
- await page.locator('button[type=submit]').click();await page.waitForFunction(()=>window.counts().saves===1);assert.equal((await page.evaluate(()=>counts())).stored[0].name,'Lysa');
+ await page.locator('.trpg-record button[type=submit]').click();await page.waitForFunction(()=>window.counts().saves===1);assert.equal((await page.evaluate(()=>counts())).stored[0].name,'Lysa');
  await page.locator('[data-back]').click();await page.locator('[data-new]').click();await page.locator('[name=name]').fill('Keep me');await page.locator('[data-npc-brief]').fill('Another healer');
  await page.evaluate(()=>window.badAI=true);await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>document.querySelector('[role=status]').textContent.includes('incomplete'));
  assert.equal(await page.locator('[name=name]').inputValue(),'Keep me');
@@ -73,7 +73,7 @@ try{
  assert.equal((await page.evaluate(()=>counts())).requests,priorRequests);
  await page.evaluate(()=>window.noVision=false);await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>document.querySelector('[name=name]').value==='Lysa');
  assert.match(await page.evaluate(()=>window.lastImage),/^data:image\/(webp|jpeg);base64,/);assert.match(await page.evaluate(()=>window.lastPrompt),/attached portrait/);
- await page.locator('button[type=submit]').click();await page.waitForFunction(()=>window.counts().shared.length===1);
+ await page.locator('.trpg-record button[type=submit]').click();await page.waitForFunction(()=>window.counts().shared.length===1);
  assert.equal((await page.evaluate(()=>counts())).shared[0].npcScope,'character');assert.equal((await page.evaluate(()=>counts())).stored.length,1);
  await page.locator('[data-back]').click();assert.equal(await page.locator('.trpg-person').count(),1);
  await page.locator('.trpg-person').click();await page.getByRole('button',{name:'แก้ไขข้อมูล',exact:true}).click();
