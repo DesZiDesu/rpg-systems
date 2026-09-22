@@ -111,6 +111,10 @@
 
 /* NPC creation and viewport sizing: safe area belongs inside the dialog. */
 .trpg-manager{box-sizing:border-box}
+.trpg-generation-scope{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 18px;flex-shrink:0;border-bottom:1px solid var(--line);font-size:13px}
+.trpg-generation-scope small{flex-basis:100%;opacity:.7}
+.trpg-generation-scope select{max-width:100%;min-width:0}
+.trpg-manager[data-view="edit"] .trpg-generation-scope,.trpg-manager[data-view="detail"] .trpg-generation-scope,.trpg-manager[data-view="import"] .trpg-generation-scope{display:none}
 .trpg-generator{display:grid;gap:12px;margin:0 0 24px;padding:18px;border:1px solid var(--line);background:#d6b45809}
 .trpg-generator p{margin:0;line-height:1.6}
 .trpg-manager-top{flex-shrink:0}

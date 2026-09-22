@@ -1,4 +1,4 @@
-import { keyName } from './npc-core.js?v=0.31.0';
+import { keyName } from './npc-core.js?v=0.33.0';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -107,4 +107,19 @@ export function scopedPortraitKey(profile, chatId, owner = '') {
     return profile.npcScope === 'character'
         ? `tretaresia-rpg:npc-portrait:character:${encodeURIComponent(owner || profile.npcOwner)}:${profile.id}`
         : `tretaresia-rpg:npc-portrait:${chatId || 'no-chat'}:${profile.id}`;
+}
+
+// The user, never an AI patch, chooses where NEW story NPCs are archived.
+// Existing shared records keep per-chat deltas instead of rewriting their base.
+export function routeNewStoryNpcs(state, previous, library, owner, destination) {
+ const next=clone(state),archive=clone(library);let added=0,overflow=0;
+ if(destination!=='character'||!owner)return {state:next,library:archive,added,overflow};
+ const ids=new Set(previous.npcs.map(p=>p.id)),names=new Set(previous.npcs.flatMap(p=>[p.name,...(p.aliases||[])]).map(keyName));
+ for(const p of next.npcs){
+  if(ids.has(p.id)||names.has(keyName(p.name))||p.npcScope==='character')continue;
+  if(archive.some(n=>n.id===p.id||keyName(n.name)===keyName(p.name)))continue;
+  if(archive.length>=200){overflow++;continue;}
+  p.npcScope='character';p.npcOwner=owner;archive.push(clone(p));added++;
+ }
+ return {state:next,library:archive,added,overflow};
 }
