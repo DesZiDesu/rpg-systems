@@ -1,5 +1,12 @@
 # Tretaresia RPG System
 
+### v0.37.1 — Scene Tracker synchronization
+
+- Same-reply `sceneTracker` location/environment facts now update canonical state; explicit state operations win. Scene-only patches are accepted, unknown values do not erase established facts, and non-atlas places can seed a scene.
+- Scene panel and footer hide unconfirmed atlas bootstrap locations. The inline card uses canonical scene facts and avoids duplicate `Day 1` labels.
+- Manual **Sync latest turn** reads up to 12 recent messages (6,000 characters per message), strips old patches, and refreshes the latest reply's scene card. Older context establishes scene continuity only. Changes while a sync request is running cause its result to be discarded.
+- After updating and reloading, use **Sync latest turn** once for an existing chat whose location is missing. This is an explicit AI request; automatic tracking still uses the normal reply only. Unknown weather/temperature stay unknown until established. Earlier scene cards remain historical snapshots.
+
 ### v0.37.0 — Smaller settings saves
 
 - Character NPC and Lore archives now live in the selected character card's extension fields. Existing archives are copied from global extension settings in the background. Each old archive remains readable until its card write succeeds; failed migrations leave the original intact. After confirmation, its old settings copy is removed. Archives now travel with exported character cards, which can increase their file size. Chat-specific NPC developments continue to live in chat metadata.
@@ -35,7 +42,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.37.0**
+**Current version: 0.37.1**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 

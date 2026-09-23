@@ -1,6 +1,28 @@
 // Small, per-reply scene records. Never send a second request to build a card.
 const value = (source, limit = 180) => typeof source === 'string' ? source.trim().slice(0, limit) : '';
-const known = source => source && !/^(?:unknown|none|n\/a|ไม่ทราบ|—)$/i.test(source) ? source : '';
+const known = source => source && !/^(?:unknown|none|n\/a|ไม่ทราบ|—|-)$/i.test(source) ? source : '';
+
+// Only allow bounded scene facts; explicit canonical operations take precedence.
+export function sceneTrackerOperations(details, operations = []) {
+    if (!details || typeof details !== 'object' || Array.isArray(details)) return [];
+    const paths = {location:'location.place', continent:'location.continent', region:'location.region',
+        detail:'location.detail', position:'scene.position', weather:'scene.weather', temperature:'scene.temperature',
+        time:'worldClock.time', day:'worldClock.day', dayName:'worldClock.dayName', period:'worldClock.phase'};
+    return Object.entries(paths).flatMap(([key,path]) => {
+        if (operations.some(op => op[1] === path)) return [];
+        let fact = details[key];
+        if (key === 'temperature' || key === 'day') {
+            if (fact === null || fact === undefined || typeof fact === 'boolean' || String(fact).trim() === '') return [];
+            fact = Number(fact);
+            if (!Number.isFinite(fact) || (key === 'day' && (!Number.isInteger(fact) || fact < 1))
+                || (key === 'temperature' && (fact < -1000 || fact > 1000))) return [];
+        } else {
+            fact = known(value(fact, 180));
+            if (!fact || (key === 'time' && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(fact))) return [];
+        }
+        return [['set',path,fact]];
+    });
+}
 
 export function sceneSnapshot(state, supplement = {}, speakers = []) {
     const clock = state?.worldClock || {}, location = state?.onboarding?.locationSeeded === false ? {} : state?.location || {}, scene = state?.scene || {};
@@ -12,7 +34,7 @@ export function sceneSnapshot(state, supplement = {}, speakers = []) {
         day: Number.isFinite(Number(clock.day)) ? Math.max(1, Math.floor(Number(clock.day))) : null,
         dayName: read('dayName', clock.dayName, 50), time: read('time', clock.time, 20),
         period: read('period', clock.phase, 50), location: read('location', location.place || location.detail, 180),
-        region: read('region', [location.region,location.continent].filter(Boolean).filter((part,index,all) => all.indexOf(part) === index).join(' · '), 120),
+        region: read('region', [location.region,location.continent].filter(known).filter((part,index,all) => all.indexOf(part) === index).join(' · '), 120),
         weather: read('weather', scene.weather, 100),
         temperature: Number.isFinite(Number(scene.temperature)) && scene.temperature !== null ? Number(scene.temperature) : null,
         participants: names, position: read('position', scene.position, 120),
@@ -41,7 +63,7 @@ export function renderSceneTracker(snapshot, language = 'en') {
     const body = node('div', 'trpg-scene-body');
     const top = node('div', 'trpg-scene-top');
     top.append(node('span', '', 'SCENE STATUS / LIVE'),
-        node('span', '', [snapshot.dayName,snapshot.day == null ? '' : `${word('Day', 'วันที่')} ${snapshot.day}`].filter(Boolean).join(' · ') || '—'));
+        node('span', '', [snapshot.dayName,snapshot.day == null || snapshot.dayName === `Day ${snapshot.day}` ? '' : `${word('Day', 'วันที่')} ${snapshot.day}`].filter(Boolean).join(' · ') || '—'));
     const hero = node('div', 'trpg-scene-hero'), place = node('div');
     place.append(node('small', '', word('CURRENT LOCATION', 'ตำแหน่งในเนื้อเรื่อง')),
         node('strong', '', snapshot.location || '—'), node('span', '', snapshot.region || '—'));
