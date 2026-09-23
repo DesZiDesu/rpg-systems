@@ -113,7 +113,8 @@ tretaresia_patch {
 .tretaresia-h-roster button small{color:var(--tretaresia-muted);font-size:.47rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tretaresia-h-main{min-width:0}
 .tretaresia-h-identity{display:flex;align-items:center;gap:.7rem;min-width:0;padding:.8rem}
-.tretaresia-h-monogram{flex:none;display:grid;place-items:center;width:56px;aspect-ratio:1;color:var(--tretaresia-accent);background:rgba(var(--tretaresia-accent-rgb),.16);border:1px solid var(--tretaresia-line);font:600 1.3rem Georgia,serif}
+.tretaresia-h-monogram{flex:none;display:grid;place-items:center;width:72px;aspect-ratio:3/4;overflow:hidden;color:var(--tretaresia-accent);background:rgba(var(--tretaresia-accent-rgb),.16);border:1px solid var(--tretaresia-line);font:600 1.3rem Georgia,serif}
+.tretaresia-h-monogram .tretaresia-h-photo{width:100%;height:100%;border:0;border-radius:0}
 .tretaresia-h-identity>div{min-width:0}
 .tretaresia-h-identity small{color:var(--tretaresia-accent);font-size:.48rem}
 .tretaresia-h-identity h3{margin:.12rem 0;color:var(--tretaresia-ink);font:600 1.35rem Georgia,serif;overflow-wrap:anywhere}
@@ -124,6 +125,8 @@ tretaresia_patch {
 .tretaresia-h-track{height:6px;overflow:hidden;background:rgba(255,255,255,.12)}
 .tretaresia-h-track i{display:block;height:100%;background:linear-gradient(90deg,rgba(var(--tretaresia-accent-rgb),.65),var(--tretaresia-accent))}
 .tretaresia-h-hearts{display:flex;gap:.18rem;flex-shrink:0}
+.tretaresia-h-heart-value{display:grid;justify-items:end;gap:.12rem}
+.tretaresia-h-heart-value small{color:var(--tretaresia-muted);font-size:.48rem}
 .tretaresia-h-hearts svg{width:19px;height:19px;fill:transparent;stroke:#af6974;stroke-width:1.5}
 .tretaresia-h-hearts svg.is-filled{fill:#d55470;stroke:#f596ac}
 .tretaresia-h-sections{display:flex;flex-wrap:wrap;gap:.28rem;margin:.7rem 0 .45rem}

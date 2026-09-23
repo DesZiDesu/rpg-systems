@@ -1,5 +1,10 @@
 # Tretaresia RPG System
 
+### v0.40.2 — NPC progression and H-Stats display
+
+- The H-Stats loyalty hearts now use a complete SVG outline. An unset value says "ยังไม่ทราบ" instead of implying that loyalty is zero. The selected NPC's stored portrait loads in the dossier through the existing NPC portrait sources; the initial remains when no image is available.
+- With Auto Track enabled, the normal reply still applies confirmed NPC values and existing skill proficiency from its inline patch. If it omits progression for a met NPC who appears in the completed scene, a focused NPC progress request checks that turn and saves only confirmed changes. A named skill can be checked even when the inline patch already changed a relationship meter; fields changed by the inline patch cannot be increased twice. Core attributes increase only after a clear training breakthrough and an established nonzero baseline. The request counter lists extra checks as **NPC progress**. Earlier turns are not changed retroactively, and uncertain events keep their existing values.
+
 ### v0.40.1 — NPC-focused H-Stats dossier
 
 - H-Stats now opens as a read-first NPC dossier matching the other system panels. Choose a met friendly NPC in the directory; a shortcut from that NPC's Codex dossier opens the same character directly. The choice is saved with the current chat and never falls back to the player sheet. With no met NPC, the panel explains how to add one.
@@ -83,7 +88,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.40.1**
+**Current version: 0.40.2**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 
