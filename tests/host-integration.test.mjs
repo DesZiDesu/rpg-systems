@@ -16,7 +16,7 @@ const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,parseRegistrationMessage};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,parseRegistrationMessage};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -44,25 +44,41 @@ test('NPC Codex requires a recorded meeting, while all genders retain H-Stats',(
  assert.equal(state.npcs[0].hStats.penisSize,'');
  assert.ok(Object.hasOwn(state.npcs[2].hStats,'vaginaQuality'));
 });
-test('player H-Stats render and survive confirmed story updates',()=>{
+test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in this chat',async()=>{
  const base=host.defaultState();
  const panel={innerHTML:''};
  host.renderHStats(panel,base);
- assert.match(panel.innerHTML,/data-form="npc-hstats"/);
- assert.match(panel.innerHTML,/data-id="player"/);
- assert.equal((panel.innerHTML.match(/<svg viewBox="0 0 24 24"/g)||[]).length,5);
- const updated=host.applyStatePatch(base,{ops:[
-  ['set','playerHStats',{field:'loyaltyHearts',value:4}],
-  ['inc','playerHStats',{field:'oralSexCount',amount:1}],
-  ['set','playerHStats',{field:'pregnant',value:false}],
- ]});
- assert.equal(updated.accepted,3);
- assert.equal(updated.next.player.hStats.loyaltyHearts,4);
- assert.equal(updated.next.player.hStats.oralSexCount,1);
- assert.equal(updated.next.player.hStats.pregnant,false);
- host.renderHStats(panel,updated.next);
- assert.match(panel.innerHTML,/Loyalty 4 of 5/);
- assert.equal((panel.innerHTML.match(/class="is-filled"/g)||[]).length,4);
+ assert.match(panel.innerHTML,/tretaresia-h-empty/);
+ assert.doesNotMatch(panel.innerHTML,/data-id="player"/);
+ base.npcs=[host.npcProfile({id:'lore',name:'Lore only',met:false}),host.npcProfile({id:'lysa',name:'Lysa',met:true}),host.npcProfile({id:'rin',name:'Rin',met:true})];
+ const saved={metadata:context.chatMetadata,save:context.saveMetadata,getId:context.getCurrentChatId};
+ let chatId='h-stats-test';context.chatMetadata={};context.getCurrentChatId=()=>chatId;context.saveMetadata=async()=>{};
+ try{
+  host.renderHStats(panel,base);
+  assert.match(panel.innerHTML,/data-id="lysa"/);
+  assert.doesNotMatch(panel.innerHTML,/data-id="lore"|data-id="player"/);
+  assert.equal(host.chooseHStatsNpc('lore',base),false);
+  assert.equal(host.chooseHStatsNpc('rin',base),true);
+  host.renderHStats(panel,base);
+  assert.match(panel.innerHTML,/data-id="rin" class="is-active"/);
+  assert.equal(context.chatMetadata.tretaresia_rpg_selected_hstats_npc,'rin');
+  const updated=host.applyStatePatch(base,{ops:[['set','npcHStats',{npcId:'rin',field:'loyaltyHearts',value:4}]]});
+  host.renderHStats(panel,updated.next);
+  assert.match(panel.innerHTML,/Loyalty 4 of 5/);
+  assert.equal((panel.innerHTML.match(/class="is-filled"/g)||[]).length,4);
+  chatId='another-chat';context.chatMetadata={};
+  host.renderHStats(panel,base);
+  assert.match(panel.innerHTML,/data-id="lysa" class="is-active"/);
+  assert.doesNotMatch(panel.innerHTML,/data-id="rin" class="is-active"/);
+ }finally{context.chatMetadata=saved.metadata;context.saveMetadata=saved.save;context.getCurrentChatId=saved.getId;}
+});
+test('editing one H-Stats category preserves values in the other categories',()=>{
+ const previous=hStats({oralSexCount:3,loyaltyHearts:5,mouthQuality:'Known'});
+ const patch=host.hStatsFormValues({npcId:'lysa',mouthQuality:'Updated',pregnant:'false'});
+ const next=hStats(patch,previous);
+ assert.equal(next.mouthQuality,'Updated');assert.equal(next.pregnant,false);
+ assert.equal(next.oralSexCount,3);assert.equal(next.loyaltyHearts,5);
+ assert.equal(Object.hasOwn(patch,'condition'),false);
 });
 test('same-turn patches update NPC relationships, skills and H-Stats without resetting other values',()=>{
  const base=host.defaultState();base.npcs=[host.npcProfile({id:'a',name:'Aria',met:true,trust:10,
@@ -126,7 +142,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.40.0');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.40.1');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

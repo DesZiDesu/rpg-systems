@@ -1,15 +1,15 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.40.0';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.40.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.40.1';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.40.1';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.40.0';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.40.0';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.40.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.40.0';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.40.0';
-import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.40.0';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './h-stats.js?v=0.40.0';
-import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.40.0';
-import { mountAdultPromptControls } from './nsfw-prompt-ui.js?v=0.40.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.40.1';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.40.1';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.40.1';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.40.1';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.40.1';
+import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.40.1';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './h-stats.js?v=0.40.1';
+import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.40.1';
+import { mountAdultPromptControls } from './nsfw-prompt-ui.js?v=0.40.1';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -19,6 +19,7 @@ const SAFE_MODE = /(?:^|[?&])tretaresia-safe=(?:1|true)(?:&|$)/i.test(globalThis
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
 const SETTINGS_KEY = 'tretaresia_rpg';
 const METADATA_KEY = 'tretaresia_rpg_state';
+const H_SELECTION_KEY = 'tretaresia_rpg_selected_hstats_npc';
 const TURN_HISTORY_KEY = 'tretaresia_rpg_turn_history';
 const SCENE_HISTORY_KEY = 'tretaresia_rpg_scene_history';
 const PROMPT_KEY = 'tretaresia_rpg_roleplay_state';
@@ -852,7 +853,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.40.0';
+const LAUNCHER_BIND_VERSION = '0.40.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -865,6 +866,9 @@ const TAB_META = {
 };
 let activeTabIndex = 0;
 let selectedHStatsNpcId = null;
+let hStatsSelectionChatId = null;
+let selectedHStatsSection = 'Body';
+let hStatsEditing = false;
 let activeQuestSection = 'active';
 let characterLifeSkillSyncTimer = null;
 let characterLifeCompatibilityTimer = null;
@@ -6761,6 +6765,28 @@ function renderNpcs(panel, state) {
 }
 
 const H_GROUPS = ['Body', 'History', 'Bonds', 'Preferences'];
+const H_GROUP_LABELS = { Body:'ร่างกาย', History:'ประสบการณ์', Bonds:'ความสัมพันธ์', Preferences:'ความชอบ' };
+function syncHStatsSelectionChat(context = SillyTavern.getContext()) {
+    const chatId = context.getCurrentChatId?.() || '';
+    if (hStatsSelectionChatId !== chatId) {
+        hStatsSelectionChatId = chatId;
+        selectedHStatsNpcId = null;
+        selectedHStatsSection = 'Body';
+        hStatsEditing = false;
+    }
+    return context;
+}
+function chooseHStatsNpc(id, state = getState()) {
+    if (!metFriendlyNpcs(state).some(entry => entry.id === id)) return false;
+    const context = syncHStatsSelectionChat();
+    selectedHStatsNpcId = id;
+    hStatsEditing = false;
+    if (context.getCurrentChatId?.() && context.chatMetadata && context.chatMetadata[H_SELECTION_KEY] !== id) {
+        context.chatMetadata[H_SELECTION_KEY] = id;
+        void saveCurrentChatMetadata(context);
+    }
+    return true;
+}
 function hFieldControl(field, value) {
     const label = html(field.label), key = html(field.key), stored = value === null || value === undefined ? '' : value;
     if (field.type === 'boolean') return `<label class="tretaresia-h-field"><span>${label}</span><select name="${key}"><option value=""${stored === '' ? ' selected' : ''}>—</option><option value="true"${stored === true ? ' selected' : ''}>ท้อง / Pregnant</option><option value="false"${stored === false ? ' selected' : ''}>ไม่ท้อง / Not pregnant</option></select></label>`;
@@ -6768,20 +6794,36 @@ function hFieldControl(field, value) {
     const bounds = field.type === 'stage' ? ' min="1" max="5" step="1"' : field.type === 'hearts' ? ' min="0" max="5" step="1"' : field.type === 'progress' ? ' min="0" max="100" step="1"' : field.type === 'liters' ? ' min="0" step="0.001"' : ' min="0" step="1"';
     return `<label class="tretaresia-h-field"><span>${label}</span><input name="${key}" type="${numeric ? 'number' : 'text'}" value="${html(stored)}"${numeric ? bounds : ' maxlength="500"'} placeholder="—"></label>`;
 }
+function hStatsFormValues(values) {
+    const incoming = {};
+    for (const field of H_FIELDS) {
+        if (!Object.hasOwn(values, field.key)) continue;
+        const value = values[field.key];
+        incoming[field.key] = field.type === 'boolean' ? value === '' ? null : value === 'true' : value;
+    }
+    return incoming;
+}
 function renderHStats(panel, state) {
     if (!panel) return;
-    const roster = [{...state.player,id:'player',name:currentPersonaName(state),met:true},...metFriendlyNpcs(state)];
-    if (!roster.some(entry => entry.id === selectedHStatsNpcId)) selectedHStatsNpcId = roster[0]?.id || null;
+    const context = syncHStatsSelectionChat();
+    const roster = metFriendlyNpcs(state);
+    if (!roster.some(entry => entry.id === selectedHStatsNpcId)) {
+        const stored = context.chatMetadata?.[H_SELECTION_KEY];
+        selectedHStatsNpcId = [stored, selectedNpcId, roster[0]?.id].find(id => roster.some(entry => entry.id === id)) || null;
+    }
     const selected = roster.find(entry => entry.id === selectedHStatsNpcId);
     const sheet = selected ? hStats(selected.hStats) : null;
-    const stage = sheet?.infidelityStage ?? 1, progress = sheet?.infidelityProgress ?? 0;
+    const stage = sheet?.infidelityStage ?? '—', progress = sheet?.infidelityProgress ?? null;
     const hearts = sheet?.loyaltyHearts;
     const heartSvg = filled => `<svg viewBox="0 0 24 24" aria-hidden="true" class="${filled ? 'is-filled' : ''}"><path d="M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 6.84 3c2.82 0 4.5 1.24 5.58 2.66C13.08 4.24 14.76 3 17.58 3 20 5.42 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35Z"/></svg>`;
+    const fields = H_FIELDS.filter(field => field.group === selectedHStatsSection);
     panel.innerHTML = `${heading('H-Stats', 'PARTNER DOSSIER · TRETARESIA', 'fa-solid fa-heart-pulse')}
-        <div class="tretaresia-h-shell"><nav class="tretaresia-h-roster" aria-label="Select partner">${roster.map(entry => `<button type="button" data-action="select-hstats-npc" data-id="${html(entry.id)}" class="${selected?.id === entry.id ? 'is-active' : ''}"><strong>${html(entry.name)}</strong><small>${html(entry.gender || 'Gender unknown')} · ${html(entry.title || entry.occupation || '')}</small></button>`).join('') || '<p>ยังไม่มีตัวละครที่พบแล้ว / No met partner selected.</p>'}</nav>
-        ${selected ? `<div class="tretaresia-h-detail"><header><small>H-STATS / ${html(selected.gender || '—')}</small><h3>${html(selected.name)}</h3><p>${html(selected.title || selected.occupation || '')}</p></header>
-        <div class="tretaresia-h-progress"><div><span>แนวโน้มนอกใจ · Stage ${stage} / 5</span><strong>${progress}%</strong></div><div class="tretaresia-h-track"><i style="width:${progress}%"></i></div><div class="tretaresia-h-hearts" aria-label="Loyalty ${hearts === null ? 'unknown' : hearts + ' of 5'}">${Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join('')}</div></div>
-        <form data-form="npc-hstats" class="tretaresia-h-form"><input type="hidden" name="npcId" value="${html(selected.id)}">${H_GROUPS.map(group => `<details open><summary>${group}</summary><div class="tretaresia-h-grid">${H_FIELDS.filter(field => field.group === group).map(field => hFieldControl(field, sheet[field.key])).join('')}</div></details>`).join('')}<button type="submit" class="tretaresia-primary-button">บันทึก H-Stats / Save</button></form></div>` : '<div class="tretaresia-h-detail"><p>เลือกตัวละครที่เคยพบจาก NPC Management หรือในเรื่องราว</p></div>'}</div>`;
+        ${roster.length ? `<div class="tretaresia-h-shell"><nav class="tretaresia-h-roster" aria-label="NPC DIRECTORY · เลือกตัวละคร"><small>NPC DIRECTORY · เลือกตัวละคร</small>${roster.map(entry => `<button type="button" data-action="select-hstats-npc" data-id="${html(entry.id)}" class="${selected?.id === entry.id ? 'is-active' : ''}" aria-pressed="${selected?.id === entry.id}"><strong>${html(entry.name)}</strong><small>${html(entry.gender || '—')} · ${html(entry.location || entry.title || '—')}</small></button>`).join('')}</nav>
+        <div class="tretaresia-h-main"><section class="tretaresia-h-hero"><div class="tretaresia-h-identity"><span class="tretaresia-h-monogram" aria-hidden="true">${html(selected.name.charAt(0).toLocaleUpperCase())}</span><div><small>${html(selected.gender || '—')} · ${html(selected.location || '—')}</small><h3>${html(selected.name)}</h3><p>${html(selected.title || selected.occupation || selected.relationship || '—')}</p></div></div>
+        <div class="tretaresia-h-status"><div><span>ความซื่อสัตย์ต่อผู้เล่น</span><div class="tretaresia-h-hearts" aria-label="Loyalty ${hearts === null ? 'unknown' : hearts + ' of 5'}">${Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join('')}</div></div><div><span>แนวโน้มนอกใจ</span><strong>STAGE ${stage} / 5 · ${progress ?? '—'}%</strong></div><div class="tretaresia-h-track" role="progressbar" aria-label="Infidelity stage progress" ${progress === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"`}><i style="width:${progress ?? 0}%"></i></div></div></section>
+        <nav class="tretaresia-h-sections" aria-label="H-Stats categories">${H_GROUPS.map(group => `<button type="button" data-action="select-hstats-section" data-id="${group}" class="${selectedHStatsSection === group ? 'is-active' : ''}" aria-pressed="${selectedHStatsSection === group}">${H_GROUP_LABELS[group]}</button>`).join('')}</nav>
+        <section class="tretaresia-h-detail"><header><h4>${H_GROUP_LABELS[selectedHStatsSection]}</h4><button type="button" data-action="toggle-hstats-edit" aria-pressed="${hStatsEditing}"><i class="fa-solid ${hStatsEditing ? 'fa-xmark' : 'fa-pen'}"></i> ${hStatsEditing ? 'ยกเลิกแก้ไข / Cancel' : 'แก้ไขข้อมูล / Edit'}</button></header>
+        ${hStatsEditing ? `<form data-form="npc-hstats" class="tretaresia-h-form"><input type="hidden" name="npcId" value="${html(selected.id)}"><div class="tretaresia-h-grid">${fields.map(field => hFieldControl(field, sheet[field.key])).join('')}</div><button type="submit" class="tretaresia-primary-button">บันทึกข้อมูล / Save</button></form>` : `<div class="tretaresia-h-readout">${fields.map(field => `<div><span>${html(field.label)}</span><strong>${html(sheet[field.key] === null || sheet[field.key] === '' ? '—' : field.type === 'boolean' ? sheet[field.key] ? 'ท้อง / Pregnant' : 'ไม่ท้อง / Not pregnant' : String(sheet[field.key]))}</strong></div>`).join('')}</div>`}</section></div></div>` : `<section class="tretaresia-h-empty"><i class="fa-solid fa-users-viewfinder"></i><h3>ยังไม่มี NPC ที่เคยพบ</h3><p>NPC ที่พบแล้วและเป็นมิตรจะแสดงที่นี่เมื่อมีข้อมูลในเรื่อง</p><button type="button" class="tretaresia-primary-button" data-trpg-open>เปิด NPC Management</button></section>`}`;
 }
 
 function renderNpcDossier(entry, linkedContact) {
@@ -6813,7 +6855,7 @@ function renderNpcDossier(entry, linkedContact) {
         <div><span class="tretaresia-eyebrow">NPC dossier</span><h3>${html(entry.name)}</h3><p>${html(entry.title || entry.occupation || entry.relationship)}</p>
         <div class="tretaresia-identity-chips"><span><i class="fa-solid fa-dna"></i>${html(entry.race)}</span><span><i class="fa-solid fa-flag"></i>${html(entry.faction || 'Unaffiliated')}</span>
         <span><i class="fa-solid fa-location-dot"></i>${html(entry.location)}</span></div></div>
-        <div class="tretaresia-npc-hero-actions">${linkedContact ? `<button type="button" class="tretaresia-small-button" data-action="open-npc-mailbox" data-id="${html(entry.id)}"><i class="fa-solid fa-envelope"></i>${html(tr('Open Mailbox'))}</button>`
+        <div class="tretaresia-npc-hero-actions"><button type="button" class="tretaresia-small-button" data-action="open-npc-hstats" data-id="${html(entry.id)}"><i class="fa-solid fa-heart-pulse"></i> H-Stats</button>${linkedContact ? `<button type="button" class="tretaresia-small-button" data-action="open-npc-mailbox" data-id="${html(entry.id)}"><i class="fa-solid fa-envelope"></i>${html(tr('Open Mailbox'))}</button>`
             : `<button type="button" class="tretaresia-small-button" data-action="link-npc-contact" data-id="${html(entry.id)}"><i class="fa-solid fa-address-book"></i>${html(tr('Link to Mailbox'))}</button>`}
         ${entry.hasPortrait ? `<button type="button" class="tretaresia-small-button" data-action="remove-npc-portrait" data-id="${html(entry.id)}"><i class="fa-solid fa-image-slash"></i>${html(tr('Remove portrait'))}</button>` : ''}</div></section>
         <section class="tretaresia-npc-meter-grid">${relationshipMeters.map(args => npcMeterView(...args)).join('')}${customMeters}</section>
@@ -7619,17 +7661,14 @@ async function onSubmit(event) {
             break;
         }
         case 'npc-hstats': {
-            const npc = values.npcId === 'player' ? state.player : state.npcs.find(entry => entry.id === values.npcId);
-            if (!npc || (values.npcId !== 'player' && !npc.met)) break;
-            const incoming = {};
-            for (const field of H_FIELDS) {
-                const value = values[field.key];
-                incoming[field.key] = field.type === 'boolean'
-                    ? value === '' ? null : value === 'true' : value;
-            }
-            npc.hStats = hStats(incoming, npc.hStats);
+            const npc = metFriendlyNpcs(state).find(entry => entry.id === values.npcId);
+            if (!npc) break;
+            npc.hStats = hStats(hStatsFormValues(values), npc.hStats);
             npc.updatedAt = new Date().toISOString();
-            await persistState(state, 'hstats');
+            if (await persistState(state, 'hstats')) {
+                hStatsEditing = false;
+                renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
+            }
             break;
         }
         case 'npc-ability': {
@@ -8146,10 +8185,24 @@ async function onPanelClick(event) {
         }
         case 'select-npc':
             selectedNpcId = id;
+            chooseHStatsNpc(id, state);
             renderPanel('npcs', document.querySelector('[data-panel="npcs"]'), getState());
             break;
         case 'select-hstats-npc':
-            selectedHStatsNpcId = id;
+            if (chooseHStatsNpc(id, state)) renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
+            break;
+        case 'open-npc-hstats':
+            if (chooseHStatsNpc(id, state)) activateTab('hstats');
+            break;
+        case 'select-hstats-section':
+            if (H_GROUPS.includes(id)) {
+                selectedHStatsSection = id;
+                hStatsEditing = false;
+                renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
+            }
+            break;
+        case 'toggle-hstats-edit':
+            hStatsEditing = !hStatsEditing;
             renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
             break;
         case 'delete-npc': {
@@ -10172,7 +10225,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.40.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.40.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

@@ -1,5 +1,5 @@
-import { element } from './npc-chat.js?v=0.40.0';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.40.0';
+import { element } from './npc-chat.js?v=0.40.1';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.40.1';
 
 export function createLoreWorkspace(panel, api, say) {
     let owner = '', dirty = false, query = '', editing = null, saving = false;
