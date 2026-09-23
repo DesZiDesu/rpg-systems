@@ -1,6 +1,6 @@
-import { identity, resolveNpc, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.38.1';
-import { croppedPortrait } from './npc-portraits.js?v=0.38.1';
-import { renderSceneTracker } from './scene-tracker.js?v=0.38.1';
+import { identity, resolveNpc, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.39.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.39.0';
+import { renderSceneTracker } from './scene-tracker.js?v=0.39.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -8,10 +8,25 @@ export function element(tag, className = '', text) {
     return node;
 }
 export function icon(name) { const node = element('i', `fa-solid fa-${name}`); node.setAttribute('aria-hidden','true'); return node; }
+// Only support the two requested inline marks. Never parse model text as HTML.
+export function appendStoryText(node,value){
+    const source=String(value??''),pattern=/\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g;
+    let cursor=0,matched=false,part;
+    while((part=pattern.exec(source))){
+        if(part.index>0&&source[part.index-1]==='\\')continue;
+        if(!part[1]?.trim()&&!part[2]?.trim())continue;
+        if(part.index>cursor)node.append(document.createTextNode(source.slice(cursor,part.index)));
+        const styled=element(part[1]!==undefined?'strong':'em','',part[1]??part[2]);node.append(styled);
+        cursor=pattern.lastIndex;matched=true;
+    }
+    if(!matched)node.textContent=source;
+    else if(cursor<source.length)node.append(document.createTextNode(source.slice(cursor)));
+    return node;
+}
 export function narrative(text) {
     const node = element('div','trpg-narrative');
     for (const part of ['mark','top','glow','end']) { const deco=element('span',`trpg-prose-${part}`);deco.setAttribute('aria-hidden','true');if(part==='mark')deco.append(icon('feather-pointed'));node.append(deco); }
-    node.append(element('span','trpg-prose-copy',text)); return node;
+    node.append(appendStoryText(element('span','trpg-prose-copy'),text)); return node;
 }
 export function speakerHeader(profile, open) {
     const p={...profile,...identity(profile)}, header=element('button','trpg-header'); header.type='button';
@@ -30,7 +45,7 @@ export function speakerHeader(profile, open) {
 export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imageFor, previousSpeaker = null) {
     for (const block of blocks) {
         if (block.type === 'narrative') { root.append(narrative(block.text)); continue; }
-        if (block.type === 'plain') { root.append(element('div', 'trpg-plain', block.text)); continue; }
+        if (block.type === 'plain') { root.append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
         const name = block.name || fallbackName || 'NPC';
         const profile = lookup.get(keyName(name)) || resolveNpc([...new Set(lookup.values())], name);
         // Canonical profile object also unifies aliases, without conflating
@@ -50,7 +65,7 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
                 header.prepend(image);
             });
         }
-        section.append(element('div', 'trpg-dialogue', block.text));
+        section.append(appendStoryText(element('div', 'trpg-dialogue'),block.text));
         root.append(section);
         previousSpeaker = speaker;
     }

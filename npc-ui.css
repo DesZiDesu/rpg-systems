@@ -35,6 +35,8 @@
 .trpg-prose-mark{position:absolute;top:15px;left:2px;color:#e4ca8b;font-size:15px;filter:drop-shadow(0 0 5px #e6b65338)}
 .trpg-prose-top{position:absolute;top:20px;left:29px;width:65px;height:1px;background:linear-gradient(90deg,#b99a5866,transparent);pointer-events:none}
 .trpg-prose-copy{display:block;padding-top:4px;position:relative;z-index:1;text-shadow:0 1px 3px #0008;white-space:pre-wrap}
+.trpg-chat .trpg-prose-copy em,.trpg-chat .trpg-dialogue em,.trpg-chat .trpg-plain em{font-style:italic;font-synthesis:style}
+.trpg-chat .trpg-prose-copy strong,.trpg-chat .trpg-dialogue strong,.trpg-chat .trpg-plain strong{font-weight:700;font-synthesis:weight}
 .trpg-prose-end{position:absolute;bottom:12px;left:9px;right:12px;height:8px;pointer-events:none;background:linear-gradient(#b7985566,#b7985566) left top/1px 6px no-repeat,linear-gradient(90deg,#b7985588,#b7985520 48%,transparent 75%) left 5px/100% 1px no-repeat}
 .trpg-prose-end:after{content:'';position:absolute;left:18px;top:3px;width:5px;height:5px;background:#cfb576;box-shadow:9px 0 #cfb57655,18px 0 #cfb57620}
 .trpg-prose-glow{position:absolute;z-index:0;inset:20px 40% 16px 8px;pointer-events:none;background:radial-gradient(ellipse at left,#dfb8590c,transparent 72%);opacity:.7}

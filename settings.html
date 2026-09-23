@@ -22,6 +22,10 @@
                 <input id="tretaresia-rpg-auto-continuity" type="checkbox" />
                 <span>Continue the same character state into new chats</span>
             </label>
+            <label class="checkbox_label" for="tretaresia-rpg-nsfw-enhance">
+                <input id="tretaresia-rpg-nsfw-enhance" type="checkbox" />
+                <span>NSFW Enhance / แนวการเขียนสำหรับผู้ใหญ่ (ปิดไว้เป็นค่าเริ่มต้น)</span>
+            </label>
             <label class="checkbox_label" for="tretaresia-rpg-show-scene-tracker">
                 <input id="tretaresia-rpg-show-scene-tracker" type="checkbox" />
                 <span>Scene Tracker above each AI reply / แสดงฉากในแชท</span>
@@ -50,6 +54,14 @@
                     <select id="tretaresia-rpg-language">
                         <option value="en">English</option>
                         <option value="th">ไทย</option>
+                    </select>
+                </label>
+                <label class="tretaresia-settings-field" for="tretaresia-rpg-roleplay-language">
+                    <span>Story language / ภาษาในเนื้อเรื่อง</span>
+                    <select id="tretaresia-rpg-roleplay-language">
+                        <option value="auto">Auto · ตามข้อความผู้เล่นล่าสุด</option>
+                        <option value="th">ไทย</option>
+                        <option value="en">English</option>
                     </select>
                 </label>
                 <label class="tretaresia-settings-field" for="tretaresia-rpg-interaction-mode">
@@ -97,6 +109,23 @@
                     <input id="tretaresia-rpg-notification-duration" type="number" min="1500" max="30000" step="500" value="6000" />
                 </label>
             </div>
+            <details class="tretaresia-adult-tags" id="tretaresia-rpg-adult-tags">
+                <summary>NSFW Tags / เลือกแนวที่ต้องการ <span data-adult-count></span></summary>
+                <p>เลือกเองทีละแท็ก · ปิดไว้ทั้งหมดเป็นค่าเริ่มต้น · ส่งเฉพาะชื่อแท็กที่เปิดเข้า AI เมื่อเปิด NSFW Enhance เท่านั้น</p>
+                <label for="tretaresia-rpg-adult-search">ค้นหาแท็ก / Search</label>
+                <input id="tretaresia-rpg-adult-search" data-adult-search type="search" placeholder="พิมพ์ชื่อแท็ก…" autocomplete="off" />
+                <div data-adult-list class="tretaresia-adult-tag-list"></div>
+                <form data-adult-create class="tretaresia-adult-create">
+                    <label for="tretaresia-rpg-adult-name">สร้างแท็กเอง / Custom tag</label>
+                    <input id="tretaresia-rpg-adult-name" data-adult-name type="text" maxlength="72" placeholder="ชื่อแนวที่ต้องการ" />
+                    <button class="menu_button" type="submit">เพิ่มแท็ก</button>
+                </form>
+                <label class="tretaresia-adult-import">นำเข้ารายชื่อแท็กจากไฟล์ JSON, TXT หรือ CSV (ชื่อหนึ่งรายการต่อบรรทัด)
+                    <input data-adult-file type="file" accept=".json,.txt,.csv,application/json,text/plain,text/csv" />
+                </label>
+                <small>รายการเริ่มต้นเป็นตัวอย่างสำหรับตัวละครผู้ใหญ่ ไม่ใช่รายการครบจาก nhentai.net · รายการที่นำเข้าจะเก็บในเบราว์เซอร์นี้ แต่แท็กที่เปิดจะเก็บเป็นค่าตั้งค่า</small>
+                <p data-adult-status role="status" aria-live="polite"></p>
+            </details>
             <div class="tretaresia-rpg-settings-note">
                 <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
                 <span>Every normal reply checks progression, power and combat proficiency, Origin skills, long-distance travel, regional currency, dungeons, NPC relationships/stats, Scene, inventory, quests, and Mailbox without a background AI request. Values change only when the story gives a reasonable basis; hidden power types obey Tretaresia sensing rules. Manual Sync and sent UI actions use a request. <strong data-tretaresia-request-usage>0 extension-started requests</strong>.</span>
@@ -121,7 +150,7 @@
                 </button>
                 <span class="tretaresia-rpg-ready-state">
                     <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                    Tretaresia engine 0.38.1 ready
+                    Tretaresia engine 0.39.0 ready
                 </span>
             </div>
         </div>
