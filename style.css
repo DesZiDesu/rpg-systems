@@ -103,3 +103,24 @@ tretaresia_patch {
 .tretaresia-adult-prompt textarea[readonly]{background:rgba(var(--tretaresia-accent-rgb),.025)}
 .tretaresia-adult-prompt button{margin:.5rem 0}
 [data-tretaresia-request-breakdown]{display:block;margin-top:.3rem;color:var(--tretaresia-muted);font-size:.7rem}
+.tretaresia-h-shell { display: grid; grid-template-columns: minmax(180px,230px) minmax(0,1fr); gap: 16px; margin-top: 18px; }
+.tretaresia-h-roster { display: flex; flex-direction: column; gap: 7px; max-height: 70dvh; overflow: auto; }
+.tretaresia-h-roster button { text-align: left; display: grid; gap: 4px; padding: 12px; color: var(--trpg-ink,#ece7da); background: rgba(255,255,255,.05); border: 1px solid rgba(214,180,88,.2); border-radius: 9px; }
+.tretaresia-h-roster button.is-active { border-color: var(--trpg-accent,#d6b458); }
+.tretaresia-h-roster small { opacity: .7; }
+.tretaresia-h-detail { min-width: 0; padding: 16px; border: 1px solid rgba(214,180,88,.3); border-radius: 12px; }
+.tretaresia-h-detail header h3 { margin: 6px 0; font-size: 1.4rem; }
+.tretaresia-h-progress { padding: 14px; margin: 14px 0; border: 1px solid rgba(214,180,88,.25); border-radius: 9px; }
+.tretaresia-h-progress > div:first-child { display: flex; justify-content: space-between; gap: 8px; }
+.tretaresia-h-track { height: 8px; margin: 12px 0; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.13); }
+.tretaresia-h-track i { display: block; height: 100%; background: #eaa050; }
+.tretaresia-h-hearts { display: flex; gap: 5px; }
+.tretaresia-h-hearts svg { width: 24px; height: 24px; fill: transparent; stroke: #a85a66; stroke-width: 1.5; }
+.tretaresia-h-hearts svg.is-filled { fill: #d55470; stroke: #f596ac; }
+.tretaresia-h-form details { margin: 12px 0; border-top: 1px solid rgba(214,180,88,.25); padding-top: 10px; }
+.tretaresia-h-form summary { cursor: pointer; font-weight: 700; }
+.tretaresia-h-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); gap: 10px; padding-top: 12px; }
+.tretaresia-h-field { display: grid; gap: 5px; min-width: 0; font-size: .8rem; }
+.tretaresia-h-field input,.tretaresia-h-field select { width: 100%; min-height: 36px; box-sizing: border-box; }
+.tretaresia-h-form > button { margin-top: 14px; }
+@media (max-width: 650px) { .tretaresia-h-shell { grid-template-columns: minmax(0,1fr); } .tretaresia-h-roster { flex-direction: row; max-height: none; overflow-x: auto; } .tretaresia-h-roster button { min-width: 145px; } .tretaresia-h-grid { grid-template-columns: minmax(0,1fr); } }

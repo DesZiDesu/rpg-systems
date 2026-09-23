@@ -20,6 +20,18 @@ test('packing stores only Chat NPCs and sparse Character deltas',()=>{
  assert.equal(stored.npcs.length,1);assert.deepEqual(stored.npcScopes.overrides.s1,{location:'Market',stats:{hp:80}});assert.equal(stored.npcScopes.bases,undefined);
  const restored=hydrateScopedNpcs(stored,library,owner);assert.equal(restored.npcs[1].location,'Market');assert.equal(restored.npcs[1].stats.level,5);assert.equal(library[0].location,'Library');
 });
+test('partner history and meeting status remain chat-specific for shared Character NPCs',()=>{
+ const shared=[{...library[0],met:false,hStats:{oralSexCount:0,loyaltyHearts:5}}];
+ const chat=hydrateScopedNpcs({npcs:[]},shared,owner);
+ chat.npcs[0].met=true;chat.npcs[0].hStats.oralSexCount=2;
+ const packed=packScopedNpcs(chat,shared,owner);
+ assert.deepEqual(packed.npcScopes.overrides.s1,{met:true,hStats:{oralSexCount:2}});
+ const restored=hydrateScopedNpcs(packed,shared,owner);
+ assert.equal(restored.npcs[0].hStats.loyaltyHearts,5);
+ assert.equal(restored.npcs[0].hStats.oralSexCount,2);
+ assert.equal(shared[0].met,false);
+ assert.equal(hydrateScopedNpcs({npcs:[]},shared,owner).npcs[0].met,false);
+});
 test('Character edits propagate to other chats while scene deltas stay local',()=>{
  const chatA=hydrateScopedNpcs({npcs:[]},library,owner);chatA.npcs[0].location='Town';
  const storedA=packScopedNpcs(chatA,library,owner),edited=[{...library[0],personality:'Wise',stats:{hp:100,level:6}}];

@@ -1,5 +1,12 @@
 # Tretaresia RPG System
 
+### v0.40.0 — Partner H-Stats and NPC continuity
+
+- The **H-Stats** tab selects the player or a met partner of any gender and stores the requested body, encounter, relationship, pregnancy and preference fields per character. Unestablished values remain blank. Infidelity has five stages with a progress bar; loyalty uses five SVG hearts. All requested fields are editable and can be updated in the same story patch through `playerHStats` or `npcHStats`. No H-Stats Condition field is added.
+- The NPC Codex lists only met friendly NPCs. Mere lore records remain in NPC Management; direct named dialogue registers a meeting. Existing records can be marked met manually.
+- NPC Management shows field-level green/orange SVG markers and old → new values for tracked changes, including relationships, combat stats, abilities and H-Stats. Character records compare this chat's live values with their shared baseline.
+- Player registration captures the actual name separately from title; NPC dialogue resolves a unique title to the existing named dossier. Existing NPC abilities can gain proficiency from confirmed training through `inc npcAbilities` without resetting other skill fields.
+
 ### v0.39.2 — Transparent, editable writing prompt and request counter
 
 - **View & edit writing prompt** in the extension drawer shows the exact RPG writing block built from the current language, NSFW toggle, selected tags and writing style. Users can replace the default style or reset it without changing their selected tags. The preview and typing never call AI; edits save on field change, not every keystroke. The preview does not include other SillyTavern prompts and the writing block is only sent after a player reply.
@@ -71,7 +78,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.39.2**
+**Current version: 0.40.0**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 

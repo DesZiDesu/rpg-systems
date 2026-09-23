@@ -8,8 +8,9 @@
     "css": "",
     "hooks": {"update": "onUpdate"},
     "author": "DesZiDesu",
-    "version": "0.39.2",
+    "version": "0.40.0",
     "generate_interceptor": "TretaresiaRpgGenerateInterceptor",
     "homePage": "https://github.com/DesZiDesu/rpg-systems",
     "auto_update": true
 }
+

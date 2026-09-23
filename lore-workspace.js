@@ -1,5 +1,5 @@
-import { element } from './npc-chat.js?v=0.39.2';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.39.2';
+import { element } from './npc-chat.js?v=0.40.0';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.40.0';
 
 export function createLoreWorkspace(panel, api, say) {
     let owner = '', dirty = false, query = '', editing = null, saving = false;
@@ -67,3 +67,4 @@ export function createLoreWorkspace(panel, api, say) {
     }
     return {canLeave,open(){owner=api.scopeInfo()?.key||'';query='';list();},reset(){dirty=false;editing=null;},refresh(){if(editing===null&&!dirty)list();}};
 }
+

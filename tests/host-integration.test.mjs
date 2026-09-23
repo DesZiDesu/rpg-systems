@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
-import { identity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from '../npc-core.js';
+import { identity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from '../npc-core.js';
+import {H_FIELDS,H_FIELD_MAP,hStats,updateHStat} from '../h-stats.js';
 import * as scopes from '../npc-scopes.js';
 import * as lore from '../lore-core.js';
 import * as archive from '../character-archive.js';
@@ -11,11 +12,11 @@ import {normalizeAdultSettings,writingPreferencePrompt} from '../nsfw-enhance.js
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,normalizeAdultSettings,writingPreferencePrompt,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
+const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,normalizeAdultSettings,writingPreferencePrompt,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
-vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,renderScene};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,parseRegistrationMessage};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -32,6 +33,68 @@ test('real model patch creates NPC in shared state and preserves manual appearan
 });
 test('hostile NPC remains in Management state but not friendly roster',()=>{
  const {next}=host.applyStatePatch(host.defaultState(),{ops:[['upsert','npcs',{id:'enemy',name:'Enemy',isHostile:true}]]});assert.equal(next.npcs.length,1);assert.equal(host.friendlyNpcs(next).length,0);
+});
+test('NPC Codex requires a recorded meeting, while all genders retain H-Stats',()=>{
+ const state=host.defaultState();state.npcs=[
+  host.npcProfile({id:'f',name:'Female',gender:'Female',met:false}),
+  host.npcProfile({id:'m',name:'Male',gender:'Male',met:true}),
+  host.npcProfile({id:'futa',name:'Futa',gender:'Futanari',met:true}),
+ ];
+ assert.deepEqual(host.metFriendlyNpcs(state).map(n=>n.id),['m','futa']);
+ assert.equal(state.npcs[0].hStats.penisSize,'');
+ assert.ok(Object.hasOwn(state.npcs[2].hStats,'vaginaQuality'));
+});
+test('player H-Stats render and survive confirmed story updates',()=>{
+ const base=host.defaultState();
+ const panel={innerHTML:''};
+ host.renderHStats(panel,base);
+ assert.match(panel.innerHTML,/data-form="npc-hstats"/);
+ assert.match(panel.innerHTML,/data-id="player"/);
+ assert.equal((panel.innerHTML.match(/<svg viewBox="0 0 24 24"/g)||[]).length,5);
+ const updated=host.applyStatePatch(base,{ops:[
+  ['set','playerHStats',{field:'loyaltyHearts',value:4}],
+  ['inc','playerHStats',{field:'oralSexCount',amount:1}],
+  ['set','playerHStats',{field:'pregnant',value:false}],
+ ]});
+ assert.equal(updated.accepted,3);
+ assert.equal(updated.next.player.hStats.loyaltyHearts,4);
+ assert.equal(updated.next.player.hStats.oralSexCount,1);
+ assert.equal(updated.next.player.hStats.pregnant,false);
+ host.renderHStats(panel,updated.next);
+ assert.match(panel.innerHTML,/Loyalty 4 of 5/);
+ assert.equal((panel.innerHTML.match(/class="is-filled"/g)||[]).length,4);
+});
+test('same-turn patches update NPC relationships, skills and H-Stats without resetting other values',()=>{
+ const base=host.defaultState();base.npcs=[host.npcProfile({id:'a',name:'Aria',met:true,trust:10,
+  abilities:[{id:'skill',name:'Aura Weaving',category:'Aura',level:'Novice',proficiency:20,description:'Established skill'}]})];
+ const result=host.applyStatePatch(base,{ops:[
+  ['inc','npcValues',{npcId:'a',field:'trust',amount:3}],
+  ['inc','npcAbilities',{npcId:'a',name:'Aura Weaving',amount:4}],
+  ['set','npcHStats',{npcId:'a',field:'loyaltyHearts',value:5}],
+  ['inc','npcHStats',{npcId:'a',field:'oralSexCount',amount:1}],
+  ['set','npcHStats',{npcId:'a',field:'pregnant',value:false}],
+ ]});
+ const npc=result.next.npcs[0];
+ assert.equal(result.accepted,5);assert.equal(npc.trust,13);
+ assert.equal(npc.abilities[0].proficiency,24);assert.equal(npc.abilities[0].category,'Aura');
+ assert.equal(npc.hStats.loyaltyHearts,5);assert.equal(npc.hStats.oralSexCount,1);assert.equal(npc.hStats.pregnant,false);
+ const later=host.applyStatePatch(result.next,{ops:[['upsert','npcs',{id:'a',name:'Aria',stats:{hp:88},hStats:{favoritePosition:'Established preference'}}],
+  ['upsert','npcAbilities',{npcId:'a',name:'Aura Weaving',proficiency:29}]]}).next.npcs[0];
+ assert.equal(later.hStats.oralSexCount,1);assert.equal(later.hStats.favoritePosition,'Established preference');
+ assert.equal(later.abilities[0].category,'Aura');assert.equal(later.abilities[0].proficiency,29);
+});
+test('NPC field history includes old and new relationship, stat, skill and H-Stats values',()=>{
+ const before=host.defaultState();before.npcs=[host.npcProfile({id:'a',name:'Aria',trust:10,stats:{hp:100},abilities:[{name:'Aura',proficiency:10}]})];
+ const after=structuredClone(before);after.npcs[0].trust=15;after.npcs[0].stats.hp=80;after.npcs[0].abilities[0].proficiency=20;after.npcs[0].hStats.loyaltyHearts=4;
+ const audit=host.appendStateAudit(after,before,'npc-test');
+ const paths=audit.changes.map(change=>change.path);
+ for(const path of ['npcs.a.trust','npcs.a.stats.hp','npcs.a.abilities','npcs.a.hStats.loyaltyHearts'])assert.ok(paths.includes(path),path);
+ assert.equal(audit.changes.find(change=>change.path==='npcs.a.trust').before,'10');
+ assert.equal(audit.changes.find(change=>change.path==='npcs.a.trust').after,'15');
+});
+test('registration keeps a character name separate from title',()=>{
+ const parsed=host.parseRegistrationMessage('Identity\nCharacter Name: Aria Vale\nGender: Female\nRace: Human\nTitle: Knight');
+ assert.equal(parsed.name,'Aria Vale');assert.equal(parsed.race,'Human');assert.equal(parsed.title,undefined);
 });
 test('patch extraction leaves story blocks intact and does not expose patch JSON',()=>{
  const parsed=host.extractStatePatch('<tr-dialogue name="Lysa">Hello.</tr-dialogue><!-- tretaresia_patch: {"ops":[["upsert","npcs",{"name":"Lysa"}]]} -->');
@@ -63,7 +126,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.39.2');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.40.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -134,8 +197,8 @@ test('new NPCs receive complete missing attributes; explicit zeros and partial u
 test('dialogue-only speakers are registered once, aliases and player names are excluded',()=>{
  const state=host.defaultState();state.player.name='Player';state.npcs=[host.npcProfile({name:'Alice',aliases:['Al']})];
  const message={mes:'<tr-dialogue name="Al">Hi</tr-dialogue><tr-dialogue name="Player">Hi</tr-dialogue><tr-dialogue name="New guard">Hi</tr-dialogue><tr-dialogue name="New guard">Again</tr-dialogue>'};
- assert.equal(host.registerStorySpeakers(state,message,context),1);assert.equal(host.registerStorySpeakers(state,message,context),0);
- assert.equal(state.npcs.length,2);assert.equal(state.npcs[1].stats.hp,100);
+ assert.equal(host.registerStorySpeakers(state,message,context),2);assert.equal(host.registerStorySpeakers(state,message,context),0);
+ assert.equal(state.npcs.length,2);assert.equal(state.npcs[0].met,true);assert.equal(state.npcs[1].met,true);assert.equal(state.npcs[1].stats.hp,100);
 });
 test('story Character destination persists in library and survives fresh chats without leaking to another card',async()=>{
  context.characters=[{name:'First',avatar:'first.png'},{name:'Second',avatar:'second.png'}];context.characterId=0;context.chatMetadata={};
@@ -171,7 +234,7 @@ test('Thai duplicate creation reuses canonical NPC without resetting its dossier
  const state={...host.defaultState(),npcs:[canonical]};
  const result=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'new-thai-id',name:'โคฮาคุ',background:'Replacement history',stats:{hp:100}}],['set','npcValues',{npcName:'โคฮาคุ',field:'trust',value:44}]]});
  assert.equal(result.next.npcs.length,1);const p=result.next.npcs[0];assert.equal(p.id,'kohaku');assert.equal(p.name,'Kohaku');assert.equal(p.background,'Established history');assert.equal(p.stats.hp,83);assert.equal(p.trust,44);assert.equal(p.npcScope,'character');assert.ok(p.aliases.includes('โคฮาคุ'));
- assert.equal(host.registerStorySpeakers(state,{mes:'<tr-dialogue name="โคฮาคุ">Hello</tr-dialogue>'},context),0);
+ assert.equal(host.registerStorySpeakers(state,{mes:'<tr-dialogue name="โคฮาคุ">Hello</tr-dialogue>'},context),1);assert.equal(state.npcs[0].met,true);
 });
 test('full name index includes NPCs outside the detailed context shortlist',()=>{
  const state={...host.defaultState(),npcs:Array.from({length:40},(_,i)=>host.npcProfile({id:`npc-${i}`,name:`NPC ${i}`,aliases:[`Alias ${i}`]}))};
