@@ -26,6 +26,16 @@
                 <input id="tretaresia-rpg-nsfw-enhance" type="checkbox" />
                 <span>NSFW Enhance / แนวการเขียนสำหรับผู้ใหญ่ (ปิดไว้เป็นค่าเริ่มต้น)</span>
             </label>
+            <details class="tretaresia-adult-prompt" id="tretaresia-rpg-adult-prompt">
+                <summary>ดูและปรับ NSFW prompt / View &amp; edit writing prompt</summary>
+                <p>ตัวอย่างด้านล่างแสดงส่วนคำสั่งการเขียนจาก RPG System ตามค่าและแท็กที่เลือกในแชทนี้ ไม่รวม prompt อื่นของ SillyTavern การเปิดดูหรือแก้ไขไม่เรียก AI</p>
+                <label for="tretaresia-rpg-adult-style-editor">แก้สไตล์การเขียน / Edit writing style</label>
+                <textarea id="tretaresia-rpg-adult-style-editor" data-adult-style-editor rows="5" maxlength="2000" spellcheck="false"></textarea>
+                <button type="button" class="menu_button" data-adult-style-reset>คืนค่าสไตล์เริ่มต้น / Reset style</button>
+                <label for="tretaresia-rpg-adult-prompt-preview">คำสั่งที่ใช้งานจริง / Effective prompt (อ่านอย่างเดียว)</label>
+                <p role="status" data-adult-prompt-status></p>
+                <textarea id="tretaresia-rpg-adult-prompt-preview" data-adult-prompt-preview rows="7" readonly spellcheck="false"></textarea>
+            </details>
             <label class="checkbox_label" for="tretaresia-rpg-show-scene-tracker">
                 <input id="tretaresia-rpg-show-scene-tracker" type="checkbox" />
                 <span>Scene Tracker above each AI reply / แสดงฉากในแชท</span>
@@ -128,7 +138,7 @@
             </details>
             <div class="tretaresia-rpg-settings-note">
                 <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
-                <span>Every normal reply checks progression, power and combat proficiency, Origin skills, long-distance travel, regional currency, dungeons, NPC relationships/stats, Scene, inventory, quests, and Mailbox without a background AI request. Values change only when the story gives a reasonable basis; hidden power types obey Tretaresia sensing rules. Manual Sync and sent UI actions use a request. <strong data-tretaresia-request-usage>0 extension-started requests</strong>.</span>
+                <span>คำขอ AI ที่ RPG System เริ่มเองในหน้านี้: <strong data-tretaresia-request-usage>0 ครั้ง</strong>. นี่เป็นยอดสะสม ไม่ใช่จำนวนครั้งต่อข้อความ ระบบติดตามข้อมูลส่วนใหญ่ใช้คำตอบแชตปกติ; ถ้า Scene Tracker ได้ข้อมูลไม่ครบ อาจเรียก AI เพิ่ม 1 ครั้งในเทิร์นนั้น Manual Sync, เจน NPC และคำสั่งจาก UI ก็อาจใช้คำขอ <small data-tretaresia-request-breakdown></small></span>
             </div>
             <details class="tretaresia-tracking-explainer">
                 <summary><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> How automatic UI updates work</summary>
@@ -150,7 +160,7 @@
                 </button>
                 <span class="tretaresia-rpg-ready-state">
                     <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                    Tretaresia engine 0.39.1 ready
+                    Tretaresia engine 0.39.2 ready
                 </span>
             </div>
         </div>

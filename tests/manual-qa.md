@@ -1,5 +1,10 @@
 # Host and iOS acceptance checks
 
+## v0.39.2 Writing prompt and request display
+
+- Open Extensions → Tretaresia RPG → View & edit writing prompt. With NSFW Enhance off, the preview must contain no adult-style text or chosen tags. Toggle it on, select a tag, switch story language and verify the preview updates without an AI request. Type a short replacement style and verify preview updates without saving on each keystroke; leave the textarea and check it persists after reload. Reset style, check the default returns and the selected tag stays selected. On iPhone, both textareas must fit the drawer width without pushing main chat sideways.
+- Before and after a normal role-play reply, inspect the RPG-initiated request counter. A fully reported scene needs no separate Scene completion call; a reply missing scene fields may add one. Manual Sync and UI actions should update their own breakdown. Reload the page and confirm the counter starts again at zero.
+
 ## v0.39.1 Localized adult tags
 
 - Set the extension interface language to Thai and open NSFW Tags. Every built-in tag should show a Thai explanation above its English name. Search for both `Kissing` and `การจูบ`; each finds the same toggle. Select it, change interface language to English without closing the drawer and confirm the list updates immediately and the selection remains checked. Return to Thai and confirm the saved tag is still `Kissing` and no save occurs simply from a search or list redraw. Imported and custom tags remain as entered.

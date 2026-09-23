@@ -1,15 +1,17 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.39.1';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.39.1';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.39.2';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.39.2';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.39.1';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.39.1';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.39.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.39.1';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.39.1';
-import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.39.1';
-import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.39.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.39.2';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.39.2';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.39.2';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.39.2';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.39.2';
+import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.39.2';
+import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.39.2';
+import { mountAdultPromptControls } from './nsfw-prompt-ui.js?v=0.39.2';
 
 let npcWorkspace = null;
+let adultPromptControls = null;
 let runtimeRequestUsage = null;
 const SAFE_MODE = /(?:^|[?&])tretaresia-safe=(?:1|true)(?:&|$)/i.test(globalThis.location?.search || '');
 
@@ -812,6 +814,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     nsfwEnhance: false,
     nsfwTags: [],
     nsfwCustomTags: [],
+    nsfwWritingStyle: '',
     roleplayLanguage: 'auto',
     showSceneTracker: true,
     npcGenerationScope: 'chat',
@@ -848,7 +851,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.39.1';
+const LAUNCHER_BIND_VERSION = '0.39.2';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -1210,15 +1213,9 @@ function getSettings() {
 
 function requestUsage() {
     if (runtimeRequestUsage) return runtimeRequestUsage;
-    const settings = getSettings();
-    const source = settings.requestUsage && typeof settings.requestUsage === 'object' ? settings.requestUsage : {};
     runtimeRequestUsage = {
-        total: Math.max(0, Math.trunc(number(source.total, 0, 0, Number.MAX_SAFE_INTEGER))),
-        manualSync: Math.max(0, Math.trunc(number(source.manualSync, 0, 0, Number.MAX_SAFE_INTEGER))),
-        hiddenAction: Math.max(0, Math.trunc(number(source.hiddenAction, 0, 0, Number.MAX_SAFE_INTEGER))),
-        visibleAction: Math.max(0, Math.trunc(number(source.visibleAction, 0, 0, Number.MAX_SAFE_INTEGER))),
-        lastReason: text(source.lastReason, '', 120),
-        lastAt: text(source.lastAt, '', 80),
+        total: 0, manualSync: 0, hiddenAction: 0, visibleAction: 0,
+        sceneCompletion: 0, npcDraft: 0, npcPortrait: 0, lastReason: '', lastAt: '',
     };
     return runtimeRequestUsage;
 }
@@ -1226,8 +1223,11 @@ function requestUsage() {
 function renderRequestUsage() {
     const usage = requestUsage();
     document.querySelectorAll('[data-tretaresia-request-usage]').forEach(output => {
-        output.textContent = `${usage.total} extension-started request${usage.total === 1 ? '' : 's'}`;
+        output.textContent = `${usage.total} ครั้งในหน้านี้`;
         output.title = usage.lastAt ? `Last: ${usage.lastReason || 'unknown'} · ${usage.lastAt}` : 'No separate extension request recorded yet.';
+    });
+    document.querySelectorAll('[data-tretaresia-request-breakdown]').forEach(output => {
+        output.textContent = `Scene Tracker ${usage.sceneCompletion} · Manual Sync ${usage.manualSync} · คำสั่ง RPG ${usage.hiddenAction + usage.visibleAction} · เจน NPC/ภาพ ${usage.npcDraft + usage.npcPortrait}`;
     });
 }
 
@@ -3179,6 +3179,7 @@ function updatePrompt(state = getState()) {
     const prompt = enabled ? statePrompt(state, { includeState: settings.injectState || settings.autoTrack, track: settings.autoTrack }) : '';
     const writing=activeChat?writingPreferencePrompt(settings,context.chat):'';
     context.setExtensionPrompt(PROMPT_KEY, [reference, prompt, writing].filter(Boolean).join('\n\n'), 1, 1, false, 0);
+    adultPromptControls?.refresh();
 }
 
 globalThis.TretaresiaRpgGenerateInterceptor = async function () {
@@ -9829,6 +9830,12 @@ async function addSettingsDrawer() {
     bindCheckbox('tretaresia-rpg-show-launcher', 'showWandLauncher', settings, syncLauncherVisibility);
     bindCheckbox('tretaresia-rpg-nsfw-enhance', 'nsfwEnhance', settings, updatePrompt);
     bindSettingControl('tretaresia-rpg-roleplay-language', 'roleplayLanguage', settings, updatePrompt);
+    adultPromptControls=mountAdultPromptControls(document.getElementById('tretaresia-rpg-adult-prompt'),{
+        settings,
+        getChat:()=>SillyTavern.getContext().chat||[],
+        save:()=>context.saveSettingsDebounced(),
+        refreshPrompt:updatePrompt,
+    });
     const tagControls = mountAdultTagControls(document.getElementById('tretaresia-rpg-adult-tags'),{
         settings,
         save:()=>context.saveSettingsDebounced(),
@@ -10056,7 +10063,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.39.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.39.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
