@@ -1,5 +1,12 @@
 # Tretaresia RPG System
 
+### v0.38.0 — Complete scene on every normal reply
+
+- With auto tracking enabled, request a full Scene Tracker record in the **same normal model response** on every turn, including the current place, region, story calendar/date, weather, Celsius temperature, participants, lighting, objective, safety and atmosphere. The latest saved scene is passed as continuity reference, and the scene is attached to its own reply.
+- If the reply omits scene details, make **one** bounded AI completion request for that reply only. Complete replies require no additional AI request. Character and chat switches during that request discard its result. Automatic scene completion uses no global settings save and joins the existing turn metadata save.
+- Calendar and extra environment facts appear in the reply card and a collapsible Scene panel. Missing facts stay visibly incomplete when the provider fails (including status 524); an AI guess is never presented as a verified real-world measurement. Manual Sync can retry the latest scene.
+- This mode asks the story model to establish coherent fictional details when the fiction lacks them. It may increase output tokens, and an incomplete turn can incur one extra request. A provider outage can still leave a partial scene.
+
 ### v0.37.1 — Scene Tracker synchronization
 
 - Same-reply `sceneTracker` location/environment facts now update canonical state; explicit state operations win. Scene-only patches are accepted, unknown values do not erase established facts, and non-atlas places can seed a scene.
@@ -42,7 +49,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.37.1**
+**Current version: 0.38.0**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {sceneSnapshot,renderSceneTracker} from '../scene-tracker.js';
+import {sceneSnapshot,renderSceneTracker,missingSceneFields,SCENE_REQUIRED_FIELDS} from '../scene-tracker.js';
 
 class Node {
     constructor(tag){this.tag=tag;this.children=[];this.attributes={};this.textContent='';}
@@ -33,4 +33,21 @@ test('mobile ledger uses configured Tretaresia theme and safe text nodes',()=>{
     const css=readFileSync(new URL('../npc-ui.css',import.meta.url),'utf8');
     assert.match(css,/\.trpg-scene-ledger\{[^}]*--sc:var\(--tretaresia-accent/);
     assert.match(css,/@media\(max-width:480px\)\{\.trpg-scene-ledger\{grid-template-columns:42px minmax\(0,1fr\)/);
+});
+test('a complete scene records the same full calendar and environment as Rune without placeholders',()=>{
+    const state={worldClock:{day:2,dayName:'Moonday',time:'09:25',phase:'Morning'},onboarding:{locationSeeded:true},
+        location:{place:'Moon Hall',region:'East Quarter',continent:'Central Continent'},
+        scene:{weather:'Rain',temperature:21,position:'By the east window'}};
+    const details={month:'Harvest',year:'1286',era:'Silver Age',calendar:'Lunar',season:'Spring',
+        lighting:'Lamps',participants:['Kohaku'],objective:'Find the book',safety:'Safe',atmosphere:'Quiet',elapsed:'0 minutes'};
+    const snapshot=sceneSnapshot(state,details);
+    assert.equal(SCENE_REQUIRED_FIELDS.length,21);
+    assert.deepEqual(missingSceneFields(snapshot),[]);
+    assert.equal(snapshot.calendar,'Lunar');
+    assert.ok(missingSceneFields({...snapshot,weather:'Unknown',participants:[],month:''}).includes('participants'));
+    globalThis.document={createElement:tag=>new Node(tag)};
+    const card=renderSceneTracker(snapshot,'th');
+    const collect=node=>[node.textContent,...node.children.flatMap(collect)].join(' ');
+    assert.match(collect(card),/Silver Age/);
+    assert.match(collect(card),/SCENE STATUS \/ LIVE/);
 });

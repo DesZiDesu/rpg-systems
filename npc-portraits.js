@@ -1,4 +1,4 @@
-import { clamp, cropGeometry } from './npc-core.js?v=0.37.1';
+import { clamp, cropGeometry } from './npc-core.js?v=0.38.0';
 
 export async function decodePortrait(blob) {
     if (!(blob instanceof Blob) || blob.size > 16 * 1024 * 1024) throw Error('ภาพต้องมีขนาดไม่เกิน 16 MB');

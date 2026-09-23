@@ -55,3 +55,9 @@ Known boundaries: images are device-local browser storage, not embedded into mod
 - In both NPC scopes, disable and re-enable a profile. Disabled records remain searchable but leave friendly social rosters. Try a translated spelling of a disabled existing name; it must not create or re-enable a copy. In Character scope, let a story change a dossier, inspect its current-chat differences, reset them, and confirm a fresh chat still uses the shared baseline.
 - With Lore in relevant mode and no keywords, mention a distinctive fact from one entry: only that entry should be sent. Pin an essential entry and verify it is always selected within the configured budget. Confirm all-mode remains available and existing mode selections are preserved.
 - Generate an NPC from text with a long chat: the request should use raw generation if the host exposes it. Adding a portrait must not send it until the image checkbox is selected. A 524 or invalid JSON must leave the draft untouched and show an actionable error. Drag color and range controls and confirm global settings save once when released.
+
+## v0.38.0 Scene Tracker
+
+- In a normal role-play chat, send a message that changes location and one that stays in the same room. Each answer should include a separate full scene card, while older cards retain their earlier place. Scene panel details should show calendar, season, lighting, participants and atmosphere.
+- Force a reply without a sceneTracker payload. The extension should make one scene-only request, save the result with that reply, and make no extra request for a fully populated normal reply.
+- If that request returns 524, the reply should still show the known facts and PARTIAL status, with no invented temperature. Switch chats while a request is pending and confirm that no result lands in the new chat.
