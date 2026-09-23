@@ -1,4 +1,4 @@
-import {ADULT_TAGS,TAG_LIMIT,CUSTOM_LIMIT,normalizeTag,uniqueTags,parseTagCatalog} from './nsfw-enhance.js?v=0.39.0';
+import {ADULT_TAGS,ADULT_TAG_THAI,TAG_LIMIT,CUSTOM_LIMIT,normalizeTag,uniqueTags,parseTagCatalog} from './nsfw-enhance.js?v=0.39.1';
 
 const CATALOG_KEY='tretaresia-rpg-adult-catalog-v1';
 const item=(tag,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;};
@@ -19,28 +19,30 @@ export async function mountAdultTagControls(root,{settings,save,refresh,storage}
  function render(){
   const all=uniqueTags([...ADULT_TAGS,...settings.nsfwCustomTags,...imported,...settings.nsfwTags],10000);
   const term=search.value.trim().normalize('NFKC').toLocaleLowerCase();
+  const thai=settings.language==='th';
   const chosen=new Set(settings.nsfwTags.map(t=>t.toLocaleLowerCase()));
   const custom=new Set(settings.nsfwCustomTags.map(t=>t.toLocaleLowerCase()));
-  const matches=all.filter(t=>t.toLocaleLowerCase().includes(term)).sort((a,b)=>Number(chosen.has(b.toLocaleLowerCase()))-Number(chosen.has(a.toLocaleLowerCase()))||a.localeCompare(b));
-  counter.textContent=`เปิด ${settings.nsfwTags.length}/${TAG_LIMIT} · พบ ${matches.length} จาก ${all.length} แท็ก`;
+  const matches=all.filter(t=>t.toLocaleLowerCase().includes(term)||ADULT_TAG_THAI[t]?.toLocaleLowerCase().includes(term)).sort((a,b)=>Number(chosen.has(b.toLocaleLowerCase()))-Number(chosen.has(a.toLocaleLowerCase()))||(thai?ADULT_TAG_THAI[a]||a:a).localeCompare(thai?ADULT_TAG_THAI[b]||b:b,thai?'th':'en'));
+  counter.textContent=thai?`เปิด ${settings.nsfwTags.length}/${TAG_LIMIT} · พบ ${matches.length} จาก ${all.length} แท็ก`:`Selected ${settings.nsfwTags.length}/${TAG_LIMIT} · ${matches.length} of ${all.length} tags`;
   list.replaceChildren();
   for(const tag of matches.slice(0,80)){
    const row=item('div');row.className='tretaresia-adult-tag';
    const label=item('label');label.className='checkbox_label';const check=item('input');check.type='checkbox';check.checked=chosen.has(tag.toLocaleLowerCase());
-   check.setAttribute('aria-label',`${check.checked?'ปิด':'เปิด'} ${tag}`);
+   const display=thai&&ADULT_TAG_THAI[tag]||tag;
+   check.setAttribute('aria-label',`${check.checked?(thai?'ปิด':'Disable'):(thai?'เปิด':'Enable')} ${display}`);
    check.addEventListener('change',()=>{
     const existing=settings.nsfwTags.filter(t=>t.toLocaleLowerCase()!==tag.toLocaleLowerCase());
     if(check.checked&&existing.length>=TAG_LIMIT){check.checked=false;status.textContent=`เลือกได้สูงสุด ${TAG_LIMIT} แท็ก เพื่อไม่ให้พรอมต์ยาวเกินไป`;return;}
     settings.nsfwTags=check.checked?[...existing,tag]:existing;persist();render();
-   });label.append(check,item('span',tag));row.append(label);
+   });const caption=item('span',display);if(thai&&ADULT_TAG_THAI[tag])caption.append(item('small',tag));label.append(check,caption);row.append(label);
    if(custom.has(tag.toLocaleLowerCase())){
     const remove=item('button','ลบ');remove.type='button';remove.className='menu_button tretaresia-adult-remove';remove.setAttribute('aria-label',`ลบแท็กที่สร้างเอง ${tag}`);
     remove.addEventListener('click',()=>{settings.nsfwCustomTags=settings.nsfwCustomTags.filter(t=>t.toLocaleLowerCase()!==tag.toLocaleLowerCase());settings.nsfwTags=settings.nsfwTags.filter(t=>t.toLocaleLowerCase()!==tag.toLocaleLowerCase());persist();render();});row.append(remove);
    }
    list.append(row);
   }
-  if(matches.length>80)list.append(item('p',`แสดง 80 รายการแรกจาก ${matches.length} · พิมพ์ชื่อเพื่อค้นหาเพิ่มเติม`));
-  if(!matches.length)list.append(item('p','ไม่พบแท็ก · ลองสร้างชื่อใหม่ด้านล่าง'));
+  if(matches.length>80)list.append(item('p',thai?`แสดง 80 รายการแรกจาก ${matches.length} · พิมพ์ชื่อเพื่อค้นหาเพิ่มเติม`:`Showing the first 80 of ${matches.length} · search to narrow the list`));
+  if(!matches.length)list.append(item('p',thai?'ไม่พบแท็ก · ลองสร้างชื่อใหม่ด้านล่าง':'No tags found · create a custom tag below'));
  }
  search.addEventListener('input',render);
  create.addEventListener('submit',event=>{
@@ -48,7 +50,7 @@ export async function mountAdultTagControls(root,{settings,save,refresh,storage}
   if(!tag){status.textContent='กรอกชื่อแท็กก่อน';return;}
   if(settings.nsfwCustomTags.length>=CUSTOM_LIMIT){status.textContent=`แท็กที่สร้างเองเต็ม ${CUSTOM_LIMIT} รายการ`;return;}
   const all=uniqueTags([...ADULT_TAGS,...settings.nsfwCustomTags,...imported]);
-  if(all.some(t=>t.toLocaleLowerCase()===tag.toLocaleLowerCase())){status.textContent='ชื่อแท็กนี้มีอยู่แล้ว · ค้นหาแล้วเปิดจากรายการ';search.value=tag;render();return;}
+  if(all.some(t=>t.toLocaleLowerCase()===tag.toLocaleLowerCase()||ADULT_TAG_THAI[t]===tag)){status.textContent='ชื่อแท็กนี้มีอยู่แล้ว · ค้นหาแล้วเปิดจากรายการ';search.value=tag;render();return;}
   settings.nsfwCustomTags.push(tag);name.value='';search.value=tag;status.textContent=`สร้าง ${tag} แล้ว · กดเปิดเมื่อพร้อม`;persist();render();
  });
  file.addEventListener('change',async()=>{
@@ -63,4 +65,5 @@ export async function mountAdultTagControls(root,{settings,save,refresh,storage}
   }catch(error){status.textContent=`นำเข้าไม่ได้: ${error.message}`;}
  });
  render();
+ return {refresh:render};
 }
