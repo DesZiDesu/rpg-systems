@@ -1,16 +1,22 @@
-import { element } from './npc-chat.js?v=0.36.0';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.36.0';
+import { element } from './npc-chat.js?v=0.37.0';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.37.0';
 
 export function createLoreWorkspace(panel, api, say) {
-    let owner = '', dirty = false, query = '', editing = null;
-    const canLeave = () => !dirty || confirm('ยังมี Lore ที่ไม่ได้บันทึก ต้องการทิ้งการแก้ไขนี้หรือไม่?');
+    let owner = '', dirty = false, query = '', editing = null, saving = false;
+    const canLeave = () => !saving && (!dirty || confirm('ยังมี Lore ที่ไม่ได้บันทึก ต้องการทิ้งการแก้ไขนี้หรือไม่?'));
     const entries = () => api.listLore?.() || [];
     const button = (label, action) => {const b=element('button','',label);b.type='button';b.addEventListener('click',action);return b;};
-    function save(next) {
+    async function save(next) {
         if(owner !== api.scopeInfo()?.key) throw Error('การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่');
-        api.persistLore(next,owner);
+        await api.persistLore(next,owner);
+        if(owner !== api.scopeInfo()?.key) throw Error('บันทึกการ์ดเดิมแล้ว แต่ตอนนี้เปิดการ์ดอื่นอยู่ กรุณาเปิด Lore Management ใหม่');
     }
-    function attempt(action){try{action();}catch(error){say(error.message);}}
+    async function attempt(action){
+        if(saving)return;
+        saving=true;panel.inert=true;
+        try{await action();}catch(error){say(error.message);}
+        finally{saving=false;panel.inert=false;}
+    }
     function list() {
         editing=null;dirty=false;panel.replaceChildren();
         const info=api.scopeInfo(), all=entries();
@@ -31,11 +37,13 @@ export function createLoreWorkspace(panel, api, say) {
         function renderRows(){rows.replaceChildren();const shown=all.filter(item=>`${item.title} ${item.content}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
             for(const item of shown){
                 const row=element('article','trpg-lore-row'),toggleLabel=element('label','trpg-lore-toggle'),toggle=element('input');toggle.type='checkbox';toggle.checked=item.enabled;toggle.setAttribute('aria-label',`เปิด Lore ${item.title}`);
-                toggle.addEventListener('change',()=>attempt(()=>{save(entries().map(v=>v.id===item.id?{...v,enabled:toggle.checked}:v));list();say('บันทึกการเปิด–ปิด Lore แล้ว');}));
-                toggle.addEventListener('change',()=>{toggle.checked=entries().find(v=>v.id===item.id)?.enabled===true;});
+                toggle.addEventListener('change',()=>attempt(async()=>{
+                    try{await save(entries().map(v=>v.id===item.id?{...v,enabled:toggle.checked}:v));list();say('บันทึกการเปิด–ปิด Lore แล้ว');}
+                    finally{toggle.checked=entries().find(v=>v.id===item.id)?.enabled===true;}
+                }));
                 toggleLabel.append(toggle,document.createTextNode(item.enabled?'เปิด':'ปิด'));
                 const open=button(item.title,()=>{if(canLeave())edit(item);});open.className='trpg-lore-title';
-                row.append(toggleLabel,open,element('p','trpg-lore-excerpt',item.content.slice(0,180)),button('ลบ',()=>{if(confirm(`ลบ Lore “${item.title}”?`))attempt(()=>{save(entries().filter(v=>v.id!==item.id));list();say('ลบ Lore แล้ว');});}));rows.append(row);
+                row.append(toggleLabel,open,element('p','trpg-lore-excerpt',item.content.slice(0,180)),button('ลบ',()=>{if(confirm(`ลบ Lore “${item.title}”?`))return attempt(async()=>{await save(entries().filter(v=>v.id!==item.id));list();say('ลบ Lore แล้ว');});}));rows.append(row);
             }
             if(!shown.length)rows.append(element('p','trpg-empty',query?'ไม่พบ Lore ที่ค้นหา':'ยังไม่มี Lore — กดสร้าง Lore ใหม่เพื่อเพิ่มข้อมูลโลก สถานที่ กฎ หรือประวัติ'));
         }
@@ -51,10 +59,10 @@ export function createLoreWorkspace(panel, api, say) {
         form.addEventListener('input',()=>{dirty=true;update();});form.addEventListener('change',()=>dirty=true);
         const actions=element('div','trpg-lore-tools'),submit=element('button','trpg-primary','บันทึก Lore');submit.type='submit';actions.append(submit,button('กลับรายการ',()=>{if(canLeave())list();}));
         form.append(element('h3','',item.id?'แก้ไข Lore':'สร้าง Lore ใหม่'),titleLabel,bodyLabel,counter,enabledLabel,keywordsLabel,alwaysLabel,actions);panel.append(form);
-        form.addEventListener('submit',event=>{event.preventDefault();attempt(()=>{
+        form.addEventListener('submit',event=>{event.preventDefault();return attempt(async()=>{
             const all=entries();if(item.id&&!all.some(v=>v.id===item.id))throw Error('Lore นี้ถูกลบแล้ว กรุณากลับรายการ');
             const next={id:item.id||(globalThis.crypto?.randomUUID?.()||`lore-${Date.now()}-${Math.random().toString(36).slice(2)}`),title:title.value.trim(),content:body.value.trim(),enabled:enabled.checked,keywords:keywords.value.split(',').map(v=>v.trim()).filter(Boolean),always:always.checked};
-            save(item.id?all.map(v=>v.id===item.id?next:v):[...all,next]);dirty=false;list();say('บันทึก Lore แล้ว — มีผลกับการเจนครั้งถัดไป');
+            await save(item.id?all.map(v=>v.id===item.id?next:v):[...all,next]);dirty=false;list();say('บันทึก Lore แล้ว — มีผลกับการเจนครั้งถัดไป');
         });});title.focus();
     }
     return {canLeave,open(){owner=api.scopeInfo()?.key||'';query='';list();},reset(){dirty=false;editing=null;},refresh(){if(editing===null&&!dirty)list();}};
