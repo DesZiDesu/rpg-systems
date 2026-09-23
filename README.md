@@ -1,5 +1,12 @@
 # Tretaresia RPG System
 
+### v0.39.0 — Opt-in adult writing preferences and narrative typography
+
+- **NSFW Enhance** is off by default in the SillyTavern extension settings drawer. Turning it on adds a concise writing preference prompt for adult, consensual scenes: character-specific dialogue, measured manga-style emphasis and Japanese-style sound brackets 「...」 for sounds that occur in the scene. No themes are active until selected. Turning it off immediately removes both the style instructions and all selected theme labels from the model prompt.
+- **Story language** is separate from interface language. Auto follows the latest user message's dominant Thai or English script; Thai and English overrides are available in the drawer. This also works with NSFW Enhance off when the NPC chat presentation is enabled.
+- **NSFW Tags** in the same drawer has search, per-tag toggles, user-created tags with deletion, and JSON/TXT/CSV catalog import. Only selected names (up to 50) and up to 100 custom tags enter extension settings; the optional imported catalog is saved locally in this browser and only selected labels reach the model. Search and imports do not trigger a global settings save. The built-in adult starter vocabulary is curated; it is **not** a complete or official nhentai.net catalog, which could not be retrieved for this release. A user-supplied tag list can be imported without copying an unverified external taxonomy into the extension.
+- Narrative, dialogue and untagged story text now render `*italic*` and `**bold**` as semantic text elements without interpreting model-generated HTML. Plain text and saved chats are preserved.
+
 ### v0.38.1 — NPC editor, reference images and generation
 
 - On phones, opening the keyboard collapses NPC Management's tabs, scope navigation and action bar so the focused field remains visible. They return when the keyboard closes; the editor keeps its scroll position and the unsaved draft.
@@ -55,7 +62,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.38.1**
+**Current version: 0.39.0**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 

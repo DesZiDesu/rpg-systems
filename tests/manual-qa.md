@@ -1,5 +1,12 @@
 # Host and iOS acceptance checks
 
+## v0.39.0 NSFW Enhance and bilingual narrative
+
+- Open SillyTavern Extensions → Tretaresia RPG drawer. Confirm NSFW Enhance starts off and no theme labels enter the model prompt. Switch on, select two tags, then switch off; selected tags should remain in the drawer while the style instructions and labels immediately leave the model prompt. Search by name and create, toggle and remove a custom tag.
+- Import a plain text file with one tag per line or a JSON array. Searching should find imported names without saving a large catalog into extension settings. Reload in the same browser: imported names should remain. On a second device the imported catalog may be absent, while previously selected labels remain visible as settings data.
+- With roleplay language Auto, send a Thai user message and then an English one; the next generated stories should follow each respective language, without changing the interface language. Verify the explicit Thai/English overrides and return to Auto.
+- In the chat presentation, check stored and fresh messages containing `*quiet*`, `**urgent**` and literal HTML-shaped text. Only the first two should become italic/bold; HTML-shaped text must stay inert. On an iPhone width, confirm sound brackets 「...」 and emphasized Thai text wrap within the chat column.
+
 ## v0.38.1 NPC creation and iPhone keyboard
 
 - In NPC Management on iPhone, focus the long brief, Name, Appearance and a lower attribute field. The keyboard should leave a compact title and most of the visible area for the focused input; scrolling should keep it above the keyboard. Dismiss the keyboard and confirm tabs, scope, AI/Save buttons and status return without losing the draft. Repeat with the keyboard's Next button.

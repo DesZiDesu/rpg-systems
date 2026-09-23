@@ -7,10 +7,11 @@ import * as scopes from '../npc-scopes.js';
 import * as lore from '../lore-core.js';
 import * as archive from '../character-archive.js';
 import {sceneSnapshot,sceneTrackerOperations,missingSceneFields} from '../scene-tracker.js';
+import {normalizeAdultSettings,writingPreferencePrompt} from '../nsfw-enhance.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
+const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,normalizeAdultSettings,writingPreferencePrompt,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
@@ -42,12 +43,27 @@ test('presentation prompt works independently; disabled tracking does not reques
  settings.chatPresentation=false;host.updatePrompt(host.defaultState());assert.equal(context.lastPrompt[1],'');
  settings.autoTrack=true;settings.chatPresentation=true;host.updatePrompt(host.defaultState());assert.match(context.lastPrompt[1],/must be upserted/);assert.doesNotMatch(context.lastPrompt[1],/upsert only relevant named friendly NPCs/);
 });
+test('host prompt sends adult preferences only while enabled and follows the player language',()=>{
+ const settings=host.getSettings();
+ const before={injectState:settings.injectState,autoTrack:settings.autoTrack,chatPresentation:settings.chatPresentation,nsfwEnhance:settings.nsfwEnhance,nsfwTags:settings.nsfwTags,roleplayLanguage:settings.roleplayLanguage};
+ const previousChat=context.chat;
+ try{
+  settings.injectState=false;settings.autoTrack=false;settings.chatPresentation=false;
+  settings.nsfwEnhance=false;settings.nsfwTags=['Romance'];settings.roleplayLanguage='auto';
+  host.updatePrompt(host.defaultState());assert.equal(context.lastPrompt[1],'');
+  settings.nsfwEnhance=true;context.chat=[{is_user:true,mes:'ตอบเป็นภาษาไทยนะ'}];
+  host.updatePrompt(host.defaultState());assert.match(context.lastPrompt[1],/Write narrative and character dialogue in Thai/);
+  assert.match(context.lastPrompt[1],/"Romance"/);
+  context.chat=[{is_user:true,mes:'Please continue in English.'}];
+  host.updatePrompt(host.defaultState());assert.match(context.lastPrompt[1],/Write narrative and character dialogue in English/);
+ }finally{Object.assign(settings,before);context.chat=previousChat;}
+});
 test('manual profiles reach the canonical model prompt without portrait bytes',()=>{
  const state=host.defaultState();state.npcs=[host.npcProfile({id:'lysa',name:'Lysa',personality:'Calm',appearance:'Silver hair',background:'Archive',goals:'Book',speechStyle:'Formal',hasPortrait:true})];
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.38.1');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.39.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

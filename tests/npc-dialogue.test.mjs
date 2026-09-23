@@ -56,3 +56,10 @@ test('player/system/unstructured turns reset continuation; changed prior speaker
  assert.equal(priorDialogueSpeaker([{mes:dialogue('Bob','One')},{}],1,lookup,s=>s),b);
  const root=new Node('root');renderStoryBlocks(root,parseStory(dialogue('Alice','Two')),lookup,'Narrator',()=>{},async()=>null,b);assert.equal(find(root,'trpg-header').length,1);
 });
+test('narrative and dialogue render only safe bold and italic nodes',()=>{
+ const {root}=draw('<tr-narrative>*soft* and **urgent** &lt;img src=x onerror=alert(1)&gt;</tr-narrative>'+dialogue('Alice','*whisper* **NOW**'));
+ const prose=find(root,'trpg-prose-copy')[0],speech=find(root,'trpg-dialogue')[0];
+ assert.deepEqual(prose.children.filter(n=>n.tag).map(n=>[n.tag,n.textContent]),[['em','soft'],['strong','urgent']]);
+ assert.deepEqual(speech.children.filter(n=>n.tag).map(n=>[n.tag,n.textContent]),[['em','whisper'],['strong','NOW']]);
+ assert.equal(find(root,'img').length,0);
+});
