@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mountAdultTagControls} from '../nsfw-tags-ui.js';
+import {ADULT_TAGS,ADULT_TAG_THAI} from '../nsfw-enhance.js';
 
 class Element {
  constructor(tag='div'){this.tag=tag;this.children=[];this.listeners={};this.value='';this.files=[];this.textContent='';this.checked=false;}
@@ -28,4 +29,19 @@ test('drawer search, custom toggles and catalog import save only selected/custom
  const file=get('file');file.files=[{size:17,async text(){return 'New tag\nRomance'}}];await file.listeners.change();
  assert.deepEqual(stored,['New tag','Romance']);assert.deepEqual(settings.nsfwTags,['Romance']);assert.equal(saves,2);assert.equal(refreshes,2);
  search.value='New tag';search.listeners.input();assert.equal(list.children.length,1);
+});
+
+test('every built-in tag has a Thai explanation; changing UI language preserves the selected key',async()=>{
+ assert.deepEqual(Object.keys(ADULT_TAG_THAI).sort(),[...ADULT_TAGS].sort());
+ const {root,get}=setup(),settings={language:'th',nsfwTags:[],nsfwCustomTags:[]};let saves=0;
+ const controls=await mountAdultTagControls(root,{settings,save(){saves++},refresh(){},storage:{async getItem(){return[]}}});
+ const search=get('search'),list=get('list');search.value='การจูบ';search.listeners.input();
+ assert.equal(list.children.length,1);
+ const row=list.children[0],caption=row.children[0].children[1];
+ assert.equal(caption.textContent,'การจูบ');assert.equal(caption.children[0].textContent,'Kissing');
+ const check=row.children[0].children[0];check.checked=true;check.listeners.change();
+ assert.deepEqual(settings.nsfwTags,['Kissing']);assert.equal(saves,1);
+ settings.language='en';controls.refresh();
+ assert.equal(list.children[0].children[0].children[1].textContent,'Kissing');
+ assert.deepEqual(settings.nsfwTags,['Kissing']);assert.equal(saves,1);
 });

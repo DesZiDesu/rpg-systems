@@ -1,5 +1,9 @@
 # Host and iOS acceptance checks
 
+## v0.39.1 Localized adult tags
+
+- Set the extension interface language to Thai and open NSFW Tags. Every built-in tag should show a Thai explanation above its English name. Search for both `Kissing` and `การจูบ`; each finds the same toggle. Select it, change interface language to English without closing the drawer and confirm the list updates immediately and the selection remains checked. Return to Thai and confirm the saved tag is still `Kissing` and no save occurs simply from a search or list redraw. Imported and custom tags remain as entered.
+
 ## v0.39.0 NSFW Enhance and bilingual narrative
 
 - Open SillyTavern Extensions → Tretaresia RPG drawer. Confirm NSFW Enhance starts off and no theme labels enter the model prompt. Switch on, select two tags, then switch off; selected tags should remain in the drawer while the style instructions and labels immediately leave the model prompt. Search by name and create, toggle and remove a custom tag.

@@ -1,5 +1,9 @@
 # Tretaresia RPG System
 
+### v0.39.1 — Thai descriptions for built-in NSFW tags
+
+- The 78 built-in tags show short Thai explanations with their original English names when the interface language is Thai. English mode shows the original names. Search finds either language, and changing the interface language immediately updates the list without changing selected tags or model prompt keys. Imported and custom tags keep the names their creator supplied.
+
 ### v0.39.0 — Opt-in adult writing preferences and narrative typography
 
 - **NSFW Enhance** is off by default in the SillyTavern extension settings drawer. Turning it on adds a concise writing preference prompt for adult, consensual scenes: character-specific dialogue, measured manga-style emphasis and Japanese-style sound brackets 「...」 for sounds that occur in the scene. No themes are active until selected. Turning it off immediately removes both the style instructions and all selected theme labels from the model prompt.
@@ -62,7 +66,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.39.0**
+**Current version: 0.39.1**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 
