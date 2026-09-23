@@ -1,10 +1,11 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.36.0';
-import { sceneSnapshot } from './scene-tracker.js?v=0.36.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.37.0';
+import { sceneSnapshot } from './scene-tracker.js?v=0.37.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.36.0';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.36.0';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.36.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.36.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.37.0';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.37.0';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.37.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.37.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.37.0';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
@@ -841,7 +842,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.36.0';
+const LAUNCHER_BIND_VERSION = '0.37.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -858,6 +859,8 @@ let characterLifeSkillSyncTimer = null;
 let characterLifeCompatibilityTimer = null;
 let characterLifeCompatibilityOptions = { save: false };
 let auraColorSettingTimer = 0;
+let archiveMigration = null;
+const pendingInterfaceSettings = new WeakSet();
 
 const TRANSLATIONS = {
     th: {
@@ -973,6 +976,17 @@ let introGateTimer = null;
 let introFinishTimer = null;
 let aiSyncInProgress = false;
 let pendingSave = Promise.resolve();
+
+function saveCurrentChatMetadata(context = SillyTavern.getContext()) {
+    const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata;
+    pendingSave = pendingSave.catch(() => undefined).then(async () => {
+        const active = SillyTavern.getContext();
+        if (!chatId || active.getCurrentChatId?.() !== chatId || active.chatMetadata !== metadata) return false;
+        await active.saveMetadata();
+        return true;
+    });
+    return pendingSave;
+}
 let syncQueue = Promise.resolve();
 let manualSyncQueued = false;
 let tabTransitionToken = 0;
@@ -2192,7 +2206,9 @@ function getState() {
 }
 
 function activeCharacterLore() {
-    return characterLore(getSettings(), characterOwner(SillyTavern.getContext())?.key);
+    const context = SillyTavern.getContext(), owner = characterOwner(context)?.key;
+    const stored = readCharacterArchive(context, getSettings(), owner, 'lore');
+    return characterLore({loreCharacterLibraries:{[owner]:stored}}, owner);
 }
 
 function activeLorePrompt(request = '', overrides = {}) {
@@ -2207,18 +2223,31 @@ function persistCharacterLoreOptions(options, expectedOwner) {
     context.saveSettingsDebounced(); updatePrompt();
 }
 
-function persistCharacterLore(entries, expectedOwner) {
+async function persistCharacterLore(entries, expectedOwner) {
     const context = SillyTavern.getContext();
-    writeCharacterLore(getSettings(), entries, expectedOwner, characterOwner(context)?.key);
-    context.saveSettingsDebounced();
+    const owner = characterOwner(context)?.key;
+    const staged = {loreCharacterOptions:{[owner]:loreOptions(getSettings(), owner)}};
+    const normalized = writeCharacterLore(staged, entries, expectedOwner, owner);
+    await writeCharacterArchive(context, getSettings(), owner, 'lore', normalized);
     updatePrompt();
 }
 
 function characterNpcLibrary(owner = characterOwner(SillyTavern.getContext())?.key) {
     if (!owner) return [];
-    const saved = getSettings().npcCharacterLibraries?.[owner];
+    const saved = readCharacterArchive(SillyTavern.getContext(), getSettings(), owner, 'npcs');
     return (Array.isArray(saved) ? saved : []).slice(0, 200)
         .map(npc => npcProfile({ ...npc, npcScope: 'character', npcOwner: owner })).filter(Boolean);
+}
+
+function scheduleArchiveMigration() {
+    if (archiveMigration) return archiveMigration;
+    const context = SillyTavern.getContext();
+    archiveMigration = migrateCharacterArchives(context, getSettings()).then(() => {
+        updatePrompt();
+        npcWorkspace?.refresh();
+    }).catch(error => console.warn('[Tretaresia RPG] Character archive migration was deferred.', error))
+        .finally(() => { archiveMigration = null; });
+    return archiveMigration;
 }
 
 function storedNpcState(state) {
@@ -2234,9 +2263,9 @@ async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner)
         const settings = getSettings();
         const removed = characterNpcLibrary(owner).filter(p => !npcs.some(n => n.id === p.id)).map(p => p.id);
         const current = getState();
-        settings.npcCharacterLibraries ||= {};
-        settings.npcCharacterLibraries[owner] = npcs.map(npc => npcProfile({ ...npc, npcScope: 'character', npcOwner: owner }));
-        context.saveSettingsDebounced();
+        const archive = npcs.map(npc => npcProfile({ ...npc, npcScope: 'character', npcOwner: owner }));
+        await writeCharacterArchive(context, settings, owner, 'npcs', archive);
+        if (context.getCurrentChatId?.() !== expectedChat || characterOwner(context)?.key !== expectedOwner) return true;
         if (removed.length) {
             retainNpcDeletions(turnHistory(context, false), removed);
             const cleaned = pruneNpcReferences(current, removed);
@@ -2254,14 +2283,11 @@ async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner)
     return persistState(hydrateScopedNpcs(stored, characterNpcLibrary(), owner), source);
 }
 
-function routeStoryNpcState(state, previous, context) {
+async function routeStoryNpcState(state, previous, context) {
     const owner = characterOwner(context)?.key;
     const routed = routeNewStoryNpcs(state, previous, characterNpcLibrary(owner), owner, getSettings().npcGenerationScope);
     if (routed.added) {
-        const settings = getSettings();
-        settings.npcCharacterLibraries ||= {};
-        settings.npcCharacterLibraries[owner] = routed.library;
-        context.saveSettingsDebounced();
+        await writeCharacterArchive(context, getSettings(), owner, 'npcs', routed.library);
     }
     if (routed.overflow) notify('warning', 'Character archive is full. New NPCs were kept in Chat; no records were discarded.');
     return routed.state;
@@ -2521,9 +2547,10 @@ function appendStateAudit(state, previous, source = 'manual') {
     return entry;
 }
 
-async function persistState(candidate, source = 'manual') {
+async function persistState(candidate, source = 'manual', { deferMetadataSave = false } = {}) {
     const context = SillyTavern.getContext();
-    if (!context.getCurrentChatId?.()) {
+    const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata, owner = characterOwner(context)?.key;
+    if (!chatId) {
         notify('warning', 'Open a character or group chat before changing the role-play state.');
         return false;
     }
@@ -2560,15 +2587,20 @@ async function persistState(candidate, source = 'manual') {
     if (['npc-management', 'character-life-import'].includes(source)) {
         retainManualNpcEdits(turnHistory(context, false), previous, state);
     }
-    if (['inline-patch+turn-reconcile', 'turn-reconcile-fallback', 'manual-ai-patch'].includes(source)) state = routeStoryNpcState(state, previous, context);
+    if (['inline-patch+turn-reconcile', 'turn-reconcile-fallback', 'manual-ai-patch'].includes(source)) {
+        try { state = await routeStoryNpcState(state, previous, context); }
+        catch (error) { console.warn('[Tretaresia RPG] The Character archive could not be saved; new NPCs remain in this chat.', error); }
+    }
+    if (context.getCurrentChatId?.() !== chatId || context.chatMetadata !== metadata || characterOwner(context)?.key !== owner) return false;
     context.chatMetadata[METADATA_KEY] = storedNpcState(state);
     updatePrompt(state);
     renderAll(state);
     npcWorkspace?.refresh();
-    pendingSave = pendingSave.catch(() => undefined).then(() => context.saveMetadata());
-    await pendingSave;
-    writeContinuitySnapshot(state);
-    queueCharacterLifeSkillSync(state);
+    if (!deferMetadataSave) {
+        if (!await saveCurrentChatMetadata(context)) return false;
+        writeContinuitySnapshot(state);
+        queueCharacterLifeSkillSync(state);
+    }
     return true;
 }
 
@@ -2658,7 +2690,7 @@ function assistantCheckpoint(messageId, { create = false } = {}) {
     return entry || null;
 }
 
-async function persistExactState(snapshot, source) {
+async function persistExactState(snapshot, source, { deferMetadataSave = false } = {}) {
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.() || !snapshot) return false;
     const state = normalize(clone(snapshot));
@@ -2668,10 +2700,11 @@ async function persistExactState(snapshot, source) {
     updatePrompt();
     renderAll();
     npcWorkspace?.refresh();
-    pendingSave = pendingSave.catch(() => undefined).then(() => context.saveMetadata());
-    await pendingSave;
-    writeContinuitySnapshot(state);
-    queueCharacterLifeSkillSync(state);
+    if (!deferMetadataSave) {
+        if (!await saveCurrentChatMetadata(context)) return false;
+        writeContinuitySnapshot(state);
+        queueCharacterLifeSkillSync(state);
+    }
     return true;
 }
 
@@ -2682,15 +2715,18 @@ async function replaceAssistantTurnState(messageId, { reuseVariant = false, reas
     const message = context.chat?.[Number(messageId)];
     const variantKey = reuseVariant ? assistantVariantKey(message) : '';
     const storedVariant = variantKey ? entry.variants?.[variantKey] : null;
-    await persistExactState(entry.baseState, `turn-rollback-${reason}`);
+    await persistExactState(entry.baseState, `turn-rollback-${reason}`, {deferMetadataSave:true});
     entry.activeVariant = '';
     entry.applied = false;
     if (storedVariant?.state) {
-        await persistExactState(storedVariant.state, `turn-variant-${reason}`);
+        await persistExactState(storedVariant.state, `turn-variant-${reason}`, {deferMetadataSave:true});
         entry.activeVariant = variantKey;
         entry.applied = true;
     }
-    await SillyTavern.getContext().saveMetadata?.();
+    if (!await saveCurrentChatMetadata(context)) return false;
+    const finalState = getState();
+    writeContinuitySnapshot(finalState);
+    queueCharacterLifeSkillSync(finalState);
     globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:turn-rollback', {
         detail: { messageId: Number(messageId), reason, restoredVariant: Boolean(storedVariant?.state) },
     }));
@@ -5148,7 +5184,11 @@ function onInterfaceSettingChange(event) {
     if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
     const key = control.dataset.uiSetting;
     const settings = getSettings();
-    settings[key] = control.type === 'checkbox' ? control.checked : control.type === 'range' ? Number(control.value) : control.value;
+    const next = control.type === 'checkbox' ? control.checked : control.type === 'range' ? Number(control.value) : control.value;
+    const changed = settings[key] !== next;
+    if (!changed && !pendingInterfaceSettings.has(control)) return;
+    settings[key] = next;
+    if (changed && event.type === 'input') pendingInterfaceSettings.add(control);
     if (key === 'themePreset' && COLOR_PRESETS[settings.themePreset]) {
         const preset = COLOR_PRESETS[settings.themePreset];
         settings.accentColor = preset.accent;
@@ -5157,7 +5197,10 @@ function onInterfaceSettingChange(event) {
         settings.surfaceColor = preset.surface;
     }
     if (['accentColor', 'accentAltColor', 'inkColor', 'surfaceColor'].includes(key)) settings.themePreset = 'custom';
-    SillyTavern.getContext().saveSettingsDebounced();
+    if (event.type === 'change' && (changed || pendingInterfaceSettings.has(control))) {
+        pendingInterfaceSettings.delete(control);
+        SillyTavern.getContext().saveSettingsDebounced();
+    }
     if (control.type === 'range') {
         const output = control.closest('.tretaresia-control-field')?.querySelector('output');
         if (output) output.textContent = control.value + '%';
@@ -9268,7 +9311,7 @@ async function processAssistantPatch(messageId, generationType = '') {
     if (!settings.autoTrack) {
         processedAssistantMessages.set(message, incomingVariant);
         await rememberScene(messageId, message, getState());
-        await context.saveMetadata?.();
+        await saveCurrentChatMetadata(context);
         setSync('disabled', tr('Reply received'), tr('Tracking is off'));
         return;
     }
@@ -9288,7 +9331,7 @@ async function processAssistantPatch(messageId, generationType = '') {
         processedAssistantMessages.set(message, variantKey);
         if (!sceneForMessage(messageId, message)) {
             await rememberScene(messageId, message, recordedVariant.state, extracted.patch?.sceneTracker);
-            await context.saveMetadata?.();
+            await saveCurrentChatMetadata(context);
         }
         setSync('unchanged', tr('State updated'), settings.language === 'th' ? 'คำตอบเวอร์ชันนี้ถูกบันทึกแล้ว จึงไม่หักค่าซ้ำ' : 'This reply variant is already recorded; no values were applied twice.');
         return;
@@ -9316,7 +9359,8 @@ async function processAssistantPatch(messageId, generationType = '') {
         reconciled.changes += registerStorySpeakers(reconciled.next, message, context, base);
         const totalChanges = accepted + reconciled.changes;
         if (totalChanges) {
-            await persistState(reconciled.next, accepted ? 'inline-patch+turn-reconcile' : 'turn-reconcile-fallback');
+            const saved = await persistState(reconciled.next, accepted ? 'inline-patch+turn-reconcile' : 'turn-reconcile-fallback', {deferMetadataSave:true});
+            if (!saved) return;
             await rememberScene(messageId, message, getState(), extracted.patch?.sceneTracker);
             if (checkpoint) {
                 checkpoint.variants[variantKey] = {
@@ -9326,8 +9370,10 @@ async function processAssistantPatch(messageId, generationType = '') {
                 for (const stale of variantKeys.slice(0, Math.max(0, variantKeys.length - 6))) delete checkpoint.variants[stale];
                 checkpoint.activeVariant = variantKey;
                 checkpoint.applied = true;
-                await SillyTavern.getContext().saveMetadata?.();
             }
+            if (!await saveCurrentChatMetadata(context)) return;
+            writeContinuitySnapshot(getState());
+            queueCharacterLifeSkillSync(getState());
             showEventNotifications(notifications);
             setSync('success', tr('State updated'), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${totalChanges} รายการแล้ว` : `${totalChanges} confirmed change${totalChanges === 1 ? '' : 's'} saved.`);
             console.info(`[Tretaresia RPG] Applied ${accepted} inline operation(s) plus ${reconciled.changes} deterministic reconciliation change(s).`);
@@ -9341,12 +9387,14 @@ async function processAssistantPatch(messageId, generationType = '') {
                 for (const stale of variantKeys.slice(0, Math.max(0, variantKeys.length - 6))) delete checkpoint.variants[stale];
                 checkpoint.activeVariant = variantKey;
                 checkpoint.applied = false;
-                await SillyTavern.getContext().saveMetadata?.();
             }
+            await saveCurrentChatMetadata(context);
             setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
         }
     } catch (error) {
         console.error('[Tretaresia RPG] Inline state patch failed.', error);
+        try { await saveCurrentChatMetadata(context); }
+        catch (saveError) { console.warn('[Tretaresia RPG] Could not save the turn checkpoint.', saveError); }
         setSync('error', tr('Sync unavailable'));
     }
 }
@@ -9724,6 +9772,7 @@ async function addSettingsDrawer() {
 function bindChatEvents() {
     const { eventSource, eventTypes } = SillyTavern.getContext();
     eventSource.on(eventTypes.CHAT_CHANGED, async () => {
+        void scheduleArchiveMigration();
         processedAssistantMessages = new WeakMap();
         assistantRollbackQueue = Promise.resolve();
         cleanupAudio();
@@ -9778,8 +9827,8 @@ function bindChatEvents() {
         if (!generationType || generationType === 'normal') updatePrompt();
     });
     eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => {
+        if (['first_message', 'quiet', 'impersonate'].includes(generationType)) return;
         assistantCheckpoint(Number(messageId), { create: true });
-        pendingSave = pendingSave.catch(() => undefined).then(() => SillyTavern.getContext().saveMetadata());
         scheduleAssistantPatch(messageId, generationType, 0);
         scheduleAssistantPatch(messageId, generationType, 120);
     });
@@ -9882,6 +9931,7 @@ async function initialize() {
             }
         });
         bindNewChatSummaryCompatibility();
+        void scheduleArchiveMigration();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
         try { await catchUpPlayerIdentity(); }
@@ -9899,7 +9949,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.36.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.37.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

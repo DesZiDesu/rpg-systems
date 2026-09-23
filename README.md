@@ -1,5 +1,12 @@
 # Tretaresia RPG System
 
+### v0.37.0 — Smaller settings saves
+
+- Character NPC and Lore archives now live in the selected character card's extension fields. Existing archives are copied from global extension settings in the background. Each old archive remains readable until its card write succeeds; failed migrations leave the original intact. After confirmation, its old settings copy is removed. Archives now travel with exported character cards, which can increase their file size. Chat-specific NPC developments continue to live in chat metadata.
+- A normal assistant turn now saves its checkpoint, scene, and reconciled state together at the end of processing instead of writing chat metadata at each intermediate step. Restoring a reply variant likewise saves the final state once.
+- Theme sliders and colors update the preview while being adjusted and request one global settings save when the control is released. Character Lore save errors keep the editor and draft available for retry.
+- These changes reduce the extension's contribution to settings requests; they cannot fix a rejected SillyTavern settings request caused by an expired session, CSRF error, unavailable server, or another extension. Update normally and reload; do not clear Safari website data.
+
 ### v0.36.0 — Scene Tracker, NPC baselines, and lighter generation
 
 - The former **World Map** tab is replaced by the **Scene Tracker**. The chosen horizontal archive panel appears above each new AI reply, fits the width of a mobile chat, expands for details, and follows the configured Tretaresia accent, background, and text colors. Turn and swipe variants keep separate compact scene snapshots in chat metadata. The existing Scene tab still edits the location and clock. Old map data remains in saved chats so upgrading does not erase it.
@@ -21,14 +28,14 @@
 
 Open **NPC Management → Lore Management** to create, edit, search, delete, or toggle lore entries. Each entry has a title and content. Enabled entries are included on every generation (no keyword trigger), in main chat, NPC generation/fill/attribute repair, and manual RPG sync. Disabled entries remain stored but are excluded from future prompts; toggling cannot remove facts already present in chat history.
 
-Lore is saved in extension settings, bound to the selected character card's filename, and shared across its chats. Other cards and group chats do not receive it. It is not embedded in exported character PNGs. A changed card filename has a different binding. Existing lore starts empty; add your world's facts rather than loading invented canon.
+Since v0.37.0, Lore is saved in the selected character card's extension fields and shared across its chats. Older extension-settings archives migrate automatically after the card accepts a write. Other cards and group chats do not receive it. Exported cards now include their Lore, so large archives increase exported file size. Existing lore starts empty; add your world's facts rather than loading invented canon.
 
 Storage limits: 200 entries per card and 12,000 characters per entry. The active title/content budget now defaults to 60,000 characters and is configurable in v0.35.0. Over-limit saves report an error without replacing saved data. Lore drafts warn before closing/switching tabs; a card change prevents a stale save. The UI displays the active count and context size. Model context limits still apply.
 
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.36.0**
+**Current version: 0.37.0**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 
@@ -45,9 +52,9 @@ Automated coverage includes the existing scope and Safari-safe-mode regressions,
 
 - Management opens to a full-width **vertical list**, including an empty state when no NPC exists. Search covers names, aliases, roles and factions; pagination shows 20 records per page. Select a row to read its dossier, then choose **Edit**. Creation is an explicit separate action. Mobile no longer turns NPCs into horizontal tabs above an editor.
 - The scope selector chooses **Chat** (this chat only) or **Character** (every chat using the same character card). Character ownership uses the card's avatar/filename, not its display name or array index. Group chats have Chat scope only because no single card is selected. Existing NPCs stay in their original Chat scope without automatic promotion.
-- Character libraries are persisted in TRETARESIA extension settings under the card file identity. They are not embedded in an exported character-card PNG. Renaming/replacing the card file changes that binding; identical display names do not share a library. Older portraits use separate Chat and Character browser keys; v0.32.0 adds server storage and migration.
+- Since v0.37.0, Character libraries are persisted on the selected card and included when that card is exported. Legacy settings libraries are migrated after a confirmed card save, retaining the old settings data on failures. Identical display names do not share a library. Older portraits use separate Chat and Character browser keys; v0.32.0 adds server storage and migration.
 - Both scopes are available to chat headers, model context and the existing Codex. A same-name Chat record wins **in that chat only**; it does not overwrite the Character record. The dossier offers **Create a copy in Character/Chat**, with confirmation, duplicate checks and portrait copying; the source remains unchanged.
-- New AI-created NPCs always enter Chat scope. Story changes to an existing Character NPC are stored as per-chat differences; they do not rewrite the shared card library or leak into another chat. Explicit edits in Character Management update the shared template. The Character dossier displays that template; live scene/relationship differences can be inspected in the current chat's Codex.
+- New AI-created NPCs use the chosen destination (Chat by default). If the Character archive cannot be saved, a new story NPC stays in Chat. Story changes to an existing Character NPC are stored as per-chat differences; they do not rewrite the shared card library or leak into another chat. Explicit edits in Character Management update the shared template. The Character dossier displays that template; live scene/relationship differences can be inspected in the current chat's Codex.
 - Automatic new-chat continuity now excludes Chat NPCs and their linked social/contact references, including when restoring an older continuity cache. It keeps other player/world continuity features. An AI may still introduce an NPC mentioned in a new story/summary as a new Chat record.
 - Imports go to the scope selected before opening the import dialog. All NPC fields, mobile portrait controls, AI assistance and Character Life JSON/ZIP import remain available. Each scope supports up to 200 records.
 

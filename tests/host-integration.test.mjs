@@ -5,15 +5,16 @@ import { readFileSync } from 'node:fs';
 import { identity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from '../npc-core.js';
 import * as scopes from '../npc-scopes.js';
 import * as lore from '../lore-core.js';
+import * as archive from '../character-archive.js';
 import {sceneSnapshot} from '../scene-tracker.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
-const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,sceneSnapshot,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
+const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
+const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
-vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage};`,sandbox);
+vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -46,7 +47,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.36.0');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.37.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -80,6 +81,17 @@ test('scope save rejects a stale chat or card before mutation',async()=>{
  await assert.rejects(host.persistNpcScope('character',[],'npc-management','test-chat','card:second.png'));
  assert.equal(JSON.stringify(host.getSettings().npcCharacterLibraries),before);
 });
+test('a rejected Character NPC write leaves the older library and current chat unchanged',async()=>{
+ const previousFetch=context.fetch,previousMetadata=context.chatMetadata;
+ context.characterId=0;context.chatMetadata={};
+ const owner='card:first.png',prior=JSON.stringify(host.characterNpcLibrary(owner));
+ context.fetch=async()=>({ok:false,status:503});
+ try{
+  await assert.rejects(host.persistNpcScope('character',[host.npcProfile({id:'failed',name:'Unsaved'})],'npc-management','test-chat',owner),/503/);
+  assert.equal(JSON.stringify(host.characterNpcLibrary(owner)),prior);
+  assert.deepEqual(context.chatMetadata,{});
+ }finally{context.fetch=previousFetch;context.chatMetadata=previousMetadata;}
+});
 test('preserves upstream v0.30.1: request diagnostics never save global settings',()=>{
  let saves=0;const original=context.saveSettingsDebounced;context.saveSettingsDebounced=()=>{saves++;};
  const before=JSON.stringify(host.getSettings().requestUsage);const total=host.requestUsage().total;
@@ -109,11 +121,11 @@ test('dialogue-only speakers are registered once, aliases and player names are e
  assert.equal(host.registerStorySpeakers(state,message,context),1);assert.equal(host.registerStorySpeakers(state,message,context),0);
  assert.equal(state.npcs.length,2);assert.equal(state.npcs[1].stats.hp,100);
 });
-test('story Character destination persists in library and survives fresh chats without leaking to another card',()=>{
+test('story Character destination persists in library and survives fresh chats without leaking to another card',async()=>{
  context.characters=[{name:'First',avatar:'first.png'},{name:'Second',avatar:'second.png'}];context.characterId=0;context.chatMetadata={};
  const settings=host.getSettings();settings.npcCharacterLibraries={};settings.npcGenerationScope='character';
  const before=host.getState();const result=host.applyStatePatch(before,{ops:[['upsert','npcs',{id:'generated',name:'Generated',stats:{hp:82}}]]});
- const routed=host.routeStoryNpcState(result.next,before,context);
+ const routed=await host.routeStoryNpcState(result.next,before,context);
  context.chatMetadata.tretaresia_rpg_state=host.storedNpcState(routed);
  assert.equal(context.chatMetadata.tretaresia_rpg_state.npcs.length,0);assert.equal(host.characterNpcLibrary()[0].name,'Generated');assert.equal(host.getState().npcs[0].stats.hp,82);
  context.chatMetadata={};assert.equal(host.getState().npcs[0].name,'Generated');context.characterId=1;assert.equal(host.getState().npcs.length,0);
@@ -128,14 +140,14 @@ test('speaker fallback does not resurrect an NPC intentionally removed in this t
  assert.equal(host.registerStorySpeakers(state,{mes:'<tr-dialogue name="Gone">Goodbye.</tr-dialogue>'},context,previous),0);assert.equal(state.npcs.length,0);
 });
 
-test('Character Lore feeds main generation independently and stops immediately when disabled or card changes',()=>{
+test('Character Lore feeds main generation independently and stops immediately when disabled or card changes',async()=>{
  context.characters=[{avatar:'lore-a.png'},{avatar:'lore-b.png'}];context.characterId=0;context.groupId=null;
  const settings=host.getSettings();settings.injectState=false;settings.autoTrack=false;settings.chatPresentation=false;
- host.persistCharacterLore([{id:'moon',title:'Moon law',content:'The moon is a blue crystal.',enabled:true}],'card:lore-a.png');
+ await host.persistCharacterLore([{id:'moon',title:'Moon law',content:'The moon is a blue crystal.',enabled:true}],'card:lore-a.png');
  assert.match(context.lastPrompt[1],/blue crystal/);assert.match(host.activeLorePrompt(),/blue crystal/);
  context.characterId=1;host.updatePrompt(host.defaultState());assert.equal(context.lastPrompt[1],'');
- assert.throws(()=>host.persistCharacterLore([],'card:lore-a.png'));
- context.characterId=0;host.persistCharacterLore([{id:'moon',title:'Moon law',content:'The moon is a blue crystal.',enabled:false}],'card:lore-a.png');assert.equal(context.lastPrompt[1],'');
+ await assert.rejects(host.persistCharacterLore([],'card:lore-a.png'));
+ context.characterId=0;await host.persistCharacterLore([{id:'moon',title:'Moon law',content:'The moon is a blue crystal.',enabled:false}],'card:lore-a.png');assert.equal(context.lastPrompt[1],'');
 });
 
 test('Thai duplicate creation reuses canonical NPC without resetting its dossier or shared scope',()=>{
@@ -187,4 +199,35 @@ test('scene snapshots survive swipes without showing another reply variant',asyn
   message.swipe_id=0;message.mes='<tr-dialogue name="Kohaku">Hello</tr-dialogue>';
   assert.equal(host.sceneForMessage(1,message).location,'Academy');
  }finally{context.chat=previousChat;context.chatMetadata=previousMetadata;}
+});
+
+test('theme slider previews many inputs but saves global settings once on release',()=>{
+ class Input {constructor(){this.dataset={uiSetting:'glassOpacity'};this.type='range';this.value='80';}closest(selector){return selector==='[data-ui-setting]'?this:null;}}
+ sandbox.HTMLInputElement=Input;sandbox.HTMLSelectElement=class {};
+ vm.runInContext('applyAppearance=()=>{};',sandbox);
+ const original=context.saveSettingsDebounced;let saves=0;context.saveSettingsDebounced=()=>{saves++;};
+ try{
+  const slider=new Input();for(const value of ['60','65','70','75']){slider.value=value;host.onInterfaceSettingChange({type:'input',target:slider});}
+  assert.equal(host.getSettings().glassOpacity,75);assert.equal(saves,0);
+  host.onInterfaceSettingChange({type:'change',target:slider});host.onInterfaceSettingChange({type:'change',target:slider});
+  assert.equal(saves,1);
+ }finally{context.saveSettingsDebounced=original;}
+});
+
+test('a completed reply and a rollback each save chat metadata only once',async()=>{
+ vm.runInContext('renderAll=()=>{};setSync=()=>{};writeContinuitySnapshot=()=>{};queueCharacterLifeSkillSync=()=>{};',sandbox);
+ sandbox.CustomEvent=class {constructor(name,options){this.name=name;this.detail=options.detail;}};
+ sandbox.dispatchEvent=()=>{};
+ const beforeChat=context.chat,beforeMetadata=context.chatMetadata,beforeSave=context.saveMetadata;
+ let writes=0;
+ try{
+  context.chat=[{is_user:true,mes:'Hello'}, {is_user:false,mes:'A quiet evening.'}];context.chatMetadata={};
+  context.saveMetadata=async()=>{writes++;};
+  host.assistantCheckpoint(1,{create:true});
+  await host.processAssistantPatch(1,'normal');
+  assert.equal(writes,1);
+  assert.equal(Object.keys(context.chatMetadata.tretaresia_rpg_scene_history).length,1);
+  await host.replaceAssistantTurnState(1,{reuseVariant:false});
+  assert.equal(writes,2);
+ }finally{context.chat=beforeChat;context.chatMetadata=beforeMetadata;context.saveMetadata=beforeSave;}
 });
