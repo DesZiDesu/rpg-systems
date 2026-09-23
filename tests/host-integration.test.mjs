@@ -6,15 +6,15 @@ import { identity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaul
 import * as scopes from '../npc-scopes.js';
 import * as lore from '../lore-core.js';
 import * as archive from '../character-archive.js';
-import {sceneSnapshot} from '../scene-tracker.js';
+import {sceneSnapshot,sceneTrackerOperations} from '../scene-tracker.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
+const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
-vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState};`,sandbox);
+vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,renderScene};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -47,7 +47,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.37.0');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.37.1');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -230,4 +230,76 @@ test('a completed reply and a rollback each save chat metadata only once',async(
   await host.replaceAssistantTurnState(1,{reuseVariant:false});
   assert.equal(writes,2);
  }finally{context.chat=beforeChat;context.chatMetadata=beforeMetadata;context.saveMetadata=beforeSave;}
+});
+
+test('scene-only patch seeds a non-atlas place and updates canonical environment',()=>{
+ const patch=host.extractStatePatch('Story<!--tretaresia_patch:{"sceneTracker":{"location":"ห้องพักของโคฮาคุ","position":"ข้างหน้าต่าง","weather":"ฝนตก","temperature":24}}-->').patch;
+ assert.ok(patch);
+ const {next,accepted}=host.applyStatePatch(host.defaultState(),patch);
+ assert.equal(accepted,4);assert.equal(next.location.place,'ห้องพักของโคฮาคุ');
+ assert.equal(next.onboarding.locationSeeded,true);assert.equal(next.location.region,'Unknown');
+ assert.equal(next.scene.weather,'ฝนตก');assert.equal(next.scene.temperature,24);
+ assert.equal(sceneSnapshot(next).location,next.location.place);
+ assert.equal(sceneSnapshot(next).region,'');
+});
+test('explicit scene ops win over supplements and seed even a repeated opening place',()=>{
+ const state=host.defaultState();
+ const {next}=host.applyStatePatch(state,{ops:[['set','scene.currentPlace','Central Crown'],['set','scene.weather','Snow']],sceneTracker:{location:'Other room',weather:'Rain',temperature:null}});
+ assert.equal(next.location.place,'Central Crown');assert.equal(next.onboarding.locationSeeded,true);
+ assert.equal(next.scene.weather,'Snow');assert.equal(next.scene.temperature,null);
+});
+test('scene supplements cannot write unrelated state or replace a known location with unknown',()=>{
+ const state=host.defaultState();state.onboarding.locationSeeded=true;state.location.place='Library';state.scene.temperature=18;
+ const {next,accepted}=host.applyStatePatch(state,{ops:[],sceneTracker:{location:'Unknown',temperature:'',day:-1,time:'99:99',player:{hp:{current:0}}}});
+ assert.equal(accepted,0);assert.equal(next.location.place,'Library');assert.equal(next.scene.temperature,18);assert.equal(next.player.hp.current,100);
+});
+
+test('manual sync reads earlier scene context, refreshes latest card, and saves once',async()=>{
+ vm.runInContext('notify=()=>{};showEventNotifications=()=>{};',sandbox);
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ let writes=0;
+ try{
+  context.chatMetadata={};context.chat=[{is_user:true,mes:'We are in the Moon Library.'},{is_user:false,mes:'The lamps glow.'},{is_user:true,mes:'Hello'},{is_user:false,mes:'Welcome.'}];
+  context.saveMetadata=async()=>{writes++;};
+  context.generateQuietPrompt=async({quietPrompt})=>{
+   assert.match(quietPrompt,/Moon Library/);assert.match(quietPrompt,/never replay earlier rewards/);
+   return JSON.stringify({sceneTracker:{location:'Moon Library',position:'Reading table',weather:'Rain'}});
+  };
+  await host.analyzeChat({manual:true});
+  assert.equal(host.getState().location.place,'Moon Library');
+  assert.equal(host.sceneForMessage(3,context.chat[3]).location,'Moon Library');
+  assert.equal(writes,1);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;}
+});
+test('manual sync discards results after a newer message arrives',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ let writes=0;
+ try{
+  context.chatMetadata={};context.chat=[{is_user:true,mes:'Hello'},{is_user:false,mes:'Welcome.'}];
+  context.saveMetadata=async()=>{writes++;};
+  context.generateQuietPrompt=async()=>{context.chat.push({is_user:true,mes:'We leave.'});return JSON.stringify({sceneTracker:{location:'Old room'}});};
+  await host.analyzeChat({manual:true});
+  assert.notEqual(host.getState().location.place,'Old room');assert.equal(writes,0);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;}
+});
+test('reply card uses canonical state over conflicting scene display fields',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata};
+ try{
+  context.chatMetadata={};context.chat=[{is_user:true,mes:'Hello'},{is_user:false,mes:'Welcome.'}];
+  const state=host.defaultState();state.onboarding.locationSeeded=true;state.location.place='Library';state.scene.weather='Snow';
+  await host.rememberScene(1,context.chat[1],state,{location:'Garden',weather:'Rain',lighting:'Lanterns'});
+  const card=host.sceneForMessage(1,context.chat[1]);
+  assert.equal(card.location,'Library');assert.equal(card.weather,'Snow');assert.equal(card.lighting,'Lanterns');
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;}
+});
+test('scene panel does not show an unconfirmed bootstrap place as current',()=>{
+ sandbox.SVGElement=class {};
+ const panel={innerHTML:'',querySelector:()=>null};
+ host.renderScene(panel,host.defaultState());
+ const cards=panel.innerHTML.split('<section class="tretaresia-scene-grid">')[1].split('</section>')[0];
+ assert.doesNotMatch(cards,/Central Crown|Crown Heartlands|Central Continent/);
+ const state=host.applyStatePatch(host.defaultState(),{ops:[],sceneTracker:{location:'Moon Library',region:'Moon District'}}).next;
+ host.renderScene(panel,state);
+ const updated=panel.innerHTML.split('<section class="tretaresia-scene-grid">')[1].split('</section>')[0];
+ assert.match(updated,/Moon Library/);assert.match(updated,/Moon District/);
 });

@@ -1,11 +1,11 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.37.0';
-import { sceneSnapshot } from './scene-tracker.js?v=0.37.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.37.1';
+import { sceneSnapshot, sceneTrackerOperations } from './scene-tracker.js?v=0.37.1';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.37.0';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.37.0';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.37.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.37.0';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.37.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.37.1';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.37.1';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.37.1';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.37.1';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.37.1';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
@@ -842,7 +842,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.37.0';
+const LAUNCHER_BIND_VERSION = '0.37.1';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -2638,10 +2638,11 @@ async function rememberScene(messageId, message, state, details = {}) {
         && !Array.isArray(context.chatMetadata[SCENE_HISTORY_KEY])
         ? context.chatMetadata[SCENE_HISTORY_KEY] : (context.chatMetadata[SCENE_HISTORY_KEY] = {});
     const blocks = parseStory(extractStatePatch(message.mes || '').visible) || [];
+    const displayDetails = Object.fromEntries(Object.entries(details || {}).filter(([key]) => !['location','region','continent','position','weather','temperature','time','day','dayName','period'].includes(key)));
     const speakers = blocks.filter(part => part.type === 'dialogue').map(part => part.name).filter(Boolean);
     history[key] ||= {};
     history[key][assistantVariantKey(message)] = {
-        ...sceneSnapshot(state, details, speakers),
+        ...sceneSnapshot(state, displayDetails, speakers),
         sequence: context.chat.slice(0, messageId + 1).filter(entry => entry && !entry.is_user && !entry.is_system).length,
     };
     const variants = Object.keys(history[key]);
@@ -3092,7 +3093,7 @@ function patchInstructions() {
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
-        'Optional sceneTracker in the same patch: {"participants":["names present"],"season":"only if known","lighting":"only if known","safety":"only if known","objective":"only if known","atmosphere":"only if known","elapsed":"confirmed time passed"}. Use it only for scene facts shown by this reply; omit unknown fields. It is display-only and must never change canonical state. Never send a separate request for it.',
+        'Scene Tracker: include top-level sceneTracker in the SAME reply patch with the current confirmed scene facts: {"location":"actual place, including rooms or places outside the atlas","region":"only if known","continent":"only if known","position":"exact position","weather":"only if established","temperature":null,"participants":["names present"],"season":"only if known","lighting":"only if known","objective":"only if known","atmosphere":"only if known","elapsed":"confirmed time passed"}. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops take precedence. Omit unknown fields; null temperature does not erase a known value. Read established scene context from earlier messages when the latest reply continues the same scene. When onboarding.locationSeeded is false, establish the actual current place even if absent from the atlas; do not copy Central Crown/Crown Heartlands defaults or invent coordinates. Never treat a mentioned destination, memory, plan or hypothetical as the current location. Never send a separate automatic request for this.',
         'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. EVERY completed normal reply must append exactly one comment; use {"ops":[],"summary":"No confirmed changes."} when nothing beyond the locally tracked turn clock changed. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this one patch, not only scene fields.',
@@ -5463,7 +5464,7 @@ function renderAll(state = getState()) {
     if (id) renderPanel(id, panel, state);
     const label = overlay.querySelector('#tretaresia-context-label');
     if (label) label.innerHTML = SillyTavern.getContext().getCurrentChatId?.()
-        ? `<i class="fa-solid fa-location-dot"></i> ${html(state.location.region)} · ${html(state.location.place)}`
+        ? `<i class="fa-solid fa-location-dot"></i> ${html(sceneSnapshot(state).region || '—')} · ${html(sceneSnapshot(state).location || '—')}`
         : `<i class="fa-solid fa-triangle-exclamation"></i> ${html(tr('Open a chat to activate this system'))}`;
     if (id === 'npcs') void hydrateNpcPortraits(panel, state);
 }
@@ -5726,9 +5727,11 @@ function renderScene(panel, state) {
     const moving = ['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status);
     const journeyProgress = travelProgress(state);
     const routePoints = state.travel.routePoints?.length >= 2 ? state.travel.routePoints : buildTravelRoutePoints(state, state.travel);
-    const coordinate = coordinatesLabel(state.location.mapX, state.location.mapY);
+    const snapshot = sceneSnapshot(state);
+    const locationKnown = state.onboarding.locationSeeded;
+    // Atlas coordinates may still be bootstrap values; scene details use narrative locations.
     const locationDetail = state.location.detail || state.location.place || state.location.region;
-    const exactLocation = locationDetail.includes(coordinate) ? locationDetail : `${locationDetail} · ${coordinate}`;
+    const exactLocation = locationKnown ? locationDetail : '—';
     const temperature = state.scene.temperature === null ? '—' : `${Number(state.scene.temperature).toLocaleString()}°C`;
     panel.innerHTML = `${heading('Scene Tracker', 'Live environment and position', 'fa-solid fa-cloud-sun')}
         <section class="tretaresia-scene-hero">
@@ -5739,8 +5742,8 @@ function renderScene(panel, state) {
         <section class="tretaresia-day-cycle tretaresia-scene-cycle" style="--phase:${phaseIndex}"><div class="tretaresia-cycle-line"><span></span></div>
             ${DAY_PHASES.map((phase, index) => `<div class="tretaresia-cycle-stop${index === phaseIndex ? ' is-current' : ''}"><i class="${['fa-solid fa-sun','fa-regular fa-sun','fa-solid fa-cloud-sun','fa-solid fa-moon'][index]}"></i><span>${html(tr(phase))}</span></div>`).join('')}</section>
         <section class="tretaresia-scene-grid">
-            <article><i class="fa-solid fa-earth-americas"></i><span>${html(tr('Current region'))}</span><strong>${html(state.location.continent)}</strong><small>${html(state.location.region)}</small></article>
-            <article><i class="fa-solid fa-location-dot"></i><span>${html(tr('Current place'))}</span><strong>${html(moving ? `En route to ${state.travel.destinationPlace || state.travel.destination}` : state.location.place)}</strong><small>${html(exactLocation)}</small></article>
+            <article><i class="fa-solid fa-earth-americas"></i><span>${html(tr('Current region'))}</span><strong>${html(locationKnown ? state.location.continent : '—')}</strong><small>${html(snapshot.region || '—')}</small></article>
+            <article><i class="fa-solid fa-location-dot"></i><span>${html(tr('Current place'))}</span><strong>${html(moving ? `En route to ${state.travel.destinationPlace || state.travel.destination}` : snapshot.location || '—')}</strong><small>${html(exactLocation)}</small></article>
             <article><i class="fa-solid fa-street-view"></i><span>${html(tr('Scene position'))}</span><strong>${html(state.scene.position)}</strong><small>${html(tr(state.location.zoneType))}</small></article>
         </section>
         ${state.travel.status !== 'Idle' ? `<section class="tretaresia-card tretaresia-travel-status" data-status="${html(state.travel.status.toLowerCase())}">
@@ -9094,7 +9097,8 @@ function applyStatePatch(current, patch) {
     const candidate = clone(current);
     const acceptedOps = [];
     const rewardOps = new Set();
-    const operations = patch.ops.slice(0, 75).flatMap(canonicalPatchOperations).slice(0, 100);
+    const explicit = patch.ops.slice(0, 75).flatMap(canonicalPatchOperations).slice(0, 100);
+    const operations = [...explicit, ...sceneTrackerOperations(patch.sceneTracker, explicit)];
     for (const operation of operations) {
         if (isDuplicateQuestRewardOperation(current, operation)) continue;
         const meta = operationMeta(operation);
@@ -9104,6 +9108,15 @@ function applyStatePatch(current, patch) {
             rewardOps.add(rewardKey);
         }
         if (applyPatchOperation(candidate, operation)) acceptedOps.push(operation);
+    }
+    if (acceptedOps.some(op => op[0] === 'set' && op[1] === 'location.place' && typeof op[2] === 'string' && op[2].trim() && !/^(?:unknown|none|n\/a|ไม่ทราบ|—|-)$/i.test(op[2].trim()))) {
+        candidate.onboarding.locationSeeded = true;
+        // A first real place must not inherit the old atlas bootstrap region.
+        if (!current.onboarding.locationSeeded) {
+            for (const [key, fallback] of Object.entries({continent:'Unknown',region:'Unknown',detail:''})) {
+                if (!acceptedOps.some(op => op[1] === `location.${key}`)) candidate.location[key] = fallback;
+            }
+        }
     }
     let next = normalize(candidate, current);
     synchronizeWorldState(next, current);
@@ -9216,7 +9229,7 @@ function coerceStatePatch(raw) {
         };
         walk(delta);
     }
-    if (!operations.length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates)) return null;
+    if (!operations.length && !sceneTrackerOperations(source.sceneTracker).length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates)) return null;
     return {
         ops: operations.slice(0, 75),
         summary: text(source.summary || raw.summary, '', 300),
@@ -9426,7 +9439,7 @@ function analyzerPrompt(state, transcript) {
 CURRENT STATE:
 ${JSON.stringify(aiState(state, { privateTracker: true }))}
 
-LATEST TURN:
+RECENT CONTEXT (older messages establish scene continuity only; apply gameplay changes from the latest completed turn only, never replay earlier rewards or costs):
 ${transcript}
 
 ${patchInstructions()}
@@ -9457,8 +9470,8 @@ async function analyzeChat({ manual = false } = {}) {
         notify('info', getSettings().language === 'th' ? 'ระบบจะเริ่มหลังจากผู้เล่นตอบ First Message' : 'Tracking starts after the user replies to the first message.');
         return;
     }
-    const transcript = context.chat.filter(message => message?.mes && !message.is_system).slice(-2)
-        .map(message => `${message.is_user ? 'User' : 'Character'}: ${message.mes}`).join('\n\n');
+    const transcript = context.chat.filter(message => message?.mes && !message.is_system).slice(-12)
+        .map(message => `${message.is_user ? 'User' : 'Character'}: ${extractStatePatch(message.mes).visible.slice(-6000)}`).join('\n\n');
     if (!transcript) {
         notify('info', 'There are no role-play messages to analyze yet.');
         return;
@@ -9469,6 +9482,8 @@ async function analyzeChat({ manual = false } = {}) {
     try {
         const requestChat = context.getCurrentChatId?.(), requestOwner = characterOwner(context)?.key;
         const current = getState();
+        const requestState = JSON.stringify(context.chatMetadata);
+        const requestMessages = JSON.stringify(context.chat);
         recordExtensionRequest('manualSync', 'RPG Manual Sync');
         const response = await context.generateQuietPrompt({
             quietPrompt: [activeLorePrompt(), analyzerPrompt(current, transcript)].filter(Boolean).join('\n\n'),
@@ -9478,12 +9493,16 @@ async function analyzeChat({ manual = false } = {}) {
         });
         const activeContext = SillyTavern.getContext();
         if (activeContext.getCurrentChatId?.() !== requestChat || characterOwner(activeContext)?.key !== requestOwner) throw new Error('Chat/card changed during synchronization; no NPCs or state were saved.');
-        const parsed = parseJson(response);
+        if (JSON.stringify(activeContext.chatMetadata) !== requestState || JSON.stringify(activeContext.chat) !== requestMessages) throw new Error('Chat changed during synchronization; retry Sync latest turn.');
+        const parsed = coerceStatePatch(parseJson(response));
         const { next, accepted, summary, notifications } = applyStatePatch(current, parsed);
         if (accepted) {
-            await persistState(next, 'manual-ai-patch');
+            if (!await persistState(next, 'manual-ai-patch', {deferMetadataSave:true})) return;
             showEventNotifications(notifications);
         }
+        const messageId = latestAssistantMessageId();
+        if (messageId !== null) await rememberScene(messageId, context.chat[messageId], getState(), parsed.sceneTracker);
+        if (accepted || messageId !== null) await saveCurrentChatMetadata(context);
         setSync('success', tr('AI synchronized'), accepted
             ? (getSettings().language === 'th' ? `Manual Sync บันทึก ${accepted} รายการ` : `Manual Sync saved ${accepted} confirmed change${accepted === 1 ? '' : 's'}.`)
             : (getSettings().language === 'th' ? 'Manual Sync ตรวจแล้ว ไม่มีข้อมูลเปลี่ยนแปลง' : 'Manual Sync found no confirmed changes.'));
@@ -9949,7 +9968,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.37.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.37.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
