@@ -1,4 +1,4 @@
-import {ADULT_TAGS,ADULT_TAG_THAI,TAG_LIMIT,CUSTOM_LIMIT,normalizeTag,uniqueTags,parseTagCatalog} from './nsfw-enhance.js?v=0.40.0';
+import {ADULT_TAGS,ADULT_TAG_THAI,TAG_LIMIT,CUSTOM_LIMIT,normalizeTag,uniqueTags,parseTagCatalog} from './nsfw-enhance.js?v=0.40.1';
 
 const CATALOG_KEY='tretaresia-rpg-adult-catalog-v1';
 const item=(tag,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;};

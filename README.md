@@ -1,5 +1,10 @@
 # Tretaresia RPG System
 
+### v0.40.1 — NPC-focused H-Stats dossier
+
+- H-Stats now opens as a read-first NPC dossier matching the other system panels. Choose a met friendly NPC in the directory; a shortcut from that NPC's Codex dossier opens the same character directly. The choice is saved with the current chat and never falls back to the player sheet. With no met NPC, the panel explains how to add one.
+- Body, History, Bonds and Preferences have separate readouts, with editing available for the selected category. Saving a category leaves the other fields intact. Confirmed story updates still use `npcHStats` automatically when tracking is enabled and the model supplies the patch; manual editing remains available.
+
 ### v0.40.0 — Partner H-Stats and NPC continuity
 
 - The **H-Stats** tab selects the player or a met partner of any gender and stores the requested body, encounter, relationship, pregnancy and preference fields per character. Unestablished values remain blank. Infidelity has five stages with a progress bar; loyalty uses five SVG hearts. All requested fields are editable and can be updated in the same story patch through `playerHStats` or `npcHStats`. No H-Stats Condition field is added.
@@ -78,7 +83,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.40.0**
+**Current version: 0.40.1**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 
