@@ -131,6 +131,9 @@
 .trpg-manager[data-view="edit"] .trpg-generation-scope,.trpg-manager[data-view="detail"] .trpg-generation-scope,.trpg-manager[data-view="import"] .trpg-generation-scope{display:none}
 .trpg-generator{display:grid;gap:12px;margin:0 0 24px;padding:18px;border:1px solid var(--line);background:#d6b45809}
 .trpg-generator p{margin:0;line-height:1.6}
+.trpg-reference-preview{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.trpg-reference-preview:empty{display:none}
+.trpg-reference-preview img{width:72px;height:72px;object-fit:contain;border:1px solid var(--line);background:#080909}
 .trpg-manager-top{flex-shrink:0}
 @media(max-width:650px){
  .trpg-manager{position:fixed;inset:var(--trpg-viewport-top,0px) 0 auto;margin:0;width:100%;max-width:100%;height:var(--trpg-viewport-height,100dvh);max-height:var(--trpg-viewport-height,100dvh);padding:env(safe-area-inset-top,0px) 0 0}
@@ -167,3 +170,18 @@
 .trpg-manager .trpg-danger{color:#ffb6aa;border-color:#ad645c}
 .trpg-lore-panel select{max-width:100%;font:inherit;background:#101112;color:#ede6d5;padding:12px}
 @media(max-width:650px){.trpg-manager[data-view="edit"] .trpg-manager-footer{padding-bottom:6px;font-size:11px;max-height:64px;overflow:auto}.trpg-manager .trpg-editor-actions{padding-top:10px}}
+
+/* The visual viewport shrinks when the iPhone keyboard opens. Give its small
+   remaining area to the focused form field instead of the archive navigation. */
+@media(max-width:650px){
+ .trpg-manager.trpg-keyboard-open[data-view="edit"]{padding-top:0}
+ .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-manager-top{padding:3px 12px;min-height:44px}
+ .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-manager-top small,
+ .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-management-tabs,
+ .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-archive-nav,
+ .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-manager-footer,
+ .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-editor-actions{display:none}
+ .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-manager-top h2{font-size:13px;line-height:1.1;margin:0}
+ .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-manager-top button{min-height:36px;min-width:36px;padding:0 9px;font-size:21px}
+ .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-record{padding:10px 14px 32px;scroll-padding-block:16px}
+}

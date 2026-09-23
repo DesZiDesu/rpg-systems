@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {portraitForGeneration} from '../npc-generation.js';
+import {portraitForGeneration,visualDescription} from '../npc-generation.js';
 import {npcAttributeDefaults,generatedAttributes,STATS} from '../npc-core.js';
 import {routeNewStoryNpcs,packScopedNpcs,hydrateScopedNpcs} from '../npc-scopes.js';
 
@@ -12,6 +12,12 @@ test('portrait is attached as an ephemeral data URL only for supported vision re
  await assert.rejects(portraitForGeneration(blob,{mainApi:'openai'},async()=>false),/Image inlining/);
  await assert.rejects(portraitForGeneration(new Blob(['svg'],{type:'image/svg+xml'}),{mainApi:'openai'},async()=>true),/256 KB/);
  await assert.rejects(portraitForGeneration(new Blob([new Uint8Array(262145)],{type:'image/png'}),{mainApi:'openai'},async()=>true),/256 KB/);
+});
+test('vision descriptions accept visible traits but reject an absent image before generating NPC details',()=>{
+ assert.equal(visualDescription('Short dark hair and a red cloak.'),'Short dark hair and a red cloak.');
+ assert.throws(()=>visualDescription('IMAGE_UNAVAILABLE'),/AI อ่านภาพไม่ได้/);
+ assert.throws(()=>visualDescription('{"imageError":"not received"}'),/AI อ่านภาพไม่ได้/);
+ assert.throws(()=>visualDescription('I cannot view the image.'),/AI อ่านภาพไม่ได้/);
 });
 test('missing/null attributes receive defaults, genuine zeros remain valid, full AI repair is atomic',()=>{
  const p=npcAttributeDefaults({stats:{hp:null,mp:0,level:''},trust:0});assert.equal(p.stats.hp,100);assert.equal(p.stats.mp,0);assert.equal(p.stats.level,1);assert.equal(p.trust,0);

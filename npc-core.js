@@ -195,6 +195,24 @@ export function generatedDraft(raw) {
  return {...profileFields(raw),...generatedAttributes(raw),isHostile:raw.isHostile,portraitSize:clamp(raw.portraitSize,48,144)};
 }
 
+// A generator response may omit optional dossier fields. Keep the useful facts
+// instead of discarding the entire draft when one of the many fields is absent.
+// Storage identity and image references are never accepted from model output.
+export function generatedNpcDraft(raw, current={}) {
+ if(!raw||typeof raw!=='object'||Array.isArray(raw)||raw.imageError)throw Error('AI did not return an NPC object. Your draft was not changed.');
+ const incoming=profileFields(raw), previous=profileFields(current);
+ if(!clean(incoming.name||previous.name)||!['appearance','personality','background','occupation','relationship','goals'].some(k=>usable(incoming[k])))
+  throw Error('AI returned no usable character details. Your draft was not changed.');
+ const text={...previous};for(const k of Object.keys(FIELDS))if(usable(incoming[k]))text[k]=incoming[k];
+ const attrs=npcAttributeDefaults(incoming,current);
+ return {...text,...attrs,
+  aliases:incoming.aliases??previous.aliases??[],abilities:incoming.abilities??previous.abilities??[],
+  isHostile:typeof raw.isHostile==='boolean'?raw.isHostile:Boolean(current.isHostile),
+  identityColor:incoming.identityColor||identity(current).identityColor,
+  roleIcon:incoming.roleIcon||identity(current).roleIcon,
+  portraitSize:Number.isFinite(raw.portraitSize)?clamp(raw.portraitSize,48,144):identity(current).portraitSize};
+}
+
 // Conservative fallback for fully vowel-marked Thai transliterations. Unparsed
 // syllables and ambiguous matches are rejected; explicit IDs/aliases take priority.
 function thaiNameRomanization(value) {

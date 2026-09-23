@@ -1,5 +1,11 @@
 # Tretaresia RPG System
 
+### v0.38.1 — NPC editor, reference images and generation
+
+- On phones, opening the keyboard collapses NPC Management's tabs, scope navigation and action bar so the focused field remains visible. They return when the keyboard closes; the editor keeps its scroll position and the unsaved draft.
+- NPC creation now has a separate optional **ภาพอ้างอิงสำหรับ AI** picker beside Generate. The reference is sent only when image reading is selected and is never saved as the portrait. If no separate reference is selected, the saved or newly selected character portrait can be used instead. A short description of visible hair, clothes and other clear features is written into **รูปลักษณ์ / appearance**, so the main chat can use it after saving the NPC. A vision-capable model with SillyTavern Image inlining is required; a model that reports no image leaves the draft untouched. For text-only models, turn off image reading and describe the look in words.
+- The image-reading call now asks for a brief description instead of a full NPC JSON document. Text generation requests a shorter JSON object, accepts useful partial character details while retaining existing fields and using safe stat defaults, and retries malformed JSON once with a shorter request. Failed requests leave the draft intact. Sending an image requires an additional AI call and may still fail if the provider cannot process images or times out.
+
 ### v0.38.0 — Complete scene on every normal reply
 
 - With auto tracking enabled, request a full Scene Tracker record in the **same normal model response** on every turn, including the current place, region, story calendar/date, weather, Celsius temperature, participants, lighting, objective, safety and atmosphere. The latest saved scene is passed as continuity reference, and the scene is attached to its own reply.
@@ -49,7 +55,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.38.0**
+**Current version: 0.38.1**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 
