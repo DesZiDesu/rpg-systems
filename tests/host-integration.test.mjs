@@ -6,11 +6,11 @@ import { identity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaul
 import * as scopes from '../npc-scopes.js';
 import * as lore from '../lore-core.js';
 import * as archive from '../character-archive.js';
-import {sceneSnapshot,sceneTrackerOperations} from '../scene-tracker.js';
+import {sceneSnapshot,sceneTrackerOperations,missingSceneFields} from '../scene-tracker.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
+const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,keyName,parseStory,retainManualNpcEdits,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
@@ -47,7 +47,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.37.1');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.38.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -302,4 +302,79 @@ test('scene panel does not show an unconfirmed bootstrap place as current',()=>{
  host.renderScene(panel,state);
  const updated=panel.innerHTML.split('<section class="tretaresia-scene-grid">')[1].split('</section>')[0];
  assert.match(updated,/Moon Library/);assert.match(updated,/Moon District/);
+});
+
+const fullScene={dayName:'Day 1',day:1,month:'Harvest',year:'1286',era:'Silver Age',calendar:'Moon Calendar',
+ time:'08:00',period:'Morning',season:'Spring',location:'Moon Hall',region:'East Quarter',continent:'Central Continent',
+ position:'At the window',weather:'Rain',temperature:21,lighting:'Lanterns',participants:['Kohaku'],
+ objective:'Find the ledger',safety:'Safe',atmosphere:'Quiet',elapsed:'0 minutes'};
+
+test('each complete normal reply records a distinct full scene without an extra AI call',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
+ let requests=0,writes=0;
+ try{
+  context.chatMetadata={};context.chat=[{is_user:true,mes:'Enter Moon Hall.'},
+   {is_user:false,mes:`Moon Hall is quiet.<!--tretaresia_patch:${JSON.stringify({ops:[],sceneTracker:fullScene})}-->`}];
+  context.generateQuietPrompt=async()=>{requests++;throw Error('should not be called');};
+  context.saveMetadata=async()=>{writes++;};
+  await host.processAssistantPatch(1,'normal');
+  const first=host.sceneForMessage(1,context.chat[1]);
+  assert.deepEqual([...first.missing],[]);assert.equal(first.calendar,'Moon Calendar');assert.equal(first.location,'Moon Hall');
+  context.chat.push({is_user:true,mes:'Walk to the observatory.'},
+   {is_user:false,mes:`We are at the observatory.<!--tretaresia_patch:${JSON.stringify({ops:[],sceneTracker:{...fullScene,location:'Observatory',position:'At the telescope',time:'08:10',elapsed:'10 minutes'}})}-->`});
+  await host.processAssistantPatch(3,'normal');
+  assert.equal(host.sceneForMessage(3,context.chat[3]).location,'Observatory');
+  assert.equal(host.sceneForMessage(1,context.chat[1]).location,'Moon Hall');
+  assert.equal(host.getState().location.place,'Observatory');
+  assert.equal(requests,0);assert.equal(writes,2);
+  host.updatePrompt(host.getState());assert.match(context.lastPrompt[1],/PREVIOUS SCENE.*Observatory/);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
+});
+
+test('missing scene fields are requested once and stored with the same reply',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
+ let requests=0,writes=0;
+ try{
+  context.chatMetadata={};context.chat=[{is_user:true,mes:'Go to Moon Hall.'},{is_user:false,mes:'Kohaku waits in Moon Hall.'}];
+  context.saveMetadata=async()=>{writes++;};
+  context.generateQuietPrompt=async({quietPrompt})=>{requests++;assert.match(quietPrompt,/ACTUAL current location/);return JSON.stringify({sceneTracker:fullScene});};
+  await host.processAssistantPatch(1,'normal');
+  const scene=host.sceneForMessage(1,context.chat[1]);
+  assert.equal(scene.location,'Moon Hall');assert.deepEqual([...scene.missing],[]);
+  assert.equal(host.getState().location.place,'Moon Hall');assert.equal(requests,1);assert.equal(writes,1);
+  await host.processAssistantPatch(1,'normal');assert.equal(requests,1);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
+});
+
+test('a scene completion for an obsolete chat cannot overwrite the next chat',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,getId:context.getCurrentChatId};
+ const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
+ let writes=0;
+ try{
+  context.chatMetadata={};context.chat=[{is_user:true,mes:'Go outside.'},{is_user:false,mes:'The gates open.'}];
+  context.saveMetadata=async()=>{writes++;};
+  let currentId='test-chat';context.getCurrentChatId=()=>currentId;
+  context.generateQuietPrompt=async()=>{currentId='other-chat';return JSON.stringify({sceneTracker:fullScene});};
+  await host.processAssistantPatch(1,'normal');
+  assert.equal(writes,0);assert.equal(context.chatMetadata.tretaresia_rpg_scene_history,undefined);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;context.getCurrentChatId=saved.getId;host.getSettings().autoTrack=priorTrack;}
+});
+
+test('a failed scene-completion request preserves known facts and marks missing fields',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
+ let requests=0,writes=0;
+ try{
+  context.chatMetadata={};context.chat=[{is_user:true,mes:'Hello.'},
+   {is_user:false,mes:`The rain reaches Moon Hall.<!--tretaresia_patch:${JSON.stringify({ops:[],sceneTracker:{location:'Moon Hall',weather:'Rain'}})}-->`}];
+  context.saveMetadata=async()=>{writes++;};
+  context.generateQuietPrompt=async()=>{requests++;throw Error('Got response status 524');};
+  await host.processAssistantPatch(1,'normal');
+  const scene=host.sceneForMessage(1,context.chat[1]);
+  assert.equal(scene.location,'Moon Hall');assert.equal(scene.weather,'Rain');
+  assert.ok(scene.missing.includes('month'));assert.ok(scene.missing.includes('temperature'));
+  assert.equal(requests,1);assert.equal(writes,1);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
 });

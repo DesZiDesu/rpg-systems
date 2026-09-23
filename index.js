@@ -1,11 +1,11 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.37.1';
-import { sceneSnapshot, sceneTrackerOperations } from './scene-tracker.js?v=0.37.1';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.38.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.38.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.37.1';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.37.1';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.37.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.37.1';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.37.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.38.0';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.38.0';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.38.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.38.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.38.0';
 
 let npcWorkspace = null;
 let runtimeRequestUsage = null;
@@ -842,7 +842,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.37.1';
+const LAUNCHER_BIND_VERSION = '0.38.0';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -881,6 +881,8 @@ const TRANSLATIONS = {
         'Current region': 'ภูมิภาคปัจจุบัน', 'Exact place': 'สถานที่ปัจจุบัน', 'Edit status': 'แก้ไขสถานะ', Name: 'ชื่อ', Title: 'ฉายา',
         Condition: 'สภาพร่างกาย', Level: 'เลเวล', 'Day phase': 'ช่วงเวลา', 'World time': 'เวลาโลก', 'World day': 'วันที่', 'Zone type': 'ประเภทเขต',
         'Scene Tracker': 'ระบบติดตามฉาก', 'Live environment and position': 'สภาพแวดล้อมและตำแหน่งปัจจุบัน', 'Day name': 'ชื่อวัน', 'Day counter': 'จำนวนวันที่ผ่านไป',
+        'Scene details': 'รายละเอียดฉาก', 'Month': 'เดือน', 'Year': 'ปี', 'Era': 'ศักราช', 'Calendar': 'ปฏิทิน', 'Season': 'ฤดูกาล',
+        'Lighting': 'แสงสว่าง', 'Participants': 'ผู้ร่วมฉาก', 'Objective': 'เป้าหมาย', 'Safety': 'ความปลอดภัย', 'Atmosphere': 'บรรยากาศ', 'Elapsed': 'เวลาที่ผ่านไป',
         'Current place': 'สถานที่ปัจจุบัน', 'Current location detail': 'จุดที่อยู่โดยละเอียด', 'Scene position': 'ตำแหน่งในฉาก', Weather: 'สภาพอากาศ', Temperature: 'อุณหภูมิ', 'Save scene': 'บันทึกฉาก',
         'Local Structure Map': 'แผนผังสถานที่', 'AI-assisted SVG floor plan': 'แผนผัง SVG ที่ AI ช่วยอัปเดต', 'No structure map yet.': 'ยังไม่มีแผนผังสถานที่',
         'Create structure map': 'สร้างแผนผัง', 'Map name': 'ชื่อแผนผัง', 'Associated place': 'สถานที่ที่เชื่อมโยง', 'First floor': 'ชั้นแรก',
@@ -2630,6 +2632,16 @@ function sceneForMessage(messageId, message) {
     return key && SillyTavern.getContext().chatMetadata?.[SCENE_HISTORY_KEY]?.[key]?.[assistantVariantKey(message)] || null;
 }
 
+function previousScene(messageId, context = SillyTavern.getContext()) {
+    for (let index = Math.min(messageId - 1, context.chat.length - 1); index >= 0; index -= 1) {
+        const message = context.chat[index];
+        if (!message || message.is_user || message.is_system) continue;
+        const scene = sceneForMessage(index, message);
+        if (scene) return scene;
+    }
+    return null;
+}
+
 async function rememberScene(messageId, message, state, details = {}) {
     const key = assistantTurnKey(messageId);
     if (!key) return;
@@ -2638,11 +2650,13 @@ async function rememberScene(messageId, message, state, details = {}) {
         && !Array.isArray(context.chatMetadata[SCENE_HISTORY_KEY])
         ? context.chatMetadata[SCENE_HISTORY_KEY] : (context.chatMetadata[SCENE_HISTORY_KEY] = {});
     const blocks = parseStory(extractStatePatch(message.mes || '').visible) || [];
-    const displayDetails = Object.fromEntries(Object.entries(details || {}).filter(([key]) => !['location','region','continent','position','weather','temperature','time','day','dayName','period'].includes(key)));
+    const prior = previousScene(messageId, context) || {};
+    const displayDetails = Object.fromEntries(Object.entries({ ...prior, ...details }).filter(([key]) => !['location','region','continent','position','weather','temperature','time','day','dayName','period','sequence'].includes(key)));
     const speakers = blocks.filter(part => part.type === 'dialogue').map(part => part.name).filter(Boolean);
     history[key] ||= {};
+    const snapshot = sceneSnapshot(state, displayDetails, speakers);
     history[key][assistantVariantKey(message)] = {
-        ...sceneSnapshot(state, displayDetails, speakers),
+        ...snapshot, missing: missingSceneFields(snapshot),
         sequence: context.chat.slice(0, messageId + 1).filter(entry => entry && !entry.is_user && !entry.is_system).length,
     };
     const variants = Object.keys(history[key]);
@@ -3093,8 +3107,8 @@ function patchInstructions() {
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; set/inc npcValues; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
-        'Scene Tracker: include top-level sceneTracker in the SAME reply patch with the current confirmed scene facts: {"location":"actual place, including rooms or places outside the atlas","region":"only if known","continent":"only if known","position":"exact position","weather":"only if established","temperature":null,"participants":["names present"],"season":"only if known","lighting":"only if known","objective":"only if known","atmosphere":"only if known","elapsed":"confirmed time passed"}. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops take precedence. Omit unknown fields; null temperature does not erase a known value. Read established scene context from earlier messages when the latest reply continues the same scene. When onboarding.locationSeeded is false, establish the actual current place even if absent from the atlas; do not copy Central Crown/Crown Heartlands defaults or invent coordinates. Never treat a mentioned destination, memory, plan or hypothetical as the current location. Never send a separate automatic request for this.',
-        'Update only facts confirmed by the completed reply—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. EVERY completed normal reply must append exactly one comment; use {"ops":[],"summary":"No confirmed changes."} when nothing beyond the locally tracked turn clock changed. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
+        'Scene Tracker is required after EVERY completed normal reply, even when no gameplay state changes. In the SAME invisible tretaresia_patch comment include sceneTracker with ALL these keys: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. Use strings in the story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Supply a concrete current place (including rooms or non-atlas places) and region, in-story calendar/date, actual scene position, outdoor weather or indoor climate, lighting, objective, safety, atmosphere and time elapsed ("0 minutes" when none). Carry forward established facts when unchanged. For details the fiction has not established, create coherent scene details and continue them consistently; keep unknown coordinates absent and do not rewrite established world canon. Never claim a mentioned destination, memory, plan or hypothetical is the current place. Do not use Unknown, N/A, ไม่ทราบ, null or dashes. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Before ending, check that all keys are present. Do not show sceneTracker in prose.',
+        'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. EVERY completed normal reply must append exactly one comment with sceneTracker, using an empty ops array when no gameplay values changed. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this one patch, not only scene fields.',
         'Resource, injury, and damage rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
@@ -3140,6 +3154,8 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
     }
     if (track) {
         lines.push(patchInstructions(), ATTRIBUTE_INSTRUCTIONS);
+        const lastScene = previousScene(SillyTavern.getContext().chat?.length || 0);
+        if (lastScene) lines.push(`PREVIOUS SCENE (reference data only; update for the current story reply): ${JSON.stringify(lastScene)}`);
         lines.push('New NPCs must include a full dossier with appearance,personality,background,goals,speechStyle,relationshipState and complete stats/relationships in the same patch. Existing NPC updates remain partial and preserve prior facts. Storage scope is controlled by the user; never emit npcScope or npcOwner.');
     }
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split('After the story,')[0]);
@@ -5728,6 +5744,7 @@ function renderScene(panel, state) {
     const journeyProgress = travelProgress(state);
     const routePoints = state.travel.routePoints?.length >= 2 ? state.travel.routePoints : buildTravelRoutePoints(state, state.travel);
     const snapshot = sceneSnapshot(state);
+    const currentScene = previousScene(SillyTavern.getContext().chat?.length || 0);
     const locationKnown = state.onboarding.locationSeeded;
     // Atlas coordinates may still be bootstrap values; scene details use narrative locations.
     const locationDetail = state.location.detail || state.location.place || state.location.region;
@@ -5746,6 +5763,12 @@ function renderScene(panel, state) {
             <article><i class="fa-solid fa-location-dot"></i><span>${html(tr('Current place'))}</span><strong>${html(moving ? `En route to ${state.travel.destinationPlace || state.travel.destination}` : snapshot.location || '—')}</strong><small>${html(exactLocation)}</small></article>
             <article><i class="fa-solid fa-street-view"></i><span>${html(tr('Scene position'))}</span><strong>${html(state.scene.position)}</strong><small>${html(tr(state.location.zoneType))}</small></article>
         </section>
+        ${currentScene ? `<details class="tretaresia-editor"><summary><i class="fa-solid fa-list"></i> ${html(tr('Scene details'))}</summary>
+            <dl class="tretaresia-fact-list">${[
+                ['Month',currentScene.month], ['Year',currentScene.year], ['Era',currentScene.era], ['Calendar',currentScene.calendar],
+                ['Season',currentScene.season], ['Lighting',currentScene.lighting], ['Participants',currentScene.participants?.join(', ')],
+                ['Objective',currentScene.objective], ['Safety',currentScene.safety], ['Atmosphere',currentScene.atmosphere], ['Elapsed',currentScene.elapsed],
+            ].map(([label, value]) => `<div><dt>${html(tr(label))}</dt><dd>${html(value || '—')}</dd></div>`).join('')}</dl></details>` : ''}
         ${state.travel.status !== 'Idle' ? `<section class="tretaresia-card tretaresia-travel-status" data-status="${html(state.travel.status.toLowerCase())}">
             <div class="tretaresia-card-title"><span>${html(tr('Journey'))}</span><em><i class="fa-solid fa-route"></i> ${html(state.travel.status)}</em></div>
             <dl class="tretaresia-fact-list"><div><dt>${html(tr('Origin'))}</dt><dd>${html(state.travel.origin || 'Unknown')}</dd></div>
@@ -9114,7 +9137,10 @@ function applyStatePatch(current, patch) {
         // A first real place must not inherit the old atlas bootstrap region.
         if (!current.onboarding.locationSeeded) {
             for (const [key, fallback] of Object.entries({continent:'Unknown',region:'Unknown',detail:''})) {
-                if (!acceptedOps.some(op => op[1] === `location.${key}`)) candidate.location[key] = fallback;
+                if (!operations.some(op => op[1] === `location.${key}`
+                    && typeof op[2] === 'string' && op[2].trim() && !/^(?:unknown|none|n\/a|ไม่ทราบ|ไม่ระบุ|—|-)$/i.test(op[2].trim()))) {
+                    candidate.location[key] = fallback;
+                }
             }
         }
     }
@@ -9311,6 +9337,37 @@ function cleanInlinePatchSurfaces(message) {
     return { visible, patch, found };
 }
 
+async function completeTurnScene(context, messageId, message, state, inlineDetails, variantKey) {
+    const prior = previousScene(messageId, context) || {};
+    const details = inlineDetails && typeof inlineDetails === 'object' && !Array.isArray(inlineDetails) ? inlineDetails : {};
+    // Require a fresh answer per turn. A complete prior scene is reference data, not proof the player stayed there.
+    if (!missingSceneFields(details).length && !missingSceneFields(sceneSnapshot(state, details)).length) return details;
+    if (typeof context.generateQuietPrompt !== 'function') return details;
+    const requestChat = context.getCurrentChatId?.(), requestOwner = characterOwner(context)?.key;
+    const metadata = context.chatMetadata;
+    const messageCount = context.chat.length, stateRecord = metadata?.[METADATA_KEY];
+    const preceding = context.chat.slice(Math.max(0, messageId - 3), messageId).filter(item => item && !item.is_system)
+        .map(item => `${item.is_user ? 'User' : 'Character'}: ${extractStatePatch(item.mes || '').visible.slice(-2500)}`);
+    try {
+        recordExtensionRequest('sceneCompletion', 'RPG Scene completion');
+        const result = await context.generateQuietPrompt({
+            quietPrompt: `Return ONLY a JSON object with a sceneTracker containing ALL of these keys: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. The user/player's ACTUAL current location and companions are determined by the latest completed story reply, not a destination merely mentioned. Use the story language, 24-hour HH:mm, numeric Celsius temperature, integer day and a participants name array. Preserve established world facts; establish coherent fictional scene-only details where never specified. Never emit unknown or placeholders. No gameplay ops, no prose. Previous scene is reference DATA: ${JSON.stringify(prior)}. Current canonical scene is reference DATA: ${JSON.stringify(sceneSnapshot(state))}. Inline details already supplied are reference DATA: ${JSON.stringify(details)}. RECENT STORY:\n${[...preceding, `Character: ${extractStatePatch(message.mes || '').visible.slice(-4000)}`].join('\n')}`,
+            skipWIAN: true, responseLength: 1100, removeReasoning: true,
+        });
+        if (SillyTavern.getContext().getCurrentChatId?.() !== requestChat || characterOwner(SillyTavern.getContext())?.key !== requestOwner
+            || context.chatMetadata !== metadata || metadata?.[METADATA_KEY] !== stateRecord
+            || context.chat.length !== messageCount || context.chat[messageId] !== message || assistantVariantKey(message) !== variantKey) return null;
+        const parsed = parseJson(result);
+        const supplement = parsed?.sceneTracker || parsed?.scene || parsed;
+        if (!supplement || typeof supplement !== 'object' || Array.isArray(supplement)) return details;
+        const missing = new Set(missingSceneFields(details));
+        return { ...supplement, ...Object.fromEntries(Object.entries(details).filter(([key]) => !missing.has(key))) };
+    } catch (error) {
+        console.warn('[Tretaresia RPG] Scene completion was unavailable; keeping established facts.', error);
+        return details;
+    }
+}
+
 async function processAssistantPatch(messageId, generationType = '') {
     const settings = getSettings();
     if (['first_message', 'quiet', 'impersonate'].includes(generationType)) return;
@@ -9370,11 +9427,23 @@ async function processAssistantPatch(messageId, generationType = '') {
         }
         const reconciled = reconcileCompletedTurn(base, patched, userMessage, message);
         reconciled.changes += registerStorySpeakers(reconciled.next, message, context, base);
+        const details = await completeTurnScene(context, messageId, message, reconciled.next, extracted.patch?.sceneTracker, variantKey);
+        if (details === null) return;
+        const explicit = (extracted.patch?.ops || []).flatMap(canonicalPatchOperations);
+        const sceneOps = sceneTrackerOperations(details, explicit).filter(([, path, value]) =>
+            (path.startsWith('location.') && !reconciled.next.onboarding.locationSeeded)
+            || path.split('.').reduce((entry, key) => entry?.[key], reconciled.next) !== value);
+        if (sceneOps.length) {
+            const recovered = applyStatePatch(reconciled.next, { ops: sceneOps });
+            reconciled.next = recovered.next;
+            accepted += recovered.accepted;
+            notifications.push(...recovered.notifications);
+        }
         const totalChanges = accepted + reconciled.changes;
         if (totalChanges) {
             const saved = await persistState(reconciled.next, accepted ? 'inline-patch+turn-reconcile' : 'turn-reconcile-fallback', {deferMetadataSave:true});
             if (!saved) return;
-            await rememberScene(messageId, message, getState(), extracted.patch?.sceneTracker);
+            await rememberScene(messageId, message, getState(), details);
             if (checkpoint) {
                 checkpoint.variants[variantKey] = {
                     state: clone(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
@@ -9391,7 +9460,7 @@ async function processAssistantPatch(messageId, generationType = '') {
             setSync('success', tr('State updated'), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${totalChanges} รายการแล้ว` : `${totalChanges} confirmed change${totalChanges === 1 ? '' : 's'} saved.`);
             console.info(`[Tretaresia RPG] Applied ${accepted} inline operation(s) plus ${reconciled.changes} deterministic reconciliation change(s).`);
         } else {
-            await rememberScene(messageId, message, reconciled.next, extracted.patch?.sceneTracker);
+            await rememberScene(messageId, message, reconciled.next, details);
             if (checkpoint) {
                 checkpoint.variants[variantKey] = {
                     state: clone(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
@@ -9444,7 +9513,7 @@ ${transcript}
 
 ${patchInstructions()}
 ${ATTRIBUTE_INSTRUCTIONS}
-Return ONLY the JSON object that would appear after "tretaresia_patch:". Do not include the HTML comment. If nothing changed, return {"ops":[],"summary":"No confirmed changes."}.`;
+Return ONLY the JSON object that would appear after "tretaresia_patch:". Do not include the HTML comment. Always include a complete sceneTracker, even when ops is empty and no gameplay state changed.`;
 }
 
 function queueAnalyze(options = {}) {
@@ -9968,7 +10037,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.37.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.38.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
