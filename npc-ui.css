@@ -187,3 +187,14 @@
  .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-manager-top button{min-height:36px;min-width:36px;padding:0 9px;font-size:21px}
  .trpg-manager.trpg-keyboard-open[data-view="edit"] .trpg-record{padding:10px 14px 32px;scroll-padding-block:16px}
 }
+.trpg-change-history { margin: 12px 0; border: 1px solid rgba(220,185,104,.27); border-radius: 10px; padding: 10px; }
+.trpg-change-history summary { cursor: pointer; color: var(--trpg-gold,#d6b458); font-weight: 700; }
+.trpg-change-icon { width: 12px; height: 12px; flex: 0 0 12px; vertical-align: middle; }
+.trpg-change-icon circle { fill: currentColor; }
+.trpg-change-icon.is-steady { color: #49b978; }
+.trpg-change-icon.is-changed { color: #eea646; }
+.trpg-change-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(215px,1fr)); gap: 5px; max-height: 340px; overflow: auto; margin-top: 10px; }
+.trpg-change-list > div { display: grid; gap: 3px; min-width: 0; padding: 8px; border: 1px solid rgba(255,255,255,.12); border-radius: 6px; }
+.trpg-change-list > div.is-changed { border-color: rgba(238,166,70,.52); }
+.trpg-change-list span { display: flex; align-items: center; gap: 6px; font-size: .8rem; }
+.trpg-change-list small { overflow-wrap: anywhere; opacity: .85; }

@@ -1,9 +1,10 @@
-import { createLoreWorkspace } from './lore-workspace.js?v=0.39.2';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable } from './npc-core.js?v=0.39.2';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription } from './npc-generation.js?v=0.39.2';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.39.2';
-import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.39.2';
-import { collectPortraitBackups } from './npc-media.js?v=0.39.2';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.40.0';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable } from './npc-core.js?v=0.40.0';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription } from './npc-generation.js?v=0.40.0';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.40.0';
+import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.40.0';
+import { collectPortraitBackups } from './npc-media.js?v=0.40.0';
+import { H_FIELDS } from './h-stats.js?v=0.40.0';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -41,11 +42,48 @@ export function createNpcWorkspace(api) {
     }
     const changed=new Set();
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('./npc-ui.css?v=0.39.2',import.meta.url).href;document.head.append(sheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('./npc-ui.css?v=0.40.0',import.meta.url).href;document.head.append(sheet);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
     const valid=t=>dialog?.open && token===t && chatId===currentChat() && ownerKey===(api.scopeInfo()?.key||'');
     const records=()=>api.listScope(scope);
+    function changeIcon(different){
+        const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+        svg.setAttribute('viewBox','0 0 16 16');svg.setAttribute('aria-hidden','true');svg.classList.add('trpg-change-icon',different?'is-changed':'is-steady');
+        const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx','8');circle.setAttribute('cy','8');circle.setAttribute('r','6');
+        svg.append(circle);return svg;
+    }
+    function formatChange(value){return value===undefined||value===null||value===''?'—':typeof value==='object'?JSON.stringify(value):String(value);}
+    function changeHistory(p,live){
+        const fields=[
+            ...Object.entries(FIELDS).map(([key,label])=>({path:key,label,value:n=>n[key]})),
+            {path:'met',label:'เคยพบแล้ว / Met',value:n=>n.met},
+            ...RELATIONS.map(key=>({path:key,label:key,value:n=>n[key]})),
+            ...['rank',...STATS].map(key=>({path:`stats.${key}`,label:`Stat · ${key}`,value:n=>n.stats?.[key]})),
+            {path:'abilities',label:'Abilities',value:n=>(n.abilities||[]).map(a=>`${a.name} · ${a.level} · ${a.proficiency}%`).join(', ')},
+            ...H_FIELDS.map(field=>({path:`hStats.${field.key}`,label:field.label,value:n=>n.hStats?.[field.key]})),
+        ];
+        const prefix=`npcs.${p.id}.`,latest=new Map();
+        for(const audit of [...(api.state().systems?.audit||[])].reverse())for(const change of [...(audit.changes||[])].reverse()){
+            if(change.path.startsWith(prefix)&&!latest.has(change.path.slice(prefix.length)))latest.set(change.path.slice(prefix.length),change);
+        }
+        const rows=fields.map(field=>{
+            const baseline=field.value(p),current=field.value(live||p),audit=latest.get(field.path);
+            const different=scope==='character'?JSON.stringify(baseline)!==JSON.stringify(current):Boolean(audit);
+            return {label:field.label,different,before:scope==='character'?baseline:audit?.before??baseline,after:scope==='character'?current:audit?.after??current};
+        });
+        const count=rows.filter(row=>row.different).length;
+        const block=element('details','trpg-change-history');const summary=element('summary');
+        summary.append(changeIcon(count>0),document.createTextNode(` การเปลี่ยนแปลง · ${count} รายการ (ค่าเดิม → ค่าปัจจุบัน)`));block.append(summary);
+        const list=element('div','trpg-change-list');
+        for(const row of rows){
+            const item=element('div',row.different?'is-changed':'is-steady');
+            const label=element('span');label.append(changeIcon(row.different),document.createTextNode(row.label));
+            item.append(label,element('small','',row.different?`${formatChange(row.before)} → ${formatChange(row.after)}`:'ไม่มีการเปลี่ยนแปลง'));
+            list.append(item);
+        }
+        block.append(list);return {block,count};
+    }
     const scopeState=()=>({...api.state(),npcs:records()});
     const persistRecords=(npcs,source)=>api.persistScope(scope,npcs,source,chatId,ownerKey);
     function setView(next){
@@ -73,7 +111,7 @@ export function createNpcWorkspace(api) {
             <div class="trpg-roster-actions"><button type="button" data-new data-lock>＋ สร้าง NPC</button><button type="button" data-import data-lock>นำเข้า Character Life</button><input type="file" data-import-file accept=".json,.zip,application/json,application/zip" hidden></div></div><div class="trpg-list-heading"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class="trpg-pagination" data-pagination></div></section>
             <section class="trpg-record" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id="trpg-npc-form" novalidate hidden><fieldset></fieldset></form></section></div>
             <section class="trpg-lore-panel" data-lore-panel hidden></section>
-            <footer class="trpg-manager-footer"><span role="status" aria-live="polite"></span><span>SCOPED ARCHIVE · v0.39.2</span></footer><div class="trpg-actions trpg-editor-actions" data-editor-actions hidden></div>`;
+            <footer class="trpg-manager-footer"><span role="status" aria-live="polite"></span><span>SCOPED ARCHIVE · v0.40.0</span></footer><div class="trpg-actions trpg-editor-actions" data-editor-actions hidden></div>`;
         document.body.append(dialog);form=dialog.querySelector('form');roster=dialog.querySelector('[data-list]');status=dialog.querySelector('[role=status]');
         lore=createLoreWorkspace(dialog.querySelector('[data-lore-panel]'),api,say);
         dialog.querySelectorAll('[data-management-tab]').forEach(button=>button.addEventListener('click',()=>{
@@ -126,7 +164,7 @@ export function createNpcWorkspace(api) {
             const button=element('button','trpg-person');button.type='button';button.dataset.lock='';button.disabled=busy;button.setAttribute('aria-pressed',String(p.id===draftId));
             button.style.setProperty('--speaker',identity(p).identityColor);const emblem=element('span','trpg-list-emblem');emblem.append(icon(ROLE_ICONS[identity(p).roleIcon]));
             const copy=element('span','trpg-list-copy');copy.append(element('strong','',p.name),element('small','',[p.title||p.occupation,p.race].filter(Boolean).join(' · ')));
-            const meta=element('span','trpg-list-meta');meta.append(element('span','',p.enabled===false?'ปิดใช้งาน':p.isHostile?'Hostile':p.relationship||''),element('small','',p.location||''));
+            const meta=element('span','trpg-list-meta');meta.append(element('span','',p.enabled===false?'ปิดใช้งาน':p.isHostile?'Hostile':p.met?'พบแล้ว':'ยังไม่พบ'),element('small','',p.location||''));
             button.append(emblem,copy,meta,element('span','trpg-list-arrow','›'));button.setAttribute('aria-label',`ดูข้อมูล ${p.name}`);
             button.addEventListener('click',()=>{if(!busy&&canLeave())void showDetail(p);});roster.append(button);
         }
@@ -140,17 +178,11 @@ export function createNpcWorkspace(api) {
         const banner=element('div','trpg-detail-banner trpg-chat'),header=speakerHeader(p,()=>void load(records().find(n=>n.id===p.id)||p));banner.append(header);detail.append(banner);
         const actions=element('div','trpg-detail-actions'),edit=element('button','trpg-primary','แก้ไขข้อมูล');edit.type='button';edit.dataset.lock='';edit.addEventListener('click',()=>{if(!busy)void load(records().find(n=>n.id===p.id)||p);});actions.append(edit);
         const toggle=element('button','',p.enabled===false?'เปิดใช้งานตัวละคร':'ปิดใช้งานตัวละคร');toggle.type='button';toggle.dataset.lock='';toggle.setAttribute('aria-pressed',String(p.enabled!==false));toggle.addEventListener('click',()=>void toggleRecord(p));actions.append(toggle);
-        if(scope==='character'){
-            const live=api.state().npcs.find(n=>n.id===p.id&&n.npcScope==='character');
-            if(live){
-                const differences=Object.keys(FIELDS).filter(key=>JSON.stringify(live[key])!==JSON.stringify(p[key]));
-                if(JSON.stringify(live.stats)!==JSON.stringify(p.stats))differences.push('stats');
-                if(differences.length){
-                    const reset=element('button','','คืนข้อมูลแชทนี้เป็นค่าเริ่มต้น');reset.type='button';reset.dataset.lock='';
-                    reset.addEventListener('click',()=>void resetChatRecord(p));actions.append(reset);
-                    detail.append(element('p','trpg-detail-scope',`การเปลี่ยนแปลงเฉพาะแชทนี้: ${differences.map(key=>FIELDS[key]||'ค่าสถานะ').join(' · ')}`));
-                }
-            }
+        const live=scope==='character'?api.state().npcs.find(n=>n.id===p.id&&n.npcScope==='character'):null;
+        const history=changeHistory(p,live);detail.append(history.block);
+        if(scope==='character'&&history.count){
+            const reset=element('button','','คืนข้อมูลแชทนี้เป็นค่าเริ่มต้น');reset.type='button';reset.dataset.lock='';
+            reset.addEventListener('click',()=>void resetChatRecord(p));actions.append(reset);
         }
         const copy=element('button','',scope==='chat'?'สร้างสำเนาใน Character':'สร้างสำเนาใน Chat');copy.type='button';copy.disabled=scope==='chat'&&!api.scopeInfo();copy.dataset.lock='';copy.addEventListener('click',()=>void copyScope(p));actions.append(copy);const remove=element('button','trpg-danger','ลบตัวละคร');remove.type='button';remove.dataset.lock='';remove.addEventListener('click',()=>void deleteRecord(p));actions.append(remove);detail.append(actions);
         detail.append(element('p','trpg-detail-scope',scope==='chat'?'CHAT SCOPE · ใช้เฉพาะแชตนี้':`CHARACTER SCOPE · ${api.scopeInfo()?.label||''} · ข้อมูลฐานใช้ร่วมกันทุกแชท · พัฒนาการระหว่างเล่นบันทึกเฉพาะแชทนี้`));
@@ -229,6 +261,7 @@ export function createNpcWorkspace(api) {
         for(const [key,label]of Object.entries(FIELDS))grid.append(field(key,label,p[key],LONG_FIELDS.has(key)));
         grid.append(field('aliases','ชื่ออื่น / ชื่อเรียก (คั่นด้วย ,)',(p.aliases||[]).join(', '),true));
         const hostile=element('label','trpg-check');const check=element('input');check.type='checkbox';check.name='isHostile';check.checked=Boolean(p.isHostile);hostile.append(check,document.createTextNode('เป็นศัตรู (ยังอยู่ใน Management แต่ไม่อยู่ในรายชื่อมิตร)'));grid.append(hostile);
+        const metLabel=element('label','trpg-check'),metCheck=element('input');metCheck.type='checkbox';metCheck.name='met';metCheck.checked=p.met===true;metLabel.append(metCheck,document.createTextNode('เคยพบแล้ว · แสดงในแท็บ NPC หากเป็นมิตร'));grid.append(metLabel);
         const generator=element('section','trpg-generator');
         const label=element('label','','Describe the NPC you want / อธิบาย NPC ที่ต้องการ');
         const description=element('textarea');description.dataset.npcBrief='';description.rows=4;description.maxLength=6000;description.value=brief;
@@ -286,7 +319,7 @@ export function createNpcWorkspace(api) {
     function values(){
         const result={};for(const key of Object.keys(FIELDS))result[key]=form.elements.namedItem(key)?.value.trim()||'';
         result.aliases=form.elements.namedItem('aliases').value.split(',').map(v=>v.trim()).filter(Boolean);
-        result.identityColor=form.elements.namedItem('identityColor').value;result.roleIcon=form.elements.namedItem('roleIcon').value;result.portraitSize=Number(form.elements.namedItem('portraitSize').value);result.isHostile=form.elements.namedItem('isHostile').checked;
+        result.identityColor=form.elements.namedItem('identityColor').value;result.roleIcon=form.elements.namedItem('roleIcon').value;result.portraitSize=Number(form.elements.namedItem('portraitSize').value);result.isHostile=form.elements.namedItem('isHostile').checked;result.met=form.elements.namedItem('met').checked;
         result.stats={rank:form.elements.namedItem('stats.rank').value};for(const key of STATS)result.stats[key]=Number(form.elements.namedItem(`stats.${key}`).value)||0;
         for(const key of RELATIONS)result[key]=Number(form.elements.namedItem(key).value)||0;
         result.abilities=[...form.querySelectorAll('.trpg-ability')].map(row=>({id:row.dataset.id,...Object.fromEntries([...row.querySelectorAll('[data-ability]')].map(n=>[n.dataset.ability,n.dataset.ability==='proficiency'?Number(n.value):n.value.trim()]))})).filter(v=>v.name);

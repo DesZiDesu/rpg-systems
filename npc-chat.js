@@ -1,6 +1,6 @@
-import { identity, resolveNpc, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.39.2';
-import { croppedPortrait } from './npc-portraits.js?v=0.39.2';
-import { renderSceneTracker } from './scene-tracker.js?v=0.39.2';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.40.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.40.0';
+import { renderSceneTracker } from './scene-tracker.js?v=0.40.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -47,7 +47,7 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
         if (block.type === 'narrative') { root.append(narrative(block.text)); continue; }
         if (block.type === 'plain') { root.append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
         const name = block.name || fallbackName || 'NPC';
-        const profile = lookup.get(keyName(name)) || resolveNpc([...new Set(lookup.values())], name);
+        const profile = lookup.get(keyName(name)) || resolveNpcSpeaker([...new Set(lookup.values())], name);
         // Canonical profile object also unifies aliases, without conflating
         // distinct records with the same display label or different scopes.
         const speaker = profile || keyName(name);

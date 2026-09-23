@@ -173,9 +173,9 @@ export function retainManualNpcEdits(history, before, after) {
 }
 export const CHAT_INSTRUCTIONS = `TRETARESIA CHAT PRESENTATION: Write the visible story as plain text inside these blocks, in story order:
 <tr-narrative>Third-person scene/action narration only.</tr-narrative>
-<tr-dialogue name="Exact NPC Name">Only words spoken by this character, without quotation marks.</tr-dialogue>
+ <tr-dialogue name="Exact NPC Name">Only words spoken by this character, without quotation marks.</tr-dialogue>
 Do not emit HTML, Markdown fences, thought labels or role metadata inside blocks. Do not invent portrait URLs.
-After the story, emit the existing tretaresia_patch as usual, outside these blocks. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;
+ After the story, emit the existing tretaresia_patch as usual, outside these blocks. The dialogue name and NPC name must be the actual person's name; title is a separate role or epithet and must never replace name. Set met:true only when the player has actually met the person; a mere lore mention is not an encounter. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;
 
 
 // All-or-nothing AI form replacement. Never accept storage IDs, image paths or scope.
@@ -240,4 +240,15 @@ export function resolveNpc(records, value) {
  const matches=records.filter(p=>names(p).some(n=>requested.some(r=>
   (/^[a-z]+$/.test(n)&&thaiNameRomanization(r)===n)||(/^[a-z]+$/.test(r)&&thaiNameRomanization(n)===r))));
  return matches.length===1?matches[0]:null;
+}
+
+// A generated dialogue header occasionally puts a unique title in its name slot.
+// Resolve it to the recorded person, while preserving canonical name and title.
+export function resolveNpcSpeaker(records, value) {
+ const direct=resolveNpc(records,value);if(direct)return direct;
+ const raw=typeof value==='string'?value:value?.npcName||value?.name;
+ const wanted=keyName(raw);
+ if(!wanted)return null;
+ const titled=records.filter(p=>p.title&&keyName(p.title)===wanted);
+ return titled.length===1?titled[0]:null;
 }

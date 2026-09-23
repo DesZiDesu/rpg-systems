@@ -1,4 +1,4 @@
-import { keyName, resolveNpc } from './npc-core.js?v=0.39.2';
+import { keyName, resolveNpc } from './npc-core.js?v=0.40.0';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -45,6 +45,7 @@ export function hydrateScopedNpcs(state, library, owner) {
         const delta = active.overrides[p.id] || {};
         const next = { ...clone(p), ...clone(delta), id: p.id, npcScope: 'character', npcOwner: owner };
         if (delta.stats) next.stats = { ...p.stats, ...delta.stats };
+        if (delta.hStats) next.hStats = { ...p.hStats, ...delta.hStats };
         if (names.has(keyName(next.name))) continue;
         shared.push(next); names.add(keyName(next.name)); ids.add(p.id);
     }
@@ -77,9 +78,9 @@ export function packScopedNpcs(state, library, owner) {
         const baseline = scoped.bases[original.id] || original, delta = {};
         for (const [key, value] of Object.entries(p)) {
             if (RESERVED.has(key) || same(value, baseline[key])) continue;
-            if (key === 'stats') {
-                const stats = Object.fromEntries(Object.entries(value).filter(([stat, n]) => !same(n, baseline.stats?.[stat])));
-                if (Object.keys(stats).length) delta.stats = stats;
+            if (key === 'stats' || key === 'hStats') {
+                const fields = Object.fromEntries(Object.entries(value).filter(([field, n]) => !same(n, baseline[key]?.[field])));
+                if (Object.keys(fields).length) delta[key] = fields;
             } else delta[key] = clone(value);
         }
         if (Object.keys(delta).length) overrides[p.id] = delta;

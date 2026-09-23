@@ -1,4 +1,4 @@
-@import url("./style.css?v=0.39.2");
+@import url("./style.css?v=0.40.0");
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&display=swap");
 
@@ -5771,3 +5771,4 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 @media (max-width: 420px) {
     .tretaresia-aura-control-grid,.tretaresia-diagnostic-grid,.tretaresia-comparison-grid { grid-template-columns:1fr; }
 }
+

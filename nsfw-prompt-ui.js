@@ -1,4 +1,4 @@
-import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,writingPreferencePrompt} from './nsfw-enhance.js?v=0.39.2';
+import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,writingPreferencePrompt} from './nsfw-enhance.js?v=0.40.0';
 
 // This renders the exact optional writing block sent by updatePrompt. Reading
 // or editing it never calls the model; only committed changes save settings.
@@ -36,3 +36,4 @@ export function mountAdultPromptControls(root,{settings,getChat,save,refreshProm
  render();
  return {refresh:render};
 }
+
