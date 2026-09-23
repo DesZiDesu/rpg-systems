@@ -1,5 +1,11 @@
 # Host and iOS acceptance checks
 
+## v0.38.1 NPC creation and iPhone keyboard
+
+- In NPC Management on iPhone, focus the long brief, Name, Appearance and a lower attribute field. The keyboard should leave a compact title and most of the visible area for the focused input; scrolling should keep it above the keyboard. Dismiss the keyboard and confirm tabs, scope, AI/Save buttons and status return without losing the draft. Repeat with the keyboard's Next button.
+- Select a separate reference image near Generate and a different saved portrait under Chat Appearance. With Image inlining and a vision-capable chat model, Generate should write a brief visual description into Appearance; Save should keep the saved portrait and Appearance, without storing the separate reference image. Opening a fresh draft should have no old reference image.
+- Repeat with a model that cannot read images: report the image error and keep the existing form unchanged. Turn off image reading, type the appearance in the brief and Generate using text. Force a short, incomplete but valid JSON response and confirm useful fields are retained; malformed JSON should retry once, then leave the draft untouched with an error if still invalid. Confirm a 524 does not trigger a retry loop.
+
 ## v0.31 list navigation and scopes
 
 1. Open Management with an empty chat and again with existing NPCs. Only the list/empty state should be visible; no editor should open automatically. Selecting a row opens a read-only dossier. Edit and Create are explicit actions. Back returns to the list and warns before abandoning an edited draft.
