@@ -95,3 +95,11 @@ tretaresia_patch {
 .tretaresia-adult-import{display:grid;gap:5px;margin-top:.7rem;font-size:.72rem}
 .tretaresia-adult-import input{max-width:100%;font-size:.72rem}
 .tretaresia-adult-tags [role=status]{min-height:1em;color:var(--tretaresia-accent)}
+.tretaresia-adult-prompt{margin:.75rem 0;padding:.65rem;border:1px solid var(--tretaresia-line);color:var(--tretaresia-soft)}
+.tretaresia-adult-prompt summary{cursor:pointer;color:var(--tretaresia-accent);font-weight:600}
+.tretaresia-adult-prompt label{display:block;margin:.6rem 0 .3rem;font-size:.73rem}
+.tretaresia-adult-prompt p{font-size:.72rem;line-height:1.5}
+.tretaresia-adult-prompt textarea{box-sizing:border-box;display:block;width:100%;max-width:100%;min-height:95px;max-height:220px;padding:.55rem;color:var(--tretaresia-ink);background:rgba(var(--tretaresia-accent-rgb),.05);border:1px solid var(--tretaresia-line);font:500 .72rem/1.5 ui-monospace,SFMono-Regular,monospace;resize:vertical;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+.tretaresia-adult-prompt textarea[readonly]{background:rgba(var(--tretaresia-accent-rgb),.025)}
+.tretaresia-adult-prompt button{margin:.5rem 0}
+[data-tretaresia-request-breakdown]{display:block;margin-top:.3rem;color:var(--tretaresia-muted);font-size:.7rem}

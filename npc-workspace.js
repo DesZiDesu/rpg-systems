@@ -1,9 +1,9 @@
-import { createLoreWorkspace } from './lore-workspace.js?v=0.39.1';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable } from './npc-core.js?v=0.39.1';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription } from './npc-generation.js?v=0.39.1';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.39.1';
-import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.39.1';
-import { collectPortraitBackups } from './npc-media.js?v=0.39.1';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.39.2';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable } from './npc-core.js?v=0.39.2';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription } from './npc-generation.js?v=0.39.2';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.39.2';
+import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.39.2';
+import { collectPortraitBackups } from './npc-media.js?v=0.39.2';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -41,7 +41,7 @@ export function createNpcWorkspace(api) {
     }
     const changed=new Set();
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('./npc-ui.css?v=0.39.1',import.meta.url).href;document.head.append(sheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('./npc-ui.css?v=0.39.2',import.meta.url).href;document.head.append(sheet);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
     const valid=t=>dialog?.open && token===t && chatId===currentChat() && ownerKey===(api.scopeInfo()?.key||'');
@@ -73,7 +73,7 @@ export function createNpcWorkspace(api) {
             <div class="trpg-roster-actions"><button type="button" data-new data-lock>＋ สร้าง NPC</button><button type="button" data-import data-lock>นำเข้า Character Life</button><input type="file" data-import-file accept=".json,.zip,application/json,application/zip" hidden></div></div><div class="trpg-list-heading"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class="trpg-pagination" data-pagination></div></section>
             <section class="trpg-record" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id="trpg-npc-form" novalidate hidden><fieldset></fieldset></form></section></div>
             <section class="trpg-lore-panel" data-lore-panel hidden></section>
-            <footer class="trpg-manager-footer"><span role="status" aria-live="polite"></span><span>SCOPED ARCHIVE · v0.39.1</span></footer><div class="trpg-actions trpg-editor-actions" data-editor-actions hidden></div>`;
+            <footer class="trpg-manager-footer"><span role="status" aria-live="polite"></span><span>SCOPED ARCHIVE · v0.39.2</span></footer><div class="trpg-actions trpg-editor-actions" data-editor-actions hidden></div>`;
         document.body.append(dialog);form=dialog.querySelector('form');roster=dialog.querySelector('[data-list]');status=dialog.querySelector('[role=status]');
         lore=createLoreWorkspace(dialog.querySelector('[data-lore-panel]'),api,say);
         dialog.querySelectorAll('[data-management-tab]').forEach(button=>button.addEventListener('click',()=>{

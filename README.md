@@ -1,5 +1,10 @@
 # Tretaresia RPG System
 
+### v0.39.2 — Transparent, editable writing prompt and request counter
+
+- **View & edit writing prompt** in the extension drawer shows the exact RPG writing block built from the current language, NSFW toggle, selected tags and writing style. Users can replace the default style or reset it without changing their selected tags. The preview and typing never call AI; edits save on field change, not every keystroke. The preview does not include other SillyTavern prompts and the writing block is only sent after a player reply.
+- The RPG request counter is explicitly per page session, with Scene completion, Manual Sync and RPG action breakdown. Normal chat tracking uses the normal reply, but an incomplete Scene Tracker may require one additional quiet AI request for that turn. The counter is diagnostic and is never saved with global extension settings.
+
 ### v0.39.1 — Thai descriptions for built-in NSFW tags
 
 - The 78 built-in tags show short Thai explanations with their original English names when the interface language is Thai. English mode shows the original names. Search finds either language, and changing the interface language immediately updates the list without changing selected tags or model prompt keys. Imported and custom tags keep the names their creator supplied.
@@ -66,7 +71,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.39.1**
+**Current version: 0.39.2**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 
