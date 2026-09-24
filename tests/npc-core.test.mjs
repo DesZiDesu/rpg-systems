@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { identity, profileFields, completeDraft, importCharacters, readCharacterFile, parseStory, portraitData, cropGeometry, keyName, ROLE_ICONS, retainManualNpcEdits } from '../npc-core.js';
+import { identity, profileFields, completeDraft, importCharacters, readCharacterFile, parseStory, portraitData, cropGeometry, keyName, ROLE_ICONS, retainManualNpcEdits } from '../src/npc-core.js';
 
 test('identity fields survive partial updates; role/color are allowlisted',()=>{
  const base={appearance:'silver hair',personality:'calm',aliases:['Lys'],identityColor:'#85aacc',roleIcon:'mage',portraitSize:96,portraitSource:'local'};
@@ -20,9 +20,9 @@ test('story parser preserves ordered narrative/dialogue/plain blocks',()=>{
  const result=parseStory('Intro\n<tr-narrative>Rain falls.</tr-narrative><tr-dialogue name="Lysa">Hello.</tr-dialogue>End');
  assert.deepEqual(result.map(v=>v.type),['plain','narrative','dialogue','plain']);assert.equal(result[2].name,'Lysa');assert.equal(result[2].text,'Hello.');assert.equal(parseStory('Existing untagged message'),null);
 });
-test('story parser handles Thai, strips tags, ignores unfinished streaming block',()=>{
+test('story parser handles Thai, strips tags, renders unfinished streaming block safely',()=>{
  const result=parseStory('<tr-dialogue name="ไลซา"><img src=x onerror=alert(1)>สวัสดี</tr-dialogue><tr-narrative>unfinished');
- assert.equal(result.length,1);assert.equal(result[0].text,'สวัสดี');assert.equal(result[0].name,'ไลซา');assert.equal(parseStory('<tr-narrative>unfinished'),null);
+ assert.equal(result.length,2);assert.equal(result[1].text,'unfinished');assert.equal(result[0].text,'สวัสดี');assert.equal(result[0].name,'ไลซา');assert.equal(parseStory('<tr-narrative>unfinished')[0].text,'unfinished');
 });
 test('import direct CL character maps shared fields only',()=>{
  const [r]=importCharacters({name:'Lysa',role:'Archivist',species:'Elf',affiliation:'Library',relationshipToUser:'Friend',relationship:'Trusted for years',currentState:'Reading',appearance:'Silver hair',adultProfile:'ignored',customCss:'ignored',abilities:'Reads runes',unknown:'ignored'});
@@ -67,9 +67,15 @@ test('saved user edits survive swipes without copying unrelated AI state between
 });
 
 test('NPC resolution uses IDs and aliases first, rejects ambiguous transliterations',async()=>{
- const {resolveNpc}=await import('../npc-core.js');const a={id:'a',name:'Kohaku',aliases:['Amber']},b={id:'b',name:'โคฮาคุ'};
+ const {resolveNpc}=await import('../src/npc-core.js');const a={id:'a',name:'Kohaku',aliases:['Amber']},b={id:'b',name:'โคฮาคุ'};
  assert.equal(resolveNpc([a],{name:'โคฮาคุ'}),a);assert.equal(resolveNpc([a],{name:'Amber'}),a);
  assert.equal(resolveNpc([a,b],{id:'b',name:'Kohaku'}),b);
  assert.equal(resolveNpc([a,{id:'c',name:'Kohaku'}],{name:'โคฮาคุ'}),null);
  assert.equal(resolveNpc([a],{name:'Koharu'}),null);assert.equal(resolveNpc([a],{name:'โคฮาคุอื่น'}),null);
+});
+
+test('adjacent narrative paragraphs merge, malformed boundaries do not mix dialogue',()=>{
+ const blocks=parseStory('<tr-narrative>First.</tr-narrative>\n\n<tr-narrative>Second.</tr-narrative><tr-dialogue name="Kohaku">Hello.</narrative><tr-narrative>Rain<tr-dialogue name="Ren">Yes</tr-narrative>');
+ assert.deepEqual(blocks.map(b=>b.type),['narrative','dialogue','narrative','dialogue']);
+ assert.equal(blocks[0].text,'First.\n\nSecond.');assert.equal(blocks[1].text,'Hello.');assert.equal(blocks[2].text,'Rain');assert.equal(blocks[3].text,'Yes');
 });

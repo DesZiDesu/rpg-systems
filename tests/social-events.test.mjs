@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {allowedDiaryOps, eligibleNpc, householdOffers, groupOffers} from '../social-events.js';
+import {allowedDiaryOps, eligibleNpc, householdOffers, groupOffers} from '../src/social-events.js';
 
 const people = [
     {id:'kohaku',name:'Kohaku',met:true,diary:[]},
@@ -32,7 +32,7 @@ test('diary respects turn cooldown, visibility, duplicates, and the off setting'
     assert.equal(eligibleNpc(people,{npcId:'lore'},'Lore Only greeted us',[]),null);
 });
 
-test('group invitations require an eligible inviter, named group, offered role and only confirmed members',()=>{
+test('group invitations resolve eligible inviters, default roles and retain total membership separately',()=>{
     const party = ['offer','partyInvitation',{npcId:'kohaku',name:'Ashtrail',role:'Scout',memberCount:4,
         members:[{name:'Rhea',role:'Leader'}],leaderName:'Rhea'}];
     const guild = ['offer','guildInvitation',{npcId:'kohaku',name:'Dawnspire',role:'Initiate',
@@ -42,11 +42,11 @@ test('group invitations require an eligible inviter, named group, offered role a
     assert.deepEqual(offers[0].members.map(person=>person.name),['Kohaku','Rhea']);
     assert.equal(offers[0].memberCount,4);
     assert.equal(offers[1].memberCount,128);
-    assert.equal(groupOffers([guild],people,'Kohaku invited you; no total was stated',[],{} )[0].memberCount,null);
+    assert.equal(groupOffers([guild],people,'Kohaku invited you; no total was stated',[],{} )[0].memberCount,128);
     assert.equal(groupOffers([['offer','guildInvitation',{npcId:'kohaku',name:'Guild',role:'Member',members:[{name:'Sera'}]}]],people,'Kohaku invited you',[],{} )[0].memberCount,null);
     assert.equal(groupOffers([party],people,'No one asked',[],{}).length,0);
     assert.equal(groupOffers([party],people,'Kohaku spoke',[],{party:{name:'Elsewhere'}}).length,0);
-    assert.equal(groupOffers([['offer','partyInvitation',{npcId:'kohaku',name:'Ashtrail'}]],people,'Kohaku spoke',[],{}).length,0);
+    assert.equal(groupOffers([['offer','partyInvitation',{npcId:'kohaku',name:'Ashtrail'}]],people,'Kohaku spoke',[],{} )[0].role,'Member');
     assert.equal(groupOffers([['offer','guildInvitation',{npcId:'enemy',name:'Guild',role:'Member'}]],people,'Enemy spoke',[],{}).length,0);
 });
 
@@ -56,4 +56,13 @@ test('explicit diary request bypasses cadence but still respects off and duplica
     assert.equal(allowedDiaryOps([op],[npc],'Kohaku writes in her journal',[],'normal',20).length,0);
     assert.equal(allowedDiaryOps([op],[npc],'Kohaku writes in her journal',[],'normal',20,true).length,1);
     assert.equal(allowedDiaryOps([op],[npc],'Kohaku writes in her journal',[],'off',20,true).length,0);
+});
+
+test('direct spoken invitations recover locally and exclude hypothetical or rejected invitations',()=>{
+ const line=text=>`<tr-dialogue name="Kohaku">${text}</tr-dialogue>`;
+ assert.equal(groupOffers([],people,line('I invite you to join the guild "Dawnspire".'),[],{})[0].name,'Dawnspire');
+ assert.equal(groupOffers([],people,line('ขอเชิญคุณเข้าร่วมกิลด์ “รุ่งอรุณ”'),[],{})[0].kind,'guild');
+ for(const text of ['If I invite you to join the guild "Dawnspire".','I do not invite you to join the guild "Dawnspire".','ชวนคุณเข้ากิลด์ แต่ยังไม่ตัดสินใจ'])assert.equal(groupOffers([],people,line(text),[],{}).length,0);
+ const offers=groupOffers([['offer','guildInvitation',{npcName:'Kohaku',name:'Dawnspire',role:'Leader'}]],people,line('I invite you to join the guild "Dawnspire".'),[],{});
+ assert.equal(offers.length,1);assert.equal(offers[0].role,'Member');
 });

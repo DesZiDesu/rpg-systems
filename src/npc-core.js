@@ -72,18 +72,25 @@ export function completeDraft(base, generated) {
 export function parseStory(source) {
  const text=String(source||'');
  if(!/<tr-(?:narrative|dialogue)\b/i.test(text)||text.length>300000)return null;
- const regex=/<tr-(narrative|dialogue)\b([^>]*)>([\s\S]*?)<\/tr-\1\s*>/gi;
- const blocks=[];let m,last=0;
- while((m=regex.exec(text))&&blocks.length<150){
-  const before=text.slice(last,m.index).trim();if(before)blocks.push({type:'plain',text:before});
-  const name=m[2].match(/\bname\s*=\s*(?:"([^"]*)"|'([^']*)')/i);
-  const body=m[3].replace(/<[^>]*>/g,'').slice(0,20000);
-  blocks.push({type:m[1].toLowerCase(),name:clean(name?.[1]??name?.[2],120),text:body});last=regex.lastIndex;
+ // Tokenize boundaries instead of matching nested blocks with one regex.
+ // A new opener ends the previous block; a mismatched closer cannot swallow it.
+ const tags=/<(\/?)(?:tr-)?(narrative|dialogue)\b([^>]*)>/gi;
+ const blocks=[];let active={type:'plain'},cursor=0,match;
+ const append=raw=>{
+  const body=raw.replace(/<[^>]*>/g,'').replace(/<[^>]*$/,'').trim();
+  if(!body)return;
+  const previous=blocks.at(-1);
+  if(active.type==='narrative'&&previous?.type==='narrative')previous.text+='\n\n'+body;
+  else blocks.push({...active,text:body});
+ };
+ while((match=tags.exec(text))&&blocks.length<150){
+  append(text.slice(cursor,match.index));cursor=tags.lastIndex;
+  if(match[1]) { active={type:'plain'}; continue; }
+  const name=match[3].match(/\bname\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+  active={type:match[2].toLowerCase(),name:clean(name?.[1]??name?.[2]??name?.[3],120)};
  }
- if(!blocks.length)return null;
- const tail=text.slice(last).trim();
- if(tail && !/^<tr-(narrative|dialogue)\b/i.test(tail))blocks.push({type:'plain',text:tail});
- return blocks;
+ append(text.slice(cursor));
+ return blocks.length?blocks:null;
 }
 export function portraitData(value) {
  const s=typeof value==='string'?value:'';
@@ -175,7 +182,7 @@ export const CHAT_INSTRUCTIONS = `TRETARESIA CHAT PRESENTATION: Write the visibl
 <tr-narrative>Third-person scene/action narration only.</tr-narrative>
  <tr-dialogue name="Exact NPC Name">Only words spoken by this character, without quotation marks.</tr-dialogue>
 Do not emit HTML, Markdown fences, thought labels or role metadata inside blocks. Do not invent portrait URLs.
- After the story, emit the existing tretaresia_patch as usual, outside these blocks. The dialogue name and NPC name must be the actual person's name; title is a separate role or epithet and must never replace name. Set met:true only when the player has actually met the person; a mere lore mention is not an encounter. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;
+ Keep consecutive narration paragraphs inside ONE tr-narrative block, separated by blank lines. Start a new block only when switching between narration and speech. Never nest blocks or mix opening/closing tag types. Emit scene metadata before the story and event patches immediately after the associated story block, always outside presentation tags. The dialogue name and NPC name must be the actual person's name; title is a separate role or epithet and must never replace name. Set met:true only when the player has actually met the person; a mere lore mention is not an encounter. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;
 
 
 // All-or-nothing AI form replacement. Never accept storage IDs, image paths or scope.

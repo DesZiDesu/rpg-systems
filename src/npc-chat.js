@@ -1,6 +1,6 @@
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.40.8';
-import { croppedPortrait } from './npc-portraits.js?v=0.40.8';
-import { renderSceneTracker } from './scene-tracker.js?v=0.40.8';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.41.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.41.0';
+import { renderSceneTracker } from './scene-tracker.js?v=0.41.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -80,7 +80,7 @@ export function priorDialogueSpeaker(messages, id, lookup, visible) {
     const last = blocks?.findLast(block => block.type === 'dialogue');
     if (!last) return null;
     const name = last.name || prior.name || 'NPC';
-    return lookup.get(keyName(name)) || resolveNpc([...new Set(lookup.values())], name) || keyName(name);
+    return lookup.get(keyName(name)) || resolveNpcSpeaker([...new Set(lookup.values())], name) || keyName(name);
 }
 
 function diaryBook(note) {
@@ -149,7 +149,7 @@ function groupInvitation(offer, messageId, api) {
     if (offer.status === 'pending') {
         const actions = element('div','trpg-group-invite-actions');
         for (const [label,accepted] of [[guild ? 'รับตรากิลด์' : 'ยอมรับคำเชิญ',true],['ปฏิเสธ',false]]) {
-            const button = element('button',accepted ? 'trpg-group-invite-accept' : 'trpg-group-invite-reject',label);button.type='button';
+            const button = element('button',accepted ? 'trpg-group-invite-accept' : 'trpg-group-invite-reject',label);button.type='button';button.disabled=Boolean(offer.preview);
             button.addEventListener('click',async()=>{
                 actions.querySelectorAll('button').forEach(item=>item.disabled=true);
                 try { if (!await api.answerGroupOffer(messageId,offer.key,accepted)) actions.querySelectorAll('button').forEach(item=>item.disabled=false); }
@@ -157,6 +157,7 @@ function groupInvitation(offer, messageId, api) {
             });actions.append(button);
         }
         card.append(actions);
+        if(offer.preview)card.append(element('p','trpg-group-invite-status','กำลังรับคำเชิญ… ตอบรับได้เมื่อข้อความเสร็จ'));
     } else card.append(element('p','trpg-group-invite-status',offer.status === 'accepted' ? `เข้าร่วมแล้ว · ${offer.role}` : 'ปฏิเสธคำเชิญแล้ว'));
     return card;
 }
@@ -198,7 +199,7 @@ export function createChatPresentation(api, open) {
             const root=element('div','trpg-chat');root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
             if(scene)root.append(renderSceneTracker(scene,settings.language));
             if(blocks)renderStoryBlocks(root, blocks, lookup, message.name, open, imageFor, previousSpeaker);
-            else root.append(...original);
+            else root.append(appendStoryText(element('div','trpg-plain'),source));
             for(const offer of offers)root.append(householdInvitation(offer,id,api));
             for(const offer of groupOffers)root.append(groupInvitation(offer,id,api));
             for(const note of notes){
@@ -211,7 +212,7 @@ export function createChatPresentation(api, open) {
             mounted.set(host,{root,original,signature});host.replaceChildren(root);
         }
     }
-    function schedule(){clearTimeout(timer);timer=setTimeout(render,90);}
+    function schedule(){if(timer==null)timer=setTimeout(render,90);}
     const observer=new MutationObserver(records=>{
         if(records.some(r=>{
             const target=r.target.nodeType===1?r.target:r.target.parentElement;
@@ -222,7 +223,7 @@ export function createChatPresentation(api, open) {
     });
     // Observe only the chat, not the full settings/editor tree. Host events handle chat replacement.
     function observe(){observer.disconnect();const chat=document.getElementById('chat');if(chat)observer.observe(chat,{childList:true,subtree:true,characterData:true});schedule();}
-    const context=api.context();for(const event of ['CHAT_CHANGED','CHARACTER_MESSAGE_RENDERED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED']){
+    const context=api.context();for(const event of ['CHAT_CHANGED','CHARACTER_MESSAGE_RENDERED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED','STREAM_TOKEN_RECEIVED','GENERATION_STARTED']){
         const type=(context.eventTypes||context.event_types)?.[event];if(type)context.eventSource?.on(type,observe);
     }
     observe();

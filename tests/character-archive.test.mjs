@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ARCHIVE_FIELDS,readCharacterArchive,writeCharacterArchive,migrateCharacterArchives} from '../character-archive.js';
+import {ARCHIVE_FIELDS,readCharacterArchive,writeCharacterArchive,migrateCharacterArchives} from '../src/character-archive.js';
 
 function fixture() {
     const cards=[{avatar:'one.png',data:{extensions:{}},json_data:JSON.stringify({data:{extensions:{}}})},{avatar:'two.png',data:{extensions:{}}}];

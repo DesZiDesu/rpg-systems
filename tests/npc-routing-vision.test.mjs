@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {portraitForGeneration,visualDescription} from '../npc-generation.js';
-import {npcAttributeDefaults,generatedAttributes,STATS} from '../npc-core.js';
-import {routeNewStoryNpcs,packScopedNpcs,hydrateScopedNpcs} from '../npc-scopes.js';
+import {portraitForGeneration,visualDescription} from '../src/npc-generation.js';
+import {npcAttributeDefaults,generatedAttributes,STATS} from '../src/npc-core.js';
+import {routeNewStoryNpcs,packScopedNpcs,hydrateScopedNpcs} from '../src/npc-scopes.js';
 
 test('portrait is attached as an ephemeral data URL only for supported vision requests',async()=>{
  const blob=new Blob(['image'],{type:'image/webp'});

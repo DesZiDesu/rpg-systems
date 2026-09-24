@@ -83,3 +83,14 @@ Known boundaries: images are device-local browser storage, not embedded into mod
 - In a normal role-play chat, send a message that changes location and one that stays in the same room. Each answer should include a separate full scene card, while older cards retain their earlier place. Scene panel details should show calendar, season, lighting, participants and atmosphere.
 - Force a reply without a sceneTracker payload. The extension should make one scene-only request, save the result with that reply, and make no extra request for a fully populated normal reply.
 - If that request returns 524, the reply should still show the known facts and PARTIAL status, with no invented temperature. Switch chats while a request is pending and confirm that no result lands in the new chat.
+
+## v0.41.0 — streaming and consent
+
+- With streaming enabled, send a normal turn: Scene Tracker should show the previous scene while the new scene comment arrives. Narrative text should update continuously inside one card for adjacent narrative paragraphs.
+- Trigger a named friendly NPC's Party and Guild invitations. Check cards arrive with the relevant event data, buttons remain disabled while generating, and become usable after completion. Accept one; decline the other. Reload and check status persists, no duplicate membership or fee, and the player is not Leader.
+- A guild with 120 members should show 120 → 121, preserving unnamed members. Unknown total must not display 2 merely because only the inviter is named.
+- Change swipe, regenerate, stop mid-comment, switch chat while generating: no previous chat's transient invitations or diary should leak; no gameplay changes from a partial preview.
+- Compare the extension request counter before/after several normal replies, including missing scene data and explicit diary requests. It must not increase. Manual Sync and other explicitly requested AI actions may increase it.
+- Update from v0.40.10, reload without clearing Safari, and check Settings, Character Forge, NPC portraits, world maps and CSS resolve from their new folders.
+
+Browser automation requires a local Chromium installation. Node tests cover the actual host processing, preview guards, metadata parsing and state transitions; they do not substitute for a live SillyTavern/iOS check.

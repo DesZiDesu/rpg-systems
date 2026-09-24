@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {characterLore,lorePrompt,writeCharacterLore} from '../lore-core.js';
+import {characterLore,lorePrompt,writeCharacterLore} from '../src/lore-core.js';
 const entry=(id,enabled=true)=>({id,title:id,content:`Facts about ${id}`,enabled});
 test('lore persists per card across chats, toggles and deletes without leaking',()=>{
  const settings={};writeCharacterLore(settings,[entry('Moon')],'card:a','card:a');
@@ -21,7 +21,7 @@ test('disabled lore never enters prompts; markup is serialized as reference data
 });
 
 test('large budgets persist per card without equating characters with model tokens',async()=>{
- const {loreOptions,writeLoreOptions}=await import('../lore-core.js');const settings={};
+ const {loreOptions,writeLoreOptions}=await import('../src/lore-core.js');const settings={};
  writeLoreOptions(settings,{budget:2000000,mode:'all'},'a','a');
  const entries=Array.from({length:12},(_,i)=>({...entry(String(i)),content:String(i)+'x'.repeat(11000)}));
  writeCharacterLore(settings,entries,'a','a');const reload=JSON.parse(JSON.stringify(settings));
@@ -32,7 +32,7 @@ test('large budgets persist per card without equating characters with model toke
  assert.throws(()=>writeLoreOptions(settings,{budget:1000,mode:'all'},'a','b'));assert.equal(JSON.stringify(settings),before);
 });
 test('relevant lore is bounded, deduplicated and matches Thai keywords with pinned rules first',async()=>{
- const {selectLore,writeLoreOptions}=await import('../lore-core.js');
+ const {selectLore,writeLoreOptions}=await import('../src/lore-core.js');
  const entries=[{...entry('Town'),keywords:['เมือง'],content:'city facts'}, {...entry('Rule'),always:true,content:'base rules'}, {...entry('Copy'),keywords:['เมือง'],content:'city facts'},entry('Unrelated'),{...entry('Secret',false),always:true}];
  const selected=selectLore(entries,{budget:1000,mode:'relevant'},'ไปเมืองกัน');assert.deepEqual(selected.entries.map(p=>p.id),['Rule','Town']);
  assert.ok(selectLore(entries,{budget:15,mode:'relevant'},'เมือง').used<=15);
@@ -41,7 +41,7 @@ test('relevant lore is bounded, deduplicated and matches Thai keywords with pinn
  assert.deepEqual(selectLore(entries,{budget:1000,mode:'relevant'},'').entries.map(p=>p.id),['Rule']);
 });
 test('relevant lore finds distinctive words in content without manually entered keywords',async()=>{
- const {selectLore}=await import('../lore-core.js');
+ const {selectLore}=await import('../src/lore-core.js');
  const records=[{...entry('Archive'),content:'Kohaku keeps the silver map in the Moon Hall.',keywords:[]},
   {...entry('Other'),content:'A different hall with different rules.',keywords:[]}];
  assert.deepEqual(selectLore(records,{mode:'relevant',budget:3000},'Where is Kohaku?').entries.map(item=>item.id),['Archive']);

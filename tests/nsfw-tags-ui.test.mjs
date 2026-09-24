@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mountAdultTagControls} from '../nsfw-tags-ui.js';
-import {ADULT_TAGS,ADULT_TAG_THAI} from '../nsfw-enhance.js';
+import {mountAdultTagControls} from '../src/nsfw-tags-ui.js';
+import {ADULT_TAGS,ADULT_TAG_THAI} from '../src/nsfw-enhance.js';
 
 class Element {
  constructor(tag='div'){this.tag=tag;this.children=[];this.listeners={};this.value='';this.files=[];this.textContent='';this.checked=false;}

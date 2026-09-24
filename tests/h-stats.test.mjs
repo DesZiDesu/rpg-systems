@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {H_FIELDS,hStats,updateHStat} from '../h-stats.js';
+import {H_FIELDS,hStats,updateHStat} from '../src/h-stats.js';
 
 test('all requested partner fields are available for every gender and no extra Condition key is stored',()=>{
  const names=H_FIELDS.map(field=>field.key);

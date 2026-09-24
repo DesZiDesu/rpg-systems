@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FIELDS, STATS, RELATIONS, generatedDraft, generatedNpcDraft } from '../npc-core.js';
+import { FIELDS, STATS, RELATIONS, generatedDraft, generatedNpcDraft } from '../src/npc-core.js';
 const complete=()=>({...Object.fromEntries(Object.keys(FIELDS).map(k=>[k,`${k} detail`])),aliases:['Lysa'],abilities:[{name:'Heal',category:'Magic',level:'2',description:'Restores health',proficiency:75}],isHostile:false,identityColor:'#abcdef',roleIcon:'healer',portraitSize:96,...Object.fromEntries(RELATIONS.map(k=>[k,25])),stats:{rank:'Basic',...Object.fromEntries(STATS.map(k=>[k,10]))}});
 test('description draft covers the full form and preserves requested fictional details',()=>{
  const raw=complete();raw.name='ลิซ่า';raw.age='120';raw.background='Forest clinic';

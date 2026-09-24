@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createLoreWorkspace} from '../lore-workspace.js';
-import {characterLore,writeCharacterLore,loreOptions,writeLoreOptions} from '../lore-core.js';
+import {createLoreWorkspace} from '../src/lore-workspace.js';
+import {characterLore,writeCharacterLore,loreOptions,writeLoreOptions} from '../src/lore-core.js';
 class Node {
  constructor(tag){this.tag=tag;this.children=[];this.listeners={};}
  append(...nodes){this.children.push(...nodes);}

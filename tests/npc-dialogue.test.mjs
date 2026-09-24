@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {renderStoryBlocks,priorDialogueSpeaker} from '../npc-chat.js';
-import {parseStory} from '../npc-core.js';
+import {renderStoryBlocks,priorDialogueSpeaker} from '../src/npc-chat.js';
+import {parseStory} from '../src/npc-core.js';
 class Node {
  constructor(tag){this.tag=tag;this.className='';this.children=[];this.style={setProperty(){}};this.isConnected=true;this.listeners={};}
  append(...nodes){this.children.push(...nodes)}

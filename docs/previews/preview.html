@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Tretaresia UI 7.0 Preview</title>
-<link rel="stylesheet" href="./style.css">
-<link rel="stylesheet" href="./ui-polish.css">
+<link rel="stylesheet" href="../../styles/style.css">
+<link rel="stylesheet" href="../../styles/ui-polish.css">
 <style>
 :root {
     --tretaresia-accent:#d6b458;
@@ -270,7 +270,7 @@ body {
     var mapFrame = document.getElementById('preview-map-frame');
     var fullscreenButton = document.getElementById('preview-map-fullscreen');
     var mapImage = new Image();
-    mapImage.src = 'assets/world-map/tretaresia-world-map.webp';
+    mapImage.src = '../../assets/world-map/tretaresia-world-map.webp';
     function drawMap(){
         var rect = canvas.getBoundingClientRect();
         var ratio = window.devicePixelRatio || 1;
