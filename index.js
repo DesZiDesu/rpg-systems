@@ -1,17 +1,17 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.0';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.1';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.1';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './src/npc-core.js?v=0.43.0';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.0';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.0';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.0';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.0';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.0';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.0';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.0';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.0';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './src/npc-core.js?v=0.43.1';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.1';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.1';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.1';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.1';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.1';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.1';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.1';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.1';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.1';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.1';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -3407,7 +3407,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label','Tretaresia character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.0`;
+        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.1`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3522,13 +3522,13 @@ function patchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
-        'TRETARESIA PATCH PROTOCOL — use the SAME normal reply; never start another generation. Start with scene metadata, then emit confirmed events immediately after their story blocks:',
-        '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
+        'TRETARESIA PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
+        '<!--tretaresia_patch:{"sceneTracker":{"loc":"Market","t":"08:00","w":"Clear","temp":24,"who":["Mira"]},"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"journey":"Accepted the Eastwatch escort mission after completing aura practice."}--> (Example only; add all 21 scene fields on the first reply.)',
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
-        'Scene Tracker: Use compact aliases in sceneTracker to reduce tokens: dn=dayName,d=day,mo=month,yr=year,er=era,cal=calendar,t=time,per=period,se=season,loc=location,reg=region,con=continent,pos=position,w=weather,temp=temperature,light=lighting,who=participants,goal=objective,safe=safety,mood=atmosphere,dt=elapsed. Example {"sceneTracker":{"loc":"Market","t":"08:00","who":["Mira"]},"ops":[]}. At the START of the first normal reply, provide a complete sceneTracker in the invisible patch: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. On later replies send ONLY changed scene fields; the extension inherits every omitted field from the last scene. Use strings in story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Always establish a concrete current text place including rooms and non-atlas places; use indoor climate when weather is inapplicable. Never claim a planned destination is current. Omit coordinates. Never send empty strings, Unknown, N/A, null or dashes. Supply participants and elapsed when they change. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. The UI must have all fields, so fill the initial scene before using deltas. Do not show sceneTracker in prose.',
-        'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Begin each normal reply with sceneTracker containing only changes (complete on the first reply) and empty ops. Emit invitation/diary ops in a separate comment immediately after the relevant story block. End with any remaining gameplay ops; do not repeat ops already emitted. Multiple comments are supported. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
+        'Scene Tracker: Use compact aliases in sceneTracker to reduce tokens: dn=dayName,d=day,mo=month,yr=year,er=era,cal=calendar,t=time,per=period,se=season,loc=location,reg=region,con=continent,pos=position,w=weather,temp=temperature,light=lighting,who=participants,goal=objective,safe=safety,mood=atmosphere,dt=elapsed. Example {"sceneTracker":{"loc":"Market","t":"08:00","who":["Mira"]},"ops":[]}. In the final patch of the FIRST normal reply, provide all 21 fields: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. On later replies include changed fields AND any fields marked missing in PREVIOUS SCENE; the extension inherits the rest. Use strings in story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Establish the actual current place, including rooms and non-atlas places. Describe indoor climate when outdoor weather does not apply. Do not claim a planned destination is current. Omit coordinates. Never send empty strings, Unknown, N/A, null or dashes. Supply participants and elapsed when they change. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Complete the scene before finishing the same reply. Do not show sceneTracker in prose.',
+        'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Write the complete story first, then append one patch with sceneTracker and all gameplay, diary and invitation ops. A user asking an NPC to write a diary or invite them is not itself an event: portray the NPC doing it, then include the append/offer op in that same patch. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this main reply; never depend on a second AI request for scene, diary or invitations.',
         'Resource, injury, and damage rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
@@ -9993,7 +9993,7 @@ function extractStatePatch(message) {
         ops: patches.flatMap(patch => patch.ops).slice(0, 75),
         summary: patches.map(patch => text(patch.summary, '', 300)).filter(Boolean).join('; ').slice(0, 300),
         journey: [...patches].reverse().map(patch => text(patch.journey, '', 500)).find(Boolean) || '',
-        sceneTracker: [...patches].reverse().find(patch => Object.keys(patch.sceneTracker || {}).length)?.sceneTracker || {},
+        sceneTracker: Object.assign({}, ...patches.map(patch => patch.sceneTracker || {})),
     } : null;
     return { visible: visible.replace(/<!--[^>]*$/, '').trimEnd(), patch: combined, found };
 }
@@ -11068,7 +11068,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.43.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.43.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

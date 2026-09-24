@@ -81,6 +81,31 @@ test('an inline invitation waits for the player, stays on the message, and the d
   assert.equal(await host.answerHouseholdOffer(1,'kohaku',true),false);
  }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=originalGet;settings.autoTrack=oldTrack;settings.npcDiaryFrequency=oldRate;}
 });
+test('one completed reply updates the full scene, diary and group invitations without a second AI call',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ const settings=host.getSettings(), prior=settings.autoTrack, oldRate=settings.npcDiaryFrequency;
+ const originalGet=sandbox.document.getElementById;
+ try{
+  settings.autoTrack=true;settings.npcDiaryFrequency='often';
+  sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true})];
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
+  let requests=0;context.generateQuietPrompt=async()=>{requests++;throw Error('Unexpected second AI call');};context.saveMetadata=async()=>{};
+  const early={sceneTracker:{loc:'Kohaku room',t:'08:30',w:'Rain',temp:24},ops:[]};
+  const final={sceneTracker:{...fullScene,loc:'Kohaku room',t:'08:30',w:'Rain',temp:24},ops:[
+   ['offer','partyInvitation',{npcId:'kohaku',name:'Moonlight',role:'Scout',memberCount:4}],
+   ['offer','guildInvitation',{npcId:'kohaku',name:'Silver Dawn',role:'Member',memberCount:20}],
+   ['append','npcDiary',{npcId:'kohaku',text:'I hope they will join us tomorrow.'}]]};
+  context.chat=[{is_user:true,mes:'Talk to Kohaku.'},{is_user:false,mes:`Kohaku invites you to party “Moonlight” and guild “Silver Dawn”. <!--tretaresia_patch:${JSON.stringify(early)}--> She writes in her diary. <!--tretaresia_patch:${JSON.stringify(final)}-->`}];
+  await host.processAssistantPatch(1,'normal');
+  const card=host.sceneForMessage(1,context.chat[1]);
+  assert.equal(card.location,'Kohaku room');assert.equal(card.time,'08:30');assert.equal(card.weather,'Rain');
+  assert.deepEqual(card.missing,[]);assert.equal(host.diaryForMessage(1,context.chat[1]).length,1);
+  assert.equal(host.socialEventsForMessage(1,context.chat[1]).groupOffers.length,2);
+  assert.equal(host.getState().social.party,null);assert.equal(host.getState().social.guilds.length,0);
+  assert.equal(requests,0);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;settings.autoTrack=prior;settings.npcDiaryFrequency=oldRate;sandbox.document.getElementById=originalGet;}
+});
 test('NPC party and famous guild offers wait for consent and retain credible member counts',async()=>{
  const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
  const settings=host.getSettings(), prior=settings.autoTrack, originalGet=sandbox.document.getElementById;
@@ -360,7 +385,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.0');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.1');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
