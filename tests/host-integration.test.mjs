@@ -13,10 +13,10 @@ import {normalizeAdultSettings,writingPreferencePrompt} from '../nsfw-enhance.js
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
 const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,normalizeAdultSettings,writingPreferencePrompt,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,
-    createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
+    createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -168,6 +168,69 @@ test('same-turn patches update NPC relationships, skills and H-Stats without res
  assert.equal(later.hStats.oralSexCount,1);assert.equal(later.hStats.favoritePosition,'Established preference');
  assert.equal(later.abilities[0].category,'Aura');assert.equal(later.abilities[0].proficiency,29);
 });
+
+test('Character Forge generates the first assistant scene without posting a user message and seeds selected powers',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,characters:context.characters,characterId:context.characterId,
+  generate:context.generate,save:context.saveMetadata,query:sandbox.document.querySelector,element:sandbox.document.getElementById,input:sandbox.HTMLInputElement,autoTrack:host.getSettings().autoTrack};
+ const draft={fields:{fName:'Ari',fTitle:'The Dawn',fOrigin:'Sun Ward',fOriginCat:'Intrinsic Skill',fMastery:'Adept',fScene:'The old temple opens.',fBack:'Born in the forest.'},
+  power:['Divine Mana','Aura'],ab:[{n:'Healing',cat:'Common Skill',tier:'Adept',d:'Restore wounds'}],it:[{n:'Prayer Bell',t:'Tool',d:'Small bell'}]};
+ let requests=0,writes=0;
+ try{
+  context.chat=[{is_user:false,mes:''}];context.chatMetadata={};context.characters=[{data:{first_mes:''}}];context.characterId=0;
+  context.saveMetadata=async()=>{writes++;};sandbox.document.querySelector=()=>null;
+  sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  sandbox.HTMLInputElement=class HTMLInputElement {};
+  context.generate=async(type,options)=>{
+   requests++;assert.equal(type,'normal');assert.equal(options.automatic_trigger,true);
+   assert.equal(context.chat.some(message=>message.is_user),false);
+   assert.match(context.lastPrompt[1],/Divine Mana/);assert.match(context.lastPrompt[1],/old temple opens/);
+   context.chat.push({is_user:false,mes:'Ari stands before the old temple.'});
+  };
+  assert.equal(host.forgeEligible(context),true);
+  assert.equal(await host.startForgeOpening(draft),true);
+  assert.equal(requests,1);assert.ok(writes>=2);
+  const state=host.getState();
+  assert.equal(state.player.name,'Ari');assert.equal(state.player.title,'The Dawn');
+  assert.match(state.player.powerType,/Divine Mana/);assert.match(state.player.powerType,/Aura/);
+  assert.equal(state.proficiencies.magic.divineMana,1);assert.equal(state.player.aura.color,'#ffffff');
+  assert.deepEqual(Array.from(state.skills,x=>x.name),['Sun Ward','Healing']);
+  assert.equal(state.inventory[0].name,'Prayer Bell');
+  assert.equal(host.forgeSession(context).phase,'completed');
+  assert.equal(context.chat.filter(message=>message.is_user).length,0);
+  assert.equal(host.forgeEligible(context),false);
+  assert.equal(host.manualSyncSelection(context.chat,1,1).assistants[0].index,1);
+  host.getSettings().autoTrack=false;
+  await host.processAssistantPatch(1,'normal');
+  assert.ok(host.sceneForMessage(1,context.chat[1]));
+  assert.equal(host.forgeSession({...context,chatMetadata:structuredClone(context.chatMetadata)}).draft.fields.fName,'Ari');
+ }finally{Object.assign(context,{chat:saved.chat,chatMetadata:saved.metadata,characters:saved.characters,characterId:saved.characterId,generate:saved.generate,saveMetadata:saved.save});host.getSettings().autoTrack=saved.autoTrack;sandbox.document.querySelector=saved.query;sandbox.document.getElementById=saved.element;sandbox.HTMLInputElement=saved.input;}
+});
+
+test('Character Forge keeps the chat draft after a provider error and retries only on the next click',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,characters:context.characters,characterId:context.characterId,
+  generate:context.generate,save:context.saveMetadata,query:sandbox.document.querySelector,element:sandbox.document.getElementById,input:sandbox.HTMLInputElement};
+ let requests=0;
+ try{
+  context.chat=[];context.chatMetadata={};context.characters=[{first_mes:''}];context.characterId=0;
+  context.saveMetadata=async()=>{};sandbox.document.querySelector=()=>null;
+  sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  sandbox.HTMLInputElement=class HTMLInputElement {};
+  const draft={fields:{fName:'Nami',fScene:'A rainy afternoon.'},power:['Sage Mana']};
+  context.generate=async()=>{requests++;throw Error('Provider offline');};
+  assert.equal(await host.startForgeOpening(draft),false);
+  assert.equal(requests,1);assert.equal(host.forgeSession(context).phase,'failed');
+  assert.equal(host.forgeSession(context).draft.fields.fName,'Nami');
+  assert.equal(host.forgeEligible(context),true);
+  assert.equal(host.getState().player.name,'Nami');
+  context.generate=async()=>{requests++;};
+  assert.equal(await host.startForgeOpening(host.forgeSession(context).draft),false);
+  assert.equal(host.forgeSession(context).phase,'failed');
+  context.generate=async()=>{requests++;context.chat.push({is_user:false,mes:'Rain falls around Nami.'});};
+  assert.equal(await host.startForgeOpening(host.forgeSession(context).draft),true);
+  assert.equal(requests,3);assert.equal(host.getState().proficiencies.magic.sageMana,1);
+  assert.equal(host.forgeEligible({...context,chat:[],characters:[{first_mes:'A prewritten greeting'}]}),false);
+ }finally{Object.assign(context,{chat:saved.chat,chatMetadata:saved.metadata,characters:saved.characters,characterId:saved.characterId,generate:saved.generate,saveMetadata:saved.save});sandbox.document.querySelector=saved.query;sandbox.document.getElementById=saved.element;sandbox.HTMLInputElement=saved.input;}
+});
 test('NPC field history includes old and new relationship, stat, skill and H-Stats values',()=>{
  const before=host.defaultState();before.npcs=[host.npcProfile({id:'a',name:'Aria',trust:10,stats:{hp:100},abilities:[{name:'Aura',proficiency:10}]})];
  const after=structuredClone(before);after.npcs[0].trust=15;after.npcs[0].stats.hp=80;after.npcs[0].abilities[0].proficiency=20;after.npcs[0].hStats.loyaltyHearts=4;
@@ -211,7 +274,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.40.4');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.40.5');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

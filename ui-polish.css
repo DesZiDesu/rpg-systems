@@ -1,4 +1,4 @@
-@import url("./style.css?v=0.40.4");
+@import url("./style.css?v=0.40.5");
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&display=swap");
 
@@ -5771,4 +5771,8 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 @media (max-width: 420px) {
     .tretaresia-aura-control-grid,.tretaresia-diagnostic-grid,.tretaresia-comparison-grid { grid-template-columns:1fr; }
 }
-
+/* Keep the original Tretaresia Character Forge inside the empty chat. */
+#chat > #tretaresia-character-forge{box-sizing:border-box;display:block;align-self:center;width:min(100%,510px);max-width:100%;margin:1rem auto;padding:0 8px;flex-shrink:0}
+#chat > #tretaresia-character-forge[hidden]{display:none}
+#tretaresia-character-forge iframe{display:block;width:100%;height:min(78dvh,760px);min-height:360px;overflow:auto;background:#040404;border:1px solid rgba(214,180,88,.45);color-scheme:dark}
+@media(max-width:600px){#chat > #tretaresia-character-forge{padding:0 4px;margin:.4rem auto}#tretaresia-character-forge iframe{height:72dvh}}

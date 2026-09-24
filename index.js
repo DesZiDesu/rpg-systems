@@ -1,15 +1,15 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.40.4';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.40.4';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.40.5';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.40.5';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.40.4';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.40.4';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.40.4';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.40.4';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.40.4';
-import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.40.4';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './h-stats.js?v=0.40.4';
-import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.40.4';
-import { mountAdultPromptControls } from './nsfw-prompt-ui.js?v=0.40.4';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.40.5';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.40.5';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.40.5';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.40.5';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.40.5';
+import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.40.5';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './h-stats.js?v=0.40.5';
+import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.40.5';
+import { mountAdultPromptControls } from './nsfw-prompt-ui.js?v=0.40.5';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -19,6 +19,7 @@ const SAFE_MODE = /(?:^|[?&])tretaresia-safe=(?:1|true)(?:&|$)/i.test(globalThis
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
 const SETTINGS_KEY = 'tretaresia_rpg';
 const METADATA_KEY = 'tretaresia_rpg_state';
+const CREATION_KEY = 'tretaresia_rpg_character_creation';
 const H_SELECTION_KEY = 'tretaresia_rpg_selected_hstats_npc';
 const MANUAL_SYNC_HISTORY_KEY = 'tretaresia_rpg_manual_sync_history';
 const TURN_HISTORY_KEY = 'tretaresia_rpg_turn_history';
@@ -854,7 +855,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.40.4';
+const LAUNCHER_BIND_VERSION = '0.40.5';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -994,6 +995,8 @@ let introGateTimer = null;
 let introFinishTimer = null;
 let aiSyncInProgress = false;
 let pendingSave = Promise.resolve();
+let creationSaveTimer = null;
+let openingGeneration = null;
 
 function saveCurrentChatMetadata(context = SillyTavern.getContext()) {
     const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata;
@@ -1223,7 +1226,7 @@ function requestUsage() {
     if (runtimeRequestUsage) return runtimeRequestUsage;
     runtimeRequestUsage = {
         total: 0, manualSync: 0, hiddenAction: 0, visibleAction: 0,
-        sceneCompletion: 0, npcProgression: 0, hStatsBaseline: 0, npcDraft: 0, npcPortrait: 0, lastReason: '', lastAt: '',
+        sceneCompletion: 0, npcProgression: 0, hStatsBaseline: 0, npcDraft: 0, npcPortrait: 0, opening: 0, lastReason: '', lastAt: '',
     };
     return runtimeRequestUsage;
 }
@@ -1235,7 +1238,7 @@ function renderRequestUsage() {
         output.title = usage.lastAt ? `Last: ${usage.lastReason || 'unknown'} · ${usage.lastAt}` : 'No separate extension request recorded yet.';
     });
     document.querySelectorAll('[data-tretaresia-request-breakdown]').forEach(output => {
-        output.textContent = `Scene Tracker เติมฉาก ${usage.sceneCompletion} · NPC progress ${usage.npcProgression} · H-Stats โปรไฟล์ ${usage.hStatsBaseline} · Manual Sync ${usage.manualSync} · คำสั่ง RPG ${usage.hiddenAction + usage.visibleAction} · เจน NPC/ภาพ ${usage.npcDraft + usage.npcPortrait}`;
+        output.textContent = `เปิดเรื่อง ${usage.opening} · Scene Tracker เติมฉาก ${usage.sceneCompletion} · NPC progress ${usage.npcProgression} · H-Stats โปรไฟล์ ${usage.hStatsBaseline} · Manual Sync ${usage.manualSync} · คำสั่ง RPG ${usage.hiddenAction + usage.visibleAction} · เจน NPC/ภาพ ${usage.npcDraft + usage.npcPortrait}`;
     });
 }
 
@@ -3126,6 +3129,194 @@ async function catchUpPlayerIdentity() {
     return seeded ? persistState(seeded, 'user-registration-bootstrap') : false;
 }
 
+// The Character Forge is shown only for a blank, single-character chat with no
+// card greeting. Its draft and committed profile are both owned by chat metadata.
+const FORGE_FIELDS = ['fName','fTitle','fGender','fPron','fAge','fRace','fCont','fBirth','fHair','fEyes','fHeight','fBuild',
+    'fMarks','fAppear','fOrigin','fOriginCat','fOriginD','fMastery','fProf','fRankCustom','fAffil','fPers','fBack','fGoal','fScene'];
+const FORGE_POWERS = new Map([['False Magic','falseMagic'],['True Magic','trueMagic'],['Aura','aura'],
+    ['Formless Aura','formlessAura'],['Blood Aura','bloodAura'],['Sage Mana','sageMana'],
+    ['Divine Mana','divineMana'],['Construct','construct'],['Divine Construct','divineConstruct']]);
+
+function forgeDraft(input) {
+    const fields = Object.fromEntries(FORGE_FIELDS.map(key => [key, text(input?.fields?.[key], '',
+        ['fBack','fAppear','fScene','fOriginD','fPers'].includes(key) ? 8000 : 500)]));
+    const entries = (value, limit, shape) => (Array.isArray(value) ? value : []).slice(0, limit)
+        .filter(entry => entry && typeof entry === 'object' && !Array.isArray(entry))
+        .map(entry => Object.fromEntries(shape.map(([key,max]) => [key,text(entry[key], '', max)])))
+        .filter(entry => entry.n);
+    return {
+        fields, stand:text(input?.stand, '', 120), rank:text(input?.rank, '', 100),
+        power:[...new Set((Array.isArray(input?.power) ? input.power : []).filter(key => FORGE_POWERS.has(key)))].slice(0, 9),
+        ab:entries(input?.ab, 40, [['n',120],['cat',80],['tier',80],['d',1000]]),
+        it:entries(input?.it, 40, [['n',120],['t',80],['d',1000]]),
+        cf:entries(input?.cf, 40, [['n',120],['d',3000]]),
+        theme:input?.theme === 'light' ? 'light' : 'dark', language:input?.language === 'th' ? 'th' : 'en',
+    };
+}
+
+function blankForgeChat(context) {
+    const messages = (context.chat || []).filter(message => !message?.is_system);
+    return messages.length <= 1 && messages.every(message => !text(message?.mes));
+}
+
+function forgeEligible(context = SillyTavern.getContext()) {
+    const card = context.characters?.[context.characterId];
+    const greeting = card?.data?.first_mes ?? card?.first_mes;
+    return Boolean(context.getCurrentChatId?.() && !context.groupId && card
+        && typeof greeting === 'string' && !greeting.trim() && blankForgeChat(context));
+}
+
+function forgeSession(context = SillyTavern.getContext()) {
+    const record = context.chatMetadata?.[CREATION_KEY];
+    return record && typeof record === 'object' && !Array.isArray(record) ? record : null;
+}
+
+function applyForgeProfile(state, profile) {
+    const p = forgeDraft(profile), f = p.fields;
+    if (!f.fName.trim()) throw Error('Enter a character name before starting the story.');
+    state.player.name = f.fName.trim();
+    state.player.title = f.fTitle.trim() || state.player.title;
+    state.player.gender = f.fGender.trim(); state.player.age = f.fAge.trim(); state.player.race = f.fRace.trim() || state.player.race;
+    state.player.homeContinent = f.fCont.trim(); state.player.standing = p.stand;
+    state.player.affiliation = f.fAffil.trim(); state.player.guild = f.fAffil.trim() || state.player.guild;
+    state.player.profession = f.fProf.trim() || state.player.profession;
+    Object.assign(state.player.appearance, {hair:f.fHair.trim(),eyes:f.fEyes.trim(),height:f.fHeight.trim(),build:f.fBuild.trim()});
+    if (p.power.length) state.player.powerType = p.power.join(', ');
+    for (const power of p.power) state.proficiencies.magic[FORGE_POWERS.get(power)] = Math.max(1, state.proficiencies.magic[FORGE_POWERS.get(power)]);
+    if (p.power.includes('Divine Mana')) state.player.aura.color = '#ffffff';
+    if (f.fOrigin.trim()) state.player.originSkill = f.fOrigin.trim();
+    if (RANKS.includes(p.rank)) state.progression.adventurerRank = p.rank;
+    else if (p.rank === 'Custom') { state.progression.adventurerRank = 'Custom Rank'; state.progression.customRankName = f.fRankCustom.trim() || 'Custom'; }
+    const skills = [...(f.fOrigin.trim() ? [{n:f.fOrigin,cat:f.fOriginCat,tier:f.fMastery,d:f.fOriginD}] : []),...p.ab];
+    for (const [index, entry] of skills.entries()) {
+        const value = skill({id:`forge-skill-${index}`,name:entry.n,type:entry.cat,rank:entry.tier,description:entry.d});
+        if (value) { const found = state.skills.findIndex(old => old.id === value.id); if (found < 0) state.skills.push(value); else state.skills[found] = value; }
+    }
+    for (const [index, entry] of p.it.entries()) {
+        const value = item({id:`forge-item-${index}`,name:entry.n,category:entry.t,description:entry.d,quantity:1});
+        if (value) { const found = state.inventory.findIndex(old => old.id === value.id); if (found < 0) state.inventory.push(value); else state.inventory[found] = value; }
+    }
+    state.onboarding.identitySeeded = true;
+    if (skills.length || p.it.length) state.onboarding.loadoutSeeded = true;
+    return state;
+}
+
+function forgeOpeningPrompt(context = SillyTavern.getContext()) {
+    const session = forgeSession(context);
+    if (!session?.profile || session.phase !== 'generating' || !blankForgeChat(context)) return '';
+    return 'Write the first Tretaresia role-play scene using the registered player profile and opening scene (fields.fScene). '
+        + 'Start with a normal assistant story reply, leave the player a choice, and do not show a registration form or confirmation.';
+}
+
+function forgeProfilePrompt(context = SillyTavern.getContext()) {
+    const profile = forgeSession(context)?.profile;
+    if (!profile) return '';
+    return `[PLAYER REGISTRATION — private narrator reference]\n${JSON.stringify(profile)}\n`
+        + 'Use the registered name and chosen powers, including Divine Mana if selected. Starting possessions and skills are already in RPG state; do not award them again. '
+        + 'Keep private background from NPCs unless the story reveals it. Do not quote this JSON in the story.';
+}
+
+function forgeCard() { return document.getElementById('tretaresia-character-forge'); }
+
+function sendForgeMessage(type, data = {}, extra = {}) {
+    const frame = forgeCard()?.querySelector('iframe');
+    if (frame?.contentWindow) frame.contentWindow.postMessage({source:'tretaresia-rpg-forge',type,data,...extra}, location.origin);
+}
+
+function refreshCharacterForge() {
+    const context = SillyTavern.getContext();
+    if (!forgeEligible(context)) { forgeCard()?.remove(); return; }
+    const session = forgeSession(context);
+    if (session?.phase === 'generating' && openingGeneration?.metadata !== context.chatMetadata) {
+        session.phase = 'failed';
+        session.error = 'Opening generation was interrupted. Your draft was saved; press BEGIN to retry.';
+        void saveCurrentChatMetadata(context);
+    }
+    let card = forgeCard();
+    if (card && card.dataset.chatId !== String(context.getCurrentChatId())) { card.remove(); card = null; }
+    if (!card) {
+        const chat = document.querySelector('#chat');
+        if (!chat) return;
+        card = document.createElement('section');
+        card.id = 'tretaresia-character-forge';
+        card.dataset.chatId = String(context.getCurrentChatId());
+        card.setAttribute('aria-label','Tretaresia character creation');
+        const frame = document.createElement('iframe');
+        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/character-creation.html?v=0.40.5`;
+        frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
+        card.append(frame); chat.append(card);
+    }
+    card.hidden = Boolean(openingGeneration?.metadata === context.chatMetadata && openingGeneration.started);
+    if (session?.error) sendForgeMessage('status',{}, {message:session.error,working:false});
+}
+
+function scheduleForgeDraftSave(context) {
+    clearTimeout(creationSaveTimer);
+    creationSaveTimer = setTimeout(() => { creationSaveTimer = null; void saveCurrentChatMetadata(context).catch(error =>
+        console.warn('[Tretaresia RPG] Could not save character draft.', error)); }, 350);
+}
+
+async function startForgeOpening(input) {
+    const context = SillyTavern.getContext(), metadata = context.chatMetadata, chatId = context.getCurrentChatId?.();
+    if (!forgeEligible(context) || openingGeneration) return false;
+    const draft = forgeDraft(input), session = forgeSession(context) || {version:1,phase:'draft'};
+    session.draft = draft; metadata[CREATION_KEY] = session;
+    const same = () => { const active = SillyTavern.getContext(); return active.getCurrentChatId?.() === chatId && active.chatMetadata === metadata; };
+    const ticket = {metadata,chatId,started:false,requested:false};
+    openingGeneration = ticket;
+    try {
+        if (typeof context.generate !== 'function') throw Error('Main-chat generation is unavailable in this SillyTavern version.');
+        if (document.querySelector('#send_textarea')?.value?.trim()) throw Error('Save or clear the unsent chat message before starting.');
+        if (!draft.fields.fName.trim()) throw Error('Enter a character name before starting the story.');
+        session.profile = draft;
+        if (!await persistState(applyForgeProfile(getState(), draft), 'character-forge')) throw Error('The character profile could not be saved with this chat. Retry.');
+        if (!same() || !forgeEligible(context)) return false;
+        session.phase = 'generating'; session.error = '';
+        await saveCurrentChatMetadata(context);
+        if (!same() || !forgeEligible(context)) return false;
+        updatePrompt();
+        sendForgeMessage('status',{}, {message:'Generating your first story message…',working:true});
+        recordExtensionRequest('opening', 'Character Forge first scene');
+        ticket.requested = true;
+        await context.generate('normal', {automatic_trigger:true});
+        if (!same() || openingGeneration !== ticket) return false;
+        const reply = context.chat?.find(message => !message?.is_user && !message?.is_system && text(message?.mes));
+        if (!reply) throw Error('No opening message was generated. Check your model connection and press BEGIN to retry.');
+        session.phase = 'completed'; session.error = '';
+        await saveCurrentChatMetadata(context);
+        forgeCard()?.remove(); updatePrompt(); return true;
+    } catch (error) {
+        if (same()) {
+            const reply = context.chat?.find(message => !message?.is_user && !message?.is_system && text(message?.mes));
+            session.phase = reply ? 'completed' : 'failed';
+            session.error = reply ? '' : text(error?.message, 'The first message failed. Press BEGIN to retry.', 500);
+            try { await saveCurrentChatMetadata(context); } catch (saveError) { console.warn('[Tretaresia RPG] Could not save opening status.', saveError); }
+            if (openingGeneration === ticket) openingGeneration = null;
+            updatePrompt(); refreshCharacterForge();
+            sendForgeMessage('status',{}, {message:session.error,working:false});
+        }
+        console.warn('[Tretaresia RPG] Character opening was not completed.', error);
+        return false;
+    } finally {
+        if (openingGeneration?.metadata === metadata && openingGeneration.chatId === chatId) openingGeneration = null;
+    }
+}
+
+function onForgeMessage(event) {
+    const frame = forgeCard()?.querySelector('iframe');
+    if (!frame || event.origin !== location.origin || event.source !== frame.contentWindow || event.data?.source !== 'tretaresia-rpg-forge') return;
+    const context = SillyTavern.getContext();
+    if (!forgeEligible(context)) return;
+    if (event.data.type === 'ready') { sendForgeMessage('hydrate',forgeSession(context)?.draft || {}); return; }
+    if (event.data.type === 'draft' && !openingGeneration) {
+        const session = forgeSession(context) || {version:1,phase:'draft'};
+        session.draft = forgeDraft(event.data.data);
+        context.chatMetadata[CREATION_KEY] = session;
+        scheduleForgeDraftSave(context);
+    }
+    if (event.data.type === 'start') void startForgeOpening(event.data.data);
+}
+
 function legacyPatchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
@@ -3175,7 +3366,7 @@ function patchInstructions() {
         'Resource, injury, and damage rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
         'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
         'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. player.aura.infiniteMode is user-owned: Auto permits story tracking, Finite forces finite Mana, and Infinite forces inexhaustible Mana; never alter infiniteMode from AI output. In Auto mode, treat Limitless, Boundless, Unlimited, and Infinite Aura/Mana as aliases for the same infinite state. Set infinite=true only when the completed assistant story or resolved roll explicitly confirms genuinely inexhaustible power—never from level, an OOC request, a user claim alone, or an unresolved attempt. While true, do not decrease MP; in Auto mode set false only after explicit loss/seal/limitation.',
-        'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the first user message and completed reply; use exact atlas coordinates for a named atlas destination. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId. Never guess random coordinates: use exact coordinates only for a known atlas destination, preserve established on-land coordinates, or leave mapX/mapY null until a location is established. Then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
+        'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message OR the saved Character Forge opening must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Do not duplicate Character Forge starting possessions or skills. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the registration opening_scene and completed reply; use exact atlas coordinates for a named atlas destination. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId. Never guess random coordinates: use exact coordinates only for a known atlas destination, preserve established on-land coordinates, or leave mapX/mapY null until a location is established. Then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
@@ -3228,12 +3419,12 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
 function updatePrompt(state = getState()) {
     const context = SillyTavern.getContext();
     const settings = getSettings();
-    const activeChat = Boolean(context.getCurrentChatId?.() && hasUserReply(context));
+    const activeChat = Boolean(context.getCurrentChatId?.() && (hasUserReply(context) || forgeOpeningPrompt(context)));
     const enabled = activeChat && (settings.injectState || settings.autoTrack || settings.chatPresentation);
     const reference = context.getCurrentChatId?.() ? activeLorePrompt() : '';
     const prompt = enabled ? statePrompt(state, { includeState: settings.injectState || settings.autoTrack, track: settings.autoTrack }) : '';
     const writing=activeChat?writingPreferencePrompt(settings,context.chat):'';
-    context.setExtensionPrompt(PROMPT_KEY, [reference, prompt, writing].filter(Boolean).join('\n\n'), 1, 1, false, 0);
+    context.setExtensionPrompt(PROMPT_KEY, [reference, prompt, writing, forgeProfilePrompt(context), forgeOpeningPrompt(context)].filter(Boolean).join('\n\n'), 1, 1, false, 0);
     adultPromptControls?.refresh();
 }
 
@@ -4164,7 +4355,7 @@ function synchronizeDerivedPlayerState(state) {
         else state.player.condition = 'Stable';
     }
     if (hasDivinePower(state)) {
-        state.player.powerType = 'Divine Mana';
+        if (!/\bDivine Mana\b/i.test(state.player.powerType)) state.player.powerType = 'Divine Mana';
         state.player.aura.color = '#ffffff';
     }
     return state;
@@ -9788,12 +9979,13 @@ async function completeSceneRemainder(context, messageId, message, state, varian
 
 async function processAssistantPatch(messageId, generationType = '') {
     const settings = getSettings();
-    if (['first_message', 'quiet', 'impersonate'].includes(generationType)) return;
+    if (['quiet', 'impersonate'].includes(generationType)
+        || (generationType === 'first_message' && !forgeSession()?.profile)) return;
     const context = SillyTavern.getContext();
-    if (!hasUserReply(context) || !Number.isInteger(messageId)) return;
+    if ((!hasUserReply(context) && !forgeSession(context)?.profile) || !Number.isInteger(messageId)) return;
     await assistantRollbackQueue.catch(() => undefined);
     const message = context.chat[messageId];
-    if (!message || message.is_user || message.is_system || typeof message.mes !== 'string') return;
+    if (!message || message.is_user || message.is_system || !text(message.mes)) return;
     const incomingVariant = assistantVariantKey(message);
     if (processedAssistantMessages.get(message) === incomingVariant) return;
     if (!settings.autoTrack) {
@@ -9955,7 +10147,9 @@ function manualSyncSelection(chat, startIndex, endIndex) {
     if (!Number.isInteger(start) || !Number.isInteger(end) || start > end
         || !markers.some(marker => marker.index === start) || !markers.some(marker => marker.index === end)) return null;
     const selected = markers.filter(marker => marker.index >= start && marker.index <= end);
-    const assistants = selected.filter(marker => marker.role === 'Character' && chat.slice(0, marker.index).some(entry => entry?.is_user && !entry.is_system));
+    const registeredOpening = SillyTavern.getContext().chat === chat && Boolean(forgeSession()?.profile);
+    const assistants = selected.filter(marker => marker.role === 'Character'
+        && (registeredOpening || chat.slice(0, marker.index).some(entry => entry?.is_user && !entry.is_system)));
     return assistants.length ? {start,end,selected,assistants} : null;
 }
 
@@ -10509,6 +10703,10 @@ async function addSettingsDrawer() {
 function bindChatEvents() {
     const { eventSource, eventTypes } = SillyTavern.getContext();
     eventSource.on(eventTypes.CHAT_CHANGED, async () => {
+        clearTimeout(creationSaveTimer);
+        creationSaveTimer = null;
+        if (openingGeneration?.metadata !== SillyTavern.getContext().chatMetadata) openingGeneration = null;
+        forgeCard()?.remove();
         closeManualSyncDialog();
         void scheduleArchiveMigration();
         processedAssistantMessages = new WeakMap();
@@ -10534,6 +10732,7 @@ function bindChatEvents() {
         try { await catchUpTravelHistory(); }
         catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
         await refreshCharacterLifeCompatibility({ save: true });
+        refreshCharacterForge();
         if (SillyTavern.getContext().getCurrentChatId?.() && !hasUserReply()) {
             setSync('ready', tr('Waiting for first reply'), getSettings().language === 'th' ? 'First Message จะยังไม่ถูกอ่านหรือบันทึก' : 'The First Message is not read or stored by the extension.');
         } else setSync('ready', tr('Ready'), '', { show: false });
@@ -10549,6 +10748,13 @@ function bindChatEvents() {
         else setSync('disabled', tr('Tracking is off'), settings.language === 'th' ? 'คำตอบนี้จะไม่อัปเดต Tretaresia RPG อัตโนมัติ' : 'This reply will not update Tretaresia RPG automatically.');
     });
     if (eventTypes.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, generationType => {
+        if (openingGeneration?.requested && (!generationType || generationType === 'normal')) {
+            const context = SillyTavern.getContext();
+            if (openingGeneration.metadata === context.chatMetadata && openingGeneration.chatId === context.getCurrentChatId?.()) {
+                openingGeneration.started = true;
+                const card = forgeCard(); if (card) card.hidden = true;
+            }
+        }
         if (isReplacementGeneration(generationType)) {
             const context = SillyTavern.getContext();
             const ledger = turnHistory(context, false);
@@ -10565,7 +10771,8 @@ function bindChatEvents() {
         if (!generationType || generationType === 'normal') updatePrompt();
     });
     eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => {
-        if (['first_message', 'quiet', 'impersonate'].includes(generationType)) return;
+        if (['quiet', 'impersonate'].includes(generationType)
+            || (generationType === 'first_message' && !forgeSession()?.profile)) return;
         assistantCheckpoint(Number(messageId), { create: true });
         scheduleAssistantPatch(messageId, generationType, 0);
         scheduleAssistantPatch(messageId, generationType, 120);
@@ -10597,6 +10804,7 @@ function bindChatEvents() {
         scheduleAssistantPatch(messageId, '', 0);
         scheduleAssistantPatch(messageId, '', 240);
     });
+    if (eventTypes.MESSAGE_DELETED) eventSource.on(eventTypes.MESSAGE_DELETED, () => refreshCharacterForge());
     globalThis.addEventListener('character-life:rpg-bridge-ready', () => {
         invalidateCharacterLifeMapMarkers();
         clearMapPortraitCache();
@@ -10631,6 +10839,12 @@ async function initialize() {
         buildInterface();
         await addSettingsDrawer();
         bindChatEvents();
+        globalThis.addEventListener('message', onForgeMessage);
+        globalThis.addEventListener('pagehide', () => {
+            if (!creationSaveTimer) return;
+            clearTimeout(creationSaveTimer); creationSaveTimer = null;
+            void saveCurrentChatMetadata().catch(error => console.warn('[Tretaresia RPG] Character draft save failed while leaving.', error));
+        });
         npcWorkspace = createNpcWorkspace({
             context: () => SillyTavern.getContext(), state: getState, settings: getSettings,
             sceneForMessage,
@@ -10676,6 +10890,7 @@ async function initialize() {
         catch (error) { console.warn('[Tretaresia RPG] Could not import player registration.', error); }
         try { await catchUpTravelHistory(); }
         catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
+        refreshCharacterForge();
         updatePrompt();
         syncTravelTracker(getState());
         document.addEventListener('keydown', event => {
@@ -10687,7 +10902,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.40.4 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.40.5 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
