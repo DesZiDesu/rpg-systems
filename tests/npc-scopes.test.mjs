@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {characterOwner,hydrateScopedNpcs,packScopedNpcs,withoutChatNpcContinuity,scopedPortraitKey,scopeEnvelope} from '../npc-scopes.js';
+import {characterOwner,hydrateScopedNpcs,packScopedNpcs,withoutChatNpcContinuity,scopedPortraitKey,scopeEnvelope} from '../src/npc-scopes.js';
 
 const owner='card:first.png';
 const library=[{id:'s1',name:'Archivist',personality:'Calm',location:'Library',stats:{hp:100,level:5},npcScope:'character',npcOwner:owner,hasPortrait:true}];
@@ -78,7 +78,7 @@ test('scope metadata refuses prototype keys and scope spoofing',()=>{
 });
 
 test('deletion unlinks references and snapshots; deleted Character contacts cannot resurrect dossiers',async()=>{
- const {pruneNpcReferences,retainNpcDeletions}=await import('../npc-scopes.js');
+ const {pruneNpcReferences,retainNpcDeletions}=await import('../src/npc-scopes.js');
  const state={npcs:[local,...library],contacts:[{id:'c',npcId:'s1',name:'Archivist'}],social:{party:{memberIds:['l1','s1'],roles:{s1:'Mage'},leaderId:'s1'},guilds:[{memberIds:['s1']}],household:{members:[{npcId:'s1'}]}}};
  const clean=pruneNpcReferences(state,['s1']);assert.equal(clean.contacts[0].npcId,'');assert.deepEqual(clean.social.party.memberIds,['l1']);assert.deepEqual(clean.social.party.roles,{});assert.equal(state.contacts[0].npcId,'s1');
  const history={entries:[{baseState:structuredClone(state),variants:{one:{state:structuredClone(state)}}}]};retainNpcDeletions(history,['s1']);assert.equal(history.entries[0].baseState.npcs.length,1);assert.equal(history.entries[0].variants.one.state.contacts[0].npcId,'');

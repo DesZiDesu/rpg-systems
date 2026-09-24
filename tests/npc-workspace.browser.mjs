@@ -9,9 +9,9 @@ const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?process.
 const source=await readFile(new URL('../index.js',import.meta.url),'utf8');
 const launchers=source.slice(source.indexOf('function syncLauncherVisibility()'),source.indexOf('function bindCheckbox('));
 const fixture=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><div id="extensionsMenu"></div><div id="chat"></div><script type="module">
-import {createNpcWorkspace} from '/npc-workspace.js';
-import {FIELDS,STATS,RELATIONS} from '/npc-core.js';
-import {characterLore,lorePrompt,writeCharacterLore,loreOptions,writeLoreOptions} from '/lore-core.js';
+import {createNpcWorkspace} from '/src/npc-workspace.js';
+import {FIELDS,STATS,RELATIONS} from '/src/npc-core.js';
+import {characterLore,lorePrompt,writeCharacterLore,loreOptions,writeLoreOptions} from '/src/lore-core.js';
 let stored=[],shared=[],savedPhoto=null,saves=0,requests=0;const settings={showWandLauncher:true,chatPresentation:false,npcGenerationScope:'chat'};
 const generated={...Object.fromEntries(Object.keys(FIELDS).map(k=>[k,k+' detail'])),name:'Lysa',age:'120',aliases:['Forest healer'],abilities:[{name:'Heal',category:'Magic',level:'2',description:'Restore health',proficiency:75}],isHostile:false,identityColor:'#abcdef',roleIcon:'healer',portraitSize:96,...Object.fromEntries(RELATIONS.map(k=>[k,25])),stats:{rank:'Basic',...Object.fromEntries(STATS.map(k=>[k,10]))}};
 const context={mainApi:'openai',getCurrentChatId:()=> 'chat-1',chat:[],generateQuietPrompt:async options=>{requests++;window.lastPrompt=options.quietPrompt;window.lastImage=options.quietImage;if(options.quietImage){window.lastVisionImage=options.quietImage;return window.imageUnavailable?'IMAGE_UNAVAILABLE':'Short dark hair, brown eyes, and a green cloak.';}if(window.waitForAI)await new Promise(r=>window.resolveAI=r);return window.badAI?'broken {':JSON.stringify(window.shortAI?{name:'Lysa',appearance:'Green cloak',background:'A healer'}:generated);},generateRaw:async options=>{requests++;window.lastPrompt=options.prompt;window.lastImage=null;if(window.waitForAI)await new Promise(r=>window.resolveAI=r);return window.badAI?'broken {':JSON.stringify(window.shortAI?{name:'Lysa',appearance:'Green cloak',background:'A healer'}:generated);}};
@@ -24,7 +24,7 @@ window.toggle=on=>{settings.showWandLauncher=on;syncLauncherVisibility()};window
 </script>`;
 const server=http.createServer(async(req,res)=>{
  try{const pathname=new URL(req.url,'http://localhost').pathname;if(pathname==='/'){res.setHeader('content-type','text/html');res.end(fixture);return}
- if(!/^\/[a-z-]+\.(js|css)$/.test(pathname)){res.writeHead(404).end();return}
+ if(!/^\/(?:src|styles)\/[a-z-]+\.(js|css)$/.test(pathname)){res.writeHead(404).end();return}
  const file=await readFile(new URL('..'+pathname,import.meta.url));res.setHeader('content-type',pathname.endsWith('.css')?'text/css':'text/javascript');res.end(file);
  }catch{res.writeHead(404).end()}
 });

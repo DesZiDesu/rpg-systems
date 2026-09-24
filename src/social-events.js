@@ -1,3 +1,4 @@
+import { parseStory } from './npc-core.js?v=0.41.0';
 // Pure guards shared by the inline turn tracker and its chat presentation.
 const rates = Object.freeze({ off: Infinity, rare: 12, normal: 5, often: 2 });
 export const diaryRates = Object.keys(rates);
@@ -11,8 +12,8 @@ function mentioned(story, name) {
 }
 
 export function eligibleNpc(npcs, value, story, participants = []) {
-    const id = String(value?.npcId || ''), name = String(value?.npcName || '');
-    const npc = (npcs || []).find(entry => entry.id === id || (name && entry.name.toLocaleLowerCase() === name.toLocaleLowerCase()));
+    const id = String(value?.npcId || ''), name = String(value?.npcName || value?.npcId || '');
+    const npc = (npcs || []).find(entry => entry.id === id || (name && [entry.name,...(entry.aliases || [])].some(alias => alias.toLocaleLowerCase() === name.toLocaleLowerCase())));
     if (!npc || npc.enabled === false || npc.met !== true || npc.isHostile) return null;
     const aliases = [npc.name, ...(npc.aliases || [])];
     const present = aliases.some(alias => participants.some(participant => String(participant).toLocaleLowerCase() === String(alias).toLocaleLowerCase()));
@@ -32,17 +33,36 @@ export function householdOffers(ops, npcs, story, participants, members) {
     }).slice(0, 2);
 }
 
+// Conservative local fallback: direct speech to the player, with an explicit
+// named group. Questions/plans about somebody else never create invitations.
+export function spokenGroupInvitations(story) {
+    return (parseStory(story) || []).filter(block => block.type === 'dialogue' && block.name).flatMap(block => {
+        if (/\b(?:if|might|would have|not|never|don't|declin|reject)\b|ถ้า|หาก|ไม่|ปฏิเสธ/.test(block.text.toLowerCase())) return [];
+        const invitation = /(?:I invite you to join|join (?:us in|my|our))\s+(?:the\s+)?(party|guild)\s+["“']([^"”'\n]+)["”']|(?:ขอเชิญ|ชวน|เชิญ)(?:คุณ|เจ้า|เธอ|นาย|ท่าน)(?:มา|ให้)?(?:เข้า|ร่วม|เข้าร่วม)(?:กับ)?(?:ปาร์ตี้|กิลด์)/i;
+        const english = block.text.match(invitation);
+        if (!english) return [];
+        let kind = english[1]?.toLowerCase(), name = english[2];
+        if (!name) {
+            const thai = block.text.match(/(ปาร์ตี้|กิลด์)\s*["“']([^"”'\n]+)["”']/);
+            if (!thai) return [];
+            kind = thai[1] === 'กิลด์' ? 'guild' : 'party'; name = thai[2];
+        }
+        return [['offer',kind === 'guild' ? 'guildInvitation' : 'partyInvitation',{npcName:block.name,name,role:'Member'}]];
+    });
+}
+
 // An invitation is a request, never a state change. A roster count is a fact
 // distinct from the people whose names the story has actually revealed.
 export function groupOffers(ops, npcs, story, participants, social = {}) {
     const seen = new Set();
-    return (ops || []).flatMap(operation => {
+    return [...(ops || []),...spokenGroupInvitations(story)].flatMap(operation => {
         if (!Array.isArray(operation) || operation[0] !== 'offer'
             || !['partyInvitation', 'guildInvitation'].includes(operation[1])) return [];
         const value = operation[2], kind = operation[1] === 'partyInvitation' ? 'party' : 'guild';
         const inviter = eligibleNpc(npcs, value, story, participants);
         const name = typeof value?.name === 'string' ? value.name.trim().slice(0, 140) : '';
-        const role = typeof value?.role === 'string' ? value.role.trim().slice(0, 80) : '';
+        const offeredRole = typeof value?.role === 'string' ? value.role.trim().slice(0,80) : '';
+        const role = !offeredRole || /^(?:leader|guildmaster|guild master|หัวหน้า|หัวหน้าปาร์ตี้|หัวหน้ากิลด์)$/i.test(offeredRole) ? 'Member' : offeredRole;
         if (!inviter || !name || !role || (kind === 'party' && social.party)
             || (kind === 'guild' && (social.guilds || []).some(g => g.name.toLocaleLowerCase() === name.toLocaleLowerCase()))) return [];
         const key = `${kind}:${name.toLocaleLowerCase()}`;
@@ -60,8 +80,7 @@ export function groupOffers(ops, npcs, story, participants, social = {}) {
         const leaderName = mentioned(story,candidateLeader) ? candidateLeader : '';
         if (leaderName && !members.some(person => person.name.toLocaleLowerCase() === leaderName.toLocaleLowerCase()))
             members.push({name:leaderName,role:'Leader'});
-        const statedCount = Number.isSafeInteger(value.memberCount)
-            && new RegExp(`(^|[^0-9])${value.memberCount}(?=$|[^0-9])`).test(story);
+        const statedCount = Number.isSafeInteger(value.memberCount);
         const count = statedCount && value.memberCount >= members.length && value.memberCount > 0
             ? Math.min(value.memberCount, 1000000) : null;
         return [{kind,key,name,role,inviterId:inviter.id,inviterName:inviter.name,

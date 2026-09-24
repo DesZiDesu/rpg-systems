@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ADULT_TAGS,DEFAULT_ADULT_STYLE,STYLE_LIMIT,normalizeAdultSettings,parseTagCatalog,selectedLanguage,writingPreferencePrompt} from '../nsfw-enhance.js';
+import {ADULT_TAGS,DEFAULT_ADULT_STYLE,STYLE_LIMIT,normalizeAdultSettings,parseTagCatalog,selectedLanguage,writingPreferencePrompt} from '../src/nsfw-enhance.js';
 
 test('adult writing is off by default, and no selected themes reach the prompt when disabled',()=>{
  const settings=normalizeAdultSettings({chatPresentation:false,language:'th',nsfwTags:['Romance','Kissing']});

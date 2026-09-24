@@ -28,7 +28,7 @@ async function boot() {
     if (globalThis.TretaresiaBootStarted) return;
     globalThis.TretaresiaBootStarted=true;
     const version = await installed();
-    const style=document.createElement('link'); style.rel='stylesheet'; style.href=releaseUrl('ui-polish.css',version); document.head.append(style);
+    const style=document.createElement('link'); style.rel='stylesheet'; style.href=releaseUrl('styles/ui-polish.css',version); document.head.append(style);
     await import(releaseUrl('index.js',version));
     globalThis.TretaresiaRelease=version;
 }

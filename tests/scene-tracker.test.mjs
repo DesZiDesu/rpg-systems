@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {sceneSnapshot,renderSceneTracker,missingSceneFields,SCENE_REQUIRED_FIELDS} from '../scene-tracker.js';
+import {sceneSnapshot,renderSceneTracker,missingSceneFields,SCENE_REQUIRED_FIELDS} from '../src/scene-tracker.js';
 
 class Node {
     constructor(tag){this.tag=tag;this.children=[];this.attributes={};this.textContent='';}
@@ -30,7 +30,7 @@ test('mobile ledger uses configured Tretaresia theme and safe text nodes',()=>{
     assert.match(collect(card),/Moon Hall/);assert.match(collect(card),/—/);
     assert.ok(card.children[1].children.some(node=>node.tag==='details'));
     assert.equal(card.children.some(node=>node.tag==='script'),false);
-    const css=readFileSync(new URL('../npc-ui.css',import.meta.url),'utf8');
+    const css=readFileSync(new URL('../styles/npc-ui.css',import.meta.url),'utf8');
     assert.match(css,/\.trpg-scene-ledger\{[^}]*--sc:var\(--tretaresia-accent/);
     assert.match(css,/@media\(max-width:480px\)\{\.trpg-scene-ledger\{grid-template-columns:42px minmax\(0,1fr\)/);
 });

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mountAdultPromptControls} from '../nsfw-prompt-ui.js';
-import {DEFAULT_ADULT_STYLE} from '../nsfw-enhance.js';
+import {mountAdultPromptControls} from '../src/nsfw-prompt-ui.js';
+import {DEFAULT_ADULT_STYLE} from '../src/nsfw-enhance.js';
 
 class Element{
  constructor(){this.value='';this.textContent='';this.dataset={};this.listeners={};}

@@ -1,16 +1,17 @@
 {
-    "display_name": "Tretaresia RPG",
-    "loading_order": 11,
-    "requires": [],
-    "optional": [],
-    "dependencies": [],
-    "js": "loader.js",
-    "css": "",
-    "hooks": {"update": "onUpdate"},
-    "author": "DesZiDesu",
-    "version": "0.40.10",
-    "generate_interceptor": "TretaresiaRpgGenerateInterceptor",
-    "homePage": "https://github.com/DesZiDesu/rpg-systems",
-    "auto_update": true
+  "display_name": "Tretaresia RPG",
+  "loading_order": 11,
+  "requires": [],
+  "optional": [],
+  "dependencies": [],
+  "js": "loader.js",
+  "css": "",
+  "hooks": {
+    "update": "onUpdate"
+  },
+  "author": "DesZiDesu",
+  "version": "0.41.0",
+  "generate_interceptor": "TretaresiaRpgGenerateInterceptor",
+  "homePage": "https://github.com/DesZiDesu/rpg-systems",
+  "auto_update": true
 }
-
