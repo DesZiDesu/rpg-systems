@@ -1,6 +1,6 @@
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.42.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.42.0';
-import { renderSceneTracker } from './scene-tracker.js?v=0.42.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.43.0';
+import { renderSceneTracker } from './scene-tracker.js?v=0.43.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -144,7 +144,8 @@ function groupInvitation(offer, messageId, api) {
         element('strong','',offer.memberCount === null ? 'ยังไม่ทราบ' : `${offer.memberCount} → ${offer.memberCount + 1} คน`));
     const rank = element('div');rank.append(element('small','','แรงก์กลุ่ม'),element('strong','',offer.rank || 'ยังไม่ทราบ'));
     const quests = element('div');quests.append(element('small','','ภารกิจสำเร็จ'),element('strong','',offer.completedQuests === null || offer.completedQuests === undefined ? 'ยังไม่ทราบ' : `${offer.completedQuests} ภารกิจ`));
-    facts.append(role,count,rank,quests);card.append(facts);
+    const reputation = element('div');reputation.append(element('small','','Reputation'),element('strong','',offer.reputation === null || offer.reputation === undefined ? 'ยังไม่ทราบ' : String(offer.reputation)));
+    facts.append(role,count,rank,quests,reputation);card.append(facts);
     if (offer.leaderName) card.append(element('p','trpg-group-invite-roster',`หัวหน้า: ${offer.leaderName}`));
     const names = (offer.members || []).map(person => person.name).join(', ');
     if (names) card.append(element('p','trpg-group-invite-roster',`สมาชิกที่รู้จัก: ${names}${offer.memberCount !== null && offer.memberCount > offer.members.length ? ` · อีก ${offer.memberCount - offer.members.length} คนยังไม่ทราบชื่อ` : ''}`));

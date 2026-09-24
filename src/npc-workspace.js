@@ -1,10 +1,10 @@
-import { createLoreWorkspace } from './lore-workspace.js?v=0.42.0';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable } from './npc-core.js?v=0.42.0';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription } from './npc-generation.js?v=0.42.0';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.42.0';
-import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.42.0';
-import { collectPortraitBackups } from './npc-media.js?v=0.42.0';
-import { H_FIELDS } from './h-stats.js?v=0.42.0';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.43.0';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable } from './npc-core.js?v=0.43.0';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription } from './npc-generation.js?v=0.43.0';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.43.0';
+import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.43.0';
+import { collectPortraitBackups } from './npc-media.js?v=0.43.0';
+import { H_FIELDS } from './h-stats.js?v=0.43.0';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -42,7 +42,7 @@ export function createNpcWorkspace(api) {
     }
     const changed=new Set();
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.42.0',import.meta.url).href;document.head.append(sheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.43.0',import.meta.url).href;document.head.append(sheet);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
     const valid=t=>dialog?.open && token===t && chatId===currentChat() && ownerKey===(api.scopeInfo()?.key||'');
