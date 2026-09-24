@@ -134,6 +134,7 @@ tretaresia_patch {
 .tretaresia-h-hearts{display:flex;gap:.18rem;flex-shrink:0}
 .tretaresia-h-heart-value{display:grid;justify-items:end;gap:.12rem}
 .tretaresia-h-heart-value small{color:var(--tretaresia-muted);font-size:.48rem}
+.tretaresia-h-generated{display:block;margin-top:.14rem;color:var(--tretaresia-accent);font-size:.43rem;font-weight:500;white-space:nowrap}
 .tretaresia-h-hearts svg{width:19px;height:19px;fill:transparent;stroke:#af6974;stroke-width:1.5}
 .tretaresia-h-hearts svg.is-filled{fill:#d55470;stroke:#f596ac}
 .tretaresia-h-sections{display:flex;flex-wrap:wrap;gap:.28rem;margin:.7rem 0 .45rem}

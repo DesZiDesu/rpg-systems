@@ -1,5 +1,10 @@
 # Tretaresia RPG System
 
+### v0.40.4 — Complete H-Stats profiles and recover missing scene details
+
+- Opening H-Stats for a met NPC with missing fields now creates a complete initial profile. One focused AI request uses the existing dossier to propose missing values; any omitted or unavailable values receive neutral generated defaults. Established values are never replaced. Generated fields are labeled in the dossier and lose that label when the story or a manual edit confirms a value, including confirmation of the same value. Historical Manual Sync can replace these generated assumptions. No H-Stats Condition field is added.
+- A full Scene Tracker supplied in the main reply still uses no additional request. If scene fields are missing, one focused completion request fills them; the same request also checks NPC progression when needed. A partial response can receive one bounded request for the remaining scene fields. Provider failures still preserve confirmed facts, and Manual Sync can retry the affected turn. Scene completion and initial H-Stats generation appear separately in the request counter and consume extra AI requests when invoked.
+
 ### v0.40.3 — Shared Scene Tracker, H-Stats recovery and selectable Manual Sync
 
 - Scene Tracker now records the scene returned in the normal main-chat reply without a separate AI completion request. If the reply omits scene facts, those fields remain incomplete until another reply or a user-initiated Manual Sync. NPC progress recovery may still make its own request for a met participant when the reply leaves confirmed NPC progression or H-Stats unrecorded; the request counter reports it separately.
@@ -94,7 +99,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.40.3**
+**Current version: 0.40.4**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 

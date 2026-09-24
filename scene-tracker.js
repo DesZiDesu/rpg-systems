@@ -1,4 +1,4 @@
-// Small, per-reply scene records. Never send a second request to build a card.
+// Small, per-reply scene records; the host may complete omitted scene details.
 const value = (source, limit = 180) => typeof source === 'string' ? source.trim().slice(0, limit) : '';
 const known = source => source && !/^(?:unknown|none|n\/a|unspecified|not specified|not known|undefined|null|tbd|ไม่ทราบ|ไม่ระบุ|ไม่รู้|—|–|-|\?|…|\.{2,})$/i.test(source) ? source : '';
 export const SCENE_REQUIRED_FIELDS = Object.freeze(['dayName','day','month','year','era','calendar','time','period','season',
