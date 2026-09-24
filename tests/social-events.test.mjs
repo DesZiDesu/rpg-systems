@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {allowedDiaryOps, eligibleNpc, householdOffers} from '../social-events.js';
+import {allowedDiaryOps, eligibleNpc, householdOffers, groupOffers} from '../social-events.js';
 
 const people = [
     {id:'kohaku',name:'Kohaku',met:true,diary:[]},
@@ -30,4 +30,22 @@ test('diary respects turn cooldown, visibility, duplicates, and the off setting'
     const duplicate=[{...people[0],diary:[{text:operation[2].text,sourceTurn:1}]},...people.slice(1)];
     assert.equal(allowedDiaryOps([operation],duplicate,'Kohaku spotted a bear',[],'often',20).length,0);
     assert.equal(eligibleNpc(people,{npcId:'lore'},'Lore Only greeted us',[]),null);
+});
+
+test('group invitations require an eligible inviter, named group, offered role and only confirmed members',()=>{
+    const party = ['offer','partyInvitation',{npcId:'kohaku',name:'Ashtrail',role:'Scout',memberCount:4,
+        members:[{name:'Rhea',role:'Leader'}],leaderName:'Rhea'}];
+    const guild = ['offer','guildInvitation',{npcId:'kohaku',name:'Dawnspire',role:'Initiate',
+        members:[{name:'Sera'}],memberCount:128}];
+    const offers = groupOffers([party,guild],people,'Kohaku and Rhea offered an invitation to a party with 4 people and a guild with 128 people',[],{party:null,guilds:[]});
+    assert.equal(offers.length,2);
+    assert.deepEqual(offers[0].members.map(person=>person.name),['Kohaku','Rhea']);
+    assert.equal(offers[0].memberCount,4);
+    assert.equal(offers[1].memberCount,128);
+    assert.equal(groupOffers([guild],people,'Kohaku invited you; no total was stated',[],{} )[0].memberCount,null);
+    assert.equal(groupOffers([['offer','guildInvitation',{npcId:'kohaku',name:'Guild',role:'Member',members:[{name:'Sera'}]}]],people,'Kohaku invited you',[],{} )[0].memberCount,null);
+    assert.equal(groupOffers([party],people,'No one asked',[],{}).length,0);
+    assert.equal(groupOffers([party],people,'Kohaku spoke',[],{party:{name:'Elsewhere'}}).length,0);
+    assert.equal(groupOffers([['offer','partyInvitation',{npcId:'kohaku',name:'Ashtrail'}]],people,'Kohaku spoke',[],{}).length,0);
+    assert.equal(groupOffers([['offer','guildInvitation',{npcId:'enemy',name:'Guild',role:'Member'}]],people,'Enemy spoke',[],{}).length,0);
 });

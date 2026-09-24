@@ -1,4 +1,4 @@
-@import url("./style.css?v=0.40.7");
+@import url("./style.css?v=0.40.8");
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&display=swap");
 
@@ -5837,3 +5837,34 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 .trpg-diary-footer { padding: 0 .65rem .7rem; text-align: right; }
 .trpg-diary-footer button { min-height: 35px; padding: .35rem .7rem; color: #f1d59c; background: #21170d; border: 1px solid #856a3e; cursor: pointer; }
 @media(max-width:420px) { .trpg-diary-page { padding: .6rem; } .trpg-diary-page p { font-size: .85rem; } .trpg-diary-bar { font-size: .6rem; } }
+
+/* Invitations live in the assistant turn and retain the player's decision. */
+.trpg-group-invite{position:relative;box-sizing:border-box;max-width:100%;min-width:0;margin:1rem 0;padding:18px 15px;background:radial-gradient(ellipse at 50% 0%,#a8802d2c,transparent 52%),#17140d;border:1px solid #8c713d;box-shadow:inset 0 0 0 4px #16120c,inset 0 0 0 5px #544323,0 9px 20px #0008;color:#e8dbc0;text-align:center;overflow-wrap:anywhere}
+.trpg-group-invite::before,.trpg-group-invite::after{content:'◆';position:absolute;top:7px;color:#e0bf72;font-size:10px}
+.trpg-group-invite::before{left:10px}.trpg-group-invite::after{right:10px}
+.trpg-group-invite.is-guild{background:radial-gradient(ellipse at 50% 0%,#af925039,transparent 56%),repeating-linear-gradient(135deg,#bfa46009 0px,#bfa46009 1px,transparent 1px,transparent 8px),#1e190f}
+.trpg-group-invite-type{display:block;color:#e8ca7c;font:600 10px 'Orbitron','Chakra Petch',sans-serif;letter-spacing:.13em;line-height:1.5}
+.trpg-group-invite-seal{display:grid;place-items:center;width:42px;height:42px;margin:10px auto 13px;border:1px solid #c7a758;background:#302717;color:#e7c77f;font:24px Georgia,serif;transform:rotate(45deg)}
+.trpg-group-invite-seal::first-letter{transform:rotate(-45deg)}
+.trpg-group-invite.is-guild .trpg-group-invite-seal{border-radius:50%;transform:none;outline:1px solid #674f2c;outline-offset:4px}
+.trpg-group-invite h3{margin:4px 0;color:#f2e2b6;font:700 23px Georgia,'Noto Serif Thai',serif;line-height:1.3}
+.trpg-group-invite-from{margin:2px 0 14px;color:#ad9d7d;font-size:12px}
+.trpg-group-invite-desc{margin:0 0 12px;text-align:left;font-size:13px;line-height:1.6}
+.trpg-group-invite-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));text-align:left;border-block:1px solid #59472a}
+.trpg-group-invite-facts>div{min-width:0;padding:12px 5px}
+.trpg-group-invite-facts>div+div{padding-left:12px;border-left:1px solid #59472a}
+.trpg-group-invite-facts small{display:block;color:#ac9770;font-size:11px;line-height:1.4}
+.trpg-group-invite-facts strong{display:block;margin-top:4px;color:#f5dea6;font-size:16px;line-height:1.4}
+.trpg-group-invite-roster{margin:10px 0 0;text-align:left;color:#c4b597;font-size:12px;line-height:1.6}
+.trpg-group-invite-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px}
+.trpg-group-invite-actions button{min-width:0;min-height:44px;padding:8px 4px;border:1px solid #a98743;font:600 13px 'Chakra Petch',sans-serif;cursor:pointer}
+.trpg-group-invite-accept{background:linear-gradient(#f2dea7,#b18e44);color:#21180a}
+.trpg-group-invite-reject{background:#241d12;color:#ebd1a2}
+.trpg-group-invite-actions button:disabled{opacity:.5;cursor:wait}
+.trpg-group-invite-status{padding-top:11px;border-top:1px solid #5c4b2b;color:#a8ce96;text-align:left;font-size:13px}
+.tretaresia-affiliation-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.tretaresia-affiliation-summary>div{min-width:0;padding:10px;background:#262015;border:1px solid #66512b}
+.tretaresia-affiliation-summary span{display:block;color:#b4a079;font-size:11px}
+.tretaresia-affiliation-summary strong{display:block;color:#f3dfa9;font-size:16px;overflow-wrap:anywhere}
+.tretaresia-affiliation-summary p{grid-column:1/-1;margin:0;color:#c3b49a;font-size:12px;overflow-wrap:anywhere}
+@media(max-width:380px){.trpg-group-invite-facts{grid-template-columns:1fr}.trpg-group-invite-facts>div+div{border-left:0;border-top:1px solid #59472a;padding-left:5px}}
