@@ -28,11 +28,14 @@ async function boot() {
     if (globalThis.TretaresiaBootStarted) return;
     globalThis.TretaresiaBootStarted=true;
     const version = await installed();
-    const style=document.createElement('link'); style.rel='stylesheet'; style.href=releaseUrl('styles/ui-polish.css',version); document.head.append(style);
+    // Stable compatibility entry. The versioned runtime also verifies core and
+    // polish styles, so stale bootstraps cannot silently leave the UI unstyled.
+    const style=document.createElement('link'); style.rel='stylesheet'; style.href=releaseUrl('ui-polish.css',version); document.head.append(style);
     await import(releaseUrl('index.js',version));
     globalThis.TretaresiaRelease=version;
 }
 if (typeof document !== 'undefined') void boot().catch(error=>{
+    globalThis.TretaresiaBootStarted=false;
     console.error('[Tretaresia loader]',error);
     globalThis.toastr?.error('Tretaresia could not load. Check your server connection and reload; do not clear browser data.');
 });

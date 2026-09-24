@@ -62,6 +62,9 @@ test('release URLs invalidate the entry point as well as styles; manifest select
  const loader=readFileSync(new URL('../loader.js',import.meta.url),'utf8');
  assert.match(loader,/cache:'no-store'/);assert.doesNotMatch(loader,/localStorage|indexedDB|caches\.delete/);
  assert.match(readFileSync(new URL('../styles/ui-polish.css',import.meta.url),'utf8'),new RegExp('style\\.css\\?v='+manifest.version.replaceAll('.','\\.')));
+ for(const [legacy,current] of [['ui-polish.css','styles/ui-polish.css'],['style.css','styles/style.css'],['npc-ui.css','styles/npc-ui.css']]){
+  assert.match(readFileSync(new URL('../'+legacy,import.meta.url),'utf8'),new RegExp(current.replaceAll('/','\\/')+'\\?v='+manifest.version.replaceAll('.','\\.')));
+ }
 });
 
 test('bootstrap requests a fresh descriptor, loads one runtime, and never starts in safe mode',async()=>{
@@ -71,7 +74,7 @@ test('bootstrap requests a fresh descriptor, loads one runtime, and never starts
   const sandbox={URL,console,location:{search:safe?'?tretaresia-safe=1':''},document:{createElement:()=>({}),head:{append:s=>styles.push(s)}},fetch:async(url,options)=>{calls.push({url:String(url),options});return {ok:true,json:async()=>({version:'0.32.0'})};},loadRuntime:async url=>modules.push(url)};
   vm.createContext(sandbox);vm.runInContext(source,sandbox);await new Promise(resolve=>setImmediate(resolve));
   if(safe){assert.equal(calls.length,0);assert.equal(modules.length,0);continue;}
-  assert.equal(calls[0].options.cache,'no-store');assert.match(calls[0].url,/manifest.json\?_=/);assert.match(modules[0],/index.js\?v=0.32.0$/);assert.match(styles[0].href,/styles\/ui-polish.css\?v=0.32.0$/);
+  assert.equal(calls[0].options.cache,'no-store');assert.match(calls[0].url,/manifest.json\?_=/);assert.match(modules[0],/index.js\?v=0.32.0$/);assert.match(styles[0].href,/\/ui-polish.css\?v=0.32.0$/);
   await vm.runInContext('boot()',sandbox);assert.equal(modules.length,1);assert.equal(sandbox.TretaresiaRelease,'0.32.0');
  }
 });
