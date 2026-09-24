@@ -1,5 +1,11 @@
 # Tretaresia RPG System
 
+### v0.40.3 — Shared Scene Tracker, H-Stats recovery and selectable Manual Sync
+
+- Scene Tracker now records the scene returned in the normal main-chat reply without a separate AI completion request. If the reply omits scene facts, those fields remain incomplete until another reply or a user-initiated Manual Sync. NPC progress recovery may still make its own request for a met participant when the reply leaves confirmed NPC progression or H-Stats unrecorded; the request counter reports it separately.
+- The selected NPC's H-Stats dossier has a larger portrait, relationship and pregnancy panel, and four compact body/encounter summaries in the existing Tretaresia theme. Automatic tracking asks for every distinct H-Stats field confirmed by the scene, supports more than twelve updates in one recovery response, and never fills unconfirmed values or adds a Condition field.
+- Manual Sync opens a start/end main-chat message selector, shows the number of character turns and expected AI requests, then checks those replies in order for missed story updates across supported system tabs. It saves the resulting state once and adds old scene snapshots to their original messages without moving the live scene. Existing per-turn records stop an already applied counter from being added twice. An old selected interval cannot reliably restore superseded current location, inventory, social membership, pregnancy, or another historical number without later context; choose a range through the latest reply for current events. Only facts the story confirms are updated. One manual AI request is made per selected character reply; images, music and device settings are managed in their own controls.
+
 ### v0.40.2 — NPC progression and H-Stats display
 
 - The H-Stats loyalty hearts now use a complete SVG outline. An unset value says "ยังไม่ทราบ" instead of implying that loyalty is zero. The selected NPC's stored portrait loads in the dossier through the existing NPC portrait sources; the initial remains when no image is available.
@@ -88,7 +94,7 @@ Storage limits: 200 entries per card and 12,000 characters per entry. The active
 
 A persistent, responsive SillyTavern RPG interface built specifically for the world of Tretaresia. It is a separate extension from Tensei System and can be installed alongside it without sharing settings, chat state, storage keys, prompts, or UI IDs.
 
-**Current version: 0.40.2**
+**Current version: 0.40.3**
 
 ### v0.32.0 — Fresh-release loading and server-backed NPC portraits
 

@@ -16,7 +16,7 @@ const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -161,7 +161,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.40.2');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.40.3');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -423,6 +423,94 @@ const fullScene={dayName:'Day 1',day:1,month:'Harvest',year:'1286',era:'Silver A
  position:'At the window',weather:'Rain',temperature:21,lighting:'Lanterns',participants:['Kohaku'],
  objective:'Find the ledger',safety:'Safe',atmosphere:'Quiet',elapsed:'0 minutes'};
 
+test('Manual Sync markers use actual main-chat indexes and require a completed reply inside the range',()=>{
+ const chat=[{is_user:false,mes:'First message'},{is_system:true,mes:'Hidden'},{is_user:true,mes:'Start here'},
+  {is_user:false,mes:'<tr-dialogue name="Kohaku">Answer</tr-dialogue>'},{is_user:true,mes:'Pending'}];
+ assert.deepEqual(JSON.parse(JSON.stringify(host.manualSyncMarkers(chat).map(marker=>marker.index))),[0,2,3,4]);
+ assert.deepEqual(JSON.parse(JSON.stringify(host.manualSyncSelection(chat,2,3)?.assistants.map(marker=>marker.index))),[3]);
+ assert.equal(host.manualSyncSelection(chat,4,4),null);
+ assert.equal(host.manualSyncSelection(chat,4,2),null);
+});
+
+test('Manual Sync audits an older selected interval, updates multiple tabs once, and preserves the live scene',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ let requests=0,writes=0;
+ try{
+  const state=host.defaultState();state.onboarding.locationSeeded=true;state.location.place='Present Hall';
+  state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true})];
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
+  context.chat=[{is_user:true,mes:'Earlier journey'}, {is_user:false,mes:'Earlier hall'},
+   {is_user:true,mes:'Ask Kohaku about an old event'}, {is_user:false,mes:'Kohaku confirms a recorded detail and a quest in Old Hall.'},
+   {is_user:true,mes:'Walk to Present Hall'}, {is_user:false,mes:'We are in Present Hall.'}];
+  context.saveMetadata=async()=>{writes++;};
+  context.generateQuietPrompt=async({quietPrompt})=>{
+   requests++;assert.match(quietPrompt,/ONE completed reply \(#4\)/);assert.doesNotMatch(quietPrompt,/Walk to Present Hall/);
+   return JSON.stringify({ops:[['set','npcHStats',{npcId:'kohaku',field:'mouthQuality',value:'Established'}],
+    ['inc','npcHStats',{npcId:'kohaku',field:'oralSexCount',amount:1}],
+    ['upsert','quests',{id:'archival',name:'Archival Quest',type:'Quest',status:'Offered',objective:'Find a page'}],
+    ['set','location.place','Old Hall']],sceneTracker:{...fullScene,location:'Old Hall',day:2,time:'09:00'}});
+  };
+  await host.analyzeChat({manual:true,startIndex:2,endIndex:3});
+  assert.equal(requests,1);assert.equal(writes,1);
+  assert.equal(host.getState().location.place,'Present Hall');
+  assert.equal(host.getState().npcs[0].hStats.mouthQuality,'Established');
+  assert.equal(host.getState().npcs[0].hStats.oralSexCount,1);
+  assert.equal(host.getState().quests[0].name,'Archival Quest');
+  assert.equal(host.sceneForMessage(3,context.chat[3]).location,'Old Hall');
+  assert.equal(host.sceneForMessage(3,context.chat[3]).day,2);
+  await host.analyzeChat({manual:true,startIndex:2,endIndex:3});
+  assert.equal(host.getState().npcs[0].hStats.oralSexCount,1);
+  assert.equal(host.getState().quests.length,1);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;}
+});
+
+test('Manual Sync selected turns advance story driven data across tabs in order with one metadata save',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ let requests=0,writes=0;
+ try{
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true,trust:8})];
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
+  context.chat=[{is_user:true,mes:'Receive a quest'}, {is_user:false,mes:'Kohaku offers a quest in Old Hall.'},
+   {is_user:true,mes:'Accept and head out'}, {is_user:false,mes:'Kohaku trusts us. We reach Moon Hall.'}];
+  context.saveMetadata=async()=>{writes++;};
+  context.generateQuietPrompt=async()=>{
+   requests++;
+   return requests===1 ? JSON.stringify({ops:[['upsert','quests',{id:'one',name:'Quest One',type:'Quest',status:'Offered',objective:'Find clue'}]],sceneTracker:{...fullScene,location:'Old Hall'}})
+    : JSON.stringify({ops:[['inc','npcValues',{npcId:'kohaku',field:'trust',amount:2}],
+     ['inc','inventory',{id:'page',name:'Page',quantity:1,category:'Quest'}]],sceneTracker:fullScene});
+  };
+  await host.analyzeChat({manual:true,startIndex:0,endIndex:3});
+  assert.equal(requests,2);assert.equal(writes,1);
+  assert.equal(host.getState().quests[0].name,'Quest One');
+  assert.equal(host.getState().npcs[0].trust,10);
+  assert.equal(host.getState().inventory[0].quantity,1);
+  assert.equal(host.getState().location.place,'Moon Hall');
+  assert.equal(host.sceneForMessage(1,context.chat[1]).location,'Old Hall');
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;}
+});
+
+test('Manual Sync backfills a missing H-Stats field without recounting an auto tracked event',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
+ try{
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true})];
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
+  context.chat=[{is_user:true,mes:'Kohaku confirms the encounter.'},
+   {is_user:false,mes:`Kohaku speaks about an oral event.<!--tretaresia_patch:${JSON.stringify({ops:[['inc','npcHStats',{npcId:'kohaku',field:'oralSexCount',amount:1}]],sceneTracker:fullScene})}-->`}];
+  context.saveMetadata=async()=>{};
+  context.generateQuietPrompt=async()=>JSON.stringify({ops:[]});
+  await host.processAssistantPatch(1,'normal');
+  assert.equal(host.getState().npcs[0].hStats.oralSexCount,1);
+  context.generateQuietPrompt=async()=>JSON.stringify({ops:[
+   ['inc','npcHStats',{npcId:'kohaku',field:'oralSexCount',amount:1}],
+   ['set','npcHStats',{npcId:'kohaku',field:'mouthQuality',value:'Recorded'}],
+  ],sceneTracker:fullScene});
+  await host.analyzeChat({manual:true,startIndex:0,endIndex:1});
+  assert.equal(host.getState().npcs[0].hStats.oralSexCount,1);
+  assert.equal(host.getState().npcs[0].hStats.mouthQuality,'Recorded');
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
+});
+
 test('NPC progression recovery targets only met participants and rejects unrelated or repeated changes',()=>{
  const base=host.defaultState();base.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true,trust:10,
   abilities:[{id:'holy',name:'Holy Light',level:'Adept',proficiency:0}]}),
@@ -439,6 +527,17 @@ test('NPC progression recovery targets only met participants and rejects unrelat
   ['set','npcHStats',{npcId:'kohaku',field:'condition',value:'extra'}],
  ],candidates,later,base);
  assert.deepEqual(JSON.parse(JSON.stringify(operations)),[['inc','npcAbilities',{npcId:'kohaku',name:'Holy Light',amount:3}]]);
+});
+
+test('NPC H-Stats recovery retains more than twelve distinct confirmed fields',()=>{
+ const state=host.defaultState();state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true})];
+ const fields=H_FIELDS.filter(field=>field.type==='text').slice(0,14);
+ const raw=fields.map(field=>['set','npcHStats',{npcId:'kohaku',field:field.key,value:`Confirmed ${field.key}`}]);
+ const recovered=host.npcProgressionOperations(raw,state.npcs,state,state);
+ assert.equal(recovered.length,14);
+ const {next,accepted}=host.applyStatePatch(state,{ops:recovered});
+ assert.equal(accepted,14);
+ assert.equal(next.npcs[0].hStats[fields.at(-1).key],`Confirmed ${fields.at(-1).key}`);
 });
 
 test('NPC relationship and existing skill grow from a completed story when its inline patch omits them',async()=>{
@@ -472,6 +571,30 @@ test('NPC relationship and existing skill grow from a completed story when its i
  }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
 });
 
+test('H-Stats recovers multiple confirmed fields even when the inline patch changed NPC relationship',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
+ let requests=0;
+ try{
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true,trust:10})];
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
+  context.chat=[{is_user:true,mes:'Listen to Kohaku.'},
+   {is_user:false,mes:`<tr-dialogue name="Kohaku">The healer confirmed I am pregnant, and Ren is the other parent.</tr-dialogue><!--tretaresia_patch:${JSON.stringify({ops:[['inc','npcValues',{npcId:'kohaku',field:'trust',amount:1}]],sceneTracker:fullScene})}-->`}];
+  context.saveMetadata=async()=>{};
+  context.generateQuietPrompt=async({quietPrompt})=>{
+   requests++;assert.match(quietPrompt,/pregnancyFather/);assert.match(quietPrompt,/No extra Condition|Never add a Condition/);
+   return JSON.stringify({ops:[['inc','npcValues',{npcId:'kohaku',field:'trust',amount:2}],
+    ['set','npcHStats',{npcId:'kohaku',field:'pregnant',value:true}],
+    ['set','npcHStats',{npcId:'kohaku',field:'pregnancyFather',value:'Ren'}]]});
+  };
+  await host.processAssistantPatch(1,'normal');
+  const npc=host.getState().npcs[0];
+  assert.equal(requests,1);assert.equal(npc.trust,11);
+  assert.equal(npc.hStats.pregnant,true);assert.equal(npc.hStats.pregnancyFather,'Ren');
+  assert.equal(npc.hStats.favoritePosition,'');
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
+});
+
 test('each complete normal reply records a distinct full scene without an extra AI call',async()=>{
  const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
  const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
@@ -495,37 +618,40 @@ test('each complete normal reply records a distinct full scene without an extra 
  }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
 });
 
-test('missing scene fields are requested once and stored with the same reply',async()=>{
+test('an incomplete main reply keeps Scene Tracker partial without a second AI request',async()=>{
  const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
  const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
  let requests=0,writes=0;
  try{
   context.chatMetadata={};context.chat=[{is_user:true,mes:'Go to Moon Hall.'},{is_user:false,mes:'Kohaku waits in Moon Hall.'}];
   context.saveMetadata=async()=>{writes++;};
-  context.generateQuietPrompt=async({quietPrompt})=>{requests++;assert.match(quietPrompt,/ACTUAL current location/);return JSON.stringify({sceneTracker:fullScene});};
+  context.generateQuietPrompt=async()=>{requests++;throw Error('Scene Tracker must not call separately');};
   await host.processAssistantPatch(1,'normal');
   const scene=host.sceneForMessage(1,context.chat[1]);
-  assert.equal(scene.location,'Moon Hall');assert.deepEqual([...scene.missing],[]);
-  assert.equal(host.getState().location.place,'Moon Hall');assert.equal(requests,1);assert.equal(writes,1);
-  await host.processAssistantPatch(1,'normal');assert.equal(requests,1);
+  assert.ok(scene.missing.includes('location'));assert.ok(scene.missing.includes('month'));
+  assert.notEqual(host.getState().location.place,'Moon Hall');assert.equal(requests,0);assert.equal(writes,1);
+  await host.processAssistantPatch(1,'normal');assert.equal(requests,0);
  }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
 });
 
-test('a scene completion for an obsolete chat cannot overwrite the next chat',async()=>{
+test('a stale NPC recovery cannot save into the next chat',async()=>{
  const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,getId:context.getCurrentChatId};
  const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
  let writes=0;
  try{
-  context.chatMetadata={};context.chat=[{is_user:true,mes:'Go outside.'},{is_user:false,mes:'The gates open.'}];
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true,trust:5})];
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
+  context.chat=[{is_user:true,mes:'Speak with Kohaku.'},
+   {is_user:false,mes:`<tr-dialogue name="Kohaku">I trust you.</tr-dialogue><!--tretaresia_patch:${JSON.stringify({ops:[],sceneTracker:fullScene})}-->`}];
   context.saveMetadata=async()=>{writes++;};
   let currentId='test-chat';context.getCurrentChatId=()=>currentId;
-  context.generateQuietPrompt=async()=>{currentId='other-chat';return JSON.stringify({sceneTracker:fullScene});};
+  context.generateQuietPrompt=async()=>{currentId='other-chat';return JSON.stringify({ops:[['inc','npcValues',{npcId:'kohaku',field:'trust',amount:2}]]});};
   await host.processAssistantPatch(1,'normal');
-  assert.equal(writes,0);assert.equal(context.chatMetadata.tretaresia_rpg_scene_history,undefined);
+  assert.equal(writes,0);assert.equal(host.getState().npcs[0].trust,5);
  }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;context.getCurrentChatId=saved.getId;host.getSettings().autoTrack=priorTrack;}
 });
 
-test('a failed scene-completion request preserves known facts and marks missing fields',async()=>{
+test('a partial scene records known facts without requesting an AI supplement',async()=>{
  const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
  const priorTrack=host.getSettings().autoTrack;host.getSettings().autoTrack=true;
  let requests=0,writes=0;
@@ -538,6 +664,6 @@ test('a failed scene-completion request preserves known facts and marks missing 
   const scene=host.sceneForMessage(1,context.chat[1]);
   assert.equal(scene.location,'Moon Hall');assert.equal(scene.weather,'Rain');
   assert.ok(scene.missing.includes('month'));assert.ok(scene.missing.includes('temperature'));
-  assert.equal(requests,1);assert.equal(writes,1);
+  assert.equal(requests,0);assert.equal(writes,1);
  }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
 });
