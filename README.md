@@ -1,5 +1,10 @@
 # Tretaresia RPG System
 
+### v0.40.5 — Character Forge for chats without a First Message
+
+- For a single-character card with an empty First Message, a Character Forge appears in the empty main chat. It uses the existing Tretaresia form and starts the first assistant scene directly through SillyTavern's normal generation, without adding a user message or a separate confirmation screen. The form hides when generation starts; if the provider fails or returns no reply, the saved draft and a retry action return. There is no automatic retry or second request.
+- Draft and confirmed profile live in this chat's metadata and load again after reopening it. Identity, selected power systems (including Divine Mana), starting abilities and inventory seed the RPG state before generation; the complete registration remains private narrator context for later replies. Previously written first messages and group chats are left alone. The old TR_CREATE regex UI is no longer needed for new chats; disable an imported copy to avoid showing a duplicate form.
+
 ### v0.40.4 — Complete H-Stats profiles and recover missing scene details
 
 - Opening H-Stats for a met NPC with missing fields now creates a complete initial profile. One focused AI request uses the existing dossier to propose missing values; any omitted or unavailable values receive neutral generated defaults. Established values are never replaced. Generated fields are labeled in the dossier and lose that label when the story or a manual edit confirms a value, including confirmation of the same value. Historical Manual Sync can replace these generated assumptions. No H-Stats Condition field is added.
