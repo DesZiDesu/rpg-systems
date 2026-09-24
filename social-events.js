@@ -71,7 +71,7 @@ export function groupOffers(ops, npcs, story, participants, social = {}) {
     }).slice(0, 2);
 }
 
-export function allowedDiaryOps(ops, npcs, story, participants, frequency, turn) {
+export function allowedDiaryOps(ops, npcs, story, participants, frequency, turn, requested = false) {
     const gap = rates[frequency] ?? rates.normal;
     if (!Number.isFinite(gap)) return [];
     const seen = new Set();
@@ -83,7 +83,7 @@ export function allowedDiaryOps(ops, npcs, story, participants, frequency, turn)
         if (thought.length < 4 || thought.length > 400 || /^(?:\*|\[|\(|\{|<)/.test(thought)) return [];
         const latest = npc.diary?.at(-1);
         if (latest?.text?.trim().toLocaleLowerCase() === thought.toLocaleLowerCase()) return [];
-        if (Number.isInteger(latest?.sourceTurn) && turn - latest.sourceTurn < gap) return [];
+        if (!requested && Number.isInteger(latest?.sourceTurn) && turn - latest.sourceTurn < gap) return [];
         seen.add(npc.id);
         return [['append', 'npcDiary', { ...value, npcId: npc.id, text: thought, sourceTurn: turn }]];
     });
