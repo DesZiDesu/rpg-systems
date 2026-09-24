@@ -1,10 +1,10 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.41.0",
+  "version": "0.41.1",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check index.js && node --check loader.js && node --check src/character-archive.js && node --check src/h-stats.js && node --check src/lore-core.js && node --check src/lore-workspace.js && node --check src/npc-chat.js && node --check src/npc-core.js && node --check src/npc-generation.js && node --check src/npc-media.js && node --check src/npc-portraits.js && node --check src/npc-scopes.js && node --check src/npc-workspace.js && node --check src/nsfw-enhance.js && node --check src/nsfw-prompt-ui.js && node --check src/nsfw-tags-ui.js && node --check src/scene-tracker.js && node --check src/social-events.js"
+    "check": "node --check index.js && node --check loader.js && node --check src/character-archive.js && node --check src/h-stats.js && node --check src/lore-core.js && node --check src/lore-workspace.js && node --check src/npc-chat.js && node --check src/npc-core.js && node --check src/npc-generation.js && node --check src/npc-media.js && node --check src/npc-portraits.js && node --check src/npc-scopes.js && node --check src/npc-workspace.js && node --check src/nsfw-enhance.js && node --check src/nsfw-prompt-ui.js && node --check src/nsfw-tags-ui.js && node --check src/runtime-styles.js && node --check src/scene-tracker.js && node --check src/social-events.js"
   }
 }
