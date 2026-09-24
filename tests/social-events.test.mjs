@@ -49,3 +49,11 @@ test('group invitations require an eligible inviter, named group, offered role a
     assert.equal(groupOffers([['offer','partyInvitation',{npcId:'kohaku',name:'Ashtrail'}]],people,'Kohaku spoke',[],{}).length,0);
     assert.equal(groupOffers([['offer','guildInvitation',{npcId:'enemy',name:'Guild',role:'Member'}]],people,'Enemy spoke',[],{}).length,0);
 });
+
+test('explicit diary request bypasses cadence but still respects off and duplicate entries', () => {
+    const npc = {id:'kohaku',name:'Kohaku',met:true,diary:[{text:'Earlier thought',sourceTurn:19}]};
+    const op = ['append','npcDiary',{npcId:'kohaku',text:'I need to speak honestly today.'}];
+    assert.equal(allowedDiaryOps([op],[npc],'Kohaku writes in her journal',[],'normal',20).length,0);
+    assert.equal(allowedDiaryOps([op],[npc],'Kohaku writes in her journal',[],'normal',20,true).length,1);
+    assert.equal(allowedDiaryOps([op],[npc],'Kohaku writes in her journal',[],'off',20,true).length,0);
+});
