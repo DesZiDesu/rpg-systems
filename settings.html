@@ -40,6 +40,16 @@
                 <input id="tretaresia-rpg-show-scene-tracker" type="checkbox" />
                 <span>Scene Tracker above each AI reply / แสดงฉากในแชท</span>
             </label>
+            <div class="tretaresia-diary-setting">
+                <span>NPC Diary · ความถี่ในการเขียน</span>
+                <div class="tretaresia-diary-frequency" role="group" aria-label="NPC diary frequency">
+                    <button type="button" data-diary-frequency="off" aria-pressed="false">ปิด</button>
+                    <button type="button" data-diary-frequency="rare" aria-pressed="false">นาน ๆ ครั้ง</button>
+                    <button type="button" data-diary-frequency="normal" aria-pressed="false">พอดี</button>
+                    <button type="button" data-diary-frequency="often" aria-pressed="false">บ่อยขึ้น</button>
+                </div>
+                <small>เฉพาะ NPC ที่อยู่ในฉากหรือถูกเอ่ยถึงในคำตอบนั้นเท่านั้น · บันทึกเป็นความคิดหรือคำพูด ไม่มีคำบรรยายการกระทำ</small>
+            </div>
             <label class="checkbox_label" for="tretaresia-rpg-show-travel-tracker">
                 <input id="tretaresia-rpg-show-travel-tracker" type="checkbox" />
                 <span>Show draggable journey progress over the main chat</span>
@@ -160,10 +170,9 @@
                 </button>
                 <span class="tretaresia-rpg-ready-state">
                     <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                    Tretaresia engine 0.40.6 ready
+                    Tretaresia engine 0.40.7 ready
                 </span>
             </div>
         </div>
     </div>
 </div>
-

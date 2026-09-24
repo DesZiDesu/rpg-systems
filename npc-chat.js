@@ -1,6 +1,6 @@
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.40.6';
-import { croppedPortrait } from './npc-portraits.js?v=0.40.6';
-import { renderSceneTracker } from './scene-tracker.js?v=0.40.6';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.40.7';
+import { croppedPortrait } from './npc-portraits.js?v=0.40.7';
+import { renderSceneTracker } from './scene-tracker.js?v=0.40.7';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -83,6 +83,54 @@ export function priorDialogueSpeaker(messages, id, lookup, visible) {
     return lookup.get(keyName(name)) || resolveNpc([...new Set(lookup.values())], name) || keyName(name);
 }
 
+function diaryBook(note) {
+    const window = element('aside','trpg-diary-book');
+    window.setAttribute('aria-label',`Diary · ${note.npcName}`);
+    const bar=element('div','trpg-diary-bar'),heading=element('strong','',`${note.npcName} / PERSONAL JOURNAL`);
+    const close=element('button','', '×');close.type='button';close.setAttribute('aria-label','Close diary');
+    bar.append(heading,close);window.append(bar);
+    const book=element('div','trpg-diary-spread'),left=element('div','trpg-diary-page'),right=element('div','trpg-diary-page');
+    left.append(element('small','',new Date(note.at).toLocaleDateString()),element('h3','',note.npcName),element('span','trpg-diary-rune','✦'));
+    right.append(element('small','','PRIVATE THOUGHTS'),element('p','',note.text),element('small','',`— ${note.npcName}`));
+    book.append(left,right);window.append(book);
+    const cover=element('div','trpg-diary-cover',`${note.npcName}\nDIARY`);cover.hidden=true;window.append(cover);
+    const footer=element('div','trpg-diary-footer'),fold=element('button','','Close book');fold.type='button';footer.append(fold);window.append(footer);
+    close.addEventListener('click',()=>window.remove());
+    fold.addEventListener('click',()=>{cover.hidden=!cover.hidden;book.hidden=!book.hidden;fold.textContent=book.hidden?'Open book':'Close book';});
+    let start=null;
+    bar.addEventListener('pointerdown',event=>{
+        if(event.target.closest('button'))return;
+        const rect=window.getBoundingClientRect();
+        start={x:event.clientX,y:event.clientY,left:rect.left,top:rect.top};bar.setPointerCapture(event.pointerId);
+    });
+    bar.addEventListener('pointermove',event=>{
+        if(!start)return;
+        window.style.left=`${Math.max(0,Math.min(innerWidth-window.offsetWidth,start.left+event.clientX-start.x))}px`;
+        window.style.top=`${Math.max(0,Math.min(innerHeight-window.offsetHeight,start.top+event.clientY-start.y))}px`;
+    });
+    for(const type of ['pointerup','pointercancel'])bar.addEventListener(type,()=>{start=null});
+    return window;
+}
+
+function householdInvitation(offer, messageId, api) {
+    const card=element('section','trpg-household-writ');
+    card.append(element('span','trpg-writ-sigil','✦'),element('small','trpg-writ-eyebrow','THE HOUSEHOLD COVENANT'),element('h3','',offer.npcName),
+        element('p','',`Requests to join your household as ${offer.role}`));
+    if(offer.status==='pending'){
+        const actions=element('div','trpg-writ-actions');
+        for(const [label,accepted] of [['Accept',true],['Decline',false]]){
+            const button=element('button',accepted?'trpg-writ-accept':'trpg-writ-reject',label);button.type='button';
+            button.addEventListener('click',async()=>{
+                actions.querySelectorAll('button').forEach(item=>item.disabled=true);
+                const saved=await api.answerHouseholdOffer(messageId,offer.npcId,accepted);
+                if(!saved)actions.querySelectorAll('button').forEach(item=>item.disabled=false);
+            });actions.append(button);
+        }
+        card.append(actions);
+    }else card.append(element('p',`trpg-writ-status${offer.status==='rejected'?' is-rejected':''}`,offer.status==='accepted'?`Accepted · ${offer.role}`:'Declined'));
+    return card;
+}
+
 export function createChatPresentation(api, open) {
     const mounted=new Map(), portraits=new Map();let timer,revision=0,epoch=0,currentChat='';
     function clearPortraits(){++epoch;for(const record of portraits.values())if(record.url)URL.revokeObjectURL(record.url);portraits.clear();}
@@ -97,7 +145,7 @@ export function createChatPresentation(api, open) {
     function restore(host, entry){if(entry.root.parentNode===host)host.replaceChildren(...entry.original);mounted.delete(host);}
     function render(){
         timer=null;const context=api.context(),chatId=context.getCurrentChatId?.()||'';
-        if(chatId!==currentChat){currentChat=chatId;clearPortraits();for(const [host,entry]of mounted)restore(host,entry);}
+        if(chatId!==currentChat){currentChat=chatId;clearPortraits();document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}
         const settings=api.settings();
         const npcs=api.state().npcs||[], lookup=new Map();
         for(const npc of npcs)for(const name of [npc.name,...(npc.aliases||[])])if(!lookup.has(keyName(name)))lookup.set(keyName(name),npc);
@@ -107,17 +155,27 @@ export function createChatPresentation(api, open) {
             if(!message || message.is_user || message.is_system || mes.querySelector('.mes_edit_textarea'))continue;
             const source=api.visible(message.mes||''),blocks=settings.chatPresentation?parseStory(source):null,old=mounted.get(host);
             const scene=settings.showSceneTracker?api.sceneForMessage?.(id,message):null;
-            if(!blocks&&!scene){if(old)restore(host,old);continue;}
+            const offers=api.socialEventsForMessage?.(id,message)?.offers||[];
+            const notes=api.diaryForMessage?.(id,message)||[];
+            if(!blocks&&!scene&&!offers.length&&!notes.length){if(old)restore(host,old);continue;}
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
-            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${source}`;
+            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(notes)}:${source}`;
             if(old?.signature===signature && old.root.parentNode===host)continue;
             const original=old?.root.parentNode===host?old.original:[...host.childNodes];
             const root=element('div','trpg-chat');root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
             if(scene)root.append(renderSceneTracker(scene,settings.language));
             if(blocks)renderStoryBlocks(root, blocks, lookup, message.name, open, imageFor, previousSpeaker);
             else root.append(...original);
+            for(const offer of offers)root.append(householdInvitation(offer,id,api));
+            for(const note of notes){
+                const button=element('button','trpg-diary-trigger',`✦  ${note.npcName} · Open diary`);button.type='button';
+                button.addEventListener('click',()=>{
+                    document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());
+                    const book=diaryBook(note);document.body.append(book);
+                });root.append(button);
+            }
             mounted.set(host,{root,original,signature});host.replaceChildren(root);
         }
     }
@@ -136,5 +194,5 @@ export function createChatPresentation(api, open) {
         const type=(context.eventTypes||context.event_types)?.[event];if(type)context.eventSource?.on(type,observe);
     }
     observe();
-    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){clearTimeout(timer);observer.disconnect();clearPortraits();for(const [host,entry]of mounted)restore(host,entry);}};
+    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){clearTimeout(timer);observer.disconnect();clearPortraits();document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
 }

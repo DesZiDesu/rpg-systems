@@ -9,14 +9,15 @@ import * as lore from '../lore-core.js';
 import * as archive from '../character-archive.js';
 import {sceneSnapshot,sceneTrackerOperations,missingSceneFields} from '../scene-tracker.js';
 import {normalizeAdultSettings,writingPreferencePrompt} from '../nsfw-enhance.js';
+import {allowedDiaryOps,diaryRates,householdOffers} from '../social-events.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,normalizeAdultSettings,writingPreferencePrompt,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,
+const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -43,6 +44,42 @@ test('NPC Codex requires a recorded meeting, while all genders retain H-Stats',(
  assert.deepEqual(host.metFriendlyNpcs(state).map(n=>n.id),['m','futa']);
  assert.equal(state.npcs[0].hStats.penisSize,'');
  assert.ok(Object.hasOwn(state.npcs[2].hStats,'vaginaQuality'));
+});
+test('Household retains its layout, lists only met NPCs, and accepts a free-text family role',()=>{
+ const state=host.defaultState();state.npcs=[host.npcProfile({id:'met',name:'Met Friend',met:true}),host.npcProfile({id:'lore',name:'Lore Friend',met:false})];
+ const panel={innerHTML:''};host.renderHousehold(panel,state);
+ assert.match(panel.innerHTML,/data-action="select-household-npc" data-id="met"/);
+ assert.doesNotMatch(panel.innerHTML,/data-action="select-household-npc" data-id="lore"/);
+ assert.match(panel.innerHTML,/name="role"[^>]*type="text"/);
+ assert.doesNotMatch(panel.innerHTML,/select name="role"/);
+});
+
+test('an inline invitation waits for the player, stays on the message, and the diary stays with its source reply',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
+ const originalGet=sandbox.document.getElementById;
+ const settings=host.getSettings(), oldTrack=settings.autoTrack, oldRate=settings.npcDiaryFrequency;
+ try{
+  settings.autoTrack=true;settings.npcDiaryFrequency='normal';
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true}),host.npcProfile({id:'lore',name:'Lore Only',met:false})];
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
+  const ops=[['offer','householdInvitation',{npcId:'kohaku',role:'คู่ชีวิต'}],
+   ['upsert','householdMembers',{npcId:'kohaku',role:'คู่ชีวิต'}],
+   ['append','npcDiary',{npcId:'kohaku',text:'วันนี้เจอหมีด้วยแหะ น่ารักจัง'}],
+   ['append','npcDiary',{npcId:'lore',text:'I was not in this scene.'}]];
+  context.chat=[{is_user:true,mes:'Talk to Kohaku.'},{is_user:false,mes:`Kohaku asks to join your household.<!--tretaresia_patch:${JSON.stringify({ops,sceneTracker:fullScene})}-->`}];
+  context.saveMetadata=async()=>{};context.generateQuietPrompt=async()=>JSON.stringify({ops:[]});
+  await host.processAssistantPatch(1,'normal');
+  assert.equal(host.getState().social.household.members.length,0);
+  assert.equal(host.socialEventsForMessage(1,context.chat[1]).offers[0].role,'คู่ชีวิต');
+  assert.equal(host.diaryForMessage(1,context.chat[1]).length,1);
+  assert.equal(host.diaryForMessage(1,context.chat[1])[0].sourceChatId,'test-chat');
+  assert.equal(host.getState().npcs.find(npc=>npc.id==='lore').diary.length,0);
+  sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  await host.answerHouseholdOffer(1,'kohaku',true);
+  assert.equal(host.getState().social.household.members[0].role,'คู่ชีวิต');
+  assert.equal(host.socialEventsForMessage(1,context.chat[1]).offers[0].status,'accepted');
+  assert.equal(await host.answerHouseholdOffer(1,'kohaku',true),false);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=originalGet;settings.autoTrack=oldTrack;settings.npcDiaryFrequency=oldRate;}
 });
 test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in this chat',async()=>{
  const base=host.defaultState();
@@ -274,7 +311,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.40.6');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.40.7');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\.\/npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

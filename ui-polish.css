@@ -1,4 +1,4 @@
-@import url("./style.css?v=0.40.6");
+@import url("./style.css?v=0.40.7");
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&display=swap");
 
@@ -5790,3 +5790,50 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 #chat > #tretaresia-character-forge[hidden]{display:none}
 #tretaresia-character-forge iframe{display:block;width:100%;height:min(78dvh,760px);min-height:360px;overflow:auto;background:#040404;border:1px solid rgba(214,180,88,.45);color-scheme:dark}
 @media(max-width:600px){#chat > #tretaresia-character-forge{padding:0 4px;margin:.4rem auto}#tretaresia-character-forge iframe{height:72dvh}}
+/* Consent in the story message, with the existing Household layout intact. */
+.tretaresia-diary-setting { display: grid; gap: .4rem; margin: .75rem 0; padding: .65rem; border: 1px solid var(--tretaresia-line-soft); background: rgba(var(--tretaresia-accent-rgb), .06); }
+.tretaresia-diary-setting > span { color: var(--tretaresia-accent); font-weight: 600; }
+.tretaresia-diary-frequency { display: flex; flex-wrap: wrap; gap: .25rem; }
+.tretaresia-diary-frequency button { flex: 1 1 92px; min-height: 40px; color: var(--tretaresia-muted); background: rgba(0,0,0,.24); border: 1px solid var(--tretaresia-line-soft); cursor: pointer; }
+.tretaresia-diary-frequency button[aria-pressed="true"] { color: var(--tretaresia-ink); background: rgba(var(--tretaresia-accent-rgb), .28); border-color: var(--tretaresia-accent); }
+.tretaresia-diary-setting small { color: var(--tretaresia-muted); line-height: 1.5; }
+.tretaresia-household-picker { position: relative; min-width: 0; }
+.tretaresia-household-picker > .tretaresia-secondary-button { width: 100%; justify-content: space-between; min-height: 42px; text-align: left; }
+.tretaresia-household-options { position: absolute; z-index: 5; top: 100%; left: 0; right: 0; max-height: 250px; overflow-y: auto; padding: .3rem; background: var(--tretaresia-surface, #17130c); border: 1px solid var(--tretaresia-accent); box-shadow: 0 14px 26px #0009; }
+.tretaresia-household-options[hidden] { display: none; }
+.tretaresia-household-options > button { display: flex; width: 100%; min-height: 42px; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .3rem; padding: .5rem; background: transparent; border: 0; border-bottom: 1px solid var(--tretaresia-line-soft); color: var(--tretaresia-ink); text-align: left; cursor: pointer; }
+.tretaresia-household-options > button:hover, .tretaresia-household-options > button:focus-visible { background: rgba(var(--tretaresia-accent-rgb), .16); }
+.tretaresia-household-options small { color: var(--tretaresia-muted); }
+.tretaresia-household-options > span { display: block; padding: .65rem; color: var(--tretaresia-muted); }
+
+.trpg-household-writ { position: relative; margin: 1rem 0; padding: 1.2rem 1rem 1rem; border: 1px solid var(--tretaresia-accent); background: radial-gradient(circle at 50% 10%, rgba(var(--tretaresia-accent-rgb), .16), transparent 58%), repeating-linear-gradient(0deg, transparent 0 23px, rgba(var(--tretaresia-accent-rgb), .055) 24px 25px), #19140d; box-shadow: inset 0 0 0 4px #17120c, inset 0 0 0 5px rgba(var(--tretaresia-accent-rgb), .38), 0 12px 25px #0007; text-align: center; }
+.trpg-household-writ::before, .trpg-household-writ::after { content: '✦'; position: absolute; top: -.7rem; padding: 0 .35rem; background: #19140d; color: var(--tretaresia-accent); }
+.trpg-household-writ::before { left: 1rem; } .trpg-household-writ::after { right: 1rem; }
+.trpg-writ-sigil { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; margin: 0 auto .8rem; border: 1px solid var(--tretaresia-accent); color: var(--tretaresia-accent); transform: rotate(45deg); font-size: 1.4rem; }
+.trpg-writ-eyebrow { display: block; color: var(--tretaresia-accent); font-family: var(--tretaresia-display-font, Orbitron), sans-serif; letter-spacing: .2em; }
+.trpg-household-writ h3 { margin: .5rem 0 .2rem; font: 600 1.3rem Georgia, serif; color: var(--tretaresia-ink); }
+.trpg-household-writ p { margin: .3rem 0 .9rem; color: var(--tretaresia-muted); overflow-wrap: anywhere; }
+.trpg-writ-actions { display: flex; gap: .6rem; padding-top: .9rem; border-top: 1px solid var(--tretaresia-line-soft); }
+.trpg-writ-actions button { flex: 1; min-height: 43px; cursor: pointer; }
+.trpg-writ-accept { border: 1px solid var(--tretaresia-accent); color: #1c1509; background: linear-gradient(180deg, var(--tretaresia-accent), #a57f36); }
+.trpg-writ-reject { border: 1px solid var(--tretaresia-line-soft); color: var(--tretaresia-accent); background: #211b13; }
+.trpg-writ-status { color: var(--tretaresia-success) !important; }
+.trpg-writ-status.is-rejected { color: var(--tretaresia-muted) !important; }
+.trpg-diary-trigger { display: inline-flex; align-items: center; min-height: 36px; max-width: 100%; gap: .45rem; margin: .45rem 0; padding: .3rem .7rem; border: 1px solid var(--tretaresia-line-soft); border-left: 3px solid var(--tretaresia-accent); color: var(--tretaresia-accent); background: linear-gradient(90deg, rgba(var(--tretaresia-accent-rgb), .14), #14110d); cursor: pointer; text-align: left; }
+.trpg-diary-book { position: fixed; z-index: 100000; top: min(22vh, 180px); left: max(4vw, calc(50vw - 260px)); width: min(520px, 92vw); border: 1px solid var(--tretaresia-accent); background: #302211; color: #e7d7a6; box-shadow: 0 20px 44px #000c, 0 0 0 3px #18110a; }
+.trpg-diary-book [hidden] { display: none !important; }
+.trpg-diary-bar { display: flex; justify-content: space-between; align-items: center; min-height: 43px; gap: .5rem; padding: .4rem .6rem; background: linear-gradient(90deg,#4c3519,#20180e); border-bottom: 1px solid #a6864e; color: #f2dfaa; font-family: Orbitron,sans-serif; font-size: .7rem; letter-spacing: .12em; touch-action: none; cursor: grab; }
+.trpg-diary-bar:active { cursor: grabbing; }
+.trpg-diary-bar button { flex: none; min-width: 35px; min-height: 35px; color: #f2dfaa; background: #251a0e; border: 1px solid #8c7241; cursor: pointer; }
+.trpg-diary-spread { display: flex; margin: .65rem; padding: .25rem; background: #3c2815; border: 2px solid #886b39; border-radius: .35rem .35rem .65rem .65rem; box-shadow: inset 0 0 0 2px #2a1c0e, 0 7px 8px #0006; }
+.trpg-diary-page { flex: 1; min-width: 0; min-height: 205px; padding: .9rem; background: repeating-linear-gradient(0deg,transparent 0 25px,#6e51251b 26px 27px),linear-gradient(100deg,#bfaa80,#eadcb6 18%,#e8dab3 85%,#ad9465); color: #4b341e; overflow-wrap: anywhere; }
+.trpg-diary-page:first-child { border-right: 3px solid #a18a5a; box-shadow: inset -13px 0 17px #4b301e2b; }
+.trpg-diary-page:last-child { box-shadow: inset 13px 0 17px #4b301e2b; }
+.trpg-diary-page small { color: #76562f; font-family: Orbitron,sans-serif; font-size: .57rem; }
+.trpg-diary-page h3 { margin: .7rem 0; color: #51371f; font: 600 1.15rem Georgia,serif; }
+.trpg-diary-page p { margin: .9rem 0; white-space: pre-wrap; font: 1rem/1.7 Georgia,serif; }
+.trpg-diary-rune { display: block; margin-top: 1rem; text-align: center; color: #8e6c39; font-size: 2rem; }
+.trpg-diary-cover { white-space: pre-line; width: 145px; min-height: 180px; display: grid; place-content: center; margin: 1.2rem auto; background: linear-gradient(90deg,#1a1109,#513317 12%,#49301c 86%,#b08a4f); border: 2px solid #d2ad63; border-radius: .2rem .9rem .9rem .2rem; color: #f5dfa1; box-shadow: 8px 5px 0 #c9b88e,0 12px 20px #0009; text-align: center; font: 700 .75rem/1.9 Orbitron,sans-serif; letter-spacing: .1em; }
+.trpg-diary-footer { padding: 0 .65rem .7rem; text-align: right; }
+.trpg-diary-footer button { min-height: 35px; padding: .35rem .7rem; color: #f1d59c; background: #21170d; border: 1px solid #856a3e; cursor: pointer; }
+@media(max-width:420px) { .trpg-diary-page { padding: .6rem; } .trpg-diary-page p { font-size: .85rem; } .trpg-diary-bar { font-size: .6rem; } }

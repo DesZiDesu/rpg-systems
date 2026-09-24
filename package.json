@@ -1,10 +1,10 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.40.6",
+  "version": "0.40.7",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check index.js && node --check h-stats.js && node --check character-archive.js && node --check npc-core.js && node --check npc-scopes.js && node --check npc-chat.js && node --check npc-workspace.js && node --check npc-portraits.js && node --check npc-generation.js && node --check lore-core.js && node --check lore-workspace.js && node --check nsfw-enhance.js && node --check nsfw-tags-ui.js && node --check nsfw-prompt-ui.js"
+    "check": "node --check index.js && node --check h-stats.js && node --check character-archive.js && node --check npc-core.js && node --check npc-scopes.js && node --check npc-chat.js && node --check social-events.js && node --check npc-workspace.js && node --check npc-portraits.js && node --check npc-generation.js && node --check lore-core.js && node --check lore-workspace.js && node --check nsfw-enhance.js && node --check nsfw-tags-ui.js && node --check nsfw-prompt-ui.js"
   }
 }

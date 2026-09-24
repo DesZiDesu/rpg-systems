@@ -1,5 +1,10 @@
 # Tretaresia RPG System
 
+### v0.40.7 — Household consent and NPC diary journal
+
+- Household keeps its existing page layout. The NPC chooser now lists only friendly NPCs the player has met, and Family role is free text. When a met NPC in the current reply offers to join, a themed Accept/Decline request remains attached to that assistant message. Membership changes only after acceptance; the offered role is shown and saved with the NPC. Decisions persist in chat metadata and on turn variants.
+- NPC diary entries from ordinary main-chat replies now require a met friendly NPC present in or named by that reply. The extension drawer controls frequency: Off, Rare, Normal, and Often, with per-NPC turn cooldown and duplicate filtering. Each recorded thought appears as a small button in its originating chat message and opens a movable, two-page book; the NPC dossier retains the diary history. Historical Manual Sync can backfill eligible missing notes without repeating them. Existing diary entries and manual edits stay available.
+
 ### v0.40.6 — SVG symbols in loading screens
 
 - The Character Forge and main Tretaresia opening screens now draw their center sigil and Skip chevrons with inline SVG. The scene generation spinner also uses an SVG stroke, matching the extension's gold theme without relying on emoji or icon fonts.
