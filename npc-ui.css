@@ -171,6 +171,20 @@
 .trpg-editor-actions button{flex:1;min-height:44px}
 .trpg-manager .trpg-danger{color:#ffb6aa;border-color:#ad645c}
 .trpg-lore-panel select{max-width:100%;font:inherit;background:#101112;color:#ede6d5;padding:12px}
+/* Keep every archive row within the visual viewport. The lore list scrolls vertically. */
+.trpg-manager{box-sizing:border-box;max-width:100%;overflow-x:hidden}
+.trpg-manager .trpg-lore-panel{min-width:0;max-width:100%;overflow-x:hidden;overflow-y:auto}
+.trpg-lore-rows,.trpg-lore-row,.trpg-lore-tools,.trpg-lore-editor{min-width:0;max-width:100%}
+.trpg-lore-row>*{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.trpg-lore-excerpt{word-break:break-word}
+@media(max-width:650px){
+ .trpg-manager .trpg-lore-row{grid-template-columns:minmax(0,1fr) auto;align-items:start}
+ .trpg-lore-row .trpg-lore-toggle{grid-column:1;grid-row:1}
+ .trpg-lore-row .trpg-lore-title{grid-column:1;grid-row:2;white-space:normal;text-align:left}
+ .trpg-lore-row>button:last-child{grid-column:2;grid-row:1 / span 2}
+ .trpg-lore-row .trpg-lore-excerpt{grid-column:1/-1;grid-row:3}
+ .trpg-lore-tools>label{flex-basis:100%;min-width:0}
+}
 @media(max-width:650px){.trpg-manager[data-view="edit"] .trpg-manager-footer{padding-bottom:6px;font-size:11px;max-height:64px;overflow:auto}.trpg-manager .trpg-editor-actions{padding-top:10px}}
 
 /* The visual viewport shrinks when the iPhone keyboard opens. Give its small

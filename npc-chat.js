@@ -1,6 +1,6 @@
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.40.7';
-import { croppedPortrait } from './npc-portraits.js?v=0.40.7';
-import { renderSceneTracker } from './scene-tracker.js?v=0.40.7';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.40.8';
+import { croppedPortrait } from './npc-portraits.js?v=0.40.8';
+import { renderSceneTracker } from './scene-tracker.js?v=0.40.8';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -131,6 +131,36 @@ function householdInvitation(offer, messageId, api) {
     return card;
 }
 
+function groupInvitation(offer, messageId, api) {
+    const guild = offer.kind === 'guild';
+    const card = element('section',`trpg-group-invite ${guild ? 'is-guild' : 'is-party'}`);
+    card.append(element('small','trpg-group-invite-type',guild ? 'OFFICIAL CHARTER · GUILD INVITATION' : 'FIELD DISPATCH · PARTY INVITATION'));
+    const seal = element('span','trpg-group-invite-seal',guild ? '✦' : '◆');seal.setAttribute('aria-hidden','true');card.append(seal);
+    card.append(element('h3','',offer.name),element('p','trpg-group-invite-from',`${offer.inviterName} · ${guild ? 'ผู้แทนกิลด์' : 'ผู้เชิญเข้าปาร์ตี้'}`));
+    if (offer.description) card.append(element('p','trpg-group-invite-desc',offer.description));
+    const facts = element('div','trpg-group-invite-facts');
+    const role = element('div');role.append(element('small','','ตำแหน่งที่คุณจะได้รับ'),element('strong','',offer.role));
+    const count = element('div');count.append(element('small','','สมาชิกก่อน → หลังเข้าร่วม'),
+        element('strong','',offer.memberCount === null ? 'ยังไม่ทราบ' : `${offer.memberCount} → ${offer.memberCount + 1} คน`));
+    facts.append(role,count);card.append(facts);
+    if (offer.leaderName) card.append(element('p','trpg-group-invite-roster',`หัวหน้า: ${offer.leaderName}`));
+    const names = (offer.members || []).map(person => person.name).join(', ');
+    if (names) card.append(element('p','trpg-group-invite-roster',`สมาชิกที่รู้จัก: ${names}${offer.memberCount !== null && offer.memberCount > offer.members.length ? ` · อีก ${offer.memberCount - offer.members.length} คนยังไม่ทราบชื่อ` : ''}`));
+    if (offer.status === 'pending') {
+        const actions = element('div','trpg-group-invite-actions');
+        for (const [label,accepted] of [[guild ? 'รับตรากิลด์' : 'ยอมรับคำเชิญ',true],['ปฏิเสธ',false]]) {
+            const button = element('button',accepted ? 'trpg-group-invite-accept' : 'trpg-group-invite-reject',label);button.type='button';
+            button.addEventListener('click',async()=>{
+                actions.querySelectorAll('button').forEach(item=>item.disabled=true);
+                try { if (!await api.answerGroupOffer(messageId,offer.key,accepted)) actions.querySelectorAll('button').forEach(item=>item.disabled=false); }
+                catch { actions.querySelectorAll('button').forEach(item=>item.disabled=false); }
+            });actions.append(button);
+        }
+        card.append(actions);
+    } else card.append(element('p','trpg-group-invite-status',offer.status === 'accepted' ? `เข้าร่วมแล้ว · ${offer.role}` : 'ปฏิเสธคำเชิญแล้ว'));
+    return card;
+}
+
 export function createChatPresentation(api, open) {
     const mounted=new Map(), portraits=new Map();let timer,revision=0,epoch=0,currentChat='';
     function clearPortraits(){++epoch;for(const record of portraits.values())if(record.url)URL.revokeObjectURL(record.url);portraits.clear();}
@@ -156,12 +186,13 @@ export function createChatPresentation(api, open) {
             const source=api.visible(message.mes||''),blocks=settings.chatPresentation?parseStory(source):null,old=mounted.get(host);
             const scene=settings.showSceneTracker?api.sceneForMessage?.(id,message):null;
             const offers=api.socialEventsForMessage?.(id,message)?.offers||[];
+            const groupOffers=api.socialEventsForMessage?.(id,message)?.groupOffers||[];
             const notes=api.diaryForMessage?.(id,message)||[];
-            if(!blocks&&!scene&&!offers.length&&!notes.length){if(old)restore(host,old);continue;}
+            if(!blocks&&!scene&&!offers.length&&!groupOffers.length&&!notes.length){if(old)restore(host,old);continue;}
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
-            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(notes)}:${source}`;
+            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(groupOffers)}:${JSON.stringify(notes)}:${source}`;
             if(old?.signature===signature && old.root.parentNode===host)continue;
             const original=old?.root.parentNode===host?old.original:[...host.childNodes];
             const root=element('div','trpg-chat');root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
@@ -169,6 +200,7 @@ export function createChatPresentation(api, open) {
             if(blocks)renderStoryBlocks(root, blocks, lookup, message.name, open, imageFor, previousSpeaker);
             else root.append(...original);
             for(const offer of offers)root.append(householdInvitation(offer,id,api));
+            for(const offer of groupOffers)root.append(groupInvitation(offer,id,api));
             for(const note of notes){
                 const button=element('button','trpg-diary-trigger',`✦  ${note.npcName} · Open diary`);button.type='button';
                 button.addEventListener('click',()=>{

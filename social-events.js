@@ -32,6 +32,45 @@ export function householdOffers(ops, npcs, story, participants, members) {
     }).slice(0, 2);
 }
 
+// An invitation is a request, never a state change. A roster count is a fact
+// distinct from the people whose names the story has actually revealed.
+export function groupOffers(ops, npcs, story, participants, social = {}) {
+    const seen = new Set();
+    return (ops || []).flatMap(operation => {
+        if (!Array.isArray(operation) || operation[0] !== 'offer'
+            || !['partyInvitation', 'guildInvitation'].includes(operation[1])) return [];
+        const value = operation[2], kind = operation[1] === 'partyInvitation' ? 'party' : 'guild';
+        const inviter = eligibleNpc(npcs, value, story, participants);
+        const name = typeof value?.name === 'string' ? value.name.trim().slice(0, 140) : '';
+        const role = typeof value?.role === 'string' ? value.role.trim().slice(0, 80) : '';
+        if (!inviter || !name || !role || (kind === 'party' && social.party)
+            || (kind === 'guild' && (social.guilds || []).some(g => g.name.toLocaleLowerCase() === name.toLocaleLowerCase()))) return [];
+        const key = `${kind}:${name.toLocaleLowerCase()}`;
+        if (seen.has(key)) return [];
+        seen.add(key);
+        const people = Array.isArray(value.members) ? value.members : [];
+        const members = [...new Map(people.map(person => {
+            const personName = typeof person === 'string' ? person : person?.name;
+            const label = typeof personName === 'string' ? personName.trim().slice(0, 140) : '';
+            return [label.toLocaleLowerCase(),label && mentioned(story,label) ? {name:label,role:typeof person?.role === 'string' ? person.role.trim().slice(0, 80) : ''} : null];
+        }).filter(([, person]) => person)).values()].slice(0, 30);
+        if (!members.some(person => person.name.toLocaleLowerCase() === inviter.name.toLocaleLowerCase()))
+            members.unshift({name:inviter.name,role:typeof value.inviterRole === 'string' ? value.inviterRole.trim().slice(0, 80) : ''});
+        const candidateLeader = typeof value.leaderName === 'string' ? value.leaderName.trim().slice(0,140) : '';
+        const leaderName = mentioned(story,candidateLeader) ? candidateLeader : '';
+        if (leaderName && !members.some(person => person.name.toLocaleLowerCase() === leaderName.toLocaleLowerCase()))
+            members.push({name:leaderName,role:'Leader'});
+        const statedCount = Number.isSafeInteger(value.memberCount)
+            && new RegExp(`(^|[^0-9])${value.memberCount}(?=$|[^0-9])`).test(story);
+        const count = statedCount && value.memberCount >= members.length && value.memberCount > 0
+            ? Math.min(value.memberCount, 1000000) : null;
+        return [{kind,key,name,role,inviterId:inviter.id,inviterName:inviter.name,
+            leaderName,
+            description:typeof value.description === 'string' ? value.description.trim().slice(0,300) : '',
+            memberCount:count,members,status:'pending'}];
+    }).slice(0, 2);
+}
+
 export function allowedDiaryOps(ops, npcs, story, participants, frequency, turn) {
     const gap = rates[frequency] ?? rates.normal;
     if (!Number.isFinite(gap)) return [];

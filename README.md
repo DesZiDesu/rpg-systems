@@ -1,5 +1,10 @@
 # Tretaresia RPG System
 
+### v0.40.8 — NPC party and guild invitations, mobile Lore layout
+
+- NPCs can offer a named party or guild membership in the Main Chat with an explicit player position, known roster, and member count only when established by the story. Accept and decline remain on the original message across chat reopen; accepting updates Party & Guild without charging the guild creation fee or generating unnamed NPC records. Unknown membership totals stay unknown.
+- Existing player-created parties and guilds retain their management controls. NPC-led memberships show the offered role, confirmed count and known names; the player can leave without dissolving the entire NPC-led group. Lore Management rows now wrap within narrow mobile screens and scroll vertically.
+
 ### v0.40.7 — Household consent and NPC diary journal
 
 - Household keeps its existing page layout. The NPC chooser now lists only friendly NPCs the player has met, and Family role is free text. When a met NPC in the current reply offers to join, a themed Accept/Decline request remains attached to that assistant message. Membership changes only after acceptance; the offered role is shown and saved with the NPC. Decisions persist in chat metadata and on turn variants.
