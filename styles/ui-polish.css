@@ -1,4 +1,4 @@
-@import url("./style.css?v=0.43.1");
+@import url("./style.css?v=0.43.2");
 /* Use the host/local font stack; external font requests must not block UI startup. */
 
 /* Tretaresia RPG UI polish layer.
@@ -5869,3 +5869,4 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 .tretaresia-affiliation-summary strong{display:block;color:#f3dfa9;font-size:16px;overflow-wrap:anywhere}
 .tretaresia-affiliation-summary p{grid-column:1/-1;margin:0;color:#c3b49a;font-size:12px;overflow-wrap:anywhere}
 @media(max-width:380px){.trpg-group-invite-facts{grid-template-columns:1fr}.trpg-group-invite-facts>div+div,.trpg-group-invite-facts>div:nth-child(4){border-left:0;border-top:1px solid #59472a;padding-left:5px}}
+body.tretaresia-rpg-open #extensionsMenu { display: none !important; }

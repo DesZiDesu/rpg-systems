@@ -17,7 +17,7 @@ const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -385,7 +385,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.1');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.2');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -858,6 +858,31 @@ test('stream previews scene and social data without persisting or accepting befo
   assert.equal(host.diaryForMessage(1,context.chat[1]).length,1);
   assert.equal(host.getState().social.guilds.length,0);
  }finally{host.setLiveGeneration(false);context.chat=saved.chat;context.chatMetadata=saved.metadata;context.saveMetadata=saved.save;settings.autoTrack=prior;}
+});
+
+test('a stale generation event does not leave an invitation disabled or a diary unsaved',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,isGenerating:context.isGenerating};
+ const settings=host.getSettings(), prior=settings.autoTrack, rate=settings.npcDiaryFrequency;
+ const originalGet=sandbox.document.getElementById;
+ try{
+  settings.autoTrack=true;settings.npcDiaryFrequency='often';
+  sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true})];
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
+  context.chat=[{is_user:true,mes:'Talk to Kohaku.'},{is_user:false,mes:`<tr-dialogue name="Kohaku">I invite you to join the party "Moonlight".</tr-dialogue><!--tretaresia_patch:${JSON.stringify({sceneTracker:fullScene,ops:[['offer','partyInvitation',{npcId:'kohaku',name:'Moonlight',memberCount:3}],['append','npcDiary',{npcId:'kohaku',text:'I want us to travel together.'}]]})}-->`}];
+  context.isGenerating=()=>true;context.saveMetadata=async()=>{};
+  host.setLiveGeneration(true);
+  host.markCompleted(context.chat[1]); // MESSAGE_RECEIVED is authoritative even if host busy state lingers.
+  await host.processAssistantPatch(1,'normal');
+  assert.equal(host.sceneForMessage(1,context.chat[1]).missing.length,0);
+  assert.equal(host.socialEventsForMessage(1,context.chat[1]).groupOffers[0].preview,undefined);
+  assert.equal(host.diaryForMessage(1,context.chat[1]).length,1);
+  assert.equal(host.getState().npcs.find(npc=>npc.id==='kohaku').diary.length,1);
+  assert.equal(host.getState().social.party,null);
+  assert.equal(await host.answerGroupOffer(1,'party:moonlight',true),true);
+  assert.equal(host.getState().social.party.name,'Moonlight');
+  assert.notEqual(host.getState().social.party.leaderId,'player');
+ }finally{host.setLiveGeneration(false);context.chat=saved.chat;context.chatMetadata=saved.metadata;context.saveMetadata=saved.save;context.isGenerating=saved.isGenerating;settings.autoTrack=prior;settings.npcDiaryFrequency=rate;sandbox.document.getElementById=originalGet;}
 });
 
 test('a partial scene preserves supplied facts and leaves missing data open without calls',async()=>{

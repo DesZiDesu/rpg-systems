@@ -1,17 +1,17 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.1';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.1';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.2';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.2';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './src/npc-core.js?v=0.43.1';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.1';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.1';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.1';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.1';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.1';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.1';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.1';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.1';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './src/npc-core.js?v=0.43.2';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.2';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.2';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.2';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.2';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.2';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.2';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.2';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.2';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.2';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.2';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -19,6 +19,14 @@ let runtimeRequestUsage = null;
 const SAFE_MODE = /(?:^|[?&])tretaresia-safe=(?:1|true)(?:&|$)/i.test(globalThis.location?.search || '');
 
 let liveGeneration = false;
+let completedAssistantMessages = new WeakSet();
+function mainReplyGenerating(context = SillyTavern.getContext()) {
+    try {
+        const active = context?.isGenerating?.();
+        if (typeof active === 'boolean') return active;
+    } catch { /* Older hosts use the generation events below. */ }
+    return liveGeneration;
+}
 const livePreviewCache = new WeakMap();
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
 const SETTINGS_KEY = 'tretaresia_rpg';
@@ -2698,7 +2706,7 @@ function assistantVariantKey(message) {
 
 function liveReplyPreview(messageId, message) {
     const context = SillyTavern.getContext();
-    if (!liveGeneration || !getSettings().autoTrack || !message || message.is_user || message.is_system || messageId !== context.chat.length - 1
+    if (!mainReplyGenerating(context) || completedAssistantMessages.has(message) || !getSettings().autoTrack || !message || message.is_user || message.is_system || messageId !== context.chat.length - 1
         || processedAssistantMessages.get(message) === assistantVariantKey(message)) return null;
     const cached = livePreviewCache.get(message);
     const cacheKey = [message.mes, context.chatMetadata, context.chatMetadata?.[METADATA_KEY], context.getCurrentChatId?.(), getSettings().npcDiaryFrequency];
@@ -3407,7 +3415,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label','Tretaresia character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.1`;
+        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.2`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3582,6 +3590,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
         lines.push('New NPCs must include a full dossier with appearance,personality,background,goals,speechStyle,relationshipState and complete stats/relationships in the same patch. Existing NPC updates remain partial and preserve prior facts. Storage scope is controlled by the user; never emit npcScope or npcOwner.');
     }
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' Emit scene metadata')[0]);
+    if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 21 fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
     lines.push('</tretaresia_rpg_state>');
     return lines.join('\n');
 }
@@ -5142,17 +5151,16 @@ function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage) 
         && unchanged(state => state.player.aura.infinite)) setIfChanged(next.player.aura, 'infinite', true);
 
     const partyConfirmed = /\b(?:join(?:ed|s|ing)?|form(?:ed|s|ing)?|became (?:a )?member)\b.{0,80}\bparty\b|\bparty\b.{0,80}\b(?:join(?:ed|s|ing)?|member)\b|(?:เข้าร่วม|ร่วม|ตั้ง|ก่อตั้ง).{0,50}(?:ปาร์ตี้|กลุ่มผจญภัย)|(?:ปาร์ตี้|กลุ่มผจญภัย).{0,50}(?:มีสมาชิก|เข้าร่วม|ร่วมทีม)/i.test(assistant);
-    if (partyConfirmed) {
+    const invitationSpeech = /\b(?:invite|invitation|would you join|please join|join us|join my|join our)\b|(?:ขอเชิญ|เชิญ|ชวน).{0,80}(?:ปาร์ตี้|กลุ่มผจญภัย)/i.test(assistant);
+    // A spoken invitation is never acceptance. The player joins an NPC-led
+    // group only through its chat card; this fallback may update an existing
+    // player-owned party when a companion has actually joined it.
+    if (partyConfirmed && next.social.party && !invitationSpeech) {
         const candidates = [...friendlyNpcs(next), ...characterLifeCharacterReferences().map(entry => ({
             id: entry.id, name: entry.name, relationship: entry.relationshipToUser || 'Companion', characterLifeId: entry.id, characterLifeScope: 'character',
         }))];
         const mentioned = candidates.filter(entry => entry.name && combined.toLocaleLowerCase().includes(entry.name.toLocaleLowerCase()));
         if (mentioned.length) {
-            if (!next.social.party) {
-                next.social.party = partyProfile({ name: 'Adventuring Party', leaderId: 'player', memberIds: [] });
-                next.player.party = next.social.party.name;
-                changes += 1;
-            }
             for (const record of mentioned) {
                 const npc = resolveOrCreateFriendlyNpc(next, record);
                 if (npc && !next.social.party.memberIds.includes(npc.id)) {
@@ -10082,11 +10090,11 @@ function npcProgressionOperations(raw, targets, state, base) {
 }
 
 async function processAssistantPatch(messageId, generationType = '') {
-    if (liveGeneration) return;
+    const context = SillyTavern.getContext();
+    if (mainReplyGenerating(context) && !completedAssistantMessages.has(context.chat?.[messageId])) return;
     const settings = getSettings();
     if (['quiet', 'impersonate'].includes(generationType)
         || (generationType === 'first_message' && !forgeSession()?.profile)) return;
-    const context = SillyTavern.getContext();
     if ((!hasUserReply(context) && !forgeSession(context)?.profile) || !Number.isInteger(messageId)) return;
     await assistantRollbackQueue.catch(() => undefined);
     const message = context.chat[messageId];
@@ -10244,6 +10252,17 @@ function scheduleAssistantPatch(messageId, generationType = '', delay = 0) {
         assistantPatchTimers.delete(key);
         void processAssistantPatch(id, generationType);
     }, delay));
+}
+
+function resumeUnfinishedAssistantPatch() {
+    if (!getSettings().autoTrack) return;
+    const context = SillyTavern.getContext(), id = latestAssistantMessageId();
+    const message = context.chat?.[id];
+    if (!message || !extractStatePatch(message.mes).found) return;
+    const checkpoint = assistantCheckpoint(id);
+    if (checkpoint?.activeVariant && checkpoint.variants?.[checkpoint.activeVariant]?.reconcileVersion === TURN_RECONCILE_VERSION) return;
+    completedAssistantMessages.add(message);
+    scheduleAssistantPatch(id, '', 0);
 }
 
 function manualSyncMarkers(chat) {
@@ -10671,19 +10690,13 @@ function syncLauncherVisibility() {
     if (npcLauncher) npcLauncher.hidden = !getSettings().showWandLauncher;
 }
 
-let wandMenuCloseQueued = false;
 function closeHostWandMenu() {
-    if (wandMenuCloseQueued) return;
-    wandMenuCloseQueued = true;
-    requestAnimationFrame(() => {
-        wandMenuCloseQueued = false;
-        const menu = document.getElementById('extensionsMenu');
-        if (!menu || !menu.getClientRects().length) return;
-        const toggle = document.querySelector('#extensionsMenuButton, [data-drawer-id="extensionsMenu"], [aria-controls="extensionsMenu"]');
-        if (toggle?.getAttribute('aria-expanded') === 'false') return;
-        if (toggle instanceof HTMLElement) toggle.click();
-        else globalThis.jQuery?.(menu).stop(true, true).slideUp(0);
-    });
+    const menu = document.getElementById('extensionsMenu');
+    if (!menu) return;
+    // SillyTavern may render this as a sheet on mobile. Clicking a generic
+    // toggle after opening our overlay can reopen the sheet instead of closing it.
+    globalThis.jQuery?.(menu).stop(true, true).hide();
+    menu.style.display = 'none';
 }
 
 function createWandLauncher() {
@@ -10868,6 +10881,7 @@ function bindChatEvents() {
         closeManualSyncDialog();
         void scheduleArchiveMigration();
         processedAssistantMessages = new WeakMap();
+        completedAssistantMessages = new WeakSet();
         assistantRollbackQueue = Promise.resolve();
         cleanupAudio();
         invalidateCharacterLifeMapMarkers();
@@ -10891,6 +10905,7 @@ function bindChatEvents() {
         catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
         await refreshCharacterLifeCompatibility({ save: true });
         await backfillHistoricalScenes();
+        resumeUnfinishedAssistantPatch();
         refreshCharacterForge();
         if (SillyTavern.getContext().getCurrentChatId?.() && !hasUserReply()) {
             setSync('ready', tr('Waiting for first reply'), getSettings().language === 'th' ? 'First Message จะยังไม่ถูกอ่านหรือบันทึก' : 'The First Message is not read or stored by the extension.');
@@ -10933,6 +10948,8 @@ function bindChatEvents() {
     eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => {
         if (['quiet', 'impersonate'].includes(generationType)
             || (generationType === 'first_message' && !forgeSession()?.profile)) return;
+        const message = SillyTavern.getContext().chat?.[Number(messageId)];
+        if (message && !message.is_user && !message.is_system) completedAssistantMessages.add(message);
         assistantCheckpoint(Number(messageId), { create: true });
         scheduleAssistantPatch(messageId, generationType, 0);
         scheduleAssistantPatch(messageId, generationType, 120);
@@ -10959,11 +10976,19 @@ function bindChatEvents() {
         scheduleAssistantPatch(messageId, '', 0);
         scheduleAssistantPatch(messageId, '', 180);
     });
-    if (eventTypes.GENERATION_STOPPED) eventSource.on(eventTypes.GENERATION_STOPPED, () => { liveGeneration = false; npcWorkspace?.refresh(); });
+    if (eventTypes.GENERATION_STOPPED) eventSource.on(eventTypes.GENERATION_STOPPED, () => {
+        liveGeneration = false;
+        const messageId = latestAssistantMessageId(), message = SillyTavern.getContext().chat?.[messageId];
+        if (message) completedAssistantMessages.add(message);
+        scheduleAssistantPatch(messageId, '', 0);
+        npcWorkspace?.refresh();
+    });
     if (eventTypes.CHAT_CHANGED) eventSource.on(eventTypes.CHAT_CHANGED, () => { liveGeneration = false; });
     if (eventTypes.GENERATION_ENDED) eventSource.on(eventTypes.GENERATION_ENDED, () => {
         liveGeneration = false;
         const messageId = latestAssistantMessageId();
+        const message = SillyTavern.getContext().chat?.[messageId];
+        if (message) completedAssistantMessages.add(message);
         scheduleAssistantPatch(messageId, '', 0);
         scheduleAssistantPatch(messageId, '', 240);
     });
@@ -11056,6 +11081,7 @@ async function initialize() {
         try { await catchUpTravelHistory(); }
         catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
         await backfillHistoricalScenes();
+        resumeUnfinishedAssistantPatch();
         refreshCharacterForge();
         updatePrompt();
         syncTravelTracker(getState());
@@ -11068,7 +11094,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.43.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.43.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
