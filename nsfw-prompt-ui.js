@@ -1,4 +1,4 @@
-import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,writingPreferencePrompt} from './nsfw-enhance.js?v=0.40.6';
+import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,writingPreferencePrompt} from './nsfw-enhance.js?v=0.40.7';
 
 // This renders the exact optional writing block sent by updatePrompt. Reading
 // or editing it never calls the model; only committed changes save settings.

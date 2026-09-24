@@ -1,15 +1,16 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.40.6';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.40.6';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.40.7';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.40.7';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.40.6';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.40.6';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.40.6';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.40.6';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.40.6';
-import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.40.6';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './h-stats.js?v=0.40.6';
-import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.40.6';
-import { mountAdultPromptControls } from './nsfw-prompt-ui.js?v=0.40.6';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.40.7';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.40.7';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.40.7';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.40.7';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.40.7';
+import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.40.7';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './h-stats.js?v=0.40.7';
+import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.40.7';
+import { mountAdultPromptControls } from './nsfw-prompt-ui.js?v=0.40.7';
+import { allowedDiaryOps, diaryRates, householdOffers } from './social-events.js?v=0.40.7';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -24,6 +25,7 @@ const H_SELECTION_KEY = 'tretaresia_rpg_selected_hstats_npc';
 const MANUAL_SYNC_HISTORY_KEY = 'tretaresia_rpg_manual_sync_history';
 const TURN_HISTORY_KEY = 'tretaresia_rpg_turn_history';
 const SCENE_HISTORY_KEY = 'tretaresia_rpg_scene_history';
+const SOCIAL_EVENTS_KEY = 'tretaresia_rpg_social_events';
 const PROMPT_KEY = 'tretaresia_rpg_roleplay_state';
 const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
 const STATE_PACKAGE_FORMAT = 'tretaresia-rpg-state';
@@ -38,7 +40,6 @@ const RANKS = ['Rookie', 'Basic', 'Intermediate', 'Ember', 'Custom Rank'];
 const MASTERY = ['Dormant', 'Initiate', 'Practiced', 'Adept', 'Expert', 'Master', 'Grandmaster', 'Mythic'];
 const DUNGEON_RANKS = ['Unranked', 'E-', 'E', 'E+', 'D-', 'D', 'D+', 'C-', 'C', 'C+', 'B-', 'B', 'B+', 'A-', 'A', 'A+', 'S-', 'S', 'S+', 'SS'];
 const GUILD_CREATION_FEE = Object.freeze({ gold: 10, silver: 0, copper: 0 });
-const HOUSEHOLD_ROLES = ['Partner', 'Spouse', 'Child', 'Mother', 'Father', 'Sibling', 'Relative', 'Guardian', 'Other'];
 const QUEST_TYPES = ['Story', 'Side-Story', 'Mission', 'Quest', 'Dungeon', 'Contract', 'Personal'];
 const QUEST_SECTIONS = Object.freeze([
     { id: 'story', label: 'STORY' },
@@ -825,6 +826,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     chatEffects: true,
     showWandLauncher: true,
     autoTrack: true,
+    npcDiaryFrequency: 'normal',
     injectState: true,
     language: 'en',
     interactionMode: 'hidden',
@@ -855,7 +857,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.40.6';
+const LAUNCHER_BIND_VERSION = '0.40.7';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -1205,6 +1207,7 @@ function getSettings() {
     if (!['en', 'th'].includes(settings.language)) settings.language = DEFAULT_SETTINGS.language;
     if (!['hidden', 'visible', 'draft'].includes(settings.interactionMode)) settings.interactionMode = DEFAULT_SETTINGS.interactionMode;
     if (!['full', 'compact', 'off'].includes(settings.activityIndicator)) settings.activityIndicator = DEFAULT_SETTINGS.activityIndicator;
+    if (!diaryRates.includes(settings.npcDiaryFrequency)) settings.npcDiaryFrequency = DEFAULT_SETTINGS.npcDiaryFrequency;
     if (!['compact', 'comfortable'].includes(settings.density)) settings.density = DEFAULT_SETTINGS.density;
     for (const key of ['accentColor', 'accentAltColor', 'inkColor', 'surfaceColor', 'auraColor']) {
         if (!/^#[0-9a-f]{6}$/i.test(settings[key])) settings[key] = DEFAULT_SETTINGS[key];
@@ -1507,6 +1510,10 @@ function npcDiaryEntry(value) {
     return {
         id: text(value.id, uid(), 100), text: text(value.text, '', 1200), mood: text(value.mood, '', 80),
         at: text(value.at, new Date().toISOString(), 60),
+        sourceTurn: Number.isInteger(value.sourceTurn) && value.sourceTurn >= 0 ? value.sourceTurn : null,
+        sourceMessageId: Number.isInteger(value.sourceMessageId) && value.sourceMessageId >= 0 ? value.sourceMessageId : null,
+        sourceVariant: text(value.sourceVariant, '', 100),
+        sourceChatId: text(value.sourceChatId, '', 140),
     };
 }
 
@@ -2677,6 +2684,57 @@ function sceneForMessage(messageId, message) {
     return key && SillyTavern.getContext().chatMetadata?.[SCENE_HISTORY_KEY]?.[key]?.[assistantVariantKey(message)] || null;
 }
 
+function socialEventsForMessage(messageId, message) {
+    const key = assistantTurnKey(messageId);
+    return key && SillyTavern.getContext().chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[assistantVariantKey(message)] || null;
+}
+
+function diaryForMessage(messageId, message) {
+    const variant = assistantVariantKey(message);
+    const chatId = SillyTavern.getContext().getCurrentChatId?.();
+    return metFriendlyNpcs(getState()).flatMap(npc => (npc.diary || [])
+        .filter(note => note.sourceChatId === chatId && note.sourceMessageId === messageId && note.sourceVariant === variant)
+        .map(note => ({...note,npcName:npc.name,npcId:npc.id}))).slice(0, 2);
+}
+
+function rememberHouseholdOffers(messageId, message, offers) {
+    const key = assistantTurnKey(messageId);
+    if (!key || !offers.length) return;
+    const context = SillyTavern.getContext();
+    const history = context.chatMetadata[SOCIAL_EVENTS_KEY] ||= {};
+    const variant = assistantVariantKey(message);
+    const existing = history[key]?.[variant]?.offers || [];
+    history[key] ||= {};
+    history[key][variant] = { offers: offers.map(offer => ({
+        ...offer, status: existing.find(current => current.npcId === offer.npcId)?.status || 'pending',
+    })) };
+    for (const stale of Object.keys(history[key]).slice(0, -6)) delete history[key][stale];
+    for (const stale of Object.keys(history).slice(0, -300)) delete history[stale];
+    npcWorkspace?.refresh();
+}
+
+async function answerHouseholdOffer(messageId, npcId, accepted) {
+    const context = SillyTavern.getContext();
+    const message = context.chat?.[messageId];
+    const record = message && socialEventsForMessage(messageId, message);
+    const offer = record?.offers?.find(entry => entry.npcId === npcId && entry.status === 'pending');
+    if (!offer) return false;
+    const state = getState();
+    const npc = metFriendlyNpcs(state).find(entry => entry.id === npcId);
+    if (!npc) return false;
+    if (accepted && !state.social.household.members.some(entry => entry.npcId === npcId)) {
+        state.social.household.members.push(socialMember({npcId, name:npc.name, role:offer.role}));
+        if (!await persistState(state, 'household-invitation')) return false;
+        const variant = assistantVariantKey(message);
+        const checkpoint = assistantCheckpoint(messageId);
+        if (checkpoint?.variants?.[variant]?.state) checkpoint.variants[variant].state = clone(getState());
+    }
+    offer.status = accepted ? 'accepted' : 'rejected';
+    await saveCurrentChatMetadata(context);
+    npcWorkspace?.refresh();
+    return true;
+}
+
 function previousScene(messageId, context = SillyTavern.getContext()) {
     for (let index = Math.min(messageId - 1, context.chat.length - 1); index >= 0; index -= 1) {
         const message = context.chat[index];
@@ -3242,7 +3300,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label','Tretaresia character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/character-creation.html?v=0.40.6`;
+        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/character-creation.html?v=0.40.7`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3323,11 +3381,12 @@ function legacyPatchInstructions() {
     return [
         'After the role-play reply, append one invisible HTML comment only when confirmed state changed:',
         '<!--tretaresia_patch:{"ops":[["upsert","quests",{"id":"academy-escort","name":"Escort the Academy Caravan","type":"Mission","status":"Active","objective":"Protect the caravan until it reaches Eastwatch","reward":"12 silver","giver":"Quartermaster Lysa","source":"Great Academy mission board","progress":0}],["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}]],"summary":"Mission, training, payment, and combat progress recorded."}-->',
-        'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers, guildMembers, and householdMembers; set or inc npcValues, npcHStats, and playerHStats; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
-        'Party, Guild, and Household rules: The player is always the leader of a party or guild created from the UI unless the story explicitly confirms a leadership change. Party membership is free. The UI already deducts the Guild fee. For a guild newly created by the player in the story, set createdByPlayer:true on the guild upsert; the parser accepts it only when the player can afford the fee and deducts the fee automatically. Merely joining an existing guild never charges a creation fee. Role-play changes are automatic: whenever a completed reply confirms joining, accepting an invitation, leaving, expulsion, creation, dissolution, marriage, partnership, a child, parent, guardian, or another family role, update social state in this same patch even when no UI button was used. For a friendly person absent from npcIndex, first upsert npcs with a stable id/name, then use that id in partyMembers, guildMembers, or householdMembers. A Household is the player\'s family roster, not a generic faction.',
+        'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers and guildMembers; delete householdMembers; offer householdInvitation with npcId and role; set or inc npcValues, npcHStats, and playerHStats; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
+        'Household invitations: when a met friendly NPC in the current scene or explicitly named in the completed reply asks to join the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. Include the exact role the NPC proposes. This creates an Accept/Decline card in that assistant message, not immediate membership. Never upsert householdMembers or put members inside household; only the player can accept. Explicit departures may delete householdMembers.',
         'Use canonical paths shown in the state JSON. For a new incoming physical letter include contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not a letter.',
         'Create or update a named NPC dossier with an upsert on npcs only when that NPC becomes relevant or a confirmed fact changes. Use partial NPC objects and preserve the canonical id from npcIndex. When a relationship becomes a correspondence, also upsert contacts with npcId; do not make every incidental NPC a contact.',
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. An existing ability can improve via ["inc","npcAbilities",{"npcId":"...","name":"Known skill","amount":2}]; only from established practice/use. NPC portraits and portrait framing are local-only and forbidden in patches.',
+        `NPC diary frequency: ${getSettings().npcDiaryFrequency}. Off means NEVER append. Rare allows one entry per NPC every 12 assistant turns; normal every 5; often every 2. Append ["append","npcDiary",{"npcId":"stable-id","text":"one or two sentences of the NPC's own private words or thoughts","mood":"optional"}] ONLY for a met friendly NPC physically in scene or explicitly named in THIS completed reply, and only for a meaningful fresh thought. Write first-person thoughts or quoted speech, never action narration, stage directions, or a thought attributed to somebody else. Do not write every reply or repeat the previous thought; the extension enforces frequency and eligibility.`,
         'Evaluate every relevant subsystem after every reply, not only scene/location. Update every materially affected value in the same patch; leave a value unchanged only when this reply provides no reasonable story basis for changing it.',
         'Full checklist: player HP/Aura-or-Mana/stamina/condition, profession, power type, Origin skill and identity; EXP/adventurer rank/custom title/reputation/local currency; inventory, Constructs and learned skills; power/combat/technique proficiency; quests and dungeons; time/location/travel/weather/local map; every participating NPC dossier, relationship meter, location, lastSeen, abilities, diary, and revealed stats; contacts and actual physical letters. For inventory use inc with positive quantity for pickup/receipt and negative quantity for consumption/drop/gift/sale; acquisition and immediate consumption require both ordered ops. Add top-level journey (maximum 500 characters) only for a significant story milestone. Emit only fields affected by this completed reply.',
         'Mission and quest receipt rules: immediately upsert every named mission, quest, contract, dungeon task, or personal objective when this reply formally offers, assigns, gives, or confirms receipt. Type must be Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Use Offered when optional and unaccepted; Active when accepted or assigned. Include stable id/name/type/status/objective/reward/giver/source/progress. Progress must reflect confirmed objective completion and Completed always means progress 100. Failed is terminal unless the story explicitly reopens the mission. On the first transition to Completed, grant the established reward once in the SAME patch and tag every reward operation metadata with {"category":"quest-reward","questId":"canonical quest id","reason":"specific reward"}. Completed questArchive entries with rewardClaimed=true are historical records: never grant their reward, EXP, item, currency, rank, or loot again and never reset their progress. Do not turn rumors, possibilities, rejected work, or casual advice into quests.',
@@ -3356,7 +3415,7 @@ function patchInstructions() {
     return [
         'TRETARESIA PATCH PROTOCOL — use the SAME normal reply; never start another generation. Append one invisible comment only when confirmed state changed:',
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
-        'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, householdMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
+        'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
         'Scene Tracker is required after EVERY completed normal reply, even when no gameplay state changes. In the SAME invisible tretaresia_patch comment include sceneTracker with ALL these keys: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. Use strings in the story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Supply a concrete current place (including rooms or non-atlas places) and region, in-story calendar/date, actual scene position, outdoor weather or indoor climate, lighting, objective, safety, atmosphere and time elapsed ("0 minutes" when none). Carry forward established facts when unchanged. For details the fiction has not established, create coherent scene details and continue them consistently; keep unknown coordinates absent and do not rewrite established world canon. Never claim a mentioned destination, memory, plan or hypothetical is the current place. Do not use Unknown, N/A, ไม่ทราบ, null or dashes. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Before ending, check that all keys are present. Do not show sceneTracker in prose.',
@@ -3380,7 +3439,8 @@ function patchInstructions() {
         'NPCs and knowledge: upsert relevant named NPCs or confirmed changes; preserve npcIndex id. Set isHostile:true for hostile/enemy/foe/antagonist/villain/threat NPCs; they remain in NPC Management, but stay out of friendly Codex/social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Improve a known skill after confirmed practice/use with ["inc","npcAbilities",{"npcId":"...","name":"Existing skill","amount":2}], optionally setting level when a milestone is confirmed. Upsert a new skill only after learning it. Supply complete plausible starting stats and relationship values for new NPCs; zero is a real value, never an unknown placeholder. Never raise existing combat stats from conversation alone. Record only facts an NPC actually learns using npcKnowledge {npcId,id,fact,source,confidence,learnedDay}; do not copy private tracker facts. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
         `Player and NPC H-Stats: ${hFieldKeys}. Applies to female, male and futanari partners with every field available; no extra Condition field or unlock logic. For established details use ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}] or ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}]; use playerHStats with the same field/value or field/amount shape and no npcId for the player. Track all confirmed relevant physical qualities/states, last partners, encounters, volume in liters, infidelity stage/progress, loyalty hearts, pregnancy/other parent, favorite partner/size/position, births, orgasms, and current fantasy. Do not invent values or advance counters twice. infidelityStage 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Record only established facts. Name is the person's actual name; title is a separate role or epithet. Set met:true only once the player has actually met the NPC, and keep mere lore/remote mentions out of the visible Codex.`,
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
-        'Social auto-sync: player leads UI-created Party/Guild unless story changes it. UI actions are not required: every confirmed join/invite/leave/expulsion/create/dissolve/rank/family-role change must update this patch. Party upserts can maintain formation, roles keyed by NPC id (Vanguard/Tank/Striker/Support/Healer/Scout/Rear Guard/Companion), and sharedFunds. Guild upserts can maintain rank, level, reputation, headquarters, alliances, enemies, treasury and quests. Existing NPC example: ["upsert","partyMembers",{"npcId":"lysa"}]. New friendly NPC: first upsert npcs, then membership. Guild member includes guildId/name. Household member includes npcId/role. Party is free. UI Guild creation already charges locally. A story-created player-led Guild must include createdByPlayer:true; parser charges only when affordable. Joining or editing an existing guild is free. Household is family, not a faction.',
+        'Social auto-sync: update Party and Guild for confirmed changes. Household invitations require consent: when a met friendly NPC in the current scene or named in this completed reply asks to enter the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. This leaves a permanent Accept/Decline card on that message; NEVER upsert householdMembers or embed members inside household. Only the player confirms entry, including a partner/spouse/child/relative. A confirmed departure may delete householdMembers.',
+        `NPC diary frequency: ${getSettings().npcDiaryFrequency}. Off means NEVER append. Rare allows one entry per NPC every 12 assistant turns; normal every 5; often every 2. Append ["append","npcDiary",{"npcId":"stable-id","text":"one or two sentences of the NPC's own private words or thoughts","mood":"optional"}] ONLY for a met friendly NPC physically in scene or explicitly named in THIS completed reply, and only for a meaningful fresh thought. Write first-person thoughts or quoted speech, never action narration, stage directions, or a thought attributed to somebody else. Do not write every reply or repeat the previous thought; the extension enforces frequency and eligibility.`,
         'Travel/scene: journeys take days/months/years. Preserve the local per-message clock and add further confirmed elapsed time. At journey start set status/endpoints/route/days and exact known atlas coordinates. Unknown coordinates must be nearby and on land. Re-evaluate position on every reply with movement; update remainingDays, location, scene.position, heading, weather and temperature without moving progress backward or teleporting early. The local route planner generates land-safe checkpoints and interpolates the marker. At arrival set Arrived/0 and destination location. When weather is established for any visited/mentioned region, upsert regionalWeather {id,region,weather,temperature,hazard,updatedDay}; preserve other regions. Keep local maps sparse and gradual; preserve locked maps.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
     ].join('\n');
@@ -6935,7 +6995,7 @@ function renderHousehold(panel, state) {
     panel.innerHTML = `${heading('Household', `${household.members.length} ${tr('Members').toLowerCase()}`, 'fa-solid fa-house-chimney-user')}
         <p class="tretaresia-social-note"><i class="fa-solid fa-heart"></i>${html(getSettings().language === 'th' ? 'ใช้ดูสมาชิกในครอบครัวของผู้เล่น เช่น คู่ครอง ลูก พ่อ แม่ และญาติ' : 'Track the player\'s partner, children, parents, relatives, and other family bonds.')}</p>
         <section class="tretaresia-household-card"><form data-form="household-save" class="tretaresia-household-header"><div><span class="tretaresia-eyebrow">${html(tr('Household management'))}</span><h4>${html(household.name)}</h4></div>${input('Household name', 'name', household.name)}<button class="tretaresia-secondary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i>${html(tr('Save household'))}</button></form>
-        <div class="tretaresia-household-list"><article class="tretaresia-household-member is-player"><span class="tretaresia-social-member-icon"><i class="fa-solid fa-user"></i></span><span><strong>${html(currentPersonaName(state))}</strong><small>${html(getSettings().language === 'th' ? 'เจ้าของครอบครัว' : 'Household head')}</small></span><i class="fa-solid fa-check social-member-check"></i></article>${members}</div><form data-form="household-add" class="tretaresia-social-invite"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label>${select('Family role', 'role', HOUSEHOLD_ROLES, 'Other')}${input('Notes', 'notes', '')}<button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Add household member'))}</button></form></section>`;
+        <div class="tretaresia-household-list"><article class="tretaresia-household-member is-player"><span class="tretaresia-social-member-icon"><i class="fa-solid fa-user"></i></span><span><strong>${html(currentPersonaName(state))}</strong><small>${html(getSettings().language === 'th' ? 'เจ้าของครอบครัว' : 'Household head')}</small></span><i class="fa-solid fa-check social-member-check"></i></article>${members}</div><form data-form="household-add" class="tretaresia-social-invite"><div class="tretaresia-field tretaresia-household-picker"><span>${html(tr('Friendly NPCs'))} · ${html(getSettings().language === 'th' ? 'เคยพบแล้ว' : 'Met NPCs')}</span><input type="hidden" name="npcId"><button type="button" class="tretaresia-secondary-button" data-action="toggle-household-picker" aria-expanded="false">${html(tr('Choose a friendly NPC'))} <i class="fa-solid fa-chevron-down"></i></button><div class="tretaresia-household-options" hidden>${metFriendlyNpcs(state).filter(entry => !household.members.some(member => member.npcId === entry.id)).map(entry => `<button type="button" data-action="select-household-npc" data-id="${html(entry.id)}"><strong>${html(entry.name)}</strong><small>${html(entry.relationship)}</small></button>`).join('') || `<span>${html(getSettings().language === 'th' ? 'ยังไม่มี NPC ที่เคยพบ' : 'No met NPCs yet')}</span>`}</div></div>${input('Family role', 'role', '', 'text', 'maxlength="80" required placeholder="Partner / คู่ชีวิต"')}${input('Notes', 'notes', '')}<button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Add household member'))}</button></form></section>`;
 }
 
 function npcLifeModeField(selected = 'Active') {
@@ -7952,8 +8012,9 @@ async function onSubmit(event) {
             break;
         }
         case 'household-add': {
-            const npc = resolveFriendlyNpc(state, { npcId: values.npcId });
+            const npc = metFriendlyNpcs(state).find(entry => entry.id === values.npcId);
             if (!npc) return notify('warning', getSettings().language === 'th' ? 'เลือก NPC ฝ่ายมิตรที่ถูกต้อง' : 'Choose a valid friendly NPC.');
+            if (!text(values.role, '', 80)) return notify('warning', getSettings().language === 'th' ? 'กรุณาพิมพ์ฐานะในครอบครัว' : 'Enter a family role.');
             if (state.social.household.members.some(entry => entry.npcId === npc.id)) return notify('info', getSettings().language === 'th' ? 'สมาชิกคนนี้อยู่ในครอบครัวแล้ว' : 'That NPC is already in the household.');
             state.social.household.members.push(socialMember({ npcId: npc.id, name: npc.name, role: values.role, notes: values.notes }));
             await persistState(state, 'household');
@@ -8214,6 +8275,20 @@ async function onPanelClick(event) {
     const state = clone(getState());
     const id = button.dataset.id;
     switch (button.dataset.action) {
+        case 'toggle-household-picker': {
+            const options = button.closest('.tretaresia-household-picker')?.querySelector('.tretaresia-household-options');
+            if (options) { options.hidden = !options.hidden; button.setAttribute('aria-expanded', String(!options.hidden)); }
+            break;
+        }
+        case 'select-household-npc': {
+            const picker = button.closest('.tretaresia-household-picker');
+            const npc = metFriendlyNpcs(state).find(entry => entry.id === id);
+            if (!picker || !npc) break;
+            picker.querySelector('input[name="npcId"]').value = npc.id;
+            picker.querySelector('[data-action="toggle-household-picker"]').textContent = npc.name;
+            picker.querySelector('.tretaresia-household-options').hidden = true;
+            break;
+        }
         case 'retry-hstats-baseline':
             hStatsBaselineFailures.delete(hStatsBaselineKey(selectedHStatsNpcId));
             renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
@@ -10022,8 +10097,16 @@ async function processAssistantPatch(messageId, generationType = '') {
         let patched = base;
         let accepted = 0;
         let notifications = [];
-        if (extracted.patch) {
-            const result = applyStatePatch(base, extracted.patch);
+        const inlineOps = extracted.patch?.ops || [];
+        // Joining the family is a user decision. Never let a model upsert a
+        // household member or append an unchecked private journal entry.
+        const safeOps = inlineOps.filter(([verb,path]) =>
+            !(verb === 'upsert' && path === 'householdMembers')
+            && path !== 'householdInvitation' && path !== 'npcDiary');
+        const safePatch = extracted.patch && { ...extracted.patch, ops: safeOps.map(([verb,path,value,...rest]) =>
+            path === 'household' && verb === 'upsert' ? [verb,path,{...value,members:undefined},...rest] : [verb,path,value,...rest]) };
+        if (safePatch) {
+            const result = applyStatePatch(base, safePatch);
             patched = result.next;
             accepted = result.accepted;
             notifications = result.notifications;
@@ -10037,6 +10120,17 @@ async function processAssistantPatch(messageId, generationType = '') {
         }
         const reconciled = reconcileCompletedTurn(base, patched, userMessage, message);
         reconciled.changes += registerStorySpeakers(reconciled.next, message, context, base);
+        const participants = Array.isArray(extracted.patch?.sceneTracker?.participants) ? extracted.patch.sceneTracker.participants : [];
+        const offers = householdOffers(inlineOps, reconciled.next.npcs, extracted.visible, participants, reconciled.next.social.household.members);
+        rememberHouseholdOffers(messageId, message, offers);
+        const turn = context.chat.slice(0, messageId + 1).filter(entry => entry && !entry.is_user && !entry.is_system).length;
+        const diaryOps = allowedDiaryOps(inlineOps, reconciled.next.npcs, extracted.visible, participants,
+            settings.npcDiaryFrequency, turn).map(([verb,path,value]) => [verb,path,{...value,sourceChatId:context.getCurrentChatId?.(),sourceMessageId:messageId,sourceVariant:variantKey}]);
+        if (diaryOps.length) {
+            const notes = applyStatePatch(reconciled.next, {ops:diaryOps});
+            reconciled.next = notes.next;
+            accepted += notes.accepted;
+        }
         let details = extracted.patch?.sceneTracker && typeof extracted.patch.sceneTracker === 'object'
             && !Array.isArray(extracted.patch.sceneTracker) ? extracted.patch.sceneTracker : {};
         const speakers = (parseStory(extracted.visible) || []).filter(block => block.type === 'dialogue').map(block => block.name);
@@ -10059,7 +10153,7 @@ async function processAssistantPatch(messageId, generationType = '') {
             accepted += recovered.accepted;
             notifications.push(...recovered.notifications);
         }
-        const explicit = (extracted.patch?.ops || []).flatMap(canonicalPatchOperations);
+        const explicit = [...safeOps, ...diaryOps].flatMap(canonicalPatchOperations);
         const sceneOps = sceneTrackerOperations(details, explicit).filter(([, path, value]) =>
             (path.startsWith('location.') && !reconciled.next.onboarding.locationSeeded)
             || path.split('.').reduce((entry, key) => entry?.[key], reconciled.next) !== value);
@@ -10102,6 +10196,7 @@ async function processAssistantPatch(messageId, generationType = '') {
                 checkpoint.applied = false;
             }
             await saveCurrentChatMetadata(context);
+            npcWorkspace?.refresh();
             setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
         }
     } catch (error) {
@@ -10375,6 +10470,8 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
                 || Boolean(context.chatMetadata?.[TURN_HISTORY_KEY]?.entries?.some(entry => entry?.key === assistantTurnKey(marker.index, context)
                     && entry.variants?.[assistantVariantKey(message)]?.state));
             const operations = manualSyncHistoricalOperations((parsed.ops || []).filter(operation => {
+                if (operation[1] === 'householdInvitation' || operation[1] === 'npcDiary'
+                    || (operation[0] === 'upsert' && operation[1] === 'householdMembers')) return false;
                 const opKey = manualSyncOperationKey(operation, draft);
                 return opKey && !already.has(opKey) && !manualSyncPreviouslyChanged(context, marker.index, message, operation);
             }), historical, draft, trackedTurn);
@@ -10383,7 +10480,22 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
             accepted += result.accepted;
             summary = result.summary || summary;
             allNotifications.push(...result.notifications);
-            if (result.accepted) history.turns[key] = [...new Set([...already,...operations.map(operation => manualSyncOperationKey(operation, draft)).filter(Boolean)])].slice(0, 100);
+            const rawNotes = (parsed.ops || []).filter(operation => operation[0] === 'append' && operation[1] === 'npcDiary'
+                && !already.has(manualSyncOperationKey(operation, draft)));
+            const noteVariant = assistantVariantKey(message);
+            const noteTurn = context.chat.slice(0, marker.index + 1).filter(entry => entry && !entry.is_user && !entry.is_system).length;
+            const participants = Array.isArray(parsed.sceneTracker?.participants) ? parsed.sceneTracker.participants : [];
+            const diaryOps = allowedDiaryOps(rawNotes, draft.npcs, extractStatePatch(message.mes).visible,
+                participants, getSettings().npcDiaryFrequency, noteTurn)
+                .filter(([, , value]) => !resolveNpc(draft.npcs, value)?.diary?.some(note =>
+                    note.sourceChatId === context.getCurrentChatId?.() && note.sourceMessageId === marker.index && note.sourceVariant === noteVariant))
+                .map(([verb,path,value]) => [verb,path,{...value,sourceChatId:context.getCurrentChatId?.(),sourceMessageId:marker.index,sourceVariant:noteVariant}]);
+            if (diaryOps.length) {
+                const recoveredNotes = applyStatePatch(draft,{ops:diaryOps});
+                draft = recoveredNotes.next;
+                accepted += recoveredNotes.accepted;
+            }
+            if (result.accepted || diaryOps.length) history.turns[key] = [...new Set([...already,...[...operations,...diaryOps].map(operation => manualSyncOperationKey(operation, draft)).filter(Boolean)])].slice(0, 100);
             if (parsed.sceneTracker && typeof parsed.sceneTracker === 'object') scenes.push({index:marker.index,message,details:parsed.sceneTracker,historical});
             setSync('working', tr('Reading latest turn'), `${position + 1} / ${selection.assistants.length}`);
         }
@@ -10663,6 +10775,16 @@ async function addSettingsDrawer() {
     });
     bindCheckbox('tretaresia-rpg-inject-state', 'injectState', settings, updatePrompt);
     bindCheckbox('tretaresia-rpg-show-scene-tracker', 'showSceneTracker', settings, () => npcWorkspace?.refresh());
+    const diaryRateButtons = [...document.querySelectorAll('[data-diary-frequency]')];
+    const syncDiaryRate = () => diaryRateButtons.forEach(button =>
+        button.setAttribute('aria-pressed', String(button.dataset.diaryFrequency === settings.npcDiaryFrequency)));
+    syncDiaryRate();
+    diaryRateButtons.forEach(button => button.addEventListener('click', () => {
+        settings.npcDiaryFrequency = button.dataset.diaryFrequency;
+        syncDiaryRate();
+        context.saveSettingsDebounced();
+        updatePrompt();
+    }));
     bindCheckbox('tretaresia-rpg-auto-continuity', 'autoContinuity', settings, () => {
         if (settings.autoContinuity) writeContinuitySnapshot(getState());
         else {
@@ -10849,6 +10971,7 @@ async function initialize() {
         npcWorkspace = createNpcWorkspace({
             context: () => SillyTavern.getContext(), state: getState, settings: getSettings,
             sceneForMessage,
+            socialEventsForMessage, diaryForMessage, answerHouseholdOffer,
             profile: npcProfile, persist: persistState,
             scopeInfo: () => characterOwner(SillyTavern.getContext()),
             listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
@@ -10903,7 +11026,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.40.6 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.40.7 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
