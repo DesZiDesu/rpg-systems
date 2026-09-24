@@ -33,7 +33,7 @@ test('diary respects turn cooldown, visibility, duplicates, and the off setting'
 });
 
 test('group invitations resolve eligible inviters, default roles and retain total membership separately',()=>{
-    const party = ['offer','partyInvitation',{npcId:'kohaku',name:'Ashtrail',role:'Scout',memberCount:4,
+    const party = ['offer','partyInvitation',{npcId:'kohaku',name:'Ashtrail',role:'Scout',rank:'Silver',completedQuests:7,memberCount:4,
         members:[{name:'Rhea',role:'Leader'}],leaderName:'Rhea'}];
     const guild = ['offer','guildInvitation',{npcId:'kohaku',name:'Dawnspire',role:'Initiate',
         members:[{name:'Sera'}],memberCount:128}];
@@ -41,7 +41,10 @@ test('group invitations resolve eligible inviters, default roles and retain tota
     assert.equal(offers.length,2);
     assert.deepEqual(offers[0].members.map(person=>person.name),['Kohaku','Rhea']);
     assert.equal(offers[0].memberCount,4);
+    assert.equal(offers[0].rank,'Silver');
+    assert.equal(offers[0].completedQuests,7);
     assert.equal(offers[1].memberCount,128);
+    assert.equal(offers[1].completedQuests,null);
     assert.equal(groupOffers([guild],people,'Kohaku invited you; no total was stated',[],{} )[0].memberCount,128);
     assert.equal(groupOffers([['offer','guildInvitation',{npcId:'kohaku',name:'Guild',role:'Member',members:[{name:'Sera'}]}]],people,'Kohaku invited you',[],{} )[0].memberCount,null);
     assert.equal(groupOffers([party],people,'No one asked',[],{}).length,0);
