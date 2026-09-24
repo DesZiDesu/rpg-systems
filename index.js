@@ -1,17 +1,17 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.42.0';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './src/scene-tracker.js?v=0.42.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './src/npc-core.js?v=0.42.0';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.42.0';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.42.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.42.0';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.42.0';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.42.0';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.42.0';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.42.0';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.42.0';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.42.0';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.42.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './src/npc-core.js?v=0.43.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -1631,6 +1631,7 @@ function partyProfile(value, fallback = null) {
         name: text(value.name, text(fallback?.name, 'Unnamed Party', 140), 140),
         rank: text(value.rank, text(fallback?.rank, value.joinedByInvitation ? '' : 'Unranked', 80), 80),
         completedQuests: Number.isSafeInteger(value.completedQuests) && value.completedQuests >= 0 ? Math.min(value.completedQuests, 999999) : (fallback?.completedQuests ?? (value.joinedByInvitation ? null : 0)),
+        reputation: Number.isSafeInteger(value.reputation) && value.reputation >= 0 ? Math.min(value.reputation,999999) : (fallback?.reputation ?? (value.joinedByInvitation ? null : 0)),
         leaderId: fallback?.joinedByInvitation ? fallback.leaderId : text(value.leaderId, text(fallback?.leaderId, value.joinedByInvitation ? 'unidentified-leader' : 'player', 100), 100),
         leaderName: text(value.leaderName, text(fallback?.leaderName, '', 140), 140),
         playerRole: text(value.playerRole, text(fallback?.playerRole, '', 80), 80),
@@ -1641,7 +1642,7 @@ function partyProfile(value, fallback = null) {
         formation: text(value.formation, text(fallback?.formation, 'Balanced', 80), 80),
         roles: Object.fromEntries(memberIds.map(id => {
             const requested = text(value.roles?.[id], text(fallback?.roles?.[id], 'Companion', 40), 40);
-            return [id, PARTY_ROLES.includes(requested) ? requested : 'Companion'];
+            return [id, requested];
         })),
         sharedFunds: {
             gold: number(value.sharedFunds?.gold, number(fallback?.sharedFunds?.gold, 0, 0, 999999999), 0, 999999999),
@@ -1664,7 +1665,7 @@ function guildProfile(value, fallback = {}) {
         rank: text(value.rank, text(fallback.rank, value.joinedByInvitation ? '' : 'Unranked', 80), 80),
         completedQuests: Number.isSafeInteger(value.completedQuests) && value.completedQuests >= 0 ? Math.min(value.completedQuests, 999999) : (fallback.completedQuests ?? (value.joinedByInvitation ? null : 0)),
         level: number(value.level, number(fallback.level, 1, 1, 9999), 1, 9999),
-        reputation: number(value.reputation, number(fallback.reputation, 0, -999999, 999999), -999999, 999999),
+        reputation: value.reputation === null && value.joinedByInvitation ? null : (Number.isSafeInteger(value.reputation) ? number(value.reputation,0,-999999,999999) : (fallback.reputation ?? (value.joinedByInvitation ? null : 0))),
         headquarters: text(value.headquarters, text(fallback.headquarters, 'Unestablished', 180), 180),
         alliances: (Array.isArray(value.alliances) ? value.alliances : fallback.alliances || []).map(entry => text(entry, '', 120)).filter(Boolean).slice(0, 40),
         enemies: (Array.isArray(value.enemies) ? value.enemies : fallback.enemies || []).map(entry => text(entry, '', 120)).filter(Boolean).slice(0, 40),
@@ -2789,7 +2790,7 @@ async function answerGroupOffer(messageId, key, accepted) {
         const namedIds = knownMembers.map(member => state.npcs.find(entry => entry.name.toLocaleLowerCase() === member.name.toLocaleLowerCase()))
             .filter(entry => entry && entry.met && !entry.isHostile).map(entry => entry.id);
         const memberIds = [...new Set([npc.id,...namedIds])];
-        const shared = {name:offer.name,rank:offer.rank,completedQuests:offer.completedQuests,leaderId,leaderName:offer.leaderName || '',memberIds,
+        const shared = {name:offer.name,rank:offer.rank,completedQuests:offer.completedQuests,reputation:offer.reputation,leaderId,leaderName:offer.leaderName || '',memberIds,
             knownMembers,memberCount:offer.memberCount === null ? null : offer.memberCount + 1,
             playerRole:offer.role,joinedByInvitation:true};
         if (offer.kind === 'party') {
@@ -3044,8 +3045,8 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         progression: state.progression,
         worldClock: state.worldClock,
         location: state.onboarding?.locationSeeded
-            ? { ...state.location, discovered: discoveredLocationsFor(state), discoveredByWorld: undefined, pins: undefined }
-            : {continent:'Unknown',region:'Unknown',place:'Unknown',detail:'',mapX:null,mapY:null},
+            ? { continent:state.location.continent,region:state.location.region,place:state.location.place,detail:state.location.detail,discovered:discoveredLocationsFor(state) }
+            : {continent:'Unknown',region:'Unknown',place:'Unknown',detail:''},
         travel: state.onboarding?.locationSeeded ? state.travel : {status:state.travel.status,destination:state.travel.destination},
         scene: state.scene,
         sceneMap: aiSceneMap(state),
@@ -3062,7 +3063,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         questArchive: questArchive.map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
         social: {
             party: state.social.party ? {
-                id: state.social.party.id, name: state.social.party.name, rank: state.social.party.rank, completedQuests: state.social.party.completedQuests, leaderId: state.social.party.leaderId,
+                id: state.social.party.id, name: state.social.party.name, rank: state.social.party.rank, completedQuests: state.social.party.completedQuests, reputation:state.social.party.reputation, leaderId: state.social.party.leaderId,
                 memberIds: state.social.party.memberIds, formation: state.social.party.formation,
                 roles: state.social.party.roles, sharedFunds: state.social.party.sharedFunds,
                 leaderName:state.social.party.leaderName,playerRole:state.social.party.playerRole,
@@ -3080,8 +3081,8 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         },
         npcIndex: rankedNpcs.slice(0, 24).map(({ id, name, relationship, location, faction }) => [id, name, relationship, location, faction]),
         npcNames: state.npcs.map(({id,name,aliases,enabled}) => [id,name,aliases || [],enabled !== false]),
-        npcWorld: rankedNpcs.filter(entry => entry.lifeMode === 'Active' || entry.mapVisible || socialNpcIds.has(entry.id)).slice(0, 12)
-            .map(({ id, name, location, mapX, mapY, mapVisible, lifeMode, activity, activityUpdatedDay }) => [id, name, location, mapX, mapY, mapVisible, lifeMode, activity, activityUpdatedDay]),
+        npcWorld: rankedNpcs.filter(entry => entry.lifeMode === 'Active' || socialNpcIds.has(entry.id)).slice(0, 12)
+            .map(({ id, name, location, lifeMode, activity, activityUpdatedDay }) => [id, name, location, lifeMode, activity, activityUpdatedDay]),
         npcs: recentNpcs.map(entry => ({
             id: entry.id, name: entry.name, title: entry.title, race: entry.race, age: entry.age, faction: entry.faction,
             occupation: entry.occupation, personality: entry.personality, appearance: entry.appearance,
@@ -3089,7 +3090,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
             relationship: entry.relationship, relationshipState: entry.relationshipState, affection: entry.affection,
             trust: entry.trust, loyalty: entry.loyalty, fear: entry.fear, corruption: entry.corruption, lust: entry.lust,
             location: entry.location, lastSeen: entry.lastSeen, maritalStatus: entry.maritalStatus, partner: entry.partner, children: entry.children,
-            mapX: entry.mapX, mapY: entry.mapY, mapVisible: entry.mapVisible, lifeMode: entry.lifeMode, activity: entry.activity, activityUpdatedDay: entry.activityUpdatedDay,
+            lifeMode: entry.lifeMode, activity: entry.activity, activityUpdatedDay: entry.activityUpdatedDay,
             stats: entry.stats,
             abilities: entry.abilities.slice(0, 4).map(({ id, name, category, level, proficiency }) => [id, name, category, level, proficiency]),
             met: entry.met,
@@ -3125,9 +3126,6 @@ function roleplayState(state) {
                 region: state.onboarding?.locationSeeded ? state.location.region : 'Unknown',
                 place: state.onboarding?.locationSeeded ? state.location.place : 'Unknown',
                 detail: state.onboarding?.locationSeeded ? state.location.detail : '',
-                heading: state.onboarding?.locationSeeded ? state.location.heading : null,
-                mapX: state.onboarding?.locationSeeded ? state.location.mapX : null,
-                mapY: state.onboarding?.locationSeeded ? state.location.mapY : null,
             },
             travel: {
                 status: state.travel.status,
@@ -3136,10 +3134,6 @@ function roleplayState(state) {
                 route: state.travel.route,
                 totalDays: state.travel.totalDays,
                 remainingDays: state.travel.remainingDays,
-                originX: state.travel.originX,
-                originY: state.travel.originY,
-                destinationX: state.travel.destinationX,
-                destinationY: state.travel.destinationY,
                 destinationPlace: state.travel.destinationPlace,
             },
             scene: state.scene,
@@ -3413,7 +3407,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label','Tretaresia character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.42.0`;
+        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3503,7 +3497,7 @@ function legacyPatchInstructions() {
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. An existing ability can improve via ["inc","npcAbilities",{"npcId":"...","name":"Known skill","amount":2}]; only from established practice/use. NPC portraits and portrait framing are local-only and forbidden in patches.',
         `NPC diary frequency: ${getSettings().npcDiaryFrequency}. Off means NEVER append. Rare allows one entry per NPC every 12 assistant turns; normal every 5; often every 2. Append ["append","npcDiary",{"npcId":"stable-id","text":"one or two sentences of the NPC's own private words or thoughts","mood":"optional"}] ONLY for a met friendly NPC physically in scene or explicitly named in THIS completed reply, and only for a meaningful fresh thought. Write first-person thoughts or quoted speech, never action narration, stage directions, or a thought attributed to somebody else. Do not write every reply or repeat the previous thought; the extension enforces frequency and eligibility.`,
         'Evaluate every relevant subsystem after every reply, not only scene/location. Update every materially affected value in the same patch; leave a value unchanged only when this reply provides no reasonable story basis for changing it.',
-        'Full checklist: player HP/Aura-or-Mana/stamina/condition, profession, power type, Origin skill and identity; EXP/adventurer rank/custom title/reputation/local currency; inventory, Constructs and learned skills; power/combat/technique proficiency; quests and dungeons; time/location/travel/weather/local map; every participating NPC dossier, relationship meter, location, lastSeen, abilities, diary, and revealed stats; contacts and actual physical letters. For inventory use inc with positive quantity for pickup/receipt and negative quantity for consumption/drop/gift/sale; acquisition and immediate consumption require both ordered ops. Add top-level journey (maximum 500 characters) only for a significant story milestone. Emit only fields affected by this completed reply.',
+        'Full checklist: player HP/Aura-or-Mana/stamina/condition, profession, power type, Origin skill and identity; EXP/adventurer rank/custom title/reputation/local currency; inventory, Constructs and learned skills; power/combat/technique proficiency; quests and dungeons; time/location/travel/weather/local room layout; every participating NPC dossier, relationship meter, location, lastSeen, abilities, diary, and revealed stats; contacts and actual physical letters. For inventory use inc with positive quantity for pickup/receipt and negative quantity for consumption/drop/gift/sale; acquisition and immediate consumption require both ordered ops. Add top-level journey (maximum 500 characters) only for a significant story milestone. Emit only fields affected by this completed reply.',
         'Mission and quest receipt rules: immediately upsert every named mission, quest, contract, dungeon task, or personal objective when this reply formally offers, assigns, gives, or confirms receipt. Type must be Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Use Offered when optional and unaccepted; Active when accepted or assigned. Include stable id/name/type/status/objective/reward/giver/source/progress. Progress must reflect confirmed objective completion and Completed always means progress 100. Failed is terminal unless the story explicitly reopens the mission. On the first transition to Completed, grant the established reward once in the SAME patch and tag every reward operation metadata with {"category":"quest-reward","questId":"canonical quest id","reason":"specific reward"}. Completed questArchive entries with rewardClaimed=true are historical records: never grant their reward, EXP, item, currency, rank, or loot again and never reset their progress. Do not turn rumors, possibilities, rejected work, or casual advice into quests.',
         'EXP rules: award EXP for every completed action that materially counts as studying, reading with understanding, taking a lesson, researching, learning, spell or skill practice, crafting practice, physical training, sparring, combat participation, surviving danger, killing a hostile creature, discovery, quest progress, or another genuine growth action. Use inc progression.experience and always add fourth-position metadata {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical gain: 1-3 routine study/practice, 4-8 meaningful success, 9-20 combat or major challenge, 21-40 exceptional milestone. Do not award EXP for passive narration, merely intending to act, failed non-instructive attempts, or ordinary small talk. The extension levels up automatically the instant accumulated EXP is greater than or exactly equal to experienceMax.',
         'Kill rules: whenever the player personally kills or decisively finishes a hostile person or creature, inc progression.kills by the confirmed count with fourth-position metadata naming the defeated target, for example ["inc","progression.kills",1,{"reason":"Defeated the cave troll","category":"kill"}]. Also award appropriate combat EXP in the same patch. Do not count knockouts, uncertain deaths, assists without a kill, practice targets, or environmental deaths not caused by the player.',
@@ -3531,16 +3525,16 @@ function patchInstructions() {
         'TRETARESIA PATCH PROTOCOL — use the SAME normal reply; never start another generation. Start with scene metadata, then emit confirmed events immediately after their story blocks:',
         '<!--tretaresia_patch:{"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"summary":"Training and mission recorded","journey":"Accepted the Eastwatch escort mission after completing aura practice."}-->',
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
-        'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,mapX,mapY,mapVisible,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
+        'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
-        'Scene Tracker is required at the START of EVERY normal reply, even when no gameplay state changes. In an invisible tretaresia_patch comment include sceneTracker with ALL these keys: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. Use strings in the story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Supply a concrete current place (including rooms or non-atlas places) and region, in-story calendar/date, actual scene position, outdoor weather or indoor climate, lighting, objective, safety, atmosphere and time elapsed ("0 minutes" when none). Carry forward established facts when unchanged. For details the fiction has not established, create coherent scene details and continue them consistently; keep unknown coordinates absent and do not rewrite established world canon. Never claim a mentioned destination, memory, plan or hypothetical is the current place. Do not use Unknown, N/A, ไม่ทราบ, null or dashes. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Before ending, check that all keys are present. Do not show sceneTracker in prose.',
-        'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Begin EVERY normal reply with a complete sceneTracker comment and empty ops. Emit invitation/diary ops in a separate comment immediately after the relevant story block. End with any remaining gameplay ops; do not repeat ops already emitted. Multiple comments are supported. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
+        'Scene Tracker: Use compact aliases in sceneTracker to reduce tokens: dn=dayName,d=day,mo=month,yr=year,er=era,cal=calendar,t=time,per=period,se=season,loc=location,reg=region,con=continent,pos=position,w=weather,temp=temperature,light=lighting,who=participants,goal=objective,safe=safety,mood=atmosphere,dt=elapsed. Example {"sceneTracker":{"loc":"Market","t":"08:00","who":["Mira"]},"ops":[]}. At the START of the first normal reply, provide a complete sceneTracker in the invisible patch: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. On later replies send ONLY changed scene fields; the extension inherits every omitted field from the last scene. Use strings in story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Always establish a concrete current text place including rooms and non-atlas places; use indoor climate when weather is inapplicable. Never claim a planned destination is current. Omit coordinates. Never send empty strings, Unknown, N/A, null or dashes. Supply participants and elapsed when they change. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. The UI must have all fields, so fill the initial scene before using deltas. Do not show sceneTracker in prose.',
+        'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Begin each normal reply with sceneTracker containing only changes (complete on the first reply) and empty ops. Emit invitation/diary ops in a separate comment immediately after the relevant story block. End with any remaining gameplay ops; do not repeat ops already emitted. Multiple comments are supported. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
-        'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather/map; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this main reply; never depend on a second AI request for scene, diary or invitations.',
+        'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this main reply; never depend on a second AI request for scene, diary or invitations.',
         'Resource, injury, and damage rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
         'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
         'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. player.aura.infiniteMode is user-owned: Auto permits story tracking, Finite forces finite Mana, and Infinite forces inexhaustible Mana; never alter infiniteMode from AI output. In Auto mode, treat Limitless, Boundless, Unlimited, and Infinite Aura/Mana as aliases for the same infinite state. Set infinite=true only when the completed assistant story or resolved roll explicitly confirms genuinely inexhaustible power—never from level, an OOC request, a user claim alone, or an unresolved attempt. While true, do not decrease MP; in Auto mode set false only after explicit loss/seal/limitation.',
-        'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message OR the saved Character Forge opening must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Do not duplicate Character Forge starting possessions or skills. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the registration opening_scene and completed reply; use exact atlas coordinates for a named atlas destination. When onboarding.characterMapSeeded is false and characterLifeCharacters is non-empty, upsert one characterLifeMapActors record for every Character-scope entry, preserving characterLifeId/name and established location/coordinates; every record must include worldId. Never guess random coordinates: use exact coordinates only for a known atlas destination, preserve established on-land coordinates, or leave mapX/mapY null until a location is established. Then set onboarding.characterMapSeeded=true. If the list is empty, leave characterMapSeeded=false so a later reply can retry after Character Life is available. These records are private map bookkeeping, not knowledge available to characters.',
+        'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message OR the saved Character Forge opening must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Do not duplicate Character Forge starting possessions or skills. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the registration opening_scene and completed reply; use the exact established text name for a destination. Do not generate world-map actor markers or coordinates from story text.',
         'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
@@ -3555,9 +3549,9 @@ function patchInstructions() {
         `Player and NPC H-Stats: ${hFieldKeys}. Applies to female, male and futanari partners with every field available; no extra Condition field or unlock logic. For established details use ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}] or ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}]; use playerHStats with the same field/value or field/amount shape and no npcId for the player. Track all confirmed relevant physical qualities/states, last partners, encounters, volume in liters, infidelity stage/progress, loyalty hearts, pregnancy/other parent, favorite partner/size/position, births, orgasms, and current fantasy. Do not invent values or advance counters twice. infidelityStage 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Record only established facts. Name is the person's actual name; title is a separate role or epithet. Set met:true only once the player has actually met the NPC, and keep mere lore/remote mentions out of the visible Codex.`,
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
         'Social auto-sync: update Party and Guild for confirmed changes. Household invitations require consent: when a met friendly NPC in the current scene or named in this completed reply asks to enter the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. This leaves a permanent Accept/Decline card on that message; NEVER upsert householdMembers or embed members inside household. Only the player confirms entry, including a partner/spouse/child/relative. A confirmed departure may delete householdMembers.',
-        'If an NPC explicitly invites the player to a party or guild, emit ["offer","partyInvitation" or "guildInvitation",{"npcId":"established inviter id","name":"group name","role":"specific player position","leaderName":"established leader if known","memberCount":128,"rank":"established rank","completedQuests":12,"members":[{"name":"known member","role":"known role"}]}]. Include rank and completedQuests only if known, and update a group through a partial party/guilds upsert when a confirmed quest completion changes its record. Provide a coherent total including offscreen members for newly invented groups; preserve canonical totals, or omit genuinely unknown totals; never infer a famous guild has only the few named people or fabricate missing member records. Only the player can accept; NEVER create an NPC-led party or guild for the player through upsert. Existing player-owned groups and genuinely confirmed changes can still update.',
+        'If an NPC explicitly invites the player to a party or guild, emit ["offer","partyInvitation" or "guildInvitation",{"npcId":"established inviter id","name":"group name","role":"specific player position","leaderName":"established leader if known","memberCount":128,"rank":"established rank","completedQuests":12,"reputation":742,"members":[{"name":"known member","role":"known role"}]}]. Include rank, completedQuests and reputation only if known, and update a group through a partial party/guilds upsert when a confirmed quest completion changes its record. Provide a coherent total including offscreen members for newly invented groups; preserve canonical totals, or omit genuinely unknown totals; never infer a famous guild has only the few named people or fabricate missing member records. Only the player can accept; NEVER create an NPC-led party or guild for the player through upsert. Existing player-owned groups and genuinely confirmed changes can still update.',
         `NPC diary frequency: ${getSettings().npcDiaryFrequency}. Off means NEVER append. Rare allows one entry per NPC every 12 assistant turns; normal every 5; often every 2. Append ["append","npcDiary",{"npcId":"stable-id","text":"one or two sentences of the NPC's own private words or thoughts","mood":"optional"}] ONLY for a met friendly NPC physically in scene or explicitly named in THIS completed reply, and only for a meaningful fresh thought. Write first-person thoughts or quoted speech, never action narration, stage directions, or a thought attributed to somebody else. Do not write every reply or repeat the previous thought; the extension enforces frequency and eligibility.`,
-        'Travel/scene: journeys take days/months/years. Preserve the local per-message clock and add further confirmed elapsed time. At journey start set status/endpoints/route/days and exact known atlas coordinates. Unknown coordinates must be nearby and on land. Re-evaluate position on every reply with movement; update remainingDays, location, scene.position, heading, weather and temperature without moving progress backward or teleporting early. The local route planner generates land-safe checkpoints and interpolates the marker. At arrival set Arrived/0 and destination location. When weather is established for any visited/mentioned region, upsert regionalWeather {id,region,weather,temperature,hazard,updatedDay}; preserve other regions. Keep local maps sparse and gradual; preserve locked maps.',
+        'Travel/scene: journeys take days/months/years. Preserve the per-message clock and confirmed elapsed time. At journey start set status, origin and destination names, route and days. With movement update remainingDays, location text, scene.position, weather and temperature without moving progress backward or teleporting early. At arrival set Arrived/0 and destination place. For established regional weather upsert regionalWeather; preserve other regions and sparse local room layouts.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
     ].join('\n');
 }
@@ -4382,20 +4376,11 @@ function synchronizeWorldState(state, previous = state) {
     if (state.worldClock.day !== previous?.worldClock?.day && state.worldClock.dayName === previous?.worldClock?.dayName) {
         state.worldClock.dayName = `Day ${state.worldClock.day}`;
     }
-    const destinationSite = mapLocationByName(travel.destinationPlace || travel.destination, state);
-    travel.originX ??= optionalNumber(previousTravel.originX, previous?.location?.mapX ?? state.location.mapX, 0, WORLD_MAP_WIDTH);
-    travel.originY ??= optionalNumber(previousTravel.originY, previous?.location?.mapY ?? state.location.mapY, 0, WORLD_MAP_HEIGHT);
+    // Keep legacy coordinate fields in saved data for migration, but travel now follows place names.
     travel.originContinent ||= text(previousTravel.originContinent, previous?.location?.continent || state.location.continent, 100);
     travel.originRegion ||= text(previousTravel.originRegion, previous?.location?.region || state.location.region, 120);
-    travel.destinationX ??= destinationSite?.x ?? null;
-    travel.destinationY ??= destinationSite?.y ?? null;
-    travel.destinationContinent ||= destinationSite?.continent || '';
-    travel.destinationRegion ||= destinationSite?.region || '';
-    travel.destinationPlace ||= destinationSite?.name || travel.destination;
+    travel.destinationPlace ||= travel.destination;
     travel.startedAtWorldMinutes ??= optionalNumber(previousTravel.startedAtWorldMinutes, now, 0, 9999999999);
-    const routeChanged = ['originX', 'originY', 'destinationX', 'destinationY', 'originContinent', 'destinationContinent', 'route']
-        .some(key => travel[key] !== previousTravel[key]);
-    if (routeChanged || travel.routePoints?.length < 2) travel.routePoints = buildTravelRoutePoints(state, travel);
 
     const moving = ['Preparing', 'Traveling', 'Delayed'].includes(travel.status);
     if (moving) {
@@ -4413,20 +4398,10 @@ function synchronizeWorldState(state, previous = state) {
         }
         travel.lastWorldMinutes = now;
         const progress = travelProgress(state);
-        const routePoint = travelRoutePoint(state, progress);
-        if (routePoint) {
-            state.location.mapX = routePoint.x;
-            state.location.mapY = routePoint.y;
-            const dx = routePoint.next.x - routePoint.x;
-            const dy = routePoint.next.y - routePoint.y;
-            if (dx || dy) state.location.heading = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
-        }
         state.location.continent = progress >= .5 && travel.destinationContinent ? travel.destinationContinent : travel.originContinent || state.location.continent;
-        const nearest = nearestMapLocation(state.location.mapX, state.location.mapY, state.location.continent);
-        state.location.region = progress >= .5 && travel.destinationRegion ? travel.destinationRegion : nearest?.region || travel.originRegion || state.location.region;
-        if (nearest?.zone) state.location.zoneType = nearest.zone;
+        state.location.region = progress >= .5 && travel.destinationRegion ? travel.destinationRegion : travel.originRegion || state.location.region;
         state.location.place = `En route to ${travel.destinationPlace || travel.destination || 'destination'}`;
-        state.location.detail = `${Math.round(progress * 100)}% via ${travel.route} · ${coordinatesLabel(state.location.mapX, state.location.mapY)}`;
+        state.location.detail = `${Math.round(progress * 100)}% via ${travel.route}`;
         if (!previous?.scene?.position || state.scene.position === previous.scene.position || /^Traveling|^En route/i.test(state.scene.position)) {
             state.scene.position = `Traveling via ${travel.route} toward ${travel.destinationPlace || travel.destination}`;
         }
@@ -4439,33 +4414,12 @@ function synchronizeWorldState(state, previous = state) {
     if (justArrived || (moving && travel.remainingDays <= 0)) {
         travel.status = 'Arrived';
         travel.remainingDays = 0;
-        if (travel.destinationX !== null) state.location.mapX = travel.destinationX;
-        if (travel.destinationY !== null) state.location.mapY = travel.destinationY;
-        state.location.continent = travel.destinationContinent || destinationSite?.continent || state.location.continent;
-        state.location.region = travel.destinationRegion || destinationSite?.region || state.location.region;
-        state.location.place = travel.destinationPlace || destinationSite?.name || travel.destination || state.location.place;
-        state.location.zoneType = destinationSite?.zone || state.location.zoneType;
+        state.location.continent = travel.destinationContinent || state.location.continent;
+        state.location.region = travel.destinationRegion || state.location.region;
+        state.location.place = travel.destinationPlace || travel.destination || state.location.place;
         if (state.location.place) addDiscoveredLocation(state, state.location.place);
         if (!previous?.scene?.position || state.scene.position === previous.scene.position || /^Traveling|^En route/i.test(state.scene.position)) {
             state.scene.position = `Arrived at ${state.location.place}`;
-        }
-    }
-
-    if (!moving && travel.status !== 'Arrived') {
-        const directSite = mapLocationByName(state.location.place, state) || mapLocationByName(state.location.region, state);
-        const placeChanged = state.location.place !== previous?.location?.place || state.location.region !== previous?.location?.region;
-        const coordinatesUnchanged = state.location.mapX === previous?.location?.mapX && state.location.mapY === previous?.location?.mapY;
-        const unsafeCoordinates = !pointIsOnAtlasLand(state.location.mapX, state.location.mapY, storyWorldId(state), state.location.continent);
-        const staleNamedCoordinates = directSite && directSite.name === state.location.place
-            && Math.hypot(directSite.x - state.location.mapX, directSite.y - state.location.mapY) > 180;
-        if (directSite && (placeChanged && coordinatesUnchanged || unsafeCoordinates || staleNamedCoordinates)) {
-            state.location.mapX = directSite.x;
-            state.location.mapY = directSite.y;
-            state.location.continent = directSite.continent;
-            state.location.region = directSite.region;
-            state.location.place = directSite.name;
-            state.location.zoneType = directSite.zone;
-            addDiscoveredLocation(state, directSite.name);
         }
     }
 
@@ -5896,7 +5850,7 @@ function renderPanel(id, panel, state) {
     const renderers = {
         status: renderStatus, scene: renderScene, inventory: renderInventory, skills: renderSkillStorage,
         techniques: renderTechniques, quests: renderQuests, rank: renderRank, groups: renderGroups,
-        household: renderHousehold, map: renderMap, npcs: renderNpcs, hstats: renderHStats, mail: renderMailbox, music: renderMusic, systems: renderSystems,
+        household: renderHousehold, npcs: renderNpcs, hstats: renderHStats, mail: renderMailbox, music: renderMusic, systems: renderSystems,
     };
     capturePanelScroll(id, panel);
     renderers[id]?.(panel, state);
@@ -6175,7 +6129,6 @@ function renderScene(panel, state) {
     const phaseIndex = Math.max(0, DAY_PHASES.indexOf(state.worldClock.phase));
     const moving = ['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status);
     const journeyProgress = travelProgress(state);
-    const routePoints = state.travel.routePoints?.length >= 2 ? state.travel.routePoints : buildTravelRoutePoints(state, state.travel);
     const snapshot = sceneSnapshot(state);
     const currentScene = previousScene(SillyTavern.getContext().chat?.length || 0);
     const locationKnown = state.onboarding.locationSeeded;
@@ -6208,9 +6161,8 @@ function renderScene(panel, state) {
             <div><dt>${html(tr('Destination'))}</dt><dd>${html(state.travel.destination || 'Unknown')}</dd></div>
             <div><dt>${html(tr('Travel route'))}</dt><dd>${html(state.travel.route)}</dd></div>
             <div><dt>${html(tr('Remaining travel'))}</dt><dd>${formatTravelDays(state.travel.remainingDays)} / ${formatTravelDays(state.travel.totalDays)} ${html(tr('days'))}</dd></div>
-            <div><dt>${html(tr('Current'))}</dt><dd>${Math.round(journeyProgress * 100)}% · ${coordinatesLabel(state.location.mapX, state.location.mapY)}</dd></div></dl>
+            <div><dt>${html(tr('Current'))}</dt><dd>${Math.round(journeyProgress * 100)}% · ${html(state.location.place)}</dd></div></dl>
             <div class="tretaresia-travel-progress" style="--journey-progress:${Math.round(journeyProgress * 100)}%"><span></span><b>${Math.round(journeyProgress * 100)}%</b></div>
-            ${routePoints.length > 2 ? `<div class="tretaresia-route-checkpoints">${routePoints.map((point, index) => `<span class="${index / (routePoints.length - 1) <= journeyProgress ? 'is-passed' : ''}" title="${html(point.name || point.region || coordinatesLabel(point.x, point.y))}"><i></i><b>${index === 0 ? 'START' : index === routePoints.length - 1 ? 'END' : `CP ${index}`}</b></span>`).join('')}</div>` : ''}
             ${state.travel.notes ? `<p>${html(state.travel.notes)}</p>` : ''}</section>` : ''}
         ${renderJourneyLogs(state)}
         ${renderLocalStructure(state)}
@@ -6220,8 +6172,6 @@ function renderScene(panel, state) {
                 ${input('World time', 'time', state.worldClock.time, 'time')}${select('Day phase', 'phase', DAY_PHASES, state.worldClock.phase)}
                 ${input('Continent', 'continent', state.location.continent)}${input('Current region', 'region', state.location.region)}
                 ${input('Current place', 'place', state.location.place)}${input('Current location detail', 'detail', state.location.detail)}
-                ${input('World map X', 'mapX', state.location.mapX, 'number', `min="0" max="${WORLD_MAP_WIDTH}" step="1"`)}${input('World map Y', 'mapY', state.location.mapY, 'number', `min="0" max="${WORLD_MAP_HEIGHT}" step="1"`)}
-                ${input('Compass heading', 'heading', state.location.heading, 'number', 'min="0" max="359" step="1"')}
                 ${input('Scene position', 'position', state.scene.position)}${select('Zone type', 'zoneType', ZONE_TYPES, state.location.zoneType)}
                 ${input('Weather', 'weather', state.scene.weather)}${input('Temperature', 'temperature', state.scene.temperature, 'number', 'min="-1000" max="1000" step="0.1"')}
                 <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save scene'))}</button>
@@ -7078,7 +7028,7 @@ function socialMemberCards(state, memberIds, removeAction = '', groupId = '', le
 
 function socialGroupSummary(group, state) {
     const unknown = getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown';
-    const progress = `<div class="tretaresia-affiliation-summary"><div><span>${html(getSettings().language === 'th' ? 'แรงก์กลุ่ม' : 'Group rank')}</span><strong>${html(group.rank || unknown)}</strong></div><div><span>${html(getSettings().language === 'th' ? 'ภารกิจสำเร็จ' : 'Completed quests')}</span><strong>${group.completedQuests === null ? html(unknown) : html(String(group.completedQuests ?? 0))}</strong></div></div>`;
+    const progress = `<div class="tretaresia-affiliation-summary"><div><span>${html(getSettings().language === 'th' ? 'แรงก์กลุ่ม' : 'Group rank')}</span><strong>${html(group.rank || unknown)}</strong></div><div><span>${html(getSettings().language === 'th' ? 'ภารกิจสำเร็จ' : 'Completed quests')}</span><strong>${group.completedQuests === null ? html(unknown) : html(String(group.completedQuests ?? 0))}</strong></div><div><span>Reputation</span><strong>${group.reputation === null ? html(unknown) : html(String(group.reputation ?? 0))}</strong></div></div>`;
     if (!group.joinedByInvitation) return progress;
     const count = group.memberCount === null ? (getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown') : `${group.memberCount} ${tr('Members').toLowerCase()}`;
     const known = group.knownMembers || [];
@@ -7097,7 +7047,7 @@ function renderGroups(panel, state) {
         <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'ปาร์ตี้ไม่มีค่าก่อตั้ง สมาชิกทำงานร่วมกันในแชตปัจจุบัน' : 'Party membership is free and follows the current role-play chat.')}</p>
         <div class="tretaresia-party-strategy"><span><i class="fa-solid fa-people-arrows-left-right"></i>Formation</span><strong>${html(party.formation)}</strong><em>Shared funds: ${html(currencyLabel(party.sharedFunds))}</em></div>
         <div class="tretaresia-social-member-list">${socialMemberCards(state, party.memberIds, party.joinedByInvitation ? '' : 'remove-party-member', '', party.leaderId, {...party.roles,player:party.playerRole})}</div>
-        ${party.joinedByInvitation ? '' : `<details class="tretaresia-editor"><summary><i class="fa-solid fa-chess-board"></i> Party formation & roles</summary><form data-form="party-strategy" class="tretaresia-form-grid">${input('Party name', 'name', party.name)}${input('Party rank', 'rank', party.rank)}${input('Completed quests', 'completedQuests', party.completedQuests, 'number', 'min="0" max="999999"')}${input('Formation', 'formation', party.formation)}${party.memberIds.map(id => select(socialMemberName(state, id), `role-${id}`, PARTY_ROLES, party.roles[id] || 'Companion')).join('')}${input('Shared gold', 'sharedGold', party.sharedFunds.gold, 'number', 'min="0"')}${input('Shared silver', 'sharedSilver', party.sharedFunds.silver, 'number', 'min="0"')}${input('Shared copper', 'sharedCopper', party.sharedFunds.copper, 'number', 'min="0"')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">Save formation</button></form></details>
+        ${party.joinedByInvitation ? '' : `<details class="tretaresia-editor"><summary><i class="fa-solid fa-chess-board"></i> Party formation & roles</summary><form data-form="party-strategy" class="tretaresia-form-grid">${input('Party name', 'name', party.name)}${input('Party rank', 'rank', party.rank)}${input('Completed quests', 'completedQuests', party.completedQuests, 'number', 'min="0" max="999999"')}${input('Reputation', 'reputation', party.reputation, 'number', 'min="0" max="999999"')}${input('Formation', 'formation', party.formation)}${party.memberIds.map(id => input(socialMemberName(state, id), `role-${id}`, party.roles[id] || 'Companion', 'text', 'maxlength="40" list="tretaresia-party-roles"')).join('')}<datalist id="tretaresia-party-roles">${PARTY_ROLES.map(role => `<option value="${html(role)}">`).join('')}</datalist>${input('Shared gold', 'sharedGold', party.sharedFunds.gold, 'number', 'min="0"')}${input('Shared silver', 'sharedSilver', party.sharedFunds.silver, 'number', 'min="0"')}${input('Shared copper', 'sharedCopper', party.sharedFunds.copper, 'number', 'min="0"')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">Save formation</button></form></details>
         <form data-form="party-invite" class="tretaresia-social-invite"><input type="hidden" name="partyId" value="${html(party.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to party'))}</button></form>`}
     </article>` : `<article class="tretaresia-social-card"><header><div><span class="tretaresia-eyebrow">${html(tr('Party management'))}</span><h4>${html(tr('No active party'))}</h4></div><i class="fa-solid fa-people-group tretaresia-social-card-icon"></i></header>
         <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'สร้างปาร์ตี้เพื่อรวม NPC ฝ่ายมิตรไว้ร่วมเดินทางหรือทำภารกิจ' : 'Create a party to organize friendly NPCs for travel and missions.')}</p>
@@ -7106,7 +7056,7 @@ function renderGroups(panel, state) {
     const guildCards = guilds.length ? guilds.map(guild => `<article class="tretaresia-social-card tretaresia-guild-card">
         <header><div><span class="tretaresia-eyebrow">${html(tr('Guild management'))}</span><h4>${html(guild.name)}</h4><small>${html(guild.rank)} · Lv.${guild.level} · ${html(guild.joinedByInvitation ? (guild.memberCount === null ? (getSettings().language === 'th' ? 'ไม่ทราบจำนวนสมาชิก' : 'Member count unknown') : `${guild.memberCount} ${tr('Members').toLowerCase()}`) : `${guild.memberIds.length + 1} ${tr('Members').toLowerCase()}`)}</small></div><button type="button" class="tretaresia-danger-button" data-action="dissolve-guild" data-id="${html(guild.id)}"><i class="fa-solid fa-xmark"></i>${html(guild.joinedByInvitation ? (getSettings().language === 'th' ? 'ออกจากกิลด์' : 'Leave guild') : tr('Dissolve guild'))}</button></header>
         ${socialGroupSummary(guild,state)}
-        ${guild.description ? `<p class="tretaresia-social-description">${html(guild.description)}</p>` : ''}<div class="tretaresia-guild-progress"><article><span>Reputation</span><strong>${guild.reputation}</strong></article><article><span>Headquarters</span><strong>${html(guild.headquarters)}</strong></article><article><span>Alliances</span><strong>${guild.alliances.length}</strong></article><article><span>Enemies</span><strong>${guild.enemies.length}</strong></article><article><span>Guild quests</span><strong>${guild.quests.length}</strong></article></div><div class="tretaresia-social-treasury"><span><i class="fa-solid fa-coins"></i>${html(tr('Guild treasury'))}</span><strong>${html(currencyLabel(guild.treasury))}</strong></div>
+        ${guild.description ? `<p class="tretaresia-social-description">${html(guild.description)}</p>` : ''}<div class="tretaresia-guild-progress"><article><span>Reputation</span><strong>${guild.reputation === null ? html(getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown') : guild.reputation}</strong></article><article><span>Headquarters</span><strong>${html(guild.headquarters)}</strong></article><article><span>Alliances</span><strong>${guild.alliances.length}</strong></article><article><span>Enemies</span><strong>${guild.enemies.length}</strong></article><article><span>Guild quests</span><strong>${guild.quests.length}</strong></article></div><div class="tretaresia-social-treasury"><span><i class="fa-solid fa-coins"></i>${html(tr('Guild treasury'))}</span><strong>${html(currencyLabel(guild.treasury))}</strong></div>
         <div class="tretaresia-social-member-list">${socialMemberCards(state, guild.memberIds, guild.joinedByInvitation ? '' : 'remove-guild-member', guild.id, guild.leaderId, {player:guild.playerRole})}</div>
         ${guild.joinedByInvitation ? '' : `<form data-form="guild-invite" class="tretaresia-social-invite"><input type="hidden" name="guildId" value="${html(guild.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to guild'))}</button></form>
         <details class="tretaresia-editor"><summary><i class="fa-solid fa-landmark"></i> Guild progression</summary><form data-form="guild-progression" class="tretaresia-form-grid"><input type="hidden" name="guildId" value="${html(guild.id)}">${input('Guild name', 'name', guild.name)}${input('Guild rank', 'rank', guild.rank)}${input('Completed quests', 'completedQuests', guild.completedQuests, 'number', 'min="0" max="999999"')}${input('Level', 'level', guild.level, 'number', 'min="1"')}${input('Reputation', 'reputation', guild.reputation, 'number')}${input('Headquarters', 'headquarters', guild.headquarters)}${input('Alliances', 'alliances', guild.alliances.join(', '))}${input('Enemies', 'enemies', guild.enemies.join(', '))}${input('Guild quests', 'quests', guild.quests.join(', '))}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">Save guild progression</button></form></details>`}
@@ -7903,12 +7853,10 @@ async function onSubmit(event) {
         }
         case 'scene':
             {
-            const knownPlace = mapLocationByName(values.place, state) || mapLocationByName(values.region, state);
             state.worldClock = { day: values.day, dayName: values.dayName, time: values.time, phase: values.phase };
             state.location = {
                 ...state.location, continent: values.continent, region: values.region, place: values.place,
                 detail: values.detail, zoneType: values.zoneType,
-                mapX: values.mapX || knownPlace?.x || state.location.mapX, mapY: values.mapY || knownPlace?.y || state.location.mapY, heading: values.heading,
             };
             state.scene = { position: values.position, weather: values.weather, temperature: values.temperature };
             if (values.place) state.onboarding.locationSeeded = true;
@@ -8085,10 +8033,11 @@ async function onSubmit(event) {
             state.player.party = name;
             party.rank = text(values.rank, party.rank, 80);
             party.completedQuests = number(values.completedQuests, party.completedQuests ?? 0, 0, 999999);
+            party.reputation = number(values.reputation, party.reputation ?? 0, 0, 999999);
             party.formation = text(values.formation, party.formation, 80);
             party.roles = Object.fromEntries(party.memberIds.map(id => {
                 const requested = text(values[`role-${id}`], party.roles?.[id] || 'Companion', 40);
-                return [id, PARTY_ROLES.includes(requested) ? requested : 'Companion'];
+                return [id, requested];
             }));
             party.sharedFunds = {
                 gold: number(values.sharedGold, party.sharedFunds.gold, 0, 999999999),
@@ -9996,8 +9945,7 @@ function coerceStatePatch(raw) {
         ops: operations.slice(0, 75),
         summary: text(source.summary || raw.summary, '', 300),
         journey: text(source.journey || source.journeyLog || raw.journey || raw.journeyLog, '', 500),
-        sceneTracker: source.sceneTracker && typeof source.sceneTracker === 'object' && !Array.isArray(source.sceneTracker)
-            ? source.sceneTracker : {},
+        sceneTracker: expandScene(source.sceneTracker),
     };
 }
 
@@ -11120,7 +11068,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.42.0 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.43.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

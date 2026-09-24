@@ -1,4 +1,4 @@
-import { parseStory } from './npc-core.js?v=0.42.0';
+import { parseStory } from './npc-core.js?v=0.43.0';
 // Pure guards shared by the inline turn tracker and its chat presentation.
 const rates = Object.freeze({ off: Infinity, rare: 12, normal: 5, often: 2 });
 export const diaryRates = Object.keys(rates);
@@ -85,11 +85,13 @@ export function groupOffers(ops, npcs, story, participants, social = {}) {
             ? Math.min(value.memberCount, 1000000) : null;
         const completedQuests = Number.isSafeInteger(value.completedQuests) && value.completedQuests >= 0
             ? Math.min(value.completedQuests, 999999) : null;
+        const reputation = Number.isSafeInteger(value.reputation) && value.reputation >= 0
+            ? Math.min(value.reputation, 999999) : null;
         return [{kind,key,name,role,inviterId:inviter.id,inviterName:inviter.name,
             leaderName,
             description:typeof value.description === 'string' ? value.description.trim().slice(0,300) : '',
             rank:typeof value.rank === 'string' ? value.rank.trim().slice(0,80) : '',
-            completedQuests,memberCount:count,members,status:'pending'}];
+            completedQuests,reputation,memberCount:count,members,status:'pending'}];
     }).slice(0, 2);
 }
 

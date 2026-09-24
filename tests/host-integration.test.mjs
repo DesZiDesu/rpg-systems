@@ -7,13 +7,13 @@ import {H_FIELDS,H_FIELD_MAP,hStats,updateHStat} from '../src/h-stats.js';
 import * as scopes from '../src/npc-scopes.js';
 import * as lore from '../src/lore-core.js';
 import * as archive from '../src/character-archive.js';
-import {sceneSnapshot,sceneTrackerOperations,missingSceneFields} from '../src/scene-tracker.js';
+import {sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene} from '../src/scene-tracker.js';
 import {normalizeAdultSettings,writingPreferencePrompt} from '../src/nsfw-enhance.js';
 import {allowedDiaryOps,diaryRates,householdOffers,groupOffers} from '../src/social-events.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,
+const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
@@ -360,7 +360,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.42.0');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -488,7 +488,7 @@ test('completed travel does not reset a later scene to the old destination',()=>
 });
 test('unconfirmed opening coordinates are hidden from the roleplay prompt',()=>{
  const scene=host.roleplayState(host.defaultState()).sceneContext;
- assert.equal(scene.location.place,'Unknown');assert.equal(scene.location.mapX,null);
+ assert.equal(scene.location.place,'Unknown');assert.equal(Object.hasOwn(scene.location,'mapX'),false);
  const confirmed=host.defaultState();confirmed.onboarding.locationSeeded=true;
  assert.equal(host.roleplayState(confirmed).sceneContext.location.place,'Central Crown');
 });
@@ -754,6 +754,22 @@ test('inline NPC progression is applied without any recovery generation',async()
   await host.processAssistantPatch(1,'normal');await host.processAssistantPatch(1,'normal');
   assert.equal(host.getState().npcs[0].trust,12);assert.equal(requests,0);
  }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;settings.autoTrack=prior;}
+});
+
+test('compact scene delta inherits all previous fields and keeps freeform group roles',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata};
+ const settings=host.getSettings(),old=settings.autoTrack;settings.autoTrack=true;
+ try{
+  context.chatMetadata={};context.chat=[{is_user:true,mes:'Enter Moon Hall.'},{is_user:false,mes:`The hall is quiet.<!--tretaresia_patch:${JSON.stringify({ops:[],sceneTracker:fullScene})}-->`}];
+  context.saveMetadata=async()=>{};await host.processAssistantPatch(1,'normal');
+  context.chat.push({is_user:true,mes:'Walk to the library.'},{is_user:false,mes:'We reach the library.<!--tretaresia_patch:{"ops":[],"sceneTracker":{"loc":"Library","t":"08:15","pos":"Reading desk","dt":"15 minutes"}}-->'});
+  await host.processAssistantPatch(3,'normal');
+  const scene=host.sceneForMessage(3,context.chat[3]);
+  assert.deepEqual([...scene.missing],[]);assert.equal(scene.location,'Library');assert.equal(scene.calendar,fullScene.calendar);
+  assert.equal(host.getState().location.place,'Library');
+  const party=host.normalize({...host.getState(),social:{...host.getState().social,party:{name:'Moon Guard',memberIds:['kohaku'],roles:{kohaku:'Spirit Guide'}}}}).social.party;
+  assert.equal(party.roles.kohaku,'Spirit Guide');
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.saveMetadata=saved.save;settings.autoTrack=old;}
 });
 
 test('each complete normal reply records a distinct full scene without an extra AI call',async()=>{
