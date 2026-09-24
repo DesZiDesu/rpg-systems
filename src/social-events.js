@@ -1,4 +1,4 @@
-import { parseStory } from './npc-core.js?v=0.43.0';
+import { parseStory } from './npc-core.js?v=0.43.1';
 // Pure guards shared by the inline turn tracker and its chat presentation.
 const rates = Object.freeze({ off: Infinity, rare: 12, normal: 5, often: 2 });
 export const diaryRates = Object.keys(rates);
@@ -37,17 +37,14 @@ export function householdOffers(ops, npcs, story, participants, members) {
 // named group. Questions/plans about somebody else never create invitations.
 export function spokenGroupInvitations(story) {
     return (parseStory(story) || []).filter(block => block.type === 'dialogue' && block.name).flatMap(block => {
-        if (/\b(?:if|might|would have|not|never|don't|declin|reject)\b|ถ้า|หาก|ไม่|ปฏิเสธ/.test(block.text.toLowerCase())) return [];
-        const invitation = /(?:I invite you to join|join (?:us in|my|our))\s+(?:the\s+)?(party|guild)\s+["“']([^"”'\n]+)["”']|(?:ขอเชิญ|ชวน|เชิญ)(?:คุณ|เจ้า|เธอ|นาย|ท่าน)(?:มา|ให้)?(?:เข้า|ร่วม|เข้าร่วม)(?:กับ)?(?:ปาร์ตี้|กิลด์)/i;
-        const english = block.text.match(invitation);
-        if (!english) return [];
-        let kind = english[1]?.toLowerCase(), name = english[2];
-        if (!name) {
-            const thai = block.text.match(/(ปาร์ตี้|กิลด์)\s*["“']([^"”'\n]+)["”']/);
-            if (!thai) return [];
-            kind = thai[1] === 'กิลด์' ? 'guild' : 'party'; name = thai[2];
-        }
-        return [['offer',kind === 'guild' ? 'guildInvitation' : 'partyInvitation',{npcName:block.name,name,role:'Member'}]];
+        const speech = block.text;
+        if (/\b(?:if|might|would have|not|never|don't|declin|reject)\b|ถ้า|หาก|ไม่|ปฏิเสธ/i.test(speech)) return [];
+        const direct = /(?:I invite you|(?:would you|please) join (?:us|my|our)|join (?:us in|my|our)|(?:ขอเชิญ|ชวน|เชิญ)(?:คุณ|เจ้า|เธอ|นาย|ท่าน)?(?:มา|ให้)?(?:เข้า|ร่วม|เข้าร่วม)?)/i.test(speech);
+        if (!direct) return [];
+        const groups = [...speech.matchAll(/\b(party|guild)\s+["“']([^"”'\n]+)["”']|(ปาร์ตี้|กิลด์)\s*["“']([^"”'\n]+)["”']/gi)];
+        return groups.slice(0, 2).map(match => ['offer',
+            /^(?:guild|กิลด์)$/i.test(match[1] || match[3]) ? 'guildInvitation' : 'partyInvitation',
+            {npcName:block.name,name:match[2] || match[4],role:'Member'}]);
     });
 }
 

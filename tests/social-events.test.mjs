@@ -65,6 +65,8 @@ test('direct spoken invitations recover locally and exclude hypothetical or reje
  const line=text=>`<tr-dialogue name="Kohaku">${text}</tr-dialogue>`;
  assert.equal(groupOffers([],people,line('I invite you to join the guild "Dawnspire".'),[],{})[0].name,'Dawnspire');
  assert.equal(groupOffers([],people,line('ขอเชิญคุณเข้าร่วมกิลด์ “รุ่งอรุณ”'),[],{})[0].kind,'guild');
+ assert.deepEqual(groupOffers([],people,line('ชวนเธอเข้าปาร์ตี้ “แสงจันทร์” และกิลด์ “รุ่งอรุณ”'),[],{}).map(offer=>offer.kind),['party','guild']);
+ assert.equal(groupOffers([],people,line('Would you join our party “Moonlight”?'),[],{})[0].name,'Moonlight');
  for(const text of ['If I invite you to join the guild "Dawnspire".','I do not invite you to join the guild "Dawnspire".','ชวนคุณเข้ากิลด์ แต่ยังไม่ตัดสินใจ'])assert.equal(groupOffers([],people,line(text),[],{}).length,0);
  const offers=groupOffers([['offer','guildInvitation',{npcName:'Kohaku',name:'Dawnspire',role:'Leader'}]],people,line('I invite you to join the guild "Dawnspire".'),[],{});
  assert.equal(offers.length,1);assert.equal(offers[0].role,'Member');
