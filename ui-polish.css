@@ -1,4 +1,4 @@
-@import url("./style.css?v=0.40.5");
+@import url("./style.css?v=0.40.6");
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&display=swap");
 
@@ -3996,14 +3996,19 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 .tretaresia-intro-sigil .core {
     width: 21%;
     aspect-ratio: 1;
-    transform: rotate(45deg);
-    border: 2px solid var(--tf-gold2);
+    height: 21%;
+    overflow: visible;
+    fill: none;
+    stroke: var(--tf-gold2);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
     animation: tf-intro-pulse 2.2s ease-in-out infinite;
 }
 @keyframes tf-intro-spin { to { transform: rotate(360deg); } }
 @keyframes tf-intro-pulse {
-    0%, 100% { box-shadow: 0 0 12px color-mix(in srgb, var(--tf-gold) 40%, transparent); }
-    50% { box-shadow: 0 0 30px color-mix(in srgb, var(--tf-gold) 72%, transparent); }
+    0%, 100% { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--tf-gold) 45%, transparent)); }
+    50% { filter: drop-shadow(0 0 18px color-mix(in srgb, var(--tf-gold) 85%, transparent)); }
 }
 .tretaresia-intro-gate strong {
     font-family: var(--tf-disp);
@@ -4083,6 +4088,15 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
     font-size: .6rem;
     letter-spacing: .24em;
     touch-action: manipulation;
+}
+.tretaresia-intro-gate > button svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 .tretaresia-intro-gate > button:hover,
 .tretaresia-intro-gate > button:focus-visible {

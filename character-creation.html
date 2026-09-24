@@ -53,10 +53,10 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 #trapp .emb .rgB{width:132px;height:132px;border:1px dashed rgba(214,180,88,.8)}
 #trapp .emb .arc{position:absolute;width:158px;height:158px;border-radius:50%;border:3px solid transparent;border-top-color:#f4dc93;border-left-color:rgba(214,180,88,.35);filter:drop-shadow(0 0 8px rgba(214,180,88,.5));animation:spin 3.4s linear infinite}
 #trapp .emb .arc2{position:absolute;width:118px;height:118px;border-radius:50%;border:2px solid transparent;border-bottom-color:rgba(255,255,255,.7);animation:spin 5s linear infinite reverse}
-#trapp .emb .sig{position:absolute;width:52px;height:52px;transform:rotate(45deg);border:2px solid #f4dc93;box-shadow:0 0 18px rgba(214,180,88,.5),inset 0 0 14px rgba(255,255,255,.15);animation:pulse 2.2s ease-in-out infinite}
-#trapp .emb .sig::after{content:'';position:absolute;inset:13px;background:radial-gradient(circle,#fff,rgba(255,255,255,.1));box-shadow:0 0 18px #fff}
+#trapp .emb svg.sig{position:absolute;width:72px;height:72px;color:var(--gold2);animation:pulse 2.2s ease-in-out infinite}
+#trapp .emb .sig path,#trapp .emb .sig circle{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{box-shadow:0 0 14px rgba(214,180,88,.4),inset 0 0 10px rgba(255,255,255,.1)}50%{box-shadow:0 0 30px rgba(214,180,88,.7),inset 0 0 18px rgba(255,255,255,.25)}}
+@keyframes pulse{0%,100%{filter:drop-shadow(0 0 8px rgba(214,180,88,.45))}50%{filter:drop-shadow(0 0 18px rgba(214,180,88,.85))}}
 #trapp .ld-title{font-family:var(--f-disp);font-weight:900;font-size:clamp(20px,8vw,38px);letter-spacing:clamp(2px,1.3vw,8px);text-align:center;max-width:100%;overflow:hidden;
   background:linear-gradient(180deg,#fff,var(--gold2) 55%,#9c7d31);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 26px rgba(214,180,88,.22)}
 #trapp.lt .ld-title{background:linear-gradient(180deg,#3a3a3a,var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
@@ -70,7 +70,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 #trapp .ld-skip{position:absolute;right:24px;bottom:30px;font-family:var(--f-body);font-weight:600;padding:11px 22px;letter-spacing:4px;font-size:12px;color:var(--gold2);
   border:1px solid var(--line);background:linear-gradient(180deg,rgba(214,180,88,.10),rgba(214,180,88,.02));cursor:pointer;display:flex;align-items:center;gap:9px}
 #trapp .ld-skip:hover{background:var(--hov)}
-#trapp .ld-skip::after{content:'\25B6\25B6';font-size:9px;opacity:.85}
+#trapp .ld-skip svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 /* ============ FORM ============ */
 #trapp .wrap{position:relative;z-index:2;padding:22px 18px 30px}
@@ -157,7 +157,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 #trapp .sndover{position:absolute;inset:0;z-index:40;background:rgba(4,4,4,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 #trapp.lt .sndover{background:rgba(233,235,238,.9)}
 #trapp .sndover.on{display:flex}
-#trapp .sndover .sp{width:54px;height:54px;border:2px solid var(--line-soft);border-top-color:var(--gold2);border-radius:50%;animation:spin 1s linear infinite}
+#trapp .sndover .sp{width:54px;height:54px;fill:none;stroke:var(--gold2);stroke-width:2.5;stroke-linecap:round;animation:spin 1s linear infinite}
 #trapp .sndover .tt{font-family:var(--f-disp);letter-spacing:3px;font-size:13px;color:var(--gold2)}
 @media (max-width:440px){#trapp .wrap{padding:20px 14px 28px}#trapp .head{gap:8px}#trapp .head .h1{font-size:19px;letter-spacing:2px}#trapp .head .tag{font-size:9px;letter-spacing:2px}#trapp .controls{width:100%;justify-content:flex-end}#trapp .power{grid-template-columns:1fr 1fr}}
 </style>
@@ -175,7 +175,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <svg class="hxe" viewBox="0 0 206 232" preserveAspectRatio="none"><polygon points="103,2 204,60 204,172 103,230 2,172 2,60" fill="none" stroke="#f4dc93" stroke-width="2"/></svg>
       <div class="rg rgA"></div><div class="rg rgB"></div>
       <div class="arc"></div><div class="arc2"></div>
-      <div class="sig"></div>
+      <svg class="sig" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4 55 17v30L32 60 9 47V17Z M32 14 46 32 32 50 18 32Z M32 23v18 M23 32h18"/><circle cx="32" cy="32" r="3"/></svg>
     </div>
     <div class="ld-title">TRETARESIA</div>
     <div class="ld-sub" id="ldSub">E N T E R &nbsp; T H E &nbsp; W O R L D</div>
@@ -185,7 +185,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <div class="ld-bar"><i id="ldBar"></i></div>
       <div class="ld-pct" id="ldPct">0%</div>
     </div>
-    <div class="ld-skip" id="trSkip">SKIP</div>
+    <button class="ld-skip" id="trSkip" type="button">SKIP <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 4 6 6-6 6 M11 4l6 6-6 6"/></svg></button>
   </div>
 
   <!-- FORM -->
@@ -373,7 +373,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     <div class="hint" id="trStatus" role="status" data-en="Your draft is saved with this chat." data-th="บันทึกข้อมูลไว้กับแชตนี้">Your draft is saved with this chat.</div>
   </div>
 
-  <div class="sndover" id="trSnd"><div class="sp"></div><div class="tt" data-en="INSCRIBING…" data-th="กำลังจารึก…">INSCRIBING…</div></div>
+  <div class="sndover" id="trSnd"><svg class="sp" viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="22" opacity=".22"/><path d="M27 5a22 22 0 0 1 22 22"/></svg><div class="tt" data-en="INSCRIBING…" data-th="กำลังจารึก…">INSCRIBING…</div></div>
 </div>
 
 <script>

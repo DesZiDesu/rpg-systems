@@ -1,5 +1,9 @@
 # Tretaresia RPG System
 
+### v0.40.6 — SVG symbols in loading screens
+
+- The Character Forge and main Tretaresia opening screens now draw their center sigil and Skip chevrons with inline SVG. The scene generation spinner also uses an SVG stroke, matching the extension's gold theme without relying on emoji or icon fonts.
+
 ### v0.40.5 — Character Forge for chats without a First Message
 
 - For a single-character card with an empty First Message, a Character Forge appears in the empty main chat. It uses the existing Tretaresia form and starts the first assistant scene directly through SillyTavern's normal generation, without adding a user message or a separate confirmation screen. The form hides when generation starts; if the provider fails or returns no reply, the saved draft and a retry action return. There is no automatic retry or second request.

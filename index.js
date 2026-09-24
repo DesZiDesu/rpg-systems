@@ -1,15 +1,15 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.40.5';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.40.5';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './lore-core.js?v=0.40.6';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './scene-tracker.js?v=0.40.6';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.40.5';
-import { createNpcWorkspace } from './npc-workspace.js?v=0.40.5';
-import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.40.5';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.40.5';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.40.5';
-import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.40.5';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './h-stats.js?v=0.40.5';
-import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.40.5';
-import { mountAdultPromptControls } from './nsfw-prompt-ui.js?v=0.40.5';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './npc-core.js?v=0.40.6';
+import { createNpcWorkspace } from './npc-workspace.js?v=0.40.6';
+import { uploadPortrait, readServerPortrait } from './npc-media.js?v=0.40.6';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './npc-scopes.js?v=0.40.6';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './character-archive.js?v=0.40.6';
+import { normalizeAdultSettings, writingPreferencePrompt } from './nsfw-enhance.js?v=0.40.6';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './h-stats.js?v=0.40.6';
+import { mountAdultTagControls } from './nsfw-tags-ui.js?v=0.40.6';
+import { mountAdultPromptControls } from './nsfw-prompt-ui.js?v=0.40.6';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -855,7 +855,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     visualVersion: 6,
 });
 
-const LAUNCHER_BIND_VERSION = '0.40.5';
+const LAUNCHER_BIND_VERSION = '0.40.6';
 const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
@@ -3242,7 +3242,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label','Tretaresia character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/character-creation.html?v=0.40.5`;
+        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/character-creation.html?v=0.40.6`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -10428,10 +10428,11 @@ function buildIntroGate() {
     return '<div class="tretaresia-intro-gate" id="tretaresia-intro-gate">' +
         '<span class="tretaresia-intro-lattice"></span><div class="tretaresia-intro-sigil">' +
         '<span class="hex"></span><svg viewBox="0 0 206 232" aria-hidden="true"><polygon points="103,2 204,60 204,172 103,230 2,172 2,60"/></svg>' +
-        '<span class="ring ring-a"></span><span class="ring ring-b"></span><span class="arc arc-a"></span><span class="arc arc-b"></span><span class="core"></span></div>' +
+        '<span class="ring ring-a"></span><span class="ring ring-b"></span><span class="arc arc-a"></span><span class="arc arc-b"></span>' +
+        '<svg class="core" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4 55 17v30L32 60 9 47V17Z M32 14 46 32 32 50 18 32Z M32 23v18 M23 32h18"/><circle cx="32" cy="32" r="3"/></svg></div>' +
         '<strong>TRETARESIA</strong><small data-intro-sub>' + html(tr('Connecting to the active role-play...')) + '</small><span class="tretaresia-intro-rule"></span>' +
         '<div class="tretaresia-intro-load"><span data-intro-label>UNSEALING THE WORLD GATE</span><span class="bar"><i data-intro-bar></i></span><span class="pct" data-intro-pct>0%</span></div>' +
-        '<button type="button" data-action="skip-intro">SKIP <i class="fa-solid fa-angles-right"></i></button></div>';
+        '<button type="button" data-action="skip-intro">SKIP <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 4 6 6-6 6 M11 4l6 6-6 6"/></svg></button></div>';
 }
 
 function runIntroGate(overlay) {
@@ -10902,7 +10903,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.40.5 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.40.6 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
