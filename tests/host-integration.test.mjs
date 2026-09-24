@@ -88,8 +88,8 @@ test('NPC party and famous guild offers wait for consent and retain credible mem
   settings.autoTrack=true;
   const state=host.defaultState();state.npcs=[host.npcProfile({id:'rhea',name:'Rhea',met:true})];
   context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
-  const ops=[['offer','partyInvitation',{npcId:'rhea',name:'Ashtrail',role:'Scout',memberCount:4,members:[{name:'Rhea',role:'Leader'}],leaderName:'Rhea'}],
-   ['offer','guildInvitation',{npcId:'rhea',name:'Dawnspire',role:'Initiate',memberCount:128,members:[{name:'Rhea'}]}],
+  const ops=[['offer','partyInvitation',{npcId:'rhea',name:'Ashtrail',role:'Scout',rank:'Silver',completedQuests:7,memberCount:4,members:[{name:'Rhea',role:'Leader'}],leaderName:'Rhea'}],
+   ['offer','guildInvitation',{npcId:'rhea',name:'Dawnspire',role:'Initiate',rank:'A',completedQuests:214,memberCount:128,members:[{name:'Rhea'}]}],
    ['upsert','guilds',{name:'Dawnspire',leaderId:'rhea',memberIds:['rhea']}]];
   context.chat=[{is_user:true,mes:'Talk to Rhea.'},{is_user:false,mes:`Rhea invites you into Ashtrail (4 members) and Dawnspire guild (128 members).<!--tretaresia_patch:${JSON.stringify({ops,sceneTracker:fullScene})}-->`}];
   context.saveMetadata=async()=>{};context.generateQuietPrompt=async()=>JSON.stringify({ops:[]});
@@ -104,12 +104,31 @@ test('NPC party and famous guild offers wait for consent and retain credible mem
   assert.equal(await host.answerGroupOffer(1,offers[1].key,true),false);
   const current=host.getState();
   assert.equal(current.social.party.playerRole,'Scout');assert.equal(current.social.party.memberCount,5);
+  assert.equal(current.social.party.rank,'Silver');assert.equal(current.social.party.completedQuests,7);
+  assert.notEqual(current.social.party.leaderId,'player');
   assert.equal(current.social.guilds[0].playerRole,'Initiate');assert.equal(current.social.guilds[0].memberCount,129);
+  assert.equal(current.social.guilds[0].rank,'A');assert.equal(current.social.guilds[0].completedQuests,214);
+  assert.notEqual(current.social.guilds[0].leaderId,'player');
   assert.equal(current.npcs.length,1);
   const panel={innerHTML:''};host.renderGroups(panel,current);
   assert.match(panel.innerHTML,/129 members/);assert.match(panel.innerHTML,/Initiate/);
+  assert.match(panel.innerHTML,/214/);assert.match(panel.innerHTML,/Silver/);
   assert.equal(host.socialEventsForMessage(1,context.chat[1]).groupOffers[1].status,'accepted');
  }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=originalGet;settings.autoTrack=prior;}
+});
+test('group rank and completed quests survive reloads and partial updates',()=>{
+ const initial=host.defaultState();
+ initial.social.party={name:'Wayfarers',leaderId:'player',memberIds:[],rank:'Bronze',completedQuests:3};
+ initial.social.guilds=[{id:'g1',name:'Lantern Guild',leaderId:'player',memberIds:[],rank:'A',completedQuests:42}];
+ const restored=host.normalize(initial);
+ assert.equal(restored.social.party.rank,'Bronze');assert.equal(restored.social.party.completedQuests,3);
+ assert.equal(restored.social.guilds[0].rank,'A');assert.equal(restored.social.guilds[0].completedQuests,42);
+ const edited=host.applyStatePatch(restored,{ops:[['upsert','party',{name:'Wayfarers',completedQuests:4}],['upsert','guilds',{id:'g1',completedQuests:43}]]}).next;
+ assert.equal(edited.social.party.rank,'Bronze');assert.equal(edited.social.party.completedQuests,4);
+ assert.equal(edited.social.guilds[0].name,'Lantern Guild');assert.equal(edited.social.guilds[0].completedQuests,43);
+ const panel={innerHTML:''};host.renderGroups(panel,edited);
+ assert.match(panel.innerHTML,/Party name/);assert.match(panel.innerHTML,/Guild name/);
+ assert.match(panel.innerHTML,/Completed quests/);
 });
 test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in this chat',async()=>{
  const base=host.defaultState();
@@ -341,7 +360,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.41.1');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.42.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

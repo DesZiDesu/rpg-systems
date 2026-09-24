@@ -1,17 +1,17 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.41.1';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './src/scene-tracker.js?v=0.41.1';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.42.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields } from './src/scene-tracker.js?v=0.42.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './src/npc-core.js?v=0.41.1';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.41.1';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.41.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.41.1';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.41.1';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.41.1';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.41.1';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.41.1';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.41.1';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.41.1';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.41.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './src/npc-core.js?v=0.42.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.42.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.42.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.42.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.42.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.42.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.42.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.42.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.42.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.42.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.42.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -1629,6 +1629,8 @@ function partyProfile(value, fallback = null) {
     return {
         id: text(value.id, text(fallback?.id, uid(), 100), 100),
         name: text(value.name, text(fallback?.name, 'Unnamed Party', 140), 140),
+        rank: text(value.rank, text(fallback?.rank, value.joinedByInvitation ? '' : 'Unranked', 80), 80),
+        completedQuests: Number.isSafeInteger(value.completedQuests) && value.completedQuests >= 0 ? Math.min(value.completedQuests, 999999) : (fallback?.completedQuests ?? (value.joinedByInvitation ? null : 0)),
         leaderId: fallback?.joinedByInvitation ? fallback.leaderId : text(value.leaderId, text(fallback?.leaderId, value.joinedByInvitation ? 'unidentified-leader' : 'player', 100), 100),
         leaderName: text(value.leaderName, text(fallback?.leaderName, '', 140), 140),
         playerRole: text(value.playerRole, text(fallback?.playerRole, '', 80), 80),
@@ -1659,7 +1661,8 @@ function guildProfile(value, fallback = {}) {
         id: text(value.id, text(fallback.id, uid(), 100), 100),
         name: text(value.name, text(fallback.name, 'Unnamed Guild', 140), 140),
         description: text(value.description, text(fallback.description, '', 600), 600),
-        rank: text(value.rank, text(fallback.rank, 'Unranked', 80), 80),
+        rank: text(value.rank, text(fallback.rank, value.joinedByInvitation ? '' : 'Unranked', 80), 80),
+        completedQuests: Number.isSafeInteger(value.completedQuests) && value.completedQuests >= 0 ? Math.min(value.completedQuests, 999999) : (fallback.completedQuests ?? (value.joinedByInvitation ? null : 0)),
         level: number(value.level, number(fallback.level, 1, 1, 9999), 1, 9999),
         reputation: number(value.reputation, number(fallback.reputation, 0, -999999, 999999), -999999, 999999),
         headquarters: text(value.headquarters, text(fallback.headquarters, 'Unestablished', 180), 180),
@@ -2786,7 +2789,7 @@ async function answerGroupOffer(messageId, key, accepted) {
         const namedIds = knownMembers.map(member => state.npcs.find(entry => entry.name.toLocaleLowerCase() === member.name.toLocaleLowerCase()))
             .filter(entry => entry && entry.met && !entry.isHostile).map(entry => entry.id);
         const memberIds = [...new Set([npc.id,...namedIds])];
-        const shared = {name:offer.name,leaderId,leaderName:offer.leaderName || '',memberIds,
+        const shared = {name:offer.name,rank:offer.rank,completedQuests:offer.completedQuests,leaderId,leaderName:offer.leaderName || '',memberIds,
             knownMembers,memberCount:offer.memberCount === null ? null : offer.memberCount + 1,
             playerRole:offer.role,joinedByInvitation:true};
         if (offer.kind === 'party') {
@@ -3059,14 +3062,14 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         questArchive: questArchive.map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
         social: {
             party: state.social.party ? {
-                id: state.social.party.id, name: state.social.party.name, leaderId: state.social.party.leaderId,
+                id: state.social.party.id, name: state.social.party.name, rank: state.social.party.rank, completedQuests: state.social.party.completedQuests, leaderId: state.social.party.leaderId,
                 memberIds: state.social.party.memberIds, formation: state.social.party.formation,
                 roles: state.social.party.roles, sharedFunds: state.social.party.sharedFunds,
                 leaderName:state.social.party.leaderName,playerRole:state.social.party.playerRole,
                 memberCount:state.social.party.memberCount,knownMembers:state.social.party.knownMembers,joinedByInvitation:state.social.party.joinedByInvitation,
             } : null,
-            guilds: state.social.guilds.map(({ id, name, description, rank, level, reputation, headquarters, alliances, enemies, leaderId, memberIds, treasury, quests,leaderName,playerRole,memberCount,knownMembers,joinedByInvitation }) => (
-                { id, name, description, rank, level, reputation, headquarters, alliances, enemies, leaderId, memberIds, treasury, quests,leaderName,playerRole,memberCount,knownMembers,joinedByInvitation }
+            guilds: state.social.guilds.map(({ id, name, description, rank, completedQuests, level, reputation, headquarters, alliances, enemies, leaderId, memberIds, treasury, quests,leaderName,playerRole,memberCount,knownMembers,joinedByInvitation }) => (
+                { id, name, description, rank, completedQuests, level, reputation, headquarters, alliances, enemies, leaderId, memberIds, treasury, quests,leaderName,playerRole,memberCount,knownMembers,joinedByInvitation }
             )),
             household: { id: state.social.household.id, name: state.social.household.name, members: state.social.household.members },
         },
@@ -3410,7 +3413,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label','Tretaresia character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.41.1`;
+        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.42.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3494,7 +3497,7 @@ function legacyPatchInstructions() {
         'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers and guildMembers; delete householdMembers; offer householdInvitation, partyInvitation or guildInvitation; set or inc npcValues, npcHStats, and playerHStats; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
         'Household invitations: when a met friendly NPC in the current scene or explicitly named in the completed reply asks to join the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. Include the exact role the NPC proposes. This creates an Accept/Decline card in that assistant message, not immediate membership. Never upsert householdMembers or put members inside household; only the player can accept. Explicit departures may delete householdMembers.',
         'If the user asks a named NPC to send a party/guild invitation or write a diary, portray the NPC doing so in the main reply if it fits the story, with a specific established group name and offered role for invitations. Emit the corresponding offer or diary append op in that same reply. A user request by itself does not mean the event happened.',
-        'Party/Guild invitations: if a met friendly NPC present in this completed reply explicitly invites the player, emit ["offer","partyInvitation",{"npcId":"stable-id","name":"established group name","role":"exact position offered","leaderName":"known leader if established","memberCount":12,"members":[{"name":"known member","role":"known role"}],"description":"established purpose"}] or use guildInvitation. The group name is required; default the offered role to Member if unspecified. memberCount is the total BEFORE the player joins, including unnamed offscreen members. Preserve canonical totals. For a newly invented fictional group establish a plausible size consistent with its reputation and purpose (for example an established adventuring party of 4-8 or a famous guild of dozens/hundreds), without inventing named dossiers. OMIT the count if canon leaves it genuinely unknown. Include only named members confirmed in the story and do not invent NPCs to fill a famous guild. Never create or upsert a player membership or charge a creation fee until the player accepts in Main Chat. Do not emit a new invitation for an already joined group.',
+        'Party/Guild invitations: if a met friendly NPC present in this completed reply explicitly invites the player, emit ["offer","partyInvitation",{"npcId":"stable-id","name":"established group name","role":"exact position offered","leaderName":"known leader if established","memberCount":12,"members":[{"name":"known member","role":"known role"}],"description":"established purpose","rank":"established group rank if known","completedQuests":12}] or use guildInvitation. Include rank and completedQuests only when established by the story; do not invent a track record. The group name is required; default the offered role to Member if unspecified. memberCount is the total BEFORE the player joins, including unnamed offscreen members. Preserve canonical totals. For a newly invented fictional group establish a plausible size consistent with its reputation and purpose (for example an established adventuring party of 4-8 or a famous guild of dozens/hundreds), without inventing named dossiers. OMIT the count if canon leaves it genuinely unknown. Include only named members confirmed in the story and do not invent NPCs to fill a famous guild. Never create or upsert a player membership or charge a creation fee until the player accepts in Main Chat. Do not emit a new invitation for an already joined group.',
         'Use canonical paths shown in the state JSON. For a new incoming physical letter include contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not a letter.',
         'Create or update a named NPC dossier with an upsert on npcs only when that NPC becomes relevant or a confirmed fact changes. Use partial NPC objects and preserve the canonical id from npcIndex. When a relationship becomes a correspondence, also upsert contacts with npcId; do not make every incidental NPC a contact.',
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. An existing ability can improve via ["inc","npcAbilities",{"npcId":"...","name":"Known skill","amount":2}]; only from established practice/use. NPC portraits and portrait framing are local-only and forbidden in patches.',
@@ -3552,7 +3555,7 @@ function patchInstructions() {
         `Player and NPC H-Stats: ${hFieldKeys}. Applies to female, male and futanari partners with every field available; no extra Condition field or unlock logic. For established details use ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}] or ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}]; use playerHStats with the same field/value or field/amount shape and no npcId for the player. Track all confirmed relevant physical qualities/states, last partners, encounters, volume in liters, infidelity stage/progress, loyalty hearts, pregnancy/other parent, favorite partner/size/position, births, orgasms, and current fantasy. Do not invent values or advance counters twice. infidelityStage 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Record only established facts. Name is the person's actual name; title is a separate role or epithet. Set met:true only once the player has actually met the NPC, and keep mere lore/remote mentions out of the visible Codex.`,
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
         'Social auto-sync: update Party and Guild for confirmed changes. Household invitations require consent: when a met friendly NPC in the current scene or named in this completed reply asks to enter the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. This leaves a permanent Accept/Decline card on that message; NEVER upsert householdMembers or embed members inside household. Only the player confirms entry, including a partner/spouse/child/relative. A confirmed departure may delete householdMembers.',
-        'If an NPC explicitly invites the player to a party or guild, emit ["offer","partyInvitation" or "guildInvitation",{"npcId":"established inviter id","name":"group name","role":"specific player position","leaderName":"established leader if known","memberCount":128,"members":[{"name":"known member","role":"known role"}]}]. Provide a coherent total including offscreen members for newly invented groups; preserve canonical totals, or omit genuinely unknown totals; never infer a famous guild has only the few named people or fabricate missing member records. Only the player can accept; NEVER create an NPC-led party or guild for the player through upsert. Existing player-owned groups and genuinely confirmed changes can still update.',
+        'If an NPC explicitly invites the player to a party or guild, emit ["offer","partyInvitation" or "guildInvitation",{"npcId":"established inviter id","name":"group name","role":"specific player position","leaderName":"established leader if known","memberCount":128,"rank":"established rank","completedQuests":12,"members":[{"name":"known member","role":"known role"}]}]. Include rank and completedQuests only if known, and update a group through a partial party/guilds upsert when a confirmed quest completion changes its record. Provide a coherent total including offscreen members for newly invented groups; preserve canonical totals, or omit genuinely unknown totals; never infer a famous guild has only the few named people or fabricate missing member records. Only the player can accept; NEVER create an NPC-led party or guild for the player through upsert. Existing player-owned groups and genuinely confirmed changes can still update.',
         `NPC diary frequency: ${getSettings().npcDiaryFrequency}. Off means NEVER append. Rare allows one entry per NPC every 12 assistant turns; normal every 5; often every 2. Append ["append","npcDiary",{"npcId":"stable-id","text":"one or two sentences of the NPC's own private words or thoughts","mood":"optional"}] ONLY for a met friendly NPC physically in scene or explicitly named in THIS completed reply, and only for a meaningful fresh thought. Write first-person thoughts or quoted speech, never action narration, stage directions, or a thought attributed to somebody else. Do not write every reply or repeat the previous thought; the extension enforces frequency and eligibility.`,
         'Travel/scene: journeys take days/months/years. Preserve the local per-message clock and add further confirmed elapsed time. At journey start set status/endpoints/route/days and exact known atlas coordinates. Unknown coordinates must be nearby and on land. Re-evaluate position on every reply with movement; update remainingDays, location, scene.position, heading, weather and temperature without moving progress backward or teleporting early. The local route planner generates land-safe checkpoints and interpolates the marker. At arrival set Arrived/0 and destination location. When weather is established for any visited/mentioned region, upsert regionalWeather {id,region,weather,temperature,hazard,updatedDay}; preserve other regions. Keep local maps sparse and gradual; preserve locked maps.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
@@ -7074,11 +7077,13 @@ function socialMemberCards(state, memberIds, removeAction = '', groupId = '', le
 }
 
 function socialGroupSummary(group, state) {
-    if (!group.joinedByInvitation) return '';
+    const unknown = getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown';
+    const progress = `<div class="tretaresia-affiliation-summary"><div><span>${html(getSettings().language === 'th' ? 'แรงก์กลุ่ม' : 'Group rank')}</span><strong>${html(group.rank || unknown)}</strong></div><div><span>${html(getSettings().language === 'th' ? 'ภารกิจสำเร็จ' : 'Completed quests')}</span><strong>${group.completedQuests === null ? html(unknown) : html(String(group.completedQuests ?? 0))}</strong></div></div>`;
+    if (!group.joinedByInvitation) return progress;
     const count = group.memberCount === null ? (getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown') : `${group.memberCount} ${tr('Members').toLowerCase()}`;
     const known = group.knownMembers || [];
     const remainder = group.memberCount === null ? '' : Math.max(0, group.memberCount - 1 - known.length);
-    return `<div class="tretaresia-affiliation-summary"><div><span>${html(getSettings().language === 'th' ? 'ตำแหน่งของคุณ' : 'Your position')}</span><strong>${html(group.playerRole)}</strong></div><div><span>${html(tr('Members'))}</span><strong>${html(count)}</strong></div>
+    return `${progress}<div class="tretaresia-affiliation-summary"><div><span>${html(getSettings().language === 'th' ? 'ตำแหน่งของคุณ' : 'Your position')}</span><strong>${html(group.playerRole)}</strong></div><div><span>${html(tr('Members'))}</span><strong>${html(count)}</strong></div>
         <p>${group.leaderName ? `${html(tr('Leader'))}: ${html(group.leaderName)} · ` : ''}${html(getSettings().language === 'th' ? 'สมาชิกที่รู้จัก' : 'Known members')}: ${html(known.map(entry => entry.name).join(', ') || '—')}${remainder ? ` · ${remainder} ${html(getSettings().language === 'th' ? 'คนยังไม่ทราบชื่อ' : 'unnamed members')}` : ''}</p></div>`;
 }
 
@@ -7092,7 +7097,7 @@ function renderGroups(panel, state) {
         <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'ปาร์ตี้ไม่มีค่าก่อตั้ง สมาชิกทำงานร่วมกันในแชตปัจจุบัน' : 'Party membership is free and follows the current role-play chat.')}</p>
         <div class="tretaresia-party-strategy"><span><i class="fa-solid fa-people-arrows-left-right"></i>Formation</span><strong>${html(party.formation)}</strong><em>Shared funds: ${html(currencyLabel(party.sharedFunds))}</em></div>
         <div class="tretaresia-social-member-list">${socialMemberCards(state, party.memberIds, party.joinedByInvitation ? '' : 'remove-party-member', '', party.leaderId, {...party.roles,player:party.playerRole})}</div>
-        ${party.joinedByInvitation ? '' : `<details class="tretaresia-editor"><summary><i class="fa-solid fa-chess-board"></i> Party formation & roles</summary><form data-form="party-strategy" class="tretaresia-form-grid">${input('Formation', 'formation', party.formation)}${party.memberIds.map(id => select(socialMemberName(state, id), `role-${id}`, PARTY_ROLES, party.roles[id] || 'Companion')).join('')}${input('Shared gold', 'sharedGold', party.sharedFunds.gold, 'number', 'min="0"')}${input('Shared silver', 'sharedSilver', party.sharedFunds.silver, 'number', 'min="0"')}${input('Shared copper', 'sharedCopper', party.sharedFunds.copper, 'number', 'min="0"')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">Save formation</button></form></details>
+        ${party.joinedByInvitation ? '' : `<details class="tretaresia-editor"><summary><i class="fa-solid fa-chess-board"></i> Party formation & roles</summary><form data-form="party-strategy" class="tretaresia-form-grid">${input('Party name', 'name', party.name)}${input('Party rank', 'rank', party.rank)}${input('Completed quests', 'completedQuests', party.completedQuests, 'number', 'min="0" max="999999"')}${input('Formation', 'formation', party.formation)}${party.memberIds.map(id => select(socialMemberName(state, id), `role-${id}`, PARTY_ROLES, party.roles[id] || 'Companion')).join('')}${input('Shared gold', 'sharedGold', party.sharedFunds.gold, 'number', 'min="0"')}${input('Shared silver', 'sharedSilver', party.sharedFunds.silver, 'number', 'min="0"')}${input('Shared copper', 'sharedCopper', party.sharedFunds.copper, 'number', 'min="0"')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">Save formation</button></form></details>
         <form data-form="party-invite" class="tretaresia-social-invite"><input type="hidden" name="partyId" value="${html(party.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to party'))}</button></form>`}
     </article>` : `<article class="tretaresia-social-card"><header><div><span class="tretaresia-eyebrow">${html(tr('Party management'))}</span><h4>${html(tr('No active party'))}</h4></div><i class="fa-solid fa-people-group tretaresia-social-card-icon"></i></header>
         <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'สร้างปาร์ตี้เพื่อรวม NPC ฝ่ายมิตรไว้ร่วมเดินทางหรือทำภารกิจ' : 'Create a party to organize friendly NPCs for travel and missions.')}</p>
@@ -7104,7 +7109,7 @@ function renderGroups(panel, state) {
         ${guild.description ? `<p class="tretaresia-social-description">${html(guild.description)}</p>` : ''}<div class="tretaresia-guild-progress"><article><span>Reputation</span><strong>${guild.reputation}</strong></article><article><span>Headquarters</span><strong>${html(guild.headquarters)}</strong></article><article><span>Alliances</span><strong>${guild.alliances.length}</strong></article><article><span>Enemies</span><strong>${guild.enemies.length}</strong></article><article><span>Guild quests</span><strong>${guild.quests.length}</strong></article></div><div class="tretaresia-social-treasury"><span><i class="fa-solid fa-coins"></i>${html(tr('Guild treasury'))}</span><strong>${html(currencyLabel(guild.treasury))}</strong></div>
         <div class="tretaresia-social-member-list">${socialMemberCards(state, guild.memberIds, guild.joinedByInvitation ? '' : 'remove-guild-member', guild.id, guild.leaderId, {player:guild.playerRole})}</div>
         ${guild.joinedByInvitation ? '' : `<form data-form="guild-invite" class="tretaresia-social-invite"><input type="hidden" name="guildId" value="${html(guild.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to guild'))}</button></form>
-        <details class="tretaresia-editor"><summary><i class="fa-solid fa-landmark"></i> Guild progression</summary><form data-form="guild-progression" class="tretaresia-form-grid"><input type="hidden" name="guildId" value="${html(guild.id)}">${input('Guild rank', 'rank', guild.rank)}${input('Level', 'level', guild.level, 'number', 'min="1"')}${input('Reputation', 'reputation', guild.reputation, 'number')}${input('Headquarters', 'headquarters', guild.headquarters)}${input('Alliances', 'alliances', guild.alliances.join(', '))}${input('Enemies', 'enemies', guild.enemies.join(', '))}${input('Guild quests', 'quests', guild.quests.join(', '))}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">Save guild progression</button></form></details>`}
+        <details class="tretaresia-editor"><summary><i class="fa-solid fa-landmark"></i> Guild progression</summary><form data-form="guild-progression" class="tretaresia-form-grid"><input type="hidden" name="guildId" value="${html(guild.id)}">${input('Guild name', 'name', guild.name)}${input('Guild rank', 'rank', guild.rank)}${input('Completed quests', 'completedQuests', guild.completedQuests, 'number', 'min="0" max="999999"')}${input('Level', 'level', guild.level, 'number', 'min="1"')}${input('Reputation', 'reputation', guild.reputation, 'number')}${input('Headquarters', 'headquarters', guild.headquarters)}${input('Alliances', 'alliances', guild.alliances.join(', '))}${input('Enemies', 'enemies', guild.enemies.join(', '))}${input('Guild quests', 'quests', guild.quests.join(', '))}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">Save guild progression</button></form></details>`}
     </article>`).join('') : `<article class="tretaresia-social-card tretaresia-social-empty-card"><i class="fa-solid fa-landmark-dome"></i><strong>${html(tr('No guilds yet'))}</strong><p>${html(getSettings().language === 'th' ? 'กิลด์ต้องเสียค่าก่อตั้งเป็นเงิน 10 เหรียญทอง' : 'A guild costs 10 gold to establish.')}</p></article>`;
     panel.innerHTML = `${heading('Party & Guild', `${party ? 1 : 0} ${tr('party')} · ${guilds.length} ${tr('guilds')}`, 'fa-solid fa-people-group')}
         <p class="tretaresia-social-note"><i class="fa-solid fa-circle-info"></i>${html(tr('Friendly NPCs only'))} · ${html(tr('Hostile NPCs are excluded from the list.'))}</p>
@@ -8073,7 +8078,13 @@ async function onSubmit(event) {
         }
         case 'party-strategy': {
             const party = state.social.party;
-            if (!party) break;
+            if (!party || party.joinedByInvitation) break;
+            const name = text(values.name, '', 140);
+            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อปาร์ตี้' : 'Enter a party name first.');
+            party.name = name;
+            state.player.party = name;
+            party.rank = text(values.rank, party.rank, 80);
+            party.completedQuests = number(values.completedQuests, party.completedQuests ?? 0, 0, 999999);
             party.formation = text(values.formation, party.formation, 80);
             party.roles = Object.fromEntries(party.memberIds.map(id => {
                 const requested = text(values[`role-${id}`], party.roles?.[id] || 'Companion', 40);
@@ -8115,8 +8126,14 @@ async function onSubmit(event) {
         }
         case 'guild-progression': {
             const guild = state.social.guilds.find(entry => entry.id === values.guildId);
-            if (!guild) break;
+            if (!guild || guild.joinedByInvitation) break;
+            const name = text(values.name, '', 140);
+            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อกิลด์' : 'Enter a guild name first.');
+            if (state.social.guilds.some(entry => entry.id !== guild.id && entry.name.toLocaleLowerCase() === name.toLocaleLowerCase())) return notify('warning', getSettings().language === 'th' ? 'มีกิลด์ชื่อนี้อยู่แล้ว' : 'A guild with this name already exists.');
+            if (state.player.guild === guild.name) state.player.guild = name;
+            guild.name = name;
             guild.rank = text(values.rank, guild.rank, 80);
+            guild.completedQuests = number(values.completedQuests, guild.completedQuests ?? 0, 0, 999999);
             guild.level = number(values.level, guild.level, 1, 9999);
             guild.reputation = number(values.reputation, guild.reputation, -999999, 999999);
             guild.headquarters = text(values.headquarters, guild.headquarters, 180);
@@ -11103,7 +11120,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.41.1 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.42.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
