@@ -9,6 +9,14 @@ export function ensureRuntimeStyles({
     timeout = 12000,
 } = {}) {
     if (!doc) return Promise.resolve();
+    // Restore the UI fonts without making external requests part of startup's wait.
+    if (!doc.getElementById('tretaresia-ui-fonts')) {
+        const fonts = doc.createElement('link');
+        fonts.id = 'tretaresia-ui-fonts';
+        fonts.rel = 'stylesheet';
+        fonts.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Chakra+Petch:wght@300;400;500;600;700&display=swap';
+        doc.head.append(fonts);
+    }
     let loads = pending.get(doc);
     if (!loads) pending.set(doc, loads = new Map());
     return Promise.all(['styles/style.css', 'styles/ui-polish.css'].map(file => {
