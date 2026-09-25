@@ -1,6 +1,6 @@
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.2';
-import { croppedPortrait } from './npc-portraits.js?v=0.43.2';
-import { renderSceneTracker } from './scene-tracker.js?v=0.43.2';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.3';
+import { croppedPortrait } from './npc-portraits.js?v=0.43.3';
+import { renderSceneTracker } from './scene-tracker.js?v=0.43.3';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;

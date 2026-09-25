@@ -1,4 +1,4 @@
-@import url("./style.css?v=0.43.2");
+@import url("./style.css?v=0.43.3");
 /* Use the host/local font stack; external font requests must not block UI startup. */
 
 /* Tretaresia RPG UI polish layer.
@@ -5870,3 +5870,26 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 .tretaresia-affiliation-summary p{grid-column:1/-1;margin:0;color:#c3b49a;font-size:12px;overflow-wrap:anywhere}
 @media(max-width:380px){.trpg-group-invite-facts{grid-template-columns:1fr}.trpg-group-invite-facts>div+div,.trpg-group-invite-facts>div:nth-child(4){border-left:0;border-top:1px solid #59472a;padding-left:5px}}
 body.tretaresia-rpg-open #extensionsMenu { display: none !important; }
+
+/* Keep intrinsic content and host font scaling inside the dialog viewport. */
+#tretaresia-rpg-overlay { min-width: 0; max-width: 100%; grid-template-columns: minmax(0, 1fr); }
+#tretaresia-rpg-overlay #tretaresia-rpg-panel { min-width: 0 !important; max-width: 100% !important; }
+#tretaresia-rpg-overlay .tretaresia-app-shell { width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+#tretaresia-rpg-overlay .tretaresia-app-shell > * { min-width: 0; max-width: 100%; }
+#tretaresia-rpg-overlay .tretaresia-rpg-panel-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+#tretaresia-rpg-overlay .tretaresia-brand-lockup { overflow: hidden; }
+#tretaresia-rpg-overlay .tretaresia-rpg-panel-heading { min-width: 0; }
+#tretaresia-rpg-overlay .tretaresia-rpg-panel-heading h2 { overflow: hidden; text-overflow: ellipsis; }
+#tretaresia-rpg-overlay .tretaresia-header-actions { flex-shrink: 0; }
+#tretaresia-rpg-overlay #tretaresia-rpg-close { flex: 0 0 44px; width: 44px; min-width: 44px; min-height: 44px; }
+@media (max-width: 650px) {
+    #tretaresia-rpg-overlay { width: var(--tretaresia-viewport-width, 100vw); max-width: 100vw; }
+    #tretaresia-rpg-overlay #tretaresia-rpg-panel { width: 100%; height: 100%; margin: 0; }
+    #tretaresia-rpg-overlay .tretaresia-header-actions { gap: 4px; }
+    #tretaresia-rpg-overlay .tretaresia-header-button,
+    #tretaresia-rpg-overlay .tretaresia-sync-state { width: 44px; min-width: 0; max-width: 44px; padding: 6px; }
+    #tretaresia-rpg-overlay .tretaresia-sync-state span { display: none; }
+    #tretaresia-rpg-overlay .tretaresia-rpg-panel-header { padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right)); }
+    #tretaresia-rpg-overlay .tretaresia-rpg-panel-footer { flex-wrap: wrap; }
+    #tretaresia-rpg-overlay #tretaresia-context-label { min-width: 0; max-width: 100%; }
+}
