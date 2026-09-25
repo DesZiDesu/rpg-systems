@@ -94,3 +94,12 @@ Known boundaries: images are device-local browser storage, not embedded into mod
 - Update from v0.40.10, reload without clearing Safari, and check Settings, Character Forge, NPC portraits, world maps and CSS resolve from their new folders.
 
 Browser automation requires a local Chromium installation. Node tests cover the actual host processing, preview guards, metadata parsing and state transitions; they do not substitute for a live SillyTavern/iOS check.
+
+
+### v0.43.5 NPC names and draft recovery
+- With a named NPC whose relationship is พ่อ, ask Father to speak. The header and saved dossier should use the canonical name; no Father duplicate should appear.
+- Repeat for occupation Innkeeper / Gate Keeper; with two matching occupations, no arbitrary portrait/person should be selected.
+- Ask for a new fictional NPC: name must be a personal name, job in occupation, family relation in relationship. An intentionally concealed identity should not create a role-named dossier.
+- A legacy role-named dossier can receive its proper name via its existing id without losing portrait or history.
+- In Generate / fill missing, test invalid JSON and role-only name output. One compact retry is allowed; two failures leave the existing draft intact and re-enable controls.
+- With a reference image, a retry must preserve observed appearance, active card canon and lore. Save remains explicit.

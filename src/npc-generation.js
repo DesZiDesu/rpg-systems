@@ -19,3 +19,13 @@ export function visualDescription(response) {
  if(text.length<8||text.length>1000)throw Error('AI บรรยายภาพไม่สำเร็จ ลองเลือกภาพอีกครั้งหรือพิมพ์ลักษณะภายนอกแทน');
  return text;
 }
+
+// Text-only canon for Generate Raw, which does not include the active card itself.
+// Never copy avatar/image bytes or the rest of the host context into the request.
+export function npcCanonContext(context={}) {
+ const card=context.characters?.[context.characterId??context.chid]||context.character||{};
+ const data=card.data||card;
+ return Object.fromEntries(['name','description','personality','scenario'].flatMap(key=>{
+  const value=data[key]??card[key];return typeof value==='string'&&value.trim()?[[key,value]]:[];
+ }));
+}

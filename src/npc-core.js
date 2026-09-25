@@ -29,6 +29,47 @@ export const ROLE_ICONS = {book:'book-open',compass:'compass',mage:'wand-magic-s
 export const keyName = s => String(s || '').trim().normalize('NFKC').toLowerCase();
 export const clean = (s, max=1000) => ['string','number'].includes(typeof s) ? String(s).trim().slice(0,max) : '';
 export const usable = s => Boolean(clean(s)) && !/^(unknown|unspecified|n\/a|null|undefined|ไม่ทราบ|ไม่ระบุ|—|-)$/i.test(clean(s));
+// Deliberately exact role labels: never guess a person from a shared profession
+// or a relationship phrase such as "father of Lysa".
+const NPC_ROLE_GROUPS = [
+ ['relationship','father','father','dad','daddy','พ่อ','บิดา','คุณพ่อ'],
+ ['relationship','mother','mother','mom','mum','แม่','มารดา','คุณแม่'],
+ ['relationship','brother','brother','older brother','younger brother','พี่ชาย','น้องชาย'],
+ ['relationship','sister','sister','older sister','younger sister','พี่สาว','น้องสาว'],
+ ['relationship','son','son','ลูกชาย'],['relationship','daughter','daughter','ลูกสาว'],
+ ['relationship','husband','husband','สามี'],['relationship','wife','wife','ภรรยา'],
+ ['relationship','grandfather','grandfather','grandpa','ปู่','ตา'],['relationship','grandmother','grandmother','grandma','ย่า','ยาย'],
+ ['occupation','innkeeper','innkeeper','inn keeper','เจ้าของโรงเตี๊ยม','เจ้าของโรงแรม','เจ้าของร้านเหล้า'],
+ ['occupation','gatekeeper','gatekeeper','gate keeper','ยามเฝ้าประตู','ผู้เฝ้าประตู'],
+ ['occupation','guard','guard','ยาม','ทหารยาม'],['occupation','merchant','merchant','shopkeeper','shop keeper','พ่อค้า','แม่ค้า','เจ้าของร้าน'],
+ ['occupation','soldier','soldier','ทหาร'],['occupation','blacksmith','blacksmith','ช่างตีเหล็ก'],
+ ['occupation','healer','healer','ผู้รักษา'],['occupation','teacher','teacher','ครู','อาจารย์'],
+ ['occupation','servant','servant','maid','คนรับใช้','สาวใช้'],
+ ['title','king','king','กษัตริย์','ราชา'],['title','queen','queen','ราชินี'],
+ ['title','prince','prince','เจ้าชาย'],['title','princess','princess','เจ้าหญิง'],
+ ['title','captain','captain','กัปตัน'],['title','stranger','stranger','unknown npc','npc','unknown character','ชายแปลกหน้า','หญิงแปลกหน้า','คนแปลกหน้า','นักเดินทาง'],
+];
+export function npcRole(value) {
+ const label=keyName(value).replace(/[’]/g,"'").replace(/^(?:the|my|your|our|player's|the player's|{{user}}'s)\s+/, '').replace(/^(?:พ่อ|แม่)ของ(?:ฉัน|ผม|ผู้เล่น|คุณ)$/u,m=>m.startsWith('พ่อ')?'พ่อ':'แม่');
+ const group=NPC_ROLE_GROUPS.find(([, , ...labels])=>labels.includes(label));
+ return group?{field:group[0],key:group[1]}:null;
+}
+export const usableNpcName = value => typeof value==='string' && usable(value) && !npcRole(value);
+export const NPC_FIELD_INSTRUCTIONS = `NPC IDENTITY AND FIELD RULES: name is ONLY the person's proper name, never a role, profession, kinship term or placeholder. Father/พ่อ belongs in relationship; Innkeeper/เจ้าของโรงเตี๊ยม and Gate Keeper/ยามเฝ้าประตู belong in occupation; rank/honorific/epithet belongs in title. Resolve references from the character card, lore, story and existing NPC index to the established proper name and stable id. Do not rename known people or create duplicate dossiers for their roles. For a genuinely new fictional NPC whose name is not established or deliberately concealed, create a suitable proper name ONCE in the same reply and use it consistently in dialogue and the NPC upsert. For intentionally anonymous characters, keep the descriptive label in prose and omit the named dossier until identity is established. When correcting an old role-named dossier, use its existing id and put the role in the correct field. aliases are alternate personal names, not generic shared professions. Keep appearance, personality, background, occupation and relationship in their own fields. Age/gender/race must follow established facts; omit unknown facts rather than copying a role into them.`;
+
+// A bad AI name may not overwrite an established one. A new unnamed dossier
+// needs another model attempt, never a locally fabricated name.
+export function validateGeneratedNpcName(raw, current={}) {
+ if(!raw||Array.isArray(raw)||typeof raw!=='object')throw Error('AI ไม่ได้ส่งข้อมูล JSON ของตัวละคร');
+ const result={...raw},role=npcRole(raw.name)||npcRole(current.name);
+ if(role&&!usable(result[role.field])&&!(role.field==='relationship'&&usable(current.relationship)))result[role.field]=clean(npcRole(raw.name)?raw.name:current.name,120);
+ if(!usableNpcName(result.name)&&usableNpcName(current.name))result.name=current.name;
+ if(!usableNpcName(result.name)){
+  const error=Error('AI ใส่บทบาทแทนชื่อหรือไม่ส่งชื่อบุคคล กรุณาเจนใหม่หรือระบุชื่อในคำอธิบาย ร่างเดิมยังอยู่');
+  error.code='NPC_NAME_INVALID';throw error;
+ }
+ return result;
+}
 export const clamp = (n, low, high) => Math.min(high,Math.max(low,Number(n)||0));
 export function identity(raw={}, base={}) {
  const result={};
@@ -182,7 +223,7 @@ export const CHAT_INSTRUCTIONS = `TRETARESIA CHAT PRESENTATION: Write the visibl
 <tr-narrative>Third-person scene/action narration only.</tr-narrative>
  <tr-dialogue name="Exact NPC Name">Only words spoken by this character, without quotation marks.</tr-dialogue>
 Do not emit HTML, Markdown fences, thought labels or role metadata inside blocks. Do not invent portrait URLs.
- Keep consecutive narration paragraphs inside ONE tr-narrative block, separated by blank lines. Start a new block only when switching between narration and speech. Never nest blocks or mix opening/closing tag types. Emit scene metadata before the story and event patches immediately after the associated story block, always outside presentation tags. The dialogue name and NPC name must be the actual person's name; title is a separate role or epithet and must never replace name. Set met:true only when the player has actually met the person; a mere lore mention is not an encounter. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;
+ Keep consecutive narration paragraphs inside ONE tr-narrative block, separated by blank lines. Start a new block only when switching between narration and speech. Never nest blocks or mix opening/closing tag types. Emit scene metadata before the story and event patches immediately after the associated story block, always outside presentation tags. ${NPC_FIELD_INSTRUCTIONS} The dialogue name and NPC name must be the actual person's name; title is a separate role or epithet and must never replace name. Set met:true only when the player has actually met the person; a mere lore mention is not an encounter. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;
 
 
 // All-or-nothing AI form replacement. Never accept storage IDs, image paths or scope.
@@ -252,10 +293,16 @@ export function resolveNpc(records, value) {
 // A generated dialogue header occasionally puts a unique title in its name slot.
 // Resolve it to the recorded person, while preserving canonical name and title.
 export function resolveNpcSpeaker(records, value) {
+ const raw=typeof value==='string'?{name:value}:value||{};
+ const exact=(raw.npcId||raw.id)&&records.find(p=>p.id===(raw.npcId||raw.id));if(exact)return exact;
+ const wanted=keyName(raw.npcName||raw.name);if(!wanted)return null;
+ const role=npcRole(wanted);
+ if(role){
+  const matches=records.filter(p=>usableNpcName(p.name)&&[p.title,p.occupation,p.relationship,...(p.aliases||[])].some(v=>npcRole(v)?.key===role.key));
+  // Shared roles must not select the first NPC or an unrelated old placeholder.
+  if(matches.length)return matches.length===1?matches[0]:null;
+ }
  const direct=resolveNpc(records,value);if(direct)return direct;
- const raw=typeof value==='string'?value:value?.npcName||value?.name;
- const wanted=keyName(raw);
- if(!wanted)return null;
  const titled=records.filter(p=>p.title&&keyName(p.title)===wanted);
  return titled.length===1?titled[0]:null;
 }

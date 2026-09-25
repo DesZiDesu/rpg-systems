@@ -63,3 +63,13 @@ test('narrative and dialogue render only safe bold and italic nodes',()=>{
  assert.deepEqual(speech.children.filter(n=>n.tag).map(n=>[n.tag,n.textContent]),[['em','whisper'],['strong','NOW']]);
  assert.equal(find(root,'img').length,0);
 });
+
+test('role headers render the unique canonical name and do not attach ambiguous portraits',()=>{
+ const father={id:'dad',name:'Arthur',relationship:'พ่อ'},inn={id:'inn',name:'Lysa',occupation:'Innkeeper'};
+ const records=new Map([[father.name,father],[inn.name,inn]]),root=new Node('root'),opened=[];
+ renderStoryBlocks(root,parseStory(dialogue('Father','Hello')+dialogue('Innkeeper','Welcome')),records,'Narrator',p=>opened.push(p.name),async()=>null);
+ const headers=find(root,'trpg-header');assert.equal(headers.length,2);headers.forEach(h=>h.listeners.click());assert.deepEqual(opened,['Arthur','Lysa']);
+ records.set('Bob',{id:'b',name:'Bob',occupation:'Innkeeper'});
+ const ambiguous=new Node('root'),images=[];renderStoryBlocks(ambiguous,parseStory(dialogue('Innkeeper','Hello')),records,'Narrator',()=>{},async p=>{images.push(p.name);return null;});
+ assert.deepEqual(images,[]);
+});

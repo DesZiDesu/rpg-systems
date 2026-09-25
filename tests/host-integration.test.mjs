@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
-import { identity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from '../src/npc-core.js';
+import { identity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from '../src/npc-core.js';
 import {H_FIELDS,H_FIELD_MAP,hStats,updateHStat} from '../src/h-stats.js';
 import * as scopes from '../src/npc-scopes.js';
 import * as lore from '../src/lore-core.js';
@@ -13,7 +13,7 @@ import {allowedDiaryOps,diaryRates,householdOffers,groupOffers} from '../src/soc
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,
+const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
@@ -385,7 +385,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.4');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.5');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -900,4 +900,28 @@ test('a partial scene preserves supplied facts and leaves missing data open with
   assert.ok(scene.missing.includes('month'));assert.ok(scene.missing.includes('temperature'));
   assert.equal(requests,0);assert.equal(writes,1);
  }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;host.getSettings().autoTrack=priorTrack;}
+});
+
+test('role-only model upserts and dialogue fallback cannot create fake named dossiers',()=>{
+ const state=host.defaultState();
+ for(const name of ['Father','พ่อ','Innkeeper','Gate Keeper']){
+  const result=host.applyStatePatch(state,{ops:[['upsert','npcs',{name,occupation:name}]]});
+  assert.equal(result.next.npcs.length,0);assert.equal(result.accepted,0);
+  host.registerStorySpeakers(state,{mes:`<tr-dialogue name="${name}">Hello</tr-dialogue>`},context);
+  assert.equal(state.npcs.length,0);
+ }
+});
+test('role references update canonical people without duplicates or renaming',()=>{
+ const state=host.defaultState();state.npcs=[host.npcProfile({id:'dad',name:'Arthur',relationship:'พ่อ'}),host.npcProfile({id:'inn',name:'Lysa',occupation:'Innkeeper'})];
+ const result=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'dad',name:'Father',activity:'At home'}],['upsert','npcs',{name:'Innkeeper',met:true}]]});
+ assert.equal(result.next.npcs.length,2);assert.equal(result.next.npcs[0].name,'Arthur');assert.equal(result.next.npcs[1].name,'Lysa');
+ assert.equal(result.next.npcs[0].aliases.includes('Father'),false);
+ host.registerStorySpeakers(result.next,{mes:'<tr-dialogue name="Father">Hello</tr-dialogue><tr-dialogue name="Innkeeper">Welcome</tr-dialogue>'},context);
+ assert.equal(result.next.npcs.length,2);assert.equal(result.next.npcs[0].met,true);
+});
+test('an explicit id can repair a legacy role name while retaining the dossier and portrait',()=>{
+ const state=host.defaultState();state.npcs=[host.npcProfile({id:'old',name:'Gate Keeper',hasPortrait:true,portraitSource:'server',portraitPath:'/user/images/tretaresia-npc/a.webp',background:'Veteran',stats:{hp:65}})];
+ const result=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'old',name:'Darin'}]]});
+ const npc=result.next.npcs[0];assert.equal(npc.id,'old');assert.equal(npc.name,'Darin');assert.equal(npc.occupation,'Gate Keeper');
+ assert.equal(npc.stats.hp,65);assert.equal(npc.background,'Veteran');assert.equal(npc.hasPortrait,true);
 });

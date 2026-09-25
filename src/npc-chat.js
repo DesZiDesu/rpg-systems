@@ -1,6 +1,6 @@
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.4';
-import { croppedPortrait } from './npc-portraits.js?v=0.43.4';
-import { renderSceneTracker } from './scene-tracker.js?v=0.43.4';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.5';
+import { croppedPortrait } from './npc-portraits.js?v=0.43.5';
+import { renderSceneTracker } from './scene-tracker.js?v=0.43.5';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -47,7 +47,7 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
         if (block.type === 'narrative') { root.append(narrative(block.text)); continue; }
         if (block.type === 'plain') { root.append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
         const name = block.name || fallbackName || 'NPC';
-        const profile = lookup.get(keyName(name)) || resolveNpcSpeaker([...new Set(lookup.values())], name);
+        const profile = resolveNpcSpeaker([...new Set(lookup.values())], name);
         // Canonical profile object also unifies aliases, without conflating
         // distinct records with the same display label or different scopes.
         const speaker = profile || keyName(name);
@@ -80,7 +80,7 @@ export function priorDialogueSpeaker(messages, id, lookup, visible) {
     const last = blocks?.findLast(block => block.type === 'dialogue');
     if (!last) return null;
     const name = last.name || prior.name || 'NPC';
-    return lookup.get(keyName(name)) || resolveNpcSpeaker([...new Set(lookup.values())], name) || keyName(name);
+    return resolveNpcSpeaker([...new Set(lookup.values())], name) || keyName(name);
 }
 
 function diaryBook(note) {

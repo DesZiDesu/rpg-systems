@@ -1,17 +1,17 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.4';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.4';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.5';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.5';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits } from './src/npc-core.js?v=0.43.4';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.4';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.4';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.4';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.4';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.4';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.4';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.4';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.4';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.4';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.4';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.43.5';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.5';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.5';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.5';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.5';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.5';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.5';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.5';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.5';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.5';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.5';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -2370,7 +2370,7 @@ function registerStorySpeakers(state, message, context, previous = {npcs:[]}) {
             if (!known.met) { known.met = true; known.updatedAt = new Date().toISOString(); changes++; }
             continue;
         }
-        if (names.has(key) || localCount + added >= 200 || state.npcs.length >= 400) continue;
+        if (!usableNpcName(name) || names.has(key) || localCount + added >= 200 || state.npcs.length >= 400) continue;
         state.npcs.push(npcProfile({name, met:true, notes:'Registered from dialogue because the AI omitted a dossier. Starting attributes are provisional; use AI attributes to refine them.'}));
         names.add(key); added++; changes++;
     }
@@ -3087,7 +3087,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
             recentCombat: state.systems.combatLogs.slice(-8),
             regionalWeather: state.systems.regionalWeather.slice(-16),
         },
-        npcIndex: rankedNpcs.slice(0, 24).map(({ id, name, relationship, location, faction }) => [id, name, relationship, location, faction]),
+        npcIndex: rankedNpcs.slice(0, 24).map(({ id, name, relationship, location, faction, title, occupation, aliases }) => [id, name, relationship, location, faction, title, occupation, aliases]),
         npcNames: state.npcs.map(({id,name,aliases,enabled}) => [id,name,aliases || [],enabled !== false]),
         npcWorld: rankedNpcs.filter(entry => entry.lifeMode === 'Active' || socialNpcIds.has(entry.id)).slice(0, 12)
             .map(({ id, name, location, lifeMode, activity, activityUpdatedDay }) => [id, name, location, lifeMode, activity, activityUpdatedDay]),
@@ -3415,7 +3415,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label','Tretaresia character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.4`;
+        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.5`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3494,6 +3494,7 @@ function legacyPatchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
+        NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
         '<!--tretaresia_patch:{"ops":[["upsert","quests",{"id":"academy-escort","name":"Escort the Academy Caravan","type":"Mission","status":"Active","objective":"Protect the caravan until it reaches Eastwatch","reward":"12 silver","giver":"Quartermaster Lysa","source":"Great Academy mission board","progress":0}],["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}]],"summary":"Mission, training, payment, and combat progress recorded."}-->',
         'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers and guildMembers; delete householdMembers; offer householdInvitation, partyInvitation or guildInvitation; set or inc npcValues, npcHStats, and playerHStats; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
@@ -3533,7 +3534,8 @@ function patchInstructions() {
         'TRETARESIA PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
         '<!--tretaresia_patch:{"sceneTracker":{"loc":"Market","t":"08:00","w":"Clear","temp":24,"who":["Mira"]},"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"journey":"Accepted the Eastwatch escort mission after completing aura practice."}--> (Example only; add all 21 scene fields on the first reply.)',
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
-        'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
+        NPC_FIELD_INSTRUCTIONS,
+        'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction,title,occupation,aliases], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
         'Scene Tracker: Use compact aliases in sceneTracker to reduce tokens: dn=dayName,d=day,mo=month,yr=year,er=era,cal=calendar,t=time,per=period,se=season,loc=location,reg=region,con=continent,pos=position,w=weather,temp=temperature,light=lighting,who=participants,goal=objective,safe=safety,mood=atmosphere,dt=elapsed. Example {"sceneTracker":{"loc":"Market","t":"08:00","who":["Mira"]},"ops":[]}. In the final patch of the FIRST normal reply, provide all 21 fields: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. On later replies include changed fields AND any fields marked missing in PREVIOUS SCENE; the extension inherits the rest. Use strings in story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Establish the actual current place, including rooms and non-atlas places. Describe indoor climate when outdoor weather does not apply. Do not claim a planned destination is current. Omit coordinates. Never send empty strings, Unknown, N/A, null or dashes. Supply participants and elapsed when they change. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Complete the scene before finishing the same reply. Do not show sceneTracker in prose.',
         'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Write the complete story first, then append one patch with sceneTracker and all gameplay, diary and invitation ops. A user asking an NPC to write a diary or invite them is not itself an event: portray the NPC doing it, then include the append/offer op in that same patch. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
@@ -9622,12 +9624,16 @@ function applyPatchOperation(state, operation) {
         let candidate = { ...(index >= 0 ? collection[index] : {}), ...value };
         if (!candidate.id) candidate.id = uid();
         if (path === 'npcs') {
+            if (index < 0 && !usableNpcName(value.name)) return false;
             if (index >= 0) {
                 const existing = collection[index];
                 // A translated-name creation must not reset an established dossier.
                 if (value.id !== existing.id && keyName(value.name) !== keyName(existing.name)) candidate = {...value, ...existing};
-                candidate.id = existing.id; candidate.name = existing.name;
-                candidate.aliases = [...new Set([...(existing.aliases || []), ...(Array.isArray(value.aliases) ? value.aliases : []), ...(value.name && keyName(value.name) !== keyName(existing.name) ? [value.name] : [])])];
+                const repairName = value.id === existing.id && !usableNpcName(existing.name) && usableNpcName(value.name);
+                candidate.id = existing.id; candidate.name = repairName ? value.name : existing.name;
+                const oldRole = repairName && npcRole(existing.name);
+                if (oldRole && (!candidate[oldRole.field] || candidate[oldRole.field] === 'Acquaintance')) candidate[oldRole.field] = existing.name;
+                candidate.aliases = [...new Set([...(existing.aliases || []), ...(Array.isArray(value.aliases) ? value.aliases : []), ...(usableNpcName(value.name) && keyName(value.name) !== keyName(candidate.name) ? [value.name] : [])])];
                 candidate.met = existing.met === true || value.met === true;
             }
             if (value.hStats && typeof value.hStats === 'object') {
@@ -11097,7 +11103,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.43.4 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.43.5 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);
