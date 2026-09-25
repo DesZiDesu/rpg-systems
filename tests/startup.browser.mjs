@@ -23,8 +23,8 @@ const fixture = legacy => `<!doctype html><meta name="viewport" content="width=d
 <script>
 const callbacks=new Map();window.menuToggles=0;
 document.getElementById('extensionsMenuButton').onclick=()=>{
- window.menuToggles++;const menu=document.getElementById('extensionsMenu');menu.hidden=!menu.hidden;
- document.getElementById('extensionsMenuButton').setAttribute('aria-expanded',String(!menu.hidden));
+ window.menuToggles++;const menu=document.getElementById('extensionsMenu');menu.style.display=getComputedStyle(menu).display==='none'?'block':'none';
+ document.getElementById('extensionsMenuButton').setAttribute('aria-expanded',String(menu.style.display!=='none'));
 };
 const eventTypes=Object.fromEntries(['CHAT_CHANGED','MESSAGE_SENT','GENERATION_STARTED','GENERATION_AFTER_COMMANDS','MESSAGE_RECEIVED','MESSAGE_SWIPED','MESSAGE_DELETED','CHARACTER_MESSAGE_RENDERED','GENERATION_ENDED','GENERATION_STOPPED','STREAM_TOKEN_RECEIVED'].map(k=>[k,k]));
 window.host={extensionSettings:{},chatMetadata:{},chat:[],characters:[],characterId:null,eventTypes,
@@ -50,8 +50,8 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 let browser;
 try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
- for(const legacy of [true,false])for(const mobile of [true,false]){
-  const page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:1440,height:1000},isMobile:mobile,hasTouch:mobile,reducedMotion:'reduce'});
+ for(const legacy of [true,false])for(const mobile of [320,390,false]){
+  const page=await browser.newPage({viewport:mobile?{width:mobile,height:844}:{width:1440,height:1000},isMobile:Boolean(mobile),hasTouch:Boolean(mobile),reducedMotion:'reduce'});
   const errors=[],missing=[];
   page.on('pageerror',error=>errors.push(error.message));
   page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
@@ -61,13 +61,21 @@ try{
   assert.equal(await page.locator('#tretaresia-rpg-settings .tretaresia-settings-grid').evaluate(node=>getComputedStyle(node).display),'grid');
   await page.locator('#tretaresia-rpg-wand-launcher').click();
   await page.waitForFunction(()=>document.getElementById('tretaresia-rpg-overlay')?.classList.contains('is-ready'));
-  assert.equal(await page.evaluate(()=>window.menuToggles),1,'one open gesture must close the host menu exactly once');
+  assert.equal(await page.locator('#extensionsMenu').evaluate(node=>getComputedStyle(node).display),'none');
   const overlay=page.locator('#tretaresia-rpg-overlay');
   assert.equal(await overlay.evaluate(node=>getComputedStyle(node).position),'fixed');
   const box=await overlay.boundingBox();assert.ok(box&&box.width>300&&box.height>600);
+  if(mobile)await page.addStyleTag({content:'html{font-size:32px}'});
+  const checkWidth=async()=>{
+   const result=await overlay.evaluate(node=>{const close=document.getElementById('tretaresia-rpg-close').getBoundingClientRect(),shell=node.querySelector('.tretaresia-app-shell');return {closeRight:close.right,closeLeft:close.left,width:innerWidth,shell:shell.getBoundingClientRect().width};});
+   assert.ok(result.closeLeft>=0&&result.closeRight<=result.width,JSON.stringify(result));
+   assert.ok(result.shell<=result.width,JSON.stringify(result));
+  };
+  await checkWidth();
   for(const tab of await page.locator('#tretaresia-rpg-overlay [data-tab]').evaluateAll(nodes=>nodes.map(node=>node.dataset.tab))){
    await page.locator(`#tretaresia-rpg-overlay [data-tab="${tab}"]`).evaluate(node=>node.click());
    assert.ok(await page.locator(`#tretaresia-rpg-overlay [data-panel="${tab}"]`).evaluate(node=>node.classList.contains('is-active')&&node.childElementCount>0),tab);
+   await checkWidth();
   }
   await page.locator('#tretaresia-rpg-close').click();
   await page.locator('#extensionsMenuButton').click();
