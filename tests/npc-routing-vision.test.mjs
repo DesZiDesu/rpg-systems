@@ -15,6 +15,9 @@ test('portrait is attached as an ephemeral data URL only for supported vision re
 });
 test('vision descriptions accept visible traits but reject an absent image before generating NPC details',()=>{
  assert.equal(visualDescription('Short dark hair and a red cloak.'),'Short dark hair and a red cloak.');
+ const detailed='Visible clothing and hair. '.repeat(25)+'Distinctive silver earrings.';
+ assert.equal(visualDescription(detailed),detailed, 'Keep distinctive details beyond character 450');
+ assert.throws(()=>visualDescription('x'.repeat(1001)),/AI บรรยายภาพไม่สำเร็จ/);
  assert.throws(()=>visualDescription('IMAGE_UNAVAILABLE'),/AI อ่านภาพไม่ได้/);
  assert.throws(()=>visualDescription('{"imageError":"not received"}'),/AI อ่านภาพไม่ได้/);
  assert.throws(()=>visualDescription('I cannot view the image.'),/AI อ่านภาพไม่ได้/);
