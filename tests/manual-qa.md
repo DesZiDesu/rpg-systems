@@ -96,7 +96,7 @@ Known boundaries: images are device-local browser storage, not embedded into mod
 Browser automation requires a local Chromium installation. Node tests cover the actual host processing, preview guards, metadata parsing and state transitions; they do not substitute for a live SillyTavern/iOS check.
 
 
-### v0.43.5 NPC names and draft recovery
+### v0.43.6 NPC names and draft recovery
 - With a named NPC whose relationship is พ่อ, ask Father to speak. The header and saved dossier should use the canonical name; no Father duplicate should appear.
 - Repeat for occupation Innkeeper / Gate Keeper; with two matching occupations, no arbitrary portrait/person should be selected.
 - Ask for a new fictional NPC: name must be a personal name, job in occupation, family relation in relationship. An intentionally concealed identity should not create a role-named dossier.

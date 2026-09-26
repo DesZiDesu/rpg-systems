@@ -1,6 +1,7 @@
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.5';
-import { croppedPortrait } from './npc-portraits.js?v=0.43.5';
-import { renderSceneTracker } from './scene-tracker.js?v=0.43.5';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.43.6';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.6';
+import { croppedPortrait } from './npc-portraits.js?v=0.43.6';
+import { renderSceneTracker } from './scene-tracker.js?v=0.43.6';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -8,6 +9,16 @@ export function element(tag, className = '', text) {
     return node;
 }
 export function icon(name) { const node = element('i', `fa-solid fa-${name}`); node.setAttribute('aria-hidden','true'); return node; }
+// Saved legacy keys keep their original Font Awesome appearance.
+export function roleIcon(key) {
+    const [style,role] = String(key || '').split(':');
+    if (!['medallion','emblem'].includes(style) || !Object.hasOwn(MEDALLION_ROLES,role)) return icon(ROLE_ICONS[key] || ROLE_ICONS.book);
+    const node=element('span','trpg-role-art'); node.setAttribute('aria-hidden','true');
+    const shape=MEDALLION_ROLES[role].shape;
+    // No user text enters markup: both paths and frame come from the static allowlist.
+    node.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${style==='medallion'?'128 128':'96 96'}" focusable="false">${style==='medallion'?MEDALLION_FRAME+'<g transform="translate(24 24) scale(.8333333)">'+shape+'</g>':shape}</svg>`;
+    return node;
+}
 // Only support the two requested inline marks. Never parse model text as HTML.
 export function appendStoryText(node,value){
     const source=String(value??''),pattern=/\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g;
@@ -32,7 +43,7 @@ export function speakerHeader(profile, open) {
     const p={...profile,...identity(profile)}, header=element('button','trpg-header'); header.type='button';
     header.style.setProperty('--speaker',p.identityColor); header.style.setProperty('--portrait',`${p.portraitSize}px`);
     header.setAttribute('aria-label',`เปิดข้อมูล ${p.name}`);
-    const details=element('span','trpg-identity'), role=element('span','trpg-role'); role.append(icon(ROLE_ICONS[p.roleIcon]));
+    const details=element('span','trpg-identity'), role=element('span','trpg-role'); role.append(roleIcon(p.roleIcon));
     role.append(document.createTextNode([p.title,p.occupation].filter(usable).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') || 'TRETARESIA'));
     details.append(role,element('strong','',p.name));
     const meta=element('span','trpg-meta');for(const value of [p.race,p.relationship,p.faction].filter(usable))meta.append(element('span','',value));details.append(meta);

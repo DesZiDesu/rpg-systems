@@ -1,17 +1,17 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.5';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.5';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.6';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.6';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.43.5';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.5';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.5';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.5';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.5';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.5';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.5';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.5';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.5';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.5';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.5';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.43.6';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.6';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.6';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.6';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.6';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.6';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.6';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.6';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.6';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.6';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.6';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -3415,7 +3415,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label','Tretaresia character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.5`;
+        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.6`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -11103,7 +11103,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.43.5 loaded.');
+        console.info('[Tretaresia RPG] Role-play interface v0.43.6 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[Tretaresia RPG] Failed to initialize.', error);

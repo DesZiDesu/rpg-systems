@@ -1,8 +1,8 @@
-# Tretaresia RPG / RPG System — v0.43.5
+# Tretaresia RPG / RPG System — v0.43.6
 
 ส่วนเสริมสำหรับ SillyTavern ที่แสดงสถานะ RPG, ฉาก, NPC และกลุ่มสังคมร่วมกับ Main Chat รองรับภาษาไทยและอังกฤษ รวมถึงหน้าจอมือถือ
 
-### แก้ไข v0.43.5
+### แก้ไข v0.43.6
 
 - แยก Name (ชื่อบุคคล), Title (ตำแหน่ง/ฉายา), Occupation (อาชีพ) และ Relationship (ความสัมพันธ์) ให้ชัดเจนในคำสั่งทั้ง Main Chat และ NPC Management
 - หัวบทพูด Father/พ่อ, Innkeeper, Gate Keeper จับคู่กับชื่อจริงจากความสัมพันธ์/อาชีพที่มีอยู่เมื่อมีผู้ตรงกันเพียงคนเดียว ไม่เดาเมื่อมีหลายคนในบทบาทเดียวกัน
@@ -156,3 +156,6 @@ Rhea หยุดตรงหน้าคุณ</tr-narrative>
 [README ก่อน v0.41.0](docs/archive/README-v0.40.10.md) เก็บรายละเอียดและประวัติเวอร์ชันเดิม เอกสารนี้เป็นคำอธิบายพฤติกรรมปัจจุบัน
 
 License: [MIT](LICENSE)
+
+### NPC role artwork (0.43.6)
+NPC Management → CHAT APPEARANCE offers Classic (12 original icons), Medallion and Emblem (54 roles each). Select a style and role, then save. Existing NPC roleIcon values are retained without migration; AI updates cannot replace an existing NPC icon. New roles include Politician, Knight, Prisoner, Slave, Master (lord/owner), Clergyman and Nun. Clergyman is separate from the fantasy Priest role. Artwork is bundled locally and follows each NPC identity color.

@@ -1,2 +1,7 @@
 /* Compatibility entry for cached NPC workspace modules. */
-@import url("./styles/npc-ui.css?v=0.43.5");
+@import url("./styles/npc-ui.css?v=0.43.6");
+
+/* Static SVG role artwork inherits the NPC identity color. */
+.trpg-role-art{display:inline-flex;width:40px;height:40px;flex:0 0 40px;vertical-align:middle;line-height:0}
+.trpg-role-art svg{display:block;width:100%;height:100%;overflow:visible}
+.trpg-list-emblem .trpg-role-art{width:34px;height:34px;flex-basis:34px}

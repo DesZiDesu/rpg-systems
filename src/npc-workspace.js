@@ -1,10 +1,11 @@
-import { createLoreWorkspace } from './lore-workspace.js?v=0.43.5';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS } from './npc-core.js?v=0.43.5';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext } from './npc-generation.js?v=0.43.5';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.43.5';
-import { element, icon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.43.5';
-import { collectPortraitBackups } from './npc-media.js?v=0.43.5';
-import { H_FIELDS } from './h-stats.js?v=0.43.5';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.43.6';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.43.6';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS } from './npc-core.js?v=0.43.6';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext } from './npc-generation.js?v=0.43.6';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.43.6';
+import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.43.6';
+import { collectPortraitBackups } from './npc-media.js?v=0.43.6';
+import { H_FIELDS } from './h-stats.js?v=0.43.6';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -42,7 +43,7 @@ export function createNpcWorkspace(api) {
     }
     const changed=new Set();
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.43.5',import.meta.url).href;document.head.append(sheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.43.6',import.meta.url).href;document.head.append(sheet);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
     const valid=t=>dialog?.open && token===t && chatId===currentChat() && ownerKey===(api.scopeInfo()?.key||'');
@@ -162,7 +163,7 @@ export function createNpcWorkspace(api) {
         dialog.querySelector('[data-count]').textContent=`${filtered.length} / ${all.length} ตัวละคร`;
         for(const p of filtered.slice(page*20,page*20+20)){
             const button=element('button','trpg-person');button.type='button';button.dataset.lock='';button.disabled=busy;button.setAttribute('aria-pressed',String(p.id===draftId));
-            button.style.setProperty('--speaker',identity(p).identityColor);const emblem=element('span','trpg-list-emblem');emblem.append(icon(ROLE_ICONS[identity(p).roleIcon]));
+            button.style.setProperty('--speaker',identity(p).identityColor);const emblem=element('span','trpg-list-emblem');emblem.append(roleIcon(identity(p).roleIcon));
             const copy=element('span','trpg-list-copy');copy.append(element('strong','',p.name),element('small','',[p.title||p.occupation,p.race].filter(Boolean).join(' · ')));
             const meta=element('span','trpg-list-meta');meta.append(element('span','',p.enabled===false?'ปิดใช้งาน':p.isHostile?'Hostile':p.met?'พบแล้ว':'ยังไม่พบ'),element('small','',p.location||''));
             button.append(emblem,copy,meta,element('span','trpg-list-arrow','›'));button.setAttribute('aria-label',`ดูข้อมูล ${p.name}`);
@@ -287,8 +288,22 @@ export function createNpcWorkspace(api) {
         const appearance=section('CHAT APPEARANCE / ภาพและสีประจำตัว');
         appearance.body.append(field('identityColor','สี Header / Dialogue',identity(p).identityColor,false,'color'));
         const size=field('portraitSize','ขนาดกรอบภาพ 48–144 px',identity(p).portraitSize,false,'range');Object.assign(size.querySelector('input'),{min:'48',max:'144',step:'4'});appearance.body.append(size);
-        const roles=element('label','','ตราบทบาท (12 แบบ)'),select=element('select');select.name='roleIcon';
-        for(const key of Object.keys(ROLE_ICONS)){const option=element('option','',key);option.value=key;select.append(option);}select.value=identity(p).roleIcon;roles.append(select);appearance.body.append(roles);
+        const designLabel=element('label','','รูปแบบตราบทบาท'),design=element('select');
+        design.setAttribute('aria-label','รูปแบบตราบทบาท');
+        for(const [value,label] of [['classic','Classic · แบบเดิม 12 บทบาท'],['medallion','Medallion · 54 บทบาท'],['emblem','Emblem · 54 บทบาท']]){const option=element('option','',label);option.value=value;design.append(option);}
+        const saved=identity(p).roleIcon;design.value=saved.includes(':')?saved.split(':')[0]:'classic';designLabel.append(design);
+        const roles=element('label','','บทบาท'),select=element('select');select.name='roleIcon';
+        const fillRoles=key=>{
+            select.replaceChildren();
+            const entries=design.value==='classic'?Object.keys(CLASSIC_ROLE_ICONS):Object.keys(MEDALLION_ROLES);
+            for(const id of entries){const option=element('option','',MEDALLION_ROLES[id]?.label || id);option.value=design.value==='classic'?id:design.value+':'+id;select.append(option);}
+            const id=key.split(':').pop(),chosen=design.value==='classic'?id:design.value+':'+id;
+            select.value=Object.hasOwn(ROLE_ICONS,chosen)?chosen:select.options[0].value;
+        };
+        fillRoles(saved);
+        design.addEventListener('change',()=>{fillRoles(select.value);select.dispatchEvent(new Event('input',{bubbles:true}));});
+        // Explicit selection only: opening/saving an existing dossier never upgrades its icon.
+        roles.append(select);appearance.body.append(designLabel,roles,element('p','trpg-muted','เปลี่ยนตราเฉพาะ NPC ตัวนี้เมื่อกดบันทึก · NPC เดิมยังใช้ไอคอนเดิม'));
         const fileLabel=element('label','','ภาพสี่เหลี่ยม 1:1 · JPG / PNG / WebP / GIF / AVIF'),file=element('input');file.type='file';file.accept='image/png,image/jpeg,image/webp,image/gif,image/avif';fileLabel.append(file);appearance.body.append(fileLabel);
         const photoActions=element('div','trpg-wide trpg-actions'),remove=element('button','','นำภาพออก');remove.type='button';photoActions.append(remove);appearance.body.append(photoActions);
         const crop=element('div','trpg-crop trpg-wide');crop.hidden=true;appearance.body.append(crop);

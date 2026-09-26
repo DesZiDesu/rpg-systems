@@ -1,3 +1,4 @@
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.43.6';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -25,7 +26,8 @@ export function generatedAttributes(raw) {
  if(STATS.every(k=>fields.stats[k]===0))throw Error('AI returned all-zero placeholder stats. Your draft was not changed.');
  return {...Object.fromEntries(RELATIONS.map(k=>[k,fields[k]])),stats:fields.stats};
 }
-export const ROLE_ICONS = {book:'book-open',compass:'compass',mage:'wand-magic-sparkles',warrior:'shield-halved',healer:'hand-holding-heart',merchant:'coins',noble:'crown',artisan:'hammer',scholar:'graduation-cap',guard:'shield',ranger:'bullseye',performer:'music'};
+export const CLASSIC_ROLE_ICONS = {book:'book-open',compass:'compass',mage:'wand-magic-sparkles',warrior:'shield-halved',healer:'hand-holding-heart',merchant:'coins',noble:'crown',artisan:'hammer',scholar:'graduation-cap',guard:'shield',ranger:'bullseye',performer:'music'};
+export const ROLE_ICONS = {...CLASSIC_ROLE_ICONS, ...Object.fromEntries(Object.keys(MEDALLION_ROLES).flatMap(key=>[['medallion:'+key,'medallion'],['emblem:'+key,'emblem']]))};
 export const keyName = s => String(s || '').trim().normalize('NFKC').toLowerCase();
 export const clean = (s, max=1000) => ['string','number'].includes(typeof s) ? String(s).trim().slice(0,max) : '';
 export const usable = s => Boolean(clean(s)) && !/^(unknown|unspecified|n\/a|null|undefined|ไม่ทราบ|ไม่ระบุ|—|-)$/i.test(clean(s));
@@ -257,7 +259,7 @@ export function generatedNpcDraft(raw, current={}) {
   aliases:incoming.aliases??previous.aliases??[],abilities:incoming.abilities??previous.abilities??[],
   isHostile:typeof raw.isHostile==='boolean'?raw.isHostile:Boolean(current.isHostile),
   identityColor:incoming.identityColor||identity(current).identityColor,
-  roleIcon:incoming.roleIcon||identity(current).roleIcon,
+  roleIcon:previous.roleIcon||incoming.roleIcon||identity(current).roleIcon,
   portraitSize:Number.isFinite(raw.portraitSize)?clamp(raw.portraitSize,48,144):identity(current).portraitSize};
 }
 

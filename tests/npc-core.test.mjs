@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { identity, profileFields, completeDraft, importCharacters, readCharacterFile, parseStory, portraitData, cropGeometry, keyName, ROLE_ICONS, retainManualNpcEdits } from '../src/npc-core.js';
+import { identity, profileFields, completeDraft, importCharacters, readCharacterFile, parseStory, portraitData, cropGeometry, keyName, ROLE_ICONS, CLASSIC_ROLE_ICONS, retainManualNpcEdits } from '../src/npc-core.js';
 
 test('identity fields survive partial updates; role/color are allowlisted',()=>{
  const base={appearance:'silver hair',personality:'calm',aliases:['Lys'],identityColor:'#85aacc',roleIcon:'mage',portraitSize:96,portraitSource:'local'};
  assert.deepEqual(identity({goals:'find a book'},base),{...identity(base),goals:'find a book'});
  const invalid=identity({identityColor:'red;url(x)',roleIcon:'__proto__',portraitSize:999,portraitSource:'url'});
- assert.equal(invalid.identityColor,'#d6b458');assert.equal(invalid.roleIcon,'book');assert.equal(invalid.portraitSize,144);assert.equal(invalid.portraitSource,'');assert.equal(Object.keys(ROLE_ICONS).length,12);
+ assert.equal(invalid.identityColor,'#d6b458');assert.equal(invalid.roleIcon,'book');assert.equal(invalid.portraitSize,144);assert.equal(invalid.portraitSource,'');assert.equal(Object.keys(CLASSIC_ROLE_ICONS).length,12);assert.equal(Object.keys(ROLE_ICONS).length,120);
 });
 test('profile allowlist rejects metadata, image and prototype input',()=>{
  const raw=JSON.parse('{"name":"Lysa","chatMetadata":{"secret":1},"__proto__":{"polluted":true},"portrait":"http://x","stats":{"hp":20,"secret":5}}');

@@ -385,7 +385,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.5');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.6');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -924,4 +924,14 @@ test('an explicit id can repair a legacy role name while retaining the dossier a
  const result=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'old',name:'Darin'}]]});
  const npc=result.next.npcs[0];assert.equal(npc.id,'old');assert.equal(npc.name,'Darin');assert.equal(npc.occupation,'Gate Keeper');
  assert.equal(npc.stats.hp,65);assert.equal(npc.background,'Veteran');assert.equal(npc.hasPortrait,true);
+});
+
+test('legacy and medallion selections survive real host normalization and AI patches',()=>{
+ for(const roleIcon of ['book','mage','scholar','medallion:knight','emblem:nun']){
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'lysa',name:'Lysa',roleIcon,hasPortrait:true,portraitSource:'local'})];
+  const before=JSON.stringify(state);
+  const normalized=host.normalize(JSON.parse(before));assert.equal(normalized.npcs[0].roleIcon,roleIcon);
+  const result=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'lysa',name:'Lysa',occupation:'Councillor',roleIcon:'medallion:politician'}]]});
+  assert.equal(result.next.npcs[0].roleIcon,roleIcon);assert.equal(result.next.npcs[0].hasPortrait,true);assert.equal(JSON.stringify(state),before);
+ }
 });

@@ -212,3 +212,8 @@
 .trpg-change-list > div.is-changed { border-color: rgba(238,166,70,.52); }
 .trpg-change-list span { display: flex; align-items: center; gap: 6px; font-size: .8rem; }
 .trpg-change-list small { overflow-wrap: anywhere; opacity: .85; }
+
+/* Static SVG role artwork inherits the NPC identity color. */
+.trpg-role-art{display:inline-flex;width:40px;height:40px;flex:0 0 40px;vertical-align:middle;line-height:0}
+.trpg-role-art svg{display:block;width:100%;height:100%;overflow:visible}
+.trpg-list-emblem .trpg-role-art{width:34px;height:34px;flex-basis:34px}

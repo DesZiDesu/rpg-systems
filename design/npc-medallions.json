@@ -1,0 +1,380 @@
+[
+  {
+    "id": "book",
+    "th": "ผู้บันทึก",
+    "name": "Chronicler",
+    "shape": "<path d=\"M48 26Q29 12 10 20V74Q29 68 48 83Q67 68 86 74V20Q67 12 48 26Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M17 26Q31 23 43 32V72Q29 64 17 66ZM79 26Q65 23 53 32V72Q67 64 79 66Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M23 35 37 40M23 44 37 49M23 53 37 58M59 40 73 35M59 49 73 44M59 58 73 53M48 27V79\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M67 14 73 3 78 18 70 37 61 39Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M65 34 73 12\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M10 79 21 78M86 79 75 78\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "compass",
+    "th": "นักสำรวจ",
+    "name": "Explorer",
+    "shape": "<circle cx=\"48\" cy=\"49\" r=\"32\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"49\" r=\"27\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"49\" r=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"0.8\"/><path d=\"M48 8V19M48 79V90M7 49H18M78 49H89M20 21 28 29M68 69 76 77M20 77 28 69M68 29 76 21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M62 26 54 55 32 73 40 44Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M62 26 40 44 54 55Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"49\" r=\"3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M45 21 48 17 51 21M22 46 18 49 22 52M74 46 78 49 74 52\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M37 7Q48 0 59 7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "mage",
+    "th": "จอมเวท",
+    "name": "Mage",
+    "shape": "<path d=\"M22 87 64 34\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M26 76 33 81M30 70 37 75M34 64 41 69\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M53 13 67 5 82 18 78 37 62 43 49 30Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M55 17 65 11 74 21 69 33 60 35 54 28Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M65 11 62 25 69 33M55 17 62 25 74 21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M45 31Q42 46 60 48M81 27Q90 41 77 47M16 20 20 31 31 35 20 39 16 50 12 39 1 35 12 31Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"79\" cy=\"65\" r=\"5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M79 56V59M79 71V74M70 65H73M85 65H88\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "warrior",
+    "th": "นักรบ",
+    "name": "Warrior",
+    "shape": "<path d=\"M44 24 48 6 52 24V65H44Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 14V59\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 63 40 59H56L66 63 63 69 54 66H42L33 69Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M45 68H51V83H45ZM41 85H55V90H41Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M16 27 36 21V48Q30 63 18 67L10 50Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M20 34 29 31V46L20 55 16 48Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M69 23 80 31 86 48 77 64 61 53V31Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M68 33 77 36 79 46 73 54 67 49Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "healer",
+    "th": "ผู้รักษา",
+    "name": "Healer",
+    "shape": "<path d=\"M47 53 29 34Q17 17 29 10Q42 5 48 19Q54 5 67 10Q79 17 67 34Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 24V43M39 33H57\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M8 55 17 59 30 71H49Q56 71 57 65H38L24 53Q19 49 16 53M57 65 77 48Q84 44 88 50L68 77 53 84H28L14 72\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M7 55 17 59 12 79 3 76Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M34 76H53Q59 76 64 71\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M9 24H19M14 19V29M83 22V32M78 27H88\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "merchant",
+    "th": "พ่อค้า / แม่ค้า",
+    "name": "Merchant",
+    "shape": "<path d=\"M29 26 21 9 40 15 48 6 57 15 75 9 67 26M29 28H67V35H29Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 36Q14 50 15 73Q18 89 48 89Q78 89 81 73Q82 50 65 36Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M29 44Q23 57 25 72M67 44Q74 57 71 72\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"61\" r=\"17\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"61\" r=\"13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\"/><path d=\"M48 49V73M54 53H46Q39 53 43 59L53 63Q58 70 48 70H41\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M27 27 19 33M68 29 78 35\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M22 80 29 82M65 82 72 79\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "noble",
+    "th": "ขุนนาง",
+    "name": "Noble",
+    "shape": "<path d=\"M20 23 48 11 76 23V57Q70 74 48 89Q26 74 20 57Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M27 28 48 19 69 28V55Q63 70 48 80Q33 70 27 55Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M32 43 29 29 39 34 48 25 57 34 67 29 64 43ZM32 47H64\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M40 55Q48 50 56 55L53 65 48 70 43 65Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 55V65\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M11 34Q1 49 13 63M85 34Q95 49 83 63M8 44 15 47M8 54 17 55M88 44 81 47M88 54 79 55\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "artisan",
+    "th": "ช่างฝีมือ",
+    "name": "Artisan",
+    "shape": "<path d=\"M17 20 24 13 75 70 69 77Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M18 80 63 23 70 28 25 86Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M49 13 57 3 84 23 76 34Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M55 15 60 9 77 22 73 27Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M11 15 17 8 30 21 23 29Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M25 21 21 25M31 61 39 67M27 67 35 73M23 73 31 79\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M61 71 66 65M67 77 72 71\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"45\" cy=\"45\" r=\"4\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M13 41 17 47 13 53 9 47Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "scholar",
+    "th": "นักปราชญ์",
+    "name": "Scholar",
+    "shape": "<path d=\"M4 28 48 9 92 28 48 47Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 17 76 29 48 40 20 29Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M25 41V59Q48 75 71 59V41M86 32V63M82 65H90L92 76H80Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M16 69H67V78H16ZM20 81H72V88H20Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M22 73H61M26 85H65\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M73 5Q59 10 63 27Q76 27 83 10L80 7Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M65 30 77 10\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "guard",
+    "th": "ผู้พิทักษ์",
+    "name": "Guard",
+    "shape": "<path d=\"M48 8 78 19 75 58Q65 79 48 90Q31 79 21 58L18 19Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 16 69 25 66 56Q60 70 48 80Q36 70 30 56L27 25Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M34 33V26H41V33H55V26H62V33L59 39V63H37V39Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M44 63V48Q48 42 52 48V63Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M41 38H44M52 38H55M37 70 42 74M59 70 54 74\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"25\" cy=\"23\" r=\"1.5\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"71\" cy=\"23\" r=\"1.5\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M12 31V58M84 31V58\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "ranger",
+    "th": "ผู้ลาดตระเวน",
+    "name": "Ranger",
+    "shape": "<path d=\"M23 22 35 12H63L74 23 69 82H27Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 28H67L62 76H34Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M35 15V69M47 10V66M59 14V70\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M35 6 30 17 35 15 40 17ZM47 2 42 13 47 11 52 13ZM59 5 54 17 59 15 64 17Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 57Q49 47 66 54M32 62Q49 52 65 59\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M67 35Q88 41 84 68Q77 79 69 77\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M72 42Q81 48 77 65\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M37 71H59M39 80H57\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "performer",
+    "th": "นักแสดง",
+    "name": "Performer",
+    "shape": "<path d=\"M12 18Q32 27 50 18V50Q35 78 15 52Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M19 30 29 32 25 38 20 36M37 32 44 30 43 37 38 38M21 48Q31 60 42 46\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 29Q69 15 86 24L82 60Q66 84 48 65Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M55 35 64 33 61 39M73 31 80 32 77 38M55 60Q67 48 78 59\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M15 11 11 5M37 12 40 5M71 15 75 7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 74 28 85 38 82M66 78 69 87 59 84\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "paladin",
+    "th": "อัศวินศักดิ์สิทธิ์",
+    "name": "Paladin",
+    "shape": "<path d=\"M48 6 69 17V56Q62 75 48 88Q34 75 27 56V17Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 15 62 23V54Q57 68 48 77Q39 68 34 54V23Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M44 23H52V37H62V45H52V65H44V45H34V37H44Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M24 27 6 17 12 46 25 62M72 27 90 17 84 46 71 62\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M12 27 23 35M16 39 24 45M84 27 73 35M80 39 72 45\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M39 7Q48 2 57 7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "berserker",
+    "th": "นักรบคลั่ง",
+    "name": "Berserker",
+    "shape": "<path d=\"M24 87 67 17M72 87 29 17\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 21Q68 5 87 31L70 45Q62 26 52 32ZM48 21Q28 5 9 31L26 45Q34 26 44 32Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M61 21 72 34 80 30M35 21 24 34 16 30\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M29 79 25 76M34 72 30 69M67 79 71 76M62 72 66 69\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M40 47 48 39 56 47 57 61 48 70 39 61Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M43 51 46 54M53 51 50 54M44 61H52\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "rogue",
+    "th": "หัวขโมย",
+    "name": "Rogue",
+    "shape": "<path d=\"M8 29Q48 9 88 29L79 55Q66 67 48 51Q30 67 17 55Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M20 34 39 30 35 44 24 45ZM57 30 76 34 72 45 61 44Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M12 29 5 23M84 29 91 23M23 52 34 53M62 53 73 52\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"30\" cy=\"75\" r=\"10\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"30\" cy=\"75\" r=\"4\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M40 75H81V81H73V75M65 75V84H58V75\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M45 69H55M28 17 33 12M68 17 63 12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "necromancer",
+    "th": "จอมเวทมรณะ",
+    "name": "Necromancer",
+    "shape": "<path d=\"M46 55H50V90H46Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M19 32Q16 7 48 7Q80 7 77 32L70 48 63 50V66H33V50L26 48Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M29 30 41 32 38 42 28 40ZM55 32 67 30 68 40 58 42ZM48 41 43 50H53Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M38 56V64M45 55V65M52 55V65M59 56V64\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M12 15Q4 28 15 42M84 15Q92 28 81 42M38 75H58M40 83H56\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M43 17 48 12 53 17 48 23Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "summoner",
+    "th": "ผู้อัญเชิญ",
+    "name": "Summoner",
+    "shape": "<circle cx=\"48\" cy=\"48\" r=\"34\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.3\"/><circle cx=\"48\" cy=\"48\" r=\"28\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\"/><path d=\"M48 14 77 64H19ZM19 31H77L48 82Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"48\" r=\"11\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M48 39 53 48 48 57 43 48Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"9\" r=\"3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"82\" cy=\"29\" r=\"3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"82\" cy=\"68\" r=\"3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"87\" r=\"3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"14\" cy=\"68\" r=\"3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"14\" cy=\"29\" r=\"3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M29 20 33 27M67 20 63 27M20 48H27M69 48H76M33 69 29 76M63 69 67 76\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "druid",
+    "th": "ดรูอิด",
+    "name": "Druid",
+    "shape": "<path d=\"M45 49H51V86H45Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 54 29 36 19 12M29 36 9 33M29 36 32 14M48 54 67 36 77 12M67 36 87 33M67 36 64 14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M19 12 13 6M19 12 22 5M77 12 83 6M77 12 74 5M9 33 6 25M87 33 90 25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 57Q24 43 17 57Q19 72 44 74M48 57Q72 43 79 57Q77 72 52 74\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M24 57 43 68M72 57 53 68\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M38 87H58M39 48 48 34 57 48 48 62Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 41V54\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "monk",
+    "th": "นักสู้หมัดเปล่า",
+    "name": "Monk",
+    "shape": "<path d=\"M22 43V27Q23 18 31 23V40M31 33V17Q36 10 43 17V39M43 22Q49 15 56 22V42M56 29Q64 22 70 30V53L64 67 60 81H31L26 65 13 48Q14 40 22 43Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M27 45 37 55 49 51M29 58 42 63H63M31 69H63M32 75H61M35 64 40 81M50 64 54 81\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M74 50Q90 66 73 83M17 61Q8 76 21 85\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"47\" cy=\"88\" r=\"3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M35 87H38M57 87H60\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "priest",
+    "th": "นักบวช",
+    "name": "Priest",
+    "shape": "<path d=\"M48 6 67 21 64 42H32L29 21Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 13V33M41 24H55\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M34 44Q30 62 48 70Q66 62 62 44M30 62 16 73 13 89H83L80 73 66 62 48 75Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M36 69 30 87M60 69 66 87M43 79 48 84 53 79\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M8 28V58M3 38H13M83 28V58M78 38H88\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M36 47H60M40 56Q48 62 56 56\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "alchemist",
+    "th": "นักเล่นแร่แปรธาตุ",
+    "name": "Alchemist",
+    "shape": "<path d=\"M35 8H61V16H57V38L81 75Q86 88 72 89H24Q10 88 15 75L39 38V16H35Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M44 17H52V40L72 75Q77 82 68 83H28Q19 82 24 75L44 40Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 64Q44 56 66 64L72 77H24Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"43\" cy=\"72\" r=\"3\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"56\" cy=\"76\" r=\"2\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"53\" cy=\"50\" r=\"3\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"41\" cy=\"57\" r=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M9 16 13 24 21 28 13 32 9 40 5 32M73 16H87M80 9V23\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M43 12H53\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "blacksmith",
+    "th": "ช่างตีเหล็ก",
+    "name": "Blacksmith",
+    "shape": "<path d=\"M9 53H87L78 64H63V76H73V86H23V76H33V64H22Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M20 58H76M38 66H58M29 81H67\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M39 50 61 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M34 16 43 6 76 30 67 42Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M43 17 46 13 66 29 64 34Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M12 19 16 28 25 32 16 36 12 45 8 36 1 32 8 28Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M74 12 81 8M81 20H89\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "engineer",
+    "th": "วิศวกร",
+    "name": "Engineer",
+    "shape": "<path d=\"M39 7H57L60 19 71 23 82 17 91 33 82 42V54L91 63 82 79 71 73 60 77 57 89H39L36 77 25 73 14 79 5 63 14 54V42L5 33 14 17 25 23 36 19Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"48\" r=\"27\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"48\" r=\"21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\"/><path d=\"M30 67 55 41Q49 25 64 25L60 33 68 39 73 31Q79 48 63 49L38 75Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M33 64 38 69\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"33\" cy=\"33\" r=\"4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M30 30 25 25M36 30 41 25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "sailor",
+    "th": "กะลาสี",
+    "name": "Sailor",
+    "shape": "<circle cx=\"48\" cy=\"16\" r=\"9\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"16\" r=\"4\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M44 25H52V77H44Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M22 35H74V42H22Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M10 53 28 58 22 64Q30 75 44 75H52Q66 75 74 64L68 58 86 53 82 74 77 69Q66 88 48 90Q30 88 19 69L14 74Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 31V70M28 39H68\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M28 48Q12 34 29 24M68 48Q84 34 67 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M35 53Q48 60 60 52\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "pirate",
+    "th": "โจรสลัด",
+    "name": "Pirate",
+    "shape": "<path d=\"M14 82 78 18M82 82 18 18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M10 70 25 85M71 85 86 70\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M24 40Q22 15 48 15Q74 15 72 40L65 55 60 57V70H36V57L31 55Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 37H43V47H32ZM52 35Q63 30 67 39Q63 49 53 47Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 47 43 55H53Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M28 29 69 51M40 61V68M48 61V68M56 61V68\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M24 19 31 10 69 13 74 23Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M33 16H65\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "hunter",
+    "th": "นายพราน",
+    "name": "Hunter",
+    "shape": "<path d=\"M12 79 70 13 83 7 79 22 22 88Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M23 63 38 76M16 76 23 83\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M63 18 70 26M67 15 75 22\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M16 17Q27 10 39 21L47 42 39 52 25 42 12 35Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M18 20 30 20 37 30 39 41 31 40 20 32Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M54 59Q82 52 88 68L80 81 62 83 50 71Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M61 64 75 62 81 68 76 75 64 76 58 70Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M10 51 18 55M81 37 87 32\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "beastmaster",
+    "th": "ผู้ฝึกสัตว์",
+    "name": "Beastmaster",
+    "shape": "<path d=\"M26 58Q48 35 70 58L77 75Q72 87 61 82L48 79 35 82Q24 87 19 75Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 60Q48 47 65 60L69 71 60 73 48 69 36 73 27 71Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"16\" cy=\"43\" r=\"9\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"35\" cy=\"24\" r=\"10\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"61\" cy=\"24\" r=\"10\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"80\" cy=\"43\" r=\"9\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M13 43 16 36 19 43M32 24 35 16 38 24M58 24 61 16 64 24M77 43 80 36 83 43\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M39 84 48 90 57 84\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "farmer",
+    "th": "เกษตรกร",
+    "name": "Farmer",
+    "shape": "<path d=\"M48 86V9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M47 30Q24 29 24 12Q45 13 47 30ZM49 30Q72 29 72 12Q51 13 49 30ZM47 48Q19 47 19 28Q45 31 47 48ZM49 48Q77 47 77 28Q51 31 49 48ZM47 66Q15 63 15 46Q43 47 47 66ZM49 66Q81 63 81 46Q53 47 49 66Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 19 42 28M66 19 54 28M26 36 42 46M70 36 54 46M23 53 42 62M73 53 54 62\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M27 85Q48 77 69 85M33 90H63\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "innkeeper",
+    "th": "เจ้าของโรงเตี๊ยม",
+    "name": "Innkeeper",
+    "shape": "<path d=\"M12 88V9H81V15H19V88Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M32 15V27M70 15V27\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M25 28H79V74H25Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 34H73V68H31Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M39 43H57V61H39ZM57 45H63V56H57\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M44 45V57M50 45V57\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M36 37Q39 32 44 37Q48 30 53 37Q61 32 62 42H37Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M32 78H72M38 82H66\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"16\" cy=\"18\" r=\"1.5\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"16\" cy=\"72\" r=\"1.5\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "chef",
+    "th": "พ่อครัว / แม่ครัว",
+    "name": "Chef",
+    "shape": "<path d=\"M25 54Q6 51 10 32Q15 17 31 24Q36 5 52 13Q62 8 69 25Q86 21 87 37Q88 53 72 56V84H25Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 58H66V78H31Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M29 58H68M32 71H64M37 31V51M48 26V51M60 32V51\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 63H65\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M32 87H66\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"47\" cy=\"76\" r=\"1.5\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M10 65 16 70M81 66 87 61\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "doctor",
+    "th": "แพทย์",
+    "name": "Doctor",
+    "shape": "<path d=\"M33 25V12H63V25M39 25V18H57V25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M14 26H82V84H14Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M20 32H76V78H20Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M27 26V84M69 26V84\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M43 39H53V50H64V60H53V71H43V60H32V50H43Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M14 42H22M74 42H82\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"18\" cy=\"30\" r=\"1.5\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"78\" cy=\"30\" r=\"1.5\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M39 16H57\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "diplomat",
+    "th": "นักการทูต",
+    "name": "Diplomat",
+    "shape": "<path d=\"M16 14H76V71H16Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M23 21H69V63H23Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 31H62M30 39H58M30 47H62M30 55H45\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M54 66 46 89 60 83 70 90 73 66Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"62\" cy=\"64\" r=\"12\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"62\" cy=\"64\" r=\"8\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M62 57 65 62 70 64 65 66 62 71 59 66 54 64 59 62Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M12 24H8V77H38\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "courier",
+    "th": "ผู้ส่งสาร",
+    "name": "Courier",
+    "shape": "<path d=\"M17 30H82V77H17Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M23 37 49 55 76 37V69H23Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M17 31 49 57 82 31M22 71 40 54M77 71 58 54\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M49 49 58 55V66L49 72 40 66V55Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M49 54 53 59 49 66 45 59Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M26 14H60M14 21H48M4 28H11M6 38H11M4 49H11M6 61H11\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M66 12 71 17 66 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "oracle",
+    "th": "ผู้พยากรณ์",
+    "name": "Oracle",
+    "shape": "<circle cx=\"48\" cy=\"38\" r=\"29\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"38\" r=\"24\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M23 38Q48 13 73 38Q48 63 23 38Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"38\" r=\"10\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M48 29 53 38 48 47 43 38Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 64 23 81H73L65 64M20 85H76V90H20Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M33 76H63\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 2V5M10 18 15 22M81 22 86 18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"13\" cy=\"60\" r=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"83\" cy=\"60\" r=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "gatekeeper",
+    "th": "ยามเฝ้าประตู",
+    "name": "Gatekeeper",
+    "shape": "<path d=\"M12 86V23H20V12H35V23H61V12H76V23H84V86Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M25 85V43Q48 21 71 43V85Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M29 47Q48 30 67 47M34 43V85M43 39V85M53 39V85M62 43V85M27 58H69M27 73H69\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M17 32H22M17 44H22M74 32H79M74 44H79\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"62\" r=\"3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M46 65H50V70H46Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "adventurer",
+    "name": "Adventurer",
+    "th": "นักผจญภัย",
+    "shape": "<path d=\"M16 77 66 18 76 12 73 24 24 82Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M27 63 40 75M32 70 24 79M22 78 17 84\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M32 33V26Q48 16 64 26V33M27 36Q48 28 69 36L72 76Q48 87 24 76Z\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M26 38Q48 50 70 38L66 54H30Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M32 38Q48 44 64 38\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M36 33V77M60 33V77\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M42 43H54V52H42Z\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M28 62 34 64M62 64 69 62M31 73H36M60 73H65\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"49\" cy=\"66\" r=\"10\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M49 58 52 65 49 74 46 67Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M42 66H45M53 66H56\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M8 43H19M13 38V49\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "archer",
+    "name": "Archer",
+    "th": "พลธนู",
+    "shape": "<path d=\"M28 10Q80 28 80 48Q80 68 28 86Q42 67 49 55M49 41Q42 29 28 10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 14Q67 32 71 48Q67 64 31 82\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M28 10 49 48 28 86\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M9 48H88\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M77 41 90 48 77 55 80 48Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M11 42 23 48 11 54 16 48Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M49 42V54M53 42V54\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M61 25 58 31 66 33M71 35 66 39 73 42M71 61 66 57 73 54M61 71 58 65 66 63\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M27 7 24 13M27 89 24 83\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"72\" cy=\"48\" r=\"2.4\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M11 66 14 72 20 75 14 78 11 84 8 78 2 75 8 72Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "assassin",
+    "name": "Assassin",
+    "th": "นักฆ่า",
+    "shape": "<path d=\"M12 79 33 48M84 79 63 48\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M10 67 24 79M72 79 86 67\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M8 85 13 80M88 85 83 80\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 8Q23 24 17 62L27 78 48 88 69 78 79 62Q73 24 48 8Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 17Q31 29 28 58L36 76 48 82 60 76 68 58Q65 29 48 17Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M28 47Q48 34 68 47L64 66 48 78 32 66Z\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 54 48 62 66 54M35 64 48 69 61 64M42 75 48 71 54 75\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M34 47 43 49 40 52 35 51ZM62 47 53 49 56 52 61 51Z\" fill=\"currentColor\" stroke=\"none\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 17 43 35M48 17 56 36M23 62 29 70M73 62 67 70\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "lancer",
+    "name": "Lancer",
+    "th": "พลหอก",
+    "shape": "<path d=\"M45 39H51V89H45Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 3 59 24 53 38H43L37 24Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 8V35M40 24 48 29 56 24\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M29 32Q36 44 48 40Q60 44 67 32L63 48 53 52H43L33 48Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M32 36 40 46M64 36 56 46\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M39 49Q26 62 22 78L34 72 29 87Q41 74 42 53Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M56 49Q67 63 72 77L62 73 66 88Q54 74 54 53Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M36 59 29 76M61 61 65 76\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M42 57H54M43 65H53M43 73H53M42 87H54\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M15 22 18 28 24 31 18 34 15 40 12 34 6 31 12 28Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "tanker",
+    "name": "Tanker",
+    "th": "ผู้รับแนวหน้า",
+    "shape": "<path d=\"M48 7 79 18 75 60Q67 80 48 90Q29 80 21 60L17 18Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 14 71 23 67 57Q61 73 48 81Q35 73 29 57L25 23Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 19V75M30 31 48 25 66 31M31 43H65M33 55H63M39 65H57\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 30 59 43 55 61 48 69 41 61 37 43Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 36 52 45 48 60 44 45Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"24\" cy=\"24\" r=\"1.8\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1\"/><circle cx=\"72\" cy=\"24\" r=\"1.8\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1\"/><circle cx=\"25\" cy=\"43\" r=\"1.8\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1\"/><circle cx=\"71\" cy=\"43\" r=\"1.8\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1\"/><circle cx=\"29\" cy=\"61\" r=\"1.8\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1\"/><circle cx=\"67\" cy=\"61\" r=\"1.8\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1\"/><circle cx=\"39\" cy=\"77\" r=\"1.8\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1\"/><circle cx=\"57\" cy=\"77\" r=\"1.8\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1\"/><path d=\"M9 32H15M8 41H14M81 32H87M82 41H88\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "maid",
+    "name": "Maid",
+    "th": "สาวใช้",
+    "shape": "<path d=\"M22 44Q18 22 30 18Q33 10 40 15Q48 6 56 15Q64 10 67 18Q79 22 74 44L64 49H32Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M28 37Q30 23 48 23Q66 23 68 37L64 54Q48 66 32 54Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 36Q48 26 66 36M28 27 33 30M38 20 40 26M48 17V24M58 20 56 26M68 27 63 30\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 37V47Q33 58 48 61Q63 58 65 47V37\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M22 70 34 61 48 67 62 61 74 70 80 88H16Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M29 65 34 86H62L67 65M37 64 40 73H56L59 64\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M39 78H57V87H39Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M47 63 37 58 36 68 46 67M49 63 59 58 60 68 50 67\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"65\" r=\"2.2\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M20 76 25 84M76 76 71 84M42 49Q48 53 54 49\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "butler",
+    "name": "Butler",
+    "th": "พ่อบ้าน",
+    "shape": "<path d=\"M31 39V25Q31 10 48 10Q65 10 65 25V39Q61 53 48 56Q35 53 31 39Z\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 28Q40 25 44 18Q51 27 65 26M35 43Q40 48 43 46\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"57\" cy=\"34\" r=\"6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M63 36Q72 40 70 51M42 35H47M45 47H53\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M16 87 22 64 36 56 48 63 60 56 74 64 80 87Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M37 57 48 82 59 57M28 63 33 74 39 72 35 82 43 89M68 63 63 74 57 72 61 82 53 89\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M44 61 36 57V66L44 63M52 61 60 57V66L52 63\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"62\" r=\"2\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M46 69H50M47 75H49M64 73H72M64 74Q63 83 71 83L72 76\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"66\" cy=\"82\" r=\"2.5\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "beastfolk",
+    "name": "Beastfolk",
+    "th": "เผ่ามนุษย์สัตว์",
+    "shape": "<path d=\"M15 9 34 21Q48 15 62 21L81 9 77 39 84 54 73 58 72 70 60 73 48 89 36 73 24 70 23 58 12 54 19 39Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M22 18 32 25 24 34ZM74 18 64 25 72 34Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M28 37 42 44 36 49 28 45ZM68 37 54 44 60 49 68 45Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M40 57 48 52 56 57 52 66H44Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 66V75M36 65 42 74 48 79 54 74 60 65M22 49 28 54 23 55M74 49 68 54 73 55M32 27 40 32M64 27 56 32M44 26 48 32 52 26\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M10 69 15 75M86 69 81 75\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "demon",
+    "name": "Demon",
+    "th": "ปีศาจ",
+    "shape": "<path d=\"M30 28Q10 28 12 5Q20 20 34 18M66 28Q86 28 84 5Q76 20 62 18\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 14 67 26 73 46 67 66 48 86 29 66 23 46 29 26Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 31 42 37 48 23 54 37 66 31 63 50 58 59 48 72 38 59 33 50Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 43 43 47 38 53 33 50ZM65 43 53 47 58 53 63 50Z\" fill=\"currentColor\" stroke=\"none\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 45 43 58H53ZM38 63 43 66 48 62 53 66 58 63M42 68V72M54 68V72\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M20 57 13 47Q8 67 26 81L20 70M76 57 83 47Q88 67 70 81L76 70\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M45 78 48 82 51 78\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "god",
+    "name": "God",
+    "th": "เทพเจ้า",
+    "shape": "<circle cx=\"48\" cy=\"38\" r=\"19\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"38\" r=\"23\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"0.9\"/><path d=\"M48 5V11M48 65V71M15 38H21M75 38H81M24 14 28 19M72 14 68 19M19 24 24 27M77 24 72 27\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 38Q48 20 66 38Q48 56 30 38Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"38\" r=\"7\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"38\" r=\"2.2\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M40 60Q23 61 8 45L12 65 29 76 43 74M56 60Q73 61 88 45L84 65 67 76 53 74\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M14 55 29 65 37 66M16 64 28 70 35 70M82 55 67 65 59 66M80 64 68 70 61 70\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 59 55 72 48 90 41 72Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 64V82\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M34 10 36 15M62 10 60 15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "prince",
+    "name": "Prince",
+    "th": "เจ้าชาย",
+    "shape": "<path d=\"M29 82 65 45M67 82 31 45\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M23 75 35 86M61 86 73 75\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M24 44 17 21 34 29 48 10 62 29 79 21 72 44Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M27 39 23 29 35 35 48 19 61 35 73 29 69 39Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M25 44H71V53H25Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M29 48H67\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"18\" cy=\"19\" r=\"2.3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"48\" cy=\"8\" r=\"2.3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"78\" cy=\"19\" r=\"2.3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M48 29 53 36 48 42 43 36Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 58 60 64 58 78 48 86 38 78 36 64Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 64 52 70 48 79 44 70Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 57 27 62M65 57 69 62\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "princess",
+    "name": "Princess",
+    "th": "เจ้าหญิง",
+    "shape": "<path d=\"M18 47Q18 26 31 36Q29 16 42 30L48 9 54 30Q67 16 65 36Q78 26 78 47L72 55H24Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M25 45Q24 35 32 42L39 45Q36 30 43 37L48 44 53 37Q60 30 57 45L64 42Q72 35 71 45L68 49H28Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 19 52 31 48 38 44 31Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M24 55H72V61H24Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M29 58H67\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"19\" cy=\"29\" r=\"2.3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"77\" cy=\"29\" r=\"2.3\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M48 65Q34 80 48 90Q62 80 48 65Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 70Q42 78 48 84Q54 78 48 70Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M34 66Q21 67 20 79Q31 81 34 66ZM62 66Q75 67 76 79Q65 81 62 66Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M25 75 31 70M71 75 65 70\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "Approved core"
+  },
+  {
+    "id": "politician",
+    "th": "นักการเมือง",
+    "name": "Politician",
+    "shape": "<path d=\"M10 31 48 9 86 31ZM15 76H81V84H15ZM20 36H30V70H20ZM43 36H53V70H43ZM66 36H76V70H66Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M25 27 48 15 71 27ZM24 41V65M47 41V65M70 41V65M21 80H75\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M54 53H84V77H54Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M59 59H78M59 64H74M59 69H69\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"78\" cy=\"76\" r=\"6\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M78 72V79M75 75H81\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "knight",
+    "th": "อัศวิน",
+    "name": "Knight",
+    "shape": "<path d=\"M30 36Q26 14 48 10Q71 14 67 36L62 61 48 72 34 61Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M34 34 48 29 63 34 60 43 36 43ZM39 47V57M45 46V62M51 46V62M57 47V57\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 12V29M31 28H65\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 9Q58 0 71 7L78 20 65 15 61 24Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 62 15 70 9 87H39L48 77 57 87H87L81 70 65 62 48 75Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M18 76 34 71M62 71 78 76M22 81H34M62 81H74\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "prisoner",
+    "th": "นักโทษ",
+    "name": "Prisoner",
+    "shape": "<path d=\"M16 86V31Q16 7 48 7Q80 7 80 31V86Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M23 80V32Q23 15 48 15Q73 15 73 32V80Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"37\" r=\"10\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M29 71Q28 52 48 52Q68 52 67 71Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M31 21V83M48 16V83M65 21V83M21 47H75M21 76H75\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M18 31H22M74 31H78\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"70\" cy=\"63\" r=\"5\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M70 60V66\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "slave",
+    "th": "ทาส",
+    "name": "Slave",
+    "shape": "<path d=\"M10 22 18 16 36 25 32 47 22 55 9 46Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M15 25 19 22 29 28 26 43 22 47 15 42Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M60 25 78 16 86 22 87 46 74 55 64 47Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M67 28 77 22 81 25 81 42 74 47 70 43Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M24 53V65Q24 73 32 73H39M72 53V65Q72 73 64 73H57\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M40 67H55Q63 67 63 74Q63 81 55 81H40Q32 81 32 74Q32 67 40 67Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M13 34H29M67 34H83\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"22\" cy=\"50\" r=\"2\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"74\" cy=\"50\" r=\"2\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "master",
+    "th": "นาย / เจ้านาย",
+    "name": "Master",
+    "shape": "<path d=\"M18 82 63 21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M55 13 65 5 77 14 73 28 61 31 52 24Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M60 15 65 11 71 16 67 24 60 24Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M21 76 27 81M25 70 31 75\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"61\" cy=\"64\" r=\"23\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"61\" cy=\"66\" r=\"16\" fill=\"#101822\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M48 50 61 44 74 50V63L61 73 48 63Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M53 55 57 58 61 51 65 58 69 55 67 64H55Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M41 79 45 84M78 79 74 84\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M18 19V31M12 25H24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "clergyman",
+    "th": "บาทหลวง",
+    "name": "Clergyman",
+    "shape": "<circle cx=\"48\" cy=\"26\" r=\"15\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M33 23Q32 10 48 10Q64 10 63 23L56 18 48 21 40 18Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M34 44 48 49 62 44 77 61 83 88H13L19 61Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M33 45 42 57 42 85H29L28 58M63 45 54 57 54 85H67L68 58\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M42 46H54V52H42Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M45 47H51V51H45Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 57V78M41 67H55\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M38 29H42M54 29H58M43 37Q48 40 53 37\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M19 83H25M71 83H77\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  },
+  {
+    "id": "nun",
+    "th": "แม่ชี",
+    "name": "Nun",
+    "shape": "<path d=\"M14 87 22 32Q24 7 48 6Q72 7 74 32L82 87Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M20 82 29 32Q30 14 48 13Q66 14 67 32L76 82Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M30 28Q48 13 66 28L62 53 48 66 34 53Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M35 29Q48 24 61 29L58 46Q48 59 38 46Z\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M32 55 48 69 64 55 68 82H28Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M48 65V81M42 73H54\" fill=\"#101822\" stroke=\"#101822\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M39 34H42M54 34H57M44 46Q48 49 52 46\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M25 47 21 75M71 47 75 75\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "kind": "New detailed"
+  }
+]
