@@ -214,6 +214,5 @@
 .trpg-change-list small { overflow-wrap: anywhere; opacity: .85; }
 
 /* Static SVG role artwork inherits the NPC identity color. */
-.trpg-role-art{display:inline-flex;width:1em;height:1em;flex:0 0 1em;vertical-align:middle;line-height:0}
-.trpg-role-art svg{display:block;width:100%;height:100%;overflow:visible}
-.trpg-list-emblem .trpg-role-art{width:1em;height:1em;flex-basis:1em}
+.trpg-role .trpg-role-art,.trpg-list-emblem .trpg-role-art{display:inline-flex;box-sizing:content-box;font-size:inherit!important;width:1em!important;height:1em!important;min-width:1em!important;max-width:1em!important;min-height:1em!important;max-height:1em!important;flex:0 0 1em!important;padding:0!important;margin:0;border:0;vertical-align:middle;line-height:0;overflow:hidden}
+.trpg-role-art>svg{display:block;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;overflow:hidden}

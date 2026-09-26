@@ -1,7 +1,7 @@
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.43.6';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.6';
-import { croppedPortrait } from './npc-portraits.js?v=0.43.6';
-import { renderSceneTracker } from './scene-tracker.js?v=0.43.6';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.43.7';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.7';
+import { croppedPortrait } from './npc-portraits.js?v=0.43.7';
+import { renderSceneTracker } from './scene-tracker.js?v=0.43.7';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -16,7 +16,7 @@ export function roleIcon(key) {
     const node=element('span','trpg-role-art'); node.setAttribute('aria-hidden','true');
     const shape=MEDALLION_ROLES[role].shape;
     // No user text enters markup: both paths and frame come from the static allowlist.
-    node.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${style==='medallion'?'128 128':'96 96'}" focusable="false">${style==='medallion'?MEDALLION_FRAME+'<g transform="translate(24 24) scale(.8333333)">'+shape+'</g>':shape}</svg>`;
+    node.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 ${style==='medallion'?'128 128':'96 96'}" focusable="false">${style==='medallion'?MEDALLION_FRAME+'<g transform="translate(24 24) scale(.8333333)">'+shape+'</g>':shape}</svg>`;
     return node;
 }
 // Only support the two requested inline marks. Never parse model text as HTML.

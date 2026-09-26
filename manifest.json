@@ -10,7 +10,7 @@
     "update": "onUpdate"
   },
   "author": "DesZiDesu",
-  "version": "0.43.6",
+  "version": "0.43.7",
   "generate_interceptor": "TretaresiaRpgGenerateInterceptor",
   "homePage": "https://github.com/DesZiDesu/rpg-systems",
   "auto_update": true

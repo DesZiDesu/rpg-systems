@@ -53,6 +53,8 @@ try{
  for(const legacy of [true,false])for(const mobile of [320,390,false]){
   const page=await browser.newPage({viewport:mobile?{width:mobile,height:844}:{width:1440,height:1000},isMobile:Boolean(mobile),hasTouch:Boolean(mobile),reducedMotion:'reduce'});
   const errors=[],missing=[];
+  // Optional remote fonts must not make local startup verification network-dependent.
+  await page.route('https://fonts.googleapis.com/**',route=>route.fulfill({contentType:'text/css',body:''}));
   page.on('pageerror',error=>errors.push(error.message));
   page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
   page.on('response',response=>{if(response.status()>=400)missing.push(response.url());});
