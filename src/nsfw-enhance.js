@@ -86,7 +86,7 @@ export const ADULT_TAG_THAI = Object.freeze({
  'English roleplay':'โรลเพลย์ภาษาอังกฤษ',
 });
 export const TAG_LIMIT=50, CUSTOM_LIMIT=100;
-export const STYLE_LIMIT=2000;
+export const STYLE_LIMIT=50000;
 export const DEFAULT_ADULT_STYLE=[
  'Vary pacing between dialogue, reactions, quiet beats and meaningful scene sounds. Swearing, ~, ♡ and ♪ are occasional voice accents, not required in every reply.',
  'For short, action-matched vocal reactions and sound effects use Japanese-style opening/closing brackets 「sound」, including when writing in Thai or English. Match only actions that actually occur: kisses, breaths, clothing, and consensual intimate contact such as sucking, oral activity or penetration. Use sparingly and do not swap the narrative language to Japanese. Use *single asterisks* for occasional emphasis or action and **double asterisks** for rare strong emphasis; no HTML.',
