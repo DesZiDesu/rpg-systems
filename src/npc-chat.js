@@ -1,7 +1,7 @@
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.43.7';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.7';
-import { croppedPortrait } from './npc-portraits.js?v=0.43.7';
-import { renderSceneTracker } from './scene-tracker.js?v=0.43.7';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.43.8';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.8';
+import { croppedPortrait } from './npc-portraits.js?v=0.43.8';
+import { renderSceneTracker } from './scene-tracker.js?v=0.43.8';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;

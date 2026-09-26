@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLoreWorkspace} from '../src/lore-workspace.js';
 import {characterLore,writeCharacterLore,loreOptions,writeLoreOptions} from '../src/lore-core.js';
+import {exportLore} from '../src/lore-transfer.js';
 class Node {
  constructor(tag){this.tag=tag;this.children=[];this.listeners={};}
  append(...nodes){this.children.push(...nodes);}
@@ -48,4 +49,19 @@ test('failed Lore saves keep the draft open and do not report success',async()=>
  await form.fire('submit');assert.match(status(),/HTTP 503/);
  assert.equal(find(panel,n=>n.name==='loreContent')[0].value,'Unpublished fact');assert.deepEqual(characterLore(settings,'card:a'),[]);
  globalThis.confirm=()=>false;assert.equal(ui.canLeave(),false);globalThis.confirm=()=>true;
+});
+
+test('Lore import adds records, skips duplicates and retains original data on invalid files',async()=>{
+ const {panel,api,status}=fixture();const file=()=>find(panel,n=>n.type==='file')[0];
+ const record={id:'foreign',title:'Imported',content:'World facts',enabled:false,keywords:['world'],always:true};
+ let input=file();input.files=[{size:300,text:async()=>exportLore([record])}];await input.fire('change');
+ assert.equal(api.listLore().length,1);assert.equal(api.listLore()[0].always,true);assert.match(status(),/นำเข้า Lore แล้ว/);
+ input=file();input.files=[{size:300,text:async()=>exportLore([record])}];await input.fire('change');assert.equal(api.listLore().length,1);assert.match(status(),/ไม่มีรายการใหม่/);
+ input.files=[{size:2,text:async()=>'{'}];await input.fire('change');assert.match(status(),/JSON/);assert.equal(api.listLore().length,1);
+});
+test('Lore import rejects card switches during file reading',async()=>{
+ const {panel,api,setOwner,status}=fixture();const input=find(panel,n=>n.type==='file')[0];
+ let finish;input.files=[{size:300,text:()=>new Promise(resolve=>finish=resolve)}];const pending=input.fire('change');
+ setOwner('card:b');finish(exportLore([{id:'x',title:'X',content:'Facts',enabled:true}]));await pending;
+ assert.match(status(),/การ์ดเปลี่ยน/);assert.deepEqual(api.listLore(),[]);
 });

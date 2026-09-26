@@ -1,5 +1,12 @@
 # Tretaresia RPG / RPG System — v0.43.6
 
+## v0.43.8 — Lore Import / Export
+
+In **NPC Management → Lore Management**, use **Export JSON** to download all saved Lore for the current character card, including disabled entries, keywords and pinned flags. Use **Import JSON** to select a Tretaresia Lore JSON file and confirm the destination and new-entry count. Imports append to the current card, skip exact duplicates, and never overwrite existing records. Titles shared by different entries are retained. Imported IDs are regenerated.
+
+Files use `{ "format": "tretaresia-lore", "version": 1, "entries": [...] }`; arrays of native Lore records are also accepted. SillyTavern World Info files are not this format. Limits remain 200 entries per card, 160 characters per title, 12,000 characters per entry, 30 keywords and 12 MB per file. Invalid files, over-capacity imports and active-budget failures leave saved Lore unchanged. The card's budget and selection mode stay unchanged. Export saves entries, not unsaved edits or chat/NPC data.
+
+
 ส่วนเสริมสำหรับ SillyTavern ที่แสดงสถานะ RPG, ฉาก, NPC และกลุ่มสังคมร่วมกับ Main Chat รองรับภาษาไทยและอังกฤษ รวมถึงหน้าจอมือถือ
 
 ### แก้ไข v0.43.6

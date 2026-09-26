@@ -1,5 +1,6 @@
-import { element } from './npc-chat.js?v=0.43.7';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.43.7';
+import { element } from './npc-chat.js?v=0.43.8';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.43.8';
+import { LORE_FILE_LIMIT, exportLore, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.43.8';
 
 export function createLoreWorkspace(panel, api, say) {
     let owner = '', dirty = false, query = '', editing = null, saving = false;
@@ -32,7 +33,29 @@ export function createLoreWorkspace(panel, api, say) {
         preferences.append(budgetLabel,modeLabel,button('บันทึกงบและโหมด',()=>attempt(()=>{api.persistLoreOptions({budget:Number(budget.value),mode:mode.value},owner);dirty=false;list();say('บันทึกงบและโหมด Lore แล้ว');})));
         if(api.persistLoreOptions)panel.append(preferences,element('p','trpg-muted','Context 2,000,000 tokens ไม่เท่ากับ 2,000,000 ตัวอักษร ควรเผื่อประวัติแชทและคำตอบ โหมดเฉพาะที่เกี่ยวข้องเลือกจากชื่อ คำค้น และคำในเนื้อหา Lore อัตโนมัติจาก 8 ข้อความล่าสุด โดยไม่เรียก AI เพิ่ม; ตรึงรายการที่จำเป็นได้'));
         const tools=element('div','trpg-lore-tools'),label=element('label','','ค้นหา Lore'),search=element('input');search.type='search';search.value=query;search.placeholder='ชื่อหรือเนื้อหา';label.append(search);
-        tools.append(label,button('＋ สร้าง Lore ใหม่',()=>{if(canLeave())edit({id:'',title:'',content:'',enabled:true});}));panel.append(tools);
+        const file=element('input');file.type='file';file.accept='.json,application/json';file.hidden=true;file.setAttribute('aria-label','Import Lore JSON');
+        file.addEventListener('change',()=>{
+            const selected=file.files?.[0];file.value='';if(!selected)return;
+            const target=owner;
+            if(!canLeave())return;
+            return attempt(async()=>{
+                if(selected.size>LORE_FILE_LIMIT)throw Error('ไฟล์ Lore ต้องไม่เกิน 12 MB');
+                const imported=parseLoreFile(await selected.text());
+                if(target!==owner||target!==api.scopeInfo()?.key)throw Error('การ์ดเปลี่ยนแล้ว กรุณาเลือกไฟล์ใหม่ในการ์ดที่ต้องการ');
+                const merged=mergeLore(entries(),imported);
+                if(!merged.added){say(`ไม่มีรายการใหม่ · ข้ามข้อมูลซ้ำ ${merged.skipped} รายการ`);return;}
+                if(!confirm(`นำเข้า Lore ${merged.added} รายการไปยัง ${info.label}? ข้ามข้อมูลซ้ำ ${merged.skipped} รายการ โดยเก็บ Lore เดิมไว้ทั้งหมด`))return;
+                await save(merged.entries);list();say(`นำเข้า Lore แล้ว ${merged.added} รายการ · ข้ามข้อมูลซ้ำ ${merged.skipped} รายการ`);
+            });
+        });
+        const download=button('Export JSON',()=>attempt(()=>{
+            if(owner!==api.scopeInfo()?.key)throw Error('การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่');
+            const blob=new Blob([exportLore(entries())],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=element('a');
+            a.href=url;a.download='tretaresia-lore.json';document.body.append(a);
+            try{a.click();say('ส่งออก Lore ที่บันทึกแล้วเป็นไฟล์ JSON');}finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+        }));
+        tools.append(label,button('＋ สร้าง Lore ใหม่',()=>{if(canLeave())edit({id:'',title:'',content:'',enabled:true});}),button('Import JSON',()=>{if(canLeave())file.click();}),download,file);panel.append(tools);
+        panel.append(element('p','trpg-muted','Import/Export ไฟล์ Lore JSON · นำเข้าแบบเพิ่มรวมและข้ามรายการที่เหมือนกันทุกช่อง · เก็บชื่อ เนื้อหา คำค้น เปิด/ปิด และการตรึง · งบและโหมดของการ์ดนี้ไม่เปลี่ยน'));
         const rows=element('div','trpg-lore-rows');panel.append(rows);
         function renderRows(){rows.replaceChildren();const shown=all.filter(item=>`${item.title} ${item.content}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
             for(const item of shown){
