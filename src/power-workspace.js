@@ -1,4 +1,4 @@
-import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.44.0';
+import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.44.1';
 const el=(tag,text='')=>{const node=document.createElement(tag);node.textContent=text;return node;};
 const button=(text,action)=>{const b=el('button',text);b.type='button';b.addEventListener('click',action);return b;};
 function download(text){const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=el('a');a.href=url;a.download='roleforge-powers.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
@@ -9,7 +9,8 @@ export function mountPowerWorkspace(host,api){
  const act=async fn=>{if(busy)return;busy=true;root.inert=true;try{await fn();}catch(e){status.textContent=e.message;}finally{busy=false;root.inert=false;}};
  const save=async next=>{await api.save(next);config=next;};
  function render(){
-  root.replaceChildren(el('h3','Power Preset'),status);status.textContent='';
+  root.replaceChildren(el('h3',api.valuesOnly?'Current powers':'Power Preset'),status);status.textContent='';
+  if(!api.valuesOnly){
   const toolbar=el('div');toolbar.className='rf-power-toolbar';
   const select=el('select');select.setAttribute('aria-label','Power preset');
   for(const [value,label]of [['tretaresia','Original Preset · พลังชุดเดิม'],['custom','Custom']]){const o=el('option',label);o.value=value;select.append(o);}select.value=config.mode;
@@ -22,18 +23,21 @@ export function mountPowerWorkspace(host,api){
   const name=el('input');name.value=config.name;name.maxLength=80;name.setAttribute('aria-label','Preset name');
   root.append(name,button('บันทึกชื่อ Preset',()=>act(()=>save({...config,name:name.value}))),button('＋ สร้างพลัง',()=>edit()));
   if(!config.definitions.length)root.append(el('p','Custom ยังว่าง — กดสร้างพลังเพื่อเริ่ม ไม่มีพลังเดิมเพิ่มให้อัตโนมัติ'));
+  }else if(!config.definitions.length)root.append(el('p','No powers configured. Manage presets in Extensions → RoleForge → Power Presets.'));
   const grid=el('div');grid.className='rf-power-grid';root.append(grid);
   for(const def of config.definitions){
    const card=el('article');card.className='rf-power-card';card.style.setProperty('--rf-power-color',def.color);card.dataset.powerId=def.id;
    const title=el('h4'),icon=el('i');icon.className='fa-solid fa-'+def.icon;title.append(icon,document.createTextNode(' '+def.name));
+   card.append(title,el('p',def.description));
+   if(api.valuesOnly){
    const value=powerValue(def,api.state().customPowers?.[def.id]),field=el(def.type==='rank'?'select':'input');field.setAttribute('aria-label',def.name+' value');
    if(def.type==='rank'){def.ranks.forEach((label,i)=>{const o=el('option',label);o.value=i;field.append(o);});field.value=value;}
    else if(def.type==='toggle'){field.type='checkbox';field.checked=value;}
    else{field.type='number';field.min=0;field.max=def.max;field.step='any';field.value=value;}
-   card.append(title,el('p',def.description),field);
+   card.append(field);
    if(def.type==='resource'){const meter=el('progress');meter.max=def.max;meter.value=value;meter.setAttribute('aria-label',def.name);card.append(meter,el('small',`${value} / ${def.max}`));}
    field.onchange=()=>act(async()=>{if(!field.checkValidity())throw Error('ค่าพลังอยู่นอกช่วงที่กำหนด');await api.value(def.id,def.type==='toggle'?field.checked:Number(field.value));});
-   card.append(button('แก้ไข',()=>edit(def)),button('ลบ',()=>{if(confirm(`ลบพลัง “${def.name}” ออกจาก Preset? ค่าที่บันทึกไว้จะยังอยู่`))return act(()=>save({...config,definitions:config.definitions.filter(d=>d.id!==def.id)}));}));grid.append(card);
+   }else card.append(button('แก้ไข',()=>edit(def)),button('ลบ',()=>{if(confirm(`ลบพลัง “${def.name}” ออกจาก Preset? ค่าที่บันทึกไว้จะยังอยู่`))return act(()=>save({...config,definitions:config.definitions.filter(d=>d.id!==def.id)}));}));grid.append(card);
   }
  }
  function edit(def=null){

@@ -1,19 +1,19 @@
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.0';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.0';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.0';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.1';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.1';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.1';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.1';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.0';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.0';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.0';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.0';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.0';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.0';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.0';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.0';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.44.0';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.1';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.1';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.1';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.1';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.1';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.1';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.1';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.1';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.1';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.44.1';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.1';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -1164,13 +1164,23 @@ function customPowerLabel(state) {
     const config=getPowerPreset();
     return config.definitions.filter(d=>(state.customPowerSelections||[]).includes(d.id)||Number(powerValue(d,state.customPowers?.[d.id]))>0).map(d=>d.name).join(', ') || 'None';
 }
-function mountPowerSettings(panel,state) {
+function refreshPowerDrawer(force=false) {
+    const panel=document.getElementById('roleforge-power-editor');if(!panel)return;
+    const owner=powerPresetOwner(),metadata=SillyTavern.getContext().chatMetadata;
+    const signature=JSON.stringify([owner,getPowerPreset()]);
+    if(!force&&panel.rfSignature===signature&&panel.rfMetadata===metadata)return;
+    panel.rfSignature=signature;panel.rfMetadata=metadata;panel.replaceChildren();
+    if(!owner){panel.textContent='Open a character chat to manage its power preset.';return;}
+    mountPowerSettings(panel,getState());
+}
+function mountPowerSettings(panel,state,valuesOnly=false) {
     const owner=powerPresetOwner(),context=SillyTavern.getContext(),metadata=context.chatMetadata;
     const guard=()=>{if(!owner||owner!==powerPresetOwner()||metadata!==SillyTavern.getContext().chatMetadata)throw Error('การ์ดหรือแชทเปลี่ยนแล้ว กรุณาเปิด Powers ใหม่');};
     mountPowerWorkspace(panel,{
+        valuesOnly,
         config:getPowerPreset,state:()=>getState(),
         builtin:()=>({mode:'custom',name:'Original',definitions:[...MAGIC_DISCIPLINES,...SWORD_STYLES].map(d=>({id:'preset_'+d.id.toLowerCase(),name:d.name,description:'',type:'number',max:100,initial:0,ranks:[],color:d.tone,icon:'bolt',selectable:true}))}),
-        save:async config=>{guard();writePowerConfig(getSettings(),config,owner,powerPresetOwner());await context.saveSettingsDebounced?.();guard();updatePrompt();renderAll();sendForgeMessage('power-config',{mode:config.mode,choices:powerPresetChoices()});},
+        save:async config=>{guard();writePowerConfig(getSettings(),config,owner,powerPresetOwner());await context.saveSettingsDebounced?.();guard();updatePrompt();refreshPowerDrawer(true);renderAll();sendForgeMessage('power-config',{mode:config.mode,choices:powerPresetChoices()});},
         value:async(id,value)=>{guard();const next=clone(getState());if(!applyPowerOperation(next,getPowerPreset(),'set',`customPowers.${id}`,value))throw Error('พลังนี้ถูกลบหรือค่าพลังไม่ถูกต้อง');if(!await persistState(next,'custom-power-value'))throw Error('บันทึกไม่สำเร็จ');},
     });
 }
@@ -3454,7 +3464,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label','RoleForge character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'RoleForge Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.0`;
+        frame.title = 'RoleForge Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.1`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3519,7 +3529,6 @@ function onForgeMessage(event) {
     if (!frame || event.origin !== location.origin || event.source !== frame.contentWindow || event.data?.source !== 'tretaresia-rpg-forge') return;
     const context = SillyTavern.getContext();
     if (!forgeEligible(context)) return;
-    if (event.data.type === 'manage-powers') { void openInterface().then(()=>activateTab('techniques')); return; }
     if (event.data.type === 'ready') { sendForgeMessage('hydrate',forgeSession(context)?.draft || {}); return; }
     if (event.data.type === 'draft' && !openingGeneration) {
         const session = forgeSession(context) || {version:1,phase:'draft'};
@@ -5917,6 +5926,7 @@ function renderPanel(id, panel, state) {
 }
 
 function renderAll(state = getState()) {
+    refreshPowerDrawer();
     syncTravelTracker(state);
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (!overlay?.classList.contains('is-open')) return;
@@ -6371,7 +6381,7 @@ function customProficiencyEditor(kind) {
 
 function renderTechniques(panel, state) {
     if (!panel) return;
-    if(getPowerPreset().mode==='custom'){panel.innerHTML=heading('Powers',getPowerPreset().name,'fa-solid fa-bolt');mountPowerSettings(panel,state);return;}
+    if(getPowerPreset().mode==='custom'){panel.innerHTML=heading('Powers',getPowerPreset().name,'fa-solid fa-bolt');mountPowerSettings(panel,state,true);return;}
     const magicEntries = [
         ...MAGIC_DISCIPLINES.map(entry => ({ ...entry, value: state.proficiencies.magic[entry.id], custom: false })),
         ...state.proficiencies.customMagic.map(entry => ({ ...entry, value: entry.proficiency, custom: true })),
@@ -6403,7 +6413,6 @@ function renderTechniques(panel, state) {
                 <form data-form="technique" class="tretaresia-form-grid">${input('Technique name', 'name', '')}${input('Category', 'category', 'General')}
                     ${input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"')}${input('Description', 'description', '')}
                     <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add technique'))}</button></form></details></section>`;
-    mountPowerSettings(panel,state);
 }
 
 function questSectionId(entry) {
@@ -10865,6 +10874,7 @@ async function addSettingsDrawer() {
     const container = document.getElementById('extensions_settings2');
     if (!container) throw new Error('Could not find the SillyTavern Extensions settings container.');
     container.insertAdjacentHTML('beforeend', await context.renderExtensionTemplateAsync(`${EXTENSION_FOLDER}/templates`, 'settings'));
+    refreshPowerDrawer();
     const settings = getSettings();
     bindCheckbox('tretaresia-rpg-show-launcher', 'showWandLauncher', settings, syncLauncherVisibility);
     bindCheckbox('tretaresia-rpg-nsfw-enhance', 'nsfwEnhance', settings, updatePrompt);
@@ -11158,7 +11168,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.44.0 loaded.');
+        console.info('[RoleForge] Role-play interface v0.44.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
@@ -11173,4 +11183,3 @@ if (SAFE_MODE) {
 } else {
     void initialize();
 }
-

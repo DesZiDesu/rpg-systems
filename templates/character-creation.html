@@ -271,7 +271,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     <div class="sec">
       <div class="st"><span class="no">04</span><span class="nm" data-en="POWER SYSTEM" data-th="ระบบพลัง">POWER SYSTEM</span><span class="ln"></span></div>
       <div style="font-size:10px;letter-spacing:1px;color:var(--gold);margin:-3px 0 9px" data-en="Tap to select — multiple power systems allowed" data-th="แตะเพื่อเลือก — เลือกได้หลายระบบพลัง">Tap to select — multiple power systems allowed</div>
-      <button type="button" class="chip" id="managePowers">Power Preset / จัดการพลัง</button><div class="power" id="powerGrid"></div>
+      <div class="power" id="powerGrid"></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill" data-th="พลังกำเนิด">Origin Skill</span><span class="opt" data-en="define freely" data-th="นิยามอิสระ">define freely</span></label><input class="inp" id="fOrigin" placeholder="Name your innate power…"/></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill — Category" data-th="หมวดพลังกำเนิด">Origin Skill — Category</span><span class="opt" data-en="preset" data-th="พรีเซ็ต">preset</span></label>
         <select class="inp" id="fOriginCat">
@@ -449,7 +449,6 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     init:function(){
       g('trapp').classList.add('loading');
       buildChips();buildPowers();buildRanks();rAb();rIt();rCf();
-      g('managePowers').onclick=function(){sendToExtension('manage-powers');};
       g('trSkip').onclick=function(){TR.skip();};
       g('abAdd').onclick=function(){g('abForm').classList.toggle('open');};
       g('itAdd').onclick=function(){g('itForm').classList.toggle('open');};
@@ -513,4 +512,3 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 </script>
 </body>
 </html>
-
