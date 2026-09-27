@@ -1,3 +1,4 @@
+import {uiText} from '../src/ui-language.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLoreWorkspace} from '../src/lore-workspace.js';
@@ -15,7 +16,7 @@ class Node {
 globalThis.document={createElement:tag=>new Node(tag),createTextNode:text=>({textContent:text})};
 globalThis.confirm=()=>true;
 function find(root,predicate){return [root,...root.children.flatMap(n=>n.children?find(n,predicate):[])].filter(predicate);}
-const click=(root,label)=>find(root,n=>n.tag==='button'&&n.textContent===label)[0].fire('click');
+const click=(root,label)=>find(root,n=>n.tag==='button'&&n.textContent===uiText(label))[0].fire('click');
 function fixture(){const panel=new Node('section'),settings={};let owner='card:a',status='';const api={loreOptions:()=>loreOptions(settings,owner),persistLoreOptions:(options,expected)=>writeLoreOptions(settings,options,expected,owner),scopeInfo:()=>({key:owner,label:owner}),listLore:()=>characterLore(settings,owner),persistLore:(entries,expected)=>writeCharacterLore(settings,entries,expected,owner)};const ui=createLoreWorkspace(panel,api,value=>status=value);ui.open();return {panel,settings,api,ui,setOwner:value=>owner=value,status:()=>status};}
 test('Lore UI creates, edits, toggles, searches and deletes saved records',async()=>{
  const {panel,settings,ui}=fixture();click(panel,'＋ สร้าง Lore ใหม่');
@@ -32,14 +33,14 @@ test('Lore UI protects unsaved work and rejects saves after switching cards',asy
  find(panel,n=>n.name==='loreTitle')[0].value='Moon';find(panel,n=>n.name==='loreContent')[0].value='Facts';const form=find(panel,n=>n.tag==='form')[0];form.fire('input');
  globalThis.confirm=()=>false;assert.equal(ui.canLeave(),false);globalThis.confirm=()=>true;
  ui.refresh();assert.equal(find(panel,n=>n.name==='loreTitle')[0].value,'Moon');
- setOwner('card:b');await form.fire('submit');assert.match(status(),/การ์ดเปลี่ยน/);assert.deepEqual(characterLore(settings,'card:b'),[]);assert.deepEqual(characterLore(settings,'card:a'),[]);
+ setOwner('card:b');await form.fire('submit');assert.match(status(),/card changed/);assert.deepEqual(characterLore(settings,'card:b'),[]);assert.deepEqual(characterLore(settings,'card:a'),[]);
 });
 
 test('Lore UI persists a two-million-character budget and rejects stale preference writes',async()=>{
  const {panel,settings,ui,setOwner,status}=fixture();
  find(panel,n=>n.name==='loreBudget')[0].value='2000000';find(panel,n=>n.name==='loreMode')[0].value='relevant';await click(panel,'บันทึกงบและโหมด');
  assert.deepEqual(loreOptions(settings,'card:a'),{budget:2000000,mode:'relevant'});ui.open();assert.equal(find(panel,n=>n.name==='loreBudget')[0].value,2000000);
- setOwner('card:b');await click(panel,'บันทึกงบและโหมด');assert.match(status(),/การ์ดเปลี่ยน/);assert.equal(loreOptions(settings,'card:b').budget,60000);
+ setOwner('card:b');await click(panel,'บันทึกงบและโหมด');assert.match(status(),/card changed/);assert.equal(loreOptions(settings,'card:b').budget,60000);
 });
 
 test('failed Lore saves keep the draft open and do not report success',async()=>{
@@ -55,13 +56,13 @@ test('Lore import adds records, skips duplicates and retains original data on in
  const {panel,api,status}=fixture();const file=()=>find(panel,n=>n.type==='file')[0];
  const record={id:'foreign',title:'Imported',content:'World facts',enabled:false,keywords:['world'],always:true};
  let input=file();input.files=[{size:300,text:async()=>exportLore([record])}];await input.fire('change');
- assert.equal(api.listLore().length,1);assert.equal(api.listLore()[0].always,true);assert.match(status(),/นำเข้า Lore แล้ว/);
- input=file();input.files=[{size:300,text:async()=>exportLore([record])}];await input.fire('change');assert.equal(api.listLore().length,1);assert.match(status(),/ไม่มีรายการใหม่/);
+ assert.equal(api.listLore().length,1);assert.equal(api.listLore()[0].always,true);assert.match(status(),/Imported 1 Lore entries/);
+ input=file();input.files=[{size:300,text:async()=>exportLore([record])}];await input.fire('change');assert.equal(api.listLore().length,1);assert.match(status(),/No new entries/);
  input.files=[{size:2,text:async()=>'{'}];await input.fire('change');assert.match(status(),/JSON/);assert.equal(api.listLore().length,1);
 });
 test('Lore import rejects card switches during file reading',async()=>{
  const {panel,api,setOwner,status}=fixture();const input=find(panel,n=>n.type==='file')[0];
  let finish;input.files=[{size:300,text:()=>new Promise(resolve=>finish=resolve)}];const pending=input.fire('change');
  setOwner('card:b');finish(exportLore([{id:'x',title:'X',content:'Facts',enabled:true}]));await pending;
- assert.match(status(),/การ์ดเปลี่ยน/);assert.deepEqual(api.listLore(),[]);
+ assert.match(status(),/card changed/);assert.deepEqual(api.listLore(),[]);
 });

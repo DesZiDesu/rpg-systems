@@ -1,4 +1,4 @@
-@import url("./style.css?v=0.44.1");
+@import url("./style.css?v=0.44.2");
 /* Use the host/local font stack; external font requests must not block UI startup. */
 
 /* RoleForge UI polish layer.
@@ -5894,3 +5894,9 @@ body.tretaresia-rpg-open #extensionsMenu { display: none !important; }
     #tretaresia-rpg-overlay #tretaresia-context-label { min-width: 0; max-width: 100%; }
 }
 
+
+/* Decorative interface labels follow the same UI language as the panel. */
+#tretaresia-rpg-overlay[data-language="th"] .tretaresia-tab-list::before{content:"สารบัญข้อมูลโลก"}
+#tretaresia-rpg-overlay[data-language="th"] .tretaresia-section-heading::before{content:"ข้อมูลปัจจุบัน"}
+#tretaresia-rpg-overlay[data-language="th"] .tretaresia-character-hero::after{content:"ตัวตน / ข้อมูลปัจจุบัน"}
+#tretaresia-rpg-overlay[data-language="th"] .tretaresia-proficiency-card.is-custom::after{content:"กำหนดเอง"}

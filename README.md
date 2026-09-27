@@ -1,4 +1,8 @@
-# ROLEFORGE — v0.44.1
+# ROLEFORGE — v0.44.2
+
+## v0.44.2 — Consistent interface language
+
+English/Thai interface preferences now cover the settings drawer, character creation, RPG labels, power editor, NPC/Lore management, invitations, help and status messages. Switching UI language does not select the story language or translate saved names, descriptions, custom powers, chat text or editable prompt content. Story language remains an independent preference. Existing data is retained; reload after updating.
 
 ## v0.44.1 — Power settings in the extension drawer
 

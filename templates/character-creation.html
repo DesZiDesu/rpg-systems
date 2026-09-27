@@ -185,7 +185,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <div class="ld-bar"><i id="ldBar"></i></div>
       <div class="ld-pct" id="ldPct">0%</div>
     </div>
-    <button class="ld-skip" id="trSkip" type="button">SKIP <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 4 6 6-6 6 M11 4l6 6-6 6"/></svg></button>
+    <button class="ld-skip" id="trSkip" type="button"><span data-en="SKIP" data-th="ข้าม">SKIP</span> <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 4 6 6-6 6 M11 4l6 6-6 6"/></svg></button>
   </div>
 
   <!-- FORM -->
@@ -196,7 +196,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
         <div class="tag" data-en="ROLEFORGE · SOUL INSCRIPTION" data-th="ROLEFORGE · จารึกดวงวิญญาณ">ROLEFORGE · SOUL INSCRIPTION</div>
       </div>
       <div class="controls">
-        <div class="seg"><button id="lnEn" class="on" onclick="TR.ln('en')">EN</button><button id="lnTh" onclick="TR.ln('th')">ไทย</button></div>
+        <div class="seg"><button id="lnEn" class="on" data-en="English" data-th="อังกฤษ" onclick="TR.setLanguage('en');">English</button><button id="lnTh" data-en="Thai" data-th="ไทย" onclick="TR.setLanguage('th');">Thai</button></div>
         <button class="iconbtn" title="theme" onclick="TR.th()">◑</button>
       </div>
     </div>
@@ -218,13 +218,13 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     <div class="sec">
       <div class="st"><span class="no">01</span><span class="nm" data-en="IDENTITY" data-th="อัตลักษณ์">IDENTITY</span><span class="ln"></span></div>
       <div class="g2">
-        <div class="f full"><label><span data-en="Name" data-th="ชื่อ">Name</span><span class="opt" data-en="required" data-th="จำเป็น">required</span></label><input class="inp" id="fName" placeholder="Enter true name…"/></div>
+        <div class="f full"><label><span data-en="Name" data-th="ชื่อ">Name</span><span class="opt" data-en="required" data-th="จำเป็น">required</span></label><input class="inp" id="fName" placeholder="Enter true name…" data-placeholder-en="Enter true name…" data-placeholder-th="กรอกชื่อจริง…"/></div>
         <div class="f full"><label><span data-en="Title / Epithet" data-th="สมญานาม">Title / Epithet</span><span class="opt" data-en="custom" data-th="กำหนดเอง">custom</span></label><input class="inp" id="fTitle" placeholder='e.g. "The Ashen Wanderer"'/></div>
-        <div class="f"><label><span data-en="Gender" data-th="เพศ">Gender</span></label><input class="inp" id="fGender" placeholder="Female / Male / …"/></div>
-        <div class="f"><label><span data-en="Pronouns" data-th="สรรพนาม">Pronouns</span></label><input class="inp" id="fPron" placeholder="she / her"/></div>
-        <div class="f"><label><span data-en="Age" data-th="อายุ">Age</span></label><input class="inp" id="fAge" placeholder="21"/></div>
-        <div class="f"><label><span data-en="Race" data-th="เผ่าพันธุ์">Race</span></label><input class="inp" id="fRace" list="raceList" placeholder="Human / Vampire / …"/>
-          <datalist id="raceList"><option>Human</option><option>Vampire</option><option>Beastfolk</option><option>Demon</option><option>Elf</option><option>Dwarf</option><option>Half-blood</option></datalist></div>
+        <div class="f"><label><span data-en="Gender" data-th="เพศ">Gender</span></label><input class="inp" id="fGender" placeholder="Female / Male / …" data-placeholder-en="Female / Male / …" data-placeholder-th="หญิง / ชาย / …"/></div>
+        <div class="f"><label><span data-en="Pronouns" data-th="สรรพนาม">Pronouns</span></label><input class="inp" id="fPron" placeholder="she / her" data-placeholder-en="she / her" data-placeholder-th="เธอ / หล่อน"/></div>
+        <div class="f"><label><span data-en="Age" data-th="อายุ">Age</span></label><input class="inp" id="fAge" placeholder="21" data-placeholder-en="21" data-placeholder-th="21"/></div>
+        <div class="f"><label><span data-en="Race" data-th="เผ่าพันธุ์">Race</span></label><input class="inp" id="fRace" list="raceList" placeholder="Human / Vampire / …" data-placeholder-en="Human / Vampire / …" data-placeholder-th="มนุษย์ / แวมไพร์ / …"/>
+          <datalist id="raceList"><option value="Human" data-en="Human" data-th="มนุษย์">Human</option><option value="Vampire" data-en="Vampire" data-th="แวมไพร์">Vampire</option><option value="Beastfolk" data-en="Beastfolk" data-th="มนุษย์สัตว์">Beastfolk</option><option value="Demon" data-en="Demon" data-th="ปีศาจ">Demon</option><option value="Elf" data-en="Elf" data-th="เอลฟ์">Elf</option><option value="Dwarf" data-en="Dwarf" data-th="คนแคระ">Dwarf</option><option value="Half-blood" data-en="Half-blood" data-th="ลูกครึ่ง">Half-blood</option></datalist></div>
       </div>
     </div>
 
@@ -234,11 +234,11 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <div class="g2">
         <div class="f"><label><span data-en="Home Continent" data-th="ทวีปบ้านเกิด">Home Continent</span></label>
           <select class="inp" id="fCont">
-            <option value="">— select —</option>
-            <option>Central (Human) Continent</option><option>The Great Forest</option><option>Great Land of Titan</option>
-            <option>Drinovia</option><option>North Continent</option><option>Baluguria</option>
+            <option value="" data-en="— select —" data-th="— เลือก —">— select —</option>
+            <option value="Central (Human) Continent" data-en="Central (Human) Continent" data-th="ทวีปกลาง (มนุษย์)">Central (Human) Continent</option><option value="The Great Forest" data-en="The Great Forest" data-th="มหาพงไพร">The Great Forest</option><option value="Great Land of Titan" data-en="Great Land of Titan" data-th="มหาดินแดนไททัน">Great Land of Titan</option>
+            <option value="Drinovia" data-en="Drinovia" data-th="ดริโนเวีย">Drinovia</option><option value="North Continent" data-en="North Continent" data-th="ทวีปเหนือ">North Continent</option><option value="Baluguria" data-en="Baluguria" data-th="บาลูกูเรีย">Baluguria</option>
           </select></div>
-        <div class="f"><label><span data-en="Birthplace" data-th="สถานที่เกิด">Birthplace</span></label><input class="inp" id="fBirth" placeholder="Free text…"/></div>
+        <div class="f"><label><span data-en="Birthplace" data-th="สถานที่เกิด">Birthplace</span></label><input class="inp" id="fBirth" placeholder="Free text…" data-placeholder-en="Free text…" data-placeholder-th="เขียนได้อย่างอิสระ…"/></div>
         <div class="f full"><label><span data-en="Social Standing" data-th="สถานะทางสังคม">Social Standing</span></label>
           <div class="chips" id="standChips"></div></div>
       </div>
@@ -253,12 +253,12 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     <div class="sec">
       <div class="st"><span class="no">03</span><span class="nm" data-en="APPEARANCE" data-th="รูปลักษณ์">APPEARANCE</span><span class="ln"></span></div>
       <div class="g2">
-        <div class="f"><label><span data-en="Hair" data-th="ผม">Hair</span></label><input class="inp" id="fHair" placeholder="Silver, waist-length…"/></div>
-        <div class="f"><label><span data-en="Eyes" data-th="ดวงตา">Eyes</span></label><input class="inp" id="fEyes" placeholder="Crimson…"/></div>
-        <div class="f"><label><span data-en="Height" data-th="ส่วนสูง">Height</span></label><input class="inp" id="fHeight" placeholder="163 cm"/></div>
-        <div class="f"><label><span data-en="Build" data-th="รูปร่าง">Build</span></label><input class="inp" id="fBuild" placeholder="Lithe / Athletic…"/></div>
-        <div class="f full"><label><span data-en="Distinguishing marks" data-th="จุดเด่น / รอย">Distinguishing marks</span><span class="opt" data-en="custom" data-th="กำหนดเอง">custom</span></label><textarea class="inp" id="fMarks" placeholder="Scars, tattoos, fangs, horns…"></textarea></div>
-        <div class="f full"><label><span data-en="Full Appearance" data-th="รายละเอียดรูปลักษณ์">Full Appearance</span><span class="opt" data-en="free write" data-th="เขียนอิสระ">free write</span></label><textarea class="inp" id="fAppear" placeholder="Describe freely…"></textarea></div>
+        <div class="f"><label><span data-en="Hair" data-th="ผม">Hair</span></label><input class="inp" id="fHair" placeholder="Silver, waist-length…" data-placeholder-en="Silver, waist-length…" data-placeholder-th="สีเงิน ยาวถึงเอว…"/></div>
+        <div class="f"><label><span data-en="Eyes" data-th="ดวงตา">Eyes</span></label><input class="inp" id="fEyes" placeholder="Crimson…" data-placeholder-en="Crimson…" data-placeholder-th="สีแดงเข้ม…"/></div>
+        <div class="f"><label><span data-en="Height" data-th="ส่วนสูง">Height</span></label><input class="inp" id="fHeight" placeholder="163 cm" data-placeholder-en="163 cm" data-placeholder-th="163 ซม."/></div>
+        <div class="f"><label><span data-en="Build" data-th="รูปร่าง">Build</span></label><input class="inp" id="fBuild" placeholder="Lithe / Athletic…" data-placeholder-en="Lithe / Athletic…" data-placeholder-th="เพรียว / สมส่วนแข็งแรง…"/></div>
+        <div class="f full"><label><span data-en="Distinguishing marks" data-th="จุดเด่น / รอย">Distinguishing marks</span><span class="opt" data-en="custom" data-th="กำหนดเอง">custom</span></label><textarea class="inp" id="fMarks" placeholder="Scars, tattoos, fangs, horns…" data-placeholder-en="Scars, tattoos, fangs, horns…" data-placeholder-th="แผลเป็น รอยสัก เขี้ยว เขา…"></textarea></div>
+        <div class="f full"><label><span data-en="Full Appearance" data-th="รายละเอียดรูปลักษณ์">Full Appearance</span><span class="opt" data-en="free write" data-th="เขียนอิสระ">free write</span></label><textarea class="inp" id="fAppear" placeholder="Describe freely…" data-placeholder-en="Describe freely…" data-placeholder-th="อธิบายได้อย่างอิสระ…"></textarea></div>
       </div>
     </div>
 
@@ -272,7 +272,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <div class="st"><span class="no">04</span><span class="nm" data-en="POWER SYSTEM" data-th="ระบบพลัง">POWER SYSTEM</span><span class="ln"></span></div>
       <div style="font-size:10px;letter-spacing:1px;color:var(--gold);margin:-3px 0 9px" data-en="Tap to select — multiple power systems allowed" data-th="แตะเพื่อเลือก — เลือกได้หลายระบบพลัง">Tap to select — multiple power systems allowed</div>
       <div class="power" id="powerGrid"></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill" data-th="พลังกำเนิด">Origin Skill</span><span class="opt" data-en="define freely" data-th="นิยามอิสระ">define freely</span></label><input class="inp" id="fOrigin" placeholder="Name your innate power…"/></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill" data-th="พลังกำเนิด">Origin Skill</span><span class="opt" data-en="define freely" data-th="นิยามอิสระ">define freely</span></label><input class="inp" id="fOrigin" placeholder="Name your innate power…" data-placeholder-en="Name your innate power…" data-placeholder-th="ตั้งชื่อพลังติดตัว…"/></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill — Category" data-th="หมวดพลังกำเนิด">Origin Skill — Category</span><span class="opt" data-en="preset" data-th="พรีเซ็ต">preset</span></label>
         <select class="inp" id="fOriginCat">
           <option value="Intrinsic Skill" data-en="Intrinsic Skill" data-th="สกิลกำเนิด">Intrinsic Skill</option>
@@ -282,7 +282,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
           <option value="Ultimate Skill" data-en="Ultimate Skill" data-th="สกิลสูงสุด">Ultimate Skill</option>
           <option value="Resistance" data-en="Resistance" data-th="ความต้านทาน">Resistance</option>
         </select></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill — Description" data-th="คำอธิบายพลังกำเนิด">Origin Skill — Description</span></label><textarea class="inp" id="fOriginD" placeholder="How does it work? Its limits?"></textarea></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill — Description" data-th="คำอธิบายพลังกำเนิด">Origin Skill — Description</span></label><textarea class="inp" id="fOriginD" placeholder="How does it work? Its limits?" data-placeholder-en="How does it work? Its limits?" data-placeholder-th="ทำงานอย่างไร มีข้อจำกัดอะไร?"></textarea></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Mastery" data-th="ความเชี่ยวชาญ">Mastery</span></label>
         <select class="inp" id="fMastery"><option data-en="Dormant" data-th="หลับใหล">Dormant</option><option data-en="Novice" data-th="มือใหม่">Novice</option><option selected data-en="Adept" data-th="ชำนาญ">Adept</option><option data-en="Expert" data-th="เชี่ยวชาญ">Expert</option><option data-en="Master" data-th="ปรมาจารย์">Master</option><option data-en="Transcendent" data-th="เหนือมนุษย์">Transcendent</option></select></div>
       <!-- abilities list -->
@@ -291,7 +291,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
         <div class="list" id="abList"></div>
         <div class="addrow" id="abAdd" data-en="+ ADD ABILITY" data-th="+ เพิ่มความสามารถ">+ ADD ABILITY</div>
         <div class="adder" id="abForm">
-          <div class="row"><input class="inp" id="abN" placeholder="Name"/><input class="inp" id="abTier" placeholder="Tier (optional)"/></div>
+          <div class="row"><input class="inp" id="abN" placeholder="Name" data-placeholder-en="Name" data-placeholder-th="ชื่อ"/><input class="inp" id="abTier" placeholder="Tier (optional)" data-placeholder-en="Tier (optional)" data-placeholder-th="ระดับขั้น (ไม่บังคับ)"/></div>
           <div class="row">
             <select class="inp" id="abCat" onchange="TR.abCatChg()">
               <option value="Intrinsic Skill" data-en="Intrinsic Skill" data-th="สกิลกำเนิด">Intrinsic Skill</option>
@@ -303,8 +303,8 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
               <option value="__custom" data-en="Custom category…" data-th="หมวดกำหนดเอง…">Custom category…</option>
             </select>
           </div>
-          <input class="inp cat-c" id="abCatC" placeholder="Custom category…" style="display:none"/>
-          <textarea class="inp" id="abD" placeholder="Description…"></textarea>
+          <input class="inp cat-c" id="abCatC" placeholder="Custom category…" data-placeholder-en="Custom category…" data-placeholder-th="ชื่อหมวดที่กำหนดเอง…" style="display:none"/>
+          <textarea class="inp" id="abD" placeholder="Description…" data-placeholder-en="Description…" data-placeholder-th="คำอธิบาย…"></textarea>
           <div class="mini"><span class="mbtn gh" onclick="TR.closeAdd('abForm','abAdd')" data-en="Cancel" data-th="ยกเลิก">Cancel</span><span class="mbtn go" onclick="TR.addAb()" data-en="Add" data-th="เพิ่ม">Add</span></div>
         </div>
       </div>
@@ -321,9 +321,9 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <div class="list" id="itList"></div>
       <div class="addrow" id="itAdd" data-en="+ ADD ITEM / CONSTRUCT" data-th="+ เพิ่มไอเทม / คอนสตรัค">+ ADD ITEM / CONSTRUCT</div>
       <div class="adder" id="itForm">
-        <div class="row"><input class="inp" id="itN" placeholder="Name"/>
-          <select class="inp" id="itT"><option>Weapon</option><option>Armor</option><option>Construct</option><option>Divine Construct</option><option>Tool</option><option>Relic</option><option>Other</option></select></div>
-        <textarea class="inp" id="itD" placeholder="Description / special ability…"></textarea>
+        <div class="row"><input class="inp" id="itN" placeholder="Name" data-placeholder-en="Name" data-placeholder-th="ชื่อ"/>
+          <select class="inp" id="itT"><option value="Weapon" data-en="Weapon" data-th="อาวุธ">Weapon</option><option value="Armor" data-en="Armor" data-th="เกราะ">Armor</option><option value="Construct" data-en="Construct" data-th="สิ่งสร้าง">Construct</option><option value="Divine Construct" data-en="Divine Construct" data-th="สิ่งสร้างเทพ">Divine Construct</option><option value="Tool" data-en="Tool" data-th="เครื่องมือ">Tool</option><option value="Relic" data-en="Relic" data-th="โบราณวัตถุ">Relic</option><option value="Other" data-en="Other" data-th="อื่น ๆ">Other</option></select></div>
+        <textarea class="inp" id="itD" placeholder="Description / special ability…" data-placeholder-en="Description / special ability…" data-placeholder-th="คำอธิบาย / ความสามารถพิเศษ…"></textarea>
         <div class="mini"><span class="mbtn gh" onclick="TR.closeAdd('itForm','itAdd')" data-en="Cancel" data-th="ยกเลิก">Cancel</span><span class="mbtn go" onclick="TR.addIt()" data-en="Add" data-th="เพิ่ม">Add</span></div>
       </div>
     </div>
@@ -331,11 +331,11 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     <!-- 06 PATH -->
     <div class="sec">
       <div class="st"><span class="no">06</span><span class="nm" data-en="PATH" data-th="เส้นทาง">PATH</span><span class="ln"></span></div>
-      <div class="f full"><label><span data-en="Profession" data-th="อาชีพ">Profession</span></label><input class="inp" id="fProf" placeholder="Adventurer / Mage / Merchant…"/></div>
+      <div class="f full"><label><span data-en="Profession" data-th="อาชีพ">Profession</span></label><input class="inp" id="fProf" placeholder="Adventurer / Mage / Merchant…" data-placeholder-en="Adventurer / Mage / Merchant…" data-placeholder-th="นักผจญภัย / จอมเวท / พ่อค้า…"/></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Adventurer Rank" data-th="แรงค์นักผจญภัย">Adventurer Rank</span></label>
         <div class="rank" id="rankRow"></div>
-        <input class="inp" id="fRankCustom" placeholder="Custom rank name…" style="margin-top:7px;display:none"/></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Affiliation / Guild" data-th="สังกัด / กิลด์">Affiliation / Guild</span></label><input class="inp" id="fAffil" placeholder="Free text…"/></div>
+        <input class="inp" id="fRankCustom" placeholder="Custom rank name…" data-placeholder-en="Custom rank name…" data-placeholder-th="ชื่ออันดับที่กำหนดเอง…" style="margin-top:7px;display:none"/></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Affiliation / Guild" data-th="สังกัด / กิลด์">Affiliation / Guild</span></label><input class="inp" id="fAffil" placeholder="Free text…" data-placeholder-en="Free text…" data-placeholder-th="เขียนได้อย่างอิสระ…"/></div>
     </div>
 
     </div><!-- /PANEL 4 -->
@@ -346,10 +346,10 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     <!-- 07 STORY -->
     <div class="sec">
       <div class="st"><span class="no">07</span><span class="nm" data-en="STORY" data-th="เรื่องราว">STORY</span><span class="ln"></span></div>
-      <div class="f full"><label><span data-en="Personality" data-th="บุคลิก">Personality</span></label><textarea class="inp" id="fPers" placeholder="Traits, quirks, values…"></textarea></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Backstory" data-th="ภูมิหลัง">Backstory</span><span class="opt" data-en="free write" data-th="เขียนอิสระ">free write</span></label><textarea class="inp" id="fBack" placeholder="Write as much as you want…"></textarea></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Goal / Drive" data-th="เป้าหมาย">Goal / Drive</span></label><input class="inp" id="fGoal" placeholder="What do you seek in RoleForge?"/></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Opening Scene" data-th="ฉากเริ่มต้น">Opening Scene</span><span class="opt" data-en="where you begin" data-th="จุดเริ่ม">where you begin</span></label><textarea class="inp" id="fScene" placeholder="Where & how does your story open?"></textarea></div>
+      <div class="f full"><label><span data-en="Personality" data-th="บุคลิก">Personality</span></label><textarea class="inp" id="fPers" placeholder="Traits, quirks, values…" data-placeholder-en="Traits, quirks, values…" data-placeholder-th="นิสัย ลักษณะเฉพาะ ค่านิยม…"></textarea></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Backstory" data-th="ภูมิหลัง">Backstory</span><span class="opt" data-en="free write" data-th="เขียนอิสระ">free write</span></label><textarea class="inp" id="fBack" placeholder="Write as much as you want…" data-placeholder-en="Write as much as you want…" data-placeholder-th="เขียนได้ตามต้องการ…"></textarea></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Goal / Drive" data-th="เป้าหมาย">Goal / Drive</span></label><input class="inp" id="fGoal" placeholder="What do you seek in RoleForge?" data-placeholder-en="What do you seek in RoleForge?" data-placeholder-th="คุณแสวงหาอะไรใน RoleForge?"/></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Opening Scene" data-th="ฉากเริ่มต้น">Opening Scene</span><span class="opt" data-en="where you begin" data-th="จุดเริ่ม">where you begin</span></label><textarea class="inp" id="fScene" placeholder="Where & how does your story open?" data-placeholder-en="Where & how does your story open?" data-placeholder-th="เรื่องราวเริ่มที่ไหนและอย่างไร?"></textarea></div>
     </div>
 
     <!-- 08 CUSTOM FIELDS -->
@@ -358,8 +358,8 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <div class="list" id="cfList"></div>
       <div class="addrow" id="cfAdd" data-en="+ ADD CUSTOM FIELD" data-th="+ เพิ่มช่องกำหนดเอง">+ ADD CUSTOM FIELD</div>
       <div class="adder" id="cfForm">
-        <div class="row"><input class="inp" id="cfN" placeholder="Field name"/></div>
-        <textarea class="inp" id="cfD" placeholder="Value / content…"></textarea>
+        <div class="row"><input class="inp" id="cfN" placeholder="Field name" data-placeholder-en="Field name" data-placeholder-th="ชื่อช่องข้อมูล"/></div>
+        <textarea class="inp" id="cfD" placeholder="Value / content…" data-placeholder-en="Value / content…" data-placeholder-th="ข้อมูล / เนื้อหา…"></textarea>
         <div class="mini"><span class="mbtn gh" onclick="TR.closeAdd('cfForm','cfAdd')" data-en="Cancel" data-th="ยกเลิก">Cancel</span><span class="mbtn go" onclick="TR.addCf()" data-en="Add" data-th="เพิ่ม">Add</span></div>
       </div>
     </div>
@@ -418,7 +418,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 
   function buildPowers(){
     var w=g('powerGrid');w.innerHTML='';
-    if(!POWERS.length){var empty=document.createElement('p');empty.textContent='Custom ยังว่าง — กดจัดการพลังเพื่อสร้าง';w.appendChild(empty);}
+    if(!POWERS.length){var empty=document.createElement('p');empty.textContent=S.ln==='th'?'ยังไม่มีพลัง กำหนดได้ที่ส่วนเสริม → RoleForge → จัดการระบบพลัง':'No powers yet. Configure them in Extensions → RoleForge → Power Presets.';w.appendChild(empty);}
     POWERS.forEach(function(p){var c=document.createElement('div');c.className='pcard';
       var title=document.createElement('span'),detail=document.createElement('small');title.textContent=p[1]||p[0];detail.textContent=p[2]||'';c.append(title,detail);
       c.onclick=function(){var i=S.power.indexOf(p[0]);if(i>=0)S.power.splice(i,1);else S.power.push(p[0]);c.classList.toggle('on');};
@@ -426,7 +426,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
   }
   function buildRanks(){
     var w=g('rankRow');w.innerHTML='';
-    RANKS.forEach(function(r){var c=document.createElement('span');c.className='rk';c.textContent=r[1];
+    RANKS.forEach(function(r){var c=document.createElement('span');c.className='rk';c.textContent=S.ln==='th'?({Rookie:'มือใหม่',Basic:'พื้นฐาน',Intermediate:'ปานกลาง',Ember:'ประกายไฟ',Custom:'กำหนดเอง'}[r[0]]||r[1]):r[1];
       c.onclick=function(){S.rank=r[0];[].forEach.call(w.children,function(x){x.classList.remove('on');});c.classList.add('on');
         g('fRankCustom').style.display=(r[0]==='Custom'?'block':'none');};
       if(S.rank===r[0])c.classList.add('on');w.appendChild(c);});
@@ -440,6 +440,8 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
   function esc(s){return String(s||'').replace(/[<>&]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});}
 
   function applyLabels(){
+    document.documentElement.lang=S.ln;
+    [].forEach.call(document.querySelectorAll('[data-placeholder-en]'),function(e){e.placeholder=e.getAttribute('data-placeholder-'+S.ln);});
     [].forEach.call(document.querySelectorAll('[data-en]'),function(e){var t=(S.ln==='th'?e.getAttribute('data-th'):e.getAttribute('data-en'));if(t!=null)e.textContent=t;});
     [].forEach.call(document.querySelectorAll('#trapp option[data-en]'),function(o){o.textContent=(S.ln==='th'?o.getAttribute('data-th'):o.getAttribute('data-en'));});
     buildChips();
@@ -460,6 +462,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
         if(event.source!==window.parent||event.origin!==parentOrigin||event.data?.source!=='tretaresia-rpg-forge')return;
         if(event.data.powerConfig){POWERS=event.data.powerConfig.choices.map(function(d){return[d.id,d.name,d.description];});S.power=S.power.filter(function(id){return POWERS.some(function(p){return p[0]===id;});});buildPowers();}
         if(event.data.type==='hydrate')restore(event.data.data);
+        if(event.data.uiLanguage)TR.ln(event.data.uiLanguage);
         if(event.data.type==='status'){
           g('trSnd').classList.toggle('on',event.data.working===true);
           g('trStatus').textContent=String(event.data.message||'').slice(0,500);
@@ -474,11 +477,13 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       var msgs=['UNSEALING THE WORLD GATE','CALIBRATING AURA FIELD','INSCRIBING YOUR NAME INTO FATE','LINK ESTABLISHED'];
       var iv=setInterval(function(){p+=Math.random()*9+3;if(p>=100){p=100;clearInterval(iv);setTimeout(TR.skip,420);}
         bar.style.width=p+'%';pct.textContent=Math.floor(p)+'%';
-        g('ldLbl').textContent=msgs[Math.min(msgs.length-1,Math.floor(p/26))];},170);
+        var labels=S.ln==='th'?['เปิดประตูโลก','ปรับสนามพลัง','จารึกชื่อของคุณในโชคชะตา','เชื่อมต่อสำเร็จ']:msgs;
+        g('ldLbl').textContent=labels[Math.min(msgs.length-1,Math.floor(p/26))];},170);
       S._iv=iv;
     },
     skip:function(){if(S._done)return;S._done=true;clearInterval(S._iv);g('trLoader').classList.add('gone');setTimeout(function(){g('trapp').classList.remove('loading');},700);},
     th:function(){S.th=(S.th==='dark'?'light':'dark');g('trapp').classList.toggle('lt',S.th==='light');},
+    setLanguage:function(l){TR.ln(l);sendToExtension('ui-language',{language:l});},
     ln:function(l){S.ln=l;g('lnEn').classList.toggle('on',l==='en');g('lnTh').classList.toggle('on',l==='th');
       g('ldSub').textContent=(l==='th'?'ก้าวเข้าสู่โลก':'E N T E R   T H E   W O R L D');applyLabels();buildPowers();buildRanks();},
     tab:function(id){['t1','t2','t3','t4','t5'].forEach(function(t){var p=g(t),b=g('tab_'+t);if(p)p.classList.toggle('on',t===id);if(b)b.classList.toggle('on',t===id);});},

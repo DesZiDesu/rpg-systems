@@ -38,7 +38,7 @@ test('every built-in tag has a Thai explanation; changing UI language preserves 
  const search=get('search'),list=get('list');search.value='การจูบ';search.listeners.input();
  assert.equal(list.children.length,1);
  const row=list.children[0],caption=row.children[0].children[1];
- assert.equal(caption.textContent,'การจูบ');assert.equal(caption.children[0].textContent,'Kissing');
+ assert.equal(caption.textContent,'การจูบ');assert.equal(caption.children.length,0);
  const check=row.children[0].children[0];check.checked=true;check.listeners.change();
  assert.deepEqual(settings.nsfwTags,['Kissing']);assert.equal(saves,1);
  settings.language='en';controls.refresh();

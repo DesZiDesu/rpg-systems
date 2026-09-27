@@ -1,17 +1,18 @@
-import { clamp, cropGeometry } from './npc-core.js?v=0.44.1';
+import {uiText,uiMarkup} from './ui-language.js?v=0.44.2';
+import { clamp, cropGeometry } from './npc-core.js?v=0.44.2';
 
 export async function decodePortrait(blob) {
-    if (!(blob instanceof Blob) || blob.size > 16 * 1024 * 1024) throw Error('ภาพต้องมีขนาดไม่เกิน 16 MB');
+    if (!(blob instanceof Blob) || blob.size > 16 * 1024 * 1024) throw Error(uiText("ภาพต้องมีขนาดไม่เกิน 16 MB"));
     const bytes = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
     const signature = String.fromCharCode(...bytes);
     if (!(bytes[0] === 0xff && bytes[1] === 0xd8) && !signature.startsWith('\x89PNG') && !signature.startsWith('GIF8')
         && !(signature.startsWith('RIFF') && signature.slice(8, 12) === 'WEBP') && !signature.includes('ftypavif')) {
-        throw Error('ใช้ภาพ JPG, PNG, WebP, GIF หรือ AVIF (ไม่รับ SVG)');
+        throw Error(uiText("ใช้ภาพ JPG, PNG, WebP, GIF หรือ AVIF (ไม่รับ SVG)"));
     }
     const url = URL.createObjectURL(blob);
     try {
         const image = new Image(); image.src = url; await image.decode();
-        if (!image.naturalWidth || !image.naturalHeight || image.naturalWidth * image.naturalHeight > 40_000_000) throw Error('ภาพมีความละเอียดสูงเกินไป (สูงสุด 40 MP)');
+        if (!image.naturalWidth || !image.naturalHeight || image.naturalWidth * image.naturalHeight > 40_000_000) throw Error(uiText("ภาพมีความละเอียดสูงเกินไป (สูงสุด 40 MP)"));
         return image;
     } finally { URL.revokeObjectURL(url); }
 }
@@ -28,7 +29,7 @@ export async function preparePortrait(blob) {
         if(output?.type!=='image/webp')output=await encode('image/jpeg');
         if(output && output.size<=256*1024)return output;
     }
-    throw Error('ไม่สามารถย่อภาพให้เล็กกว่า 256 KB ได้');
+    throw Error(uiText("ไม่สามารถย่อภาพให้เล็กกว่า 256 KB ได้"));
 }
 
 export async function croppedPortrait(blob, frame) {
@@ -36,17 +37,12 @@ export async function croppedPortrait(blob, frame) {
     canvas.width = canvas.height = 512;
     const g = cropGeometry(image.naturalWidth, image.naturalHeight, frame);
     canvas.getContext('2d').drawImage(image, g.x, g.y, g.w, g.h);
-    return new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(Error('แสดงภาพไม่ได้')), 'image/webp', .9));
+    return new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(Error(uiText("แสดงภาพไม่ได้"))), 'image/webp', .9));
 }
 
 // Pointer capture supports mouse, one-finger pan and two-finger pinch on iOS Safari.
 export function portraitEditor(host, onChange) {
-    host.innerHTML = `<canvas width="512" height="512" aria-label="ลากภาพ หรือใช้สองนิ้วซูม" tabindex="0"></canvas>
-        <p>ลากภาพเพื่อจัดตำแหน่ง · ใช้สองนิ้วซูม หรือใช้แถบปรับด้านล่าง</p>
-        <label>ซูม <input type="range" data-axis="zoom" min="1" max="3" step="0.01" value="1"></label>
-        <label>ซ้าย ↔ ขวา <input type="range" data-axis="x" min="0" max="100" step="0.1" value="50"></label>
-        <label>บน ↔ ล่าง <input type="range" data-axis="y" min="0" max="100" step="0.1" value="50"></label>
-        <button type="button" data-reset>จัดภาพกึ่งกลาง</button>`;
+    host.innerHTML = (uiMarkup("<canvas width=\"512\" height=\"512\" aria-label=\"ลากภาพ หรือใช้สองนิ้วซูม\" tabindex=\"0\"></canvas>\n        <p>ลากภาพเพื่อจัดตำแหน่ง · ใช้สองนิ้วซูม หรือใช้แถบปรับด้านล่าง</p>\n        <label>ซูม <input type=\"range\" data-axis=\"zoom\" min=\"1\" max=\"3\" step=\"0.01\" value=\"1\"></label>\n        <label>ซ้าย ↔ ขวา <input type=\"range\" data-axis=\"x\" min=\"0\" max=\"100\" step=\"0.1\" value=\"50\"></label>\n        <label>บน ↔ ล่าง <input type=\"range\" data-axis=\"y\" min=\"0\" max=\"100\" step=\"0.1\" value=\"50\"></label>\n        <button type=\"button\" data-reset>จัดภาพกึ่งกลาง</button>"));
     const canvas = host.querySelector('canvas'), ctx = canvas.getContext('2d'), pointers = new Map();
     const controller = new AbortController(), options = { signal: controller.signal };
     let image = null, frame = { x: 50, y: 50, zoom: 1 }, baseline = null, generation = 0;

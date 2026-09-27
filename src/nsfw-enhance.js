@@ -132,7 +132,7 @@ export function selectedLanguage(mode, chat=[], fallback='en'){
 export function writingPreferencePrompt(settings,chat=[]){
  const active=Boolean(settings.nsfwEnhance),explicit=['th','en'].includes(settings.roleplayLanguage);
  if(!active&&!explicit&&!settings.chatPresentation)return '';
- const language=selectedLanguage(settings.roleplayLanguage,chat,settings.language);
+ const language=selectedLanguage(settings.roleplayLanguage,chat);
  const lines=[`ROLEPLAY LANGUAGE: Write narrative and character dialogue in ${language==='th'?'Thai':'English'}. Keep established names and intentional code-switching; follow the latest user message when language is Auto. Interface language does not change story language.`];
  if(!active)return lines.join('\n');
  const tags=uniqueTags(settings.nsfwTags,TAG_LIMIT);

@@ -1,7 +1,8 @@
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.44.1';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.44.1';
-import { croppedPortrait } from './npc-portraits.js?v=0.44.1';
-import { renderSceneTracker } from './scene-tracker.js?v=0.44.1';
+import {uiText} from './ui-language.js?v=0.44.2';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.44.2';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.44.2';
+import { croppedPortrait } from './npc-portraits.js?v=0.44.2';
+import { renderSceneTracker } from './scene-tracker.js?v=0.44.2';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -42,12 +43,12 @@ export function narrative(text) {
 export function speakerHeader(profile, open) {
     const p={...profile,...identity(profile)}, header=element('button','trpg-header'); header.type='button';
     header.style.setProperty('--speaker',p.identityColor); header.style.setProperty('--portrait',`${p.portraitSize}px`);
-    header.setAttribute('aria-label',`เปิดข้อมูล ${p.name}`);
+    header.setAttribute('aria-label',uiText("เปิดข้อมูล {0}",[p.name]));
     const details=element('span','trpg-identity'), role=element('span','trpg-role'); role.append(roleIcon(p.roleIcon));
     role.append(document.createTextNode([p.title,p.occupation].filter(usable).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') || 'ROLEFORGE'));
     details.append(role,element('strong','',p.name));
     const meta=element('span','trpg-meta');for(const value of [p.race,p.relationship,p.faction].filter(usable))meta.append(element('span','',value));details.append(meta);
-    const action=element('span','trpg-open-record');action.append(icon('address-card'),element('small','','ข้อมูลตัวละคร'));
+    const action=element('span','trpg-open-record');action.append(icon('address-card'),element('small','',uiText("ข้อมูลตัวละคร")));
     header.append(details,action);header.addEventListener('click',()=>open(p));return header;
 }
 
@@ -96,18 +97,18 @@ export function priorDialogueSpeaker(messages, id, lookup, visible) {
 
 function diaryBook(note) {
     const window = element('aside','trpg-diary-book');
-    window.setAttribute('aria-label',`Diary · ${note.npcName}`);
-    const bar=element('div','trpg-diary-bar'),heading=element('strong','',`${note.npcName} / PERSONAL JOURNAL`);
-    const close=element('button','', '×');close.type='button';close.setAttribute('aria-label','Close diary');
+    window.setAttribute('aria-label',uiText('Diary · {0}',[note.npcName]));
+    const bar=element('div','trpg-diary-bar'),heading=element('strong','',uiText('{0} / PERSONAL JOURNAL',[note.npcName]));
+    const close=element('button','', uiText("×"));close.type='button';close.setAttribute('aria-label',uiText('Close diary'));
     bar.append(heading,close);window.append(bar);
     const book=element('div','trpg-diary-spread'),left=element('div','trpg-diary-page'),right=element('div','trpg-diary-page');
     left.append(element('small','',new Date(note.at).toLocaleDateString()),element('h3','',note.npcName),element('span','trpg-diary-rune','✦'));
-    right.append(element('small','','PRIVATE THOUGHTS'),element('p','',note.text),element('small','',`— ${note.npcName}`));
+    right.append(element('small','',uiText("PRIVATE THOUGHTS")),element('p','',note.text),element('small','',`— ${note.npcName}`));
     book.append(left,right);window.append(book);
-    const cover=element('div','trpg-diary-cover',`${note.npcName}\nDIARY`);cover.hidden=true;window.append(cover);
-    const footer=element('div','trpg-diary-footer'),fold=element('button','','Close book');fold.type='button';footer.append(fold);window.append(footer);
+    const cover=element('div','trpg-diary-cover',uiText('{0}\nDIARY',[note.npcName]));cover.hidden=true;window.append(cover);
+    const footer=element('div','trpg-diary-footer'),fold=element('button','',uiText("Close book"));fold.type='button';footer.append(fold);window.append(footer);
     close.addEventListener('click',()=>window.remove());
-    fold.addEventListener('click',()=>{cover.hidden=!cover.hidden;book.hidden=!book.hidden;fold.textContent=book.hidden?'Open book':'Close book';});
+    fold.addEventListener('click',()=>{cover.hidden=!cover.hidden;book.hidden=!book.hidden;fold.textContent=uiText(book.hidden?'Open book':'Close book');});
     let start=null;
     bar.addEventListener('pointerdown',event=>{
         if(event.target.closest('button'))return;
@@ -125,12 +126,12 @@ function diaryBook(note) {
 
 function householdInvitation(offer, messageId, api) {
     const card=element('section','trpg-household-writ');
-    card.append(element('span','trpg-writ-sigil','✦'),element('small','trpg-writ-eyebrow','THE HOUSEHOLD COVENANT'),element('h3','',offer.npcName),
-        element('p','',`Requests to join your household as ${offer.role}`));
+    card.append(element('span','trpg-writ-sigil','✦'),element('small','trpg-writ-eyebrow',uiText("THE HOUSEHOLD COVENANT")),element('h3','',offer.npcName),
+        element('p','',uiText('Requests to join your household as {0}',[offer.role])));
     if(offer.status==='pending'){
         const actions=element('div','trpg-writ-actions');
         for(const [label,accepted] of [['Accept',true],['Decline',false]]){
-            const button=element('button',accepted?'trpg-writ-accept':'trpg-writ-reject',label);button.type='button';
+            const button=element('button',accepted?'trpg-writ-accept':'trpg-writ-reject',uiText(label));button.type='button';
             button.addEventListener('click',async()=>{
                 actions.querySelectorAll('button').forEach(item=>item.disabled=true);
                 const saved=await api.answerHouseholdOffer(messageId,offer.npcId,accepted);
@@ -138,31 +139,31 @@ function householdInvitation(offer, messageId, api) {
             });actions.append(button);
         }
         card.append(actions);
-    }else card.append(element('p',`trpg-writ-status${offer.status==='rejected'?' is-rejected':''}`,offer.status==='accepted'?`Accepted · ${offer.role}`:'Declined'));
+    }else card.append(element('p',`trpg-writ-status${offer.status==='rejected'?' is-rejected':''}`,offer.status==='accepted'?uiText("Accepted · {0}",[offer.role]):uiText("Declined")));
     return card;
 }
 
 function groupInvitation(offer, messageId, api) {
     const guild = offer.kind === 'guild';
     const card = element('section',`trpg-group-invite ${guild ? 'is-guild' : 'is-party'}`);
-    card.append(element('small','trpg-group-invite-type',guild ? 'OFFICIAL CHARTER · GUILD INVITATION' : 'FIELD DISPATCH · PARTY INVITATION'));
+    card.append(element('small','trpg-group-invite-type',guild ? uiText("OFFICIAL CHARTER · GUILD INVITATION") : uiText("FIELD DISPATCH · PARTY INVITATION")));
     const seal = element('span','trpg-group-invite-seal',guild ? '✦' : '◆');seal.setAttribute('aria-hidden','true');card.append(seal);
-    card.append(element('h3','',offer.name),element('p','trpg-group-invite-from',`${offer.inviterName} · ${guild ? 'ผู้แทนกิลด์' : 'ผู้เชิญเข้าปาร์ตี้'}`));
+    card.append(element('h3','',offer.name),element('p','trpg-group-invite-from',`${offer.inviterName} · ${guild ? uiText("ผู้แทนกิลด์") : uiText("ผู้เชิญเข้าปาร์ตี้")}`));
     if (offer.description) card.append(element('p','trpg-group-invite-desc',offer.description));
     const facts = element('div','trpg-group-invite-facts');
-    const role = element('div');role.append(element('small','','ตำแหน่งที่คุณจะได้รับ'),element('strong','',offer.role));
-    const count = element('div');count.append(element('small','','สมาชิกก่อน → หลังเข้าร่วม'),
-        element('strong','',offer.memberCount === null ? 'ยังไม่ทราบ' : `${offer.memberCount} → ${offer.memberCount + 1} คน`));
-    const rank = element('div');rank.append(element('small','','แรงก์กลุ่ม'),element('strong','',offer.rank || 'ยังไม่ทราบ'));
-    const quests = element('div');quests.append(element('small','','ภารกิจสำเร็จ'),element('strong','',offer.completedQuests === null || offer.completedQuests === undefined ? 'ยังไม่ทราบ' : `${offer.completedQuests} ภารกิจ`));
-    const reputation = element('div');reputation.append(element('small','','Reputation'),element('strong','',offer.reputation === null || offer.reputation === undefined ? 'ยังไม่ทราบ' : String(offer.reputation)));
+    const role = element('div');role.append(element('small','',uiText("ตำแหน่งที่คุณจะได้รับ")),element('strong','',offer.role));
+    const count = element('div');count.append(element('small','',uiText("สมาชิกก่อน → หลังเข้าร่วม")),
+        element('strong','',offer.memberCount === null ? uiText("ยังไม่ทราบ") : uiText("{0} → {1} คน",[offer.memberCount,offer.memberCount + 1])));
+    const rank = element('div');rank.append(element('small','',uiText("แรงก์กลุ่ม")),element('strong','',offer.rank || uiText("ยังไม่ทราบ")));
+    const quests = element('div');quests.append(element('small','',uiText("ภารกิจสำเร็จ")),element('strong','',offer.completedQuests === null || offer.completedQuests === undefined ? uiText("ยังไม่ทราบ") : uiText("{0} ภารกิจ",[offer.completedQuests])));
+    const reputation = element('div');reputation.append(element('small','',uiText("Reputation")),element('strong','',offer.reputation === null || offer.reputation === undefined ? uiText("ยังไม่ทราบ") : String(offer.reputation)));
     facts.append(role,count,rank,quests,reputation);card.append(facts);
-    if (offer.leaderName) card.append(element('p','trpg-group-invite-roster',`หัวหน้า: ${offer.leaderName}`));
+    if (offer.leaderName) card.append(element('p','trpg-group-invite-roster',uiText("หัวหน้า: {0}",[offer.leaderName])));
     const names = (offer.members || []).map(person => person.name).join(', ');
-    if (names) card.append(element('p','trpg-group-invite-roster',`สมาชิกที่รู้จัก: ${names}${offer.memberCount !== null && offer.memberCount > offer.members.length ? ` · อีก ${offer.memberCount - offer.members.length} คนยังไม่ทราบชื่อ` : ''}`));
+    if (names) card.append(element('p','trpg-group-invite-roster',uiText("สมาชิกที่รู้จัก: {0}{1}",[names,offer.memberCount !== null && offer.memberCount > offer.members.length ? ` · อีก ${offer.memberCount - offer.members.length} คนยังไม่ทราบชื่อ` : ''])));
     if (offer.status === 'pending') {
         const actions = element('div','trpg-group-invite-actions');
-        for (const [label,accepted] of [[guild ? 'รับตรากิลด์' : 'ยอมรับคำเชิญ',true],['ปฏิเสธ',false]]) {
+        for (const [label,accepted] of [[guild ? uiText("รับตรากิลด์") : uiText("ยอมรับคำเชิญ"),true],[uiText("ปฏิเสธ"),false]]) {
             const button = element('button',accepted ? 'trpg-group-invite-accept' : 'trpg-group-invite-reject',label);button.type='button';button.disabled=Boolean(offer.preview);
             button.addEventListener('click',async()=>{
                 actions.querySelectorAll('button').forEach(item=>item.disabled=true);
@@ -171,8 +172,8 @@ function groupInvitation(offer, messageId, api) {
             });actions.append(button);
         }
         card.append(actions);
-        if(offer.preview)card.append(element('p','trpg-group-invite-status','กำลังรับคำเชิญ… ตอบรับได้เมื่อข้อความเสร็จ'));
-    } else card.append(element('p','trpg-group-invite-status',offer.status === 'accepted' ? `เข้าร่วมแล้ว · ${offer.role}` : 'ปฏิเสธคำเชิญแล้ว'));
+        if(offer.preview)card.append(element('p','trpg-group-invite-status',uiText("กำลังรับคำเชิญ… ตอบรับได้เมื่อข้อความเสร็จ")));
+    } else card.append(element('p','trpg-group-invite-status',offer.status === 'accepted' ? uiText("เข้าร่วมแล้ว · {0}",[offer.role]) : uiText("ปฏิเสธคำเชิญแล้ว")));
     return card;
 }
 
@@ -217,7 +218,7 @@ export function createChatPresentation(api, open) {
             for(const offer of offers)root.append(householdInvitation(offer,id,api));
             for(const offer of groupOffers)root.append(groupInvitation(offer,id,api));
             for(const note of notes){
-                const button=element('button','trpg-diary-trigger',`✦  ${note.npcName} · Open diary`);button.type='button';
+                const button=element('button','trpg-diary-trigger',uiText('✦  {0} · Open diary',[note.npcName]));button.type='button';
                 button.addEventListener('click',()=>{
                     document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());
                     const book=diaryBook(note);document.body.append(book);

@@ -1,3 +1,4 @@
+import * as i18n from '../src/ui-language.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -18,7 +19,7 @@ function setup({image=true,enabled=true,available=true,retry=false,replies=null,
   async generateQuietPrompt(options){calls.push(options);return available?observed:'IMAGE_UNAVAILABLE';},
   async generateRaw(options){calls.push(options);if(replies)return replies[Math.min(attempts++,replies.length-1)];if(retry&&attempts++===0)return '{';return JSON.stringify({name:'Lysa',appearance:'Long red hair, blue eyes and golden armor.',background:'A healer'});},
  };
- const env={...core,...vision,Blob,btoa,Uint8Array,console,busy:false,referenceBlob:null,photoBlob:image?new Blob(['image'],{type:'image/webp'}):null,
+ const env={...i18n,...core,...vision,Blob,btoa,Uint8Array,console,busy:false,referenceBlob:null,photoBlob:image?new Blob(['image'],{type:'image/webp'}):null,
   form:{querySelector:()=>checkbox,elements:{namedItem:key=>{if(!fields.has(key))fields.set(key,{value:draft[key]||''});return fields.get(key);}}},
   brief:'A healer',draftId:'',changed:new Set(),token:1,base:{},dirty:false,
   values:()=>({...draft}),lock(){},say(message){env.status=message;},confirm:()=>true,valid:()=>true,

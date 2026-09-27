@@ -1,4 +1,5 @@
-import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,writingPreferencePrompt} from './nsfw-enhance.js?v=0.44.1';
+import {uiText,uiMarkup} from './ui-language.js?v=0.44.2';
+import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,writingPreferencePrompt} from './nsfw-enhance.js?v=0.44.2';
 
 // This renders the exact optional writing block sent by updatePrompt. Reading
 // or editing it never calls the model; only committed changes save settings.
@@ -13,8 +14,8 @@ export function mountAdultPromptControls(root,{settings,getChat,save,refreshProm
   const draft=document.activeElement===editor?editor.value:settings.nsfwWritingStyle||DEFAULT_ADULT_STYLE;
   preview.value=writingPreferencePrompt({...settings,nsfwWritingStyle:draft},getChat());
   status.textContent=settings.nsfwEnhance
-   ?'NSFW Enhance เปิดอยู่ · ข้อความด้านล่างคือส่วนคำสั่งการเขียนที่จะเพิ่มหลังผู้เล่นเริ่มตอบ'
-   :'NSFW Enhance ปิดอยู่ · ตอนนี้จะไม่ส่งคำสั่งสไตล์หรือแท็ก NSFW (คำสั่งภาษาอาจยังทำงานแยกต่างหาก)';
+   ?uiText("NSFW Enhance เปิดอยู่ · ข้อความด้านล่างคือส่วนคำสั่งการเขียนที่จะเพิ่มหลังผู้เล่นเริ่มตอบ")
+   :uiText("NSFW Enhance ปิดอยู่ · ตอนนี้จะไม่ส่งคำสั่งสไตล์หรือแท็ก NSFW (คำสั่งภาษาอาจยังทำงานแยกต่างหาก)");
  }
  editor.addEventListener('input',render);
  editor.addEventListener('change',()=>{

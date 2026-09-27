@@ -1,19 +1,20 @@
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.1';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.1';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.1';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.1';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.2';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.2';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.2';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.2';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.2';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.1';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.1';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.1';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.1';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.1';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.1';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.1';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.1';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.44.1';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.2';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.2';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.2';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.2';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.2';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.2';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.2';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.2';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.2';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.44.2';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.2';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -894,113 +895,7 @@ let auraColorSettingTimer = 0;
 let archiveMigration = null;
 const pendingInterfaceSettings = new WeakSet();
 
-const TRANSLATIONS = {
-    th: {
-        'RoleForge Role-play': 'ระบบโรลเพลย์ RoleForge', 'World ledger': 'บันทึกโลก', Powers: 'พลัง',
-        'Magic interface': 'อินเทอร์เฟซเวทมนตร์',
-        'Synchronizing world state': 'กำลังเชื่อมข้อมูลโลก',
-        'Connecting to the active role-play...': 'กำลังเชื่อมต่อกับโรลเพลย์ปัจจุบัน...',
-        Ready: 'พร้อม', Status: 'สถานะ', Scene: 'ฉาก', Inventory: 'คลังสิ่งของ', Skills: 'ทักษะ', Quests: 'ภารกิจ', Rank: 'อันดับ', 'World Map': 'แผนที่โลก', 'System Audit': 'ตรวจสอบระบบ',
-        Music: 'เพลง', Mailbox: 'กล่องจดหมาย', Contacts: 'รายชื่อ', Letters: 'จดหมาย', NPCs: 'ตัวละคร NPC', 'NPC Codex': 'สารบบ NPC', Techniques: 'วิชา',
-        'Party & Guild': 'ปาร์ตี้และกิลด์', Household: 'ครอบครัว', 'Friendly NPCs': 'NPC ฝ่ายมิตร', 'Choose a friendly NPC': 'เลือก NPC ฝ่ายมิตร', Member: 'สมาชิก', party: 'ปาร์ตี้', guilds: 'กิลด์',
-        'Waiting for chat': 'กำลังรอแชต', 'Sync latest turn': 'ซิงก์เหตุการณ์ล่าสุด', 'System interface': 'ข้อมูลระบบ',
-        'Current persona': 'ตัวตนปัจจุบัน', 'Guild rank': 'อันดับกิลด์', 'Vital status': 'สถานะพลังชีวิต', Identity: 'ข้อมูลส่วนตัว',
-        Health: 'พลังชีวิต', Mana: 'มานา', 'Aura / Mana': 'ออร่า / มานา', 'Divine Mana': 'มานาเทพ', Stamina: 'พละกำลัง', Hunger: 'ความอิ่ม', Thirst: 'ความชุ่มชื้น', 'Aura color': 'สีออร่า', 'Mana limit': 'ขีดจำกัดมานา', Auto: 'อัตโนมัติตามเนื้อเรื่อง', Finite: 'มีขีดจำกัด', Infinite: 'ไร้ขีดจำกัด', Boundless: 'ไร้ขีดจำกัด', Race: 'เผ่าพันธุ์', Age: 'อายุ', Guild: 'กิลด์', Party: 'ปาร์ตี้',
-        'Home continent': 'ทวีปบ้านเกิด', Standing: 'ฐานะ', Hair: 'เส้นผม', Eyes: 'ดวงตา', Height: 'ส่วนสูง', Build: 'รูปร่าง',
-        Profession: 'อาชีพ', 'Power type': 'ประเภทพลัง', 'Origin skill': 'สกิลกำเนิด', 'Active effects': 'สถานะผิดปกติ', 'Combat comparison': 'เปรียบเทียบการต่อสู้',
-        'Turn Inspector': 'ตัวตรวจสอบแต่ละเทิร์น', Diagnostics: 'วินิจฉัยระบบ', 'Repair current state': 'ซ่อมข้อมูลปัจจุบัน', 'Rollback latest turn': 'ย้อนเทิร์นล่าสุด',
-        'Damage breakdown': 'รายละเอียดความเสียหาย', 'Regional weather': 'สภาพอากาศรายภูมิภาค', 'NPC knowledge': 'ข้อมูลที่ NPC รู้',
-        'Current region': 'ภูมิภาคปัจจุบัน', 'Exact place': 'สถานที่ปัจจุบัน', 'Edit status': 'แก้ไขสถานะ', Name: 'ชื่อ', Title: 'ฉายา',
-        Condition: 'สภาพร่างกาย', Level: 'เลเวล', 'Day phase': 'ช่วงเวลา', 'World time': 'เวลาโลก', 'World day': 'วันที่', 'Zone type': 'ประเภทเขต',
-        'Scene Tracker': 'ระบบติดตามฉาก', 'Live environment and position': 'สภาพแวดล้อมและตำแหน่งปัจจุบัน', 'Day name': 'ชื่อวัน', 'Day counter': 'จำนวนวันที่ผ่านไป',
-        'Scene details': 'รายละเอียดฉาก', 'Month': 'เดือน', 'Year': 'ปี', 'Era': 'ศักราช', 'Calendar': 'ปฏิทิน', 'Season': 'ฤดูกาล',
-        'Lighting': 'แสงสว่าง', 'Participants': 'ผู้ร่วมฉาก', 'Objective': 'เป้าหมาย', 'Safety': 'ความปลอดภัย', 'Atmosphere': 'บรรยากาศ', 'Elapsed': 'เวลาที่ผ่านไป',
-        'Current place': 'สถานที่ปัจจุบัน', 'Current location detail': 'จุดที่อยู่โดยละเอียด', 'Scene position': 'ตำแหน่งในฉาก', Weather: 'สภาพอากาศ', Temperature: 'อุณหภูมิ', 'Save scene': 'บันทึกฉาก',
-        'Local Structure Map': 'แผนผังสถานที่', 'AI-assisted SVG floor plan': 'แผนผัง SVG ที่ AI ช่วยอัปเดต', 'No structure map yet.': 'ยังไม่มีแผนผังสถานที่',
-        'Create structure map': 'สร้างแผนผัง', 'Map name': 'ชื่อแผนผัง', 'Associated place': 'สถานที่ที่เชื่อมโยง', 'First floor': 'ชั้นแรก',
-        Floor: 'ชั้น', 'Floor name': 'ชื่อชั้น', 'Add floor': 'เพิ่มชั้น', Rooms: 'ห้อง', Connections: 'ทางเชื่อม', 'Add room': 'เพิ่มห้อง', 'Room name': 'ชื่อห้อง',
-        'Room type': 'ประเภทห้อง', 'X position': 'ตำแหน่ง X', 'Y position': 'ตำแหน่ง Y', Width: 'ความกว้าง', Height: 'ความสูง', 'Save room': 'บันทึกห้อง',
-        'Current room': 'ห้องปัจจุบัน', 'Set current room': 'ตั้งห้องปัจจุบัน', 'Add connection': 'เพิ่มทางเชื่อม', 'From room': 'จากห้อง', 'To room': 'ไปยังห้อง',
-        'Connection type': 'ประเภททางเชื่อม', 'Edit floor plan': 'แก้ไขแผนผัง', 'Lock map': 'ล็อกแผนผัง', 'Unlock map': 'ปลดล็อกแผนผัง',
-        'Map locked': 'แผนผังถูกล็อก', 'AI updates enabled': 'เปิดการอัปเดตโดย AI', 'Drag unlocked rooms to reposition them.': 'ลากห้องที่ไม่ได้ล็อกเพื่อย้ายตำแหน่ง',
-        'Delete map': 'ลบแผนผัง', 'Delete floor': 'ลบชั้น', 'Delete room': 'ลบห้อง', Discovered: 'ค้นพบแล้ว', Locked: 'ล็อก',
-        Room: 'ห้อง', Hall: 'โถง', Corridor: 'ทางเดิน', Stairs: 'บันได', Entrance: 'ทางเข้า', Garden: 'สวน', Utility: 'พื้นที่ใช้งาน', Unknown: 'ไม่ทราบ',
-        Door: 'ประตู', Passage: 'ทางผ่าน', Archway: 'ซุ้มทางผ่าน', Window: 'หน้าต่าง',
-        'HP max': 'HP สูงสุด', 'MP max': 'MP สูงสุด', 'Stamina max': 'พละกำลังสูงสุด', 'Save status': 'บันทึกสถานะ',
-        'Add inventory item': 'เพิ่มสิ่งของ', 'Item name': 'ชื่อสิ่งของ', Quantity: 'จำนวน', Category: 'หมวดหมู่', Description: 'รายละเอียด', 'Add item': 'เพิ่มสิ่งของ',
-        'Skill Storage': 'คลังทักษะ', 'All acquired user skills': 'ทักษะทั้งหมดของผู้เล่น', 'Add skill': 'เพิ่มทักษะ', 'Skill name': 'ชื่อทักษะ', Type: 'ประเภท',
-        'Quest Log': 'บันทึกภารกิจ', 'Add quest': 'เพิ่มภารกิจ', 'Quest name': 'ชื่อภารกิจ', 'Quest type': 'ประเภทภารกิจ', 'Dungeon rank': 'ระดับดันเจี้ยน', Objective: 'เป้าหมาย', Reward: 'รางวัล',
-        STORY: 'เนื้อเรื่องหลัก', 'SIDE-STORY': 'เนื้อเรื่องรอง', 'ACTIVE MISSION': 'ภารกิจที่กำลังทำ', 'COMPLETED MISSION': 'ภารกิจสำเร็จ', 'FAILED MISSION': 'ภารกิจล้มเหลว',
-        'Reward claimed': 'รับรางวัลแล้ว', 'Mission archive': 'คลังบันทึกภารกิจ',
-        'Ranks & Progression': 'อันดับและความก้าวหน้า', 'Guild and mastery record': 'บันทึกอันดับกิลด์และความชำนาญ', 'Adventurer Rank': 'อันดับนักผจญภัย', 'Custom rank name': 'ชื่ออันดับเฉพาะตัว',
-        'Power mastery': 'ความชำนาญพลัง', 'Combat mastery': 'ความชำนาญการต่อสู้', 'Power & Combat': 'พลังและการต่อสู้', 'Power systems': 'ระบบพลัง', 'Combat disciplines': 'ศาสตร์การต่อสู้',
-        'Recognized guild classification': 'ระดับที่กิลด์รับรอง', 'Magic mastery': 'ความชำนาญเวทมนตร์', 'Sword mastery': 'ความชำนาญดาบ', Experience: 'ค่าประสบการณ์', Reputation: 'ชื่อเสียง',
-        Gold: 'เหรียญทอง', Silver: 'เหรียญเงิน', Copper: 'เหรียญทองแดง', 'Gold coins': 'เหรียญทอง', 'Silver coins': 'เหรียญเงิน', 'Copper coins': 'เหรียญทองแดง',
-        'Transaction history': 'ประวัติธุรกรรม', 'No transactions recorded yet.': 'ยังไม่มีธุรกรรม', 'Balance after': 'ยอดคงเหลือหลังรายการ',
-        'Inventory Logs': 'ประวัติคลังสิ่งของ', 'Item changes': 'การเปลี่ยนแปลงไอเทม', 'No inventory changes recorded yet.': 'ยังไม่มีการเปลี่ยนแปลงไอเทม',
-        Journal: 'บันทึกระบบ', 'System history': 'ประวัติระบบ', 'No journal entries yet.': 'ยังไม่มีบันทึกระบบ', 'State updated': 'อัปเดตข้อมูลแล้ว',
-        'Journey Logs': 'บันทึกการเดินทาง', 'Story milestones': 'หมุดหมายเรื่องราว', 'No journey logs yet.': 'ยังไม่มีบันทึกการเดินทาง',
-        'Add journey log': 'เพิ่มบันทึก', 'Edit log': 'แก้ไขบันทึก', 'Delete log': 'ลบบันทึก', 'Save log': 'บันทึก', 'What happened': 'เกิดอะไรขึ้น', 'Journey log saved.': 'บันทึกการเดินทางแล้ว',
-        'Edit progression': 'แก้ไขความก้าวหน้า', 'Adventurer rank': 'อันดับนักผจญภัย',
-        'Magic rank': 'ระดับเวทมนตร์', 'Sword rank': 'ระดับดาบ', 'EXP to next level': 'EXP สำหรับเลเวลถัดไป', 'Save progression': 'บันทึกความก้าวหน้า',
-        'RoleForge World Atlas': 'แผนที่โลก RoleForge', 'Present World': 'โลกปัจจุบัน', 'Present Era': 'ยุคปัจจุบัน', 'Alternate Present World ROLEFORGE': 'โลกปัจจุบันคู่ขนาน ROLEFORGE', 'Alternate Present Era': 'ยุคปัจจุบันคู่ขนาน', 'World map': 'แผนที่โลก', 'Atlas browsing mode': 'โหมดดูแผนที่', 'Travel becomes available when the story enters this world.': 'จะเดินทางในแผนที่นี้ได้เมื่อเนื้อเรื่องเข้าสู่โลกนี้', World: 'โลก', Era: 'ยุค', 'Character positions': 'ตำแหน่งตัวละคร', You: 'คุณ', 'Unknown coordinates': 'ไม่ทราบพิกัด', 'No Character Life positions yet.': 'ยังไม่มีตำแหน่งจาก Character Life',
-        'Map lighting': 'ช่วงเวลาของแผนที่', 'Day map': 'แผนที่กลางวัน', 'Night map': 'แผนที่กลางคืน', 'Selected location': 'สถานที่ที่เลือก', Region: 'ภูมิภาค', Discovery: 'การค้นพบ', Marker: 'หมุด',
-        Journey: 'การเดินทาง', Origin: 'ต้นทาง', 'Travel route': 'เส้นทางเดินทาง', 'Remaining travel': 'เวลาที่เหลือ', days: 'วัน', 'Estimated travel days': 'จำนวนวันเดินทางโดยประมาณ', 'Begin journey': 'เริ่มออกเดินทาง',
-        'Currency / region': 'สกุลเงิน / ภูมิภาค', 'High denomination': 'หน่วยมูลค่าสูง', 'Standard denomination': 'หน่วยมาตรฐาน', 'Fractional denomination': 'หน่วยย่อย',
-        Recorded: 'บันทึกแล้ว', Unexplored: 'ยังไม่สำรวจ', Pinned: 'ปักหมุดแล้ว', None: 'ไม่มี', Destination: 'จุดหมาย', 'Exact place / scene': 'สถานที่หรือฉากโดยละเอียด',
-        'Location detail': 'รายละเอียดสถานที่', 'Travel and notify chat': 'เดินทางและแจ้งในโรลเพลย์', 'Marker label': 'ชื่อหมุด', 'Marker note': 'บันทึกหมุด', 'Mark location': 'ปักหมุดสถานที่',
-        Current: 'ปัจจุบัน', Discovered: 'ค้นพบแล้ว', Marked: 'ปักหมุด', 'Drag to pan · Pinch or scroll to zoom': 'ลากเพื่อเลื่อน · จีบนิ้วหรือเลื่อนเพื่อซูม',
-        'Living NPCs': 'NPC ที่มีชีวิต', 'Show NPC markers': 'แสดงตำแหน่ง NPC', 'Hide NPC markers': 'ซ่อนตำแหน่ง NPC', 'Life mode': 'โหมดการใช้ชีวิต', Activity: 'กิจกรรมปัจจุบัน',
-        'Active life': 'ใช้ชีวิตอัตโนมัติ', 'Story only': 'อัปเดตเมื่ออยู่ในเรื่อง', Paused: 'หยุดการอัปเดต', 'Show on World Map': 'แสดงบนแผนที่โลก', 'Open NPC dossier': 'เปิดข้อมูล NPC',
-        Morning: 'เช้า', Afternoon: 'บ่าย', Evening: 'เย็น', Night: 'กลางคืน', 'Safe Zone': 'เขตปลอดภัย', 'Neutral Zone': 'เขตเป็นกลาง', 'Danger Zone': 'เขตอันตราย', 'Unknown Zone': 'เขตไม่ทราบข้อมูล',
-        Rookie: 'มือใหม่', Basic: 'พื้นฐาน', Ember: 'เอมเบอร์', 'Custom Rank': 'อันดับเฉพาะตัว', Dormant: 'หลับใหล', Initiate: 'เริ่มฝึก', Practiced: 'ฝึกฝนแล้ว', Adept: 'ชำนาญ', Expert: 'เชี่ยวชาญ', Master: 'ปรมาจารย์', Grandmaster: 'มหาปรมาจารย์', Mythic: 'ระดับตำนาน',
-        Active: 'กำลังดำเนินการ', Completed: 'สำเร็จ', Failed: 'ล้มเหลว', 'On Hold': 'พักไว้', Beginner: 'เริ่มต้น', Intermediate: 'กลาง', Advanced: 'ขั้นสูง', Saint: 'เซนต์', King: 'คิง', Emperor: 'จักรพรรดิ', God: 'เทพ',
-        'No description': 'ไม่มีรายละเอียด', 'No objective recorded': 'ยังไม่ได้บันทึกเป้าหมาย', 'Your inventory is empty.': 'คลังสิ่งของยังว่างอยู่',
-        'Skills learned during role-play will appear here.': 'ทักษะที่เรียนรู้ระหว่างโรลเพลย์จะแสดงที่นี่', 'No quests have been recorded yet.': 'ยังไม่มีภารกิจที่ถูกบันทึก',
-        'Open a chat to activate this system': 'เปิดแชตเพื่อใช้งานระบบ', 'Reading latest turn': 'กำลังอ่านเหตุการณ์ล่าสุด', 'AI synchronized': 'ซิงก์กับ AI แล้ว', 'State updated': 'อัปเดตข้อมูลแล้ว', 'Sync unavailable': 'ไม่สามารถซิงก์ได้',
-        Appearance: 'รูปแบบหน้าจอ', Accent: 'สีหลัก', Glass: 'ความโปร่งใส', Glow: 'แสงเรือง', Density: 'ความหนาแน่น', Language: 'ภาษา', 'Action delivery': 'รูปแบบการส่งคำสั่ง',
-        Compact: 'กระชับ', Comfortable: 'สบายตา', Hidden: 'ซ่อนข้อความ', Visible: 'แสดงข้อความ', 'Draft only': 'ร่างเท่านั้น',
-        'Activity indicator': 'ตัวแจ้งสถานะการทำงาน', Full: 'แสดงเต็ม', Off: 'ปิด',
-        'Waiting for AI': 'กำลังรอ AI', 'Checking reply': 'กำลังตรวจคำตอบ', 'No state changes': 'ไม่มีข้อมูลเปลี่ยนแปลง',
-        'Reply received': 'ได้รับคำตอบแล้ว', 'Tracking is off': 'ปิดการติดตามอยู่', 'Waiting for first reply': 'รอคำตอบแรกของผู้เล่น',
-        'Hidden action sent': 'ส่งคำสั่งแบบซ่อนแล้ว', 'Visible message sent': 'ส่งข้อความแบบแสดงแล้ว', 'Draft prepared': 'เตรียมข้อความร่างแล้ว',
-        'Choose profile picture': 'เลือกรูปโปรไฟล์', 'Use in role-play': 'ใช้ในโรลเพลย์', Remove: 'ลบ', 'Pursue in role-play': 'ดำเนินภารกิจในโรลเพลย์',
-        'Adjust portrait': 'จัดตำแหน่งรูป', 'Desktop framing': 'กรอบภาพ PC', 'Phone framing': 'กรอบภาพมือถือ',
-        Horizontal: 'แนวนอน', Vertical: 'แนวตั้ง', Zoom: 'ซูม', 'Save framing': 'บันทึกกรอบภาพ',
-        'Magic disciplines': 'สาขาเวทมนตร์', 'Sword schools': 'สำนักดาบ', Proficiency: 'ความชำนาญ', 'Proficiency rank': 'ระดับความชำนาญ',
-        'Custom proficiency': 'ความชำนาญกำหนดเอง', 'Preset discipline': 'สาขาพื้นฐาน', 'Preset style': 'สำนักพื้นฐาน', 'Mastery Archive': 'สารบบความชำนาญ',
-        'Known disciplines and styles': 'สาขาและสำนักที่รู้จัก', 'Active proficiencies': 'ความชำนาญที่ใช้งาน', entries: 'รายการ', custom: 'กำหนดเอง',
-        'Add magic proficiency': 'เพิ่มความชำนาญเวทมนตร์', 'Add sword style': 'เพิ่มสำนักดาบ', 'Magic name': 'ชื่อเวทมนตร์', 'Sword style name': 'ชื่อสำนักดาบ', 'Icon preset': 'ไอคอนสำเร็จรูป',
-        'A dash means the stat has not been revealed yet.': 'เครื่องหมายขีดหมายถึงค่าสถานะนั้นยังไม่ถูกเปิดเผย',
-        'Add technique': 'เพิ่มวิชา', 'Technique name': 'ชื่อวิชา', Category: 'หมวดหมู่', 'Save proficiency': 'บันทึกความชำนาญ',
-        Playlist: 'เพลย์ลิสต์', 'Add audio files': 'เพิ่มไฟล์เสียง', 'No tracks in this chat.': 'ยังไม่มีเพลงในแชทนี้',
-        'Stored locally on this device': 'เก็บไว้ในอุปกรณ์นี้เท่านั้น', 'Now playing': 'กำลังเล่น',
-        Inbox: 'กล่องขาเข้า', Unread: 'ยังไม่อ่าน', Read: 'อ่านแล้ว', Sent: 'ส่งแล้ว', 'Add contact': 'เพิ่มรายชื่อ', 'Compose letter': 'เขียนจดหมาย',
-        Subject: 'หัวข้อ', Message: 'เนื้อหา', 'Send letter': 'ส่งจดหมาย', Reply: 'ตอบกลับ', Close: 'ปิด', 'Clear letter': 'ลบจดหมาย', Affiliation: 'สังกัด', Relationship: 'ความสัมพันธ์', Notes: 'บันทึก',
-        'Add NPC': 'เพิ่ม NPC', 'Edit NPC': 'แก้ไข NPC', 'Save NPC': 'บันทึก NPC', Faction: 'ฝ่าย', Alignment: 'จุดยืน', Occupation: 'อาชีพ', Gender: 'เพศ',
-        'Current location': 'ตำแหน่งปัจจุบัน', 'Last seen': 'พบล่าสุด', Affection: 'ความชอบพอ', Trust: 'ความไว้ใจ', Loyalty: 'ความภักดี', Fear: 'ความกลัว', Corruption: 'ความเสื่อมทราม', Lust: 'แรงปรารถนา',
-        'Relationship state': 'สถานะความสัมพันธ์', Partner: 'คู่ครอง', 'Marital status': 'สถานภาพ', Children: 'บุตร', 'Family & bonds': 'ครอบครัวและสายสัมพันธ์',
-        'Party management': 'จัดการปาร์ตี้', 'Guild management': 'จัดการกิลด์', 'Household management': 'จัดการครอบครัว', 'Create party': 'สร้างปาร์ตี้', 'Dissolve party': 'ยุบปาร์ตี้', 'Invite to party': 'เชิญเข้าปาร์ตี้', 'Create guild': 'สร้างกิลด์', 'Dissolve guild': 'ยุบกิลด์', 'Invite to guild': 'เชิญเข้ากิลด์',
-        'Party name': 'ชื่อปาร์ตี้', 'Guild name': 'ชื่อกิลด์', 'Guild description': 'รายละเอียดกิลด์', Members: 'สมาชิก', Leader: 'หัวหน้า', 'No active party': 'ยังไม่มีปาร์ตี้', 'No guilds yet': 'ยังไม่มีกิลด์', 'No household members': 'ยังไม่มีสมาชิกในครอบครัว',
-        'Guild creation fee': 'ค่าก่อตั้งกิลด์', 'Creation fee': 'ค่าก่อตั้ง', 'Guild treasury': 'คลังกิลด์', 'Current balance': 'ยอดเงินปัจจุบัน', 'Not enough currency': 'เงินไม่พอ', 'Friendly NPCs only': 'เชิญได้เฉพาะ NPC ฝ่ายมิตร', 'Only friendly NPCs appear here.': 'หน้านี้จะแสดงเฉพาะ NPC ฝ่ายมิตรเท่านั้น', 'Hostile NPCs are excluded from the list.': 'NPC ฝ่ายศัตรูจะไม่แสดงในรายชื่อนี้',
-        'Household name': 'ชื่อครอบครัว', 'Add household member': 'เพิ่มสมาชิกครอบครัว', 'Family role': 'บทบาทในครอบครัว', 'Remove member': 'นำสมาชิกออก', 'Save household': 'บันทึกครอบครัว', 'Dissolve this party?': 'ต้องการยุบปาร์ตี้นี้หรือไม่?', 'Dissolve this guild?': 'ต้องการยุบกิลด์นี้หรือไม่?',
-        'Core stats': 'ค่าสถานะหลัก', Strength: 'พละกำลัง', Agility: 'ความคล่องตัว', Intelligence: 'สติปัญญา', Endurance: 'ความอดทน',
-        Abilities: 'สกิลและความสามารถ', 'Add ability': 'เพิ่มความสามารถ', 'Ability name': 'ชื่อความสามารถ', 'Ability level': 'ระดับความสามารถ',
-        Diary: 'ไดอารี', 'Add diary entry': 'เพิ่มบันทึกไดอารี', Thought: 'ความคิด', Mood: 'อารมณ์', 'Custom meters': 'ค่าสถานะกำหนดเอง', 'Add custom meter': 'เพิ่มค่ากำหนดเอง',
-        'Link to Mailbox': 'เชื่อมกับ Mailbox', 'Open Mailbox': 'เปิดกล่องจดหมาย', 'Remove portrait': 'ลบรูปตัวละคร',
-        'Character continuity': 'การสานต่อตัวละคร', 'Carry this character into new chats automatically': 'นำตัวละครนี้ไปยังแชตใหม่โดยอัตโนมัติ',
-        'Export state': 'ส่งออกข้อมูล', 'Import state': 'นำเข้าข้อมูล', 'Portable backup': 'ข้อมูลสำรองแบบพกพา',
-        'Control center': 'ศูนย์ควบคุม', Interface: 'อินเทอร์เฟซ', Continuity: 'ความต่อเนื่อง', 'Active module': 'โมดูลปัจจุบัน',
-        'Visual controls': 'การตั้งค่าหน้าจอ', 'Character transfer': 'การย้ายข้อมูลตัวละคร', 'Archive index': 'สารบัญระบบ',
-        'State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device.': 'รวมข้อมูลและรูปผู้เล่นไว้แล้ว ส่วนรูป NPC และเสียงที่เก็บในอุปกรณ์จะถูกคัดลอกอัตโนมัติเฉพาะเมื่อสานต่อบนอุปกรณ์นี้',
-        Custom: 'กำหนดเอง',
-        'Locate me': 'หาตำแหน่งฉัน', 'Full map view': 'ดูแผนที่ทั้งหมด',
-        'Open fullscreen map': 'เปิดแผนที่เต็มหน้าจอ', 'Close fullscreen map': 'ปิดแผนที่เต็มหน้าจอ',
-        Palette: 'ชุดสี', 'Fully customizable': 'ปรับได้ทั้งหมด', 'Theme preset': 'ชุดสีสำเร็จ',
-        Accent: 'สีหลัก', Highlight: 'สีเน้น', Text: 'สีตัวอักษร', Surface: 'สีพื้น',
-        'Map artwork': 'ลายเส้นแผนที่', Procedural: 'วาดโดยระบบ', 'Tile images': 'ภาพไทล์',
-    },
-};
+
 
 let initialized = false;
 let previousFocusedElement = null;
@@ -1091,8 +986,7 @@ const html = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<
     .replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 
 function tr(value) {
-    const language = getSettings().language;
-    return TRANSLATIONS[language]?.[value] || value;
+    return uiText(value,[],getSettings().language);
 }
 
 function hexToRgb(hex) {
@@ -1158,7 +1052,7 @@ function getPowerPreset() { return readPowerConfig(getSettings(), powerPresetOwn
 function powerPresetChoices() {
     const config=getPowerPreset();
     return config.mode==='custom' ? config.definitions.filter(d=>d.selectable).map(d=>({id:d.id,name:d.name,description:d.description}))
-        : MAGIC_DISCIPLINES.map(d=>({id:d.name,name:d.name,description:''}));
+        : MAGIC_DISCIPLINES.map(d=>({id:d.name,name:tr(d.name),description:''}));
 }
 function customPowerLabel(state) {
     const config=getPowerPreset();
@@ -1170,18 +1064,18 @@ function refreshPowerDrawer(force=false) {
     const signature=JSON.stringify([owner,getPowerPreset()]);
     if(!force&&panel.rfSignature===signature&&panel.rfMetadata===metadata)return;
     panel.rfSignature=signature;panel.rfMetadata=metadata;panel.replaceChildren();
-    if(!owner){panel.textContent='Open a character chat to manage its power preset.';return;}
-    mountPowerSettings(panel,getState());
+    if(!owner){panel.textContent=uiText("Open a character chat to manage its power preset.");return;}
+    panel.rfController=mountPowerSettings(panel,getState());
 }
 function mountPowerSettings(panel,state,valuesOnly=false) {
     const owner=powerPresetOwner(),context=SillyTavern.getContext(),metadata=context.chatMetadata;
-    const guard=()=>{if(!owner||owner!==powerPresetOwner()||metadata!==SillyTavern.getContext().chatMetadata)throw Error('การ์ดหรือแชทเปลี่ยนแล้ว กรุณาเปิด Powers ใหม่');};
-    mountPowerWorkspace(panel,{
+    const guard=()=>{if(!owner||owner!==powerPresetOwner()||metadata!==SillyTavern.getContext().chatMetadata)throw Error(uiText("การ์ดหรือแชทเปลี่ยนแล้ว กรุณาเปิด Powers ใหม่"));};
+    return mountPowerWorkspace(panel,{
         valuesOnly,
         config:getPowerPreset,state:()=>getState(),
         builtin:()=>({mode:'custom',name:'Original',definitions:[...MAGIC_DISCIPLINES,...SWORD_STYLES].map(d=>({id:'preset_'+d.id.toLowerCase(),name:d.name,description:'',type:'number',max:100,initial:0,ranks:[],color:d.tone,icon:'bolt',selectable:true}))}),
         save:async config=>{guard();writePowerConfig(getSettings(),config,owner,powerPresetOwner());await context.saveSettingsDebounced?.();guard();updatePrompt();refreshPowerDrawer(true);renderAll();sendForgeMessage('power-config',{mode:config.mode,choices:powerPresetChoices()});},
-        value:async(id,value)=>{guard();const next=clone(getState());if(!applyPowerOperation(next,getPowerPreset(),'set',`customPowers.${id}`,value))throw Error('พลังนี้ถูกลบหรือค่าพลังไม่ถูกต้อง');if(!await persistState(next,'custom-power-value'))throw Error('บันทึกไม่สำเร็จ');},
+        value:async(id,value)=>{guard();const next=clone(getState());if(!applyPowerOperation(next,getPowerPreset(),'set',`customPowers.${id}`,value))throw Error(uiText("พลังนี้ถูกลบหรือค่าพลังไม่ถูกต้อง"));if(!await persistState(next,'custom-power-value'))throw Error(uiText("บันทึกไม่สำเร็จ"));},
     });
 }
 
@@ -1286,11 +1180,11 @@ function requestUsage() {
 function renderRequestUsage() {
     const usage = requestUsage();
     document.querySelectorAll('[data-tretaresia-request-usage]').forEach(output => {
-        output.textContent = `${usage.total} ครั้งในหน้านี้`;
-        output.title = usage.lastAt ? `Last: ${usage.lastReason || 'unknown'} · ${usage.lastAt}` : 'No separate extension request recorded yet.';
+        output.textContent = uiText("{0} ครั้งในหน้านี้",[usage.total]);
+        output.title = usage.lastAt ? uiText("Last: {0} · {1}",[usage.lastReason || 'unknown',usage.lastAt]) : uiText("No separate extension request recorded yet.");
     });
     document.querySelectorAll('[data-tretaresia-request-breakdown]').forEach(output => {
-        output.textContent = `เปิดเรื่อง ${usage.opening} · Scene Tracker เติมฉาก ${usage.sceneCompletion} · NPC progress ${usage.npcProgression} · H-Stats โปรไฟล์ ${usage.hStatsBaseline} · Manual Sync ${usage.manualSync} · คำสั่ง RPG ${usage.hiddenAction + usage.visibleAction} · เจน NPC/ภาพ ${usage.npcDraft + usage.npcPortrait}`;
+        output.textContent = uiText("เปิดเรื่อง {0} · Scene Tracker เติมฉาก {1} · NPC progress {2} · H-Stats โปรไฟล์ {3} · Manual Sync {4} · คำสั่ง RPG {5} · เจน NPC/ภาพ {6}",[usage.opening,usage.sceneCompletion,usage.npcProgression,usage.hStatsBaseline,usage.manualSync,usage.hiddenAction + usage.visibleAction,usage.npcDraft + usage.npcPortrait]);
     });
 }
 
@@ -2357,10 +2251,10 @@ function storedNpcState(state) {
 
 async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner) {
     const context = SillyTavern.getContext(), owner = characterOwner(context)?.key || '';
-    if (context.getCurrentChatId?.() !== expectedChat || owner !== expectedOwner) throw new Error('แชตหรือการ์ดเปลี่ยนแล้ว กรุณาเปิดรายการใหม่');
-    if (npcs.length > 200) throw new Error('แต่ละ Scope รองรับ NPC สูงสุด 200 ตัว');
+    if (context.getCurrentChatId?.() !== expectedChat || owner !== expectedOwner) throw new Error(uiText("แชตหรือการ์ดเปลี่ยนแล้ว กรุณาเปิดรายการใหม่"));
+    if (npcs.length > 200) throw new Error(uiText("แต่ละ Scope รองรับ NPC สูงสุด 200 ตัว"));
     if (scope === 'character') {
-        if (!owner) throw new Error('Character Scope ต้องเปิดแชตของการ์ดตัวละครเดี่ยว');
+        if (!owner) throw new Error(uiText("Character Scope ต้องเปิดแชตของการ์ดตัวละครเดี่ยว"));
         const settings = getSettings();
         const removed = characterNpcLibrary(owner).filter(p => !npcs.some(n => n.id === p.id)).map(p => p.id);
         const current = getState();
@@ -2390,7 +2284,7 @@ async function routeStoryNpcState(state, previous, context) {
     if (routed.added) {
         await writeCharacterArchive(context, getSettings(), owner, 'npcs', routed.library);
     }
-    if (routed.overflow) notify('warning', 'Character archive is full. New NPCs were kept in Chat; no records were discarded.');
+    if (routed.overflow) notify('warning', uiText("Character archive is full. New NPCs were kept in Chat; no records were discarded."));
     return routed.state;
 }
 
@@ -2508,7 +2402,7 @@ async function restoreContinuityForCurrentChat() {
                     summaryExtensionCompatible: true,
                 },
             }));
-            notify('success', settings.language === 'th' ? 'สานต่อข้อมูลตัวละครในแชตใหม่แล้ว' : 'Character state continued into this new chat.');
+            notify('success', settings.language === 'th' ? uiText("สานต่อข้อมูลตัวละครในแชตใหม่แล้ว") : uiText("Character state continued into this new chat."));
         }
         return saved;
     } finally {
@@ -2554,7 +2448,7 @@ function portableState(state) {
 
 function exportStatePackage() {
     const context = SillyTavern.getContext();
-    if (!context.getCurrentChatId?.()) return notify('warning', getSettings().language === 'th' ? 'เปิดแชตก่อนส่งออกข้อมูล' : 'Open a chat before exporting state.');
+    if (!context.getCurrentChatId?.()) return notify('warning', getSettings().language === 'th' ? uiText("เปิดแชตก่อนส่งออกข้อมูล") : uiText("Open a chat before exporting state."));
     const state = getState();
     const payload = {
         format: STATE_PACKAGE_FORMAT, version: 1, exportedAt: new Date().toISOString(),
@@ -2571,21 +2465,21 @@ function exportStatePackage() {
     anchor.click();
     anchor.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    notify('success', getSettings().language === 'th' ? 'ส่งออกข้อมูลตัวละครแล้ว' : 'Character state exported.');
+    notify('success', getSettings().language === 'th' ? uiText("ส่งออกข้อมูลตัวละครแล้ว") : uiText("Character state exported."));
 }
 
 async function importStatePackage(file) {
     if (!file) return;
     const context = SillyTavern.getContext();
-    if (!context.getCurrentChatId?.()) throw new Error(getSettings().language === 'th' ? 'เปิดแชตก่อนนำเข้าข้อมูล' : 'Open a chat before importing state.');
+    if (!context.getCurrentChatId?.()) throw new Error(getSettings().language === 'th' ? uiText("เปิดแชตก่อนนำเข้าข้อมูล") : uiText("Open a chat before importing state."));
     const parsed = JSON.parse(await file.text());
     const candidate = parsed?.format === STATE_PACKAGE_FORMAT ? parsed.state : parsed?.state || parsed;
-    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('This is not a valid RoleForge state file.');
-    const confirmed = globalThis.confirm?.(getSettings().language === 'th' ? 'แทนที่ข้อมูล RPG ของแชตนี้ด้วยไฟล์ที่เลือก?' : 'Replace this chat\'s RPG state with the selected file?');
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error(uiText("This is not a valid RoleForge state file."));
+    const confirmed = globalThis.confirm?.(getSettings().language === 'th' ? uiText("แทนที่ข้อมูล RPG ของแชตนี้ด้วยไฟล์ที่เลือก?") : uiText("Replace this chat's RPG state with the selected file?"));
     if (confirmed === false) return;
     const imported = portableState(candidate);
     await persistState(imported, 'import');
-    notify('success', getSettings().language === 'th' ? 'นำเข้าข้อมูลตัวละครแล้ว' : 'Character state imported.');
+    notify('success', getSettings().language === 'th' ? uiText("นำเข้าข้อมูลตัวละครแล้ว") : uiText("Character state imported."));
 }
 
 function resolveLevelProgression(state) {
@@ -2670,7 +2564,7 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
     const context = SillyTavern.getContext();
     const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata, owner = characterOwner(context)?.key;
     if (!chatId) {
-        notify('warning', 'Open a character or group chat before changing the role-play state.');
+        notify('warning', uiText("Open a character or group chat before changing the role-play state."));
         return false;
     }
     const previous = getState();
@@ -3387,7 +3281,7 @@ function forgeSession(context = SillyTavern.getContext()) {
 
 function applyForgeProfile(state, profile) {
     const p = forgeDraft(profile), f = p.fields;
-    if (!f.fName.trim()) throw Error('Enter a character name before starting the story.');
+    if (!f.fName.trim()) throw Error(uiText("Enter a character name before starting the story."));
     state.player.name = f.fName.trim();
     state.player.title = f.fTitle.trim() || state.player.title;
     state.player.gender = f.fGender.trim(); state.player.age = f.fAge.trim(); state.player.race = f.fRace.trim() || state.player.race;
@@ -3442,7 +3336,7 @@ function forgeCard() { return document.getElementById('tretaresia-character-forg
 
 function sendForgeMessage(type, data = {}, extra = {}) {
     const frame = forgeCard()?.querySelector('iframe');
-    if (frame?.contentWindow) frame.contentWindow.postMessage({source:'tretaresia-rpg-forge',type,data,...extra,powerConfig:{mode:getPowerPreset().mode,choices:powerPresetChoices()}}, location.origin);
+    if (frame?.contentWindow) frame.contentWindow.postMessage({source:'tretaresia-rpg-forge',type,data,...extra,uiLanguage:getSettings().language,powerConfig:{mode:getPowerPreset().mode,choices:powerPresetChoices()}}, location.origin);
 }
 
 function refreshCharacterForge() {
@@ -3462,9 +3356,9 @@ function refreshCharacterForge() {
         card = document.createElement('section');
         card.id = 'tretaresia-character-forge';
         card.dataset.chatId = String(context.getCurrentChatId());
-        card.setAttribute('aria-label','RoleForge character creation');
+        card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = 'RoleForge Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.1`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.2`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3487,23 +3381,23 @@ async function startForgeOpening(input) {
     const ticket = {metadata,chatId,started:false,requested:false};
     openingGeneration = ticket;
     try {
-        if (typeof context.generate !== 'function') throw Error('Main-chat generation is unavailable in this SillyTavern version.');
-        if (document.querySelector('#send_textarea')?.value?.trim()) throw Error('Save or clear the unsent chat message before starting.');
-        if (!draft.fields.fName.trim()) throw Error('Enter a character name before starting the story.');
+        if (typeof context.generate !== 'function') throw Error(uiText("Main-chat generation is unavailable in this SillyTavern version."));
+        if (document.querySelector('#send_textarea')?.value?.trim()) throw Error(uiText("Save or clear the unsent chat message before starting."));
+        if (!draft.fields.fName.trim()) throw Error(uiText("Enter a character name before starting the story."));
         session.profile = draft;
-        if (!await persistState(applyForgeProfile(getState(), draft), 'character-forge')) throw Error('The character profile could not be saved with this chat. Retry.');
+        if (!await persistState(applyForgeProfile(getState(), draft), 'character-forge')) throw Error(uiText("The character profile could not be saved with this chat. Retry."));
         if (!same() || !forgeEligible(context)) return false;
         session.phase = 'generating'; session.error = '';
         await saveCurrentChatMetadata(context);
         if (!same() || !forgeEligible(context)) return false;
         updatePrompt();
-        sendForgeMessage('status',{}, {message:'Generating your first story message…',working:true});
+        sendForgeMessage('status',{}, {message:tr('Generating your first story message…'),working:true});
         recordExtensionRequest('opening', 'Character Forge first scene');
         ticket.requested = true;
         await context.generate('normal', {automatic_trigger:true});
         if (!same() || openingGeneration !== ticket) return false;
         const reply = context.chat?.find(message => !message?.is_user && !message?.is_system && text(message?.mes));
-        if (!reply) throw Error('No opening message was generated. Check your model connection and press BEGIN to retry.');
+        if (!reply) throw Error(uiText("No opening message was generated. Check your model connection and press BEGIN to retry."));
         session.phase = 'completed'; session.error = '';
         await saveCurrentChatMetadata(context);
         forgeCard()?.remove(); updatePrompt(); return true;
@@ -3530,6 +3424,10 @@ function onForgeMessage(event) {
     const context = SillyTavern.getContext();
     if (!forgeEligible(context)) return;
     if (event.data.type === 'ready') { sendForgeMessage('hydrate',forgeSession(context)?.draft || {}); return; }
+    if (event.data.type === 'ui-language' && ['en','th'].includes(event.data.data?.language)) {
+        getSettings().language=event.data.data.language;
+        context.saveSettingsDebounced?.();rebuildInterface();return;
+    }
     if (event.data.type === 'draft' && !openingGeneration) {
         const session = forgeSession(context) || {version:1,phase:'draft'};
         session.draft = forgeDraft(event.data.data);
@@ -3545,7 +3443,7 @@ function legacyPatchInstructions() {
     return [
         NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
-        '<!--tretaresia_patch:{"ops":[["upsert","quests",{"id":"academy-escort","name":"Escort the Academy Caravan","type":"Mission","status":"Active","objective":"Protect the caravan until it reaches Eastwatch","reward":"12 silver","giver":"Quartermaster Lysa","source":"Great Academy mission board","progress":0}],["inc","progression.experience",5,{"reason":"Completed aura control training","category":"training"}],["inc","progression.currency.silver",-3,{"reason":"Paid for an academy meal","category":"currency"}],["inc","progression.kills",1,{"reason":"Defeated the ash troll","category":"kill"}]],"summary":"Mission, training, payment, and combat progress recorded."}-->',
+        uiMarkup("<!--tretaresia_patch:{\"ops\":[[\"upsert\",\"quests\",{\"id\":\"academy-escort\",\"name\":\"Escort the Academy Caravan\",\"type\":\"Mission\",\"status\":\"Active\",\"objective\":\"Protect the caravan until it reaches Eastwatch\",\"reward\":\"12 silver\",\"giver\":\"Quartermaster Lysa\",\"source\":\"Great Academy mission board\",\"progress\":0}],[\"inc\",\"progression.experience\",5,{\"reason\":\"Completed aura control training\",\"category\":\"training\"}],[\"inc\",\"progression.currency.silver\",-3,{\"reason\":\"Paid for an academy meal\",\"category\":\"currency\"}],[\"inc\",\"progression.kills\",1,{\"reason\":\"Defeated the ash troll\",\"category\":\"kill\"}]],\"summary\":\"Mission, training, payment, and combat progress recorded.\"}-->"),
         'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers and guildMembers; delete householdMembers; offer householdInvitation, partyInvitation or guildInvitation; set or inc npcValues, npcHStats, and playerHStats; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
         'Household invitations: when a met friendly NPC in the current scene or explicitly named in the completed reply asks to join the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. Include the exact role the NPC proposes. This creates an Accept/Decline card in that assistant message, not immediate membership. Never upsert householdMembers or put members inside household; only the player can accept. Explicit departures may delete householdMembers.',
         'If the user asks a named NPC to send a party/guild invitation or write a diary, portray the NPC doing so in the main reply if it fits the story, with a specific established group name and offered role for invitations. Emit the corresponding offer or diary append op in that same reply. A user request by itself does not mean the event happened.',
@@ -3581,7 +3479,7 @@ function patchInstructions() {
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
         'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
-        '<!--tretaresia_patch:{"sceneTracker":{"loc":"Market","t":"08:00","w":"Clear","temp":24,"who":["Mira"]},"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"journey":"Accepted the Eastwatch escort mission after completing aura practice."}--> (Example only; add all 21 scene fields on the first reply.)',
+        uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all 21 scene fields on the first reply.)"),
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         NPC_FIELD_INSTRUCTIONS,
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction,title,occupation,aliases], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
@@ -3616,7 +3514,7 @@ function patchInstructions() {
 }
 
 function statePrompt(state, { includeState = true, track = true } = {}) {
-    const lines = ['<tretaresia_rpg_state>'];
+    const lines = [uiMarkup("<tretaresia_rpg_state>")];
     const customPreset=getPowerPreset().mode==='custom';
     const activeAtlas = atlasById(state?.world?.id);
     if (!customPreset) {
@@ -3648,7 +3546,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' Emit scene metadata')[0]);
     if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 21 fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
     if(customPreset)lines.push(customPowerPrompt(getPowerPreset(),state));
-    lines.push('</tretaresia_rpg_state>');
+    lines.push(uiMarkup("</tretaresia_rpg_state>"));
     return lines.join('\n');
 }
 
@@ -3683,7 +3581,7 @@ function buildEventNotificationStack() {
     stack.id = 'tretaresia-event-stack';
     stack.className = 'tretaresia-event-stack';
     stack.setAttribute('aria-live', 'polite');
-    stack.setAttribute('aria-label', 'RoleForge event notifications');
+    stack.setAttribute('aria-label', uiText("RoleForge event notifications"));
     stack.addEventListener('click', event => event.target.closest('[data-dismiss-event]')?.closest('.tretaresia-event-toast')?.remove());
     document.body.appendChild(stack);
 }
@@ -3704,7 +3602,7 @@ function showEventNotification(event) {
     const toast = document.createElement('article');
     toast.className = 'tretaresia-event-toast';
     toast.dataset.kind = event.kind;
-    toast.innerHTML = `<span class="tretaresia-event-icon"><i class="fa-solid ${icons[event.kind] || 'fa-sparkles'}"></i></span><div><small>${html(event.eyebrow || 'SYSTEM')}</small><strong>${html(event.title)}</strong>${event.detail ? `<p>${html(event.detail)}</p>` : ''}</div>${event.value ? `<b>${html(event.value)}</b>` : ''}<button type="button" data-dismiss-event aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button><i class="tretaresia-event-timer" style="animation-duration:${getSettings().notificationDuration}ms"></i>`;
+    toast.innerHTML = (uiMarkup("<span class=\"tretaresia-event-icon\"><i class=\"fa-solid ")+(icons[event.kind] || 'fa-sparkles')+uiMarkup("\"></i></span><div><small>")+(html(event.eyebrow || 'SYSTEM'))+uiMarkup("</small><strong>")+(html(event.title))+uiMarkup("</strong>")+(event.detail ? (uiMarkup("<p>")+(html(event.detail))+uiMarkup("</p>")) : '')+uiMarkup("</div>")+(event.value ? (uiMarkup("<b>")+(html(event.value))+uiMarkup("</b>")) : '')+uiMarkup("<button type=\"button\" data-dismiss-event aria-label=\"Dismiss\"><i class=\"fa-solid fa-xmark\"></i></button><i class=\"tretaresia-event-timer\" style=\"animation-duration:")+(getSettings().notificationDuration)+uiMarkup("ms\"></i>"));
     stack.prepend(toast);
     while (stack.children.length > 5) stack.lastElementChild?.remove();
     requestAnimationFrame(() => toast.classList.add('is-visible'));
@@ -3750,7 +3648,7 @@ function buildTravelTracker() {
     tracker.className = 'tretaresia-travel-tracker';
     tracker.setAttribute('role', 'status');
     tracker.setAttribute('aria-live', 'polite');
-    tracker.setAttribute('aria-label', 'Active journey progress');
+    tracker.setAttribute('aria-label', uiText("Active journey progress"));
     tracker.hidden = true;
     let drag = null;
     tracker.addEventListener('pointerdown', event => {
@@ -3807,9 +3705,7 @@ function syncTravelTracker(state = getState()) {
         ? (thai ? 'ถึงจุดหมายแล้ว' : 'Destination reached')
         : `${formatTravelDistance(distance.remaining)} km ${thai ? 'คงเหลือ' : 'remaining'}`;
     tracker.dataset.status = travel.status;
-    tracker.innerHTML = `<div class="tretaresia-travel-route"><i class="fa-solid fa-grip-lines" aria-hidden="true"></i><strong title="${html(origin)} → ${html(destination)}"><span>${html(origin)}</span><b>→</b><span>${html(destination)}</span></strong><em>${progress}%</em></div>
-        <div class="tretaresia-travel-progress" aria-label="${progress}%"><i style="width:${progress}%"></i></div>
-        <div class="tretaresia-travel-distance"><span><i class="fa-solid fa-route"></i>${formatTravelDistance(distance.travelled)} / ${formatTravelDistance(distance.total)} km</span><b>${remainingLabel}</b><small>${formatTravelDays(travel.remainingDays)} ${thai ? 'วัน' : 'days'} · ${html(travel.status)}</small></div>`;
+    tracker.innerHTML = (uiMarkup("<div class=\"tretaresia-travel-route\"><i class=\"fa-solid fa-grip-lines\" aria-hidden=\"true\"></i><strong title=\"")+(html(origin))+uiMarkup(" → ")+(html(destination))+uiMarkup("\"><span>")+(html(origin))+uiMarkup("</span><b>→</b><span>")+(html(destination))+uiMarkup("</span></strong><em>")+(progress)+uiMarkup("%</em></div>\n        <div class=\"tretaresia-travel-progress\" aria-label=\"")+(progress)+uiMarkup("%\"><i style=\"width:")+(progress)+uiMarkup("%\"></i></div>\n        <div class=\"tretaresia-travel-distance\"><span><i class=\"fa-solid fa-route\"></i>")+(formatTravelDistance(distance.travelled))+uiMarkup(" / ")+(formatTravelDistance(distance.total))+uiMarkup(" km</span><b>")+(remainingLabel)+uiMarkup("</b><small>")+(formatTravelDays(travel.remainingDays))+uiMarkup(" ")+(thai ? 'วัน' : 'days')+uiMarkup(" · ")+(html(travel.status))+uiMarkup("</small></div>"));
     applyTravelTrackerPosition(tracker);
 }
 
@@ -3836,9 +3732,8 @@ function buildActivityIndicator() {
     indicator.className = 'tretaresia-activity-island';
     indicator.type = 'button';
     indicator.setAttribute('aria-live', 'polite');
-    indicator.setAttribute('aria-label', 'Open RoleForge');
-    indicator.innerHTML = `<span class="tretaresia-activity-orb"><i class="fa-solid fa-wand-sparkles"></i></span>
-        <span class="tretaresia-activity-copy"><strong></strong><small></small></span><span class="tretaresia-activity-progress"></span>`;
+    indicator.setAttribute('aria-label', uiText("Open RoleForge"));
+    indicator.innerHTML = (uiMarkup("<span class=\"tretaresia-activity-orb\"><i class=\"fa-solid fa-wand-sparkles\"></i></span>\n        <span class=\"tretaresia-activity-copy\"><strong></strong><small></small></span><span class=\"tretaresia-activity-progress\"></span>"));
     indicator.addEventListener('click', openInterface);
     document.body.appendChild(indicator);
     syncActivityIndicator();
@@ -3988,7 +3883,7 @@ function decodeMapPortraitSource(source) {
         const image = new Image();
         image.decoding = 'async';
         image.onload = () => resolve(image);
-        image.onerror = () => reject(new Error('Map portrait source could not be decoded.'));
+        image.onerror = () => reject(new Error(uiText("Map portrait source could not be decoded.")));
         image.src = source;
     });
 }
@@ -4002,13 +3897,13 @@ async function createMapPortraitThumbnail(source) {
     canvas.width = Math.max(1, Math.round(width * ratio));
     canvas.height = Math.max(1, Math.round(height * ratio));
     const context = canvas.getContext('2d', { alpha: false });
-    if (!context) throw new Error('Map thumbnail canvas is unavailable.');
+    if (!context) throw new Error(uiText("Map thumbnail canvas is unavailable."));
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'medium';
     context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
     sourceImage.src = '';
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', .78));
-    if (!blob) throw new Error('Map thumbnail encoding failed.');
+    if (!blob) throw new Error(uiText("Map thumbnail encoding failed."));
     return { url: URL.createObjectURL(blob), owned: true };
 }
 
@@ -5312,49 +5207,47 @@ async function processUserTravelIntent(messageId) {
     return persistState(next, 'user-travel-intent');
 }
 
-const tabButton = (id, icon, label, active = false) => `
-    <button class="tretaresia-tab-button${active ? ' is-active' : ''}" type="button" role="tab"
-        data-tab="${id}" aria-selected="${active}"><i class="${icon}"></i><span>${html(tr(label))}</span></button>`;
+const tabButton = (id, icon, label, active = false) => (uiMarkup("\n    <button class=\"tretaresia-tab-button")+(active ? ' is-active' : '')+uiMarkup("\" type=\"button\" role=\"tab\"\n        data-tab=\"")+(id)+uiMarkup("\" aria-selected=\"")+(active)+uiMarkup("\"><i class=\"")+(icon)+uiMarkup("\"></i><span>")+(html(tr(label)))+uiMarkup("</span></button>"));
 
 function controlCenterTrigger() {
     return '<button id="tretaresia-control-trigger" class="tretaresia-header-button tretaresia-control-trigger" type="button" data-action="toggle-control-center" aria-label="' +
-        html(tr('Control center')) + '" title="' + html(tr('Control center')) + '" aria-expanded="false"><i class="fa-solid fa-sliders"></i></button>';
+        html(tr(uiText("Control center"))) + '" title="' + html(tr(uiText("Control center"))) + uiMarkup("\" aria-expanded=\"false\"><i class=\"fa-solid fa-sliders\"></i></button>");
 }
 
 function controlCenterMarkup() {
     const settings = getSettings();
     const presetOptions = Object.keys(COLOR_PRESETS).map(key =>
         '<option value="' + key + '"' + (settings.themePreset === key ? ' selected' : '') + '>' +
-        key.replace(/^./, value => value.toUpperCase()) + '</option>').join('') +
-        '<option value="custom"' + (settings.themePreset === 'custom' ? ' selected' : '') + '>' + html(tr('Custom')) + '</option>';
+        key.replace(/^./, value => value.toUpperCase()) + uiMarkup("</option>")).join('') +
+        '<option value="custom"' + (settings.themePreset === 'custom' ? ' selected' : '') + '>' + html(tr(uiText("Custom"))) + uiMarkup("</option>");
     const colorField = (label, key) =>
-        '<label class="tretaresia-control-field color"><span>' + html(tr(label)) + '</span>' +
-        '<input type="color" data-ui-setting="' + key + '" value="' + settings[key] + '"></label>';
-    return '<section class="tretaresia-control-panel" aria-label="' + html(tr('Control center')) + '">' +
-        '<header class="tretaresia-control-head"><span class="tretaresia-control-sigil"><i class="fa-solid fa-compass-drafting"></i></span>' +
-        '<div><small>ROLEFORGE / CONSOLE</small><h3>' + html(tr('Control center')) + '</h3></div>' +
-        '<button type="button" data-action="close-control-center" aria-label="' + html(tr('Close')) + '"><i class="fa-solid fa-xmark"></i></button></header>' +
-        '<div class="tretaresia-control-scroll">' +
-        '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>01</b><span><strong>' + html(tr('Palette')) + '</strong><small>' + html(tr('Fully customizable')) + '</small></span></div>' +
-        '<label class="tretaresia-control-field full"><span>' + html(tr('Theme preset')) + '</span><select data-ui-setting="themePreset">' + presetOptions + '</select></label>' +
-        '<div class="tretaresia-control-grid">' + colorField('Accent', 'accentColor') + colorField('Highlight', 'accentAltColor') +
-        colorField('Text', 'inkColor') + colorField('Surface', 'surfaceColor') + colorField('Aura / Mana', 'auraColor') + '</div>' +
-        '<p class="tretaresia-control-note">' + html(tr('A preset overwrites all four colors. Adjust any swatch afterwards to make it your own.')) + '</p></section>' +
-        '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>02</b><span><strong>' + html(tr('Interface')) + '</strong><small>' + html(tr('Visual controls')) + '</small></span></div>' +
-        '<div class="tretaresia-control-grid">' +
-        '<label class="tretaresia-control-field full"><span>' + html(tr('Glass')) + '<output>' + settings.glassOpacity + '%</output></span><input type="range" data-ui-setting="glassOpacity" min="55" max="98" value="' + settings.glassOpacity + '"></label>' +
-        '<label class="tretaresia-control-field full"><span>' + html(tr('Glow')) + '<output>' + settings.glowStrength + '%</output></span><input type="range" data-ui-setting="glowStrength" min="0" max="100" value="' + settings.glowStrength + '"></label>' +
-        '<label class="tretaresia-control-field"><span>' + html(tr('Density')) + '</span><select data-ui-setting="density"><option value="compact"' + (settings.density === 'compact' ? ' selected' : '') + '>' + html(tr('Compact')) + '</option><option value="comfortable"' + (settings.density === 'comfortable' ? ' selected' : '') + '>' + html(tr('Comfortable')) + '</option></select></label>' +
-        '<label class="tretaresia-control-field"><span>' + html(tr('Language')) + '</span><select data-ui-setting="language"><option value="en"' + (settings.language === 'en' ? ' selected' : '') + '>English</option><option value="th"' + (settings.language === 'th' ? ' selected' : '') + '>ไทย</option></select></label>' +
-        '<label class="tretaresia-control-field full"><span>' + html(tr('Action delivery')) + '</span><select data-ui-setting="interactionMode"><option value="hidden"' + (settings.interactionMode === 'hidden' ? ' selected' : '') + '>' + html(tr('Hidden')) + '</option><option value="visible"' + (settings.interactionMode === 'visible' ? ' selected' : '') + '>' + html(tr('Visible')) + '</option><option value="draft"' + (settings.interactionMode === 'draft' ? ' selected' : '') + '>' + html(tr('Draft only')) + '</option></select></label>' +
-        '<small class="tretaresia-action-mode-help full" data-action-mode-help>' + html(activityCopy()) + '</small>' +
-        '<label class="tretaresia-control-field full"><span>' + html(tr('Activity indicator')) + '</span><select data-ui-setting="activityIndicator"><option value="full"' + (settings.activityIndicator === 'full' ? ' selected' : '') + '>' + html(tr('Full')) + '</option><option value="compact"' + (settings.activityIndicator === 'compact' ? ' selected' : '') + '>' + html(tr('Compact')) + '</option><option value="off"' + (settings.activityIndicator === 'off' ? ' selected' : '') + '>' + html(tr('Off')) + '</option></select></label>' +
-        '</div></section>' +
-        '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>03</b><span><strong>' + html(tr('Continuity')) + '</strong><small>' + html(tr('Character transfer')) + '</small></span></div>' +
-        '<label class="tretaresia-continuity-toggle"><input type="checkbox" data-ui-setting="autoContinuity"' + (settings.autoContinuity ? ' checked' : '') + '><span>' + html(tr('Carry this character into new chats automatically')) + '</span></label>' +
-        '<p class="tretaresia-control-note">' + html(tr('State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device.')) + '</p>' +
-        '<div class="tretaresia-continuity-actions"><button type="button" data-action="export-state"><i class="fa-solid fa-arrow-up-from-bracket"></i>' + html(tr('Export state')) + '</button><button type="button" data-action="import-state"><i class="fa-solid fa-arrow-down-to-bracket"></i>' + html(tr('Import state')) + '</button></div></section>' +
-        '</div></section>';
+        uiMarkup("<label class=\"tretaresia-control-field color\"><span>") + html(tr(label)) + uiMarkup("</span>") +
+        '<input type="color" data-ui-setting="' + key + '" value="' + settings[key] + uiMarkup("\"></label>");
+    return '<section class="tretaresia-control-panel" aria-label="' + html(tr(uiText("Control center"))) + '">' +
+        uiMarkup("<header class=\"tretaresia-control-head\"><span class=\"tretaresia-control-sigil\"><i class=\"fa-solid fa-compass-drafting\"></i></span>") +
+        uiMarkup("<div><small>ROLEFORGE / CONSOLE</small><h3>") + html(tr(uiText("Control center"))) + uiMarkup("</h3></div>") +
+        '<button type="button" data-action="close-control-center" aria-label="' + html(tr(uiText("Close"))) + uiMarkup("\"><i class=\"fa-solid fa-xmark\"></i></button></header>") +
+        uiMarkup("<div class=\"tretaresia-control-scroll\">") +
+        uiMarkup("<section class=\"tretaresia-control-section\"><div class=\"tretaresia-control-section-title\"><b>01</b><span><strong>") + html(tr(uiText("Palette"))) + uiMarkup("</strong><small>") + html(tr(uiText("Fully customizable"))) + uiMarkup("</small></span></div>") +
+        uiMarkup("<label class=\"tretaresia-control-field full\"><span>") + html(tr(uiText("Theme preset"))) + uiMarkup("</span><select data-ui-setting=\"themePreset\">") + presetOptions + uiMarkup("</select></label>") +
+        uiMarkup("<div class=\"tretaresia-control-grid\">") + colorField('Accent', 'accentColor') + colorField('Highlight', 'accentAltColor') +
+        colorField('Text', 'inkColor') + colorField('Surface', 'surfaceColor') + colorField('Aura / Mana', 'auraColor') + uiMarkup("</div>") +
+        uiMarkup("<p class=\"tretaresia-control-note\">") + html(tr(uiText("A preset overwrites all four colors. Adjust any swatch afterwards to make it your own."))) + uiMarkup("</p></section>") +
+        uiMarkup("<section class=\"tretaresia-control-section\"><div class=\"tretaresia-control-section-title\"><b>02</b><span><strong>") + html(tr(uiText("Interface"))) + uiMarkup("</strong><small>") + html(tr(uiText("Visual controls"))) + uiMarkup("</small></span></div>") +
+        uiMarkup("<div class=\"tretaresia-control-grid\">") +
+        uiMarkup("<label class=\"tretaresia-control-field full\"><span>") + html(tr(uiText("Glass"))) + uiMarkup("<output>") + settings.glassOpacity + uiMarkup("%</output></span><input type=\"range\" data-ui-setting=\"glassOpacity\" min=\"55\" max=\"98\" value=\"") + settings.glassOpacity + uiMarkup("\"></label>") +
+        uiMarkup("<label class=\"tretaresia-control-field full\"><span>") + html(tr(uiText("Glow"))) + uiMarkup("<output>") + settings.glowStrength + uiMarkup("%</output></span><input type=\"range\" data-ui-setting=\"glowStrength\" min=\"0\" max=\"100\" value=\"") + settings.glowStrength + uiMarkup("\"></label>") +
+        uiMarkup("<label class=\"tretaresia-control-field\"><span>") + html(tr(uiText("Density"))) + uiMarkup("</span><select data-ui-setting=\"density\"><option value=\"compact\"") + (settings.density === 'compact' ? ' selected' : '') + '>' + html(tr(uiText("Compact"))) + uiMarkup("</option><option value=\"comfortable\"") + (settings.density === 'comfortable' ? ' selected' : '') + '>' + html(tr(uiText("Comfortable"))) + uiMarkup("</option></select></label>") +
+        uiMarkup("<label class=\"tretaresia-control-field\"><span>") + html(tr(uiText("Language"))) + uiMarkup("</span><select data-ui-setting=\"language\"><option value=\"en\"") + (settings.language === 'en' ? ' selected' : '') + uiMarkup(">English</option><option value=\"th\"") + (settings.language === 'th' ? ' selected' : '') + uiMarkup(">ไทย</option></select></label>") +
+        uiMarkup("<label class=\"tretaresia-control-field full\"><span>") + html(tr(uiText("Action delivery"))) + uiMarkup("</span><select data-ui-setting=\"interactionMode\"><option value=\"hidden\"") + (settings.interactionMode === 'hidden' ? ' selected' : '') + '>' + html(tr(uiText("Hidden"))) + uiMarkup("</option><option value=\"visible\"") + (settings.interactionMode === 'visible' ? ' selected' : '') + '>' + html(tr(uiText("Visible"))) + uiMarkup("</option><option value=\"draft\"") + (settings.interactionMode === 'draft' ? ' selected' : '') + '>' + html(tr(uiText("Draft only"))) + uiMarkup("</option></select></label>") +
+        uiMarkup("<small class=\"tretaresia-action-mode-help full\" data-action-mode-help>") + html(activityCopy()) + uiMarkup("</small>") +
+        uiMarkup("<label class=\"tretaresia-control-field full\"><span>") + html(tr(uiText("Activity indicator"))) + uiMarkup("</span><select data-ui-setting=\"activityIndicator\"><option value=\"full\"") + (settings.activityIndicator === 'full' ? ' selected' : '') + '>' + html(tr(uiText("Full"))) + uiMarkup("</option><option value=\"compact\"") + (settings.activityIndicator === 'compact' ? ' selected' : '') + '>' + html(tr(uiText("Compact"))) + uiMarkup("</option><option value=\"off\"") + (settings.activityIndicator === 'off' ? ' selected' : '') + '>' + html(tr(uiText("Off"))) + uiMarkup("</option></select></label>") +
+        uiMarkup("</div></section>") +
+        uiMarkup("<section class=\"tretaresia-control-section\"><div class=\"tretaresia-control-section-title\"><b>03</b><span><strong>") + html(tr(uiText("Continuity"))) + uiMarkup("</strong><small>") + html(tr(uiText("Character transfer"))) + uiMarkup("</small></span></div>") +
+        uiMarkup("<label class=\"tretaresia-continuity-toggle\"><input type=\"checkbox\" data-ui-setting=\"autoContinuity\"") + (settings.autoContinuity ? ' checked' : '') + uiMarkup("><span>") + html(tr(uiText("Carry this character into new chats automatically"))) + uiMarkup("</span></label>") +
+        uiMarkup("<p class=\"tretaresia-control-note\">") + html(tr(uiText("State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device."))) + uiMarkup("</p>") +
+        uiMarkup("<div class=\"tretaresia-continuity-actions\"><button type=\"button\" data-action=\"export-state\"><i class=\"fa-solid fa-arrow-up-from-bracket\"></i>") + html(tr(uiText("Export state"))) + uiMarkup("</button><button type=\"button\" data-action=\"import-state\"><i class=\"fa-solid fa-arrow-down-to-bracket\"></i>") + html(tr(uiText("Import state"))) + uiMarkup("</button></div></section>") +
+        uiMarkup("</div></section>");
 }
 
 function buildControlCenter() {
@@ -5425,21 +5318,21 @@ function buildInterface() {
     overlay.setAttribute('data-astra-extension-surface', 'tretaresia-rpg');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.innerHTML =
-        '<button class="tretaresia-rpg-backdrop" type="button" aria-label="Close RoleForge"></button>' +
-        '<section id="tretaresia-rpg-panel" class="tretaresia-rpg-panel" role="dialog" aria-modal="true" aria-labelledby="tretaresia-rpg-title" tabindex="-1">' +
-        '<div class="tretaresia-app-shell"><header class="tretaresia-rpg-panel-header"><div class="tretaresia-brand-lockup">' +
-        '<div class="tretaresia-rpg-panel-heading"><span class="tretaresia-rpg-kicker">' + html(tr('RoleForge Role-play')) + '</span><h2 id="tretaresia-rpg-title">ROLEFORGE</h2></div></div>' +
-        '<div class="tretaresia-header-actions"><div id="tretaresia-rpg-sync-state" class="tretaresia-sync-state" data-mode="ready"><i class="fa-solid fa-circle"></i><span>' + html(tr('Ready')) + '</span></div>' +
-        controlCenterTrigger() + '<button id="tretaresia-rpg-close" class="tretaresia-header-button" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div></header>' +
+        uiMarkup("<button class=\"tretaresia-rpg-backdrop\" type=\"button\" aria-label=\"Close RoleForge\"></button>") +
+        uiMarkup("<section id=\"tretaresia-rpg-panel\" class=\"tretaresia-rpg-panel\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"tretaresia-rpg-title\" tabindex=\"-1\">") +
+        uiMarkup("<div class=\"tretaresia-app-shell\"><header class=\"tretaresia-rpg-panel-header\"><div class=\"tretaresia-brand-lockup\">") +
+        uiMarkup("<div class=\"tretaresia-rpg-panel-heading\"><span class=\"tretaresia-rpg-kicker\">") + html(tr(uiText("RoleForge Role-play"))) + uiMarkup("</span><h2 id=\"tretaresia-rpg-title\">ROLEFORGE</h2></div></div>") +
+        uiMarkup("<div class=\"tretaresia-header-actions\"><div id=\"tretaresia-rpg-sync-state\" class=\"tretaresia-sync-state\" data-mode=\"ready\"><i class=\"fa-solid fa-circle\"></i><span>") + html(tr(uiText("Ready"))) + uiMarkup("</span></div>") +
+        controlCenterTrigger() + uiMarkup("<button id=\"tretaresia-rpg-close\" class=\"tretaresia-header-button\" type=\"button\" aria-label=\"Close\"><i class=\"fa-solid fa-xmark\"></i></button></div></header>") +
         moduleSlider() +
-        '<main class="tretaresia-rpg-panel-body">' +
-        TAB_ORDER.map((id, index) => '<section class="tretaresia-tab-panel' + (index ? '' : ' is-active') + '" data-panel="' + id + '"' + (index ? ' hidden' : '') + '></section>').join('') +
-        '</main><footer class="tretaresia-rpg-panel-footer"><span id="tretaresia-context-label"><i class="fa-solid fa-link"></i> ' + html(tr('Waiting for chat')) + '</span>' +
-        '<button id="tretaresia-sync-now" class="tretaresia-text-button" type="button"><i class="fa-solid fa-rotate"></i> ' + html(tr('Sync latest turn')) + '</button></footer></div>' +
-        '<div id="tretaresia-manual-sync" class="tretaresia-submodal" hidden></div><div id="tretaresia-portrait-editor" class="tretaresia-submodal" hidden></div><div id="tretaresia-letter-reader" class="tretaresia-submodal" hidden></div>' +
-        '<input id="tretaresia-npc-avatar-input" type="file" accept="image/*" hidden><input id="tretaresia-state-import" type="file" accept="application/json,.json" hidden>' +
+        uiMarkup("<main class=\"tretaresia-rpg-panel-body\">") +
+        TAB_ORDER.map((id, index) => '<section class="tretaresia-tab-panel' + (index ? '' : ' is-active') + '" data-panel="' + id + '"' + (index ? ' hidden' : '') + uiMarkup("></section>")).join('') +
+        uiMarkup("</main><footer class=\"tretaresia-rpg-panel-footer\"><span id=\"tretaresia-context-label\"><i class=\"fa-solid fa-link\"></i> ") + html(tr(uiText("Waiting for chat"))) + uiMarkup("</span>") +
+        uiMarkup("<button id=\"tretaresia-sync-now\" class=\"tretaresia-text-button\" type=\"button\"><i class=\"fa-solid fa-rotate\"></i> ") + html(tr(uiText("Sync latest turn"))) + uiMarkup("</button></footer></div>") +
+        uiMarkup("<div id=\"tretaresia-manual-sync\" class=\"tretaresia-submodal\" hidden></div><div id=\"tretaresia-portrait-editor\" class=\"tretaresia-submodal\" hidden></div><div id=\"tretaresia-letter-reader\" class=\"tretaresia-submodal\" hidden></div>") +
+        uiMarkup("<input id=\"tretaresia-npc-avatar-input\" type=\"file\" accept=\"image/*\" hidden><input id=\"tretaresia-state-import\" type=\"file\" accept=\"application/json,.json\" hidden>") +
         (typeof buildIntroGate === 'function' ? buildIntroGate() : '') +
-        '</section>';
+        uiMarkup("</section>");
     document.body.appendChild(overlay);
     installAstraSurfaceCompatibility(overlay);
     try {
@@ -5542,6 +5435,15 @@ function restorePanelScroll(id, panel, { restoreBody = true } = {}) {
 }
 
 function rebuildInterface() {
+    refreshStaticUi();
+    const powerPanel=document.getElementById('roleforge-power-editor');
+    if(powerPanel?.rfController)powerPanel.rfController.refreshLanguage();else refreshPowerDrawer(true);
+    renderRequestUsage();
+    adultPromptControls?.refresh();
+    sendForgeMessage('language');
+    npcWorkspace?.refresh();
+    const languageSelect=document.getElementById('tretaresia-rpg-language');
+    if(languageSelect)languageSelect.value=getSettings().language;
     const previous = document.getElementById('tretaresia-rpg-overlay');
     const wasOpen = previous?.classList.contains('is-open');
     const controlWasOpen = controlCenterOpen();
@@ -5560,13 +5462,13 @@ function rebuildInterface() {
 
 
 function moduleSlider() {
-    return '<div class="tretaresia-module-slider" id="tretaresia-module-slider" role="tablist" aria-label="RoleForge modules">' +
-        '<button class="tretaresia-slider-arrow" type="button" data-action="tab-prev" aria-label="Previous module"><i class="fa-solid fa-angle-left"></i></button>' +
-        '<div class="tretaresia-module-window"><div class="tretaresia-module-track" id="tretaresia-module-track" style="--tab-index:0">' +
+    return uiMarkup("<div class=\"tretaresia-module-slider\" id=\"tretaresia-module-slider\" role=\"tablist\" aria-label=\"RoleForge modules\">") +
+        uiMarkup("<button class=\"tretaresia-slider-arrow\" type=\"button\" data-action=\"tab-prev\" aria-label=\"Previous module\"><i class=\"fa-solid fa-angle-left\"></i></button>") +
+        uiMarkup("<div class=\"tretaresia-module-window\"><div class=\"tretaresia-module-track\" id=\"tretaresia-module-track\" style=\"--tab-index:0\">") +
         TAB_ORDER.map((id, index) => '<button class="tretaresia-tab-button' + (index ? '' : ' is-active') + '" type="button" role="tab" data-tab="' + id + '" aria-selected="' + String(!index) + '" tabindex="' + (index ? '-1' : '0') + '">' +
-            '<i class="' + TAB_META[id][0] + '"></i><span>' + html(tr(TAB_META[id][1])) + '</span><em>' + String(index + 1).padStart(2, '0') + ' / ' + String(TAB_ORDER.length).padStart(2, '0') + '</em></button>').join('') +
-        '</div></div><button class="tretaresia-slider-arrow" type="button" data-action="tab-next" aria-label="Next module"><i class="fa-solid fa-angle-right"></i></button>' +
-        '<span class="tretaresia-module-dots" aria-hidden="true">' + TAB_ORDER.map((_, index) => '<i' + (index ? '' : ' class="on"') + '></i>').join('') + '</span></div>';
+            '<i class="' + TAB_META[id][0] + uiMarkup("\"></i><span>") + html(tr(TAB_META[id][1])) + uiMarkup("</span><em>") + String(index + 1).padStart(2, '0') + ' / ' + String(TAB_ORDER.length).padStart(2, '0') + uiMarkup("</em></button>")).join('') +
+        uiMarkup("</div></div><button class=\"tretaresia-slider-arrow\" type=\"button\" data-action=\"tab-next\" aria-label=\"Next module\"><i class=\"fa-solid fa-angle-right\"></i></button>") +
+        uiMarkup("<span class=\"tretaresia-module-dots\" aria-hidden=\"true\">") + TAB_ORDER.map((_, index) => '<i' + (index ? '' : ' class="on"') + uiMarkup("></i>")).join('') + uiMarkup("</span></div>");
 }
 
 function stepTab(direction) {
@@ -5641,7 +5543,7 @@ function onInterfaceSettingChange(event) {
         const rankCopy = card?.querySelector('.tretaresia-proficiency-rank strong');
         const rank = tr(proficiencyRank(proficiency.value));
         if (fill) fill.style.width = proficiency.value + '%';
-        if (score) score.innerHTML = proficiency.value + '<small>%</small>';
+        if (score) score.innerHTML = proficiency.value + uiMarkup("<small>%</small>");
         if (rankCopy) rankCopy.textContent = rank;
         if (card) card.style.setProperty('--proficiency', proficiency.value);
         return;
@@ -5763,14 +5665,13 @@ function activateTab(id) {
 
 
 const input = (label, name, value, type = 'text', extra = '') =>
-    `<label class="tretaresia-field"><span>${html(tr(label))}</span><input name="${name}" type="${type}" value="${html(value)}" ${extra}></label>`;
+    (uiMarkup("<label class=\"tretaresia-field\"><span>")+(html(tr(label)))+uiMarkup("</span><input name=\"")+(name)+uiMarkup("\" type=\"")+(type)+uiMarkup("\" value=\"")+(html(value))+uiMarkup("\" ")+(extra)+uiMarkup("></label>"));
 const select = (label, name, options, selected) =>
-    `<label class="tretaresia-field"><span>${html(tr(label))}</span><select name="${name}">${options.map(value =>
-        `<option value="${html(value)}"${value === selected ? ' selected' : ''}>${html(tr(value))}</option>`).join('')}</select></label>`;
+    (uiMarkup("<label class=\"tretaresia-field\"><span>")+(html(tr(label)))+uiMarkup("</span><select name=\"")+(name)+uiMarkup("\">")+(options.map(value =>
+        (uiMarkup("<option value=\"")+(html(value))+uiMarkup("\"")+(value === selected ? ' selected' : '')+uiMarkup(">")+(html(tr(value)))+uiMarkup("</option>"))).join(''))+uiMarkup("</select></label>"));
 const heading = (title, subtitle, icon) =>
-    `<div class="tretaresia-section-heading"><div><span class="tretaresia-eyebrow">${html(tr('System interface'))}</span>
-        <h3>${html(tr(title))}</h3><p>${html(tr(subtitle))}</p></div><i class="${icon} tretaresia-heading-icon"></i></div>`;
-const empty = message => `<div class="tretaresia-empty-state"><i class="fa-regular fa-compass"></i><p>${html(tr(message))}</p></div>`;
+    (uiMarkup("<div class=\"tretaresia-section-heading\"><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("System interface"))))+uiMarkup("</span>\n        <h3>")+(html(tr(title)))+uiMarkup("</h3><p>")+(html(tr(subtitle)))+uiMarkup("</p></div><i class=\"")+(icon)+uiMarkup(" tretaresia-heading-icon\"></i></div>"));
+const empty = message => (uiMarkup("<div class=\"tretaresia-empty-state\"><i class=\"fa-regular fa-compass\"></i><p>")+(html(tr(message)))+uiMarkup("</p></div>"));
 
 function meterView(label, value, icon, tone, options = {}) {
     const infinite = Boolean(options.infinite);
@@ -5778,11 +5679,7 @@ function meterView(label, value, icon, tone, options = {}) {
     const cappedPercent = Math.min(100, Math.max(0, percent));
     const style = options.color ? ` style="--vital:${html(auraColor(options.color))}"` : '';
     const classes = `${options.divine ? ' is-divine' : ''}${infinite ? ' is-infinite' : ''}`;
-    return `<article class="tretaresia-vital tretaresia-vital-${tone}${classes}"${style}>
-        <div class="tretaresia-vital-line"><span><i class="${icon}"></i>${html(tr(label))}</span><strong>${infinite ? '&infin;' : value.current} <em>${infinite ? html(tr('Boundless')) : `/ ${value.max}`}</em></strong></div>
-        <div class="tretaresia-vital-track" role="meter" aria-valuenow="${infinite ? value.max : value.current}" aria-valuemax="${value.max}" aria-label="${html(tr(label))}">
-            <span style="width:${cappedPercent}%"></span><i style="left:${cappedPercent}%"></i>
-        </div><small>${infinite ? '&infin;' : `${percent}%`}</small></article>`;
+    return (uiMarkup("<article class=\"tretaresia-vital tretaresia-vital-")+(tone)+uiMarkup("")+(classes)+uiMarkup("\"")+(style)+uiMarkup(">\n        <div class=\"tretaresia-vital-line\"><span><i class=\"")+(icon)+uiMarkup("\"></i>")+(html(tr(label)))+uiMarkup("</span><strong>")+(infinite ? '&infin;' : value.current)+uiMarkup(" <em>")+(infinite ? html(tr(uiText("Boundless"))) : `/ ${value.max}`)+uiMarkup("</em></strong></div>\n        <div class=\"tretaresia-vital-track\" role=\"meter\" aria-valuenow=\"")+(infinite ? value.max : value.current)+uiMarkup("\" aria-valuemax=\"")+(value.max)+uiMarkup("\" aria-label=\"")+(html(tr(label)))+uiMarkup("\">\n            <span style=\"width:")+(cappedPercent)+uiMarkup("%\"></span><i style=\"left:")+(cappedPercent)+uiMarkup("%\"></i>\n        </div><small>")+(infinite ? '&infin;' : `${percent}%`)+uiMarkup("</small></article>"));
 }
 
 function playerCombatProfile(state) {
@@ -5904,14 +5801,10 @@ function repairCurrentStateSnapshot(source = getState()) {
 function renderSystems(panel, state) {
     if (!panel) return;
     const report = diagnosticReport(state);
-    const audits = [...state.systems.audit].reverse().map(entry => `<details class="tretaresia-audit-entry"><summary><span><b>${html(entry.summary)}</b><small>${html(entry.source)} · ${html(new Date(entry.at).toLocaleString())}</small></span><em>${entry.changes.length}</em></summary><div>${entry.changes.map(change => `<article><code>${html(change.path)}</code><span>${html(change.before)} <i class="fa-solid fa-arrow-right"></i> ${html(change.after)}</span><small>${html(change.reason)} · ${change.confidence}%</small></article>`).join('')}${Number.isInteger(entry.messageId) ? `<aside><button type="button" data-action="rollback-turn" data-id="${entry.messageId}"><i class="fa-solid fa-rotate-left"></i>${html(tr('Rollback latest turn'))}</button><button type="button" data-action="reapply-turn" data-id="${entry.messageId}"><i class="fa-solid fa-rotate-right"></i>Apply again</button></aside>` : ''}</div></details>`).join('');
-    const combat = [...state.systems.combatLogs].reverse().slice(0, 30).map(entry => `<details class="tretaresia-combat-log"><summary><span><b>${html(entry.summary)}</b><small>${html(entry.damageType)}${entry.critical ? ' · CRITICAL' : ''}</small></span><strong>-${entry.finalDamage} HP</strong></summary><dl><div><dt>Base</dt><dd>${entry.baseDamage}</dd></div><div><dt>Armor</dt><dd>-${entry.armor}</dd></div><div><dt>Aura Guard</dt><dd>-${entry.auraGuard}</dd></div><div><dt>Resistance</dt><dd>-${entry.resistance}</dd></div><div><dt>Final</dt><dd>${entry.finalDamage}</dd></div></dl></details>`).join('');
-    const regional = state.systems.regionalWeather.map(entry => `<article><i class="${weatherIcon(entry.weather)}"></i><span><b>${html(entry.region)}</b><small>${html(entry.weather)}${entry.temperature === null ? '' : ` · ${entry.temperature}°`}${entry.hazard ? ` · ${html(entry.hazard)}` : ''}</small></span></article>`).join('');
-    panel.innerHTML = `${heading('System Audit', `${report.score}% · ${report.passed}/${report.total} checks passed`, 'fa-solid fa-microchip')}
-        <section class="tretaresia-diagnostic-card"><header><div><span>${html(tr('Diagnostics'))}</span><strong>${report.score}%</strong></div><div class="tretaresia-diagnostic-track"><i style="width:${report.score}%"></i></div></header><div class="tretaresia-diagnostic-grid">${report.checks.map(([name, ok, detail]) => `<article class="${ok ? 'is-ok' : 'is-warning'}"><i class="fa-solid fa-${ok ? 'circle-check' : 'triangle-exclamation'}"></i><span><b>${html(name)}</b><small>${html(detail)}</small></span></article>`).join('')}</div><footer><button class="tretaresia-primary-button" type="button" data-action="repair-state"><i class="fa-solid fa-screwdriver-wrench"></i>${html(tr('Repair current state'))}</button><button class="tretaresia-secondary-button" type="button" data-action="rollback-latest-turn"><i class="fa-solid fa-rotate-left"></i>${html(tr('Rollback latest turn'))}</button><button class="tretaresia-secondary-button" type="button" data-action="reapply-latest-turn"><i class="fa-solid fa-rotate-right"></i>Apply again</button></footer></section>
-        <section class="tretaresia-system-section"><div class="tretaresia-section-label"><i class="fa-solid fa-list-check"></i><span>${html(tr('Turn Inspector'))}</span><b>${state.systems.audit.length}</b></div><div class="tretaresia-audit-list">${audits || empty('No journal entries yet.')}</div></section>
-        <section class="tretaresia-system-section"><div class="tretaresia-section-label"><i class="fa-solid fa-burst"></i><span>${html(tr('Damage breakdown'))}</span><b>${state.systems.combatLogs.length}</b></div><div class="tretaresia-combat-list">${combat || empty('No journal entries yet.')}</div></section>
-        <section class="tretaresia-system-section"><div class="tretaresia-section-label"><i class="fa-solid fa-cloud-sun-rain"></i><span>${html(tr('Regional weather'))}</span><b>${state.systems.regionalWeather.length}</b></div><div class="tretaresia-regional-weather">${regional || empty('No journal entries yet.')}</div></section>`;
+    const audits = [...state.systems.audit].reverse().map(entry => (uiMarkup("<details class=\"tretaresia-audit-entry\"><summary><span><b>")+(html(entry.summary))+uiMarkup("</b><small>")+(html(entry.source))+uiMarkup(" · ")+(html(new Date(entry.at).toLocaleString()))+uiMarkup("</small></span><em>")+(entry.changes.length)+uiMarkup("</em></summary><div>")+(entry.changes.map(change => (uiMarkup("<article><code>")+(html(change.path))+uiMarkup("</code><span>")+(html(change.before))+uiMarkup(" <i class=\"fa-solid fa-arrow-right\"></i> ")+(html(change.after))+uiMarkup("</span><small>")+(html(change.reason))+uiMarkup(" · ")+(change.confidence)+uiMarkup("%</small></article>"))).join(''))+uiMarkup("")+(Number.isInteger(entry.messageId) ? (uiMarkup("<aside><button type=\"button\" data-action=\"rollback-turn\" data-id=\"")+(entry.messageId)+uiMarkup("\"><i class=\"fa-solid fa-rotate-left\"></i>")+(html(tr(uiText("Rollback latest turn"))))+uiMarkup("</button><button type=\"button\" data-action=\"reapply-turn\" data-id=\"")+(entry.messageId)+uiMarkup("\"><i class=\"fa-solid fa-rotate-right\"></i>Apply again</button></aside>")) : '')+uiMarkup("</div></details>"))).join('');
+    const combat = [...state.systems.combatLogs].reverse().slice(0, 30).map(entry => (uiMarkup("<details class=\"tretaresia-combat-log\"><summary><span><b>")+(html(entry.summary))+uiMarkup("</b><small>")+(html(entry.damageType))+uiMarkup("")+(entry.critical ? ' · CRITICAL' : '')+uiMarkup("</small></span><strong>-")+(entry.finalDamage)+uiMarkup(" HP</strong></summary><dl><div><dt>Base</dt><dd>")+(entry.baseDamage)+uiMarkup("</dd></div><div><dt>Armor</dt><dd>-")+(entry.armor)+uiMarkup("</dd></div><div><dt>Aura Guard</dt><dd>-")+(entry.auraGuard)+uiMarkup("</dd></div><div><dt>Resistance</dt><dd>-")+(entry.resistance)+uiMarkup("</dd></div><div><dt>Final</dt><dd>")+(entry.finalDamage)+uiMarkup("</dd></div></dl></details>"))).join('');
+    const regional = state.systems.regionalWeather.map(entry => (uiMarkup("<article><i class=\"")+(weatherIcon(entry.weather))+uiMarkup("\"></i><span><b>")+(html(entry.region))+uiMarkup("</b><small>")+(html(entry.weather))+uiMarkup("")+(entry.temperature === null ? '' : ` · ${entry.temperature}°`)+uiMarkup("")+(entry.hazard ? ` · ${html(entry.hazard)}` : '')+uiMarkup("</small></span></article>"))).join('');
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("System Audit"), `${report.score}% · ${report.passed}/${report.total} checks passed`, 'fa-solid fa-microchip'))+uiMarkup("\n        <section class=\"tretaresia-diagnostic-card\"><header><div><span>")+(html(tr(uiText("Diagnostics"))))+uiMarkup("</span><strong>")+(report.score)+uiMarkup("%</strong></div><div class=\"tretaresia-diagnostic-track\"><i style=\"width:")+(report.score)+uiMarkup("%\"></i></div></header><div class=\"tretaresia-diagnostic-grid\">")+(report.checks.map(([name, ok, detail]) => (uiMarkup("<article class=\"")+(ok ? 'is-ok' : 'is-warning')+uiMarkup("\"><i class=\"fa-solid fa-")+(ok ? 'circle-check' : 'triangle-exclamation')+uiMarkup("\"></i><span><b>")+(html(name))+uiMarkup("</b><small>")+(html(detail))+uiMarkup("</small></span></article>"))).join(''))+uiMarkup("</div><footer><button class=\"tretaresia-primary-button\" type=\"button\" data-action=\"repair-state\"><i class=\"fa-solid fa-screwdriver-wrench\"></i>")+(html(tr(uiText("Repair current state"))))+uiMarkup("</button><button class=\"tretaresia-secondary-button\" type=\"button\" data-action=\"rollback-latest-turn\"><i class=\"fa-solid fa-rotate-left\"></i>")+(html(tr(uiText("Rollback latest turn"))))+uiMarkup("</button><button class=\"tretaresia-secondary-button\" type=\"button\" data-action=\"reapply-latest-turn\"><i class=\"fa-solid fa-rotate-right\"></i>Apply again</button></footer></section>\n        <section class=\"tretaresia-system-section\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-list-check\"></i><span>")+(html(tr(uiText("Turn Inspector"))))+uiMarkup("</span><b>")+(state.systems.audit.length)+uiMarkup("</b></div><div class=\"tretaresia-audit-list\">")+(audits || empty(uiText("No journal entries yet.")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-system-section\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-burst\"></i><span>")+(html(tr(uiText("Damage breakdown"))))+uiMarkup("</span><b>")+(state.systems.combatLogs.length)+uiMarkup("</b></div><div class=\"tretaresia-combat-list\">")+(combat || empty(uiText("No journal entries yet.")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-system-section\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-cloud-sun-rain\"></i><span>")+(html(tr(uiText("Regional weather"))))+uiMarkup("</span><b>")+(state.systems.regionalWeather.length)+uiMarkup("</b></div><div class=\"tretaresia-regional-weather\">")+(regional || empty(uiText("No journal entries yet.")))+uiMarkup("</div></section>"));
 }
 
 function renderPanel(id, panel, state) {
@@ -5936,8 +5829,8 @@ function renderAll(state = getState()) {
     if (id) renderPanel(id, panel, state);
     const label = overlay.querySelector('#tretaresia-context-label');
     if (label) label.innerHTML = SillyTavern.getContext().getCurrentChatId?.()
-        ? `<i class="fa-solid fa-location-dot"></i> ${html(sceneSnapshot(state).region || '—')} · ${html(sceneSnapshot(state).location || '—')}`
-        : `<i class="fa-solid fa-triangle-exclamation"></i> ${html(tr('Open a chat to activate this system'))}`;
+        ? (uiMarkup("<i class=\"fa-solid fa-location-dot\"></i> ")+(html(sceneSnapshot(state).region || '—'))+uiMarkup(" · ")+(html(sceneSnapshot(state).location || '—'))+uiMarkup(""))
+        : (uiMarkup("<i class=\"fa-solid fa-triangle-exclamation\"></i> ")+(html(tr(uiText("Open a chat to activate this system"))))+uiMarkup(""));
     if (id === 'npcs') void hydrateNpcPortraits(panel, state);
 }
 
@@ -5945,10 +5838,10 @@ function rankInsignia(progression) {
     const label = progression.adventurerRank === 'Custom Rank' && progression.customRankName
         ? progression.customRankName : progression.adventurerRank;
     const tier = Math.max(0, RANKS.indexOf(progression.adventurerRank));
-    const bars = RANKS.map((_, index) => '<i' + (index <= tier ? ' class="on"' : '') + '></i>').join('');
-    return '<div class="tretaresia-rank-insignia" role="img" aria-label="' + html(tr('Guild rank')) + ': ' + html(label) + ', tier ' + (tier + 1) + ' of ' + RANKS.length + '">' +
-        '<span class="tretaresia-rank-bars">' + bars + '</span><small>' + html(tr('Guild rank')) + '</small><b>' + html(label) + '</b>' +
-        '<em>' + String(tier + 1).padStart(2, '0') + '<span>/ ' + String(RANKS.length).padStart(2, '0') + '</span></em></div>';
+    const bars = RANKS.map((_, index) => '<i' + (index <= tier ? ' class="on"' : '') + uiMarkup("></i>")).join('');
+    return '<div class="tretaresia-rank-insignia" role="img" aria-label="' + html(tr(uiText("Guild rank"))) + ': ' + html(label) + ', tier ' + (tier + 1) + ' of ' + RANKS.length + '">' +
+        uiMarkup("<span class=\"tretaresia-rank-bars\">") + bars + uiMarkup("</span><small>") + html(tr(uiText("Guild rank"))) + uiMarkup("</small><b>") + html(label) + uiMarkup("</b>") +
+        uiMarkup("<em>") + String(tier + 1).padStart(2, '0') + uiMarkup("<span>/ ") + String(RANKS.length).padStart(2, '0') + uiMarkup("</span></em></div>");
 }
 
 function renderStatus(panel, state) {
@@ -5958,80 +5851,11 @@ function renderStatus(panel, state) {
     const initial = html((persona || '?').charAt(0).toUpperCase());
     const divineAura = hasDivinePower(state);
     const customPreset=getPowerPreset().mode==='custom';
-    panel.innerHTML = `
-        <section class="tretaresia-character-hero"><button class="tretaresia-avatar" type="button" data-action="${state.player.portrait ? 'open-portrait-editor' : 'choose-portrait'}" aria-label="${html(tr(state.player.portrait ? 'Adjust portrait' : 'Choose profile picture'))}">
-            <span class="tretaresia-magic-ring ring-one"></span><span class="tretaresia-magic-ring ring-two"></span>
-            ${state.player.portrait ? `<span class="tretaresia-avatar-photo"><img src="${html(state.player.portrait)}" alt="${html(persona)} portrait" style="--portrait-desktop-x:${state.player.portraitView.desktop.x}%;--portrait-desktop-y:${state.player.portraitView.desktop.y}%;--portrait-desktop-zoom:${state.player.portraitView.desktop.zoom};--portrait-mobile-x:${state.player.portraitView.mobile.x}%;--portrait-mobile-y:${state.player.portraitView.mobile.y}%;--portrait-mobile-zoom:${state.player.portraitView.mobile.zoom}"></span>` : `<span class="tretaresia-avatar-initial">${initial}</span>`}
-            <span class="tretaresia-avatar-edit"><i class="fa-solid ${state.player.portrait ? 'fa-crop-simple' : 'fa-camera'}"></i></span></button>
-            <input id="tretaresia-avatar-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
-            <div class="tretaresia-character-copy"><span class="tretaresia-eyebrow">${html(tr('Current persona'))}</span><h3>${html(persona)}</h3>
-                <p class="tretaresia-character-title">${html(state.player.title)}</p><div class="tretaresia-identity-chips">
-                <span><i class="fa-solid fa-dna"></i>${html(state.player.race)}</span><span><i class="fa-solid fa-shield-halved"></i>${html(state.player.guild)}</span>
-                <span><i class="fa-solid fa-briefcase"></i>${html(state.player.profession)}</span><span><i class="fa-solid fa-people-group"></i>${html(state.player.party)}</span></div></div>
-            ${rankInsignia(state.progression)}</section>
-        <section class="tretaresia-progress-deck"><div class="tretaresia-exp-line"><div class="tretaresia-exp-track"><span style="width:${expPercent}%"></span><i style="left:${expPercent}%"></i></div>
-            <p><strong>${state.progression.experience} / ${state.progression.experienceMax} EXP</strong><span>Lv. ${state.player.level} · ${html(state.progression.adventurerRank)} Rank</span></p></div></section>
-        <div class="tretaresia-dashboard-grid">
-            <article class="tretaresia-card tretaresia-vitals-card"><div class="tretaresia-card-title"><span>${html(tr('Vital status'))}</span>
-                <em><i class="fa-solid fa-wave-square"></i> ${html(state.player.condition)}</em></div><div class="tretaresia-vitals-grid">
-                ${meterView('Health', state.player.hp, 'fa-solid fa-heart', 'health')}
-                ${customPreset ? getPowerPreset().definitions.filter(d=>d.type==='resource').map(d=>meterView(d.name,{current:powerValue(d,state.customPowers?.[d.id]),max:d.max},'fa-solid fa-'+d.icon,'mana',{color:d.color})).join('') : meterView(divineAura ? 'Divine Mana' : 'Aura / Mana', state.player.mp, 'fa-solid fa-fire-flame-curved', 'mana', { color: state.player.aura.color, infinite: state.player.aura.infinite, divine: divineAura })}
-                ${meterView('Stamina', state.player.stamina, 'fa-solid fa-bolt', 'stamina')}
-                ${meterView('Hunger', { current: state.player.survival.hunger, max: 100 }, 'fa-solid fa-drumstick-bite', 'hunger')}
-                ${meterView('Thirst', { current: state.player.survival.thirst, max: 100 }, 'fa-solid fa-droplet', 'thirst')}</div>
-                <div class="tretaresia-fitness-capacity"><span><i class="fa-solid fa-lungs"></i>${html(tr('Lung capacity'))}</span>
-                    <strong>${state.player.fitness.lungCapacity.toLocaleString()} <small>CAP</small></strong><em>${state.player.fitness.aerobicSessions.toLocaleString()} ${html(tr('aerobic sessions'))}</em></div></article>
-            <article class="tretaresia-card"><div class="tretaresia-card-title"><span>${html(tr('Identity'))}</span>
-                <i class="fa-solid fa-feather"></i></div><dl class="tretaresia-fact-list">
-                <div><dt>${html(tr('Race'))}</dt><dd>${html(state.player.race)}</dd></div>
-                <div><dt>${html(tr('Gender'))}</dt><dd>${html(state.player.gender || 'Unknown')}</dd></div>
-                <div><dt>${html(tr('Age'))}</dt><dd>${html(state.player.age || 'Unknown')}</dd></div>
-                <div><dt>${html(tr('Home continent'))}</dt><dd>${html(state.player.homeContinent || 'Unknown')}</dd></div>
-                <div><dt>${html(tr('Standing'))}</dt><dd>${html(state.player.standing || 'Unknown')}</dd></div>
-                <div><dt>${html(tr('Affiliation'))}</dt><dd>${html(state.player.affiliation || 'Unaffiliated')}</dd></div>
-                <div><dt>${html(tr('Hair'))}</dt><dd>${html(state.player.appearance.hair || 'Unknown')}</dd></div>
-                <div><dt>${html(tr('Eyes'))}</dt><dd>${html(state.player.appearance.eyes || 'Unknown')}</dd></div>
-                <div><dt>${html(tr('Height'))}</dt><dd>${html(state.player.appearance.height || 'Unknown')}</dd></div>
-                <div><dt>${html(tr('Build'))}</dt><dd>${html(state.player.appearance.build || 'Unknown')}</dd></div>
-                <div><dt>${html(tr('Guild'))}</dt><dd>${html(state.player.guild)}</dd></div>
-                <div><dt>${html(tr('Party'))}</dt><dd>${html(state.player.party)}</dd></div>
-                <div><dt>${html(tr('Profession'))}</dt><dd>${html(state.player.profession)}</dd></div>
-                <div><dt>${html(tr('Power type'))}</dt><dd>${html(getPowerPreset().mode==='custom'?customPowerLabel(state):state.player.powerType)}</dd></div>
-                ${customPreset?'':`                <div><dt>${html(tr('Aura color'))}</dt><dd><span class="tretaresia-aura-swatch" style="--aura-color:${html(state.player.aura.color)}"></span>${html(state.player.aura.color)}${state.player.aura.infinite ? ` · ${html(tr('Boundless'))}` : ''}</dd></div>
-                <div><dt>${html(tr('Mana limit'))}</dt><dd>${html(tr(state.player.aura.infinite ? 'Infinite' : 'Finite'))} · ${html(tr(state.player.aura.infiniteMode))}</dd></div>
-`}
-                <div><dt>${html(tr('Origin skill'))}</dt><dd>${html(state.player.originSkill)}</dd></div>
-                <div><dt>${html(tr('Condition'))}</dt><dd>${html(state.player.condition)}</dd></div>
-                <div><dt>${html(tr('Level'))}</dt><dd>${state.player.level}</dd></div></dl></article>
-        </div>
-        ${customPreset?'':`        <section class="tretaresia-aura-control-card"><div class="tretaresia-section-label"><i class="fa-solid fa-wave-square"></i><span>Aura / Mana Control</span></div><div class="tretaresia-aura-control-grid">
-            ${[['output', 'Output'], ['control', 'Control'], ['efficiency', 'Efficiency'], ['recovery', 'Recovery']].map(([key, label]) => `<article><span>${label}</span><strong>${state.player.aura[key]}%</strong><div><i style="width:${state.player.aura[key]}%"></i></div></article>`).join('')}</div>
-            <small><i class="fa-solid fa-circle-info"></i>Efficiency reduces Mana cost; Recovery increases rest recovery. Output and Control progress through confirmed use or training.</small></section>
-`}
-        <section class="tretaresia-effects-card"><div class="tretaresia-section-label"><i class="fa-solid fa-heart-pulse"></i><span>${html(tr('Active effects'))}</span><b>${state.systems.effects.length}</b></div><div>${state.systems.effects.length ? state.systems.effects.map(effect => `<article data-severity="${html(effect.severity.toLocaleLowerCase())}"><i class="fa-solid fa-triangle-exclamation"></i><span><b>${html(effect.name)}</b><small>${html(effect.severity)} · ${html(effect.type)}${effect.remainingTurns === null ? '' : ` · ${effect.remainingTurns} turn(s)`}</small><em>${html(effect.treatment || effect.source || 'No treatment recorded')}</em></span></article>`).join('') : `<p class="tretaresia-no-effects"><i class="fa-solid fa-shield-heart"></i>No active injuries or status effects</p>`}</div></section>
-        <details class="tretaresia-editor"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Edit status'))}</summary>
-            <form data-form="status" class="tretaresia-form-grid">
-                ${input('Name', 'name', state.player.name)}${input('Title', 'title', state.player.title)}
-                ${input('Race', 'race', state.player.race)}${input('Age', 'age', state.player.age)}
-                ${input('Gender', 'gender', state.player.gender)}${input('Home continent', 'homeContinent', state.player.homeContinent)}
-                ${input('Standing', 'standing', state.player.standing)}${input('Affiliation', 'affiliation', state.player.affiliation)}
-                ${input('Hair', 'hair', state.player.appearance.hair)}${input('Eyes', 'eyes', state.player.appearance.eyes)}
-                ${input('Height', 'height', state.player.appearance.height)}${input('Build', 'build', state.player.appearance.build)}
-                ${input('Profession', 'profession', state.player.profession)}${input('Guild', 'guild', state.player.guild)}${input('Party', 'party', state.player.party)}
-                ${input('Power type', 'powerType', customPreset?customPowerLabel(state):state.player.powerType)}${input('Origin skill', 'originSkill', state.player.originSkill)}
-                ${input('Condition', 'condition', state.player.condition)}${input('Level', 'level', state.player.level, 'number', 'min="1"')}
-                ${input('HP', 'hpCurrent', state.player.hp.current, 'number', 'min="0"')}${input('HP max', 'hpMax', state.player.hp.max, 'number', 'min="1"')}
-                ${customPreset?'':`${input('MP', 'mpCurrent', state.player.mp.current, 'number', 'min="0"')}${input('MP max', 'mpMax', state.player.mp.max, 'number', 'min="1"')}
-                `}
-                ${input('Stamina', 'staminaCurrent', state.player.stamina.current, 'number', 'min="0"')}${input('Stamina max', 'staminaMax', state.player.stamina.max, 'number', 'min="1"')}
-                ${input('Hunger', 'hunger', state.player.survival.hunger, 'number', 'min="0" max="100"')}${input('Thirst', 'thirst', state.player.survival.thirst, 'number', 'min="0" max="100"')}
-                ${customPreset?'':`${input('Aura color', 'auraColor', state.player.aura.color, 'color')}${select('Mana limit', 'auraInfiniteMode', ['Auto', 'Finite', 'Infinite'], state.player.aura.infiniteMode)}
+    panel.innerHTML = (uiMarkup("\n        <section class=\"tretaresia-character-hero\"><button class=\"tretaresia-avatar\" type=\"button\" data-action=\"")+(state.player.portrait ? 'open-portrait-editor' : 'choose-portrait')+uiMarkup("\" aria-label=\"")+(html(tr(state.player.portrait ? uiText("Adjust portrait") : uiText("Choose profile picture"))))+uiMarkup("\">\n            <span class=\"tretaresia-magic-ring ring-one\"></span><span class=\"tretaresia-magic-ring ring-two\"></span>\n            ")+(state.player.portrait ? (uiMarkup("<span class=\"tretaresia-avatar-photo\"><img src=\"")+(html(state.player.portrait))+uiMarkup("\" alt=\"")+(html(persona))+uiMarkup(" portrait\" style=\"--portrait-desktop-x:")+(state.player.portraitView.desktop.x)+uiMarkup("%;--portrait-desktop-y:")+(state.player.portraitView.desktop.y)+uiMarkup("%;--portrait-desktop-zoom:")+(state.player.portraitView.desktop.zoom)+uiMarkup(";--portrait-mobile-x:")+(state.player.portraitView.mobile.x)+uiMarkup("%;--portrait-mobile-y:")+(state.player.portraitView.mobile.y)+uiMarkup("%;--portrait-mobile-zoom:")+(state.player.portraitView.mobile.zoom)+uiMarkup("\"></span>")) : (uiMarkup("<span class=\"tretaresia-avatar-initial\">")+(initial)+uiMarkup("</span>")))+uiMarkup("\n            <span class=\"tretaresia-avatar-edit\"><i class=\"fa-solid ")+(state.player.portrait ? 'fa-crop-simple' : 'fa-camera')+uiMarkup("\"></i></span></button>\n            <input id=\"tretaresia-avatar-input\" type=\"file\" accept=\"image/png,image/jpeg,image/webp\" hidden>\n            <div class=\"tretaresia-character-copy\"><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Current persona"))))+uiMarkup("</span><h3>")+(html(persona))+uiMarkup("</h3>\n                <p class=\"tretaresia-character-title\">")+(html(state.player.title))+uiMarkup("</p><div class=\"tretaresia-identity-chips\">\n                <span><i class=\"fa-solid fa-dna\"></i>")+(html(state.player.race))+uiMarkup("</span><span><i class=\"fa-solid fa-shield-halved\"></i>")+(html(state.player.guild))+uiMarkup("</span>\n                <span><i class=\"fa-solid fa-briefcase\"></i>")+(html(state.player.profession))+uiMarkup("</span><span><i class=\"fa-solid fa-people-group\"></i>")+(html(state.player.party))+uiMarkup("</span></div></div>\n            ")+(rankInsignia(state.progression))+uiMarkup("</section>\n        <section class=\"tretaresia-progress-deck\"><div class=\"tretaresia-exp-line\"><div class=\"tretaresia-exp-track\"><span style=\"width:")+(expPercent)+uiMarkup("%\"></span><i style=\"left:")+(expPercent)+uiMarkup("%\"></i></div>\n            <p><strong>")+(state.progression.experience)+uiMarkup(" / ")+(state.progression.experienceMax)+uiMarkup(" EXP</strong><span>Lv. ")+(state.player.level)+uiMarkup(" · ")+(html(state.progression.adventurerRank))+uiMarkup(" Rank</span></p></div></section>\n        <div class=\"tretaresia-dashboard-grid\">\n            <article class=\"tretaresia-card tretaresia-vitals-card\"><div class=\"tretaresia-card-title\"><span>")+(html(tr(uiText("Vital status"))))+uiMarkup("</span>\n                <em><i class=\"fa-solid fa-wave-square\"></i> ")+(html(state.player.condition))+uiMarkup("</em></div><div class=\"tretaresia-vitals-grid\">\n                ")+(meterView('Health', state.player.hp, 'fa-solid fa-heart', 'health'))+uiMarkup("\n                ")+(customPreset ? getPowerPreset().definitions.filter(d=>d.type==='resource').map(d=>meterView(d.name,{current:powerValue(d,state.customPowers?.[d.id]),max:d.max},'fa-solid fa-'+d.icon,'mana',{color:d.color})).join('') : meterView(divineAura ? 'Divine Mana' : 'Aura / Mana', state.player.mp, 'fa-solid fa-fire-flame-curved', 'mana', { color: state.player.aura.color, infinite: state.player.aura.infinite, divine: divineAura }))+uiMarkup("\n                ")+(meterView('Stamina', state.player.stamina, 'fa-solid fa-bolt', 'stamina'))+uiMarkup("\n                ")+(meterView('Hunger', { current: state.player.survival.hunger, max: 100 }, 'fa-solid fa-drumstick-bite', 'hunger'))+uiMarkup("\n                ")+(meterView('Thirst', { current: state.player.survival.thirst, max: 100 }, 'fa-solid fa-droplet', 'thirst'))+uiMarkup("</div>\n                <div class=\"tretaresia-fitness-capacity\"><span><i class=\"fa-solid fa-lungs\"></i>")+(html(tr(uiText("Lung capacity"))))+uiMarkup("</span>\n                    <strong>")+(state.player.fitness.lungCapacity.toLocaleString())+uiMarkup(" <small>CAP</small></strong><em>")+(state.player.fitness.aerobicSessions.toLocaleString())+uiMarkup(" ")+(html(tr(uiText("aerobic sessions"))))+uiMarkup("</em></div></article>\n            <article class=\"tretaresia-card\"><div class=\"tretaresia-card-title\"><span>")+(html(tr(uiText("Identity"))))+uiMarkup("</span>\n                <i class=\"fa-solid fa-feather\"></i></div><dl class=\"tretaresia-fact-list\">\n                <div><dt>")+(html(tr(uiText("Race"))))+uiMarkup("</dt><dd>")+(html(state.player.race))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Gender"))))+uiMarkup("</dt><dd>")+(html(state.player.gender || 'Unknown'))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Age"))))+uiMarkup("</dt><dd>")+(html(state.player.age || 'Unknown'))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Home continent"))))+uiMarkup("</dt><dd>")+(html(state.player.homeContinent || 'Unknown'))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Standing"))))+uiMarkup("</dt><dd>")+(html(state.player.standing || 'Unknown'))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Affiliation"))))+uiMarkup("</dt><dd>")+(html(state.player.affiliation || 'Unaffiliated'))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Hair"))))+uiMarkup("</dt><dd>")+(html(state.player.appearance.hair || 'Unknown'))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Eyes"))))+uiMarkup("</dt><dd>")+(html(state.player.appearance.eyes || 'Unknown'))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Height"))))+uiMarkup("</dt><dd>")+(html(state.player.appearance.height || 'Unknown'))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Build"))))+uiMarkup("</dt><dd>")+(html(state.player.appearance.build || 'Unknown'))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Guild"))))+uiMarkup("</dt><dd>")+(html(state.player.guild))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Party"))))+uiMarkup("</dt><dd>")+(html(state.player.party))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Profession"))))+uiMarkup("</dt><dd>")+(html(state.player.profession))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Power type"))))+uiMarkup("</dt><dd>")+(html(getPowerPreset().mode==='custom'?customPowerLabel(state):state.player.powerType))+uiMarkup("</dd></div>\n                ")+(customPreset?'':(uiMarkup("                <div><dt>")+(html(tr(uiText("Aura color"))))+uiMarkup("</dt><dd><span class=\"tretaresia-aura-swatch\" style=\"--aura-color:")+(html(state.player.aura.color))+uiMarkup("\"></span>")+(html(state.player.aura.color))+uiMarkup("")+(state.player.aura.infinite ? ` · ${html(tr(uiText("Boundless")))}` : '')+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Mana limit"))))+uiMarkup("</dt><dd>")+(html(tr(state.player.aura.infinite ? uiText("Infinite") : uiText("Finite"))))+uiMarkup(" · ")+(html(tr(state.player.aura.infiniteMode)))+uiMarkup("</dd></div>\n")))+uiMarkup("\n                <div><dt>")+(html(tr(uiText("Origin skill"))))+uiMarkup("</dt><dd>")+(html(state.player.originSkill))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Condition"))))+uiMarkup("</dt><dd>")+(html(state.player.condition))+uiMarkup("</dd></div>\n                <div><dt>")+(html(tr(uiText("Level"))))+uiMarkup("</dt><dd>")+(state.player.level)+uiMarkup("</dd></div></dl></article>\n        </div>\n        ")+(customPreset?'':(uiMarkup("        <section class=\"tretaresia-aura-control-card\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-wave-square\"></i><span>Aura / Mana Control</span></div><div class=\"tretaresia-aura-control-grid\">\n            ")+([['output', 'Output'], ['control', 'Control'], ['efficiency', 'Efficiency'], ['recovery', 'Recovery']].map(([key, label]) => (uiMarkup("<article><span>")+(label)+uiMarkup("</span><strong>")+(state.player.aura[key])+uiMarkup("%</strong><div><i style=\"width:")+(state.player.aura[key])+uiMarkup("%\"></i></div></article>"))).join(''))+uiMarkup("</div>\n            <small><i class=\"fa-solid fa-circle-info\"></i>Efficiency reduces Mana cost; Recovery increases rest recovery. Output and Control progress through confirmed use or training.</small></section>\n")))+uiMarkup("\n        <section class=\"tretaresia-effects-card\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-heart-pulse\"></i><span>")+(html(tr(uiText("Active effects"))))+uiMarkup("</span><b>")+(state.systems.effects.length)+uiMarkup("</b></div><div>")+(state.systems.effects.length ? state.systems.effects.map(effect => (uiMarkup("<article data-severity=\"")+(html(effect.severity.toLocaleLowerCase()))+uiMarkup("\"><i class=\"fa-solid fa-triangle-exclamation\"></i><span><b>")+(html(effect.name))+uiMarkup("</b><small>")+(html(effect.severity))+uiMarkup(" · ")+(html(effect.type))+uiMarkup("")+(effect.remainingTurns === null ? '' : ` · ${effect.remainingTurns} turn(s)`)+uiMarkup("</small><em>")+(html(effect.treatment || effect.source || 'No treatment recorded'))+uiMarkup("</em></span></article>"))).join('') : (uiMarkup("<p class=\"tretaresia-no-effects\"><i class=\"fa-solid fa-shield-heart\"></i>No active injuries or status effects</p>")))+uiMarkup("</div></section>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Edit status"))))+uiMarkup("</summary>\n            <form data-form=\"status\" class=\"tretaresia-form-grid\">\n                ")+(input('Name', 'name', state.player.name))+uiMarkup("")+(input('Title', 'title', state.player.title))+uiMarkup("\n                ")+(input('Race', 'race', state.player.race))+uiMarkup("")+(input('Age', 'age', state.player.age))+uiMarkup("\n                ")+(input('Gender', 'gender', state.player.gender))+uiMarkup("")+(input('Home continent', 'homeContinent', state.player.homeContinent))+uiMarkup("\n                ")+(input('Standing', 'standing', state.player.standing))+uiMarkup("")+(input('Affiliation', 'affiliation', state.player.affiliation))+uiMarkup("\n                ")+(input('Hair', 'hair', state.player.appearance.hair))+uiMarkup("")+(input('Eyes', 'eyes', state.player.appearance.eyes))+uiMarkup("\n                ")+(input('Height', 'height', state.player.appearance.height))+uiMarkup("")+(input('Build', 'build', state.player.appearance.build))+uiMarkup("\n                ")+(input('Profession', 'profession', state.player.profession))+uiMarkup("")+(input('Guild', 'guild', state.player.guild))+uiMarkup("")+(input('Party', 'party', state.player.party))+uiMarkup("\n                ")+(input('Power type', 'powerType', customPreset?customPowerLabel(state):state.player.powerType))+uiMarkup("")+(input('Origin skill', 'originSkill', state.player.originSkill))+uiMarkup("\n                ")+(input('Condition', 'condition', state.player.condition))+uiMarkup("")+(input('Level', 'level', state.player.level, 'number', 'min="1"'))+uiMarkup("\n                ")+(input('HP', 'hpCurrent', state.player.hp.current, 'number', 'min="0"'))+uiMarkup("")+(input('HP max', 'hpMax', state.player.hp.max, 'number', 'min="1"'))+uiMarkup("\n                ")+(customPreset?'':`${input('MP', 'mpCurrent', state.player.mp.current, 'number', 'min="0"')}${input('MP max', 'mpMax', state.player.mp.max, 'number', 'min="1"')}
+                `)+uiMarkup("\n                ")+(input('Stamina', 'staminaCurrent', state.player.stamina.current, 'number', 'min="0"'))+uiMarkup("")+(input('Stamina max', 'staminaMax', state.player.stamina.max, 'number', 'min="1"'))+uiMarkup("\n                ")+(input('Hunger', 'hunger', state.player.survival.hunger, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Thirst', 'thirst', state.player.survival.thirst, 'number', 'min="0" max="100"'))+uiMarkup("\n                ")+(customPreset?'':`${input('Aura color', 'auraColor', state.player.aura.color, 'color')}${select('Mana limit', 'auraInfiniteMode', ['Auto', 'Finite', 'Infinite'], state.player.aura.infiniteMode)}
                 ${input('Aura output', 'auraOutput', state.player.aura.output, 'number', 'min="0" max="100"')}${input('Aura control', 'auraControl', state.player.aura.control, 'number', 'min="0" max="100"')}
                 ${input('Aura efficiency', 'auraEfficiency', state.player.aura.efficiency, 'number', 'min="0" max="100"')}${input('Aura recovery', 'auraRecovery', state.player.aura.recovery, 'number', 'min="0" max="100"')}
-                `}
-                ${input('Lung capacity', 'lungCapacity', state.player.fitness.lungCapacity, 'number', 'min="1"')}
-                <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save status'))}</button>
-            </form></details>`;
+                `)+uiMarkup("\n                ")+(input('Lung capacity', 'lungCapacity', state.player.fitness.lungCapacity, 'number', 'min="1"'))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save status"))))+uiMarkup("</button>\n            </form></details>"));
 }
 
 function weatherIcon(condition) {
@@ -6053,29 +5877,19 @@ function activeSceneStructure(state) {
 }
 
 function sceneMapHiddenFields(mapId = '', floorId = '', roomId = '') {
-    return `<input type="hidden" name="mapId" value="${html(mapId)}"><input type="hidden" name="floorId" value="${html(floorId)}">
-        ${roomId ? `<input type="hidden" name="roomId" value="${html(roomId)}">` : ''}`;
+    return (uiMarkup("<input type=\"hidden\" name=\"mapId\" value=\"")+(html(mapId))+uiMarkup("\"><input type=\"hidden\" name=\"floorId\" value=\"")+(html(floorId))+uiMarkup("\">\n        ")+(roomId ? (uiMarkup("<input type=\"hidden\" name=\"roomId\" value=\"")+(html(roomId))+uiMarkup("\">")) : '')+uiMarkup(""));
 }
 
 function sceneRoomFields(room = {}, { editing = false } = {}) {
     const source = { name: '', type: 'Room', x: 4, y: 4, width: 24, height: 18, discovered: true, locked: false, ...room };
-    return `${input('Room name', 'name', source.name)}${select('Room type', 'type', ROOM_TYPES, source.type)}
-        ${input('X position', 'x', source.x, 'number', 'min="0" max="92" step="0.5"')}${input('Y position', 'y', source.y, 'number', 'min="0" max="63" step="0.5"')}
-        ${input('Width', 'width', source.width, 'number', 'min="8" max="70" step="0.5"')}${input('Height', 'height', source.height, 'number', 'min="7" max="50" step="0.5"')}
-        <label class="tretaresia-check-field"><input type="checkbox" name="discovered"${source.discovered ? ' checked' : ''}><span>${html(tr('Discovered'))}</span></label>
-        <label class="tretaresia-check-field"><input type="checkbox" name="locked"${source.locked ? ' checked' : ''}><span>${html(tr('Locked'))}</span></label>
-        <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr(editing ? 'Save room' : 'Add room'))}</button>`;
+    return (uiMarkup("")+(input('Room name', 'name', source.name))+uiMarkup("")+(select('Room type', 'type', ROOM_TYPES, source.type))+uiMarkup("\n        ")+(input('X position', 'x', source.x, 'number', 'min="0" max="92" step="0.5"'))+uiMarkup("")+(input('Y position', 'y', source.y, 'number', 'min="0" max="63" step="0.5"'))+uiMarkup("\n        ")+(input('Width', 'width', source.width, 'number', 'min="8" max="70" step="0.5"'))+uiMarkup("")+(input('Height', 'height', source.height, 'number', 'min="7" max="50" step="0.5"'))+uiMarkup("\n        <label class=\"tretaresia-check-field\"><input type=\"checkbox\" name=\"discovered\"")+(source.discovered ? ' checked' : '')+uiMarkup("><span>")+(html(tr(uiText("Discovered"))))+uiMarkup("</span></label>\n        <label class=\"tretaresia-check-field\"><input type=\"checkbox\" name=\"locked\"")+(source.locked ? ' checked' : '')+uiMarkup("><span>")+(html(tr(uiText("Locked"))))+uiMarkup("</span></label>\n        <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(editing ? uiText("Save room") : uiText("Add room"))))+uiMarkup("</button>"));
 }
 
 function renderLocalStructure(state) {
     const { map, floor } = activeSceneStructure(state);
-    const createForm = `<details class="tretaresia-editor${map ? '' : ' tretaresia-map-first-editor'}"${map ? '' : ' open'}><summary><i class="fa-solid fa-plus"></i> ${html(tr('Create structure map'))}</summary>
-        <form data-form="scene-map" class="tretaresia-form-grid">${input('Map name', 'name', state.location.place === 'Unknown' ? '' : state.location.place)}
-            ${input('Associated place', 'place', state.location.place)}${input('First floor', 'floorName', '1F')}${input('Floor', 'level', 1, 'number', 'min="-20" max="200"')}
-            <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Create structure map'))}</button></form></details>`;
+    const createForm = (uiMarkup("<details class=\"tretaresia-editor")+(map ? '' : ' tretaresia-map-first-editor')+uiMarkup("\"")+(map ? '' : ' open')+uiMarkup("><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Create structure map"))))+uiMarkup("</summary>\n        <form data-form=\"scene-map\" class=\"tretaresia-form-grid\">")+(input('Map name', 'name', state.location.place === 'Unknown' ? '' : state.location.place))+uiMarkup("\n            ")+(input('Associated place', 'place', state.location.place))+uiMarkup("")+(input('First floor', 'floorName', '1F'))+uiMarkup("")+(input('Floor', 'level', 1, 'number', 'min="-20" max="200"'))+uiMarkup("\n            <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Create structure map"))))+uiMarkup("</button></form></details>"));
     if (!map || !floor) {
-        return `<section class="tretaresia-local-map"><header><div><span>${html(tr('Local Structure Map'))}</span><small>${html(tr('AI-assisted SVG floor plan'))}</small></div></header>
-            ${empty('No structure map yet.')}${createForm}</section>`;
+        return (uiMarkup("<section class=\"tretaresia-local-map\"><header><div><span>")+(html(tr(uiText("Local Structure Map"))))+uiMarkup("</span><small>")+(html(tr(uiText("AI-assisted SVG floor plan"))))+uiMarkup("</small></div></header>\n            ")+(empty(uiText("No structure map yet.")))+uiMarkup("")+(createForm)+uiMarkup("</section>"));
     }
 
     const roomById = new Map(floor.rooms.map(entry => [entry.id, entry]));
@@ -6087,55 +5901,17 @@ function renderLocalStructure(state) {
         const y1 = from.y + from.height / 2;
         const x2 = to.x + to.width / 2;
         const y2 = to.y + to.height / 2;
-        return `<g class="tretaresia-floor-connection${entry.locked ? ' is-locked' : ''}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"></line>
-            <circle cx="${(x1 + x2) / 2}" cy="${(y1 + y2) / 2}" r="1.25"></circle><title>${html(entry.type)}</title></g>`;
+        return (uiMarkup("<g class=\"tretaresia-floor-connection")+(entry.locked ? ' is-locked' : '')+uiMarkup("\"><line x1=\"")+(x1)+uiMarkup("\" y1=\"")+(y1)+uiMarkup("\" x2=\"")+(x2)+uiMarkup("\" y2=\"")+(y2)+uiMarkup("\"></line>\n            <circle cx=\"")+((x1 + x2) / 2)+uiMarkup("\" cy=\"")+((y1 + y2) / 2)+uiMarkup("\" r=\"1.25\"></circle><title>")+(html(entry.type))+uiMarkup("</title></g>"));
     }).join('');
     const rooms = floor.rooms.map(entry => {
         const current = entry.id === state.sceneMap.playerRoomId;
-        const label = entry.discovered ? entry.name : tr('Unexplored');
-        return `<g class="tretaresia-floor-room${current ? ' is-current' : ''}${entry.discovered ? '' : ' is-hidden'}${entry.locked ? ' is-locked' : ''}" data-scene-room="${html(entry.id)}">
-            <rect x="${entry.x}" y="${entry.y}" width="${entry.width}" height="${entry.height}" rx="1.4"></rect>
-            <text x="${entry.x + entry.width / 2}" y="${entry.y + entry.height / 2 - .8}" text-anchor="middle">${html(label.slice(0, 22))}</text>
-            <text class="tretaresia-room-type" x="${entry.x + entry.width / 2}" y="${entry.y + entry.height / 2 + 3.2}" text-anchor="middle">${html(entry.discovered ? tr(entry.type) : '?')}</text>
-            ${current ? `<circle class="tretaresia-player-pulse" cx="${entry.x + entry.width / 2}" cy="${entry.y + 3.2}" r="1.8"></circle>` : ''}</g>`;
+        const label = entry.discovered ? entry.name : tr(uiText("Unexplored"));
+        return (uiMarkup("<g class=\"tretaresia-floor-room")+(current ? ' is-current' : '')+uiMarkup("")+(entry.discovered ? '' : ' is-hidden')+uiMarkup("")+(entry.locked ? ' is-locked' : '')+uiMarkup("\" data-scene-room=\"")+(html(entry.id))+uiMarkup("\">\n            <rect x=\"")+(entry.x)+uiMarkup("\" y=\"")+(entry.y)+uiMarkup("\" width=\"")+(entry.width)+uiMarkup("\" height=\"")+(entry.height)+uiMarkup("\" rx=\"1.4\"></rect>\n            <text x=\"")+(entry.x + entry.width / 2)+uiMarkup("\" y=\"")+(entry.y + entry.height / 2 - .8)+uiMarkup("\" text-anchor=\"middle\">")+(html(label.slice(0, 22)))+uiMarkup("</text>\n            <text class=\"tretaresia-room-type\" x=\"")+(entry.x + entry.width / 2)+uiMarkup("\" y=\"")+(entry.y + entry.height / 2 + 3.2)+uiMarkup("\" text-anchor=\"middle\">")+(html(entry.discovered ? tr(entry.type) : '?'))+uiMarkup("</text>\n            ")+(current ? (uiMarkup("<circle class=\"tretaresia-player-pulse\" cx=\"")+(entry.x + entry.width / 2)+uiMarkup("\" cy=\"")+(entry.y + 3.2)+uiMarkup("\" r=\"1.8\"></circle>")) : '')+uiMarkup("</g>"));
     }).join('');
-    const roomOptions = floor.rooms.filter(entry => entry.discovered).map(entry => `<option value="${html(entry.id)}"${entry.id === state.sceneMap.playerRoomId ? ' selected' : ''}>${html(entry.name)}</option>`).join('');
-    const connectionOptions = floor.rooms.map(entry => `<option value="${html(entry.id)}">${html(entry.name)}</option>`).join('');
+    const roomOptions = floor.rooms.filter(entry => entry.discovered).map(entry => (uiMarkup("<option value=\"")+(html(entry.id))+uiMarkup("\"")+(entry.id === state.sceneMap.playerRoomId ? ' selected' : '')+uiMarkup(">")+(html(entry.name))+uiMarkup("</option>"))).join('');
+    const connectionOptions = floor.rooms.map(entry => (uiMarkup("<option value=\"")+(html(entry.id))+uiMarkup("\">")+(html(entry.name))+uiMarkup("</option>"))).join('');
 
-    return `<section class="tretaresia-local-map${map.locked ? ' is-locked' : ''}">
-        <header><div><span>${html(tr('Local Structure Map'))}</span><strong>${html(map.name)}</strong><small>${html(map.place || state.location.place)} · ${floor.rooms.length} ${html(tr('Rooms').toLowerCase())}</small></div>
-            <label class="tretaresia-map-picker"><span>${html(tr('Map name'))}</span><select id="tretaresia-scene-map-picker">${state.sceneMap.maps.map(entry => `<option value="${html(entry.id)}"${entry.id === map.id ? ' selected' : ''}>${html(entry.name)}</option>`).join('')}</select></label>
-            <button type="button" class="tretaresia-map-lock" data-action="toggle-scene-map-lock" data-id="${html(map.id)}"><i class="fa-solid fa-${map.locked ? 'lock' : 'lock-open'}"></i><span>${html(tr(map.locked ? 'Map locked' : 'AI updates enabled'))}</span></button></header>
-        <nav class="tretaresia-floor-tabs" aria-label="${html(tr('Floor'))}">${map.floors.map(entry => `<button type="button" data-action="select-scene-floor" data-id="${html(entry.id)}" data-map-id="${html(map.id)}" class="${entry.id === floor.id ? 'is-active' : ''}">${html(entry.name)}</button>`).join('')}</nav>
-        <div class="tretaresia-floor-canvas"><svg class="tretaresia-floor-svg" viewBox="0 0 100 70" preserveAspectRatio="none" role="img" aria-label="${html(`${map.name} ${floor.name}`)}">
-            <defs><pattern id="tretaresia-floor-grid" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M 5 0 L 0 0 0 5"></path></pattern></defs>
-            <rect class="tretaresia-floor-grid" width="100" height="70"></rect>${connections}${rooms}</svg>
-            <div class="tretaresia-floor-caption"><span><i class="fa-solid fa-location-crosshairs"></i>${html(roomById.get(state.sceneMap.playerRoomId)?.name || tr('Current room'))}</span>
-                <small>${html(tr(map.locked ? 'Map locked' : 'Drag unlocked rooms to reposition them.'))}</small></div></div>
-        <details class="tretaresia-editor tretaresia-floor-editor"><summary><i class="fa-solid fa-pen-ruler"></i> ${html(tr('Edit floor plan'))}</summary>
-            <div class="tretaresia-map-editor-actions"><button type="button" data-action="toggle-scene-map-lock" data-id="${html(map.id)}"><i class="fa-solid fa-${map.locked ? 'lock-open' : 'lock'}"></i>${html(tr(map.locked ? 'Unlock map' : 'Lock map'))}</button>
-                <button type="button" data-action="delete-scene-floor" data-id="${html(floor.id)}" data-map-id="${html(map.id)}"><i class="fa-solid fa-layer-group"></i>${html(tr('Delete floor'))}</button>
-                <button type="button" data-action="delete-scene-map" data-id="${html(map.id)}"><i class="fa-solid fa-trash"></i>${html(tr('Delete map'))}</button></div>
-            ${roomOptions ? `<form data-form="scene-position" class="tretaresia-form-grid tretaresia-map-compact-form">${sceneMapHiddenFields(map.id, floor.id)}
-                <label class="tretaresia-field"><span>${html(tr('Current room'))}</span><select name="roomId">${roomOptions}</select></label>
-                <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Set current room'))}</button></form>` : ''}
-            <div class="tretaresia-map-editor-grid">
-                <details><summary><i class="fa-solid fa-layer-group"></i>${html(tr('Add floor'))}</summary><form data-form="scene-floor" class="tretaresia-form-grid">${sceneMapHiddenFields(map.id)}
-                    ${input('Floor name', 'name', `${map.floors.length + 1}F`)}${input('Floor', 'level', map.floors.length + 1, 'number', 'min="-20" max="200"')}
-                    <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add floor'))}</button></form></details>
-                <details><summary><i class="fa-solid fa-vector-square"></i>${html(tr('Add room'))}</summary><form data-form="scene-room" class="tretaresia-form-grid">${sceneMapHiddenFields(map.id, floor.id)}${sceneRoomFields()}</form></details>
-                ${floor.rooms.length >= 2 ? `<details><summary><i class="fa-solid fa-door-open"></i>${html(tr('Add connection'))}</summary><form data-form="scene-connection" class="tretaresia-form-grid">${sceneMapHiddenFields(map.id, floor.id)}
-                    <label class="tretaresia-field"><span>${html(tr('From room'))}</span><select name="from">${connectionOptions}</select></label>
-                    <label class="tretaresia-field"><span>${html(tr('To room'))}</span><select name="to">${connectionOptions}</select></label>${select('Connection type', 'type', CONNECTION_TYPES, 'Door')}
-                    <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add connection'))}</button></form></details>` : ''}
-                ${createForm}
-            </div>
-            <div class="tretaresia-room-editor-list">${floor.rooms.map(entry => `<details><summary><span><i class="fa-solid fa-${entry.locked ? 'lock' : 'vector-square'}"></i>${html(entry.name)}</span><small>${html(tr(entry.type))}</small></summary>
-                <form data-form="scene-room" class="tretaresia-form-grid">${sceneMapHiddenFields(map.id, floor.id, entry.id)}${sceneRoomFields(entry, { editing: true })}</form>
-                <button type="button" class="tretaresia-map-delete-row" data-action="delete-scene-room" data-id="${html(entry.id)}" data-map-id="${html(map.id)}" data-floor-id="${html(floor.id)}"><i class="fa-solid fa-trash"></i>${html(tr('Delete room'))}</button></details>`).join('')}</div>
-            <div class="tretaresia-connection-list">${floor.connections.map(entry => `<span><i class="fa-solid fa-door-open"></i>${html(roomById.get(entry.from)?.name || '?')} → ${html(roomById.get(entry.to)?.name || '?')}<small>${html(tr(entry.type))}</small>
-                <button type="button" data-action="delete-scene-connection" data-id="${html(entry.id)}" data-map-id="${html(map.id)}" data-floor-id="${html(floor.id)}"><i class="fa-solid fa-xmark"></i></button></span>`).join('')}</div>
-        </details></section>`;
+    return (uiMarkup("<section class=\"tretaresia-local-map")+(map.locked ? ' is-locked' : '')+uiMarkup("\">\n        <header><div><span>")+(html(tr(uiText("Local Structure Map"))))+uiMarkup("</span><strong>")+(html(map.name))+uiMarkup("</strong><small>")+(html(map.place || state.location.place))+uiMarkup(" · ")+(floor.rooms.length)+uiMarkup(" ")+(html(tr(uiText("Rooms")).toLowerCase()))+uiMarkup("</small></div>\n            <label class=\"tretaresia-map-picker\"><span>")+(html(tr(uiText("Map name"))))+uiMarkup("</span><select id=\"tretaresia-scene-map-picker\">")+(state.sceneMap.maps.map(entry => (uiMarkup("<option value=\"")+(html(entry.id))+uiMarkup("\"")+(entry.id === map.id ? ' selected' : '')+uiMarkup(">")+(html(entry.name))+uiMarkup("</option>"))).join(''))+uiMarkup("</select></label>\n            <button type=\"button\" class=\"tretaresia-map-lock\" data-action=\"toggle-scene-map-lock\" data-id=\"")+(html(map.id))+uiMarkup("\"><i class=\"fa-solid fa-")+(map.locked ? 'lock' : 'lock-open')+uiMarkup("\"></i><span>")+(html(tr(map.locked ? uiText("Map locked") : uiText("AI updates enabled"))))+uiMarkup("</span></button></header>\n        <nav class=\"tretaresia-floor-tabs\" aria-label=\"")+(html(tr(uiText("Floor"))))+uiMarkup("\">")+(map.floors.map(entry => (uiMarkup("<button type=\"button\" data-action=\"select-scene-floor\" data-id=\"")+(html(entry.id))+uiMarkup("\" data-map-id=\"")+(html(map.id))+uiMarkup("\" class=\"")+(entry.id === floor.id ? 'is-active' : '')+uiMarkup("\">")+(html(entry.name))+uiMarkup("</button>"))).join(''))+uiMarkup("</nav>\n        <div class=\"tretaresia-floor-canvas\"><svg class=\"tretaresia-floor-svg\" viewBox=\"0 0 100 70\" preserveAspectRatio=\"none\" role=\"img\" aria-label=\"")+(html(`${map.name} ${floor.name}`))+uiMarkup("\">\n            <defs><pattern id=\"tretaresia-floor-grid\" width=\"5\" height=\"5\" patternUnits=\"userSpaceOnUse\"><path d=\"M 5 0 L 0 0 0 5\"></path></pattern></defs>\n            <rect class=\"tretaresia-floor-grid\" width=\"100\" height=\"70\"></rect>")+(connections)+uiMarkup("")+(rooms)+uiMarkup("</svg>\n            <div class=\"tretaresia-floor-caption\"><span><i class=\"fa-solid fa-location-crosshairs\"></i>")+(html(roomById.get(state.sceneMap.playerRoomId)?.name || tr(uiText("Current room"))))+uiMarkup("</span>\n                <small>")+(html(tr(map.locked ? uiText("Map locked") : uiText("Drag unlocked rooms to reposition them."))))+uiMarkup("</small></div></div>\n        <details class=\"tretaresia-editor tretaresia-floor-editor\"><summary><i class=\"fa-solid fa-pen-ruler\"></i> ")+(html(tr(uiText("Edit floor plan"))))+uiMarkup("</summary>\n            <div class=\"tretaresia-map-editor-actions\"><button type=\"button\" data-action=\"toggle-scene-map-lock\" data-id=\"")+(html(map.id))+uiMarkup("\"><i class=\"fa-solid fa-")+(map.locked ? 'lock-open' : 'lock')+uiMarkup("\"></i>")+(html(tr(map.locked ? uiText("Unlock map") : uiText("Lock map"))))+uiMarkup("</button>\n                <button type=\"button\" data-action=\"delete-scene-floor\" data-id=\"")+(html(floor.id))+uiMarkup("\" data-map-id=\"")+(html(map.id))+uiMarkup("\"><i class=\"fa-solid fa-layer-group\"></i>")+(html(tr(uiText("Delete floor"))))+uiMarkup("</button>\n                <button type=\"button\" data-action=\"delete-scene-map\" data-id=\"")+(html(map.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i>")+(html(tr(uiText("Delete map"))))+uiMarkup("</button></div>\n            ")+(roomOptions ? (uiMarkup("<form data-form=\"scene-position\" class=\"tretaresia-form-grid tretaresia-map-compact-form\">")+(sceneMapHiddenFields(map.id, floor.id))+uiMarkup("\n                <label class=\"tretaresia-field\"><span>")+(html(tr(uiText("Current room"))))+uiMarkup("</span><select name=\"roomId\">")+(roomOptions)+uiMarkup("</select></label>\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Set current room"))))+uiMarkup("</button></form>")) : '')+uiMarkup("\n            <div class=\"tretaresia-map-editor-grid\">\n                <details><summary><i class=\"fa-solid fa-layer-group\"></i>")+(html(tr(uiText("Add floor"))))+uiMarkup("</summary><form data-form=\"scene-floor\" class=\"tretaresia-form-grid\">")+(sceneMapHiddenFields(map.id))+uiMarkup("\n                    ")+(input('Floor name', 'name', `${map.floors.length + 1}F`))+uiMarkup("")+(input('Floor', 'level', map.floors.length + 1, 'number', 'min="-20" max="200"'))+uiMarkup("\n                    <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add floor"))))+uiMarkup("</button></form></details>\n                <details><summary><i class=\"fa-solid fa-vector-square\"></i>")+(html(tr(uiText("Add room"))))+uiMarkup("</summary><form data-form=\"scene-room\" class=\"tretaresia-form-grid\">")+(sceneMapHiddenFields(map.id, floor.id))+uiMarkup("")+(sceneRoomFields())+uiMarkup("</form></details>\n                ")+(floor.rooms.length >= 2 ? (uiMarkup("<details><summary><i class=\"fa-solid fa-door-open\"></i>")+(html(tr(uiText("Add connection"))))+uiMarkup("</summary><form data-form=\"scene-connection\" class=\"tretaresia-form-grid\">")+(sceneMapHiddenFields(map.id, floor.id))+uiMarkup("\n                    <label class=\"tretaresia-field\"><span>")+(html(tr(uiText("From room"))))+uiMarkup("</span><select name=\"from\">")+(connectionOptions)+uiMarkup("</select></label>\n                    <label class=\"tretaresia-field\"><span>")+(html(tr(uiText("To room"))))+uiMarkup("</span><select name=\"to\">")+(connectionOptions)+uiMarkup("</select></label>")+(select('Connection type', 'type', CONNECTION_TYPES, 'Door'))+uiMarkup("\n                    <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add connection"))))+uiMarkup("</button></form></details>")) : '')+uiMarkup("\n                ")+(createForm)+uiMarkup("\n            </div>\n            <div class=\"tretaresia-room-editor-list\">")+(floor.rooms.map(entry => (uiMarkup("<details><summary><span><i class=\"fa-solid fa-")+(entry.locked ? 'lock' : 'vector-square')+uiMarkup("\"></i>")+(html(entry.name))+uiMarkup("</span><small>")+(html(tr(entry.type)))+uiMarkup("</small></summary>\n                <form data-form=\"scene-room\" class=\"tretaresia-form-grid\">")+(sceneMapHiddenFields(map.id, floor.id, entry.id))+uiMarkup("")+(sceneRoomFields(entry, { editing: true }))+uiMarkup("</form>\n                <button type=\"button\" class=\"tretaresia-map-delete-row\" data-action=\"delete-scene-room\" data-id=\"")+(html(entry.id))+uiMarkup("\" data-map-id=\"")+(html(map.id))+uiMarkup("\" data-floor-id=\"")+(html(floor.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i>")+(html(tr(uiText("Delete room"))))+uiMarkup("</button></details>"))).join(''))+uiMarkup("</div>\n            <div class=\"tretaresia-connection-list\">")+(floor.connections.map(entry => (uiMarkup("<span><i class=\"fa-solid fa-door-open\"></i>")+(html(roomById.get(entry.from)?.name || '?'))+uiMarkup(" → ")+(html(roomById.get(entry.to)?.name || '?'))+uiMarkup("<small>")+(html(tr(entry.type)))+uiMarkup("</small>\n                <button type=\"button\" data-action=\"delete-scene-connection\" data-id=\"")+(html(entry.id))+uiMarkup("\" data-map-id=\"")+(html(map.id))+uiMarkup("\" data-floor-id=\"")+(html(floor.id))+uiMarkup("\"><i class=\"fa-solid fa-xmark\"></i></button></span>"))).join(''))+uiMarkup("</div>\n        </details></section>"));
 }
 
 function setupSceneMapInteractions(panel, state) {
@@ -6181,21 +5957,7 @@ function setupSceneMapInteractions(panel, state) {
 
 function renderJourneyLogs(state) {
     const entries = [...state.journeyLogs].reverse();
-    return `<details class="tretaresia-card tretaresia-journey-logs tretaresia-log-disclosure">
-        <summary><span><i class="fa-solid fa-book-open"></i><b>${html(tr('Journey Logs'))}</b><small>${html(tr('Story milestones'))}</small></span><em>${entries.length}</em><i class="fa-solid fa-chevron-down"></i></summary>
-        <div class="tretaresia-log-body"><details class="tretaresia-journey-add"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add journey log'))}</summary>
-                <form data-form="journey-log-add">${textareaField('What happened', 'text', '', 3, 'maxlength="500" required')}
-                    <button class="tretaresia-primary-button" type="submit">${html(tr('Save log'))}</button></form></details>
-        <div class="tretaresia-journey-list">${entries.length ? entries.map(entry => `
-            <article class="tretaresia-journey-entry"><div class="tretaresia-journey-mark"><i class="fa-solid fa-diamond"></i></div>
-                <div class="tretaresia-journey-copy"><small>${html(entry.day || '')}${entry.place ? ` · ${html(entry.place)}` : ''}${entry.at ? ` · ${html(formatDate(entry.at))}` : ''}</small><p>${html(entry.text)}</p></div>
-                <div class="tretaresia-journey-actions"><details><summary title="${html(tr('Edit log'))}"><i class="fa-solid fa-pen"></i></summary>
-                    <form data-form="journey-log-edit"><input type="hidden" name="id" value="${html(entry.id)}">
-                        ${textareaField('What happened', 'text', entry.text, 3, 'maxlength="500" required')}
-                        <button class="tretaresia-primary-button" type="submit">${html(tr('Save log'))}</button></form></details>
-                    <button type="button" data-action="delete-journey-log" data-id="${html(entry.id)}" title="${html(tr('Delete log'))}"><i class="fa-solid fa-trash"></i></button></div>
-            </article>`).join('') : `<p class="tretaresia-journey-empty">${html(tr('No journey logs yet.'))}</p>`}</div></div>
-    </details>`;
+    return (uiMarkup("<details class=\"tretaresia-card tretaresia-journey-logs tretaresia-log-disclosure\">\n        <summary><span><i class=\"fa-solid fa-book-open\"></i><b>")+(html(tr(uiText("Journey Logs"))))+uiMarkup("</b><small>")+(html(tr(uiText("Story milestones"))))+uiMarkup("</small></span><em>")+(entries.length)+uiMarkup("</em><i class=\"fa-solid fa-chevron-down\"></i></summary>\n        <div class=\"tretaresia-log-body\"><details class=\"tretaresia-journey-add\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add journey log"))))+uiMarkup("</summary>\n                <form data-form=\"journey-log-add\">")+(textareaField('What happened', 'text', '', 3, 'maxlength="500" required'))+uiMarkup("\n                    <button class=\"tretaresia-primary-button\" type=\"submit\">")+(html(tr(uiText("Save log"))))+uiMarkup("</button></form></details>\n        <div class=\"tretaresia-journey-list\">")+(entries.length ? entries.map(entry => (uiMarkup("\n            <article class=\"tretaresia-journey-entry\"><div class=\"tretaresia-journey-mark\"><i class=\"fa-solid fa-diamond\"></i></div>\n                <div class=\"tretaresia-journey-copy\"><small>")+(html(entry.day || ''))+uiMarkup("")+(entry.place ? ` · ${html(entry.place)}` : '')+uiMarkup("")+(entry.at ? ` · ${html(formatDate(entry.at))}` : '')+uiMarkup("</small><p>")+(html(entry.text))+uiMarkup("</p></div>\n                <div class=\"tretaresia-journey-actions\"><details><summary title=\"")+(html(tr(uiText("Edit log"))))+uiMarkup("\"><i class=\"fa-solid fa-pen\"></i></summary>\n                    <form data-form=\"journey-log-edit\"><input type=\"hidden\" name=\"id\" value=\"")+(html(entry.id))+uiMarkup("\">\n                        ")+(textareaField('What happened', 'text', entry.text, 3, 'maxlength="500" required'))+uiMarkup("\n                        <button class=\"tretaresia-primary-button\" type=\"submit\">")+(html(tr(uiText("Save log"))))+uiMarkup("</button></form></details>\n                    <button type=\"button\" data-action=\"delete-journey-log\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Delete log"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div>\n            </article>"))).join('') : (uiMarkup("<p class=\"tretaresia-journey-empty\">")+(html(tr(uiText("No journey logs yet."))))+uiMarkup("</p>")))+uiMarkup("</div></div>\n    </details>"));
 }
 
 function renderScene(panel, state) {
@@ -6210,55 +5972,16 @@ function renderScene(panel, state) {
     const locationDetail = state.location.detail || state.location.place || state.location.region;
     const exactLocation = locationKnown ? locationDetail : '—';
     const temperature = state.scene.temperature === null ? '—' : `${Number(state.scene.temperature).toLocaleString()}°C`;
-    panel.innerHTML = `${heading('Scene Tracker', 'Live environment and position', 'fa-solid fa-cloud-sun')}
-        <section class="tretaresia-scene-hero">
-            <div class="tretaresia-scene-time"><span>${html(state.worldClock.dayName)}</span><strong>${html(state.worldClock.time)}</strong><small>${html(tr(state.worldClock.phase))} · ${html(tr('Day counter'))} ${state.worldClock.day}</small></div>
-            <div class="tretaresia-scene-weather"><i class="${weatherIcon(state.scene.weather)}"></i><div><span>${html(tr('Weather'))}</span><strong>${html(state.scene.weather)}</strong></div>
-                <output>${temperature}</output></div>
-        </section>
-        <section class="tretaresia-day-cycle tretaresia-scene-cycle" style="--phase:${phaseIndex}"><div class="tretaresia-cycle-line"><span></span></div>
-            ${DAY_PHASES.map((phase, index) => `<div class="tretaresia-cycle-stop${index === phaseIndex ? ' is-current' : ''}"><i class="${['fa-solid fa-sun','fa-regular fa-sun','fa-solid fa-cloud-sun','fa-solid fa-moon'][index]}"></i><span>${html(tr(phase))}</span></div>`).join('')}</section>
-        <section class="tretaresia-scene-grid">
-            <article><i class="fa-solid fa-earth-americas"></i><span>${html(tr('Current region'))}</span><strong>${html(locationKnown ? state.location.continent : '—')}</strong><small>${html(snapshot.region || '—')}</small></article>
-            <article><i class="fa-solid fa-location-dot"></i><span>${html(tr('Current place'))}</span><strong>${html(moving ? `En route to ${state.travel.destinationPlace || state.travel.destination}` : snapshot.location || '—')}</strong><small>${html(exactLocation)}</small></article>
-            <article><i class="fa-solid fa-street-view"></i><span>${html(tr('Scene position'))}</span><strong>${html(state.scene.position)}</strong><small>${html(tr(state.location.zoneType))}</small></article>
-        </section>
-        ${currentScene ? `<details class="tretaresia-editor"><summary><i class="fa-solid fa-list"></i> ${html(tr('Scene details'))}</summary>
-            <dl class="tretaresia-fact-list">${[
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Scene Tracker"), 'Live environment and position', 'fa-solid fa-cloud-sun'))+uiMarkup("\n        <section class=\"tretaresia-scene-hero\">\n            <div class=\"tretaresia-scene-time\"><span>")+(html(state.worldClock.dayName))+uiMarkup("</span><strong>")+(html(state.worldClock.time))+uiMarkup("</strong><small>")+(html(tr(state.worldClock.phase)))+uiMarkup(" · ")+(html(tr(uiText("Day counter"))))+uiMarkup(" ")+(state.worldClock.day)+uiMarkup("</small></div>\n            <div class=\"tretaresia-scene-weather\"><i class=\"")+(weatherIcon(state.scene.weather))+uiMarkup("\"></i><div><span>")+(html(tr(uiText("Weather"))))+uiMarkup("</span><strong>")+(html(state.scene.weather))+uiMarkup("</strong></div>\n                <output>")+(temperature)+uiMarkup("</output></div>\n        </section>\n        <section class=\"tretaresia-day-cycle tretaresia-scene-cycle\" style=\"--phase:")+(phaseIndex)+uiMarkup("\"><div class=\"tretaresia-cycle-line\"><span></span></div>\n            ")+(DAY_PHASES.map((phase, index) => (uiMarkup("<div class=\"tretaresia-cycle-stop")+(index === phaseIndex ? ' is-current' : '')+uiMarkup("\"><i class=\"")+(['fa-solid fa-sun','fa-regular fa-sun','fa-solid fa-cloud-sun','fa-solid fa-moon'][index])+uiMarkup("\"></i><span>")+(html(tr(phase)))+uiMarkup("</span></div>"))).join(''))+uiMarkup("</section>\n        <section class=\"tretaresia-scene-grid\">\n            <article><i class=\"fa-solid fa-earth-americas\"></i><span>")+(html(tr(uiText("Current region"))))+uiMarkup("</span><strong>")+(html(locationKnown ? state.location.continent : '—'))+uiMarkup("</strong><small>")+(html(snapshot.region || '—'))+uiMarkup("</small></article>\n            <article><i class=\"fa-solid fa-location-dot\"></i><span>")+(html(tr(uiText("Current place"))))+uiMarkup("</span><strong>")+(html(moving ? `En route to ${state.travel.destinationPlace || state.travel.destination}` : snapshot.location || '—'))+uiMarkup("</strong><small>")+(html(exactLocation))+uiMarkup("</small></article>\n            <article><i class=\"fa-solid fa-street-view\"></i><span>")+(html(tr(uiText("Scene position"))))+uiMarkup("</span><strong>")+(html(state.scene.position))+uiMarkup("</strong><small>")+(html(tr(state.location.zoneType)))+uiMarkup("</small></article>\n        </section>\n        ")+(currentScene ? (uiMarkup("<details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-list\"></i> ")+(html(tr(uiText("Scene details"))))+uiMarkup("</summary>\n            <dl class=\"tretaresia-fact-list\">")+([
                 ['Month',currentScene.month], ['Year',currentScene.year], ['Era',currentScene.era], ['Calendar',currentScene.calendar],
                 ['Season',currentScene.season], ['Lighting',currentScene.lighting], ['Participants',currentScene.participants?.join(', ')],
                 ['Objective',currentScene.objective], ['Safety',currentScene.safety], ['Atmosphere',currentScene.atmosphere], ['Elapsed',currentScene.elapsed],
-            ].map(([label, value]) => `<div><dt>${html(tr(label))}</dt><dd>${html(value || '—')}</dd></div>`).join('')}</dl></details>` : ''}
-        ${state.travel.status !== 'Idle' ? `<section class="tretaresia-card tretaresia-travel-status" data-status="${html(state.travel.status.toLowerCase())}">
-            <div class="tretaresia-card-title"><span>${html(tr('Journey'))}</span><em><i class="fa-solid fa-route"></i> ${html(state.travel.status)}</em></div>
-            <dl class="tretaresia-fact-list"><div><dt>${html(tr('Origin'))}</dt><dd>${html(state.travel.origin || 'Unknown')}</dd></div>
-            <div><dt>${html(tr('Destination'))}</dt><dd>${html(state.travel.destination || 'Unknown')}</dd></div>
-            <div><dt>${html(tr('Travel route'))}</dt><dd>${html(state.travel.route)}</dd></div>
-            <div><dt>${html(tr('Remaining travel'))}</dt><dd>${formatTravelDays(state.travel.remainingDays)} / ${formatTravelDays(state.travel.totalDays)} ${html(tr('days'))}</dd></div>
-            <div><dt>${html(tr('Current'))}</dt><dd>${Math.round(journeyProgress * 100)}% · ${html(state.location.place)}</dd></div></dl>
-            <div class="tretaresia-travel-progress" style="--journey-progress:${Math.round(journeyProgress * 100)}%"><span></span><b>${Math.round(journeyProgress * 100)}%</b></div>
-            ${state.travel.notes ? `<p>${html(state.travel.notes)}</p>` : ''}</section>` : ''}
-        ${renderJourneyLogs(state)}
-        ${renderLocalStructure(state)}
-        <details class="tretaresia-editor"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Save scene'))}</summary>
-            <form data-form="scene" class="tretaresia-form-grid">
-                ${input('Day name', 'dayName', state.worldClock.dayName)}${input('Day counter', 'day', state.worldClock.day, 'number', 'min="1"')}
-                ${input('World time', 'time', state.worldClock.time, 'time')}${select('Day phase', 'phase', DAY_PHASES, state.worldClock.phase)}
-                ${input('Continent', 'continent', state.location.continent)}${input('Current region', 'region', state.location.region)}
-                ${input('Current place', 'place', state.location.place)}${input('Current location detail', 'detail', state.location.detail)}
-                ${input('Scene position', 'position', state.scene.position)}${select('Zone type', 'zoneType', ZONE_TYPES, state.location.zoneType)}
-                ${input('Weather', 'weather', state.scene.weather)}${input('Temperature', 'temperature', state.scene.temperature, 'number', 'min="-1000" max="1000" step="0.1"')}
-                <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save scene'))}</button>
-            </form></details>`;
+            ].map(([label, value]) => (uiMarkup("<div><dt>")+(html(tr(label)))+uiMarkup("</dt><dd>")+(html(value || '—'))+uiMarkup("</dd></div>"))).join(''))+uiMarkup("</dl></details>")) : '')+uiMarkup("\n        ")+(state.travel.status !== 'Idle' ? (uiMarkup("<section class=\"tretaresia-card tretaresia-travel-status\" data-status=\"")+(html(state.travel.status.toLowerCase()))+uiMarkup("\">\n            <div class=\"tretaresia-card-title\"><span>")+(html(tr(uiText("Journey"))))+uiMarkup("</span><em><i class=\"fa-solid fa-route\"></i> ")+(html(state.travel.status))+uiMarkup("</em></div>\n            <dl class=\"tretaresia-fact-list\"><div><dt>")+(html(tr(uiText("Origin"))))+uiMarkup("</dt><dd>")+(html(state.travel.origin || 'Unknown'))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Destination"))))+uiMarkup("</dt><dd>")+(html(state.travel.destination || 'Unknown'))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Travel route"))))+uiMarkup("</dt><dd>")+(html(state.travel.route))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Remaining travel"))))+uiMarkup("</dt><dd>")+(formatTravelDays(state.travel.remainingDays))+uiMarkup(" / ")+(formatTravelDays(state.travel.totalDays))+uiMarkup(" ")+(html(tr(uiText("days"))))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Current"))))+uiMarkup("</dt><dd>")+(Math.round(journeyProgress * 100))+uiMarkup("% · ")+(html(state.location.place))+uiMarkup("</dd></div></dl>\n            <div class=\"tretaresia-travel-progress\" style=\"--journey-progress:")+(Math.round(journeyProgress * 100))+uiMarkup("%\"><span></span><b>")+(Math.round(journeyProgress * 100))+uiMarkup("%</b></div>\n            ")+(state.travel.notes ? (uiMarkup("<p>")+(html(state.travel.notes))+uiMarkup("</p>")) : '')+uiMarkup("</section>")) : '')+uiMarkup("\n        ")+(renderJourneyLogs(state))+uiMarkup("\n        ")+(renderLocalStructure(state))+uiMarkup("\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Save scene"))))+uiMarkup("</summary>\n            <form data-form=\"scene\" class=\"tretaresia-form-grid\">\n                ")+(input('Day name', 'dayName', state.worldClock.dayName))+uiMarkup("")+(input('Day counter', 'day', state.worldClock.day, 'number', 'min="1"'))+uiMarkup("\n                ")+(input('World time', 'time', state.worldClock.time, 'time'))+uiMarkup("")+(select('Day phase', 'phase', DAY_PHASES, state.worldClock.phase))+uiMarkup("\n                ")+(input('Continent', 'continent', state.location.continent))+uiMarkup("")+(input('Current region', 'region', state.location.region))+uiMarkup("\n                ")+(input('Current place', 'place', state.location.place))+uiMarkup("")+(input('Current location detail', 'detail', state.location.detail))+uiMarkup("\n                ")+(input('Scene position', 'position', state.scene.position))+uiMarkup("")+(select('Zone type', 'zoneType', ZONE_TYPES, state.location.zoneType))+uiMarkup("\n                ")+(input('Weather', 'weather', state.scene.weather))+uiMarkup("")+(input('Temperature', 'temperature', state.scene.temperature, 'number', 'min="-1000" max="1000" step="0.1"'))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save scene"))))+uiMarkup("</button>\n            </form></details>"));
     setupSceneMapInteractions(panel, state);
 }
 
 function portraitPreview(label, mode, frame, portrait) {
-    return `<section class="tretaresia-portrait-device ${mode}"><span>${html(tr(label))}</span><div class="tretaresia-portrait-preview">
-        <img src="${html(portrait)}" alt="" style="--preview-x:${frame.x}%;--preview-y:${frame.y}%;--preview-zoom:${frame.zoom}"></div>
-        <label><span>${html(tr('Horizontal'))}<output>${Math.round(frame.x)}%</output></span><input type="range" name="${mode}X" data-portrait-control="x" data-portrait-mode="${mode}" min="0" max="100" value="${frame.x}"></label>
-        <label><span>${html(tr('Vertical'))}<output>${Math.round(frame.y)}%</output></span><input type="range" name="${mode}Y" data-portrait-control="y" data-portrait-mode="${mode}" min="0" max="100" value="${frame.y}"></label>
-        <label><span>${html(tr('Zoom'))}<output>${Number(frame.zoom).toFixed(2)}×</output></span><input type="range" name="${mode}Zoom" data-portrait-control="zoom" data-portrait-mode="${mode}" min="1" max="3" step="0.05" value="${frame.zoom}"></label></section>`;
+    return (uiMarkup("<section class=\"tretaresia-portrait-device ")+(mode)+uiMarkup("\"><span>")+(html(tr(label)))+uiMarkup("</span><div class=\"tretaresia-portrait-preview\">\n        <img src=\"")+(html(portrait))+uiMarkup("\" alt=\"\" style=\"--preview-x:")+(frame.x)+uiMarkup("%;--preview-y:")+(frame.y)+uiMarkup("%;--preview-zoom:")+(frame.zoom)+uiMarkup("\"></div>\n        <label><span>")+(html(tr(uiText("Horizontal"))))+uiMarkup("<output>")+(Math.round(frame.x))+uiMarkup("%</output></span><input type=\"range\" name=\"")+(mode)+uiMarkup("X\" data-portrait-control=\"x\" data-portrait-mode=\"")+(mode)+uiMarkup("\" min=\"0\" max=\"100\" value=\"")+(frame.x)+uiMarkup("\"></label>\n        <label><span>")+(html(tr(uiText("Vertical"))))+uiMarkup("<output>")+(Math.round(frame.y))+uiMarkup("%</output></span><input type=\"range\" name=\"")+(mode)+uiMarkup("Y\" data-portrait-control=\"y\" data-portrait-mode=\"")+(mode)+uiMarkup("\" min=\"0\" max=\"100\" value=\"")+(frame.y)+uiMarkup("\"></label>\n        <label><span>")+(html(tr(uiText("Zoom"))))+uiMarkup("<output>")+(Number(frame.zoom).toFixed(2))+uiMarkup("×</output></span><input type=\"range\" name=\"")+(mode)+uiMarkup("Zoom\" data-portrait-control=\"zoom\" data-portrait-mode=\"")+(mode)+uiMarkup("\" min=\"1\" max=\"3\" step=\"0.05\" value=\"")+(frame.zoom)+uiMarkup("\"></label></section>"));
 }
 
 function openPortraitEditor() {
@@ -6270,13 +5993,7 @@ function openPortraitEditor() {
     }
     const frame = state.player.portraitView;
     modal.hidden = false;
-    modal.innerHTML = `<button class="tretaresia-submodal-backdrop" type="button" data-action="close-portrait-editor" aria-label="${html(tr('Close'))}"></button>
-        <article class="tretaresia-portrait-editor-card"><header><div><span>${html(tr('Choose profile picture'))}</span><h3>${html(tr('Adjust portrait'))}</h3></div>
-            <button type="button" data-action="close-portrait-editor"><i class="fa-solid fa-xmark"></i></button></header>
-            <form data-form="portrait-frame"><div class="tretaresia-portrait-previews">${portraitPreview('Desktop framing', 'desktop', frame.desktop, state.player.portrait)}
-                ${portraitPreview('Phone framing', 'mobile', frame.mobile, state.player.portrait)}</div>
-                <footer><button type="button" class="tretaresia-secondary-button" data-action="choose-portrait"><i class="fa-solid fa-image"></i>${html(tr('Choose profile picture'))}</button>
-                    <button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-crop-simple"></i>${html(tr('Save framing'))}</button></footer></form></article>`;
+    modal.innerHTML = (uiMarkup("<button class=\"tretaresia-submodal-backdrop\" type=\"button\" data-action=\"close-portrait-editor\" aria-label=\"")+(html(tr(uiText("Close"))))+uiMarkup("\"></button>\n        <article class=\"tretaresia-portrait-editor-card\"><header><div><span>")+(html(tr(uiText("Choose profile picture"))))+uiMarkup("</span><h3>")+(html(tr(uiText("Adjust portrait"))))+uiMarkup("</h3></div>\n            <button type=\"button\" data-action=\"close-portrait-editor\"><i class=\"fa-solid fa-xmark\"></i></button></header>\n            <form data-form=\"portrait-frame\"><div class=\"tretaresia-portrait-previews\">")+(portraitPreview('Desktop framing', 'desktop', frame.desktop, state.player.portrait))+uiMarkup("\n                ")+(portraitPreview('Phone framing', 'mobile', frame.mobile, state.player.portrait))+uiMarkup("</div>\n                <footer><button type=\"button\" class=\"tretaresia-secondary-button\" data-action=\"choose-portrait\"><i class=\"fa-solid fa-image\"></i>")+(html(tr(uiText("Choose profile picture"))))+uiMarkup("</button>\n                    <button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-crop-simple\"></i>")+(html(tr(uiText("Save framing"))))+uiMarkup("</button></footer></form></article>"));
 }
 
 function closePortraitEditor() {
@@ -6291,29 +6008,17 @@ function closePortraitEditor() {
 
 function renderInventoryLogs(state) {
     const entries = [...state.inventoryLogs].reverse();
-    return `<details class="tretaresia-card tretaresia-log-disclosure tretaresia-inventory-logs"><summary><span><i class="fa-solid fa-boxes-stacked"></i><b>${html(tr('Inventory Logs'))}</b><small>${html(tr('Item changes'))}</small></span><em>${entries.length}</em><i class="fa-solid fa-chevron-down"></i></summary>
-        <div class="tretaresia-log-body tretaresia-compact-log">${entries.length ? entries.map(entry => `<article><i class="fa-solid fa-${entry.delta > 0 ? 'plus' : 'minus'}"></i><span><strong>${html(entry.name)}</strong><small>${html(entry.reason)} · ${html(formatDate(entry.at))}</small></span><b>${entry.delta > 0 ? '+' : ''}${entry.delta}</b></article>`).join('') : `<p>${html(tr('No inventory changes recorded yet.'))}</p>`}</div></details>`;
+    return (uiMarkup("<details class=\"tretaresia-card tretaresia-log-disclosure tretaresia-inventory-logs\"><summary><span><i class=\"fa-solid fa-boxes-stacked\"></i><b>")+(html(tr(uiText("Inventory Logs"))))+uiMarkup("</b><small>")+(html(tr(uiText("Item changes"))))+uiMarkup("</small></span><em>")+(entries.length)+uiMarkup("</em><i class=\"fa-solid fa-chevron-down\"></i></summary>\n        <div class=\"tretaresia-log-body tretaresia-compact-log\">")+(entries.length ? entries.map(entry => (uiMarkup("<article><i class=\"fa-solid fa-")+(entry.delta > 0 ? 'plus' : 'minus')+uiMarkup("\"></i><span><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.reason))+uiMarkup(" · ")+(html(formatDate(entry.at)))+uiMarkup("</small></span><b>")+(entry.delta > 0 ? '+' : '')+uiMarkup("")+(entry.delta)+uiMarkup("</b></article>"))).join('') : (uiMarkup("<p>")+(html(tr(uiText("No inventory changes recorded yet."))))+uiMarkup("</p>")))+uiMarkup("</div></details>"));
 }
 
 function renderJournal(state) {
     const entries = [...state.journal].reverse();
-    return `<details class="tretaresia-card tretaresia-log-disclosure tretaresia-journal-log"><summary><span><i class="fa-solid fa-book"></i><b>${html(tr('Journal'))}</b><small>${html(tr('System history'))}</small></span><em>${entries.length}</em><i class="fa-solid fa-chevron-down"></i></summary>
-        <div class="tretaresia-log-body tretaresia-compact-log">${entries.length ? entries.map(entry => `<article><i class="fa-solid fa-feather-pointed"></i><span><strong>${html(entry.text || entry.summary || tr('State updated'))}</strong><small>${html(formatDate(entry.at))}</small></span></article>`).join('') : `<p>${html(tr('No journal entries yet.'))}</p>`}</div></details>`;
+    return (uiMarkup("<details class=\"tretaresia-card tretaresia-log-disclosure tretaresia-journal-log\"><summary><span><i class=\"fa-solid fa-book\"></i><b>")+(html(tr(uiText("Journal"))))+uiMarkup("</b><small>")+(html(tr(uiText("System history"))))+uiMarkup("</small></span><em>")+(entries.length)+uiMarkup("</em><i class=\"fa-solid fa-chevron-down\"></i></summary>\n        <div class=\"tretaresia-log-body tretaresia-compact-log\">")+(entries.length ? entries.map(entry => (uiMarkup("<article><i class=\"fa-solid fa-feather-pointed\"></i><span><strong>")+(html(entry.text || entry.summary || tr(uiText("State updated"))))+uiMarkup("</strong><small>")+(html(formatDate(entry.at)))+uiMarkup("</small></span></article>"))).join('') : (uiMarkup("<p>")+(html(tr(uiText("No journal entries yet."))))+uiMarkup("</p>")))+uiMarkup("</div></details>"));
 }
 
 function renderInventory(panel, state) {
     if (!panel) return;
-    panel.innerHTML = `${heading('Inventory', `${state.inventory.length} item types`, 'fa-solid fa-box-open')}
-        <div class="tretaresia-item-grid">${state.inventory.length ? state.inventory.map(entry => `
-            <article class="tretaresia-list-card"><div class="tretaresia-item-icon"><i class="fa-solid fa-cube"></i></div>
-                <div class="tretaresia-item-copy"><strong>${html(entry.name)}</strong><span>${html(entry.category)} · ×${entry.quantity}</span>
-                <p>${html(entry.description || tr('No description'))}</p></div><div class="tretaresia-card-actions">
-                <button type="button" data-action="delete-item" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button></div></article>`).join('') : empty('Your inventory is empty.')}</div>
-        <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add inventory item'))}</summary>
-            <form data-form="inventory" class="tretaresia-form-grid">${input('Item name', 'name', '')}
-                ${input('Quantity', 'quantity', 1, 'number', 'min="0"')}${input('Category', 'category', 'Other')}
-                ${input('Description', 'description', '')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add item'))}</button>
-            </form></details>${renderInventoryLogs(state)}${renderJournal(state)}`;
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Inventory"), `${state.inventory.length} item types`, 'fa-solid fa-box-open'))+uiMarkup("\n        <div class=\"tretaresia-item-grid\">")+(state.inventory.length ? state.inventory.map(entry => (uiMarkup("\n            <article class=\"tretaresia-list-card\"><div class=\"tretaresia-item-icon\"><i class=\"fa-solid fa-cube\"></i></div>\n                <div class=\"tretaresia-item-copy\"><strong>")+(html(entry.name))+uiMarkup("</strong><span>")+(html(entry.category))+uiMarkup(" · ×")+(entry.quantity)+uiMarkup("</span>\n                <p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div><div class=\"tretaresia-card-actions\">\n                <button type=\"button\" data-action=\"delete-item\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"))).join('') : empty(uiText("Your inventory is empty.")))+uiMarkup("</div>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add inventory item"))))+uiMarkup("</summary>\n            <form data-form=\"inventory\" class=\"tretaresia-form-grid\">")+(input('Item name', 'name', ''))+uiMarkup("\n                ")+(input('Quantity', 'quantity', 1, 'number', 'min="0"'))+uiMarkup("")+(input('Category', 'category', 'Other'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add item"))))+uiMarkup("</button>\n            </form></details>")+(renderInventoryLogs(state))+uiMarkup("")+(renderJournal(state))+uiMarkup(""));
 }
 
 function proficiencyRank(value) {
@@ -6334,54 +6039,29 @@ function renderSkillStorage(panel, state) {
     const linkedSkills = characterLifeSkillsForOwner(currentPersonaName(state))
         .filter(entry => text(entry?.name) && !rpgKeys.has(text(entry.name).toLocaleLowerCase()));
     const total = state.skills.length + linkedSkills.length;
-    const localCards = state.skills.map(entry => `<article class="tretaresia-skill-card">
-        <div class="tretaresia-skill-rank"><strong>${html(tr(entry.rank))}</strong><small>${html(tr('Proficiency rank'))}</small></div>
-        <div><span>${html(entry.type)}</span><h4>${html(entry.name)}</h4><p>${html(entry.description || tr('No description'))}</p></div>
-        <button type="button" data-action="delete-skill" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button></article>`).join('');
-    const linkedCards = linkedSkills.map(entry => `<article class="tretaresia-skill-card is-character-life-linked">
-        <div class="tretaresia-skill-rank"><strong>${html(entry.rank || 'Unranked')}</strong><small>Character Life</small></div>
-        <div><span>${html(entry.category || 'General')}</span><h4>${html(entry.name)}</h4><p>${html(entry.description || tr('No description'))}</p></div>
-        <i class="fa-solid fa-link" title="Character Life Skill Storage"></i></article>`).join('');
-    panel.innerHTML = `${heading('Skill Storage', `${total} ${tr('Skills').toLowerCase()}`, 'fa-solid fa-layer-group')}
-        <section class="tretaresia-skill-storage"><div class="tretaresia-section-label"><i class="fa-solid fa-box-archive"></i><span>${html(tr('All acquired user skills'))}</span></div>
-            <div class="tretaresia-skill-storage-grid">${total ? localCards + linkedCards : empty('Skills learned during role-play will appear here.')}</div>
-            <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add skill'))}</summary>
-                <form data-form="skill" class="tretaresia-form-grid">${input('Skill name', 'name', '')}${input('Type', 'type', 'General')}
-                    ${select('Proficiency rank', 'rank', MASTERY, 'Beginner')}${input('Description', 'description', '')}
-                    <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add skill'))}</button></form></details></section>`;
+    const localCards = state.skills.map(entry => (uiMarkup("<article class=\"tretaresia-skill-card\">\n        <div class=\"tretaresia-skill-rank\"><strong>")+(html(tr(entry.rank)))+uiMarkup("</strong><small>")+(html(tr(uiText("Proficiency rank"))))+uiMarkup("</small></div>\n        <div><span>")+(html(entry.type))+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4><p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div>\n        <button type=\"button\" data-action=\"delete-skill\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('');
+    const linkedCards = linkedSkills.map(entry => (uiMarkup("<article class=\"tretaresia-skill-card is-character-life-linked\">\n        <div class=\"tretaresia-skill-rank\"><strong>")+(html(entry.rank || 'Unranked'))+uiMarkup("</strong><small>Character Life</small></div>\n        <div><span>")+(html(entry.category || 'General'))+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4><p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div>\n        <i class=\"fa-solid fa-link\" title=\"Character Life Skill Storage\"></i></article>"))).join('');
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Skill Storage"), `${total} ${tr(uiText("Skills")).toLowerCase()}`, 'fa-solid fa-layer-group'))+uiMarkup("\n        <section class=\"tretaresia-skill-storage\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-box-archive\"></i><span>")+(html(tr(uiText("All acquired user skills"))))+uiMarkup("</span></div>\n            <div class=\"tretaresia-skill-storage-grid\">")+(total ? localCards + linkedCards : empty(uiText("Skills learned during role-play will appear here.")))+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add skill"))))+uiMarkup("</summary>\n                <form data-form=\"skill\" class=\"tretaresia-form-grid\">")+(input('Skill name', 'name', ''))+uiMarkup("")+(input('Type', 'type', 'General'))+uiMarkup("\n                    ")+(select('Proficiency rank', 'rank', MASTERY, 'Beginner'))+uiMarkup("")+(input('Description', 'description', ''))+uiMarkup("\n                    <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add skill"))))+uiMarkup("</button></form></details></section>"));
 }
 
 function proficiencyCard(entry, group, value, custom = false) {
     const score = number(value, 0, 0, 100);
     const rank = proficiencyRank(score);
-    return `<article class="tretaresia-proficiency-card${custom ? ' is-custom' : ''}" style="--discipline-tone:${entry.tone || 'var(--tretaresia-accent)'};--proficiency:${score}">
-        <div class="tretaresia-proficiency-orbit"><span><i class="${entry.icon}"></i></span><b>${score}<small>%</small></b></div>
-        <div class="tretaresia-proficiency-card-copy"><span>${html(custom ? tr('Custom proficiency') : tr(group === 'magic' ? 'Preset discipline' : 'Preset style'))}</span>
-            <h4>${html(entry.name)}</h4><p>${html(entry.description || `${tr(rank)} Rank`)}</p></div>
-        <div class="tretaresia-proficiency-rank"><small>${html(tr('Proficiency rank'))}</small><strong>${html(tr(rank))}</strong></div>
-        ${custom ? `<button type="button" class="tretaresia-proficiency-delete" data-action="delete-custom-proficiency" data-kind="${group}" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button>` : ''}
-        <label class="tretaresia-proficiency-control"><span class="tretaresia-proficiency-track"><i style="width:${score}%"></i></span>
-            <input type="range" name="${custom ? `custom-${group}` : group}-${entry.id}" data-proficiency-kind="${group}" data-proficiency-id="${html(entry.id)}" data-custom="${custom}" min="0" max="100" value="${score}" aria-label="${html(entry.name)} proficiency"></label>
-    </article>`;
+    return (uiMarkup("<article class=\"tretaresia-proficiency-card")+(custom ? ' is-custom' : '')+uiMarkup("\" style=\"--discipline-tone:")+(entry.tone || 'var(--tretaresia-accent)')+uiMarkup(";--proficiency:")+(score)+uiMarkup("\">\n        <div class=\"tretaresia-proficiency-orbit\"><span><i class=\"")+(entry.icon)+uiMarkup("\"></i></span><b>")+(score)+uiMarkup("<small>%</small></b></div>\n        <div class=\"tretaresia-proficiency-card-copy\"><span>")+(html(custom ? tr(uiText("Custom proficiency")) : tr(group === 'magic' ? uiText("Preset discipline") : uiText("Preset style"))))+uiMarkup("</span>\n            <h4>")+(html(entry.name))+uiMarkup("</h4><p>")+(html(entry.description || `${tr(rank)} Rank`))+uiMarkup("</p></div>\n        <div class=\"tretaresia-proficiency-rank\"><small>")+(html(tr(uiText("Proficiency rank"))))+uiMarkup("</small><strong>")+(html(tr(rank)))+uiMarkup("</strong></div>\n        ")+(custom ? (uiMarkup("<button type=\"button\" class=\"tretaresia-proficiency-delete\" data-action=\"delete-custom-proficiency\" data-kind=\"")+(group)+uiMarkup("\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button>")) : '')+uiMarkup("\n        <label class=\"tretaresia-proficiency-control\"><span class=\"tretaresia-proficiency-track\"><i style=\"width:")+(score)+uiMarkup("%\"></i></span>\n            <input type=\"range\" name=\"")+(custom ? `custom-${group}` : group)+uiMarkup("-")+(entry.id)+uiMarkup("\" data-proficiency-kind=\"")+(group)+uiMarkup("\" data-proficiency-id=\"")+(html(entry.id))+uiMarkup("\" data-custom=\"")+(custom)+uiMarkup("\" min=\"0\" max=\"100\" value=\"")+(score)+uiMarkup("\" aria-label=\"")+(html(entry.name))+uiMarkup(" proficiency\"></label>\n    </article>"));
 }
 
 function proficiencyIconPicker(selected = 'arcane') {
-    return `<div class="tretaresia-icon-picker"><input type="hidden" name="iconKey" value="${html(selected)}"><span>${html(tr('Icon preset'))}</span>
-        <div>${PROFICIENCY_ICON_PRESETS.map(entry => `<button type="button" data-action="select-proficiency-icon" data-icon-key="${html(entry.key)}" class="${entry.key === selected ? 'is-selected' : ''}" style="--icon-tone:${entry.tone}" title="${html(entry.label)}"><i class="${entry.icon}"></i><small>${html(entry.label)}</small></button>`).join('')}</div></div>`;
+    return (uiMarkup("<div class=\"tretaresia-icon-picker\"><input type=\"hidden\" name=\"iconKey\" value=\"")+(html(selected))+uiMarkup("\"><span>")+(html(tr(uiText("Icon preset"))))+uiMarkup("</span>\n        <div>")+(PROFICIENCY_ICON_PRESETS.map(entry => (uiMarkup("<button type=\"button\" data-action=\"select-proficiency-icon\" data-icon-key=\"")+(html(entry.key))+uiMarkup("\" class=\"")+(entry.key === selected ? 'is-selected' : '')+uiMarkup("\" style=\"--icon-tone:")+(entry.tone)+uiMarkup("\" title=\"")+(html(entry.label))+uiMarkup("\"><i class=\"")+(entry.icon)+uiMarkup("\"></i><small>")+(html(entry.label))+uiMarkup("</small></button>"))).join(''))+uiMarkup("</div></div>"));
 }
 
 function customProficiencyEditor(kind) {
     const magic = kind === 'magic';
-    return `<details class="tretaresia-editor tretaresia-add-proficiency"><summary><i class="fa-solid fa-plus"></i> ${html(tr(magic ? 'Add magic proficiency' : 'Add sword style'))}</summary>
-        <form data-form="custom-proficiency" class="tretaresia-form-grid"><input type="hidden" name="kind" value="${kind}">
-            ${input(magic ? 'Magic name' : 'Sword style name', 'name', '')}${input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"')}
-            ${input('Description', 'description', '')}${proficiencyIconPicker(magic ? 'arcane' : 'sword')}
-            <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr(magic ? 'Add magic proficiency' : 'Add sword style'))}</button></form></details>`;
+    return (uiMarkup("<details class=\"tretaresia-editor tretaresia-add-proficiency\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(magic ? uiText("Add magic proficiency") : uiText("Add sword style"))))+uiMarkup("</summary>\n        <form data-form=\"custom-proficiency\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"kind\" value=\"")+(kind)+uiMarkup("\">\n            ")+(input(magic ? 'Magic name' : 'Sword style name', 'name', ''))+uiMarkup("")+(input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"'))+uiMarkup("\n            ")+(input('Description', 'description', ''))+uiMarkup("")+(proficiencyIconPicker(magic ? 'arcane' : 'sword'))+uiMarkup("\n            <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(magic ? uiText("Add magic proficiency") : uiText("Add sword style"))))+uiMarkup("</button></form></details>"));
 }
 
 function renderTechniques(panel, state) {
     if (!panel) return;
-    if(getPowerPreset().mode==='custom'){panel.innerHTML=heading('Powers',getPowerPreset().name,'fa-solid fa-bolt');mountPowerSettings(panel,state,true);return;}
+    if(getPowerPreset().mode==='custom'){panel.innerHTML=heading(uiText("Powers"),getPowerPreset().name,'fa-solid fa-bolt');mountPowerSettings(panel,state,true);return;}
     const magicEntries = [
         ...MAGIC_DISCIPLINES.map(entry => ({ ...entry, value: state.proficiencies.magic[entry.id], custom: false })),
         ...state.proficiencies.customMagic.map(entry => ({ ...entry, value: entry.proficiency, custom: true })),
@@ -6391,28 +6071,7 @@ function renderTechniques(panel, state) {
         ...state.proficiencies.customSword.map(entry => ({ ...entry, value: entry.proficiency, custom: true })),
     ];
     const mastered = [...magicEntries, ...swordEntries].filter(entry => entry.value > 0).length;
-    panel.innerHTML = `${heading('Power & Combat', `${mastered} ${tr('Active proficiencies').toLowerCase()} · ${state.proficiencies.techniques.length} ${tr('Techniques').toLowerCase()}`, 'fa-solid fa-fire-flame-curved')}
-        <section class="tretaresia-proficiency-overview"><div><span>${html(tr('Mastery Archive'))}</span><strong>${mastered}</strong><small>${html(tr('Known disciplines and styles'))}</small></div>
-            ${MASTERY.slice(1).map(rank => `<span><i></i>${html(tr(rank))}</span>`).join('')}</section>
-        <div class="tretaresia-mastery-atlas">
-            <section class="tretaresia-proficiency-section"><header><div><i class="fa-solid fa-fire-flame-curved"></i><span><strong>${html(tr('Power systems'))}</strong><small>${magicEntries.length} ${html(tr('entries'))}</small></span></div>
-                <em>${state.proficiencies.customMagic.length} ${html(tr('custom'))}</em></header>
-                <form data-form="proficiencies" data-kind="magic"><div class="tretaresia-proficiency-card-grid">${magicEntries.map(entry => proficiencyCard(entry, 'magic', entry.value, entry.custom)).join('')}</div>
-                    <button class="tretaresia-primary-button tretaresia-mastery-save" type="submit"><i class="fa-solid fa-floppy-disk"></i>${html(tr('Save proficiency'))}</button></form>${customProficiencyEditor('magic')}</section>
-            <section class="tretaresia-proficiency-section"><header><div><i class="fa-solid fa-khanda"></i><span><strong>${html(tr('Combat disciplines'))}</strong><small>${swordEntries.length} ${html(tr('entries'))}</small></span></div>
-                <em>${state.proficiencies.customSword.length} ${html(tr('custom'))}</em></header>
-                <form data-form="proficiencies" data-kind="sword"><div class="tretaresia-proficiency-card-grid tretaresia-sword-card-grid">${swordEntries.map(entry => proficiencyCard(entry, 'sword', entry.value, entry.custom)).join('')}</div>
-                    <button class="tretaresia-primary-button tretaresia-mastery-save" type="submit"><i class="fa-solid fa-floppy-disk"></i>${html(tr('Save proficiency'))}</button></form>${customProficiencyEditor('sword')}</section>
-        </div>
-        <section class="tretaresia-technique-section tretaresia-technique-revamp"><div class="tretaresia-section-label"><i class="fa-solid fa-list-check"></i><span>${html(tr('Techniques'))}</span></div>
-            <div class="tretaresia-technique-grid">${state.proficiencies.techniques.length ? state.proficiencies.techniques.map(entry => `<article class="tretaresia-technique-card">
-                <div><span>${html(entry.category)}</span><strong>${html(entry.name)}</strong><p>${html(entry.description || tr('No description'))}</p></div>
-                <div class="tretaresia-technique-meter"><em>${html(tr(proficiencyRank(entry.proficiency)))} Rank</em><span><i style="width:${entry.proficiency}%"></i></span><b>${entry.proficiency}%</b></div>
-                <button type="button" data-action="delete-technique" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button></article>`).join('') : empty('Skills learned during role-play will appear here.')}</div>
-            <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add technique'))}</summary>
-                <form data-form="technique" class="tretaresia-form-grid">${input('Technique name', 'name', '')}${input('Category', 'category', 'General')}
-                    ${input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"')}${input('Description', 'description', '')}
-                    <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add technique'))}</button></form></details></section>`;
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Power & Combat"), `${mastered} ${tr(uiText("Active proficiencies")).toLowerCase()} · ${state.proficiencies.techniques.length} ${tr(uiText("Techniques")).toLowerCase()}`, 'fa-solid fa-fire-flame-curved'))+uiMarkup("\n        <section class=\"tretaresia-proficiency-overview\"><div><span>")+(html(tr(uiText("Mastery Archive"))))+uiMarkup("</span><strong>")+(mastered)+uiMarkup("</strong><small>")+(html(tr(uiText("Known disciplines and styles"))))+uiMarkup("</small></div>\n            ")+(MASTERY.slice(1).map(rank => (uiMarkup("<span><i></i>")+(html(tr(rank)))+uiMarkup("</span>"))).join(''))+uiMarkup("</section>\n        <div class=\"tretaresia-mastery-atlas\">\n            <section class=\"tretaresia-proficiency-section\"><header><div><i class=\"fa-solid fa-fire-flame-curved\"></i><span><strong>")+(html(tr(uiText("Power systems"))))+uiMarkup("</strong><small>")+(magicEntries.length)+uiMarkup(" ")+(html(tr(uiText("entries"))))+uiMarkup("</small></span></div>\n                <em>")+(state.proficiencies.customMagic.length)+uiMarkup(" ")+(html(tr(uiText("custom"))))+uiMarkup("</em></header>\n                <form data-form=\"proficiencies\" data-kind=\"magic\"><div class=\"tretaresia-proficiency-card-grid\">")+(magicEntries.map(entry => proficiencyCard(entry, 'magic', entry.value, entry.custom)).join(''))+uiMarkup("</div>\n                    <button class=\"tretaresia-primary-button tretaresia-mastery-save\" type=\"submit\"><i class=\"fa-solid fa-floppy-disk\"></i>")+(html(tr(uiText("Save proficiency"))))+uiMarkup("</button></form>")+(customProficiencyEditor('magic'))+uiMarkup("</section>\n            <section class=\"tretaresia-proficiency-section\"><header><div><i class=\"fa-solid fa-khanda\"></i><span><strong>")+(html(tr(uiText("Combat disciplines"))))+uiMarkup("</strong><small>")+(swordEntries.length)+uiMarkup(" ")+(html(tr(uiText("entries"))))+uiMarkup("</small></span></div>\n                <em>")+(state.proficiencies.customSword.length)+uiMarkup(" ")+(html(tr(uiText("custom"))))+uiMarkup("</em></header>\n                <form data-form=\"proficiencies\" data-kind=\"sword\"><div class=\"tretaresia-proficiency-card-grid tretaresia-sword-card-grid\">")+(swordEntries.map(entry => proficiencyCard(entry, 'sword', entry.value, entry.custom)).join(''))+uiMarkup("</div>\n                    <button class=\"tretaresia-primary-button tretaresia-mastery-save\" type=\"submit\"><i class=\"fa-solid fa-floppy-disk\"></i>")+(html(tr(uiText("Save proficiency"))))+uiMarkup("</button></form>")+(customProficiencyEditor('sword'))+uiMarkup("</section>\n        </div>\n        <section class=\"tretaresia-technique-section tretaresia-technique-revamp\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-list-check\"></i><span>")+(html(tr(uiText("Techniques"))))+uiMarkup("</span></div>\n            <div class=\"tretaresia-technique-grid\">")+(state.proficiencies.techniques.length ? state.proficiencies.techniques.map(entry => (uiMarkup("<article class=\"tretaresia-technique-card\">\n                <div><span>")+(html(entry.category))+uiMarkup("</span><strong>")+(html(entry.name))+uiMarkup("</strong><p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div>\n                <div class=\"tretaresia-technique-meter\"><em>")+(html(tr(proficiencyRank(entry.proficiency))))+uiMarkup(" Rank</em><span><i style=\"width:")+(entry.proficiency)+uiMarkup("%\"></i></span><b>")+(entry.proficiency)+uiMarkup("%</b></div>\n                <button type=\"button\" data-action=\"delete-technique\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('') : empty(uiText("Skills learned during role-play will appear here.")))+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add technique"))))+uiMarkup("</summary>\n                <form data-form=\"technique\" class=\"tretaresia-form-grid\">")+(input('Technique name', 'name', ''))+uiMarkup("")+(input('Category', 'category', 'General'))+uiMarkup("\n                    ")+(input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Description', 'description', ''))+uiMarkup("\n                    <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add technique"))))+uiMarkup("</button></form></details></section>"));
 }
 
 function questSectionId(entry) {
@@ -6425,15 +6084,8 @@ function questSectionId(entry) {
 
 function renderQuestCard(entry) {
     const progress = entry.status === 'Completed' ? 100 : number(entry.progress, 0, 0, 100);
-    const rewardLabel = entry.status === 'Completed' && entry.rewardClaimed ? tr('Reward claimed') : tr('Reward');
-    return `<article class="tretaresia-quest-card" data-status="${html(entry.status.toLowerCase())}"><div>
-        <span class="tretaresia-quest-status">${html(entry.status)} · ${html(entry.type)}${entry.type === 'Dungeon' ? ` ${html(entry.dungeonRank)}` : ''}</span><h4>${html(entry.name)}</h4>
-        <p>${html(entry.objective || tr('No objective recorded'))}</p>
-        <div class="tretaresia-quest-progress" style="--quest-progress:${progress}%"><span><i></i></span><b>${progress}%</b></div>
-        ${(entry.giver || entry.source) ? `<small><i class="fa-solid fa-user-tag"></i> ${html(entry.giver || tr('Unknown giver'))}${entry.source ? ` · ${html(entry.source)}` : ''}</small>` : ''}
-        ${entry.reward ? `<small class="tretaresia-quest-reward${entry.rewardClaimed ? ' is-claimed' : ''}"><i class="fa-solid ${entry.rewardClaimed ? 'fa-circle-check' : 'fa-gift'}"></i> ${html(rewardLabel)}: ${html(entry.reward)}</small>` : ''}
-        ${entry.receivedAt ? `<small><i class="fa-solid fa-clock"></i> ${html(tr('Received'))}: ${html(formatDate(entry.receivedAt))}</small>` : ''}</div>
-        <div class="tretaresia-card-actions"><button type="button" data-action="delete-quest" data-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></article>`;
+    const rewardLabel = entry.status === 'Completed' && entry.rewardClaimed ? tr(uiText("Reward claimed")) : tr(uiText("Reward"));
+    return (uiMarkup("<article class=\"tretaresia-quest-card\" data-status=\"")+(html(entry.status.toLowerCase()))+uiMarkup("\"><div>\n        <span class=\"tretaresia-quest-status\">")+(html(entry.status))+uiMarkup(" · ")+(html(entry.type))+uiMarkup("")+(entry.type === 'Dungeon' ? ` ${html(entry.dungeonRank)}` : '')+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4>\n        <p>")+(html(entry.objective || tr(uiText("No objective recorded"))))+uiMarkup("</p>\n        <div class=\"tretaresia-quest-progress\" style=\"--quest-progress:")+(progress)+uiMarkup("%\"><span><i></i></span><b>")+(progress)+uiMarkup("%</b></div>\n        ")+((entry.giver || entry.source) ? (uiMarkup("<small><i class=\"fa-solid fa-user-tag\"></i> ")+(html(entry.giver || tr(uiText("Unknown giver"))))+uiMarkup("")+(entry.source ? ` · ${html(entry.source)}` : '')+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.reward ? (uiMarkup("<small class=\"tretaresia-quest-reward")+(entry.rewardClaimed ? ' is-claimed' : '')+uiMarkup("\"><i class=\"fa-solid ")+(entry.rewardClaimed ? 'fa-circle-check' : 'fa-gift')+uiMarkup("\"></i> ")+(html(rewardLabel))+uiMarkup(": ")+(html(entry.reward))+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.receivedAt ? (uiMarkup("<small><i class=\"fa-solid fa-clock\"></i> ")+(html(tr(uiText("Received"))))+uiMarkup(": ")+(html(formatDate(entry.receivedAt)))+uiMarkup("</small>")) : '')+uiMarkup("</div>\n        <div class=\"tretaresia-card-actions\"><button type=\"button\" data-action=\"delete-quest\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"));
 }
 
 function renderQuests(panel, state) {
@@ -6445,54 +6097,26 @@ function renderQuests(panel, state) {
     const section = QUEST_SECTIONS.find(entry => entry.id === activeQuestSection) || QUEST_SECTIONS[2];
     const visible = grouped[section.id];
     const openCount = grouped.story.length + grouped['side-story'].length + grouped.active.length;
-    panel.innerHTML = `${heading('Mission & Quest Log', `${openCount} open · ${grouped.completed.length} completed · ${grouped.failed.length} failed`, 'fa-solid fa-scroll')}
-        <nav class="tretaresia-quest-sections" aria-label="${html(tr('Mission archive'))}">${QUEST_SECTIONS.map(entry => `<button type="button" data-action="quest-section" data-section="${entry.id}" class="${entry.id === section.id ? 'is-active' : ''}"><span>${html(tr(entry.label))}</span><b>${grouped[entry.id].length}</b></button>`).join('')}</nav>
-        <section class="tretaresia-quest-section"><header><span>${html(tr(section.label))}</span><small>${visible.length}</small></header>
-            <div class="tretaresia-quest-list">${visible.length ? visible.map(renderQuestCard).join('') : empty('No quests have been recorded yet.')}</div></section>
-        <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add mission or quest'))}</summary>
-            <form data-form="quest" class="tretaresia-form-grid">${input('Mission / quest name', 'name', '')}
-                ${select('Type', 'type', QUEST_TYPES, 'Quest')}${select('Dungeon rank', 'dungeonRank', DUNGEON_RANKS, 'Unranked')}
-                ${select('Status', 'status', ['Offered', 'Active', 'Completed', 'Failed', 'On Hold'], 'Active')}
-                ${input('Objective', 'objective', '')}${input('Reward', 'reward', '')}${input('Quest giver', 'giver', '')}${input('Source', 'source', 'Manual entry')}
-                ${input('Progress', 'progress', 0, 'number', 'min="0" max="100"')}${input('Notes', 'notes', '')}
-                <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add to log'))}</button></form></details>`;
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Mission & Quest Log"), `${openCount} open · ${grouped.completed.length} completed · ${grouped.failed.length} failed`, 'fa-solid fa-scroll'))+uiMarkup("\n        <nav class=\"tretaresia-quest-sections\" aria-label=\"")+(html(tr(uiText("Mission archive"))))+uiMarkup("\">")+(QUEST_SECTIONS.map(entry => (uiMarkup("<button type=\"button\" data-action=\"quest-section\" data-section=\"")+(entry.id)+uiMarkup("\" class=\"")+(entry.id === section.id ? 'is-active' : '')+uiMarkup("\"><span>")+(html(tr(entry.label)))+uiMarkup("</span><b>")+(grouped[entry.id].length)+uiMarkup("</b></button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-quest-section\"><header><span>")+(html(tr(section.label)))+uiMarkup("</span><small>")+(visible.length)+uiMarkup("</small></header>\n            <div class=\"tretaresia-quest-list\">")+(visible.length ? visible.map(renderQuestCard).join('') : empty(uiText("No quests have been recorded yet.")))+uiMarkup("</div></section>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add mission or quest"))))+uiMarkup("</summary>\n            <form data-form=\"quest\" class=\"tretaresia-form-grid\">")+(input('Mission / quest name', 'name', ''))+uiMarkup("\n                ")+(select('Type', 'type', QUEST_TYPES, 'Quest'))+uiMarkup("")+(select('Dungeon rank', 'dungeonRank', DUNGEON_RANKS, 'Unranked'))+uiMarkup("\n                ")+(select('Status', 'status', ['Offered', 'Active', 'Completed', 'Failed', 'On Hold'], 'Active'))+uiMarkup("\n                ")+(input('Objective', 'objective', ''))+uiMarkup("")+(input('Reward', 'reward', ''))+uiMarkup("")+(input('Quest giver', 'giver', ''))+uiMarkup("")+(input('Source', 'source', 'Manual entry'))+uiMarkup("\n                ")+(input('Progress', 'progress', 0, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Notes', 'notes', ''))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add to log"))))+uiMarkup("</button></form></details>"));
 }
 
-const rankRow = (label, value, icon) => `<article class="tretaresia-rank-row"><i class="${icon}"></i><span>${html(tr(label))}</span><strong>${html(tr(String(value)))}</strong></article>`;
+const rankRow = (label, value, icon) => (uiMarkup("<article class=\"tretaresia-rank-row\"><i class=\"")+(icon)+uiMarkup("\"></i><span>")+(html(tr(label)))+uiMarkup("</span><strong>")+(html(tr(String(value))))+uiMarkup("</strong></article>"));
 
 function transactionAmounts(entry) {
     return ['gold', 'silver', 'copper'].filter(key => entry.amounts?.[key])
-        .map(key => `<span data-kind="${key}" data-sign="${entry.amounts[key] > 0 ? 'gain' : 'loss'}">${entry.amounts[key] > 0 ? '+' : ''}${entry.amounts[key]} ${html(tr(`${key[0].toUpperCase() + key.slice(1)} coins`))}</span>`).join('');
+        .map(key => (uiMarkup("<span data-kind=\"")+(key)+uiMarkup("\" data-sign=\"")+(entry.amounts[key] > 0 ? 'gain' : 'loss')+uiMarkup("\">")+(entry.amounts[key] > 0 ? '+' : '')+uiMarkup("")+(entry.amounts[key])+uiMarkup(" ")+(html(tr(uiText("{0} coins",[key[0].toUpperCase() + key.slice(1)]))))+uiMarkup("</span>"))).join('');
 }
 
 function renderTransactions(state) {
     const entries = [...state.transactions].reverse();
-    return `<details class="tretaresia-card tretaresia-transactions tretaresia-log-disclosure"><summary><span><i class="fa-solid fa-receipt"></i><b>${html(tr('Transaction history'))}</b><small>${html(state.progression.currency.name)}</small></span><em>${entries.length}</em><i class="fa-solid fa-chevron-down"></i></summary>
-        <div class="tretaresia-log-body">${entries.length ? entries.map(entry => `<article><div><strong>${html(entry.reason)}</strong><small>${html(formatDate(entry.at))} · ${html(entry.source)}</small></div>
-            <div class="tretaresia-transaction-amounts">${transactionAmounts(entry)}<small>${html(tr('Balance after'))}: ${entry.balance.gold} / ${entry.balance.silver} / ${entry.balance.copper}</small></div></article>`).join('')
-            : `<p class="tretaresia-transaction-empty">${html(tr('No transactions recorded yet.'))}</p>`}</div></details>`;
+    return (uiMarkup("<details class=\"tretaresia-card tretaresia-transactions tretaresia-log-disclosure\"><summary><span><i class=\"fa-solid fa-receipt\"></i><b>")+(html(tr(uiText("Transaction history"))))+uiMarkup("</b><small>")+(html(state.progression.currency.name))+uiMarkup("</small></span><em>")+(entries.length)+uiMarkup("</em><i class=\"fa-solid fa-chevron-down\"></i></summary>\n        <div class=\"tretaresia-log-body\">")+(entries.length ? entries.map(entry => (uiMarkup("<article><div><strong>")+(html(entry.reason))+uiMarkup("</strong><small>")+(html(formatDate(entry.at)))+uiMarkup(" · ")+(html(entry.source))+uiMarkup("</small></div>\n            <div class=\"tretaresia-transaction-amounts\">")+(transactionAmounts(entry))+uiMarkup("<small>")+(html(tr(uiText("Balance after"))))+uiMarkup(": ")+(entry.balance.gold)+uiMarkup(" / ")+(entry.balance.silver)+uiMarkup(" / ")+(entry.balance.copper)+uiMarkup("</small></div></article>"))).join('')
+            : (uiMarkup("<p class=\"tretaresia-transaction-empty\">")+(html(tr(uiText("No transactions recorded yet."))))+uiMarkup("</p>")))+uiMarkup("</div></details>"));
 }
 
 function renderRank(panel, state) {
     if (!panel) return;
     const p = state.progression;
-    panel.innerHTML = `${heading('Ranks & Progression', 'Guild and mastery record', 'fa-solid fa-medal')}
-        <div class="tretaresia-rank-layout"><article class="tretaresia-rank-hero"><span>${html(tr('Adventurer Rank'))}</span>
-            <strong>${html(p.adventurerRank === 'Custom Rank' && p.customRankName ? p.customRankName : p.adventurerRank)}</strong><small>${html(tr('Recognized guild classification'))}</small></article>
-            <div class="tretaresia-rank-stack">${rankRow('Power mastery', p.magicRank, 'fa-solid fa-fire-flame-curved')}
-                ${rankRow('Combat mastery', p.swordRank, 'fa-solid fa-khanda')}${rankRow('Experience', `${p.experience} / ${p.experienceMax}`, 'fa-solid fa-star')}
-                ${rankRow('Reputation', p.reputation, 'fa-solid fa-people-group')}${rankRow('Confirmed kills', p.kills, 'fa-solid fa-skull')}</div></div>
-        <article class="tretaresia-card tretaresia-wallet" title="${html(p.currency.name)}"><div><span>${html(tr('Gold coins'))}</span><strong>${p.currency.gold}</strong></div>
-            <div><span>${html(tr('Silver coins'))}</span><strong>${p.currency.silver}</strong></div><div><span>${html(tr('Copper coins'))}</span><strong>${p.currency.copper}</strong></div></article>
-        ${renderTransactions(state)}
-        <details class="tretaresia-editor"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Edit progression'))}</summary>
-            <form data-form="rank" class="tretaresia-form-grid">${select('Adventurer rank', 'adventurerRank', RANKS, p.adventurerRank)}${input('Custom rank name', 'customRankName', p.customRankName)}
-                ${select('Power mastery', 'magicRank', MASTERY, p.magicRank)}${select('Combat mastery', 'swordRank', MASTERY, p.swordRank)}
-                ${input('Experience', 'experience', p.experience, 'number', 'min="0"')}${input('EXP to next level', 'experienceMax', p.experienceMax, 'number', 'min="1"')}
-                ${input('Reputation', 'reputation', p.reputation, 'number')}${input('Confirmed kills', 'kills', p.kills, 'number', 'min="0"')}
-                ${input('Currency / region', 'currencyName', p.currency.name)}${input('Gold coins', 'gold', p.currency.gold, 'number', 'min="0"')}${input('Silver coins', 'silver', p.currency.silver, 'number', 'min="0"')}
-                ${input('Copper coins', 'copper', p.currency.copper, 'number', 'min="0"')}
-                <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save progression'))}</button></form></details>`;
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Ranks & Progression"), 'Guild and mastery record', 'fa-solid fa-medal'))+uiMarkup("\n        <div class=\"tretaresia-rank-layout\"><article class=\"tretaresia-rank-hero\"><span>")+(html(tr(uiText("Adventurer Rank"))))+uiMarkup("</span>\n            <strong>")+(html(p.adventurerRank === 'Custom Rank' && p.customRankName ? p.customRankName : p.adventurerRank))+uiMarkup("</strong><small>")+(html(tr(uiText("Recognized guild classification"))))+uiMarkup("</small></article>\n            <div class=\"tretaresia-rank-stack\">")+(rankRow('Power mastery', p.magicRank, 'fa-solid fa-fire-flame-curved'))+uiMarkup("\n                ")+(rankRow('Combat mastery', p.swordRank, 'fa-solid fa-khanda'))+uiMarkup("")+(rankRow('Experience', `${p.experience} / ${p.experienceMax}`, 'fa-solid fa-star'))+uiMarkup("\n                ")+(rankRow('Reputation', p.reputation, 'fa-solid fa-people-group'))+uiMarkup("")+(rankRow('Confirmed kills', p.kills, 'fa-solid fa-skull'))+uiMarkup("</div></div>\n        <article class=\"tretaresia-card tretaresia-wallet\" title=\"")+(html(p.currency.name))+uiMarkup("\"><div><span>")+(html(tr(uiText("Gold coins"))))+uiMarkup("</span><strong>")+(p.currency.gold)+uiMarkup("</strong></div>\n            <div><span>")+(html(tr(uiText("Silver coins"))))+uiMarkup("</span><strong>")+(p.currency.silver)+uiMarkup("</strong></div><div><span>")+(html(tr(uiText("Copper coins"))))+uiMarkup("</span><strong>")+(p.currency.copper)+uiMarkup("</strong></div></article>\n        ")+(renderTransactions(state))+uiMarkup("\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Edit progression"))))+uiMarkup("</summary>\n            <form data-form=\"rank\" class=\"tretaresia-form-grid\">")+(select('Adventurer rank', 'adventurerRank', RANKS, p.adventurerRank))+uiMarkup("")+(input('Custom rank name', 'customRankName', p.customRankName))+uiMarkup("\n                ")+(select('Power mastery', 'magicRank', MASTERY, p.magicRank))+uiMarkup("")+(select('Combat mastery', 'swordRank', MASTERY, p.swordRank))+uiMarkup("\n                ")+(input('Experience', 'experience', p.experience, 'number', 'min="0"'))+uiMarkup("")+(input('EXP to next level', 'experienceMax', p.experienceMax, 'number', 'min="1"'))+uiMarkup("\n                ")+(input('Reputation', 'reputation', p.reputation, 'number'))+uiMarkup("")+(input('Confirmed kills', 'kills', p.kills, 'number', 'min="0"'))+uiMarkup("\n                ")+(input('Currency / region', 'currencyName', p.currency.name))+uiMarkup("")+(input('Gold coins', 'gold', p.currency.gold, 'number', 'min="0"'))+uiMarkup("")+(input('Silver coins', 'silver', p.currency.silver, 'number', 'min="0"'))+uiMarkup("\n                ")+(input('Copper coins', 'copper', p.currency.copper, 'number', 'min="0"'))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save progression"))))+uiMarkup("</button></form></details>"));
 }
 
 function renderNpcMapControls(state) {
@@ -6500,13 +6124,9 @@ function renderNpcMapControls(state) {
     const entries = friendlyNpcs(state);
     const rows = entries.length ? entries.map(entry => {
         const point = npcMapPoint(entry, state);
-        return `<button type="button" class="tretaresia-npc-map-row${entry.mapVisible ? ' is-visible' : ''}" data-action="toggle-npc-map" data-id="${html(entry.id)}" aria-pressed="${entry.mapVisible}">
-            <span class="tretaresia-npc-map-avatar">${html(entry.name.charAt(0).toUpperCase() || '?')}</span><span><strong>${html(entry.name)}</strong><small>${html(entry.activity || entry.location)}${point ? ` · ${coordinatesLabel(point.x, point.y)}` : ' · Unknown coordinates'}</small></span>
-            <i class="fa-solid fa-${entry.mapVisible ? 'eye' : 'eye-slash'}"></i></button>`;
-    }).join('') : `<p class="tretaresia-npc-map-empty">${html(tr('Only friendly NPCs appear here.'))}</p>`;
-    return `<section class="tretaresia-npc-map-controls"><header><span><i class="fa-solid fa-person-walking"></i>${html(tr('Living NPCs'))}</span>
-        <button type="button" data-action="toggle-npc-markers" aria-pressed="${settings.showNpcMapMarkers}" title="${html(tr(settings.showNpcMapMarkers ? 'Hide NPC markers' : 'Show NPC markers'))}"><i class="fa-solid fa-${settings.showNpcMapMarkers ? 'eye' : 'eye-slash'}"></i></button></header>
-        <div>${rows}</div></section>`;
+        return (uiMarkup("<button type=\"button\" class=\"tretaresia-npc-map-row")+(entry.mapVisible ? ' is-visible' : '')+uiMarkup("\" data-action=\"toggle-npc-map\" data-id=\"")+(html(entry.id))+uiMarkup("\" aria-pressed=\"")+(entry.mapVisible)+uiMarkup("\">\n            <span class=\"tretaresia-npc-map-avatar\">")+(html(entry.name.charAt(0).toUpperCase() || '?'))+uiMarkup("</span><span><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.activity || entry.location))+uiMarkup("")+(point ? ` · ${coordinatesLabel(point.x, point.y)}` : ' · Unknown coordinates')+uiMarkup("</small></span>\n            <i class=\"fa-solid fa-")+(entry.mapVisible ? 'eye' : 'eye-slash')+uiMarkup("\"></i></button>"));
+    }).join('') : (uiMarkup("<p class=\"tretaresia-npc-map-empty\">")+(html(tr(uiText("Only friendly NPCs appear here."))))+uiMarkup("</p>"));
+    return (uiMarkup("<section class=\"tretaresia-npc-map-controls\"><header><span><i class=\"fa-solid fa-person-walking\"></i>")+(html(tr(uiText("Living NPCs"))))+uiMarkup("</span>\n        <button type=\"button\" data-action=\"toggle-npc-markers\" aria-pressed=\"")+(settings.showNpcMapMarkers)+uiMarkup("\" title=\"")+(html(tr(settings.showNpcMapMarkers ? uiText("Hide NPC markers") : uiText("Show NPC markers"))))+uiMarkup("\"><i class=\"fa-solid fa-")+(settings.showNpcMapMarkers ? 'eye' : 'eye-slash')+uiMarkup("\"></i></button></header>\n        <div>")+(rows)+uiMarkup("</div></section>"));
 }
 
 function mapPresenceAvatar(key, name, directSource = '', directFrame = null) {
@@ -6514,8 +6134,8 @@ function mapPresenceAvatar(key, name, directSource = '', directFrame = null) {
     const record = mapPortraitRecord(key);
     if (record && directFrame) record.frame = directFrame;
     return record?.status === 'ready' && record.url
-        ? `<span class="tretaresia-map-presence-avatar"><img src="${html(record.url)}" alt="" style="object-position:${number(record.frame?.x, 50, 0, 100)}% ${number(record.frame?.y, 50, 0, 100)}%;transform:scale(${number(record.frame?.zoom, 1, 1, 4)})"></span>`
-        : `<span class="tretaresia-map-presence-avatar">${html(text(name, '?', 120).charAt(0).toUpperCase() || '?')}</span>`;
+        ? (uiMarkup("<span class=\"tretaresia-map-presence-avatar\"><img src=\"")+(html(record.url))+uiMarkup("\" alt=\"\" style=\"object-position:")+(number(record.frame?.x, 50, 0, 100))+uiMarkup("% ")+(number(record.frame?.y, 50, 0, 100))+uiMarkup("%;transform:scale(")+(number(record.frame?.zoom, 1, 1, 4))+uiMarkup(")\"></span>"))
+        : (uiMarkup("<span class=\"tretaresia-map-presence-avatar\">")+(html(text(name, '?', 120).charAt(0).toUpperCase() || '?'))+uiMarkup("</span>"));
 }
 
 function renderMapPresenceRoster(state, atlas) {
@@ -6525,38 +6145,21 @@ function renderMapPresenceRoster(state, atlas) {
     const rows = characters.map((entry, index) => {
         const point = npcMapPoint(entry, state);
         if (index < MAP_ROSTER_PORTRAIT_LIMIT) requestMapPortrait(`character:${entry.id}`, { id: entry.id, scope: 'character', name: entry.name });
-        return `<article>${mapPresenceAvatar(`character:${entry.id}`, entry.name)}<span><strong>${html(entry.name)}</strong><small>${html(entry.location || entry.currentState || tr('Unknown'))}${point ? ` · ${html(coordinatesLabel(point.x, point.y))}` : ` · ${html(tr('Unknown coordinates'))}`}</small></span></article>`;
+        return (uiMarkup("<article>")+(mapPresenceAvatar(`character:${entry.id}`, entry.name))+uiMarkup("<span><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.location || entry.currentState || tr(uiText("Unknown"))))+uiMarkup("")+(point ? ` · ${html(coordinatesLabel(point.x, point.y))}` : ` · ${html(tr(uiText("Unknown coordinates")))}`)+uiMarkup("</small></span></article>"));
     }).join('');
-    return `<section class="tretaresia-card tretaresia-map-presence"><header><span><i class="fa-solid fa-location-crosshairs"></i>${html(tr('Character positions'))}</span><b>${characters.length + 1}</b></header><div>
-        <article class="is-player">${mapPresenceAvatar(`player:${shortHash(state.player.portrait)}`, playerName, state.player.portrait, state.player.portraitView.mobile)}<span><strong>${html(playerName)} · ${html(tr('You'))}</strong><small>${html(state.location.place)} · ${html(coordinatesLabel(playerPoint.x, playerPoint.y))}</small></span></article>${rows || `<p>${html(tr('No Character Life positions yet.'))}</p>`}</div></section>`;
+    return (uiMarkup("<section class=\"tretaresia-card tretaresia-map-presence\"><header><span><i class=\"fa-solid fa-location-crosshairs\"></i>")+(html(tr(uiText("Character positions"))))+uiMarkup("</span><b>")+(characters.length + 1)+uiMarkup("</b></header><div>\n        <article class=\"is-player\">")+(mapPresenceAvatar(`player:${shortHash(state.player.portrait)}`, playerName, state.player.portrait, state.player.portraitView.mobile))+uiMarkup("<span><strong>")+(html(playerName))+uiMarkup(" · ")+(html(tr(uiText("You"))))+uiMarkup("</strong><small>")+(html(state.location.place))+uiMarkup(" · ")+(html(coordinatesLabel(playerPoint.x, playerPoint.y)))+uiMarkup("</small></span></article>")+(rows || (uiMarkup("<p>")+(html(tr(uiText("No Character Life positions yet."))))+uiMarkup("</p>")))+uiMarkup("</div></section>"));
 }
 
 function mapWorldToolbar(state, selected, fullscreen = false) {
     const atlas = viewedAtlas(state);
-    return `<div class="tretaresia-map-toolbar" data-map-toolbar>
-        <label class="tretaresia-map-world-select" title="${html(atlas.name)}"><i class="fa-solid fa-earth-asia"></i><span>${html(tr('World'))}</span>
-            <select data-map-world-select aria-label="${html(tr('World map'))}">${Object.values(WORLD_ATLASES).map(entry =>
-                `<option value="${entry.id}"${entry.id === atlas.id ? ' selected' : ''}>${html(entry.id === 'present-world' ? tr('Present World') : 'ALTERNATE')}</option>`).join('')}</select>
-        </label>
-        <div class="tretaresia-map-toolbar-readouts">
-            <span><i class="fa-solid fa-magnifying-glass"></i><b data-map-zoom>100%</b></span>
-        </div>
-        <button class="tretaresia-map-fullscreen-icon" type="button" data-action="map-fullscreen"
-            title="${html(tr(fullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}" aria-label="${html(tr(fullscreen ? 'Close fullscreen map' : 'Open fullscreen map'))}">
-            <i class="fa-solid fa-${fullscreen ? 'xmark' : 'up-right-and-down-left-from-center'}"></i>
-        </button>
-    </div>`;
+    return (uiMarkup("<div class=\"tretaresia-map-toolbar\" data-map-toolbar>\n        <label class=\"tretaresia-map-world-select\" title=\"")+(html(atlas.name))+uiMarkup("\"><i class=\"fa-solid fa-earth-asia\"></i><span>")+(html(tr(uiText("World"))))+uiMarkup("</span>\n            <select data-map-world-select aria-label=\"")+(html(tr(uiText("World map"))))+uiMarkup("\">")+(Object.values(WORLD_ATLASES).map(entry =>
+                (uiMarkup("<option value=\"")+(entry.id)+uiMarkup("\"")+(entry.id === atlas.id ? ' selected' : '')+uiMarkup(">")+(html(entry.id === 'present-world' ? tr(uiText("Present World")) : 'ALTERNATE'))+uiMarkup("</option>"))).join(''))+uiMarkup("</select>\n        </label>\n        <div class=\"tretaresia-map-toolbar-readouts\">\n            <span><i class=\"fa-solid fa-magnifying-glass\"></i><b data-map-zoom>100%</b></span>\n        </div>\n        <button class=\"tretaresia-map-fullscreen-icon\" type=\"button\" data-action=\"map-fullscreen\"\n            title=\"")+(html(tr(fullscreen ? uiText("Close fullscreen map") : uiText("Open fullscreen map"))))+uiMarkup("\" aria-label=\"")+(html(tr(fullscreen ? uiText("Close fullscreen map") : uiText("Open fullscreen map"))))+uiMarkup("\">\n            <i class=\"fa-solid fa-")+(fullscreen ? 'xmark' : 'up-right-and-down-left-from-center')+uiMarkup("\"></i>\n        </button>\n    </div>"));
 }
 
 function mapSurfaceMarkup(state, selected, fullscreen = false) {
     const atlas = viewedAtlas(state);
     const variant = worldMapVariant(state);
-    return `<div class="tretaresia-map-surface${fullscreen ? ' is-viewer' : ''}">
-        <div class="tretaresia-map-frame${fullscreen ? ' is-viewer' : ''}" data-map-variant="${variant}" data-map-world="${atlas.id}" data-map-surface="${fullscreen ? 'fullscreen' : 'embedded'}">
-            <canvas class="tretaresia-world-map" role="img" aria-label="${html(`Interactive atlas of ${atlas.name}; drag to pan and pinch to zoom`)}"></canvas>
-        </div>
-        <div class="tretaresia-map-control-panel" aria-label="${html(tr('Map controls'))}">${mapWorldToolbar(state, selected, fullscreen)}</div>
-    </div>`;
+    return (uiMarkup("<div class=\"tretaresia-map-surface")+(fullscreen ? ' is-viewer' : '')+uiMarkup("\">\n        <div class=\"tretaresia-map-frame")+(fullscreen ? ' is-viewer' : '')+uiMarkup("\" data-map-variant=\"")+(variant)+uiMarkup("\" data-map-world=\"")+(atlas.id)+uiMarkup("\" data-map-surface=\"")+(fullscreen ? 'fullscreen' : 'embedded')+uiMarkup("\">\n            <canvas class=\"tretaresia-world-map\" role=\"img\" aria-label=\"")+(html(`Interactive atlas of ${atlas.name}; drag to pan and pinch to zoom`))+uiMarkup("\"></canvas>\n        </div>\n        <div class=\"tretaresia-map-control-panel\" aria-label=\"")+(html(tr(uiText("Map controls"))))+uiMarkup("\">")+(mapWorldToolbar(state, selected, fullscreen))+uiMarkup("</div>\n    </div>"));
 }
 
 function selectViewedWorld(nextWorldId, state = getState()) {
@@ -6580,24 +6183,9 @@ function renderMap(panel, state) {
     // Location catalogs stay in canonical state and in the AI prompt, but the
     // atlas DOM no longer creates hundreds of destination options, pin rows,
     // or location controls. Main-chat role-play is the travel controller.
-    const travelMarkup = moving || viewingCurrentWorld && state.travel.status === 'Arrived' ? `
-        <section class="tretaresia-map-journey-strip" data-status="${html(state.travel.status.toLowerCase())}">
-            <span><i class="fa-solid fa-route"></i><b>${html(state.travel.origin || 'Unknown')}</b><i class="fa-solid fa-arrow-right-long"></i><b>${html(state.travel.destinationPlace || state.travel.destination || state.location.place)}</b></span>
-            <div class="tretaresia-map-journey-track" style="--journey-progress:${progress}%"><i></i><strong>${progress}%</strong></div>
-            <small>${html(moving ? `${formatTravelDays(state.travel.remainingDays)} ${tr('days')} ${tr('Remaining travel').toLocaleLowerCase()}` : state.travel.status)}</small>
-        </section>` : '';
+    const travelMarkup = moving || viewingCurrentWorld && state.travel.status === 'Arrived' ? (uiMarkup("\n        <section class=\"tretaresia-map-journey-strip\" data-status=\"")+(html(state.travel.status.toLowerCase()))+uiMarkup("\">\n            <span><i class=\"fa-solid fa-route\"></i><b>")+(html(state.travel.origin || 'Unknown'))+uiMarkup("</b><i class=\"fa-solid fa-arrow-right-long\"></i><b>")+(html(state.travel.destinationPlace || state.travel.destination || state.location.place))+uiMarkup("</b></span>\n            <div class=\"tretaresia-map-journey-track\" style=\"--journey-progress:")+(progress)+uiMarkup("%\"><i></i><strong>")+(progress)+uiMarkup("%</strong></div>\n            <small>")+(html(moving ? `${formatTravelDays(state.travel.remainingDays)} ${tr(uiText("days"))} ${tr(uiText("Remaining travel")).toLocaleLowerCase()}` : state.travel.status))+uiMarkup("</small>\n        </section>")) : '';
 
-    panel.innerHTML = `${heading(atlas.name, `${tr(atlas.era)} · ${viewingCurrentWorld ? state.location.continent + ' · ' + state.location.region : tr('Atlas browsing mode')}`, 'fa-solid fa-earth-asia')}
-<div class="tretaresia-map-layout tretaresia-performance-map${mapFullscreen ? ' has-fullscreen-map' : ''}">
-    ${mapFullscreen ? '' : mapSurfaceMarkup(state, selected, false)}
-    ${travelMarkup}
-</div>
-${mapFullscreen ? '' : renderMapPresenceRoster(state, atlas)}
-${mapFullscreen ? `<section class="tretaresia-map-window" role="dialog" aria-modal="true" aria-label="${html(atlas.name)}">
-    <header><div><span>${html(tr('World map'))}</span><h3>${html(atlas.name)}</h3><small>${html(viewingCurrentWorld ? state.location.continent : tr('Atlas browsing mode'))}</small></div>
-        <button type="button" data-action="map-fullscreen" title="${html(tr('Close fullscreen map'))}" aria-label="${html(tr('Close fullscreen map'))}"><i class="fa-solid fa-xmark"></i></button></header>
-    <div class="tretaresia-map-window-body">${mapSurfaceMarkup(state, selected, true)}</div>
-</section>` : ''}`;
+    panel.innerHTML = (uiMarkup("")+(heading(atlas.name, `${tr(atlas.era)} · ${viewingCurrentWorld ? state.location.continent + ' · ' + state.location.region : tr(uiText("Atlas browsing mode"))}`, 'fa-solid fa-earth-asia'))+uiMarkup("\n<div class=\"tretaresia-map-layout tretaresia-performance-map")+(mapFullscreen ? ' has-fullscreen-map' : '')+uiMarkup("\">\n    ")+(mapFullscreen ? '' : mapSurfaceMarkup(state, selected, false))+uiMarkup("\n    ")+(travelMarkup)+uiMarkup("\n</div>\n")+(mapFullscreen ? '' : renderMapPresenceRoster(state, atlas))+uiMarkup("\n")+(mapFullscreen ? (uiMarkup("<section class=\"tretaresia-map-window\" role=\"dialog\" aria-modal=\"true\" aria-label=\"")+(html(atlas.name))+uiMarkup("\">\n    <header><div><span>")+(html(tr(uiText("World map"))))+uiMarkup("</span><h3>")+(html(atlas.name))+uiMarkup("</h3><small>")+(html(viewingCurrentWorld ? state.location.continent : tr(uiText("Atlas browsing mode"))))+uiMarkup("</small></div>\n        <button type=\"button\" data-action=\"map-fullscreen\" title=\"")+(html(tr(uiText("Close fullscreen map"))))+uiMarkup("\" aria-label=\"")+(html(tr(uiText("Close fullscreen map"))))+uiMarkup("\"><i class=\"fa-solid fa-xmark\"></i></button></header>\n    <div class=\"tretaresia-map-window-body\">")+(mapSurfaceMarkup(state, selected, true))+uiMarkup("</div>\n</section>")) : '')+uiMarkup(""));
     const visible = mapFullscreen || (!panel.hidden && panel.classList.contains('is-active')
         && document.getElementById('tretaresia-rpg-overlay')?.classList.contains('is-open'));
     if (visible) {
@@ -7070,7 +6658,7 @@ function suspendMapRendering(releaseTiles = false) {
 }
 
 const textareaField = (label, name, value, rows = 4, extra = '') =>
-    `<label class="tretaresia-field tretaresia-field-wide"><span>${html(tr(label))}</span><textarea name="${name}" rows="${rows}" ${extra}>${html(value)}</textarea></label>`;
+    (uiMarkup("<label class=\"tretaresia-field tretaresia-field-wide\"><span>")+(html(tr(label)))+uiMarkup("</span><textarea name=\"")+(name)+uiMarkup("\" rows=\"")+(rows)+uiMarkup("\" ")+(extra)+uiMarkup(">")+(html(value))+uiMarkup("</textarea></label>"));
 
 function npcPortraitStyle(entry) {
     const frame = entry.portraitView;
@@ -7078,84 +6666,53 @@ function npcPortraitStyle(entry) {
 }
 
 function npcPortraitSlot(entry, className = 'tretaresia-npc-thumb') {
-    return `<span class="${className}${entry.hasPortrait || entry.characterLifePortraitId ? ' has-photo' : ''}" data-npc-portrait="${html(entry.id)}" style="${npcPortraitStyle(entry)}">
-        <span class="tretaresia-npc-initial">${html(entry.name.charAt(0).toUpperCase() || '?')}</span></span>`;
+    return (uiMarkup("<span class=\"")+(className)+uiMarkup("")+(entry.hasPortrait || entry.characterLifePortraitId ? ' has-photo' : '')+uiMarkup("\" data-npc-portrait=\"")+(html(entry.id))+uiMarkup("\" style=\"")+(npcPortraitStyle(entry))+uiMarkup("\">\n        <span class=\"tretaresia-npc-initial\">")+(html(entry.name.charAt(0).toUpperCase() || '?'))+uiMarkup("</span></span>"));
 }
 
 function npcMeterView(label, value, tone = 'accent') {
-    return `<article class="tretaresia-npc-meter" data-tone="${tone}"><span><b>${html(tr(label))}</b><output>${value}%</output></span>
-        <div><i style="width:${value}%"></i></div></article>`;
+    return (uiMarkup("<article class=\"tretaresia-npc-meter\" data-tone=\"")+(tone)+uiMarkup("\"><span><b>")+(html(tr(label)))+uiMarkup("</b><output>")+(value)+uiMarkup("%</output></span>\n        <div><i style=\"width:")+(value)+uiMarkup("%\"></i></div></article>"));
 }
 
 function socialNpcOptions(state, placeholder = 'Choose a friendly NPC') {
-    const options = friendlyNpcs(state).map(entry => `<option value="${html(entry.id)}">${html(entry.name)} · ${html(entry.relationship)}</option>`).join('');
-    return `<option value="">${html(tr(placeholder))}</option>${options}`;
+    const options = friendlyNpcs(state).map(entry => (uiMarkup("<option value=\"")+(html(entry.id))+uiMarkup("\">")+(html(entry.name))+uiMarkup(" · ")+(html(entry.relationship))+uiMarkup("</option>"))).join('');
+    return (uiMarkup("<option value=\"\">")+(html(tr(placeholder)))+uiMarkup("</option>")+(options)+uiMarkup(""));
 }
 
 function socialMemberCards(state, memberIds, removeAction = '', groupId = '', leaderId = 'player', roleMap = {}) {
     const ids = [...new Set(['player', ...(memberIds || []).filter(id => id !== 'player'), ...(leaderId && leaderId !== 'player' && state.npcs.some(entry => entry.id === leaderId) ? [leaderId] : [])])];
-    return ids.length ? ids.map(id => `<article class="tretaresia-social-member${id === 'player' ? ' is-player' : ''}">
-        <span class="tretaresia-social-member-icon"><i class="fa-solid ${id === 'player' ? 'fa-user' : 'fa-user-astronaut'}"></i></span>
-        <span><strong>${html(socialMemberName(state, id))}</strong><small>${html(id === leaderId ? tr('Leader') : (roleMap[id] || state.npcs.find(entry => entry.id === id)?.relationship || tr('Member')))}</small></span>
-        ${removeAction && id !== 'player' ? `<button type="button" data-action="${removeAction}" data-id="${html(id)}"${groupId ? ` data-group-id="${html(groupId)}"` : ''} title="${html(tr('Remove member'))}"><i class="fa-solid fa-user-minus"></i></button>` : '<i class="fa-solid fa-check social-member-check"></i>'}
-    </article>`).join('') : `<div class="tretaresia-social-empty">${html(tr('No household members'))}</div>`;
+    return ids.length ? ids.map(id => (uiMarkup("<article class=\"tretaresia-social-member")+(id === 'player' ? ' is-player' : '')+uiMarkup("\">\n        <span class=\"tretaresia-social-member-icon\"><i class=\"fa-solid ")+(id === 'player' ? 'fa-user' : 'fa-user-astronaut')+uiMarkup("\"></i></span>\n        <span><strong>")+(html(socialMemberName(state, id)))+uiMarkup("</strong><small>")+(html(id === leaderId ? tr(uiText("Leader")) : (roleMap[id] || state.npcs.find(entry => entry.id === id)?.relationship || tr(uiText("Member")))))+uiMarkup("</small></span>\n        ")+(removeAction && id !== 'player' ? (uiMarkup("<button type=\"button\" data-action=\"")+(removeAction)+uiMarkup("\" data-id=\"")+(html(id))+uiMarkup("\"")+(groupId ? ` data-group-id="${html(groupId)}"` : '')+uiMarkup(" title=\"")+(html(tr(uiText("Remove member"))))+uiMarkup("\"><i class=\"fa-solid fa-user-minus\"></i></button>")) : uiMarkup("<i class=\"fa-solid fa-check social-member-check\"></i>"))+uiMarkup("\n    </article>"))).join('') : (uiMarkup("<div class=\"tretaresia-social-empty\">")+(html(tr(uiText("No household members"))))+uiMarkup("</div>"));
 }
 
 function socialGroupSummary(group, state) {
     const unknown = getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown';
-    const progress = `<div class="tretaresia-affiliation-summary"><div><span>${html(getSettings().language === 'th' ? 'แรงก์กลุ่ม' : 'Group rank')}</span><strong>${html(group.rank || unknown)}</strong></div><div><span>${html(getSettings().language === 'th' ? 'ภารกิจสำเร็จ' : 'Completed quests')}</span><strong>${group.completedQuests === null ? html(unknown) : html(String(group.completedQuests ?? 0))}</strong></div><div><span>Reputation</span><strong>${group.reputation === null ? html(unknown) : html(String(group.reputation ?? 0))}</strong></div></div>`;
+    const progress = (uiMarkup("<div class=\"tretaresia-affiliation-summary\"><div><span>")+(html(getSettings().language === 'th' ? 'แรงก์กลุ่ม' : 'Group rank'))+uiMarkup("</span><strong>")+(html(group.rank || unknown))+uiMarkup("</strong></div><div><span>")+(html(getSettings().language === 'th' ? 'ภารกิจสำเร็จ' : 'Completed quests'))+uiMarkup("</span><strong>")+(group.completedQuests === null ? html(unknown) : html(String(group.completedQuests ?? 0)))+uiMarkup("</strong></div><div><span>Reputation</span><strong>")+(group.reputation === null ? html(unknown) : html(String(group.reputation ?? 0)))+uiMarkup("</strong></div></div>"));
     if (!group.joinedByInvitation) return progress;
-    const count = group.memberCount === null ? (getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown') : `${group.memberCount} ${tr('Members').toLowerCase()}`;
+    const count = group.memberCount === null ? (getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown') : `${group.memberCount} ${tr(uiText("Members")).toLowerCase()}`;
     const known = group.knownMembers || [];
     const remainder = group.memberCount === null ? '' : Math.max(0, group.memberCount - 1 - known.length);
-    return `${progress}<div class="tretaresia-affiliation-summary"><div><span>${html(getSettings().language === 'th' ? 'ตำแหน่งของคุณ' : 'Your position')}</span><strong>${html(group.playerRole)}</strong></div><div><span>${html(tr('Members'))}</span><strong>${html(count)}</strong></div>
-        <p>${group.leaderName ? `${html(tr('Leader'))}: ${html(group.leaderName)} · ` : ''}${html(getSettings().language === 'th' ? 'สมาชิกที่รู้จัก' : 'Known members')}: ${html(known.map(entry => entry.name).join(', ') || '—')}${remainder ? ` · ${remainder} ${html(getSettings().language === 'th' ? 'คนยังไม่ทราบชื่อ' : 'unnamed members')}` : ''}</p></div>`;
+    return (uiMarkup("")+(progress)+uiMarkup("<div class=\"tretaresia-affiliation-summary\"><div><span>")+(html(getSettings().language === 'th' ? 'ตำแหน่งของคุณ' : 'Your position'))+uiMarkup("</span><strong>")+(html(group.playerRole))+uiMarkup("</strong></div><div><span>")+(html(tr(uiText("Members"))))+uiMarkup("</span><strong>")+(html(count))+uiMarkup("</strong></div>\n        <p>")+(group.leaderName ? `${html(tr(uiText("Leader")))}: ${html(group.leaderName)} · ` : '')+uiMarkup("")+(html(getSettings().language === 'th' ? 'สมาชิกที่รู้จัก' : 'Known members'))+uiMarkup(": ")+(html(known.map(entry => entry.name).join(', ') || '—'))+uiMarkup("")+(remainder ? ` · ${remainder} ${html(getSettings().language === 'th' ? 'คนยังไม่ทราบชื่อ' : 'unnamed members')}` : '')+uiMarkup("</p></div>"));
 }
 
 function renderGroups(panel, state) {
     if (!panel) return;
     const party = state.social.party;
     const guilds = state.social.guilds;
-    const partyMarkup = party ? `<article class="tretaresia-social-card tretaresia-party-card">
-        <header><div><span class="tretaresia-eyebrow">${html(tr('Party management'))}</span><h4>${html(party.name)}</h4></div><button type="button" class="tretaresia-danger-button" data-action="dissolve-party"><i class="fa-solid fa-xmark"></i>${html(party.joinedByInvitation ? (getSettings().language === 'th' ? 'ออกจากปาร์ตี้' : 'Leave party') : tr('Dissolve party'))}</button></header>
-        ${socialGroupSummary(party,state)}
-        <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'ปาร์ตี้ไม่มีค่าก่อตั้ง สมาชิกทำงานร่วมกันในแชตปัจจุบัน' : 'Party membership is free and follows the current role-play chat.')}</p>
-        <div class="tretaresia-party-strategy"><span><i class="fa-solid fa-people-arrows-left-right"></i>Formation</span><strong>${html(party.formation)}</strong><em>Shared funds: ${html(currencyLabel(party.sharedFunds))}</em></div>
-        <div class="tretaresia-social-member-list">${socialMemberCards(state, party.memberIds, party.joinedByInvitation ? '' : 'remove-party-member', '', party.leaderId, {...party.roles,player:party.playerRole})}</div>
-        ${party.joinedByInvitation ? '' : `<details class="tretaresia-editor"><summary><i class="fa-solid fa-chess-board"></i> Party formation & roles</summary><form data-form="party-strategy" class="tretaresia-form-grid">${input('Party name', 'name', party.name)}${input('Party rank', 'rank', party.rank)}${input('Completed quests', 'completedQuests', party.completedQuests, 'number', 'min="0" max="999999"')}${input('Reputation', 'reputation', party.reputation, 'number', 'min="0" max="999999"')}${input('Formation', 'formation', party.formation)}${party.memberIds.map(id => input(socialMemberName(state, id), `role-${id}`, party.roles[id] || 'Companion', 'text', 'maxlength="40" list="tretaresia-party-roles"')).join('')}<datalist id="tretaresia-party-roles">${PARTY_ROLES.map(role => `<option value="${html(role)}">`).join('')}</datalist>${input('Shared gold', 'sharedGold', party.sharedFunds.gold, 'number', 'min="0"')}${input('Shared silver', 'sharedSilver', party.sharedFunds.silver, 'number', 'min="0"')}${input('Shared copper', 'sharedCopper', party.sharedFunds.copper, 'number', 'min="0"')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">Save formation</button></form></details>
-        <form data-form="party-invite" class="tretaresia-social-invite"><input type="hidden" name="partyId" value="${html(party.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to party'))}</button></form>`}
-    </article>` : `<article class="tretaresia-social-card"><header><div><span class="tretaresia-eyebrow">${html(tr('Party management'))}</span><h4>${html(tr('No active party'))}</h4></div><i class="fa-solid fa-people-group tretaresia-social-card-icon"></i></header>
-        <p class="tretaresia-social-description">${html(getSettings().language === 'th' ? 'สร้างปาร์ตี้เพื่อรวม NPC ฝ่ายมิตรไว้ร่วมเดินทางหรือทำภารกิจ' : 'Create a party to organize friendly NPCs for travel and missions.')}</p>
-        <form data-form="party-create" class="tretaresia-social-form">${input('Party name', 'name', '')}<button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-plus"></i>${html(tr('Create party'))}</button></form>
-    </article>`;
-    const guildCards = guilds.length ? guilds.map(guild => `<article class="tretaresia-social-card tretaresia-guild-card">
-        <header><div><span class="tretaresia-eyebrow">${html(tr('Guild management'))}</span><h4>${html(guild.name)}</h4><small>${html(guild.rank)} · Lv.${guild.level} · ${html(guild.joinedByInvitation ? (guild.memberCount === null ? (getSettings().language === 'th' ? 'ไม่ทราบจำนวนสมาชิก' : 'Member count unknown') : `${guild.memberCount} ${tr('Members').toLowerCase()}`) : `${guild.memberIds.length + 1} ${tr('Members').toLowerCase()}`)}</small></div><button type="button" class="tretaresia-danger-button" data-action="dissolve-guild" data-id="${html(guild.id)}"><i class="fa-solid fa-xmark"></i>${html(guild.joinedByInvitation ? (getSettings().language === 'th' ? 'ออกจากกิลด์' : 'Leave guild') : tr('Dissolve guild'))}</button></header>
-        ${socialGroupSummary(guild,state)}
-        ${guild.description ? `<p class="tretaresia-social-description">${html(guild.description)}</p>` : ''}<div class="tretaresia-guild-progress"><article><span>Reputation</span><strong>${guild.reputation === null ? html(getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown') : guild.reputation}</strong></article><article><span>Headquarters</span><strong>${html(guild.headquarters)}</strong></article><article><span>Alliances</span><strong>${guild.alliances.length}</strong></article><article><span>Enemies</span><strong>${guild.enemies.length}</strong></article><article><span>Guild quests</span><strong>${guild.quests.length}</strong></article></div><div class="tretaresia-social-treasury"><span><i class="fa-solid fa-coins"></i>${html(tr('Guild treasury'))}</span><strong>${html(currencyLabel(guild.treasury))}</strong></div>
-        <div class="tretaresia-social-member-list">${socialMemberCards(state, guild.memberIds, guild.joinedByInvitation ? '' : 'remove-guild-member', guild.id, guild.leaderId, {player:guild.playerRole})}</div>
-        ${guild.joinedByInvitation ? '' : `<form data-form="guild-invite" class="tretaresia-social-invite"><input type="hidden" name="guildId" value="${html(guild.id)}"><label class="tretaresia-field"><span>${html(tr('Friendly NPCs'))}</span><select name="npcId" required>${socialNpcOptions(state)}</select></label><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Invite to guild'))}</button></form>
-        <details class="tretaresia-editor"><summary><i class="fa-solid fa-landmark"></i> Guild progression</summary><form data-form="guild-progression" class="tretaresia-form-grid"><input type="hidden" name="guildId" value="${html(guild.id)}">${input('Guild name', 'name', guild.name)}${input('Guild rank', 'rank', guild.rank)}${input('Completed quests', 'completedQuests', guild.completedQuests, 'number', 'min="0" max="999999"')}${input('Level', 'level', guild.level, 'number', 'min="1"')}${input('Reputation', 'reputation', guild.reputation, 'number')}${input('Headquarters', 'headquarters', guild.headquarters)}${input('Alliances', 'alliances', guild.alliances.join(', '))}${input('Enemies', 'enemies', guild.enemies.join(', '))}${input('Guild quests', 'quests', guild.quests.join(', '))}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">Save guild progression</button></form></details>`}
-    </article>`).join('') : `<article class="tretaresia-social-card tretaresia-social-empty-card"><i class="fa-solid fa-landmark-dome"></i><strong>${html(tr('No guilds yet'))}</strong><p>${html(getSettings().language === 'th' ? 'กิลด์ต้องเสียค่าก่อตั้งเป็นเงิน 10 เหรียญทอง' : 'A guild costs 10 gold to establish.')}</p></article>`;
-    panel.innerHTML = `${heading('Party & Guild', `${party ? 1 : 0} ${tr('party')} · ${guilds.length} ${tr('guilds')}`, 'fa-solid fa-people-group')}
-        <p class="tretaresia-social-note"><i class="fa-solid fa-circle-info"></i>${html(tr('Friendly NPCs only'))} · ${html(tr('Hostile NPCs are excluded from the list.'))}</p>
-        <div class="tretaresia-social-grid">${partyMarkup}<section class="tretaresia-social-stack"><div class="tretaresia-social-subheading"><span><i class="fa-solid fa-landmark"></i>${html(tr('Guild management'))}</span><small>${html(tr('Current balance'))}: ${html(currencyLabel(state.progression.currency))}</small></div>
-        <article class="tretaresia-social-card tretaresia-guild-create"><form data-form="guild-create" class="tretaresia-social-form">${input('Guild name', 'name', '')}${input('Guild description', 'description', '')}<div class="tretaresia-fee-line"><span>${html(tr('Guild creation fee'))}</span><strong>${html(currencyLabel(GUILD_CREATION_FEE))}</strong></div><button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-plus"></i>${html(tr('Create guild'))}</button></form></article>${guildCards}</section></div>`;
+    const partyMarkup = party ? (uiMarkup("<article class=\"tretaresia-social-card tretaresia-party-card\">\n        <header><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Party management"))))+uiMarkup("</span><h4>")+(html(party.name))+uiMarkup("</h4></div><button type=\"button\" class=\"tretaresia-danger-button\" data-action=\"dissolve-party\"><i class=\"fa-solid fa-xmark\"></i>")+(html(party.joinedByInvitation ? (getSettings().language === 'th' ? 'ออกจากปาร์ตี้' : 'Leave party') : tr(uiText("Dissolve party"))))+uiMarkup("</button></header>\n        ")+(socialGroupSummary(party,state))+uiMarkup("\n        <p class=\"tretaresia-social-description\">")+(html(getSettings().language === 'th' ? 'ปาร์ตี้ไม่มีค่าก่อตั้ง สมาชิกทำงานร่วมกันในแชตปัจจุบัน' : 'Party membership is free and follows the current role-play chat.'))+uiMarkup("</p>\n        <div class=\"tretaresia-party-strategy\"><span><i class=\"fa-solid fa-people-arrows-left-right\"></i>Formation</span><strong>")+(html(party.formation))+uiMarkup("</strong><em>Shared funds: ")+(html(currencyLabel(party.sharedFunds)))+uiMarkup("</em></div>\n        <div class=\"tretaresia-social-member-list\">")+(socialMemberCards(state, party.memberIds, party.joinedByInvitation ? '' : 'remove-party-member', '', party.leaderId, {...party.roles,player:party.playerRole}))+uiMarkup("</div>\n        ")+(party.joinedByInvitation ? '' : (uiMarkup("<details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-chess-board\"></i> Party formation & roles</summary><form data-form=\"party-strategy\" class=\"tretaresia-form-grid\">")+(input('Party name', 'name', party.name))+uiMarkup("")+(input('Party rank', 'rank', party.rank))+uiMarkup("")+(input('Completed quests', 'completedQuests', party.completedQuests, 'number', 'min="0" max="999999"'))+uiMarkup("")+(input('Reputation', 'reputation', party.reputation, 'number', 'min="0" max="999999"'))+uiMarkup("")+(input('Formation', 'formation', party.formation))+uiMarkup("")+(party.memberIds.map(id => input(socialMemberName(state, id), `role-${id}`, party.roles[id] || 'Companion', 'text', 'maxlength="40" list="tretaresia-party-roles"')).join(''))+uiMarkup("<datalist id=\"tretaresia-party-roles\">")+(PARTY_ROLES.map(role => (uiMarkup("<option value=\"")+(html(role))+uiMarkup("\">"))).join(''))+uiMarkup("</datalist>")+(input('Shared gold', 'sharedGold', party.sharedFunds.gold, 'number', 'min="0"'))+uiMarkup("")+(input('Shared silver', 'sharedSilver', party.sharedFunds.silver, 'number', 'min="0"'))+uiMarkup("")+(input('Shared copper', 'sharedCopper', party.sharedFunds.copper, 'number', 'min="0"'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">Save formation</button></form></details>\n        <form data-form=\"party-invite\" class=\"tretaresia-social-invite\"><input type=\"hidden\" name=\"partyId\" value=\"")+(html(party.id))+uiMarkup("\"><label class=\"tretaresia-field\"><span>")+(html(tr(uiText("Friendly NPCs"))))+uiMarkup("</span><select name=\"npcId\" required>")+(socialNpcOptions(state))+uiMarkup("</select></label><button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-user-plus\"></i>")+(html(tr(uiText("Invite to party"))))+uiMarkup("</button></form>")))+uiMarkup("\n    </article>")) : (uiMarkup("<article class=\"tretaresia-social-card\"><header><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Party management"))))+uiMarkup("</span><h4>")+(html(tr(uiText("No active party"))))+uiMarkup("</h4></div><i class=\"fa-solid fa-people-group tretaresia-social-card-icon\"></i></header>\n        <p class=\"tretaresia-social-description\">")+(html(getSettings().language === 'th' ? 'สร้างปาร์ตี้เพื่อรวม NPC ฝ่ายมิตรไว้ร่วมเดินทางหรือทำภารกิจ' : 'Create a party to organize friendly NPCs for travel and missions.'))+uiMarkup("</p>\n        <form data-form=\"party-create\" class=\"tretaresia-social-form\">")+(input('Party name', 'name', ''))+uiMarkup("<button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-plus\"></i>")+(html(tr(uiText("Create party"))))+uiMarkup("</button></form>\n    </article>"));
+    const guildCards = guilds.length ? guilds.map(guild => (uiMarkup("<article class=\"tretaresia-social-card tretaresia-guild-card\">\n        <header><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Guild management"))))+uiMarkup("</span><h4>")+(html(guild.name))+uiMarkup("</h4><small>")+(html(guild.rank))+uiMarkup(" · Lv.")+(guild.level)+uiMarkup(" · ")+(html(guild.joinedByInvitation ? (guild.memberCount === null ? (getSettings().language === 'th' ? 'ไม่ทราบจำนวนสมาชิก' : 'Member count unknown') : `${guild.memberCount} ${tr(uiText("Members")).toLowerCase()}`) : `${guild.memberIds.length + 1} ${tr(uiText("Members")).toLowerCase()}`))+uiMarkup("</small></div><button type=\"button\" class=\"tretaresia-danger-button\" data-action=\"dissolve-guild\" data-id=\"")+(html(guild.id))+uiMarkup("\"><i class=\"fa-solid fa-xmark\"></i>")+(html(guild.joinedByInvitation ? (getSettings().language === 'th' ? 'ออกจากกิลด์' : 'Leave guild') : tr(uiText("Dissolve guild"))))+uiMarkup("</button></header>\n        ")+(socialGroupSummary(guild,state))+uiMarkup("\n        ")+(guild.description ? (uiMarkup("<p class=\"tretaresia-social-description\">")+(html(guild.description))+uiMarkup("</p>")) : '')+uiMarkup("<div class=\"tretaresia-guild-progress\"><article><span>Reputation</span><strong>")+(guild.reputation === null ? html(getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown') : guild.reputation)+uiMarkup("</strong></article><article><span>Headquarters</span><strong>")+(html(guild.headquarters))+uiMarkup("</strong></article><article><span>Alliances</span><strong>")+(guild.alliances.length)+uiMarkup("</strong></article><article><span>Enemies</span><strong>")+(guild.enemies.length)+uiMarkup("</strong></article><article><span>Guild quests</span><strong>")+(guild.quests.length)+uiMarkup("</strong></article></div><div class=\"tretaresia-social-treasury\"><span><i class=\"fa-solid fa-coins\"></i>")+(html(tr(uiText("Guild treasury"))))+uiMarkup("</span><strong>")+(html(currencyLabel(guild.treasury)))+uiMarkup("</strong></div>\n        <div class=\"tretaresia-social-member-list\">")+(socialMemberCards(state, guild.memberIds, guild.joinedByInvitation ? '' : 'remove-guild-member', guild.id, guild.leaderId, {player:guild.playerRole}))+uiMarkup("</div>\n        ")+(guild.joinedByInvitation ? '' : (uiMarkup("<form data-form=\"guild-invite\" class=\"tretaresia-social-invite\"><input type=\"hidden\" name=\"guildId\" value=\"")+(html(guild.id))+uiMarkup("\"><label class=\"tretaresia-field\"><span>")+(html(tr(uiText("Friendly NPCs"))))+uiMarkup("</span><select name=\"npcId\" required>")+(socialNpcOptions(state))+uiMarkup("</select></label><button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-user-plus\"></i>")+(html(tr(uiText("Invite to guild"))))+uiMarkup("</button></form>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-landmark\"></i> Guild progression</summary><form data-form=\"guild-progression\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"guildId\" value=\"")+(html(guild.id))+uiMarkup("\">")+(input('Guild name', 'name', guild.name))+uiMarkup("")+(input('Guild rank', 'rank', guild.rank))+uiMarkup("")+(input('Completed quests', 'completedQuests', guild.completedQuests, 'number', 'min="0" max="999999"'))+uiMarkup("")+(input('Level', 'level', guild.level, 'number', 'min="1"'))+uiMarkup("")+(input('Reputation', 'reputation', guild.reputation, 'number'))+uiMarkup("")+(input('Headquarters', 'headquarters', guild.headquarters))+uiMarkup("")+(input('Alliances', 'alliances', guild.alliances.join(', ')))+uiMarkup("")+(input('Enemies', 'enemies', guild.enemies.join(', ')))+uiMarkup("")+(input('Guild quests', 'quests', guild.quests.join(', ')))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">Save guild progression</button></form></details>")))+uiMarkup("\n    </article>"))).join('') : (uiMarkup("<article class=\"tretaresia-social-card tretaresia-social-empty-card\"><i class=\"fa-solid fa-landmark-dome\"></i><strong>")+(html(tr(uiText("No guilds yet"))))+uiMarkup("</strong><p>")+(html(getSettings().language === 'th' ? 'กิลด์ต้องเสียค่าก่อตั้งเป็นเงิน 10 เหรียญทอง' : 'A guild costs 10 gold to establish.'))+uiMarkup("</p></article>"));
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Party & Guild"), `${party ? 1 : 0} ${tr(uiText("party"))} · ${guilds.length} ${tr(uiText("guilds"))}`, 'fa-solid fa-people-group'))+uiMarkup("\n        <p class=\"tretaresia-social-note\"><i class=\"fa-solid fa-circle-info\"></i>")+(html(tr(uiText("Friendly NPCs only"))))+uiMarkup(" · ")+(html(tr(uiText("Hostile NPCs are excluded from the list."))))+uiMarkup("</p>\n        <div class=\"tretaresia-social-grid\">")+(partyMarkup)+uiMarkup("<section class=\"tretaresia-social-stack\"><div class=\"tretaresia-social-subheading\"><span><i class=\"fa-solid fa-landmark\"></i>")+(html(tr(uiText("Guild management"))))+uiMarkup("</span><small>")+(html(tr(uiText("Current balance"))))+uiMarkup(": ")+(html(currencyLabel(state.progression.currency)))+uiMarkup("</small></div>\n        <article class=\"tretaresia-social-card tretaresia-guild-create\"><form data-form=\"guild-create\" class=\"tretaresia-social-form\">")+(input('Guild name', 'name', ''))+uiMarkup("")+(input('Guild description', 'description', ''))+uiMarkup("<div class=\"tretaresia-fee-line\"><span>")+(html(tr(uiText("Guild creation fee"))))+uiMarkup("</span><strong>")+(html(currencyLabel(GUILD_CREATION_FEE)))+uiMarkup("</strong></div><button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-plus\"></i>")+(html(tr(uiText("Create guild"))))+uiMarkup("</button></form></article>")+(guildCards)+uiMarkup("</section></div>"));
 }
 
 function renderHousehold(panel, state) {
     if (!panel) return;
     const household = state.social.household;
-    const members = household.members.length ? household.members.map(member => `<article class="tretaresia-household-member"><span class="tretaresia-social-member-icon"><i class="fa-solid fa-user-group"></i></span><span><strong>${html(member.name)}</strong><small>${html(member.role)}${member.notes ? ` · ${html(member.notes)}` : ''}</small></span><button type="button" data-action="remove-household-member" data-id="${html(member.id)}" title="${html(tr('Remove member'))}"><i class="fa-solid fa-user-minus"></i></button></article>`).join('') : `<div class="tretaresia-social-empty">${html(tr('No household members'))}</div>`;
-    panel.innerHTML = `${heading('Household', `${household.members.length} ${tr('Members').toLowerCase()}`, 'fa-solid fa-house-chimney-user')}
-        <p class="tretaresia-social-note"><i class="fa-solid fa-heart"></i>${html(getSettings().language === 'th' ? 'ใช้ดูสมาชิกในครอบครัวของผู้เล่น เช่น คู่ครอง ลูก พ่อ แม่ และญาติ' : 'Track the player\'s partner, children, parents, relatives, and other family bonds.')}</p>
-        <section class="tretaresia-household-card"><form data-form="household-save" class="tretaresia-household-header"><div><span class="tretaresia-eyebrow">${html(tr('Household management'))}</span><h4>${html(household.name)}</h4></div>${input('Household name', 'name', household.name)}<button class="tretaresia-secondary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i>${html(tr('Save household'))}</button></form>
-        <div class="tretaresia-household-list"><article class="tretaresia-household-member is-player"><span class="tretaresia-social-member-icon"><i class="fa-solid fa-user"></i></span><span><strong>${html(currentPersonaName(state))}</strong><small>${html(getSettings().language === 'th' ? 'เจ้าของครอบครัว' : 'Household head')}</small></span><i class="fa-solid fa-check social-member-check"></i></article>${members}</div><form data-form="household-add" class="tretaresia-social-invite"><div class="tretaresia-field tretaresia-household-picker"><span>${html(tr('Friendly NPCs'))} · ${html(getSettings().language === 'th' ? 'เคยพบแล้ว' : 'Met NPCs')}</span><input type="hidden" name="npcId"><button type="button" class="tretaresia-secondary-button" data-action="toggle-household-picker" aria-expanded="false">${html(tr('Choose a friendly NPC'))} <i class="fa-solid fa-chevron-down"></i></button><div class="tretaresia-household-options" hidden>${metFriendlyNpcs(state).filter(entry => !household.members.some(member => member.npcId === entry.id)).map(entry => `<button type="button" data-action="select-household-npc" data-id="${html(entry.id)}"><strong>${html(entry.name)}</strong><small>${html(entry.relationship)}</small></button>`).join('') || `<span>${html(getSettings().language === 'th' ? 'ยังไม่มี NPC ที่เคยพบ' : 'No met NPCs yet')}</span>`}</div></div>${input('Family role', 'role', '', 'text', 'maxlength="80" required placeholder="Partner / คู่ชีวิต"')}${input('Notes', 'notes', '')}<button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-user-plus"></i>${html(tr('Add household member'))}</button></form></section>`;
+    const members = household.members.length ? household.members.map(member => (uiMarkup("<article class=\"tretaresia-household-member\"><span class=\"tretaresia-social-member-icon\"><i class=\"fa-solid fa-user-group\"></i></span><span><strong>")+(html(member.name))+uiMarkup("</strong><small>")+(html(member.role))+uiMarkup("")+(member.notes ? ` · ${html(member.notes)}` : '')+uiMarkup("</small></span><button type=\"button\" data-action=\"remove-household-member\" data-id=\"")+(html(member.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove member"))))+uiMarkup("\"><i class=\"fa-solid fa-user-minus\"></i></button></article>"))).join('') : (uiMarkup("<div class=\"tretaresia-social-empty\">")+(html(tr(uiText("No household members"))))+uiMarkup("</div>"));
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Household"), `${household.members.length} ${tr(uiText("Members")).toLowerCase()}`, 'fa-solid fa-house-chimney-user'))+uiMarkup("\n        <p class=\"tretaresia-social-note\"><i class=\"fa-solid fa-heart\"></i>")+(html(getSettings().language === 'th' ? 'ใช้ดูสมาชิกในครอบครัวของผู้เล่น เช่น คู่ครอง ลูก พ่อ แม่ และญาติ' : 'Track the player\'s partner, children, parents, relatives, and other family bonds.'))+uiMarkup("</p>\n        <section class=\"tretaresia-household-card\"><form data-form=\"household-save\" class=\"tretaresia-household-header\"><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Household management"))))+uiMarkup("</span><h4>")+(html(household.name))+uiMarkup("</h4></div>")+(input('Household name', 'name', household.name))+uiMarkup("<button class=\"tretaresia-secondary-button\" type=\"submit\"><i class=\"fa-solid fa-floppy-disk\"></i>")+(html(tr(uiText("Save household"))))+uiMarkup("</button></form>\n        <div class=\"tretaresia-household-list\"><article class=\"tretaresia-household-member is-player\"><span class=\"tretaresia-social-member-icon\"><i class=\"fa-solid fa-user\"></i></span><span><strong>")+(html(currentPersonaName(state)))+uiMarkup("</strong><small>")+(html(getSettings().language === 'th' ? 'เจ้าของครอบครัว' : 'Household head'))+uiMarkup("</small></span><i class=\"fa-solid fa-check social-member-check\"></i></article>")+(members)+uiMarkup("</div><form data-form=\"household-add\" class=\"tretaresia-social-invite\"><div class=\"tretaresia-field tretaresia-household-picker\"><span>")+(html(tr(uiText("Friendly NPCs"))))+uiMarkup(" · ")+(html(getSettings().language === 'th' ? 'เคยพบแล้ว' : 'Met NPCs'))+uiMarkup("</span><input type=\"hidden\" name=\"npcId\"><button type=\"button\" class=\"tretaresia-secondary-button\" data-action=\"toggle-household-picker\" aria-expanded=\"false\">")+(html(tr(uiText("Choose a friendly NPC"))))+uiMarkup(" <i class=\"fa-solid fa-chevron-down\"></i></button><div class=\"tretaresia-household-options\" hidden>")+(metFriendlyNpcs(state).filter(entry => !household.members.some(member => member.npcId === entry.id)).map(entry => (uiMarkup("<button type=\"button\" data-action=\"select-household-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\"><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.relationship))+uiMarkup("</small></button>"))).join('') || (uiMarkup("<span>")+(html(getSettings().language === 'th' ? 'ยังไม่มี NPC ที่เคยพบ' : 'No met NPCs yet'))+uiMarkup("</span>")))+uiMarkup("</div></div>")+(input('Family role', 'role', '', 'text', 'maxlength="80" required placeholder="Partner / คู่ชีวิต"'))+uiMarkup("")+(input('Notes', 'notes', ''))+uiMarkup("<button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-user-plus\"></i>")+(html(tr(uiText("Add household member"))))+uiMarkup("</button></form></section>"));
 }
 
 function npcLifeModeField(selected = 'Active') {
     const labels = { Active: 'Active life', 'Story only': 'Story only', Paused: 'Paused' };
-    return `<label class="tretaresia-field"><span>${html(tr('Life mode'))}</span><select name="lifeMode">${Object.entries(labels).map(([value, label]) =>
-        `<option value="${html(value)}"${value === selected ? ' selected' : ''}>${html(tr(label))}</option>`).join('')}</select></label>`;
+    return (uiMarkup("<label class=\"tretaresia-field\"><span>")+(html(tr(uiText("Life mode"))))+uiMarkup("</span><select name=\"lifeMode\">")+(Object.entries(labels).map(([value, label]) =>
+        (uiMarkup("<option value=\"")+(html(value))+uiMarkup("\"")+(value === selected ? ' selected' : '')+uiMarkup(">")+(html(tr(label)))+uiMarkup("</option>"))).join(''))+uiMarkup("</select></label>"));
 }
 
 function renderNpcs(panel, state) {
@@ -7164,23 +6721,10 @@ function renderNpcs(panel, state) {
     if (!visibleNpcs.some(entry => entry.id === selectedNpcId)) selectedNpcId = visibleNpcs[0]?.id || null;
     const selected = visibleNpcs.find(entry => entry.id === selectedNpcId);
     const linkedContact = selected ? state.contacts.find(entry => entry.id === selected.contactId || entry.npcId === selected.id) : null;
-    const list = visibleNpcs.length ? visibleNpcs.map(entry => `<article class="tretaresia-npc-list-row${entry.id === selectedNpcId ? ' is-active' : ''}">
-        <button type="button" data-action="select-npc" data-id="${html(entry.id)}">${npcPortraitSlot(entry)}<span><strong>${html(entry.name)}</strong>
-        <em>${html(entry.title || entry.faction || tr('No description'))}</em><small>${html(entry.relationship)} · ${html(entry.location)}</small></span></button>
-        <button type="button" data-action="delete-npc" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button></article>`).join('')
-        : `<div class="tretaresia-mail-empty large"><i class="fa-solid fa-users-viewfinder"></i><p>NPC ที่พบแล้วและเป็นมิตรจะแสดงที่นี่ / Met friendly NPCs appear here.</p></div>`;
-    const detail = selected ? renderNpcDossier(selected, linkedContact) : `<section class="tretaresia-npc-empty-dossier"><i class="fa-solid fa-address-card"></i><p>ยังไม่มี NPC ที่พบแล้ว / No met NPCs yet.</p></section>`;
-    panel.innerHTML = `${heading('NPC Codex', `${visibleNpcs.length} ${tr('Friendly NPCs').toLowerCase()}`, 'fa-solid fa-users')}
-        <button type="button" class="tretaresia-primary-button" data-trpg-open><i class="fa-solid fa-address-book"></i> NPC Management · จัดการตัวละครทั้งหมด</button>
-        <p class="tretaresia-social-note"><i class="fa-solid fa-shield-heart"></i>แสดงเฉพาะ NPC ที่พบแล้วและเป็นมิตร · Other records stay in NPC Management.</p>
-        <div class="tretaresia-npc-layout"><aside class="tretaresia-npc-index" data-rpg-scroll-key="npc-index"><div class="tretaresia-section-label"><i class="fa-solid fa-list"></i><span>${html(tr('NPCs'))}</span></div>
-            <div class="tretaresia-npc-list" data-rpg-scroll-key="npc-list">${list}</div><details class="tretaresia-editor tretaresia-npc-add"><summary><i class="fa-solid fa-user-plus"></i> ${html(tr('Add NPC'))}</summary>
-            <form data-form="npc-new" class="tretaresia-form-grid">${input('Name', 'name', '')}${input('Title', 'title', '')}${input('Faction', 'faction', '')}${input('Relationship', 'relationship', 'Acquaintance')}${input('Current location', 'location', 'Unknown')}${npcLifeModeField('Active')}
-            <label class="tretaresia-checkbox-field"><input type="checkbox" name="met" checked><span>เคยพบแล้ว / Met</span></label>
-            <label class="tretaresia-checkbox-field"><input type="checkbox" name="mapVisible"><span>${html(tr('Show on World Map'))}</span></label>
-            <label class="tretaresia-checkbox-field"><input type="checkbox" name="linkContact" value="yes"><span>${html(tr('Link to Mailbox'))}</span></label>
-            <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add NPC'))}</button></form></details></aside>
-            <div class="tretaresia-npc-dossier" data-rpg-scroll-key="npc-dossier">${detail}</div></div>`;
+    const list = visibleNpcs.length ? visibleNpcs.map(entry => (uiMarkup("<article class=\"tretaresia-npc-list-row")+(entry.id === selectedNpcId ? ' is-active' : '')+uiMarkup("\">\n        <button type=\"button\" data-action=\"select-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\">")+(npcPortraitSlot(entry))+uiMarkup("<span><strong>")+(html(entry.name))+uiMarkup("</strong>\n        <em>")+(html(entry.title || entry.faction || tr(uiText("No description"))))+uiMarkup("</em><small>")+(html(entry.relationship))+uiMarkup(" · ")+(html(entry.location))+uiMarkup("</small></span></button>\n        <button type=\"button\" data-action=\"delete-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('')
+        : (uiMarkup("<div class=\"tretaresia-mail-empty large\"><i class=\"fa-solid fa-users-viewfinder\"></i><p>NPC ที่พบแล้วและเป็นมิตรจะแสดงที่นี่ / Met friendly NPCs appear here.</p></div>"));
+    const detail = selected ? renderNpcDossier(selected, linkedContact) : (uiMarkup("<section class=\"tretaresia-npc-empty-dossier\"><i class=\"fa-solid fa-address-card\"></i><p>ยังไม่มี NPC ที่พบแล้ว / No met NPCs yet.</p></section>"));
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("NPC Codex"), `${visibleNpcs.length} ${tr(uiText("Friendly NPCs")).toLowerCase()}`, 'fa-solid fa-users'))+uiMarkup("\n        <button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open><i class=\"fa-solid fa-address-book\"></i> NPC Management · จัดการตัวละครทั้งหมด</button>\n        <p class=\"tretaresia-social-note\"><i class=\"fa-solid fa-shield-heart\"></i>แสดงเฉพาะ NPC ที่พบแล้วและเป็นมิตร · Other records stay in NPC Management.</p>\n        <div class=\"tretaresia-npc-layout\"><aside class=\"tretaresia-npc-index\" data-rpg-scroll-key=\"npc-index\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-list\"></i><span>")+(html(tr(uiText("NPCs"))))+uiMarkup("</span></div>\n            <div class=\"tretaresia-npc-list\" data-rpg-scroll-key=\"npc-list\">")+(list)+uiMarkup("</div><details class=\"tretaresia-editor tretaresia-npc-add\"><summary><i class=\"fa-solid fa-user-plus\"></i> ")+(html(tr(uiText("Add NPC"))))+uiMarkup("</summary>\n            <form data-form=\"npc-new\" class=\"tretaresia-form-grid\">")+(input('Name', 'name', ''))+uiMarkup("")+(input('Title', 'title', ''))+uiMarkup("")+(input('Faction', 'faction', ''))+uiMarkup("")+(input('Relationship', 'relationship', 'Acquaintance'))+uiMarkup("")+(input('Current location', 'location', 'Unknown'))+uiMarkup("")+(npcLifeModeField('Active'))+uiMarkup("\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"met\" checked><span>เคยพบแล้ว / Met</span></label>\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"mapVisible\"><span>")+(html(tr(uiText("Show on World Map"))))+uiMarkup("</span></label>\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"linkContact\" value=\"yes\"><span>")+(html(tr(uiText("Link to Mailbox"))))+uiMarkup("</span></label>\n            <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add NPC"))))+uiMarkup("</button></form></details></aside>\n            <div class=\"tretaresia-npc-dossier\" data-rpg-scroll-key=\"npc-dossier\">")+(detail)+uiMarkup("</div></div>"));
     void hydrateNpcPortraits(panel, state);
 }
 
@@ -7209,10 +6753,10 @@ function chooseHStatsNpc(id, state = getState()) {
 }
 function hFieldControl(field, value) {
     const label = html(field.label), key = html(field.key), stored = value === null || value === undefined ? '' : value;
-    if (field.type === 'boolean') return `<label class="tretaresia-h-field"><span>${label}</span><select name="${key}"><option value=""${stored === '' ? ' selected' : ''}>—</option><option value="true"${stored === true ? ' selected' : ''}>ท้อง / Pregnant</option><option value="false"${stored === false ? ' selected' : ''}>ไม่ท้อง / Not pregnant</option></select></label>`;
+    if (field.type === 'boolean') return (uiMarkup("<label class=\"tretaresia-h-field\"><span>")+(label)+uiMarkup("</span><select name=\"")+(key)+uiMarkup("\"><option value=\"\"")+(stored === '' ? ' selected' : '')+uiMarkup(">—</option><option value=\"true\"")+(stored === true ? ' selected' : '')+uiMarkup(">ท้อง / Pregnant</option><option value=\"false\"")+(stored === false ? ' selected' : '')+uiMarkup(">ไม่ท้อง / Not pregnant</option></select></label>"));
     const numeric = field.type !== 'text';
     const bounds = field.type === 'stage' ? ' min="1" max="5" step="1"' : field.type === 'hearts' ? ' min="0" max="5" step="1"' : field.type === 'progress' ? ' min="0" max="100" step="1"' : field.type === 'liters' ? ' min="0" step="0.001"' : ' min="0" step="1"';
-    return `<label class="tretaresia-h-field"><span>${label}</span><input name="${key}" type="${numeric ? 'number' : 'text'}" value="${html(stored)}"${numeric ? bounds : ' maxlength="500"'} placeholder="—"></label>`;
+    return (uiMarkup("<label class=\"tretaresia-h-field\"><span>")+(label)+uiMarkup("</span><input name=\"")+(key)+uiMarkup("\" type=\"")+(numeric ? 'number' : 'text')+uiMarkup("\" value=\"")+(html(stored))+uiMarkup("\"")+(numeric ? bounds : ' maxlength="500"')+uiMarkup(" placeholder=\"—\"></label>"));
 }
 function hStatsFormValues(values) {
     const incoming = {};
@@ -7327,17 +6871,16 @@ function renderHStats(panel, state) {
     if (selected && hStatsMissingFields(selected).length && openPanel) {
         const failed = hStatsBaselineFailures.has(hStatsBaselineKey(selected.id, context));
         if (!failed) void completeHStatsBaseline(selected.id);
-        panel.innerHTML = `${heading('H-Stats', 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse')}
-            <section class="tretaresia-h-empty" role="status"><i class="fa-solid fa-heart-pulse"></i><h3>${html(selected.name)}</h3><p>${failed ? 'บันทึกโปรไฟล์ยังไม่สำเร็จ กรุณาลองใหม่' : 'กำลังสร้างโปรไฟล์ H-Stats ให้ครบทุกช่อง และเก็บค่าที่เนื้อเรื่องยืนยันไว้'}</p>${failed ? '<button type="button" class="tretaresia-primary-button" data-action="retry-hstats-baseline">ลองสร้างอีกครั้ง</button>' : ''}</section>`;
+        panel.innerHTML = (uiMarkup("")+(heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse'))+uiMarkup("\n            <section class=\"tretaresia-h-empty\" role=\"status\"><i class=\"fa-solid fa-heart-pulse\"></i><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(failed ? 'บันทึกโปรไฟล์ยังไม่สำเร็จ กรุณาลองใหม่' : 'กำลังสร้างโปรไฟล์ H-Stats ให้ครบทุกช่อง และเก็บค่าที่เนื้อเรื่องยืนยันไว้')+uiMarkup("</p>")+(failed ? uiMarkup("<button type=\"button\" class=\"tretaresia-primary-button\" data-action=\"retry-hstats-baseline\">ลองสร้างอีกครั้ง</button>") : '')+uiMarkup("</section>"));
         return;
     }
     const sheet = selected ? hStats(selected.hStats) : null;
     const stage = sheet?.infidelityStage ?? '—', progress = sheet?.infidelityProgress ?? null;
     const hearts = sheet?.loyaltyHearts;
-    const heartSvg = filled => `<svg viewBox="0 0 24 24" aria-hidden="true" class="${filled ? 'is-filled' : ''}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    const heartSvg = filled => (uiMarkup("<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" class=\"")+(filled ? 'is-filled' : '')+uiMarkup("\"><path d=\"M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z\"/></svg>"));
     const generated = new Set(selected?.hStatsGenerated || []);
     const knownH = key => html(sheet?.[key] === null || sheet?.[key] === '' || sheet?.[key] === undefined ? 'ยังไม่ทราบ' : String(sheet[key]))
-        + (generated.has(key) ? '<small class="tretaresia-h-generated">ค่าเริ่มต้น AI</small>' : '');
+        + (generated.has(key) ? uiMarkup("<small class=\"tretaresia-h-generated\">ค่าเริ่มต้น AI</small>") : '');
     const highlights = selected ? [
         ['ช่องปาก / Oral', 'fa-comment-dots', 'mouthQuality', 'mouthState', 'oralSexCount'],
         ['หน้าอก / Chest', 'fa-heart', 'breastQuality', 'nippleQuality', 'breastState'],
@@ -7345,15 +6888,8 @@ function renderHStats(panel, state) {
         ['ทวาร / Anal', 'fa-circle-dot', 'anusQuality', 'anusState', 'analSexCount'],
     ] : [];
     const fields = H_FIELDS.filter(field => field.group === selectedHStatsSection);
-    panel.innerHTML = `${heading('H-Stats', 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse')}
-        ${roster.length ? `<div class="tretaresia-h-shell"><nav class="tretaresia-h-roster" aria-label="NPC DIRECTORY · เลือกตัวละคร"><small>NPC DIRECTORY · เลือกตัวละคร</small>${roster.map(entry => `<button type="button" data-action="select-hstats-npc" data-id="${html(entry.id)}" class="${selected?.id === entry.id ? 'is-active' : ''}" aria-pressed="${selected?.id === entry.id}"><strong>${html(entry.name)}</strong><small>${html(entry.gender || '—')} · ${html(entry.location || entry.title || '—')}</small></button>`).join('')}</nav>
-        <div class="tretaresia-h-main"><section class="tretaresia-h-hero"><div class="tretaresia-h-portrait-stage"><span class="tretaresia-h-monogram">${npcPortraitSlot(selected, 'tretaresia-npc-portrait tretaresia-h-photo')}</span><small>PARTNER · ${html(selected.name)}</small></div><div class="tretaresia-h-hero-info"><div class="tretaresia-h-identity"><div><small>${html(selected.gender || '—')} · ${html(selected.race || selected.location || '—')}</small><h3>${html(selected.name)}</h3><p>${html(selected.title || selected.occupation || selected.relationship || '—')}</p><span>${html(selected.location || '—')}</span></div></div>
-        <div class="tretaresia-h-status"><div><span>ความซื่อสัตย์ต่อผู้เล่น</span><div class="tretaresia-h-heart-value"><div class="tretaresia-h-hearts" aria-label="Loyalty ${hearts === null ? 'unknown' : hearts + ' of 5'}">${Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join('')}</div><small>${hearts === null ? 'ยังไม่ทราบ' : `${hearts} / 5${generated.has('loyaltyHearts') ? ' · AI' : ''}`}</small></div></div><div><span>แนวโน้มนอกใจ</span><strong>STAGE ${stage} / 5 · ${progress ?? '—'}%${generated.has('infidelityStage') || generated.has('infidelityProgress') ? ' · AI' : ''}</strong></div><div class="tretaresia-h-track" role="progressbar" aria-label="Infidelity stage progress" ${progress === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"`}><i style="width:${progress ?? 0}%"></i></div><div><span>การตั้งครรภ์</span><strong>${sheet.pregnant === null ? 'ยังไม่ทราบ' : sheet.pregnant ? 'ท้อง' : 'ไม่ท้อง'}${generated.has('pregnant') ? ' · AI' : ''}</strong></div></div></div></section>
-        <section class="tretaresia-h-highlights" aria-label="H-Stats overview">${highlights.map(([title,icon,quality,stateKey,count]) => `<article><header><i class="fa-solid ${icon}" aria-hidden="true"></i><strong>${title}</strong></header><div><span>${html(H_FIELD_MAP[quality].label)}</span><b>${knownH(quality)}</b></div><div><span>${html(H_FIELD_MAP[stateKey].label)}</span><b>${knownH(stateKey)}</b></div><div><span>${html(H_FIELD_MAP[count].label)}</span><b>${knownH(count)}</b></div></article>`).join('')}</section>
-        <p class="tretaresia-h-sync-note">${generated.size ? `${generated.size} ช่องเป็นค่าเริ่มต้นที่สร้างขึ้นและจะเปลี่ยนเมื่อเรื่องยืนยันข้อมูลใหม่` : 'ข้อมูลทุกช่องมาจากเรื่องหรือการแก้ไขของคุณ'} <button type="button" data-action="open-manual-sync">เลือกช่วงข้อความเพื่ออัปเดตทุกแท็บ</button></p>
-        <nav class="tretaresia-h-sections" aria-label="H-Stats categories">${H_GROUPS.map(group => `<button type="button" data-action="select-hstats-section" data-id="${group}" class="${selectedHStatsSection === group ? 'is-active' : ''}" aria-pressed="${selectedHStatsSection === group}">${H_GROUP_LABELS[group]}</button>`).join('')}</nav>
-        <section class="tretaresia-h-detail"><header><h4>${H_GROUP_LABELS[selectedHStatsSection]}</h4><button type="button" data-action="toggle-hstats-edit" aria-pressed="${hStatsEditing}"><i class="fa-solid ${hStatsEditing ? 'fa-xmark' : 'fa-pen'}"></i> ${hStatsEditing ? 'ยกเลิกแก้ไข / Cancel' : 'แก้ไขข้อมูล / Edit'}</button></header>
-        ${hStatsEditing ? `<form data-form="npc-hstats" class="tretaresia-h-form"><input type="hidden" name="npcId" value="${html(selected.id)}"><div class="tretaresia-h-grid">${fields.map(field => hFieldControl(field, sheet[field.key])).join('')}</div><button type="submit" class="tretaresia-primary-button">บันทึกข้อมูล / Save</button></form>` : `<div class="tretaresia-h-readout">${fields.map(field => `<div><span>${html(field.label)}</span><strong>${html(sheet[field.key] === null || sheet[field.key] === '' ? 'ยังไม่ทราบ' : field.type === 'boolean' ? sheet[field.key] ? 'ท้อง / Pregnant' : 'ไม่ท้อง / Not pregnant' : String(sheet[field.key]))}${generated.has(field.key) ? '<small class="tretaresia-h-generated">ค่าเริ่มต้น AI</small>' : ''}</strong></div>`).join('')}</div>`}</section></div></div>` : `<section class="tretaresia-h-empty"><i class="fa-solid fa-users-viewfinder"></i><h3>ยังไม่มี NPC ที่เคยพบ</h3><p>NPC ที่พบแล้วและเป็นมิตรจะแสดงที่นี่เมื่อมีข้อมูลในเรื่อง</p><button type="button" class="tretaresia-primary-button" data-trpg-open>เปิด NPC Management</button></section>`}`;
+    panel.innerHTML = `${heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse')}
+        ${roster.length ? (uiMarkup("<div class=\"tretaresia-h-shell\"><nav class=\"tretaresia-h-roster\" aria-label=\"NPC DIRECTORY · เลือกตัวละคร\"><small>NPC DIRECTORY · เลือกตัวละคร</small>")+(roster.map(entry => (uiMarkup("<button type=\"button\" data-action=\"select-hstats-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\" class=\"")+(selected?.id === entry.id ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selected?.id === entry.id)+uiMarkup("\"><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.gender || '—'))+uiMarkup(" · ")+(html(entry.location || entry.title || '—'))+uiMarkup("</small></button>"))).join(''))+uiMarkup("</nav>\n        <div class=\"tretaresia-h-main\"><section class=\"tretaresia-h-hero\"><div class=\"tretaresia-h-portrait-stage\"><span class=\"tretaresia-h-monogram\">")+(npcPortraitSlot(selected, 'tretaresia-npc-portrait tretaresia-h-photo'))+uiMarkup("</span><small>PARTNER · ")+(html(selected.name))+uiMarkup("</small></div><div class=\"tretaresia-h-hero-info\"><div class=\"tretaresia-h-identity\"><div><small>")+(html(selected.gender || '—'))+uiMarkup(" · ")+(html(selected.race || selected.location || '—'))+uiMarkup("</small><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(html(selected.title || selected.occupation || selected.relationship || '—'))+uiMarkup("</p><span>")+(html(selected.location || '—'))+uiMarkup("</span></div></div>\n        <div class=\"tretaresia-h-status\"><div><span>ความซื่อสัตย์ต่อผู้เล่น</span><div class=\"tretaresia-h-heart-value\"><div class=\"tretaresia-h-hearts\" aria-label=\"Loyalty ")+(hearts === null ? 'unknown' : hearts + ' of 5')+uiMarkup("\">")+(Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join(''))+uiMarkup("</div><small>")+(hearts === null ? 'ยังไม่ทราบ' : `${hearts} / 5${generated.has('loyaltyHearts') ? ' · AI' : ''}`)+uiMarkup("</small></div></div><div><span>แนวโน้มนอกใจ</span><strong>STAGE ")+(stage)+uiMarkup(" / 5 · ")+(progress ?? '—')+uiMarkup("%")+(generated.has('infidelityStage') || generated.has('infidelityProgress') ? ' · AI' : '')+uiMarkup("</strong></div><div class=\"tretaresia-h-track\" role=\"progressbar\" aria-label=\"Infidelity stage progress\" ")+(progress === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"`)+uiMarkup("><i style=\"width:")+(progress ?? 0)+uiMarkup("%\"></i></div><div><span>การตั้งครรภ์</span><strong>")+(sheet.pregnant === null ? 'ยังไม่ทราบ' : sheet.pregnant ? 'ท้อง' : 'ไม่ท้อง')+uiMarkup("")+(generated.has('pregnant') ? ' · AI' : '')+uiMarkup("</strong></div></div></div></section>\n        <section class=\"tretaresia-h-highlights\" aria-label=\"H-Stats overview\">")+(highlights.map(([title,icon,quality,stateKey,count]) => (uiMarkup("<article><header><i class=\"fa-solid ")+(icon)+uiMarkup("\" aria-hidden=\"true\"></i><strong>")+(title)+uiMarkup("</strong></header><div><span>")+(html(H_FIELD_MAP[quality].label))+uiMarkup("</span><b>")+(knownH(quality))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[stateKey].label))+uiMarkup("</span><b>")+(knownH(stateKey))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[count].label))+uiMarkup("</span><b>")+(knownH(count))+uiMarkup("</b></div></article>"))).join(''))+uiMarkup("</section>\n        <p class=\"tretaresia-h-sync-note\">")+(generated.size ? `${generated.size} ช่องเป็นค่าเริ่มต้นที่สร้างขึ้นและจะเปลี่ยนเมื่อเรื่องยืนยันข้อมูลใหม่` : 'ข้อมูลทุกช่องมาจากเรื่องหรือการแก้ไขของคุณ')+uiMarkup(" <button type=\"button\" data-action=\"open-manual-sync\">เลือกช่วงข้อความเพื่ออัปเดตทุกแท็บ</button></p>\n        <nav class=\"tretaresia-h-sections\" aria-label=\"H-Stats categories\">")+(H_GROUPS.map(group => (uiMarkup("<button type=\"button\" data-action=\"select-hstats-section\" data-id=\"")+(group)+uiMarkup("\" class=\"")+(selectedHStatsSection === group ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selectedHStatsSection === group)+uiMarkup("\">")+(H_GROUP_LABELS[group])+uiMarkup("</button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-h-detail\"><header><h4>")+(H_GROUP_LABELS[selectedHStatsSection])+uiMarkup("</h4><button type=\"button\" data-action=\"toggle-hstats-edit\" aria-pressed=\"")+(hStatsEditing)+uiMarkup("\"><i class=\"fa-solid ")+(hStatsEditing ? 'fa-xmark' : 'fa-pen')+uiMarkup("\"></i> ")+(hStatsEditing ? 'ยกเลิกแก้ไข / Cancel' : 'แก้ไขข้อมูล / Edit')+uiMarkup("</button></header>\n        ")+(hStatsEditing ? (uiMarkup("<form data-form=\"npc-hstats\" class=\"tretaresia-h-form\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(selected.id))+uiMarkup("\"><div class=\"tretaresia-h-grid\">")+(fields.map(field => hFieldControl(field, sheet[field.key])).join(''))+uiMarkup("</div><button type=\"submit\" class=\"tretaresia-primary-button\">บันทึกข้อมูล / Save</button></form>")) : (uiMarkup("<div class=\"tretaresia-h-readout\">")+(fields.map(field => (uiMarkup("<div><span>")+(html(field.label))+uiMarkup("</span><strong>")+(html(sheet[field.key] === null || sheet[field.key] === '' ? 'ยังไม่ทราบ' : field.type === 'boolean' ? sheet[field.key] ? 'ท้อง / Pregnant' : 'ไม่ท้อง / Not pregnant' : String(sheet[field.key])))+uiMarkup("")+(generated.has(field.key) ? uiMarkup("<small class=\"tretaresia-h-generated\">ค่าเริ่มต้น AI</small>") : '')+uiMarkup("</strong></div>"))).join(''))+uiMarkup("</div>")))+uiMarkup("</section></div></div>")) : (uiMarkup("<section class=\"tretaresia-h-empty\"><i class=\"fa-solid fa-users-viewfinder\"></i><h3>ยังไม่มี NPC ที่เคยพบ</h3><p>NPC ที่พบแล้วและเป็นมิตรจะแสดงที่นี่เมื่อมีข้อมูลในเรื่อง</p><button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open>เปิด NPC Management</button></section>"))}`;
     if (selected && typeof panel.querySelectorAll === 'function') void hydrateNpcPortraits(panel, state);
 }
 
@@ -7370,68 +6906,19 @@ function renderNpcDossier(entry, linkedContact) {
     const characterLifeSkills = characterLifeSkillsForOwner({ id: entry.characterLifeId, name: entry.name });
     const linkedNames = new Set(characterLifeSkills.map(skill => text(skill?.name).toLocaleLowerCase()));
     const rpgAbilities = entry.abilities.filter(ability => !linkedNames.has(ability.name.toLocaleLowerCase()));
-    const abilityCards = rpgAbilities.map(ability => `<article class="tretaresia-npc-ability"><div><span>${html(ability.category)}</span><strong>${html(ability.name)}</strong>
-        <p>${html(ability.description || tr('No description'))}</p></div><div class="tretaresia-npc-ability-rank"><b>${html(ability.level)}</b><span><i style="width:${ability.proficiency}%"></i></span><small>${ability.proficiency}%</small></div>
-        <button type="button" data-action="delete-npc-ability" data-id="${html(ability.id)}" data-npc-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></article>`).join('');
-    const linkedAbilityCards = characterLifeSkills.map(skill => `<article class="tretaresia-npc-ability is-character-life-linked"><div><span>${html(skill.category || 'General')} · Character Life</span><strong>${html(skill.name)}</strong>
-        <p>${html(skill.description || tr('No description'))}</p></div><div class="tretaresia-npc-ability-rank"><b>${html(skill.rank || 'Unranked')}</b><i class="fa-solid fa-link"></i></div></article>`).join('');
-    const abilities = abilityCards || linkedAbilityCards ? linkedAbilityCards + abilityCards : empty('Skills learned during role-play will appear here.');
-    const diary = entry.diary.length ? [...entry.diary].reverse().map(note => `<article class="tretaresia-diary-entry"><span><i class="fa-solid fa-feather-pointed"></i>${html(note.mood || tr('Diary'))}<small>${html(formatDate(note.at))}</small></span>
-        <p>${html(note.text).replaceAll('\n', '<br>')}</p><button type="button" data-action="delete-npc-diary" data-id="${html(note.id)}" data-npc-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></article>`).join('')
-        : `<div class="tretaresia-mail-empty"><i class="fa-solid fa-feather"></i><p>${getSettings().language === 'th' ? 'ยังไม่มีความคิดที่ถูกบันทึก' : 'No private thoughts have been recorded.'}</p></div>`;
-    const customMeters = entry.customMeters.map(meterEntry => `<article class="tretaresia-custom-meter">${npcMeterView(meterEntry.name, meterEntry.value)}
-        <button type="button" data-action="delete-npc-meter" data-id="${html(meterEntry.id)}" data-npc-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i></button></article>`).join('');
-    return `<section class="tretaresia-npc-hero"><button class="tretaresia-npc-avatar" type="button" data-action="${entry.hasPortrait ? 'open-npc-portrait-editor' : 'choose-npc-portrait'}" data-id="${html(entry.id)}">
-        ${npcPortraitSlot(entry, 'tretaresia-npc-portrait')}<span class="tretaresia-avatar-edit"><i class="fa-solid ${entry.hasPortrait ? 'fa-crop-simple' : 'fa-camera'}"></i></span></button>
-        <div><span class="tretaresia-eyebrow">NPC dossier</span><h3>${html(entry.name)}</h3><p>${html(entry.title || entry.occupation || entry.relationship)}</p>
-        <div class="tretaresia-identity-chips"><span><i class="fa-solid fa-dna"></i>${html(entry.race)}</span><span><i class="fa-solid fa-flag"></i>${html(entry.faction || 'Unaffiliated')}</span>
-        <span><i class="fa-solid fa-location-dot"></i>${html(entry.location)}</span></div></div>
-        <div class="tretaresia-npc-hero-actions"><button type="button" class="tretaresia-small-button" data-action="open-npc-hstats" data-id="${html(entry.id)}"><i class="fa-solid fa-heart-pulse"></i> H-Stats</button>${linkedContact ? `<button type="button" class="tretaresia-small-button" data-action="open-npc-mailbox" data-id="${html(entry.id)}"><i class="fa-solid fa-envelope"></i>${html(tr('Open Mailbox'))}</button>`
-            : `<button type="button" class="tretaresia-small-button" data-action="link-npc-contact" data-id="${html(entry.id)}"><i class="fa-solid fa-address-book"></i>${html(tr('Link to Mailbox'))}</button>`}
-        ${entry.hasPortrait ? `<button type="button" class="tretaresia-small-button" data-action="remove-npc-portrait" data-id="${html(entry.id)}"><i class="fa-solid fa-image-slash"></i>${html(tr('Remove portrait'))}</button>` : ''}</div></section>
-        <section class="tretaresia-npc-meter-grid">${relationshipMeters.map(args => npcMeterView(...args)).join('')}${customMeters}</section>
-        <div class="tretaresia-npc-info-grid"><article class="tretaresia-card"><div class="tretaresia-card-title"><span>${html(tr('Relationship state'))}</span><i class="fa-solid fa-heart"></i></div><dl class="tretaresia-fact-list">
-            <div><dt>${html(tr('Relationship'))}</dt><dd>${html(entry.relationship)}</dd></div><div><dt>${html(tr('Current location'))}</dt><dd>${html(entry.location)}</dd></div>
-            <div><dt>${html(tr('Activity'))}</dt><dd>${html(entry.activity)}</dd></div><div><dt>${html(tr('Life mode'))}</dt><dd>${html(tr(entry.lifeMode === 'Active' ? 'Active life' : entry.lifeMode))}</dd></div>
-            <div><dt>${html(tr('Last seen'))}</dt><dd>${html(entry.lastSeen || 'Unknown')}</dd></div><div><dt>${html(tr('Alignment'))}</dt><dd>${html(entry.alignment || 'Unknown')}</dd></div></dl>
-            ${entry.relationshipState ? `<p class="tretaresia-npc-note">${html(entry.relationshipState)}</p>` : ''}</article>
-        <article class="tretaresia-card"><div class="tretaresia-card-title"><span>${html(tr('Family & bonds'))}</span><i class="fa-solid fa-ring"></i></div><dl class="tretaresia-fact-list">
-            <div><dt>${html(tr('Marital status'))}</dt><dd>${html(entry.maritalStatus)}</dd></div><div><dt>${html(tr('Partner'))}</dt><dd>${html(entry.partner || 'None')}</dd></div>
-            <div class="tretaresia-fact-wide"><dt>${html(tr('Children'))}</dt><dd>${html(entry.children || 'None')}</dd></div></dl></article></div>
-        <section class="tretaresia-npc-stats"><div class="tretaresia-section-label"><i class="fa-solid fa-chart-simple"></i><span>${html(tr('Core stats'))}</span></div><div>
-            <article><span>LV</span><strong>${knownStat(entry.stats.level)}</strong><small>${html(entry.stats.rank)}</small></article>
-            <article><span>HP</span><strong>${knownStat(entry.stats.hp)}</strong></article><article><span>MP</span><strong>${knownStat(entry.stats.mp)}</strong></article><article><span>STA</span><strong>${knownStat(entry.stats.stamina)}</strong></article>
-            ${NPC_CORE_STATS.map(stat => `<article><span>${html(tr(stat.name))}</span><strong>${knownStat(entry.stats[stat.id])}</strong></article>`).join('')}</div>
-            <small class="tretaresia-npc-stat-note"><i class="fa-solid fa-eye-slash"></i>${html(tr('A dash means the stat has not been revealed yet.'))}</small></section>
-        <section class="tretaresia-comparison-card" data-tone="${html(comparison.tone)}"><div class="tretaresia-section-label"><i class="fa-solid fa-scale-balanced"></i><span>${html(tr('Combat comparison'))}</span><b>${html(comparison.label)}</b></div><div class="tretaresia-comparison-grid">${COMBAT_DIMENSIONS.map(([key, label]) => {
+    const abilityCards = rpgAbilities.map(ability => (uiMarkup("<article class=\"tretaresia-npc-ability\"><div><span>")+(html(ability.category))+uiMarkup("</span><strong>")+(html(ability.name))+uiMarkup("</strong>\n        <p>")+(html(ability.description || tr(uiText("No description"))))+uiMarkup("</p></div><div class=\"tretaresia-npc-ability-rank\"><b>")+(html(ability.level))+uiMarkup("</b><span><i style=\"width:")+(ability.proficiency)+uiMarkup("%\"></i></span><small>")+(ability.proficiency)+uiMarkup("%</small></div>\n        <button type=\"button\" data-action=\"delete-npc-ability\" data-id=\"")+(html(ability.id))+uiMarkup("\" data-npc-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('');
+    const linkedAbilityCards = characterLifeSkills.map(skill => (uiMarkup("<article class=\"tretaresia-npc-ability is-character-life-linked\"><div><span>")+(html(skill.category || 'General'))+uiMarkup(" · Character Life</span><strong>")+(html(skill.name))+uiMarkup("</strong>\n        <p>")+(html(skill.description || tr(uiText("No description"))))+uiMarkup("</p></div><div class=\"tretaresia-npc-ability-rank\"><b>")+(html(skill.rank || 'Unranked'))+uiMarkup("</b><i class=\"fa-solid fa-link\"></i></div></article>"))).join('');
+    const abilities = abilityCards || linkedAbilityCards ? linkedAbilityCards + abilityCards : empty(uiText("Skills learned during role-play will appear here."));
+    const diary = entry.diary.length ? [...entry.diary].reverse().map(note => (uiMarkup("<article class=\"tretaresia-diary-entry\"><span><i class=\"fa-solid fa-feather-pointed\"></i>")+(html(note.mood || tr(uiText("Diary"))))+uiMarkup("<small>")+(html(formatDate(note.at)))+uiMarkup("</small></span>\n        <p>")+(html(note.text).replaceAll('\n', uiMarkup("<br>")))+uiMarkup("</p><button type=\"button\" data-action=\"delete-npc-diary\" data-id=\"")+(html(note.id))+uiMarkup("\" data-npc-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('')
+        : (uiMarkup("<div class=\"tretaresia-mail-empty\"><i class=\"fa-solid fa-feather\"></i><p>")+(getSettings().language === 'th' ? 'ยังไม่มีความคิดที่ถูกบันทึก' : 'No private thoughts have been recorded.')+uiMarkup("</p></div>"));
+    const customMeters = entry.customMeters.map(meterEntry => (uiMarkup("<article class=\"tretaresia-custom-meter\">")+(npcMeterView(meterEntry.name, meterEntry.value))+uiMarkup("\n        <button type=\"button\" data-action=\"delete-npc-meter\" data-id=\"")+(html(meterEntry.id))+uiMarkup("\" data-npc-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('');
+    return (uiMarkup("<section class=\"tretaresia-npc-hero\"><button class=\"tretaresia-npc-avatar\" type=\"button\" data-action=\"")+(entry.hasPortrait ? 'open-npc-portrait-editor' : 'choose-npc-portrait')+uiMarkup("\" data-id=\"")+(html(entry.id))+uiMarkup("\">\n        ")+(npcPortraitSlot(entry, 'tretaresia-npc-portrait'))+uiMarkup("<span class=\"tretaresia-avatar-edit\"><i class=\"fa-solid ")+(entry.hasPortrait ? 'fa-crop-simple' : 'fa-camera')+uiMarkup("\"></i></span></button>\n        <div><span class=\"tretaresia-eyebrow\">NPC dossier</span><h3>")+(html(entry.name))+uiMarkup("</h3><p>")+(html(entry.title || entry.occupation || entry.relationship))+uiMarkup("</p>\n        <div class=\"tretaresia-identity-chips\"><span><i class=\"fa-solid fa-dna\"></i>")+(html(entry.race))+uiMarkup("</span><span><i class=\"fa-solid fa-flag\"></i>")+(html(entry.faction || 'Unaffiliated'))+uiMarkup("</span>\n        <span><i class=\"fa-solid fa-location-dot\"></i>")+(html(entry.location))+uiMarkup("</span></div></div>\n        <div class=\"tretaresia-npc-hero-actions\"><button type=\"button\" class=\"tretaresia-small-button\" data-action=\"open-npc-hstats\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-heart-pulse\"></i> H-Stats</button>")+(linkedContact ? (uiMarkup("<button type=\"button\" class=\"tretaresia-small-button\" data-action=\"open-npc-mailbox\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-envelope\"></i>")+(html(tr(uiText("Open Mailbox"))))+uiMarkup("</button>"))
+            : (uiMarkup("<button type=\"button\" class=\"tretaresia-small-button\" data-action=\"link-npc-contact\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-address-book\"></i>")+(html(tr(uiText("Link to Mailbox"))))+uiMarkup("</button>")))+uiMarkup("\n        ")+(entry.hasPortrait ? (uiMarkup("<button type=\"button\" class=\"tretaresia-small-button\" data-action=\"remove-npc-portrait\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-image-slash\"></i>")+(html(tr(uiText("Remove portrait"))))+uiMarkup("</button>")) : '')+uiMarkup("</div></section>\n        <section class=\"tretaresia-npc-meter-grid\">")+(relationshipMeters.map(args => npcMeterView(...args)).join(''))+uiMarkup("")+(customMeters)+uiMarkup("</section>\n        <div class=\"tretaresia-npc-info-grid\"><article class=\"tretaresia-card\"><div class=\"tretaresia-card-title\"><span>")+(html(tr(uiText("Relationship state"))))+uiMarkup("</span><i class=\"fa-solid fa-heart\"></i></div><dl class=\"tretaresia-fact-list\">\n            <div><dt>")+(html(tr(uiText("Relationship"))))+uiMarkup("</dt><dd>")+(html(entry.relationship))+uiMarkup("</dd></div><div><dt>")+(html(tr(uiText("Current location"))))+uiMarkup("</dt><dd>")+(html(entry.location))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Activity"))))+uiMarkup("</dt><dd>")+(html(entry.activity))+uiMarkup("</dd></div><div><dt>")+(html(tr(uiText("Life mode"))))+uiMarkup("</dt><dd>")+(html(tr(entry.lifeMode === 'Active' ? uiText("Active life") : entry.lifeMode)))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Last seen"))))+uiMarkup("</dt><dd>")+(html(entry.lastSeen || 'Unknown'))+uiMarkup("</dd></div><div><dt>")+(html(tr(uiText("Alignment"))))+uiMarkup("</dt><dd>")+(html(entry.alignment || 'Unknown'))+uiMarkup("</dd></div></dl>\n            ")+(entry.relationshipState ? (uiMarkup("<p class=\"tretaresia-npc-note\">")+(html(entry.relationshipState))+uiMarkup("</p>")) : '')+uiMarkup("</article>\n        <article class=\"tretaresia-card\"><div class=\"tretaresia-card-title\"><span>")+(html(tr(uiText("Family & bonds"))))+uiMarkup("</span><i class=\"fa-solid fa-ring\"></i></div><dl class=\"tretaresia-fact-list\">\n            <div><dt>")+(html(tr(uiText("Marital status"))))+uiMarkup("</dt><dd>")+(html(entry.maritalStatus))+uiMarkup("</dd></div><div><dt>")+(html(tr(uiText("Partner"))))+uiMarkup("</dt><dd>")+(html(entry.partner || 'None'))+uiMarkup("</dd></div>\n            <div class=\"tretaresia-fact-wide\"><dt>")+(html(tr(uiText("Children"))))+uiMarkup("</dt><dd>")+(html(entry.children || 'None'))+uiMarkup("</dd></div></dl></article></div>\n        <section class=\"tretaresia-npc-stats\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-chart-simple\"></i><span>")+(html(tr(uiText("Core stats"))))+uiMarkup("</span></div><div>\n            <article><span>LV</span><strong>")+(knownStat(entry.stats.level))+uiMarkup("</strong><small>")+(html(entry.stats.rank))+uiMarkup("</small></article>\n            <article><span>HP</span><strong>")+(knownStat(entry.stats.hp))+uiMarkup("</strong></article><article><span>MP</span><strong>")+(knownStat(entry.stats.mp))+uiMarkup("</strong></article><article><span>STA</span><strong>")+(knownStat(entry.stats.stamina))+uiMarkup("</strong></article>\n            ")+(NPC_CORE_STATS.map(stat => (uiMarkup("<article><span>")+(html(tr(stat.name)))+uiMarkup("</span><strong>")+(knownStat(entry.stats[stat.id]))+uiMarkup("</strong></article>"))).join(''))+uiMarkup("</div>\n            <small class=\"tretaresia-npc-stat-note\"><i class=\"fa-solid fa-eye-slash\"></i>")+(html(tr(uiText("A dash means the stat has not been revealed yet."))))+uiMarkup("</small></section>\n        <section class=\"tretaresia-comparison-card\" data-tone=\"")+(html(comparison.tone))+uiMarkup("\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-scale-balanced\"></i><span>")+(html(tr(uiText("Combat comparison"))))+uiMarkup("</span><b>")+(html(comparison.label))+uiMarkup("</b></div><div class=\"tretaresia-comparison-grid\">")+(COMBAT_DIMENSIONS.map(([key, label]) => {
             const npcValue = npcProfileValues[key];
             const playerValue = playerProfile[key];
             const result = npcValue === null ? 'unknown' : playerValue > npcValue + 7 ? 'player' : npcValue > playerValue + 7 ? 'npc' : 'even';
-            return `<article data-result="${result}"><span>${html(label)}</span><div><b>${playerValue}</b><i></i><b>${npcValue === null ? '?' : npcValue}</b></div><small>${result === 'unknown' ? 'Not revealed' : result === 'player' ? 'Player advantage' : result === 'npc' ? `${html(entry.name)} advantage` : 'Even'}</small></article>`;
-        }).join('')}</div><footer><span>${html(currentPersonaName(state))}</span><i class="fa-solid fa-bolt"></i><span>${html(entry.name)}</span></footer></section>
-        <section class="tretaresia-knowledge-card"><div class="tretaresia-section-label"><i class="fa-solid fa-brain"></i><span>${html(tr('NPC knowledge'))}</span><b>${entry.knowledge.length}</b></div><p><i class="fa-solid fa-shield-halved"></i>Only witnessed, explicitly told, publicly observable, or role-credible facts belong here.</p><div>${entry.knowledge.length ? [...entry.knowledge].reverse().map(fact => `<article><span><b>${html(fact.fact)}</b><small>${html(fact.source)} · confidence ${fact.confidence}% · Day ${fact.learnedDay}</small></span>${fact.private ? '<i class="fa-solid fa-lock"></i>' : '<i class="fa-solid fa-eye"></i>'}</article>`).join('') : `<span class="tretaresia-knowledge-empty"><i class="fa-solid fa-eye-slash"></i>No confirmed player knowledge recorded for this NPC</span>`}</div></section>
-        <section class="tretaresia-npc-abilities"><div class="tretaresia-section-label"><i class="fa-solid fa-sparkles"></i><span>${html(tr('Abilities'))}</span></div><div class="tretaresia-npc-ability-list">${abilities}</div>
-            <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr('Add ability'))}</summary><form data-form="npc-ability" class="tretaresia-form-grid"><input type="hidden" name="npcId" value="${html(entry.id)}">
-                ${input('Ability name', 'name', '')}${input('Category', 'category', 'General')}${input('Ability level', 'level', 'Beginner')}${input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"')}
-                ${input('Description', 'description', '')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add ability'))}</button></form></details></section>
-        <section class="tretaresia-npc-diary"><div class="tretaresia-section-label"><i class="fa-solid fa-book"></i><span>${html(tr('Diary'))}</span></div><div class="tretaresia-diary-list">${diary}</div>
-            <details class="tretaresia-editor"><summary><i class="fa-solid fa-feather"></i> ${html(tr('Add diary entry'))}</summary><form data-form="npc-diary" class="tretaresia-form-grid"><input type="hidden" name="npcId" value="${html(entry.id)}">
-                ${input('Mood', 'mood', '')}${textareaField('Thought', 'text', '', 4, 'maxlength="1200" required')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add diary entry'))}</button></form></details></section>
-        <details class="tretaresia-editor"><summary><i class="fa-solid fa-gauge"></i> ${html(tr('Add custom meter'))}</summary><form data-form="npc-meter" class="tretaresia-form-grid"><input type="hidden" name="npcId" value="${html(entry.id)}">
-            ${input('Name', 'name', '')}${input('Proficiency', 'value', 0, 'number', 'min="0" max="100"')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add custom meter'))}</button></form></details>
-        <details class="tretaresia-editor tretaresia-npc-edit"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Edit NPC'))}</summary><form data-form="npc-profile" class="tretaresia-form-grid"><input type="hidden" name="id" value="${html(entry.id)}">
-            ${input('Name', 'name', entry.name)}${input('Title', 'title', entry.title)}${input('Race', 'race', entry.race)}${input('Age', 'age', entry.age)}${input('Gender', 'gender', entry.gender)}${input('Occupation', 'occupation', entry.occupation)}
-            ${input('Faction', 'faction', entry.faction)}${input('Alignment', 'alignment', entry.alignment)}${input('Relationship', 'relationship', entry.relationship)}${input('Current location', 'location', entry.location)}
-            ${npcLifeModeField(entry.lifeMode)}${input('Activity', 'activity', entry.activity)}
-            ${input('World map X', 'mapX', entry.mapX ?? '', 'number', `min="0" max="${WORLD_MAP_WIDTH}" step="1"`)}${input('World map Y', 'mapY', entry.mapY ?? '', 'number', `min="0" max="${WORLD_MAP_HEIGHT}" step="1"`)}
-            <label class="tretaresia-checkbox-field"><input type="checkbox" name="mapVisible"${entry.mapVisible ? ' checked' : ''}><span>${html(tr('Show on World Map'))}</span></label>
-            <label class="tretaresia-checkbox-field"><input type="checkbox" name="met"${entry.met ? ' checked' : ''}><span>เคยพบแล้ว / Met</span></label>
-            ${input('Last seen', 'lastSeen', entry.lastSeen)}${input('Marital status', 'maritalStatus', entry.maritalStatus)}${input('Partner', 'partner', entry.partner)}${input('Children', 'children', entry.children)}
-            ${input('Affection', 'affection', entry.affection, 'number', 'min="0" max="100"')}${input('Trust', 'trust', entry.trust, 'number', 'min="0" max="100"')}${input('Loyalty', 'loyalty', entry.loyalty, 'number', 'min="0" max="100"')}${input('Fear', 'fear', entry.fear, 'number', 'min="0" max="100"')}
-            ${input('Corruption', 'corruption', entry.corruption, 'number', 'min="0" max="100"')}${input('Lust', 'lust', entry.lust, 'number', 'min="0" max="100"')}${input('Level', 'level', entry.stats.level, 'number', 'min="0"')}${input('Rank', 'rank', entry.stats.rank)}
-            ${input('HP', 'hp', entry.stats.hp, 'number', 'min="0"')}${input('MP', 'mp', entry.stats.mp, 'number', 'min="0"')}${input('Stamina', 'stamina', entry.stats.stamina, 'number', 'min="0"')}
-            ${NPC_CORE_STATS.map(stat => input(stat.name, stat.id, entry.stats[stat.id], 'number', 'min="0"')).join('')}${textareaField('Relationship state', 'relationshipState', entry.relationshipState, 3)}${textareaField('Notes', 'notes', entry.notes, 4)}
-            <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save NPC'))}</button></form></details>`;
+            return (uiMarkup("<article data-result=\"")+(result)+uiMarkup("\"><span>")+(html(label))+uiMarkup("</span><div><b>")+(playerValue)+uiMarkup("</b><i></i><b>")+(npcValue === null ? '?' : npcValue)+uiMarkup("</b></div><small>")+(result === 'unknown' ? 'Not revealed' : result === 'player' ? 'Player advantage' : result === 'npc' ? `${html(entry.name)} advantage` : 'Even')+uiMarkup("</small></article>"));
+        }).join(''))+uiMarkup("</div><footer><span>")+(html(currentPersonaName(state)))+uiMarkup("</span><i class=\"fa-solid fa-bolt\"></i><span>")+(html(entry.name))+uiMarkup("</span></footer></section>\n        <section class=\"tretaresia-knowledge-card\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-brain\"></i><span>")+(html(tr(uiText("NPC knowledge"))))+uiMarkup("</span><b>")+(entry.knowledge.length)+uiMarkup("</b></div><p><i class=\"fa-solid fa-shield-halved\"></i>Only witnessed, explicitly told, publicly observable, or role-credible facts belong here.</p><div>")+(entry.knowledge.length ? [...entry.knowledge].reverse().map(fact => (uiMarkup("<article><span><b>")+(html(fact.fact))+uiMarkup("</b><small>")+(html(fact.source))+uiMarkup(" · confidence ")+(fact.confidence)+uiMarkup("% · Day ")+(fact.learnedDay)+uiMarkup("</small></span>")+(fact.private ? uiMarkup("<i class=\"fa-solid fa-lock\"></i>") : uiMarkup("<i class=\"fa-solid fa-eye\"></i>"))+uiMarkup("</article>"))).join('') : (uiMarkup("<span class=\"tretaresia-knowledge-empty\"><i class=\"fa-solid fa-eye-slash\"></i>No confirmed player knowledge recorded for this NPC</span>")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-npc-abilities\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-sparkles\"></i><span>")+(html(tr(uiText("Abilities"))))+uiMarkup("</span></div><div class=\"tretaresia-npc-ability-list\">")+(abilities)+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add ability"))))+uiMarkup("</summary><form data-form=\"npc-ability\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n                ")+(input('Ability name', 'name', ''))+uiMarkup("")+(input('Category', 'category', 'General'))+uiMarkup("")+(input('Ability level', 'level', 'Beginner'))+uiMarkup("")+(input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add ability"))))+uiMarkup("</button></form></details></section>\n        <section class=\"tretaresia-npc-diary\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-book\"></i><span>")+(html(tr(uiText("Diary"))))+uiMarkup("</span></div><div class=\"tretaresia-diary-list\">")+(diary)+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-feather\"></i> ")+(html(tr(uiText("Add diary entry"))))+uiMarkup("</summary><form data-form=\"npc-diary\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n                ")+(input('Mood', 'mood', ''))+uiMarkup("")+(textareaField('Thought', 'text', '', 4, 'maxlength="1200" required'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add diary entry"))))+uiMarkup("</button></form></details></section>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-gauge\"></i> ")+(html(tr(uiText("Add custom meter"))))+uiMarkup("</summary><form data-form=\"npc-meter\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n            ")+(input('Name', 'name', ''))+uiMarkup("")+(input('Proficiency', 'value', 0, 'number', 'min="0" max="100"'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add custom meter"))))+uiMarkup("</button></form></details>\n        <details class=\"tretaresia-editor tretaresia-npc-edit\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Edit NPC"))))+uiMarkup("</summary><form data-form=\"npc-profile\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"id\" value=\"")+(html(entry.id))+uiMarkup("\">\n            ")+(input('Name', 'name', entry.name))+uiMarkup("")+(input('Title', 'title', entry.title))+uiMarkup("")+(input('Race', 'race', entry.race))+uiMarkup("")+(input('Age', 'age', entry.age))+uiMarkup("")+(input('Gender', 'gender', entry.gender))+uiMarkup("")+(input('Occupation', 'occupation', entry.occupation))+uiMarkup("\n            ")+(input('Faction', 'faction', entry.faction))+uiMarkup("")+(input('Alignment', 'alignment', entry.alignment))+uiMarkup("")+(input('Relationship', 'relationship', entry.relationship))+uiMarkup("")+(input('Current location', 'location', entry.location))+uiMarkup("\n            ")+(npcLifeModeField(entry.lifeMode))+uiMarkup("")+(input('Activity', 'activity', entry.activity))+uiMarkup("\n            ")+(input('World map X', 'mapX', entry.mapX ?? '', 'number', `min="0" max="${WORLD_MAP_WIDTH}" step="1"`))+uiMarkup("")+(input('World map Y', 'mapY', entry.mapY ?? '', 'number', `min="0" max="${WORLD_MAP_HEIGHT}" step="1"`))+uiMarkup("\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"mapVisible\"")+(entry.mapVisible ? ' checked' : '')+uiMarkup("><span>")+(html(tr(uiText("Show on World Map"))))+uiMarkup("</span></label>\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"met\"")+(entry.met ? ' checked' : '')+uiMarkup("><span>เคยพบแล้ว / Met</span></label>\n            ")+(input('Last seen', 'lastSeen', entry.lastSeen))+uiMarkup("")+(input('Marital status', 'maritalStatus', entry.maritalStatus))+uiMarkup("")+(input('Partner', 'partner', entry.partner))+uiMarkup("")+(input('Children', 'children', entry.children))+uiMarkup("\n            ")+(input('Affection', 'affection', entry.affection, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Trust', 'trust', entry.trust, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Loyalty', 'loyalty', entry.loyalty, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Fear', 'fear', entry.fear, 'number', 'min="0" max="100"'))+uiMarkup("\n            ")+(input('Corruption', 'corruption', entry.corruption, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Lust', 'lust', entry.lust, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Level', 'level', entry.stats.level, 'number', 'min="0"'))+uiMarkup("")+(input('Rank', 'rank', entry.stats.rank))+uiMarkup("\n            ")+(input('HP', 'hp', entry.stats.hp, 'number', 'min="0"'))+uiMarkup("")+(input('MP', 'mp', entry.stats.mp, 'number', 'min="0"'))+uiMarkup("")+(input('Stamina', 'stamina', entry.stats.stamina, 'number', 'min="0"'))+uiMarkup("\n            ")+(NPC_CORE_STATS.map(stat => input(stat.name, stat.id, entry.stats[stat.id], 'number', 'min="0"')).join(''))+uiMarkup("")+(textareaField('Relationship state', 'relationshipState', entry.relationshipState, 3))+uiMarkup("")+(textareaField('Notes', 'notes', entry.notes, 4))+uiMarkup("\n            <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save NPC"))))+uiMarkup("</button></form></details>"));
 }
 
 function npcPortraitStorageKey(npcId, chatId = SillyTavern.getContext().getCurrentChatId?.() || 'no-chat') {
@@ -7511,14 +6998,14 @@ async function hydrateNpcPortraits(root, state = getState()) {
 }
 
 function resizeImageBlob(file) {
-    if (!file?.type?.startsWith('image/')) return Promise.reject(new Error('Choose an image file.'));
-    if (file.size > 12 * 1024 * 1024) return Promise.reject(new Error('The image must be smaller than 12 MB.'));
+    if (!file?.type?.startsWith('image/')) return Promise.reject(new Error(uiText("Choose an image file.")));
+    if (file.size > 12 * 1024 * 1024) return Promise.reject(new Error(uiText("The image must be smaller than 12 MB.")));
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onerror = () => reject(new Error('The image could not be read.'));
+        reader.onerror = () => reject(new Error(uiText("The image could not be read.")));
         reader.onload = () => {
             const image = new Image();
-            image.onerror = () => reject(new Error('This device could not decode the image. Try JPG, PNG, or WebP.'));
+            image.onerror = () => reject(new Error(uiText("This device could not decode the image. Try JPG, PNG, or WebP.")));
             image.onload = () => {
                 const maxSide = 1400;
                 const ratio = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
@@ -7527,7 +7014,7 @@ function resizeImageBlob(file) {
                 canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio));
                 const context = canvas.getContext('2d');
                 context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('The image could not be compressed.')), 'image/jpeg', .84);
+                canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error(uiText("The image could not be compressed."))), 'image/jpeg', .84);
             };
             image.src = reader.result;
         };
@@ -7550,7 +7037,7 @@ async function openNpcPortraitEditor(npcId) {
     try { blob = await readNpcPortrait(entry); }
     catch(error) { notify('error',error.message || 'Could not load the NPC portrait from the server.'); return; }
     if (!(blob instanceof Blob)) {
-        notify('warning', getSettings().language === 'th' ? 'รูป NPC นี้ไม่ได้อยู่ในอุปกรณ์นี้ กรุณาเลือกไฟล์ใหม่' : 'This NPC portrait is not stored on this device. Choose it again here.');
+        notify('warning', getSettings().language === 'th' ? uiText("รูป NPC นี้ไม่ได้อยู่ในอุปกรณ์นี้ กรุณาเลือกไฟล์ใหม่") : uiText("This NPC portrait is not stored on this device. Choose it again here."));
         const inputElement = document.getElementById('tretaresia-npc-avatar-input');
         if (inputElement) inputElement.dataset.npcId = entry.id;
         inputElement?.click();
@@ -7560,45 +7047,20 @@ async function openNpcPortraitEditor(npcId) {
     npcEditorObjectUrl = URL.createObjectURL(blob);
     const frame = entry.portraitView;
     modal.hidden = false;
-    modal.innerHTML = `<button class="tretaresia-submodal-backdrop" type="button" data-action="close-portrait-editor" aria-label="${html(tr('Close'))}"></button>
-        <article class="tretaresia-portrait-editor-card"><header><div><span>NPC portrait · ${html(entry.name)}</span><h3>${html(tr('Adjust portrait'))}</h3></div>
-        <button type="button" data-action="close-portrait-editor"><i class="fa-solid fa-xmark"></i></button></header>
-        <form data-form="npc-portrait-frame"><input type="hidden" name="npcId" value="${html(entry.id)}"><div class="tretaresia-portrait-previews">
-        ${portraitPreview('Desktop framing', 'desktop', frame.desktop, npcEditorObjectUrl)}${portraitPreview('Phone framing', 'mobile', frame.mobile, npcEditorObjectUrl)}</div>
-        <footer><button type="button" class="tretaresia-secondary-button" data-action="choose-npc-portrait" data-id="${html(entry.id)}"><i class="fa-solid fa-image"></i>${html(tr('Choose profile picture'))}</button>
-        <button class="tretaresia-primary-button" type="submit"><i class="fa-solid fa-crop-simple"></i>${html(tr('Save framing'))}</button></footer></form></article>`;
+    modal.innerHTML = (uiMarkup("<button class=\"tretaresia-submodal-backdrop\" type=\"button\" data-action=\"close-portrait-editor\" aria-label=\"")+(html(tr(uiText("Close"))))+uiMarkup("\"></button>\n        <article class=\"tretaresia-portrait-editor-card\"><header><div><span>NPC portrait · ")+(html(entry.name))+uiMarkup("</span><h3>")+(html(tr(uiText("Adjust portrait"))))+uiMarkup("</h3></div>\n        <button type=\"button\" data-action=\"close-portrait-editor\"><i class=\"fa-solid fa-xmark\"></i></button></header>\n        <form data-form=\"npc-portrait-frame\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\"><div class=\"tretaresia-portrait-previews\">\n        ")+(portraitPreview('Desktop framing', 'desktop', frame.desktop, npcEditorObjectUrl))+uiMarkup("")+(portraitPreview('Phone framing', 'mobile', frame.mobile, npcEditorObjectUrl))+uiMarkup("</div>\n        <footer><button type=\"button\" class=\"tretaresia-secondary-button\" data-action=\"choose-npc-portrait\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-image\"></i>")+(html(tr(uiText("Choose profile picture"))))+uiMarkup("</button>\n        <button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-crop-simple\"></i>")+(html(tr(uiText("Save framing"))))+uiMarkup("</button></footer></form></article>"));
 }
 
 function renderMailbox(panel, state) {
     if (!panel) return;
     const unread = state.letters.filter(entry => entry.direction === 'incoming' && entry.status === 'unread').length;
-    const contactOptions = state.contacts.map(entry => `<option value="${html(entry.id)}">${html(entry.name)}</option>`).join('');
+    const contactOptions = state.contacts.map(entry => (uiMarkup("<option value=\"")+(html(entry.id))+uiMarkup("\">")+(html(entry.name))+uiMarkup("</option>"))).join('');
     const sortedLetters = [...state.letters].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-    panel.innerHTML = `${heading('Mailbox', `${unread} ${tr('Unread').toLowerCase()} · ${state.contacts.length} ${tr('Contacts').toLowerCase()}`, 'fa-solid fa-envelope-open-text')}
-        <div class="tretaresia-mail-layout"><section class="tretaresia-contact-rail"><div class="tretaresia-section-label"><i class="fa-solid fa-address-book"></i><span>${html(tr('Contacts'))}</span></div>
-            <div class="tretaresia-contact-list">${state.contacts.length ? state.contacts.map(entry => {
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Mailbox"), `${unread} ${tr(uiText("Unread")).toLowerCase()} · ${state.contacts.length} ${tr(uiText("Contacts")).toLowerCase()}`, 'fa-solid fa-envelope-open-text'))+uiMarkup("\n        <div class=\"tretaresia-mail-layout\"><section class=\"tretaresia-contact-rail\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-address-book\"></i><span>")+(html(tr(uiText("Contacts"))))+uiMarkup("</span></div>\n            <div class=\"tretaresia-contact-list\">")+(state.contacts.length ? state.contacts.map(entry => {
                 const linkedNpc = state.npcs.find(value => value.id === entry.npcId) || state.npcs.find(value => value.name.toLocaleLowerCase() === entry.name.toLocaleLowerCase());
-                return `<article class="tretaresia-contact-card"><button type="button" class="tretaresia-contact-open" data-action="open-contact-npc" data-id="${html(entry.id)}">
-                    ${linkedNpc ? npcPortraitSlot(linkedNpc, 'tretaresia-contact-sigil') : `<span class="tretaresia-contact-sigil"><span class="tretaresia-npc-initial">${html(entry.name.charAt(0).toUpperCase())}</span></span>`}
-                    <span><strong>${html(entry.name)}</strong><span>${html(entry.title || entry.affiliation || entry.relationship)}</span><small>${html(entry.relationship)}</small></span></button>
-                    <button type="button" data-action="delete-contact" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-user-xmark"></i></button></article>`;
-            }).join('') : `<div class="tretaresia-mail-empty"><i class="fa-solid fa-feather"></i><p>${getSettings().language === 'th' ? 'NPC ที่รู้จักระหว่างโรลเพลย์จะปรากฏที่นี่' : 'NPCs discovered during role-play will appear here.'}</p></div>`}</div>
-            <details class="tretaresia-editor"><summary><i class="fa-solid fa-user-plus"></i> ${html(tr('Add contact'))}</summary>
-                <form data-form="contact" class="tretaresia-form-grid">${input('Name', 'name', '')}${input('Title', 'title', '')}${input('Affiliation', 'affiliation', '')}
-                    ${input('Relationship', 'relationship', 'Acquaintance')}${input('Notes', 'notes', '')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add contact'))}</button></form></details></section>
-            <section class="tretaresia-letter-desk"><div class="tretaresia-letter-desk-head"><div class="tretaresia-section-label"><i class="fa-solid fa-inbox"></i><span>${html(tr('Letters'))}</span></div>
-                ${state.letters.length ? `<button type="button" class="tretaresia-small-button" data-action="clear-letters"><i class="fa-solid fa-broom"></i>${html(tr('Clear letter'))}</button>` : ''}</div>
-                <div class="tretaresia-letter-list">${sortedLetters.length ? sortedLetters.map(entry => `<article class="tretaresia-letter-row${entry.status === 'unread' ? ' is-unread' : ''}" data-direction="${entry.direction}">
-                    <button class="tretaresia-letter-open" type="button" data-action="open-letter" data-id="${html(entry.id)}"><span class="tretaresia-wax-seal"><i class="fa-solid ${entry.direction === 'incoming' ? 'fa-envelope' : 'fa-paper-plane'}"></i></span>
-                    <span class="tretaresia-letter-summary"><b>${html(entry.subject)}</b><em>${html(entry.direction === 'incoming' ? entry.fromName : entry.toName)}</em>
-                    <small>${html(formatDate(entry.createdAt))}</small></span>${entry.status === 'unread' ? `<i class="tretaresia-unread-dot" title="${html(tr('Unread'))}"></i>` : ''}</button>
-                    <button type="button" data-action="delete-letter" data-id="${html(entry.id)}" title="${html(tr('Remove'))}"><i class="fa-solid fa-trash"></i></button></article>`).join('') : `<div class="tretaresia-mail-empty large"><i class="fa-regular fa-envelope-open"></i><p>${getSettings().language === 'th' ? 'ยังไม่มีจดหมายในแชทนี้' : 'No letters have arrived in this chat.'}</p></div>`}</div>
-                <details class="tretaresia-editor tretaresia-compose-editor"><summary><i class="fa-solid fa-feather-pointed"></i> ${html(tr('Compose letter'))}</summary>
-                    <form data-form="letter" class="tretaresia-form-grid"><label class="tretaresia-field"><span>${html(tr('Contacts'))}</span>${state.contacts.length
-                        ? `<select name="contactId" required><option value="">—</option>${contactOptions}</select>`
-                        : `<input name="recipientName" maxlength="120" required placeholder="NPC name">`}</label>
-                        ${input('Subject', 'subject', '')}<label class="tretaresia-field tretaresia-field-wide"><span>${html(tr('Message'))}</span><textarea name="body" rows="6" maxlength="5000" required></textarea></label>
-                        <button class="tretaresia-primary-button tretaresia-form-submit" type="submit"><i class="fa-solid fa-paper-plane"></i>${html(tr('Send letter'))}</button></form></details></section></div>`;
+                return (uiMarkup("<article class=\"tretaresia-contact-card\"><button type=\"button\" class=\"tretaresia-contact-open\" data-action=\"open-contact-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\">\n                    ")+(linkedNpc ? npcPortraitSlot(linkedNpc, 'tretaresia-contact-sigil') : (uiMarkup("<span class=\"tretaresia-contact-sigil\"><span class=\"tretaresia-npc-initial\">")+(html(entry.name.charAt(0).toUpperCase()))+uiMarkup("</span></span>")))+uiMarkup("\n                    <span><strong>")+(html(entry.name))+uiMarkup("</strong><span>")+(html(entry.title || entry.affiliation || entry.relationship))+uiMarkup("</span><small>")+(html(entry.relationship))+uiMarkup("</small></span></button>\n                    <button type=\"button\" data-action=\"delete-contact\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-user-xmark\"></i></button></article>"));
+            }).join('') : (uiMarkup("<div class=\"tretaresia-mail-empty\"><i class=\"fa-solid fa-feather\"></i><p>")+(getSettings().language === 'th' ? 'NPC ที่รู้จักระหว่างโรลเพลย์จะปรากฏที่นี่' : 'NPCs discovered during role-play will appear here.')+uiMarkup("</p></div>")))+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-user-plus\"></i> ")+(html(tr(uiText("Add contact"))))+uiMarkup("</summary>\n                <form data-form=\"contact\" class=\"tretaresia-form-grid\">")+(input('Name', 'name', ''))+uiMarkup("")+(input('Title', 'title', ''))+uiMarkup("")+(input('Affiliation', 'affiliation', ''))+uiMarkup("\n                    ")+(input('Relationship', 'relationship', 'Acquaintance'))+uiMarkup("")+(input('Notes', 'notes', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add contact"))))+uiMarkup("</button></form></details></section>\n            <section class=\"tretaresia-letter-desk\"><div class=\"tretaresia-letter-desk-head\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-inbox\"></i><span>")+(html(tr(uiText("Letters"))))+uiMarkup("</span></div>\n                ")+(state.letters.length ? (uiMarkup("<button type=\"button\" class=\"tretaresia-small-button\" data-action=\"clear-letters\"><i class=\"fa-solid fa-broom\"></i>")+(html(tr(uiText("Clear letter"))))+uiMarkup("</button>")) : '')+uiMarkup("</div>\n                <div class=\"tretaresia-letter-list\">")+(sortedLetters.length ? sortedLetters.map(entry => (uiMarkup("<article class=\"tretaresia-letter-row")+(entry.status === 'unread' ? ' is-unread' : '')+uiMarkup("\" data-direction=\"")+(entry.direction)+uiMarkup("\">\n                    <button class=\"tretaresia-letter-open\" type=\"button\" data-action=\"open-letter\" data-id=\"")+(html(entry.id))+uiMarkup("\"><span class=\"tretaresia-wax-seal\"><i class=\"fa-solid ")+(entry.direction === 'incoming' ? 'fa-envelope' : 'fa-paper-plane')+uiMarkup("\"></i></span>\n                    <span class=\"tretaresia-letter-summary\"><b>")+(html(entry.subject))+uiMarkup("</b><em>")+(html(entry.direction === 'incoming' ? entry.fromName : entry.toName))+uiMarkup("</em>\n                    <small>")+(html(formatDate(entry.createdAt)))+uiMarkup("</small></span>")+(entry.status === 'unread' ? (uiMarkup("<i class=\"tretaresia-unread-dot\" title=\"")+(html(tr(uiText("Unread"))))+uiMarkup("\"></i>")) : '')+uiMarkup("</button>\n                    <button type=\"button\" data-action=\"delete-letter\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('') : (uiMarkup("<div class=\"tretaresia-mail-empty large\"><i class=\"fa-regular fa-envelope-open\"></i><p>")+(getSettings().language === 'th' ? 'ยังไม่มีจดหมายในแชทนี้' : 'No letters have arrived in this chat.')+uiMarkup("</p></div>")))+uiMarkup("</div>\n                <details class=\"tretaresia-editor tretaresia-compose-editor\"><summary><i class=\"fa-solid fa-feather-pointed\"></i> ")+(html(tr(uiText("Compose letter"))))+uiMarkup("</summary>\n                    <form data-form=\"letter\" class=\"tretaresia-form-grid\"><label class=\"tretaresia-field\"><span>")+(html(tr(uiText("Contacts"))))+uiMarkup("</span>")+(state.contacts.length
+                        ? (uiMarkup("<select name=\"contactId\" required><option value=\"\">—</option>")+(contactOptions)+uiMarkup("</select>"))
+                        : (uiMarkup("<input name=\"recipientName\" maxlength=\"120\" required placeholder=\"NPC name\">")))+uiMarkup("</label>\n                        ")+(input('Subject', 'subject', ''))+uiMarkup("<label class=\"tretaresia-field tretaresia-field-wide\"><span>")+(html(tr(uiText("Message"))))+uiMarkup("</span><textarea name=\"body\" rows=\"6\" maxlength=\"5000\" required></textarea></label>\n                        <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\"><i class=\"fa-solid fa-paper-plane\"></i>")+(html(tr(uiText("Send letter"))))+uiMarkup("</button></form></details></section></div>"));
     renderLetterReader(state);
 }
 
@@ -7618,36 +7080,14 @@ function renderLetterReader(state) {
         return;
     }
     modal.hidden = false;
-    modal.innerHTML = `<button class="tretaresia-submodal-backdrop" type="button" data-action="close-letter" aria-label="${html(tr('Close'))}"></button>
-        <article class="tretaresia-letter-sheet" data-direction="${entry.direction}"><div class="tretaresia-letter-fold"></div><header><span>${html(entry.direction === 'incoming' ? entry.fromName : entry.toName)}</span>
-            <button type="button" data-action="close-letter" aria-label="${html(tr('Close'))}"><i class="fa-solid fa-xmark"></i></button></header>
-            <div class="tretaresia-letter-paper"><span class="tretaresia-letter-date">${html(formatDate(entry.createdAt))}</span><h3>${html(entry.subject)}</h3>
-                <p>${html(entry.body).replaceAll('\n', '<br>')}</p><div class="tretaresia-letter-signature">${html(entry.direction === 'incoming' ? entry.fromName : currentPersonaName(state))}</div></div>
-            <footer>${entry.direction === 'incoming' ? `<button class="tretaresia-primary-button" type="button" data-action="reply-letter" data-id="${html(entry.id)}"><i class="fa-solid fa-reply"></i>${html(tr('Reply'))}</button>` : ''}
-                <button class="tretaresia-secondary-button" type="button" data-action="delete-letter" data-id="${html(entry.id)}"><i class="fa-solid fa-trash"></i>${html(tr('Clear letter'))}</button>
-                <button class="tretaresia-text-button" type="button" data-action="close-letter">${html(tr('Close'))}</button></footer></article>`;
+    modal.innerHTML = (uiMarkup("<button class=\"tretaresia-submodal-backdrop\" type=\"button\" data-action=\"close-letter\" aria-label=\"")+(html(tr(uiText("Close"))))+uiMarkup("\"></button>\n        <article class=\"tretaresia-letter-sheet\" data-direction=\"")+(entry.direction)+uiMarkup("\"><div class=\"tretaresia-letter-fold\"></div><header><span>")+(html(entry.direction === 'incoming' ? entry.fromName : entry.toName))+uiMarkup("</span>\n            <button type=\"button\" data-action=\"close-letter\" aria-label=\"")+(html(tr(uiText("Close"))))+uiMarkup("\"><i class=\"fa-solid fa-xmark\"></i></button></header>\n            <div class=\"tretaresia-letter-paper\"><span class=\"tretaresia-letter-date\">")+(html(formatDate(entry.createdAt)))+uiMarkup("</span><h3>")+(html(entry.subject))+uiMarkup("</h3>\n                <p>")+(html(entry.body).replaceAll('\n', uiMarkup("<br>")))+uiMarkup("</p><div class=\"tretaresia-letter-signature\">")+(html(entry.direction === 'incoming' ? entry.fromName : currentPersonaName(state)))+uiMarkup("</div></div>\n            <footer>")+(entry.direction === 'incoming' ? (uiMarkup("<button class=\"tretaresia-primary-button\" type=\"button\" data-action=\"reply-letter\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-reply\"></i>")+(html(tr(uiText("Reply"))))+uiMarkup("</button>")) : '')+uiMarkup("\n                <button class=\"tretaresia-secondary-button\" type=\"button\" data-action=\"delete-letter\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i>")+(html(tr(uiText("Clear letter"))))+uiMarkup("</button>\n                <button class=\"tretaresia-text-button\" type=\"button\" data-action=\"close-letter\">")+(html(tr(uiText("Close"))))+uiMarkup("</button></footer></article>"));
 }
 
 function renderMusic(panel, state) {
     if (!panel) return;
     const current = state.music.tracks.find(track => track.id === state.music.currentId) || state.music.tracks[0];
     const playing = Boolean(audioPlayer && !audioPlayer.paused && current && audioPlayer.dataset.trackId === current.id);
-    panel.innerHTML = `${heading('Music', `${state.music.tracks.length} ${tr('Playlist').toLowerCase()}`, 'fa-solid fa-compact-disc')}
-        <section class="tretaresia-music-console"><div class="tretaresia-now-playing"><div class="tretaresia-record${playing ? ' is-playing' : ''}"><i class="fa-solid fa-compact-disc"></i></div>
-            <div><span>${html(tr('Now playing'))}</span><h3>${html(current?.name || (getSettings().language === 'th' ? 'ยังไม่ได้เลือกเพลง' : 'No track selected'))}</h3>
-            <small><i class="fa-solid fa-lock"></i>${html(tr('Stored locally on this device'))}</small></div></div>
-            <div class="tretaresia-player-progress"><input id="tretaresia-music-seek" type="range" min="0" max="1000" value="0" ${current ? '' : 'disabled'}><div><span id="tretaresia-music-current-time">0:00</span><span id="tretaresia-music-duration">${formatDuration(current?.duration || 0)}</span></div></div>
-            <div class="tretaresia-player-controls"><button type="button" data-action="music-shuffle" class="${state.music.shuffle ? 'is-active' : ''}" title="Shuffle"><i class="fa-solid fa-shuffle"></i></button>
-                <button type="button" data-action="music-prev" title="Previous"><i class="fa-solid fa-backward-step"></i></button>
-                <button class="tretaresia-play-button" type="button" data-action="music-toggle" ${current ? '' : 'disabled'}><i class="fa-solid ${playing ? 'fa-pause' : 'fa-play'}"></i></button>
-                <button type="button" data-action="music-next" title="Next"><i class="fa-solid fa-forward-step"></i></button>
-                <button type="button" data-action="music-repeat" class="${state.music.repeat ? 'is-active' : ''}" title="Repeat"><i class="fa-solid fa-repeat"></i></button></div></section>
-        <section class="tretaresia-playlist"><div class="tretaresia-section-label"><i class="fa-solid fa-list-ol"></i><span>${html(tr('Playlist'))}</span>
-            <button type="button" class="tretaresia-small-button" data-action="choose-audio"><i class="fa-solid fa-plus"></i>${html(tr('Add audio files'))}</button><input id="tretaresia-audio-input" type="file" accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/mp4,audio/aac" multiple hidden></div>
-            <div class="tretaresia-track-list">${state.music.tracks.length ? state.music.tracks.map((track, index) => `<article class="tretaresia-track-row${track.id === state.music.currentId ? ' is-current' : ''}">
-                <button type="button" data-action="music-play" data-id="${html(track.id)}"><span>${String(index + 1).padStart(2, '0')}</span><i class="fa-solid ${track.id === state.music.currentId && playing ? 'fa-volume-high' : 'fa-music'}"></i>
-                    <span><b>${html(track.name)}</b><small>${html(track.fileName)}</small></span><em>${formatDuration(track.duration)}</em></button>
-                <button type="button" data-action="delete-track" data-id="${html(track.id)}"><i class="fa-solid fa-trash"></i></button></article>`).join('') : empty('No tracks in this chat.')}</div></section>`;
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Music"), `${state.music.tracks.length} ${tr(uiText("Playlist")).toLowerCase()}`, 'fa-solid fa-compact-disc'))+uiMarkup("\n        <section class=\"tretaresia-music-console\"><div class=\"tretaresia-now-playing\"><div class=\"tretaresia-record")+(playing ? ' is-playing' : '')+uiMarkup("\"><i class=\"fa-solid fa-compact-disc\"></i></div>\n            <div><span>")+(html(tr(uiText("Now playing"))))+uiMarkup("</span><h3>")+(html(current?.name || (getSettings().language === 'th' ? 'ยังไม่ได้เลือกเพลง' : 'No track selected')))+uiMarkup("</h3>\n            <small><i class=\"fa-solid fa-lock\"></i>")+(html(tr(uiText("Stored locally on this device"))))+uiMarkup("</small></div></div>\n            <div class=\"tretaresia-player-progress\"><input id=\"tretaresia-music-seek\" type=\"range\" min=\"0\" max=\"1000\" value=\"0\" ")+(current ? '' : 'disabled')+uiMarkup("><div><span id=\"tretaresia-music-current-time\">0:00</span><span id=\"tretaresia-music-duration\">")+(formatDuration(current?.duration || 0))+uiMarkup("</span></div></div>\n            <div class=\"tretaresia-player-controls\"><button type=\"button\" data-action=\"music-shuffle\" class=\"")+(state.music.shuffle ? 'is-active' : '')+uiMarkup("\" title=\"Shuffle\"><i class=\"fa-solid fa-shuffle\"></i></button>\n                <button type=\"button\" data-action=\"music-prev\" title=\"Previous\"><i class=\"fa-solid fa-backward-step\"></i></button>\n                <button class=\"tretaresia-play-button\" type=\"button\" data-action=\"music-toggle\" ")+(current ? '' : 'disabled')+uiMarkup("><i class=\"fa-solid ")+(playing ? 'fa-pause' : 'fa-play')+uiMarkup("\"></i></button>\n                <button type=\"button\" data-action=\"music-next\" title=\"Next\"><i class=\"fa-solid fa-forward-step\"></i></button>\n                <button type=\"button\" data-action=\"music-repeat\" class=\"")+(state.music.repeat ? 'is-active' : '')+uiMarkup("\" title=\"Repeat\"><i class=\"fa-solid fa-repeat\"></i></button></div></section>\n        <section class=\"tretaresia-playlist\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-list-ol\"></i><span>")+(html(tr(uiText("Playlist"))))+uiMarkup("</span>\n            <button type=\"button\" class=\"tretaresia-small-button\" data-action=\"choose-audio\"><i class=\"fa-solid fa-plus\"></i>")+(html(tr(uiText("Add audio files"))))+uiMarkup("</button><input id=\"tretaresia-audio-input\" type=\"file\" accept=\"audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/mp4,audio/aac\" multiple hidden></div>\n            <div class=\"tretaresia-track-list\">")+(state.music.tracks.length ? state.music.tracks.map((track, index) => (uiMarkup("<article class=\"tretaresia-track-row")+(track.id === state.music.currentId ? ' is-current' : '')+uiMarkup("\">\n                <button type=\"button\" data-action=\"music-play\" data-id=\"")+(html(track.id))+uiMarkup("\"><span>")+(String(index + 1).padStart(2, '0'))+uiMarkup("</span><i class=\"fa-solid ")+(track.id === state.music.currentId && playing ? 'fa-volume-high' : 'fa-music')+uiMarkup("\"></i>\n                    <span><b>")+(html(track.name))+uiMarkup("</b><small>")+(html(track.fileName))+uiMarkup("</small></span><em>")+(formatDuration(track.duration))+uiMarkup("</em></button>\n                <button type=\"button\" data-action=\"delete-track\" data-id=\"")+(html(track.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('') : empty(uiText("No tracks in this chat.")))+uiMarkup("</div></section>"));
     updateMusicProgress();
 }
 
@@ -7703,13 +7143,13 @@ async function readAudioDuration(file) {
 
 async function addAudioFiles(files) {
     const context = SillyTavern.getContext();
-    if (!context.getCurrentChatId?.()) return notify('warning', getSettings().language === 'th' ? 'เปิดแชทก่อนเพิ่มเพลง' : 'Open a chat before adding music.');
+    if (!context.getCurrentChatId?.()) return notify('warning', getSettings().language === 'th' ? uiText("เปิดแชทก่อนเพิ่มเพลง") : uiText("Open a chat before adding music."));
     const store = SillyTavern.libs?.localforage;
-    if (!store) return notify('error', 'Local audio storage is unavailable in this SillyTavern build.');
+    if (!store) return notify('error', uiText("Local audio storage is unavailable in this SillyTavern build."));
     const state = clone(getState());
     for (const file of files.slice(0, 30)) {
         if (!file.type.startsWith('audio/') || file.size > 100 * 1024 * 1024) {
-            notify('warning', `${file.name}: unsupported audio or larger than 100 MB.`);
+            notify('warning', uiText("{0}: unsupported audio or larger than 100 MB.",[file.name]));
             continue;
         }
         const id = uid();
@@ -7719,7 +7159,7 @@ async function addAudioFiles(files) {
                 type: file.type, duration: await readAudioDuration(file), addedAt: new Date().toISOString() }));
         } catch (error) {
             console.error('[RoleForge] Could not store audio.', error);
-            notify('error', `${file.name}: could not be stored on this device.`);
+            notify('error', uiText("{0}: could not be stored on this device.",[file.name]));
         }
     }
     if (!state.music.currentId) state.music.currentId = state.music.tracks[0]?.id || '';
@@ -7747,7 +7187,7 @@ async function playTrack(id) {
     const store = SillyTavern.libs?.localforage;
     const blob = await store?.getItem(audioStorageKey(id));
     if (!(blob instanceof Blob)) return notify('warning', getSettings().language === 'th'
-        ? 'ไฟล์เพลงนี้ไม่อยู่ในอุปกรณ์นี้ กรุณาเพิ่มไฟล์ใหม่' : 'This audio file is not stored on this device. Add it again here.');
+        ? uiText("ไฟล์เพลงนี้ไม่อยู่ในอุปกรณ์นี้ กรุณาเพิ่มไฟล์ใหม่") : uiText("This audio file is not stored on this device. Add it again here."));
     const player = ensureAudioPlayer();
     player.pause();
     if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl);
@@ -7761,7 +7201,7 @@ async function playTrack(id) {
         await player.play();
     } catch (error) {
         console.warn('[RoleForge] Audio playback requires a direct user gesture.', error);
-        notify('warning', getSettings().language === 'th' ? 'แตะปุ่มเล่นอีกครั้งเพื่ออนุญาตเสียง' : 'Tap play again to allow audio playback.');
+        notify('warning', getSettings().language === 'th' ? uiText("แตะปุ่มเล่นอีกครั้งเพื่ออนุญาตเสียง") : uiText("Tap play again to allow audio playback."));
     }
     renderMusic(document.querySelector('[data-panel="music"]'), getState());
 }
@@ -7858,7 +7298,7 @@ async function onSubmit(event) {
             if (form.closest('#tretaresia-manual-sync')?.dataset.chatId !== String(SillyTavern.getContext().getCurrentChatId?.() || '')
                 || form.closest('#tretaresia-manual-sync')?.dataset.fingerprint !== shortHash(JSON.stringify(SillyTavern.getContext().chat))) {
                 closeManualSyncDialog();
-                notify('warning', getSettings().language === 'th' ? 'แชตเปลี่ยนแล้ว กรุณาเลือกช่วงใหม่' : 'The chat changed. Choose a new range.');
+                notify('warning', getSettings().language === 'th' ? uiText("แชตเปลี่ยนแล้ว กรุณาเลือกช่วงใหม่") : uiText("The chat changed. Choose a new range."));
                 break;
             }
             closeManualSyncDialog();
@@ -7871,7 +7311,7 @@ async function onSubmit(event) {
             };
             await persistState(state, 'portrait');
             closePortraitEditor();
-            notify('success', getSettings().language === 'th' ? 'บันทึกตำแหน่งรูปแล้ว' : 'Portrait framing saved.');
+            notify('success', getSettings().language === 'th' ? uiText("บันทึกตำแหน่งรูปแล้ว") : uiText("Portrait framing saved."));
             break;
         case 'npc-portrait-frame': {
             const entry = state.npcs.find(value => value.id === values.npcId);
@@ -7883,7 +7323,7 @@ async function onSubmit(event) {
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc-portrait');
             closePortraitEditor();
-            notify('success', getSettings().language === 'th' ? 'บันทึกตำแหน่งรูป NPC แล้ว' : 'NPC portrait framing saved.');
+            notify('success', getSettings().language === 'th' ? uiText("บันทึกตำแหน่งรูป NPC แล้ว") : uiText("NPC portrait framing saved."));
             break;
         }
         case 'status':
@@ -7906,24 +7346,24 @@ async function onSubmit(event) {
             };
             state.onboarding.identitySeeded = true;
             await persistState(state);
-            notify('success', 'Character status saved.');
+            notify('success', uiText("Character status saved."));
             break;
         case 'journey-log-add': {
             const entry = journeyLogEntry({ text: values.text, place: state.location.place, day: state.worldClock.dayName || `Day ${state.worldClock.day}`, kind: 'manual' });
-            if (!entry) return notify('warning', tr('What happened'));
+            if (!entry) return notify('warning', tr(uiText("What happened")));
             appendJourneyLog(state, entry);
             await persistState(state, 'journey-log');
-            notify('success', tr('Journey log saved.'));
+            notify('success', tr(uiText("Journey log saved.")));
             break;
         }
         case 'journey-log-edit': {
             const entry = state.journeyLogs.find(value => value.id === values.id);
             const nextText = text(values.text, '', 500);
-            if (!entry || !nextText) return notify('warning', tr('What happened'));
+            if (!entry || !nextText) return notify('warning', tr(uiText("What happened")));
             entry.text = nextText;
             entry.at = new Date().toISOString();
             await persistState(state, 'journey-log');
-            notify('success', tr('Journey log saved.'));
+            notify('success', tr(uiText("Journey log saved.")));
             break;
         }
         case 'scene':
@@ -7936,25 +7376,25 @@ async function onSubmit(event) {
             state.scene = { position: values.position, weather: values.weather, temperature: values.temperature };
             if (values.place) state.onboarding.locationSeeded = true;
             await persistState(state, 'scene');
-            notify('success', getSettings().language === 'th' ? 'บันทึกข้อมูลฉากแล้ว' : 'Scene tracking saved.');
+            notify('success', getSettings().language === 'th' ? uiText("บันทึกข้อมูลฉากแล้ว") : uiText("Scene tracking saved."));
             break;
             }
         case 'scene-map': {
             const firstFloor = sceneFloor({ name: values.floorName || '1F', level: values.level, rooms: [], connections: [] });
             const nextMap = sceneStructure({ name: values.name, place: values.place, floors: firstFloor ? [firstFloor] : [] });
-            if (!nextMap || !firstFloor) return notify('warning', 'Enter a map name and first floor.');
+            if (!nextMap || !firstFloor) return notify('warning', uiText("Enter a map name and first floor."));
             state.sceneMap.maps.push(nextMap);
             state.sceneMap.activeMapId = nextMap.id;
             state.sceneMap.activeFloorId = firstFloor.id;
             state.sceneMap.playerRoomId = '';
             await persistState(state, 'scene-map');
-            notify('success', `${nextMap.name} created.`);
+            notify('success', uiText("{0} created.",[nextMap.name]));
             break;
         }
         case 'scene-floor': {
             const map = state.sceneMap.maps.find(entry => entry.id === values.mapId);
             const nextFloor = sceneFloor({ name: values.name, level: values.level, rooms: [], connections: [] });
-            if (!map || !nextFloor) return notify('warning', 'Enter a floor name.');
+            if (!map || !nextFloor) return notify('warning', uiText("Enter a floor name."));
             map.floors.push(nextFloor);
             state.sceneMap.activeMapId = map.id;
             state.sceneMap.activeFloorId = nextFloor.id;
@@ -7965,13 +7405,13 @@ async function onSubmit(event) {
         case 'scene-room': {
             const map = state.sceneMap.maps.find(entry => entry.id === values.mapId);
             const floor = map?.floors.find(entry => entry.id === values.floorId);
-            if (!floor) return notify('warning', 'Choose a valid floor.');
+            if (!floor) return notify('warning', uiText("Choose a valid floor."));
             const existing = floor.rooms.find(entry => entry.id === values.roomId);
             const nextRoom = sceneRoom({
                 id: existing?.id, name: values.name, type: values.type, x: values.x, y: values.y,
                 width: values.width, height: values.height, discovered: values.discovered === 'on', locked: values.locked === 'on',
             }, existing || {});
-            if (!nextRoom) return notify('warning', 'Enter a room name.');
+            if (!nextRoom) return notify('warning', uiText("Enter a room name."));
             if (existing) floor.rooms[floor.rooms.indexOf(existing)] = nextRoom;
             else floor.rooms.push(nextRoom);
             state.sceneMap.activeMapId = map.id;
@@ -7983,7 +7423,7 @@ async function onSubmit(event) {
             const map = state.sceneMap.maps.find(entry => entry.id === values.mapId);
             const floor = map?.floors.find(entry => entry.id === values.floorId);
             const room = floor?.rooms.find(entry => entry.id === values.roomId);
-            if (!map || !floor || !room) return notify('warning', 'Choose a valid current room.');
+            if (!map || !floor || !room) return notify('warning', uiText("Choose a valid current room."));
             state.sceneMap.activeMapId = map.id;
             state.sceneMap.activeFloorId = floor.id;
             state.sceneMap.playerRoomId = room.id;
@@ -7995,7 +7435,7 @@ async function onSubmit(event) {
             const map = state.sceneMap.maps.find(entry => entry.id === values.mapId);
             const floor = map?.floors.find(entry => entry.id === values.floorId);
             if (!floor?.rooms.some(entry => entry.id === values.from) || !floor.rooms.some(entry => entry.id === values.to) || values.from === values.to) {
-                return notify('warning', 'Choose two different rooms.');
+                return notify('warning', uiText("Choose two different rooms."));
             }
             const duplicate = floor.connections.some(entry => (
                 (entry.from === values.from && entry.to === values.to) || (entry.from === values.to && entry.to === values.from)
@@ -8006,18 +7446,18 @@ async function onSubmit(event) {
         }
         case 'inventory': {
             const nextItem = item(values);
-            if (!nextItem) return notify('warning', 'Enter an item name first.');
+            if (!nextItem) return notify('warning', uiText("Enter an item name first."));
             state.inventory.push(nextItem);
             await persistState(state);
-            notify('success', `${nextItem.name} added to inventory.`);
+            notify('success', uiText("{0} added to inventory.",[nextItem.name]));
             break;
         }
         case 'skill': {
             const nextSkill = skill(values);
-            if (!nextSkill) return notify('warning', 'Enter a skill name first.');
+            if (!nextSkill) return notify('warning', uiText("Enter a skill name first."));
             state.skills.push(nextSkill);
             await persistState(state);
-            notify('success', `${nextSkill.name} added to skills.`);
+            notify('success', uiText("{0} added to skills.",[nextSkill.name]));
             break;
         }
         case 'proficiencies': {
@@ -8049,61 +7489,61 @@ async function onSubmit(event) {
                 });
             }
             await persistState(state, 'proficiency');
-            notify('success', getSettings().language === 'th' ? 'บันทึกความชำนาญแล้ว' : 'Proficiency record saved.');
+            notify('success', getSettings().language === 'th' ? uiText("บันทึกความชำนาญแล้ว") : uiText("Proficiency record saved."));
             break;
         }
         case 'custom-proficiency': {
             const kind = values.kind === 'sword' ? 'sword' : 'magic';
             const entry = customProficiency(values, {}, kind);
-            if (!entry) return notify('warning', kind === 'magic' ? 'Enter a magic name first.' : 'Enter a sword style name first.');
+            if (!entry) return notify('warning', kind === 'magic' ? uiText("Enter a magic name first.") : uiText("Enter a sword style name first."));
             const collection = kind === 'magic' ? state.proficiencies.customMagic : state.proficiencies.customSword;
             const existing = collection.find(value => value.name.toLocaleLowerCase() === entry.name.toLocaleLowerCase());
             if (existing) Object.assign(existing, entry, { id: existing.id });
             else collection.push(entry);
             await persistState(state, 'proficiency');
-            notify('success', `${entry.name} added to proficiencies.`);
+            notify('success', uiText("{0} added to proficiencies.",[entry.name]));
             break;
         }
         case 'technique': {
             const nextTechnique = technique(values);
-            if (!nextTechnique) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อวิชา' : 'Enter a technique name first.');
+            if (!nextTechnique) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อวิชา") : uiText("Enter a technique name first."));
             state.proficiencies.techniques.push(nextTechnique);
             await persistState(state, 'technique');
             break;
         }
         case 'quest': {
             const nextQuest = quest({ ...values, receivedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-            if (!nextQuest) return notify('warning', 'Enter a quest name first.');
+            if (!nextQuest) return notify('warning', uiText("Enter a quest name first."));
             state.quests.push(nextQuest);
             await persistState(state);
-            notify('success', `${nextQuest.name} added to the quest log.`);
+            notify('success', uiText("{0} added to the quest log.",[nextQuest.name]));
             break;
         }
         case 'party-create': {
-            if (state.social.party) return notify('warning', getSettings().language === 'th' ? 'มีปาร์ตี้อยู่แล้ว' : 'A party already exists.');
+            if (state.social.party) return notify('warning', getSettings().language === 'th' ? uiText("มีปาร์ตี้อยู่แล้ว") : uiText("A party already exists."));
             const name = text(values.name, '', 140);
-            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อปาร์ตี้' : 'Enter a party name first.');
+            if (!name) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อปาร์ตี้") : uiText("Enter a party name first."));
             state.social.party = partyProfile({ name, leaderId: 'player', memberIds: [] });
             state.player.party = state.social.party.name;
             await persistState(state, 'party');
-            notify('success', `${state.social.party.name} created.`);
+            notify('success', uiText("{0} created.",[state.social.party.name]));
             break;
         }
         case 'party-invite': {
             const party = state.social.party;
             const npc = resolveFriendlyNpc(state, { npcId: values.npcId });
-            if (!party || !npc) return notify('warning', getSettings().language === 'th' ? 'เลือก NPC ฝ่ายมิตรที่ถูกต้อง' : 'Choose a valid friendly NPC.');
-            if (party.memberIds.includes(npc.id)) return notify('info', getSettings().language === 'th' ? 'NPC อยู่ในปาร์ตี้แล้ว' : 'That NPC is already in the party.');
+            if (!party || !npc) return notify('warning', getSettings().language === 'th' ? uiText("เลือก NPC ฝ่ายมิตรที่ถูกต้อง") : uiText("Choose a valid friendly NPC."));
+            if (party.memberIds.includes(npc.id)) return notify('info', getSettings().language === 'th' ? uiText("NPC อยู่ในปาร์ตี้แล้ว") : uiText("That NPC is already in the party."));
             party.memberIds.push(npc.id);
             await persistState(state, 'party');
-            notify('success', `${npc.name} invited to ${party.name}.`);
+            notify('success', uiText("{0} invited to {1}.",[npc.name,party.name]));
             break;
         }
         case 'party-strategy': {
             const party = state.social.party;
             if (!party || party.joinedByInvitation) break;
             const name = text(values.name, '', 140);
-            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อปาร์ตี้' : 'Enter a party name first.');
+            if (!name) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อปาร์ตี้") : uiText("Enter a party name first."));
             party.name = name;
             state.player.party = name;
             party.rank = text(values.rank, party.rank, 80);
@@ -8120,40 +7560,40 @@ async function onSubmit(event) {
                 copper: number(values.sharedCopper, party.sharedFunds.copper, 0, 999999999),
             };
             await persistState(state, 'party-strategy');
-            notify('success', 'Party formation and roles saved.');
+            notify('success', uiText("Party formation and roles saved."));
             break;
         }
         case 'guild-create': {
             const name = text(values.name, '', 140);
-            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อกิลด์' : 'Enter a guild name first.');
-            if (state.social.guilds.some(entry => entry.name.toLocaleLowerCase() === name.toLocaleLowerCase())) return notify('warning', getSettings().language === 'th' ? 'มีกิลด์ชื่อนี้อยู่แล้ว' : 'A guild with this name already exists.');
-            if (!canAffordCurrency(state.progression.currency, GUILD_CREATION_FEE)) return notify('warning', `${tr('Not enough currency')}: ${currencyLabel(GUILD_CREATION_FEE)}`);
+            if (!name) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อกิลด์") : uiText("Enter a guild name first."));
+            if (state.social.guilds.some(entry => entry.name.toLocaleLowerCase() === name.toLocaleLowerCase())) return notify('warning', getSettings().language === 'th' ? uiText("มีกิลด์ชื่อนี้อยู่แล้ว") : uiText("A guild with this name already exists."));
+            if (!canAffordCurrency(state.progression.currency, GUILD_CREATION_FEE)) return notify('warning', `${tr(uiText("Not enough currency"))}: ${currencyLabel(GUILD_CREATION_FEE)}`);
             state.progression.currency.gold -= GUILD_CREATION_FEE.gold;
             appendCurrencyTransaction(state, { gold: -GUILD_CREATION_FEE.gold }, `Guild creation fee: ${name}`, 'guild');
             const guild = guildProfile({ name, description: values.description, leaderId: 'player', memberIds: [], treasury: { ...GUILD_CREATION_FEE } });
-            if (!guild) return notify('warning', getSettings().language === 'th' ? 'สร้างกิลด์ไม่สำเร็จ' : 'The guild could not be created.');
+            if (!guild) return notify('warning', getSettings().language === 'th' ? uiText("สร้างกิลด์ไม่สำเร็จ") : uiText("The guild could not be created."));
             state.social.guilds.push(guild);
             state.player.guild = guild.name;
             await persistState(state, 'guild');
-            notify('success', `${guild.name} created. ${currencyLabel(GUILD_CREATION_FEE)} deducted.`);
+            notify('success', uiText("{0} created. {1} deducted.",[guild.name,currencyLabel(GUILD_CREATION_FEE)]));
             break;
         }
         case 'guild-invite': {
             const guild = state.social.guilds.find(entry => entry.id === values.guildId);
             const npc = resolveFriendlyNpc(state, { npcId: values.npcId });
-            if (!guild || !npc) return notify('warning', getSettings().language === 'th' ? 'เลือกกิลด์และ NPC ฝ่ายมิตรให้ถูกต้อง' : 'Choose a guild and a valid friendly NPC.');
-            if (guild.memberIds.includes(npc.id)) return notify('info', getSettings().language === 'th' ? 'NPC อยู่ในกิลด์แล้ว' : 'That NPC is already in the guild.');
+            if (!guild || !npc) return notify('warning', getSettings().language === 'th' ? uiText("เลือกกิลด์และ NPC ฝ่ายมิตรให้ถูกต้อง") : uiText("Choose a guild and a valid friendly NPC."));
+            if (guild.memberIds.includes(npc.id)) return notify('info', getSettings().language === 'th' ? uiText("NPC อยู่ในกิลด์แล้ว") : uiText("That NPC is already in the guild."));
             guild.memberIds.push(npc.id);
             await persistState(state, 'guild');
-            notify('success', `${npc.name} invited to ${guild.name}.`);
+            notify('success', uiText("{0} invited to {1}.",[npc.name,guild.name]));
             break;
         }
         case 'guild-progression': {
             const guild = state.social.guilds.find(entry => entry.id === values.guildId);
             if (!guild || guild.joinedByInvitation) break;
             const name = text(values.name, '', 140);
-            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อกิลด์' : 'Enter a guild name first.');
-            if (state.social.guilds.some(entry => entry.id !== guild.id && entry.name.toLocaleLowerCase() === name.toLocaleLowerCase())) return notify('warning', getSettings().language === 'th' ? 'มีกิลด์ชื่อนี้อยู่แล้ว' : 'A guild with this name already exists.');
+            if (!name) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อกิลด์") : uiText("Enter a guild name first."));
+            if (state.social.guilds.some(entry => entry.id !== guild.id && entry.name.toLocaleLowerCase() === name.toLocaleLowerCase())) return notify('warning', getSettings().language === 'th' ? uiText("มีกิลด์ชื่อนี้อยู่แล้ว") : uiText("A guild with this name already exists."));
             if (state.player.guild === guild.name) state.player.guild = name;
             guild.name = name;
             guild.rank = text(values.rank, guild.rank, 80);
@@ -8165,33 +7605,33 @@ async function onSubmit(event) {
             guild.enemies = String(values.enemies || '').split(',').map(entry => text(entry, '', 120)).filter(Boolean).slice(0, 40);
             guild.quests = String(values.quests || '').split(',').map(entry => text(entry, '', 160)).filter(Boolean).slice(0, 80);
             await persistState(state, 'guild-progression');
-            notify('success', 'Guild progression saved.');
+            notify('success', uiText("Guild progression saved."));
             break;
         }
         case 'household-save': {
             const name = text(values.name, '', 140);
-            if (!name) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อครอบครัว' : 'Enter a household name first.');
+            if (!name) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อครอบครัว") : uiText("Enter a household name first."));
             state.social.household.name = name;
             await persistState(state, 'household');
-            notify('success', getSettings().language === 'th' ? 'บันทึกชื่อครอบครัวแล้ว' : 'Household name saved.');
+            notify('success', getSettings().language === 'th' ? uiText("บันทึกชื่อครอบครัวแล้ว") : uiText("Household name saved."));
             break;
         }
         case 'household-add': {
             const npc = metFriendlyNpcs(state).find(entry => entry.id === values.npcId);
-            if (!npc) return notify('warning', getSettings().language === 'th' ? 'เลือก NPC ฝ่ายมิตรที่ถูกต้อง' : 'Choose a valid friendly NPC.');
-            if (!text(values.role, '', 80)) return notify('warning', getSettings().language === 'th' ? 'กรุณาพิมพ์ฐานะในครอบครัว' : 'Enter a family role.');
-            if (state.social.household.members.some(entry => entry.npcId === npc.id)) return notify('info', getSettings().language === 'th' ? 'สมาชิกคนนี้อยู่ในครอบครัวแล้ว' : 'That NPC is already in the household.');
+            if (!npc) return notify('warning', getSettings().language === 'th' ? uiText("เลือก NPC ฝ่ายมิตรที่ถูกต้อง") : uiText("Choose a valid friendly NPC."));
+            if (!text(values.role, '', 80)) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาพิมพ์ฐานะในครอบครัว") : uiText("Enter a family role."));
+            if (state.social.household.members.some(entry => entry.npcId === npc.id)) return notify('info', getSettings().language === 'th' ? uiText("สมาชิกคนนี้อยู่ในครอบครัวแล้ว") : uiText("That NPC is already in the household."));
             state.social.household.members.push(socialMember({ npcId: npc.id, name: npc.name, role: values.role, notes: values.notes }));
             await persistState(state, 'household');
-            notify('success', `${npc.name} added to ${state.social.household.name}.`);
+            notify('success', uiText("{0} added to {1}.",[npc.name,state.social.household.name]));
             break;
         }
         case 'npc-new': {
             const nextNpc = npcProfile({ ...values, met: values.met === 'on' });
-            if (!nextNpc) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อ NPC' : 'Enter the NPC name first.');
-            if (!isFriendlyNpc(nextNpc)) return notify('warning', getSettings().language === 'th' ? 'NPC ฝ่ายศัตรูจะไม่ถูกเพิ่มในสารบบ NPC' : 'Hostile NPCs are excluded from the NPC Codex.');
+            if (!nextNpc) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อ NPC") : uiText("Enter the NPC name first."));
+            if (!isFriendlyNpc(nextNpc)) return notify('warning', getSettings().language === 'th' ? uiText("NPC ฝ่ายศัตรูจะไม่ถูกเพิ่มในสารบบ NPC") : uiText("Hostile NPCs are excluded from the NPC Codex."));
             if (state.npcs.some(entry => entry.name.toLocaleLowerCase() === nextNpc.name.toLocaleLowerCase())) {
-                return notify('warning', getSettings().language === 'th' ? 'มี NPC ชื่อนี้อยู่แล้ว' : 'An NPC with this name already exists.');
+                return notify('warning', getSettings().language === 'th' ? uiText("มี NPC ชื่อนี้อยู่แล้ว") : uiText("An NPC with this name already exists."));
             }
             state.npcs.push(nextNpc);
             if (values.linkContact === 'yes') ensureContactForNpc(state, nextNpc);
@@ -8229,7 +7669,7 @@ async function onSubmit(event) {
         case 'npc-ability': {
             const entry = state.npcs.find(value => value.id === values.npcId);
             const ability = npcAbility(values);
-            if (!entry || !ability) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อความสามารถ' : 'Enter an ability name first.');
+            if (!entry || !ability) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อความสามารถ") : uiText("Enter an ability name first."));
             entry.abilities.push(ability);
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc');
@@ -8238,7 +7678,7 @@ async function onSubmit(event) {
         case 'npc-meter': {
             const entry = state.npcs.find(value => value.id === values.npcId);
             const meterEntry = npcMeter(values);
-            if (!entry || !meterEntry) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อค่าสถานะ' : 'Enter a meter name first.');
+            if (!entry || !meterEntry) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อค่าสถานะ") : uiText("Enter a meter name first."));
             entry.customMeters.push(meterEntry);
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc');
@@ -8247,7 +7687,7 @@ async function onSubmit(event) {
         case 'npc-diary': {
             const entry = state.npcs.find(value => value.id === values.npcId);
             const note = npcDiaryEntry(values);
-            if (!entry || !note) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ข้อความไดอารี' : 'Write the diary entry first.');
+            if (!entry || !note) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ข้อความไดอารี") : uiText("Write the diary entry first."));
             entry.diary.push(note);
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc');
@@ -8255,7 +7695,7 @@ async function onSubmit(event) {
         }
         case 'contact': {
             const nextContact = contact(values);
-            if (!nextContact) return notify('warning', getSettings().language === 'th' ? 'กรุณาใส่ชื่อ NPC' : 'Enter the NPC name first.');
+            if (!nextContact) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อ NPC") : uiText("Enter the NPC name first."));
             ensureNpcForContact(state, nextContact);
             state.contacts.push(nextContact);
             await persistState(state, 'contact');
@@ -8268,7 +7708,7 @@ async function onSubmit(event) {
                 ensureNpcForContact(state, recipient);
                 state.contacts.push(recipient);
             }
-            if (!recipient || !text(values.body)) return notify('warning', getSettings().language === 'th' ? 'กรุณาเลือกผู้รับและเขียนเนื้อหา' : 'Choose a recipient and write the letter first.');
+            if (!recipient || !text(values.body)) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาเลือกผู้รับและเขียนเนื้อหา") : uiText("Choose a recipient and write the letter first."));
             const outgoing = letter({ contactId: recipient.id, fromName: currentPersonaName(state), toName: recipient.name,
                 subject: values.subject || 'Letter', body: values.body, direction: 'outgoing', status: 'sent', createdAt: new Date().toISOString() });
             state.letters.push(outgoing);
@@ -8291,13 +7731,13 @@ async function onSubmit(event) {
             const balanceChange = currencyDelta(previousCurrency, state.progression.currency);
             if (balanceChange.gold || balanceChange.silver || balanceChange.copper) appendCurrencyTransaction(state, balanceChange, 'Manual balance adjustment', 'manual');
             await persistState(state);
-            notify('success', 'Progression saved.');
+            notify('success', uiText("Progression saved."));
             break;
         }
         case 'travel': {
             const namedDestination = mapLocation(values.destination, state, false);
             const isCoordinate = values.destination === '__coordinates__';
-            if (!namedDestination && !isCoordinate) return notify('warning', 'Choose a valid destination.');
+            if (!namedDestination && !isCoordinate) return notify('warning', uiText("Choose a valid destination."));
             const mapX = number(values.mapX, namedDestination?.x || 0, 0, WORLD_MAP_WIDTH);
             const mapY = number(values.mapY, namedDestination?.y || 0, 0, WORLD_MAP_HEIGHT);
             const destination = namedDestination || {
@@ -8343,7 +7783,7 @@ async function onSubmit(event) {
             state.location.pins = [...state.location.pins.filter(pin => pin.id !== existing?.id), nextPin];
             if (destination) addDiscoveredLocation(state, destination.name, worldId);
             await persistState(state, 'map');
-            notify('success', `${nextPin.label} marked at ${coordinatesLabel(x, y)}.`);
+            notify('success', uiText("{0} marked at {1}.",[nextPin.label,coordinatesLabel(x, y)]));
             break;
         }
     }
@@ -8364,7 +7804,7 @@ async function onPanelChange(event) {
             state.player.portrait = await resizePortrait(portrait.files[0]);
             state.player.portraitView = clone(defaultState().player.portraitView);
             await persistState(state, 'portrait');
-            notify('success', 'Profile picture updated.');
+            notify('success', uiText("Profile picture updated."));
             openPortraitEditor();
         } catch (error) {
             notify('error', error.message || 'Could not use that image.');
@@ -8376,17 +7816,17 @@ async function onPanelChange(event) {
         const npcId = npcPortrait.dataset.npcId;
         try {
             const expectedChat = SillyTavern.getContext().getCurrentChatId?.();
-            if (!getState().npcs.some(value => value.id === npcId)) throw new Error('NPC profile was not found.');
+            if (!getState().npcs.some(value => value.id === npcId)) throw new Error(uiText("NPC profile was not found."));
             const reference = await saveNpcPortrait(npcPortrait.files[0]);
-            if(expectedChat!==SillyTavern.getContext().getCurrentChatId?.())throw Error('Chat changed; please reopen the NPC before saving.');
+            if(expectedChat!==SillyTavern.getContext().getCurrentChatId?.())throw Error(uiText("Chat changed; please reopen the NPC before saving."));
             const state = clone(getState());
             const entry = state.npcs.find(value => value.id === npcId);
-            if (!entry) throw new Error('NPC profile was removed during upload.');
+            if (!entry) throw new Error(uiText("NPC profile was removed during upload."));
             Object.assign(entry,reference);
             entry.portraitView = clone(defaultState().player.portraitView);
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc-portrait');
-            notify('success', getSettings().language === 'th' ? 'อัปเดตรูป NPC แล้ว' : 'NPC portrait updated.');
+            notify('success', getSettings().language === 'th' ? uiText("อัปเดตรูป NPC แล้ว") : uiText("NPC portrait updated."));
             await openNpcPortraitEditor(entry.id);
         } catch (error) {
             notify('error', error.message || 'Could not use that image.');
@@ -8488,47 +7928,47 @@ async function onPanelClick(event) {
         case 'repair-state': {
             const repaired = repairCurrentStateSnapshot(state);
             await persistState(repaired, 'diagnostic-repair');
-            notify('success', getSettings().language === 'th' ? 'ซ่อมและตรวจ state ปัจจุบันแล้ว' : 'Current state repaired and normalized.');
+            notify('success', getSettings().language === 'th' ? uiText("ซ่อมและตรวจ state ปัจจุบันแล้ว") : uiText("Current state repaired and normalized."));
             break;
         }
         case 'rollback-latest-turn': {
             const history = turnHistory(SillyTavern.getContext(), false);
             const entry = [...(history?.entries || [])].reverse().find(candidate => candidate?.baseState);
             if (!entry) {
-                notify('info', getSettings().language === 'th' ? 'ยังไม่มี turn ที่ย้อนกลับได้' : 'No turn checkpoint is available yet.');
+                notify('info', getSettings().language === 'th' ? uiText("ยังไม่มี turn ที่ย้อนกลับได้") : uiText("No turn checkpoint is available yet."));
                 break;
             }
             await replaceAssistantTurnState(entry.messageId, { reuseVariant: false, reason: 'inspector' });
-            notify('success', getSettings().language === 'th' ? 'ย้อนข้อมูล turn ล่าสุดแล้ว' : 'Latest turn data rolled back.');
+            notify('success', getSettings().language === 'th' ? uiText("ย้อนข้อมูล turn ล่าสุดแล้ว") : uiText("Latest turn data rolled back."));
             break;
         }
         case 'reapply-latest-turn': {
             const history = turnHistory(SillyTavern.getContext(), false);
             const entry = [...(history?.entries || [])].reverse().find(candidate => candidate?.baseState);
             if (!entry) {
-                notify('info', getSettings().language === 'th' ? 'ยังไม่มี turn ที่นำกลับมาใช้ได้' : 'No turn checkpoint is available yet.');
+                notify('info', getSettings().language === 'th' ? uiText("ยังไม่มี turn ที่นำกลับมาใช้ได้") : uiText("No turn checkpoint is available yet."));
                 break;
             }
             await replaceAssistantTurnState(entry.messageId, { reuseVariant: true, reason: 'inspector-reapply' });
-            notify('success', getSettings().language === 'th' ? 'นำข้อมูล variant ล่าสุดกลับมาใช้แล้ว' : 'Latest turn variant applied again.');
+            notify('success', getSettings().language === 'th' ? uiText("นำข้อมูล variant ล่าสุดกลับมาใช้แล้ว") : uiText("Latest turn variant applied again."));
             break;
         }
         case 'rollback-turn': {
             const messageId = Number(id);
             if (!Number.isInteger(messageId) || !await replaceAssistantTurnState(messageId, { reuseVariant: false, reason: 'audit-entry' })) {
-                notify('warning', getSettings().language === 'th' ? 'ไม่พบ checkpoint ของ turn นี้' : 'That turn checkpoint is no longer available.');
+                notify('warning', getSettings().language === 'th' ? uiText("ไม่พบ checkpoint ของ turn นี้") : uiText("That turn checkpoint is no longer available."));
                 break;
             }
-            notify('success', getSettings().language === 'th' ? 'ย้อนข้อมูล turn ที่เลือกแล้ว' : 'Selected turn data rolled back.');
+            notify('success', getSettings().language === 'th' ? uiText("ย้อนข้อมูล turn ที่เลือกแล้ว") : uiText("Selected turn data rolled back."));
             break;
         }
         case 'reapply-turn': {
             const messageId = Number(id);
             if (!Number.isInteger(messageId) || !await replaceAssistantTurnState(messageId, { reuseVariant: true, reason: 'audit-entry-reapply' })) {
-                notify('warning', getSettings().language === 'th' ? 'ไม่พบ checkpoint ของ turn นี้' : 'That turn checkpoint is no longer available.');
+                notify('warning', getSettings().language === 'th' ? uiText("ไม่พบ checkpoint ของ turn นี้") : uiText("That turn checkpoint is no longer available."));
                 break;
             }
-            notify('success', getSettings().language === 'th' ? 'นำข้อมูล turn ที่เลือกกลับมาใช้แล้ว' : 'Selected turn data applied again.');
+            notify('success', getSettings().language === 'th' ? uiText("นำข้อมูล turn ที่เลือกกลับมาใช้แล้ว") : uiText("Selected turn data applied again."));
             break;
         }
         case 'select-proficiency-icon': {
@@ -8607,12 +8047,12 @@ async function onPanelClick(event) {
             if (!map) break;
             map.locked = !map.locked;
             await persistState(state, 'scene-map-lock');
-            notify('success', tr(map.locked ? 'Map locked' : 'AI updates enabled'));
+            notify('success', tr(map.locked ? uiText("Map locked") : uiText("AI updates enabled")));
             break;
         }
         case 'delete-scene-map': {
             const map = state.sceneMap.maps.find(entry => entry.id === id);
-            if (!map || globalThis.confirm?.(`Delete the structure map “${map.name}”?`) === false) break;
+            if (!map || globalThis.confirm?.(uiText("Delete the structure map “{0}”?",[map.name])) === false) break;
             state.sceneMap.maps = state.sceneMap.maps.filter(entry => entry.id !== id);
             state.sceneMap.activeMapId = state.sceneMap.maps[0]?.id || '';
             state.sceneMap.activeFloorId = state.sceneMap.maps[0]?.floors[0]?.id || '';
@@ -8623,7 +8063,7 @@ async function onPanelClick(event) {
         case 'delete-scene-floor': {
             const map = state.sceneMap.maps.find(entry => entry.id === button.dataset.mapId);
             const floor = map?.floors.find(entry => entry.id === id);
-            if (!map || !floor || globalThis.confirm?.(`Delete floor “${floor.name}”?`) === false) break;
+            if (!map || !floor || globalThis.confirm?.(uiText("Delete floor “{0}”?",[floor.name])) === false) break;
             map.floors = map.floors.filter(entry => entry.id !== id);
             state.sceneMap.activeFloorId = map.floors[0]?.id || '';
             state.sceneMap.playerRoomId = '';
@@ -8634,7 +8074,7 @@ async function onPanelClick(event) {
             const map = state.sceneMap.maps.find(entry => entry.id === button.dataset.mapId);
             const floor = map?.floors.find(entry => entry.id === button.dataset.floorId);
             const room = floor?.rooms.find(entry => entry.id === id);
-            if (!floor || !room || globalThis.confirm?.(`Delete room “${room.name}”?`) === false) break;
+            if (!floor || !room || globalThis.confirm?.(uiText("Delete room “{0}”?",[room.name])) === false) break;
             floor.rooms = floor.rooms.filter(entry => entry.id !== id);
             floor.connections = floor.connections.filter(entry => entry.from !== id && entry.to !== id);
             if (state.sceneMap.playerRoomId === id) state.sceneMap.playerRoomId = '';
@@ -8708,7 +8148,7 @@ async function onPanelClick(event) {
             await persistState(state);
             break;
         case 'dissolve-party':
-            if (!state.social.party || globalThis.confirm?.(tr('Dissolve this party?')) === false) break;
+            if (!state.social.party || globalThis.confirm?.(tr(uiText("Dissolve this party?"))) === false) break;
             state.social.party = null;
             state.player.party = 'Solo';
             await persistState(state, 'party');
@@ -8720,7 +8160,7 @@ async function onPanelClick(event) {
             break;
         case 'dissolve-guild': {
             const guild = state.social.guilds.find(entry => entry.id === id);
-            if (!guild || globalThis.confirm?.(tr('Dissolve this guild?')) === false) break;
+            if (!guild || globalThis.confirm?.(tr(uiText("Dissolve this guild?"))) === false) break;
             state.social.guilds = state.social.guilds.filter(entry => entry.id !== id);
             if (state.player.guild === guild.name) state.player.guild = state.social.guilds[0]?.name || 'Unaffiliated';
             await persistState(state, 'guild');
@@ -8755,7 +8195,7 @@ async function onPanelClick(event) {
                     entry.mapX = point.x;
                     entry.mapY = point.y;
                 } else {
-                    notify('info', getSettings().language === 'th' ? `เปิด marker ของ ${entry.name} แล้ว แต่ยังไม่มีพิกัด ให้แก้ Current location หรือ World Map X/Y ในข้อมูล NPC` : `${entry.name}'s marker is enabled, but its coordinates are unknown. Edit Current location or World Map X/Y in the NPC dossier.`);
+                    notify('info', getSettings().language === 'th' ? uiText("เปิด marker ของ {0} แล้ว แต่ยังไม่มีพิกัด ให้แก้ Current location หรือ World Map X/Y ในข้อมูล NPC",[entry.name]) : uiText("{0}'s marker is enabled, but its coordinates are unknown. Edit Current location or World Map X/Y in the NPC dossier.",[entry.name]));
                 }
             }
             entry.updatedAt = new Date().toISOString();
@@ -8787,7 +8227,7 @@ async function onPanelClick(event) {
         case 'delete-npc': {
             const entry = state.npcs.find(value => value.id === id);
             if (!entry) break;
-            if (globalThis.confirm?.(getSettings().language === 'th' ? `ลบข้อมูล NPC “${entry.name}”? รายชื่อและจดหมายเดิมจะยังอยู่` : `Delete the NPC dossier for “${entry.name}”? Existing contacts and letters will remain.`) === false) break;
+            if (globalThis.confirm?.(getSettings().language === 'th' ? uiText("ลบข้อมูล NPC “{0}”? รายชื่อและจดหมายเดิมจะยังอยู่",[entry.name]) : uiText("Delete the NPC dossier for “{0}”? Existing contacts and letters will remain.",[entry.name])) === false) break;
             state.npcs = state.npcs.filter(value => value.id !== id);
             state.contacts.forEach(value => { if (value.npcId === id) value.npcId = ''; });
             await SillyTavern.libs?.localforage?.removeItem(npcPortraitStorageKey(id));
@@ -8874,7 +8314,7 @@ async function onPanelClick(event) {
             await persistState(state, 'mailbox');
             break;
         case 'clear-letters':
-            if (globalThis.confirm?.(getSettings().language === 'th' ? 'ลบจดหมายทั้งหมดในแชทนี้?' : 'Clear every letter in this chat?') !== false) {
+            if (globalThis.confirm?.(getSettings().language === 'th' ? uiText("ลบจดหมายทั้งหมดในแชทนี้?") : uiText("Clear every letter in this chat?")) !== false) {
                 state.letters = [];
                 openedLetterId = null;
                 await persistState(state, 'mailbox');
@@ -8916,14 +8356,14 @@ async function onPanelClick(event) {
 }
 
 function resizePortrait(file) {
-    if (!file.type.startsWith('image/')) return Promise.reject(new Error('Choose a PNG, JPG, or WebP image.'));
-    if (file.size > 8 * 1024 * 1024) return Promise.reject(new Error('The image must be smaller than 8 MB.'));
+    if (!file.type.startsWith('image/')) return Promise.reject(new Error(uiText("Choose a PNG, JPG, or WebP image.")));
+    if (file.size > 8 * 1024 * 1024) return Promise.reject(new Error(uiText("The image must be smaller than 8 MB.")));
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onerror = () => reject(new Error('The image could not be read.'));
+        reader.onerror = () => reject(new Error(uiText("The image could not be read.")));
         reader.onload = () => {
             const image = new Image();
-            image.onerror = () => reject(new Error('The image format is not supported.'));
+            image.onerror = () => reject(new Error(uiText("The image format is not supported.")));
             image.onload = () => {
                 const maxSide = 1200;
                 const ratio = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
@@ -9147,23 +8587,23 @@ async function sendChatAction(message, modeOverride = '') {
     const interactionMode = ['hidden', 'visible', 'draft'].includes(modeOverride) ? modeOverride : settings.interactionMode;
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.()) {
-        notify('warning', settings.language === 'th' ? 'เปิดแชตก่อนใช้งานคำสั่งโรลเพลย์' : 'Open a chat before using a role-play action.');
+        notify('warning', settings.language === 'th' ? uiText("เปิดแชตก่อนใช้งานคำสั่งโรลเพลย์") : uiText("Open a chat before using a role-play action."));
         return;
     }
     if (interactionMode === 'hidden') {
         const instruction = settings.language === 'th'
-            ? `<tretaresia_rpg_action>การกระทำของผู้เล่น: ${message}\nให้ตอบสนองต่อการกระทำนี้ต่อเนื่องอย่างเป็นธรรมชาติในโรลเพลย์ ห้ามกล่าวถึงระบบ อินเทอร์เฟซ หรือคำสั่งที่ซ่อนอยู่</tretaresia_rpg_action>`
-            : `<tretaresia_rpg_action>Player action: ${message}\nContinue the role-play naturally from this action. Never mention the system, interface, or hidden instruction.</tretaresia_rpg_action>`;
+            ? (uiMarkup("<tretaresia_rpg_action>การกระทำของผู้เล่น: ")+(message)+uiMarkup("\nให้ตอบสนองต่อการกระทำนี้ต่อเนื่องอย่างเป็นธรรมชาติในโรลเพลย์ ห้ามกล่าวถึงระบบ อินเทอร์เฟซ หรือคำสั่งที่ซ่อนอยู่</tretaresia_rpg_action>"))
+            : (uiMarkup("<tretaresia_rpg_action>Player action: ")+(message)+uiMarkup("\nContinue the role-play naturally from this action. Never mention the system, interface, or hidden instruction.</tretaresia_rpg_action>"));
         context.setExtensionPrompt(ACTION_PROMPT_KEY, instruction, 1, 0, false, 0);
         closeInterface();
-        setSync('working', tr('Hidden action sent'), settings.language === 'th' ? 'กำลังรอคำตอบของ AI โดยไม่สร้างข้อความผู้เล่น' : 'Waiting for the AI without creating a user bubble.');
+        setSync('working', tr(uiText("Hidden action sent")), settings.language === 'th' ? 'กำลังรอคำตอบของ AI โดยไม่สร้างข้อความผู้เล่น' : 'Waiting for the AI without creating a user bubble.');
         try {
             recordExtensionRequest('hiddenAction', 'RPG hidden role-play action');
             await context.generate('normal');
         } catch (error) {
             console.error('[RoleForge] Hidden action failed.', error);
-            setSync('error', tr('Sync unavailable'), settings.language === 'th' ? 'AI ไม่สามารถตอบคำสั่งที่ซ่อนได้' : 'The AI could not resolve the hidden action.');
-            notify('error', settings.language === 'th' ? 'ไม่สามารถดำเนินการที่ซ่อนไว้ได้' : 'The hidden action could not be generated.');
+            setSync('error', tr(uiText("Sync unavailable")), settings.language === 'th' ? 'AI ไม่สามารถตอบคำสั่งที่ซ่อนได้' : 'The AI could not resolve the hidden action.');
+            notify('error', settings.language === 'th' ? uiText("ไม่สามารถดำเนินการที่ซ่อนไว้ได้") : uiText("The hidden action could not be generated."));
         } finally {
             context.setExtensionPrompt(ACTION_PROMPT_KEY, '', 1, 0, false, 0);
         }
@@ -9172,7 +8612,7 @@ async function sendChatAction(message, modeOverride = '') {
     const composer = document.querySelector('#send_textarea');
     const send = document.querySelector('#send_but');
     if (!(composer instanceof HTMLTextAreaElement) || !(send instanceof HTMLElement)) {
-        notify('error', 'The SillyTavern chat composer is not available.');
+        notify('error', uiText("The SillyTavern chat composer is not available."));
         return;
     }
     const preservedDraft = composer.value;
@@ -9182,7 +8622,7 @@ async function sendChatAction(message, modeOverride = '') {
         composer.dispatchEvent(new Event('input', { bubbles: true }));
         composer.focus();
         closeInterface();
-        setSync('ready', tr('Draft prepared'), settings.language === 'th' ? 'ยังไม่ได้เรียก AI ตรวจสอบแล้วกดส่งเองเมื่อพร้อม' : 'No AI call yet. Review it and press Send when ready.');
+        setSync('ready', tr(uiText("Draft prepared")), settings.language === 'th' ? 'ยังไม่ได้เรียก AI ตรวจสอบแล้วกดส่งเองเมื่อพร้อม' : 'No AI call yet. Review it and press Send when ready.');
         return;
     }
     if (send.matches(':disabled, .disabled')) {
@@ -9190,7 +8630,7 @@ async function sendChatAction(message, modeOverride = '') {
         composer.dispatchEvent(new Event('input', { bubbles: true }));
         composer.focus();
         closeInterface();
-        setSync('error', settings.language === 'th' ? 'ยังส่งข้อความไม่ได้' : 'Message not sent', settings.language === 'th' ? 'คำสั่งถูกเก็บไว้ในช่องพิมพ์' : 'The action remains in the composer for review.');
+        setSync('error', settings.language === 'th' ? uiText("ยังส่งข้อความไม่ได้") : uiText("Message not sent"), settings.language === 'th' ? 'คำสั่งถูกเก็บไว้ในช่องพิมพ์' : 'The action remains in the composer for review.');
         return;
     }
     if (hadDraft) pendingComposerDraft = { value: preservedDraft, sent: message };
@@ -9198,7 +8638,7 @@ async function sendChatAction(message, modeOverride = '') {
     composer.dispatchEvent(new Event('input', { bubbles: true }));
     composer.focus();
     closeInterface();
-    setSync('working', tr('Visible message sent'), settings.language === 'th' ? 'กำลังรอคำตอบและตรวจการเปลี่ยนแปลงของระบบ' : 'Waiting for the reply and its confirmed state changes.');
+    setSync('working', tr(uiText("Visible message sent")), settings.language === 'th' ? 'กำลังรอคำตอบและตรวจการเปลี่ยนแปลงของระบบ' : 'Waiting for the reply and its confirmed state changes.');
     recordExtensionRequest('visibleAction', 'RPG visible role-play action');
     send.click();
     if (hadDraft) setTimeout(() => { if (pendingComposerDraft) restoreComposerDraft(); }, 1200);
@@ -9286,7 +8726,7 @@ function parseJson(response) {
             try { return JSON.parse(range.json); }
             catch { cursor = range.start + 1; }
         }
-        throw new Error('The AI response did not contain valid JSON.');
+        throw new Error(uiText("The AI response did not contain valid JSON."));
     }
 }
 
@@ -9882,7 +9322,7 @@ function significantJourneyOperation(current, next, operation) {
 }
 
 function applyStatePatch(current, patch) {
-    if (!patch || typeof patch !== 'object' || !Array.isArray(patch.ops)) throw new Error('State patch is missing an ops array.');
+    if (!patch || typeof patch !== 'object' || !Array.isArray(patch.ops)) throw new Error(uiText("State patch is missing an ops array."));
     const candidate = clone(current);
     const acceptedOps = [];
     const rewardOps = new Set();
@@ -10178,10 +9618,10 @@ async function processAssistantPatch(messageId, generationType = '') {
         processedAssistantMessages.set(message, incomingVariant);
         await rememberScene(messageId, message, getState());
         await saveCurrentChatMetadata(context);
-        setSync('disabled', tr('Reply received'), tr('Tracking is off'));
+        setSync('disabled', tr(uiText("Reply received")), tr(uiText("Tracking is off")));
         return;
     }
-    setSync('working', tr('Checking reply'), settings.language === 'th' ? 'กำลังอ่านเฉพาะข้อมูลที่เปลี่ยนแปลงจากคำตอบนี้' : 'Reading this reply for confirmed state changes.');
+    setSync('working', tr(uiText("Checking reply")), settings.language === 'th' ? 'กำลังอ่านเฉพาะข้อมูลที่เปลี่ยนแปลงจากคำตอบนี้' : 'Reading this reply for confirmed state changes.');
     const extracted = cleanInlinePatchSurfaces(message);
     if (extracted.found) {
         message.mes = extracted.visible;
@@ -10199,7 +9639,7 @@ async function processAssistantPatch(messageId, generationType = '') {
             await rememberScene(messageId, message, recordedVariant.state, extracted.patch?.sceneTracker);
             await saveCurrentChatMetadata(context);
         }
-        setSync('unchanged', tr('State updated'), settings.language === 'th' ? 'คำตอบเวอร์ชันนี้ถูกบันทึกแล้ว จึงไม่หักค่าซ้ำ' : 'This reply variant is already recorded; no values were applied twice.');
+        setSync('unchanged', tr(uiText("State updated")), settings.language === 'th' ? 'คำตอบเวอร์ชันนี้ถูกบันทึกแล้ว จึงไม่หักค่าซ้ำ' : 'This reply variant is already recorded; no values were applied twice.');
         return;
     }
     processedAssistantMessages.set(message, variantKey);
@@ -10281,7 +9721,7 @@ async function processAssistantPatch(messageId, generationType = '') {
             writeContinuitySnapshot(getState());
             queueCharacterLifeSkillSync(getState());
             showEventNotifications(notifications);
-            setSync('success', tr('State updated'), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${totalChanges} รายการแล้ว` : `${totalChanges} confirmed change${totalChanges === 1 ? '' : 's'} saved.`);
+            setSync('success', tr(uiText("State updated")), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${totalChanges} รายการแล้ว` : `${totalChanges} confirmed change${totalChanges === 1 ? '' : 's'} saved.`);
             console.info(`[RoleForge] Applied ${accepted} inline operation(s) plus ${reconciled.changes} deterministic reconciliation change(s).`);
         } else {
             await rememberScene(messageId, message, reconciled.next, details);
@@ -10296,13 +9736,13 @@ async function processAssistantPatch(messageId, generationType = '') {
             }
             await saveCurrentChatMetadata(context);
             npcWorkspace?.refresh();
-            setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
+            setSync('unchanged', tr(uiText("No state changes")), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
         }
     } catch (error) {
         console.error('[RoleForge] Inline state patch failed.', error);
         try { await saveCurrentChatMetadata(context); }
         catch (saveError) { console.warn('[RoleForge] Could not save the turn checkpoint.', saveError); }
-        setSync('error', tr('Sync unavailable'));
+        setSync('error', tr(uiText("Sync unavailable")));
     }
 }
 
@@ -10369,22 +9809,17 @@ function openManualSyncDialog() {
     const chat = context.chat || [];
     const markers = manualSyncMarkers(chat);
     if (!modal || !hasUserReply() || !markers.some(marker => marker.role === 'Character' && chat.slice(0, marker.index).some(entry => entry?.is_user))) {
-        notify('info', getSettings().language === 'th' ? 'ต้องมีคำตอบของตัวละครหลังข้อความผู้เล่นก่อน' : "Wait for a character reply after the player's first message.");
+        notify('info', getSettings().language === 'th' ? uiText("ต้องมีคำตอบของตัวละครหลังข้อความผู้เล่นก่อน") : uiText("Wait for a character reply after the player's first message."));
         return;
     }
     const last = [...markers].reverse().find(marker => marker.role === 'Character' && chat.slice(0, marker.index).some(entry => entry?.is_user));
     const first = [...markers].reverse().find(marker => marker.role === 'User' && marker.index < last.index)
         || markers.find(marker => marker.role === 'User');
-    const options = markers.map(marker => `<option value="${marker.index}">#${marker.index + 1} · ${marker.role === 'User' ? 'ผู้เล่น' : 'ตัวละคร'} · ${html(marker.preview || '…')}</option>`).join('');
+    const options = markers.map(marker => (uiMarkup("<option value=\"")+(marker.index)+uiMarkup("\">#")+(marker.index + 1)+uiMarkup(" · ")+(marker.role === 'User' ? 'ผู้เล่น' : 'ตัวละคร')+uiMarkup(" · ")+(html(marker.preview || '…'))+uiMarkup("</option>"))).join('');
     modal.hidden = false;
     modal.dataset.chatId = String(context.getCurrentChatId?.() || '');
     modal.dataset.fingerprint = shortHash(JSON.stringify(chat));
-    modal.innerHTML = `<button type="button" class="tretaresia-submodal-backdrop" data-action="close-manual-sync" aria-label="Close"></button>
-        <section class="tretaresia-sync-dialog" role="dialog" aria-modal="true" aria-labelledby="tretaresia-sync-title"><header><div><small>ROLE-PLAY ARCHIVE · MAIN CHAT</small><h3 id="tretaresia-sync-title">Manual Sync · เลือกช่วงข้อความ</h3></div><button type="button" data-action="close-manual-sync" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></header>
-        <form data-form="manual-sync"><p>อ่านบทสนทนาตามช่วงที่เลือกและตรวจข้อมูลจากเรื่องในทุกแท็บ รวมทั้ง NPC และ H-Stats โดยไม่เพิ่มข้อมูลที่เรื่องไม่ได้ยืนยัน</p>
-        <div class="tretaresia-sync-range"><label>เริ่มจาก / From<select name="start" required>${options}</select></label><label>ถึง / Through<select name="end" required>${options}</select></label></div>
-        <output data-sync-range-summary role="status"></output><small>ระบบอ่านคำตอบตัวละครทีละเทิร์นตามลำดับ จำนวนคำขอ AI จะเท่ากับจำนวนเทิร์นที่เลือก ข้อมูลเพลง ไฟล์ภาพ และการตั้งค่าที่เก็บในอุปกรณ์ต้องแก้ในหน้าของตัวเอง</small>
-        <footer><button type="button" class="tretaresia-secondary-button" data-action="close-manual-sync">ยกเลิก</button><button type="submit" class="tretaresia-primary-button">ตรวจและอัปเดต</button></footer></form></section>`;
+    modal.innerHTML = (uiMarkup("<button type=\"button\" class=\"tretaresia-submodal-backdrop\" data-action=\"close-manual-sync\" aria-label=\"Close\"></button>\n        <section class=\"tretaresia-sync-dialog\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"tretaresia-sync-title\"><header><div><small>ROLE-PLAY ARCHIVE · MAIN CHAT</small><h3 id=\"tretaresia-sync-title\">Manual Sync · เลือกช่วงข้อความ</h3></div><button type=\"button\" data-action=\"close-manual-sync\" aria-label=\"Close\"><i class=\"fa-solid fa-xmark\"></i></button></header>\n        <form data-form=\"manual-sync\"><p>อ่านบทสนทนาตามช่วงที่เลือกและตรวจข้อมูลจากเรื่องในทุกแท็บ รวมทั้ง NPC และ H-Stats โดยไม่เพิ่มข้อมูลที่เรื่องไม่ได้ยืนยัน</p>\n        <div class=\"tretaresia-sync-range\"><label>เริ่มจาก / From<select name=\"start\" required>")+(options)+uiMarkup("</select></label><label>ถึง / Through<select name=\"end\" required>")+(options)+uiMarkup("</select></label></div>\n        <output data-sync-range-summary role=\"status\"></output><small>ระบบอ่านคำตอบตัวละครทีละเทิร์นตามลำดับ จำนวนคำขอ AI จะเท่ากับจำนวนเทิร์นที่เลือก ข้อมูลเพลง ไฟล์ภาพ และการตั้งค่าที่เก็บในอุปกรณ์ต้องแก้ในหน้าของตัวเอง</small>\n        <footer><button type=\"button\" class=\"tretaresia-secondary-button\" data-action=\"close-manual-sync\">ยกเลิก</button><button type=\"submit\" class=\"tretaresia-primary-button\">ตรวจและอัปเดต</button></footer></form></section>"));
     const form = modal.querySelector('form');
     form.elements.start.value = String(first.index);
     form.elements.end.value = String(last.index);
@@ -10392,8 +9827,8 @@ function openManualSyncDialog() {
         const selection = manualSyncSelection(chat, Number(form.elements.start.value), Number(form.elements.end.value));
         form.querySelector('[type=submit]').disabled = !selection;
         form.querySelector('[data-sync-range-summary]').textContent = selection
-            ? `${selection.selected.length} ข้อความ · ${selection.assistants.length} คำตอบตัวละคร · ประมาณ ${selection.assistants.length} คำขอ AI`
-            : 'กรุณาเลือกช่วงตามลำดับที่มีคำตอบของตัวละคร';
+            ? uiText("{0} ข้อความ · {1} คำตอบตัวละคร · ประมาณ {2} คำขอ AI",[selection.selected.length,selection.assistants.length,selection.assistants.length])
+            : uiText("กรุณาเลือกช่วงตามลำดับที่มีคำตอบของตัวละคร");
     };
     form.addEventListener('change', refresh);
     refresh();
@@ -10478,7 +9913,7 @@ Return ONLY a JSON object {"ops":[],"sceneTracker":{}} with confirmed missing ch
 
 function queueAnalyze(options = {}) {
     if (options.manual && (manualSyncQueued || aiSyncInProgress)) {
-        notify('info', getSettings().language === 'th' ? 'Manual Sync กำลังทำงานอยู่' : 'Manual Sync is already running.');
+        notify('info', getSettings().language === 'th' ? uiText("Manual Sync กำลังทำงานอยู่") : uiText("Manual Sync is already running."));
         return syncQueue;
     }
     if (options.manual) manualSyncQueued = true;
@@ -10522,11 +9957,11 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
     if (!manual) return;
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.()) {
-        notify('warning', 'Open a chat before synchronizing.');
+        notify('warning', uiText("Open a chat before synchronizing."));
         return;
     }
     if (!hasUserReply(context)) {
-        notify('info', getSettings().language === 'th' ? 'ระบบจะเริ่มหลังจากผู้เล่นตอบ First Message' : 'Tracking starts after the user replies to the first message.');
+        notify('info', getSettings().language === 'th' ? uiText("ระบบจะเริ่มหลังจากผู้เล่นตอบ First Message") : uiText("Tracking starts after the user replies to the first message."));
         return;
     }
     const markers = manualSyncMarkers(context.chat);
@@ -10536,12 +9971,12 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
     const start = startIndex ?? markers.find(marker => marker.index >= Math.max(first?.index ?? 0, Number(end) - 11))?.index;
     const selection = manualSyncSelection(context.chat, start, end);
     if (!selection) {
-        notify('warning', getSettings().language === 'th' ? 'ช่วงข้อความต้องมีคำตอบตัวละครหลังข้อความผู้เล่น' : 'The selected range must contain a completed character reply.');
+        notify('warning', getSettings().language === 'th' ? uiText("ช่วงข้อความต้องมีคำตอบตัวละครหลังข้อความผู้เล่น") : uiText("The selected range must contain a completed character reply."));
         return;
     }
 
     aiSyncInProgress = true;
-    setSync('working', tr('Reading latest turn'), `0 / ${selection.assistants.length}`);
+    setSync('working', tr(uiText("Reading latest turn")), `0 / ${selection.assistants.length}`);
     try {
         const requestChat = context.getCurrentChatId?.(), requestOwner = characterOwner(context)?.key;
         const metadata = context.chatMetadata;
@@ -10569,11 +10004,11 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
             });
             const activeContext = SillyTavern.getContext();
             if (activeContext.getCurrentChatId?.() !== requestChat || characterOwner(activeContext)?.key !== requestOwner
-                || activeContext.chatMetadata !== metadata) throw new Error('Chat/card changed during synchronization; no state was saved.');
+                || activeContext.chatMetadata !== metadata) throw new Error(uiText("Chat/card changed during synchronization; no state was saved."));
             if (JSON.stringify(activeContext.chatMetadata) !== requestState || JSON.stringify(activeContext.chat) !== requestMessages)
-                throw new Error('Chat changed during synchronization; retry the selected range.');
+                throw new Error(uiText("Chat changed during synchronization; retry the selected range."));
             const parsed = coerceStatePatch(parseJson(response));
-            if (!parsed) throw new Error(`No valid state patch for message #${marker.index + 1}.`);
+            if (!parsed) throw new Error(uiText("No valid state patch for message #{0}.",[marker.index + 1]));
             const key = manualSyncTurnKey(marker.index, message, context);
             const already = new Set(history.turns[key] || []);
             const trackedTurn = Object.hasOwn(history.turns, key)
@@ -10610,7 +10045,7 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
             }
             if (result.accepted || diaryOps.length) history.turns[key] = [...new Set([...already,...[...operations,...diaryOps].map(operation => manualSyncOperationKey(operation, draft)).filter(Boolean)])].slice(0, 100);
             if (parsed.sceneTracker && typeof parsed.sceneTracker === 'object') scenes.push({index:marker.index,message,details:parsed.sceneTracker,historical});
-            setSync('working', tr('Reading latest turn'), `${position + 1} / ${selection.assistants.length}`);
+            setSync('working', tr(uiText("Reading latest turn")), `${position + 1} / ${selection.assistants.length}`);
         }
         if (accepted) {
             if (!await persistState(draft, 'manual-ai-patch', {deferMetadataSave:true})) return;
@@ -10620,15 +10055,15 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
         context.chatMetadata[MANUAL_SYNC_HISTORY_KEY] = history;
         for (const scene of scenes) await rememberScene(scene.index, scene.message, getState(), scene.details, {historical:scene.historical});
         if (accepted || scenes.length || selection.assistants.length) await saveCurrentChatMetadata(context);
-        setSync('success', tr('AI synchronized'), accepted
+        setSync('success', tr(uiText("AI synchronized")), accepted
             ? (getSettings().language === 'th' ? `Manual Sync บันทึก ${accepted} รายการ` : `Manual Sync saved ${accepted} confirmed change${accepted === 1 ? '' : 's'}.`)
             : (getSettings().language === 'th' ? 'Manual Sync ตรวจแล้ว ไม่มีข้อมูลเปลี่ยนแปลง' : 'Manual Sync found no confirmed changes.'));
         notify('success', summary || 'No confirmed changes.');
         console.info(`[RoleForge] Manual sync checked ${selection.assistants.length} turn(s) and applied ${accepted} operation(s).`);
     } catch (error) {
         console.error('[RoleForge] AI synchronization failed.', error);
-        setSync('error', tr('Sync unavailable'));
-        notify('error', `Could not synchronize: ${error.message}`);
+        setSync('error', tr(uiText("Sync unavailable")));
+        notify('error', uiText("Could not synchronize: {0}",[error.message]));
     } finally {
         aiSyncInProgress = false;
     }
@@ -10636,7 +10071,7 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
 
 function setSync(mode, label, detail = '', options = {}) {
     clearTimeout(activityHideTimer);
-    const show = options.show ?? !(mode === 'ready' && label === tr('Ready'));
+    const show = options.show ?? !(mode === 'ready' && label === tr(uiText("Ready")));
     activityState = { mode, label, detail, visible: show };
     syncActivityIndicator();
     if (!show || mode === 'working') return;
@@ -10650,14 +10085,14 @@ function setSync(mode, label, detail = '', options = {}) {
 let introGateDone = false;
 
 function buildIntroGate() {
-    return '<div class="tretaresia-intro-gate" id="tretaresia-intro-gate">' +
-        '<span class="tretaresia-intro-lattice"></span><div class="tretaresia-intro-sigil">' +
-        '<span class="hex"></span><svg viewBox="0 0 206 232" aria-hidden="true"><polygon points="103,2 204,60 204,172 103,230 2,172 2,60"/></svg>' +
-        '<span class="ring ring-a"></span><span class="ring ring-b"></span><span class="arc arc-a"></span><span class="arc arc-b"></span>' +
-        '<svg class="core" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4 55 17v30L32 60 9 47V17Z M32 14 46 32 32 50 18 32Z M32 23v18 M23 32h18"/><circle cx="32" cy="32" r="3"/></svg></div>' +
-        '<strong>ROLEFORGE</strong><small data-intro-sub>' + html(tr('Connecting to the active role-play...')) + '</small><span class="tretaresia-intro-rule"></span>' +
-        '<div class="tretaresia-intro-load"><span data-intro-label>UNSEALING THE WORLD GATE</span><span class="bar"><i data-intro-bar></i></span><span class="pct" data-intro-pct>0%</span></div>' +
-        '<button type="button" data-action="skip-intro">SKIP <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 4 6 6-6 6 M11 4l6 6-6 6"/></svg></button></div>';
+    return uiMarkup("<div class=\"tretaresia-intro-gate\" id=\"tretaresia-intro-gate\">") +
+        uiMarkup("<span class=\"tretaresia-intro-lattice\"></span><div class=\"tretaresia-intro-sigil\">") +
+        uiMarkup("<span class=\"hex\"></span><svg viewBox=\"0 0 206 232\" aria-hidden=\"true\"><polygon points=\"103,2 204,60 204,172 103,230 2,172 2,60\"/></svg>") +
+        uiMarkup("<span class=\"ring ring-a\"></span><span class=\"ring ring-b\"></span><span class=\"arc arc-a\"></span><span class=\"arc arc-b\"></span>") +
+        uiMarkup("<svg class=\"core\" viewBox=\"0 0 64 64\" aria-hidden=\"true\"><path d=\"M32 4 55 17v30L32 60 9 47V17Z M32 14 46 32 32 50 18 32Z M32 23v18 M23 32h18\"/><circle cx=\"32\" cy=\"32\" r=\"3\"/></svg></div>") +
+        uiMarkup("<strong>ROLEFORGE</strong><small data-intro-sub>") + html(tr(uiText("Connecting to the active role-play..."))) + uiMarkup("</small><span class=\"tretaresia-intro-rule\"></span>") +
+        uiMarkup("<div class=\"tretaresia-intro-load\"><span data-intro-label>UNSEALING THE WORLD GATE</span><span class=\"bar\"><i data-intro-bar></i></span><span class=\"pct\" data-intro-pct>0%</span></div>") +
+        uiMarkup("<button type=\"button\" data-action=\"skip-intro\">SKIP <svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"m4 4 6 6-6 6 M11 4l6 6-6 6\"/></svg></button></div>");
 }
 
 function runIntroGate(overlay) {
@@ -10704,7 +10139,7 @@ async function openInterface() {
     try { await ensureRuntimeStyles(); }
     catch (error) {
         console.error('[RoleForge] Interface styles unavailable.', error);
-        notify('error', 'โหลดรูปแบบ RPG ไม่สำเร็จ กรุณาตรวจการอัปเดตส่วนเสริม แล้วลองเปิดอีกครั้ง ไม่ต้องล้างข้อมูลเบราว์เซอร์');
+        notify('error', uiText("โหลดรูปแบบ RPG ไม่สำเร็จ กรุณาตรวจการอัปเดตส่วนเสริม แล้วลองเปิดอีกครั้ง ไม่ต้องล้างข้อมูลเบราว์เซอร์"));
         return;
     }
     buildInterface();
@@ -10724,7 +10159,7 @@ async function openInterface() {
         queueCharacterLifeCompatibilityRefresh({ save: true });
     } catch (error) {
         console.error('[RoleForge] Could not render the interface.', error);
-        notify('error', 'RoleForge opened, but one of its modules could not render. Check the browser console.');
+        notify('error', uiText("RoleForge opened, but one of its modules could not render. Check the browser console."));
     }
     requestAnimationFrame(() => {
         panel.focus({ preventScroll: true });
@@ -10791,9 +10226,9 @@ function createWandLauncher() {
     launcher.className = 'list-group-item flex-container flexGap5 interactable';
     launcher.tabIndex = 0;
     launcher.setAttribute('role', 'button');
-    launcher.setAttribute('aria-label', 'Open RoleForge');
-    launcher.title = 'Open RoleForge';
-    launcher.innerHTML = '<i class="fa-solid fa-book-open"></i><span>RoleForge</span>';
+    launcher.setAttribute('aria-label', uiText("Open RoleForge"));
+    launcher.title = uiText("Open RoleForge");
+    launcher.innerHTML = uiMarkup("<i class=\"fa-solid fa-book-open\"></i><span>RoleForge</span>");
 
     const activate = event => {
         if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
@@ -10814,14 +10249,14 @@ function createWandLauncher() {
     npcLauncher.className = 'list-group-item flex-container flexGap5 interactable';
     npcLauncher.tabIndex = 0;
     npcLauncher.setAttribute('role', 'button');
-    npcLauncher.setAttribute('aria-label', 'Open RoleForge NPC Manager');
-    npcLauncher.innerHTML = '<i class="fa-solid fa-address-book"></i><span>RoleForge NPC Manager</span>';
+    npcLauncher.setAttribute('aria-label', uiText("Open RoleForge NPC Manager"));
+    npcLauncher.innerHTML = uiMarkup("<i class=\"fa-solid fa-address-book\"></i><span>RoleForge NPC Manager</span>");
     const openNpcs = event => {
         if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
         event.stopPropagation?.();
         if (!getSettings().showWandLauncher) return;
-        if (!npcWorkspace) { notify('info', 'NPC Manager is still loading. Please try again.'); return; }
+        if (!npcWorkspace) { notify('info', uiText("NPC Manager is still loading. Please try again.")); return; }
         closeHostWandMenu();
         npcWorkspace.open();
     };
@@ -10872,8 +10307,9 @@ async function addSettingsDrawer() {
     if (document.getElementById('tretaresia-rpg-settings')) return;
     const context = SillyTavern.getContext();
     const container = document.getElementById('extensions_settings2');
-    if (!container) throw new Error('Could not find the SillyTavern Extensions settings container.');
+    if (!container) throw new Error(uiText("Could not find the SillyTavern Extensions settings container."));
     container.insertAdjacentHTML('beforeend', await context.renderExtensionTemplateAsync(`${EXTENSION_FOLDER}/templates`, 'settings'));
+    bindStaticUi(document.getElementById('tretaresia-rpg-settings'));
     refreshPowerDrawer();
     const settings = getSettings();
     bindCheckbox('tretaresia-rpg-show-launcher', 'showWandLauncher', settings, syncLauncherVisibility);
@@ -10893,7 +10329,7 @@ async function addSettingsDrawer() {
     });
     bindCheckbox('tretaresia-rpg-auto-track', 'autoTrack', settings, () => {
         updatePrompt();
-        setSync(settings.autoTrack ? 'ready' : 'disabled', settings.autoTrack ? tr('Ready') : tr('Tracking is off'), '', { show: !settings.autoTrack });
+        setSync(settings.autoTrack ? 'ready' : 'disabled', settings.autoTrack ? tr(uiText("Ready")) : tr(uiText("Tracking is off")), '', { show: !settings.autoTrack });
     });
     bindCheckbox('tretaresia-rpg-inject-state', 'injectState', settings, updatePrompt);
     bindCheckbox('tretaresia-rpg-show-scene-tracker', 'showSceneTracker', settings, () => npcWorkspace?.refresh());
@@ -10982,8 +10418,8 @@ function bindChatEvents() {
         resumeUnfinishedAssistantPatch();
         refreshCharacterForge();
         if (SillyTavern.getContext().getCurrentChatId?.() && !hasUserReply()) {
-            setSync('ready', tr('Waiting for first reply'), getSettings().language === 'th' ? 'First Message จะยังไม่ถูกอ่านหรือบันทึก' : 'The First Message is not read or stored by the extension.');
-        } else setSync('ready', tr('Ready'), '', { show: false });
+            setSync('ready', tr(uiText("Waiting for first reply")), getSettings().language === 'th' ? 'First Message จะยังไม่ถูกอ่านหรือบันทึก' : 'The First Message is not read or stored by the extension.');
+        } else setSync('ready', tr(uiText("Ready")), '', { show: false });
     });
     if (eventTypes.PERSONA_CHANGED) eventSource.on(eventTypes.PERSONA_CHANGED, () => renderAll());
     if (eventTypes.MESSAGE_SENT) eventSource.on(eventTypes.MESSAGE_SENT, async messageId => {
@@ -10992,8 +10428,8 @@ function bindChatEvents() {
         catch (error) { console.warn('[RoleForge] Could not apply user travel intent.', error); }
         updatePrompt();
         const settings = getSettings();
-        if (settings.autoTrack) setSync('working', tr('Waiting for AI'), settings.language === 'th' ? 'อ่านข้อมูลจากคำตอบหลักโดยไม่เรียก AI เพิ่ม' : 'Scene, diary, invitations and state updates use the main reply without extra AI requests.');
-        else setSync('disabled', tr('Tracking is off'), settings.language === 'th' ? 'คำตอบนี้จะไม่อัปเดต RoleForge อัตโนมัติ' : 'This reply will not update RoleForge automatically.');
+        if (settings.autoTrack) setSync('working', tr(uiText("Waiting for AI")), settings.language === 'th' ? 'อ่านข้อมูลจากคำตอบหลักโดยไม่เรียก AI เพิ่ม' : 'Scene, diary, invitations and state updates use the main reply without extra AI requests.');
+        else setSync('disabled', tr(uiText("Tracking is off")), settings.language === 'th' ? 'คำตอบนี้จะไม่อัปเดต RoleForge อัตโนมัติ' : 'This reply will not update RoleForge automatically.');
     });
     if (eventTypes.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, generationType => {
         if (!['quiet','impersonate'].includes(generationType)) liveGeneration = true;
@@ -11168,11 +10604,11 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.44.1 loaded.');
+        console.info('[RoleForge] Role-play interface v0.44.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
-        notify('error', 'RoleForge could not load. Check the browser console.');
+        notify('error', uiText("RoleForge could not load. Check the browser console."));
     }
 }
 

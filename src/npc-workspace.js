@@ -1,11 +1,12 @@
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.44.1';
-import { createLoreWorkspace } from './lore-workspace.js?v=0.44.1';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS } from './npc-core.js?v=0.44.1';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext } from './npc-generation.js?v=0.44.1';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.44.1';
-import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.44.1';
-import { collectPortraitBackups } from './npc-media.js?v=0.44.1';
-import { H_FIELDS } from './h-stats.js?v=0.44.1';
+import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.44.2';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.44.2';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.44.2';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS } from './npc-core.js?v=0.44.2';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext } from './npc-generation.js?v=0.44.2';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.44.2';
+import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.44.2';
+import { collectPortraitBackups } from './npc-media.js?v=0.44.2';
+import { H_FIELDS } from './h-stats.js?v=0.44.2';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -43,7 +44,7 @@ export function createNpcWorkspace(api) {
     }
     const changed=new Set();
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.44.1',import.meta.url).href;document.head.append(sheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.44.2',import.meta.url).href;document.head.append(sheet);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
     const valid=t=>dialog?.open && token===t && chatId===currentChat() && ownerKey===(api.scopeInfo()?.key||'');
@@ -75,12 +76,12 @@ export function createNpcWorkspace(api) {
         });
         const count=rows.filter(row=>row.different).length;
         const block=element('details','trpg-change-history');const summary=element('summary');
-        summary.append(changeIcon(count>0),document.createTextNode(` การเปลี่ยนแปลง · ${count} รายการ (ค่าเดิม → ค่าปัจจุบัน)`));block.append(summary);
+        summary.append(changeIcon(count>0),document.createTextNode(uiText(" การเปลี่ยนแปลง · {0} รายการ (ค่าเดิม → ค่าปัจจุบัน)",[count])));block.append(summary);
         const list=element('div','trpg-change-list');
         for(const row of rows){
             const item=element('div',row.different?'is-changed':'is-steady');
-            const label=element('span');label.append(changeIcon(row.different),document.createTextNode(row.label));
-            item.append(label,element('small','',row.different?`${formatChange(row.before)} → ${formatChange(row.after)}`:'ไม่มีการเปลี่ยนแปลง'));
+            const label=element('span');label.append(changeIcon(row.different),document.createTextNode(uiText(row.label)));
+            item.append(label,element('small','',row.different?`${formatChange(row.before)} → ${formatChange(row.after)}`:uiText("ไม่มีการเปลี่ยนแปลง")));
             list.append(item);
         }
         block.append(list);return {block,count};
@@ -99,27 +100,20 @@ export function createNpcWorkspace(api) {
     function releasePreview(){++previewGeneration;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;}
     function releaseReference(){if(referenceUrl)URL.revokeObjectURL(referenceUrl);referenceUrl=null;referenceBlob=null;}
     function lock(value){busy=value;if(form)form.querySelector('fieldset').disabled=value;dialog?.querySelectorAll('[data-lock]').forEach(n=>n.disabled=value);dialog?.setAttribute('aria-busy',String(value));const picker=dialog?.querySelector('[data-scope-select]');if(picker)picker.disabled=value||view!=='list';}
-    function canLeave(){if(tab==='lore')return lore.canLeave();return !dirty || confirm('ยังมีร่างที่ไม่ได้บันทึก ต้องการทิ้งการแก้ไขนี้หรือไม่?');}
+    function canLeave(){if(tab==='lore')return lore.canLeave();return !dirty || confirm(uiText("ยังมีร่างที่ไม่ได้บันทึก ต้องการทิ้งการแก้ไขนี้หรือไม่?"));}
     function close(force=false){if(!force&&!canLeave())return;watchViewport(false);++token;dirty=false;lore?.reset();lock(false);editor?.destroy();releasePreview();releaseReference();dialog?.close();}
     function ensureDialog(){
+        if(dialog&&!dialog.open&&dialog.dataset.uiLanguage!==uiLanguage()){dialog.remove();dialog=null;}
         if(dialog)return;
-        dialog=element('dialog','trpg-manager');dialog.setAttribute('aria-labelledby','trpg-manager-title');
-        dialog.innerHTML=`<header class="trpg-manager-top"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id="trpg-manager-title">NPC MANAGEMENT</h2></div><button type="button" data-close aria-label="ปิด">×</button></header>
-            <nav class="trpg-management-tabs" aria-label="Management"><button type="button" data-management-tab="npc" aria-pressed="true">NPC Management</button><button type="button" data-management-tab="lore" aria-pressed="false">Lore Management</button></nav>
-            <nav class="trpg-archive-nav" aria-label="ขอบเขต NPC"><button type="button" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value="chat">Chat · เฉพาะแชตนี้</option><option value="character">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>
-            <label class="trpg-generation-scope">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value="chat">Chat · แชตนี้</option><option value="character">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>
-            <div class="trpg-manager-layout"><section class="trpg-roster trpg-browser"><div class="trpg-browser-tools"><label>ค้นหาตัวละคร<input type="search" data-search placeholder="ค้นหาชื่อ บทบาท หรือสังกัด"></label>
-            <div class="trpg-roster-actions"><button type="button" data-new data-lock>＋ สร้าง NPC</button><button type="button" data-import data-lock>นำเข้า Character Life</button><input type="file" data-import-file accept=".json,.zip,application/json,application/zip" hidden></div></div><div class="trpg-list-heading"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class="trpg-pagination" data-pagination></div></section>
-            <section class="trpg-record" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id="trpg-npc-form" novalidate hidden><fieldset></fieldset></form></section></div>
-            <section class="trpg-lore-panel" data-lore-panel hidden></section>
-            <footer class="trpg-manager-footer"><span role="status" aria-live="polite"></span><span>SCOPED ARCHIVE · v0.40.8</span></footer><div class="trpg-actions trpg-editor-actions" data-editor-actions hidden></div>`;
+        dialog=element('dialog','trpg-manager');dialog.dataset.uiLanguage=uiLanguage();dialog.setAttribute('aria-labelledby','trpg-manager-title');
+        dialog.innerHTML=(uiMarkup("<header class=\"trpg-manager-top\"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id=\"trpg-manager-title\">NPC MANAGEMENT</h2></div><button type=\"button\" data-close aria-label=\"ปิด\">×</button></header>\n            <nav class=\"trpg-management-tabs\" aria-label=\"Management\"><button type=\"button\" data-management-tab=\"npc\" aria-pressed=\"true\">NPC Management</button><button type=\"button\" data-management-tab=\"lore\" aria-pressed=\"false\">Lore Management</button></nav>\n            <nav class=\"trpg-archive-nav\" aria-label=\"ขอบเขต NPC\"><button type=\"button\" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value=\"chat\">Chat · เฉพาะแชตนี้</option><option value=\"character\">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>\n            <label class=\"trpg-generation-scope\">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value=\"chat\">Chat · แชตนี้</option><option value=\"character\">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>\n            <div class=\"trpg-manager-layout\"><section class=\"trpg-roster trpg-browser\"><div class=\"trpg-browser-tools\"><label>ค้นหาตัวละคร<input type=\"search\" data-search placeholder=\"ค้นหาชื่อ บทบาท หรือสังกัด\"></label>\n            <div class=\"trpg-roster-actions\"><button type=\"button\" data-new data-lock>＋ สร้าง NPC</button><button type=\"button\" data-import data-lock>นำเข้า Character Life</button><input type=\"file\" data-import-file accept=\".json,.zip,application/json,application/zip\" hidden></div></div><div class=\"trpg-list-heading\"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class=\"trpg-pagination\" data-pagination></div></section>\n            <section class=\"trpg-record\" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id=\"trpg-npc-form\" novalidate hidden><fieldset></fieldset></form></section></div>\n            <section class=\"trpg-lore-panel\" data-lore-panel hidden></section>\n            <footer class=\"trpg-manager-footer\"><span role=\"status\" aria-live=\"polite\"></span><span>SCOPED ARCHIVE · v0.40.8</span></footer><div class=\"trpg-actions trpg-editor-actions\" data-editor-actions hidden></div>"));
         document.body.append(dialog);form=dialog.querySelector('form');roster=dialog.querySelector('[data-list]');status=dialog.querySelector('[role=status]');
         lore=createLoreWorkspace(dialog.querySelector('[data-lore-panel]'),api,say);
         dialog.querySelectorAll('[data-management-tab]').forEach(button=>button.addEventListener('click',()=>{
             if(busy||button.dataset.managementTab===tab||!canLeave())return;
             showList();selectTab(button.dataset.managementTab);
         }));
-        const backup=element('button','','สำรองภาพเก่าไปยังเซิร์ฟเวอร์');backup.type='button';backup.dataset.lock='';
+        const backup=element('button','',uiText("สำรองภาพเก่าไปยังเซิร์ฟเวอร์"));backup.type='button';backup.dataset.lock='';
         backup.addEventListener('click',()=>void migratePortraits());dialog.querySelector('.trpg-roster-actions').append(backup);
         dialog.querySelector('[data-close]').addEventListener('click',()=>close());
         dialog.querySelector('[data-back]').addEventListener('click',()=>{if(canLeave())showList();});
@@ -148,7 +142,7 @@ export function createNpcWorkspace(api) {
         dialog.querySelector('.trpg-manager-layout').hidden=next!=='npc';
         dialog.querySelector('.trpg-archive-nav').hidden=next!=='npc';
         dialog.querySelector('.trpg-generation-scope').hidden=next!=='npc';
-        dialog.querySelector('#trpg-manager-title').textContent=next==='lore'?'LORE MANAGEMENT':'NPC MANAGEMENT';
+        dialog.querySelector('#trpg-manager-title').textContent=next==='lore'?uiText("LORE MANAGEMENT"):uiText("NPC MANAGEMENT");
         dialog.querySelectorAll('[data-management-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.managementTab===next)));
         say('');if(next==='lore')lore.open();else lore.reset();
     }
@@ -156,180 +150,180 @@ export function createNpcWorkspace(api) {
         if(!roster)return;roster.replaceChildren();const query=keyName(dialog.querySelector('[data-search]').value),info=api.scopeInfo();
         dialog.querySelector('[data-scope-select]').value=scope;dialog.querySelector('option[value="character"]').disabled=!info;
         const destination=dialog.querySelector('[data-generation-scope]');destination.value=api.settings().npcGenerationScope==='character'?'character':'chat';
-        for(const option of dialog.querySelector('[data-scope-select]').options)option.textContent=`${option.value==='character'?'Characters · ผูกกับการ์ด':'Chat · เฉพาะแชตนี้'} (${api.listScope(option.value).length})`;
-        dialog.querySelector('[data-scope-note]').textContent=scope==='character'?`ผูกกับการ์ด ${info?.label||'—'} · ใช้ร่วมกันทุกแชตของการ์ดนี้`:'NPC ของแชตนี้เท่านั้น · ไม่ติดไปแชตใหม่';
+        for(const option of dialog.querySelector('[data-scope-select]').options)option.textContent=`${option.value==='character'?uiText("Characters · ผูกกับการ์ด"):uiText("Chat · เฉพาะแชตนี้")} (${api.listScope(option.value).length})`;
+        dialog.querySelector('[data-scope-note]').textContent=scope==='character'?uiText("ผูกกับการ์ด {0} · ใช้ร่วมกันทุกแชตของการ์ดนี้",[info?.label||'—']):uiText("NPC ของแชตนี้เท่านั้น · ไม่ติดไปแชตใหม่");
         const all=records(),filtered=all.filter(n=>keyName(`${n.name} ${n.occupation} ${n.faction} ${(n.aliases||[]).join(' ')}`).includes(query)).sort((a,b)=>a.name.localeCompare(b.name));
         const pages=Math.max(1,Math.ceil(filtered.length/20));page=Math.min(page,pages-1);
-        dialog.querySelector('[data-count]').textContent=`${filtered.length} / ${all.length} ตัวละคร`;
+        dialog.querySelector('[data-count]').textContent=uiText("{0} / {1} ตัวละคร",[filtered.length,all.length]);
         for(const p of filtered.slice(page*20,page*20+20)){
             const button=element('button','trpg-person');button.type='button';button.dataset.lock='';button.disabled=busy;button.setAttribute('aria-pressed',String(p.id===draftId));
             button.style.setProperty('--speaker',identity(p).identityColor);const emblem=element('span','trpg-list-emblem');emblem.append(roleIcon(identity(p).roleIcon));
             const copy=element('span','trpg-list-copy');copy.append(element('strong','',p.name),element('small','',[p.title||p.occupation,p.race].filter(Boolean).join(' · ')));
-            const meta=element('span','trpg-list-meta');meta.append(element('span','',p.enabled===false?'ปิดใช้งาน':p.isHostile?'Hostile':p.met?'พบแล้ว':'ยังไม่พบ'),element('small','',p.location||''));
-            button.append(emblem,copy,meta,element('span','trpg-list-arrow','›'));button.setAttribute('aria-label',`ดูข้อมูล ${p.name}`);
+            const meta=element('span','trpg-list-meta');meta.append(element('span','',p.enabled===false?uiText("ปิดใช้งาน"):p.isHostile?uiText("Hostile"):p.met?uiText("พบแล้ว"):uiText("ยังไม่พบ")),element('small','',p.location||''));
+            button.append(emblem,copy,meta,element('span','trpg-list-arrow','›'));button.setAttribute('aria-label',uiText("ดูข้อมูล {0}",[p.name]));
             button.addEventListener('click',()=>{if(!busy&&canLeave())void showDetail(p);});roster.append(button);
         }
-        if(!roster.childElementCount){const empty=element('div','trpg-empty');empty.append(icon('address-book'),element('h3','',query?'ไม่พบตัวละคร':'ยังไม่มี NPC ใน Scope นี้'),element('p','',query?'ลองค้นหาด้วยชื่อหรือบทบาทอื่น':'กด “สร้าง NPC” หรือ “นำเข้า Character Life” เมื่อพร้อม'));roster.append(empty);}
+        if(!roster.childElementCount){const empty=element('div','trpg-empty');empty.append(icon('address-book'),element('h3','',query?uiText("ไม่พบตัวละคร"):uiText("ยังไม่มี NPC ใน Scope นี้")),element('p','',query?uiText("ลองค้นหาด้วยชื่อหรือบทบาทอื่น"):uiText("กด “สร้าง NPC” หรือ “นำเข้า Character Life” เมื่อพร้อม")));roster.append(empty);}
         const pager=dialog.querySelector('[data-pagination]');pager.replaceChildren();
-        if(pages>1){for(const [label,delta]of [['← ก่อนหน้า',-1],['ถัดไป →',1]]){const b=element('button','',label);b.type='button';b.disabled=delta<0?page===0:page===pages-1;b.addEventListener('click',()=>{page+=delta;list();roster.scrollIntoView({block:'start'});});pager.append(b);}pager.insertBefore(element('span','',`${page+1} / ${pages}`),pager.lastChild);}
+        if(pages>1){for(const [label,delta]of [[uiText("← ก่อนหน้า"),-1],[uiText("ถัดไป →"),1]]){const b=element('button','',label);b.type='button';b.disabled=delta<0?page===0:page===pages-1;b.addEventListener('click',()=>{page+=delta;list();roster.scrollIntoView({block:'start'});});pager.append(b);}pager.insertBefore(element('span','',`${page+1} / ${pages}`),pager.lastChild);}
     }
     async function showDetail(p){
         const ticket=++token;editor?.destroy();releasePreview();releaseReference();base=clone(p);draftId=p.id;dirty=false;lock(false);setView('detail');say('');
         const detail=dialog.querySelector('[data-detail]');detail.replaceChildren();
         const banner=element('div','trpg-detail-banner trpg-chat'),header=speakerHeader(p,()=>void load(records().find(n=>n.id===p.id)||p));banner.append(header);detail.append(banner);
-        const actions=element('div','trpg-detail-actions'),edit=element('button','trpg-primary','แก้ไขข้อมูล');edit.type='button';edit.dataset.lock='';edit.addEventListener('click',()=>{if(!busy)void load(records().find(n=>n.id===p.id)||p);});actions.append(edit);
-        const toggle=element('button','',p.enabled===false?'เปิดใช้งานตัวละคร':'ปิดใช้งานตัวละคร');toggle.type='button';toggle.dataset.lock='';toggle.setAttribute('aria-pressed',String(p.enabled!==false));toggle.addEventListener('click',()=>void toggleRecord(p));actions.append(toggle);
+        const actions=element('div','trpg-detail-actions'),edit=element('button','trpg-primary',uiText("แก้ไขข้อมูล"));edit.type='button';edit.dataset.lock='';edit.addEventListener('click',()=>{if(!busy)void load(records().find(n=>n.id===p.id)||p);});actions.append(edit);
+        const toggle=element('button','',p.enabled===false?uiText("เปิดใช้งานตัวละคร"):uiText("ปิดใช้งานตัวละคร"));toggle.type='button';toggle.dataset.lock='';toggle.setAttribute('aria-pressed',String(p.enabled!==false));toggle.addEventListener('click',()=>void toggleRecord(p));actions.append(toggle);
         const live=scope==='character'?api.state().npcs.find(n=>n.id===p.id&&n.npcScope==='character'):null;
         const history=changeHistory(p,live);detail.append(history.block);
         if(scope==='character'&&history.count){
-            const reset=element('button','','คืนข้อมูลแชทนี้เป็นค่าเริ่มต้น');reset.type='button';reset.dataset.lock='';
+            const reset=element('button','',uiText("คืนข้อมูลแชทนี้เป็นค่าเริ่มต้น"));reset.type='button';reset.dataset.lock='';
             reset.addEventListener('click',()=>void resetChatRecord(p));actions.append(reset);
         }
-        const copy=element('button','',scope==='chat'?'สร้างสำเนาใน Character':'สร้างสำเนาใน Chat');copy.type='button';copy.disabled=scope==='chat'&&!api.scopeInfo();copy.dataset.lock='';copy.addEventListener('click',()=>void copyScope(p));actions.append(copy);const remove=element('button','trpg-danger','ลบตัวละคร');remove.type='button';remove.dataset.lock='';remove.addEventListener('click',()=>void deleteRecord(p));actions.append(remove);detail.append(actions);
-        detail.append(element('p','trpg-detail-scope',scope==='chat'?'CHAT SCOPE · ใช้เฉพาะแชตนี้':`CHARACTER SCOPE · ${api.scopeInfo()?.label||''} · ข้อมูลฐานใช้ร่วมกันทุกแชท · พัฒนาการระหว่างเล่นบันทึกเฉพาะแชทนี้`));
+        const copy=element('button','',scope==='chat'?uiText("สร้างสำเนาใน Character"):uiText("สร้างสำเนาใน Chat"));copy.type='button';copy.disabled=scope==='chat'&&!api.scopeInfo();copy.dataset.lock='';copy.addEventListener('click',()=>void copyScope(p));actions.append(copy);const remove=element('button','trpg-danger',uiText("ลบตัวละคร"));remove.type='button';remove.dataset.lock='';remove.addEventListener('click',()=>void deleteRecord(p));actions.append(remove);detail.append(actions);
+        detail.append(element('p','trpg-detail-scope',scope==='chat'?uiText("CHAT SCOPE · ใช้เฉพาะแชตนี้"):uiText("CHARACTER SCOPE · {0} · ข้อมูลฐานใช้ร่วมกันทุกแชท · พัฒนาการระหว่างเล่นบันทึกเฉพาะแชทนี้",[api.scopeInfo()?.label||''])));
         const grid=element('dl','trpg-read-fields');
-        for(const [key,label]of Object.entries(FIELDS)){if(key==='name'||!p[key])continue;const item=element('div',LONG_FIELDS.has(key)?'trpg-wide':'');item.append(element('dt','',label),element('dd','',p[key]));grid.append(item);}detail.append(grid);
-        if(p.abilities?.length){const block=element('section','trpg-read-section');block.append(element('h3','','ความสามารถ'));for(const ability of p.abilities){const row=element('div','trpg-read-ability');row.append(element('strong','',ability.name),element('p','',ability.description||''));block.append(row);}detail.append(block);}
-        const stats=element('details','trpg-section');stats.append(element('summary','','ค่าสถานะและความสัมพันธ์'));const statsGrid=element('dl','trpg-read-fields');for(const key of [...RELATIONS,...STATS]){const row=element('div');row.append(element('dt','',key),element('dd','',String(p[key]??p.stats?.[key]??0)));statsGrid.append(row);}stats.append(statsGrid);detail.append(stats);
-        try{const blob=await api.portrait(p);if(!blob||!valid(ticket))return;const imageBlob=await croppedPortrait(blob,p.portraitView?.mobile||{});if(!valid(ticket))return;previewUrl=URL.createObjectURL(imageBlob);const image=element('img','trpg-photo');image.alt=p.name;image.src=previewUrl;header.prepend(image);}catch(e){if(valid(ticket))say(`แสดงภาพไม่ได้: ${e.message}`);}
+        for(const [key,label]of Object.entries(FIELDS)){if(key==='name'||!p[key])continue;const item=element('div',LONG_FIELDS.has(key)?'trpg-wide':'');item.append(element('dt','',uiText(label)),element('dd','',p[key]));grid.append(item);}detail.append(grid);
+        if(p.abilities?.length){const block=element('section','trpg-read-section');block.append(element('h3','',uiText("ความสามารถ")));for(const ability of p.abilities){const row=element('div','trpg-read-ability');row.append(element('strong','',ability.name),element('p','',ability.description||''));block.append(row);}detail.append(block);}
+        const stats=element('details','trpg-section');stats.append(element('summary','',uiText("ค่าสถานะและความสัมพันธ์")));const statsGrid=element('dl','trpg-read-fields');for(const key of [...RELATIONS,...STATS]){const row=element('div');row.append(element('dt','',uiText(key)),element('dd','',String(p[key]??p.stats?.[key]??0)));statsGrid.append(row);}stats.append(statsGrid);detail.append(stats);
+        try{const blob=await api.portrait(p);if(!blob||!valid(ticket))return;const imageBlob=await croppedPortrait(blob,p.portraitView?.mobile||{});if(!valid(ticket))return;previewUrl=URL.createObjectURL(imageBlob);const image=element('img','trpg-photo');image.alt=p.name;image.src=previewUrl;header.prepend(image);}catch(e){if(valid(ticket))say(uiText("แสดงภาพไม่ได้: {0}",[e.message]));}
     }
     async function deleteRecord(p){
         if(busy)return;
-        if(!confirm(`ลบ “${p.name}” จาก ${scope==='character'?'Character · คลังร่วมทุกแชทของการ์ดนี้':'Chat · เฉพาะแชทนี้'}? สำเนาในอีก Scope และประวัติข้อความจะยังอยู่`))return;
+        if(!confirm(uiText("ลบ “{0}” จาก {1}? สำเนาในอีก Scope และประวัติข้อความจะยังอยู่",[p.name,scope==='character'?uiText("Character · คลังร่วมทุกแชทของการ์ดนี้"):uiText("Chat · เฉพาะแชทนี้")])))return;
         const ticket=token;lock(true);
         try{
             if(!valid(ticket))return;
-            if(!await persistRecords(records().filter(n=>n.id!==p.id),'npc-management-delete'))throw Error('ลบตัวละครไม่สำเร็จ');
-            if(valid(ticket)){showList();say('ลบตัวละครแล้ว');}
+            if(!await persistRecords(records().filter(n=>n.id!==p.id),'npc-management-delete'))throw Error(uiText("ลบตัวละครไม่สำเร็จ"));
+            if(valid(ticket)){showList();say(uiText("ลบตัวละครแล้ว"));}
         }catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
     }
     async function toggleRecord(p){
         if(busy)return;const ticket=token;lock(true);
         try{
-            const current=records().find(n=>n.id===p.id);if(!current)throw Error('ไม่พบตัวละคร กรุณาเปิดรายการใหม่');
-            if(!await persistRecords(records().map(n=>n.id===p.id?{...n,enabled:current.enabled===false,updatedAt:new Date().toISOString()}:n),'npc-management'))throw Error('บันทึกสถานะไม่สำเร็จ');
-            if(valid(ticket)){showList();say(current.enabled===false?'เปิดใช้งานตัวละครแล้ว':'ปิดใช้งานตัวละครแล้ว · ข้อมูลยังอยู่');}
+            const current=records().find(n=>n.id===p.id);if(!current)throw Error(uiText("ไม่พบตัวละคร กรุณาเปิดรายการใหม่"));
+            if(!await persistRecords(records().map(n=>n.id===p.id?{...n,enabled:current.enabled===false,updatedAt:new Date().toISOString()}:n),'npc-management'))throw Error(uiText("บันทึกสถานะไม่สำเร็จ"));
+            if(valid(ticket)){showList();say(current.enabled===false?uiText("เปิดใช้งานตัวละครแล้ว"):uiText("ปิดใช้งานตัวละครแล้ว · ข้อมูลยังอยู่"));}
         }catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
     }
     async function resetChatRecord(p){
-        if(busy||!confirm(`คืนข้อมูล “${p.name}” เฉพาะแชทนี้ตามค่าเริ่มต้นของ Character? ข้อมูลฐานและแชทอื่นจะไม่เปลี่ยน`))return;
+        if(busy||!confirm(uiText("คืนข้อมูล “{0}” เฉพาะแชทนี้ตามค่าเริ่มต้นของ Character? ข้อมูลฐานและแชทอื่นจะไม่เปลี่ยน",[p.name])))return;
         const ticket=token;lock(true);
-        try{if(!await api.resetNpcInChat(p))throw Error('คืนค่าไม่สำเร็จ');if(valid(ticket)){showList();say('คืนค่าเริ่มต้นสำหรับแชทนี้แล้ว');}}
+        try{if(!await api.resetNpcInChat(p))throw Error(uiText("คืนค่าไม่สำเร็จ"));if(valid(ticket)){showList();say(uiText("คืนค่าเริ่มต้นสำหรับแชทนี้แล้ว"));}}
         catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
     }
     async function copyScope(p){
         if(busy)return;const target=scope==='chat'?'character':'chat',ticket=token;
         if(target==='character'&&!api.scopeInfo())return;
-        if(!confirm(`สร้างสำเนา ${p.name} ใน ${target==='character'?'Character (ทุกแชตของการ์ดนี้)':'Chat (แชตนี้เท่านั้น)'}? ต้นฉบับจะยังอยู่ที่เดิม และข้อมูลจะแยกจากกัน`))return;
-        lock(true);say('กำลังสร้างสำเนา…');
+        if(!confirm(uiText("สร้างสำเนา {0} ใน {1}? ต้นฉบับจะยังอยู่ที่เดิม และข้อมูลจะแยกจากกัน",[p.name,target==='character'?uiText("Character (ทุกแชตของการ์ดนี้)"):uiText("Chat (แชตนี้เท่านั้น)")])))return;
+        lock(true);say(uiText("กำลังสร้างสำเนา…"));
         try{
-            const original=records().find(n=>n.id===p.id);if(!original)throw Error('ไม่พบตัวละครต้นฉบับ');
+            const original=records().find(n=>n.id===p.id);if(!original)throw Error(uiText("ไม่พบตัวละครต้นฉบับ"));
             const copy=api.profile({...original,id:uuid(),contactId:'',npcScope:target,npcOwner:target==='character'?ownerKey:'',portraitChatId:'',hasPortrait:false,portraitSource:'none',updatedAt:new Date().toISOString()});
             const blob=await api.portrait(original);if(!valid(ticket))return;
             if(blob)Object.assign(copy,original.portraitSource==='server'?{portraitPath:original.portraitPath,portraitSource:'server',hasPortrait:true}:await api.savePortrait(blob));
-            if(!valid(ticket))return;const destination=api.listScope(target);if(destination.length>=200)throw Error('Scope ปลายทางมี NPC ครบ 200 ตัว');if(destination.some(n=>keyName(n.name)===keyName(copy.name)))throw Error('มีชื่อนี้ใน Scope ปลายทางแล้ว ไม่ได้เขียนทับ');
-            if(!await api.persistScope(target,[...destination,copy],'npc-management',chatId,ownerKey))throw Error('บันทึกสำเนาไม่สำเร็จ');
-            if(!valid(ticket))return;scope=target;page=0;showList();say('สร้างสำเนาแล้ว · หากชื่อซ้ำกันในสอง Scope แชตนี้จะใช้ข้อมูลจาก Chat ก่อน');
+            if(!valid(ticket))return;const destination=api.listScope(target);if(destination.length>=200)throw Error(uiText("Scope ปลายทางมี NPC ครบ 200 ตัว"));if(destination.some(n=>keyName(n.name)===keyName(copy.name)))throw Error(uiText("มีชื่อนี้ใน Scope ปลายทางแล้ว ไม่ได้เขียนทับ"));
+            if(!await api.persistScope(target,[...destination,copy],'npc-management',chatId,ownerKey))throw Error(uiText("บันทึกสำเนาไม่สำเร็จ"));
+            if(!valid(ticket))return;scope=target;page=0;showList();say(uiText("สร้างสำเนาแล้ว · หากชื่อซ้ำกันในสอง Scope แชตนี้จะใช้ข้อมูลจาก Chat ก่อน"));
         }catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
     }
     async function migratePortraits(){
         if(busy)return;const ticket=token;lock(true);
         try{
-            const {updates,missing,aborted}=await collectPortraitBackups(records(),{read:api.portrait,upload:api.savePortrait,valid:()=>valid(ticket),onProgress:(n,total)=>say(`กำลังสำรองภาพ ${n}/${total}…`)});
+            const {updates,missing,aborted}=await collectPortraitBackups(records(),{read:api.portrait,upload:api.savePortrait,valid:()=>valid(ticket),onProgress:(n,total)=>say(uiText("กำลังสำรองภาพ {0}/{1}…",[n,total]))});
             if(aborted||!valid(ticket))return;
             // Re-read profiles: never replace an edit made while uploads were running.
             let applied=0;const next=records().map(p=>{const update=updates.get(p.id);if(!update||JSON.stringify(p)!==update.original)return p;applied++;return {...p,...update.reference,updatedAt:new Date().toISOString()};});
-            if(applied&&!await persistRecords(next,'npc-management'))throw Error('บันทึกลิงก์ภาพไม่สำเร็จ กรุณาลองอีกครั้ง');
-            if(valid(ticket)){list();say(`สำรองภาพ ${applied} ภาพใน ${scope==='character'?'Character':'Chat'} แล้ว · ไม่สำเร็จ/ข้อมูลเปลี่ยน ${missing+updates.size-applied} · ภาพเดิมยังอยู่ เปิดแชตอื่นเพื่อสำรองภาพของแชตนั้นด้วย`);}
+            if(applied&&!await persistRecords(next,'npc-management'))throw Error(uiText("บันทึกลิงก์ภาพไม่สำเร็จ กรุณาลองอีกครั้ง"));
+            if(valid(ticket)){list();say(uiText("สำรองภาพ {0} ภาพใน {1} แล้ว · ไม่สำเร็จ/ข้อมูลเปลี่ยน {2} · ภาพเดิมยังอยู่ เปิดแชตอื่นเพื่อสำรองภาพของแชตนั้นด้วย",[applied,scope==='character'?'Character':'Chat',missing+updates.size-applied]));}
         }catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
     }
     function field(key,label,value,long=false,type='text'){
-        const wrapper=element('label',long?'trpg-wide':'',label),input=element(long?'textarea':'input');input.name=key;
+        const wrapper=element('label',long?'trpg-wide':'',uiText(label)),input=element(long?'textarea':'input');input.name=key;
         if(!long)input.type=type;input.value=value??'';input.maxLength=long?4000:key==='name'?120:1000;
         if(key==='name')input.required=true;wrapper.append(input);return wrapper;
     }
-    function section(title){const details=element('details','trpg-section');details.append(element('summary','',title));const body=element('div','trpg-fields');details.append(body);return{details,body};}
+    function section(title){const details=element('details','trpg-section');details.append(element('summary','',uiText(title)));const body=element('div','trpg-fields');details.append(body);return{details,body};}
     function buildForm(p){
         p={...p,...npcAttributeDefaults(p)};
         editor?.destroy();releasePreview();const fields=form.querySelector('fieldset');fields.replaceChildren();
-        const heading=element('div','trpg-dossier');heading.append(element('small','',`${scope.toUpperCase()} / ${p.id?'EDIT RECORD':'NEW RECORD'}`),element('h3','',p.name||'ตัวละครใหม่'),element('p','trpg-muted',scope==='character'?`บันทึกในคลังการ์ด ${api.scopeInfo()?.label||''} ใช้ร่วมกันทุกแชตของการ์ดนี้`:'บันทึกเฉพาะแชตนี้ ไม่เปลี่ยนข้อมูลของแชตอื่น'));
+        const heading=element('div','trpg-dossier');heading.append(element('small','',`${uiText(scope.toUpperCase())} / ${uiText(p.id?'EDIT RECORD':'NEW RECORD')}`),element('h3','',p.name||uiText("ตัวละครใหม่")),element('p','trpg-muted',scope==='character'?uiText("บันทึกในคลังการ์ด {0} ใช้ร่วมกันทุกแชตของการ์ดนี้",[api.scopeInfo()?.label||'']):uiText("บันทึกเฉพาะแชตนี้ ไม่เปลี่ยนข้อมูลของแชตอื่น")));
         if(!draftId){
-            const label=element('label','','บันทึกตัวละครใหม่นี้ใน'),destination=element('select');destination.dataset.draftScope='';
-            for(const [value,title]of [['chat','Chat · แชตนี้'],['character','Characters · ทุกแชตของการ์ดนี้']]){const option=element('option','',title);option.value=value;option.disabled=value==='character'&&!api.scopeInfo();destination.append(option);}
-            destination.value=scope;destination.addEventListener('change',()=>{scope=destination.value;dirty=true;list();heading.querySelector('small').textContent=`${scope.toUpperCase()} / NEW RECORD`;heading.querySelector('p').textContent=scope==='character'?`บันทึกในคลังการ์ด ${api.scopeInfo()?.label||''}`:'บันทึกเฉพาะแชตนี้';});label.append(destination);heading.append(label);
+            const label=element('label','',uiText("บันทึกตัวละครใหม่นี้ใน")),destination=element('select');destination.dataset.draftScope='';
+            for(const [value,title]of [['chat',uiText("Chat · แชตนี้")],['character',uiText("Characters · ทุกแชตของการ์ดนี้")]]){const option=element('option','',title);option.value=value;option.disabled=value==='character'&&!api.scopeInfo();destination.append(option);}
+            destination.value=scope;destination.addEventListener('change',()=>{scope=destination.value;dirty=true;list();heading.querySelector('small').textContent=uiText("{0} / NEW RECORD",[uiText(scope.toUpperCase())]);heading.querySelector('p').textContent=scope==='character'?uiText("บันทึกในคลังการ์ด {0}",[api.scopeInfo()?.label||'']):uiText("บันทึกเฉพาะแชตนี้");});label.append(destination);heading.append(label);
         }
         const grid=element('div','trpg-fields');
         for(const [key,label]of Object.entries(FIELDS))grid.append(field(key,label,p[key],LONG_FIELDS.has(key)));
-        grid.append(field('aliases','ชื่ออื่น / ชื่อเรียก (คั่นด้วย ,)',(p.aliases||[]).join(', '),true));
-        const hostile=element('label','trpg-check');const check=element('input');check.type='checkbox';check.name='isHostile';check.checked=Boolean(p.isHostile);hostile.append(check,document.createTextNode('เป็นศัตรู (ยังอยู่ใน Management แต่ไม่อยู่ในรายชื่อมิตร)'));grid.append(hostile);
-        const metLabel=element('label','trpg-check'),metCheck=element('input');metCheck.type='checkbox';metCheck.name='met';metCheck.checked=p.met===true;metLabel.append(metCheck,document.createTextNode('เคยพบแล้ว · แสดงในแท็บ NPC หากเป็นมิตร'));grid.append(metLabel);
+        grid.append(field('aliases',uiText("ชื่ออื่น / ชื่อเรียก (คั่นด้วย ,)"),(p.aliases||[]).join(', '),true));
+        const hostile=element('label','trpg-check');const check=element('input');check.type='checkbox';check.name='isHostile';check.checked=Boolean(p.isHostile);hostile.append(check,document.createTextNode(uiText("เป็นศัตรู (ยังอยู่ใน Management แต่ไม่อยู่ในรายชื่อมิตร)")));grid.append(hostile);
+        const metLabel=element('label','trpg-check'),metCheck=element('input');metCheck.type='checkbox';metCheck.name='met';metCheck.checked=p.met===true;metLabel.append(metCheck,document.createTextNode(uiText("เคยพบแล้ว · แสดงในแท็บ NPC หากเป็นมิตร")));grid.append(metLabel);
         const generator=element('section','trpg-generator');
-        const label=element('label','','Describe the NPC you want / อธิบาย NPC ที่ต้องการ');
+        const label=element('label','',uiText("Describe the NPC you want / อธิบาย NPC ที่ต้องการ"));
         const description=element('textarea');description.dataset.npcBrief='';description.rows=4;description.maxLength=6000;description.value=brief;
-        description.placeholder='A quiet elven healer, age 120, who runs a forest clinic. Loyal to the player, afraid of fire, with healing and herbalism skills…';
+        description.placeholder=uiText("A quiet elven healer, age 120, who runs a forest clinic. Loyal to the player, afraid of fire, with healing and herbalism skills…");
         description.addEventListener('input',()=>{brief=description.value;});label.append(description);
-        const generate=element('button','trpg-primary','✦ Generate NPC from description');generate.type='button';generate.dataset.generateNpc='';
+        const generate=element('button','trpg-primary',uiText("✦ Generate NPC from description"));generate.type='button';generate.dataset.generateNpc='';
         generate.addEventListener('click',()=>void assist('description'));
         const vision=element('label','trpg-check'),visionCheck=element('input');visionCheck.type='checkbox';visionCheck.dataset.sendPortrait='';
         visionCheck.checked=Boolean(referenceBlob||photoBlob);
-        vision.append(visionCheck,document.createTextNode('ให้ AI อ่านภาพอ้างอิงเพื่อเขียนรูปลักษณ์ (ต้องใช้โมเดลที่มองเห็นภาพได้)'));
-        const referenceLabel=element('label','','ภาพอ้างอิงสำหรับ AI · ไม่บันทึกภาพนี้เป็นรูปตัวละคร'),referenceInput=element('input');
+        vision.append(visionCheck,document.createTextNode(uiText("ให้ AI อ่านภาพอ้างอิงเพื่อเขียนรูปลักษณ์ (ต้องใช้โมเดลที่มองเห็นภาพได้)")));
+        const referenceLabel=element('label','',uiText("ภาพอ้างอิงสำหรับ AI · ไม่บันทึกภาพนี้เป็นรูปตัวละคร")),referenceInput=element('input');
         referenceInput.type='file';referenceInput.accept='image/png,image/jpeg,image/webp,image/gif,image/avif';referenceInput.dataset.npcReference='';referenceLabel.append(referenceInput);
         const referencePreview=element('div','trpg-reference-preview');referencePreview.dataset.referencePreview='';
-        function renderReference(){referencePreview.replaceChildren();if(!referenceBlob)return;const image=element('img');image.src=referenceUrl;image.alt='ภาพอ้างอิงสำหรับ AI';const discard=element('button','','นำภาพอ้างอิงออก');discard.type='button';discard.addEventListener('click',()=>{releaseReference();visionCheck.checked=Boolean(photoBlob);renderReference();});referencePreview.append(image,discard);}
+        function renderReference(){referencePreview.replaceChildren();if(!referenceBlob)return;const image=element('img');image.src=referenceUrl;image.alt=uiText("ภาพอ้างอิงสำหรับ AI");const discard=element('button','',uiText("นำภาพอ้างอิงออก"));discard.type='button';discard.addEventListener('click',()=>{releaseReference();visionCheck.checked=Boolean(photoBlob);renderReference();});referencePreview.append(image,discard);}
         referenceInput.addEventListener('change',async()=>{
-            const file=referenceInput.files[0];referenceInput.value='';if(!file)return;const ticket=token;lock(true);say('กำลังเตรียมภาพอ้างอิง…');
-            try{const prepared=await preparePortrait(file);if(!valid(ticket))return;releaseReference();referenceBlob=prepared;referenceUrl=URL.createObjectURL(prepared);visionCheck.checked=true;renderReference();say('เลือกภาพอ้างอิงแล้ว · AI จะอ่านภาพนี้เมื่อกด Generate หากโมเดลรองรับภาพ');}
-            catch(e){if(valid(ticket))say(`เลือกภาพอ้างอิงไม่ได้: ${e.message}`);}finally{if(valid(ticket))lock(false);}
+            const file=referenceInput.files[0];referenceInput.value='';if(!file)return;const ticket=token;lock(true);say(uiText("กำลังเตรียมภาพอ้างอิง…"));
+            try{const prepared=await preparePortrait(file);if(!valid(ticket))return;releaseReference();referenceBlob=prepared;referenceUrl=URL.createObjectURL(prepared);visionCheck.checked=true;renderReference();say(uiText("เลือกภาพอ้างอิงแล้ว · AI จะอ่านภาพนี้เมื่อกด Generate หากโมเดลรองรับภาพ"));}
+            catch(e){if(valid(ticket))say(uiText("เลือกภาพอ้างอิงไม่ได้: {0}",[e.message]));}finally{if(valid(ticket))lock(false);}
         });
         renderReference();
-        generator.append(label,referenceLabel,referencePreview,vision,element('p','trpg-muted','หากไม่มีภาพอ้างอิง จะใช้ภาพตัวละครในส่วน CHAT APPEARANCE เมื่อเลือกช่องด้านบน ภาพอ้างอิงถูกส่งไปที่ AI เฉพาะตอน Generate และไม่ถูกบันทึกเป็นรูปตัวละคร หาก AI อ่านภาพไม่ได้ ให้ใช้โมเดลที่รองรับภาพ หรือพิมพ์รูปลักษณ์คร่าว ๆ แล้วปิดช่องอ่านภาพ'),generate);
+        generator.append(label,referenceLabel,referencePreview,vision,element('p','trpg-muted',uiText("หากไม่มีภาพอ้างอิง จะใช้ภาพตัวละครในส่วน CHAT APPEARANCE เมื่อเลือกช่องด้านบน ภาพอ้างอิงถูกส่งไปที่ AI เฉพาะตอน Generate และไม่ถูกบันทึกเป็นรูปตัวละคร หาก AI อ่านภาพไม่ได้ ให้ใช้โมเดลที่รองรับภาพ หรือพิมพ์รูปลักษณ์คร่าว ๆ แล้วปิดช่องอ่านภาพ")),generate);
         fields.append(heading,generator,grid);
-        const appearance=section('CHAT APPEARANCE / ภาพและสีประจำตัว');
-        appearance.body.append(field('identityColor','สี Header / Dialogue',identity(p).identityColor,false,'color'));
-        const size=field('portraitSize','ขนาดกรอบภาพ 48–144 px',identity(p).portraitSize,false,'range');Object.assign(size.querySelector('input'),{min:'48',max:'144',step:'4'});appearance.body.append(size);
-        const designLabel=element('label','','รูปแบบตราบทบาท'),design=element('select');
-        design.setAttribute('aria-label','รูปแบบตราบทบาท');
-        for(const [value,label] of [['classic','Classic · แบบเดิม 12 บทบาท'],['medallion','Medallion · 54 บทบาท'],['emblem','Emblem · 54 บทบาท']]){const option=element('option','',label);option.value=value;design.append(option);}
+        const appearance=section(uiText("CHAT APPEARANCE / ภาพและสีประจำตัว"));
+        appearance.body.append(field('identityColor',uiText("สี Header / Dialogue"),identity(p).identityColor,false,'color'));
+        const size=field('portraitSize',uiText("ขนาดกรอบภาพ 48–144 px"),identity(p).portraitSize,false,'range');Object.assign(size.querySelector('input'),{min:'48',max:'144',step:'4'});appearance.body.append(size);
+        const designLabel=element('label','',uiText("รูปแบบตราบทบาท")),design=element('select');
+        design.setAttribute('aria-label',uiText("รูปแบบตราบทบาท"));
+        for(const [value,label] of [['classic',uiText("Classic · แบบเดิม 12 บทบาท")],['medallion',uiText("Medallion · 54 บทบาท")],['emblem',uiText("Emblem · 54 บทบาท")]]){const option=element('option','',label);option.value=value;design.append(option);}
         const saved=identity(p).roleIcon;design.value=saved.includes(':')?saved.split(':')[0]:'classic';designLabel.append(design);
-        const roles=element('label','','บทบาท'),select=element('select');select.name='roleIcon';
+        const roles=element('label','',uiText("บทบาท")),select=element('select');select.name='roleIcon';
         const fillRoles=key=>{
             select.replaceChildren();
             const entries=design.value==='classic'?Object.keys(CLASSIC_ROLE_ICONS):Object.keys(MEDALLION_ROLES);
-            for(const id of entries){const option=element('option','',MEDALLION_ROLES[id]?.label || id);option.value=design.value==='classic'?id:design.value+':'+id;select.append(option);}
+            for(const id of entries){const option=element('option','',uiText(MEDALLION_ROLES[id]?.label || id));option.value=design.value==='classic'?id:design.value+':'+id;select.append(option);}
             const id=key.split(':').pop(),chosen=design.value==='classic'?id:design.value+':'+id;
             select.value=Object.hasOwn(ROLE_ICONS,chosen)?chosen:select.options[0].value;
         };
         fillRoles(saved);
         design.addEventListener('change',()=>{fillRoles(select.value);select.dispatchEvent(new Event('input',{bubbles:true}));});
         // Explicit selection only: opening/saving an existing dossier never upgrades its icon.
-        roles.append(select);appearance.body.append(designLabel,roles,element('p','trpg-muted','เปลี่ยนตราเฉพาะ NPC ตัวนี้เมื่อกดบันทึก · NPC เดิมยังใช้ไอคอนเดิม'));
-        const fileLabel=element('label','','ภาพสี่เหลี่ยม 1:1 · JPG / PNG / WebP / GIF / AVIF'),file=element('input');file.type='file';file.accept='image/png,image/jpeg,image/webp,image/gif,image/avif';fileLabel.append(file);appearance.body.append(fileLabel);
-        const photoActions=element('div','trpg-wide trpg-actions'),remove=element('button','','นำภาพออก');remove.type='button';photoActions.append(remove);appearance.body.append(photoActions);
+        roles.append(select);appearance.body.append(designLabel,roles,element('p','trpg-muted',uiText("เปลี่ยนตราเฉพาะ NPC ตัวนี้เมื่อกดบันทึก · NPC เดิมยังใช้ไอคอนเดิม")));
+        const fileLabel=element('label','',uiText("ภาพสี่เหลี่ยม 1:1 · JPG / PNG / WebP / GIF / AVIF")),file=element('input');file.type='file';file.accept='image/png,image/jpeg,image/webp,image/gif,image/avif';fileLabel.append(file);appearance.body.append(fileLabel);
+        const photoActions=element('div','trpg-wide trpg-actions'),remove=element('button','',uiText("นำภาพออก"));remove.type='button';photoActions.append(remove);appearance.body.append(photoActions);
         const crop=element('div','trpg-crop trpg-wide');crop.hidden=true;appearance.body.append(crop);
         editor=portraitEditor(crop,frame=>{frameDirty=true;dirty=true;base.portraitView={desktop:frame,mobile:{...frame}};void preview();});
         file.addEventListener('change',async()=>{
-            const blob=file.files[0];file.value='';if(!blob)return;const ticket=token;lock(true);say('กำลังเตรียมภาพ…');
-            try{const ready=await preparePortrait(blob);if(!valid(ticket))return;photoBlob=ready;visionCheck.checked=true;photoDirty=true;frameDirty=true;dirty=true;base.portraitView={desktop:{x:50,y:50,zoom:1},mobile:{x:50,y:50,zoom:1}};await editor.set(photoBlob,base.portraitView.mobile);await preview();say('จัดภาพได้ด้วยการลากหรือใช้สองนิ้วซูม แล้วกดบันทึก');}catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
+            const blob=file.files[0];file.value='';if(!blob)return;const ticket=token;lock(true);say(uiText("กำลังเตรียมภาพ…"));
+            try{const ready=await preparePortrait(blob);if(!valid(ticket))return;photoBlob=ready;visionCheck.checked=true;photoDirty=true;frameDirty=true;dirty=true;base.portraitView={desktop:{x:50,y:50,zoom:1},mobile:{x:50,y:50,zoom:1}};await editor.set(photoBlob,base.portraitView.mobile);await preview();say(uiText("จัดภาพได้ด้วยการลากหรือใช้สองนิ้วซูม แล้วกดบันทึก"));}catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
         });
-        remove.addEventListener('click',()=>{photoBlob=null;visionCheck.checked=Boolean(referenceBlob);photoDirty=true;dirty=true;void editor.set(null);void preview();say('ภาพจะถูกนำออกเมื่อกดบันทึก');});
+        remove.addEventListener('click',()=>{photoBlob=null;visionCheck.checked=Boolean(referenceBlob);photoDirty=true;dirty=true;void editor.set(null);void preview();say(uiText("ภาพจะถูกนำออกเมื่อกดบันทึก"));});
         const previewHost=element('div','trpg-chat trpg-preview trpg-wide');previewHost.dataset.preview='';appearance.body.append(previewHost);fields.append(appearance.details);
-        const numeric=section('ATTRIBUTES / ค่าสถานะและความสัมพันธ์');
+        const numeric=section(uiText("ATTRIBUTES / ค่าสถานะและความสัมพันธ์"));
         for(const key of RELATIONS){const wrapper=field(key,key,p[key]??0,false,'number');Object.assign(wrapper.querySelector('input'),{min:'0',max:'100'});numeric.body.append(wrapper);}
-        numeric.body.append(field('stats.rank','Rank',p.stats?.rank||''));
+        numeric.body.append(field('stats.rank',uiText("Rank"),p.stats?.rank||''));
         for(const key of STATS){const wrapper=field(`stats.${key}`,key,p.stats?.[key]??0,false,'number');Object.assign(wrapper.querySelector('input'),{min:'0',max:key==='level'||['strength','agility','intelligence','endurance'].includes(key)?'9999':'999999'});numeric.body.append(wrapper);}fields.append(numeric.details);
-        const repair=element('button','','✦ AI จัดค่าสถานะและความสัมพันธ์ใหม่');repair.type='button';repair.dataset.generateAttributes='';repair.addEventListener('click',()=>void assist('attributes'));
-        numeric.body.append(element('p','trpg-wide trpg-muted','ค่าที่ไม่เคยระบุใช้ค่าตั้งต้นชั่วคราว ให้ AI ปรับตามประวัติและสถานการณ์ได้ ค่า 0 ที่ตั้งใจไว้จะไม่ถูกแก้อัตโนมัติ'),repair);
-        const skills=section('ABILITIES / ความสามารถ');
+        const repair=element('button','',uiText("✦ AI จัดค่าสถานะและความสัมพันธ์ใหม่"));repair.type='button';repair.dataset.generateAttributes='';repair.addEventListener('click',()=>void assist('attributes'));
+        numeric.body.append(element('p','trpg-wide trpg-muted',uiText("ค่าที่ไม่เคยระบุใช้ค่าตั้งต้นชั่วคราว ให้ AI ปรับตามประวัติและสถานการณ์ได้ ค่า 0 ที่ตั้งใจไว้จะไม่ถูกแก้อัตโนมัติ")),repair);
+        const skills=section(uiText("ABILITIES / ความสามารถ"));
         const skillList=element('div','trpg-wide');skillList.dataset.abilities='';skills.body.append(skillList);
         function addAbility(value={}){
             const row=element('div','trpg-ability trpg-fields');row.dataset.id=value.id||'';
             for(const [key,label]of Object.entries({name:'ชื่อความสามารถ',category:'หมวด',level:'ระดับ',description:'รายละเอียด'})){const f=field('',label,value[key]||'',key==='description');f.lastChild.dataset.ability=key;row.append(f);}
-            const proficiency=field('','ความชำนาญ 0–100',value.proficiency??0,false,'number');proficiency.lastChild.dataset.ability='proficiency';proficiency.lastChild.min='0';proficiency.lastChild.max='100';row.append(proficiency);
-            const del=element('button','','นำความสามารถนี้ออก');del.type='button';del.addEventListener('click',()=>{row.remove();changed.add('abilities');dirty=true;});row.append(del);row.addEventListener('input',()=>{changed.add('abilities');dirty=true;});skillList.append(row);
+            const proficiency=field('',uiText("ความชำนาญ 0–100"),value.proficiency??0,false,'number');proficiency.lastChild.dataset.ability='proficiency';proficiency.lastChild.min='0';proficiency.lastChild.max='100';row.append(proficiency);
+            const del=element('button','',uiText("นำความสามารถนี้ออก"));del.type='button';del.addEventListener('click',()=>{row.remove();changed.add('abilities');dirty=true;});row.append(del);row.addEventListener('input',()=>{changed.add('abilities');dirty=true;});skillList.append(row);
         }
-        (p.abilities||[]).forEach(addAbility);const add=element('button','','＋ เพิ่มความสามารถ');add.type='button';add.addEventListener('click',()=>{addAbility();changed.add('abilities');dirty=true;});skills.body.append(add);fields.append(skills.details);
-        const actions=element('div','trpg-actions trpg-savebar'),ai=element('button','','✦ AI เติมช่องว่าง'),save=element('button','trpg-primary','บันทึกตัวละคร');ai.type='button';ai.addEventListener('click',()=>void assist());save.type='submit';save.setAttribute('form','trpg-npc-form');ai.dataset.lock='';save.dataset.lock='';actions.append(ai,save);dialog.querySelector('[data-editor-actions]').replaceChildren(...actions.children);
+        (p.abilities||[]).forEach(addAbility);const add=element('button','',uiText("＋ เพิ่มความสามารถ"));add.type='button';add.addEventListener('click',()=>{addAbility();changed.add('abilities');dirty=true;});skills.body.append(add);fields.append(skills.details);
+        const actions=element('div','trpg-actions trpg-savebar'),ai=element('button','',uiText("✦ AI เติมช่องว่าง")),save=element('button','trpg-primary',uiText("บันทึกตัวละคร"));ai.type='button';ai.addEventListener('click',()=>void assist());save.type='submit';save.setAttribute('form','trpg-npc-form');ai.dataset.lock='';save.dataset.lock='';actions.append(ai,save);dialog.querySelector('[data-editor-actions]').replaceChildren(...actions.children);
     }
     function values(){
         const result={};for(const key of Object.keys(FIELDS))result[key]=form.elements.namedItem(key)?.value.trim()||'';
@@ -342,20 +336,20 @@ export function createNpcWorkspace(api) {
     }
     async function preview(){
         const host=form?.querySelector('[data-preview]');if(!host)return;const ticket=++previewGeneration,p={...base,...values()};
-        const root=element('div','trpg-speaker');root.style.setProperty('--speaker',p.identityColor);const header=speakerHeader({...p,name:p.name||'ชื่อตัวละคร'},()=>form.elements.namedItem('name').focus());
-        root.append(header,element('div','trpg-dialogue','นี่คือตัวอย่างรูปลักษณ์บทพูดของตัวละคร'));
-        host.replaceChildren(root,narrative('ข้อความบรรยายยังคงใช้สีทองเดิม และไม่เปลี่ยนตามสีประจำตัวละคร'));
-        if(photoBlob){try{const blob=await croppedPortrait(photoBlob,base.portraitView?.mobile||{});if(ticket!==previewGeneration||!host.isConnected)return;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(blob);const image=element('img','trpg-photo');image.alt=p.name||'ภาพตัวละคร';image.src=previewUrl;header.prepend(image);}catch(e){say(e.message);}}
+        const root=element('div','trpg-speaker');root.style.setProperty('--speaker',p.identityColor);const header=speakerHeader({...p,name:p.name||uiText("ชื่อตัวละคร")},()=>form.elements.namedItem('name').focus());
+        root.append(header,element('div','trpg-dialogue',uiText("นี่คือตัวอย่างรูปลักษณ์บทพูดของตัวละคร")));
+        host.replaceChildren(root,narrative(uiText("ข้อความบรรยายยังคงใช้สีทองเดิม และไม่เปลี่ยนตามสีประจำตัวละคร")));
+        if(photoBlob){try{const blob=await croppedPortrait(photoBlob,base.portraitView?.mobile||{});if(ticket!==previewGeneration||!host.isConnected)return;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(blob);const image=element('img','trpg-photo');image.alt=p.name||uiText("ภาพตัวละคร");image.src=previewUrl;header.prepend(image);}catch(e){say(e.message);}}
         else if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
     }
     async function load(p){
         const ticket=++token;brief='';releaseReference();base=clone(p);draftId=p.id||'';changed.clear();dirty=false;photoDirty=frameDirty=false;photoBlob=null;
         setView('edit');buildForm(p);list();lock(true);say('');
         try{const loaded=p.id?await api.portrait(p):null;if(!valid(ticket))return;photoBlob=loaded;form.querySelector('[data-send-portrait]').checked=Boolean(referenceBlob||photoBlob);await editor.set(photoBlob,p.portraitView?.mobile);if(!valid(ticket))return;await preview();}
-        catch(e){if(valid(ticket))say(`โหลดภาพไม่ได้: ${e.message}`);}finally{if(valid(ticket))lock(false);}
+        catch(e){if(valid(ticket))say(uiText("โหลดภาพไม่ได้: {0}",[e.message]));}finally{if(valid(ticket))lock(false);}
     }
     function open(profile){
-        if(!currentChat()){api.notify('warning','เปิดแชตก่อนจัดการ NPC');return;}
+        if(!currentChat()){api.notify('warning',uiText("เปิดแชตก่อนจัดการ NPC"));return;}
         ensureDialog();if(dialog.open){if(busy||!canLeave())return;}else dialog.showModal();watchViewport(true);chatId=currentChat();ownerKey=api.scopeInfo()?.key||'';selectTab('npc');
         if(scope==='character'&&!ownerKey)scope='chat';
         if(profile?.name){
@@ -363,26 +357,26 @@ export function createNpcWorkspace(api) {
             const found=exact||resolveNpc(api.state().npcs,profile);
             if(found){scope=found.npcScope==='character'?'character':'chat';list();void showDetail(found);return;}
             scope=api.settings().npcGenerationScope==='character'&&ownerKey?'character':'chat';
-            void load({name:profile.name}).then(()=>{if(dialog.open&&view==='edit')say('พบชื่อในบทสนทนา แต่ยังไม่มีข้อมูลที่บันทึกไว้ เติมข้อมูลแล้วกดบันทึกเพื่อเพิ่มในหมวดที่เลือก');});return;
+            void load({name:profile.name}).then(()=>{if(dialog.open&&view==='edit')say(uiText("พบชื่อในบทสนทนา แต่ยังไม่มีข้อมูลที่บันทึกไว้ เติมข้อมูลแล้วกดบันทึกเพื่อเพิ่มในหมวดที่เลือก"));});return;
         }
         scope=api.settings().npcGenerationScope==='character'&&ownerKey?'character':'chat';
         showList();
     }
     async function save(){
-        if(busy)return;const v=values();if(!v.name){form.elements.namedItem('name').focus();say('กรอกชื่อตัวละครก่อนบันทึก');return;}
-        const ticket=token;lock(true);say('กำลังบันทึก…');
+        if(busy)return;const v=values();if(!v.name){form.elements.namedItem('name').focus();say(uiText("กรอกชื่อตัวละครก่อนบันทึก"));return;}
+        const ticket=token;lock(true);say(uiText("กำลังบันทึก…"));
         try{
             let state=scopeState();if(!valid(ticket))return;
-            if(resolveNpc(state.npcs.filter(n=>n.id!==draftId),v))throw Error('มีชื่อนี้อยู่แล้ว กรุณาเลือกตัวเดิมจากรายการหรือเปลี่ยนชื่อ');
-            if(!draftId&&state.npcs.length>=200)throw Error('แชตนี้มี NPC ครบ 200 ตัวแล้ว');
-            let existing=state.npcs.find(n=>n.id===draftId);if(draftId&&!existing)throw Error('ตัวละครนี้ถูกลบระหว่างแก้ไข กรุณาเปิดรายการใหม่');
+            if(resolveNpc(state.npcs.filter(n=>n.id!==draftId),v))throw Error(uiText("มีชื่อนี้อยู่แล้ว กรุณาเลือกตัวเดิมจากรายการหรือเปลี่ยนชื่อ"));
+            if(!draftId&&state.npcs.length>=200)throw Error(uiText("แชตนี้มี NPC ครบ 200 ตัวแล้ว"));
+            let existing=state.npcs.find(n=>n.id===draftId);if(draftId&&!existing)throw Error(uiText("ตัวละครนี้ถูกลบระหว่างแก้ไข กรุณาเปิดรายการใหม่"));
             const id=draftId||uuid();
             const reference=photoDirty&&photoBlob?await api.savePortrait(photoBlob):null;
             if(!valid(ticket))return;
             // Read again after image IO: keep concurrent AI changes to untouched fields.
             state=scopeState();existing=state.npcs.find(n=>n.id===draftId);
-            if(draftId&&!existing)throw Error('ตัวละครนี้ถูกลบระหว่างบันทึก');
-            if(resolveNpc(state.npcs.filter(n=>n.id!==draftId),v))throw Error('มีตัวละครชื่อนี้เพิ่มเข้ามาระหว่างบันทึก กรุณาเลือกตัวเดิม');
+            if(draftId&&!existing)throw Error(uiText("ตัวละครนี้ถูกลบระหว่างบันทึก"));
+            if(resolveNpc(state.npcs.filter(n=>n.id!==draftId),v))throw Error(uiText("มีตัวละครชื่อนี้เพิ่มเข้ามาระหว่างบันทึก กรุณาเลือกตัวเดิม"));
             const next=existing?{...existing}:{...v,id};
             for(const key of changed){if(key.startsWith('stats.'))next.stats={...next.stats,[key.slice(6)]:v.stats[key.slice(6)]};else if(Object.hasOwn(v,key))next[key]=v[key];}
             if(photoDirty)Object.assign(next,reference||{hasPortrait:false,portraitSource:'none',portraitPath:'',portraitChatId:''});
@@ -390,23 +384,23 @@ export function createNpcWorkspace(api) {
             if(frameDirty)next.portraitView=base.portraitView;
             next.updatedAt=new Date().toISOString();const normalized=api.profile(next,existing||{});
             if(existing)state.npcs=state.npcs.map(n=>n.id===id?normalized:n);else state.npcs.push(normalized);
-            if(!await persistRecords(state.npcs,'npc-management'))throw Error('บันทึกข้อมูลไม่สำเร็จ');
-            if(!valid(ticket))return;dirty=false;await showDetail(records().find(n=>n.id===id));say(`บันทึกใน ${scope==='character'?'Character · คลังการ์ด':'Chat · แชตนี้'} แล้ว`);
-        }catch(e){if(valid(ticket))say(`บันทึกไม่ได้: ${e.message}`);}finally{if(valid(ticket))lock(false);}
+            if(!await persistRecords(state.npcs,'npc-management'))throw Error(uiText("บันทึกข้อมูลไม่สำเร็จ"));
+            if(!valid(ticket))return;dirty=false;await showDetail(records().find(n=>n.id===id));say(uiText("บันทึกใน {0} แล้ว",[scope==='character'?uiText("Character · คลังการ์ด"):uiText("Chat · แชตนี้")]));
+        }catch(e){if(valid(ticket))say(uiText("บันทึกไม่ได้: {0}",[e.message]));}finally{if(valid(ticket))lock(false);}
     }
     async function assist(mode='missing'){
-        if(busy)return;const context=api.context();if(typeof context.generateRaw!=='function'&&typeof context.generateQuietPrompt!=='function'){say('ยังไม่มีการเชื่อมต่อ AI ที่รองรับ');return;}
+        if(busy)return;const context=api.context();if(typeof context.generateRaw!=='function'&&typeof context.generateQuietPrompt!=='function'){say(uiText("ยังไม่มีการเชื่อมต่อ AI ที่รองรับ"));return;}
         const full=mode==='description',attributes=mode==='attributes';
-        if(!attributes&&form.querySelector('[data-send-portrait]')?.checked&&!referenceBlob&&!photoBlob){say('ยังไม่มีภาพอ้างอิงหรือรูปตัวละคร กรุณาเลือกภาพก่อน หรือปิดช่องอ่านภาพเพื่อเจนจากข้อความ');return;}
+        if(!attributes&&form.querySelector('[data-send-portrait]')?.checked&&!referenceBlob&&!photoBlob){say(uiText("ยังไม่มีภาพอ้างอิงหรือรูปตัวละคร กรุณาเลือกภาพก่อน หรือปิดช่องอ่านภาพเพื่อเจนจากข้อความ"));return;}
         const usePortrait=Boolean((referenceBlob||photoBlob)&&form.querySelector('[data-send-portrait]')?.checked&&!attributes);
-        if(full&&!brief.trim()&&!usePortrait){say('กรอกคำอธิบายหรือเลือกใช้ภาพก่อนสร้างตัวละคร');form.querySelector('[data-npc-brief]').focus();return;}
-        if(attributes&&!confirm('ให้ AI จัดค่าสถานะและความสัมพันธ์ทั้งหมดใหม่ตามประวัติ/เรื่องราว? ข้อมูลอื่นและภาพคงเดิม ตรวจร่างและกดบันทึกเอง'))return;
-        if(full&&(draftId||changed.size)&&!confirm('Generate a new draft from this description and replace the profile fields? Your portrait will be kept. Nothing is saved until you press Save.'))return;
-        const ticket=token,v=values();lock(true);say('AI กำลังเติมรายละเอียดลงในร่าง ยังไม่บันทึกอัตโนมัติ…');
+        if(full&&!brief.trim()&&!usePortrait){say(uiText("กรอกคำอธิบายหรือเลือกใช้ภาพก่อนสร้างตัวละคร"));form.querySelector('[data-npc-brief]').focus();return;}
+        if(attributes&&!confirm(uiText("ให้ AI จัดค่าสถานะและความสัมพันธ์ทั้งหมดใหม่ตามประวัติ/เรื่องราว? ข้อมูลอื่นและภาพคงเดิม ตรวจร่างและกดบันทึกเอง")))return;
+        if(full&&(draftId||changed.size)&&!confirm(uiText("Generate a new draft from this description and replace the profile fields? Your portrait will be kept. Nothing is saved until you press Save.")))return;
+        const ticket=token,v=values();lock(true);say(uiText("AI กำลังเติมรายละเอียดลงในร่าง ยังไม่บันทึกอัตโนมัติ…"));
         try{
             let imageDescription='';
             if(usePortrait){
-                if(typeof context.generateQuietPrompt!=='function')throw Error('SillyTavern ไม่รองรับการส่งภาพผ่าน AI กรุณาพิมพ์รูปลักษณ์และปิดช่องอ่านภาพ');
+                if(typeof context.generateQuietPrompt!=='function')throw Error(uiText("SillyTavern ไม่รองรับการส่งภาพผ่าน AI กรุณาพิมพ์รูปลักษณ์และปิดช่องอ่านภาพ"));
                 const visionBlob=await preparePortrait(referenceBlob||photoBlob);
                 if(!valid(ticket))return;
                 const quietImage=await portraitForGeneration(visionBlob,context,api.supportsPortraitVision||(()=>false));
@@ -415,7 +409,7 @@ export function createNpcWorkspace(api) {
                 const description=await context.generateQuietPrompt({quietPrompt:PORTRAIT_INSTRUCTIONS,quietImage,skipWIAN:true,responseLength:650,removeReasoning:true});
                 if(!valid(ticket))return;
                 imageDescription=visualDescription(description);
-                say('อ่านภาพอ้างอิงแล้ว · กำลังสร้างข้อมูลตัวละคร…');
+                say(uiText("อ่านภาพอ้างอิงแล้ว · กำลังสร้างข้อมูลตัวละคร…"));
             }
             const recent=attributes||!full?(context.chat||[]).filter(m=>!m.is_system).slice(-4).map(m=>({speaker:m.is_user?'user':m.name,text:api.visible(m.mes).slice(0,1200)})):[];
             api.recordRequest('npcDraft',attributes?'NPC Management: propose attributes':full?'NPC Management: generate from description/image':'NPC Management: fill missing profile fields');
@@ -438,8 +432,8 @@ ${JSON.stringify({concept:brief.trim(),draft:profileFields(v),visibleAppearance:
 The visibleAppearance value is authoritative: copy it into appearance without additions when present.`;
             const decode=response=>{
                 let value=api.parseJson(response);
-                if(!value||Array.isArray(value)||typeof value!=='object')throw Error('AI ไม่ได้ส่งข้อมูล JSON ของตัวละคร');
-                if(value.imageError)throw Error('AI อ่านภาพไม่ได้ กรุณาตรวจโมเดลและการตั้งค่า Image inlining ร่างเดิมไม่ได้ถูกเปลี่ยน');
+                if(!value||Array.isArray(value)||typeof value!=='object')throw Error(uiText("AI ไม่ได้ส่งข้อมูล JSON ของตัวละคร"));
+                if(value.imageError)throw Error(uiText("AI อ่านภาพไม่ได้ กรุณาตรวจโมเดลและการตั้งค่า Image inlining ร่างเดิมไม่ได้ถูกเปลี่ยน"));
                 if(attributes)return value;
                 value=validateGeneratedNpcName(value,v);
                 if(full){
@@ -455,17 +449,17 @@ The visibleAppearance value is authoritative: copy it into appearance without ad
             if(!valid(ticket))return;
             try{parsed=decode(response);}catch(error){
                 if(attributes||!(/json/i.test(String(error.message))||['NPC_NAME_INVALID','NPC_DRAFT_INVALID'].includes(error.code)))throw error;
-                say(error.code==='NPC_NAME_INVALID'?'AI ใส่บทบาทแทนชื่อ · กำลังขอชื่อบุคคลและข้อมูลให้ตรงช่อง…':'AI ส่ง JSON ไม่ครบ · กำลังลองคำตอบแบบสั้นอีกครั้ง…');
+                say(error.code==='NPC_NAME_INVALID'?uiText("AI ใส่บทบาทแทนชื่อ · กำลังขอชื่อบุคคลและข้อมูลให้ตรงช่อง…"):uiText("AI ส่ง JSON ไม่ครบ · กำลังลองคำตอบแบบสั้นอีกครั้ง…"));
                 response=await ask(2400,true);if(!valid(ticket))return;
                 parsed=decode(response);
             }
-            if(!parsed||Array.isArray(parsed)||typeof parsed!=='object')throw Error('AI ไม่ได้ส่งข้อมูล JSON ของตัวละคร');
-            if(parsed.imageError)throw Error('AI อ่านภาพไม่ได้ กรุณาตรวจโมเดลและการตั้งค่า Image inlining ร่างเดิมไม่ได้ถูกเปลี่ยน');
+            if(!parsed||Array.isArray(parsed)||typeof parsed!=='object')throw Error(uiText("AI ไม่ได้ส่งข้อมูล JSON ของตัวละคร"));
+            if(parsed.imageError)throw Error(uiText("AI อ่านภาพไม่ได้ กรุณาตรวจโมเดลและการตั้งค่า Image inlining ร่างเดิมไม่ได้ถูกเปลี่ยน"));
             if(attributes){
                 const next=generatedAttributes(parsed);
                 for(const key of RELATIONS){form.elements.namedItem(key).value=next[key];changed.add(key);}
                 for(const [key,value]of Object.entries(next.stats)){form.elements.namedItem(`stats.${key}`).value=value;changed.add(`stats.${key}`);}
-                dirty=true;say('AI จัดค่าครบแล้ว ตรวจสอบและกดบันทึกเพื่อยืนยัน');return;
+                dirty=true;say(uiText("AI จัดค่าครบแล้ว ตรวจสอบและกดบันทึกเพื่อยืนยัน"));return;
             }
             if(full){
                 const next=generatedNpcDraft(imageDescription?{...parsed,appearance:imageDescription}:parsed,v);
@@ -478,62 +472,61 @@ The visibleAppearance value is authoritative: copy it into appearance without ad
                 await editor.set(photoBlob,base.portraitView?.mobile);
                 if(!valid(ticket))return;
                 await preview();
-                if(valid(ticket))say('NPC draft generated — review all fields, then press Save.');
+                if(valid(ticket))say(uiText("NPC draft generated — review all fields, then press Save."));
                 return;
             }
             if(imageDescription&&!usable(v.appearance))parsed.appearance=imageDescription;
-            const next=completeDraft(v,parsed);if(!usableNpcName(v.name))next.name=parsed.name;if(!Object.keys(profileFields(parsed)).length)throw Error('AI ไม่ได้ส่งช่องข้อมูลที่รองรับ');
+            const next=completeDraft(v,parsed);if(!usableNpcName(v.name))next.name=parsed.name;if(!Object.keys(profileFields(parsed)).length)throw Error(uiText("AI ไม่ได้ส่งช่องข้อมูลที่รองรับ"));
             for(const key of Object.keys(FIELDS))if(next[key]!==v[key]){form.elements.namedItem(key).value=next[key]||'';changed.add(key);}
             if(!v.aliases.length&&next.aliases?.length){form.elements.namedItem('aliases').value=next.aliases.join(', ');changed.add('aliases');}
             if(!v.abilities.length&&next.abilities?.length){
                 const savedChanges=new Set(changed),frame=base.portraitView;buildForm({...base,...next,portraitView:frame});for(const key of savedChanges)changed.add(key);changed.add('abilities');await editor.set(photoBlob,frame?.mobile);
             }
-            dirty=true;await preview();say('AI เติมร่างแล้ว — ตรวจแก้ข้อมูลและกด “บันทึกตัวละคร” เพื่อยืนยัน');
+            dirty=true;await preview();say(uiText("AI เติมร่างแล้ว — ตรวจแก้ข้อมูลและกด “บันทึกตัวละคร” เพื่อยืนยัน"));
         }catch(e){if(valid(ticket)){
             const message=String(e.message||e);
-            const hint=/\b524\b/.test(message)?'ผู้ให้บริการ AI หมดเวลาตอบ (524) ลองปิดการส่งภาพหรือลดความยาวคำอธิบาย แล้วกดใหม่'
-                :/json/i.test(message)?'AI ส่ง JSON ไม่ครบหรือรูปแบบไม่ถูกต้อง ร่างเดิมยังอยู่ ลองเจนใหม่ด้วยคำอธิบายสั้นลงหรือลดความยาวคำตอบของโมเดล'
+            const hint=/\b524\b/.test(message)?uiText("ผู้ให้บริการ AI หมดเวลาตอบ (524) ลองปิดการส่งภาพหรือลดความยาวคำอธิบาย แล้วกดใหม่")
+                :/json/i.test(message)?uiText("AI ส่ง JSON ไม่ครบหรือรูปแบบไม่ถูกต้อง ร่างเดิมยังอยู่ ลองเจนใหม่ด้วยคำอธิบายสั้นลงหรือลดความยาวคำตอบของโมเดล")
                 :message;
-            say(`AI เติมร่างไม่ได้: ${hint}`);
+            say(uiText("AI เติมร่างไม่ได้: {0}",[hint]));
         }}finally{if(valid(ticket))lock(false);}
     }
     async function previewImport(file){
-        if(busy||!canLeave())return;const ticket=++token;dirty=false;lock(true);say('กำลังอ่านไฟล์ Character Life…');
+        if(busy||!canLeave())return;const ticket=++token;dirty=false;lock(true);say(uiText("กำลังอ่านไฟล์ Character Life…"));
         try{
             const bundle=await readCharacterFile(file),records=importCharacters(bundle.data);if(!valid(ticket))return;
             const panel=dialog.querySelector('[data-import-preview]');panel.replaceChildren();setView('import');
-            panel.append(element('h3','',`นำเข้าใน ${scope==='character'?'Character · คลังการ์ด':'Chat · แชตนี้'}`),element('p','trpg-muted','นำเข้าเฉพาะข้อมูลที่ ROLEFORGE รองรับ ชื่อที่ซ้ำใน Scope นี้จะถูกข้าม ไม่เขียนทับตัวละครเดิม'));
-            const checks=[];for(const record of records){const label=element('label','trpg-import-row'),check=element('input');check.type='checkbox';const duplicate=api.listScope(scope).some(n=>keyName(n.name)===keyName(record.profile.name));check.checked=!duplicate;check.disabled=duplicate;label.append(check,document.createTextNode(`${record.profile.name}${duplicate?' · มีอยู่แล้ว (ข้าม)':record.image||bundle.images.has(record.portraitPath)?' · มีภาพ':record.hasImageReference?' · จะลองค้นหาภาพจาก Character Life ที่ติดตั้ง':' · ไม่มีภาพในไฟล์'}`));panel.append(label);checks.push({record,check});}
-            const button=element('button','trpg-primary','นำเข้ารายการที่เลือก'),cancel=element('button','','กลับไปแก้ไข');button.type=cancel.type='button';panel.append(button,cancel);
+            panel.append(element('h3','',uiText("นำเข้าใน {0}",[scope==='character'?uiText("Character · คลังการ์ด"):uiText("Chat · แชตนี้")])),element('p','trpg-muted',uiText("นำเข้าเฉพาะข้อมูลที่ ROLEFORGE รองรับ ชื่อที่ซ้ำใน Scope นี้จะถูกข้าม ไม่เขียนทับตัวละครเดิม")));
+            const checks=[];for(const record of records){const label=element('label','trpg-import-row'),check=element('input');check.type='checkbox';const duplicate=api.listScope(scope).some(n=>keyName(n.name)===keyName(record.profile.name));check.checked=!duplicate;check.disabled=duplicate;label.append(check,document.createTextNode(`${record.profile.name}${duplicate?uiText(" · มีอยู่แล้ว (ข้าม)"):record.image||bundle.images.has(record.portraitPath)?uiText(" · มีภาพ"):record.hasImageReference?uiText(" · จะลองค้นหาภาพจาก Character Life ที่ติดตั้ง"):uiText(" · ไม่มีภาพในไฟล์")}`));panel.append(label);checks.push({record,check});}
+            const button=element('button','trpg-primary',uiText("นำเข้ารายการที่เลือก")),cancel=element('button','',uiText("กลับไปแก้ไข"));button.type=cancel.type='button';panel.append(button,cancel);
             cancel.addEventListener('click',()=>{if(!busy)showList();});
             button.addEventListener('click',async()=>{
-                if(busy)return;const selected=checks.filter(v=>v.check.checked&&!v.check.disabled).map(v=>v.record);if(!selected.length){say('เลือกรายการที่จะนำเข้า');return;}
+                if(busy)return;const selected=checks.filter(v=>v.check.checked&&!v.check.disabled).map(v=>v.record);if(!selected.length){say(uiText("เลือกรายการที่จะนำเข้า"));return;}
                 lock(true);button.disabled=cancel.disabled=true;checks.forEach(v=>v.check.disabled=true);let missingImages=0;
                 try{
                     const prepared=[];
                     for(const record of selected){
-                        if(!valid(ticket))return;say(`กำลังเตรียม ${record.profile.name}…`);let blob=record.image?await (await fetch(record.image)).blob():bundle.images.get(record.portraitPath);
+                        if(!valid(ticket))return;say(uiText("กำลังเตรียม {0}…",[record.profile.name]));let blob=record.image?await (await fetch(record.image)).blob():bundle.images.get(record.portraitPath);
                         if(!blob&&record.hasImageReference){try{const result=await globalThis.CharacterLifeRpgBridge?.portrait?.({id:record.sourceId,name:record.profile.name,scope:record.scope||undefined,original:true});blob=result?.blob;}catch{/* Missing bridge image is non-fatal. */}}
                         let ready=null;if(blob){try{ready=await preparePortrait(blob);}catch{missingImages++;}}else if(record.hasImageReference)missingImages++;
                         prepared.push({profile:api.profile({...record.profile,id:uuid(),npcScope:scope,npcOwner:scope==='character'?ownerKey:'',hasPortrait:Boolean(ready),portraitSource:ready?'local':'none',updatedAt:new Date().toISOString()}),blob:ready});
                     }
-                    if(!valid(ticket))return;const count=api.listScope(scope).length;if(count+prepared.length>200)throw Error('จำนวน NPC รวมจะเกิน 200 ตัว กรุณาเลือกให้น้อยลง');
+                    if(!valid(ticket))return;const count=api.listScope(scope).length;if(count+prepared.length>200)throw Error(uiText("จำนวน NPC รวมจะเกิน 200 ตัว กรุณาเลือกให้น้อยลง"));
                     for(const item of prepared){if(!valid(ticket))return;if(item.blob)Object.assign(item.profile,await api.savePortrait(item.blob));}
                     if(!valid(ticket))return;const state=scopeState(),names=new Set(state.npcs.map(n=>keyName(n.name)));let added=0;
-                    for(const item of prepared){const name=keyName(item.profile.name);if(names.has(name))continue;if(state.npcs.length>=200)throw Error('มี NPC เพิ่มระหว่างนำเข้า กรุณาลองใหม่');names.add(name);state.npcs.push(item.profile);added++;}
-                    if(added&&!await persistRecords(state.npcs,'character-life-import'))throw Error('บันทึกข้อมูลนำเข้าไม่สำเร็จ');
-                    if(!valid(ticket))return;showList();say(`นำเข้า ${added} ตัวละคร · ข้ามชื่อซ้ำ ${selected.length-added}${missingImages?` · มี ${missingImages} ภาพที่ไม่มีไฟล์หรืออ่านไม่ได้ กรุณาเพิ่มภาพเอง`:''}`);
-                }catch(e){if(valid(ticket)){say(`นำเข้าไม่ได้: ${e.message}`);button.disabled=cancel.disabled=false;checks.forEach(v=>v.check.disabled=api.listScope(scope).some(n=>keyName(n.name)===keyName(v.record.profile.name)));}}
+                    for(const item of prepared){const name=keyName(item.profile.name);if(names.has(name))continue;if(state.npcs.length>=200)throw Error(uiText("มี NPC เพิ่มระหว่างนำเข้า กรุณาลองใหม่"));names.add(name);state.npcs.push(item.profile);added++;}
+                    if(added&&!await persistRecords(state.npcs,'character-life-import'))throw Error(uiText("บันทึกข้อมูลนำเข้าไม่สำเร็จ"));
+                    if(!valid(ticket))return;showList();say(uiText("นำเข้า {0} ตัวละคร · ข้ามชื่อซ้ำ {1}{2}",[added,selected.length-added,missingImages?uiText(" · มี {0} ภาพที่ไม่มีไฟล์หรืออ่านไม่ได้ กรุณาเพิ่มภาพเอง",[missingImages]):'']));
+                }catch(e){if(valid(ticket)){say(uiText("นำเข้าไม่ได้: {0}",[e.message]));button.disabled=cancel.disabled=false;checks.forEach(v=>v.check.disabled=api.listScope(scope).some(n=>keyName(n.name)===keyName(v.record.profile.name)));}}
                 finally{if(valid(ticket))lock(false);}
             });
-            say(`พบ ${records.length} ตัวละคร — ตรวจรายการก่อนนำเข้า`);
-        }catch(e){if(valid(ticket))say(`อ่านไฟล์ไม่ได้: ${e.message}`);}finally{if(valid(ticket))lock(false);}
+            say(uiText("พบ {0} ตัวละคร — ตรวจรายการก่อนนำเข้า",[records.length]));
+        }catch(e){if(valid(ticket))say(uiText("อ่านไฟล์ไม่ได้: {0}",[e.message]));}finally{if(valid(ticket))lock(false);}
     }
     document.addEventListener('click',e=>{if(e.target.closest('[data-trpg-open]'))open();});
     const settings=document.querySelector('#tretaresia-rpg-settings .inline-drawer-content')||document.getElementById('tretaresia-rpg-settings');
-    if(settings){const group=element('div','trpg-settings');const button=element('button','menu_button','NPC Management');button.dataset.trpgOpen='';button.type='button';group.append(button);
-        for(const [key,label]of [['chatPresentation','Header / Dialogue / Narrative'],['chatEffects','Gradient และเอฟเฟกต์แชต']]){const row=element('label','checkbox_label'),check=element('input');check.type='checkbox';check.checked=Boolean(api.settings()[key]);check.addEventListener('change',()=>{api.settings()[key]=check.checked;api.context().saveSettingsDebounced?.();api.updatePrompt();chat.refresh();});row.append(check,document.createTextNode(label));group.append(row);}settings.append(group);}
+    if(settings){const group=element('div','trpg-settings');const button=element('button','menu_button',uiText("NPC Management"));button.dataset.trpgOpen='';button.type='button';group.append(button);
+        for(const [key,label]of [['chatPresentation','Header / Dialogue / Narrative'],['chatEffects',uiText("Gradient และเอฟเฟกต์แชต")]]){const row=element('label','checkbox_label'),check=element('input');check.type='checkbox';check.checked=Boolean(api.settings()[key]);check.addEventListener('change',()=>{api.settings()[key]=check.checked;api.context().saveSettingsDebounced?.();api.updatePrompt();chat.refresh();});row.append(check,document.createTextNode(uiText(label)));group.append(row);}settings.append(group);bindStaticUi(group);}
     const context=api.context(),events=context.eventTypes||context.event_types;if(events?.CHAT_CHANGED)context.eventSource?.on(events.CHAT_CHANGED,()=>{close(true);chat.reset();});
     return {open,refresh(){chat.refresh();if(dialog?.open){if(tab==='lore')lore.refresh();else list();}},destroy(){close(true);chat.destroy();sheet.remove();dialog?.remove();}};
 }
-

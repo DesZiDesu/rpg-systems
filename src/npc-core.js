@@ -1,4 +1,4 @@
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.44.1';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.44.2';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',

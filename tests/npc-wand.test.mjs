@@ -1,3 +1,4 @@
+import * as i18n from '../src/ui-language.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -7,7 +8,7 @@ const functions=source.slice(source.indexOf('function syncLauncherVisibility()')
 test('NPC wand launcher follows toggle, supports keyboard, and registers only once',()=>{
  const nodes=new Map(),settings={showWandLauncher:true};let opened=0;
  const menu={children:[],style:{display:'block'},appendChild(n){this.children.push(n);nodes.set(n.id,n)},contains(n){return this.children.includes(n)}};nodes.set('extensionsMenu',menu);
- const sandbox={document:{getElementById:id=>menu.children.find(n=>n.id===id)||nodes.get(id),createElement:()=>({dataset:{},setAttribute(){}})},getSettings:()=>settings,LAUNCHER_BIND_VERSION:'test',requestAnimationFrame:()=>{},openInterface(){},npcWorkspace:{open(){opened++}},notify(){}};
+ const sandbox={...i18n,document:{getElementById:id=>menu.children.find(n=>n.id===id)||nodes.get(id),createElement:()=>({dataset:{},setAttribute(){}})},getSettings:()=>settings,LAUNCHER_BIND_VERSION:'test',requestAnimationFrame:()=>{},openInterface(){},npcWorkspace:{open(){opened++}},notify(){}};
  vm.createContext(sandbox);vm.runInContext(functions,sandbox);
  assert.equal(sandbox.createWandLauncher(),true);assert.equal(sandbox.createWandLauncher(),true);assert.equal(menu.children.length,2);
  const npc=nodes.get('tretaresia-npc-wand-launcher');assert.equal(npc.hidden,false);
