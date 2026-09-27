@@ -1,4 +1,4 @@
-import { clamp, cropGeometry } from './npc-core.js?v=0.43.8';
+import { clamp, cropGeometry } from './npc-core.js?v=0.44.0';
 
 export async function decodePortrait(blob) {
     if (!(blob instanceof Blob) || blob.size > 16 * 1024 * 1024) throw Error('ภาพต้องมีขนาดไม่เกิน 16 MB');
@@ -89,4 +89,5 @@ export function portraitEditor(host, onChange) {
         destroy() { ++generation; controller.abort(); pointers.clear(); image=null; },
     };
 }
+
 

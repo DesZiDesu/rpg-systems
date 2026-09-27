@@ -1,4 +1,4 @@
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.43.8';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.44.0';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -221,7 +221,7 @@ export function retainManualNpcEdits(history, before, after) {
   }
  }
 }
-export const CHAT_INSTRUCTIONS = `TRETARESIA CHAT PRESENTATION: Write the visible story as plain text inside these blocks, in story order:
+export const CHAT_INSTRUCTIONS = `ROLEFORGE CHAT PRESENTATION: Write the visible story as plain text inside these blocks, in story order:
 <tr-narrative>Third-person scene/action narration only.</tr-narrative>
  <tr-dialogue name="Exact NPC Name">Only words spoken by this character, without quotation marks.</tr-dialogue>
 Do not emit HTML, Markdown fences, thought labels or role metadata inside blocks. Do not invent portrait URLs.
@@ -308,3 +308,4 @@ export function resolveNpcSpeaker(records, value) {
  const titled=records.filter(p=>p.title&&keyName(p.title)===wanted);
  return titled.length===1?titled[0]:null;
 }
+

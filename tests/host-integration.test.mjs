@@ -1,3 +1,4 @@
+import * as powers from '../src/power-presets.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -13,11 +14,11 @@ import {allowedDiaryOps,diaryRates,householdOffers,groupOffers} from '../src/soc
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={...powers,mountPowerWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -385,7 +386,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.43.8');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -934,4 +935,25 @@ test('legacy and medallion selections survive real host normalization and AI pat
   const result=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'lysa',name:'Lysa',occupation:'Councillor',roleIcon:'medallion:politician'}]]});
   assert.equal(result.next.npcs[0].roleIcon,roleIcon);assert.equal(result.next.npcs[0].hasPortrait,true);assert.equal(JSON.stringify(state),before);
  }
+});
+
+
+test('custom preset connects Forge, actual inline patches, normalization and prompt without legacy power updates',()=>{
+ const settings=host.getSettings(),owner=host.powerPresetOwner();
+ const config={mode:'custom',name:'Another world',definitions:[powers.powerDefinition({id:'chakra',name:'จักระ',description:'Energy',type:'resource',max:500,initial:25}),powers.powerDefinition({id:'gift',name:'Gift',description:'',type:'toggle',max:1,initial:false})]};
+ try{
+  powers.writePowerConfig(settings,config,owner,owner);
+  const draft=host.forgeDraft({fields:{fName:'Alex'},power:['chakra','Aura']});assert.deepEqual(Array.from(draft.power),['chakra']);
+  const state=host.applyForgeProfile(host.defaultState(),draft);assert.equal(state.player.powerType,'จักระ');assert.equal(state.customPowers.chakra,25);assert.equal(state.customPowers.gift,false);
+  const result=host.applyStatePatch(state,{ops:[['inc','customPowers.chakra',15],['set','customPowers.gift',true],['set','customPowers.unknown',44],['set','proficiencies.magic.aura',88]]});
+  assert.equal(result.accepted,2);assert.equal(result.next.customPowers.chakra,40);assert.equal(result.next.customPowers.gift,true);assert.equal(result.next.proficiencies.magic.aura,0);
+  assert.equal(host.normalize(JSON.parse(JSON.stringify(result.next))).customPowers.chakra,40);
+  const prompt=host.statePrompt(result.next);assert.match(prompt,/customPowers/);assert.match(prompt,/จักระ/);assert.doesNotMatch(prompt,/Great War shattered|AUTHOR-ONLY ATLAS REFERENCE/);
+  config.definitions[0].initial=0;powers.writePowerConfig(settings,config,owner,owner);
+  const zero=host.applyForgeProfile(host.defaultState(),draft);assert.equal(zero.customPowers.chakra,0);assert.equal(zero.player.powerType,'จักระ');assert.deepEqual(Array.from(host.normalize(zero).customPowerSelections),['chakra']);
+  powers.writePowerConfig(settings,{mode:'custom',name:'Empty',definitions:[]},owner,owner);
+  assert.equal(host.forgeDraft({fields:{fName:'Alex'},power:['Aura','chakra']}).power.length,0);
+  assert.equal(host.applyForgeProfile(host.defaultState(),{fields:{fName:'Alex'}}).player.powerType,'None');
+  assert.equal(host.normalize(result.next).customPowers.chakra,40);
+ }finally{delete settings.roleforgePowerPresets[owner];}
 });

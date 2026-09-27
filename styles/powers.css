@@ -1,0 +1,6 @@
+.rf-power-workspace{padding:18px;border:1px solid var(--tretaresia-accent,#a88bd4);margin:12px 0;min-width:0;overflow-wrap:anywhere}
+.rf-power-workspace h3,.rf-power-workspace h4{margin:8px 0}.rf-power-workspace p{line-height:1.5;font-size:13px}
+.rf-power-toolbar{display:flex;gap:8px;flex-wrap:wrap}.rf-power-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px;margin-top:14px}
+.rf-power-card{border:1px solid var(--rf-power-color);padding:14px;min-width:0}.rf-power-card h4{color:var(--rf-power-color)}
+.rf-power-workspace button,.rf-power-workspace input,.rf-power-workspace select,.rf-power-workspace textarea{font:inherit;box-sizing:border-box;max-width:100%;padding:8px;margin:4px 3px 4px 0;border:1px solid #7777;border-radius:4px;background:#181818;color:#eee}
+.rf-power-workspace button{cursor:pointer;min-height:40px}.rf-power-editor{display:grid;gap:10px}.rf-power-editor label{display:grid;gap:4px}.rf-power-editor input[type=checkbox]{width:22px;height:22px}.rf-power-card progress{display:block;width:100%;accent-color:var(--rf-power-color)}

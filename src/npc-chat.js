@@ -1,7 +1,7 @@
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.43.8';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.43.8';
-import { croppedPortrait } from './npc-portraits.js?v=0.43.8';
-import { renderSceneTracker } from './scene-tracker.js?v=0.43.8';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.44.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.44.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.44.0';
+import { renderSceneTracker } from './scene-tracker.js?v=0.44.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -44,7 +44,7 @@ export function speakerHeader(profile, open) {
     header.style.setProperty('--speaker',p.identityColor); header.style.setProperty('--portrait',`${p.portraitSize}px`);
     header.setAttribute('aria-label',`เปิดข้อมูล ${p.name}`);
     const details=element('span','trpg-identity'), role=element('span','trpg-role'); role.append(roleIcon(p.roleIcon));
-    role.append(document.createTextNode([p.title,p.occupation].filter(usable).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') || 'TRETARESIA'));
+    role.append(document.createTextNode([p.title,p.occupation].filter(usable).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') || 'ROLEFORGE'));
     details.append(role,element('strong','',p.name));
     const meta=element('span','trpg-meta');for(const value of [p.race,p.relationship,p.faction].filter(usable))meta.append(element('span','',value));details.append(meta);
     const action=element('span','trpg-open-record');action.append(icon('address-card'),element('small','','ข้อมูลตัวละคร'));

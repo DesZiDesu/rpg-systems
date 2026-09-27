@@ -1,4 +1,4 @@
-import { parseStory } from './npc-core.js?v=0.43.8';
+import { parseStory } from './npc-core.js?v=0.44.0';
 // Pure guards shared by the inline turn tracker and its chat presentation.
 const rates = Object.freeze({ off: Infinity, rare: 12, normal: 5, often: 2 });
 export const diaryRates = Object.keys(rates);
@@ -109,3 +109,4 @@ export function allowedDiaryOps(ops, npcs, story, participants, frequency, turn,
         return [['append', 'npcDiary', { ...value, npcId: npc.id, text: thought, sourceTurn: turn }]];
     });
 }
+

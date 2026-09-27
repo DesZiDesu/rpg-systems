@@ -1,17 +1,19 @@
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.43.8';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.43.8';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.0';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.43.8';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.43.8';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.43.8';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.43.8';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.43.8';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.43.8';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.43.8';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.43.8';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.43.8';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.43.8';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.43.8';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.44.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -132,7 +134,7 @@ const WORLD_MAP_HEIGHT = 1800;
 const WORLD_TILE_SIZE = 512;
 const WORLD_ATLASES = Object.freeze({
     'present-world': Object.freeze({ id: 'present-world', name: 'Present World', era: 'Present Era', atlasVersion: 4 }),
-    'alternate-present-world': Object.freeze({ id: 'alternate-present-world', name: 'Alternate Present World TRETARESIA', era: 'Alternate Present Era', atlasVersion: 4 }),
+    'alternate-present-world': Object.freeze({ id: 'alternate-present-world', name: 'Alternate Present World ROLEFORGE', era: 'Alternate Present Era', atlasVersion: 4 }),
 });
 const WORLD_ATLAS = WORLD_ATLASES['present-world'];
 const WORLD_TILE_ROOTS = Object.freeze({
@@ -894,7 +896,7 @@ const pendingInterfaceSettings = new WeakSet();
 
 const TRANSLATIONS = {
     th: {
-        'Tretaresia Role-play': 'ระบบโรลเพลย์ Tretaresia', 'World ledger': 'บันทึกโลก', Powers: 'พลัง',
+        'RoleForge Role-play': 'ระบบโรลเพลย์ RoleForge', 'World ledger': 'บันทึกโลก', Powers: 'พลัง',
         'Magic interface': 'อินเทอร์เฟซเวทมนตร์',
         'Synchronizing world state': 'กำลังเชื่อมข้อมูลโลก',
         'Connecting to the active role-play...': 'กำลังเชื่อมต่อกับโรลเพลย์ปัจจุบัน...',
@@ -941,7 +943,7 @@ const TRANSLATIONS = {
         'Add journey log': 'เพิ่มบันทึก', 'Edit log': 'แก้ไขบันทึก', 'Delete log': 'ลบบันทึก', 'Save log': 'บันทึก', 'What happened': 'เกิดอะไรขึ้น', 'Journey log saved.': 'บันทึกการเดินทางแล้ว',
         'Edit progression': 'แก้ไขความก้าวหน้า', 'Adventurer rank': 'อันดับนักผจญภัย',
         'Magic rank': 'ระดับเวทมนตร์', 'Sword rank': 'ระดับดาบ', 'EXP to next level': 'EXP สำหรับเลเวลถัดไป', 'Save progression': 'บันทึกความก้าวหน้า',
-        'Tretaresia World Atlas': 'แผนที่โลก Tretaresia', 'Present World': 'โลกปัจจุบัน', 'Present Era': 'ยุคปัจจุบัน', 'Alternate Present World TRETARESIA': 'โลกปัจจุบันคู่ขนาน TRETARESIA', 'Alternate Present Era': 'ยุคปัจจุบันคู่ขนาน', 'World map': 'แผนที่โลก', 'Atlas browsing mode': 'โหมดดูแผนที่', 'Travel becomes available when the story enters this world.': 'จะเดินทางในแผนที่นี้ได้เมื่อเนื้อเรื่องเข้าสู่โลกนี้', World: 'โลก', Era: 'ยุค', 'Character positions': 'ตำแหน่งตัวละคร', You: 'คุณ', 'Unknown coordinates': 'ไม่ทราบพิกัด', 'No Character Life positions yet.': 'ยังไม่มีตำแหน่งจาก Character Life',
+        'RoleForge World Atlas': 'แผนที่โลก RoleForge', 'Present World': 'โลกปัจจุบัน', 'Present Era': 'ยุคปัจจุบัน', 'Alternate Present World ROLEFORGE': 'โลกปัจจุบันคู่ขนาน ROLEFORGE', 'Alternate Present Era': 'ยุคปัจจุบันคู่ขนาน', 'World map': 'แผนที่โลก', 'Atlas browsing mode': 'โหมดดูแผนที่', 'Travel becomes available when the story enters this world.': 'จะเดินทางในแผนที่นี้ได้เมื่อเนื้อเรื่องเข้าสู่โลกนี้', World: 'โลก', Era: 'ยุค', 'Character positions': 'ตำแหน่งตัวละคร', You: 'คุณ', 'Unknown coordinates': 'ไม่ทราบพิกัด', 'No Character Life positions yet.': 'ยังไม่มีตำแหน่งจาก Character Life',
         'Map lighting': 'ช่วงเวลาของแผนที่', 'Day map': 'แผนที่กลางวัน', 'Night map': 'แผนที่กลางคืน', 'Selected location': 'สถานที่ที่เลือก', Region: 'ภูมิภาค', Discovery: 'การค้นพบ', Marker: 'หมุด',
         Journey: 'การเดินทาง', Origin: 'ต้นทาง', 'Travel route': 'เส้นทางเดินทาง', 'Remaining travel': 'เวลาที่เหลือ', days: 'วัน', 'Estimated travel days': 'จำนวนวันเดินทางโดยประมาณ', 'Begin journey': 'เริ่มออกเดินทาง',
         'Currency / region': 'สกุลเงิน / ภูมิภาค', 'High denomination': 'หน่วยมูลค่าสูง', 'Standard denomination': 'หน่วยมาตรฐาน', 'Fractional denomination': 'หน่วยย่อย',
@@ -1149,11 +1151,37 @@ function applyAppearance() {
     scheduleMapDetailRender();
 }
 
+function powerPresetOwner(context = SillyTavern.getContext()) {
+    return characterOwner(context)?.key || (context.getCurrentChatId?.() ? `chat:${context.getCurrentChatId()}` : '');
+}
+function getPowerPreset() { return readPowerConfig(getSettings(), powerPresetOwner()); }
+function powerPresetChoices() {
+    const config=getPowerPreset();
+    return config.mode==='custom' ? config.definitions.filter(d=>d.selectable).map(d=>({id:d.id,name:d.name,description:d.description}))
+        : MAGIC_DISCIPLINES.map(d=>({id:d.name,name:d.name,description:''}));
+}
+function customPowerLabel(state) {
+    const config=getPowerPreset();
+    return config.definitions.filter(d=>(state.customPowerSelections||[]).includes(d.id)||Number(powerValue(d,state.customPowers?.[d.id]))>0).map(d=>d.name).join(', ') || 'None';
+}
+function mountPowerSettings(panel,state) {
+    const owner=powerPresetOwner(),context=SillyTavern.getContext(),metadata=context.chatMetadata;
+    const guard=()=>{if(!owner||owner!==powerPresetOwner()||metadata!==SillyTavern.getContext().chatMetadata)throw Error('การ์ดหรือแชทเปลี่ยนแล้ว กรุณาเปิด Powers ใหม่');};
+    mountPowerWorkspace(panel,{
+        config:getPowerPreset,state:()=>getState(),
+        builtin:()=>({mode:'custom',name:'Original',definitions:[...MAGIC_DISCIPLINES,...SWORD_STYLES].map(d=>({id:'preset_'+d.id.toLowerCase(),name:d.name,description:'',type:'number',max:100,initial:0,ranks:[],color:d.tone,icon:'bolt',selectable:true}))}),
+        save:async config=>{guard();writePowerConfig(getSettings(),config,owner,powerPresetOwner());await context.saveSettingsDebounced?.();guard();updatePrompt();renderAll();sendForgeMessage('power-config',{mode:config.mode,choices:powerPresetChoices()});},
+        value:async(id,value)=>{guard();const next=clone(getState());if(!applyPowerOperation(next,getPowerPreset(),'set',`customPowers.${id}`,value))throw Error('พลังนี้ถูกลบหรือค่าพลังไม่ถูกต้อง');if(!await persistState(next,'custom-power-value'))throw Error('บันทึกไม่สำเร็จ');},
+    });
+}
+
 function defaultState() {
     const magic = Object.fromEntries(MAGIC_DISCIPLINES.map(entry => [entry.id, 0]));
     const sword = Object.fromEntries(SWORD_STYLES.map(entry => [entry.id, 0]));
     return {
         version: 1,
+        customPowers: {},
+        customPowerSelections: [],
         player: {
             name: 'Adventurer', portrait: '', race: 'Human', age: '', title: 'Untitled', profession: 'Adventurer', guild: 'Unaffiliated', party: 'Solo',
             gender: '', homeContinent: '', standing: '', affiliation: '',
@@ -2151,6 +2179,8 @@ function normalize(candidate, base = defaultState()) {
         locationSeeded: Boolean(onboarding.locationSeeded || (!Object.hasOwn(onboarding,'locationSeeded')
             && source.location?.place && !['Central Crown','Unknown'].includes(source.location.place))),
     };
+    result.customPowers = normalizePowerValues(source.customPowers ?? result.customPowers);
+    result.customPowerSelections = normalizePowerSelections(source.customPowerSelections ?? result.customPowerSelections);
     const proficiencies = source.proficiencies && typeof source.proficiencies === 'object' ? source.proficiencies : {};
     result.proficiencies.magic = Object.fromEntries(MAGIC_DISCIPLINES.map(entry => [
         entry.id, number(proficiencies.magic?.[entry.id], result.proficiencies.magic[entry.id], 0, 100),
@@ -2306,7 +2336,7 @@ function scheduleArchiveMigration() {
     archiveMigration = migrateCharacterArchives(context, getSettings()).then(() => {
         updatePrompt();
         npcWorkspace?.refresh();
-    }).catch(error => console.warn('[Tretaresia RPG] Character archive migration was deferred.', error))
+    }).catch(error => console.warn('[RoleForge] Character archive migration was deferred.', error))
         .finally(() => { archiveMigration = null; });
     return archiveMigration;
 }
@@ -2404,7 +2434,7 @@ function writeContinuitySnapshot(state) {
         // structured RPG state is still more important than failing continuity.
         record.state.player.portrait = '';
         try { localStorage.setItem(key, JSON.stringify(record)); }
-        catch (storageError) { console.warn('[Tretaresia RPG] Could not cache character continuity.', storageError); }
+        catch (storageError) { console.warn('[RoleForge] Could not cache character continuity.', storageError); }
     }
 }
 
@@ -2526,7 +2556,7 @@ function exportStatePackage() {
     const anchor = document.createElement('a');
     const safeName = (state.player.name || 'character').replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'character';
     anchor.href = url;
-    anchor.download = `tretaresia-${safeName}-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.download = `roleforge-${safeName}-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
@@ -2540,7 +2570,7 @@ async function importStatePackage(file) {
     if (!context.getCurrentChatId?.()) throw new Error(getSettings().language === 'th' ? 'เปิดแชตก่อนนำเข้าข้อมูล' : 'Open a chat before importing state.');
     const parsed = JSON.parse(await file.text());
     const candidate = parsed?.format === STATE_PACKAGE_FORMAT ? parsed.state : parsed?.state || parsed;
-    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('This is not a valid Tretaresia RPG state file.');
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('This is not a valid RoleForge state file.');
     const confirmed = globalThis.confirm?.(getSettings().language === 'th' ? 'แทนที่ข้อมูล RPG ของแชตนี้ด้วยไฟล์ที่เลือก?' : 'Replace this chat\'s RPG state with the selected file?');
     if (confirmed === false) return;
     const imported = portableState(candidate);
@@ -2668,7 +2698,7 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
     }
     if (['inline-patch+turn-reconcile', 'turn-reconcile-fallback', 'manual-ai-patch'].includes(source)) {
         try { state = await routeStoryNpcState(state, previous, context); }
-        catch (error) { console.warn('[Tretaresia RPG] The Character archive could not be saved; new NPCs remain in this chat.', error); }
+        catch (error) { console.warn('[RoleForge] The Character archive could not be saved; new NPCs remain in this chat.', error); }
     }
     if (context.getCurrentChatId?.() !== chatId || context.chatMetadata !== metadata || characterOwner(context)?.key !== owner) return false;
     context.chatMetadata[METADATA_KEY] = storedNpcState(state);
@@ -2984,7 +3014,7 @@ async function replaceAssistantTurnState(messageId, { reuseVariant = false, reas
 function queueAssistantTurnReplacement(messageId, options) {
     assistantRollbackQueue = assistantRollbackQueue.catch(() => undefined)
         .then(() => replaceAssistantTurnState(messageId, options))
-        .catch(error => console.warn('[Tretaresia RPG] Could not roll back the replaced assistant turn.', error));
+        .catch(error => console.warn('[RoleForge] Could not roll back the replaced assistant turn.', error));
     return assistantRollbackQueue;
 }
 
@@ -3255,6 +3285,7 @@ function findPlayerRegistration(context = SillyTavern.getContext()) {
 }
 
 function hasDivinePower(state) {
+    if (getPowerPreset().mode === 'custom') return false;
     return /\bdivine\s+(?:aura|mana)\b|(?:ออร่า|มานา).*(?:เทพ|ศักดิ์สิทธิ์)|(?:เทพ|ศักดิ์สิทธิ์).*(?:ออร่า|มานา)/i.test(state?.player?.powerType || '')
         || number(state?.proficiencies?.magic?.divineMana, 0, 0, 100) > 0;
 }
@@ -3319,7 +3350,7 @@ function forgeDraft(input) {
         .filter(entry => entry.n);
     return {
         fields, stand:text(input?.stand, '', 120), rank:text(input?.rank, '', 100),
-        power:[...new Set((Array.isArray(input?.power) ? input.power : []).filter(key => FORGE_POWERS.has(key)))].slice(0, 9),
+        power:[...new Set((Array.isArray(input?.power) ? input.power : []).filter(key => powerPresetChoices().some(d=>d.id===key)))].slice(0, 64),
         ab:entries(input?.ab, 40, [['n',120],['cat',80],['tier',80],['d',1000]]),
         it:entries(input?.it, 40, [['n',120],['t',80],['d',1000]]),
         cf:entries(input?.cf, 40, [['n',120],['d',3000]]),
@@ -3354,9 +3385,17 @@ function applyForgeProfile(state, profile) {
     state.player.affiliation = f.fAffil.trim(); state.player.guild = f.fAffil.trim() || state.player.guild;
     state.player.profession = f.fProf.trim() || state.player.profession;
     Object.assign(state.player.appearance, {hair:f.fHair.trim(),eyes:f.fEyes.trim(),height:f.fHeight.trim(),build:f.fBuild.trim()});
-    if (p.power.length) state.player.powerType = p.power.join(', ');
-    for (const power of p.power) state.proficiencies.magic[FORGE_POWERS.get(power)] = Math.max(1, state.proficiencies.magic[FORGE_POWERS.get(power)]);
-    if (p.power.includes('Divine Mana')) state.player.aura.color = '#ffffff';
+    if (getPowerPreset().mode === 'custom') {
+        state.customPowers ||= {};
+        const definitions=getPowerPreset().definitions;
+        state.customPowerSelections=p.power.slice();
+        for(const def of definitions)state.customPowers[def.id]=p.power.includes(def.id)?powerValue(def,def.type==='toggle'?true:def.initial):def.type==='toggle'?false:0;
+        state.player.powerType=definitions.filter(d=>p.power.includes(d.id)).map(d=>d.name).join(', ')||'None';
+    } else {
+        if (p.power.length) state.player.powerType = p.power.join(', ');
+        for (const power of p.power) state.proficiencies.magic[FORGE_POWERS.get(power)] = Math.max(1, state.proficiencies.magic[FORGE_POWERS.get(power)]);
+        if (p.power.includes('Divine Mana')) state.player.aura.color = '#ffffff';
+    }
     if (f.fOrigin.trim()) state.player.originSkill = f.fOrigin.trim();
     if (RANKS.includes(p.rank)) state.progression.adventurerRank = p.rank;
     else if (p.rank === 'Custom') { state.progression.adventurerRank = 'Custom Rank'; state.progression.customRankName = f.fRankCustom.trim() || 'Custom'; }
@@ -3377,7 +3416,7 @@ function applyForgeProfile(state, profile) {
 function forgeOpeningPrompt(context = SillyTavern.getContext()) {
     const session = forgeSession(context);
     if (!session?.profile || session.phase !== 'generating' || !blankForgeChat(context)) return '';
-    return 'Write the first Tretaresia role-play scene using the registered player profile and opening scene (fields.fScene). '
+    return 'Write the first RoleForge role-play scene using the registered player profile and opening scene (fields.fScene). '
         + 'Start with a normal assistant story reply, leave the player a choice, and do not show a registration form or confirmation.';
 }
 
@@ -3385,7 +3424,7 @@ function forgeProfilePrompt(context = SillyTavern.getContext()) {
     const profile = forgeSession(context)?.profile;
     if (!profile) return '';
     return `[PLAYER REGISTRATION — private narrator reference]\n${JSON.stringify(profile)}\n`
-        + 'Use the registered name and chosen powers, including Divine Mana if selected. Starting possessions and skills are already in RPG state; do not award them again. '
+        + 'Use the registered name and only the chosen powers from the active preset. Starting possessions and skills are already in RPG state; do not award them again. '
         + 'Keep private background from NPCs unless the story reveals it. Do not quote this JSON in the story.';
 }
 
@@ -3393,7 +3432,7 @@ function forgeCard() { return document.getElementById('tretaresia-character-forg
 
 function sendForgeMessage(type, data = {}, extra = {}) {
     const frame = forgeCard()?.querySelector('iframe');
-    if (frame?.contentWindow) frame.contentWindow.postMessage({source:'tretaresia-rpg-forge',type,data,...extra}, location.origin);
+    if (frame?.contentWindow) frame.contentWindow.postMessage({source:'tretaresia-rpg-forge',type,data,...extra,powerConfig:{mode:getPowerPreset().mode,choices:powerPresetChoices()}}, location.origin);
 }
 
 function refreshCharacterForge() {
@@ -3413,9 +3452,9 @@ function refreshCharacterForge() {
         card = document.createElement('section');
         card.id = 'tretaresia-character-forge';
         card.dataset.chatId = String(context.getCurrentChatId());
-        card.setAttribute('aria-label','Tretaresia character creation');
+        card.setAttribute('aria-label','RoleForge character creation');
         const frame = document.createElement('iframe');
-        frame.title = 'Tretaresia Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.43.8`;
+        frame.title = 'RoleForge Character Forge'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3426,7 +3465,7 @@ function refreshCharacterForge() {
 function scheduleForgeDraftSave(context) {
     clearTimeout(creationSaveTimer);
     creationSaveTimer = setTimeout(() => { creationSaveTimer = null; void saveCurrentChatMetadata(context).catch(error =>
-        console.warn('[Tretaresia RPG] Could not save character draft.', error)); }, 350);
+        console.warn('[RoleForge] Could not save character draft.', error)); }, 350);
 }
 
 async function startForgeOpening(input) {
@@ -3463,12 +3502,12 @@ async function startForgeOpening(input) {
             const reply = context.chat?.find(message => !message?.is_user && !message?.is_system && text(message?.mes));
             session.phase = reply ? 'completed' : 'failed';
             session.error = reply ? '' : text(error?.message, 'The first message failed. Press BEGIN to retry.', 500);
-            try { await saveCurrentChatMetadata(context); } catch (saveError) { console.warn('[Tretaresia RPG] Could not save opening status.', saveError); }
+            try { await saveCurrentChatMetadata(context); } catch (saveError) { console.warn('[RoleForge] Could not save opening status.', saveError); }
             if (openingGeneration === ticket) openingGeneration = null;
             updatePrompt(); refreshCharacterForge();
             sendForgeMessage('status',{}, {message:session.error,working:false});
         }
-        console.warn('[Tretaresia RPG] Character opening was not completed.', error);
+        console.warn('[RoleForge] Character opening was not completed.', error);
         return false;
     } finally {
         if (openingGeneration?.metadata === metadata && openingGeneration.chatId === chatId) openingGeneration = null;
@@ -3480,6 +3519,7 @@ function onForgeMessage(event) {
     if (!frame || event.origin !== location.origin || event.source !== frame.contentWindow || event.data?.source !== 'tretaresia-rpg-forge') return;
     const context = SillyTavern.getContext();
     if (!forgeEligible(context)) return;
+    if (event.data.type === 'manage-powers') { void openInterface().then(()=>activateTab('techniques')); return; }
     if (event.data.type === 'ready') { sendForgeMessage('hydrate',forgeSession(context)?.draft || {}); return; }
     if (event.data.type === 'draft' && !openingGeneration) {
         const session = forgeSession(context) || {version:1,phase:'draft'};
@@ -3511,9 +3551,9 @@ function legacyPatchInstructions() {
         'EXP rules: award EXP for every completed action that materially counts as studying, reading with understanding, taking a lesson, researching, learning, spell or skill practice, crafting practice, physical training, sparring, combat participation, surviving danger, killing a hostile creature, discovery, quest progress, or another genuine growth action. Use inc progression.experience and always add fourth-position metadata {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical gain: 1-3 routine study/practice, 4-8 meaningful success, 9-20 combat or major challenge, 21-40 exceptional milestone. Do not award EXP for passive narration, merely intending to act, failed non-instructive attempts, or ordinary small talk. The extension levels up automatically the instant accumulated EXP is greater than or exactly equal to experienceMax.',
         'Kill rules: whenever the player personally kills or decisively finishes a hostile person or creature, inc progression.kills by the confirmed count with fourth-position metadata naming the defeated target, for example ["inc","progression.kills",1,{"reason":"Defeated the cave troll","category":"kill"}]. Also award appropriate combat EXP in the same patch. Do not count knockouts, uncertain deaths, assists without a kill, practice targets, or environmental deaths not caused by the player.',
         'Proficiency rules: increment a used or trained power system or combat discipline by 1-3 when the reply confirms genuine practice or successful use; use 4-8 only for a breakthrough. Do not increase unused proficiencies. When a confirmed power or combat style is not in the preset lists, upsert proficiencies.customMagic or proficiencies.customSword with {id,name,proficiency,description,iconKey}; later upserts may contain only id/name and changed fields.',
-        'Tretaresia sensing rule: a power can normally be sensed only by someone who wields the same kind. Formless Aura cannot be sensed by anyone. Divine Mana can be perceived only by another Divine Mana wielder. Never let observers identify a hidden power without valid same-kind perception or direct evidence.',
+        'RoleForge sensing rule: a power can normally be sensed only by someone who wields the same kind. Formless Aura cannot be sensed by anyone. Divine Mana can be perceived only by another Divine Mana wielder. Never let observers identify a hidden power without valid same-kind perception or direct evidence.',
         'Power canon: False Magic is learnable structured human magic that normally needs a staff, wand, or medium. True Magic is a lost stronger art requiring deep mana understanding and no medium. Aura is innate and commonly carries one birth-given Origin skill. Formless Aura is exceptionally rare and wholly undetectable. Blood Aura is vampiric and a turning may preserve, mutate, split, or erase the prior power. Sage Mana is lost transformative training that can refill from natural energy. Divine Mana may switch among power modes. Constructs allow those without usable Aura to wield a forged ability; primordial Divine Constructs choose one owner and cannot be copied, remade, or manufactured.',
-        'Travel rules: Tretaresia distances take days, months, or years. Roads can produce villages, towns, waystations and caravans; off-road travel may reveal secret dungeons, lost villages, cults or worse. Almost the entire 2400 by 1800 world-coordinate atlas is travelable, including unnamed wilderness and sea routes. Read the latest user role-play action as well as the completed reply. While travel.status is Traveling or Delayed, update worldClock and reduce travel.remainingDays whenever narration confirms elapsed time or continued movement; never copy a stale remainingDays over newer progress already stored by the local main-chat tracker. Do not change the current continent/place to the destination until arrival is confirmed. At arrival set travel.status to Arrived, remainingDays to 0, update location fields including location.mapX and location.mapY when the destination coordinates are known, and add location.discovered. Update location.heading from 0 north clockwise when a clear travel direction is established.',
+        'Travel rules: RoleForge distances take days, months, or years. Roads can produce villages, towns, waystations and caravans; off-road travel may reveal secret dungeons, lost villages, cults or worse. Almost the entire 2400 by 1800 world-coordinate atlas is travelable, including unnamed wilderness and sea routes. Read the latest user role-play action as well as the completed reply. While travel.status is Traveling or Delayed, update worldClock and reduce travel.remainingDays whenever narration confirms elapsed time or continued movement; never copy a stale remainingDays over newer progress already stored by the local main-chat tracker. Do not change the current continent/place to the destination until arrival is confirmed. At arrival set travel.status to Arrived, remainingDays to 0, update location fields including location.mapX and location.mapY when the destination coordinates are known, and add location.discovered. Update location.heading from 0 north clockwise when a clear travel direction is established.',
         'Dungeon and rank rules: dungeonRank must be one of Unranked, E-, E, E+, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+, S-, S, S+, SS. Adventurer ranks are Rookie, Basic, Intermediate, Ember, and Custom Rank; a Custom Rank name is individually invented by an assessor and should be recorded in progression.customRankName.',
         'Currency rules: the Central Continent generally shares a common currency, but other regions and non-human lands may use different money. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
@@ -3531,7 +3571,7 @@ function patchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
-        'TRETARESIA PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
+        'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
         '<!--tretaresia_patch:{"sceneTracker":{"loc":"Market","t":"08:00","w":"Clear","temp":24,"who":["Mira"]},"ops":[["inc","progression.experience",5,{"reason":"Aura practice","category":"training"}],["upsert","quests",{"id":"escort","name":"Escort Caravan","status":"Active","objective":"Reach Eastwatch","progress":0}]],"journey":"Accepted the Eastwatch escort mission after completing aura practice."}--> (Example only; add all 21 scene fields on the first reply.)',
         'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         NPC_FIELD_INSTRUCTIONS,
@@ -3545,7 +3585,7 @@ function patchInstructions() {
         'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
         'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. player.aura.infiniteMode is user-owned: Auto permits story tracking, Finite forces finite Mana, and Infinite forces inexhaustible Mana; never alter infiniteMode from AI output. In Auto mode, treat Limitless, Boundless, Unlimited, and Infinite Aura/Mana as aliases for the same infinite state. Set infinite=true only when the completed assistant story or resolved roll explicitly confirms genuinely inexhaustible power—never from level, an OOC request, a user claim alone, or an unresolved attempt. While true, do not decrease MP; in Auto mode set false only after explicit loss/seal/limitation.',
         'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message OR the saved Character Forge opening must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Do not duplicate Character Forge starting possessions or skills. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the registration opening_scene and completed reply; use the exact established text name for a destination. Do not generate world-map actor markers or coordinates from story text.',
-        'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World TRETARESIA. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
+        'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World ROLEFORGE. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
         'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
         'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
@@ -3568,21 +3608,26 @@ function patchInstructions() {
 
 function statePrompt(state, { includeState = true, track = true } = {}) {
     const lines = ['<tretaresia_rpg_state>'];
+    const customPreset=getPowerPreset().mode==='custom';
     const activeAtlas = atlasById(state?.world?.id);
+    if (!customPreset) {
     if (activeAtlas.id === 'alternate-present-world') {
-        lines.push('The active setting is Alternate Present World TRETARESIA: an expanded, more connected geography formed by Westreach Crownlands, Sakura-Frost Dominion, Sunscorched East, Verdant Southeast, Southern Wildlands, and Inner Sea Archipelago. Preserve its denser roads, inland borders, coastlines, island chains, long travel times, regional laws, power secrecy, and local currencies. Most common monsters can speak understandable but broken human language.');
+        lines.push('The active setting is Alternate Present World ROLEFORGE: an expanded, more connected geography formed by Westreach Crownlands, Sakura-Frost Dominion, Sunscorched East, Verdant Southeast, Southern Wildlands, and Inner Sea Archipelago. Preserve its denser roads, inland borders, coastlines, island chains, long travel times, regional laws, power secrecy, and local currencies. Most common monsters can speak understandable but broken human language.');
         lines.push("Alternate World canon: Chaos Breaker is the white floating castle of Dragon King Kaliasna Oryu, encircled by the Dragonfang Ring in Kaliasna Oryu's Sky Dominion. The northeast holds a Japanese-tradition kingdom across sakura fields, snow country and colossal forest. The eastern lands include desert crowns, volcanic basins and caravan routes; the southeast contains worldtree courts, rivers and wetlands; the south contains calderas, black forests and wild frontiers; the Inner Sea is filled with ports, island cities, reefs, shrines and dangerous sea lanes.");
         lines.push('Timeline continuity: every named Present World destination also exists in the Alternate timeline, remapped onto its corresponding expanded region. Preserve those shared names and established functions; the Alternate atlas adds many exclusive destinations without deleting Sunscar Port, Central Crown, the Great Academy, or any other Present World place.');
     } else {
-        lines.push('The active setting is Present World Tretaresia, a morally mixed, enormous world of six ocean-separated continents: Central Continent, The Great Forest, Great Land of Titan, Drinovia Continent, North Continent, and Baluguria Continent. Preserve established geography, long travel times, social prejudice, regional laws, power secrecy, and regional currencies. Most common monsters can speak understandable but broken human language.');
+        lines.push('The active setting is Present World RoleForge, a morally mixed, enormous world of six ocean-separated continents: Central Continent, The Great Forest, Great Land of Titan, Drinovia Continent, North Continent, and Baluguria Continent. Preserve established geography, long travel times, social prejudice, regional laws, power secrecy, and regional currencies. Most common monsters can speak understandable but broken human language.');
         lines.push('Present World canon: about one thousand years ago the Great War shattered the land and opened the oceans; hero Ars died and the Primordial Demon was sealed in a timeless dimension. Civilizations later rebuilt an uneasy harmony while war, invasion, prejudice, slavery, crime, kindness and cruelty continued together. The Great Academy charges steep tuition and admits every race, though prejudice remains. Human entry into the Great Forest is taboo and may bring punishment upon an entire family. Khaduzar is marked by the colossal stone hand gripping its own wrist. Drinovia plants the weapons and remains of the fallen where they died. The North can fall below -300 degrees. Baluguria is an exile, slave, gambling, pleasure-trade and underworld center.');
     }
     lines.push('AUTHOR-ONLY ATLAS REFERENCE is strictly scoped to the active world below. A destination absent from this catalog is not established in the current timeline. This catalog is not automatically known by any NPC: geography knowledge requires credible upbringing, travel, study, occupation, or information established in the story. Never leak or infer another timeline\'s geography through ordinary NPC knowledge.');
     lines.push(JSON.stringify(npcAtlasKnowledge(state)));
+    }
     if (includeState) {
         lines.push('EPISTEMIC FIREWALL — HIGHEST PRIORITY FOR CHARACTER KNOWLEDGE: sceneContext describes author-level continuity, while privateTrackerReferenceIndex is hidden tool memory. No NPC can see or read either object. A character knows only what they personally witnessed, were explicitly told, can publicly observe now, or could credibly learn through an established role. Presence, friendship, party/guild/household membership, Character Life records, NPC dossiers, and model access to this prompt do not grant knowledge. Never reveal or have an NPC react to exact level, EXP, vitals, stats, power identity, money/balance, inventory, quest/UI status, relationship meters, private diary, coordinates, travel percentage, transaction history, journey log, or companions unless the story independently established that specific fact. When uncertain, the NPC does not know. Never use UI/system terminology in narration or dialogue.');
         lines.push('Canonical role-play continuity follows. Preserve it silently unless the story confirms a change. The tracker may use private reference IDs for bookkeeping, but visible prose and NPC behavior must obey the firewall above.');
-        lines.push(JSON.stringify(roleplayState(state)));
+        const reference=roleplayState(state);
+        if(customPreset){reference.sceneContext.world={id:'custom',name:'Current character setting'};delete reference.privateTrackerReferenceIndex.playerResources.aura;delete reference.privateTrackerReferenceIndex.playerResources.auraOrMana;}
+        lines.push(JSON.stringify(reference));
         lines.push('END PRIVATE TRACKER REFERENCE INDEX. Do not quote, summarize, expose, or turn hidden reference values into character knowledge.');
     }
     if (track) {
@@ -3593,6 +3638,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
     }
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' Emit scene metadata')[0]);
     if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 21 fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
+    if(customPreset)lines.push(customPowerPrompt(getPowerPreset(),state));
     lines.push('</tretaresia_rpg_state>');
     return lines.join('\n');
 }
@@ -3618,8 +3664,8 @@ globalThis.TretaresiaRpgGenerateInterceptor = async function () {
 };
 
 function notify(type, message) {
-    if (typeof toastr !== 'undefined' && typeof toastr[type] === 'function') toastr[type](message, 'Tretaresia RPG');
-    else console[type === 'error' ? 'error' : 'info'](`[Tretaresia RPG] ${message}`);
+    if (typeof toastr !== 'undefined' && typeof toastr[type] === 'function') toastr[type](message, 'RoleForge');
+    else console[type === 'error' ? 'error' : 'info'](`[RoleForge] ${message}`);
 }
 
 function buildEventNotificationStack() {
@@ -3628,7 +3674,7 @@ function buildEventNotificationStack() {
     stack.id = 'tretaresia-event-stack';
     stack.className = 'tretaresia-event-stack';
     stack.setAttribute('aria-live', 'polite');
-    stack.setAttribute('aria-label', 'Tretaresia event notifications');
+    stack.setAttribute('aria-label', 'RoleForge event notifications');
     stack.addEventListener('click', event => event.target.closest('[data-dismiss-event]')?.closest('.tretaresia-event-toast')?.remove());
     document.body.appendChild(stack);
 }
@@ -3781,7 +3827,7 @@ function buildActivityIndicator() {
     indicator.className = 'tretaresia-activity-island';
     indicator.type = 'button';
     indicator.setAttribute('aria-live', 'polite');
-    indicator.setAttribute('aria-label', 'Open Tretaresia RPG');
+    indicator.setAttribute('aria-label', 'Open RoleForge');
     indicator.innerHTML = `<span class="tretaresia-activity-orb"><i class="fa-solid fa-wand-sparkles"></i></span>
         <span class="tretaresia-activity-copy"><strong></strong><small></small></span><span class="tretaresia-activity-progress"></span>`;
     indicator.addEventListener('click', openInterface);
@@ -3837,7 +3883,7 @@ function characterLifeNpcFor(entry) {
     try {
         return bridge.findNpc?.({ id: entry.characterLifeId, scope: entry.characterLifeScope, name: entry.name }) || null;
     } catch (error) {
-        console.warn('[Tretaresia RPG] Character Life NPC lookup failed safely.', error);
+        console.warn('[RoleForge] Character Life NPC lookup failed safely.', error);
         return null;
     }
 }
@@ -3851,7 +3897,7 @@ function characterLifeMapMarkers(force = false) {
         characterLifeMapMarkerCache = Array.isArray(markers) ? markers : [];
         return characterLifeMapMarkerCache;
     } catch (error) {
-        console.warn('[Tretaresia RPG] Character Life map marker lookup failed safely.', error);
+        console.warn('[RoleForge] Character Life map marker lookup failed safely.', error);
         return characterLifeMapMarkerCache || [];
     }
 }
@@ -3875,7 +3921,7 @@ function characterLifeCharacterReferences() {
             };
         }).filter(entry => entry.id && entry.name);
     } catch (error) {
-        console.warn('[Tretaresia RPG] Character Life character reference lookup failed safely.', error);
+        console.warn('[RoleForge] Character Life character reference lookup failed safely.', error);
         return [];
     }
 }
@@ -3974,7 +4020,7 @@ function requestMapPortrait(key, query, directSource = '', directFrame = null) {
                 if (sourceOwned) URL.revokeObjectURL(source);
             } catch (error) {
                 thumbnail = { url: source, owned: sourceOwned };
-                console.warn('[Tretaresia RPG] Map portrait thumbnail fallback used.', error);
+                console.warn('[RoleForge] Map portrait thumbnail fallback used.', error);
             }
         }
         if (mapPortraitCache.get(key) !== record) {
@@ -3997,7 +4043,7 @@ function requestMapPortrait(key, query, directSource = '', directFrame = null) {
         return load(source, result.frame || null, Boolean(result.blob), result.thumbnail === true);
     }).catch(error => {
         record.status = 'error';
-        console.warn('[Tretaresia RPG] Map portrait load failed safely.', error);
+        console.warn('[RoleForge] Map portrait load failed safely.', error);
     });
 }
 
@@ -4046,7 +4092,7 @@ function characterLifeSkillsForOwner(owner) {
         return Array.isArray(skills) ? skills : [];
     }
     catch (error) {
-        console.warn('[Tretaresia RPG] Character Life skill lookup failed safely.', error);
+        console.warn('[RoleForge] Character Life skill lookup failed safely.', error);
         return [];
     }
 }
@@ -4108,7 +4154,7 @@ async function syncRpgSkillsToCharacterLife(state) {
                 abilities: npc.abilities,
             })));
         } catch (error) {
-            console.warn('[Tretaresia RPG] Character Life NPC compatibility sync failed safely.', error);
+            console.warn('[RoleForge] Character Life NPC compatibility sync failed safely.', error);
         }
     }
     const api = globalThis.CharacterLifeSkills;
@@ -4136,7 +4182,7 @@ async function syncRpgSkillsToCharacterLife(state) {
             await api.upsert({ ...skill, source: 'rpg-systems' });
             existing.set(key, signature);
         } catch (error) {
-            console.warn('[Tretaresia RPG] Skill Storage sync failed safely.', error);
+            console.warn('[RoleForge] Skill Storage sync failed safely.', error);
         }
     }
 }
@@ -4172,7 +4218,7 @@ function queueCharacterLifeCompatibilityRefresh(options) {
         characterLifeCompatibilityOptions = { save: false };
         characterLifeCompatibilityTimer = null;
         void refreshCharacterLifeCompatibility(queued).catch(error =>
-            console.warn('[Tretaresia RPG] Character Life refresh failed safely.', error));
+            console.warn('[RoleForge] Character Life refresh failed safely.', error));
     }, 180);
 }
 
@@ -5129,7 +5175,7 @@ function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage) 
     const divineMentioned = /\bdivine\s+(?:mana|aura)\b|(?:มานา|ออร่า).{0,24}(?:เทพ|ศักดิ์สิทธิ์)|(?:เทพ|ศักดิ์สิทธิ์).{0,24}(?:มานา|ออร่า)/i.test(combined);
     const discipline = divineMentioned ? MAGIC_DISCIPLINES.find(entry => entry.id === 'divineMana')
         : MAGIC_DISCIPLINES.find(entry => new RegExp(entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(combined));
-    if (discipline && successfulPowerUse) {
+    if (getPowerPreset().mode!=='custom' && discipline && successfulPowerUse) {
         if (unchanged(state => state.proficiencies.magic[discipline.id])) {
             const previous = next.proficiencies.magic[discipline.id];
             setIfChanged(next.proficiencies.magic, discipline.id, Math.min(100, previous + (previous ? 1 : 2)));
@@ -5144,11 +5190,11 @@ function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage) 
         }
     }
     const auraTraining = /\b(?:mana|aura)\s+(?:control|output|efficiency|recovery)\s+(?:training|practice)|(?:ฝึก|ซ้อม).{0,30}(?:ควบคุม|ปล่อย|ประสิทธิภาพ|ฟื้นฟู).{0,20}(?:มานา|ออร่า)/i.test(combined);
-    if (auraTraining) {
+    if (getPowerPreset().mode!=='custom' && auraTraining) {
         const key = /output|ปล่อย/i.test(combined) ? 'output' : /efficien|ประสิทธิภาพ/i.test(combined) ? 'efficiency' : /recover|ฟื้นฟู/i.test(combined) ? 'recovery' : 'control';
         if (unchanged(state => state.player.aura[key])) setIfChanged(next.player.aura, key, Math.min(100, next.player.aura[key] + 1));
     }
-    if (next.player.aura.infiniteMode === 'Auto'
+    if (getPowerPreset().mode!=='custom' && next.player.aura.infiniteMode === 'Auto'
         && /\b(?:boundless|limitless|infinite|never[- ]deplet(?:ing|es)|unlimited)\s+(?:aura|mana)\b|\b(?:aura|mana)\b.{0,32}\b(?:is\s+)?(?:boundless|limitless|infinite|unlimited|never[- ]deplet(?:ing|es))\b|(?:ออร่า|มานา).{0,40}(?:ไร้ขีดจำกัด|ไร้ขอบเขต|ไม่มีขีดจำกัด|ไม่มีวันหมด|อนันต์)|(?:ไร้ขีดจำกัด|ไร้ขอบเขต|ไม่มีขีดจำกัด|ไม่มีวันหมด|อนันต์).{0,40}(?:ออร่า|มานา)/i.test(assistant)
         && unchanged(state => state.player.aura.infinite)) setIfChanged(next.player.aura, 'infinite', true);
 
@@ -5277,7 +5323,7 @@ function controlCenterMarkup() {
         '<input type="color" data-ui-setting="' + key + '" value="' + settings[key] + '"></label>';
     return '<section class="tretaresia-control-panel" aria-label="' + html(tr('Control center')) + '">' +
         '<header class="tretaresia-control-head"><span class="tretaresia-control-sigil"><i class="fa-solid fa-compass-drafting"></i></span>' +
-        '<div><small>TRETARESIA / CONSOLE</small><h3>' + html(tr('Control center')) + '</h3></div>' +
+        '<div><small>ROLEFORGE / CONSOLE</small><h3>' + html(tr('Control center')) + '</h3></div>' +
         '<button type="button" data-action="close-control-center" aria-label="' + html(tr('Close')) + '"><i class="fa-solid fa-xmark"></i></button></header>' +
         '<div class="tretaresia-control-scroll">' +
         '<section class="tretaresia-control-section"><div class="tretaresia-control-section-title"><b>01</b><span><strong>' + html(tr('Palette')) + '</strong><small>' + html(tr('Fully customizable')) + '</small></span></div>' +
@@ -5335,7 +5381,7 @@ function setControlCenterOpen(open) {
             dialog.showModal();
         } catch (error) {
             dialog.setAttribute('open', '');
-            console.warn('[Tretaresia RPG] showModal() unavailable; using fallback.', error);
+            console.warn('[RoleForge] showModal() unavailable; using fallback.', error);
         }
         requestAnimationFrame(() => dialog.querySelector('.tretaresia-control-panel')?.scrollTo({ top: 0 }));
     } else if (!open && dialog.open) {
@@ -5358,7 +5404,7 @@ function buildInterface() {
             try {
                 buildControlCenter();
             } catch (error) {
-                console.error('[Tretaresia RPG] Could not rebuild the control center.', error);
+                console.error('[RoleForge] Could not rebuild the control center.', error);
             }
         }
         return;
@@ -5370,10 +5416,10 @@ function buildInterface() {
     overlay.setAttribute('data-astra-extension-surface', 'tretaresia-rpg');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.innerHTML =
-        '<button class="tretaresia-rpg-backdrop" type="button" aria-label="Close Tretaresia RPG"></button>' +
+        '<button class="tretaresia-rpg-backdrop" type="button" aria-label="Close RoleForge"></button>' +
         '<section id="tretaresia-rpg-panel" class="tretaresia-rpg-panel" role="dialog" aria-modal="true" aria-labelledby="tretaresia-rpg-title" tabindex="-1">' +
         '<div class="tretaresia-app-shell"><header class="tretaresia-rpg-panel-header"><div class="tretaresia-brand-lockup">' +
-        '<div class="tretaresia-rpg-panel-heading"><span class="tretaresia-rpg-kicker">' + html(tr('Tretaresia Role-play')) + '</span><h2 id="tretaresia-rpg-title">Tretaresia</h2></div></div>' +
+        '<div class="tretaresia-rpg-panel-heading"><span class="tretaresia-rpg-kicker">' + html(tr('RoleForge Role-play')) + '</span><h2 id="tretaresia-rpg-title">ROLEFORGE</h2></div></div>' +
         '<div class="tretaresia-header-actions"><div id="tretaresia-rpg-sync-state" class="tretaresia-sync-state" data-mode="ready"><i class="fa-solid fa-circle"></i><span>' + html(tr('Ready')) + '</span></div>' +
         controlCenterTrigger() + '<button id="tretaresia-rpg-close" class="tretaresia-header-button" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div></header>' +
         moduleSlider() +
@@ -5390,7 +5436,7 @@ function buildInterface() {
     try {
         buildControlCenter();
     } catch (error) {
-        console.error('[Tretaresia RPG] Could not build the control center; the main interface will still open.', error);
+        console.error('[RoleForge] Could not build the control center; the main interface will still open.', error);
     }
     overlay.querySelector('.tretaresia-rpg-backdrop')?.addEventListener('click', closeInterface);
     overlay.querySelector('#tretaresia-rpg-close')?.addEventListener('click', closeInterface);
@@ -5505,7 +5551,7 @@ function rebuildInterface() {
 
 
 function moduleSlider() {
-    return '<div class="tretaresia-module-slider" id="tretaresia-module-slider" role="tablist" aria-label="Tretaresia RPG modules">' +
+    return '<div class="tretaresia-module-slider" id="tretaresia-module-slider" role="tablist" aria-label="RoleForge modules">' +
         '<button class="tretaresia-slider-arrow" type="button" data-action="tab-prev" aria-label="Previous module"><i class="fa-solid fa-angle-left"></i></button>' +
         '<div class="tretaresia-module-window"><div class="tretaresia-module-track" id="tretaresia-module-track" style="--tab-index:0">' +
         TAB_ORDER.map((id, index) => '<button class="tretaresia-tab-button' + (index ? '' : ' is-active') + '" type="button" role="tab" data-tab="' + id + '" aria-selected="' + String(!index) + '" tabindex="' + (index ? '-1' : '0') + '">' +
@@ -5901,6 +5947,7 @@ function renderStatus(panel, state) {
     const expPercent = Math.min(100, Math.round(state.progression.experience / Math.max(1, state.progression.experienceMax) * 100));
     const initial = html((persona || '?').charAt(0).toUpperCase());
     const divineAura = hasDivinePower(state);
+    const customPreset=getPowerPreset().mode==='custom';
     panel.innerHTML = `
         <section class="tretaresia-character-hero"><button class="tretaresia-avatar" type="button" data-action="${state.player.portrait ? 'open-portrait-editor' : 'choose-portrait'}" aria-label="${html(tr(state.player.portrait ? 'Adjust portrait' : 'Choose profile picture'))}">
             <span class="tretaresia-magic-ring ring-one"></span><span class="tretaresia-magic-ring ring-two"></span>
@@ -5918,7 +5965,7 @@ function renderStatus(panel, state) {
             <article class="tretaresia-card tretaresia-vitals-card"><div class="tretaresia-card-title"><span>${html(tr('Vital status'))}</span>
                 <em><i class="fa-solid fa-wave-square"></i> ${html(state.player.condition)}</em></div><div class="tretaresia-vitals-grid">
                 ${meterView('Health', state.player.hp, 'fa-solid fa-heart', 'health')}
-                ${meterView(divineAura ? 'Divine Mana' : 'Aura / Mana', state.player.mp, 'fa-solid fa-fire-flame-curved', 'mana', { color: state.player.aura.color, infinite: state.player.aura.infinite, divine: divineAura })}
+                ${customPreset ? getPowerPreset().definitions.filter(d=>d.type==='resource').map(d=>meterView(d.name,{current:powerValue(d,state.customPowers?.[d.id]),max:d.max},'fa-solid fa-'+d.icon,'mana',{color:d.color})).join('') : meterView(divineAura ? 'Divine Mana' : 'Aura / Mana', state.player.mp, 'fa-solid fa-fire-flame-curved', 'mana', { color: state.player.aura.color, infinite: state.player.aura.infinite, divine: divineAura })}
                 ${meterView('Stamina', state.player.stamina, 'fa-solid fa-bolt', 'stamina')}
                 ${meterView('Hunger', { current: state.player.survival.hunger, max: 100 }, 'fa-solid fa-drumstick-bite', 'hunger')}
                 ${meterView('Thirst', { current: state.player.survival.thirst, max: 100 }, 'fa-solid fa-droplet', 'thirst')}</div>
@@ -5939,16 +5986,18 @@ function renderStatus(panel, state) {
                 <div><dt>${html(tr('Guild'))}</dt><dd>${html(state.player.guild)}</dd></div>
                 <div><dt>${html(tr('Party'))}</dt><dd>${html(state.player.party)}</dd></div>
                 <div><dt>${html(tr('Profession'))}</dt><dd>${html(state.player.profession)}</dd></div>
-                <div><dt>${html(tr('Power type'))}</dt><dd>${html(state.player.powerType)}</dd></div>
-                <div><dt>${html(tr('Aura color'))}</dt><dd><span class="tretaresia-aura-swatch" style="--aura-color:${html(state.player.aura.color)}"></span>${html(state.player.aura.color)}${state.player.aura.infinite ? ` · ${html(tr('Boundless'))}` : ''}</dd></div>
+                <div><dt>${html(tr('Power type'))}</dt><dd>${html(getPowerPreset().mode==='custom'?customPowerLabel(state):state.player.powerType)}</dd></div>
+                ${customPreset?'':`                <div><dt>${html(tr('Aura color'))}</dt><dd><span class="tretaresia-aura-swatch" style="--aura-color:${html(state.player.aura.color)}"></span>${html(state.player.aura.color)}${state.player.aura.infinite ? ` · ${html(tr('Boundless'))}` : ''}</dd></div>
                 <div><dt>${html(tr('Mana limit'))}</dt><dd>${html(tr(state.player.aura.infinite ? 'Infinite' : 'Finite'))} · ${html(tr(state.player.aura.infiniteMode))}</dd></div>
+`}
                 <div><dt>${html(tr('Origin skill'))}</dt><dd>${html(state.player.originSkill)}</dd></div>
                 <div><dt>${html(tr('Condition'))}</dt><dd>${html(state.player.condition)}</dd></div>
                 <div><dt>${html(tr('Level'))}</dt><dd>${state.player.level}</dd></div></dl></article>
         </div>
-        <section class="tretaresia-aura-control-card"><div class="tretaresia-section-label"><i class="fa-solid fa-wave-square"></i><span>Aura / Mana Control</span></div><div class="tretaresia-aura-control-grid">
+        ${customPreset?'':`        <section class="tretaresia-aura-control-card"><div class="tretaresia-section-label"><i class="fa-solid fa-wave-square"></i><span>Aura / Mana Control</span></div><div class="tretaresia-aura-control-grid">
             ${[['output', 'Output'], ['control', 'Control'], ['efficiency', 'Efficiency'], ['recovery', 'Recovery']].map(([key, label]) => `<article><span>${label}</span><strong>${state.player.aura[key]}%</strong><div><i style="width:${state.player.aura[key]}%"></i></div></article>`).join('')}</div>
             <small><i class="fa-solid fa-circle-info"></i>Efficiency reduces Mana cost; Recovery increases rest recovery. Output and Control progress through confirmed use or training.</small></section>
+`}
         <section class="tretaresia-effects-card"><div class="tretaresia-section-label"><i class="fa-solid fa-heart-pulse"></i><span>${html(tr('Active effects'))}</span><b>${state.systems.effects.length}</b></div><div>${state.systems.effects.length ? state.systems.effects.map(effect => `<article data-severity="${html(effect.severity.toLocaleLowerCase())}"><i class="fa-solid fa-triangle-exclamation"></i><span><b>${html(effect.name)}</b><small>${html(effect.severity)} · ${html(effect.type)}${effect.remainingTurns === null ? '' : ` · ${effect.remainingTurns} turn(s)`}</small><em>${html(effect.treatment || effect.source || 'No treatment recorded')}</em></span></article>`).join('') : `<p class="tretaresia-no-effects"><i class="fa-solid fa-shield-heart"></i>No active injuries or status effects</p>`}</div></section>
         <details class="tretaresia-editor"><summary><i class="fa-solid fa-pen"></i> ${html(tr('Edit status'))}</summary>
             <form data-form="status" class="tretaresia-form-grid">
@@ -5959,15 +6008,17 @@ function renderStatus(panel, state) {
                 ${input('Hair', 'hair', state.player.appearance.hair)}${input('Eyes', 'eyes', state.player.appearance.eyes)}
                 ${input('Height', 'height', state.player.appearance.height)}${input('Build', 'build', state.player.appearance.build)}
                 ${input('Profession', 'profession', state.player.profession)}${input('Guild', 'guild', state.player.guild)}${input('Party', 'party', state.player.party)}
-                ${input('Power type', 'powerType', state.player.powerType)}${input('Origin skill', 'originSkill', state.player.originSkill)}
+                ${input('Power type', 'powerType', customPreset?customPowerLabel(state):state.player.powerType)}${input('Origin skill', 'originSkill', state.player.originSkill)}
                 ${input('Condition', 'condition', state.player.condition)}${input('Level', 'level', state.player.level, 'number', 'min="1"')}
                 ${input('HP', 'hpCurrent', state.player.hp.current, 'number', 'min="0"')}${input('HP max', 'hpMax', state.player.hp.max, 'number', 'min="1"')}
-                ${input('MP', 'mpCurrent', state.player.mp.current, 'number', 'min="0"')}${input('MP max', 'mpMax', state.player.mp.max, 'number', 'min="1"')}
+                ${customPreset?'':`${input('MP', 'mpCurrent', state.player.mp.current, 'number', 'min="0"')}${input('MP max', 'mpMax', state.player.mp.max, 'number', 'min="1"')}
+                `}
                 ${input('Stamina', 'staminaCurrent', state.player.stamina.current, 'number', 'min="0"')}${input('Stamina max', 'staminaMax', state.player.stamina.max, 'number', 'min="1"')}
                 ${input('Hunger', 'hunger', state.player.survival.hunger, 'number', 'min="0" max="100"')}${input('Thirst', 'thirst', state.player.survival.thirst, 'number', 'min="0" max="100"')}
-                ${input('Aura color', 'auraColor', state.player.aura.color, 'color')}${select('Mana limit', 'auraInfiniteMode', ['Auto', 'Finite', 'Infinite'], state.player.aura.infiniteMode)}
+                ${customPreset?'':`${input('Aura color', 'auraColor', state.player.aura.color, 'color')}${select('Mana limit', 'auraInfiniteMode', ['Auto', 'Finite', 'Infinite'], state.player.aura.infiniteMode)}
                 ${input('Aura output', 'auraOutput', state.player.aura.output, 'number', 'min="0" max="100"')}${input('Aura control', 'auraControl', state.player.aura.control, 'number', 'min="0" max="100"')}
                 ${input('Aura efficiency', 'auraEfficiency', state.player.aura.efficiency, 'number', 'min="0" max="100"')}${input('Aura recovery', 'auraRecovery', state.player.aura.recovery, 'number', 'min="0" max="100"')}
+                `}
                 ${input('Lung capacity', 'lungCapacity', state.player.fitness.lungCapacity, 'number', 'min="1"')}
                 <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Save status'))}</button>
             </form></details>`;
@@ -6320,6 +6371,7 @@ function customProficiencyEditor(kind) {
 
 function renderTechniques(panel, state) {
     if (!panel) return;
+    if(getPowerPreset().mode==='custom'){panel.innerHTML=heading('Powers',getPowerPreset().name,'fa-solid fa-bolt');mountPowerSettings(panel,state);return;}
     const magicEntries = [
         ...MAGIC_DISCIPLINES.map(entry => ({ ...entry, value: state.proficiencies.magic[entry.id], custom: false })),
         ...state.proficiencies.customMagic.map(entry => ({ ...entry, value: entry.proficiency, custom: true })),
@@ -6351,6 +6403,7 @@ function renderTechniques(panel, state) {
                 <form data-form="technique" class="tretaresia-form-grid">${input('Technique name', 'name', '')}${input('Category', 'category', 'General')}
                     ${input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"')}${input('Description', 'description', '')}
                     <button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr('Add technique'))}</button></form></details></section>`;
+    mountPowerSettings(panel,state);
 }
 
 function questSectionId(entry) {
@@ -7216,7 +7269,7 @@ async function completeHStatsBaseline(npcId) {
                 const parsed = parseJson(response);
                 if (parsed?.hStats && typeof parsed.hStats === 'object' && !Array.isArray(parsed.hStats)) modelValues = parsed.hStats;
             } catch (error) {
-                console.warn('[Tretaresia RPG] Generated H-Stats profile unavailable; using neutral initial values.', error);
+                console.warn('[RoleForge] Generated H-Stats profile unavailable; using neutral initial values.', error);
             }
         }
         const active = SillyTavern.getContext();
@@ -7244,7 +7297,7 @@ async function completeHStatsBaseline(npcId) {
         else hStatsBaselineFailures.add(jobKey);
     } catch (error) {
         hStatsBaselineFailures.add(jobKey);
-        console.warn('[Tretaresia RPG] Could not save the generated H-Stats profile.', error);
+        console.warn('[RoleForge] Could not save the generated H-Stats profile.', error);
     } finally {
         hStatsBaselineJobs.delete(jobKey);
         if (SillyTavern.getContext().getCurrentChatId?.() === chatId) renderAll();
@@ -7265,7 +7318,7 @@ function renderHStats(panel, state) {
     if (selected && hStatsMissingFields(selected).length && openPanel) {
         const failed = hStatsBaselineFailures.has(hStatsBaselineKey(selected.id, context));
         if (!failed) void completeHStatsBaseline(selected.id);
-        panel.innerHTML = `${heading('H-Stats', 'PARTNER DOSSIER · TRETARESIA', 'fa-solid fa-heart-pulse')}
+        panel.innerHTML = `${heading('H-Stats', 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse')}
             <section class="tretaresia-h-empty" role="status"><i class="fa-solid fa-heart-pulse"></i><h3>${html(selected.name)}</h3><p>${failed ? 'บันทึกโปรไฟล์ยังไม่สำเร็จ กรุณาลองใหม่' : 'กำลังสร้างโปรไฟล์ H-Stats ให้ครบทุกช่อง และเก็บค่าที่เนื้อเรื่องยืนยันไว้'}</p>${failed ? '<button type="button" class="tretaresia-primary-button" data-action="retry-hstats-baseline">ลองสร้างอีกครั้ง</button>' : ''}</section>`;
         return;
     }
@@ -7283,7 +7336,7 @@ function renderHStats(panel, state) {
         ['ทวาร / Anal', 'fa-circle-dot', 'anusQuality', 'anusState', 'analSexCount'],
     ] : [];
     const fields = H_FIELDS.filter(field => field.group === selectedHStatsSection);
-    panel.innerHTML = `${heading('H-Stats', 'PARTNER DOSSIER · TRETARESIA', 'fa-solid fa-heart-pulse')}
+    panel.innerHTML = `${heading('H-Stats', 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse')}
         ${roster.length ? `<div class="tretaresia-h-shell"><nav class="tretaresia-h-roster" aria-label="NPC DIRECTORY · เลือกตัวละคร"><small>NPC DIRECTORY · เลือกตัวละคร</small>${roster.map(entry => `<button type="button" data-action="select-hstats-npc" data-id="${html(entry.id)}" class="${selected?.id === entry.id ? 'is-active' : ''}" aria-pressed="${selected?.id === entry.id}"><strong>${html(entry.name)}</strong><small>${html(entry.gender || '—')} · ${html(entry.location || entry.title || '—')}</small></button>`).join('')}</nav>
         <div class="tretaresia-h-main"><section class="tretaresia-h-hero"><div class="tretaresia-h-portrait-stage"><span class="tretaresia-h-monogram">${npcPortraitSlot(selected, 'tretaresia-npc-portrait tretaresia-h-photo')}</span><small>PARTNER · ${html(selected.name)}</small></div><div class="tretaresia-h-hero-info"><div class="tretaresia-h-identity"><div><small>${html(selected.gender || '—')} · ${html(selected.race || selected.location || '—')}</small><h3>${html(selected.name)}</h3><p>${html(selected.title || selected.occupation || selected.relationship || '—')}</p><span>${html(selected.location || '—')}</span></div></div>
         <div class="tretaresia-h-status"><div><span>ความซื่อสัตย์ต่อผู้เล่น</span><div class="tretaresia-h-heart-value"><div class="tretaresia-h-hearts" aria-label="Loyalty ${hearts === null ? 'unknown' : hearts + ' of 5'}">${Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join('')}</div><small>${hearts === null ? 'ยังไม่ทราบ' : `${hearts} / 5${generated.has('loyaltyHearts') ? ' · AI' : ''}`}</small></div></div><div><span>แนวโน้มนอกใจ</span><strong>STAGE ${stage} / 5 · ${progress ?? '—'}%${generated.has('infidelityStage') || generated.has('infidelityProgress') ? ' · AI' : ''}</strong></div><div class="tretaresia-h-track" role="progressbar" aria-label="Infidelity stage progress" ${progress === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"`}><i style="width:${progress ?? 0}%"></i></div><div><span>การตั้งครรภ์</span><strong>${sheet.pregnant === null ? 'ยังไม่ทราบ' : sheet.pregnant ? 'ท้อง' : 'ไม่ท้อง'}${generated.has('pregnant') ? ' · AI' : ''}</strong></div></div></div></section>
@@ -7443,7 +7496,7 @@ async function hydrateNpcPortraits(root, state = getState()) {
             node.appendChild(image);
             node.classList.add('has-photo');
         } catch (error) {
-            console.warn('[Tretaresia RPG] Could not load an NPC portrait.', error);
+            console.warn('[RoleForge] Could not load an NPC portrait.', error);
         }
     }));
 }
@@ -7656,7 +7709,7 @@ async function addAudioFiles(files) {
             state.music.tracks.push(musicTrack({ id, name: file.name.replace(/\.[^.]+$/, ''), fileName: file.name,
                 type: file.type, duration: await readAudioDuration(file), addedAt: new Date().toISOString() }));
         } catch (error) {
-            console.error('[Tretaresia RPG] Could not store audio.', error);
+            console.error('[RoleForge] Could not store audio.', error);
             notify('error', `${file.name}: could not be stored on this device.`);
         }
     }
@@ -7698,7 +7751,7 @@ async function playTrack(id) {
     try {
         await player.play();
     } catch (error) {
-        console.warn('[Tretaresia RPG] Audio playback requires a direct user gesture.', error);
+        console.warn('[RoleForge] Audio playback requires a direct user gesture.', error);
         notify('warning', getSettings().language === 'th' ? 'แตะปุ่มเล่นอีกครั้งเพื่ออนุญาตเสียง' : 'Tap play again to allow audio playback.');
     }
     renderMusic(document.querySelector('[data-panel="music"]'), getState());
@@ -9099,7 +9152,7 @@ async function sendChatAction(message, modeOverride = '') {
             recordExtensionRequest('hiddenAction', 'RPG hidden role-play action');
             await context.generate('normal');
         } catch (error) {
-            console.error('[Tretaresia RPG] Hidden action failed.', error);
+            console.error('[RoleForge] Hidden action failed.', error);
             setSync('error', tr('Sync unavailable'), settings.language === 'th' ? 'AI ไม่สามารถตอบคำสั่งที่ซ่อนได้' : 'The AI could not resolve the hidden action.');
             notify('error', settings.language === 'th' ? 'ไม่สามารถดำเนินการที่ซ่อนไว้ได้' : 'The hidden action could not be generated.');
         } finally {
@@ -9474,6 +9527,8 @@ function applySocialPatchOperation(state, verb, path, value) {
 function applyPatchOperation(state, operation) {
     if (!Array.isArray(operation) || operation.length < 3) return false;
     const [verb, path, value] = operation;
+    if(typeof path==='string' && path.startsWith('customPowers.')) return applyPowerOperation(state,getPowerPreset(),verb,path,value);
+    if(getPowerPreset().mode==='custom' && /^(?:proficiencies\.(?:magic|sword|customMagic|customSword)(?:\.|$)|player\.aura(?:\.|$))/.test(path)) return false;
     if (['party', 'guilds', 'household', 'partyMembers', 'guildMembers', 'householdMembers'].includes(path)) {
         return applySocialPatchOperation(state, verb, path, value);
     }
@@ -9975,7 +10030,7 @@ function extractStatePatch(message) {
             const parsed = coerceStatePatch(parseJson(payload));
             if (parsed) patches.push(parsed);
         } catch (error) {
-            console.warn('[Tretaresia RPG] Ignored malformed inline state patch.', error);
+            console.warn('[RoleForge] Ignored malformed inline state patch.', error);
         }
     };
     const strip = (source, pattern) => source.replace(pattern, (_match, payload) => {
@@ -10218,7 +10273,7 @@ async function processAssistantPatch(messageId, generationType = '') {
             queueCharacterLifeSkillSync(getState());
             showEventNotifications(notifications);
             setSync('success', tr('State updated'), settings.language === 'th' ? `บันทึกการเปลี่ยนแปลง ${totalChanges} รายการแล้ว` : `${totalChanges} confirmed change${totalChanges === 1 ? '' : 's'} saved.`);
-            console.info(`[Tretaresia RPG] Applied ${accepted} inline operation(s) plus ${reconciled.changes} deterministic reconciliation change(s).`);
+            console.info(`[RoleForge] Applied ${accepted} inline operation(s) plus ${reconciled.changes} deterministic reconciliation change(s).`);
         } else {
             await rememberScene(messageId, message, reconciled.next, details);
             if (checkpoint) {
@@ -10235,9 +10290,9 @@ async function processAssistantPatch(messageId, generationType = '') {
             setSync('unchanged', tr('No state changes'), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
         }
     } catch (error) {
-        console.error('[Tretaresia RPG] Inline state patch failed.', error);
+        console.error('[RoleForge] Inline state patch failed.', error);
         try { await saveCurrentChatMetadata(context); }
-        catch (saveError) { console.warn('[Tretaresia RPG] Could not save the turn checkpoint.', saveError); }
+        catch (saveError) { console.warn('[RoleForge] Could not save the turn checkpoint.', saveError); }
         setSync('error', tr('Sync unavailable'));
     }
 }
@@ -10560,9 +10615,9 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
             ? (getSettings().language === 'th' ? `Manual Sync บันทึก ${accepted} รายการ` : `Manual Sync saved ${accepted} confirmed change${accepted === 1 ? '' : 's'}.`)
             : (getSettings().language === 'th' ? 'Manual Sync ตรวจแล้ว ไม่มีข้อมูลเปลี่ยนแปลง' : 'Manual Sync found no confirmed changes.'));
         notify('success', summary || 'No confirmed changes.');
-        console.info(`[Tretaresia RPG] Manual sync checked ${selection.assistants.length} turn(s) and applied ${accepted} operation(s).`);
+        console.info(`[RoleForge] Manual sync checked ${selection.assistants.length} turn(s) and applied ${accepted} operation(s).`);
     } catch (error) {
-        console.error('[Tretaresia RPG] AI synchronization failed.', error);
+        console.error('[RoleForge] AI synchronization failed.', error);
         setSync('error', tr('Sync unavailable'));
         notify('error', `Could not synchronize: ${error.message}`);
     } finally {
@@ -10591,7 +10646,7 @@ function buildIntroGate() {
         '<span class="hex"></span><svg viewBox="0 0 206 232" aria-hidden="true"><polygon points="103,2 204,60 204,172 103,230 2,172 2,60"/></svg>' +
         '<span class="ring ring-a"></span><span class="ring ring-b"></span><span class="arc arc-a"></span><span class="arc arc-b"></span>' +
         '<svg class="core" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4 55 17v30L32 60 9 47V17Z M32 14 46 32 32 50 18 32Z M32 23v18 M23 32h18"/><circle cx="32" cy="32" r="3"/></svg></div>' +
-        '<strong>TRETARESIA</strong><small data-intro-sub>' + html(tr('Connecting to the active role-play...')) + '</small><span class="tretaresia-intro-rule"></span>' +
+        '<strong>ROLEFORGE</strong><small data-intro-sub>' + html(tr('Connecting to the active role-play...')) + '</small><span class="tretaresia-intro-rule"></span>' +
         '<div class="tretaresia-intro-load"><span data-intro-label>UNSEALING THE WORLD GATE</span><span class="bar"><i data-intro-bar></i></span><span class="pct" data-intro-pct>0%</span></div>' +
         '<button type="button" data-action="skip-intro">SKIP <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 4 6 6-6 6 M11 4l6 6-6 6"/></svg></button></div>';
 }
@@ -10639,7 +10694,7 @@ async function openInterface() {
     if (!initialized) return;
     try { await ensureRuntimeStyles(); }
     catch (error) {
-        console.error('[Tretaresia RPG] Interface styles unavailable.', error);
+        console.error('[RoleForge] Interface styles unavailable.', error);
         notify('error', 'โหลดรูปแบบ RPG ไม่สำเร็จ กรุณาตรวจการอัปเดตส่วนเสริม แล้วลองเปิดอีกครั้ง ไม่ต้องล้างข้อมูลเบราว์เซอร์');
         return;
     }
@@ -10659,8 +10714,8 @@ async function openInterface() {
         renderAll();
         queueCharacterLifeCompatibilityRefresh({ save: true });
     } catch (error) {
-        console.error('[Tretaresia RPG] Could not render the interface.', error);
-        notify('error', 'Tretaresia RPG opened, but one of its modules could not render. Check the browser console.');
+        console.error('[RoleForge] Could not render the interface.', error);
+        notify('error', 'RoleForge opened, but one of its modules could not render. Check the browser console.');
     }
     requestAnimationFrame(() => {
         panel.focus({ preventScroll: true });
@@ -10727,9 +10782,9 @@ function createWandLauncher() {
     launcher.className = 'list-group-item flex-container flexGap5 interactable';
     launcher.tabIndex = 0;
     launcher.setAttribute('role', 'button');
-    launcher.setAttribute('aria-label', 'Open Tretaresia RPG');
-    launcher.title = 'Open Tretaresia RPG';
-    launcher.innerHTML = '<i class="fa-solid fa-book-open"></i><span>Tretaresia RPG</span>';
+    launcher.setAttribute('aria-label', 'Open RoleForge');
+    launcher.title = 'Open RoleForge';
+    launcher.innerHTML = '<i class="fa-solid fa-book-open"></i><span>RoleForge</span>';
 
     const activate = event => {
         if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
@@ -10750,8 +10805,8 @@ function createWandLauncher() {
     npcLauncher.className = 'list-group-item flex-container flexGap5 interactable';
     npcLauncher.tabIndex = 0;
     npcLauncher.setAttribute('role', 'button');
-    npcLauncher.setAttribute('aria-label', 'Open Tretaresia NPC Manager');
-    npcLauncher.innerHTML = '<i class="fa-solid fa-address-book"></i><span>Tretaresia NPC Manager</span>';
+    npcLauncher.setAttribute('aria-label', 'Open RoleForge NPC Manager');
+    npcLauncher.innerHTML = '<i class="fa-solid fa-address-book"></i><span>RoleForge NPC Manager</span>';
     const openNpcs = event => {
         if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
@@ -10909,9 +10964,9 @@ function bindChatEvents() {
             renderAll();
         }
         try { await catchUpPlayerIdentity(); }
-        catch (error) { console.warn('[Tretaresia RPG] Could not import player registration.', error); }
+        catch (error) { console.warn('[RoleForge] Could not import player registration.', error); }
         try { await catchUpTravelHistory(); }
-        catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
+        catch (error) { console.warn('[RoleForge] Could not catch up travel history.', error); }
         await refreshCharacterLifeCompatibility({ save: true });
         await backfillHistoricalScenes();
         resumeUnfinishedAssistantPatch();
@@ -10924,11 +10979,11 @@ function bindChatEvents() {
     if (eventTypes.MESSAGE_SENT) eventSource.on(eventTypes.MESSAGE_SENT, async messageId => {
         restoreComposerDraft();
         try { await processUserTravelIntent(messageId); }
-        catch (error) { console.warn('[Tretaresia RPG] Could not apply user travel intent.', error); }
+        catch (error) { console.warn('[RoleForge] Could not apply user travel intent.', error); }
         updatePrompt();
         const settings = getSettings();
         if (settings.autoTrack) setSync('working', tr('Waiting for AI'), settings.language === 'th' ? 'อ่านข้อมูลจากคำตอบหลักโดยไม่เรียก AI เพิ่ม' : 'Scene, diary, invitations and state updates use the main reply without extra AI requests.');
-        else setSync('disabled', tr('Tracking is off'), settings.language === 'th' ? 'คำตอบนี้จะไม่อัปเดต Tretaresia RPG อัตโนมัติ' : 'This reply will not update Tretaresia RPG automatically.');
+        else setSync('disabled', tr('Tracking is off'), settings.language === 'th' ? 'คำตอบนี้จะไม่อัปเดต RoleForge อัตโนมัติ' : 'This reply will not update RoleForge automatically.');
     });
     if (eventTypes.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, generationType => {
         if (!['quiet','impersonate'].includes(generationType)) liveGeneration = true;
@@ -11041,7 +11096,7 @@ async function initialize() {
         globalThis.addEventListener('pagehide', () => {
             if (!creationSaveTimer) return;
             clearTimeout(creationSaveTimer); creationSaveTimer = null;
-            void saveCurrentChatMetadata().catch(error => console.warn('[Tretaresia RPG] Character draft save failed while leaving.', error));
+            void saveCurrentChatMetadata().catch(error => console.warn('[RoleForge] Character draft save failed while leaving.', error));
         });
         npcWorkspace = createNpcWorkspace({
             context: () => SillyTavern.getContext(), state: getState, settings: getSettings,
@@ -11086,9 +11141,9 @@ async function initialize() {
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
         try { await catchUpPlayerIdentity(); }
-        catch (error) { console.warn('[Tretaresia RPG] Could not import player registration.', error); }
+        catch (error) { console.warn('[RoleForge] Could not import player registration.', error); }
         try { await catchUpTravelHistory(); }
-        catch (error) { console.warn('[Tretaresia RPG] Could not catch up travel history.', error); }
+        catch (error) { console.warn('[RoleForge] Could not catch up travel history.', error); }
         await backfillHistoricalScenes();
         resumeUnfinishedAssistantPatch();
         refreshCharacterForge();
@@ -11103,18 +11158,19 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[Tretaresia RPG] Role-play interface v0.43.8 loaded.');
+        console.info('[RoleForge] Role-play interface v0.44.0 loaded.');
     } catch (error) {
         initialized = false;
-        console.error('[Tretaresia RPG] Failed to initialize.', error);
-        notify('error', 'Tretaresia RPG could not load. Check the browser console.');
+        console.error('[RoleForge] Failed to initialize.', error);
+        notify('error', 'RoleForge could not load. Check the browser console.');
     }
 }
 
 if (SAFE_MODE) {
-    console.warn('[Tretaresia RPG] Safe mode active. Remove ?tretaresia-safe=1 from the URL to start the extension.');
+    console.warn('[RoleForge] Safe mode active. Remove ?tretaresia-safe=1 from the URL to start the extension.');
 } else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize, { once: true });
 } else {
     void initialize();
 }
+

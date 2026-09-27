@@ -1,11 +1,11 @@
-@import url("./style.css?v=0.43.8");
+@import url("./style.css?v=0.44.0");
 /* Use the host/local font stack; external font requests must not block UI startup. */
 
-/* Tretaresia RPG UI polish layer.
+/* RoleForge UI polish layer.
    Kept separate from the core stylesheet so these targeted visual fixes stay
    isolated from the extension's existing layout and behavior. */
 
-/* Tretaresia's travel scale is a first-class state rather than an instant map
+/* RoleForge's travel scale is a first-class state rather than an instant map
    teleport. Keep the live journey readable on both desktop and phone. */
 .tretaresia-travel-status {
     margin: 0 0 .72rem;
@@ -269,7 +269,7 @@
     }
 }
 
-/* Tretaresia 2.0 world atlas */
+/* RoleForge 2.0 world atlas */
 .tretaresia-map-frame { position: relative; overflow: hidden; background: #081d29; }
 .tretaresia-world-map { width: 100%; aspect-ratio: 16 / 9; min-height: 0; display: block; cursor: crosshair; touch-action: none; user-select: none; filter: none; image-rendering: auto; contain: strict; background: #102f3b; }
 .tretaresia-map-toolbar { left: .72rem; right: auto; }
@@ -352,7 +352,7 @@
 @media (max-width: 600px) { .tretaresia-notification-settings { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media (prefers-reduced-motion: reduce) { .tretaresia-event-toast { transition: none; }.tretaresia-event-timer { animation: none; } }
 
-/* Tretaresia Interface 2.0 -------------------------------------------------
+/* RoleForge Interface 2.0 -------------------------------------------------
    Inspired by the Character Forge's black-gold cartographic language: fine
    grid, numbered sections, geometric rules, and restrained light. The RPG's
    information architecture and every existing interaction remain intact. */
@@ -670,7 +670,7 @@
 }
 
 /* ==========================================================================
-   TRETARESIA UI 8.0 — image atlas, bounded navigation, fullscreen viewer
+   ROLEFORGE UI 8.0 — image atlas, bounded navigation, fullscreen viewer
    ========================================================================== */
 
 .tretaresia-world-map {
@@ -774,7 +774,7 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
     .tretaresia-map-frame.is-fullscreen .tretaresia-map-legend { padding-right: 3.2rem; }
 }
 
-/* Tretaresia Interface 3.0
+/* RoleForge Interface 3.0
    This is a structural redesign of the shell, module navigation, control
    center, information cards, player console, and event surfaces. */
 .tretaresia-rpg-panel {
@@ -1427,7 +1427,7 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 
 
 /* ==========================================================================
-   TRETARESIA UI 4.0 — black/gold world-console direction
+   ROLEFORGE UI 4.0 — black/gold world-console direction
    Final visual layer: mobile-first, portrait-safe, iOS-friendly.
    ========================================================================== */
 
@@ -2493,7 +2493,7 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 }
 
 /* ==========================================================================
-   TRETARESIA UI 5.0 — "Character Forge" direction
+   ROLEFORGE UI 5.0 — "Character Forge" direction
    Orbitron/Chakra Petch, black-gold, hairline grid, numbered sections,
    corner brackets, gold-gradient active states. Structure untouched.
    ========================================================================== */
@@ -3291,7 +3291,7 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 
 
 /* ==========================================================================
-   TRETARESIA UI 6.0 — themeable tokens, module slider, rank plate
+   ROLEFORGE UI 6.0 — themeable tokens, module slider, rank plate
    Appended after UI 5 so the new shell and user palette win the cascade.
    ========================================================================== */
 
@@ -3670,7 +3670,7 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 }
 
 /* ==========================================================================
-   TRETARESIA UI 7.0 — cartographic instrument, light mode, intro gate
+   ROLEFORGE UI 7.0 — cartographic instrument, light mode, intro gate
    ========================================================================== */
 
 .tretaresia-rpg-overlay[data-theme="light"],
@@ -4119,7 +4119,7 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 }
 
 /* ==========================================================================
-   TRETARESIA UI 7.0.4 — repeat-open state and mobile map polish
+   ROLEFORGE UI 7.0.4 — repeat-open state and mobile map polish
    ========================================================================== */
 
 .tretaresia-exact-position {
@@ -5784,7 +5784,7 @@ body.tretaresia-map-fullscreen-open .tretaresia-rpg-panel {
 @media (max-width: 420px) {
     .tretaresia-aura-control-grid,.tretaresia-diagnostic-grid,.tretaresia-comparison-grid { grid-template-columns:1fr; }
 }
-/* Keep the original Tretaresia Character Forge inside the empty chat. */
+/* Keep the original RoleForge Character Forge inside the empty chat. */
 #chat > #tretaresia-character-forge{box-sizing:border-box;display:block;align-self:center;width:min(100%,510px);max-width:100%;margin:1rem auto;padding:0 8px;flex-shrink:0}
 #chat > #tretaresia-character-forge[hidden]{display:none}
 #tretaresia-character-forge iframe{display:block;width:100%;height:min(78dvh,760px);min-height:360px;overflow:auto;background:#040404;border:1px solid rgba(214,180,88,.45);color-scheme:dark}
@@ -5893,3 +5893,4 @@ body.tretaresia-rpg-open #extensionsMenu { display: none !important; }
     #tretaresia-rpg-overlay .tretaresia-rpg-panel-footer { flex-wrap: wrap; }
     #tretaresia-rpg-overlay #tretaresia-context-label { min-width: 0; max-width: 100%; }
 }
+

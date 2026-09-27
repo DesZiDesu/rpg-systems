@@ -1,5 +1,5 @@
 {
-  "display_name": "Tretaresia RPG",
+  "display_name": "RoleForge",
   "loading_order": 11,
   "requires": [],
   "optional": [],
@@ -10,8 +10,9 @@
     "update": "onUpdate"
   },
   "author": "DesZiDesu",
-  "version": "0.43.8",
+  "version": "0.44.0",
   "generate_interceptor": "TretaresiaRpgGenerateInterceptor",
   "homePage": "https://github.com/DesZiDesu/rpg-systems",
   "auto_update": true
 }
+

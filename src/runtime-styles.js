@@ -5,7 +5,7 @@ const pending = new WeakMap();
 export function ensureRuntimeStyles({
     document: doc = globalThis.document,
     root = new URL('../', import.meta.url),
-    version = '0.43.8',
+    version = '0.44.0',
     timeout = 12000,
 } = {}) {
     if (!doc) return Promise.resolve();
@@ -19,7 +19,7 @@ export function ensureRuntimeStyles({
     }
     let loads = pending.get(doc);
     if (!loads) pending.set(doc, loads = new Map());
-    return Promise.all(['styles/style.css', 'styles/ui-polish.css'].map(file => {
+    return Promise.all(['styles/style.css', 'styles/ui-polish.css', 'styles/powers.css'].map(file => {
         const url = new URL(file, root); url.searchParams.set('v', version);
         const href = url.href;
         if (loads.has(href)) return loads.get(href);
@@ -36,7 +36,7 @@ export function ensureRuntimeStyles({
                 if (error) { link.remove(); reject(error); } else resolve();
             };
             const loaded = () => finish();
-            const failed = () => finish(new Error(`Tretaresia stylesheet could not load: ${file}`));
+            const failed = () => finish(new Error(`RoleForge stylesheet could not load: ${file}`));
             const timer = setTimeout(failed, timeout);
             link.addEventListener('load', loaded, {once:true});
             link.addEventListener('error', failed, {once:true});
@@ -47,3 +47,4 @@ export function ensureRuntimeStyles({
         return promise;
     }));
 }
+

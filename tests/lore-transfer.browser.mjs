@@ -48,7 +48,7 @@ try{
  assert.equal(await page.getByRole('checkbox',{name:'เปิด Lore Moon law',exact:true}).isChecked(),false);
  await page.getByRole('checkbox',{name:'เปิด Lore Moon law',exact:true}).check();
  const downloadEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Export JSON',exact:true}).click();
- const download=await downloadEvent;assert.equal(download.suggestedFilename(),'tretaresia-lore.json');
+ const download=await downloadEvent;assert.equal(download.suggestedFilename(),'roleforge-lore.json');
  const exported=JSON.parse(await readFile(await download.path(),'utf8'));assert.equal(exported.format,'tretaresia-lore');assert.equal(exported.entries[0].content,'The moon is a blue crystal.');
  const upload=page.getByLabel('Import Lore JSON', {exact:true});
  await upload.setInputFiles({name:'lore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(exported))});

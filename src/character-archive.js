@@ -86,7 +86,7 @@ export async function writeCharacterArchive(context, settings, owner, kind, reco
                         const editor = globalThis.document?.getElementById?.('character_json_data');
                         if (editor) editor.value = card.json_data;
                     }
-                } catch (error) { console.warn('[Tretaresia RPG] Could not refresh character JSON after saving the archive.', error); }
+                } catch (error) { console.warn('[RoleForge] Could not refresh character JSON after saving the archive.', error); }
             }
         }
         clearLegacy(context, settings, owner, kind, !migration);
@@ -109,7 +109,7 @@ export async function migrateCharacterArchives(context, settings) {
                     cleaned = true;
                 }
             } catch (error) {
-                console.warn(`[Tretaresia RPG] ${kind} archive migration for ${owner} was deferred; original settings remain intact.`, error);
+                console.warn(`[RoleForge] ${kind} archive migration for ${owner} was deferred; original settings remain intact.`, error);
                 // An unavailable server/session affects every card. Avoid a
                 // burst of doomed writes; retry when the chat changes.
                 if (!error.status || error.status === 401 || error.status === 403 || error.status >= 500) break archiveKinds;
@@ -118,3 +118,4 @@ export async function migrateCharacterArchives(context, settings) {
     }
     if (cleaned) context.saveSettingsDebounced?.();
 }
+

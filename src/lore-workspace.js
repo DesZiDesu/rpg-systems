@@ -1,6 +1,6 @@
-import { element } from './npc-chat.js?v=0.43.8';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.43.8';
-import { LORE_FILE_LIMIT, exportLore, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.43.8';
+import { element } from './npc-chat.js?v=0.44.0';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.44.0';
+import { LORE_FILE_LIMIT, exportLore, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.44.0';
 
 export function createLoreWorkspace(panel, api, say) {
     let owner = '', dirty = false, query = '', editing = null, saving = false;
@@ -51,7 +51,7 @@ export function createLoreWorkspace(panel, api, say) {
         const download=button('Export JSON',()=>attempt(()=>{
             if(owner!==api.scopeInfo()?.key)throw Error('การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่');
             const blob=new Blob([exportLore(entries())],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=element('a');
-            a.href=url;a.download='tretaresia-lore.json';document.body.append(a);
+            a.href=url;a.download='roleforge-lore.json';document.body.append(a);
             try{a.click();say('ส่งออก Lore ที่บันทึกแล้วเป็นไฟล์ JSON');}finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
         }));
         tools.append(label,button('＋ สร้าง Lore ใหม่',()=>{if(canLeave())edit({id:'',title:'',content:'',enabled:true});}),button('Import JSON',()=>{if(canLeave())file.click();}),download,file);panel.append(tools);

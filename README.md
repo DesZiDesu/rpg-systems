@@ -1,4 +1,16 @@
-# Tretaresia RPG / RPG System — v0.43.6
+# ROLEFORGE — v0.44.0
+
+## v0.44.0 — Custom Power Presets
+
+- Character creation, RPG UI and wand menu now use RoleForge branding.
+- In **Powers → Power Preset**, choose **Original Preset** for the existing Tretaresia powers or **Custom** to start with an empty list.
+- Create, rename, edit and delete power definitions. Supported types: number, resource, rank and toggle. Configure descriptions, limits, starting values, rank names, icons, colors and availability during character creation.
+- Definitions belong to the active character card; power values belong to each chat. Custom choices appear in character creation, the Powers page and normal AI state updates. Custom resources also appear on Status.
+- **Export JSON / Import JSON** transfer the power preset. Exporting Original produces an editable Custom copy. Import replaces definitions only after confirmation; matching IDs retain existing chat values. Deleting a definition hides it while preserving its archived values.
+- Custom supports up to 64 definitions, 2,000 description characters per power and a 1 MiB import file. JSON uses `roleforge-power-preset` version 1.
+- Existing saves and Original power values remain compatible. Internal storage keys and AI patch tags retain their legacy identifiers. Updating does not require clearing saved data.
+- Custom changes power systems; bundled maps, ranks and other world-specific modules are not a complete world editor.
+
 
 ## v0.43.8 — Lore Import / Export
 
@@ -166,3 +178,4 @@ License: [MIT](LICENSE)
 
 ### NPC role artwork (0.43.6)
 NPC Management → CHAT APPEARANCE offers Classic (12 original icons), Medallion and Emblem (54 roles each). Select a style and role, then save. Existing NPC roleIcon values are retained without migration; AI updates cannot replace an existing NPC icon. New roles include Politician, Knight, Prisoner, Slave, Master (lord/owner), Clergyman and Nun. Clergyman is separate from the fantasy Priest role. Artwork is bundled locally and follows each NPC identity color.
+

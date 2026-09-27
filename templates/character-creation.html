@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8"/>
-<title>TRETARESIA — Character Forge</title>
+<title>ROLEFORGE — Character Forge</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Chakra+Petch:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -177,7 +177,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <div class="arc"></div><div class="arc2"></div>
       <svg class="sig" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4 55 17v30L32 60 9 47V17Z M32 14 46 32 32 50 18 32Z M32 23v18 M23 32h18"/><circle cx="32" cy="32" r="3"/></svg>
     </div>
-    <div class="ld-title">TRETARESIA</div>
+    <div class="ld-title">ROLEFORGE</div>
     <div class="ld-sub" id="ldSub">E N T E R &nbsp; T H E &nbsp; W O R L D</div>
     <div class="ld-div"></div>
     <div class="ld-load">
@@ -193,7 +193,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     <div class="head">
       <div>
         <div class="h1" data-en="CHARACTER FORGE" data-th="สร้างตัวละคร">CHARACTER FORGE</div>
-        <div class="tag" data-en="TRETARESIA · SOUL INSCRIPTION" data-th="เตรทาเรเซีย · จารึกดวงวิญญาณ">TRETARESIA · SOUL INSCRIPTION</div>
+        <div class="tag" data-en="ROLEFORGE · SOUL INSCRIPTION" data-th="ROLEFORGE · จารึกดวงวิญญาณ">ROLEFORGE · SOUL INSCRIPTION</div>
       </div>
       <div class="controls">
         <div class="seg"><button id="lnEn" class="on" onclick="TR.ln('en')">EN</button><button id="lnTh" onclick="TR.ln('th')">ไทย</button></div>
@@ -271,8 +271,8 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     <div class="sec">
       <div class="st"><span class="no">04</span><span class="nm" data-en="POWER SYSTEM" data-th="ระบบพลัง">POWER SYSTEM</span><span class="ln"></span></div>
       <div style="font-size:10px;letter-spacing:1px;color:var(--gold);margin:-3px 0 9px" data-en="Tap to select — multiple power systems allowed" data-th="แตะเพื่อเลือก — เลือกได้หลายระบบพลัง">Tap to select — multiple power systems allowed</div>
-      <div class="power" id="powerGrid"></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Origin / Aura Skill" data-th="พลังกำเนิด">Origin / Aura Skill</span><span class="opt" data-en="define freely" data-th="นิยามอิสระ">define freely</span></label><input class="inp" id="fOrigin" placeholder="Name your innate power…"/></div>
+      <button type="button" class="chip" id="managePowers">Power Preset / จัดการพลัง</button><div class="power" id="powerGrid"></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill" data-th="พลังกำเนิด">Origin Skill</span><span class="opt" data-en="define freely" data-th="นิยามอิสระ">define freely</span></label><input class="inp" id="fOrigin" placeholder="Name your innate power…"/></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill — Category" data-th="หมวดพลังกำเนิด">Origin Skill — Category</span><span class="opt" data-en="preset" data-th="พรีเซ็ต">preset</span></label>
         <select class="inp" id="fOriginCat">
           <option value="Intrinsic Skill" data-en="Intrinsic Skill" data-th="สกิลกำเนิด">Intrinsic Skill</option>
@@ -348,7 +348,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <div class="st"><span class="no">07</span><span class="nm" data-en="STORY" data-th="เรื่องราว">STORY</span><span class="ln"></span></div>
       <div class="f full"><label><span data-en="Personality" data-th="บุคลิก">Personality</span></label><textarea class="inp" id="fPers" placeholder="Traits, quirks, values…"></textarea></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Backstory" data-th="ภูมิหลัง">Backstory</span><span class="opt" data-en="free write" data-th="เขียนอิสระ">free write</span></label><textarea class="inp" id="fBack" placeholder="Write as much as you want…"></textarea></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Goal / Drive" data-th="เป้าหมาย">Goal / Drive</span></label><input class="inp" id="fGoal" placeholder="What do you seek in Tretaresia?"/></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Goal / Drive" data-th="เป้าหมาย">Goal / Drive</span></label><input class="inp" id="fGoal" placeholder="What do you seek in RoleForge?"/></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Opening Scene" data-th="ฉากเริ่มต้น">Opening Scene</span><span class="opt" data-en="where you begin" data-th="จุดเริ่ม">where you begin</span></label><textarea class="inp" id="fScene" placeholder="Where & how does your story open?"></textarea></div>
     </div>
 
@@ -392,7 +392,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     if(!data||typeof data!=='object')return;
     fieldIds.forEach(function(id){if(typeof data.fields?.[id]==='string')g(id).value=data.fields[id];});
     S.stand=typeof data.stand==='string'?data.stand:'';
-    S.power=Array.isArray(data.power)?data.power.slice(0,12):[];
+    S.power=Array.isArray(data.power)?data.power.filter(function(id){return POWERS.some(function(p){return p[0]===id;});}).slice(0,64):[];
     S.rank=typeof data.rank==='string'?data.rank:'';
     S.ab=Array.isArray(data.ab)?data.ab.slice(0,40):[];
     S.it=Array.isArray(data.it)?data.it.slice(0,40):[];
@@ -418,8 +418,9 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 
   function buildPowers(){
     var w=g('powerGrid');w.innerHTML='';
+    if(!POWERS.length){var empty=document.createElement('p');empty.textContent='Custom ยังว่าง — กดจัดการพลังเพื่อสร้าง';w.appendChild(empty);}
     POWERS.forEach(function(p){var c=document.createElement('div');c.className='pcard';
-      c.innerHTML='<span>'+p[0]+'</span><small>'+p[1]+'</small>';
+      var title=document.createElement('span'),detail=document.createElement('small');title.textContent=p[1]||p[0];detail.textContent=p[2]||'';c.append(title,detail);
       c.onclick=function(){var i=S.power.indexOf(p[0]);if(i>=0)S.power.splice(i,1);else S.power.push(p[0]);c.classList.toggle('on');};
       if(S.power.indexOf(p[0])>=0)c.classList.add('on');w.appendChild(c);});
   }
@@ -448,6 +449,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     init:function(){
       g('trapp').classList.add('loading');
       buildChips();buildPowers();buildRanks();rAb();rIt();rCf();
+      g('managePowers').onclick=function(){sendToExtension('manage-powers');};
       g('trSkip').onclick=function(){TR.skip();};
       g('abAdd').onclick=function(){g('abForm').classList.toggle('open');};
       g('itAdd').onclick=function(){g('itForm').classList.toggle('open');};
@@ -457,6 +459,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       g('trapp').addEventListener('click',function(){setTimeout(emitDraft,0);});
       window.addEventListener('message',function(event){
         if(event.source!==window.parent||event.origin!==parentOrigin||event.data?.source!=='tretaresia-rpg-forge')return;
+        if(event.data.powerConfig){POWERS=event.data.powerConfig.choices.map(function(d){return[d.id,d.name,d.description];});S.power=S.power.filter(function(id){return POWERS.some(function(p){return p[0]===id;});});buildPowers();}
         if(event.data.type==='hydrate')restore(event.data.data);
         if(event.data.type==='status'){
           g('trSnd').classList.toggle('on',event.data.working===true);
@@ -496,7 +499,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       if(!g('fName').value)g('fName').value=names[Math.floor(Math.random()*names.length)];
       if(!g('fHair').value)g('fHair').value=hair[Math.floor(Math.random()*hair.length)];
       if(!g('fEyes').value)g('fEyes').value=eyes[Math.floor(Math.random()*eyes.length)];
-      if(S.power.length===0){S.power.push(POWERS[Math.floor(Math.random()*POWERS.length)][0]);buildPowers();}
+      if(S.power.length===0&&POWERS.length){S.power.push(POWERS[Math.floor(Math.random()*POWERS.length)][0]);buildPowers();}
       if(!S.rank){S.rank=RANKS[Math.floor(Math.random()*4)][0];buildRanks();}
     },
     send:function(){
@@ -510,3 +513,4 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 </script>
 </body>
 </html>
+

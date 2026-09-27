@@ -1,4 +1,4 @@
-import { preparePortrait } from './npc-portraits.js?v=0.43.8';
+import { preparePortrait } from './npc-portraits.js?v=0.44.0';
 
 export function portraitPath(value) {
     return typeof value==='string' && /^\/?user\/images\/tretaresia-npc\/[a-zA-Z0-9_-]+\.(webp|jpg|jpeg|png)$/.test(value) ? '/'+value.replace(/^\//,'') : '';
@@ -46,4 +46,5 @@ export async function collectPortraitBackups(records,{read,upload,valid,onProgre
     }
     return {updates,missing,aborted:false};
 }
+
 
