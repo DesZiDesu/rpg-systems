@@ -74,8 +74,15 @@ test('NPC resolution uses IDs and aliases first, rejects ambiguous transliterati
  assert.equal(resolveNpc([a],{name:'Koharu'}),null);assert.equal(resolveNpc([a],{name:'โคฮาคุอื่น'}),null);
 });
 
-test('adjacent narrative paragraphs merge, malformed boundaries do not mix dialogue',()=>{
+test('adjacent narrative blocks remain distinct, malformed boundaries do not mix dialogue',()=>{
  const blocks=parseStory('<tr-narrative>First.</tr-narrative>\n\n<tr-narrative>Second.</tr-narrative><tr-dialogue name="Kohaku">Hello.</narrative><tr-narrative>Rain<tr-dialogue name="Ren">Yes</tr-narrative>');
- assert.deepEqual(blocks.map(b=>b.type),['narrative','dialogue','narrative','dialogue']);
- assert.equal(blocks[0].text,'First.\n\nSecond.');assert.equal(blocks[1].text,'Hello.');assert.equal(blocks[2].text,'Rain');assert.equal(blocks[3].text,'Yes');
+ assert.deepEqual(blocks.map(b=>b.type),['narrative','narrative','dialogue','narrative','dialogue']);
+ assert.equal(blocks[0].text,'First.');assert.equal(blocks[1].text,'Second.');assert.equal(blocks[2].text,'Hello.');assert.equal(blocks[3].text,'Rain');assert.equal(blocks[4].text,'Yes');
+});
+test('explicit speaker header can precede narration or follow scene narration',()=>{
+ const first=parseStory('<tr-header name="Alice"/><tr-narrative>She pauses.</tr-narrative><tr-dialogue name="Alice">Hello.</tr-dialogue>');
+ assert.deepEqual(first.map(b=>b.type),['header','narrative','dialogue']);assert.equal(first[0].name,'Alice');
+ const later=parseStory('<tr-narrative>At dawn.</tr-narrative><tr-header name="Bob"/><tr-narrative>He wakes.</tr-narrative>');
+ assert.deepEqual(later.map(b=>b.type),['narrative','header','narrative']);
+ assert.deepEqual(parseStory('<tr-header name="Alice"/>'),[{type:'header',name:'Alice'}]);
 });

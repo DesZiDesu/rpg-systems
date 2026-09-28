@@ -26,7 +26,21 @@ test('A → B → A restores the returning speaker header',()=>{
 });
 test('narrative and plain prose preserve their positions without resetting the speaker',()=>{
  const {root}=draw(dialogue('Alice','One')+'<tr-narrative>Looks away.</tr-narrative>Pause.'+dialogue('Alice','Two'));
- assert.equal(find(root,'trpg-header').length,1);assert.deepEqual(root.children.map(n=>n.className),['trpg-speaker','trpg-narrative','trpg-plain','trpg-speaker']);assert.equal(find(root,'trpg-prose-copy')[0].textContent,'Looks away.');assert.equal(find(root,'trpg-plain')[0].textContent,'Pause.');
+ assert.equal(find(root,'trpg-header').length,1);assert.deepEqual(root.children.map(n=>n.className),['trpg-speaker']);assert.deepEqual(root.children[0].children.map(n=>n.className),['trpg-header','trpg-dialogue','trpg-narrative','trpg-plain','trpg-dialogue']);assert.equal(find(root,'trpg-prose-copy')[0].textContent,'Looks away.');assert.equal(find(root,'trpg-plain')[0].textContent,'Pause.');
+});
+test('header-first turn supports alternating narration and multiple dialogue boxes, then a second speaker',()=>{
+ const source='<tr-header name="Alice"/><tr-narrative>Approaches.</tr-narrative>'+dialogue('Alice','Hello.')+'<tr-narrative>Waits.</tr-narrative>'+dialogue('Al','Again.')+'<tr-header name="Bob"/>'+dialogue('Bob','Yes.')+'<tr-narrative>Looks away.</tr-narrative><tr-narrative>Steps back.</tr-narrative>'+dialogue('Bob','Goodbye.');
+ const {root,portraits}=draw(source);
+ assert.deepEqual(root.children.map(n=>n.className),['trpg-speaker','trpg-speaker']);
+ assert.deepEqual(root.children[0].children.map(n=>n.className),['trpg-header','trpg-narrative','trpg-dialogue','trpg-narrative','trpg-dialogue']);
+ assert.deepEqual(root.children[1].children.map(n=>n.className),['trpg-header','trpg-dialogue','trpg-narrative','trpg-narrative','trpg-dialogue']);
+ assert.deepEqual(texts(root),['Hello.','Again.','Yes.','Goodbye.']);assert.deepEqual(portraits,['Alice','Bob']);
+});
+test('scene narration may precede the first header, and repeated header does not duplicate it',()=>{
+ const {root}=draw('<tr-narrative>Dawn.</tr-narrative><tr-header name="Alice"/><tr-narrative>Rises.</tr-narrative><tr-header name="Al"/>'+dialogue('Alice','Morning.'));
+ assert.deepEqual(root.children.map(n=>n.className),['trpg-narrative','trpg-speaker']);
+ assert.deepEqual(root.children[1].children.map(n=>n.className),['trpg-header','trpg-narrative','trpg-dialogue']);
+ assert.equal(find(root,'trpg-header').length,1);
 });
 test('canonical names and aliases are one speaker',()=>{
  assert.equal(find(draw(dialogue('Alice','One')+dialogue('Al','Two')).root,'trpg-header').length,1);

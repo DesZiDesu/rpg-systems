@@ -1,4 +1,8 @@
-# ROLEFORGE — v0.44.2
+# ROLEFORGE — v0.44.3
+
+## v0.44.3 — Flexible character turns
+
+A character may open the scene with a header before narration or speech, or the scene may begin with narration before the first header. Each uninterrupted character turn can include multiple separate narration and dialogue boxes under one header. A different speaker gets a new header. Existing dialogue-only replies remain compatible.
 
 ## v0.44.2 — Consistent interface language
 

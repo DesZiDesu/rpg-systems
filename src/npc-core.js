@@ -1,4 +1,4 @@
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.44.2';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.44.3';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -114,23 +114,24 @@ export function completeDraft(base, generated) {
 }
 export function parseStory(source) {
  const text=String(source||'');
- if(!/<tr-(?:narrative|dialogue)\b/i.test(text)||text.length>300000)return null;
+ if(!/<tr-(?:header|narrative|dialogue)\b/i.test(text)||text.length>300000)return null;
  // Tokenize boundaries instead of matching nested blocks with one regex.
  // A new opener ends the previous block; a mismatched closer cannot swallow it.
- const tags=/<(\/?)(?:tr-)?(narrative|dialogue)\b([^>]*)>/gi;
+ const tags=/<(\/?)(?:tr-)?(header|narrative|dialogue)\b([^>]*)>/gi;
  const blocks=[];let active={type:'plain'},cursor=0,match;
  const append=raw=>{
   const body=raw.replace(/<[^>]*>/g,'').replace(/<[^>]*$/,'').trim();
   if(!body)return;
-  const previous=blocks.at(-1);
-  if(active.type==='narrative'&&previous?.type==='narrative')previous.text+='\n\n'+body;
-  else blocks.push({...active,text:body});
+  blocks.push({...active,text:body});
  };
  while((match=tags.exec(text))&&blocks.length<150){
   append(text.slice(cursor,match.index));cursor=tags.lastIndex;
+  if(match[2].toLowerCase()==='header' && match[1]) continue;
   if(match[1]) { active={type:'plain'}; continue; }
   const name=match[3].match(/\bname\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
-  active={type:match[2].toLowerCase(),name:clean(name?.[1]??name?.[2]??name?.[3],120)};
+  const speakerName=clean(name?.[1]??name?.[2]??name?.[3],120);
+  if(match[2].toLowerCase()==='header') { blocks.push({type:'header',name:speakerName});active={type:'plain'};continue; }
+  active={type:match[2].toLowerCase(),name:speakerName};
  }
  append(text.slice(cursor));
  return blocks.length?blocks:null;
@@ -222,10 +223,12 @@ export function retainManualNpcEdits(history, before, after) {
  }
 }
 export const CHAT_INSTRUCTIONS = `ROLEFORGE CHAT PRESENTATION: Write the visible story as plain text inside these blocks, in story order:
+<tr-header name="Exact NPC Name"/> Starts this character's turn and displays their header once, even if narration comes next.
 <tr-narrative>Third-person scene/action narration only.</tr-narrative>
- <tr-dialogue name="Exact NPC Name">Only words spoken by this character, without quotation marks.</tr-dialogue>
+<tr-dialogue name="Exact NPC Name">Only words spoken by this character, without quotation marks.</tr-dialogue>
+Choose the natural opening: start with a character's tr-header then narration or dialogue, OR start with scene narration and show the first tr-header later. Do not default to opening with narration. After a header, alternate narration and dialogue freely, including multiple separate dialogue blocks for the SAME character; keep all of that character's narration and speech under one header until a different character begins. Start the next character with a new tr-header. A dialogue block can also introduce its speaker without a prior header, for compatibility. Do not repeat a header for the same uninterrupted character turn. Separate narrative blocks stay separate when the pacing calls for separate boxes; do not force one dialogue box per character. Include only blocks that add to the scene, with no empty filler.
 Do not emit HTML, Markdown fences, thought labels or role metadata inside blocks. Do not invent portrait URLs.
- Keep consecutive narration paragraphs inside ONE tr-narrative block, separated by blank lines. Start a new block only when switching between narration and speech. Never nest blocks or mix opening/closing tag types. Emit scene metadata before the story and event patches immediately after the associated story block, always outside presentation tags. ${NPC_FIELD_INSTRUCTIONS} The dialogue name and NPC name must be the actual person's name; title is a separate role or epithet and must never replace name. Set met:true only when the player has actually met the person; a mere lore mention is not an encounter. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;
+ Never nest blocks or mix opening/closing tag types. Emit scene metadata before the story and event patches immediately after the associated story block, always outside presentation tags. ${NPC_FIELD_INSTRUCTIONS} The dialogue name and NPC name must be the actual person's name; title is a separate role or epithet and must never replace name. Set met:true only when the player has actually met the person; a mere lore mention is not an encounter. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;
 
 
 // All-or-nothing AI form replacement. Never accept storage IDs, image paths or scope.
@@ -308,4 +311,3 @@ export function resolveNpcSpeaker(records, value) {
  const titled=records.filter(p=>p.title&&keyName(p.title)===wanted);
  return titled.length===1?titled[0]:null;
 }
-

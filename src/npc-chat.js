@@ -1,8 +1,8 @@
-import {uiText} from './ui-language.js?v=0.44.2';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.44.2';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.44.2';
-import { croppedPortrait } from './npc-portraits.js?v=0.44.2';
-import { renderSceneTracker } from './scene-tracker.js?v=0.44.2';
+import {uiText} from './ui-language.js?v=0.44.3';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.44.3';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.44.3';
+import { croppedPortrait } from './npc-portraits.js?v=0.44.3';
+import { renderSceneTracker } from './scene-tracker.js?v=0.44.3';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -52,19 +52,17 @@ export function speakerHeader(profile, open) {
     header.append(details,action);header.addEventListener('click',()=>open(p));return header;
 }
 
-// Group headers by dialogue speaker, including assistant continuations. Narrative
-// and untagged prose retain their exact order without ending a speaker's turn.
+// Keep every block in story order. A header starts a character's turn; prose
+// before the first header stays global, and later prose belongs to that turn.
 export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imageFor, previousSpeaker = null) {
-    for (const block of blocks) {
-        if (block.type === 'narrative') { root.append(narrative(block.text)); continue; }
-        if (block.type === 'plain') { root.append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
-        const name = block.name || fallbackName || 'NPC';
+    let section = null;
+    const startSpeaker = name => {
         const profile = resolveNpcSpeaker([...new Set(lookup.values())], name);
-        // Canonical profile object also unifies aliases, without conflating
-        // distinct records with the same display label or different scopes.
+        // Canonical profiles unify aliases without conflating distinct NPCs.
         const speaker = profile || keyName(name);
+        if (speaker === previousSpeaker && section) return section;
         const p = profile || { name };
-        const section = element('section', 'trpg-speaker');
+        section = element('section', 'trpg-speaker');
         section.style.setProperty('--speaker', identity(p).identityColor);
         if (speaker !== previousSpeaker) {
             const header = speakerHeader(p, open);
@@ -77,9 +75,15 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
                 header.prepend(image);
             });
         }
-        section.append(appendStoryText(element('div', 'trpg-dialogue'),block.text));
         root.append(section);
         previousSpeaker = speaker;
+        return section;
+    };
+    for (const block of blocks) {
+        if (block.type === 'header') { startSpeaker(block.name || fallbackName || 'NPC'); continue; }
+        if (block.type === 'narrative') { (section || root).append(narrative(block.text)); continue; }
+        if (block.type === 'plain') { (section || root).append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
+        if (block.type === 'dialogue') startSpeaker(block.name || fallbackName || 'NPC').append(appendStoryText(element('div', 'trpg-dialogue'),block.text));
     }
 }
 
@@ -89,7 +93,7 @@ export function priorDialogueSpeaker(messages, id, lookup, visible) {
     const prior = messages?.[id - 1];
     if (!prior || prior.is_user || prior.is_system) return null;
     const blocks = parseStory(visible(prior.mes || ''));
-    const last = blocks?.findLast(block => block.type === 'dialogue');
+    const last = blocks?.findLast(block => block.type === 'dialogue' || block.type === 'header');
     if (!last) return null;
     const name = last.name || prior.name || 'NPC';
     return resolveNpcSpeaker([...new Set(lookup.values())], name) || keyName(name);
