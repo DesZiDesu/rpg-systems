@@ -1,8 +1,8 @@
-import {uiText} from './ui-language.js?v=0.44.3';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.44.3';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.44.3';
-import { croppedPortrait } from './npc-portraits.js?v=0.44.3';
-import { renderSceneTracker } from './scene-tracker.js?v=0.44.3';
+import {uiText} from './ui-language.js?v=0.44.4';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.44.4';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.44.4';
+import { croppedPortrait } from './npc-portraits.js?v=0.44.4';
+import { renderSceneTracker } from './scene-tracker.js?v=0.44.4';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;

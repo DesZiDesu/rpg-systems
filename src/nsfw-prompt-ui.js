@@ -1,5 +1,5 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.44.3';
-import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,writingPreferencePrompt} from './nsfw-enhance.js?v=0.44.3';
+import {uiText,uiMarkup} from './ui-language.js?v=0.44.4';
+import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,selectAdultWriting,writingPreferencePrompt} from './nsfw-enhance.js?v=0.44.4';
 
 // This renders the exact optional writing block sent by updatePrompt. Reading
 // or editing it never calls the model; only committed changes save settings.
@@ -9,14 +9,25 @@ export function mountAdultPromptControls(root,{settings,getChat,save,refreshProm
  const preview=root.querySelector('[data-adult-prompt-preview]');
  const status=root.querySelector('[data-adult-prompt-status]');
  const reset=root.querySelector('[data-adult-style-reset]');
+ const mode=root.querySelector('[data-adult-prompt-mode]');
+ mode.value=settings.nsfwPromptMode==='always'?'always':'auto';
  editor.value=settings.nsfwWritingStyle||DEFAULT_ADULT_STYLE;
  function render(){
   const draft=document.activeElement===editor?editor.value:settings.nsfwWritingStyle||DEFAULT_ADULT_STYLE;
-  preview.value=writingPreferencePrompt({...settings,nsfwWritingStyle:draft},getChat());
-  status.textContent=settings.nsfwEnhance
-   ?uiText("NSFW Enhance เปิดอยู่ · ข้อความด้านล่างคือส่วนคำสั่งการเขียนที่จะเพิ่มหลังผู้เล่นเริ่มตอบ")
-   :uiText("NSFW Enhance ปิดอยู่ · ตอนนี้จะไม่ส่งคำสั่งสไตล์หรือแท็ก NSFW (คำสั่งภาษาอาจยังทำงานแยกต่างหาก)");
+  const effective={...settings,nsfwWritingStyle:draft,nsfwPromptMode:mode.value},chat=getChat();
+  const selected=selectAdultWriting(effective,chat);
+  preview.value=writingPreferencePrompt(effective,chat);
+  status.textContent=!settings.nsfwEnhance?uiText('NSFW Enhance is off · writing style and tags are omitted')
+   :!selected.active?uiText('Auto · no relevant scene in recent chat · writing style and tags are omitted')
+   :selected.mode==='always'?uiText('Always · full style and all selected tags are sent')
+   :uiText('Auto · {0}/{1} sections and {2} tags selected',[selected.sections.length,selected.total,selected.tags.length]);
  }
+ mode.addEventListener('change',()=>{
+  const next=mode.value==='always'?'always':'auto';
+  mode.value=next;
+  if(settings.nsfwPromptMode!==next){settings.nsfwPromptMode=next;save();refreshPrompt();}
+  render();
+ });
  editor.addEventListener('input',render);
  editor.addEventListener('change',()=>{
   const next=normalizeWritingStyle(editor.value);
@@ -37,5 +48,4 @@ export function mountAdultPromptControls(root,{settings,getChat,save,refreshProm
  render();
  return {refresh:render};
 }
-
 

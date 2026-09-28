@@ -11,9 +11,9 @@ class Element{
 globalThis.document={activeElement:null};
 
 test('live prompt preview is read-only and edits save only on commit or reset',()=>{
- const root=new Element();root.controls=new Map(['style-editor','prompt-preview','prompt-status','style-reset'].map(name=>[`[data-adult-${name}]`,new Element()]));
+ const root=new Element();root.controls=new Map(['style-editor','prompt-preview','prompt-status','style-reset','prompt-mode'].map(name=>[`[data-adult-${name}]`,new Element()]));
  const get=name=>root.querySelector(`[data-adult-${name}]`);
- const settings={nsfwEnhance:true,roleplayLanguage:'th',language:'en',nsfwTags:['Kissing'],nsfwWritingStyle:''};
+ const settings={nsfwEnhance:true,nsfwPromptMode:'always',roleplayLanguage:'th',language:'en',nsfwTags:['Kissing'],nsfwWritingStyle:''};
  let saves=0,updates=0;
  const controls=mountAdultPromptControls(root,{settings,getChat:()=>[{is_user:true,mes:'Please answer in English.'}],save:()=>saves++,refreshPrompt:()=>updates++});
  assert.equal(get('style-editor').value,DEFAULT_ADULT_STYLE);
@@ -25,8 +25,12 @@ test('live prompt preview is read-only and edits save only on commit or reset',(
  assert.match(get('prompt-preview').value,/Write slower/);assert.equal(saves,0);
  editor.listeners.change();document.activeElement=null;
  assert.equal(settings.nsfwWritingStyle,'Write slower, with more dialogue.');assert.equal(saves,1);assert.equal(updates,1);
+ get('prompt-mode').value='auto';get('prompt-mode').listeners.change();
+ assert.equal(settings.nsfwPromptMode,'auto');assert.equal(saves,2);assert.equal(updates,2);
+ assert.doesNotMatch(get('prompt-preview').value,/Write slower|Kissing/);
+ assert.match(get('prompt-status').textContent,/no relevant scene/);
  settings.nsfwEnhance=false;controls.refresh();
  assert.doesNotMatch(get('prompt-preview').value,/Kissing|Write slower/);
  get('style-reset').listeners.click();assert.equal(settings.nsfwWritingStyle,'');
- assert.equal(editor.value,DEFAULT_ADULT_STYLE);assert.equal(saves,2);assert.equal(updates,2);
+ assert.equal(editor.value,DEFAULT_ADULT_STYLE);assert.equal(saves,3);assert.equal(updates,3);
 });

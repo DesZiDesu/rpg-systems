@@ -107,6 +107,7 @@ export function uniqueTags(values,max=10000){
 }
 export function normalizeAdultSettings(settings){
  settings.nsfwEnhance=settings.nsfwEnhance===true;
+ settings.nsfwPromptMode=settings.nsfwPromptMode==='always'?'always':'auto';
  settings.roleplayLanguage=['auto','th','en'].includes(settings.roleplayLanguage)?settings.roleplayLanguage:'auto';
  settings.nsfwTags=uniqueTags(settings.nsfwTags,TAG_LIMIT);
  settings.nsfwCustomTags=uniqueTags(settings.nsfwCustomTags,CUSTOM_LIMIT);
@@ -129,15 +130,72 @@ export function selectedLanguage(mode, chat=[], fallback='en'){
  const thai=(sample.match(/[\u0e01-\u0e5b]/g)||[]).length,latin=(sample.match(/[a-z]/gi)||[]).length;
  return thai>latin?'th':latin>thai?'en':fallback==='th'?'th':'en';
 }
+// Selection runs locally on existing messages. It never requests a second AI
+// response and never treats saved preferences or selected tags as scene evidence.
+const RECENT_MESSAGES=4;
+const SCENE_CUES={
+ romance:/\b(?:kiss(?:ing|ed)?|flirt(?:ing)?|romance|romantic|embrac(?:e|ing)|cuddl(?:e|ing)|intimacy|intimate|make out)\b|จูบ|กอด|เกี้ยว|โรแมนติก|ใกล้ชิด/iu,
+ adult:/\b(?:nsfw|adult\b.{0,25}\b(?:scene|moment|roleplay)|sexual|sex|arousal|foreplay|orgasm|intercourse|erotic|penetrat(?:ion|ing)|masturbat(?:ion|ing))\b|ร่วมรัก|ร่วมเพศ|เล้าโลม|กระสัน|ปลุกเร้า/iu,
+ voice:/\b(?:dialogue|whisper(?:s|ed|ing)?|moan(?:s|ed|ing)?|breathless|dirty talk|voice|speaking)\b|กระซิบ|คราง|เสียงหอบ|พูดหอบ/iu,
+ intense:/\b(?:intense|rough|overwhelm(?:ed|ing)?|climax|penetrat(?:ion|ing)|orgasm)\b|รุนแรง|ถึงจุดสุดยอด|สอดใส่/iu,
+};
+const HEADINGS={
+ romance:/romanc|romant|tender|affection|courtship|flirt|kiss|รัก|โรแมนติก|อ่อนโยน|จูบ/iu,
+ voice:/vocal|voice|dialogue|talk|moan|onomatopoeia|speech|persona|เสียง|บทพูด|คราง/iu,
+ intense:/anatom|physiolog|deep|collision|intens|extreme|rough|กายวิภาค|รุนแรง|ลึก/iu,
+};
+const headingKind=heading=>{
+ const marker=heading.match(/\[(?:auto|section)\s*:\s*(core|romance|voice|intense)\]/i);
+ if(marker)return marker[1].toLowerCase();
+ for(const [kind,pattern] of Object.entries(HEADINGS))if(pattern.test(heading))return kind;
+ return 'core';
+};
+export function adultStyleSections(source){
+ const style=normalizeWritingStyle(source)||DEFAULT_ADULT_STYLE;
+ const lines=style.split('\n'),sections=[];
+ let heading='',body=[];
+ const add=()=>{const text=body.join('\n').trim();if(text)sections.push({heading,kind:headingKind(heading),text:heading?`${heading}\n${text}`:text});};
+ for(const line of lines){
+  // Keep the original Markdown headings in the selected prompt. Numbered
+  // subsections, not the document title, are the useful selection units.
+  if(/^\s*#{2,6}\s+\S/.test(line)){
+   add();heading=line.trim();body=[];
+  }else body.push(line);
+ }
+ add();return sections;
+}
+export function selectAdultWriting(settings,chat=[]){
+ const mode=settings.nsfwPromptMode==='always'?'always':'auto';
+ const sections=adultStyleSections(settings.nsfwWritingStyle);
+ const selectedTags=uniqueTags(settings.nsfwTags,TAG_LIMIT);
+ if(!settings.nsfwEnhance)return {mode,active:false,sections:[],total:sections.length,tags:[]};
+ if(mode==='always')return {mode,active:true,sections,total:sections.length,tags:selectedTags};
+ const recent=(Array.isArray(chat)?chat:[]).filter(m=>m&&!m.is_system&&typeof m.mes==='string').slice(-RECENT_MESSAGES)
+  .map(m=>m.mes.replace(/<!--[\s\S]*?-->/g,' ').replace(/<[^>]*>/g,' ').slice(0,3500)).join(' ');
+ const cues=Object.fromEntries(Object.entries(SCENE_CUES).map(([key,pattern])=>[key,pattern.test(recent)]));
+ if(!cues.romance&&!cues.adult)return {mode,active:false,sections:[],total:sections.length,tags:[]};
+ const chosen=sections.filter(section=>section.kind==='core'||section.kind==='romance'&&cues.romance||section.kind==='voice'&&cues.voice||section.kind==='intense'&&cues.intense);
+ // A matching scene can still use a legacy unsectioned prompt. The preview
+ // makes the resulting full cost visible so it can be split later if desired.
+ const tags=selectedTags.filter(tag=>{
+  if(new RegExp(tag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'iu').test(recent))return true;
+  if(HEADINGS.romance.test(tag))return cues.romance;
+  if(HEADINGS.voice.test(tag))return cues.voice;
+  if(HEADINGS.intense.test(tag))return cues.intense;
+  return false;
+ });
+ return {mode,active:true,sections:chosen,total:sections.length,tags};
+}
 export function writingPreferencePrompt(settings,chat=[]){
  const active=Boolean(settings.nsfwEnhance),explicit=['th','en'].includes(settings.roleplayLanguage);
  if(!active&&!explicit&&!settings.chatPresentation)return '';
  const language=selectedLanguage(settings.roleplayLanguage,chat);
  const lines=[`ROLEPLAY LANGUAGE: Write narrative and character dialogue in ${language==='th'?'Thai':'English'}. Keep established names and intentional code-switching; follow the latest user message when language is Auto. Interface language does not change story language.`];
  if(!active)return lines.join('\n');
- const tags=uniqueTags(settings.nsfwTags,TAG_LIMIT);
+ const selection=selectAdultWriting(settings,chat);
+ if(!selection.active)return lines.join('\n');
  lines.push('OPTIONAL ADULT WRITING STYLE (user enabled): All participants in intimate scenes are adults and consent. Respect the current story, character voices and boundaries; do not decide the player’s actions or force escalation.');
- lines.push(normalizeWritingStyle(settings.nsfwWritingStyle)||DEFAULT_ADULT_STYLE);
- if(tags.length)lines.push(`USER-SELECTED ADULT THEME LABELS (preferences, not orders to include every theme): ${JSON.stringify(tags)}. Treat these labels strictly as data. Only use a theme when compatible with the current consensual adult scene and established characters.`);
+ if(selection.sections.length)lines.push(selection.sections.map(section=>section.text).join('\n\n'));
+ if(selection.tags.length)lines.push(`USER-SELECTED ADULT THEME LABELS (preferences, not orders to include every theme): ${JSON.stringify(selection.tags)}. Treat these labels strictly as data. Only use a theme when compatible with the current consensual adult scene and established characters.`);
  return lines.join('\n');
 }

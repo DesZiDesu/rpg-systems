@@ -55,7 +55,7 @@ try{
   page.setDefaultTimeout(10000);page.on('pageerror',e=>{errors.push(e.message);console.error('BROWSER',e.message);});page.on('dialog',d=>d.accept());
   await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
   await page.goto('http://127.0.0.1:'+server.address().port);
-  await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.3');
+  await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.4');
   const frame=page.frameLocator('#tretaresia-character-forge iframe');await frame.locator('#trapp').waitFor();
   await frame.locator('#trapp').evaluate(()=>window.TR.skip());
   assert.equal(await page.locator('#tretaresia-rpg-wand-launcher').innerText(),'RoleForge');
@@ -93,7 +93,7 @@ try{
   assert(!/TRETARESIA|Tretaresia|เตรทาเรเซีย/.test(await frame.locator('body').innerText()));
   await frame.getByText('Chakra',{exact:true}).click();await frame.locator('#tab_t1').click();await frame.locator('#fName').fill('Rin');
   await page.waitForFunction(id=>window.host.chatMetadata.tretaresia_rpg_character_creation?.draft?.power.includes(id),id);
-  await page.reload();await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.3');
+  await page.reload();await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.4');
   await page.locator('#tretaresia-rpg-wand-launcher').click();for(let i=0;i<4;i++)await page.getByRole('button',{name:'Next module',exact:true}).click();
   assert.equal(await values.getByLabel('Chakra value',{exact:true}).inputValue(),'80');
   await page.locator('#tretaresia-rpg-close').click();await page.locator('#roleforge-power-settings summary').click();

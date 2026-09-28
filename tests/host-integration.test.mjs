@@ -369,15 +369,17 @@ test('presentation prompt works independently; disabled tracking does not reques
 });
 test('host prompt sends adult preferences only while enabled and follows the player language',()=>{
  const settings=host.getSettings();
- const before={injectState:settings.injectState,autoTrack:settings.autoTrack,chatPresentation:settings.chatPresentation,nsfwEnhance:settings.nsfwEnhance,nsfwTags:settings.nsfwTags,roleplayLanguage:settings.roleplayLanguage};
+ const before={injectState:settings.injectState,autoTrack:settings.autoTrack,chatPresentation:settings.chatPresentation,nsfwEnhance:settings.nsfwEnhance,nsfwPromptMode:settings.nsfwPromptMode,nsfwTags:settings.nsfwTags,roleplayLanguage:settings.roleplayLanguage};
  const previousChat=context.chat;
  try{
   settings.injectState=false;settings.autoTrack=false;settings.chatPresentation=false;
-  settings.nsfwEnhance=false;settings.nsfwTags=['Romance'];settings.roleplayLanguage='auto';
+  settings.nsfwEnhance=false;settings.nsfwPromptMode='auto';settings.nsfwTags=['Romance'];settings.roleplayLanguage='auto';
   host.updatePrompt(host.defaultState());assert.equal(context.lastPrompt[1],'');
   settings.nsfwEnhance=true;context.chat=[{is_user:true,mes:'ตอบเป็นภาษาไทยนะ'}];
   host.updatePrompt(host.defaultState());assert.match(context.lastPrompt[1],/Write narrative and character dialogue in Thai/);
-  assert.match(context.lastPrompt[1],/"Romance"/);
+  assert.doesNotMatch(context.lastPrompt[1],/"Romance"|OPTIONAL ADULT/);
+  context.chat=[{is_user:true,mes:'จูบเธออย่างอ่อนโยน'}];
+  host.updatePrompt(host.defaultState());assert.match(context.lastPrompt[1],/"Romance"/);
   context.chat=[{is_user:true,mes:'Please continue in English.'}];
   host.updatePrompt(host.defaultState());assert.match(context.lastPrompt[1],/Write narrative and character dialogue in English/);
  }finally{Object.assign(settings,before);context.chat=previousChat;}
@@ -387,7 +389,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.3');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.4');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

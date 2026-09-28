@@ -54,7 +54,7 @@ try{
  const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
- await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.3');
+ await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.4');
  const settings=page.locator('#tretaresia-rpg-settings'),power=page.locator('#roleforge-power-editor');
  await settings.locator('details').evaluateAll(nodes=>nodes.forEach(n=>n.open=true));
  assert(!/[ก-๛]/.test(await settings.innerText()),'English settings must not contain Thai labels');
@@ -93,7 +93,7 @@ try{
  const labels=await page.locator('.trpg-manager label,.trpg-manager summary').allTextContents();
  assert(!labels.some(x=>/NPC Management|ATTRIBUTES|CHAT APPEARANCE|Chronicler|Classic|Medallion|Emblem/.test(x)),'Thai NPC editor');
  await page.locator('.trpg-manager [data-close]').click();
- await page.reload();await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.3');
+ await page.reload();await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.4');
  assert.equal(await page.locator('#tretaresia-rpg-language').inputValue(),'th');
  assert.equal(await page.locator('#tretaresia-rpg-roleplay-language').inputValue(),'th');
  assert.deepEqual(errors,[]);console.log('PASS interface isolation, both languages, unsaved values, story language, Forge, all tabs, NPC editor and reload at '+width+'px');

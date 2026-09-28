@@ -33,6 +33,12 @@
             <details class="tretaresia-adult-prompt" id="tretaresia-rpg-adult-prompt">
                 <summary>ดูและปรับ NSFW prompt / View &amp; edit writing prompt</summary>
                 <p>ตัวอย่างด้านล่างแสดงส่วนคำสั่งการเขียนจาก RPG System ตามค่าและแท็กที่เลือกในแชทนี้ ไม่รวม prompt อื่นของ SillyTavern การเปิดดูหรือแก้ไขไม่เรียก AI</p>
+                <label for="tretaresia-rpg-adult-mode">NSFW prompt delivery</label>
+                <select id="tretaresia-rpg-adult-mode" data-adult-prompt-mode>
+                    <option value="auto">Auto · relevant scenes and sections</option>
+                    <option value="always">Always · full saved prompt</option>
+                </select>
+                <p>Auto checks recent chat locally. Split a long prompt with Markdown headings (## or ###), or add [section:core], [section:romance], [section:voice] or [section:intense] to headings. An unsectioned prompt is used in full when a relevant scene is detected. Always sends everything on every turn.</p>
                 <label for="tretaresia-rpg-adult-style-editor">แก้สไตล์การเขียน / Edit writing style</label>
                 <textarea id="tretaresia-rpg-adult-style-editor" data-adult-style-editor rows="12" maxlength="50000" spellcheck="false"></textarea>
                 <button type="button" class="menu_button" data-adult-style-reset>คืนค่าสไตล์เริ่มต้น / Reset style</button>
@@ -174,7 +180,7 @@
                 </button>
                 <span class="tretaresia-rpg-ready-state">
                     <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                    RoleForge engine 0.44.3 ready
+                    RoleForge engine 0.44.4 ready
                 </span>
             </div>
         </div>

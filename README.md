@@ -1,4 +1,8 @@
-# ROLEFORGE — v0.44.3
+# ROLEFORGE — v0.44.4
+
+## v0.44.4 — Selective NSFW Enhance prompts
+
+NSFW Enhance now defaults to **Auto** when enabled. Auto checks the four most recent chat messages locally and leaves the saved adult writing style and tags out of ordinary turns. During a relevant scene it selects sections from Markdown headings, using the section title or an explicit `[section:core]`, `[section:romance]`, `[section:voice]`, or `[section:intense]` label. Unsectioned custom prompts remain intact and are sent only while a relevant scene is detected. **Always** restores the previous behavior of sending the entire saved style and all selected tags on every active turn. The settings preview shows the exact prompt and how many sections and tags Auto selected. No extra AI call is made; the separate story-language instruction still follows its own setting. Recent-chat matching can miss subtle scene transitions, so choose Always when you want to force the complete prompt.
 
 ## v0.44.3 — Flexible character turns
 
