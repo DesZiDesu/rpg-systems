@@ -1,5 +1,6 @@
 import * as uiLanguage from '../src/ui-language.js';
 import * as powers from '../src/power-presets.js';
+import * as forgePresets from '../src/forge-presets.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -15,7 +16,7 @@ import {allowedDiaryOps,diaryRates,householdOffers,groupOffers} from '../src/soc
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...uiLanguage,...powers,mountPowerWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
@@ -389,7 +390,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.4');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.5');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -959,6 +960,20 @@ test('custom preset connects Forge, actual inline patches, normalization and pro
   assert.equal(host.applyForgeProfile(host.defaultState(),{fields:{fName:'Alex'}}).player.powerType,'None');
   assert.equal(host.normalize(result.next).customPowers.chakra,40);
  }finally{delete settings.roleforgePowerPresets[owner];}
+});
+
+test('custom Forge choices save origin, skill mastery, and named Path rank without old world canon',()=>{
+ const settings=host.getSettings(),owner=host.powerPresetOwner();
+ try{
+  forgePresets.writeForgePreset(settings,{mode:'custom',name:'Another setting',origins:['Arcadia'],standings:['Citizen'],skillCategories:['Alchemy'],masteryRanks:['Seed','Bloom'],pathRanks:['Bronze','Silver','Gold']},owner,owner);
+  const draft=host.forgeDraft({fields:{fName:'Ari',fCont:'Arcadia',fBirth:'Silver Harbor',fOrigin:'Dawn',fOriginCat:'Alchemy',fMastery:'Bloom'},stand:'Citizen',rank:'Silver'});
+  const state=host.normalize(host.applyForgeProfile(host.defaultState(),draft));
+  assert.equal(state.player.homeContinent,'Arcadia');assert.equal(state.player.birthplace,'Silver Harbor');assert.equal(state.player.standing,'Citizen');
+  assert.equal(state.skills[0].type,'Alchemy');assert.equal(state.skills[0].rank,'Bloom');
+  assert.equal(state.progression.adventurerRank,'Custom Rank');assert.equal(state.progression.customRankName,'Silver');
+  const prompt=host.statePrompt(state);assert.match(prompt,/Arcadia/);assert.match(prompt,/Silver Harbor/);
+  assert.doesNotMatch(prompt,/Great War shattered|AUTHOR-ONLY ATLAS REFERENCE|Teleport and warp canon:/);
+ }finally{delete settings.roleforgeForgePresets[owner];}
 });
 
 test('interface language does not rewrite AI state instructions or saved custom content',()=>{
