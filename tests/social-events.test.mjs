@@ -1,6 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {allowedDiaryOps, eligibleNpc, householdOffers, groupOffers} from '../src/social-events.js';
+import {allowedDiaryOps, eligibleNpc, householdOffers, groupOffers, confirmedGroupMembership} from '../src/social-events.js';
+
+test('only an exact current membership statement permits direct group registration',()=>{
+ const value={membershipStatus:'established',membershipEvidence:'You are already a member of the Ashtrail party.'};
+ assert.equal(confirmedGroupMembership(value,'You are already a member of the Ashtrail party.'),true);
+ assert.equal(confirmedGroupMembership({...value,membershipEvidence:'Rhea invites you to the Ashtrail party.'},'Rhea invites you to the Ashtrail party.'),false);
+ assert.equal(confirmedGroupMembership({...value,membershipEvidence:'You might join the Ashtrail party.'},'You might join the Ashtrail party.'),false);
+ assert.equal(confirmedGroupMembership({...value,membershipEvidence:'You were already a member of the Ashtrail party.'},'You were already a member of the Ashtrail party.'),false);
+ assert.equal(confirmedGroupMembership({...value,membershipEvidence:'You joined the Ashtrail party but later left.'},'You joined the Ashtrail party but later left.'),false);
+ assert.equal(confirmedGroupMembership(value,'Rhea invites you to the Ashtrail party.'),false);
+ assert.equal(confirmedGroupMembership({...value,membershipEvidence:'คุณอยู่ในกิลด์รุ่งอรุณอยู่แล้ว'},'คุณอยู่ในกิลด์รุ่งอรุณอยู่แล้ว'),true);
+});
 
 const people = [
     {id:'kohaku',name:'Kohaku',met:true,diary:[]},
