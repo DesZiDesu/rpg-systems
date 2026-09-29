@@ -1,4 +1,10 @@
-# ROLEFORGE — v0.44.4
+# ROLEFORGE — v0.44.5
+
+## v0.44.5 — Character Forge presets
+
+In **Extensions → RoleForge → Character Forge Presets**, choose **Original Preset** to keep the Tretaresia Origin, social standings, skill categories, mastery names and Path ranks, or choose **Custom** to define each list for another character card. Each custom list starts empty. Enter one choice per line, then save. Original can be exported as editable JSON and imported again. Presets belong to the character card; existing chat profiles stay intact.
+
+The character form now lets you type an Origin location, skill category and mastery name directly, including names absent from the configured lists. Birthplace is saved separately from the current scene. Custom Path ranks keep their names in the RPG progression display and prompt. Switching back to Original restores the bundled choices without deleting the custom definitions.
 
 ## v0.44.4 — Selective NSFW Enhance prompts
 
