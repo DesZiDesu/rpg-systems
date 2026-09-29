@@ -1,7 +1,19 @@
-import { parseStory } from './npc-core.js?v=0.44.5';
+import { parseStory } from './npc-core.js?v=0.44.6';
 // Pure guards shared by the inline turn tracker and its chat presentation.
 const rates = Object.freeze({ off: Infinity, rare: 12, normal: 5, often: 2 });
 export const diaryRates = Object.keys(rates);
+
+// A direct group upsert must cite an actual assertion of current membership.
+// Invitations, plans and hypothetical membership remain offers to the player.
+export function confirmedGroupMembership(value, story, userStory = '') {
+    if (value?.membershipStatus !== 'established' || typeof value?.membershipEvidence !== 'string') return false;
+    const evidence = value.membershipEvidence.trim();
+    if (evidence.length < 8 || evidence.length > 300) return false;
+    const source = `${story || ''}\n${userStory || ''}`;
+    if (!source.toLocaleLowerCase().includes(evidence.toLocaleLowerCase())) return false;
+    if (/\b(?:if|might|could|would|want to|wish to|plan to|invited to|asked to|not|never|declined|rejected)\b|ถ้า|หาก|อยาก|อาจ|ชวน|เชิญ|ปฏิเสธ|ไม่ได้/i.test(evidence)) return false;
+    return /\b(?:already (?:a |an )?member|(?:am|are|is|was|were) (?:already )?(?:a |an )?(?:member|part of)|(?:have|has) joined|joined|belong(?:s)? to)\b.{0,100}\b(?:party|guild)\b|\b(?:am|are|is|was|were) (?:already )?in (?:the|our|a) (?:party|guild)\b|\b(?:party|guild)\b.{0,100}\b(?:member|joined|belong)\b|(?:อยู่ใน|เป็นสมาชิก|สังกัด|เข้าร่วมแล้ว).{0,100}(?:ปาร์ตี้|กิลด์)|(?:ปาร์ตี้|กิลด์).{0,100}(?:อยู่แล้ว|เป็นสมาชิก|สังกัด|เข้าร่วมแล้ว)/iu.test(evidence);
+}
 
 function mentioned(story, name) {
     if (typeof name !== 'string' || name.trim().length < 2) return false;
@@ -109,4 +121,3 @@ export function allowedDiaryOps(ops, npcs, story, participants, frequency, turn,
         return [['append', 'npcDiary', { ...value, npcId: npc.id, text: thought, sourceTurn: turn }]];
     });
 }
-
