@@ -11,8 +11,8 @@ export function confirmedGroupMembership(value, story, userStory = '') {
     if (evidence.length < 8 || evidence.length > 300) return false;
     const source = `${story || ''}\n${userStory || ''}`;
     if (!source.toLocaleLowerCase().includes(evidence.toLocaleLowerCase())) return false;
-    if (/\b(?:if|might|could|would|want to|wish to|plan to|invited to|asked to|not|never|declined|rejected)\b|ถ้า|หาก|อยาก|อาจ|ชวน|เชิญ|ปฏิเสธ|ไม่ได้/i.test(evidence)) return false;
-    return /\b(?:already (?:a |an )?member|(?:am|are|is|was|were) (?:already )?(?:a |an )?(?:member|part of)|(?:have|has) joined|joined|belong(?:s)? to)\b.{0,100}\b(?:party|guild)\b|\b(?:am|are|is|was|were) (?:already )?in (?:the|our|a) (?:party|guild)\b|\b(?:party|guild)\b.{0,100}\b(?:member|joined|belong)\b|(?:อยู่ใน|เป็นสมาชิก|สังกัด|เข้าร่วมแล้ว).{0,100}(?:ปาร์ตี้|กิลด์)|(?:ปาร์ตี้|กิลด์).{0,100}(?:อยู่แล้ว|เป็นสมาชิก|สังกัด|เข้าร่วมแล้ว)/iu.test(evidence);
+    if (/\b(?:if|might|could|would|want to|wish to|plan to|invited to|asked to|not|never|declined|rejected|former|used to|was|were|left|quit|no longer)\b|ถ้า|หาก|อยาก|อาจ|ชวน|เชิญ|ปฏิเสธ|ไม่ได้|เคย|ออกจาก/i.test(evidence)) return false;
+    return /\b(?:already (?:a |an )?member|(?:am|are|is) (?:already )?(?:a |an )?(?:member|part of)|(?:have|has) joined|joined|belong(?:s)? to)\b.{0,100}\b(?:party|guild)\b|\b(?:am|are|is) (?:already )?in (?:the|our|a) (?:party|guild)\b|\b(?:party|guild)\b.{0,100}\b(?:member|joined|belong)\b|(?:อยู่ใน|เป็นสมาชิก|สังกัด|เข้าร่วมแล้ว).{0,100}(?:ปาร์ตี้|กิลด์)|(?:ปาร์ตี้|กิลด์).{0,100}(?:อยู่แล้ว|เป็นสมาชิก|สังกัด|เข้าร่วมแล้ว)/iu.test(evidence);
 }
 
 function mentioned(story, name) {

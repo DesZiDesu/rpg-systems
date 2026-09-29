@@ -7,6 +7,8 @@ test('only an exact current membership statement permits direct group registrati
  assert.equal(confirmedGroupMembership(value,'You are already a member of the Ashtrail party.'),true);
  assert.equal(confirmedGroupMembership({...value,membershipEvidence:'Rhea invites you to the Ashtrail party.'},'Rhea invites you to the Ashtrail party.'),false);
  assert.equal(confirmedGroupMembership({...value,membershipEvidence:'You might join the Ashtrail party.'},'You might join the Ashtrail party.'),false);
+ assert.equal(confirmedGroupMembership({...value,membershipEvidence:'You were already a member of the Ashtrail party.'},'You were already a member of the Ashtrail party.'),false);
+ assert.equal(confirmedGroupMembership({...value,membershipEvidence:'You joined the Ashtrail party but later left.'},'You joined the Ashtrail party but later left.'),false);
  assert.equal(confirmedGroupMembership(value,'Rhea invites you to the Ashtrail party.'),false);
  assert.equal(confirmedGroupMembership({...value,membershipEvidence:'คุณอยู่ในกิลด์รุ่งอรุณอยู่แล้ว'},'คุณอยู่ในกิลด์รุ่งอรุณอยู่แล้ว'),true);
 });
