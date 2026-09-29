@@ -12,15 +12,15 @@ import * as lore from '../src/lore-core.js';
 import * as archive from '../src/character-archive.js';
 import {sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene} from '../src/scene-tracker.js';
 import {normalizeAdultSettings,writingPreferencePrompt} from '../src/nsfw-enhance.js';
-import {allowedDiaryOps,diaryRates,householdOffers,groupOffers} from '../src/social-events.js';
+import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership} from '../src/social-events.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
@@ -158,6 +158,31 @@ test('group rank and completed quests survive reloads and partial updates',()=>{
  assert.match(panel.innerHTML,/Party name/);assert.match(panel.innerHTML,/Guild name/);
  assert.match(panel.innerHTML,/Completed quests/);
 });
+test('confirmed existing party and guild membership joins immediately without accepting an offer or founding fee',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,get:sandbox.document.getElementById};
+ const settings=host.getSettings(),prior=settings.autoTrack;
+ try{
+  settings.autoTrack=true;
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'rhea',name:'Rhea',met:true})];
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
+  context.saveMetadata=async()=>{};sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  const partyLine='You are already a member of the Ashtrail party.';
+  const guildLine='You have joined the Dawnspire guild.';
+  const ops=[
+   ['upsert','party',{name:'Ashtrail',leaderId:'rhea',leaderName:'Rhea',playerRole:'Scout',memberCount:4,membershipStatus:'established',membershipEvidence:partyLine}],
+   ['upsert','guilds',{name:'Dawnspire',leaderId:'rhea',leaderName:'Rhea',playerRole:'Initiate',memberCount:128,membershipStatus:'established',membershipEvidence:guildLine}],
+  ];
+  context.chat=[{is_user:true,mes:'I am with Rhea.'},{is_user:false,mes:`${partyLine} ${guildLine}<!--tretaresia_patch:${JSON.stringify({ops,sceneTracker:fullScene})}-->`}];
+  await host.processAssistantPatch(1,'normal');
+  const current=host.getState();
+  assert.equal(current.social.party.name,'Ashtrail');assert.equal(current.social.party.playerRole,'Scout');
+  assert.equal(current.social.party.leaderId,'rhea');assert.equal(current.social.party.memberCount,4);
+  assert.equal(current.social.guilds[0].name,'Dawnspire');assert.equal(current.social.guilds[0].memberCount,128);
+  assert.equal(current.player.party,'Ashtrail');assert.equal(current.player.guild,'Dawnspire');
+  assert.equal(current.progression.currency.gold,0);
+  assert.equal(host.socialEventsForMessage(1,context.chat[1])?.groupOffers?.length||0,0);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.get;settings.autoTrack=prior;}
+});
 test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in this chat',async()=>{
  const base=host.defaultState();
  const panel={innerHTML:''};
@@ -169,8 +194,9 @@ test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in 
  let chatId='h-stats-test';context.chatMetadata={};context.getCurrentChatId=()=>chatId;context.saveMetadata=async()=>{};
  try{
   host.renderHStats(panel,base);
-  assert.match(panel.innerHTML,/data-id="lysa"/);
-  assert.doesNotMatch(panel.innerHTML,/data-id="lore"|data-id="player"/);
+  assert.match(panel.innerHTML,/ยังไม่ได้เลือกตัวละคร/);
+  assert.match(panel.innerHTML,/<option value="lysa">Lysa<\/option>/);
+  assert.doesNotMatch(panel.innerHTML,/data-id="lysa"|data-id="lore"|data-id="player"/);
   assert.equal(host.chooseHStatsNpc('lore',base),false);
   assert.equal(host.chooseHStatsNpc('rin',base),true);
   host.renderHStats(panel,base);
@@ -184,9 +210,13 @@ test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in 
   host.renderHStats(panel,updated.next);
   assert.match(panel.innerHTML,/Loyalty 4 of 5/);
   assert.equal((panel.innerHTML.match(/class="is-filled"/g)||[]).length,4);
+  assert.equal(host.removeHStatsNpc('rin',base),true);
+  host.renderHStats(panel,base);
+  assert.match(panel.innerHTML,/ยังไม่ได้เลือกตัวละคร/);
+  assert.deepEqual(Array.from(context.chatMetadata.tretaresia_rpg_visible_hstats_npcs),[]);
   chatId='another-chat';context.chatMetadata={};
   host.renderHStats(panel,base);
-  assert.match(panel.innerHTML,/data-id="lysa" class="is-active"/);
+  assert.match(panel.innerHTML,/ยังไม่ได้เลือกตัวละคร/);
   assert.doesNotMatch(panel.innerHTML,/data-id="rin" class="is-active"/);
  }finally{context.chatMetadata=saved.metadata;context.saveMetadata=saved.save;context.getCurrentChatId=saved.getId;}
 });
@@ -207,6 +237,7 @@ test('H-Stats hydrates the selected NPC image from the same stored portrait sour
  try{
   sandbox.readServerPortrait=async entry=>{assert.equal(entry.id,'kohaku');return new Blob(['portrait'],{type:'image/png'});};
   sandbox.document.createElement=tag=>({tag});
+  host.chooseHStatsNpc('kohaku',state);
   host.renderHStats(panel,state);
   await new Promise(resolve=>setTimeout(resolve,0));
   assert.equal(node.image.alt,'Kohaku portrait');
@@ -242,7 +273,7 @@ test('generated H-Stats fill every missing field and confirmed values replace ge
   assert.equal(changed.hStats.analSexCount,1);
   assert.ok(!changed.hStatsGenerated.includes('favoritePosition'));
   assert.ok(!changed.hStatsGenerated.includes('analSexCount'));
-  const panel={innerHTML:''};host.renderHStats(panel,host.getState());
+  const panel={innerHTML:''};host.chooseHStatsNpc('kohaku',host.getState());host.renderHStats(panel,host.getState());
   assert.match(panel.innerHTML,/ค่าเริ่มต้น AI/);
  }finally{context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.getElement;}
 });
@@ -390,7 +421,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.5');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.6');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

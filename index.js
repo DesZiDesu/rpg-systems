@@ -1,22 +1,22 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.5';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.5';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.6';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.6';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.5';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.5';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.5';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.6';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.6';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.6';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.5';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.5';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.5';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.5';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.5';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.5';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.5';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.5';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.5';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers } from './src/social-events.js?v=0.44.5';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.5';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.6';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.6';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.6';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.6';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.6';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.6';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.6';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.6';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.6';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership } from './src/social-events.js?v=0.44.6';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.6';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -38,6 +38,7 @@ const SETTINGS_KEY = 'tretaresia_rpg';
 const METADATA_KEY = 'tretaresia_rpg_state';
 const CREATION_KEY = 'tretaresia_rpg_character_creation';
 const H_SELECTION_KEY = 'tretaresia_rpg_selected_hstats_npc';
+const H_VISIBLE_KEY = 'tretaresia_rpg_visible_hstats_npcs';
 const MANUAL_SYNC_HISTORY_KEY = 'tretaresia_rpg_manual_sync_history';
 const TURN_HISTORY_KEY = 'tretaresia_rpg_turn_history';
 const SCENE_HISTORY_KEY = 'tretaresia_rpg_scene_history';
@@ -3387,7 +3388,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.5`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.6`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3476,7 +3477,7 @@ function legacyPatchInstructions() {
         'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers and guildMembers; delete householdMembers; offer householdInvitation, partyInvitation or guildInvitation; set or inc npcValues, npcHStats, and playerHStats; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
         'Household invitations: when a met friendly NPC in the current scene or explicitly named in the completed reply asks to join the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. Include the exact role the NPC proposes. This creates an Accept/Decline card in that assistant message, not immediate membership. Never upsert householdMembers or put members inside household; only the player can accept. Explicit departures may delete householdMembers.',
         'If the user asks a named NPC to send a party/guild invitation or write a diary, portray the NPC doing so in the main reply if it fits the story, with a specific established group name and offered role for invitations. Emit the corresponding offer or diary append op in that same reply. A user request by itself does not mean the event happened.',
-        'Party/Guild invitations: if a met friendly NPC present in this completed reply explicitly invites the player, emit ["offer","partyInvitation",{"npcId":"stable-id","name":"established group name","role":"exact position offered","leaderName":"known leader if established","memberCount":12,"members":[{"name":"known member","role":"known role"}],"description":"established purpose","rank":"established group rank if known","completedQuests":12}] or use guildInvitation. Include rank and completedQuests only when established by the story; do not invent a track record. The group name is required; default the offered role to Member if unspecified. memberCount is the total BEFORE the player joins, including unnamed offscreen members. Preserve canonical totals. For a newly invented fictional group establish a plausible size consistent with its reputation and purpose (for example an established adventuring party of 4-8 or a famous guild of dozens/hundreds), without inventing named dossiers. OMIT the count if canon leaves it genuinely unknown. Include only named members confirmed in the story and do not invent NPCs to fill a famous guild. Never create or upsert a player membership or charge a creation fee until the player accepts in Main Chat. Do not emit a new invitation for an already joined group.',
+        'Party/Guild invitations: if a met friendly NPC present in this completed reply explicitly invites the player, emit ["offer","partyInvitation",{"npcId":"stable-id","name":"established group name","role":"exact position offered","leaderName":"known leader if established","memberCount":12,"members":[{"name":"known member","role":"known role"}],"description":"established purpose","rank":"established group rank if known","completedQuests":12}] or use guildInvitation. Include rank and completedQuests only when established by the story; do not invent a track record. The group name is required; default the offered role to Member if unspecified. memberCount is the total BEFORE the player joins, including unnamed offscreen members. Preserve canonical totals. For a newly invented fictional group establish a plausible size consistent with its reputation and purpose (for example an established adventuring party of 4-8 or a famous guild of dozens/hundreds), without inventing named dossiers. OMIT the count if canon leaves it genuinely unknown. Include only named members confirmed in the story and do not invent NPCs to fill a famous guild. An invitation alone creates only the offer button. If the visible story or latest user role-play already establishes the player as a current member, upsert party or guilds immediately instead, with membershipStatus:"established", membershipEvidence:"an exact 8–300 character quote asserting current membership", name, playerRole, leaderId (or "unidentified-leader"), leaderName, knownMembers and memberCount when known. Do not charge a guild founding fee for joining. The memberCount for an established group already includes the player. Do not emit a new invitation for an already joined group.',
         'Use canonical paths shown in the state JSON. For a new incoming physical letter include contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not a letter.',
         'Create or update a named NPC dossier with an upsert on npcs only when that NPC becomes relevant or a confirmed fact changes. Use partial NPC objects and preserve the canonical id from npcIndex. When a relationship becomes a correspondence, also upsert contacts with npcId; do not make every incidental NPC a contact.',
         'For a meaningful private thought or relationship turning point, append npcDiary with {npcId,text,mood}, or npcName when the NPC was created in the same patch; do not write a diary entry every turn. Update abilities granularly through npcAbilities with npcId or npcName. An existing ability can improve via ["inc","npcAbilities",{"npcId":"...","name":"Known skill","amount":2}]; only from established practice/use. NPC portraits and portrait framing are local-only and forbidden in patches.',
@@ -3535,7 +3536,7 @@ function patchInstructions() {
         `Player and NPC H-Stats: ${hFieldKeys}. Applies to female, male and futanari partners with every field available; no extra Condition field or unlock logic. For established details use ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}] or ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}]; use playerHStats with the same field/value or field/amount shape and no npcId for the player. Track all confirmed relevant physical qualities/states, last partners, encounters, volume in liters, infidelity stage/progress, loyalty hearts, pregnancy/other parent, favorite partner/size/position, births, orgasms, and current fantasy. Do not invent values or advance counters twice. infidelityStage 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Record only established facts. Name is the person's actual name; title is a separate role or epithet. Set met:true only once the player has actually met the NPC, and keep mere lore/remote mentions out of the visible Codex.`,
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
         'Social auto-sync: update Party and Guild for confirmed changes. Household invitations require consent: when a met friendly NPC in the current scene or named in this completed reply asks to enter the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. This leaves a permanent Accept/Decline card on that message; NEVER upsert householdMembers or embed members inside household. Only the player confirms entry, including a partner/spouse/child/relative. A confirmed departure may delete householdMembers.',
-        'If an NPC explicitly invites the player to a party or guild, emit ["offer","partyInvitation" or "guildInvitation",{"npcId":"established inviter id","name":"group name","role":"specific player position","leaderName":"established leader if known","memberCount":128,"rank":"established rank","completedQuests":12,"reputation":742,"members":[{"name":"known member","role":"known role"}]}]. Include rank, completedQuests and reputation only if known, and update a group through a partial party/guilds upsert when a confirmed quest completion changes its record. Provide a coherent total including offscreen members for newly invented groups; preserve canonical totals, or omit genuinely unknown totals; never infer a famous guild has only the few named people or fabricate missing member records. Only the player can accept; NEVER create an NPC-led party or guild for the player through upsert. Existing player-owned groups and genuinely confirmed changes can still update.',
+        'If an NPC explicitly invites the player to a party or guild, emit ["offer","partyInvitation" or "guildInvitation",{"npcId":"established inviter id","name":"group name","role":"specific player position","leaderName":"established leader if known","memberCount":128,"rank":"established rank","completedQuests":12,"reputation":742,"members":[{"name":"known member","role":"known role"}]}]. Include rank, completedQuests and reputation only if known, and update a group through a partial party/guilds upsert when a confirmed quest completion changes its record. Provide a coherent total including offscreen members for newly invented groups; preserve canonical totals, or omit genuinely unknown totals; never infer a famous guild has only the few named people or fabricate missing member records. An invitation alone requires the Accept/Decline button. If the story instead states the player is already a member, immediately upsert party or guilds with membershipStatus:"established" and membershipEvidence containing an exact 8–300 character quote from this completed reply or latest user role-play that asserts current membership. Supply name and playerRole; set leaderId to the established NPC id or "unidentified-leader" and leaderName to the established leader name when known. Include only established knownMembers and memberCount (already including the player); do not invent names or charge a founding fee. Existing groups can receive confirmed partial updates.',
         `NPC diary frequency: ${getSettings().npcDiaryFrequency}. Off means NEVER append. Rare allows one entry per NPC every 12 assistant turns; normal every 5; often every 2. Append ["append","npcDiary",{"npcId":"stable-id","text":"one or two sentences of the NPC's own private words or thoughts","mood":"optional"}] ONLY for a met friendly NPC physically in scene or explicitly named in THIS completed reply, and only for a meaningful fresh thought. Write first-person thoughts or quoted speech, never action narration, stage directions, or a thought attributed to somebody else. Do not write every reply or repeat the previous thought; the extension enforces frequency and eligibility.`,
         'Travel/scene: journeys take days/months/years. Preserve the per-message clock and confirmed elapsed time. At journey start set status, origin and destination names, route and days. With movement update remainingDays, location text, scene.position, weather and temperature without moving progress backward or teleporting early. At arrival set Arrived/0 and destination place. For established regional weather upsert regionalWeather; preserve other regions and sparse local room layouts.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
@@ -6780,15 +6781,35 @@ function syncHStatsSelectionChat(context = SillyTavern.getContext()) {
     }
     return context;
 }
+function visibleHStatsNpcs(state = getState(), context = syncHStatsSelectionChat()) {
+    const saved = context.chatMetadata?.[H_VISIBLE_KEY];
+    // Earlier versions stored only an explicitly chosen NPC, never a roster.
+    const ids = Array.isArray(saved) ? saved : context.chatMetadata?.[H_SELECTION_KEY] ? [context.chatMetadata[H_SELECTION_KEY]] : [];
+    return [...new Set(ids)].slice(0, 100).map(id => metFriendlyNpcs(state).find(entry => entry.id === id)).filter(Boolean);
+}
 function chooseHStatsNpc(id, state = getState()) {
     if (!metFriendlyNpcs(state).some(entry => entry.id === id)) return false;
     const context = syncHStatsSelectionChat();
+    const ids = visibleHStatsNpcs(state, context).map(entry => entry.id);
+    if (!ids.includes(id)) ids.push(id);
     selectedHStatsNpcId = id;
     hStatsEditing = false;
-    if (context.getCurrentChatId?.() && context.chatMetadata && context.chatMetadata[H_SELECTION_KEY] !== id) {
+    if (context.getCurrentChatId?.() && context.chatMetadata) {
+        context.chatMetadata[H_VISIBLE_KEY] = ids;
         context.chatMetadata[H_SELECTION_KEY] = id;
-        void saveCurrentChatMetadata(context);
+        void saveCurrentChatMetadata(context).catch(error => console.warn('[RoleForge] Could not save H-Stats selection.', error));
     }
+    return true;
+}
+function removeHStatsNpc(id, state = getState()) {
+    const context = syncHStatsSelectionChat();
+    const ids = visibleHStatsNpcs(state, context).map(entry => entry.id).filter(entry => entry !== id);
+    if (ids.length === visibleHStatsNpcs(state, context).length) return false;
+    context.chatMetadata[H_VISIBLE_KEY] = ids;
+    if (selectedHStatsNpcId === id) selectedHStatsNpcId = ids[0] || null;
+    context.chatMetadata[H_SELECTION_KEY] = selectedHStatsNpcId;
+    hStatsEditing = false;
+    void saveCurrentChatMetadata(context).catch(error => console.warn('[RoleForge] Could not save H-Stats selection.', error));
     return true;
 }
 function hFieldControl(field, value) {
@@ -6900,18 +6921,22 @@ async function completeHStatsBaseline(npcId) {
 function renderHStats(panel, state) {
     if (!panel) return;
     const context = syncHStatsSelectionChat();
-    const roster = metFriendlyNpcs(state);
+    const roster = visibleHStatsNpcs(state, context);
     if (!roster.some(entry => entry.id === selectedHStatsNpcId)) {
         const stored = context.chatMetadata?.[H_SELECTION_KEY];
-        selectedHStatsNpcId = [stored, selectedNpcId, roster[0]?.id].find(id => roster.some(entry => entry.id === id)) || null;
+        selectedHStatsNpcId = [stored, roster[0]?.id].find(id => roster.some(entry => entry.id === id)) || null;
     }
     const selected = roster.find(entry => entry.id === selectedHStatsNpcId);
+    const available = metFriendlyNpcs(state).filter(entry => !roster.some(visible => visible.id === entry.id));
+    const picker = available.length ? (uiMarkup('<div class="tretaresia-h-picker"><label><span>เลือกคนที่จะแสดง / Add to H-Stats</span><select name="hStatsNpcId">')
+        + available.map(entry => (uiMarkup('<option value="')+html(entry.id)+uiMarkup('">')+html(entry.name)+uiMarkup('</option>'))).join('')
+        + uiMarkup('</select></label><button type="button" class="tretaresia-secondary-button" data-action="add-hstats-npc">เพิ่ม / Add</button></div>')) : '';
     const openPanel = activeTabIndex === TAB_ORDER.indexOf('hstats')
         && document.getElementById?.('tretaresia-rpg-overlay')?.classList?.contains('is-open');
     if (selected && hStatsMissingFields(selected).length && openPanel) {
         const failed = hStatsBaselineFailures.has(hStatsBaselineKey(selected.id, context));
         if (!failed) void completeHStatsBaseline(selected.id);
-        panel.innerHTML = (uiMarkup("")+(heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse'))+uiMarkup("\n            <section class=\"tretaresia-h-empty\" role=\"status\"><i class=\"fa-solid fa-heart-pulse\"></i><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(failed ? 'บันทึกโปรไฟล์ยังไม่สำเร็จ กรุณาลองใหม่' : 'กำลังสร้างโปรไฟล์ H-Stats ให้ครบทุกช่อง และเก็บค่าที่เนื้อเรื่องยืนยันไว้')+uiMarkup("</p>")+(failed ? uiMarkup("<button type=\"button\" class=\"tretaresia-primary-button\" data-action=\"retry-hstats-baseline\">ลองสร้างอีกครั้ง</button>") : '')+uiMarkup("</section>"));
+        panel.innerHTML = (uiMarkup("")+(heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse'))+picker+uiMarkup("\n            <section class=\"tretaresia-h-empty\" role=\"status\"><i class=\"fa-solid fa-heart-pulse\"></i><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(failed ? 'บันทึกโปรไฟล์ยังไม่สำเร็จ กรุณาลองใหม่' : 'กำลังสร้างโปรไฟล์ H-Stats ให้ครบทุกช่อง และเก็บค่าที่เนื้อเรื่องยืนยันไว้')+uiMarkup("</p>")+(failed ? uiMarkup("<button type=\"button\" class=\"tretaresia-primary-button\" data-action=\"retry-hstats-baseline\">ลองสร้างอีกครั้ง</button>") : '')+uiMarkup("</section>"));
         return;
     }
     const sheet = selected ? hStats(selected.hStats) : null;
@@ -6929,7 +6954,8 @@ function renderHStats(panel, state) {
     ] : [];
     const fields = H_FIELDS.filter(field => field.group === selectedHStatsSection);
     panel.innerHTML = `${heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse')}
-        ${roster.length ? (uiMarkup("<div class=\"tretaresia-h-shell\"><nav class=\"tretaresia-h-roster\" aria-label=\"NPC DIRECTORY · เลือกตัวละคร\"><small>NPC DIRECTORY · เลือกตัวละคร</small>")+(roster.map(entry => (uiMarkup("<button type=\"button\" data-action=\"select-hstats-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\" class=\"")+(selected?.id === entry.id ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selected?.id === entry.id)+uiMarkup("\"><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.gender || '—'))+uiMarkup(" · ")+(html(entry.location || entry.title || '—'))+uiMarkup("</small></button>"))).join(''))+uiMarkup("</nav>\n        <div class=\"tretaresia-h-main\"><section class=\"tretaresia-h-hero\"><div class=\"tretaresia-h-portrait-stage\"><span class=\"tretaresia-h-monogram\">")+(npcPortraitSlot(selected, 'tretaresia-npc-portrait tretaresia-h-photo'))+uiMarkup("</span><small>PARTNER · ")+(html(selected.name))+uiMarkup("</small></div><div class=\"tretaresia-h-hero-info\"><div class=\"tretaresia-h-identity\"><div><small>")+(html(selected.gender || '—'))+uiMarkup(" · ")+(html(selected.race || selected.location || '—'))+uiMarkup("</small><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(html(selected.title || selected.occupation || selected.relationship || '—'))+uiMarkup("</p><span>")+(html(selected.location || '—'))+uiMarkup("</span></div></div>\n        <div class=\"tretaresia-h-status\"><div><span>ความซื่อสัตย์ต่อผู้เล่น</span><div class=\"tretaresia-h-heart-value\"><div class=\"tretaresia-h-hearts\" aria-label=\"Loyalty ")+(hearts === null ? 'unknown' : hearts + ' of 5')+uiMarkup("\">")+(Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join(''))+uiMarkup("</div><small>")+(hearts === null ? 'ยังไม่ทราบ' : `${hearts} / 5${generated.has('loyaltyHearts') ? ' · AI' : ''}`)+uiMarkup("</small></div></div><div><span>แนวโน้มนอกใจ</span><strong>STAGE ")+(stage)+uiMarkup(" / 5 · ")+(progress ?? '—')+uiMarkup("%")+(generated.has('infidelityStage') || generated.has('infidelityProgress') ? ' · AI' : '')+uiMarkup("</strong></div><div class=\"tretaresia-h-track\" role=\"progressbar\" aria-label=\"Infidelity stage progress\" ")+(progress === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"`)+uiMarkup("><i style=\"width:")+(progress ?? 0)+uiMarkup("%\"></i></div><div><span>การตั้งครรภ์</span><strong>")+(sheet.pregnant === null ? 'ยังไม่ทราบ' : sheet.pregnant ? 'ท้อง' : 'ไม่ท้อง')+uiMarkup("")+(generated.has('pregnant') ? ' · AI' : '')+uiMarkup("</strong></div></div></div></section>\n        <section class=\"tretaresia-h-highlights\" aria-label=\"H-Stats overview\">")+(highlights.map(([title,icon,quality,stateKey,count]) => (uiMarkup("<article><header><i class=\"fa-solid ")+(icon)+uiMarkup("\" aria-hidden=\"true\"></i><strong>")+(title)+uiMarkup("</strong></header><div><span>")+(html(H_FIELD_MAP[quality].label))+uiMarkup("</span><b>")+(knownH(quality))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[stateKey].label))+uiMarkup("</span><b>")+(knownH(stateKey))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[count].label))+uiMarkup("</span><b>")+(knownH(count))+uiMarkup("</b></div></article>"))).join(''))+uiMarkup("</section>\n        <p class=\"tretaresia-h-sync-note\">")+(generated.size ? `${generated.size} ช่องเป็นค่าเริ่มต้นที่สร้างขึ้นและจะเปลี่ยนเมื่อเรื่องยืนยันข้อมูลใหม่` : 'ข้อมูลทุกช่องมาจากเรื่องหรือการแก้ไขของคุณ')+uiMarkup(" <button type=\"button\" data-action=\"open-manual-sync\">เลือกช่วงข้อความเพื่ออัปเดตทุกแท็บ</button></p>\n        <nav class=\"tretaresia-h-sections\" aria-label=\"H-Stats categories\">")+(H_GROUPS.map(group => (uiMarkup("<button type=\"button\" data-action=\"select-hstats-section\" data-id=\"")+(group)+uiMarkup("\" class=\"")+(selectedHStatsSection === group ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selectedHStatsSection === group)+uiMarkup("\">")+(H_GROUP_LABELS[group])+uiMarkup("</button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-h-detail\"><header><h4>")+(H_GROUP_LABELS[selectedHStatsSection])+uiMarkup("</h4><button type=\"button\" data-action=\"toggle-hstats-edit\" aria-pressed=\"")+(hStatsEditing)+uiMarkup("\"><i class=\"fa-solid ")+(hStatsEditing ? 'fa-xmark' : 'fa-pen')+uiMarkup("\"></i> ")+(hStatsEditing ? 'ยกเลิกแก้ไข / Cancel' : 'แก้ไขข้อมูล / Edit')+uiMarkup("</button></header>\n        ")+(hStatsEditing ? (uiMarkup("<form data-form=\"npc-hstats\" class=\"tretaresia-h-form\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(selected.id))+uiMarkup("\"><div class=\"tretaresia-h-grid\">")+(fields.map(field => hFieldControl(field, sheet[field.key])).join(''))+uiMarkup("</div><button type=\"submit\" class=\"tretaresia-primary-button\">บันทึกข้อมูล / Save</button></form>")) : (uiMarkup("<div class=\"tretaresia-h-readout\">")+(fields.map(field => (uiMarkup("<div><span>")+(html(field.label))+uiMarkup("</span><strong>")+(html(sheet[field.key] === null || sheet[field.key] === '' ? 'ยังไม่ทราบ' : field.type === 'boolean' ? sheet[field.key] ? 'ท้อง / Pregnant' : 'ไม่ท้อง / Not pregnant' : String(sheet[field.key])))+uiMarkup("")+(generated.has(field.key) ? uiMarkup("<small class=\"tretaresia-h-generated\">ค่าเริ่มต้น AI</small>") : '')+uiMarkup("</strong></div>"))).join(''))+uiMarkup("</div>")))+uiMarkup("</section></div></div>")) : (uiMarkup("<section class=\"tretaresia-h-empty\"><i class=\"fa-solid fa-users-viewfinder\"></i><h3>ยังไม่มี NPC ที่เคยพบ</h3><p>NPC ที่พบแล้วและเป็นมิตรจะแสดงที่นี่เมื่อมีข้อมูลในเรื่อง</p><button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open>เปิด NPC Management</button></section>"))}`;
+        ${picker}
+        ${roster.length ? (uiMarkup("<div class=\"tretaresia-h-shell\"><nav class=\"tretaresia-h-roster\" aria-label=\"NPC DIRECTORY · เลือกตัวละคร\"><small>NPC DIRECTORY · เลือกตัวละคร</small>")+(roster.map(entry => (uiMarkup("<div class=\"tretaresia-h-roster-item\"><button type=\"button\" data-action=\"select-hstats-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\" class=\"")+(selected?.id === entry.id ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selected?.id === entry.id)+uiMarkup("\"><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.gender || '—'))+uiMarkup(" · ")+(html(entry.location || entry.title || '—'))+uiMarkup("</small></button><button type=\"button\" class=\"tretaresia-h-remove\" data-action=\"remove-hstats-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\" aria-label=\"Remove ")+(html(entry.name))+uiMarkup(" from H-Stats\"><i class=\"fa-solid fa-xmark\"></i></button></div>"))).join(''))+uiMarkup("</nav>\n        <div class=\"tretaresia-h-main\"><section class=\"tretaresia-h-hero\"><div class=\"tretaresia-h-portrait-stage\"><span class=\"tretaresia-h-monogram\">")+(npcPortraitSlot(selected, 'tretaresia-npc-portrait tretaresia-h-photo'))+uiMarkup("</span><small>PARTNER · ")+(html(selected.name))+uiMarkup("</small></div><div class=\"tretaresia-h-hero-info\"><div class=\"tretaresia-h-identity\"><div><small>")+(html(selected.gender || '—'))+uiMarkup(" · ")+(html(selected.race || selected.location || '—'))+uiMarkup("</small><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(html(selected.title || selected.occupation || selected.relationship || '—'))+uiMarkup("</p><span>")+(html(selected.location || '—'))+uiMarkup("</span></div></div>\n        <div class=\"tretaresia-h-status\"><div><span>ความซื่อสัตย์ต่อผู้เล่น</span><div class=\"tretaresia-h-heart-value\"><div class=\"tretaresia-h-hearts\" aria-label=\"Loyalty ")+(hearts === null ? 'unknown' : hearts + ' of 5')+uiMarkup("\">")+(Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join(''))+uiMarkup("</div><small>")+(hearts === null ? 'ยังไม่ทราบ' : `${hearts} / 5${generated.has('loyaltyHearts') ? ' · AI' : ''}`)+uiMarkup("</small></div></div><div><span>แนวโน้มนอกใจ</span><strong>STAGE ")+(stage)+uiMarkup(" / 5 · ")+(progress ?? '—')+uiMarkup("%")+(generated.has('infidelityStage') || generated.has('infidelityProgress') ? ' · AI' : '')+uiMarkup("</strong></div><div class=\"tretaresia-h-track\" role=\"progressbar\" aria-label=\"Infidelity stage progress\" ")+(progress === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"`)+uiMarkup("><i style=\"width:")+(progress ?? 0)+uiMarkup("%\"></i></div><div><span>การตั้งครรภ์</span><strong>")+(sheet.pregnant === null ? 'ยังไม่ทราบ' : sheet.pregnant ? 'ท้อง' : 'ไม่ท้อง')+uiMarkup("")+(generated.has('pregnant') ? ' · AI' : '')+uiMarkup("</strong></div></div></div></section>\n        <section class=\"tretaresia-h-highlights\" aria-label=\"H-Stats overview\">")+(highlights.map(([title,icon,quality,stateKey,count]) => (uiMarkup("<article><header><i class=\"fa-solid ")+(icon)+uiMarkup("\" aria-hidden=\"true\"></i><strong>")+(title)+uiMarkup("</strong></header><div><span>")+(html(H_FIELD_MAP[quality].label))+uiMarkup("</span><b>")+(knownH(quality))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[stateKey].label))+uiMarkup("</span><b>")+(knownH(stateKey))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[count].label))+uiMarkup("</span><b>")+(knownH(count))+uiMarkup("</b></div></article>"))).join(''))+uiMarkup("</section>\n        <p class=\"tretaresia-h-sync-note\">")+(generated.size ? `${generated.size} ช่องเป็นค่าเริ่มต้นที่สร้างขึ้นและจะเปลี่ยนเมื่อเรื่องยืนยันข้อมูลใหม่` : 'ข้อมูลทุกช่องมาจากเรื่องหรือการแก้ไขของคุณ')+uiMarkup(" <button type=\"button\" data-action=\"open-manual-sync\">เลือกช่วงข้อความเพื่ออัปเดตทุกแท็บ</button></p>\n        <nav class=\"tretaresia-h-sections\" aria-label=\"H-Stats categories\">")+(H_GROUPS.map(group => (uiMarkup("<button type=\"button\" data-action=\"select-hstats-section\" data-id=\"")+(group)+uiMarkup("\" class=\"")+(selectedHStatsSection === group ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selectedHStatsSection === group)+uiMarkup("\">")+(H_GROUP_LABELS[group])+uiMarkup("</button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-h-detail\"><header><h4>")+(H_GROUP_LABELS[selectedHStatsSection])+uiMarkup("</h4><button type=\"button\" data-action=\"toggle-hstats-edit\" aria-pressed=\"")+(hStatsEditing)+uiMarkup("\"><i class=\"fa-solid ")+(hStatsEditing ? 'fa-xmark' : 'fa-pen')+uiMarkup("\"></i> ")+(hStatsEditing ? 'ยกเลิกแก้ไข / Cancel' : 'แก้ไขข้อมูล / Edit')+uiMarkup("</button></header>\n        ")+(hStatsEditing ? (uiMarkup("<form data-form=\"npc-hstats\" class=\"tretaresia-h-form\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(selected.id))+uiMarkup("\"><div class=\"tretaresia-h-grid\">")+(fields.map(field => hFieldControl(field, sheet[field.key])).join(''))+uiMarkup("</div><button type=\"submit\" class=\"tretaresia-primary-button\">บันทึกข้อมูล / Save</button></form>")) : (uiMarkup("<div class=\"tretaresia-h-readout\">")+(fields.map(field => (uiMarkup("<div><span>")+(html(field.label))+uiMarkup("</span><strong>")+(html(sheet[field.key] === null || sheet[field.key] === '' ? 'ยังไม่ทราบ' : field.type === 'boolean' ? sheet[field.key] ? 'ท้อง / Pregnant' : 'ไม่ท้อง / Not pregnant' : String(sheet[field.key])))+uiMarkup("")+(generated.has(field.key) ? uiMarkup("<small class=\"tretaresia-h-generated\">ค่าเริ่มต้น AI</small>") : '')+uiMarkup("</strong></div>"))).join(''))+uiMarkup("</div>")))+uiMarkup("</section></div></div>")) : (uiMarkup("<section class=\"tretaresia-h-empty\"><i class=\"fa-solid fa-users-viewfinder\"></i><h3>ยังไม่ได้เลือกตัวละคร</h3><p>เลือก NPC ที่เคยพบจากเมนูด้านบน หรือเปิดข้อมูล NPC แล้วกด H-Stats</p><button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open>เปิด NPC Management</button></section>"))}`;
     if (selected && typeof panel.querySelectorAll === 'function') void hydrateNpcPortraits(panel, state);
 }
 
@@ -8245,11 +8271,18 @@ async function onPanelClick(event) {
         }
         case 'select-npc':
             selectedNpcId = id;
-            chooseHStatsNpc(id, state);
             renderPanel('npcs', document.querySelector('[data-panel="npcs"]'), getState());
             break;
+        case 'add-hstats-npc': {
+            const chosen = document.querySelector('[data-panel="hstats"] select[name="hStatsNpcId"]')?.value;
+            if (chooseHStatsNpc(chosen, state)) renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
+            break;
+        }
+        case 'remove-hstats-npc':
+            if (removeHStatsNpc(id, state)) renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
+            break;
         case 'select-hstats-npc':
-            if (chooseHStatsNpc(id, state)) renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
+            if (visibleHStatsNpcs(state).some(entry => entry.id === id) && chooseHStatsNpc(id, state)) renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
             break;
         case 'open-npc-hstats':
             if (chooseHStatsNpc(id, state)) activateTab('hstats');
@@ -9690,28 +9723,33 @@ async function processAssistantPatch(messageId, generationType = '') {
         let accepted = 0;
         let notifications = [];
         const inlineOps = extracted.patch?.ops || [];
-        // Joining the family is a user decision. Never let a model upsert a
-        // household member or append an unchecked private journal entry.
-        const safeOps = inlineOps.filter(([verb,path,value]) =>
-            !(verb === 'upsert' && path === 'householdMembers')
-            && !['householdInvitation','partyInvitation','guildInvitation','npcDiary'].includes(path)
-            && !(verb === 'upsert' && path === 'party' && !base.social.party && value?.leaderId !== 'player')
-            && !(verb === 'upsert' && path === 'guilds' && value?.leaderId !== 'player'
-                && !base.social.guilds.some(entry => entry.id === value?.id || entry.name === value?.name)));
-        const safePatch = extracted.patch && { ...extracted.patch, ops: safeOps.map(([verb,path,value,...rest]) =>
-            path === 'household' && verb === 'upsert' ? [verb,path,{...value,members:undefined},...rest] : [verb,path,value,...rest]) };
-        if (safePatch) {
-            const result = applyStatePatch(base, safePatch);
-            patched = result.next;
-            accepted = result.accepted;
-            notifications = result.notifications;
-        }
         let userMessage = null;
         for (let index = messageId - 1; index >= 0; index -= 1) {
             if (context.chat[index]?.is_user && !context.chat[index]?.is_system) {
                 userMessage = context.chat[index];
                 break;
             }
+        }
+        // Family membership still needs user consent. External party/guild
+        // membership can be recorded when the role-play already establishes it.
+        const safeOps = inlineOps.filter(([verb,path,value]) =>
+            !(verb === 'upsert' && path === 'householdMembers')
+            && !['householdInvitation','partyInvitation','guildInvitation','npcDiary'].includes(path)
+            && !(verb === 'upsert' && path === 'party' && !base.social.party && value?.leaderId !== 'player'
+                && !confirmedGroupMembership(value, extracted.visible, userMessage?.mes))
+            && !(verb === 'upsert' && path === 'guilds' && value?.leaderId !== 'player'
+                && !base.social.guilds.some(entry => entry.id === value?.id || entry.name === value?.name)
+                && !confirmedGroupMembership(value, extracted.visible, userMessage?.mes)));
+        const safePatch = extracted.patch && { ...extracted.patch, ops: safeOps.map(([verb,path,value,...rest]) =>
+            path === 'household' && verb === 'upsert' ? [verb,path,{...value,members:undefined},...rest]
+                : verb === 'upsert' && ['party','guilds'].includes(path) && value?.leaderId !== 'player'
+                    && confirmedGroupMembership(value, extracted.visible, userMessage?.mes)
+                    ? [verb,path,{...value,joinedByInvitation:true},...rest] : [verb,path,value,...rest]) };
+        if (safePatch) {
+            const result = applyStatePatch(base, safePatch);
+            patched = result.next;
+            accepted = result.accepted;
+            notifications = result.notifications;
         }
         const reconciled = reconcileCompletedTurn(base, patched, userMessage, message);
         reconciled.changes += registerStorySpeakers(reconciled.next, message, context, base);
@@ -10646,7 +10684,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.44.5 loaded.');
+        console.info('[RoleForge] Role-play interface v0.44.6 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

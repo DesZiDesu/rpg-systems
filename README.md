@@ -1,4 +1,9 @@
-# ROLEFORGE — v0.44.5
+# ROLEFORGE — v0.44.6
+
+## v0.44.6 — Established groups and selected H-Stats NPCs
+
+- If the current story or player role-play already establishes membership in a party or guild, the tracker records it immediately with the stated leader, role, and known membership details. A new invitation still shows Accept/Decline and does not join automatically. Joining an existing guild does not charge the founding fee.
+- H-Stats starts with an empty NPC roster. Add a met NPC from its picker or the NPC Management H-Stats action, then remove it from the roster when desired. Existing chat-specific selections stay visible; other met NPCs remain available to add without displaying their dossiers automatically.
 
 ## v0.44.5 — Character Forge presets
 
