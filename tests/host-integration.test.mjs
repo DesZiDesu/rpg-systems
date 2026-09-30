@@ -11,17 +11,21 @@ import {H_FIELDS,H_FIELD_MAP,hStats,updateHStat} from '../src/h-stats.js';
 import * as scopes from '../src/npc-scopes.js';
 import * as lore from '../src/lore-core.js';
 import * as archive from '../src/character-archive.js';
+import * as storyMemory from '../src/story-memory.js';
+import * as storyAgenda from '../src/story-agenda.js';
+import * as questObjectives from '../src/quest-objectives.js';
+import * as storyWorkspace from '../src/story-workspace.js';
 import {sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel} from '../src/scene-tracker.js';
 import {normalizeAdultSettings,writingPreferencePrompt} from '../src/nsfw-enhance.js';
 import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded} from '../src/social-events.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('quest payout is recorded once across paraphrased turns, set balances, archive removal and reload',()=>{
@@ -855,7 +859,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.8');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.9');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -1446,4 +1450,277 @@ test('interface language does not rewrite AI state instructions or saved custom 
  state.player.name='Name ชื่อเดิม';state.player.profession='ผู้รักษา';
  try{settings.language='en';const en=host.statePrompt(state);settings.language='th';assert.equal(host.statePrompt(state),en);assert.equal(state.player.name,'Name ชื่อเดิม');assert.equal(state.player.profession,'ผู้รักษา');}
  finally{settings.language=before;}
+});
+
+test('story systems migrate old saves without changing legacy quest progress or balances',()=>{
+ const old=host.defaultState();delete old.storyMemories;delete old.storyAgenda;
+ old.quests=[{id:'legacy',name:'An older quest',status:'Active',progress:61}];old.progression.currency.gold=17;
+ const migrated=host.normalize(JSON.parse(JSON.stringify(old)));
+ assert.deepEqual(Array.from(migrated.storyMemories),[]);assert.deepEqual(Array.from(migrated.storyAgenda),[]);
+ assert.equal(migrated.quests[0].progress,61);assert.equal(migrated.quests[0].objectives.length,0);assert.equal(migrated.progression.currency.gold,17);
+ assert.deepEqual(Array.from(host.defaultState().storyMemories),[]);assert.deepEqual(Array.from(host.defaultState().storyAgenda),[]);
+});
+
+test('story patches preserve canonical identities and host provenance across duplicates, partial updates and reload',()=>{
+ const first=host.applyStatePatch(host.defaultState(),{ops:[['set','worldClock.day',7],
+  ['upsert','storyMemories',{id:'promise',title:'Return Mira’s book',kind:'Promise',detail:'Return it intact.',people:['Mira'],evidence:'I promise to return it.',sourceMessageId:999,sourceDay:999,source:'spoof'}],
+  ['upsert','storyAgenda',{id:'meeting',title:'Meet Mira',dueDay:8,dueTime:'09:00',location:'Library',evidence:'See you tomorrow at nine.',sourceMessageId:999,source:'spoof'}],
+  ['upsert','quests',{id:'books',name:'Recover the books',status:'Active',objectives:[{id:'find',title:'Find the book'},{id:'return',title:'Return the book'}]}],
+ ]},{sourceMessageId:5,source:'main-reply'}).next;
+ assert.equal(first.storyMemories[0].sourceMessageId,5);assert.equal(first.storyMemories[0].sourceDay,7);assert.equal(first.storyMemories[0].source,'main-reply');
+ assert.equal(first.storyAgenda[0].sourceMessageId,5);assert.equal(first.storyAgenda[0].sourceDay,7);assert.equal(first.storyAgenda[0].source,'main-reply');
+ const repeated=host.applyStatePatch(first,{ops:[
+  ['upsert','storyMemories',{id:'fresh-ai-id',title:'RETURN MIRA’S BOOK',kind:'Promise'}],
+  ['upsert','storyAgenda',{id:'fresh-ai-id',title:'MEET MIRA',dueDay:8,dueTime:'09:00'}],
+  ['upsert','quests',{id:'fresh-ai-id',name:'Recover the books',objectives:[{id:'find',notes:'Search the archive'}]}],
+ ]},{sourceMessageId:9,source:'main-reply'}).next;
+ assert.equal(repeated.storyMemories.length,1);assert.equal(repeated.storyMemories[0].id,'promise');
+ assert.equal(repeated.storyAgenda.length,1);assert.equal(repeated.storyAgenda[0].id,'meeting');
+ assert.equal(repeated.quests[0].id,'books');assert.equal(repeated.quests[0].objectives.length,2);
+ const reloaded=host.normalize(JSON.parse(JSON.stringify(repeated)));
+ const updated=host.applyStatePatch(reloaded,{ops:[
+  ['upsert','storyMemories',{id:'promise',status:'Resolved',resolution:'Mira accepted the book.'}],
+  ['upsert','storyAgenda',{id:'meeting',status:'Completed',resolution:'Met at the library.'}],
+  ['upsert','questObjectives',{questId:'books',id:'find',status:'Completed',evidence:'Found in the archive.'}],
+ ]},{sourceMessageId:11,source:'main-reply'}).next;
+ assert.equal(updated.storyMemories[0].status,'Resolved');assert.equal(updated.storyMemories[0].detail,'Return it intact.');assert.equal(updated.storyMemories[0].sourceMessageId,11);
+ assert.equal(updated.storyAgenda[0].status,'Completed');assert.equal(updated.storyAgenda[0].dueTime,'09:00');assert.equal(updated.storyAgenda[0].location,'Library');assert.equal(updated.storyAgenda[0].sourceMessageId,11);
+ assert.equal(updated.quests[0].progress,50);assert.equal(updated.quests[0].objectives[1].status,'Pending');
+ assert.equal(updated.quests[0].status,'Active');assert.equal(updated.progression.currency.gold,0);
+ const portable=host.portableState(updated);
+ assert.equal(portable.storyMemories[0].resolution,'Mira accepted the book.');assert.equal(portable.storyAgenda[0].status,'Completed');
+ assert.equal(portable.quests[0].objectives[0].evidence,'Found in the archive.');
+ const duplicate=host.applyStatePatch(updated,{ops:[['upsert','storyMemories',{id:'promise',status:'Resolved'}],['upsert','storyAgenda',{id:'meeting',status:'Completed'}]]},{sourceMessageId:20,source:'main-reply'});
+ assert.equal(duplicate.accepted,0);assert.equal(duplicate.next.storyMemories[0].sourceMessageId,11);assert.equal(duplicate.next.storyAgenda[0].sourceMessageId,11);
+});
+
+test('required objective gating blocks premature quest completion and payouts in either operation order',()=>{
+ const base=host.normalize({...host.defaultState(),quests:[{id:'delivery',name:'Deliver a package',status:'Active',objectives:[
+  {id:'collect',title:'Collect the package',status:'Completed'},{id:'deliver',title:'Give it to the recipient',status:'Pending'}]}]});
+ const complete=['upsert','quests',{id:'delivery',name:'Deliver a package',status:'Completed'}];
+ const payment=['inc','progression.currency.gold',6,{category:'quest-reward',questId:'delivery',reason:'Delivery reward'}];
+ const pending=['upsert','questObjectives',{questId:'delivery',id:'deliver',status:'Pending'}];
+ for(const ops of [[complete,payment,pending],[payment,pending,complete]]){
+  const result=host.applyStatePatch(base,{ops:structuredClone(ops)}).next;
+  assert.equal(result.quests[0].status,'Active');assert.equal(result.quests[0].progress,50);
+  assert.equal(result.progression.currency.gold,0);assert.equal(result.questRewardReceipts.length,0);assert.equal(result.transactions.length,0);
+ }
+ const ready=host.applyStatePatch(base,{ops:[['upsert','questObjectives',{questId:'delivery',id:'deliver',status:'Completed',evidence:'The recipient accepts it.'}]]}).next;
+ assert.equal(ready.quests[0].progress,100);assert.equal(ready.quests[0].status,'Active');assert.equal(ready.quests[0].rewardClaimed,false);
+ assert.equal(ready.progression.currency.gold,0);assert.equal(ready.questRewardReceipts.length,0);
+ for(const ops of [[complete,payment], [payment,complete,['upsert','questObjectives',{questId:'delivery',id:'deliver',status:'Completed'}]]]){
+  const paid=host.applyStatePatch(ops.length===2?ready:base,{ops:structuredClone(ops)}).next;
+  assert.equal(paid.quests[0].status,'Completed');assert.equal(paid.progression.currency.gold,6);assert.equal(paid.questRewardReceipts.length,1);
+  const replay=host.applyStatePatch(host.normalize(JSON.parse(JSON.stringify(paid))),{ops:[structuredClone(payment)]}).next;
+  assert.equal(replay.progression.currency.gold,6);assert.equal(replay.transactions.length,1);
+ }
+});
+
+test('skipped required goals block completion, optional goals do not, and terminal quests stay archived',()=>{
+ let state=host.normalize({...host.defaultState(),quests:[{id:'trail',name:'Find the trail',status:'Active',objectives:[
+  {id:'path',title:'Locate the path',status:'Skipped'},{id:'flower',title:'Find a flower',status:'Pending',optional:true}]}]});
+ state=host.applyStatePatch(state,{ops:[['upsert','quests',{id:'trail',name:'Find the trail',status:'Completed'}]]}).next;
+ assert.equal(state.quests[0].status,'Active');assert.equal(state.quests[0].progress,0);
+ state=host.applyStatePatch(state,{ops:[['upsert','questObjectives',{questId:'trail',id:'path',optional:true}]]}).next;
+ assert.equal(state.quests[0].progress,100);assert.equal(state.quests[0].status,'Active');assert.equal(state.progression.currency.gold,0);
+ state=host.applyStatePatch(state,{ops:[['upsert','quests',{id:'trail',name:'Find the trail',status:'Completed'}]]}).next;
+ assert.equal(state.quests[0].status,'Completed');
+ for(const status of ['Completed','Failed']){
+  const archived=host.normalize({...state,quests:[{...state.quests[0],status}]});
+  const replay=host.applyStatePatch(archived,{ops:[['upsert','questObjectives',{questId:'trail',id:'path',status:'Pending',optional:false}],
+   ['upsert','quests',{id:'trail',name:'Find the trail',status:'Active'}]]}).next;
+  assert.equal(replay.quests[0].status,status);assert.equal(replay.quests[0].objectives[0].optional,true);
+ }
+});
+
+test('host context selects relevant memories and keeps closed outcomes distinct from active commitments',()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata};
+ try{
+  context.chat=[{is_user:true,mes:'Meet Mira at the library.'},{is_user:false,mes:'Mira shows us the old book.'}];context.chatMetadata={};
+  const state=host.normalize({...host.defaultState(),storyMemories:[
+   {id:'relevant',title:'Mira’s book',kind:'Fact',detail:'The book is damaged.',people:['Mira']},
+   {id:'secret',title:'Levi’s concealed identity',kind:'Secret',detail:'UNRELATED_SECRET_TOKEN',people:['Levi']},
+   {id:'closed',title:'Return Mira’s book',kind:'Promise',status:'Resolved',resolution:'Mira accepted it.',people:['Mira']},
+   {id:'archived',title:'Old library mystery',kind:'Thread',status:'Archived',resolution:'The case was dismissed.',keywords:['library']},
+   {id:'unrelated-closed',title:'The mountain debt',kind:'Promise',status:'Resolved',people:['Evan']},
+  ]});
+  const references=host.roleplayState(state).privateTrackerReferenceIndex.storyMemories;
+  assert.deepEqual(references.map(entry=>entry.id).sort(),['archived','closed','relevant']);
+  assert.equal(references.find(entry=>entry.id==='closed').status,'Resolved');assert.equal(references.find(entry=>entry.id==='archived').status,'Archived');
+  assert.doesNotMatch(JSON.stringify(references),/UNRELATED_SECRET_TOKEN|unrelated-closed/);
+  const focused=host.aiState(state,{privateTracker:true,focusTranscript:'Levi asks about his identity.'}).storyMemories;
+  assert.equal(focused.some(entry=>entry.id==='secret'),true);assert.equal(focused.some(entry=>entry.id==='relevant'),false);
+  host.updatePrompt(state);assert.doesNotMatch(context.lastPrompt[1],/UNRELATED_SECRET_TOKEN/);
+ }finally{context.chat=saved.chat;context.chatMetadata=saved.metadata;}
+});
+
+test('agenda alerts use narrative time transitions once and never auto fail quests or alter money',()=>{
+ const state=host.normalize({...host.defaultState(),worldClock:{...host.defaultState().worldClock,day:9,time:'08:59'},storyAgenda:[
+  {id:'exact',title:'Meet Mira',dueDay:10,dueTime:'09:00',questId:'deadline-quest'},
+  {id:'day-only',title:'Finish the letter',kind:'Deadline',dueDay:10,dueTime:''},
+  {id:'vague',title:'Meet when ready',dueDay:null,dueTime:'',whenText:'After the rain stops'},
+  {id:'closed',title:'A finished meeting',status:'Completed',dueDay:1,dueTime:'09:00'},
+ ],quests:[{id:'deadline-quest',name:'Meet before dawn',status:'Active',progress:20}],progression:{...host.defaultState().progression,currency:{gold:12,silver:0,copper:0}}});
+ assert.equal(host.storyAgendaAlerts(state,state).length,0);
+ const due=host.applyStatePatch(state,{ops:[['set','worldClock.day',10],['set','worldClock.time','09:00']]}).next;
+ assert.deepEqual(Array.from(host.storyAgendaAlerts(due,state).map(entry=>entry.id)).sort(),['day-only','exact']);
+ assert.equal(host.storyAgendaAlerts(due,due).length,0);assert.match(host.storyAgendaNotice(due),/2/);
+ const overdue=host.applyStatePatch(due,{ops:[['set','worldClock.time','09:01']]}).next;
+ assert.deepEqual(Array.from(host.storyAgendaAlerts(overdue,due).map(entry=>entry.id)),['exact']);
+ assert.equal(host.storyAgendaAlerts(overdue,overdue).length,0);
+ const unknownTime={...due,worldClock:{...due.worldClock,time:''}};
+ assert.equal(storyAgenda.storyAgendaState(unknownTime.storyAgenda[0],unknownTime.worldClock),'Today');
+ assert.equal(storyAgenda.storyAgendaState(unknownTime.storyAgenda[2],unknownTime.worldClock),'Unscheduled');
+ const later=host.applyStatePatch(overdue,{ops:[['set','worldClock.day',11]]}).next;
+ assert.equal(later.storyAgenda.every(entry=>entry.id==='closed'?entry.status==='Completed':entry.status==='Scheduled'),true);
+ assert.equal(later.quests[0].status,'Active');assert.equal(later.quests[0].progress,20);assert.equal(later.progression.currency.gold,12);
+ assert.equal(later.transactions.length,0);assert.equal(later.questRewardReceipts.length,0);
+});
+
+test('tracked snapshots and audit include memory, agenda and objective changes',()=>{
+ const before=host.defaultState();
+ const after=host.applyStatePatch(before,{ops:[
+  ['upsert','storyMemories',{title:'A promise to Mira',kind:'Promise',detail:'Return tomorrow.'}],
+  ['upsert','storyAgenda',{title:'Library meeting',dueDay:2,dueTime:'10:00'}],
+  ['upsert','quests',{id:'ledger',name:'Find the ledger',objectives:[{id:'search',title:'Search the desk'}]}],
+ ]},{sourceMessageId:1,source:'main-reply'}).next;
+ const snapshot=host.trackedStateSnapshot(after);
+ assert.match(snapshot['story.memory'],/Active:Return tomorrow/);assert.match(snapshot['story.agenda'],/Scheduled:2:10:00/);assert.match(snapshot['quest.objectives'],/ledger:search:Pending:false/);
+ const audit=host.appendStateAudit(after,before,'main-reply');
+ for(const path of ['story.memory','story.agenda','quest.objectives'])assert.equal(audit.changes.some(change=>change.path===path),true);
+ assert.equal(after.systems.audit.at(-1).source,'main-reply');
+});
+
+test('one main reply updates all three story systems with canonical provenance and no extra AI request',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,get:sandbox.document.getElementById};
+ const settings=host.getSettings(),prior=settings.autoTrack,priorNotifications=settings.eventNotifications;
+ try{
+  settings.autoTrack=true;settings.eventNotifications=false;context.chatMetadata={};let requests=0;
+  context.generateQuietPrompt=async()=>{requests++;throw Error('Unexpected second AI request');};context.saveMetadata=async()=>{};
+  sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  const ops=[['upsert','storyMemories',{id:'mira-promise',title:'Return Mira’s book',kind:'Promise',people:['Mira'],detail:'Return the borrowed book.',sourceMessageId:999,source:'spoof'}],
+   ['upsert','storyAgenda',{id:'mira-meeting',title:'Meet Mira',dueDay:2,dueTime:'09:00',location:'Library',sourceMessageId:999}],
+   ['upsert','quests',{id:'borrowed',name:'Recover the borrowed book',status:'Active',objectives:[{id:'search',title:'Find the book'}]}],
+   ['upsert','questObjectives',{questId:'borrowed',id:'search',status:'Completed',evidence:'The book is in your hands.'}]];
+  context.chat=[{is_user:true,mes:'Promise Mira and find the book.'},{is_user:false,mes:`You promise to return Mira’s book. Mira agrees to meet tomorrow at nine. You find the book.<!--tretaresia_patch:${JSON.stringify({ops,sceneTracker:{...fullScene,participants:[]}})}-->`}];
+  await host.processAssistantPatch(1,'normal');await host.processAssistantPatch(1,'normal');
+  const state=host.getState();assert.equal(state.storyMemories.length,1);assert.equal(state.storyAgenda.length,1);
+  assert.equal(state.storyMemories[0].sourceMessageId,1);assert.equal(state.storyMemories[0].source,'main-reply');assert.equal(state.storyAgenda[0].sourceMessageId,1);
+  assert.equal(state.quests[0].objectives[0].sourceMessageId,1);assert.equal(state.quests[0].objectives[0].source,'main-reply');
+  assert.equal(state.quests[0].progress,100);assert.equal(state.quests[0].status,'Active');assert.equal(state.progression.currency.gold,0);assert.equal(requests,0);
+  const savedAt=state.storyMemories[0].updatedAt;
+  context.chatMetadata=JSON.parse(JSON.stringify(context.chatMetadata));context.chat=JSON.parse(JSON.stringify(context.chat));
+  await host.processAssistantPatch(1,'normal');
+  assert.equal(host.getState().storyMemories[0].updatedAt,savedAt);assert.equal(host.getState().storyAgenda.length,1);assert.equal(requests,0);
+ }finally{await new Promise(resolve=>setTimeout(resolve,0));context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.get;settings.autoTrack=prior;settings.eventNotifications=priorNotifications;}
+});
+
+test('Manual Sync fills story records in chronological order while protecting closed and manually edited records',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,get:sandbox.document.getElementById};
+ const settings=host.getSettings(),prior=settings.autoTrack,priorNotifications=settings.eventNotifications;
+ try{
+  settings.autoTrack=true;settings.eventNotifications=false;sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  const seed=host.normalize({...host.defaultState(),storyMemories:[
+   {id:'closed-memory',title:'An old promise',kind:'Promise',status:'Resolved',resolution:'Already fulfilled.',sourceMessageId:9,source:'main-reply'},
+   {id:'manual-memory',title:'My personal note',kind:'Fact',detail:'PLAYER_EDIT_TOKEN',sourceMessageId:9,source:'manual-memory'},
+  ],storyAgenda:[{id:'cancelled-agenda',title:'Cancelled dinner',status:'Cancelled',dueDay:3,dueTime:'18:00',resolution:'Player cancelled.',sourceMessageId:9,source:'manual-appointment'}]});
+  seed.location.place='Current Hall';seed.onboarding.locationSeeded=true;
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(seed)};
+  context.chat=[{is_user:true,mes:'Agree to meet Mira.'},{is_user:false,mes:'You promise Mira a book and agree to meet at the library.'},
+   {is_user:true,mes:'Deliver the book and attend the meeting.'},{is_user:false,mes:'Mira accepts the book at the library. The meeting has occurred.'},
+   {is_user:true,mes:'Continue.'},{is_user:false,mes:'You are now in Current Hall.'}];
+  const olderChanges=[['upsert','storyMemories',{id:'closed-memory',status:'Active',resolution:''}],
+   ['upsert','storyMemories',{id:'manual-memory',detail:'AI_OVERWRITE_TOKEN'}],
+   ['upsert','storyAgenda',{id:'cancelled-agenda',status:'Scheduled',dueDay:1}]];
+  const patches=[{ops:[...olderChanges,
+   ['upsert','storyMemories',{id:'historic-promise',title:'Return Mira’s book',kind:'Promise',detail:'Return it intact.',people:['Mira']}],
+   ['upsert','storyAgenda',{id:'historic-meeting',title:'Meet Mira',dueDay:2,dueTime:'09:00',location:'Library'}],
+   ['upsert','quests',{id:'historic-quest',name:'Recover Mira’s book',status:'Active',objectives:[{id:'deliver',title:'Give Mira the book'}]}],
+  ],sceneTracker:{...fullScene,location:'Old Library',participants:[]}},
+  {ops:[['upsert','storyMemories',{id:'historic-promise',status:'Resolved',resolution:'Mira accepted it.'}],
+   ['upsert','storyAgenda',{id:'historic-meeting',status:'Completed',resolution:'The meeting occurred.'}],
+   ['upsert','questObjectives',{questId:'historic-quest',id:'deliver',status:'Completed',evidence:'Mira accepted the book.'}],
+  ],sceneTracker:{...fullScene,location:'Old Library',participants:[]}},
+  {ops:[],sceneTracker:{...fullScene,location:'Current Hall',participants:[]}}];
+  let requests=0,writes=0;context.saveMetadata=async()=>{writes++;};
+  context.generateQuietPrompt=async()=>JSON.stringify(patches[requests++%3]);
+  await host.analyzeChat({manual:true,startIndex:0,endIndex:5});
+  const state=host.getState();assert.equal(requests,3);assert.equal(writes,1);
+  assert.equal(state.storyMemories.find(entry=>entry.id==='historic-promise').status,'Resolved');
+  assert.equal(state.storyMemories.find(entry=>entry.id==='historic-promise').sourceMessageId,3);
+  assert.equal(state.storyAgenda.find(entry=>entry.id==='historic-meeting').status,'Completed');
+  assert.equal(state.storyAgenda.find(entry=>entry.id==='historic-meeting').sourceMessageId,3);
+  assert.equal(state.quests.find(entry=>entry.id==='historic-quest').progress,100);assert.equal(state.quests.find(entry=>entry.id==='historic-quest').status,'Active');
+  assert.equal(state.storyMemories.find(entry=>entry.id==='closed-memory').status,'Resolved');assert.equal(state.storyMemories.find(entry=>entry.id==='closed-memory').resolution,'Already fulfilled.');
+  assert.equal(state.storyMemories.find(entry=>entry.id==='manual-memory').detail,'PLAYER_EDIT_TOKEN');
+  assert.equal(state.storyAgenda.find(entry=>entry.id==='cancelled-agenda').status,'Cancelled');assert.equal(state.storyAgenda.find(entry=>entry.id==='cancelled-agenda').dueDay,3);
+  assert.equal(state.location.place,'Current Hall');assert.equal(state.progression.currency.gold,0);
+  const promiseUpdatedAt=state.storyMemories.find(entry=>entry.id==='historic-promise').updatedAt;
+  await host.analyzeChat({manual:true,startIndex:0,endIndex:5});
+  assert.equal(host.getState().storyMemories.find(entry=>entry.id==='historic-promise').updatedAt,promiseUpdatedAt);
+  assert.equal(host.getState().storyMemories.filter(entry=>entry.id==='historic-promise').length,1);
+  assert.equal(host.getState().storyAgenda.filter(entry=>entry.id==='historic-meeting').length,1);
+  assert.equal(requests,6);assert.equal(writes,2);
+ }finally{await new Promise(resolve=>setTimeout(resolve,0));context.chat=saved.chat;context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.get;settings.autoTrack=prior;settings.eventNotifications=priorNotifications;}
+});
+
+test('terminal quests reject objective edits through both objective and quest upserts',()=>{
+ for(const status of ['Completed','Failed']){
+  const base=host.normalize({...host.defaultState(),quests:[{id:'archive',name:'An archived quest',status,objectives:[
+   {id:'done',title:'Deliver the letter',status:'Completed',sourceMessageId:5,sourceDay:2,source:'main-reply'}]}]});
+  const result=host.applyStatePatch(base,{ops:[['upsert','quests',{id:'archive',name:'An archived quest',objectives:[{id:'done',status:'Pending',title:'A new goal'}]}],
+   ['upsert','questObjectives',{questId:'archive',id:'done',status:'Skipped',evidence:'Attempted rewrite'}]]},{sourceMessageId:9,source:'main-reply'}).next;
+  assert.equal(result.quests[0].status,status);assert.equal(result.quests[0].objectives[0].status,'Completed');
+  assert.equal(result.quests[0].objectives[0].title,'Deliver the letter');assert.equal(result.quests[0].objectives[0].sourceMessageId,5);
+ }
+});
+
+test('a completion request followed by a new required pending goal cannot pay even if the earlier goals were ready',()=>{
+ const base=host.normalize({...host.defaultState(),quests:[{id:'late-goal',name:'Secure the ledger',status:'Active',objectives:[{id:'find',title:'Find the ledger',status:'Completed'}]}]});
+ const complete=['upsert','quests',{id:'late-goal',name:'Secure the ledger',status:'Completed'}];
+ const newGoal=['upsert','questObjectives',{questId:'late-goal',id:'return',title:'Return it to its owner',status:'Pending'}];
+ const payout=['inc','progression.currency.gold',7,{category:'quest-reward',questId:'late-goal',reason:'Ledger mission reward'}];
+ for(const ops of [[complete,newGoal,payout],[payout,complete,newGoal]]){
+  const result=host.applyStatePatch(base,{ops:structuredClone(ops)}).next;
+  assert.equal(result.quests[0].objectives.length,2);assert.equal(result.quests[0].progress,50);assert.equal(result.quests[0].status,'Active');
+  assert.equal(result.progression.currency.gold,0);assert.equal(result.questRewardReceipts.length,0);assert.equal(result.transactions.length,0);
+ }
+});
+
+test('objective provenance comes from the host and only advances when objective content changes',()=>{
+ const value={id:'trusted-step',title:'Talk to Mira',sourceMessageId:999,sourceDay:999,source:'spoof'};
+ const created=host.applyStatePatch(host.defaultState(),{ops:[['upsert','quests',{id:'trusted-quest',name:'Ask Mira',objectives:[value]}]]},
+  {sourceMessageId:5,sourceDay:3,source:'main-reply'}).next;
+ assert.equal(created.quests[0].objectives[0].sourceMessageId,5);assert.equal(created.quests[0].objectives[0].sourceDay,3);assert.equal(created.quests[0].objectives[0].source,'main-reply');
+ const repeated=host.applyStatePatch(created,{ops:[['upsert','questObjectives',{questId:'trusted-quest',...value}]]},
+  {sourceMessageId:9,sourceDay:4,source:'main-reply'});
+ assert.equal(repeated.accepted,0);assert.equal(repeated.next.quests[0].objectives[0].sourceMessageId,5);
+ const nestedRepeat=host.applyStatePatch(created,{ops:[['upsert','quests',{id:'trusted-quest',name:'Ask Mira',objectives:[value]}]]},
+  {sourceMessageId:9,sourceDay:4,source:'main-reply'}).next;
+ assert.equal(nestedRepeat.quests[0].objectives[0].sourceMessageId,5);assert.equal(nestedRepeat.quests[0].objectives[0].sourceDay,3);
+ const updated=host.applyStatePatch(host.normalize(JSON.parse(JSON.stringify(created))),{ops:[
+  ['upsert','questObjectives',{questId:'trusted-quest',id:'trusted-step',status:'Completed',evidence:'Mira answered.'}],
+ ]},{sourceMessageId:11,sourceDay:5,source:'main-reply'}).next;
+ assert.equal(updated.quests[0].objectives[0].sourceMessageId,11);assert.equal(updated.quests[0].objectives[0].sourceDay,5);
+ assert.equal(updated.quests[0].objectives[0].source,'main-reply');assert.equal(updated.quests[0].progress,100);assert.equal(updated.quests[0].status,'Active');
+});
+
+test('historical sync can complete older pending steps but cannot overwrite newer or manual objective edits',()=>{
+ const state=host.normalize({...host.defaultState(),quests:[{id:'historical-owner',name:'A historical quest',status:'Active',objectives:[
+  {id:'older',title:'An older step',status:'Pending',sourceMessageId:1,source:'main-reply'},
+  {id:'newer',title:'A newer step',status:'Pending',sourceMessageId:9,source:'main-reply'},
+  {id:'manual',title:'A player edited step',status:'Pending',sourceMessageId:9,source:'manual-quest-objective'},
+  {id:'manual-older',title:'An earlier player edited step',status:'Pending',sourceMessageId:1,source:'manual-quest-objective'},
+  {id:'finished',title:'An already finished step',status:'Completed',sourceMessageId:1,source:'main-reply'},
+ ]}]});
+ const ops=['older','newer','manual','manual-older'].map(id=>['upsert','questObjectives',{questId:'historical-owner',id,status:'Completed'}]);
+ ops.push(['upsert','questObjectives',{questId:'historical-owner',id:'finished',status:'Pending'}]);
+ const filtered=host.manualSyncHistoricalOperations(ops,true,state,false,3);
+ assert.deepEqual(Array.from(filtered.map(operation=>operation[2].id)),['older']);
+ const applied=host.applyStatePatch(state,{ops:filtered},{sourceMessageId:3,sourceDay:2,source:'manual-sync'}).next;
+ assert.equal(applied.quests[0].objectives.find(entry=>entry.id==='older').status,'Completed');
+ assert.equal(applied.quests[0].objectives.find(entry=>entry.id==='newer').status,'Pending');
+ assert.equal(applied.quests[0].objectives.find(entry=>entry.id==='manual').status,'Pending');
+ assert.equal(applied.quests[0].objectives.find(entry=>entry.id==='finished').status,'Completed');
+ assert.equal(applied.quests[0].objectives.find(entry=>entry.id==='older').sourceMessageId,3);
 });

@@ -1,23 +1,27 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.8';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.8';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.9';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.9';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.8';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.8';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.44.8';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.44.8';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.9';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.9';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.44.9';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.44.9';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.44.9';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.44.9';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.44.9';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.44.9';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.8';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.8';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.8';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.8';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.8';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.8';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.8';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.8';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.8';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.44.8';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.8';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.9';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.9';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.9';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.9';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.9';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.9';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.9';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.9';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.9';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.44.9';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.9';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -190,11 +194,12 @@ const DEFAULT_SETTINGS = Object.freeze({
 });
 
 const LAUNCHER_BIND_VERSION = '0.40.10';
-const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
+const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'memories', 'agenda', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
     inventory: ['fa-solid fa-box-open', 'Inventory'], skills: ['fa-solid fa-layer-group', 'Skills'],
     techniques: ['fa-solid fa-fire-flame-curved', 'Powers'], quests: ['fa-solid fa-scroll', 'Quests'],
+    memories: ['fa-solid fa-book-bookmark', 'Story Memory'], agenda: ['fa-solid fa-calendar-check', 'Appointments'],
     rank: ['fa-solid fa-medal', 'Rank'],
     groups: ['fa-solid fa-people-group', 'Party & Guild'], household: ['fa-solid fa-house-chimney-user', 'Household'],
     npcs: ['fa-solid fa-users', 'NPCs'], hstats: ['fa-solid fa-heart-pulse', 'H-Stats'], mail: ['fa-solid fa-envelope', 'Mailbox'], music: ['fa-solid fa-music', 'Music'],
@@ -215,6 +220,7 @@ let characterLifeCompatibilityOptions = { save: false };
 let auraColorSettingTimer = 0;
 let archiveMigration = null;
 const pendingInterfaceSettings = new WeakSet();
+const storyControlContexts = new WeakMap();
 
 
 
@@ -458,6 +464,8 @@ function defaultState() {
         proficiencies: { magic, sword, customMagic: [], customSword: [], techniques: [] },
         quests: [],
         questRewardReceipts: [],
+        storyMemories: [],
+        storyAgenda: [],
         npcs: [],
         contacts: [],
         letters: [],
@@ -1104,14 +1112,16 @@ function quest(value) {
     const completed = status === 'Completed';
     const failed = status === 'Failed';
     const updatedAt = text(value.updatedAt, '', 60);
+    const objectives = normalizeQuestObjectives(value.objectives);
     return {
         id: text(value.id, uid(), 100), name: text(value.name, '', 120),
         type: QUEST_TYPES.includes(value.type) ? value.type : 'Quest',
         dungeonRank: DUNGEON_RANKS.includes(value.dungeonRank) ? value.dungeonRank : 'Unranked',
         status,
         objective: text(value.objective, '', 500), reward: text(value.reward, '', 160),
+        objectives,
         giver: text(value.giver, '', 120), source: text(value.source, '', 160),
-        progress: completed ? 100 : number(value.progress, 0, 0, 100),
+        progress: completed ? 100 : questObjectiveProgress({...value, objectives}),
         rewardClaimed: Boolean(value.rewardClaimed),
         rewardClaimedAt: value.rewardClaimed ? text(value.rewardClaimedAt, text(value.completedAt, updatedAt, 60), 60) : '',
         completedAt: completed ? text(value.completedAt, updatedAt, 60) : '',
@@ -1365,6 +1375,8 @@ function normalize(candidate, base = defaultState()) {
     if (Array.isArray(proficiencies.techniques)) result.proficiencies.techniques = proficiencies.techniques.map(technique).filter(Boolean).slice(0, 150);
     if (Array.isArray(source.quests)) result.quests = source.quests.map(quest).filter(Boolean).slice(0, 100);
     result.questRewardReceipts = normalizeQuestRewardReceipts(source.questRewardReceipts ?? result.questRewardReceipts, result.quests);
+    result.storyMemories = normalizeStoryMemories(source.storyMemories ?? result.storyMemories);
+    result.storyAgenda = normalizeStoryAgenda(source.storyAgenda ?? result.storyAgenda);
     if (Array.isArray(source.npcs)) {
         const existingById = new Map((result.npcs || []).map(entry => [entry.id, entry]));
         const existingByName = new Map((result.npcs || []).map(entry => [entry.name.toLocaleLowerCase(), entry]));
@@ -1807,6 +1819,9 @@ function trackedStateSnapshot(state) {
         'effects': state.systems.effects.map(entry => `${entry.name} (${entry.severity})`).join(', ') || '—',
         'inventory': state.inventory.map(entry => `${entry.name}×${entry.quantity}`).join(', ') || '—',
         'quests': state.quests.map(entry => `${entry.name}:${entry.status}:${entry.progress}%`).join(', ') || '—',
+        'quest.objectives': state.quests.map(entry => `${entry.id}:${(entry.objectives || []).map(step => `${step.id}:${step.status}:${step.optional}`).join(',')}`).join(' · ') || '—',
+        'story.memory': (state.storyMemories || []).map(entry => `${entry.id}:${entry.status}:${entry.detail}:${entry.resolution}`).join(' · ') || '—',
+        'story.agenda': (state.storyAgenda || []).map(entry => `${entry.id}:${entry.status}:${entry.dueDay ?? ''}:${entry.dueTime}:${storyAgendaState(entry,state.worldClock)}`).join(' · ') || '—',
         'power.mastery': highestMagic,
     };
     for (const field of H_FIELDS) snapshot[`player.hStats.${field.key}`] = state.player.hStats?.[field.key] ?? '—';
@@ -1838,6 +1853,26 @@ function appendStateAudit(state, previous, source = 'manual') {
     });
     if (entry) state.systems.audit = [...(state.systems.audit || []), entry].slice(-80);
     return entry;
+}
+
+function storyAgendaAlerts(state, previous) {
+    const alertStates = new Set(['Today','Due','Overdue']);
+    return (state.storyAgenda || []).filter(entry => {
+        const now = storyAgendaState(entry, state.worldClock);
+        if (!alertStates.has(now)) return false;
+        const before = (previous.storyAgenda || []).find(value => value.id === entry.id);
+        return !before || storyAgendaState(before, previous.worldClock) !== now;
+    });
+}
+
+function storyAgendaNotice(state) {
+    const summary = storyAgendaSummary(state.storyAgenda, state.worldClock);
+    const count = summary.today + summary.due + summary.overdue;
+    if (!count) return '';
+    const thai = getSettings().language === 'th';
+    const title = thai ? `นัดหมายและเส้นตายที่ต้องดู ${count} รายการ` : `${count} appointments or deadlines need attention`;
+    const names = summary.entries.filter(entry => ['Today','Due','Overdue'].includes(entry.state)).slice(0,3).map(entry => entry.title).join(' · ');
+    return `<aside class="trpg-story-workspace trpg-story-reminder"><div class="trpg-story-note"><strong>${html(title)}</strong><p>${html(names)}</p><button type="button" class="trpg-story-button" data-action="story-open-agenda">${html(thai ? 'ดูนัดหมายและเส้นตาย' : 'View appointments and deadlines')}</button></div></aside>`;
 }
 
 async function persistState(candidate, source = 'manual', { deferMetadataSave = false } = {}) {
@@ -1887,6 +1922,12 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
         if (!await saveCurrentChatMetadata(context)) return false;
         writeContinuitySnapshot(state);
         queueCharacterLifeSkillSync(state);
+    }
+    const reminders = storyAgendaAlerts(state, previous);
+    if (getSettings().eventNotifications && reminders.length) {
+        const thai = getSettings().language === 'th';
+        const labels = thai ? {Today:'วันนี้',Due:'ถึงกำหนดแล้ว',Overdue:'เลยกำหนด'} : {Today:'today',Due:'due now',Overdue:'overdue'};
+        notify('info', reminders.slice(0,3).map(entry => `${entry.title} — ${labels[storyAgendaState(entry,state.worldClock)]}`).join('\n'));
     }
     return true;
 }
@@ -2278,6 +2319,9 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
             techniques: state.proficiencies.techniques.slice(0, 40).map(({ id, name, category, proficiency }) => [id, name, category, proficiency]),
         },
         quests: activeQuests.map(({ id, name, type, status, objective, reward, giver, progress }) => [id, name, type, status, objective, reward, giver, progress]),
+        questObjectives: activeQuests.filter(entry => entry.objectives.length).map(({id,objectives}) => ({questId:id,objectives})),
+        storyMemories: relevantStoryMemories(state.storyMemories, focusTranscript || recentTranscript),
+        storyAgenda: storyAgendaSummary(state.storyAgenda, state.worldClock).entries,
         questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
         questArchive: questArchive.map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
         social: {
@@ -2382,6 +2426,9 @@ function roleplayState(state) {
             onboarding: state.onboarding,
             characterLifeCharacters,
             quests: state.quests.filter(entry => !['Completed', 'Failed'].includes(entry.status)).slice(-12).map(({ id, name, type, status }) => [id, name, type, status]),
+            questObjectives: state.quests.filter(entry => !['Completed','Failed'].includes(entry.status) && entry.objectives.length).slice(-12).map(({id,objectives}) => ({questId:id,objectives})),
+            storyMemories: relevantStoryMemories(state.storyMemories, SillyTavern.getContext().chat.slice(-8).map(message => extractStatePatch(message.mes || '').visible).join(' ' )),
+            storyAgenda: storyAgendaSummary(state.storyAgenda, state.worldClock).entries,
             questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
             questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
             npcNames: state.npcs.map(({ id, name, aliases, enabled, met }) => [id, name, aliases || [], enabled !== false, met === true]),
@@ -2639,7 +2686,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.8`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.9`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -2718,10 +2765,17 @@ function onForgeMessage(event) {
     if (event.data.type === 'start') void startForgeOpening(event.data.data);
 }
 
+const STORY_TRACKING_RULES = [
+    'Story memory: upsert storyMemories with {id,title,detail,kind:"Fact"|"Promise"|"Secret"|"Thread",status:"Active"|"Resolved"|"Archived",people:[],keywords:[],importance:"Low"|"Normal"|"High",pinned:false,evidence,resolution}. Record only confirmed significant facts, explicit commitments and unresolved threads. A confirmed promise or appointment is a real commitment now, but its future action is not completed. Do not record guesses, casual plans, rejected offers or OOC as facts. Reuse the canonical id/title/kind. Update partially; resolve only after a confirmed outcome. Never delete or reopen a closed record without explicit story evidence. Source provenance is assigned by the extension; omit sourceDay/sourceMessageId/source and timestamps. Hidden memories, especially Secrets, do not grant any NPC knowledge.',
+    'Quest objectives: include objectives:[{id,title,status:"Pending"|"Completed"|"Skipped",optional:false,notes,evidence}] in the initial quest upsert, only for established requirements. Later upsert questObjectives with {questId,id,status,evidence} for each confirmed subgoal change. Preserve omitted objectives and stable IDs. Progress derives from required objectives; optional goals do not gate completion. A skipped required goal stays unsatisfied until the story explicitly makes it optional. 100% is readiness, not automatic completion or payment. Confirm Completed with a separate quests upsert only after the story establishes the full quest outcome and all required objectives are done; then grant every established reward in that same patch with canonical questId and the existing once-only receipt rules. Prefer objective changes before the completion upsert. Never resurrect archived quests or invent extra goals just to populate a checklist.',
+    'Appointments and deadlines: upsert storyAgenda with {id,title,kind:"Appointment"|"Deadline",status:"Scheduled"|"Completed"|"Cancelled",detail,dueDay:null,dueTime:"",whenText,people:[],location,questId:"",evidence,resolution}. Use the story day counter and 24-hour HH:mm time only. Resolve explicit relative dates against an established story clock; if the reference or time is unclear, keep the wording in whenText and leave dueDay/dueTime unknown. Do not substitute a real calendar or midnight. Preserve existing IDs when postponing or correcting a meeting. Closed records stay closed unless the story explicitly reschedules/reopens them. Reminders are derived from the current story clock; overdue alone never fails a quest, penalizes money, or proves an appointment occurred. Record actual completion/cancellation only from confirmed story outcomes. A free-text location is sufficient; there is no World Map.',
+].join('\n');
+
 function legacyPatchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
+        STORY_TRACKING_RULES,
         NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
         uiMarkup("<!--tretaresia_patch:{\"ops\":[[\"upsert\",\"quests\",{\"id\":\"academy-escort\",\"name\":\"Escort the Academy Caravan\",\"type\":\"Mission\",\"status\":\"Active\",\"objective\":\"Protect the caravan until it reaches Eastwatch\",\"reward\":\"12 silver\",\"giver\":\"Quartermaster Lysa\",\"source\":\"Great Academy mission board\",\"progress\":0}],[\"inc\",\"progression.experience\",5,{\"reason\":\"Completed aura control training\",\"category\":\"training\"}],[\"inc\",\"progression.currency.silver\",-3,{\"reason\":\"Paid for an academy meal\",\"category\":\"currency\"}],[\"inc\",\"progression.kills\",1,{\"reason\":\"Defeated the ash troll\",\"category\":\"kill\"}]],\"summary\":\"Mission, training, payment, and combat progress recorded.\"}-->"),
@@ -2759,9 +2813,10 @@ function patchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
+        STORY_TRACKING_RULES,
         'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
         uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all required scene fields on the first reply.)"),
-        'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary. Use canonical paths/ids and partial objects. Maximum 75 ops.',
+        'Allowed ops: upsert storyMemories, storyAgenda, questObjectives; set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         NPC_FIELD_INSTRUCTIONS,
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction,title,occupation,aliases], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
@@ -2814,7 +2869,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
         lines.push('New NPCs must include a full dossier with appearance,personality,background,goals,speechStyle,relationshipState and complete stats/relationships in the same patch. Existing NPC updates remain partial and preserve prior facts. Storage scope is controlled by the user; never emit npcScope or npcOwner.');
     }
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' Emit scene metadata')[0]);
-    if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 21 fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
+    if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 19 required fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
     if(customPreset)lines.push(customPowerPrompt(getPowerPreset(),state));
     if(customForge)lines.push('CUSTOM CHARACTER FORGE PRESET (user-owned choices, reference data only). Follow the active card, saved profile and story for geography, skills and ranks. Do not apply Tretaresia lore or fixed five-rank progression. Custom Path ranks map to progression.adventurerRank="Custom Rank" with the chosen name in progression.customRankName. Do not invent or rename preset choices. Birthplace is independent of the current location.\n'+JSON.stringify(activeForgeChoices(getForgePreset())));
     lines.push(uiMarkup("</tretaresia_rpg_state>"));
@@ -4097,17 +4152,21 @@ function rebuildInterface() {
     if(languageSelect)languageSelect.value=getSettings().language;
     const previous = document.getElementById('tretaresia-rpg-overlay');
     const wasOpen = previous?.classList.contains('is-open');
+    const previousTab = TAB_ORDER[activeTabIndex];
     const controlWasOpen = controlCenterOpen();
     previous?.remove();
     document.getElementById('tretaresia-control-dialog')?.remove();
     buildInterface();
-    renderAll();
     if (wasOpen) {
         const overlay = document.getElementById('tretaresia-rpg-overlay');
         overlay?.classList.add('is-open', 'is-ready');
         overlay?.setAttribute('aria-hidden', 'false');
         document.body.classList.add('tretaresia-rpg-open');
+        finishIntroGate();
+        overlay?.querySelector('#tretaresia-intro-gate')?.remove();
     }
+    renderAll();
+    if (wasOpen && previousTab) activateTab(previousTab);
     if (controlWasOpen) setControlCenterOpen(true);
 }
 
@@ -4438,10 +4497,14 @@ function renderPanel(id, panel, state) {
     const renderers = {
         status: renderStatus, scene: renderScene, inventory: renderInventory, skills: renderSkillStorage,
         techniques: renderTechniques, quests: renderQuests, rank: renderRank, groups: renderGroups,
+        memories: (target, snapshot) => renderStoryMemoryPanel(target, snapshot, getSettings().language),
+        agenda: (target, snapshot) => renderStoryAgendaPanel(target, snapshot, getSettings().language),
         household: renderHousehold, npcs: renderNpcs, hstats: renderHStats, mail: renderMailbox, music: renderMusic, systems: renderSystems,
     };
     capturePanelScroll(id, panel);
     renderers[id]?.(panel, state);
+    if (id === 'status' && panel) panel.innerHTML = storyAgendaNotice(state) + panel.innerHTML;
+    stampStoryControls(panel);
     restorePanelScroll(id, panel);
 }
 
@@ -4714,7 +4777,7 @@ function questSectionId(entry) {
 function renderQuestCard(entry) {
     const progress = entry.status === 'Completed' ? 100 : number(entry.progress, 0, 0, 100);
     const rewardLabel = entry.status === 'Completed' && entry.rewardClaimed ? tr(uiText("Reward claimed")) : tr(uiText("Reward"));
-    return (uiMarkup("<article class=\"tretaresia-quest-card\" data-status=\"")+(html(entry.status.toLowerCase()))+uiMarkup("\"><div>\n        <span class=\"tretaresia-quest-status\">")+(html(entry.status))+uiMarkup(" · ")+(html(entry.type))+uiMarkup("")+(entry.type === 'Dungeon' ? ` ${html(entry.dungeonRank)}` : '')+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4>\n        <p>")+(html(entry.objective || tr(uiText("No objective recorded"))))+uiMarkup("</p>\n        <div class=\"tretaresia-quest-progress\" style=\"--quest-progress:")+(progress)+uiMarkup("%\"><span><i></i></span><b>")+(progress)+uiMarkup("%</b></div>\n        ")+((entry.giver || entry.source) ? (uiMarkup("<small><i class=\"fa-solid fa-user-tag\"></i> ")+(html(entry.giver || tr(uiText("Unknown giver"))))+uiMarkup("")+(entry.source ? ` · ${html(entry.source)}` : '')+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.reward ? (uiMarkup("<small class=\"tretaresia-quest-reward")+(entry.rewardClaimed ? ' is-claimed' : '')+uiMarkup("\"><i class=\"fa-solid ")+(entry.rewardClaimed ? 'fa-circle-check' : 'fa-gift')+uiMarkup("\"></i> ")+(html(rewardLabel))+uiMarkup(": ")+(html(entry.reward))+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.receivedAt ? (uiMarkup("<small><i class=\"fa-solid fa-clock\"></i> ")+(html(tr(uiText("Received"))))+uiMarkup(": ")+(html(formatDate(entry.receivedAt)))+uiMarkup("</small>")) : '')+uiMarkup("</div>\n        <div class=\"tretaresia-card-actions\"><button type=\"button\" data-action=\"delete-quest\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"));
+    return (uiMarkup("<article class=\"tretaresia-quest-card\" data-status=\"")+(html(entry.status.toLowerCase()))+uiMarkup("\"><div>\n        <span class=\"tretaresia-quest-status\">")+(html(entry.status))+uiMarkup(" · ")+(html(entry.type))+uiMarkup("")+(entry.type === 'Dungeon' ? ` ${html(entry.dungeonRank)}` : '')+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4>\n        <p>")+(html(entry.objective || tr(uiText("No objective recorded"))))+uiMarkup("</p>\n        <div class=\"tretaresia-quest-progress\" style=\"--quest-progress:")+(progress)+uiMarkup("%\"><span><i></i></span><b>")+(progress)+uiMarkup("%</b></div>\n        ")+((entry.giver || entry.source) ? (uiMarkup("<small><i class=\"fa-solid fa-user-tag\"></i> ")+(html(entry.giver || tr(uiText("Unknown giver"))))+uiMarkup("")+(entry.source ? ` · ${html(entry.source)}` : '')+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.reward ? (uiMarkup("<small class=\"tretaresia-quest-reward")+(entry.rewardClaimed ? ' is-claimed' : '')+uiMarkup("\"><i class=\"fa-solid ")+(entry.rewardClaimed ? 'fa-circle-check' : 'fa-gift')+uiMarkup("\"></i> ")+(html(rewardLabel))+uiMarkup(": ")+(html(entry.reward))+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.receivedAt ? (uiMarkup("<small><i class=\"fa-solid fa-clock\"></i> ")+(html(tr(uiText("Received"))))+uiMarkup(": ")+(html(formatDate(entry.receivedAt)))+uiMarkup("</small>")) : '')+renderQuestObjectives(entry,getSettings().language)+uiMarkup("</div>\n        <div class=\"tretaresia-card-actions\"><button type=\"button\" data-action=\"delete-quest\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"));
 }
 
 function renderQuests(panel, state) {
@@ -4727,6 +4790,7 @@ function renderQuests(panel, state) {
     const visible = grouped[section.id];
     const openCount = grouped.story.length + grouped['side-story'].length + grouped.active.length;
     panel.innerHTML = (uiMarkup("")+(heading(uiText("Mission & Quest Log"), `${openCount} open · ${grouped.completed.length} completed · ${grouped.failed.length} failed`, 'fa-solid fa-scroll'))+uiMarkup("\n        <nav class=\"tretaresia-quest-sections\" aria-label=\"")+(html(tr(uiText("Mission archive"))))+uiMarkup("\">")+(QUEST_SECTIONS.map(entry => (uiMarkup("<button type=\"button\" data-action=\"quest-section\" data-section=\"")+(entry.id)+uiMarkup("\" class=\"")+(entry.id === section.id ? 'is-active' : '')+uiMarkup("\"><span>")+(html(tr(entry.label)))+uiMarkup("</span><b>")+(grouped[entry.id].length)+uiMarkup("</b></button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-quest-section\"><header><span>")+(html(tr(section.label)))+uiMarkup("</span><small>")+(visible.length)+uiMarkup("</small></header>\n            <div class=\"tretaresia-quest-list\">")+(visible.length ? visible.map(renderQuestCard).join('') : empty(uiText("No quests have been recorded yet.")))+uiMarkup("</div></section>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add mission or quest"))))+uiMarkup("</summary>\n            <form data-form=\"quest\" class=\"tretaresia-form-grid\">")+(input('Mission / quest name', 'name', ''))+uiMarkup("\n                ")+(select('Type', 'type', QUEST_TYPES, 'Quest'))+uiMarkup("")+(select('Dungeon rank', 'dungeonRank', DUNGEON_RANKS, 'Unranked'))+uiMarkup("\n                ")+(select('Status', 'status', ['Offered', 'Active', 'Completed', 'Failed', 'On Hold'], 'Active'))+uiMarkup("\n                ")+(input('Objective', 'objective', ''))+uiMarkup("")+(input('Reward', 'reward', ''))+uiMarkup("")+(input('Quest giver', 'giver', ''))+uiMarkup("")+(input('Source', 'source', 'Manual entry'))+uiMarkup("\n                ")+(input('Progress', 'progress', 0, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Notes', 'notes', ''))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add to log"))))+uiMarkup("</button></form></details>"));
+    stampStoryControls(panel);
 }
 
 const rankRow = (label, value, icon) => (uiMarkup("<article class=\"tretaresia-rank-row\"><i class=\"")+(icon)+uiMarkup("\"></i><span>")+(html(tr(label)))+uiMarkup("</span><strong>")+(html(tr(String(value))))+uiMarkup("</strong></article>"));
@@ -5582,13 +5646,57 @@ function ensureNpcForContact(state, contactEntry) {
     return linked;
 }
 
+async function saveStoryOperation(state, operation, source) {
+    const result = applyStatePatch(state, {ops:[operation]}, {source});
+    if (!result.accepted) {
+        notify('info', getSettings().language === 'th' ? 'ข้อมูลตรงกับที่บันทึกไว้แล้ว หรือรายการนี้แก้ไขไม่ได้' : 'No change, or this record cannot be edited.');
+        return false;
+    }
+    return persistState(result.next, source);
+}
+
+function stampStoryControls(panel) {
+    const context = SillyTavern.getContext();
+    const identity = {chatId:context.getCurrentChatId?.(), owner:characterOwner(context)?.key, metadata:context.chatMetadata};
+    for (const control of panel?.querySelectorAll?.('[data-form^="story-"],[data-form="quest-objective"],[data-action^="story-"],[data-action^="quest-objective-"],[data-action="quest-complete"]') || []) {
+        control.dataset.storyChatId = String(identity.chatId || '');
+        storyControlContexts.set(control, identity);
+    }
+}
+
+function currentStoryControl(control) {
+    const identity = storyControlContexts.get(control), context = SillyTavern.getContext();
+    return Boolean(identity && identity.chatId === context.getCurrentChatId?.()
+        && identity.owner === characterOwner(context)?.key && identity.metadata === context.chatMetadata);
+}
+
 async function onSubmit(event) {
     const form = event.target.closest('form[data-form]');
     if (!form) return;
     event.preventDefault();
+    if (['story-memory','story-agenda','quest-objective'].includes(form.dataset.form)
+        && !currentStoryControl(form)) {
+        notify('warning', getSettings().language === 'th' ? 'แชตเปลี่ยนแล้ว กรุณาเปิดรายการในแชตปัจจุบัน' : 'The chat changed. Reopen the current record.');
+        return;
+    }
     const values = Object.fromEntries(new FormData(form).entries());
     const state = clone(getState());
     switch (form.dataset.form) {
+        case 'story-memory': {
+            const people = String(values.people || '').split(/[,，\n]/).map(value => value.trim()).filter(Boolean);
+            const keywords = String(values.keywords || '').split(/[,，\n]/).map(value => value.trim()).filter(Boolean);
+            await saveStoryOperation(state, ['upsert','storyMemories',{...values,people,keywords,pinned:form.querySelector('[name="pinned"]')?.checked === true}], 'manual-memory');
+            break;
+        }
+        case 'story-agenda': {
+            const people = String(values.people || '').split(/[,，\n]/).map(value => value.trim()).filter(Boolean);
+            await saveStoryOperation(state, ['upsert','storyAgenda',{...values,people,dueDay:values.dueDay === '' ? null : Number(values.dueDay),dueTime:values.dueTime || ''}], 'manual-appointment');
+            break;
+        }
+        case 'quest-objective': {
+            await saveStoryOperation(state, ['upsert','questObjectives',{...values,optional:form.querySelector('[name="optional"]')?.checked === true}], 'manual-quest-objective');
+            break;
+        }
         case 'manual-sync':
             if (form.closest('#tretaresia-manual-sync')?.dataset.chatId !== String(SillyTavern.getContext().getCurrentChatId?.() || '')
                 || form.closest('#tretaresia-manual-sync')?.dataset.fingerprint !== shortHash(JSON.stringify(SillyTavern.getContext().chat))) {
@@ -6112,9 +6220,42 @@ async function onPanelChange(event) {
 async function onPanelClick(event) {
     const button = event.target.closest('[data-action]');
     if (!button) return;
+    if ((button.dataset.action.startsWith('story-') || button.dataset.action.startsWith('quest-objective-') || button.dataset.action === 'quest-complete')
+        && !currentStoryControl(button)) return;
     const state = clone(getState());
     const id = button.dataset.id;
     switch (button.dataset.action) {
+        case 'story-memory-status':
+            if (['Active','Resolved','Archived'].includes(button.dataset.status) && state.storyMemories.some(entry => entry.id === id)) {
+                await saveStoryOperation(state, ['upsert','storyMemories',{id,status:button.dataset.status}], 'manual-memory');
+            }
+            break;
+        case 'story-agenda-status':
+            if (['Scheduled','Completed','Cancelled'].includes(button.dataset.status) && state.storyAgenda.some(entry => entry.id === id)) {
+                await saveStoryOperation(state, ['upsert','storyAgenda',{id,status:button.dataset.status}], 'manual-appointment');
+            }
+            break;
+        case 'quest-objective-status':
+            if (['Pending','Completed','Skipped'].includes(button.dataset.status)) {
+                await saveStoryOperation(state, ['upsert','questObjectives',{questId:button.dataset.questId,id,status:button.dataset.status}], 'manual-quest-objective');
+            }
+            break;
+        case 'quest-complete': {
+            const entry = state.quests.find(value => value.id === id);
+            if (entry?.status === 'Active' && questObjectivesReady(entry)) await saveStoryOperation(state, ['upsert','quests',{id,name:entry.name,status:'Completed'}], 'manual-quest-completion');
+            break;
+        }
+        case 'story-open-agenda':
+            activateTab('agenda');
+            break;
+        case 'story-source-message': {
+            const index = Number(button.dataset.messageId);
+            if (!Number.isInteger(index) || index < 0 || !SillyTavern.getContext().chat[index]) break;
+            const message = document.querySelector(`#chat .mes[mesid="${index}"]`);
+            if (message) {closeInterface(); message.scrollIntoView({block:'center',behavior:'smooth'});}
+            else notify('info', getSettings().language === 'th' ? 'ข้อความต้นทางยังไม่ได้แสดงในหน้าจอแชตนี้' : 'The source message is not displayed in this chat view.');
+            break;
+        }
         case 'toggle-household-picker': {
             const options = button.closest('.tretaresia-household-picker')?.querySelector('.tretaresia-household-options');
             if (options) { options.hidden = !options.hidden; button.setAttribute('aria-expanded', String(!options.hidden)); }
@@ -7008,13 +7149,51 @@ function applySocialPatchOperation(state, verb, path, value) {
     return false;
 }
 
-function applyPatchOperation(state, operation) {
+function mergeTrackedQuestObjectives(previous, incoming, storySource = {}) {
+    const before = normalizeQuestObjectives(previous);
+    const inputs = (Array.isArray(incoming) ? incoming : []).filter(value => value && typeof value === 'object' && !Array.isArray(value)).map(value => {
+        const input = {...value};
+        for (const field of ['sourceDay','sourceMessageId','source']) delete input[field];
+        return input;
+    });
+    const facts = ({sourceDay,sourceMessageId,source,...fields}) => fields;
+    return mergeQuestObjectives(before, inputs).map(entry => {
+        const prior = before.find(value => value.id === entry.id);
+        if (prior && JSON.stringify(facts(prior)) === JSON.stringify(facts(entry))) return prior;
+        return {...entry, ...storySource};
+    });
+}
+
+function applyPatchOperation(state, operation, storySource = {}) {
     if (!Array.isArray(operation) || operation.length < 3) return false;
     const [verb, path, value] = operation;
     if(typeof path==='string' && path.startsWith('customPowers.')) return applyPowerOperation(state,getPowerPreset(),verb,path,value);
     if(getPowerPreset().mode==='custom' && /^(?:proficiencies\.(?:magic|sword|customMagic|customSword)(?:\.|$)|player\.aura(?:\.|$))/.test(path)) return false;
     if (['party', 'guilds', 'household', 'partyMembers', 'guildMembers', 'householdMembers'].includes(path)) {
         return applySocialPatchOperation(state, verb, path, value);
+    }
+    if (['storyMemories', 'storyAgenda'].includes(path)) {
+        if (verb !== 'upsert' || !value || typeof value !== 'object' || Array.isArray(value)) return false;
+        const input = {...value};
+        for (const field of ['sourceDay','sourceMessageId','source','createdAt','updatedAt']) delete input[field];
+        const before = path === 'storyMemories' ? normalizeStoryMemories(state[path]) : normalizeStoryAgenda(state[path]);
+        const next = path === 'storyMemories' ? upsertStoryMemory(before, input, storySource)
+            : upsertStoryAgenda(before, {...input, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()}, storySource);
+        if (JSON.stringify(before) === JSON.stringify(next)) return false;
+        state[path] = next;
+        return true;
+    }
+    if (path === 'questObjectives') {
+        if (verb !== 'upsert' || !value || typeof value !== 'object' || Array.isArray(value)) return false;
+        const owner = state.quests.find(entry => entry.id === value.questId);
+        if (!owner || ['Completed','Failed'].includes(owner.status)) return false;
+        const input = {...value};
+        for (const field of ['sourceDay','sourceMessageId','source']) delete input[field];
+        const next = upsertQuestObjective(owner, input);
+        if (next) next.objectives = mergeTrackedQuestObjectives(owner.objectives, [input], storySource);
+        if (!next || JSON.stringify(owner.objectives || []) === JSON.stringify(next.objectives)) return false;
+        Object.assign(owner, next, {updatedAt:new Date().toISOString()});
+        return true;
     }
     if ((verb === 'set' || verb === 'inc') && SCALAR_PATCH_PATHS.has(path)) {
         const parts = path.split('.');
@@ -7186,6 +7365,13 @@ function applyPatchOperation(state, operation) {
         if (path === 'quests') {
             const previousQuest = index >= 0 ? collection[index] : null;
             if (previousQuest) candidate.id = previousQuest.id;
+            const closed = previousQuest && ['Completed','Failed'].includes(previousQuest.status);
+            const reopened = closed && value.reopen === true && ['Active','Offered','On Hold'].includes(value.status);
+            candidate.objectives = closed && !reopened ? clone(previousQuest.objectives || [])
+                : mergeTrackedQuestObjectives(previousQuest?.objectives, value.objectives, storySource);
+            // Finish after every objective operation, so a later required step cannot be bypassed.
+            if (candidate.status === 'Completed' && candidate.objectives.length
+                && previousQuest?.status !== 'Completed') candidate.status = previousQuest?.status || 'Active';
             candidate.rewardClaimed = Boolean(previousQuest?.rewardClaimed);
             candidate.rewardClaimedAt = previousQuest?.rewardClaimedAt || '';
             if (previousQuest && ['Completed', 'Failed'].includes(previousQuest.status)
@@ -7336,19 +7522,45 @@ function significantJourneyOperation(current, next, operation) {
     return false;
 }
 
-function applyStatePatch(current, patch) {
+function finalizeQuestObjectives(state, previous, operations) {
+    for (const entry of state.quests) {
+        const request = [...operations].reverse().find(([verb,path,value]) => verb === 'upsert' && path === 'quests' && matchesPatchIdentity(entry,value));
+        if (request?.[2]?.status !== 'Completed' || !entry.objectives?.length || !questObjectivesReady(entry)) continue;
+        const before = previous.quests.find(value => value.id === entry.id);
+        if (before && ['Completed','Failed'].includes(before.status) && before.status !== 'Completed' && request[2].reopen !== true) continue;
+        entry.status = 'Completed'; entry.progress = 100; entry.completedAt ||= entry.updatedAt || new Date().toISOString();
+    }
+}
+
+function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = 'story-patch'} = {}) {
     if (!patch || typeof patch !== 'object' || !Array.isArray(patch.ops)) throw new Error(uiText("State patch is missing an ops array."));
     const candidate = clone(current);
     const acceptedOps = [];
     const explicit = patch.ops.slice(0, 75).flatMap(canonicalPatchOperations).slice(0, 100);
     const operations = [...explicit, ...sceneTrackerOperations(patch.sceneTracker, explicit)];
+    let changedDay = current.worldClock.day;
+    for (const [verb,path,value] of operations) if (path === 'worldClock.day' && ['set','inc'].includes(verb)) {
+        changedDay = verb === 'inc' ? changedDay + number(value,0,-999999999,999999999) : number(value, current.worldClock.day,1,999999);
+        changedDay = number(changedDay,current.worldClock.day,1,999999);
+    }
+    const storySource = {source, sourceDay:sourceDay === undefined ? changedDay : sourceDay};
+    if (Number.isInteger(sourceMessageId) && sourceMessageId >= 0) storySource.sourceMessageId = sourceMessageId;
+    // Evaluate the final objective state before payouts, regardless of operation order.
+    const prospective = {quests:clone(current.quests)};
+    for (const operation of operations) if (['quests','questObjectives'].includes(operation[1])) applyPatchOperation(prospective, operation);
+    finalizeQuestObjectives(prospective, current, operations);
     const rewards = questRewardGuard(current, operations);
     for (const operation of operations) {
         const reward = rewards.inspect(operation, candidate);
         if (reward.blocked) continue;
+        if (reward.record) {
+            const owner = prospective.quests.find(entry => entry.id === reward.record.id || reward.record.names.has(entry.name.normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu,' ')));
+            if (owner?.objectives?.length && (owner.status !== 'Completed' || !questObjectivesReady(owner))) continue;
+        }
         if (reward.record) operation[3] = {...operationMeta(operation), questId:reward.record.id, category:'quest-reward'};
-        if (applyPatchOperation(candidate, operation)) {acceptedOps.push(operation); rewards.accept(reward);}
+        if (applyPatchOperation(candidate, operation, storySource)) {acceptedOps.push(operation); rewards.accept(reward);}
     }
+    finalizeQuestObjectives(candidate, current, operations);
     rewards.finish(candidate);
     if (acceptedOps.some(op => op[0] === 'set' && op[1] === 'location.place' && typeof op[2] === 'string' && op[2].trim() && !/^(?:unknown|none|n\/a|ไม่ทราบ|—|-)$/i.test(op[2].trim()))) {
         candidate.onboarding.locationSeeded = true;
@@ -7753,7 +7965,7 @@ async function processAssistantPatch(messageId, generationType = '') {
         const safeOps = confirmedSocialOperations(inlineOps, base, extracted.visible, userMessage?.mes);
         const safePatch = { ...(extracted.patch || {}), ops: safeOps };
         if (safeOps.length || extracted.patch) {
-            const result = applyStatePatch(base, safePatch);
+            const result = applyStatePatch(base, safePatch, {sourceMessageId:messageId,source:'main-reply'});
             patched = result.next;
             accepted = result.accepted;
             notifications = result.notifications;
@@ -7921,10 +8133,33 @@ function openManualSyncDialog() {
     form.elements.start.focus({preventScroll:true});
 }
 
+function storyPatchRecord(state, path, value) {
+    if (!value || typeof value !== 'object') return null;
+    const records = state?.[path] || [];
+    const byId = records.find(entry => entry.id === value.id);
+    if (byId) return byId;
+    const key = value => text(value,'',2000).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu,' ');
+    const matches = records.filter(entry => key(entry.title) === key(value.title) && (!value.kind || key(entry.kind) === key(value.kind)));
+    if (path === 'storyMemories') return matches.length === 1 ? matches[0] : null;
+    const incoming = normalizeStoryAgenda([value])[0];
+    return incoming ? matches.find(entry => entry.dueDay === incoming.dueDay && entry.dueTime === incoming.dueTime
+        && (entry.dueDay !== null && entry.dueTime || key(entry.whenText) === key(incoming.whenText))) || null : null;
+}
+
 function manualSyncOperationKey(operation, state = null) {
     if (!Array.isArray(operation) || operation.length < 3) return '';
     const [,rawPath,value] = operation;
     const path = PATCH_PATH_ALIASES[rawPath] || rawPath;
+    if (['storyMemories','storyAgenda'].includes(path)) {
+        const entry = storyPatchRecord(state,path,value);
+        const normalized = path === 'storyMemories' ? normalizeStoryMemories([value])[0] : normalizeStoryAgenda([value])[0];
+        return `${path}:${entry?.id || normalized?.id || value?.id || value?.title || ''}`;
+    }
+    if (path === 'questObjectives') {
+        const owner = state?.quests?.find(entry => entry.id === value?.questId);
+        const step = owner?.objectives?.find(entry => entry.id === value?.id || entry.title === value?.title);
+        return `${path}:${owner?.id || value?.questId || ''}:${step?.id || value?.id || value?.title || ''}`;
+    }
     const npc = state && value && typeof value === 'object' ? resolveNpc(state.npcs, value) : null;
     if (path === 'npcHStats' || path === 'npcValues') return `${path}:${npc?.id || value?.npcId || value?.npcName || ''}:${value?.field || ''}`;
     if (path === 'playerHStats') return `${path}:${value?.field || ''}`;
@@ -7943,6 +8178,8 @@ function manualSyncTurnKey(messageId, message, context = SillyTavern.getContext(
 
 function manualSyncTargetValue(state, operation) {
     const [,path,value] = operation;
+    if (['storyMemories','storyAgenda'].includes(path)) return storyPatchRecord(state,path,value);
+    if (path === 'questObjectives') return state.quests?.find(entry => entry.id === value?.questId)?.objectives?.find(entry => entry.id === value?.id || entry.title === value?.title);
     if (['npcHStats','playerHStats','npcValues','npcAbilities'].includes(path) && (!value || typeof value !== 'object')) return undefined;
     if (path === 'npcHStats') return resolveNpc(state.npcs, value)?.hStats?.[value.field];
     if (path === 'playerHStats') return state.player.hStats?.[value.field];
@@ -7982,9 +8219,9 @@ function recordTrackedTurnOps(context, messageId, message, operations) {
 function analyzerPrompt(state, transcript, {messageId = null, historical = false} = {}) {
     const mentioned = state.npcs.filter(npc => [npc.name,...(npc.aliases || [])]
         .some(name => name && transcript.toLocaleLowerCase().includes(name.toLocaleLowerCase()))).slice(0, 8);
-    const rules = patchInstructions().split('\n').filter(line => /^(?:Allowed ops:|Compact state arrays:|EPISTEMIC FIREWALL:|Resource, injury, and damage rules:|Survival rules:|Aura mechanics:|World identity:|EXP:|Money:|Inventory lifecycle:|Quests:|Proficiency:|NPC identity:|NPCs and knowledge:|Player and NPC H-Stats:|Social auto-sync:)/.test(line)).join('\n');
+    const rules = patchInstructions().split('\n').filter(line => /^(?:Story memory:|Quest objectives:|Appointments and deadlines:|Allowed ops:|Compact state arrays:|EPISTEMIC FIREWALL:|Resource, injury, and damage rules:|Survival rules:|Aura mechanics:|World identity:|EXP:|Money:|Inventory lifecycle:|Quests:|Proficiency:|NPC identity:|NPCs and knowledge:|Player and NPC H-Stats:|Social auto-sync:)/.test(line)).join('\n');
     return `MANUAL SYNC: Audit this ONE completed reply (#${messageId === null ? '?' : messageId + 1}) across every story-driven tab. Return only changes genuinely missing from CURRENT STATE; never replay earlier rewards, costs, experience or counters already applied. Never treat another reply, an earlier plan, or a hypothetical as the event for this turn. ${historical ? 'This is an older reply: supply its historical sceneTracker, but do not move the CURRENT location, clock, weather, travel state or overwrite later known facts.' : 'This is the latest reply: the sceneTracker describes the actual current scene.'}
-Review player status, scene, inventory, skills, techniques, quests, rank, groups, household, NPCs, all applicable H-Stats fields, physical mail and systems touched by the story. Preserve unrelated values. Include all sceneTracker keys dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed; carry forward established facts and create coherent fictional details only for unspecified scene properties. H-Stats fields (key/type): ${JSON.stringify(H_FIELDS.map(({key,type})=>[key,type]))}. Record separately every confirmed quality, current state, last partner, relevant counters, measured liters, pregnancy, relationships and preferences for the NPC named in the story. A single confirmed event may update multiple distinct counters; never guess measured volumes or a favorite. Do not add an H-Stats Condition field.
+Review story memory, appointments and deadlines, quest objectives, player status, scene, inventory, skills, techniques, quests, rank, groups, household, NPCs, all applicable H-Stats fields, physical mail and systems touched by the story. Preserve unrelated values. Include all sceneTracker keys dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed; carry forward established facts and create coherent fictional details only for unspecified scene properties. H-Stats fields (key/type): ${JSON.stringify(H_FIELDS.map(({key,type})=>[key,type]))}. Record separately every confirmed quality, current state, last partner, relevant counters, measured liters, pregnancy, relationships and preferences for the NPC named in the story. A single confirmed event may update multiple distinct counters; never guess measured volumes or a favorite. Do not add an H-Stats Condition field.
 CURRENT STATE:
 ${JSON.stringify(aiState(state, {privateTracker:true,focusTranscript:transcript}))}
 PARTICIPATING NPC DOSSIERS:
@@ -8012,6 +8249,23 @@ function queueAnalyze(options = {}) {
 function manualSyncHistoricalOperations(operations, historical, state, trackedTurn = false, messageId = null) {
     if (!historical) return operations;
     return operations.filter(([verb,path,value]) => {
+        if (['storyMemories','storyAgenda'].includes(path)) {
+            if (verb !== 'upsert') return false;
+            const existing = storyPatchRecord(state,path,value);
+            if (!existing) return true;
+            if (String(existing.source || '').startsWith('manual-') && existing.source !== 'manual-sync') return false;
+            return Number.isInteger(existing.sourceMessageId) && Number.isInteger(messageId) && messageId > existing.sourceMessageId;
+        }
+        if (path === 'questObjectives') {
+            const owner = state.quests.find(entry => entry.id === value?.questId);
+            if (verb !== 'upsert' || !owner || ['Completed','Failed'].includes(owner.status)) return false;
+            const existing = (owner.objectives || []).find(entry => entry.id === value?.id || entry.title === value?.title);
+            if (!existing) return true;
+            if (String(existing.source || '').startsWith('manual-') && existing.source !== 'manual-sync') return false;
+            if (existing.status === 'Completed' && value?.status && value.status !== 'Completed') return false;
+            // A historical outcome can update only a step last changed by an earlier story turn.
+            return Number.isInteger(existing.sourceMessageId) && Number.isInteger(messageId) && messageId > existing.sourceMessageId;
+        }
         if (verb === 'upsert' && ['party','guilds'].includes(path) && value?.membershipStatus === 'established') {
             const missing = path === 'party' ? !state.social.party : !state.social.guilds.some(group => group.name.toLocaleLowerCase() === value.name.toLocaleLowerCase());
             return missing && Number.isInteger(messageId) && !groupMembershipWasRemoved(path,value,messageId,state);
@@ -8109,7 +8363,8 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
                 const opKey = manualSyncOperationKey(operation, draft);
                 return opKey && !already.has(opKey) && !manualSyncPreviouslyChanged(context, marker.index, message, operation);
             }), historical, draft, trackedTurn, marker.index);
-            const result = applyStatePatch(draft, {...parsed, ops:operations, sceneTracker:historical ? {} : parsed.sceneTracker});
+            const result = applyStatePatch(draft, {...parsed, ops:operations, sceneTracker:historical ? {} : parsed.sceneTracker},
+                {sourceMessageId:marker.index,sourceDay:parsed.sceneTracker?.day ?? null,source:'manual-sync'});
             draft = result.next;
             accepted += result.accepted;
             summary = result.summary || summary;
@@ -8207,7 +8462,6 @@ function runIntroGate(overlay) {
 function finishIntroGate() {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     overlay?.classList.add('is-ready');
-    if (introGateDone) return;
     introGateDone = true;
     clearInterval(introGateTimer);
     clearTimeout(introFinishTimer);
@@ -8664,7 +8918,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.44.8 loaded.');
+        console.info('[RoleForge] Role-play interface v0.44.9 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

@@ -1,4 +1,14 @@
-# ROLEFORGE — v0.44.8
+# ROLEFORGE — v0.44.9
+
+## v0.44.9 — Story memory, quest steps and narrative deadlines
+
+- **Story Memory** keeps confirmed facts, promises, secrets and unresolved threads per chat. Edit, pin, resolve, archive or reopen records. Normal prompts select relevant memories and active pinned records within a bounded context; resolved and archived records are past outcomes. A saved secret does not grant NPC knowledge.
+- **Quests** now include required and optional objective checklists. Progress derives from completed required steps; skipped required steps remain unsatisfied. Reaching 100% makes a quest ready for confirmation, without completing it or paying automatically. Confirming completion through the UI grants no reward; confirmed story rewards still use the once-only payment receipt.
+- **Appointments & Deadlines** use the current story day and `HH:mm` clock. Upcoming, today, due, overdue and unspecified times update with the narrative clock. Vague timing stays as written until clarified. Reaching a deadline never automatically fails a quest, spends money or completes a meeting.
+- Normal tracking uses the main reply without extra AI requests. Add/edit forms save locally. **Manual Sync** explicitly checks a selected chat range and preserves newer story records and player corrections when auditing older replies.
+- All three belong to the existing RPG state, including reload, Export/Import, Continuity and turn/swipe history. Existing chats need no reset or automatic guessed backfill. Update the extension and reload once.
+
+อ่าน [คู่มือภาษาไทยแบบทีละขั้น พร้อมตัวอย่างการใช้ทั้งสามระบบร่วมกัน](docs/story-systems-workflows.th.md)
 
 ## v0.44.8 — Quest payment receipts and story locations
 

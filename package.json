@@ -1,10 +1,10 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.44.8",
+  "version": "0.44.9",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check index.js && node --check loader.js && node --check src/character-archive.js && node --check src/forge-presets.js && node --check src/forge-workspace.js && node --check src/h-stats.js && node --check src/lore-core.js && node --check src/lore-transfer.js && node --check src/power-presets.js && node --check src/power-workspace.js && node --check src/lore-workspace.js && node --check src/npc-chat.js && node --check src/npc-core.js && node --check src/npc-generation.js && node --check src/npc-media.js && node --check src/npc-portraits.js && node --check src/npc-scopes.js && node --check src/npc-workspace.js && node --check src/nsfw-enhance.js && node --check src/nsfw-prompt-ui.js && node --check src/nsfw-tags-ui.js && node --check src/runtime-styles.js && node --check src/scene-tracker.js && node --check src/social-events.js && node --check src/ui-language.js && node --check src/ui-strings.js && node --check src/quest-rewards.js"
+    "check": "node --check index.js && node --check loader.js && node --check src/character-archive.js && node --check src/forge-presets.js && node --check src/forge-workspace.js && node --check src/h-stats.js && node --check src/lore-core.js && node --check src/lore-transfer.js && node --check src/power-presets.js && node --check src/power-workspace.js && node --check src/lore-workspace.js && node --check src/npc-chat.js && node --check src/npc-core.js && node --check src/npc-generation.js && node --check src/npc-media.js && node --check src/npc-portraits.js && node --check src/npc-scopes.js && node --check src/npc-workspace.js && node --check src/nsfw-enhance.js && node --check src/nsfw-prompt-ui.js && node --check src/nsfw-tags-ui.js && node --check src/runtime-styles.js && node --check src/scene-tracker.js && node --check src/social-events.js && node --check src/ui-language.js && node --check src/ui-strings.js && node --check src/quest-rewards.js && node --check src/story-memory.js && node --check src/story-agenda.js && node --check src/quest-objectives.js && node --check src/story-workspace.js"
   }
 }
