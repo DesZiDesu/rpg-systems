@@ -1,4 +1,13 @@
-# ROLEFORGE — v0.45.1
+# ROLEFORGE — v0.45.2
+
+## v0.45.2 — Auction House
+
+- A confirmed arrival at an auction venue opens an **Auction House card in the main chat**, styled with RoleForge's dark surfaces, gold frames and existing UI fonts. Preview the catalog and revealed item details before joining; entry fee and refundable deposit are shown first. The normal story reply creates 1–8 lots and present rivals. No extra API request is made by auction buttons.
+- Local rules own **joining, minimum/custom bids, fixed rival ceilings, three auctioneer counts, winners, payment and Inventory delivery**. Rounds advance only by player actions. Leading bids and deposits reserve funds; outbids release the leading commitment. Wallet edits, AI spending and guild founding cannot consume reserved funds. Currency changes wait until the event is finished or left.
+- Won items and entry fees have permanent event/lot receipts. Closed lots cannot settle again; AI auction payout/item operations are rejected. Successful results emit auction, wallet and Inventory notifications. Failed saves restore currency, items, receipts and the reply checkpoint, with an inline retry message. Unrelated metadata saves wait until the auction commit finishes.
+- Active sessions survive reload and state export/continuity. **Ranks & Progression → Auctions** resumes an event when its original chat card is unavailable. Returning to the actual venue is required for new bids; existing commitments can still be resolved. Leaving while leading is blocked. The catalog/history and completed results remain readable.
+
+อ่าน [คู่มือระบบประมูลและ workflow ภาษาไทย](docs/auction-workflows.th.md)
 
 ## v0.45.1 — Mission Board and growth notifications
 

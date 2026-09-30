@@ -1,4 +1,4 @@
-import {memorySnippet} from './memory-summaries.js?v=0.45.1';
+import {memorySnippet} from './memory-summaries.js?v=0.45.2';
 const escape = value => String(value ?? '').replace(/[&<>"']/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export const memoryBusy = status => ['loading','archiving','waiting','summarizing','validating','saving'].includes(status);
 export function memoryPhaseLabel(status, language = 'en') {

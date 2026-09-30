@@ -1,4 +1,4 @@
-import {normalizeQuestObjectives} from './quest-objectives.js?v=0.45.1';
+import {normalizeQuestObjectives} from './quest-objectives.js?v=0.45.2';
 
 const clean = (value, max = 300) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');

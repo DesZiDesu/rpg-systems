@@ -1,32 +1,34 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.1';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.1';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.2';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.2';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.1';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.1';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.1';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.1';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.1';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.1';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.1';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.1';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.45.1';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.45.1';
-import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.1';
-import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.1';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.1';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.2';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.2';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.2';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.2';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.2';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.2';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.2';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.2';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.45.2';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.45.2';
+import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.45.2';
+import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.45.2';
+import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.2';
+import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.2';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.2';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.1';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.1';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.1';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.1';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.1';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.1';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.1';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.1';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.1';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.2';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.2';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.2';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.2';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.2';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.2';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.2';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.2';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.2';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.2';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.2';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -252,11 +254,17 @@ let introGateTimer = null;
 let introFinishTimer = null;
 let aiSyncInProgress = false;
 let pendingSave = Promise.resolve();
+let pendingAuctionSave = null;
 let creationSaveTimer = null;
 let openingGeneration = null;
 
-function saveCurrentChatMetadata(context = SillyTavern.getContext()) {
+function saveCurrentChatMetadata(context = SillyTavern.getContext(), {auctionCommit = false} = {}) {
     const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata;
+    // Hold unrelated metadata saves outside the queue so they cannot commit a tentative auction.
+    if (pendingAuctionSave && !auctionCommit) return pendingAuctionSave.then(() => {
+        const active = SillyTavern.getContext();
+        return active.getCurrentChatId?.() === chatId && active.chatMetadata === metadata ? saveCurrentChatMetadata(context) : false;
+    });
     pendingSave = pendingSave.catch(() => undefined).then(async () => {
         const active = SillyTavern.getContext();
         if (!chatId || active.getCurrentChatId?.() !== chatId || active.chatMetadata !== metadata) return false;
@@ -484,6 +492,8 @@ function defaultState() {
         proficiencies: { magic, sword, customMagic: [], customSword: [], techniques: [] },
         quests: [],
         questRewardReceipts: [],
+        auctions: [],
+        auctionReceipts: [],
         storyMemories: [],
         storyAgenda: [],
         npcs: [],
@@ -1405,6 +1415,8 @@ function normalize(candidate, base = defaultState()) {
     if (Array.isArray(proficiencies.techniques)) result.proficiencies.techniques = proficiencies.techniques.map(technique).filter(Boolean).slice(0, 150);
     if (Array.isArray(source.quests)) result.quests = source.quests.map(quest).filter(Boolean).slice(0, 100);
     result.questRewardReceipts = normalizeQuestRewardReceipts(source.questRewardReceipts ?? result.questRewardReceipts, result.quests);
+    result.auctions = normalizeAuctions(source.auctions ?? result.auctions);
+    result.auctionReceipts = normalizeAuctionReceipts(source.auctionReceipts ?? result.auctionReceipts);
     result.storyMemories = normalizeStoryMemories(source.storyMemories ?? result.storyMemories);
     result.storyAgenda = normalizeStoryAgenda(source.storyAgenda ?? result.storyAgenda);
     if (Array.isArray(source.npcs)) {
@@ -1837,6 +1849,7 @@ function trackedStateSnapshot(state) {
         'player.hunger': state.player.survival.hunger,
         'player.thirst': state.player.survival.thirst,
         'player.condition': state.player.condition,
+        'auctions': (state.auctions || []).map(s => `${s.id}:${s.status}:${s.index}:${s.revision}`).join('|'),
         'player.powerType': state.player.powerType,
         'player.identity': [state.player.race, state.player.gender, state.player.age, state.player.homeContinent, state.player.birthplace, state.player.standing, state.player.affiliation].filter(Boolean).join(' · '),
         'player.appearance': Object.values(state.player.appearance || {}).filter(Boolean).join(' · '),
@@ -1912,6 +1925,7 @@ function storyAgendaNotice(state) {
 }
 
 async function persistState(candidate, source = 'manual', { deferMetadataSave = false } = {}) {
+    if (pendingAuctionSave && source !== 'auction') return false;
     const context = SillyTavern.getContext();
     const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata, owner = characterOwner(context)?.key;
     if (!chatId) {
@@ -1920,6 +1934,10 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
     }
     const previous = getState();
     let state = normalize(candidate, previous);
+    if (!auctionFundsValid(state,['import','continuity'].includes(source) ? state : previous)) {
+        notify('warning',getSettings().language === 'th' ? 'เงินส่วนนี้กันไว้สำหรับการประมูล ใช้ได้เฉพาะยอดที่ไม่ถูกกันไว้ และเปลี่ยนสกุลเงินได้เมื่อจบงาน' : 'These funds are reserved for an auction. Spend only available funds; finish the auction before changing currency.');
+        return false;
+    }
     synchronizeWorldState(state, previous);
     synchronizeDerivedPlayerState(state);
     state = normalize(state, previous);
@@ -1950,6 +1968,7 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
         catch (error) { console.warn('[RoleForge] The Character archive could not be saved; new NPCs remain in this chat.', error); }
     }
     if (context.getCurrentChatId?.() !== chatId || context.chatMetadata !== metadata || characterOwner(context)?.key !== owner) return false;
+    if (pendingAuctionSave && source !== 'auction') return false;
     context.chatMetadata[METADATA_KEY] = storedNpcState(state);
     updatePrompt(state);
     renderAll(state);
@@ -2108,6 +2127,100 @@ function diaryForMessage(messageId, message) {
     return metFriendlyNpcs(getState()).flatMap(npc => (npc.diary || [])
         .filter(note => note.sourceChatId === chatId && note.sourceMessageId === messageId && note.sourceVariant === variant)
         .map(note => ({...note,npcName:npc.name,npcId:npc.id}))).slice(0, 2);
+}
+
+function rememberAuctionOffer(messageId,message,offer) {
+    if (!offer) return;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId);
+    if (!key) return;
+    const history = context.chatMetadata[SOCIAL_EVENTS_KEY] ||= {};
+    ((history[key] ||= {})[assistantVariantKey(message)] ||= {}).auction = offer;
+    for (const stale of Object.keys(history[key]).slice(0,-6)) delete history[key][stale];
+    for (const stale of Object.keys(history).slice(0,-300)) delete history[stale];
+}
+function auctionForMessage(messageId,message) {
+    if (!message || message.is_user || message.is_system) return null;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), variant = assistantVariantKey(message);
+    const offer = normalizeAuctionOffer(context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[variant]?.auction);
+    if (!offer) return null;
+    const state = getState();
+    const session = state.auctions.find(s => s.id === offer.id);
+    let latest = true;
+    if (!session) for (let i = context.chat.length-1; i > messageId; i--) {
+        const message = context.chat[i];
+        if (!message || message.is_user || message.is_system) continue;
+        if (context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[assistantTurnKey(i)]?.[assistantVariantKey(message)]?.auction) { latest = false; break; }
+    }
+    return auctionView(state,offer,{token:`${key}:${variant}`,busy:Boolean(pendingAuctionSave),
+        available:latest && !mainReplyGenerating(context) && keyName((session || offer).location) === keyName(state.location.place)});
+}
+function refreshAuctions() { renderAll(); npcWorkspace?.refresh(); }
+function auctionNotifications(result,view) {
+    const thai = getSettings().language === 'th';
+    const out = [];
+    const labels = thai ? {joined:'เข้าร่วมการประมูลแล้ว',outbid:'มีผู้เสนอราคาทับคุณ',won:'ชนะการประมูล',completed:'จบงานประมูลแล้ว',left:'ออกจากการประมูลแล้ว'}
+        : {joined:'Auction joined',outbid:'You were outbid',won:'Auction won',completed:'Auction completed',left:'Auction left'};
+    for (const event of result.events) if (labels[event.type]) out.push({kind:'auction',eyebrow:'AUCTION',title:labels[event.type],
+        detail:event.type === 'won' ? `${event.name} ×${event.quantity}` : event.type === 'outbid' ? event.name : view.title,
+        value:event.amount ? `${event.amount} ${view.denomination}` : ''});
+    const won = result.events.find(e => e.type === 'won');
+    const fee = result.events.find(e => e.type === 'fee');
+    if (fee || won) out.push({kind:'currency',eyebrow:'WALLET',title:thai ? fee ? 'ชำระค่าเข้าร่วมประมูลแล้ว' : 'ชำระราคาประมูลแล้ว' : fee ? 'Auction entry fee paid' : 'Winning bid paid',detail:view.currencyName,value:`−${(fee || won).amount} ${view.denomination}`});
+    if (won) out.push({kind:'inventory',eyebrow:'INVENTORY',title:thai ? 'ได้รับไอเทมจากการประมูล' : 'Auction item received',detail:won.name,value:`+${won.quantity}`});
+    return out;
+}
+async function runAuctionAction(messageId,id,token,action,amount,revision) {
+    const context = SillyTavern.getContext(), metadata = context.chatMetadata, chatId = context.getCurrentChatId?.(), owner = characterOwner(context)?.key;
+    if (pendingAuctionSave) return {ok:false,error:'saving'};
+    if (mainReplyGenerating(context)) return {ok:false,error:'generating'};
+    const state = getState();
+    const view = messageId === null ? auctionView(state,state.auctions.find(s => s.id === id),
+        {token:`resume:${id}`,available:keyName(state.auctions.find(s => s.id === id)?.location) === keyName(state.location.place)})
+        : auctionForMessage(messageId,context.chat?.[messageId]);
+    if (!chatId || !view || view.id !== id || view.token !== token) return {ok:false,error:'stale'};
+    const offer = state.auctions.find(s => s.id === id) || context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[assistantTurnKey(messageId)]?.[assistantVariantKey(context.chat[messageId])]?.auction;
+    const result = applyAuctionAction(state,offer,action,{amount,revision,available:view.available});
+    if (!result.ok) return {ok:false,error:result.error};
+    const originalState = metadata[METADATA_KEY];
+    const latestId = latestAssistantMessageId(), checkpoint = latestId === null ? null : assistantCheckpoint(latestId), variant = latestId === null ? '' : assistantVariantKey(context.chat[latestId]);
+    const checkpointState = checkpoint?.variants?.[variant]?.state;
+    let stagedState, saved = false, release;
+    pendingAuctionSave = new Promise(resolve => { release = resolve; });
+    const current = () => SillyTavern.getContext().chatMetadata === metadata && SillyTavern.getContext().getCurrentChatId?.() === chatId && characterOwner(SillyTavern.getContext())?.key === owner;
+    try {
+        await pendingSave.catch(() => undefined);
+        if (!current()) return {ok:false,error:'stale'};
+        const delta = currencyDelta(state.progression.currency,result.next.progression.currency);
+        if (Object.values(delta).some(Boolean)) appendCurrencyTransaction(result.next,delta,action === 'join' ? `${view.title} · Auction entry fee` : `${view.lot.name} · Winning auction bid`,'auction');
+        if (!await persistState(result.next,'auction',{deferMetadataSave:true})) return {ok:false,error:'save'};
+        stagedState = metadata[METADATA_KEY];
+        if (!current()) return {ok:false,error:'stale'};
+        if (checkpointState) checkpoint.variants[variant].state = clone(getState());
+        if (!await saveCurrentChatMetadata(context,{auctionCommit:true})) return {ok:false,error:'save'};
+        saved = true;
+        if (current()) { writeContinuitySnapshot(getState()); showEventNotifications(auctionNotifications(result,view)); }
+        return {ok:true};
+    } catch (error) {
+        console.warn('[RoleForge] Auction could not be saved.',error);
+        return {ok:false,error:'save'};
+    } finally {
+        if (!saved && stagedState && metadata[METADATA_KEY] === stagedState) {
+            metadata[METADATA_KEY] = originalState;
+            if (checkpointState) checkpoint.variants[variant].state = checkpointState;
+            if (current()) updatePrompt();
+        }
+        pendingAuctionSave = null; release();
+        if (current()) refreshAuctions();
+    }
+}
+function renderAuctionWallet(panel,state) {
+    if (!state.auctions.length) return;
+    const target = document.createElement('div'); target.className = 'trpg-auction-wallet';
+    const title = document.createElement('h3'); title.className = 'trpg-auction-wallet-title'; title.textContent = getSettings().language === 'th' ? 'AUCTIONS · ประมูลและวงเงินที่กันไว้' : 'AUCTIONS · Sessions & reserved funds'; target.append(title);
+    const api = {context:() => SillyTavern.getContext(),settings:getSettings,runAuctionAction,refreshAuctions};
+    const sessions = [...state.auctions.filter(s => s.status === 'Joined'),...state.auctions.filter(s => s.status !== 'Joined').slice(-3).reverse()];
+    for (const session of sessions) target.append(renderAuctionCard(auctionView(state,session,{token:`resume:${session.id}`,busy:Boolean(pendingAuctionSave),available:!mainReplyGenerating() && keyName(session.location) === keyName(state.location.place)}),api));
+    panel.querySelector('.tretaresia-wallet')?.after(target);
 }
 
 function rememberHouseholdOffers(messageId, message, offers) {
@@ -2317,6 +2430,7 @@ async function persistExactState(snapshot, source, { deferMetadataSave = false }
 }
 
 async function replaceAssistantTurnState(messageId, { reuseVariant = false, reason = 'swipe' } = {}) {
+    if (pendingAuctionSave) await pendingAuctionSave;
     const context = SillyTavern.getContext();
     const entry = assistantCheckpoint(messageId);
     if (!entry?.baseState) return false;
@@ -2431,6 +2545,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         storyMemories: relevantStoryMemories(state.storyMemories, focusTranscript || recentTranscript),
         storyAgenda: storyAgendaSummary(state.storyAgenda, state.worldClock).entries,
         questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
+        auctions: auctionPublicSummary(state),
         questArchive: questArchive.map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
         social: {
             party: state.social.party ? {
@@ -2490,6 +2605,7 @@ function roleplayState(state) {
     const characterLifeCharacters = characterLifeCharacterReferences();
     return {
         sceneContext: {
+            auctions: auctionPublicSummary(state),
             worldClock: state.worldClock,
             location: {
                 continent: state.onboarding?.locationSeeded ? state.location.continent : 'Unknown',
@@ -2514,6 +2630,7 @@ function roleplayState(state) {
             },
         },
         privateTrackerReferenceIndex: {
+            availableCurrency: {name:state.progression.currency.name,...auctionAvailable(state)},
             playerOrigin: { homeContinent: state.player.homeContinent, birthplace: state.player.birthplace, standing: state.player.standing },
             playerPath: { profession: state.player.profession, rank: state.progression.adventurerRank === 'Custom Rank' ? state.progression.customRankName : state.progression.adventurerRank, powerMastery: state.progression.magicRank, combatMastery: state.progression.swordRank },
             playerResources: {
@@ -2794,7 +2911,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.1`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.2`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -2885,6 +3002,7 @@ function legacyPatchInstructions() {
     return [
         STORY_TRACKING_RULES,
         MISSION_BOARD_INSTRUCTIONS,
+        AUCTION_INSTRUCTIONS,
         NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
         uiMarkup("<!--tretaresia_patch:{\"ops\":[[\"upsert\",\"quests\",{\"id\":\"academy-escort\",\"name\":\"Escort the Academy Caravan\",\"type\":\"Mission\",\"status\":\"Active\",\"objective\":\"Protect the caravan until it reaches Eastwatch\",\"reward\":\"12 silver\",\"giver\":\"Quartermaster Lysa\",\"source\":\"Great Academy mission board\",\"progress\":0}],[\"inc\",\"progression.experience\",5,{\"reason\":\"Completed aura control training\",\"category\":\"training\"}],[\"inc\",\"progression.currency.silver\",-3,{\"reason\":\"Paid for an academy meal\",\"category\":\"currency\"}],[\"inc\",\"progression.kills\",1,{\"reason\":\"Defeated the ash troll\",\"category\":\"kill\"}]],\"summary\":\"Mission, training, payment, and combat progress recorded.\"}-->"),
@@ -2923,6 +3041,7 @@ function patchInstructions() {
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
         STORY_TRACKING_RULES,
+        AUCTION_INSTRUCTIONS,
         'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
         uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all required scene fields on the first reply.)"),
         'Allowed ops: upsert storyMemories, storyAgenda, questObjectives; set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary. Use canonical paths/ids and partial objects. Maximum 75 ops.',
@@ -3039,7 +3158,7 @@ function showEventNotification(event) {
     buildEventNotificationStack();
     const stack = document.getElementById('tretaresia-event-stack');
     if (!stack) return;
-    const icons = { experience: 'fa-star', level: 'fa-arrow-up', learning: 'fa-book-open', training: 'fa-dumbbell', inventory: 'fa-box', purchase: 'fa-bag-shopping', combat: 'fa-khanda', kill: 'fa-skull', currency: 'fa-coins', quest: 'fa-scroll' };
+    const icons = { auction: 'fa-gavel', experience: 'fa-star', level: 'fa-arrow-up', learning: 'fa-book-open', training: 'fa-dumbbell', inventory: 'fa-box', purchase: 'fa-bag-shopping', combat: 'fa-khanda', kill: 'fa-skull', currency: 'fa-coins', quest: 'fa-scroll' };
     const toast = document.createElement('article');
     toast.className = 'tretaresia-event-toast';
     toast.dataset.kind = event.kind;
@@ -4967,6 +5086,7 @@ function renderRank(panel, state) {
     const pathOptions = getForgePreset().mode === "custom" ? [...new Set([...forgeChoices.pathRanks, p.customRankName].filter(Boolean)), "Custom Rank"] : RANKS;
     const masteryOptions = getForgePreset().mode === "custom" ? [...new Set([...forgeChoices.masteryRanks, p.magicRank, p.swordRank].filter(Boolean))] : MASTERY;
     panel.innerHTML = (uiMarkup("")+(heading(uiText("Ranks & Progression"), 'Guild and mastery record', 'fa-solid fa-medal'))+uiMarkup("\n        <div class=\"tretaresia-rank-layout\"><article class=\"tretaresia-rank-hero\"><span>")+(html(tr(uiText("Adventurer Rank"))))+uiMarkup("</span>\n            <strong>")+(html(p.adventurerRank === 'Custom Rank' && p.customRankName ? p.customRankName : p.adventurerRank))+uiMarkup("</strong><small>")+(html(tr(uiText("Recognized guild classification"))))+uiMarkup("</small></article>\n            <div class=\"tretaresia-rank-stack\">")+(rankRow('Power mastery', p.magicRank, 'fa-solid fa-fire-flame-curved'))+uiMarkup("\n                ")+(rankRow('Combat mastery', p.swordRank, 'fa-solid fa-khanda'))+uiMarkup("")+(rankRow('Experience', `${p.experience} / ${p.experienceMax}`, 'fa-solid fa-star'))+uiMarkup("\n                ")+(rankRow('Reputation', p.reputation, 'fa-solid fa-people-group'))+uiMarkup("")+(rankRow('Confirmed kills', p.kills, 'fa-solid fa-skull'))+uiMarkup("</div></div>\n        <article class=\"tretaresia-card tretaresia-wallet\" title=\"")+(html(p.currency.name))+uiMarkup("\"><div><span>")+(html(tr(uiText("Gold coins"))))+uiMarkup("</span><strong>")+(p.currency.gold)+uiMarkup("</strong></div>\n            <div><span>")+(html(tr(uiText("Silver coins"))))+uiMarkup("</span><strong>")+(p.currency.silver)+uiMarkup("</strong></div><div><span>")+(html(tr(uiText("Copper coins"))))+uiMarkup("</span><strong>")+(p.currency.copper)+uiMarkup("</strong></div></article>\n        ")+(renderTransactions(state))+uiMarkup("\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Edit progression"))))+uiMarkup("</summary>\n            <form data-form=\"rank\" class=\"tretaresia-form-grid\">")+(select('Adventurer rank', 'adventurerRank', pathOptions, p.adventurerRank === 'Custom Rank' && pathOptions.includes(p.customRankName) ? p.customRankName : p.adventurerRank))+uiMarkup("")+(input('Custom rank name', 'customRankName', p.customRankName))+uiMarkup("\n                ")+(select('Power mastery', 'magicRank', masteryOptions, p.magicRank))+uiMarkup("")+(select('Combat mastery', 'swordRank', masteryOptions, p.swordRank))+uiMarkup("\n                ")+(input('Experience', 'experience', p.experience, 'number', 'min="0"'))+uiMarkup("")+(input('EXP to next level', 'experienceMax', p.experienceMax, 'number', 'min="1"'))+uiMarkup("\n                ")+(input('Reputation', 'reputation', p.reputation, 'number'))+uiMarkup("")+(input('Confirmed kills', 'kills', p.kills, 'number', 'min="0"'))+uiMarkup("\n                ")+(input('Currency / region', 'currencyName', p.currency.name))+uiMarkup("")+(input('Gold coins', 'gold', p.currency.gold, 'number', 'min="0"'))+uiMarkup("")+(input('Silver coins', 'silver', p.currency.silver, 'number', 'min="0"'))+uiMarkup("\n                ")+(input('Copper coins', 'copper', p.currency.copper, 'number', 'min="0"'))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save progression"))))+uiMarkup("</button></form></details>"));
+    renderAuctionWallet(panel,state);
 }
 
 
@@ -6138,7 +6258,7 @@ async function onSubmit(event) {
             const name = text(values.name, '', 140);
             if (!name) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อกิลด์") : uiText("Enter a guild name first."));
             if (state.social.guilds.some(entry => entry.name.toLocaleLowerCase() === name.toLocaleLowerCase())) return notify('warning', getSettings().language === 'th' ? uiText("มีกิลด์ชื่อนี้อยู่แล้ว") : uiText("A guild with this name already exists."));
-            if (!canAffordCurrency(state.progression.currency, GUILD_CREATION_FEE)) return notify('warning', `${tr(uiText("Not enough currency"))}: ${currencyLabel(GUILD_CREATION_FEE)}`);
+            if (!canAffordCurrency(auctionAvailable(state), GUILD_CREATION_FEE)) return notify('warning', `${tr(uiText("Not enough currency"))}: ${currencyLabel(GUILD_CREATION_FEE)}`);
             state.progression.currency.gold -= GUILD_CREATION_FEE.gold;
             appendCurrencyTransaction(state, { gold: -GUILD_CREATION_FEE.gold }, `Guild creation fee: ${name}`, 'guild');
             const guild = guildProfile({ name, description: values.description, leaderId: 'player', memberIds: [], treasury: { ...GUILD_CREATION_FEE } });
@@ -7271,7 +7391,7 @@ function applySocialPatchOperation(state, verb, path, value) {
         if (verb !== 'upsert' || !value || typeof value !== 'object') return false;
         const existing = state.social.guilds.find(entry => matchesPatchIdentity(entry, value));
         const playerCreated = !existing && value.createdByPlayer === true;
-        if (playerCreated && !canAffordCurrency(state.progression.currency, GUILD_CREATION_FEE)) return false;
+        if (playerCreated && !canAffordCurrency(auctionAvailable(state), GUILD_CREATION_FEE)) return false;
         const next = guildProfile(value, existing || {});
         if (!next) return false;
         next.memberIds = [...new Set(next.memberIds.map(id => resolveFriendlyNpc(state, id)?.id).filter(Boolean))];
@@ -7732,7 +7852,24 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
     for (const operation of operations) if (['quests','questObjectives'].includes(operation[1])) applyPatchOperation(prospective, operation);
     finalizeQuestObjectives(prospective, current, operations);
     const rewards = questRewardGuard(current, operations);
+    const walletTrial = clone(current);
+    let auctionSpendDenied = false;
+    for (const operation of operations) if (/^progression\.currency\./u.test(String(operation[1])) && !auctionBlocksOperation(operation)) {
+        const attempted = clone(walletTrial);
+        if (applyPatchOperation(attempted,operation,storySource)) {
+            if (auctionFundsValid(attempted,walletTrial)) walletTrial.progression.currency = attempted.progression.currency;
+            else auctionSpendDenied = true;
+        }
+    }
     for (const operation of operations) {
+        if (auctionBlocksOperation(operation)) continue;
+        // A rejected payment must not leave a free purchased item behind, even if inventory came first.
+        if (auctionSpendDenied && operation[1] === 'inventory' && ['inc','upsert'].includes(operation[0])
+            && (operationMeta(operation).category === 'purchase' || /bought|purchase|paid|ซื้อ|ชำระ/iu.test(operationMeta(operation).reason))) continue;
+        if (/^progression\.currency\./u.test(String(operation[1]))) {
+            const trial = clone(candidate);
+            if (applyPatchOperation(trial,operation,storySource) && !auctionFundsValid(trial,candidate)) continue;
+        }
         const reward = rewards.inspect(operation, candidate);
         if (reward.blocked) continue;
         if (reward.record) {
@@ -7866,13 +8003,14 @@ function coerceStatePatch(raw) {
         };
         walk(delta);
     }
-    if (!operations.length && !sceneTrackerOperations(source.sceneTracker).length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates) && !normalizeMissionBoard(source.missionBoard)) return null;
+    if (!operations.length && !sceneTrackerOperations(source.sceneTracker).length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates) && !normalizeMissionBoard(source.missionBoard) && !normalizeAuctionOffer(source.auction)) return null;
     return {
         ops: operations.slice(0, 75),
         summary: text(source.summary || raw.summary, '', 300),
         journey: text(source.journey || source.journeyLog || raw.journey || raw.journeyLog, '', 500),
         sceneTracker: expandScene(source.sceneTracker),
         missionBoard: normalizeMissionBoard(source.missionBoard),
+        auction: normalizeAuctionOffer(source.auction),
     };
 }
 
@@ -7922,6 +8060,7 @@ function extractStatePatch(message) {
         journey: [...patches].reverse().map(patch => text(patch.journey, '', 500)).find(Boolean) || '',
         sceneTracker: Object.assign({}, ...patches.map(patch => patch.sceneTracker || {})),
         missionBoard: [...patches].reverse().find(patch => patch.missionBoard)?.missionBoard || null,
+        auction: [...patches].reverse().find(patch => patch.auction)?.auction || null,
     } : null;
     return { visible: visible.replace(/<!--[^>]*$/, '').trimEnd(), patch: combined, found };
 }
@@ -8093,6 +8232,7 @@ function groupMembershipWasRemoved(path,value,messageId,state,context = SillyTav
 }
 
 async function processAssistantPatch(messageId, generationType = '') {
+    if (pendingAuctionSave) await pendingAuctionSave;
     const context = SillyTavern.getContext();
     if (mainReplyGenerating(context) && !completedAssistantMessages.has(context.chat?.[messageId])) return;
     const settings = getSettings();
@@ -8148,10 +8288,14 @@ async function processAssistantPatch(messageId, generationType = '') {
         }
         const board = confirmedMissionBoard(extracted.patch?.missionBoard, extracted.visible, userMessage?.mes,
             extracted.patch?.sceneTracker?.location || base.location.place);
+        const auction = confirmedAuctionOffer(extracted.patch?.auction,extracted.visible,userMessage?.mes,
+            extracted.patch?.sceneTracker?.location || base.location.place);
         const safeOps = confirmedSocialOperations(inlineOps, base, extracted.visible, userMessage?.mes).filter(operation =>
+            !(auction && (operation[1] === 'inventory' || /^progression\.currency\./u.test(String(operation[1])))) &&
             !(extracted.patch?.missionBoard && operation[1] === 'quests' && extracted.patch.missionBoard.missions.some(mission => matchesPatchIdentity(mission,operation[2]))
                 && !base.quests.some(quest => matchesPatchIdentity(quest,operation[2]))));
         rememberMissionBoard(messageId, message, board);
+        rememberAuctionOffer(messageId,message,auction);
         const safePatch = { ...(extracted.patch || {}), ops: safeOps };
         if (safeOps.length || extracted.patch) {
             const result = applyStatePatch(base, safePatch, {sourceMessageId:messageId,source:'main-reply'});
@@ -8225,7 +8369,9 @@ async function processAssistantPatch(messageId, generationType = '') {
             }
             if (!await saveCurrentChatMetadata(context)) return;
             npcWorkspace?.refresh();
-            if (board) setSync('success',settings.language === 'th' ? 'กระดานภารกิจพร้อมแล้ว' : 'Mission board ready',
+            if (auction) setSync('success',settings.language === 'th' ? 'งานประมูลพร้อมแล้ว' : 'Auction ready',
+                settings.language === 'th' ? `${auction.lots.length} รายการ · กดเข้าร่วมจากการ์ดในแชต` : `${auction.lots.length} lots · Join from the chat card.`);
+            else if (board) setSync('success',settings.language === 'th' ? 'กระดานภารกิจพร้อมแล้ว' : 'Mission board ready',
                 settings.language === 'th' ? `มีภารกิจให้เลือก ${board.missions.length} รายการ` : `${board.missions.length} missions available to read.`);
             else setSync('unchanged', tr(uiText("No state changes")), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
         }
@@ -9084,6 +9230,7 @@ async function initialize() {
             context: () => SillyTavern.getContext(), state: getState, settings: getSettings,
             sceneForMessage,
             socialEventsForMessage, diaryForMessage, answerHouseholdOffer, answerGroupOffer, missionBoardForMessage, acceptBoardMission,
+            auctionForMessage, runAuctionAction, refreshAuctions,
             profile: npcProfile, persist: persistState,
             scopeInfo: () => characterOwner(SillyTavern.getContext()),
             listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
@@ -9129,7 +9276,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.45.1 loaded.');
+        console.info('[RoleForge] Role-play interface v0.45.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
