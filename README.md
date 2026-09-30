@@ -1,4 +1,13 @@
-# ROLEFORGE — v0.45.0
+# ROLEFORGE — v0.45.1
+
+## v0.45.1 — Mission Board and growth notifications
+
+- A confirmed visit to a mission/quest board now produces **1–4 paper cards in the main chat** from the normal reply's structured patch. Click a paper to read the description, issuer, objective checklist, difficulty, reward and stated deadline. **Back** returns to the papers; **Accept mission** saves one Active mission locally, with no immediate reward or extra API request. The canonical quest enters the next generation's context.
+- Board offers are scoped to the source chat and reply variant. Reading does not accept a mission. Duplicate acceptance, old controls, a superseded board, being at another location and acceptance during generation are blocked. Reload preserves the board; swipe rollback follows its source variant. Save failure restores the unaccepted state for retry.
+- Main-chat notifications now separate **new skills**, **training/skill progress**, **purchases** and **items received/removed**. Diffs use saved quantities and proficiency increases, including SET/upsert updates and actual capped gains. An unchanged skill refresh produces no learned notification. Custom power rank progression is supported; replenishing resources is not training. Multiple events queue in groups of up to four, so busy turns do not discard later inventory events. Each category can be disabled in extension settings.
+- Verified existing behavior: AI can update an enabled, manually created NPC from friendly to **Hostile** and back via its stable ID. The dossier remains in NPC Management; hostile characters are excluded from friendly rosters. No change to the hostility system was needed.
+
+อ่าน [คู่มือ Mission Board, notifications และ NPC Hostile ภาษาไทย](docs/mission-board-workflows.th.md)
 
 ## v0.45.0 — Memory Summaries and new-chat history
 

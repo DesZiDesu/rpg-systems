@@ -1,8 +1,9 @@
-import {uiText} from './ui-language.js?v=0.45.0';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.0';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.45.0';
-import { renderSceneTracker } from './scene-tracker.js?v=0.45.0';
+import { renderMissionBoard } from './mission-board-ui.js?v=0.45.1';
+import {uiText} from './ui-language.js?v=0.45.1';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.1';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.1';
+import { croppedPortrait } from './npc-portraits.js?v=0.45.1';
+import { renderSceneTracker } from './scene-tracker.js?v=0.45.1';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -208,17 +209,19 @@ export function createChatPresentation(api, open) {
             const offers=api.socialEventsForMessage?.(id,message)?.offers||[];
             const groupOffers=api.socialEventsForMessage?.(id,message)?.groupOffers||[];
             const notes=api.diaryForMessage?.(id,message)||[];
-            if(!blocks&&!scene&&!offers.length&&!groupOffers.length&&!notes.length){if(old)restore(host,old);continue;}
+            const board=api.missionBoardForMessage?.(id,message);
+            if(!blocks&&!scene&&!offers.length&&!groupOffers.length&&!notes.length&&!board){if(old)restore(host,old);continue;}
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
-            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(groupOffers)}:${JSON.stringify(notes)}:${source}`;
+            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(groupOffers)}:${JSON.stringify(notes)}:${JSON.stringify(board)}:${source}`;
             if(old?.signature===signature && old.root.parentNode===host)continue;
             const original=old?.root.parentNode===host?old.original:[...host.childNodes];
             const root=element('div','trpg-chat');root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
             if(scene)root.append(renderSceneTracker(scene,settings.language));
             if(blocks)renderStoryBlocks(root, blocks, lookup, message.name, open, imageFor, previousSpeaker);
             else root.append(appendStoryText(element('div','trpg-plain'),source));
+            if(board)root.append(renderMissionBoard(board,id,api));
             for(const offer of offers)root.append(householdInvitation(offer,id,api));
             for(const offer of groupOffers)root.append(groupInvitation(offer,id,api));
             for(const note of notes){

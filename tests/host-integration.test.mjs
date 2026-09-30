@@ -1,3 +1,5 @@
+import * as missionBoard from '../src/mission-board.js';
+import {growthInventoryNotifications} from '../src/growth-notifications.js';
 import {questRewardGuard,normalizeQuestRewardReceipts} from '../src/quest-rewards.js';
 import * as uiLanguage from '../src/ui-language.js';
 import * as powers from '../src/power-presets.js';
@@ -21,11 +23,11 @@ import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMem
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('quest payout is recorded once across paraphrased turns, set balances, archive removal and reload',()=>{
@@ -122,6 +124,59 @@ test('real model patch creates NPC in shared state and preserves manual appearan
 });
 test('hostile NPC remains in Management state but not friendly roster',()=>{
  const {next}=host.applyStatePatch(host.defaultState(),{ops:[['upsert','npcs',{id:'enemy',name:'Enemy',isHostile:true}]]});assert.equal(next.npcs.length,1);assert.equal(host.friendlyNpcs(next).length,0);
+});
+test('AI can change an existing manually created friendly NPC to Hostile and back without replacing its dossier',()=>{
+ const state=host.defaultState();state.npcs=[host.npcProfile({id:'cora',name:'Cora',enabled:true,met:true,isHostile:false,appearance:'Blue cloak',background:'Met at the river'})];
+ assert.equal(host.metFriendlyNpcs(state).length,1);
+ const hostile=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'cora',name:'Cora',isHostile:true,relationship:'Enemy'}]]}).next;
+ assert.equal(hostile.npcs.length,1);assert.equal(hostile.npcs[0].id,'cora');assert.equal(hostile.npcs[0].appearance,'Blue cloak');
+ assert.equal(hostile.npcs[0].background,'Met at the river');assert.equal(hostile.npcs[0].isHostile,true);assert.equal(host.metFriendlyNpcs(hostile).length,0);
+ const peaceful=host.applyStatePatch(hostile,{ops:[['upsert','npcs',{id:'cora',name:'Cora',isHostile:false,relationship:'Neutral'}]]}).next;
+ assert.equal(host.metFriendlyNpcs(peaceful).length,1);assert.equal(peaceful.npcs[0].id,'cora');
+});
+test('notification categories preserve a disabled legacy training preference and can be changed independently',()=>{
+ const saved=context.extensionSettings.tretaresia_rpg;
+ try {
+  context.extensionSettings.tretaresia_rpg={eventNotifications:true,notifyLearning:false};
+  const settings=host.getSettings();assert.equal(settings.notifyTraining,false);assert.equal(host.eventNotificationEnabled('learning'),false);
+  settings.notifyTraining=true;assert.equal(host.eventNotificationEnabled('training'),true);assert.equal(host.eventNotificationEnabled('learning'),false);
+  settings.notifyInventory=false;assert.equal(host.eventNotificationEnabled('inventory'),false);assert.equal(host.eventNotificationEnabled('purchase'),true);
+  settings.eventNotifications=false;assert.equal(host.eventNotificationEnabled('purchase'),false);
+ } finally {context.extensionSettings.tretaresia_rpg=saved;}
+});
+
+test('main reply board offers stay unaccepted, persist per variant, accept once and give no immediate reward',async()=>{
+ const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,get:sandbox.document.getElementById};const settings=host.getSettings();const notices=settings.eventNotifications;settings.eventNotifications=false;
+ try {
+  context.saveMetadata=async()=>{};
+  sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  const start=host.defaultState();start.location.place='Guild Hall';start.onboarding.locationSeeded=true;
+  context.chatMetadata={tretaresia_rpg_state:start};
+  const story='You walk up to the mission board and read the papers.';
+  const board={title:'Guild Board',location:'Guild Hall',evidence:story,missions:[{name:'Deliver medicine',objective:'Bring medicine to Cora',reward:'5 silver'}]};
+  context.chat=[{is_user:true,mes:'I read the mission board.'},{is_user:false,name:'Narrator',mes:`${story}\n<!--tretaresia_patch:${JSON.stringify({missionBoard:board,ops:[['upsert','quests',{id:'mistaken',name:'Deliver medicine',status:'Active'}]]})}-->`}];
+  await host.processAssistantPatch(1);
+  const shown=host.missionBoardForMessage(1,context.chat[1]);assert(shown);assert.equal(shown.missions.length,1);assert.equal(shown.available,true);
+  assert.equal(host.getState().quests.length,0);assert(!context.chat[1].mes.includes('tretaresia_patch'));
+  assert.equal(await host.acceptBoardMission(1,shown.missions[0].id,'stale-token'),false);
+  host.setLiveGeneration(true);assert.equal(await host.acceptBoardMission(1,shown.missions[0].id,shown.token),false);host.setLiveGeneration(false);
+  context.saveMetadata=async()=>{throw Error('Offline test');};
+  assert.equal(await host.acceptBoardMission(1,shown.missions[0].id,shown.token),false);
+  assert.equal(host.getState().quests.length,0,'Failed save restores the unaccepted state');
+  assert.equal(host.assistantCheckpoint(1).variants[host.assistantCheckpoint(1).activeVariant].state.quests.length,0);
+  context.saveMetadata=async()=>{};
+  assert.equal(await host.acceptBoardMission(1,shown.missions[0].id,shown.token),true);
+  assert.equal(await host.acceptBoardMission(1,shown.missions[0].id,shown.token),false);
+  let state=host.getState();assert.equal(state.quests.length,1);assert.equal(state.quests[0].status,'Active');assert.equal(state.progression.currency.silver,0);
+  assert.equal(state.quests[0].rewardClaimed,false);assert.equal(state.questRewardReceipts.length,0);assert.equal(state.progression.experience,0);
+  assert.match(context.lastPrompt[1],/Deliver medicine/);
+  context.chatMetadata=JSON.parse(JSON.stringify(context.chatMetadata));
+  assert.equal(host.missionBoardForMessage(1,context.chat[1]).missions[0].questStatus,'Active');
+  state=host.getState();state.location.place='Street';context.chatMetadata.tretaresia_rpg_state=state;
+  assert.equal(host.missionBoardForMessage(1,context.chat[1]).available,false);
+  const variant=context.chat[1].mes;context.chat[1].mes='An unrelated replacement reply.';assert.equal(host.missionBoardForMessage(1,context.chat[1]),null);context.chat[1].mes=variant;
+  context.chatMetadata={};assert.equal(host.missionBoardForMessage(1,context.chat[1]),null);
+ } finally {host.setLiveGeneration(false);context.chat=saved.chat;context.chatMetadata=saved.metadata;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.get;settings.eventNotifications=notices;}
 });
 test('NPC Codex requires a recorded meeting, while all genders retain H-Stats',()=>{
  const state=host.defaultState();state.npcs=[
@@ -859,7 +914,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.0');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.1');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

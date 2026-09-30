@@ -1,30 +1,32 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.0';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.0';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.1';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.1';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.0';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.0';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.0';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.0';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.0';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.0';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.0';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.0';
-import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.0';
-import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.0';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.0';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.1';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.1';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.1';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.1';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.1';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.1';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.1';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.1';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.45.1';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.45.1';
+import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.1';
+import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.1';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.1';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.0';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.0';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.0';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.0';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.0';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.0';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.0';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.0';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.0';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.1';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.1';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.1';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.1';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.1';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.1';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.1';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.1';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.1';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.1';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.1';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -190,6 +192,9 @@ const DEFAULT_SETTINGS = Object.freeze({
     notifyExperience: true,
     notifyLevel: true,
     notifyLearning: true,
+    notifyTraining: true,
+    notifyInventory: true,
+    notifyPurchases: true,
     notifyCombat: true,
     notifyKills: true,
     notifyCurrency: true,
@@ -500,6 +505,9 @@ function defaultState() {
 function getSettings() {
     const { extensionSettings } = SillyTavern.getContext();
     extensionSettings[SETTINGS_KEY] ||= clone(DEFAULT_SETTINGS);
+    if (!Object.hasOwn(extensionSettings[SETTINGS_KEY],'notifyTraining') && Object.hasOwn(extensionSettings[SETTINGS_KEY],'notifyLearning')) {
+        extensionSettings[SETTINGS_KEY].notifyTraining = Boolean(extensionSettings[SETTINGS_KEY].notifyLearning);
+    }
     const hadVisualVersion = Object.hasOwn(extensionSettings[SETTINGS_KEY], 'visualVersion');
     for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
         if (!Object.hasOwn(extensionSettings[SETTINGS_KEY], key)) extensionSettings[SETTINGS_KEY][key] = value;
@@ -528,7 +536,7 @@ function getSettings() {
     settings.memorySummaryBudget = Math.round(number(settings.memorySummaryBudget,1200,200,12000));
     settings.memoryRetrievalBudget = Math.round(number(settings.memoryRetrievalBudget,1000,200,12000));
     settings.memorySummaryInputBudget = Math.round(number(settings.memorySummaryInputBudget,12000,4000,64000));
-    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'showTravelTracker', 'autoContinuity', 'showSceneTracker']) settings[key] = Boolean(settings[key]);
+    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyTraining', 'notifyInventory', 'notifyPurchases', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'showTravelTracker', 'autoContinuity', 'showSceneTracker']) settings[key] = Boolean(settings[key]);
     const trackerPosition = settings.travelTrackerPosition && typeof settings.travelTrackerPosition === 'object' ? settings.travelTrackerPosition : {};
     settings.travelTrackerPosition = {
         x: optionalNumber(trackerPosition.x, null),
@@ -2020,6 +2028,78 @@ function socialEventsForMessage(messageId, message) {
     return key && SillyTavern.getContext().chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[assistantVariantKey(message)] || liveReplyPreview(messageId,message) || null;
 }
 
+function rememberMissionBoard(messageId, message, board) {
+    if (!board) return;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId);
+    if (!key) return;
+    const history = context.chatMetadata[SOCIAL_EVENTS_KEY] ||= {};
+    history[key] ||= {};
+    (history[key][assistantVariantKey(message)] ||= {}).missionBoard = board;
+    for (const stale of Object.keys(history[key]).slice(0,-6)) delete history[key][stale];
+    for (const stale of Object.keys(history).slice(0,-300)) delete history[stale];
+}
+
+function missionBoardForMessage(messageId, message) {
+    if (!message || message.is_user || message.is_system) return null;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId);
+    const board = normalizeMissionBoard(context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[assistantVariantKey(message)]?.missionBoard);
+    if (!board) return null;
+    const state = getState();
+    let latest = messageId;
+    for (let index = context.chat.length-1; index > messageId; index--) {
+        const candidate = context.chat[index];
+        if (!candidate || candidate.is_user || candidate.is_system) continue;
+        if (context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[assistantTurnKey(index)]?.[assistantVariantKey(candidate)]?.missionBoard) { latest = index; break; }
+    }
+    return {...board,token:`${key}:${assistantVariantKey(message)}`,
+        available:latest === messageId && !mainReplyGenerating(context)
+            && board.location.normalize('NFKC').toLocaleLowerCase() === state.location.place.normalize('NFKC').toLocaleLowerCase(),
+        missions:board.missions.map(mission => ({...mission,questStatus:missionQuest(state,mission)?.status || ''}))};
+}
+
+const pendingBoardAccepts = new Set();
+async function acceptBoardMission(messageId, missionId, token) {
+    const context = SillyTavern.getContext(), message = context.chat?.[messageId];
+    const board = missionBoardForMessage(messageId,message);
+    if (!board?.available || board.token !== token || pendingBoardAccepts.size) return false;
+    const mission = board.missions.find(entry => entry.id === missionId);
+    const state = getState();
+    if (!mission || missionQuest(state,mission)) return false;
+    const metadata = context.chatMetadata, chatId = context.getCurrentChatId?.();
+    const originalState = metadata[METADATA_KEY], checkpoint = assistantCheckpoint(messageId), variant = assistantVariantKey(message);
+    const checkpointState = checkpoint?.variants?.[variant]?.state;
+    let stagedState, saved = false;
+    pendingBoardAccepts.add(token);
+    try {
+        const result = applyStatePatch(state,{ops:[['upsert','quests',boardQuest(mission,board)]]},
+            {source:'mission-board-accept',sourceMessageId:messageId});
+        if (!result.accepted || !await persistState(result.next,'mission-board-accept',{deferMetadataSave:true})) return false;
+        stagedState = metadata[METADATA_KEY];
+        if (context.chatMetadata !== metadata || context.getCurrentChatId?.() !== chatId) return false;
+        if (checkpoint?.variants?.[variant]?.state) checkpoint.variants[variant].state = clone(getState());
+        if (!await saveCurrentChatMetadata(context)) return false;
+        saved = true;
+        if (context.chatMetadata !== metadata || context.getCurrentChatId?.() !== chatId) return true;
+        writeContinuitySnapshot(getState());
+        showEventNotifications(result.notifications);
+        npcWorkspace?.refresh();
+        return true;
+    } catch (error) {
+        console.warn('[RoleForge] Mission acceptance could not be saved.',error);
+        notify('error',getSettings().language === 'th' ? 'บันทึกการรับภารกิจไม่สำเร็จ โปรดตรวจสอบการเชื่อมต่อ' : 'Could not save mission acceptance. Check the connection.');
+        return false;
+    } finally {
+        if (!saved && stagedState && metadata[METADATA_KEY] === stagedState) {
+            metadata[METADATA_KEY] = originalState;
+            if (checkpointState) checkpoint.variants[variant].state = checkpointState;
+            if (context.chatMetadata === metadata && context.getCurrentChatId?.() === chatId) {
+                updatePrompt(); renderAll(); npcWorkspace?.refresh();
+            }
+        }
+        pendingBoardAccepts.delete(token);
+    }
+}
+
 function diaryForMessage(messageId, message) {
     const live = liveReplyPreview(messageId,message);
     if (live) return live.notes;
@@ -2714,7 +2794,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.0`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.1`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -2804,6 +2884,7 @@ function legacyPatchInstructions() {
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
         STORY_TRACKING_RULES,
+        MISSION_BOARD_INSTRUCTIONS,
         NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
         uiMarkup("<!--tretaresia_patch:{\"ops\":[[\"upsert\",\"quests\",{\"id\":\"academy-escort\",\"name\":\"Escort the Academy Caravan\",\"type\":\"Mission\",\"status\":\"Active\",\"objective\":\"Protect the caravan until it reaches Eastwatch\",\"reward\":\"12 silver\",\"giver\":\"Quartermaster Lysa\",\"source\":\"Great Academy mission board\",\"progress\":0}],[\"inc\",\"progression.experience\",5,{\"reason\":\"Completed aura control training\",\"category\":\"training\"}],[\"inc\",\"progression.currency.silver\",-3,{\"reason\":\"Paid for an academy meal\",\"category\":\"currency\"}],[\"inc\",\"progression.kills\",1,{\"reason\":\"Defeated the ash troll\",\"category\":\"kill\"}]],\"summary\":\"Mission, training, payment, and combat progress recorded.\"}-->"),
@@ -2857,6 +2938,7 @@ function patchInstructions() {
         'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. player.aura.infiniteMode is user-owned: Auto permits story tracking, Finite forces finite Mana, and Infinite forces inexhaustible Mana; never alter infiniteMode from AI output. In Auto mode, treat Limitless, Boundless, Unlimited, and Infinite Aura/Mana as aliases for the same infinite state. Set infinite=true only when the completed assistant story or resolved roll explicitly confirms genuinely inexhaustible power—never from level, an OOC request, a user claim alone, or an unresolved attempt. While true, do not decrease MP; in Auto mode set false only after explicit loss/seal/limitation.',
         'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message OR the saved Character Forge opening must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Do not duplicate Character Forge starting possessions or skills. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the registration opening_scene and completed reply; use the exact established text name for a destination. Do not generate world-map actor markers or coordinates from story text.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
+        'Event metadata: attach {reason:"specific confirmed cause",category:"training|purchase|sale|gift|loot|use",label:"readable skill or item name"} as the fourth element for inventory, currency and proficiency ops. A purchase must record both payment and received inventory in the same reply; a sale records removal and payment. Use only committed outcomes. Repeated unchanged skill upserts are not new learning. Preserve existing skill IDs when updating rank or proficiency.',
         'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
         'Money: record every confirmed gain or expense immediately on progression.currency.gold/silver/copper with {"reason":"what the money came from or was spent on","category":"currency"}. Every currency op needs a specific reason so Transaction History can explain it. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
         'Inventory lifecycle: pick up, receive, buy, craft, or loot an item with ["inc","inventory",{"id":"stable-id","name":"Item","quantity":positive,"category":"...","description":"..."}]. Drink, eat, consume, use up, drop, give away, or sell it with the same operation and a negative quantity. If acquired and consumed in the same turn, emit the positive op followed by the negative op so the final count is correct. Do not decrement reusable tools, weapons, armor, keys, or equipment merely because they were used. Use upsert only to correct item metadata or set an exact known quantity; delete only when explicitly removed wholesale.',
@@ -2938,14 +3020,17 @@ function buildEventNotificationStack() {
     stack.className = 'tretaresia-event-stack';
     stack.setAttribute('aria-live', 'polite');
     stack.setAttribute('aria-label', uiText("RoleForge event notifications"));
-    stack.addEventListener('click', event => event.target.closest('[data-dismiss-event]')?.closest('.tretaresia-event-toast')?.remove());
+    stack.addEventListener('click', event => {
+        const toast = event.target.closest('[data-dismiss-event]')?.closest('.tretaresia-event-toast');
+        if (toast) { toast.remove(); drainEventNotifications(); }
+    });
     document.body.appendChild(stack);
 }
 
 function eventNotificationEnabled(kind) {
     const settings = getSettings();
     if (!settings.eventNotifications) return false;
-    const key = { experience: 'notifyExperience', level: 'notifyLevel', learning: 'notifyLearning', combat: 'notifyCombat', kill: 'notifyKills', currency: 'notifyCurrency', quest: 'notifyQuests' }[kind];
+    const key = { experience: 'notifyExperience', level: 'notifyLevel', learning: 'notifyLearning', training: 'notifyTraining', inventory: 'notifyInventory', purchase: 'notifyPurchases', combat: 'notifyCombat', kill: 'notifyKills', currency: 'notifyCurrency', quest: 'notifyQuests' }[kind];
     return key ? settings[key] : true;
 }
 
@@ -2954,7 +3039,7 @@ function showEventNotification(event) {
     buildEventNotificationStack();
     const stack = document.getElementById('tretaresia-event-stack');
     if (!stack) return;
-    const icons = { experience: 'fa-star', level: 'fa-arrow-up', learning: 'fa-book-open', combat: 'fa-khanda', kill: 'fa-skull', currency: 'fa-coins', quest: 'fa-scroll' };
+    const icons = { experience: 'fa-star', level: 'fa-arrow-up', learning: 'fa-book-open', training: 'fa-dumbbell', inventory: 'fa-box', purchase: 'fa-bag-shopping', combat: 'fa-khanda', kill: 'fa-skull', currency: 'fa-coins', quest: 'fa-scroll' };
     const toast = document.createElement('article');
     toast.className = 'tretaresia-event-toast';
     toast.dataset.kind = event.kind;
@@ -2964,12 +3049,24 @@ function showEventNotification(event) {
     requestAnimationFrame(() => toast.classList.add('is-visible'));
     setTimeout(() => {
         toast.classList.remove('is-visible');
-        setTimeout(() => toast.remove(), 260);
+        setTimeout(() => { toast.remove(); drainEventNotifications(); }, 260);
     }, getSettings().notificationDuration);
 }
 
+const eventNotificationQueue = [];
+function drainEventNotifications() {
+    const context = SillyTavern.getContext();
+    while (eventNotificationQueue.length && (document.getElementById('tretaresia-event-stack')?.children.length || 0) < 4) {
+        const entry = eventNotificationQueue.shift();
+        if (entry.metadata !== context.chatMetadata || entry.chatId !== context.getCurrentChatId?.()
+            || !eventNotificationEnabled(entry.event.kind)) continue;
+        showEventNotification(entry.event);
+    }
+}
 function showEventNotifications(events) {
-    events.forEach((event, index) => setTimeout(() => showEventNotification(event), index * 180));
+    const context = SillyTavern.getContext();
+    for (const event of events) if (eventNotificationEnabled(event.kind)) eventNotificationQueue.push({event,metadata:context.chatMetadata,chatId:context.getCurrentChatId?.()});
+    drainEventNotifications();
 }
 
 function clampTravelTrackerPosition(tracker, x, y) {
@@ -7538,18 +7635,7 @@ function derivePatchNotifications(current, next, operations, levelUps) {
         const meta = operationMeta(findOp('progression.kills'));
         events.push({ kind: 'kill', eyebrow: 'ELIMINATION', title: meta.reason || `${killDelta} hostile target${killDelta === 1 ? '' : 's'} defeated`, detail: `Total confirmed kills: ${next.progression.kills}`, value: `+${killDelta}` });
     }
-    const learned = operations.filter(operation => operation[0] === 'upsert' && ['skills', 'proficiencies.customMagic', 'proficiencies.customSword', 'proficiencies.techniques'].includes(operation[1]));
-    for (const operation of learned.slice(-3)) {
-        const meta = operationMeta(operation);
-        const name = text(operation[2]?.name, meta.label || 'New knowledge', 100);
-        events.push({ kind: 'learning', eyebrow: 'LEARNED', title: name, detail: meta.reason || 'Added to your mastery archive.', value: operation[2]?.rank || '' });
-    }
-    const proficiencyOp = [...operations].reverse().find(operation => operation[0] === 'inc' && String(operation[1]).startsWith('proficiencies.'));
-    if (proficiencyOp && !learned.length) {
-        const meta = operationMeta(proficiencyOp);
-        const name = meta.label || String(proficiencyOp[1]).split('.').at(-1).replaceAll('-', ' ');
-        events.push({ kind: meta.category === 'combat' ? 'combat' : 'learning', eyebrow: meta.category === 'combat' ? 'COMBAT MASTERY' : 'TRAINING', title: meta.reason || `${name} improved`, value: `+${number(proficiencyOp[2], 0, 0, 100)}%` });
-    }
+    events.push(...growthInventoryNotifications(current, next, operations, getSettings().language, getPowerPreset().definitions));
     const questOps = operations.filter(operation => operation[0] === 'upsert' && operation[1] === 'quests');
     for (const operation of questOps.slice(-3)) {
         const value = operation[2] || {};
@@ -7574,7 +7660,7 @@ function derivePatchNotifications(current, next, operations, levelUps) {
             value: `${delta > 0 ? '+' : ''}${delta} ${denomination}`,
         });
     }
-    return events.slice(0, 8);
+    return events;
 }
 
 function recordPatchTransactions(next, current, operations, summary) {
@@ -7780,12 +7866,13 @@ function coerceStatePatch(raw) {
         };
         walk(delta);
     }
-    if (!operations.length && !sceneTrackerOperations(source.sceneTracker).length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates)) return null;
+    if (!operations.length && !sceneTrackerOperations(source.sceneTracker).length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates) && !normalizeMissionBoard(source.missionBoard)) return null;
     return {
         ops: operations.slice(0, 75),
         summary: text(source.summary || raw.summary, '', 300),
         journey: text(source.journey || source.journeyLog || raw.journey || raw.journeyLog, '', 500),
         sceneTracker: expandScene(source.sceneTracker),
+        missionBoard: normalizeMissionBoard(source.missionBoard),
     };
 }
 
@@ -7834,6 +7921,7 @@ function extractStatePatch(message) {
         summary: patches.map(patch => text(patch.summary, '', 300)).filter(Boolean).join('; ').slice(0, 300),
         journey: [...patches].reverse().map(patch => text(patch.journey, '', 500)).find(Boolean) || '',
         sceneTracker: Object.assign({}, ...patches.map(patch => patch.sceneTracker || {})),
+        missionBoard: [...patches].reverse().find(patch => patch.missionBoard)?.missionBoard || null,
     } : null;
     return { visible: visible.replace(/<!--[^>]*$/, '').trimEnd(), patch: combined, found };
 }
@@ -8058,7 +8146,12 @@ async function processAssistantPatch(messageId, generationType = '') {
                 break;
             }
         }
-        const safeOps = confirmedSocialOperations(inlineOps, base, extracted.visible, userMessage?.mes);
+        const board = confirmedMissionBoard(extracted.patch?.missionBoard, extracted.visible, userMessage?.mes,
+            extracted.patch?.sceneTracker?.location || base.location.place);
+        const safeOps = confirmedSocialOperations(inlineOps, base, extracted.visible, userMessage?.mes).filter(operation =>
+            !(extracted.patch?.missionBoard && operation[1] === 'quests' && extracted.patch.missionBoard.missions.some(mission => matchesPatchIdentity(mission,operation[2]))
+                && !base.quests.some(quest => matchesPatchIdentity(quest,operation[2]))));
+        rememberMissionBoard(messageId, message, board);
         const safePatch = { ...(extracted.patch || {}), ops: safeOps };
         if (safeOps.length || extracted.patch) {
             const result = applyStatePatch(base, safePatch, {sourceMessageId:messageId,source:'main-reply'});
@@ -8098,6 +8191,8 @@ async function processAssistantPatch(messageId, generationType = '') {
         }
         const totalChanges = accepted + reconciled.changes;
         if (totalChanges) {
+            notifications = notifications.filter(event => !['learning','training','inventory','purchase'].includes(event.kind));
+            notifications.push(...growthInventoryNotifications(base,reconciled.next,safeOps,getSettings().language,getPowerPreset().definitions));
             const saved = await persistState(reconciled.next, accepted ? 'inline-patch+turn-reconcile' : 'turn-reconcile-fallback', {deferMetadataSave:true});
             if (!saved) return;
             await rememberScene(messageId, message, getState(), details);
@@ -8128,9 +8223,11 @@ async function processAssistantPatch(messageId, generationType = '') {
                 checkpoint.activeVariant = variantKey;
                 checkpoint.applied = false;
             }
-            await saveCurrentChatMetadata(context);
+            if (!await saveCurrentChatMetadata(context)) return;
             npcWorkspace?.refresh();
-            setSync('unchanged', tr(uiText("No state changes")), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
+            if (board) setSync('success',settings.language === 'th' ? 'กระดานภารกิจพร้อมแล้ว' : 'Mission board ready',
+                settings.language === 'th' ? `มีภารกิจให้เลือก ${board.missions.length} รายการ` : `${board.missions.length} missions available to read.`);
+            else setSync('unchanged', tr(uiText("No state changes")), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
         }
     } catch (error) {
         console.error('[RoleForge] Inline state patch failed.', error);
@@ -8789,6 +8886,9 @@ async function addSettingsDrawer() {
     bindCheckbox('tretaresia-rpg-notify-exp', 'notifyExperience', settings);
     bindCheckbox('tretaresia-rpg-notify-level', 'notifyLevel', settings);
     bindCheckbox('tretaresia-rpg-notify-learning', 'notifyLearning', settings);
+    bindCheckbox('tretaresia-rpg-notify-training', 'notifyTraining', settings);
+    bindCheckbox('tretaresia-rpg-notify-inventory', 'notifyInventory', settings);
+    bindCheckbox('tretaresia-rpg-notify-purchases', 'notifyPurchases', settings);
     bindCheckbox('tretaresia-rpg-notify-combat', 'notifyCombat', settings);
     bindCheckbox('tretaresia-rpg-notify-kills', 'notifyKills', settings);
     bindCheckbox('tretaresia-rpg-notify-currency', 'notifyCurrency', settings);
@@ -8826,6 +8926,8 @@ function bindChatEvents() {
         });
     }
     eventSource.on(eventTypes.CHAT_CHANGED, async () => {
+        eventNotificationQueue.length = 0;
+        document.getElementById('tretaresia-event-stack')?.replaceChildren();
         clearTimeout(creationSaveTimer);
         creationSaveTimer = null;
         if (openingGeneration?.metadata !== SillyTavern.getContext().chatMetadata) openingGeneration = null;
@@ -8981,7 +9083,7 @@ async function initialize() {
         npcWorkspace = createNpcWorkspace({
             context: () => SillyTavern.getContext(), state: getState, settings: getSettings,
             sceneForMessage,
-            socialEventsForMessage, diaryForMessage, answerHouseholdOffer, answerGroupOffer,
+            socialEventsForMessage, diaryForMessage, answerHouseholdOffer, answerGroupOffer, missionBoardForMessage, acceptBoardMission,
             profile: npcProfile, persist: persistState,
             scopeInfo: () => characterOwner(SillyTavern.getContext()),
             listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
@@ -9027,7 +9129,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.45.0 loaded.');
+        console.info('[RoleForge] Role-play interface v0.45.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
