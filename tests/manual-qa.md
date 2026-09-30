@@ -103,3 +103,9 @@ Browser automation requires a local Chromium installation. Node tests cover the 
 - A legacy role-named dossier can receive its proper name via its existing id without losing portrait or history.
 - In Generate / fill missing, test invalid JSON and role-only name output. One compact retry is allowed; two failures leave the existing draft intact and re-enable controls.
 - With a reference image, a retry must preserve observed appearance, active card canon and lore. Save remains explicit.
+
+## v0.44.8 acceptance
+
+- Complete a named quest with currency, EXP and an item in one patch; each distinct component should apply once. Repeat its payment in another reply using a paraphrased reason, another amount, a SET balance, or after deleting/recreating the archive entry: no extra payment. Complete a different quest and sell an item: both independent transactions should still work. Reload and repeat the paid quest; its receipt should persist.
+- Open an old atlas save with Gaia Manor as the actual place and repeated Central Continent breadcrumbs. Current scene, footer and older scene cards should show the story place once, without seeded Central Crown/Crown Heartlands/Central Continent. Old travel arrival must not restore the seed. A newly confirmed region with that same name should remain usable.
+- Check main chat and the RPG panel at 390px and desktop. World Map tabs, coordinates and NPC map markers should be absent. Local room layout, H-Stats directory choices, safe hide/Undo, Party/Guild recovery, currency and saved portraits should still work. Update/reload without clearing chat data.

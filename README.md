@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.44.7
+# ROLEFORGE — v0.44.8
+
+## v0.44.8 — Quest payment receipts and story locations
+
+- Quest rewards now keep a payment receipt independent of reward wording, amount and the visible quest archive. A paid quest cannot pay again through a later reply, balance replacement, Manual Sync or deleting/recreating its archive entry. Distinct reward components can be granted together in the first payment; completion without payment can receive its first reward later. Each quest payment must identify one known quest.
+- Removed the bundled World Map, atlas assets, coordinate tracking, NPC map markers and geography reference injected into AI prompts. **Central Crown** came from the old atlas's default starting city. New locations follow the story; region and continent are optional. Local room layouts remain available.
+- Saved atlas locations, travel geography and scene history migrate locally: repeated breadcrumbs and the old default Central Crown/Crown Heartlands/Central Continent are cleared while actual place names, character data, room layouts and balances are retained. Confirmed geography entered after migration stays usable.
+- Existing balances are not recalculated or reduced: old transaction descriptions alone cannot prove which money was duplicated. Update the extension and reload SillyTavern once; no saved-data reset is needed.
 
 ## v0.44.7 — Safer H-Stats and existing group recovery
 

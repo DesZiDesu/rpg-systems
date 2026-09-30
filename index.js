@@ -1,22 +1,23 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.7';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.7';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.8';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.8';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.7';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.7';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.7';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.8';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.8';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.44.8';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.44.8';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.7';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.7';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.7';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.7';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.7';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.7';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.7';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.7';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.7';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.44.7';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.7';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.8';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.8';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.8';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.8';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.8';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.8';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.8';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.8';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.8';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.44.8';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.8';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -132,693 +133,6 @@ const DAY_PHASES = ['Morning', 'Afternoon', 'Evening', 'Night'];
 const ZONE_TYPES = ['Safe Zone', 'Neutral Zone', 'Danger Zone', 'Unknown Zone'];
 const ROOM_TYPES = ['Room', 'Hall', 'Corridor', 'Stairs', 'Entrance', 'Garden', 'Utility', 'Unknown'];
 const CONNECTION_TYPES = ['Door', 'Passage', 'Stairs', 'Archway', 'Window'];
-const SOURCE_MAP_WIDTH = 1448;
-const SOURCE_MAP_HEIGHT = 1086;
-const WORLD_MAP_WIDTH = 2400;
-const WORLD_MAP_HEIGHT = 1800;
-const WORLD_TILE_SIZE = 512;
-const WORLD_ATLASES = Object.freeze({
-    'present-world': Object.freeze({ id: 'present-world', name: 'Present World', era: 'Present Era', atlasVersion: 4 }),
-    'alternate-present-world': Object.freeze({ id: 'alternate-present-world', name: 'Alternate Present World ROLEFORGE', era: 'Alternate Present Era', atlasVersion: 4 }),
-});
-const WORLD_ATLAS = WORLD_ATLASES['present-world'];
-const WORLD_TILE_ROOTS = Object.freeze({
-    'present-world': Object.freeze({
-        day: `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles`,
-        night: `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles-night`,
-    }),
-    'alternate-present-world': Object.freeze({
-        day: `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles-alternate`,
-        night: `/scripts/extensions/${EXTENSION_FOLDER}/assets/world-map/tiles-alternate-night`,
-    }),
-});
-const WORLD_MAP_ZOOM_LEVELS = Object.freeze({ regional: 1.35, local: 2.4 });
-const WORLD_TILE_LEVELS = [
-    { z: 0, width: 512, height: 384, columns: 1, rows: 1 },
-    { z: 1, width: 1024, height: 768, columns: 2, rows: 2 },
-    { z: 2, width: 2048, height: 1536, columns: 4, rows: 3 },
-    { z: 3, width: 4096, height: 3072, columns: 8, rows: 6 },
-];
-const MAP_COARSE_POINTER = Boolean(globalThis.matchMedia?.('(pointer: coarse)')?.matches);
-// Mobile Safari is far more sensitive to decoded image memory and concurrent
-// image decodes than desktop browsers. Keep only the active atlas/lighting
-// context, use a deliberately small LRU, and never decode a wall of tiles at
-// once while the user is trying to pan.
-const MAP_TILE_CACHE_LIMIT = MAP_COARSE_POINTER ? 8 : 32;
-const MAP_TILE_LOAD_LIMIT = MAP_COARSE_POINTER ? 2 : 6;
-const MAP_PORTRAIT_THUMBNAIL_SIZE = MAP_COARSE_POINTER ? 64 : 96;
-const MAP_PORTRAIT_CACHE_LIMIT = MAP_COARSE_POINTER ? 40 : 56;
-const MAP_VISIBLE_PORTRAIT_LIMIT = MAP_COARSE_POINTER ? 24 : 40;
-const MAP_ROSTER_PORTRAIT_LIMIT = MAP_COARSE_POINTER ? 18 : 32;
-const MAP_CLUSTER_THRESHOLD = MAP_COARSE_POINTER ? 30 : 48;
-const MAP_DRAW_INTERVAL = 16;
-const MAP_INTERACTION_SETTLE = 140;
-const atlasPoint = (x, y) => [
-    Math.round(x / SOURCE_MAP_WIDTH * WORLD_MAP_WIDTH),
-    Math.round(y / SOURCE_MAP_HEIGHT * WORLD_MAP_HEIGHT),
-];
-const atlasPolygon = points => points.map(([x, y]) => atlasPoint(x, y));
-const atlasBounds = polygons => {
-    const points = polygons.flat();
-    const xs = points.map(point => point[0]);
-    const ys = points.map(point => point[1]);
-    return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
-};
-const atlasContinent = (id, name, className, label, sourcePolygons) => {
-    const polygons = sourcePolygons.map(atlasPolygon);
-    return { id, name, className, label: atlasPoint(...label), polygons, bounds: atlasBounds(polygons) };
-};
-const PRESENT_WORLD_CONTINENTS = [
-    atlasContinent('central', 'Central Continent', 'central', [455, 430], [[
-        [205, 290], [260, 245], [320, 220], [420, 225], [520, 230], [620, 250], [675, 320],
-        [660, 430], [630, 520], [680, 620], [655, 725], [600, 665], [520, 650], [450, 620],
-        [375, 590], [310, 550], [270, 490], [230, 420], [220, 350],
-    ]]),
-    atlasContinent('forest', 'The Great Forest', 'forest', [1185, 680], [[
-        [990, 600], [1030, 555], [1120, 520], [1220, 500], [1310, 530], [1340, 620], [1320, 710],
-        [1300, 800], [1220, 835], [1120, 820], [1030, 780], [960, 750], [900, 770], [940, 680],
-    ]]),
-    atlasContinent('titan', 'Great Land of Titan', 'titan', [375, 765], [[
-        [145, 555], [205, 540], [290, 585], [350, 650], [430, 700], [520, 745], [610, 800],
-        [665, 880], [620, 915], [510, 900], [400, 900], [300, 880], [230, 850], [175, 810], [155, 730],
-    ]]),
-    atlasContinent('drinovia', 'Drinovia Continent', 'drinovia', [1180, 245], [[
-        [1020, 85], [1110, 75], [1210, 90], [1300, 110], [1320, 185], [1305, 265], [1295, 350],
-        [1250, 425], [1170, 405], [1120, 370], [1080, 300], [1050, 220],
-    ]]),
-    atlasContinent('north', 'North Continent', 'north', [425, 145], [[
-        [145, 150], [180, 110], [300, 85], [430, 70], [560, 85], [690, 130], [675, 215],
-        [610, 245], [500, 240], [400, 235], [300, 230], [220, 215], [150, 195],
-    ]]),
-    atlasContinent('baluguria', 'Baluguria Continent', 'baluguria', [780, 875], [
-        [[505, 680], [540, 670], [580, 675], [610, 700], [605, 735], [575, 755], [535, 750], [505, 725]],
-        [[635, 720], [680, 730], [730, 750], [780, 760], [830, 750], [880, 720], [920, 690],
-            [930, 735], [880, 770], [820, 790], [760, 795], [700, 780], [655, 755]],
-        [[740, 920], [800, 900], [860, 925], [920, 910], [990, 925], [1030, 965], [980, 1005],
-            [900, 995], [830, 1000], [760, 980]],
-    ]),
-];
-
-const ALTERNATE_WORLD_CONTINENTS = [
-    atlasContinent('alt-westreach', 'Westreach Crownlands', 'central', [390, 410], [[
-        [105, 125], [230, 80], [410, 85], [610, 120], [720, 230], [760, 400], [720, 590],
-        [650, 705], [480, 720], [320, 650], [180, 520], [120, 350],
-    ]]),
-    atlasContinent('alt-sakura', 'Sakura-Frost Dominion', 'north', [825, 245], [[
-        [650, 55], [820, 35], [1005, 65], [1050, 205], [1020, 390], [920, 500],
-        [760, 475], [655, 360], [625, 190],
-    ]]),
-    atlasContinent('alt-ember', 'Sunscorched East', 'drinovia', [1160, 260], [[
-        [1010, 65], [1260, 55], [1335, 145], [1320, 360], [1235, 465], [1060, 430], [1005, 285],
-    ]]),
-    atlasContinent('alt-verdant', 'Verdant Southeast', 'forest', [1140, 650], [[
-        [900, 430], [1120, 390], [1325, 430], [1390, 600], [1340, 815], [1120, 850],
-        [930, 790], [840, 650],
-    ]]),
-    atlasContinent('alt-south', 'Southern Wildlands', 'baluguria', [390, 770], [[
-        [105, 515], [270, 485], [470, 555], [650, 650], [720, 835], [630, 930],
-        [390, 920], [180, 830], [110, 680],
-    ]]),
-    atlasContinent('alt-isles', 'Inner Sea Archipelago', 'titan', [760, 850], [[
-        [470, 560], [690, 540], [900, 610], [1110, 760], [1050, 1030], [700, 1045],
-        [500, 910], [410, 710],
-    ]]),
-];
-// These coordinates are hand-placed against the supplied atlas artwork. The order mirrors
-// WORLD_LOCATIONS below, keeping every named destination on visible land or a visible island.
-const WORLD_LOCATION_POINTS = {
-    'Central Continent': [
-        [535, 250], [265, 335], [485, 435], [560, 560], [310, 415], [430, 350], [560, 360],
-        [340, 500], [510, 300], [575, 510], [285, 370], [390, 460], [380, 535], [600, 430],
-        [475, 555], [530, 590], [320, 450], [500, 600], [430, 570], [560, 520], [470, 385],
-    ],
-    'The Great Forest': [
-        [1210, 610], [1200, 650], [1030, 700], [1250, 550], [1120, 700], [1290, 730], [1110, 780],
-        [1190, 580], [1260, 670], [1140, 620], [1240, 790], [1290, 620], [1180, 720], [1080, 730],
-        [1160, 800], [1310, 680], [1040, 650], [1220, 560], [1300, 780], [1100, 810], [1250, 820],
-    ],
-    'Great Land of Titan': [
-        [380, 815], [300, 720], [250, 760], [335, 675], [250, 650], [460, 730], [500, 790],
-        [320, 830], [420, 755], [410, 870], [230, 700], [500, 850], [280, 860], [520, 840],
-        [470, 850], [250, 800], [520, 880], [360, 780], [220, 840], [440, 800], [490, 875],
-    ],
-    'Drinovia Continent': [
-        [1250, 130], [1160, 260], [1280, 250], [1200, 180], [1100, 220], [1190, 120], [1240, 330],
-        [1110, 320], [1210, 300], [1270, 190], [1110, 150], [1190, 280], [1140, 330], [1270, 340],
-        [1080, 180], [1260, 220], [1170, 350], [1240, 380], [1080, 250], [1270, 300], [1160, 380],
-    ],
-    'North Continent': [
-        [333, 152], [470, 125], [580, 145], [540, 105], [620, 175], [650, 210], [400, 160],
-        [575, 210], [270, 175], [455, 210], [235, 150], [600, 105], [350, 205], [500, 85],
-        [420, 190], [560, 90], [475, 180], [390, 215], [300, 110], [530, 200], [360, 95],
-    ],
-    'Baluguria Continent': [
-        [533, 718], [815, 760], [814, 940], [920, 918], [515, 732], [689, 748], [791, 758],
-        [782, 924], [836, 950], [874, 946], [926, 964], [535, 696], [551, 710], [515, 712],
-        [795, 780], [777, 776], [819, 786], [735, 786], [853, 774], [776, 962], [958, 942],
-    ],
-};
-const worldLocationPointCursor = {};
-const mapSite = (id, name, continent, region, x, y, tier = 2, kind = 'landmark', zone = 'Neutral Zone') => (
-    (() => {
-        const cursor = worldLocationPointCursor[continent] || 0;
-        const sourcePoint = WORLD_LOCATION_POINTS[continent]?.[cursor];
-        worldLocationPointCursor[continent] = cursor + 1;
-        const [mapX, mapY] = sourcePoint ? atlasPoint(...sourcePoint) : [x, y];
-        return { id, name, continent, region, x: mapX, y: mapY, tier, kind, zone };
-    })()
-);
-const exactMapSite = (id, name, continent, region, x, y, tier = 0, kind = 'landmark', zone = 'Neutral Zone') => (
-    { id, name, continent, region, x, y, tier, kind, zone }
-);
-const PRESENT_WORLD_LOCATIONS = [
-    mapSite('central-capital', 'Central Crown', 'Central Continent', 'Crown Heartlands', 1135, 690, 0, 'capital', 'Safe Zone'),
-    mapSite('great-academy', 'The Great Academy', 'Central Continent', 'Academy March', 1010, 600, 0, 'academy', 'Safe Zone'),
-    mapSite('grand-crossroads', 'Grand Crossroads', 'Central Continent', 'Kingroads', 1250, 790, 0, 'city', 'Safe Zone'),
-    mapSite('eastwake-port', 'Eastwake Port', 'Central Continent', 'Eastwake Coast', 1510, 890, 0, 'port', 'Safe Zone'),
-    mapSite('sunmere', 'Sunmere Principality', 'Central Continent', 'Sunmere', 860, 520, 1, 'city', 'Safe Zone'),
-    mapSite('river-crown', 'River Crown', 'Central Continent', 'Crown Heartlands', 1180, 585, 1, 'city', 'Safe Zone'),
-    mapSite('bellfoundry', 'Bellfoundry', 'Central Continent', 'Iron Vale', 1395, 550, 1, 'town', 'Neutral Zone'),
-    mapSite('redwillow', 'Redwillow', 'Central Continent', 'Western Farms', 770, 735, 1, 'town', 'Safe Zone'),
-    mapSite('greymark', 'Greymark Citadel', 'Central Continent', 'Northern March', 1100, 410, 1, 'fortress', 'Neutral Zone'),
-    mapSite('hollowbridge', 'Hollowbridge', 'Central Continent', 'Kingroads', 1325, 895, 1, 'town', 'Safe Zone'),
-    mapSite('westmere-port', 'Westmere Port', 'Central Continent', 'Westmere Coast', 690, 855, 1, 'port', 'Safe Zone'),
-    mapSite('saint-orsen', 'Saint Orsen Hospice', 'Central Continent', 'Pilgrim Fields', 945, 820, 2, 'sanctuary', 'Safe Zone'),
-    mapSite('moonmill', 'Moonmill Village', 'Central Continent', 'Western Farms', 830, 940, 2, 'village', 'Safe Zone'),
-    mapSite('ashen-orchard', 'Ashen Orchard', 'Central Continent', 'Cinder Downs', 1460, 730, 2, 'village', 'Neutral Zone'),
-    mapSite('old-ars-road', 'Old Ars Road', 'Central Continent', 'Ancient Roads', 1045, 965, 2, 'road', 'Neutral Zone'),
-    mapSite('copper-den', 'Copper Den', 'Central Continent', 'Iron Vale', 1425, 990, 2, 'mine', 'Danger Zone'),
-    mapSite('veilwood', 'Veilwood Hamlet', 'Central Continent', 'Veilwood', 760, 625, 2, 'village', 'Neutral Zone'),
-    mapSite('larkspur-waystation', 'Larkspur Waystation', 'Central Continent', 'Kingroads', 1210, 1015, 2, 'waystation', 'Safe Zone'),
-    mapSite('glasswater-lake', 'Glasswater Lake', 'Central Continent', 'Lake Country', 930, 1035, 2, 'lake', 'Neutral Zone'),
-    mapSite('black-bell-dungeon', 'Black Bell Dungeon', 'Central Continent', 'Cinder Downs', 1525, 1010, 2, 'dungeon', 'Danger Zone'),
-    mapSite('nameless-chapel', 'Nameless Chapel', 'Central Continent', 'Pilgrim Fields', 1280, 475, 2, 'ruin', 'Danger Zone'),
-
-    mapSite('cloud-tree', 'The Cloud-Piercing Tree', 'The Great Forest', 'Worldroot Core', 2070, 1040, 0, 'world-tree', 'Danger Zone'),
-    mapSite('worldroot-expanse', 'Worldroot Expanse', 'The Great Forest', 'Worldroot Core', 2000, 960, 0, 'forest', 'Danger Zone'),
-    mapSite('forbidden-verge', 'Forbidden Verge', 'The Great Forest', 'Human Exclusion Border', 1745, 905, 0, 'border', 'Danger Zone'),
-    mapSite('verdant-court', 'Verdant Court', 'The Great Forest', 'Elder Canopy', 2150, 870, 0, 'capital', 'Safe Zone'),
-    mapSite('canopy-waystation', 'Canopy Waystation', 'The Great Forest', 'Outer Canopy', 1810, 1020, 1, 'waystation', 'Neutral Zone'),
-    mapSite('rainfang', 'Rainfang Village', 'The Great Forest', 'Rainfang Basin', 2250, 1090, 1, 'village', 'Safe Zone'),
-    mapSite('jade-river', 'Jade River Crossing', 'The Great Forest', 'Jadewater', 1930, 1185, 1, 'crossing', 'Neutral Zone'),
-    mapSite('moss-crown', 'Moss Crown', 'The Great Forest', 'Elder Canopy', 2055, 780, 1, 'town', 'Safe Zone'),
-    mapSite('thousand-vines', 'Thousand-Vine Maze', 'The Great Forest', 'Tangled Interior', 2200, 970, 1, 'labyrinth', 'Danger Zone'),
-    mapSite('greenwhisper', 'Greenwhisper', 'The Great Forest', 'Whispering Boughs', 1865, 820, 1, 'village', 'Safe Zone'),
-    mapSite('orchid-falls', 'Orchid Falls', 'The Great Forest', 'Jadewater', 2115, 1220, 1, 'waterfall', 'Neutral Zone'),
-    mapSite('sleeping-grove', 'Sleeping Grove', 'The Great Forest', 'Dreamwood', 2290, 1245, 2, 'grove', 'Danger Zone'),
-    mapSite('bone-orchard', 'Bone Orchard', 'The Great Forest', 'Tangled Interior', 1965, 855, 2, 'ruin', 'Danger Zone'),
-    mapSite('amber-hive', 'Amber Hive', 'The Great Forest', 'Outer Canopy', 1785, 1130, 2, 'settlement', 'Neutral Zone'),
-    mapSite('starcap-cavern', 'Starcap Cavern', 'The Great Forest', 'Worldroot Core', 2020, 1290, 2, 'dungeon', 'Danger Zone'),
-    mapSite('moonfern-lake', 'Moonfern Lake', 'The Great Forest', 'Dreamwood', 2185, 1320, 2, 'lake', 'Neutral Zone'),
-    mapSite('heretic-bloom', 'Heretic Bloom Shrine', 'The Great Forest', 'Tangled Interior', 2310, 835, 2, 'cult', 'Danger Zone'),
-    mapSite('beast-tongue-market', 'Beast-Tongue Market', 'The Great Forest', 'Rainfang Basin', 2205, 1155, 2, 'market', 'Safe Zone'),
-    mapSite('rootwatch', 'Rootwatch Tower', 'The Great Forest', 'Human Exclusion Border', 1735, 790, 2, 'tower', 'Danger Zone'),
-    mapSite('lost-leaf', 'Lost Leaf Village', 'The Great Forest', 'Whispering Boughs', 1880, 1265, 2, 'hidden-village', 'Neutral Zone'),
-    mapSite('pale-mangrove', 'Pale Mangrove', 'The Great Forest', 'Southern Wetlands', 2240, 1340, 2, 'swamp', 'Danger Zone'),
-
-    mapSite('khaduzar', 'Grand Kingdom of Khaduzar', 'Great Land of Titan', 'Khaduzar', 365, 1080, 0, 'capital', 'Safe Zone'),
-    mapSite('titan-hand', "Titan's Hand", 'Great Land of Titan', 'Khaduzar Dunes', 460, 1000, 0, 'monument', 'Neutral Zone'),
-    mapSite('sunscar-port', 'Sunscar Port', 'Great Land of Titan', 'Burning Coast', 165, 1165, 0, 'port', 'Safe Zone'),
-    mapSite('dune-throne', 'Dune Throne', 'Great Land of Titan', 'Royal Sands', 335, 920, 0, 'city', 'Safe Zone'),
-    mapSite('glass-dunes', 'Glass Dunes', 'Great Land of Titan', 'Titan Wastes', 190, 930, 1, 'desert', 'Danger Zone'),
-    mapSite('red-aquifer', 'Red Aquifer', 'Great Land of Titan', 'Deep Wells', 520, 1160, 1, 'oasis', 'Neutral Zone'),
-    mapSite('iron-sirocco', 'Iron Sirocco', 'Great Land of Titan', 'Stormbelt', 585, 1010, 1, 'fortress', 'Danger Zone'),
-    mapSite('salt-crown', 'Salt Crown', 'Great Land of Titan', 'White Salt', 260, 1250, 1, 'town', 'Safe Zone'),
-    mapSite('giant-step', "Giant's Step", 'Great Land of Titan', 'Khaduzar Dunes', 520, 900, 1, 'waystation', 'Neutral Zone'),
-    mapSite('mirage-market', 'Mirage Market', 'Great Land of Titan', 'Royal Sands', 405, 1215, 1, 'market', 'Safe Zone'),
-    mapSite('sunken-obelisk', 'Sunken Obelisk', 'Great Land of Titan', 'Titan Wastes', 110, 1045, 1, 'ruin', 'Danger Zone'),
-    mapSite('black-cistern', 'Black Cistern', 'Great Land of Titan', 'Deep Wells', 600, 1265, 2, 'dungeon', 'Danger Zone'),
-    mapSite('seven-tents', 'Seven Tents', 'Great Land of Titan', 'Caravan Sea', 320, 1310, 2, 'caravan', 'Safe Zone'),
-    mapSite('bonewind-camp', 'Bonewind Camp', 'Great Land of Titan', 'Stormbelt', 635, 1125, 2, 'camp', 'Danger Zone'),
-    mapSite('blue-flame-oasis', 'Blue-Flame Oasis', 'Great Land of Titan', 'Deep Wells', 475, 1295, 2, 'oasis', 'Neutral Zone'),
-    mapSite('shifting-maw', 'Shifting Maw', 'Great Land of Titan', 'Titan Wastes', 135, 1260, 2, 'dungeon', 'Danger Zone'),
-    mapSite('hammerfall-quarry', 'Hammerfall Quarry', 'Great Land of Titan', 'Khaduzar', 570, 1340, 2, 'mine', 'Neutral Zone'),
-    mapSite('scorpion-road', 'Scorpion Road', 'Great Land of Titan', 'Caravan Sea', 245, 1085, 2, 'road', 'Danger Zone'),
-    mapSite('pale-sultanate', 'Pale Sultanate', 'Great Land of Titan', 'White Salt', 95, 1185, 2, 'city', 'Safe Zone'),
-    mapSite('wrist-shadow', 'Wrist-Shadow Village', 'Great Land of Titan', 'Khaduzar Dunes', 485, 1065, 2, 'village', 'Safe Zone'),
-    mapSite('howling-vault', 'Howling Vault', 'Great Land of Titan', 'Stormbelt', 655, 1305, 2, 'dungeon', 'Danger Zone'),
-
-    mapSite('duel-crown', 'Duel Crown', 'Drinovia Continent', 'Crown of Blades', 2070, 335, 0, 'capital', 'Neutral Zone'),
-    mapSite('fallen-arms', 'Field of Fallen Arms', 'Drinovia Continent', 'Gravefields', 1950, 425, 0, 'battlefield', 'Danger Zone'),
-    mapSite('ash-march', 'Ash March', 'Drinovia Continent', 'Ash Frontier', 2250, 455, 0, 'region', 'Danger Zone'),
-    mapSite('red-arena', 'Red Arena', 'Drinovia Continent', 'Crown of Blades', 2160, 245, 0, 'arena', 'Neutral Zone'),
-    mapSite('speargrave', 'Speargrave', 'Drinovia Continent', 'Gravefields', 1835, 330, 1, 'city', 'Neutral Zone'),
-    mapSite('iron-widow', 'Iron Widow Keep', 'Drinovia Continent', 'Widow Hills', 1980, 155, 1, 'fortress', 'Danger Zone'),
-    mapSite('victors-rest', "Victor's Rest", 'Drinovia Continent', 'Crown of Blades', 2200, 570, 1, 'city', 'Safe Zone'),
-    mapSite('broken-standard', 'Broken Standard', 'Drinovia Continent', 'Gravefields', 1745, 465, 1, 'town', 'Danger Zone'),
-    mapSite('bloodford', 'Bloodford', 'Drinovia Continent', 'Redwater', 2075, 535, 1, 'crossing', 'Danger Zone'),
-    mapSite('last-challenge', 'Last Challenge', 'Drinovia Continent', 'Ash Frontier', 2320, 345, 1, 'fortress', 'Danger Zone'),
-    mapSite('weapon-rain', 'Weapon Rain Plateau', 'Drinovia Continent', 'Widow Hills', 1870, 215, 1, 'battlefield', 'Danger Zone'),
-    mapSite('nameless-duel', 'Nameless Duel Stone', 'Drinovia Continent', 'Crown of Blades', 2110, 440, 2, 'monument', 'Neutral Zone'),
-    mapSite('rust-prayer', 'Rust Prayer Chapel', 'Drinovia Continent', 'Gravefields', 1905, 540, 2, 'ruin', 'Danger Zone'),
-    mapSite('black-banner', 'Black Banner Camp', 'Drinovia Continent', 'Ash Frontier', 2280, 555, 2, 'camp', 'Danger Zone'),
-    mapSite('thousand-swords', 'Thousand Swords Ravine', 'Drinovia Continent', 'Widow Hills', 1770, 190, 2, 'ravine', 'Danger Zone'),
-    mapSite('cinder-lance', 'Cinder Lance', 'Drinovia Continent', 'Ash Frontier', 2340, 245, 2, 'town', 'Neutral Zone'),
-    mapSite('mourning-smithy', 'Mourning Smithy', 'Drinovia Continent', 'Gravefields', 1830, 520, 2, 'smithy', 'Safe Zone'),
-    mapSite('champion-well', "Champion's Well", 'Drinovia Continent', 'Redwater', 2145, 620, 2, 'sanctuary', 'Safe Zone'),
-    mapSite('skull-gate', 'Skull Gate', 'Drinovia Continent', 'Widow Hills', 1665, 360, 2, 'gate', 'Danger Zone'),
-    mapSite('oathbreaker-pit', 'Oathbreaker Pit', 'Drinovia Continent', 'Crown of Blades', 2220, 155, 2, 'dungeon', 'Danger Zone'),
-    mapSite('quiet-blade', 'Quiet Blade Village', 'Drinovia Continent', 'Redwater', 2015, 595, 2, 'village', 'Safe Zone'),
-
-    mapSite('frostgate', 'Frostgate', 'North Continent', 'North Coast', 1120, 245, 0, 'capital', 'Safe Zone'),
-    mapSite('deepwinter', 'Deepwinter Reach', 'North Continent', 'Far North', 900, 115, 0, 'region', 'Danger Zone'),
-    mapSite('white-wastes', 'White Wastes', 'North Continent', 'Outer North', 1340, 145, 0, 'region', 'Danger Zone'),
-    mapSite('aurora-hold', 'Aurora Hold', 'North Continent', 'Aurora Shelf', 1240, 230, 0, 'city', 'Safe Zone'),
-    mapSite('ice-vein', 'Ice-Vein Mine', 'North Continent', 'Outer North', 1460, 205, 1, 'mine', 'Danger Zone'),
-    mapSite('snowblind-port', 'Snowblind Port', 'North Continent', 'North Coast', 1510, 250, 1, 'port', 'Neutral Zone'),
-    mapSite('cold-sun', 'Cold Sun Monastery', 'North Continent', 'Aurora Shelf', 1040, 125, 1, 'monastery', 'Safe Zone'),
-    mapSite('wolfglass', 'Wolfglass Village', 'North Continent', 'Outer North', 1390, 265, 1, 'village', 'Safe Zone'),
-    mapSite('winter-throne', 'Winter Throne', 'North Continent', 'Far North', 780, 190, 1, 'fortress', 'Danger Zone'),
-    mapSite('blue-ice-road', 'Blue-Ice Road', 'North Continent', 'North Coast', 1185, 285, 1, 'road', 'Neutral Zone'),
-    mapSite('breathless-field', 'Breathless Field', 'North Continent', 'Far North', 720, 105, 1, 'wilderness', 'Danger Zone'),
-    mapSite('dead-star-crater', 'Dead Star Crater', 'North Continent', 'Outer North', 1560, 120, 2, 'crater', 'Danger Zone'),
-    mapSite('mammoth-grave', 'Mammoth Grave', 'North Continent', 'Far North', 840, 260, 2, 'graveyard', 'Danger Zone'),
-    mapSite('frozen-mouth', 'Frozen Mouth Dungeon', 'North Continent', 'Aurora Shelf', 1280, 80, 2, 'dungeon', 'Danger Zone'),
-    mapSite('three-fires', 'Three Fires Camp', 'North Continent', 'North Coast', 1010, 270, 2, 'camp', 'Safe Zone'),
-    mapSite('pale-choir', 'Pale Choir Ruins', 'North Continent', 'Outer North', 1435, 85, 2, 'ruin', 'Danger Zone'),
-    mapSite('iceblood-lake', 'Iceblood Lake', 'North Continent', 'Aurora Shelf', 1170, 85, 2, 'lake', 'Danger Zone'),
-    mapSite('last-pine', 'Last Pine', 'North Continent', 'North Coast', 945, 285, 2, 'waystation', 'Safe Zone'),
-    mapSite('storm-nest', 'Storm Nest', 'North Continent', 'Far North', 690, 205, 2, 'lair', 'Danger Zone'),
-    mapSite('silent-thermals', 'Silent Thermals', 'North Continent', 'Aurora Shelf', 1325, 280, 2, 'springs', 'Neutral Zone'),
-    mapSite('minus-three-hundred', '-300 Marker', 'North Continent', 'Far North', 760, 60, 2, 'monument', 'Danger Zone'),
-
-    mapSite('exile-port', 'Exile Port', 'Baluguria Continent', 'Balugurian Coast', 1010, 1290, 0, 'port', 'Neutral Zone'),
-    mapSite('gilded-vice', 'Gilded Vice', 'Baluguria Continent', 'Pleasure District', 1280, 1260, 0, 'city', 'Danger Zone'),
-    mapSite('chainmarket', 'Chainmarket', 'Baluguria Continent', 'Trade Ward', 1420, 1310, 0, 'market', 'Danger Zone'),
-    mapSite('underworld-quarter', 'Underworld Quarter', 'Baluguria Continent', 'Lower Baluguria', 1210, 1345, 0, 'district', 'Danger Zone'),
-    mapSite('black-dice', 'Black Dice', 'Baluguria Continent', 'Gambling Ward', 1160, 1220, 1, 'casino-city', 'Danger Zone'),
-    mapSite('silk-lantern', 'Silk Lantern Row', 'Baluguria Continent', 'Pleasure District', 1335, 1340, 1, 'district', 'Danger Zone'),
-    mapSite('prisoners-mile', "Prisoners' Mile", 'Baluguria Continent', 'Exile Road', 1080, 1360, 1, 'road', 'Danger Zone'),
-    mapSite('smuggler-crown', "Smuggler's Crown", 'Baluguria Continent', 'Lower Baluguria', 1535, 1260, 1, 'fortress', 'Danger Zone'),
-    mapSite('orion-auction', 'Orion Auction Hall', 'Baluguria Continent', 'Trade Ward', 1455, 1250, 1, 'auction', 'Danger Zone'),
-    mapSite('velvet-dock', 'Velvet Dock', 'Baluguria Continent', 'Balugurian Coast', 930, 1340, 1, 'port', 'Neutral Zone'),
-    mapSite('red-ledger', 'Red Ledger Bank', 'Baluguria Continent', 'Gambling Ward', 1245, 1190, 1, 'bank', 'Danger Zone'),
-    mapSite('faceless-den', 'Faceless Den', 'Baluguria Continent', 'Lower Baluguria', 1385, 1380, 2, 'hideout', 'Danger Zone'),
-    mapSite('broken-collar', 'Broken Collar Inn', 'Baluguria Continent', 'Exile Road', 1050, 1200, 2, 'inn', 'Neutral Zone'),
-    mapSite('nightglass', 'Nightglass Alley', 'Baluguria Continent', 'Pleasure District', 1305, 1375, 2, 'district', 'Danger Zone'),
-    mapSite('coin-eater', 'Coin-Eater Pit', 'Baluguria Continent', 'Gambling Ward', 1175, 1350, 2, 'arena', 'Danger Zone'),
-    mapSite('contraband-bazaar', 'Contraband Bazaar', 'Baluguria Continent', 'Trade Ward', 1490, 1365, 2, 'market', 'Danger Zone'),
-    mapSite('salt-cellars', 'Salt Cellars', 'Baluguria Continent', 'Balugurian Coast', 970, 1190, 2, 'dungeon', 'Danger Zone'),
-    mapSite('ash-chain-yard', 'Ash Chain Yard', 'Baluguria Continent', 'Exile Road', 1115, 1265, 2, 'yard', 'Danger Zone'),
-    mapSite('whisper-broker', 'Whisper Broker Court', 'Baluguria Continent', 'Lower Baluguria', 1570, 1340, 2, 'court', 'Danger Zone'),
-    mapSite('golden-cage', 'Golden Cage', 'Baluguria Continent', 'Pleasure District', 1360, 1210, 2, 'estate', 'Danger Zone'),
-    mapSite('last-freeman', "Last Freeman's Shrine", 'Baluguria Continent', 'Balugurian Coast', 900, 1260, 2, 'shrine', 'Neutral Zone'),
-];
-const ALTERNATE_PRESENT_TARGET_BOUNDS = Object.freeze({
-    'Central Continent': Object.freeze({ continent: 'Westreach Crownlands', bounds: [300, 260, 1120, 1080] }),
-    'North Continent': Object.freeze({ continent: 'Sakura-Frost Dominion', bounds: [1120, 120, 1660, 740] }),
-    'Drinovia Continent': Object.freeze({ continent: 'Sunscorched East', bounds: [1740, 180, 2160, 720] }),
-    'The Great Forest': Object.freeze({ continent: 'Verdant Southeast', bounds: [1560, 800, 2180, 1320] }),
-    'Great Land of Titan': Object.freeze({ continent: 'Southern Wildlands', bounds: [260, 980, 1120, 1490] }),
-    'Baluguria Continent': Object.freeze({ continent: 'Inner Sea Archipelago', bounds: [900, 1000, 1920, 1650] }),
-});
-const ALTERNATE_PRESENT_COORDINATE_OVERRIDES = Object.freeze({
-    'grand-crossroads': Object.freeze([810, 720]),
-    'copper-den': Object.freeze([920, 1025]),
-    'amber-hive': Object.freeze([1700, 1115]),
-    'howling-vault': Object.freeze([1000, 1450]),
-    'cinder-lance': Object.freeze([2085, 415]),
-    'wolfglass': Object.freeze([1530, 690]),
-    'gilded-vice': Object.freeze([1620, 1125]),
-});
-const ALTERNATE_PRESENT_SOURCE_BOUNDS = Object.freeze(Object.fromEntries(Object.keys(ALTERNATE_PRESENT_TARGET_BOUNDS).map(continent => {
-    const entries = PRESENT_WORLD_LOCATIONS.filter(location => location.continent === continent);
-    return [continent, Object.freeze([
-        Math.min(...entries.map(location => location.x)), Math.min(...entries.map(location => location.y)),
-        Math.max(...entries.map(location => location.x)), Math.max(...entries.map(location => location.y)),
-    ])];
-})));
-function alternatePresentSite(site) {
-    const target = ALTERNATE_PRESENT_TARGET_BOUNDS[site.continent];
-    const sourceBounds = ALTERNATE_PRESENT_SOURCE_BOUNDS[site.continent];
-    if (!target || !sourceBounds) return { ...site, id: `alt-present-${site.id}` };
-    const [sourceLeft, sourceTop, sourceRight, sourceBottom] = sourceBounds;
-    const [targetLeft, targetTop, targetRight, targetBottom] = target.bounds;
-    const ratioX = (site.x - sourceLeft) / Math.max(1, sourceRight - sourceLeft);
-    const ratioY = (site.y - sourceTop) / Math.max(1, sourceBottom - sourceTop);
-    return {
-        ...site,
-        id: `alt-present-${site.id}`,
-        continent: target.continent,
-        x: ALTERNATE_PRESENT_COORDINATE_OVERRIDES[site.id]?.[0] ?? Math.round(targetLeft + ratioX * (targetRight - targetLeft)),
-        y: ALTERNATE_PRESENT_COORDINATE_OVERRIDES[site.id]?.[1] ?? Math.round(targetTop + ratioY * (targetBottom - targetTop)),
-    };
-}
-// Every named Present World destination still exists in the Alternate timeline.
-// It is remapped onto the corresponding expanded landmass, then combined with Alternate-exclusive sites.
-const ALTERNATE_PRESENT_LOCATIONS = PRESENT_WORLD_LOCATIONS.map(alternatePresentSite);
-const ALTERNATE_NEW_LOCATIONS = [
-    exactMapSite('alt-chaos-breaker', 'Chaos Breaker', 'Westreach Crownlands', "Kaliasna Oryu's Sky Dominion", 1080, 792, 0, 'sky-castle', 'Neutral Zone'),
-    exactMapSite('alt-eastern-tradition-kingdom', 'Eastern Tradition Kingdom', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1272, 360, 0, 'capital', 'Safe Zone'),
-
-    exactMapSite('alt-crownheart-citadel', 'Crownheart Citadel', 'Westreach Crownlands', 'Northern Crown', 576, 252, 0, 'capital', 'Safe Zone'),
-    exactMapSite('alt-bluewatch-port', 'Bluewatch Port', 'Westreach Crownlands', 'Western Coast', 432, 558, 0, 'port', 'Safe Zone'),
-    exactMapSite('alt-stonegate', 'Stonegate', 'Westreach Crownlands', 'Western Coast', 456, 666, 1, 'fortress', 'Neutral Zone'),
-    exactMapSite('alt-frostgate-bastion', 'Frostgate Bastion', 'Westreach Crownlands', 'Northern Crown', 888, 396, 1, 'fortress', 'Neutral Zone'),
-    exactMapSite('alt-elderwheel-ruins', 'Elderwheel Ruins', 'Westreach Crownlands', 'Old Kingdom Basin', 576, 522, 1, 'ruin', 'Danger Zone'),
-    exactMapSite('alt-graypine-crossing', 'Graypine Crossing', 'Westreach Crownlands', 'Graypine Range', 768, 630, 1, 'crossing', 'Neutral Zone'),
-    exactMapSite('alt-westwind-abbey', 'Westwind Abbey', 'Westreach Crownlands', 'Pilgrim Downs', 768, 756, 2, 'sanctuary', 'Safe Zone'),
-    exactMapSite('alt-lakeglass', 'Lakeglass', 'Westreach Crownlands', 'Bluewater Vale', 600, 810, 2, 'lake', 'Neutral Zone'),
-    exactMapSite('alt-ravenroad', 'Ravenroad', 'Westreach Crownlands', 'Southern March', 912, 954, 2, 'road', 'Neutral Zone'),
-    exactMapSite('alt-southspire', 'Southspire', 'Westreach Crownlands', 'Southern March', 1032, 1026, 1, 'city', 'Safe Zone'),
-    exactMapSite('alt-sable-march', 'Sable March', 'Westreach Crownlands', 'Southern March', 1080, 1080, 2, 'region', 'Danger Zone'),
-    exactMapSite('alt-westmere-isles', 'Westmere Isles', 'Westreach Crownlands', 'Western Sea', 384, 864, 2, 'island', 'Neutral Zone'),
-
-    exactMapSite('alt-sakura-palace', 'Sakura Palace', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1320, 306, 1, 'palace', 'Safe Zone'),
-    exactMapSite('alt-frostbloom-shrine', 'Frostbloom Shrine', 'Sakura-Frost Dominion', 'Petal Snowfields', 1152, 414, 1, 'shrine', 'Safe Zone'),
-    exactMapSite('alt-snowpetal-monastery', 'Snowpetal Monastery', 'Sakura-Frost Dominion', 'White Cedar Heights', 1464, 234, 1, 'monastery', 'Safe Zone'),
-    exactMapSite('alt-giantwood-sanctuary', 'Giantwood Sanctuary', 'Sakura-Frost Dominion', 'Colossal Forest', 1488, 486, 0, 'world-tree', 'Neutral Zone'),
-    exactMapSite('alt-worldroot-observatory', 'Worldroot Observatory', 'Sakura-Frost Dominion', 'Colossal Forest', 1560, 558, 1, 'tower', 'Neutral Zone'),
-    exactMapSite('alt-moonblossom-village', 'Moonblossom Village', 'Sakura-Frost Dominion', 'Petal Snowfields', 1368, 612, 2, 'village', 'Safe Zone'),
-    exactMapSite('alt-white-crane-pass', 'White Crane Pass', 'Sakura-Frost Dominion', 'Eastern Snowwall', 1680, 378, 2, 'pass', 'Danger Zone'),
-    exactMapSite('alt-frozen-cedar-reach', 'Frozen Cedar Reach', 'Sakura-Frost Dominion', 'White Cedar Heights', 1608, 252, 2, 'forest', 'Danger Zone'),
-    exactMapSite('alt-petal-coast', 'Petal Coast', 'Sakura-Frost Dominion', 'Blossom Coast', 1200, 522, 2, 'coast', 'Neutral Zone'),
-    exactMapSite('alt-dragonfang-ring', 'Dragonfang Ring', 'Sakura-Frost Dominion', "Kaliasna Oryu's Sky Dominion", 1056, 774, 1, 'mountain-ring', 'Danger Zone'),
-
-    exactMapSite('alt-aurelian-sand-crown', 'Aurelian Sand Crown', 'Sunscorched East', 'Golden Throne', 2064, 216, 0, 'capital', 'Safe Zone'),
-    exactMapSite('alt-emberlake-hold', 'Emberlake Hold', 'Sunscorched East', 'Emberlake', 1848, 270, 1, 'fortress', 'Neutral Zone'),
-    exactMapSite('alt-ashen-meridian', 'Ashen Meridian', 'Sunscorched East', 'Ash Meridian', 1752, 396, 1, 'city', 'Neutral Zone'),
-    exactMapSite('alt-red-dune-citadel', 'Red Dune Citadel', 'Sunscorched East', 'Red Dunes', 2016, 432, 1, 'fortress', 'Danger Zone'),
-    exactMapSite('alt-cinderwell', 'Cinderwell', 'Sunscorched East', 'Cinder Basin', 1968, 558, 2, 'town', 'Safe Zone'),
-    exactMapSite('alt-golden-steppe', 'Golden Steppe', 'Sunscorched East', 'Eastern Steppe', 2088, 648, 2, 'region', 'Neutral Zone'),
-    exactMapSite('alt-eastern-furnace', 'Eastern Furnace', 'Sunscorched East', 'Cinder Basin', 1824, 612, 2, 'mine', 'Danger Zone'),
-    exactMapSite('alt-sunscar-canyon', 'Sunscar Canyon', 'Sunscorched East', 'Red Dunes', 1896, 468, 2, 'canyon', 'Danger Zone'),
-    exactMapSite('alt-saltwind-port', 'Saltwind Port', 'Sunscorched East', 'Saltwind Coast', 2088, 702, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-mirage-gate', 'Mirage Gate', 'Sunscorched East', 'Ash Meridian', 1752, 576, 2, 'waystation', 'Neutral Zone'),
-
-    exactMapSite('alt-greenwake-capital', 'Greenwake Capital', 'Verdant Southeast', 'Greenwake Basin', 2040, 864, 0, 'capital', 'Safe Zone'),
-    exactMapSite('alt-worldtree-court', 'Worldtree Court', 'Verdant Southeast', 'Elder Canopy', 2112, 1044, 0, 'world-tree', 'Safe Zone'),
-    exactMapSite('alt-silverriver-port', 'Silverriver Port', 'Verdant Southeast', 'Southern Delta', 2016, 1242, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-mosslight', 'Mosslight', 'Verdant Southeast', 'Mosslight Woods', 1872, 1116, 1, 'town', 'Safe Zone'),
-    exactMapSite('alt-violet-ridge', 'Violet Ridge', 'Verdant Southeast', 'Amethyst Range', 1800, 1080, 1, 'mountain', 'Neutral Zone'),
-    exactMapSite('alt-marshcrown', 'Marshcrown', 'Verdant Southeast', 'Western Wetlands', 1656, 990, 2, 'settlement', 'Neutral Zone'),
-    exactMapSite('alt-three-rivers', 'Three Rivers', 'Verdant Southeast', 'River Country', 1680, 1152, 2, 'crossing', 'Safe Zone'),
-    exactMapSite('alt-dawncoast', 'Dawncoast', 'Verdant Southeast', 'Dawn Coast', 1992, 1350, 2, 'city', 'Safe Zone'),
-    exactMapSite('alt-floodplain-abbey', 'Floodplain Abbey', 'Verdant Southeast', 'River Country', 1560, 1206, 2, 'sanctuary', 'Safe Zone'),
-    exactMapSite('alt-rootglass-lake', 'Rootglass Lake', 'Verdant Southeast', 'Elder Canopy', 1752, 1260, 2, 'lake', 'Neutral Zone'),
-
-    exactMapSite('alt-blackwood-crown', 'Blackwood Crown', 'Southern Wildlands', 'Blackwood Interior', 624, 1332, 0, 'capital', 'Neutral Zone'),
-    exactMapSite('alt-azure-caldera', 'Azure Caldera', 'Southern Wildlands', 'Western Caldera', 456, 1260, 1, 'lake', 'Danger Zone'),
-    exactMapSite('alt-duskpine', 'Duskpine', 'Southern Wildlands', 'Duskpine Forest', 528, 1404, 1, 'town', 'Neutral Zone'),
-    exactMapSite('alt-dustmarch-keep', 'Dustmarch Keep', 'Southern Wildlands', 'Eastern Dustmarch', 1032, 1476, 1, 'fortress', 'Danger Zone'),
-    exactMapSite('alt-wyrmroad-camp', 'Wyrmroad Camp', 'Southern Wildlands', 'Wyrmroad', 888, 1386, 2, 'camp', 'Neutral Zone'),
-    exactMapSite('alt-southwestern-port', 'Southwestern Port', 'Southern Wildlands', 'Southwestern Coast', 696, 1566, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-broken-mesa', 'Broken Mesa', 'Southern Wildlands', 'Eastern Dustmarch', 1104, 1332, 2, 'region', 'Danger Zone'),
-    exactMapSite('alt-ironwood-bastion', 'Ironwood Bastion', 'Southern Wildlands', 'Blackwood Interior', 600, 1188, 2, 'fortress', 'Neutral Zone'),
-    exactMapSite('alt-lakefort', 'Lakefort', 'Southern Wildlands', 'Western Caldera', 672, 1350, 2, 'fortress', 'Safe Zone'),
-    exactMapSite('alt-burning-tail', 'Burning Tail', 'Southern Wildlands', 'Ashen Peninsula', 1176, 1476, 2, 'coast', 'Danger Zone'),
-
-    exactMapSite('alt-roundhold-isle', 'Roundhold Isle', 'Inner Sea Archipelago', 'Roundhold Waters', 888, 1188, 0, 'island-fortress', 'Safe Zone'),
-    exactMapSite('alt-lantern-archipelago', 'Lantern Archipelago', 'Inner Sea Archipelago', 'Lantern Sea', 1320, 1494, 1, 'archipelago', 'Neutral Zone'),
-    exactMapSite('alt-crosswind-haven', 'Crosswind Haven', 'Inner Sea Archipelago', 'Crosswind Channel', 1272, 1296, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-pearlchain-port', 'Pearlchain Port', 'Inner Sea Archipelago', 'Pearlchain Isles', 1488, 1494, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-whisperreef', 'Whisperreef', 'Inner Sea Archipelago', 'Whispering Reefs', 1752, 1602, 2, 'reef', 'Danger Zone'),
-    exactMapSite('alt-southsea-crown', 'Southsea Crown', 'Inner Sea Archipelago', 'Southsea Isles', 1992, 1584, 1, 'island-city', 'Safe Zone'),
-    exactMapSite('alt-oracle-isle', 'Oracle Isle', 'Inner Sea Archipelago', 'Oracle Waters', 1152, 1170, 2, 'shrine', 'Neutral Zone'),
-    exactMapSite('alt-black-compass-atoll', 'Black Compass Atoll', 'Inner Sea Archipelago', 'Black Compass Sea', 1464, 1278, 2, 'atoll', 'Danger Zone'),
-    exactMapSite('alt-central-tideway', 'Central Tideway', 'Inner Sea Archipelago', 'Central Passage', 1344, 1152, 2, 'sea-route', 'Neutral Zone'),
-    exactMapSite('alt-glassbell-island', 'Glassbell Island', 'Inner Sea Archipelago', 'Western Inner Sea', 840, 936, 2, 'island', 'Neutral Zone'),
-    // Westreach Crownlands — dense heartland, coast, mountain and sky-domain routes.
-    exactMapSite('alt-ironbell-city', 'Ironbell City', 'Westreach Crownlands', 'Iron Vale', 720, 540, 1, 'city', 'Safe Zone'),
-    exactMapSite('alt-crownroad-market', 'Crownroad Market', 'Westreach Crownlands', 'Kingroads', 840, 684, 1, 'market', 'Safe Zone'),
-    exactMapSite('alt-whitecliff-watch', 'Whitecliff Watch', 'Westreach Crownlands', 'Northern Crown', 696, 306, 2, 'tower', 'Neutral Zone'),
-    exactMapSite('alt-northstar-village', 'Northstar Village', 'Westreach Crownlands', 'Northern Crown', 768, 342, 2, 'village', 'Safe Zone'),
-    exactMapSite('alt-hollow-crown-mine', 'Hollow Crown Mine', 'Westreach Crownlands', 'Graypine Range', 864, 522, 2, 'mine', 'Danger Zone'),
-    exactMapSite('alt-graypine-monastery', 'Graypine Monastery', 'Westreach Crownlands', 'Graypine Range', 936, 594, 2, 'monastery', 'Safe Zone'),
-    exactMapSite('alt-old-king-road', 'Old King Road', 'Westreach Crownlands', 'Old Kingdom Basin', 648, 612, 2, 'road', 'Neutral Zone'),
-    exactMapSite('alt-mirrorfen', 'Mirrorfen', 'Westreach Crownlands', 'Bluewater Vale', 480, 756, 2, 'swamp', 'Danger Zone'),
-    exactMapSite('alt-liongate', 'Liongate', 'Westreach Crownlands', 'Pilgrim Downs', 792, 846, 1, 'gate', 'Safe Zone'),
-    exactMapSite('alt-western-windmill', 'Western Windmill', 'Westreach Crownlands', 'Pilgrim Downs', 552, 702, 2, 'village', 'Safe Zone'),
-    exactMapSite('alt-moonbridge', 'Moonbridge', 'Westreach Crownlands', 'Bluewater Vale', 672, 882, 2, 'bridge', 'Neutral Zone'),
-    exactMapSite('alt-ravenwatch', 'Ravenwatch', 'Westreach Crownlands', 'Southern March', 960, 864, 2, 'tower', 'Danger Zone'),
-    exactMapSite('alt-cinderfield', 'Cinderfield', 'Westreach Crownlands', 'Southern March', 984, 990, 2, 'battlefield', 'Danger Zone'),
-    exactMapSite('alt-stormharbor', 'Stormharbor', 'Westreach Crownlands', 'Western Coast', 312, 612, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-drowned-cathedral', 'Drowned Cathedral', 'Westreach Crownlands', 'Western Sea', 336, 792, 2, 'ruin', 'Danger Zone'),
-    exactMapSite('alt-cloudfall-steps', 'Cloudfall Steps', 'Westreach Crownlands', "Kaliasna Oryu's Sky Dominion", 1008, 720, 2, 'mountain-pass', 'Danger Zone'),
-    exactMapSite('alt-dragons-shadow-village', "Dragon's Shadow Village", 'Westreach Crownlands', "Kaliasna Oryu's Sky Dominion", 984, 774, 1, 'village', 'Neutral Zone'),
-
-    // Sakura-Frost Dominion — cities, sacred sites, snowfields and giantwood settlements.
-    exactMapSite('alt-crimson-torii-city', 'Crimson Torii City', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1392, 396, 1, 'city', 'Safe Zone'),
-    exactMapSite('alt-shirogane-keep', 'Shirogane Keep', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1512, 342, 1, 'fortress', 'Safe Zone'),
-    exactMapSite('alt-hanakage-village', 'Hanakage Village', 'Sakura-Frost Dominion', 'Blossom Coast', 1272, 594, 2, 'village', 'Safe Zone'),
-    exactMapSite('alt-yukimori-fort', 'Yukimori Fort', 'Sakura-Frost Dominion', 'Eastern Snowwall', 1632, 432, 1, 'fortress', 'Neutral Zone'),
-    exactMapSite('alt-kitsune-falls', 'Kitsune Falls', 'Sakura-Frost Dominion', 'Petal Snowfields', 1440, 540, 2, 'waterfall', 'Neutral Zone'),
-    exactMapSite('alt-sakura-road', 'Sakura Road', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1320, 468, 2, 'road', 'Safe Zone'),
-    exactMapSite('alt-snow-lantern-port', 'Snow Lantern Port', 'Sakura-Frost Dominion', 'Blossom Coast', 1152, 558, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-ice-petal-lake', 'Ice-Petal Lake', 'Sakura-Frost Dominion', 'Petal Snowfields', 1488, 450, 2, 'lake', 'Neutral Zone'),
-    exactMapSite('alt-cedar-sword-dojo', 'Cedar Sword Dojo', 'Sakura-Frost Dominion', 'White Cedar Heights', 1536, 288, 2, 'dojo', 'Safe Zone'),
-    exactMapSite('alt-thousand-bells', 'Temple of a Thousand Bells', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1344, 324, 2, 'temple', 'Safe Zone'),
-    exactMapSite('alt-oni-gate', 'Oni Gate', 'Sakura-Frost Dominion', 'Eastern Snowwall', 1680, 504, 2, 'gate', 'Danger Zone'),
-    exactMapSite('alt-moon-rabbit-fields', 'Moon-Rabbit Fields', 'Sakura-Frost Dominion', 'Petal Snowfields', 1368, 684, 2, 'farmland', 'Safe Zone'),
-    exactMapSite('alt-frost-dragon-cave', 'Frost Dragon Cave', 'Sakura-Frost Dominion', 'Eastern Snowwall', 1608, 594, 2, 'lair', 'Danger Zone'),
-    exactMapSite('alt-pink-snow-basin', 'Pink-Snow Basin', 'Sakura-Frost Dominion', 'Petal Snowfields', 1248, 666, 2, 'wilderness', 'Neutral Zone'),
-    exactMapSite('alt-great-tree-village', 'Great-Tree Village', 'Sakura-Frost Dominion', 'Colossal Forest', 1512, 648, 1, 'hidden-village', 'Neutral Zone'),
-    exactMapSite('alt-shogun-grave', "Last Shogun's Grave", 'Sakura-Frost Dominion', 'White Cedar Heights', 1440, 216, 2, 'graveyard', 'Danger Zone'),
-    exactMapSite('alt-white-fox-shrine', 'White Fox Shrine', 'Sakura-Frost Dominion', 'Japanese-Tradition Realm', 1296, 414, 2, 'shrine', 'Safe Zone'),
-    exactMapSite('alt-eastern-cloud-port', 'Eastern Cloud Port', 'Sakura-Frost Dominion', 'Blossom Coast', 1668, 648, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-celestial-bamboo-grove', 'Celestial Bamboo Grove', 'Sakura-Frost Dominion', 'Colossal Forest', 1560, 720, 2, 'grove', 'Neutral Zone'),
-
-    // Sunscorched East — desert kingdoms, caravan arteries, volcanic ruins and oases.
-    exactMapSite('alt-solaris-gate', 'Solaris Gate', 'Sunscorched East', 'Golden Throne', 1992, 288, 1, 'gate', 'Safe Zone'),
-    exactMapSite('alt-brasshaven', 'Brasshaven', 'Sunscorched East', 'Ash Meridian', 1872, 342, 1, 'city', 'Safe Zone'),
-    exactMapSite('alt-scorpion-crown', 'Scorpion Crown', 'Sunscorched East', 'Red Dunes', 2112, 378, 2, 'fortress', 'Danger Zone'),
-    exactMapSite('alt-copper-sun-market', 'Copper Sun Market', 'Sunscorched East', 'Golden Throne', 2040, 342, 2, 'market', 'Safe Zone'),
-    exactMapSite('alt-blackglass-dunes', 'Blackglass Dunes', 'Sunscorched East', 'Red Dunes', 1920, 540, 2, 'desert', 'Danger Zone'),
-    exactMapSite('alt-phoenix-well', 'Phoenix Well', 'Sunscorched East', 'Cinder Basin', 2016, 612, 2, 'oasis', 'Safe Zone'),
-    exactMapSite('alt-sunwheel-observatory', 'Sunwheel Observatory', 'Sunscorched East', 'Golden Throne', 2136, 252, 2, 'observatory', 'Neutral Zone'),
-    exactMapSite('alt-ember-road', 'Ember Road', 'Sunscorched East', 'Ash Meridian', 1824, 486, 2, 'road', 'Neutral Zone'),
-    exactMapSite('alt-saffron-caravanserai', 'Saffron Caravanserai', 'Sunscorched East', 'Eastern Steppe', 2064, 594, 2, 'caravan', 'Safe Zone'),
-    exactMapSite('alt-red-moon-oasis', 'Red Moon Oasis', 'Sunscorched East', 'Red Dunes', 2136, 486, 2, 'oasis', 'Neutral Zone'),
-    exactMapSite('alt-ash-kings-tomb', "Ash King's Tomb", 'Sunscorched East', 'Ash Meridian', 1776, 306, 2, 'tomb', 'Danger Zone'),
-    exactMapSite('alt-furnace-depths', 'Furnace Depths', 'Sunscorched East', 'Cinder Basin', 1848, 666, 2, 'dungeon', 'Danger Zone'),
-    exactMapSite('alt-golden-vulture-roost', 'Golden Vulture Roost', 'Sunscorched East', 'Eastern Steppe', 2160, 630, 2, 'lair', 'Danger Zone'),
-    exactMapSite('alt-dry-river-city', 'Dry River City', 'Sunscorched East', 'Saltwind Coast', 2112, 720, 1, 'city', 'Safe Zone'),
-    exactMapSite('alt-smoldering-bridge', 'Smoldering Bridge', 'Sunscorched East', 'Ash Meridian', 1896, 594, 2, 'bridge', 'Neutral Zone'),
-    exactMapSite('alt-bronze-lion-fort', 'Bronze Lion Fort', 'Sunscorched East', 'Golden Throne', 2184, 324, 1, 'fortress', 'Neutral Zone'),
-    exactMapSite('alt-singing-sand-village', 'Singing Sand Village', 'Sunscorched East', 'Red Dunes', 2040, 504, 2, 'village', 'Safe Zone'),
-    exactMapSite('alt-coalwind-mine', 'Coalwind Mine', 'Sunscorched East', 'Cinder Basin', 1800, 630, 2, 'mine', 'Danger Zone'),
-    exactMapSite('alt-eastfire-lighthouse', 'Eastfire Lighthouse', 'Sunscorched East', 'Saltwind Coast', 2184, 684, 2, 'lighthouse', 'Safe Zone'),
-    exactMapSite('alt-mirage-burial-ground', 'Mirage Burial Ground', 'Sunscorched East', 'Red Dunes', 1968, 450, 2, 'graveyard', 'Danger Zone'),
-
-    // Verdant Southeast — river cities, worldtree settlements, wetlands and deep-forest ruins.
-    exactMapSite('alt-emerald-bridge', 'Emerald Bridge', 'Verdant Southeast', 'River Country', 1776, 1008, 1, 'bridge-city', 'Safe Zone'),
-    exactMapSite('alt-canopy-crown', 'Canopy Crown', 'Verdant Southeast', 'Elder Canopy', 2016, 972, 1, 'city', 'Safe Zone'),
-    exactMapSite('alt-rainbell-village', 'Rainbell Village', 'Verdant Southeast', 'Greenwake Basin', 1944, 900, 2, 'village', 'Safe Zone'),
-    exactMapSite('alt-jade-delta', 'Jade Delta', 'Verdant Southeast', 'Southern Delta', 1920, 1314, 2, 'wetland', 'Neutral Zone'),
-    exactMapSite('alt-rootbound-library', 'Rootbound Library', 'Verdant Southeast', 'Elder Canopy', 2088, 1116, 2, 'library', 'Safe Zone'),
-    exactMapSite('alt-violet-pass', 'Violet Pass', 'Verdant Southeast', 'Amethyst Range', 1752, 1026, 2, 'pass', 'Danger Zone'),
-    exactMapSite('alt-thornwall-fort', 'Thornwall Fort', 'Verdant Southeast', 'Western Wetlands', 1584, 936, 1, 'fortress', 'Neutral Zone'),
-    exactMapSite('alt-lotus-market', 'Lotus Market', 'Verdant Southeast', 'River Country', 1728, 1188, 2, 'market', 'Safe Zone'),
-    exactMapSite('alt-deepmoss-ruins', 'Deepmoss Ruins', 'Verdant Southeast', 'Mosslight Woods', 1848, 1188, 2, 'ruin', 'Danger Zone'),
-    exactMapSite('alt-green-dragon-falls', 'Green Dragon Falls', 'Verdant Southeast', 'Greenwake Basin', 2112, 918, 2, 'waterfall', 'Neutral Zone'),
-    exactMapSite('alt-sunleaf-monastery', 'Sunleaf Monastery', 'Verdant Southeast', 'Dawn Coast', 2160, 1260, 2, 'monastery', 'Safe Zone'),
-    exactMapSite('alt-mangrove-gate', 'Mangrove Gate', 'Verdant Southeast', 'Western Wetlands', 1512, 1080, 2, 'gate', 'Neutral Zone'),
-    exactMapSite('alt-river-serpent-lair', 'River Serpent Lair', 'Verdant Southeast', 'River Country', 1680, 1242, 2, 'lair', 'Danger Zone'),
-    exactMapSite('alt-glowfern-hollow', 'Glowfern Hollow', 'Verdant Southeast', 'Mosslight Woods', 1800, 1146, 2, 'grove', 'Neutral Zone'),
-    exactMapSite('alt-southern-jade-port', 'Southern Jade Port', 'Verdant Southeast', 'Southern Delta', 2088, 1332, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-elderbark-sanctum', 'Elderbark Sanctum', 'Verdant Southeast', 'Elder Canopy', 2160, 1080, 2, 'sanctuary', 'Danger Zone'),
-    exactMapSite('alt-cloudvine-tower', 'Cloudvine Tower', 'Verdant Southeast', 'Amethyst Range', 1848, 1008, 2, 'tower', 'Neutral Zone'),
-    exactMapSite('alt-flooded-palace', 'Flooded Palace', 'Verdant Southeast', 'Western Wetlands', 1584, 1152, 2, 'dungeon', 'Danger Zone'),
-    exactMapSite('alt-dawn-orchid-city', 'Dawn Orchid City', 'Verdant Southeast', 'Dawn Coast', 2208, 1188, 1, 'city', 'Safe Zone'),
-    exactMapSite('alt-silverroot-mine', 'Silverroot Mine', 'Verdant Southeast', 'Amethyst Range', 1776, 1104, 2, 'mine', 'Danger Zone'),
-
-    // Southern Wildlands — forest realms, caldera towns, frontier roads and lost strongholds.
-    exactMapSite('alt-nightpine-city', 'Nightpine City', 'Southern Wildlands', 'Blackwood Interior', 552, 1260, 1, 'city', 'Neutral Zone'),
-    exactMapSite('alt-blue-crater-village', 'Blue Crater Village', 'Southern Wildlands', 'Western Caldera', 432, 1332, 2, 'village', 'Safe Zone'),
-    exactMapSite('alt-ashen-wyrm-fort', 'Ashen Wyrm Fort', 'Southern Wildlands', 'Ashen Peninsula', 1080, 1422, 1, 'fortress', 'Danger Zone'),
-    exactMapSite('alt-wild-king-road', 'Wild King Road', 'Southern Wildlands', 'Wyrmroad', 816, 1320, 2, 'road', 'Neutral Zone'),
-    exactMapSite('alt-obsidian-lake', 'Obsidian Lake', 'Southern Wildlands', 'Western Caldera', 504, 1386, 2, 'lake', 'Danger Zone'),
-    exactMapSite('alt-wolfroot-village', 'Wolfroot Village', 'Southern Wildlands', 'Duskpine Forest', 456, 1458, 2, 'village', 'Neutral Zone'),
-    exactMapSite('alt-giant-antler-grove', 'Giant Antler Grove', 'Southern Wildlands', 'Duskpine Forest', 624, 1458, 2, 'grove', 'Danger Zone'),
-    exactMapSite('alt-dustwind-market', 'Dustwind Market', 'Southern Wildlands', 'Eastern Dustmarch', 984, 1386, 2, 'market', 'Neutral Zone'),
-    exactMapSite('alt-lost-titan-watch', 'Lost Titan Watch', 'Southern Wildlands', 'Eastern Dustmarch', 1128, 1278, 2, 'ruin', 'Danger Zone'),
-    exactMapSite('alt-black-feather-abbey', 'Black Feather Abbey', 'Southern Wildlands', 'Blackwood Interior', 672, 1242, 2, 'abbey', 'Neutral Zone'),
-    exactMapSite('alt-greenfire-swamp', 'Greenfire Swamp', 'Southern Wildlands', 'Duskpine Forest', 744, 1422, 2, 'swamp', 'Danger Zone'),
-    exactMapSite('alt-caldera-crown', 'Caldera Crown', 'Southern Wildlands', 'Western Caldera', 384, 1206, 1, 'fortress', 'Danger Zone'),
-    exactMapSite('alt-southtail-lighthouse', 'Southtail Lighthouse', 'Southern Wildlands', 'Ashen Peninsula', 1128, 1512, 2, 'lighthouse', 'Safe Zone'),
-    exactMapSite('alt-ironbark-quarry', 'Ironbark Quarry', 'Southern Wildlands', 'Blackwood Interior', 744, 1278, 2, 'mine', 'Danger Zone'),
-    exactMapSite('alt-bone-road-camp', 'Bone Road Camp', 'Southern Wildlands', 'Wyrmroad', 864, 1458, 2, 'camp', 'Neutral Zone'),
-    exactMapSite('alt-thunder-mesa', 'Thunder Mesa', 'Southern Wildlands', 'Eastern Dustmarch', 1032, 1242, 2, 'mesa', 'Danger Zone'),
-    exactMapSite('alt-deepwood-shrine', 'Deepwood Shrine', 'Southern Wildlands', 'Duskpine Forest', 576, 1512, 2, 'shrine', 'Neutral Zone'),
-    exactMapSite('alt-crimson-tail-port', 'Crimson Tail Port', 'Southern Wildlands', 'Ashen Peninsula', 984, 1530, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-hollow-beast-den', 'Hollow Beast Den', 'Southern Wildlands', 'Blackwood Interior', 816, 1206, 2, 'lair', 'Danger Zone'),
-    exactMapSite('alt-old-caldera-aqueduct', 'Old Caldera Aqueduct', 'Southern Wildlands', 'Western Caldera', 552, 1332, 2, 'ruin', 'Neutral Zone'),
-
-    // Inner Sea Archipelago — ports, island cities, reefs, shrines, prisons and sea lanes.
-    exactMapSite('alt-coral-crown-city', 'Coral Crown City', 'Inner Sea Archipelago', 'Pearlchain Isles', 1512, 1440, 1, 'island-city', 'Safe Zone'),
-    exactMapSite('alt-stormglass-harbor', 'Stormglass Harbor', 'Inner Sea Archipelago', 'Crosswind Channel', 1200, 1368, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-seven-sails-market', 'Seven Sails Market', 'Inner Sea Archipelago', 'Central Passage', 1392, 1260, 2, 'market', 'Safe Zone'),
-    exactMapSite('alt-moonwake-island', 'Moonwake Island', 'Inner Sea Archipelago', 'Western Inner Sea', 960, 1080, 2, 'island', 'Neutral Zone'),
-    exactMapSite('alt-turtleback-fort', 'Turtleback Fort', 'Inner Sea Archipelago', 'Roundhold Waters', 984, 1224, 1, 'island-fortress', 'Neutral Zone'),
-    exactMapSite('alt-siren-bone-reef', 'Siren Bone Reef', 'Inner Sea Archipelago', 'Whispering Reefs', 1680, 1512, 2, 'reef', 'Danger Zone'),
-    exactMapSite('alt-pearl-diver-village', 'Pearl Diver Village', 'Inner Sea Archipelago', 'Pearlchain Isles', 1584, 1530, 2, 'village', 'Safe Zone'),
-    exactMapSite('alt-drowned-oracle-temple', 'Drowned Oracle Temple', 'Inner Sea Archipelago', 'Oracle Waters', 1248, 1224, 2, 'ruin', 'Danger Zone'),
-    exactMapSite('alt-black-sail-prison', 'Black Sail Prison', 'Inner Sea Archipelago', 'Black Compass Sea', 1488, 1350, 1, 'prison', 'Danger Zone'),
-    exactMapSite('alt-lantern-tideway', 'Lantern Tideway', 'Inner Sea Archipelago', 'Lantern Sea', 1320, 1566, 2, 'sea-route', 'Neutral Zone'),
-    exactMapSite('alt-whale-song-sanctuary', 'Whale-Song Sanctuary', 'Inner Sea Archipelago', 'Southsea Isles', 1800, 1620, 2, 'sanctuary', 'Neutral Zone'),
-    exactMapSite('alt-ruby-atoll', 'Ruby Atoll', 'Inner Sea Archipelago', 'Southsea Isles', 1920, 1656, 2, 'atoll', 'Neutral Zone'),
-    exactMapSite('alt-gullwatch-tower', 'Gullwatch Tower', 'Inner Sea Archipelago', 'Crosswind Channel', 1296, 1320, 2, 'tower', 'Safe Zone'),
-    exactMapSite('alt-dead-mariners-cove', "Dead Mariners' Cove", 'Inner Sea Archipelago', 'Black Compass Sea', 1536, 1404, 2, 'cove', 'Danger Zone'),
-    exactMapSite('alt-blue-bell-isle', 'Blue Bell Isle', 'Inner Sea Archipelago', 'Western Inner Sea', 888, 1026, 2, 'island', 'Safe Zone'),
-    exactMapSite('alt-sea-dragon-gate', 'Sea Dragon Gate', 'Inner Sea Archipelago', 'Central Passage', 1440, 1170, 1, 'sea-gate', 'Neutral Zone'),
-    exactMapSite('alt-far-south-lighthouse', 'Far South Lighthouse', 'Inner Sea Archipelago', 'Southsea Isles', 1728, 1692, 2, 'lighthouse', 'Safe Zone'),
-    exactMapSite('alt-shattered-compass-wreck', 'Shattered Compass Wreck', 'Inner Sea Archipelago', 'Black Compass Sea', 1608, 1458, 2, 'shipwreck', 'Danger Zone'),
-    exactMapSite('alt-sunrise-pearl-port', 'Sunrise Pearl Port', 'Inner Sea Archipelago', 'Pearlchain Isles', 1656, 1566, 1, 'port', 'Safe Zone'),
-    exactMapSite('alt-mist-chain-islands', 'Mist Chain Islands', 'Inner Sea Archipelago', 'Lantern Sea', 1200, 1602, 2, 'archipelago', 'Neutral Zone'),
-];
-const ALTERNATE_WORLD_LOCATIONS = [...ALTERNATE_PRESENT_LOCATIONS, ...ALTERNATE_NEW_LOCATIONS];
-
-const ALL_WORLD_LOCATIONS = [...PRESENT_WORLD_LOCATIONS, ...ALTERNATE_WORLD_LOCATIONS];
-const WORLD_LOCATIONS = PRESENT_WORLD_LOCATIONS;
-const WORLD = Object.fromEntries([...new Set(ALL_WORLD_LOCATIONS.map(location => location.continent))].map(continent => [
-    continent, ALL_WORLD_LOCATIONS.filter(location => location.continent === continent).map(location => location.name),
-]));
-const LOCATION_REGIONS = Object.fromEntries(ALL_WORLD_LOCATIONS.map(location => [location.name, location.region]));
-
-function atlasById(id) {
-    return WORLD_ATLASES[id] || WORLD_ATLAS;
-}
-
-function storyWorldId(state) {
-    return atlasById(state?.world?.id).id;
-}
-
-function viewedWorldId(state) {
-    return WORLD_ATLASES[mapAtlasSelection] ? mapAtlasSelection : storyWorldId(state);
-}
-
-function viewedAtlas(state) {
-    return atlasById(viewedWorldId(state));
-}
-
-function worldLocationsFor(state, viewed = true) {
-    const id = viewed ? viewedWorldId(state) : storyWorldId(state);
-    return id === 'alternate-present-world' ? ALTERNATE_WORLD_LOCATIONS : PRESENT_WORLD_LOCATIONS;
-}
-
-function worldContinentsFor(state, viewed = true) {
-    const id = viewed ? viewedWorldId(state) : storyWorldId(state);
-    return id === 'alternate-present-world' ? ALTERNATE_WORLD_CONTINENTS : PRESENT_WORLD_CONTINENTS;
-}
-
-function pointInsidePolygon(x, y, polygon) {
-    let inside = false;
-    for (let index = 0, previous = polygon.length - 1; index < polygon.length; previous = index++) {
-        const [xi, yi] = polygon[index];
-        const [xj, yj] = polygon[previous];
-        const crosses = yi > y !== yj > y && x < (xj - xi) * (y - yi) / ((yj - yi) || Number.EPSILON) + xi;
-        if (crosses) inside = !inside;
-    }
-    return inside;
-}
-
-function pointIsOnAtlasLand(x, y, worldId = WORLD_ATLAS.id, continentName = '') {
-    if (!Number.isFinite(Number(x)) || !Number.isFinite(Number(y))) return false;
-    const continents = worldId === 'alternate-present-world' ? ALTERNATE_WORLD_CONTINENTS : PRESENT_WORLD_CONTINENTS;
-    const candidates = continentName ? continents.filter(entry => entry.name === continentName) : continents;
-    return candidates.some(entry => entry.polygons.some(polygon => pointInsidePolygon(Number(x), Number(y), polygon)));
-}
-
-function atlasLocationsByWorld(worldId = WORLD_ATLAS.id) {
-    return worldId === 'alternate-present-world' ? ALTERNATE_WORLD_LOCATIONS : PRESENT_WORLD_LOCATIONS;
-}
-
-function namedAtlasSite(value, worldId = WORLD_ATLAS.id) {
-    const requested = text(value, '', 240).toLocaleLowerCase();
-    if (!requested || /^(?:unknown|ไม่ทราบ|ไม่แน่ชัด)$/i.test(requested)) return null;
-    const locations = atlasLocationsByWorld(worldId);
-    return locations.find(entry => entry.name.toLocaleLowerCase() === requested)
-        || [...locations].sort((a, b) => b.name.length - a.name.length)
-            .find(entry => requested.includes(entry.name.toLocaleLowerCase()));
-}
-
-// AI/Character Life coordinates are accepted only when they are on the declared
-// atlas landmass. Ocean mistakes fall back to a canonical named destination;
-// genuinely unknown records stay hidden instead of receiving a random point.
-function landSafeMapPoint({ worldId = WORLD_ATLAS.id, x = null, y = null, location = '', continent = '' } = {}) {
-    const safeWorldId = WORLD_ATLASES[worldId] ? worldId : WORLD_ATLAS.id;
-    const site = namedAtlasSite(location, safeWorldId);
-    const numericX = optionalNumber(x, null, 0, WORLD_MAP_WIDTH);
-    const numericY = optionalNumber(y, null, 0, WORLD_MAP_HEIGHT);
-    const continentName = text(continent, site?.continent || '', 120);
-    if (numericX !== null && numericY !== null && pointIsOnAtlasLand(numericX, numericY, safeWorldId, continentName)) {
-        return { x: numericX, y: numericY, site };
-    }
-    if (site) return { x: site.x, y: site.y, site };
-    if (numericX === null || numericY === null) return null;
-    const locations = atlasLocationsByWorld(safeWorldId)
-        .filter(entry => pointIsOnAtlasLand(entry.x, entry.y, safeWorldId, entry.continent));
-    const pool = continentName ? locations.filter(entry => entry.continent === continentName) : locations;
-    const nearest = (pool.length ? pool : locations).reduce((best, entry) => {
-        const distance = Math.hypot(entry.x - numericX, entry.y - numericY);
-        return !best || distance < best.distance ? { entry, distance } : best;
-    }, null)?.entry;
-    return nearest ? { x: nearest.x, y: nearest.y, site: nearest } : null;
-}
-
-function allMapLocation(id) {
-    return ALL_WORLD_LOCATIONS.find(location => location.id === id);
-}
-
-function cleanDiscoveredLocations(values) {
-    return Array.isArray(values)
-        ? [...new Set(values.map(value => String(value || '').trim().slice(0, 120)).filter(Boolean))].slice(0, 500)
-        : [];
-}
-
-function discoveredLocationsFor(state, worldId = storyWorldId(state)) {
-    const location = state?.location || {};
-    const scoped = location.discoveredByWorld?.[worldId];
-    if (Array.isArray(scoped)) return cleanDiscoveredLocations(scoped);
-    return worldId === storyWorldId(state) ? cleanDiscoveredLocations(location.discovered) : [];
-}
-
-function setDiscoveredLocations(state, values, worldId = storyWorldId(state)) {
-    if (!state?.location || !WORLD_ATLASES[worldId]) return [];
-    const next = cleanDiscoveredLocations(values);
-    state.location.discoveredByWorld = {
-        ...(state.location.discoveredByWorld && typeof state.location.discoveredByWorld === 'object' ? state.location.discoveredByWorld : {}),
-        [worldId]: next,
-    };
-    if (worldId === storyWorldId(state)) state.location.discovered = [...next];
-    return next;
-}
-
-function addDiscoveredLocation(state, value, worldId = storyWorldId(state)) {
-    const name = String(value || '').trim().slice(0, 120);
-    if (!name) return false;
-    setDiscoveredLocations(state, [...discoveredLocationsFor(state, worldId), name], worldId);
-    return true;
-}
-
-function synchronizeActiveWorldDiscovery(state) {
-    if (!state?.location) return;
-    const worldId = storyWorldId(state);
-    setDiscoveredLocations(state, discoveredLocationsFor(state, worldId), worldId);
-}
-
-function npcAtlasKnowledge(state) {
-    const atlas = atlasById(state?.world?.id);
-    const locations = worldLocationsFor(state, false);
-    const regions = {};
-    for (const location of locations) {
-        regions[location.continent] ||= {};
-        regions[location.continent][location.region] ||= [];
-        regions[location.continent][location.region].push(location.name);
-    }
-    return {
-        activeWorld: { id: atlas.id, name: atlas.name, era: atlas.era },
-        isolationRule: 'This catalog contains only the active timeline. Never give an NPC knowledge of destinations from another world unless the story explicitly establishes that NPC has crossed worlds or received reliable inter-world information.',
-        knowledgeRule: 'These names are canonical geography, not universal personal knowledge. Judge what an individual NPC knows from origin, occupation, travel, education and established discoveries; do not reveal secret or dangerous sites without a plausible source.',
-        currentLocation: {
-            continent: state.onboarding?.locationSeeded ? state.location.continent : 'Unknown',
-            region: state.onboarding?.locationSeeded ? state.location.region : 'Unknown',
-            place: state.onboarding?.locationSeeded ? state.location.place : 'Unknown',
-            discovered: state.onboarding?.locationSeeded ? discoveredLocationsFor(state, atlas.id) : [],
-        },
-        regions,
-    };
-}
 const COLOR_PRESETS = {
     forge: { accent: '#d6b458', alt: '#f4dc93', ink: '#ece7da', surface: '#040404' },
     abyss: { accent: '#4fb8d8', alt: '#a8ecff', ink: '#e2eef2', surface: '#03080c' },
@@ -872,8 +186,6 @@ const DEFAULT_SETTINGS = Object.freeze({
     showTravelTracker: true,
     travelTrackerPosition: { x: null, y: null },
     autoContinuity: true,
-    showNpcMapMarkers: true,
-    mapHdMode: false,
     visualVersion: 6,
 });
 
@@ -883,7 +195,7 @@ const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
     inventory: ['fa-solid fa-box-open', 'Inventory'], skills: ['fa-solid fa-layer-group', 'Skills'],
     techniques: ['fa-solid fa-fire-flame-curved', 'Powers'], quests: ['fa-solid fa-scroll', 'Quests'],
-    rank: ['fa-solid fa-medal', 'Rank'], map: ['fa-solid fa-map', 'World Map'],
+    rank: ['fa-solid fa-medal', 'Rank'],
     groups: ['fa-solid fa-people-group', 'Party & Guild'], household: ['fa-solid fa-house-chimney-user', 'Household'],
     npcs: ['fa-solid fa-users', 'NPCs'], hstats: ['fa-solid fa-heart-pulse', 'H-Stats'], mail: ['fa-solid fa-envelope', 'Mailbox'], music: ['fa-solid fa-music', 'Music'],
     systems: ['fa-solid fa-microchip', 'System Audit'],
@@ -934,38 +246,38 @@ const panelScrollPositions = new Map();
 const nestedScrollPositions = new Map();
 let panelScrollRestoreToken = 0;
 let restoringPanelScroll = false;
-let mapSelectionId = null;
-let mapDraftPoint = null;
-let mapDrawFrame = 0;
-let mapDrawTimer = 0;
-let mapLastDrawAt = 0;
-let mapQueuedPanel = null;
-let mapQueuedState = null;
-let mapInteracting = false;
-let mapInteractionEndTimer = 0;
-let mapGestureBase = null;
-let mapRenderedPoints = [];
-let mapResizeObserver = null;
-let mapFullscreen = false;
-let mapAtlasSelection = '';
-const mapTileCache = new Map();
-const mapTileQueue = [];
-let mapTileLoads = 0;
-let mapTileContext = '';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 let openedLetterId = null;
 let selectedNpcId = null;
 let npcPortraitRenderToken = 0;
 let npcEditorObjectUrl = '';
 const npcPortraitObjectUrls = new Map();
-let characterLifeMapMarkerCache = null;
-const mapPortraitCache = new Map();
-let mapPortraitUseClock = 0;
+
+
+
 let activityHideTimer = null;
 let activityState = { mode: 'ready', label: 'Ready', detail: '', visible: false };
 let pendingComposerDraft = null;
 let audioPlayer = null;
 let audioObjectUrl = '';
-const mapView = { scale: 1, x: 0, y: 0 };
+
 let continuityRestoreInProgress = false;
 let processedAssistantMessages = new WeakMap();
 const assistantPatchTimers = new Map();
@@ -1051,7 +363,6 @@ function applyAppearance() {
     }
     const dialog = document.getElementById('tretaresia-control-dialog');
     if (dialog) dialog.dataset.density = settings.density;
-    scheduleMapDetailRender();
 }
 
 function powerPresetOwner(context = SillyTavern.getContext()) {
@@ -1127,28 +438,26 @@ function defaultState() {
             aura: { color: '#6f8fe8', infinite: false, infiniteMode: 'Auto', output: 0, control: 0, efficiency: 0, recovery: 0 },
             fitness: { lungCapacity: 100, aerobicSessions: 0, lastTrainingMessage: '' },
         },
-        world: { ...WORLD_ATLAS },
         progression: {
             adventurerRank: 'Rookie', customRankName: '', magicRank: 'Dormant', swordRank: 'Dormant', experience: 0, experienceMax: 100, reputation: 0,
             kills: 0,
-            currency: { name: 'Central Common Currency', gold: 0, silver: 0, copper: 0 },
+            currency: { name: 'Coins', gold: 0, silver: 0, copper: 0 },
         },
         worldClock: { day: 1, dayName: 'Day 1', time: '08:00', phase: 'Morning' },
-        location: { atlasVersion: 4, continent: 'Central Continent', region: 'Crown Heartlands', place: 'Central Crown', detail: '', zoneType: 'Safe Zone', mapX: PRESENT_WORLD_LOCATIONS[0].x, mapY: PRESENT_WORLD_LOCATIONS[0].y, heading: 0, discovered: ['Central Crown'], discoveredByWorld: { 'present-world': ['Central Crown'], 'alternate-present-world': [] }, pins: [] },
+        location: { narrativeVersion: 1, continent: '', region: '', place: 'Unknown', detail: '', zoneType: 'Unknown Zone' },
         travel: {
             status: 'Idle', origin: '', destination: '', route: 'Road', totalDays: 0, remainingDays: 0, notes: '',
-            originX: null, originY: null, originContinent: '', originRegion: '', destinationX: null, destinationY: null,
-            destinationContinent: '', destinationRegion: '', destinationPlace: '', startedAtWorldMinutes: null, lastWorldMinutes: null,
-            trackedUserTurns: 0, lastUserProgressMessage: '', routePoints: [],
+            originContinent: '', originRegion: '', destinationContinent: '', destinationRegion: '', destinationPlace: '',
+            startedAtWorldMinutes: null, lastWorldMinutes: null, trackedUserTurns: 0, lastUserProgressMessage: '',
         },
         scene: { position: 'Unknown', weather: 'Unknown', temperature: null },
         sceneMap: { activeMapId: '', activeFloorId: '', playerRoomId: '', maps: [] },
         inventory: [],
         inventoryLogs: [],
         skills: [],
-        characterLifeMapActors: [],
         proficiencies: { magic, sword, customMagic: [], customSword: [], techniques: [] },
         quests: [],
+        questRewardReceipts: [],
         npcs: [],
         contacts: [],
         letters: [],
@@ -1158,7 +467,7 @@ function defaultState() {
         transactions: [],
         journeyLogs: [],
         systems: defaultSystemsState(),
-        onboarding: { identitySeeded: false, loadoutSeeded: false, characterMapSeeded: false, locationSeeded: false },
+        onboarding: { identitySeeded: false, loadoutSeeded: false, locationSeeded: false },
         syncCursor: { user: null, assistant: null },
         updatedAt: null,
         updateSource: 'initial',
@@ -1189,7 +498,7 @@ function getSettings() {
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
-    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'showTravelTracker', 'autoContinuity', 'showNpcMapMarkers', 'mapHdMode', 'showSceneTracker']) settings[key] = Boolean(settings[key]);
+    for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'showTravelTracker', 'autoContinuity', 'showSceneTracker']) settings[key] = Boolean(settings[key]);
     const trackerPosition = settings.travelTrackerPosition && typeof settings.travelTrackerPosition === 'object' ? settings.travelTrackerPosition : {};
     settings.travelTrackerPosition = {
         x: optionalNumber(trackerPosition.x, null),
@@ -1265,30 +574,7 @@ function inventoryLogEntry(value) {
     };
 }
 
-function characterLifeMapActor(value, fallback = {}) {
-    if (!value || typeof value !== 'object') return null;
-    const name = text(value.name, text(fallback.name, '', 120), 120);
-    if (!name) return null;
-    const worldId = WORLD_ATLASES[value.worldId] ? value.worldId : WORLD_ATLASES[fallback.worldId] ? fallback.worldId : WORLD_ATLAS.id;
-    const location = text(value.location, text(fallback.location, 'Unknown', 200), 200);
-    const safePoint = landSafeMapPoint({
-        worldId, location,
-        x: optionalNumber(value.mapX, optionalNumber(fallback.mapX, null, 0, WORLD_MAP_WIDTH), 0, WORLD_MAP_WIDTH),
-        y: optionalNumber(value.mapY, optionalNumber(fallback.mapY, null, 0, WORLD_MAP_HEIGHT), 0, WORLD_MAP_HEIGHT),
-    });
-    return {
-        id: text(value.id, text(fallback.id, `character-map-${shortHash(name)}`, 100), 100),
-        characterLifeId: text(value.characterLifeId, text(fallback.characterLifeId, '', 120), 120),
-        characterLifeScope: 'character',
-        name,
-        location,
-        worldId,
-        mapX: safePoint?.x ?? null,
-        mapY: safePoint?.y ?? null,
-        portraitId: text(value.portraitId, text(fallback.portraitId, '', 180), 180),
-        updatedAt: text(value.updatedAt, new Date().toISOString(), 60),
-    };
-}
+
 
 function item(value, fallbackCategory = 'Other') {
     if (!value || typeof value !== 'object' || !text(value.name)) return null;
@@ -1319,6 +605,7 @@ function currencyTransaction(value) {
         },
         reason: text(value.reason, 'Unspecified transaction', 300),
         source: text(value.source, 'roleplay', 60),
+        questId: text(value.questId, '', 100),
     };
 }
 
@@ -1348,13 +635,14 @@ function appendJourneyLog(state, value) {
     return entry;
 }
 
-function appendCurrencyTransaction(state, amounts, reason, source = 'roleplay', balance = state.progression.currency) {
+function appendCurrencyTransaction(state, amounts, reason, source = 'roleplay', balance = state.progression.currency, questId = '') {
     const entry = currencyTransaction({
         currencyName: state.progression.currency.name,
         amounts,
         balance,
         reason,
         source,
+        questId,
     });
     if (!entry) return null;
     state.transactions ||= [];
@@ -1758,9 +1046,6 @@ function npcProfile(value, fallback = {}) {
         loyalty: number(value.loyalty, number(fallback.loyalty, 0, 0, 100), 0, 100), fear: number(value.fear, number(fallback.fear, 0, 0, 100), 0, 100),
         corruption: number(value.corruption, number(fallback.corruption, 0, 0, 100), 0, 100), lust: number(value.lust, number(fallback.lust, 0, 0, 100), 0, 100),
         location: text(value.location, text(fallback.location, 'Unknown', 200), 200), lastSeen: text(value.lastSeen, text(fallback.lastSeen, '', 120), 120),
-        mapX: optionalNumber(value.mapX, optionalNumber(fallback.mapX, null, 0, WORLD_MAP_WIDTH), 0, WORLD_MAP_WIDTH),
-        mapY: optionalNumber(value.mapY, optionalNumber(fallback.mapY, null, 0, WORLD_MAP_HEIGHT), 0, WORLD_MAP_HEIGHT),
-        mapVisible: value.mapVisible === undefined ? Boolean(fallback.mapVisible) : Boolean(value.mapVisible),
         lifeMode: ['Active', 'Story only', 'Paused'].includes(value.lifeMode) ? value.lifeMode : ['Active', 'Story only', 'Paused'].includes(fallback.lifeMode) ? fallback.lifeMode : 'Active',
         activity: text(value.activity, text(fallback.activity, 'Living their daily life', 240), 240),
         activityUpdatedDay: number(value.activityUpdatedDay, number(fallback.activityUpdatedDay, 0, 0, 999999), 0, 999999),
@@ -1827,8 +1112,8 @@ function quest(value) {
         objective: text(value.objective, '', 500), reward: text(value.reward, '', 160),
         giver: text(value.giver, '', 120), source: text(value.source, '', 160),
         progress: completed ? 100 : number(value.progress, 0, 0, 100),
-        rewardClaimed: completed || Boolean(value.rewardClaimed),
-        rewardClaimedAt: completed ? text(value.rewardClaimedAt, text(value.completedAt, updatedAt, 60), 60) : '',
+        rewardClaimed: Boolean(value.rewardClaimed),
+        rewardClaimedAt: value.rewardClaimed ? text(value.rewardClaimedAt, text(value.completedAt, updatedAt, 60), 60) : '',
         completedAt: completed ? text(value.completedAt, updatedAt, 60) : '',
         failedAt: failed ? text(value.failedAt, updatedAt, 60) : '',
         receivedAt: text(value.receivedAt, '', 60), updatedAt,
@@ -1931,21 +1216,11 @@ function normalize(candidate, base = defaultState()) {
     const player = source.player && typeof source.player === 'object' ? source.player : {};
     const infiniteMode = auraInfiniteMode(player.aura?.infiniteMode, result.player.aura.infiniteMode);
     const trackedInfinite = Boolean(player.aura?.infinite ?? result.player.aura.infinite);
-    const sourceWorld = source.world && typeof source.world === 'object' ? source.world : {};
     const progress = source.progression && typeof source.progression === 'object' ? source.progression : {};
     const currency = progress.currency && typeof progress.currency === 'object' ? progress.currency : {};
     const location = source.location && typeof source.location === 'object' ? source.location : {};
-    const legacyAlternatePlace = ["Kaliasna Oryu's Floating Castle", 'Eastern Tradition Kingdom'].includes(location.place);
-    const requestedAtlas = atlasById(legacyAlternatePlace ? 'alternate-present-world' : text(sourceWorld.id, WORLD_ATLAS.id, 100));
-    const migratedPlace = location.place === "Kaliasna Oryu's Floating Castle" ? 'Chaos Breaker' : location.place;
-    const migrationPool = requestedAtlas.id === 'alternate-present-world' ? ALTERNATE_WORLD_LOCATIONS : PRESENT_WORLD_LOCATIONS;
-    const migratedMapSite = migrationPool.find(entry => entry.name === migratedPlace)
-        || migrationPool.find(entry => entry.name === location.region)
-        || migrationPool.find(entry => entry.continent === location.continent)
-        || migrationPool[0];
-
     result.version = 1;
-    result.world = { ...requestedAtlas };
+    delete result.world;
     const portraitView = player.portraitView && typeof player.portraitView === 'object' ? player.portraitView : {};
     result.player = {
         name: text(player.name, result.player.name, 100), portrait: text(player.portrait, result.player.portrait, 1500000),
@@ -2017,68 +1292,33 @@ function normalize(candidate, base = defaultState()) {
         time: /^([01]\d|2[0-3]):[0-5]\d$/.test(worldClock.time) ? worldClock.time : result.worldClock.time,
         phase: DAY_PHASES.includes(worldClock.phase) ? worldClock.phase : result.worldClock.phase,
     };
-    const migrateAtlas = number(location.atlasVersion, 1, 1, 99) < 2;
-    const legacyDiscovered = cleanDiscoveredLocations(location.discovered);
-    const incomingDiscoveredByWorld = location.discoveredByWorld && typeof location.discoveredByWorld === 'object'
-        ? location.discoveredByWorld : null;
-    const fallbackDiscoveredByWorld = result.location.discoveredByWorld && typeof result.location.discoveredByWorld === 'object'
-        ? result.location.discoveredByWorld : {};
-    const discoveredByWorld = Object.fromEntries(Object.keys(WORLD_ATLASES).map(worldId => {
-        const scoped = incomingDiscoveredByWorld?.[worldId];
-        const fallbackScoped = fallbackDiscoveredByWorld[worldId];
-        const values = Array.isArray(scoped) ? scoped
-            : !incomingDiscoveredByWorld && worldId === requestedAtlas.id ? legacyDiscovered
-                : Array.isArray(fallbackScoped) ? fallbackScoped : [];
-        return [worldId, cleanDiscoveredLocations(values)];
-    }));
-    result.location = {
-        atlasVersion: 4,
-        continent: text(location.continent, result.location.continent, 100),
-        region: text(location.region, result.location.region, 120),
-        place: text(migratedPlace, result.location.place, 160),
-        detail: text(location.detail, result.location.detail, 300),
-        zoneType: ZONE_TYPES.includes(location.zoneType) ? location.zoneType : result.location.zoneType,
-        mapX: migrateAtlas && migratedMapSite ? migratedMapSite.x : number(location.mapX, migratedMapSite?.x ?? result.location.mapX, 0, WORLD_MAP_WIDTH),
-        mapY: migrateAtlas && migratedMapSite ? migratedMapSite.y : number(location.mapY, migratedMapSite?.y ?? result.location.mapY, 0, WORLD_MAP_HEIGHT),
-        heading: number(location.heading, result.location.heading, 0, 359.999),
-        discovered: [...discoveredByWorld[requestedAtlas.id]],
-        discoveredByWorld,
-        pins: Array.isArray(location.pins) ? location.pins.map(pin => ({
-            id: text(pin?.id, uid(), 100), locationId: text(pin?.locationId, '', 100),
-            worldId: WORLD_ATLASES[pin?.worldId] ? pin.worldId : WORLD_ATLAS.id,
-            x: migrateAtlas && allMapLocation(pin?.locationId) ? allMapLocation(pin.locationId).x : optionalNumber(pin?.x, null, 0, WORLD_MAP_WIDTH),
-            y: migrateAtlas && allMapLocation(pin?.locationId) ? allMapLocation(pin.locationId).y : optionalNumber(pin?.y, null, 0, WORLD_MAP_HEIGHT),
-            continent: text(pin?.continent, '', 100), region: text(pin?.region, '', 120),
-            label: text(pin?.label, 'Marked location', 100), note: text(pin?.note, '', 300),
-        })).filter(pin => pin.locationId || (pin.x !== null && pin.y !== null)).slice(0, 250) : result.location.pins,
-    };
+    const legacyLocation = location.narrativeVersion !== 1 && Object.hasOwn(location, 'atlasVersion');
+    const narrative = normalizeNarrativeLocation({...result.location, ...location}, {legacy: legacyLocation});
+    result.location = {...narrative, place: narrative.place || narrative.detail || 'Unknown', narrativeVersion: 1,
+        zoneType: ZONE_TYPES.includes(location.zoneType) ? location.zoneType : result.location.zoneType};
     const travel = source.travel && typeof source.travel === 'object' ? source.travel : {};
-    const namedTravelDestination = mapLocationByName(travel.destinationPlace || travel.destination, result);
+    const travelOrigin = normalizeNarrativeLocation({place:text(travel.origin, result.travel.origin, 160),
+        region:text(travel.originRegion, result.location.region, 120), continent:text(travel.originContinent, result.location.continent, 100)}, {legacy:legacyLocation});
+    const travelDestination = normalizeNarrativeLocation({place:text(travel.destinationPlace, travel.destination, 160),
+        detail:text(travel.destination, result.travel.destination, 160), region:text(travel.destinationRegion, '', 120),
+        continent:text(travel.destinationContinent, '', 100)}, {legacy:legacyLocation});
     const currentWorldMinutes = worldClockMinutes(result.worldClock);
     result.travel = {
         status: ['Idle', 'Preparing', 'Traveling', 'Delayed', 'Arrived'].includes(travel.status) ? travel.status : result.travel.status,
-        origin: text(travel.origin, result.travel.origin, 160), destination: text(travel.destination, result.travel.destination, 160),
+        origin: travelOrigin.place, destination: travelDestination.detail,
         route: ['Road', 'Caravan', 'Sea', 'Off-road', 'Unknown'].includes(travel.route) ? travel.route : result.travel.route,
         totalDays: number(travel.totalDays, result.travel.totalDays, 0, 999999),
         remainingDays: number(travel.remainingDays, result.travel.remainingDays, 0, 999999),
         notes: text(travel.notes, result.travel.notes, 500),
-        originX: optionalNumber(travel.originX, result.location.mapX, 0, WORLD_MAP_WIDTH),
-        originY: optionalNumber(travel.originY, result.location.mapY, 0, WORLD_MAP_HEIGHT),
-        originContinent: text(travel.originContinent, result.location.continent, 100),
-        originRegion: text(travel.originRegion, result.location.region, 120),
-        destinationX: optionalNumber(travel.destinationX, namedTravelDestination?.x ?? null, 0, WORLD_MAP_WIDTH),
-        destinationY: optionalNumber(travel.destinationY, namedTravelDestination?.y ?? null, 0, WORLD_MAP_HEIGHT),
-        destinationContinent: text(travel.destinationContinent, namedTravelDestination?.continent || '', 100),
-        destinationRegion: text(travel.destinationRegion, namedTravelDestination?.region || '', 120),
-        destinationPlace: text(travel.destinationPlace, namedTravelDestination?.name || travel.destination, 160),
+        originContinent: travelOrigin.continent,
+        originRegion: travelOrigin.region,
+        destinationContinent: travelDestination.continent,
+        destinationRegion: travelDestination.region,
+        destinationPlace: travelDestination.place,
         startedAtWorldMinutes: optionalNumber(travel.startedAtWorldMinutes, currentWorldMinutes, 0, 9999999999),
         lastWorldMinutes: optionalNumber(travel.lastWorldMinutes, currentWorldMinutes, 0, 9999999999),
         trackedUserTurns: number(travel.trackedUserTurns, 0, 0, 999999),
         lastUserProgressMessage: text(travel.lastUserProgressMessage, '', 180),
-        routePoints: (Array.isArray(travel.routePoints) ? travel.routePoints : result.travel.routePoints || []).map(point => ({
-            x: number(point?.x, 0, 0, WORLD_MAP_WIDTH), y: number(point?.y, 0, 0, WORLD_MAP_HEIGHT),
-            name: text(point?.name, '', 120), region: text(point?.region, '', 120),
-        })).filter(point => point.x || point.y).slice(0, 32),
     };
     const scene = source.scene && typeof source.scene === 'object' ? source.scene : {};
     result.scene = {
@@ -2104,15 +1344,12 @@ function normalize(candidate, base = defaultState()) {
         repairCount: number(systems.repairCount, number(baseSystems.repairCount, 0, 0, 999999), 0, 999999),
     };
     if (Array.isArray(source.skills)) result.skills = source.skills.map(skill).filter(Boolean).slice(0, 100);
-    if (Array.isArray(source.characterLifeMapActors)) result.characterLifeMapActors = source.characterLifeMapActors
-        .map(value => characterLifeMapActor(value)).filter(Boolean).slice(0, 80);
+    delete result.characterLifeMapActors;
     const onboarding = source.onboarding && typeof source.onboarding === 'object' ? source.onboarding : {};
     result.onboarding = {
         identitySeeded: Boolean(onboarding.identitySeeded),
         loadoutSeeded: Object.hasOwn(onboarding, 'loadoutSeeded') ? Boolean(onboarding.loadoutSeeded) : Boolean(result.inventory.length || result.skills.length),
-        characterMapSeeded: Boolean(onboarding.characterMapSeeded),
-        locationSeeded: Boolean(onboarding.locationSeeded || (!Object.hasOwn(onboarding,'locationSeeded')
-            && source.location?.place && !['Central Crown','Unknown'].includes(source.location.place))),
+        locationSeeded: Boolean(narrative.place || narrative.detail),
     };
     result.customPowers = normalizePowerValues(source.customPowers ?? result.customPowers);
     result.customPowerSelections = normalizePowerSelections(source.customPowerSelections ?? result.customPowerSelections);
@@ -2127,6 +1364,7 @@ function normalize(candidate, base = defaultState()) {
     result.proficiencies.customSword = normalizeCustomProficiencies(proficiencies.customSword, result.proficiencies.customSword, 'sword');
     if (Array.isArray(proficiencies.techniques)) result.proficiencies.techniques = proficiencies.techniques.map(technique).filter(Boolean).slice(0, 150);
     if (Array.isArray(source.quests)) result.quests = source.quests.map(quest).filter(Boolean).slice(0, 100);
+    result.questRewardReceipts = normalizeQuestRewardReceipts(source.questRewardReceipts ?? result.questRewardReceipts, result.quests);
     if (Array.isArray(source.npcs)) {
         const existingById = new Map((result.npcs || []).map(entry => [entry.id, entry]));
         const existingByName = new Map((result.npcs || []).map(entry => [entry.name.toLocaleLowerCase(), entry]));
@@ -2227,6 +1465,17 @@ function getState() {
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.()) return defaultState();
     const saved = context.chatMetadata[METADATA_KEY];
+    if (saved?.location?.narrativeVersion !== 1 && Object.hasOwn(saved?.location || {}, 'atlasVersion')
+        && context.chatMetadata.tretaresia_rpg_location_migration !== 1) {
+        const history = context.chatMetadata[SCENE_HISTORY_KEY] || {};
+        for (const variants of Object.values(history)) for (const snapshot of Object.values(variants || {})) {
+            if (!snapshot || typeof snapshot !== 'object' || snapshot.narrativeVersion === 1) continue;
+            const location = normalizeNarrativeLocation({place:snapshot.location,region:snapshot.region,continent:snapshot.continent}, {legacy:true});
+            Object.assign(snapshot,{location:location.place,region:location.region,continent:location.continent,narrativeVersion:1});
+            snapshot.missing = missingSceneFields(snapshot);
+        }
+        context.chatMetadata.tretaresia_rpg_location_migration = 1;
+    }
     const source = saved && typeof saved === 'object' ? (Array.isArray(saved.npcs) ? saved : normalize(saved)) : defaultState();
     return normalize(hydrateScopedNpcs(source, characterNpcLibrary(), characterOwner(context)?.key));
 }
@@ -2622,12 +1871,6 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
         const auraControl = document.getElementById('tretaresia-rpg-aura-color');
         if (auraControl instanceof HTMLInputElement) auraControl.value = state.player.aura.color;
     }
-    if (storyWorldId(state) !== storyWorldId(previous)) {
-        mapAtlasSelection = '';
-        mapSelectionId = null;
-        mapDraftPoint = null;
-        Object.assign(mapView, { scale: 1, x: 0, y: 0 });
-    }
     if (['npc-management', 'character-life-import'].includes(source)) {
         retainManualNpcEdits(turnHistory(context, false), previous, state);
     }
@@ -2697,7 +1940,10 @@ function liveReplyPreview(messageId, message) {
 
 function sceneForMessage(messageId, message) {
     const key = assistantTurnKey(messageId);
-    return key && SillyTavern.getContext().chatMetadata?.[SCENE_HISTORY_KEY]?.[key]?.[assistantVariantKey(message)] || liveReplyPreview(messageId,message)?.scene || null;
+    const snapshot = key && SillyTavern.getContext().chatMetadata?.[SCENE_HISTORY_KEY]?.[key]?.[assistantVariantKey(message)] || liveReplyPreview(messageId,message)?.scene;
+    if (!snapshot) return null;
+    const location = normalizeNarrativeLocation({place:snapshot.location,region:snapshot.region,continent:snapshot.continent});
+    return {...snapshot,location:location.place,region:location.region,continent:location.continent};
 }
 
 function socialEventsForMessage(messageId, message) {
@@ -2854,7 +2100,7 @@ async function rememberScene(messageId, message, state, details = {}, {historica
             && historicalDetails.temperature !== '' && Number.isFinite(temperature) ? temperature : null;
     }
     history[key][assistantVariantKey(message)] = {
-        ...snapshot, missing: missingSceneFields(snapshot),
+        ...snapshot, narrativeVersion:1, missing: missingSceneFields(snapshot),
         sequence: context.chat.slice(0, messageId + 1).filter(entry => entry && !entry.is_user && !entry.is_system).length,
     };
     const variants = Object.keys(history[key]);
@@ -2995,7 +2241,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
     ]);
     const rankedNpcs = [...friendly].sort((a, b) => {
         const score = entry => (recentTranscript.includes(entry.name.toLocaleLowerCase()) ? 8 : 0)
-            + (socialNpcIds.has(entry.id) ? 5 : 0) + (entry.mapVisible ? 3 : 0) + (entry.lifeMode === 'Active' ? 1 : 0);
+            + (socialNpcIds.has(entry.id) ? 5 : 0) + (entry.lifeMode === 'Active' ? 1 : 0);
         const aActive = score(a);
         const bActive = score(b);
         return bActive - aActive || String(b.updatedAt).localeCompare(String(a.updatedAt));
@@ -3014,11 +2260,10 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         .sort((a, b) => String(b.completedAt || b.failedAt || b.updatedAt || '').localeCompare(String(a.completedAt || a.failedAt || a.updatedAt || ''))).slice(0, 16);
     const snapshot = {
         player: safePlayer,
-        world: state.world,
         progression: state.progression,
         worldClock: state.worldClock,
         location: state.onboarding?.locationSeeded
-            ? { continent:state.location.continent,region:state.location.region,place:state.location.place,detail:state.location.detail,discovered:discoveredLocationsFor(state) }
+            ? { continent:state.location.continent,region:state.location.region,place:state.location.place,detail:state.location.detail }
             : {continent:'Unknown',region:'Unknown',place:'Unknown',detail:''},
         travel: state.onboarding?.locationSeeded ? state.travel : {status:state.travel.status,destination:state.travel.destination},
         scene: state.scene,
@@ -3033,6 +2278,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
             techniques: state.proficiencies.techniques.slice(0, 40).map(({ id, name, category, proficiency }) => [id, name, category, proficiency]),
         },
         quests: activeQuests.map(({ id, name, type, status, objective, reward, giver, progress }) => [id, name, type, status, objective, reward, giver, progress]),
+        questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
         questArchive: questArchive.map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
         social: {
             party: state.social.party ? {
@@ -3092,7 +2338,6 @@ function roleplayState(state) {
     const characterLifeCharacters = characterLifeCharacterReferences();
     return {
         sceneContext: {
-            world: { id: state.world.id, name: state.world.name, era: state.world.era },
             worldClock: state.worldClock,
             location: {
                 continent: state.onboarding?.locationSeeded ? state.location.continent : 'Unknown',
@@ -3136,8 +2381,8 @@ function roleplayState(state) {
             skills: state.skills.slice(-16).map(({ id, name }) => [id, name]),
             onboarding: state.onboarding,
             characterLifeCharacters,
-            characterLifeMapActors: state.characterLifeMapActors,
             quests: state.quests.filter(entry => !['Completed', 'Failed'].includes(entry.status)).slice(-12).map(({ id, name, type, status }) => [id, name, type, status]),
+            questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
             questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
             npcNames: state.npcs.map(({ id, name, aliases, enabled, met }) => [id, name, aliases || [], enabled !== false, met === true]),
             npcProfiles: state.npcs.slice(-16).map(entry => ({
@@ -3394,7 +2639,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.7`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.8`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3480,7 +2725,7 @@ function legacyPatchInstructions() {
         NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
         uiMarkup("<!--tretaresia_patch:{\"ops\":[[\"upsert\",\"quests\",{\"id\":\"academy-escort\",\"name\":\"Escort the Academy Caravan\",\"type\":\"Mission\",\"status\":\"Active\",\"objective\":\"Protect the caravan until it reaches Eastwatch\",\"reward\":\"12 silver\",\"giver\":\"Quartermaster Lysa\",\"source\":\"Great Academy mission board\",\"progress\":0}],[\"inc\",\"progression.experience\",5,{\"reason\":\"Completed aura control training\",\"category\":\"training\"}],[\"inc\",\"progression.currency.silver\",-3,{\"reason\":\"Paid for an academy meal\",\"category\":\"currency\"}],[\"inc\",\"progression.kills\",1,{\"reason\":\"Defeated the ash troll\",\"category\":\"kill\"}]],\"summary\":\"Mission, training, payment, and combat progress recorded.\"}-->"),
-        'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers and guildMembers; delete householdMembers; offer householdInvitation, partyInvitation or guildInvitation; set or inc npcValues, npcHStats, and playerHStats; upsert or delete npcAbilities and npcMeters; append npcDiary; add location.discovered. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
+        'Allowed verbs: set or inc for scalar paths; inc, upsert, or delete for inventory; upsert or delete for skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household; upsert or delete partyMembers and guildMembers; delete householdMembers; offer householdInvitation, partyInvitation or guildInvitation; set or inc npcValues, npcHStats, and playerHStats; upsert or delete npcAbilities and npcMeters; append npcDiary. Local maps additionally allow upsert or delete on sceneMaps, sceneFloors, sceneRooms, and sceneConnections.',
         'Household invitations: when a met friendly NPC in the current scene or explicitly named in the completed reply asks to join the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. Include the exact role the NPC proposes. This creates an Accept/Decline card in that assistant message, not immediate membership. Never upsert householdMembers or put members inside household; only the player can accept. Explicit departures may delete householdMembers.',
         'If the user asks a named NPC to send a party/guild invitation or write a diary, portray the NPC doing so in the main reply if it fits the story, with a specific established group name and offered role for invitations. Emit the corresponding offer or diary append op in that same reply. A user request by itself does not mean the event happened.',
         'Party/Guild invitations: if a met friendly NPC present in this completed reply explicitly invites the player, emit ["offer","partyInvitation",{"npcId":"stable-id","name":"established group name","role":"exact position offered","leaderName":"known leader if established","memberCount":12,"members":[{"name":"known member","role":"known role"}],"description":"established purpose","rank":"established group rank if known","completedQuests":12}] or use guildInvitation. Include rank and completedQuests only when established by the story; do not invent a track record. The group name is required; default the offered role to Member if unspecified. memberCount is the total BEFORE the player joins, including unnamed offscreen members. Preserve canonical totals. For a newly invented fictional group establish a plausible size consistent with its reputation and purpose (for example an established adventuring party of 4-8 or a famous guild of dozens/hundreds), without inventing named dossiers. OMIT the count if canon leaves it genuinely unknown. Include only named members confirmed in the story and do not invent NPCs to fill a famous guild. An invitation alone creates only the offer button. If the visible story or latest user role-play already establishes the player as a current member, upsert party or guilds immediately instead, with membershipStatus:"established", membershipEvidence:"an exact 8–300 character quote asserting current membership", name, playerRole, leaderId (or "unidentified-leader"), leaderName, knownMembers and memberCount when known. Do not charge a guild founding fee for joining. The memberCount for an established group already includes the player. Do not emit a new invitation for an already joined group.',
@@ -3496,13 +2741,13 @@ function legacyPatchInstructions() {
         'Proficiency rules: increment a used or trained power system or combat discipline by 1-3 when the reply confirms genuine practice or successful use; use 4-8 only for a breakthrough. Do not increase unused proficiencies. When a confirmed power or combat style is not in the preset lists, upsert proficiencies.customMagic or proficiencies.customSword with {id,name,proficiency,description,iconKey}; later upserts may contain only id/name and changed fields.',
         'RoleForge sensing rule: a power can normally be sensed only by someone who wields the same kind. Formless Aura cannot be sensed by anyone. Divine Mana can be perceived only by another Divine Mana wielder. Never let observers identify a hidden power without valid same-kind perception or direct evidence.',
         'Power canon: False Magic is learnable structured human magic that normally needs a staff, wand, or medium. True Magic is a lost stronger art requiring deep mana understanding and no medium. Aura is innate and commonly carries one birth-given Origin skill. Formless Aura is exceptionally rare and wholly undetectable. Blood Aura is vampiric and a turning may preserve, mutate, split, or erase the prior power. Sage Mana is lost transformative training that can refill from natural energy. Divine Mana may switch among power modes. Constructs allow those without usable Aura to wield a forged ability; primordial Divine Constructs choose one owner and cannot be copied, remade, or manufactured.',
-        'Travel rules: RoleForge distances take days, months, or years. Roads can produce villages, towns, waystations and caravans; off-road travel may reveal secret dungeons, lost villages, cults or worse. Almost the entire 2400 by 1800 world-coordinate atlas is travelable, including unnamed wilderness and sea routes. Read the latest user role-play action as well as the completed reply. While travel.status is Traveling or Delayed, update worldClock and reduce travel.remainingDays whenever narration confirms elapsed time or continued movement; never copy a stale remainingDays over newer progress already stored by the local main-chat tracker. Do not change the current continent/place to the destination until arrival is confirmed. At arrival set travel.status to Arrived, remainingDays to 0, update location fields including location.mapX and location.mapY when the destination coordinates are known, and add location.discovered. Update location.heading from 0 north clockwise when a clear travel direction is established.',
+        'Travel rules: follow destinations, routes and elapsed time explicitly established in the story. There is no fixed world map or coordinate-based distance estimate. Update remainingDays only from established travel progress; do not restore stale values. Mark Arrived only when arrival is confirmed and set the actual free-text destination. Never infer an unmentioned continent or region.',
         'Dungeon and rank rules: dungeonRank must be one of Unranked, E-, E, E+, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+, S-, S, S+, SS. Adventurer ranks are Rookie, Basic, Intermediate, Ember, and Custom Rank; a Custom Rank name is individually invented by an assessor and should be recorded in progression.customRankName.',
-        'Currency rules: the Central Continent generally shares a common currency, but other regions and non-human lands may use different money. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
+        'Currency rules: use the currency established by the current story; do not assume a region or a currency from a built-in world. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
         'NPC update rules: for every named friendly NPC who directly participates, consider relationship, location, lastSeen, abilities, custom meters, diary, and revealed stats. A substantive friendly/helpful exchange may change affection or trust by 1-3; hostility, deception, fear, romance, loyalty, or corruption should adjust only the relevant meters in proportion to what actually occurred. Use ["inc","npcValues",{"npcId":"...","field":"trust","amount":2}] for deltas or ["set","npcValues",{"npcId":"...","field":"stats.level","value":12}] for revealed absolute values. Valid relationship fields are affection, trust, loyalty, fear, corruption, lust. Valid stat fields are stats.level, stats.rank, stats.hp, stats.mp, stats.stamina, stats.strength, stats.agility, stats.intelligence, stats.endurance. Zero numeric NPC core stats mean unknown, not literal zero. Conversation alone does not increase NPC level or combat stats. Hostile, enemy, foe, antagonist, villain, aggressor, or threat NPCs must not be added to the visible NPC Codex, party invitations, guild invitations, or household roster; keep hostile encounters in the story only.',
         `H-Stats fields on the player and each NPC (female, male, futanari): ${hFieldKeys}. Update from confirmed events using ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}], ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}], or the same field/value or field/amount shape with playerHStats and no npcId for the player's own sheet. Counts and liters are nonnegative; infidelityStage is 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Set pregnant true/false and pregnancyFather only from established facts. Keep all unestablished values unknown and never insert a Condition field or add unlock rules. Set NPC met:true only after the player has met them; retain false for entries merely known through lore. Never substitute a title for a character's name.`,
-        'Track the active scene when confirmed: time, phase, day/dayName, continent, region, place, location detail, exact world mapX/mapY coordinates, compass heading, scene position, weather, and temperature. Named atlas destinations already provide exact coordinates in state; for newly discovered nearby places use a reasonable nearby coordinate and keep it consistent. Do not invent weather or temperature when the reply provides no evidence.',
+        'Track the active scene when confirmed: time, phase, day/dayName, place, location detail, scene position, weather, and temperature. Region and continent are optional story facts; omit them when unestablished. Never use atlas coordinates or invent geography, weather or temperature.',
         'Maintain a sparse overhead local map only from confirmed or strongly implied spatial facts. Create a sceneMaps record, then its sceneFloors, sceneRooms, and sceneConnections. Room coordinates use x 0-100, y 0-70, width 8-70, height 7-50. Reveal or add rooms gradually; never invent a complete unseen building. Use canonical mapId/floorId/room ids, set the active ids and playerRoomId as the player moves, and preserve all locked maps, rooms, and connections.',
         'Handle all story genres and mature or NSFW scenes neutrally. Do not censor, rewrite, omit, or classify confirmed state merely because the scene is adult; follow the active SillyTavern, model, and provider settings.',
         'Record only outcomes confirmed by this reply. Never record plans, attempts, questions, hypotheticals, rejected actions, or out-of-character discussion. Keep proficiency changes conservative.',
@@ -3515,12 +2760,12 @@ function patchInstructions() {
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
         'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
-        uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all 21 scene fields on the first reply.)"),
-        'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, characterLifeMapActors, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary; add location.discovered. Use canonical paths/ids and partial objects. Maximum 75 ops.',
+        uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all required scene fields on the first reply.)"),
+        'Allowed ops: set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         NPC_FIELD_INSTRUCTIONS,
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction,title,occupation,aliases], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
-        'Scene Tracker: Use compact aliases in sceneTracker to reduce tokens: dn=dayName,d=day,mo=month,yr=year,er=era,cal=calendar,t=time,per=period,se=season,loc=location,reg=region,con=continent,pos=position,w=weather,temp=temperature,light=lighting,who=participants,goal=objective,safe=safety,mood=atmosphere,dt=elapsed. Example {"sceneTracker":{"loc":"Market","t":"08:00","who":["Mira"]},"ops":[]}. In the final patch of the FIRST normal reply, provide all 21 fields: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. On later replies include changed fields AND any fields marked missing in PREVIOUS SCENE; the extension inherits the rest. Use strings in story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Establish the actual current place, including rooms and non-atlas places. Describe indoor climate when outdoor weather does not apply. Do not claim a planned destination is current. Omit coordinates. Never send empty strings, Unknown, N/A, null or dashes. Supply participants and elapsed when they change. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Complete the scene before finishing the same reply. Do not show sceneTracker in prose.',
+        'Scene Tracker: Use compact aliases in sceneTracker to reduce tokens: dn=dayName,d=day,mo=month,yr=year,er=era,cal=calendar,t=time,per=period,se=season,loc=location,reg=region,con=continent,pos=position,w=weather,temp=temperature,light=lighting,who=participants,goal=objective,safe=safety,mood=atmosphere,dt=elapsed. Example {"sceneTracker":{"loc":"Market","t":"08:00","who":["Mira"]},"ops":[]}. In the final patch of the FIRST normal reply, provide all required scene fields: dayName,day,month,year,era,calendar,time,period,season,location,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. On later replies include changed fields AND any fields marked missing in PREVIOUS SCENE; the extension inherits the rest. Use strings in story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Establish the actual current place, including rooms and non-atlas places. Describe indoor climate when outdoor weather does not apply. Do not claim a planned destination is current. Omit coordinates. Region and continent are optional; omit them when unestablished. Never invent them to fill a field. Never send empty strings, Unknown, N/A, null or dashes for required fields. Supply participants and elapsed when they change. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Complete the scene before finishing the same reply. Do not show sceneTracker in prose.',
         'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Write the complete story first, then append one patch with sceneTracker and all gameplay, diary and invitation ops. A user asking an NPC to write a diary or invite them is not itself an event: portray the NPC doing it, then include the append/offer op in that same patch. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this main reply; never depend on a second AI request for scene, diary or invitations.',
@@ -3528,13 +2773,11 @@ function patchInstructions() {
         'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
         'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. player.aura.infiniteMode is user-owned: Auto permits story tracking, Finite forces finite Mana, and Infinite forces inexhaustible Mana; never alter infiniteMode from AI output. In Auto mode, treat Limitless, Boundless, Unlimited, and Infinite Aura/Mana as aliases for the same infinite state. Set infinite=true only when the completed assistant story or resolved roll explicitly confirms genuinely inexhaustible power—never from level, an OOC request, a user claim alone, or an unresolved attempt. While true, do not decrease MP; in Auto mode set false only after explicit loss/seal/limitation.',
         'First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message OR the saved Character Forge opening must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Do not duplicate Character Forge starting possessions or skills. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the registration opening_scene and completed reply; use the exact established text name for a destination. Do not generate world-map actor markers or coordinates from story text.',
-        'World identity: world.id is "present-world" normally and "alternate-present-world" only after the story explicitly crosses into Alternate Present World ROLEFORGE. An actual crossing can be confirmed when the user or completed reply enters a portal, dimensional gate, rift, teleportation passage, or other established world boundary. Never switch from speculation, dreams, atlas browsing, casual mentions, or plans that have not happened. On confirmed entry set world.id together with the destination location fields; on a confirmed return set world.id back to "present-world" with the returned location fields.',
-        'NPC atlas isolation: use only the injected NPC Atlas Knowledge catalog for the active world. Never let an ordinary Present World character know Alternate-exclusive places, or an Alternate World character know Present-only geography, unless confirmed inter-world experience or reliable information explicitly grants that knowledge.',
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
         'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
         'Money: record every confirmed gain or expense immediately on progression.currency.gold/silver/copper with {"reason":"what the money came from or was spent on","category":"currency"}. Every currency op needs a specific reason so Transaction History can explain it. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
         'Inventory lifecycle: pick up, receive, buy, craft, or loot an item with ["inc","inventory",{"id":"stable-id","name":"Item","quantity":positive,"category":"...","description":"..."}]. Drink, eat, consume, use up, drop, give away, or sell it with the same operation and a negative quantity. If acquired and consumed in the same turn, emit the positive op followed by the negative op so the final count is correct. Do not decrement reusable tools, weapons, armor, keys, or equipment merely because they were used. Use upsert only to correct item metadata or set an exact known quantity; delete only when explicitly removed wholesale.',
-        'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
+        'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questRewardReceipts and questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
         'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Mana is not easily detected: non-sensing characters perceive nothing and even sensing specialists normally notice only a faint presence, while explicitly godlike beings with major lore may be exceptional. Formless Aura is wholly undetectable. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
         'Teleport and warp canon: teleportation/warp magic is inaccessible and most people believe it does not exist. Do not grant, teach, create, or casually use such a spell, item, skill, route, or world crossing unless the visible story explicitly establishes an extraordinary canon exception. A map browse or travel request is never such an exception.',
         'NPC identity: npcNames=[id,canonicalName,aliases,enabled] lists ALL saved NPC identities. Before creating anyone, check it including translated/transliterated names (for example Kohaku and โคฮาคุ). Reuse the canonical id and name; add the translated name to aliases. Never invent a new id for an existing person or replace their established dossier. Disabled NPCs remain in this identity index: never reactivate or create a copy of one. Do not merge distinct people merely because their names sound similar.',
@@ -3554,24 +2797,12 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
     const customPreset=getPowerPreset().mode==='custom';
     const customForge=getForgePreset().mode==='custom';
     const customSetting=customPreset||customForge;
-    const activeAtlas = atlasById(state?.world?.id);
-    if (!customSetting) {
-    if (activeAtlas.id === 'alternate-present-world') {
-        lines.push('The active setting is Alternate Present World ROLEFORGE: an expanded, more connected geography formed by Westreach Crownlands, Sakura-Frost Dominion, Sunscorched East, Verdant Southeast, Southern Wildlands, and Inner Sea Archipelago. Preserve its denser roads, inland borders, coastlines, island chains, long travel times, regional laws, power secrecy, and local currencies. Most common monsters can speak understandable but broken human language.');
-        lines.push("Alternate World canon: Chaos Breaker is the white floating castle of Dragon King Kaliasna Oryu, encircled by the Dragonfang Ring in Kaliasna Oryu's Sky Dominion. The northeast holds a Japanese-tradition kingdom across sakura fields, snow country and colossal forest. The eastern lands include desert crowns, volcanic basins and caravan routes; the southeast contains worldtree courts, rivers and wetlands; the south contains calderas, black forests and wild frontiers; the Inner Sea is filled with ports, island cities, reefs, shrines and dangerous sea lanes.");
-        lines.push('Timeline continuity: every named Present World destination also exists in the Alternate timeline, remapped onto its corresponding expanded region. Preserve those shared names and established functions; the Alternate atlas adds many exclusive destinations without deleting Sunscar Port, Central Crown, the Great Academy, or any other Present World place.');
-    } else {
-        lines.push('The active setting is Present World RoleForge, a morally mixed, enormous world of six ocean-separated continents: Central Continent, The Great Forest, Great Land of Titan, Drinovia Continent, North Continent, and Baluguria Continent. Preserve established geography, long travel times, social prejudice, regional laws, power secrecy, and regional currencies. Most common monsters can speak understandable but broken human language.');
-        lines.push('Present World canon: about one thousand years ago the Great War shattered the land and opened the oceans; hero Ars died and the Primordial Demon was sealed in a timeless dimension. Civilizations later rebuilt an uneasy harmony while war, invasion, prejudice, slavery, crime, kindness and cruelty continued together. The Great Academy charges steep tuition and admits every race, though prejudice remains. Human entry into the Great Forest is taboo and may bring punishment upon an entire family. Khaduzar is marked by the colossal stone hand gripping its own wrist. Drinovia plants the weapons and remains of the fallen where they died. The North can fall below -300 degrees. Baluguria is an exile, slave, gambling, pleasure-trade and underworld center.');
-    }
-    lines.push('AUTHOR-ONLY ATLAS REFERENCE is strictly scoped to the active world below. A destination absent from this catalog is not established in the current timeline. This catalog is not automatically known by any NPC: geography knowledge requires credible upbringing, travel, study, occupation, or information established in the story. Never leak or infer another timeline\'s geography through ordinary NPC knowledge.');
-    lines.push(JSON.stringify(npcAtlasKnowledge(state)));
-    }
+    lines.push('Current geography comes only from the character card, lore and confirmed story. No built-in world atlas or default capital is authoritative. Use free-text location names. Region and continent are optional: omit them unless established, and never append a display breadcrumb back into a location field.');
     if (includeState) {
         lines.push('EPISTEMIC FIREWALL — HIGHEST PRIORITY FOR CHARACTER KNOWLEDGE: sceneContext describes author-level continuity, while privateTrackerReferenceIndex is hidden tool memory. No NPC can see or read either object. A character knows only what they personally witnessed, were explicitly told, can publicly observe now, or could credibly learn through an established role. Presence, friendship, party/guild/household membership, Character Life records, NPC dossiers, and model access to this prompt do not grant knowledge. Never reveal or have an NPC react to exact level, EXP, vitals, stats, power identity, money/balance, inventory, quest/UI status, relationship meters, private diary, coordinates, travel percentage, transaction history, journey log, or companions unless the story independently established that specific fact. When uncertain, the NPC does not know. Never use UI/system terminology in narration or dialogue.');
         lines.push('Canonical role-play continuity follows. Preserve it silently unless the story confirms a change. The tracker may use private reference IDs for bookkeeping, but visible prose and NPC behavior must obey the firewall above.');
         const reference=roleplayState(state);
-        if(customSetting){reference.sceneContext.world={id:'custom',name:'Current character setting'};delete reference.privateTrackerReferenceIndex.playerResources.aura;delete reference.privateTrackerReferenceIndex.playerResources.auraOrMana;}
+        if(customSetting){delete reference.privateTrackerReferenceIndex.playerResources.aura;delete reference.privateTrackerReferenceIndex.playerResources.auraOrMana;}
         lines.push(JSON.stringify(reference));
         lines.push('END PRIVATE TRACKER REFERENCE INDEX. Do not quote, summarize, expose, or turn hidden reference values into character knowledge.');
     }
@@ -3739,13 +2970,11 @@ function syncTravelTracker(state = getState()) {
     tracker.hidden = !visible;
     if (!visible) return;
     const progress = Math.round(travelProgress(state) * 100);
-    const distance = travelDistance(state);
     const thai = getSettings().language === 'th';
-    const remainingLabel = distance.remaining <= .05
-        ? (thai ? 'ถึงจุดหมายแล้ว' : 'Destination reached')
-        : `${formatTravelDistance(distance.remaining)} km ${thai ? 'คงเหลือ' : 'remaining'}`;
     tracker.dataset.status = travel.status;
-    tracker.innerHTML = (uiMarkup("<div class=\"tretaresia-travel-route\"><i class=\"fa-solid fa-grip-lines\" aria-hidden=\"true\"></i><strong title=\"")+(html(origin))+uiMarkup(" → ")+(html(destination))+uiMarkup("\"><span>")+(html(origin))+uiMarkup("</span><b>→</b><span>")+(html(destination))+uiMarkup("</span></strong><em>")+(progress)+uiMarkup("%</em></div>\n        <div class=\"tretaresia-travel-progress\" aria-label=\"")+(progress)+uiMarkup("%\"><i style=\"width:")+(progress)+uiMarkup("%\"></i></div>\n        <div class=\"tretaresia-travel-distance\"><span><i class=\"fa-solid fa-route\"></i>")+(formatTravelDistance(distance.travelled))+uiMarkup(" / ")+(formatTravelDistance(distance.total))+uiMarkup(" km</span><b>")+(remainingLabel)+uiMarkup("</b><small>")+(formatTravelDays(travel.remainingDays))+uiMarkup(" ")+(thai ? 'วัน' : 'days')+uiMarkup(" · ")+(html(travel.status))+uiMarkup("</small></div>"));
+    tracker.innerHTML = `<div class="tretaresia-travel-route"><strong>${html(origin)} → ${html(destination)}</strong><em>${progress}%</em></div>
+        <div class="tretaresia-travel-progress"><i style="width:${progress}%"></i></div>
+        <div class="tretaresia-travel-distance"><b>${formatTravelDays(travel.remainingDays)} ${thai ? 'วันคงเหลือ' : 'days remaining'}</b><small>${html(travel.status)}</small></div>`;
     applyTravelTrackerPosition(tracker);
 }
 
@@ -3832,200 +3061,21 @@ function characterLifeNpcFor(entry) {
     }
 }
 
-function characterLifeMapMarkers(force = false) {
-    const bridge = characterLifeBridge();
-    if (!bridge || typeof bridge.listMapMarkers !== 'function') return [];
-    if (!force && characterLifeMapMarkerCache) return characterLifeMapMarkerCache;
-    try {
-        const markers = bridge.listMapMarkers({ includeHidden: true, includeDisabled: false, includeDead: false });
-        characterLifeMapMarkerCache = Array.isArray(markers) ? markers : [];
-        return characterLifeMapMarkerCache;
-    } catch (error) {
-        console.warn('[RoleForge] Character Life map marker lookup failed safely.', error);
-        return characterLifeMapMarkerCache || [];
-    }
-}
+
 
 function characterLifeCharacterReferences() {
     const bridge = characterLifeBridge();
-    if (!bridge || typeof bridge.listMapMarkers !== 'function') return [];
+    if (typeof bridge?.listNpcs !== 'function') return [];
     try {
-        const markers = bridge.listMapMarkers({ includeHidden: true, includeDisabled: false, includeDead: false });
-        const records = typeof bridge.listNpcs === 'function' ? bridge.listNpcs({ includeDisabled: false, includeDead: false }) : [];
-        return (Array.isArray(markers) ? markers : []).filter(entry => entry?.scope === 'character').slice(0, 60).map(marker => {
-            const entry = (Array.isArray(records) ? records : []).find(value => value?.id === marker.id && value?.scope === 'character') || marker;
-            return {
-                id: text(marker.id, '', 120), scope: 'character', name: text(marker.name, '', 120),
-                aliases: Array.isArray(marker.aliases) ? marker.aliases.map(value => text(value, '', 120)).filter(Boolean).slice(0, 8) : [],
-                role: text(entry.role, '', 160), species: text(entry.species, '', 100), affiliation: text(entry.affiliation, '', 160),
-                relationshipToUser: text(entry.relationshipToUser, '', 160), currentState: text(marker.currentState || entry.currentState, '', 400),
-                location: text(marker.location || entry.location || entry.currentLocation, '', 200),
-                mapX: optionalNumber(marker.mapX, null, 0, WORLD_MAP_WIDTH), mapY: optionalNumber(marker.mapY, null, 0, WORLD_MAP_HEIGHT),
-                activeFormId: text(entry.activeFormId, '', 120),
-            };
-        }).filter(entry => entry.id && entry.name);
-    } catch (error) {
-        console.warn('[RoleForge] Character Life character reference lookup failed safely.', error);
-        return [];
-    }
-}
-
-function invalidateCharacterLifeMapMarkers() {
-    characterLifeMapMarkerCache = null;
-}
-
-function mapNpcIdentity(entry) {
-    return [entry?.name, ...(Array.isArray(entry?.aliases) ? entry.aliases : [])]
-        .map(value => text(value, '', 120).toLocaleLowerCase()).filter(Boolean);
-}
-
-function mergedCharacterLifeMapMarkers(state) {
-    const source = characterLifeMapMarkers();
-    const actors = Array.isArray(state.characterLifeMapActors) ? state.characterLifeMapActors : [];
-    const used = new Set();
-    const merged = source.map(marker => {
-        const actor = actors.find(entry => entry.characterLifeId === marker.id)
-            || actors.find(entry => entry.name.toLocaleLowerCase() === text(marker.name).toLocaleLowerCase());
-        if (actor) used.add(actor.id);
-        return actor ? { ...marker, ...actor, id: marker.id, scope: 'character', key: `character:${marker.id}`, mapVisible: true } : marker;
-    });
-    for (const actor of actors) {
-        if (used.has(actor.id)) continue;
-        merged.push({ ...actor, id: actor.characterLifeId || actor.id, scope: 'character', key: `character:${actor.characterLifeId || actor.id}`, mapVisible: true });
-    }
-    return merged;
-}
-
-function releaseMapPortrait(record) {
-    if (!record) return;
-    if (record.image instanceof HTMLImageElement) record.image.src = '';
-    if (record.owned && record.url) URL.revokeObjectURL(record.url);
-}
-
-function trimMapPortraitCache() {
-    if (mapPortraitCache.size <= MAP_PORTRAIT_CACHE_LIMIT) return;
-    const candidates = [...mapPortraitCache.entries()].sort((left, right) => number(left[1]?.lastUsed, 0) - number(right[1]?.lastUsed, 0));
-    for (const [key, record] of candidates) {
-        if (mapPortraitCache.size <= MAP_PORTRAIT_CACHE_LIMIT) break;
-        mapPortraitCache.delete(key);
-        releaseMapPortrait(record);
-    }
-}
-
-function mapPortraitRecord(key) {
-    const record = key ? mapPortraitCache.get(key) : null;
-    if (record) record.lastUsed = ++mapPortraitUseClock;
-    return record || null;
-}
-
-function decodeMapPortraitSource(source) {
-    return new Promise((resolve, reject) => {
-        const image = new Image();
-        image.decoding = 'async';
-        image.onload = () => resolve(image);
-        image.onerror = () => reject(new Error(uiText("Map portrait source could not be decoded.")));
-        image.src = source;
-    });
-}
-
-async function createMapPortraitThumbnail(source) {
-    const sourceImage = await decodeMapPortraitSource(source);
-    const width = Math.max(1, sourceImage.naturalWidth || sourceImage.width || 1);
-    const height = Math.max(1, sourceImage.naturalHeight || sourceImage.height || 1);
-    const ratio = Math.min(1, MAP_PORTRAIT_THUMBNAIL_SIZE / Math.max(width, height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(width * ratio));
-    canvas.height = Math.max(1, Math.round(height * ratio));
-    const context = canvas.getContext('2d', { alpha: false });
-    if (!context) throw new Error(uiText("Map thumbnail canvas is unavailable."));
-    context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = 'medium';
-    context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
-    sourceImage.src = '';
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', .78));
-    if (!blob) throw new Error(uiText("Map thumbnail encoding failed."));
-    return { url: URL.createObjectURL(blob), owned: true };
-}
-
-function requestMapPortrait(key, query, directSource = '', directFrame = null) {
-    if (!key) return;
-    if (mapPortraitCache.has(key)) { mapPortraitRecord(key); return; }
-    const record = { status: 'loading', image: new Image(), url: '', frame: directFrame || null, owned: false, lastUsed: ++mapPortraitUseClock };
-    mapPortraitCache.set(key, record);
-    trimMapPortraitCache();
-    const load = async (source, frame = null, sourceOwned = false, alreadyThumbnail = false) => {
-        if (!source) { record.status = 'empty'; return; }
-        let thumbnail = null;
-        if (alreadyThumbnail) {
-            thumbnail = { url: source, owned: sourceOwned };
-        } else {
-            try {
-                thumbnail = await createMapPortraitThumbnail(source);
-                if (sourceOwned) URL.revokeObjectURL(source);
-            } catch (error) {
-                thumbnail = { url: source, owned: sourceOwned };
-                console.warn('[RoleForge] Map portrait thumbnail fallback used.', error);
-            }
-        }
-        if (mapPortraitCache.get(key) !== record) {
-            if (thumbnail.owned && thumbnail.url) URL.revokeObjectURL(thumbnail.url);
-            return;
-        }
-        record.url = thumbnail.url;
-        record.frame = frame;
-        record.owned = thumbnail.owned;
-        record.image.onload = () => { record.status = 'ready'; record.lastUsed = ++mapPortraitUseClock; trimMapPortraitCache(); scheduleMapDraw(); };
-        record.image.onerror = () => { record.status = 'error'; };
-        record.image.src = thumbnail.url;
-    };
-    if (directSource) { void load(directSource, directFrame, false); return; }
-    const bridge = characterLifeBridge();
-    if (!bridge?.portrait) { record.status = 'empty'; return; }
-    Promise.resolve(bridge.portrait(query)).then(result => {
-        if (!result) { record.status = 'empty'; return; }
-        const source = result.blob ? URL.createObjectURL(result.blob) : result.path || '';
-        return load(source, result.frame || null, Boolean(result.blob), result.thumbnail === true);
-    }).catch(error => {
-        record.status = 'error';
-        console.warn('[RoleForge] Map portrait load failed safely.', error);
-    });
-}
-
-function clearMapPortraitCache() {
-    for (const record of mapPortraitCache.values()) releaseMapPortrait(record);
-    mapPortraitCache.clear();
-}
-
-function drawMapAvatar(context, point, record, initial, size, fill, stroke, pixelRatio) {
-    context.save();
-    context.beginPath();
-    context.arc(point.x, point.y, size, 0, Math.PI * 2);
-    context.clip();
-    context.fillStyle = fill;
-    context.fillRect(point.x - size, point.y - size, size * 2, size * 2);
-    if (record?.status === 'ready') {
-        const image = record.image;
-        const scale = Math.max(size * 2 / image.naturalWidth, size * 2 / image.naturalHeight) * number(record.frame?.zoom, 1, 1, 4);
-        const width = image.naturalWidth * scale;
-        const height = image.naturalHeight * scale;
-        const focusX = number(record.frame?.x, 50, 0, 100) / 100;
-        const focusY = number(record.frame?.y, 50, 0, 100) / 100;
-        context.drawImage(image, point.x - width * focusX, point.y - height * focusY, width, height);
-    } else {
-        context.fillStyle = readableOn(fill);
-        context.font = `800 ${Math.max(8, size * .9)}px system-ui, sans-serif`;
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        context.fillText(initial || '?', point.x, point.y + .5 * pixelRatio);
-    }
-    context.restore();
-    context.save();
-    context.strokeStyle = stroke;
-    context.lineWidth = 2 * pixelRatio;
-    context.beginPath();
-    context.arc(point.x, point.y, size, 0, Math.PI * 2);
-    context.stroke();
-    context.restore();
+        return (bridge.listNpcs({includeDisabled:false, includeDead:false}) || [])
+            .filter(entry => entry?.scope === 'character' && entry.enabled !== false && !entry.isDead)
+            .slice(0,60).map(entry => ({id: text(entry.id,'',120),scope:'character',name:text(entry.name,'',120),
+                aliases: Array.isArray(entry.aliases) ? entry.aliases.map(name => text(name,'',120)).filter(Boolean).slice(0,8) : [],
+                role:text(entry.role,'',160),species:text(entry.species,'',100),affiliation:text(entry.affiliation,'',160),
+                relationshipToUser:text(entry.relationshipToUser,'',160),currentState:text(entry.currentState,'',400),
+                location:text(entry.location || entry.currentLocation,'',200),activeFormId:text(entry.activeFormId,'',120)}))
+            .filter(entry => entry.id && entry.name);
+    } catch (error) {console.warn('[RoleForge] Character Life reference lookup failed safely.',error);return [];}
 }
 
 function characterLifeSkillsForOwner(owner) {
@@ -4166,49 +3216,13 @@ function queueCharacterLifeCompatibilityRefresh(options) {
     }, 180);
 }
 
-function currentMapLocation(state) {
-    const locations = worldLocationsFor(state, false);
-    return locations.find(location => location.name === state.location.place)
-        || locations.find(location => location.name === state.location.region)
-        || locations.find(location => location.continent === state.location.continent)
-        || locations[0];
-}
 
-function mapLocation(id, state = getState(), viewed = true) {
-    return worldLocationsFor(state, viewed).find(location => location.id === id);
-}
 
-function currentMapPoint(state) {
-    const known = currentMapLocation(state);
-    let safe = landSafeMapPoint({
-        worldId: storyWorldId(state), x: state.location.mapX, y: state.location.mapY,
-        location: state.location.place || state.location.region, continent: state.location.continent,
-    });
-    const exactSite = namedAtlasSite(state.location.place, storyWorldId(state));
-    if (!['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status) && exactSite?.name === state.location.place
-        && (!safe || Math.hypot(exactSite.x - safe.x, exactSite.y - safe.y) > 180)) {
-        safe = { x: exactSite.x, y: exactSite.y, site: exactSite };
-    }
-    return {
-        ...known,
-        name: state.location.place || known.name,
-        continent: state.location.continent || known.continent,
-        region: state.location.region || known.region,
-        zone: state.location.zoneType || known.zone,
-        x: safe?.x ?? known.x,
-        y: safe?.y ?? known.y,
-        heading: number(state.location.heading, 0, 0, 359.999),
-    };
-}
 
-function mapLocationByName(value, state = getState()) {
-    const requested = text(value, '', 180).toLocaleLowerCase();
-    if (!requested) return null;
-    const locations = worldLocationsFor(state, false);
-    return locations.find(entry => entry.name.toLocaleLowerCase() === requested)
-        || [...locations].sort((a, b) => b.name.length - a.name.length)
-            .find(entry => requested.includes(entry.name.toLocaleLowerCase()) || entry.name.toLocaleLowerCase().includes(requested));
-}
+
+
+
+
 
 function worldClockMinutes(clock) {
     const [hours, minutes] = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(text(clock?.time, '00:00', 5))?.slice(1).map(Number) || [0, 0];
@@ -4275,79 +3289,15 @@ function travelProgress(state) {
     return Math.min(1, Math.max(0, (total - number(state.travel.remainingDays, total, 0, total)) / total));
 }
 
-function travelRouteSpeed(route) {
-    return { Road: 70, Caravan: 58, Sea: 95, 'Off-road': 38 }[route] || 55;
-}
 
-function buildTravelRoutePoints(state, travel = state?.travel || {}) {
-    const originX = optionalNumber(travel.originX, state?.location?.mapX ?? null, 0, WORLD_MAP_WIDTH);
-    const originY = optionalNumber(travel.originY, state?.location?.mapY ?? null, 0, WORLD_MAP_HEIGHT);
-    const destinationX = optionalNumber(travel.destinationX, null, 0, WORLD_MAP_WIDTH);
-    const destinationY = optionalNumber(travel.destinationY, null, 0, WORLD_MAP_HEIGHT);
-    if ([originX, originY, destinationX, destinationY].some(value => value === null)) return [];
-    const origin = { x: originX, y: originY, name: travel.origin, region: travel.originRegion };
-    const destination = { x: destinationX, y: destinationY, name: travel.destinationPlace || travel.destination, region: travel.destinationRegion };
-    if (travel.route === 'Sea' || travel.originContinent !== travel.destinationContinent) return [origin, destination];
-    const continent = travel.originContinent || state?.location?.continent || '';
-    const sites = worldLocationsFor(state, false).filter(entry => entry.continent === continent);
-    const checkpoints = [.25, .5, .75].map(progress => {
-        const x = originX + (destinationX - originX) * progress;
-        const y = originY + (destinationY - originY) * progress;
-        if (pointIsOnAtlasLand(x, y, storyWorldId(state), continent)) return { x, y, name: '', region: '' };
-        const nearest = sites.reduce((best, entry) => {
-            const distance = Math.hypot(entry.x - x, entry.y - y);
-            return !best || distance < best.distance ? { entry, distance } : best;
-        }, null)?.entry;
-        return nearest ? { x: nearest.x, y: nearest.y, name: nearest.name, region: nearest.region } : null;
-    }).filter(Boolean);
-    return [origin, ...checkpoints, destination].filter((point, index, list) => index === 0
-        || Math.hypot(point.x - list[index - 1].x, point.y - list[index - 1].y) > 2);
-}
 
-function travelRoutePoint(state, progress = travelProgress(state)) {
-    const travel = state?.travel || {};
-    const points = travel.routePoints?.length >= 2 ? travel.routePoints : buildTravelRoutePoints(state, travel);
-    if (points.length < 2) return null;
-    const lengths = points.slice(1).map((point, index) => Math.hypot(point.x - points[index].x, point.y - points[index].y));
-    const total = lengths.reduce((sum, value) => sum + value, 0);
-    if (!total) return { ...points.at(-1), next: points.at(-1) };
-    let cursor = total * Math.max(0, Math.min(1, progress));
-    for (let index = 0; index < lengths.length; index += 1) {
-        if (cursor <= lengths[index] || index === lengths.length - 1) {
-            const ratio = lengths[index] ? cursor / lengths[index] : 0;
-            const current = points[index];
-            const next = points[index + 1];
-            let point = { x: current.x + (next.x - current.x) * ratio, y: current.y + (next.y - current.y) * ratio, next };
-            if (travel.route !== 'Sea' && travel.originContinent === travel.destinationContinent
-                && !pointIsOnAtlasLand(point.x, point.y, storyWorldId(state), travel.originContinent)) {
-                const safe = landSafeMapPoint({ worldId: storyWorldId(state), x: point.x, y: point.y, continent: travel.originContinent });
-                if (safe) point = { ...point, x: safe.x, y: safe.y };
-            }
-            return point;
-        }
-        cursor -= lengths[index];
-    }
-    return { ...points.at(-1), next: points.at(-1) };
-}
 
-function travelDistance(state) {
-    const travel = state?.travel || {};
-    const coordinates = [travel.originX, travel.originY, travel.destinationX, travel.destinationY]
-        .map(value => optionalNumber(value, null));
-    const coordinateDistance = coordinates.every(value => value !== null)
-        ? Math.hypot(coordinates[2] - coordinates[0], coordinates[3] - coordinates[1]) : 0;
-    const routePoints = travel.routePoints?.length >= 2 ? travel.routePoints : buildTravelRoutePoints(state, travel);
-    const routeDistance = routePoints.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - routePoints[index].x, point.y - routePoints[index].y), 0);
-    const total = routeDistance || coordinateDistance || number(travel.totalDays, 0, 0, 999999) * travelRouteSpeed(travel.route);
-    const progress = travelProgress(state);
-    return { total, travelled: total * progress, remaining: total * (1 - progress) };
-}
 
-function formatTravelDistance(value) {
-    const distance = number(value, 0, 0, 999999999);
-    if (distance < 10) return distance.toFixed(1);
-    return Math.round(distance).toLocaleString();
-}
+
+
+
+
+
 
 function formatTravelDays(value) {
     const days = number(value, 0, 0, 999999);
@@ -4355,29 +3305,16 @@ function formatTravelDays(value) {
     return days >= 10 ? days.toFixed(1) : days.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
-function npcMapPoint(entry, state) {
-    const site = mapLocationByName(entry?.location, state);
-    const partyMember = state?.social?.party?.memberIds?.includes(entry?.id);
-    const player = partyMember ? currentMapPoint(state) : null;
-    const point = landSafeMapPoint({
-        worldId: storyWorldId(state),
-        x: optionalNumber(entry?.mapX, player?.x ?? site?.x ?? null, 0, WORLD_MAP_WIDTH),
-        y: optionalNumber(entry?.mapY, player?.y ?? site?.y ?? null, 0, WORLD_MAP_HEIGHT),
-        location: entry?.location,
-        continent: entry?.continent || site?.continent || (partyMember ? state.location.continent : ''),
-    });
-    return point ? { ...point, site: point.site || site, partyMember } : null;
-}
+
 
 function synchronizeWorldState(state, previous = state) {
-    synchronizeActiveWorldDiscovery(state);
     const travel = state.travel;
     const previousTravel = previous?.travel || {};
     const now = worldClockMinutes(state.worldClock);
     if (state.worldClock.day !== previous?.worldClock?.day && state.worldClock.dayName === previous?.worldClock?.dayName) {
         state.worldClock.dayName = `Day ${state.worldClock.day}`;
     }
-    // Keep legacy coordinate fields in saved data for migration, but travel now follows place names.
+    // Travel follows the story's place names and any confirmed geography.
     travel.originContinent ||= text(previousTravel.originContinent, previous?.location?.continent || state.location.continent, 100);
     travel.originRegion ||= text(previousTravel.originRegion, previous?.location?.region || state.location.region, 120);
     travel.destinationPlace ||= travel.destination;
@@ -4418,7 +3355,6 @@ function synchronizeWorldState(state, previous = state) {
         state.location.continent = travel.destinationContinent || state.location.continent;
         state.location.region = travel.destinationRegion || state.location.region;
         state.location.place = travel.destinationPlace || travel.destination || state.location.place;
-        if (state.location.place) addDiscoveredLocation(state, state.location.place);
         if (!previous?.scene?.position || state.scene.position === previous.scene.position || /^Traveling|^En route/i.test(state.scene.position)) {
             state.scene.position = `Arrived at ${state.location.place}`;
         }
@@ -4450,28 +3386,13 @@ function synchronizeWorldState(state, previous = state) {
     const partyIds = new Set(state.social?.party?.memberIds || []);
     for (const entry of state.npcs) {
         const prior = previous?.npcs?.find(value => value.id === entry.id) || previous?.npcs?.find(value => value.name.toLocaleLowerCase() === entry.name.toLocaleLowerCase());
-        const site = mapLocationByName(entry.location, state);
-        const locationChanged = prior && entry.location !== prior.location;
-        if (partyIds.has(entry.id)) {
-            entry.mapX = state.location.mapX;
-            entry.mapY = state.location.mapY;
-            entry.location = moving ? state.location.place : state.location.place || state.location.region;
+        if (partyIds.has(entry.id) && state.onboarding.locationSeeded) {
+            entry.location = state.location.place || state.location.region;
             entry.activity = moving ? `Traveling with ${state.player.name}` : `Accompanying ${state.player.name}`;
             entry.activityUpdatedDay = state.worldClock.day;
-        } else if (site && (entry.mapX === null || entry.mapY === null || locationChanged)) {
-            entry.mapX = site.x;
-            entry.mapY = site.y;
         }
-        const safePoint = landSafeMapPoint({
-            worldId: storyWorldId(state), x: entry.mapX, y: entry.mapY,
-            location: entry.location, continent: site?.continent || '',
-        });
-        entry.mapX = safePoint?.x ?? null;
-        entry.mapY = safePoint?.y ?? null;
-        const lifeChanged = prior && (entry.location !== prior.location || entry.activity !== prior.activity || entry.mapX !== prior.mapX || entry.mapY !== prior.mapY);
-        if (lifeChanged && entry.lifeMode !== 'Paused') entry.activityUpdatedDay = state.worldClock.day;
+        if (prior && (entry.location !== prior.location || entry.activity !== prior.activity) && entry.lifeMode !== 'Paused') entry.activityUpdatedDay = state.worldClock.day;
     }
-    state.characterLifeMapActors = (state.characterLifeMapActors || []).map(actor => characterLifeMapActor(actor)).filter(Boolean);
     return state;
 }
 
@@ -4493,271 +3414,36 @@ function synchronizeDerivedPlayerState(state) {
 }
 
 
-const mapContinentPaths = new Map();
-let mapHitContext = null;
 
-function continentPath(continent) {
-    if (typeof Path2D !== 'function') return null;
-    if (!mapContinentPaths.has(continent.id)) {
-        const path = new Path2D();
-        for (const polygon of continent.polygons) {
-            polygon.forEach(([x, y], index) => index ? path.lineTo(x, y) : path.moveTo(x, y));
-            path.closePath();
-        }
-        mapContinentPaths.set(continent.id, path);
-    }
-    return mapContinentPaths.get(continent.id);
-}
 
-function hitContext() {
-    if (!mapHitContext) mapHitContext = document.createElement('canvas').getContext('2d');
-    return mapHitContext;
-}
 
-function continentAtPoint(x, y, hintedId = '', state = getState()) {
-    const continents = worldContinentsFor(state, true);
-    const hinted = continents.find(entry => entry.id === hintedId);
-    if (hinted) return hinted;
-    const context = hitContext();
-    if (context) {
-        const match = continents.find(entry => {
-            const path = continentPath(entry);
-            return path && context.isPointInPath(path, x, y);
-        });
-        if (match) return match;
-    }
-    return continents.find(entry =>
-        x >= entry.bounds[0] && x <= entry.bounds[2] && y >= entry.bounds[1] && y <= entry.bounds[3]) || null;
-}
 
-function hashString(value) {
-    let hash = 2166136261;
-    for (let index = 0; index < value.length; index += 1) {
-        hash ^= value.charCodeAt(index);
-        hash = Math.imul(hash, 16777619);
-    }
-    return hash >>> 0;
-}
 
-function seededRandom(seed) {
-    let value = (seed >>> 0) || 1;
-    return () => {
-        value = (value * 1664525 + 1013904223) >>> 0;
-        return value / 4294967296;
-    };
-}
 
-function mapPalette() {
-    const styles = getComputedStyle(document.documentElement);
-    const read = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
-    const accent = read('--tretaresia-accent', '#d6b458');
-    const alt = read('--tretaresia-accent-alt', '#f4dc93');
-    const ink = read('--tretaresia-ink', '#ece7da');
-    const surface = read('--tretaresia-surface', '#040404');
-    const light = luminance(surface) > .45;
-    return {
-        accent, alt, ink, surface, light,
-        ocean: light ? '#ccd9e0' : '#070d12',
-        oceanDeep: light ? '#aebfca' : '#03070a',
-        land: light ? '#e8e3d3' : '#16160f',
-        landHigh: light ? '#f4efdf' : '#23231a',
-        graticule: rgbaOf(ink, light ? .13 : .085),
-        label: rgbaOf(ink, light ? .74 : .7),
-        halo: light ? 'rgba(255,255,255,.9)' : 'rgba(2,6,9,.88)',
-        faint: rgbaOf(ink, light ? .4 : .34),
-    };
-}
 
-function drawTerrain(context, continent, palette, detail, hair) {
-    const path = continentPath(continent);
-    if (!path) return;
-    context.save();
-    context.clip(path);
-    const random = seededRandom(hashString(continent.id));
-    const [left, top, right, bottom] = continent.bounds;
-    const width = right - left;
-    const height = bottom - top;
-    context.lineCap = 'round';
-    context.lineJoin = 'round';
-    context.strokeStyle = rgbaOf(palette.ink, palette.light ? .17 : .14);
-    context.lineWidth = hair * 2.3;
-    const ridges = detail === 0 ? 24 : detail === 1 ? 52 : 96;
-    for (let index = 0; index < ridges; index += 1) {
-        const x = left + random() * width;
-        const y = top + random() * height;
-        const span = 14 + random() * 24;
-        context.beginPath();
-        context.moveTo(x - span, y + span * .52);
-        context.lineTo(x, y - span * .48);
-        context.lineTo(x + span, y + span * .52);
-        context.stroke();
-    }
-    if (detail >= 1) {
-        context.strokeStyle = rgbaOf(palette.light ? '#3f7f96' : '#55a7b8', .5);
-        context.lineWidth = hair * 2.8;
-        const rivers = detail === 1 ? 3 : 6;
-        for (let index = 0; index < rivers; index += 1) {
-            let x = left + random() * width;
-            let y = top + random() * height * .3;
-            context.beginPath();
-            context.moveTo(x, y);
-            for (let step = 0; step < 7; step += 1) {
-                x += (random() - .5) * width * .16;
-                y += height * .11;
-                context.lineTo(x, y);
-            }
-            context.stroke();
-        }
-    }
-    context.restore();
-}
 
-function drawGraticule(context, canvas, palette, detail) {
-    const step = detail === 0 ? 400 : detail === 1 ? 200 : 100;
-    const bounds = mapVisibleBounds();
-    context.save();
-    context.lineWidth = 1;
-    context.strokeStyle = palette.graticule;
-    context.beginPath();
-    for (let x = Math.ceil(bounds.left / step) * step; x <= bounds.right; x += step) {
-        const point = mapCanvasPoint(x, 0, canvas.width, canvas.height);
-        context.moveTo(point.x, 0);
-        context.lineTo(point.x, canvas.height);
-    }
-    for (let y = Math.ceil(bounds.top / step) * step; y <= bounds.bottom; y += step) {
-        const point = mapCanvasPoint(0, y, canvas.width, canvas.height);
-        context.moveTo(0, point.y);
-        context.lineTo(canvas.width, point.y);
-    }
-    context.stroke();
-    context.strokeStyle = rgbaOf(palette.accent, .55);
-    context.lineWidth = 2;
-    context.beginPath();
-    for (let x = Math.ceil(bounds.left / step) * step; x <= bounds.right; x += step) {
-        const point = mapCanvasPoint(x, 0, canvas.width, canvas.height);
-        context.moveTo(point.x, 0);
-        context.lineTo(point.x, 9);
-        context.moveTo(point.x, canvas.height);
-        context.lineTo(point.x, canvas.height - 9);
-    }
-    for (let y = Math.ceil(bounds.top / step) * step; y <= bounds.bottom; y += step) {
-        const point = mapCanvasPoint(0, y, canvas.width, canvas.height);
-        context.moveTo(0, point.y);
-        context.lineTo(9, point.y);
-        context.moveTo(canvas.width, point.y);
-        context.lineTo(canvas.width - 9, point.y);
-    }
-    context.stroke();
-    context.restore();
-}
 
-function drawScaleBar(context, canvas, palette) {
-    const perUnit = canvas.width / WORLD_MAP_WIDTH * mapView.scale;
-    const target = canvas.width * .16;
-    const units = [50, 100, 200, 400, 800, 1600].reduce((best, value) =>
-        Math.abs(value * perUnit - target) < Math.abs(best * perUnit - target) ? value : best, 50);
-    const length = units * perUnit;
-    const x = 16;
-    const y = canvas.height - 18;
-    context.save();
-    context.strokeStyle = rgbaOf(palette.accent, .85);
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(x, y - 6);
-    context.lineTo(x, y);
-    context.lineTo(x + length, y);
-    context.lineTo(x + length, y - 6);
-    context.moveTo(x + length / 2, y);
-    context.lineTo(x + length / 2, y - 4);
-    context.stroke();
-    context.restore();
-    drawMapLabel(context, units + ' u', x + length / 2, y - 14, {
-        size: 10, color: palette.label, stroke: palette.halo,
-    });
-}
 
-function drawVignette(context, canvas, palette) {
-    const gradient = context.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * .3,
-        canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * .78);
-    gradient.addColorStop(0, 'rgba(0,0,0,0)');
-    gradient.addColorStop(1, palette.light ? 'rgba(40,50,60,.16)' : 'rgba(0,0,0,.42)');
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-}
 
-function drawMarkerGlyph(context, x, y, tier, fill, ring, size) {
-    context.save();
-    context.fillStyle = fill;
-    context.strokeStyle = ring;
-    context.lineWidth = 2;
-    context.beginPath();
-    if (tier === 0) {
-        context.moveTo(x, y - size);
-        context.lineTo(x + size, y);
-        context.lineTo(x, y + size);
-        context.lineTo(x - size, y);
-        context.closePath();
-    } else if (tier === 1) {
-        context.arc(x, y, size * .85, 0, Math.PI * 2);
-    } else {
-        context.rect(x - size * .62, y - size * .62, size * 1.24, size * 1.24);
-    }
-    context.fill();
-    context.stroke();
-    if (tier === 1) {
-        context.beginPath();
-        context.arc(x, y, size * .3, 0, Math.PI * 2);
-        context.fillStyle = ring;
-        context.fill();
-    }
-    context.restore();
-}
 
-function nearestMapLocation(x, y, continentName = '', state = getState()) {
-    const locations = worldLocationsFor(state, true);
-    const pool = continentName ? locations.filter(entry => entry.continent === continentName) : locations;
-    return pool.reduce((nearest, entry) => {
-        const distance = Math.hypot(entry.x - x, entry.y - y);
-        return !nearest || distance < nearest.distance ? { entry, distance } : nearest;
-    }, null)?.entry || locations[0];
-}
 
-function coordinatesLabel(x, y) {
-    return `${Math.round(x).toString().padStart(4, '0')} E · ${Math.round(y).toString().padStart(4, '0')} S`;
-}
 
-function inferUserTravelIntent(message, state = getState()) {
-    const source = text(message, '', 6000);
-    if (!source || /(?:\b(?:do not|don't|won't|not going)\b|(?:ไม่|ไม่ได้|อย่า)\s*(?:ออกเดินทาง|เดินทาง|มุ่งหน้า|มุ่งตรง|กลับ|ไป))/i.test(source)) return null;
-    const lower = source.toLocaleLowerCase();
-    const actionPatterns = [
-        /\b(?:travel(?:ling|ing)?|head(?:ing)?|go(?:ing)?|walk(?:ing)?|ride|riding|sail(?:ing)?|depart(?:ing)?|return(?:ing)?|move|moving|set\s+out)\b/gi,
-        /(?:ออกเดินทาง|เดินทาง|มุ่งหน้า|มุ่งตรง|ขี่ม้า|นั่งรถ|ล่องเรือ|แล่นเรือ|กลับไป|ไปยัง|ไปที่|ไปสู่)/gi,
-    ];
-    let actionIndex = -1;
-    for (const pattern of actionPatterns) {
-        const match = pattern.exec(lower);
-        if (match && (actionIndex < 0 || match.index < actionIndex)) actionIndex = match.index;
-    }
-    if (actionIndex < 0) return null;
-    const candidates = worldLocationsFor(state, false).flatMap(site => {
-        const names = [site.name, site.name.replace(/^the\s+/i, '')].filter((value, index, all) => value && all.indexOf(value) === index);
-        return names.map(name => ({ site, index: lower.lastIndexOf(name.toLocaleLowerCase()), length: name.length }));
-    }).filter(candidate => candidate.index >= actionIndex);
-    candidates.sort((a, b) => b.index - a.index || b.length - a.length);
-    const destination = candidates[0]?.site;
-    if (!destination) return null;
-    const route = /(?:เรือ|ล่อง|แล่น|\b(?:ship|boat|sail|sea)\b)/i.test(source) ? 'Sea'
-        : /(?:คาราวาน|\bcaravan\b)/i.test(source) ? 'Caravan'
-            : /(?:นอกเส้นทาง|ป่า|\boff[- ]?road\b|\bwilderness\b)/i.test(source) ? 'Off-road' : 'Road';
-    return { destination, route };
-}
 
-function estimatedTravelDays(state, destination, route) {
-    const distance = Math.hypot(destination.x - state.location.mapX, destination.y - state.location.mapY);
-    return Math.max(1, Math.ceil(distance / travelRouteSpeed(route)));
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function userTravelMessageKey(messageId, message) {
     return text(`${messageId ?? ''}:${message?.send_date || message?.mes || ''}`, '', 180);
@@ -4854,15 +3540,7 @@ function catchUpActiveTravelFromChat(current, context, currentMessageId) {
     const end = Number.isInteger(numericId) && numericId >= 0 ? numericId + 1 : context.chat?.length || 0;
     const history = (context.chat || []).slice(0, end).map((message, index) => ({ message, index }))
         .filter(entry => entry.message?.is_user && !entry.message?.is_system);
-    const destinationId = mapLocationByName(current.travel.destinationPlace || current.travel.destination, current)?.id;
-    let start = -1;
-    for (let index = history.length - 1; index >= 0; index -= 1) {
-        const intent = inferUserTravelIntent(history[index].message.mes, current);
-        if (intent && (!destinationId || intent.destination.id === destinationId)) {
-            start = index;
-            break;
-        }
-    }
+    const start = -1;
     const backlog = history.slice(start >= 0 ? start + 1 : Math.max(0, history.length - 100)).slice(-100);
     let next = current;
     for (const entry of backlog) {
@@ -4942,15 +3620,7 @@ function advanceTurnResourcesFromUserMessage(message, current, elapsedMinutes = 
     return next;
 }
 
-function latestMentionedAtlasSite(source, state) {
-    const lower = text(source, '', 20000).toLocaleLowerCase();
-    if (!lower) return null;
-    return worldLocationsFor(state, false).reduce((latest, site) => {
-        const index = lower.lastIndexOf(site.name.toLocaleLowerCase());
-        return index >= 0 && (!latest || index > latest.index || index === latest.index && site.name.length > latest.site.name.length)
-            ? { site, index } : latest;
-    }, null)?.site || null;
-}
+
 
 function inferredWeather(source) {
     const entries = [
@@ -5018,22 +3688,7 @@ function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage) 
         else next.systems.regionalWeather.push(regional);
     }
 
-    const moving = ['Preparing', 'Traveling', 'Delayed'].includes(next.travel.status);
-    const mentionedSite = latestMentionedAtlasSite(assistant, next) || latestMentionedAtlasSite(user, next);
-    const escapedSite = mentionedSite?.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const presenceConfirmed = mentionedSite && (new RegExp(`(?:arriv(?:e|ed|es|ing)|reach(?:ed|es|ing)|enter(?:ed|s|ing)|at|inside|อยู่(?:ที่|ใน)|มาถึง|ถึง|เข้า(?:สู่|ไปใน)?)\\s+(?:the\\s+)?${escapedSite}`, 'i').test(combined)
-        || !base.onboarding?.locationSeeded || /^initial$/.test(base.updateSource || ''));
-    if (!moving && mentionedSite && presenceConfirmed && unchanged(state => [state.location.continent, state.location.region, state.location.place, state.location.mapX, state.location.mapY])) {
-        setIfChanged(next.location, 'continent', mentionedSite.continent);
-        setIfChanged(next.location, 'region', mentionedSite.region);
-        setIfChanged(next.location, 'place', mentionedSite.name);
-        setIfChanged(next.location, 'zoneType', mentionedSite.zone);
-        setIfChanged(next.location, 'mapX', mentionedSite.x);
-        setIfChanged(next.location, 'mapY', mentionedSite.y);
-        setIfChanged(next.onboarding, 'locationSeeded', true);
-        addDiscoveredLocation(next, mentionedSite.name);
-    }
-    if (!next.onboarding.locationSeeded && !unchanged(state => [state.location.continent, state.location.region, state.location.place, state.location.mapX, state.location.mapY])) {
+    if (!next.onboarding.locationSeeded && !unchanged(state => [state.location.continent, state.location.region, state.location.place])) {
         setIfChanged(next.onboarding, 'locationSeeded', true);
     }
 
@@ -5046,7 +3701,6 @@ function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage) 
         ];
         const position = positions.find(([pattern]) => pattern.test(assistant))?.[1];
         if (position) setIfChanged(next.scene, 'position', position);
-        else if (mentionedSite && presenceConfirmed && /^Unknown$/i.test(next.scene.position)) setIfChanged(next.scene, 'position', `At ${mentionedSite.name}`);
     }
 
     const resourceSpecs = [
@@ -5194,57 +3848,12 @@ async function processUserTravelIntent(messageId) {
     const trainingAdvanced = advanceAerobicTrainingFromUserMessage(messageId, message, resourcesState);
     const current = trainingAdvanced || resourcesState;
     const localChanged = Boolean(identitySeeded || clockAdvanced || resourcesAdvanced || trainingAdvanced);
-    const intent = inferUserTravelIntent(message.mes, current);
-    if (!intent) {
-        const caughtUp = catchUpActiveTravelFromChat(current, context, messageId);
-        if (caughtUp) return persistState(caughtUp, 'user-travel-history-catchup');
-        const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
-        if (advanced) return persistState(advanced, 'user-travel-progress');
-        return localChanged ? persistState(current, identitySeeded ? 'user-registration-bootstrap' : trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
-    }
-    const alreadyHeadingThere = ['Preparing', 'Traveling', 'Delayed'].includes(current.travel.status)
-        && mapLocationByName(current.travel.destinationPlace || current.travel.destination, current)?.id === intent.destination.id;
-    const alreadyThere = current.location.place === intent.destination.name && !alreadyHeadingThere;
-    if (alreadyHeadingThere) {
-        const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
-        if (advanced) return persistState(advanced, 'user-travel-progress');
-        return localChanged ? persistState(current, identitySeeded ? 'user-registration-bootstrap' : trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
-    }
-    if (alreadyThere) return localChanged ? persistState(current, identitySeeded ? 'user-registration-bootstrap' : trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
-    const next = clone(current);
-    const totalDays = estimatedTravelDays(next, intent.destination, intent.route);
-    const origin = next.location.place || next.location.region || 'Unknown';
-    next.travel = {
-        status: 'Traveling',
-        origin,
-        destination: intent.destination.name,
-        route: intent.route,
-        totalDays,
-        remainingDays: totalDays,
-        notes: settings.language === 'th' ? 'เริ่มอัตโนมัติจากข้อความโรลเพลย์ของผู้ใช้' : 'Started automatically from the user role-play message.',
-        originX: next.location.mapX,
-        originY: next.location.mapY,
-        originContinent: next.location.continent,
-        originRegion: next.location.region,
-        destinationX: intent.destination.x,
-        destinationY: intent.destination.y,
-        destinationContinent: intent.destination.continent,
-        destinationRegion: intent.destination.region,
-        destinationPlace: intent.destination.name,
-        startedAtWorldMinutes: worldClockMinutes(next.worldClock),
-        lastWorldMinutes: worldClockMinutes(next.worldClock),
-        trackedUserTurns: 0,
-        lastUserProgressMessage: userTravelMessageKey(messageId, message),
-        routePoints: [],
-    };
-    next.travel.routePoints = buildTravelRoutePoints(next, next.travel);
-    next.journal.push({
-        id: uid(),
-        text: `Began a ${totalDays}-day ${intent.route.toLocaleLowerCase()} journey from ${origin} to ${intent.destination.name} from the user's role-play action.`,
-        at: new Date().toISOString(),
-    });
-    appendJourneyLog(next, { text: `Set out from ${origin} toward ${intent.destination.name} via ${intent.route}.`, place: origin, day: next.worldClock.dayName || `Day ${next.worldClock.day}`, kind: 'travel' });
-    return persistState(next, 'user-travel-intent');
+    const caughtUp = catchUpActiveTravelFromChat(current, context, messageId);
+    if (caughtUp) return persistState(caughtUp, 'user-travel-history-catchup');
+    const advanced = advanceActiveTravelFromUserMessage(messageId, message, current);
+    if (advanced) return persistState(advanced, 'user-travel-progress');
+    return localChanged ? persistState(current, identitySeeded ? 'user-registration-bootstrap' : trainingAdvanced ? 'user-aerobic-training' : 'user-turn-clock') : false;
+
 }
 
 const tabButton = (id, icon, label, active = false) => (uiMarkup("\n    <button class=\"tretaresia-tab-button")+(active ? ' is-active' : '')+uiMarkup("\" type=\"button\" role=\"tab\"\n        data-tab=\"")+(id)+uiMarkup("\" aria-selected=\"")+(active)+uiMarkup("\"><i class=\"")+(icon)+uiMarkup("\"></i><span>")+(html(tr(label)))+uiMarkup("</span></button>"));
@@ -5678,7 +4287,6 @@ function activateTab(id) {
     });
     overlay.querySelectorAll('.tretaresia-module-dots i').forEach((dot, dotIndex) => dot.classList.toggle('on', dotIndex === index));
     if (next === current) return;
-    if (current?.dataset.panel === 'map' && id !== 'map') suspendMapRendering(false);
     const state = getState();
     renderPanel(id, next, state);
     if (id === 'npcs') void hydrateNpcPortraits(next, state);
@@ -5696,10 +4304,6 @@ function activateTab(id) {
         void next.offsetWidth;
         next.classList.add('is-entering');
         restorePanelScroll(id, next);
-        if (id === 'map') requestAnimationFrame(() => {
-            setupMapInteractions(next);
-            scheduleMapDraw(next, getState());
-        });
     };
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) finish();
     else setTimeout(finish, 130);
@@ -5773,8 +4377,6 @@ function combatComparison(player, npc) {
 function diagnosticReport(state) {
     const npcIds = state.npcs.map(entry => entry.id);
     const duplicates = npcIds.filter((id, index) => npcIds.indexOf(id) !== index);
-    const unsafeNpcs = state.npcs.filter(entry => entry.mapVisible && entry.mapX !== null
-        && !pointIsOnAtlasLand(entry.mapX, entry.mapY, storyWorldId(state)));
     const friendlyIds = new Set(friendlyNpcs(state).map(entry => entry.id));
     const danglingParty = (state.social.party?.memberIds || []).filter(id => !friendlyIds.has(id));
     const seaTravel = state.travel.route === 'Sea' && ['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status);
@@ -5792,8 +4394,6 @@ function diagnosticReport(state) {
     const checks = [
         ['Vitals', state.player.hp.current <= state.player.hp.max && state.player.mp.current <= state.player.mp.max && state.player.stamina.current <= state.player.stamina.max, 'Current values are within capacity'],
         ['Scene', sceneReady, sceneDetail],
-        ['Player map', seaTravel || pointIsOnAtlasLand(state.location.mapX, state.location.mapY, storyWorldId(state), state.location.continent), seaTravel ? 'Sea-route position is valid' : 'Player marker is on atlas land'],
-        ['NPC map', unsafeNpcs.length === 0, unsafeNpcs.length ? `${unsafeNpcs.length} marker(s) need repair` : 'Visible NPC markers are on land'],
         ['NPC identity', duplicates.length === 0, duplicates.length ? `${duplicates.length} duplicate id(s)` : 'NPC IDs are unique'],
         ['Party links', danglingParty.length === 0, danglingParty.length ? `${danglingParty.length} missing member reference(s)` : 'Party references are valid'],
         ['Turn audit', state.systems.audit.length > 0, state.systems.audit.length ? `${state.systems.audit.length} audit record(s)` : 'No turn has been audited yet'],
@@ -5809,13 +4409,6 @@ function repairCurrentStateSnapshot(source = getState()) {
     repaired.npcs.forEach(entry => {
         if (seenNpcIds.has(entry.id)) entry.id = uid();
         seenNpcIds.add(entry.id);
-        if (entry.mapVisible) {
-            const point = npcMapPoint(entry, repaired);
-            if (point) {
-                entry.mapX = point.x;
-                entry.mapY = point.y;
-            } else entry.mapVisible = false;
-        }
     });
     const friendlyIds = new Set(friendlyNpcs(repaired).map(entry => entry.id));
     if (repaired.social.party) {
@@ -5826,14 +4419,6 @@ function repairCurrentStateSnapshot(source = getState()) {
     repaired.social.guilds.forEach(guild => {
         guild.memberIds = [...new Set(guild.memberIds.filter(id => friendlyIds.has(id)))];
     });
-    const safePlayer = landSafeMapPoint({
-        worldId: storyWorldId(repaired), x: repaired.location.mapX, y: repaired.location.mapY,
-        location: repaired.location.place, continent: repaired.location.continent,
-    });
-    if (safePlayer) {
-        repaired.location.mapX = safePlayer.x;
-        repaired.location.mapY = safePlayer.y;
-    }
     synchronizeWorldState(repaired, source);
     repaired.systems.lastRepairAt = new Date().toISOString();
     repaired.systems.repairCount += 1;
@@ -5872,7 +4457,7 @@ function renderAll(state = getState()) {
     if (id) renderPanel(id, panel, state);
     const label = overlay.querySelector('#tretaresia-context-label');
     if (label) label.innerHTML = SillyTavern.getContext().getCurrentChatId?.()
-        ? (uiMarkup("<i class=\"fa-solid fa-location-dot\"></i> ")+(html(sceneSnapshot(state).region || '—'))+uiMarkup(" · ")+(html(sceneSnapshot(state).location || '—'))+uiMarkup(""))
+        ? `<i class="fa-solid fa-location-dot"></i> ${html([narrativeLocationLabel(state.location), sceneSnapshot(state).location].filter(Boolean).join(' · ') || '—')}`
         : (uiMarkup("<i class=\"fa-solid fa-triangle-exclamation\"></i> ")+(html(tr(uiText("Open a chat to activate this system"))))+uiMarkup(""));
     if (id === 'npcs') void hydrateNpcPortraits(panel, state);
 }
@@ -6012,7 +4597,7 @@ function renderScene(panel, state) {
     const snapshot = sceneSnapshot(state);
     const currentScene = previousScene(SillyTavern.getContext().chat?.length || 0);
     const locationKnown = state.onboarding.locationSeeded;
-    // Atlas coordinates may still be bootstrap values; scene details use narrative locations.
+    // Scene details come from confirmed narrative locations.
     const locationDetail = state.location.detail || state.location.place || state.location.region;
     const exactLocation = locationKnown ? locationDetail : '—';
     const temperature = state.scene.temperature === null ? '—' : `${Number(state.scene.temperature).toLocaleString()}°C`;
@@ -6166,543 +4751,64 @@ function renderRank(panel, state) {
     panel.innerHTML = (uiMarkup("")+(heading(uiText("Ranks & Progression"), 'Guild and mastery record', 'fa-solid fa-medal'))+uiMarkup("\n        <div class=\"tretaresia-rank-layout\"><article class=\"tretaresia-rank-hero\"><span>")+(html(tr(uiText("Adventurer Rank"))))+uiMarkup("</span>\n            <strong>")+(html(p.adventurerRank === 'Custom Rank' && p.customRankName ? p.customRankName : p.adventurerRank))+uiMarkup("</strong><small>")+(html(tr(uiText("Recognized guild classification"))))+uiMarkup("</small></article>\n            <div class=\"tretaresia-rank-stack\">")+(rankRow('Power mastery', p.magicRank, 'fa-solid fa-fire-flame-curved'))+uiMarkup("\n                ")+(rankRow('Combat mastery', p.swordRank, 'fa-solid fa-khanda'))+uiMarkup("")+(rankRow('Experience', `${p.experience} / ${p.experienceMax}`, 'fa-solid fa-star'))+uiMarkup("\n                ")+(rankRow('Reputation', p.reputation, 'fa-solid fa-people-group'))+uiMarkup("")+(rankRow('Confirmed kills', p.kills, 'fa-solid fa-skull'))+uiMarkup("</div></div>\n        <article class=\"tretaresia-card tretaresia-wallet\" title=\"")+(html(p.currency.name))+uiMarkup("\"><div><span>")+(html(tr(uiText("Gold coins"))))+uiMarkup("</span><strong>")+(p.currency.gold)+uiMarkup("</strong></div>\n            <div><span>")+(html(tr(uiText("Silver coins"))))+uiMarkup("</span><strong>")+(p.currency.silver)+uiMarkup("</strong></div><div><span>")+(html(tr(uiText("Copper coins"))))+uiMarkup("</span><strong>")+(p.currency.copper)+uiMarkup("</strong></div></article>\n        ")+(renderTransactions(state))+uiMarkup("\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Edit progression"))))+uiMarkup("</summary>\n            <form data-form=\"rank\" class=\"tretaresia-form-grid\">")+(select('Adventurer rank', 'adventurerRank', pathOptions, p.adventurerRank === 'Custom Rank' && pathOptions.includes(p.customRankName) ? p.customRankName : p.adventurerRank))+uiMarkup("")+(input('Custom rank name', 'customRankName', p.customRankName))+uiMarkup("\n                ")+(select('Power mastery', 'magicRank', masteryOptions, p.magicRank))+uiMarkup("")+(select('Combat mastery', 'swordRank', masteryOptions, p.swordRank))+uiMarkup("\n                ")+(input('Experience', 'experience', p.experience, 'number', 'min="0"'))+uiMarkup("")+(input('EXP to next level', 'experienceMax', p.experienceMax, 'number', 'min="1"'))+uiMarkup("\n                ")+(input('Reputation', 'reputation', p.reputation, 'number'))+uiMarkup("")+(input('Confirmed kills', 'kills', p.kills, 'number', 'min="0"'))+uiMarkup("\n                ")+(input('Currency / region', 'currencyName', p.currency.name))+uiMarkup("")+(input('Gold coins', 'gold', p.currency.gold, 'number', 'min="0"'))+uiMarkup("")+(input('Silver coins', 'silver', p.currency.silver, 'number', 'min="0"'))+uiMarkup("\n                ")+(input('Copper coins', 'copper', p.currency.copper, 'number', 'min="0"'))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save progression"))))+uiMarkup("</button></form></details>"));
 }
 
-function renderNpcMapControls(state) {
-    const settings = getSettings();
-    const entries = friendlyNpcs(state);
-    const rows = entries.length ? entries.map(entry => {
-        const point = npcMapPoint(entry, state);
-        return (uiMarkup("<button type=\"button\" class=\"tretaresia-npc-map-row")+(entry.mapVisible ? ' is-visible' : '')+uiMarkup("\" data-action=\"toggle-npc-map\" data-id=\"")+(html(entry.id))+uiMarkup("\" aria-pressed=\"")+(entry.mapVisible)+uiMarkup("\">\n            <span class=\"tretaresia-npc-map-avatar\">")+(html(entry.name.charAt(0).toUpperCase() || '?'))+uiMarkup("</span><span><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.activity || entry.location))+uiMarkup("")+(point ? ` · ${coordinatesLabel(point.x, point.y)}` : ' · Unknown coordinates')+uiMarkup("</small></span>\n            <i class=\"fa-solid fa-")+(entry.mapVisible ? 'eye' : 'eye-slash')+uiMarkup("\"></i></button>"));
-    }).join('') : (uiMarkup("<p class=\"tretaresia-npc-map-empty\">")+(html(tr(uiText("Only friendly NPCs appear here."))))+uiMarkup("</p>"));
-    return (uiMarkup("<section class=\"tretaresia-npc-map-controls\"><header><span><i class=\"fa-solid fa-person-walking\"></i>")+(html(tr(uiText("Living NPCs"))))+uiMarkup("</span>\n        <button type=\"button\" data-action=\"toggle-npc-markers\" aria-pressed=\"")+(settings.showNpcMapMarkers)+uiMarkup("\" title=\"")+(html(tr(settings.showNpcMapMarkers ? uiText("Hide NPC markers") : uiText("Show NPC markers"))))+uiMarkup("\"><i class=\"fa-solid fa-")+(settings.showNpcMapMarkers ? 'eye' : 'eye-slash')+uiMarkup("\"></i></button></header>\n        <div>")+(rows)+uiMarkup("</div></section>"));
-}
-
-function mapPresenceAvatar(key, name, directSource = '', directFrame = null) {
-    if (directSource) requestMapPortrait(key, null, directSource, directFrame);
-    const record = mapPortraitRecord(key);
-    if (record && directFrame) record.frame = directFrame;
-    return record?.status === 'ready' && record.url
-        ? (uiMarkup("<span class=\"tretaresia-map-presence-avatar\"><img src=\"")+(html(record.url))+uiMarkup("\" alt=\"\" style=\"object-position:")+(number(record.frame?.x, 50, 0, 100))+uiMarkup("% ")+(number(record.frame?.y, 50, 0, 100))+uiMarkup("%;transform:scale(")+(number(record.frame?.zoom, 1, 1, 4))+uiMarkup(")\"></span>"))
-        : (uiMarkup("<span class=\"tretaresia-map-presence-avatar\">")+(html(text(name, '?', 120).charAt(0).toUpperCase() || '?'))+uiMarkup("</span>"));
-}
-
-function renderMapPresenceRoster(state, atlas) {
-    const playerPoint = currentMapPoint(state);
-    const playerName = currentPersonaName(state);
-    const characters = mergedCharacterLifeMapMarkers(state).filter(entry => entry.scope === 'character' && (!entry.worldId || entry.worldId === atlas.id));
-    const rows = characters.map((entry, index) => {
-        const point = npcMapPoint(entry, state);
-        if (index < MAP_ROSTER_PORTRAIT_LIMIT) requestMapPortrait(`character:${entry.id}`, { id: entry.id, scope: 'character', name: entry.name });
-        return (uiMarkup("<article>")+(mapPresenceAvatar(`character:${entry.id}`, entry.name))+uiMarkup("<span><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.location || entry.currentState || tr(uiText("Unknown"))))+uiMarkup("")+(point ? ` · ${html(coordinatesLabel(point.x, point.y))}` : ` · ${html(tr(uiText("Unknown coordinates")))}`)+uiMarkup("</small></span></article>"));
-    }).join('');
-    return (uiMarkup("<section class=\"tretaresia-card tretaresia-map-presence\"><header><span><i class=\"fa-solid fa-location-crosshairs\"></i>")+(html(tr(uiText("Character positions"))))+uiMarkup("</span><b>")+(characters.length + 1)+uiMarkup("</b></header><div>\n        <article class=\"is-player\">")+(mapPresenceAvatar(`player:${shortHash(state.player.portrait)}`, playerName, state.player.portrait, state.player.portraitView.mobile))+uiMarkup("<span><strong>")+(html(playerName))+uiMarkup(" · ")+(html(tr(uiText("You"))))+uiMarkup("</strong><small>")+(html(state.location.place))+uiMarkup(" · ")+(html(coordinatesLabel(playerPoint.x, playerPoint.y)))+uiMarkup("</small></span></article>")+(rows || (uiMarkup("<p>")+(html(tr(uiText("No Character Life positions yet."))))+uiMarkup("</p>")))+uiMarkup("</div></section>"));
-}
-
-function mapWorldToolbar(state, selected, fullscreen = false) {
-    const atlas = viewedAtlas(state);
-    return (uiMarkup("<div class=\"tretaresia-map-toolbar\" data-map-toolbar>\n        <label class=\"tretaresia-map-world-select\" title=\"")+(html(atlas.name))+uiMarkup("\"><i class=\"fa-solid fa-earth-asia\"></i><span>")+(html(tr(uiText("World"))))+uiMarkup("</span>\n            <select data-map-world-select aria-label=\"")+(html(tr(uiText("World map"))))+uiMarkup("\">")+(Object.values(WORLD_ATLASES).map(entry =>
-                (uiMarkup("<option value=\"")+(entry.id)+uiMarkup("\"")+(entry.id === atlas.id ? ' selected' : '')+uiMarkup(">")+(html(entry.id === 'present-world' ? tr(uiText("Present World")) : 'ALTERNATE'))+uiMarkup("</option>"))).join(''))+uiMarkup("</select>\n        </label>\n        <div class=\"tretaresia-map-toolbar-readouts\">\n            <span><i class=\"fa-solid fa-magnifying-glass\"></i><b data-map-zoom>100%</b></span>\n        </div>\n        <button class=\"tretaresia-map-fullscreen-icon\" type=\"button\" data-action=\"map-fullscreen\"\n            title=\"")+(html(tr(fullscreen ? uiText("Close fullscreen map") : uiText("Open fullscreen map"))))+uiMarkup("\" aria-label=\"")+(html(tr(fullscreen ? uiText("Close fullscreen map") : uiText("Open fullscreen map"))))+uiMarkup("\">\n            <i class=\"fa-solid fa-")+(fullscreen ? 'xmark' : 'up-right-and-down-left-from-center')+uiMarkup("\"></i>\n        </button>\n    </div>"));
-}
-
-function mapSurfaceMarkup(state, selected, fullscreen = false) {
-    const atlas = viewedAtlas(state);
-    const variant = worldMapVariant(state);
-    return (uiMarkup("<div class=\"tretaresia-map-surface")+(fullscreen ? ' is-viewer' : '')+uiMarkup("\">\n        <div class=\"tretaresia-map-frame")+(fullscreen ? ' is-viewer' : '')+uiMarkup("\" data-map-variant=\"")+(variant)+uiMarkup("\" data-map-world=\"")+(atlas.id)+uiMarkup("\" data-map-surface=\"")+(fullscreen ? 'fullscreen' : 'embedded')+uiMarkup("\">\n            <canvas class=\"tretaresia-world-map\" role=\"img\" aria-label=\"")+(html(`Interactive atlas of ${atlas.name}; drag to pan and pinch to zoom`))+uiMarkup("\"></canvas>\n        </div>\n        <div class=\"tretaresia-map-control-panel\" aria-label=\"")+(html(tr(uiText("Map controls"))))+uiMarkup("\">")+(mapWorldToolbar(state, selected, fullscreen))+uiMarkup("</div>\n    </div>"));
-}
-
-function selectViewedWorld(nextWorldId, state = getState()) {
-    if (!WORLD_ATLASES[nextWorldId] || nextWorldId === viewedWorldId(state)) return false;
-    mapAtlasSelection = nextWorldId;
-    mapSelectionId = null;
-    mapDraftPoint = null;
-    Object.assign(mapView, { scale: 1, x: 0, y: 0 });
-    activateMapTileContext(nextWorldId, worldMapVariant(state));
-    renderMap(document.querySelector('[data-panel="map"]'), getState());
-    return true;
-}
-
-function renderMap(panel, state) {
-    if (!panel) return;
-    const atlas = viewedAtlas(state);
-    const viewingCurrentWorld = atlas.id === storyWorldId(state);
-    const selected = viewingCurrentWorld ? currentMapPoint(state) : worldLocationsFor(state, true)[0];
-    const moving = viewingCurrentWorld && ['Preparing', 'Traveling', 'Delayed'].includes(state.travel.status);
-    const progress = Math.round(travelProgress(state) * 100);
-    // Location catalogs stay in canonical state and in the AI prompt, but the
-    // atlas DOM no longer creates hundreds of destination options, pin rows,
-    // or location controls. Main-chat role-play is the travel controller.
-    const travelMarkup = moving || viewingCurrentWorld && state.travel.status === 'Arrived' ? (uiMarkup("\n        <section class=\"tretaresia-map-journey-strip\" data-status=\"")+(html(state.travel.status.toLowerCase()))+uiMarkup("\">\n            <span><i class=\"fa-solid fa-route\"></i><b>")+(html(state.travel.origin || 'Unknown'))+uiMarkup("</b><i class=\"fa-solid fa-arrow-right-long\"></i><b>")+(html(state.travel.destinationPlace || state.travel.destination || state.location.place))+uiMarkup("</b></span>\n            <div class=\"tretaresia-map-journey-track\" style=\"--journey-progress:")+(progress)+uiMarkup("%\"><i></i><strong>")+(progress)+uiMarkup("%</strong></div>\n            <small>")+(html(moving ? `${formatTravelDays(state.travel.remainingDays)} ${tr(uiText("days"))} ${tr(uiText("Remaining travel")).toLocaleLowerCase()}` : state.travel.status))+uiMarkup("</small>\n        </section>")) : '';
-
-    panel.innerHTML = (uiMarkup("")+(heading(atlas.name, `${tr(atlas.era)} · ${viewingCurrentWorld ? state.location.continent + ' · ' + state.location.region : tr(uiText("Atlas browsing mode"))}`, 'fa-solid fa-earth-asia'))+uiMarkup("\n<div class=\"tretaresia-map-layout tretaresia-performance-map")+(mapFullscreen ? ' has-fullscreen-map' : '')+uiMarkup("\">\n    ")+(mapFullscreen ? '' : mapSurfaceMarkup(state, selected, false))+uiMarkup("\n    ")+(travelMarkup)+uiMarkup("\n</div>\n")+(mapFullscreen ? '' : renderMapPresenceRoster(state, atlas))+uiMarkup("\n")+(mapFullscreen ? (uiMarkup("<section class=\"tretaresia-map-window\" role=\"dialog\" aria-modal=\"true\" aria-label=\"")+(html(atlas.name))+uiMarkup("\">\n    <header><div><span>")+(html(tr(uiText("World map"))))+uiMarkup("</span><h3>")+(html(atlas.name))+uiMarkup("</h3><small>")+(html(viewingCurrentWorld ? state.location.continent : tr(uiText("Atlas browsing mode"))))+uiMarkup("</small></div>\n        <button type=\"button\" data-action=\"map-fullscreen\" title=\"")+(html(tr(uiText("Close fullscreen map"))))+uiMarkup("\" aria-label=\"")+(html(tr(uiText("Close fullscreen map"))))+uiMarkup("\"><i class=\"fa-solid fa-xmark\"></i></button></header>\n    <div class=\"tretaresia-map-window-body\">")+(mapSurfaceMarkup(state, selected, true))+uiMarkup("</div>\n</section>")) : '')+uiMarkup(""));
-    const visible = mapFullscreen || (!panel.hidden && panel.classList.contains('is-active')
-        && document.getElementById('tretaresia-rpg-overlay')?.classList.contains('is-open'));
-    if (visible) {
-        setupMapInteractions(panel);
-        scheduleMapDraw(panel, state);
-    }
-}
-
-function mapLod() {
-    return mapView.scale < WORLD_MAP_ZOOM_LEVELS.regional ? 0
-        : mapView.scale < WORLD_MAP_ZOOM_LEVELS.local ? 1 : 2;
-}
-
-function mapVisibleBounds() {
-    const margin = (MAP_COARSE_POINTER ? 48 : 100) / mapView.scale;
-    return {
-        left: -mapView.x / mapView.scale - margin, top: -mapView.y / mapView.scale - margin,
-        right: (WORLD_MAP_WIDTH - mapView.x) / mapView.scale + margin,
-        bottom: (WORLD_MAP_HEIGHT - mapView.y) / mapView.scale + margin,
-    };
-}
-
-function worldMapVariant(state) {
-    const phase = text(state?.worldClock?.phase, '', 20);
-    const hour = Number(text(state?.worldClock?.time, '12:00', 5).split(':')[0]);
-    return phase === 'Night' || Number.isFinite(hour) && (hour >= 18 || hour < 6) ? 'night' : 'day';
-}
-
-function worldTileLevel() {
-    if (mapView.scale < .82) return WORLD_TILE_LEVELS[0];
-    if (mapView.scale < 1.35) return WORLD_TILE_LEVELS[1];
-    if (mapView.scale < 2.55) return WORLD_TILE_LEVELS[2];
-    // z3 is 4096x3072. On coarse-pointer/mobile devices it is opt-in so the
-    // default path remains inside Safari's practical decoded-image budget.
-    return MAP_COARSE_POINTER && !getSettings().mapHdMode ? WORLD_TILE_LEVELS[2] : WORLD_TILE_LEVELS[3];
-}
-
-function trimMapTileCache(protectedKey = '') {
-    let guard = mapTileCache.size * 2;
-    while (mapTileCache.size > MAP_TILE_CACHE_LIMIT && guard-- > 0) {
-        const candidate = [...mapTileCache.entries()].find(([key, record]) =>
-            key !== protectedKey && record.status !== 'loading' && !key.includes('/0/'));
-        if (!candidate) break;
-        const [key, record] = candidate;
-        releaseMapTileRecord(record);
-        mapTileCache.delete(key);
-    }
-}
-
-function releaseMapTileRecord(record) {
-    if (!record || record.cancelled) return;
-    record.cancelled = true;
-    if (record.active) {
-        record.active = false;
-        mapTileLoads = Math.max(0, mapTileLoads - 1);
-    }
-    record.image.onload = null;
-    record.image.onerror = null;
-    try { record.image.removeAttribute('src'); } catch {}
-}
-
-function pumpMapTileQueue() {
-    while (mapTileLoads < MAP_TILE_LOAD_LIMIT && mapTileQueue.length) {
-        const queued = mapTileQueue.shift();
-        const { key, record } = queued || {};
-        if (!record || record.cancelled || mapTileCache.get(key) !== record || record.status !== 'queued') continue;
-        record.status = 'loading';
-        record.active = true;
-        mapTileLoads += 1;
-        record.image.src = record.src;
-    }
-}
-
-function finishMapTileLoad(record) {
-    if (record?.active) {
-        record.active = false;
-        mapTileLoads = Math.max(0, mapTileLoads - 1);
-    }
-    pumpMapTileQueue();
-}
-
-function clearMapTileCache(predicate = () => true) {
-    for (const [key, record] of mapTileCache) {
-        if (!predicate(key, record)) continue;
-        releaseMapTileRecord(record);
-        mapTileCache.delete(key);
-    }
-    for (let index = mapTileQueue.length - 1; index >= 0; index -= 1) {
-        const queued = mapTileQueue[index];
-        if (queued?.record?.cancelled || !mapTileCache.has(queued?.key)) mapTileQueue.splice(index, 1);
-    }
-    pumpMapTileQueue();
-}
-
-function activateMapTileContext(worldId, variant) {
-    const safeWorldId = WORLD_ATLASES[worldId] ? worldId : WORLD_ATLAS.id;
-    const safeVariant = variant === 'night' ? 'night' : 'day';
-    const nextContext = `${safeWorldId}/${safeVariant}/`;
-    if (nextContext === mapTileContext) return;
-    mapTileContext = nextContext;
-    clearMapTileCache(key => !key.startsWith(nextContext));
-}
-
-function worldTile(level, column, row, worldId = WORLD_ATLAS.id, variant = 'day') {
-    const safeWorldId = WORLD_ATLASES[worldId] ? worldId : WORLD_ATLAS.id;
-    const safeVariant = variant === 'night' ? 'night' : 'day';
-    const roots = WORLD_TILE_ROOTS[safeWorldId];
-    const key = `${safeWorldId}/${safeVariant}/${level.z}/${column}-${row}`;
-    const cached = mapTileCache.get(key);
-    if (cached) {
-        mapTileCache.delete(key);
-        mapTileCache.set(key, cached);
-        return cached;
-    }
-    const record = {
-        status: 'queued', image: new Image(), worldId: safeWorldId, variant: safeVariant,
-        fallbackAttempted: false, cancelled: false, active: false,
-        src: `${roots[safeVariant]}/${level.z}/${column}-${row}.webp`,
-    };
-    record.image.decoding = 'async';
-    record.image.onload = () => {
-        if (record.cancelled) return;
-        record.status = 'ready';
-        finishMapTileLoad(record);
-        trimMapTileCache(key);
-        scheduleMapDraw();
-    };
-    record.image.onerror = () => {
-        if (record.cancelled) return;
-        finishMapTileLoad(record);
-        if (safeVariant === 'night' && !record.fallbackAttempted) {
-            record.fallbackAttempted = true;
-            record.variant = 'day-fallback';
-            record.status = 'queued';
-            record.src = `${roots.day}/${level.z}/${column}-${row}.webp`;
-            mapTileQueue.push({ key, record });
-            pumpMapTileQueue();
-            return;
-        }
-        record.status = 'error';
-        trimMapTileCache();
-    };
-    mapTileCache.set(key, record);
-    mapTileQueue.push({ key, record });
-    trimMapTileCache(key);
-    pumpMapTileQueue();
-    return record;
-}
-
-function cachedWorldTile(level, column, row, worldId = WORLD_ATLAS.id, variant = 'day') {
-    const safeWorldId = WORLD_ATLASES[worldId] ? worldId : WORLD_ATLAS.id;
-    const safeVariant = variant === 'night' ? 'night' : 'day';
-    return mapTileCache.get(`${safeWorldId}/${safeVariant}/${level.z}/${column}-${row}`) || null;
-}
-
-function mapCanvasPoint(x, y, width, height) {
-    return {
-        x: (x * mapView.scale + mapView.x) / WORLD_MAP_WIDTH * width,
-        y: (y * mapView.scale + mapView.y) / WORLD_MAP_HEIGHT * height,
-    };
-}
-
-function drawMapLabel(context, label, x, y, options = {}) {
-    const size = options.size || 12;
-    context.save();
-    context.font = `${options.weight || 650} ${size}px Inter, system-ui, sans-serif`;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.lineJoin = 'round';
-    context.strokeStyle = options.stroke || 'rgba(4, 13, 17, .88)';
-    context.lineWidth = Math.max(3, size * .28);
-    context.strokeText(label, x, y);
-    context.fillStyle = options.color || '#f5f2df';
-    context.fillText(label, x, y);
-    context.restore();
-}
-
-function clusterMapMarkerEntries(entries, pixelRatio) {
-    if (entries.length <= MAP_CLUSTER_THRESHOLD) return entries.map(entry => ({ entries: [entry], point: entry.point, worldPoint: entry.worldPoint }));
-    const cellSize = 36 * pixelRatio;
-    const cells = new Map();
-    for (const entry of entries) {
-        const key = `${Math.floor(entry.point.x / cellSize)}:${Math.floor(entry.point.y / cellSize)}`;
-        const cell = cells.get(key) || [];
-        cell.push(entry);
-        cells.set(key, cell);
-    }
-    return [...cells.values()].map(group => ({
-        entries: group,
-        point: {
-            x: group.reduce((sum, entry) => sum + entry.point.x, 0) / group.length,
-            y: group.reduce((sum, entry) => sum + entry.point.y, 0) / group.length,
-        },
-        worldPoint: {
-            x: group.reduce((sum, entry) => sum + entry.worldPoint.x, 0) / group.length,
-            y: group.reduce((sum, entry) => sum + entry.worldPoint.y, 0) / group.length,
-        },
-    }));
-}
-
-function drawMapMarkerCluster(context, cluster, palette, pixelRatio) {
-    const radius = 9 * pixelRatio;
-    context.save();
-    context.beginPath();
-    context.arc(cluster.point.x, cluster.point.y, radius, 0, Math.PI * 2);
-    context.fillStyle = palette.accent;
-    context.fill();
-    context.strokeStyle = palette.halo;
-    context.lineWidth = 2 * pixelRatio;
-    context.stroke();
-    context.fillStyle = readableOn(palette.accent);
-    context.font = `850 ${Math.max(8, 7.5 * pixelRatio)}px system-ui, sans-serif`;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(`+${cluster.entries.length}`, cluster.point.x, cluster.point.y + .35 * pixelRatio);
-    context.restore();
-    return radius;
-}
 
 
-function drawWorldMap(panel = document.querySelector('[data-panel="map"]'), state = getState()) {
-    const scope = mapFullscreen ? panel?.querySelector('.tretaresia-map-window') || panel : panel;
-    const canvas = scope?.querySelector('.tretaresia-world-map');
-    if (!(canvas instanceof HTMLCanvasElement)) return;
-    const rect = canvas.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const pixelRatio = MAP_COARSE_POINTER ? 1 : Math.min(1.35, globalThis.devicePixelRatio || 1);
-    const targetWidth = Math.max(1, Math.round(rect.width * pixelRatio));
-    const targetHeight = Math.max(1, Math.round(rect.height * pixelRatio));
-    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-    }
-    const context = canvas.getContext('2d', { alpha: false, desynchronized: true });
-    if (!context) return;
-    const palette = mapPalette();
-    const variant = worldMapVariant(state);
-    const worldId = viewedWorldId(state);
-    activateMapTileContext(worldId, variant);
-    const viewingCurrentWorld = worldId === storyWorldId(state);
-    const continents = worldContinentsFor(state, true);
-    canvas.dataset.mapVariant = variant;
-    canvas.dataset.mapWorld = worldId;
-    const bounds = mapVisibleBounds();
-    const transformX = canvas.width / WORLD_MAP_WIDTH;
-    const transformY = canvas.height / WORLD_MAP_HEIGHT;
 
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    const ocean = context.createLinearGradient(0, 0, 0, canvas.height);
-    ocean.addColorStop(0, palette.ocean);
-    ocean.addColorStop(1, palette.oceanDeep);
-    context.fillStyle = ocean;
-    context.fillRect(0, 0, canvas.width, canvas.height);
 
-    context.setTransform(transformX * mapView.scale, 0, 0, transformY * mapView.scale,
-        transformX * mapView.x, transformY * mapView.y);
-    context.imageSmoothingEnabled = !mapInteracting;
-    context.imageSmoothingQuality = mapInteracting ? 'low' : 'medium';
 
-    {
-        const fallback = mapInteracting
-            ? cachedWorldTile(WORLD_TILE_LEVELS[0], 0, 0, worldId, variant)
-            : worldTile(WORLD_TILE_LEVELS[0], 0, 0, worldId, variant);
-        if (fallback?.status === 'ready') {
-            context.drawImage(fallback.image, 0, 0, WORLD_MAP_WIDTH, WORLD_MAP_HEIGHT);
-        }
-        const level = worldTileLevel();
-        const sourceLeft = Math.max(0, bounds.left / WORLD_MAP_WIDTH * level.width);
-        const sourceTop = Math.max(0, bounds.top / WORLD_MAP_HEIGHT * level.height);
-        const sourceRight = Math.min(level.width, bounds.right / WORLD_MAP_WIDTH * level.width);
-        const sourceBottom = Math.min(level.height, bounds.bottom / WORLD_MAP_HEIGHT * level.height);
-        const firstColumn = Math.max(0, Math.floor(sourceLeft / WORLD_TILE_SIZE));
-        const lastColumn = Math.min(level.columns - 1, Math.floor(Math.max(0, sourceRight - 1) / WORLD_TILE_SIZE));
-        const firstRow = Math.max(0, Math.floor(sourceTop / WORLD_TILE_SIZE));
-        const lastRow = Math.min(level.rows - 1, Math.floor(Math.max(0, sourceBottom - 1) / WORLD_TILE_SIZE));
-        for (let row = firstRow; row <= lastRow; row += 1) {
-            for (let column = firstColumn; column <= lastColumn; column += 1) {
-                const tile = mapInteracting ? cachedWorldTile(level, column, row, worldId, variant) : worldTile(level, column, row, worldId, variant);
-                if (tile?.status !== 'ready') continue;
-                context.drawImage(tile.image,
-                    column * WORLD_TILE_SIZE / level.width * WORLD_MAP_WIDTH,
-                    row * WORLD_TILE_SIZE / level.height * WORLD_MAP_HEIGHT,
-                    tile.image.naturalWidth / level.width * WORLD_MAP_WIDTH,
-                    tile.image.naturalHeight / level.height * WORLD_MAP_HEIGHT);
-            }
-        }
-    }
 
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    mapRenderedPoints = [];
-    // The atlas deliberately renders only continent names plus lightweight
-    // player/NPC positions. All 124/306 destination records remain available
-    // to travel, quests, NPC knowledge and the main-chat state prompt.
-    for (const continent of continents) {
-        const point = mapCanvasPoint(continent.label[0], continent.label[1], canvas.width, canvas.height);
-        drawMapLabel(context, continent.name.toUpperCase(), point.x, point.y, {
-            size: Math.max(14 * pixelRatio, canvas.width / 74), weight: 800, color: 'rgba(255,248,218,.94)', stroke: 'rgba(7,17,20,.92)',
-        });
-    }
 
-    if (viewingCurrentWorld && ['Preparing', 'Traveling', 'Delayed', 'Arrived'].includes(state.travel.status)) {
-        const routePoints = state.travel.routePoints?.length >= 2 ? state.travel.routePoints : buildTravelRoutePoints(state, state.travel);
-        if (routePoints.length >= 2) {
-            context.save();
-            context.beginPath();
-            routePoints.forEach((entry, index) => {
-                const point = mapCanvasPoint(entry.x, entry.y, canvas.width, canvas.height);
-                if (!index) context.moveTo(point.x, point.y);
-                else context.lineTo(point.x, point.y);
-            });
-            context.setLineDash([7 * pixelRatio, 5 * pixelRatio]);
-            context.lineWidth = Math.max(2, 2.4 * pixelRatio);
-            context.strokeStyle = palette.alt;
-            context.shadowColor = palette.halo;
-            context.shadowBlur = 7 * pixelRatio;
-            context.stroke();
-            context.setLineDash([]);
-            routePoints.slice(1, -1).forEach(entry => {
-                const point = mapCanvasPoint(entry.x, entry.y, canvas.width, canvas.height);
-                context.beginPath();
-                context.arc(point.x, point.y, 3.2 * pixelRatio, 0, Math.PI * 2);
-                context.fillStyle = palette.alt;
-                context.fill();
-            });
-            context.restore();
-        }
-    }
 
-    if (getSettings().showNpcMapMarkers) {
-        const characterLifeMarkers = mergedCharacterLifeMapMarkers(state).filter(marker => !marker.worldId || marker.worldId === worldId);
-        const matchedCharacterLifeKeys = new Set();
-        const nativeNpcs = viewingCurrentWorld ? friendlyNpcs(state).filter(entry => entry.mapVisible) : [];
-        const characterLifeById = new Map();
-        const characterLifeByName = new Map();
-        let visiblePortraitRequests = 0;
-        const visiblePortrait = (key, query) => {
-            const existing = mapPortraitRecord(key);
-            if (existing) return existing;
-            if (visiblePortraitRequests >= MAP_VISIBLE_PORTRAIT_LIMIT) return null;
-            visiblePortraitRequests += 1;
-            requestMapPortrait(key, query);
-            return mapPortraitRecord(key);
-        };
-        for (const marker of characterLifeMarkers) {
-            characterLifeById.set(`${marker.scope}:${marker.id}`, marker);
-            mapNpcIdentity(marker).forEach(name => characterLifeByName.set(name, marker));
-        }
-        const markerForNative = entry => {
-            if (entry.characterLifeId && entry.characterLifeScope) {
-                const linked = characterLifeById.get(`${entry.characterLifeScope}:${entry.characterLifeId}`);
-                if (linked) return linked;
-            }
-            if (entry.characterLifeId) {
-                const linked = characterLifeMarkers.find(marker => marker.id === entry.characterLifeId);
-                if (linked) return linked;
-            }
-            return mapNpcIdentity(entry).map(name => characterLifeByName.get(name)).find(Boolean) || null;
-        };
-        for (const entry of nativeNpcs) {
-            const linkedMarker = markerForNative(entry);
-            if (linkedMarker) {
-                matchedCharacterLifeKeys.add(linkedMarker.key || `${linkedMarker.scope}:${linkedMarker.id}`);
-                if (linkedMarker.mapVisible === false) continue;
-            }
-            const npcPoint = npcMapPoint(entry, state);
-            if (!npcPoint || npcPoint.x < bounds.left || npcPoint.x > bounds.right || npcPoint.y < bounds.top || npcPoint.y > bounds.bottom) continue;
-            const point = mapCanvasPoint(npcPoint.x, npcPoint.y, canvas.width, canvas.height);
-            const size = 7 * pixelRatio;
-            const portraitKey = linkedMarker ? `${linkedMarker.scope}:${linkedMarker.id}` : '';
-            const portrait = linkedMarker ? visiblePortrait(portraitKey, { id: linkedMarker.id, scope: linkedMarker.scope, name: linkedMarker.name }) : null;
-            drawMapAvatar(context, point, portrait, entry.name.charAt(0).toUpperCase(), size,
-                npcPoint.partyMember ? palette.alt : palette.accent, palette.halo, pixelRatio);
-            mapRenderedPoints.push({ type: 'npc', id: entry.id, x: point.x, y: point.y, radius: 22 * pixelRatio });
-        }
-        const standaloneMarkers = [];
-        for (const marker of characterLifeMarkers) {
-            const markerKey = marker.key || `${marker.scope}:${marker.id}`;
-            if (marker.mapVisible === false || matchedCharacterLifeKeys.has(markerKey)) continue;
-            const npcPoint = npcMapPoint({
-                ...marker,
-                location: marker.location || marker.currentState,
-                mapVisible: true,
-            }, state);
-            if (!npcPoint || npcPoint.x < bounds.left || npcPoint.x > bounds.right || npcPoint.y < bounds.top || npcPoint.y > bounds.bottom) continue;
-            const point = mapCanvasPoint(npcPoint.x, npcPoint.y, canvas.width, canvas.height);
-            standaloneMarkers.push({ marker, point, worldPoint: npcPoint });
-        }
-        for (const cluster of clusterMapMarkerEntries(standaloneMarkers, pixelRatio)) {
-            if (cluster.entries.length > 1) {
-                const radius = drawMapMarkerCluster(context, cluster, palette, pixelRatio);
-                mapRenderedPoints.push({ type: 'cluster', x: cluster.point.x, y: cluster.point.y, radius: Math.max(22 * pixelRatio, radius), worldX: cluster.worldPoint.x, worldY: cluster.worldPoint.y });
-                continue;
-            }
-            const { marker, point } = cluster.entries[0];
-            const portraitKey = `${marker.scope}:${marker.id}`;
-            const portrait = visiblePortrait(portraitKey, { id: marker.id, scope: marker.scope, name: marker.name });
-            drawMapAvatar(context, point, portrait, text(marker.name, '?', 120).charAt(0).toUpperCase(), 6 * pixelRatio,
-                palette.accent, palette.halo, pixelRatio);
-            mapRenderedPoints.push({ type: 'character-life-npc', id: marker.id, scope: marker.scope, x: point.x, y: point.y, radius: 22 * pixelRatio });
-        }
-    }
 
-    const current = currentMapPoint(state);
-    const player = mapCanvasPoint(current.x, current.y, canvas.width, canvas.height);
-    const playerPortraitKey = `player:${shortHash(state.player.portrait)}`;
-    requestMapPortrait(playerPortraitKey, null, state.player.portrait, state.player.portraitView.mobile);
-    const playerPortrait = mapPortraitRecord(playerPortraitKey);
-    if (playerPortrait) playerPortrait.frame = state.player.portraitView.mobile;
-    drawMapAvatar(context, player, playerPortrait, currentPersonaName(state).charAt(0).toUpperCase(), 9 * pixelRatio,
-        palette.alt, palette.halo, pixelRatio);
-    const zoomText = scope.querySelector('[data-map-zoom]');
-    if (zoomText) zoomText.textContent = Math.round(mapView.scale * 100) + '%';
-}
 
-function flushScheduledMapDraw() {
-    mapDrawTimer = 0;
-    if (mapDrawFrame) return;
-    mapDrawFrame = requestAnimationFrame(() => {
-        mapDrawFrame = 0;
-        mapLastDrawAt = globalThis.performance?.now?.() || Date.now();
-        const panel = mapQueuedPanel;
-        const state = mapQueuedState;
-        mapQueuedPanel = null;
-        mapQueuedState = null;
-        drawWorldMap(panel || undefined, state || undefined);
-    });
-}
 
-function mapCanRender(panel = document.querySelector('[data-panel="map"]')) {
-    if (!panel || !document.getElementById('tretaresia-rpg-overlay')?.classList.contains('is-open')) return false;
-    return mapFullscreen || (!panel.hidden && panel.classList.contains('is-active'));
-}
 
-function scheduleMapDraw(panel, state) {
-    const targetPanel = panel || mapQueuedPanel || document.querySelector('[data-panel="map"]');
-    if (!mapCanRender(targetPanel)) return;
-    if (panel) mapQueuedPanel = panel;
-    if (state) mapQueuedState = state;
-    if (mapDrawFrame || mapDrawTimer) return;
-    const now = globalThis.performance?.now?.() || Date.now();
-    const wait = Math.max(0, MAP_DRAW_INTERVAL - (now - mapLastDrawAt));
-    if (wait > 1) mapDrawTimer = globalThis.setTimeout(flushScheduledMapDraw, wait);
-    else flushScheduledMapDraw();
-}
 
-function scheduleMapDetailRender() {
-    scheduleMapDraw();
-}
 
-function suspendMapRendering(releaseTiles = false) {
-    if (mapDrawFrame) cancelAnimationFrame(mapDrawFrame);
-    if (mapDrawTimer) globalThis.clearTimeout(mapDrawTimer);
-    mapDrawFrame = 0;
-    mapDrawTimer = 0;
-    mapQueuedPanel = null;
-    mapQueuedState = null;
-    mapInteracting = false;
-    if (mapGestureBase?.canvas) {
-        mapGestureBase.canvas.style.transform = '';
-        mapGestureBase.canvas.classList.remove('is-compositing');
-    }
-    mapGestureBase = null;
-    globalThis.clearTimeout(mapInteractionEndTimer);
-    mapResizeObserver?.disconnect();
-    mapResizeObserver = null;
-    if (releaseTiles) {
-        clearMapTileCache();
-        mapTileContext = '';
-    }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const textareaField = (label, name, value, rows = 4, extra = '') =>
     (uiMarkup("<label class=\"tretaresia-field tretaresia-field-wide\"><span>")+(html(tr(label)))+uiMarkup("</span><textarea name=\"")+(name)+uiMarkup("\" rows=\"")+(rows)+uiMarkup("\" ")+(extra)+uiMarkup(">")+(html(value))+uiMarkup("</textarea></label>"));
@@ -6771,7 +4877,7 @@ function renderNpcs(panel, state) {
     const list = visibleNpcs.length ? visibleNpcs.map(entry => (uiMarkup("<article class=\"tretaresia-npc-list-row")+(entry.id === selectedNpcId ? ' is-active' : '')+uiMarkup("\">\n        <button type=\"button\" data-action=\"select-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\">")+(npcPortraitSlot(entry))+uiMarkup("<span><strong>")+(html(entry.name))+uiMarkup("</strong>\n        <em>")+(html(entry.title || entry.faction || tr(uiText("No description"))))+uiMarkup("</em><small>")+(html(entry.relationship))+uiMarkup(" · ")+(html(entry.location))+uiMarkup("</small></span></button>\n        <button type=\"button\" data-action=\"delete-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('')
         : (uiMarkup("<div class=\"tretaresia-mail-empty large\"><i class=\"fa-solid fa-users-viewfinder\"></i><p>NPC ที่พบแล้วและเป็นมิตรจะแสดงที่นี่ / Met friendly NPCs appear here.</p></div>"));
     const detail = selected ? renderNpcDossier(selected, linkedContact) : (uiMarkup("<section class=\"tretaresia-npc-empty-dossier\"><i class=\"fa-solid fa-address-card\"></i><p>ยังไม่มี NPC ที่พบแล้ว / No met NPCs yet.</p></section>"));
-    panel.innerHTML = (uiMarkup("")+(heading(uiText("NPC Codex"), `${visibleNpcs.length} ${tr(uiText("Friendly NPCs")).toLowerCase()}`, 'fa-solid fa-users'))+uiMarkup("\n        <button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open><i class=\"fa-solid fa-address-book\"></i> NPC Management · จัดการตัวละครทั้งหมด</button>\n        <p class=\"tretaresia-social-note\"><i class=\"fa-solid fa-shield-heart\"></i>แสดงเฉพาะ NPC ที่พบแล้วและเป็นมิตร · Other records stay in NPC Management.</p>\n        <div class=\"tretaresia-npc-layout\"><aside class=\"tretaresia-npc-index\" data-rpg-scroll-key=\"npc-index\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-list\"></i><span>")+(html(tr(uiText("NPCs"))))+uiMarkup("</span></div>\n            <div class=\"tretaresia-npc-list\" data-rpg-scroll-key=\"npc-list\">")+(list)+uiMarkup("</div><details class=\"tretaresia-editor tretaresia-npc-add\"><summary><i class=\"fa-solid fa-user-plus\"></i> ")+(html(tr(uiText("Add NPC"))))+uiMarkup("</summary>\n            <form data-form=\"npc-new\" class=\"tretaresia-form-grid\">")+(input('Name', 'name', ''))+uiMarkup("")+(input('Title', 'title', ''))+uiMarkup("")+(input('Faction', 'faction', ''))+uiMarkup("")+(input('Relationship', 'relationship', 'Acquaintance'))+uiMarkup("")+(input('Current location', 'location', 'Unknown'))+uiMarkup("")+(npcLifeModeField('Active'))+uiMarkup("\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"met\" checked><span>เคยพบแล้ว / Met</span></label>\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"mapVisible\"><span>")+(html(tr(uiText("Show on World Map"))))+uiMarkup("</span></label>\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"linkContact\" value=\"yes\"><span>")+(html(tr(uiText("Link to Mailbox"))))+uiMarkup("</span></label>\n            <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add NPC"))))+uiMarkup("</button></form></details></aside>\n            <div class=\"tretaresia-npc-dossier\" data-rpg-scroll-key=\"npc-dossier\">")+(detail)+uiMarkup("</div></div>"));
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("NPC Codex"), `${visibleNpcs.length} ${tr(uiText("Friendly NPCs")).toLowerCase()}`, 'fa-solid fa-users'))+uiMarkup("\n        <button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open><i class=\"fa-solid fa-address-book\"></i> NPC Management · จัดการตัวละครทั้งหมด</button>\n        <p class=\"tretaresia-social-note\"><i class=\"fa-solid fa-shield-heart\"></i>แสดงเฉพาะ NPC ที่พบแล้วและเป็นมิตร · Other records stay in NPC Management.</p>\n        <div class=\"tretaresia-npc-layout\"><aside class=\"tretaresia-npc-index\" data-rpg-scroll-key=\"npc-index\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-list\"></i><span>")+(html(tr(uiText("NPCs"))))+uiMarkup("</span></div>\n            <div class=\"tretaresia-npc-list\" data-rpg-scroll-key=\"npc-list\">")+(list)+uiMarkup("</div><details class=\"tretaresia-editor tretaresia-npc-add\"><summary><i class=\"fa-solid fa-user-plus\"></i> ")+(html(tr(uiText("Add NPC"))))+uiMarkup("</summary>\n            <form data-form=\"npc-new\" class=\"tretaresia-form-grid\">")+(input('Name', 'name', ''))+uiMarkup("")+(input('Title', 'title', ''))+uiMarkup("")+(input('Faction', 'faction', ''))+uiMarkup("")+(input('Relationship', 'relationship', 'Acquaintance'))+uiMarkup("")+(input('Current location', 'location', 'Unknown'))+uiMarkup("")+(npcLifeModeField('Active'))+uiMarkup("\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"met\" checked><span>เคยพบแล้ว / Met</span></label>\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"linkContact\" value=\"yes\"><span>")+(html(tr(uiText("Link to Mailbox"))))+uiMarkup("</span></label>\n            <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add NPC"))))+uiMarkup("</button></form></details></aside>\n            <div class=\"tretaresia-npc-dossier\" data-rpg-scroll-key=\"npc-dossier\">")+(detail)+uiMarkup("</div></div>"));
     void hydrateNpcPortraits(panel, state);
 }
 
@@ -7107,7 +5213,7 @@ function renderNpcDossier(entry, linkedContact) {
             const playerValue = playerProfile[key];
             const result = npcValue === null ? 'unknown' : playerValue > npcValue + 7 ? 'player' : npcValue > playerValue + 7 ? 'npc' : 'even';
             return (uiMarkup("<article data-result=\"")+(result)+uiMarkup("\"><span>")+(html(label))+uiMarkup("</span><div><b>")+(playerValue)+uiMarkup("</b><i></i><b>")+(npcValue === null ? '?' : npcValue)+uiMarkup("</b></div><small>")+(result === 'unknown' ? 'Not revealed' : result === 'player' ? 'Player advantage' : result === 'npc' ? `${html(entry.name)} advantage` : 'Even')+uiMarkup("</small></article>"));
-        }).join(''))+uiMarkup("</div><footer><span>")+(html(currentPersonaName(state)))+uiMarkup("</span><i class=\"fa-solid fa-bolt\"></i><span>")+(html(entry.name))+uiMarkup("</span></footer></section>\n        <section class=\"tretaresia-knowledge-card\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-brain\"></i><span>")+(html(tr(uiText("NPC knowledge"))))+uiMarkup("</span><b>")+(entry.knowledge.length)+uiMarkup("</b></div><p><i class=\"fa-solid fa-shield-halved\"></i>Only witnessed, explicitly told, publicly observable, or role-credible facts belong here.</p><div>")+(entry.knowledge.length ? [...entry.knowledge].reverse().map(fact => (uiMarkup("<article><span><b>")+(html(fact.fact))+uiMarkup("</b><small>")+(html(fact.source))+uiMarkup(" · confidence ")+(fact.confidence)+uiMarkup("% · Day ")+(fact.learnedDay)+uiMarkup("</small></span>")+(fact.private ? uiMarkup("<i class=\"fa-solid fa-lock\"></i>") : uiMarkup("<i class=\"fa-solid fa-eye\"></i>"))+uiMarkup("</article>"))).join('') : (uiMarkup("<span class=\"tretaresia-knowledge-empty\"><i class=\"fa-solid fa-eye-slash\"></i>No confirmed player knowledge recorded for this NPC</span>")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-npc-abilities\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-sparkles\"></i><span>")+(html(tr(uiText("Abilities"))))+uiMarkup("</span></div><div class=\"tretaresia-npc-ability-list\">")+(abilities)+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add ability"))))+uiMarkup("</summary><form data-form=\"npc-ability\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n                ")+(input('Ability name', 'name', ''))+uiMarkup("")+(input('Category', 'category', 'General'))+uiMarkup("")+(input('Ability level', 'level', 'Beginner'))+uiMarkup("")+(input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add ability"))))+uiMarkup("</button></form></details></section>\n        <section class=\"tretaresia-npc-diary\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-book\"></i><span>")+(html(tr(uiText("Diary"))))+uiMarkup("</span></div><div class=\"tretaresia-diary-list\">")+(diary)+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-feather\"></i> ")+(html(tr(uiText("Add diary entry"))))+uiMarkup("</summary><form data-form=\"npc-diary\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n                ")+(input('Mood', 'mood', ''))+uiMarkup("")+(textareaField('Thought', 'text', '', 4, 'maxlength="1200" required'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add diary entry"))))+uiMarkup("</button></form></details></section>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-gauge\"></i> ")+(html(tr(uiText("Add custom meter"))))+uiMarkup("</summary><form data-form=\"npc-meter\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n            ")+(input('Name', 'name', ''))+uiMarkup("")+(input('Proficiency', 'value', 0, 'number', 'min="0" max="100"'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add custom meter"))))+uiMarkup("</button></form></details>\n        <details class=\"tretaresia-editor tretaresia-npc-edit\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Edit NPC"))))+uiMarkup("</summary><form data-form=\"npc-profile\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"id\" value=\"")+(html(entry.id))+uiMarkup("\">\n            ")+(input('Name', 'name', entry.name))+uiMarkup("")+(input('Title', 'title', entry.title))+uiMarkup("")+(input('Race', 'race', entry.race))+uiMarkup("")+(input('Age', 'age', entry.age))+uiMarkup("")+(input('Gender', 'gender', entry.gender))+uiMarkup("")+(input('Occupation', 'occupation', entry.occupation))+uiMarkup("\n            ")+(input('Faction', 'faction', entry.faction))+uiMarkup("")+(input('Alignment', 'alignment', entry.alignment))+uiMarkup("")+(input('Relationship', 'relationship', entry.relationship))+uiMarkup("")+(input('Current location', 'location', entry.location))+uiMarkup("\n            ")+(npcLifeModeField(entry.lifeMode))+uiMarkup("")+(input('Activity', 'activity', entry.activity))+uiMarkup("\n            ")+(input('World map X', 'mapX', entry.mapX ?? '', 'number', `min="0" max="${WORLD_MAP_WIDTH}" step="1"`))+uiMarkup("")+(input('World map Y', 'mapY', entry.mapY ?? '', 'number', `min="0" max="${WORLD_MAP_HEIGHT}" step="1"`))+uiMarkup("\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"mapVisible\"")+(entry.mapVisible ? ' checked' : '')+uiMarkup("><span>")+(html(tr(uiText("Show on World Map"))))+uiMarkup("</span></label>\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"met\"")+(entry.met ? ' checked' : '')+uiMarkup("><span>เคยพบแล้ว / Met</span></label>\n            ")+(input('Last seen', 'lastSeen', entry.lastSeen))+uiMarkup("")+(input('Marital status', 'maritalStatus', entry.maritalStatus))+uiMarkup("")+(input('Partner', 'partner', entry.partner))+uiMarkup("")+(input('Children', 'children', entry.children))+uiMarkup("\n            ")+(input('Affection', 'affection', entry.affection, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Trust', 'trust', entry.trust, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Loyalty', 'loyalty', entry.loyalty, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Fear', 'fear', entry.fear, 'number', 'min="0" max="100"'))+uiMarkup("\n            ")+(input('Corruption', 'corruption', entry.corruption, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Lust', 'lust', entry.lust, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Level', 'level', entry.stats.level, 'number', 'min="0"'))+uiMarkup("")+(input('Rank', 'rank', entry.stats.rank))+uiMarkup("\n            ")+(input('HP', 'hp', entry.stats.hp, 'number', 'min="0"'))+uiMarkup("")+(input('MP', 'mp', entry.stats.mp, 'number', 'min="0"'))+uiMarkup("")+(input('Stamina', 'stamina', entry.stats.stamina, 'number', 'min="0"'))+uiMarkup("\n            ")+(NPC_CORE_STATS.map(stat => input(stat.name, stat.id, entry.stats[stat.id], 'number', 'min="0"')).join(''))+uiMarkup("")+(textareaField('Relationship state', 'relationshipState', entry.relationshipState, 3))+uiMarkup("")+(textareaField('Notes', 'notes', entry.notes, 4))+uiMarkup("\n            <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save NPC"))))+uiMarkup("</button></form></details>"));
+        }).join(''))+uiMarkup("</div><footer><span>")+(html(currentPersonaName(state)))+uiMarkup("</span><i class=\"fa-solid fa-bolt\"></i><span>")+(html(entry.name))+uiMarkup("</span></footer></section>\n        <section class=\"tretaresia-knowledge-card\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-brain\"></i><span>")+(html(tr(uiText("NPC knowledge"))))+uiMarkup("</span><b>")+(entry.knowledge.length)+uiMarkup("</b></div><p><i class=\"fa-solid fa-shield-halved\"></i>Only witnessed, explicitly told, publicly observable, or role-credible facts belong here.</p><div>")+(entry.knowledge.length ? [...entry.knowledge].reverse().map(fact => (uiMarkup("<article><span><b>")+(html(fact.fact))+uiMarkup("</b><small>")+(html(fact.source))+uiMarkup(" · confidence ")+(fact.confidence)+uiMarkup("% · Day ")+(fact.learnedDay)+uiMarkup("</small></span>")+(fact.private ? uiMarkup("<i class=\"fa-solid fa-lock\"></i>") : uiMarkup("<i class=\"fa-solid fa-eye\"></i>"))+uiMarkup("</article>"))).join('') : (uiMarkup("<span class=\"tretaresia-knowledge-empty\"><i class=\"fa-solid fa-eye-slash\"></i>No confirmed player knowledge recorded for this NPC</span>")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-npc-abilities\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-sparkles\"></i><span>")+(html(tr(uiText("Abilities"))))+uiMarkup("</span></div><div class=\"tretaresia-npc-ability-list\">")+(abilities)+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add ability"))))+uiMarkup("</summary><form data-form=\"npc-ability\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n                ")+(input('Ability name', 'name', ''))+uiMarkup("")+(input('Category', 'category', 'General'))+uiMarkup("")+(input('Ability level', 'level', 'Beginner'))+uiMarkup("")+(input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add ability"))))+uiMarkup("</button></form></details></section>\n        <section class=\"tretaresia-npc-diary\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-book\"></i><span>")+(html(tr(uiText("Diary"))))+uiMarkup("</span></div><div class=\"tretaresia-diary-list\">")+(diary)+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-feather\"></i> ")+(html(tr(uiText("Add diary entry"))))+uiMarkup("</summary><form data-form=\"npc-diary\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n                ")+(input('Mood', 'mood', ''))+uiMarkup("")+(textareaField('Thought', 'text', '', 4, 'maxlength="1200" required'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add diary entry"))))+uiMarkup("</button></form></details></section>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-gauge\"></i> ")+(html(tr(uiText("Add custom meter"))))+uiMarkup("</summary><form data-form=\"npc-meter\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n            ")+(input('Name', 'name', ''))+uiMarkup("")+(input('Proficiency', 'value', 0, 'number', 'min="0" max="100"'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add custom meter"))))+uiMarkup("</button></form></details>\n        <details class=\"tretaresia-editor tretaresia-npc-edit\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Edit NPC"))))+uiMarkup("</summary><form data-form=\"npc-profile\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"id\" value=\"")+(html(entry.id))+uiMarkup("\">\n            ")+(input('Name', 'name', entry.name))+uiMarkup("")+(input('Title', 'title', entry.title))+uiMarkup("")+(input('Race', 'race', entry.race))+uiMarkup("")+(input('Age', 'age', entry.age))+uiMarkup("")+(input('Gender', 'gender', entry.gender))+uiMarkup("")+(input('Occupation', 'occupation', entry.occupation))+uiMarkup("\n            ")+(input('Faction', 'faction', entry.faction))+uiMarkup("")+(input('Alignment', 'alignment', entry.alignment))+uiMarkup("")+(input('Relationship', 'relationship', entry.relationship))+uiMarkup("")+(input('Current location', 'location', entry.location))+uiMarkup("\n            ")+(npcLifeModeField(entry.lifeMode))+uiMarkup("")+(input('Activity', 'activity', entry.activity))+uiMarkup("\n            ")+uiMarkup("")+uiMarkup("\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"met\"")+(entry.met ? ' checked' : '')+uiMarkup("><span>เคยพบแล้ว / Met</span></label>\n            ")+(input('Last seen', 'lastSeen', entry.lastSeen))+uiMarkup("")+(input('Marital status', 'maritalStatus', entry.maritalStatus))+uiMarkup("")+(input('Partner', 'partner', entry.partner))+uiMarkup("")+(input('Children', 'children', entry.children))+uiMarkup("\n            ")+(input('Affection', 'affection', entry.affection, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Trust', 'trust', entry.trust, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Loyalty', 'loyalty', entry.loyalty, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Fear', 'fear', entry.fear, 'number', 'min="0" max="100"'))+uiMarkup("\n            ")+(input('Corruption', 'corruption', entry.corruption, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Lust', 'lust', entry.lust, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Level', 'level', entry.stats.level, 'number', 'min="0"'))+uiMarkup("")+(input('Rank', 'rank', entry.stats.rank))+uiMarkup("\n            ")+(input('HP', 'hp', entry.stats.hp, 'number', 'min="0"'))+uiMarkup("")+(input('MP', 'mp', entry.stats.mp, 'number', 'min="0"'))+uiMarkup("")+(input('Stamina', 'stamina', entry.stats.stamina, 'number', 'min="0"'))+uiMarkup("\n            ")+(NPC_CORE_STATS.map(stat => input(stat.name, stat.id, entry.stats[stat.id], 'number', 'min="0"')).join(''))+uiMarkup("")+(textareaField('Relationship state', 'relationshipState', entry.relationshipState, 3))+uiMarkup("")+(textareaField('Notes', 'notes', entry.notes, 4))+uiMarkup("\n            <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save NPC"))))+uiMarkup("</button></form></details>"));
 }
 
 function npcPortraitStorageKey(npcId, chatId = SillyTavern.getContext().getCurrentChatId?.() || 'no-chat') {
@@ -7832,7 +5938,7 @@ async function onSubmit(event) {
             const index = state.npcs.findIndex(entry => entry.id === values.id);
             if (index < 0) break;
             const previous = state.npcs[index];
-            const nextNpc = npcProfile({ ...previous, ...values, met: values.met === 'on', mapVisible: values.mapVisible === 'on', stats: {
+            const nextNpc = npcProfile({ ...previous, ...values, met: values.met === 'on', stats: {
                 ...previous.stats, level: values.level, rank: values.rank, hp: values.hp, mp: values.mp, stamina: values.stamina,
                 ...Object.fromEntries(NPC_CORE_STATS.map(stat => [stat.id, values[stat.id]])),
             }, updatedAt: new Date().toISOString() }, previous);
@@ -7924,58 +6030,8 @@ async function onSubmit(event) {
             notify('success', uiText("Progression saved."));
             break;
         }
-        case 'travel': {
-            const namedDestination = mapLocation(values.destination, state, false);
-            const isCoordinate = values.destination === '__coordinates__';
-            if (!namedDestination && !isCoordinate) return notify('warning', uiText("Choose a valid destination."));
-            const mapX = number(values.mapX, namedDestination?.x || 0, 0, WORLD_MAP_WIDTH);
-            const mapY = number(values.mapY, namedDestination?.y || 0, 0, WORLD_MAP_HEIGHT);
-            const destination = namedDestination || {
-                id: '__coordinates__', name: values.place || 'Uncharted coordinate', x: mapX, y: mapY,
-                continent: values.continent || 'Open Ocean', region: values.region || 'Uncharted Reach',
-            };
-            const origin = state.location.place !== 'Unknown' ? state.location.place : state.location.region;
-            const totalDays = Math.max(1, Number(values.totalDays) || 1);
-            const now = worldClockMinutes(state.worldClock);
-            state.travel = {
-                status: 'Traveling', origin, destination: values.place || destination.name, route: values.route || 'Road',
-                totalDays, remainingDays: totalDays, notes: values.detail || '',
-                originX: state.location.mapX, originY: state.location.mapY, originContinent: state.location.continent, originRegion: state.location.region,
-                destinationX: destination.x, destinationY: destination.y, destinationContinent: destination.continent,
-                destinationRegion: destination.region, destinationPlace: values.place || destination.name,
-                startedAtWorldMinutes: now, lastWorldMinutes: now,
-                routePoints: [],
-            };
-            state.travel.routePoints = buildTravelRoutePoints(state, state.travel);
-            state.journal.push({ id: uid(), text: `Began a ${totalDays}-day journey from ${origin} to ${destination.name}.`, at: new Date().toISOString() });
-            appendJourneyLog(state, { text: `Began a ${totalDays}-day journey from ${origin} to ${destination.name} via ${values.route || 'Road'}.`, place: origin, day: state.worldClock.dayName || `Day ${state.worldClock.day}`, kind: 'travel' });
-            if (await persistState(state, 'travel')) {
-                const exact = values.place && values.place !== destination.name ? values.place : '';
-                await sendChatAction(getSettings().language === 'th'
-                    ? `*ตัวผมเริ่มออกเดินทางจาก ${origin} ไปยัง ${destination.name}${exact ? ` โดยมุ่งหน้าไปที่ ${exact}` : ''} ผ่านเส้นทางแบบ ${values.route} การเดินทางคาดว่าจะใช้เวลาประมาณ ${totalDays} วัน โปรดดำเนินเหตุการณ์ระหว่างทางตามจริงโดยยังไม่ข้ามไปถึงปลายทางทันที*`
-                    : `*I begin traveling from ${origin} toward ${destination.name}${exact ? `, aiming for ${exact}` : ''} by ${values.route}. The journey is expected to take about ${totalDays} days. Play out meaningful road events and passage of time; do not teleport me to the destination.*`);
-            }
-            break;
-        }
-        case 'map-pin': {
-            const worldId = WORLD_ATLASES[values.worldId] ? values.worldId : viewedWorldId(state);
-            const destination = worldLocationsFor({ ...state, world: atlasById(worldId) }, false).find(entry => entry.id === values.locationId);
-            const x = number(values.mapX, destination?.x || 0, 0, WORLD_MAP_WIDTH);
-            const y = number(values.mapY, destination?.y || 0, 0, WORLD_MAP_HEIGHT);
-            const existing = destination
-                ? state.location.pins.find(pin => (pin.worldId || WORLD_ATLAS.id) === worldId && pin.locationId === destination.id)
-                : state.location.pins.find(pin => (pin.worldId || WORLD_ATLAS.id) === worldId && pin.x !== null && Math.hypot(pin.x - x, pin.y - y) < 8);
-            const nextPin = {
-                id: existing?.id || uid(), worldId, locationId: destination?.id || '', x, y,
-                continent: values.continent || destination?.continent || 'Open Ocean', region: values.region || destination?.region || 'Uncharted Reach',
-                label: values.label || destination?.name || 'Marked coordinate', note: values.note,
-            };
-            state.location.pins = [...state.location.pins.filter(pin => pin.id !== existing?.id), nextPin];
-            if (destination) addDiscoveredLocation(state, destination.name, worldId);
-            await persistState(state, 'map');
-            notify('success', uiText("{0} marked at {1}.",[nextPin.label,coordinatesLabel(x, y)]));
-            break;
-        }
+
+
     }
 }
 
@@ -8038,11 +6094,6 @@ async function onPanelChange(event) {
         audioInput.value = '';
         return;
     }
-    const worldSelect = event.target.closest('[data-map-world-select]');
-    if (worldSelect instanceof HTMLSelectElement) {
-        selectViewedWorld(worldSelect.value, getState());
-        return;
-    }
     const sceneMapPicker = event.target.closest('#tretaresia-scene-map-picker');
     if (sceneMapPicker instanceof HTMLSelectElement) {
         const state = clone(getState());
@@ -8055,25 +6106,12 @@ async function onPanelChange(event) {
         }
         return;
     }
-    const destination = event.target.closest('form[data-form="travel"] select[name="destination"]');
-    if (destination) {
-        if (destination.value === '__coordinates__') return;
-        mapDraftPoint = null;
-        mapSelectionId = destination.value;
-        renderMap(document.querySelector('[data-panel="map"]'), getState());
-    }
+
 }
 
 async function onPanelClick(event) {
-    const button = event.target.closest('[data-action], [data-map-location]');
+    const button = event.target.closest('[data-action]');
     if (!button) return;
-    if (button.dataset.mapLocation) {
-        mapDraftPoint = null;
-        mapSelectionId = button.dataset.mapLocation;
-        renderMap(document.querySelector('[data-panel="map"]'), getState());
-        return;
-    }
-
     const state = clone(getState());
     const id = button.dataset.id;
     switch (button.dataset.action) {
@@ -8205,30 +6243,12 @@ async function onPanelClick(event) {
             await persistState(state, 'npc-portrait');
             break;
         }
-        case 'map-world': {
-            selectViewedWorld(button.dataset.worldId, state);
-            break;
-        }
-        case 'map-zoom-in':
-            setMapZoom(mapView.scale * 1.25);
-            break;
-        case 'map-zoom-out':
-            setMapZoom(mapView.scale / 1.25);
-            break;
-        case 'map-reset':
-            resetMapView();
-            break;
-        case 'map-fullscreen':
-            setMapFullscreen(!mapFullscreen);
-            break;
-        case 'map-center': {
-            const location = currentMapPoint(state);
-            mapView.scale = 2.45;
-            mapView.x = WORLD_MAP_WIDTH / 2 - location.x * mapView.scale;
-            mapView.y = WORLD_MAP_HEIGHT / 2 - location.y * mapView.scale;
-            updateMapTransform();
-            break;
-        }
+
+
+
+
+
+
         case 'select-scene-floor': {
             const map = state.sceneMap.maps.find(entry => entry.id === button.dataset.mapId);
             const floor = map?.floors.find(entry => entry.id === id);
@@ -8286,20 +6306,7 @@ async function onPanelClick(event) {
             await persistState(state, 'scene-map');
             break;
         }
-        case 'select-pin': {
-            const pin = state.location.pins.find(entry => entry.id === button.dataset.pinId);
-            if (!pin) break;
-            if (pin.locationId && mapLocation(pin.locationId, state, true)) {
-                mapDraftPoint = null;
-                mapSelectionId = pin.locationId;
-            } else {
-                const continent = continentAtPoint(pin.x, pin.y);
-                mapSelectionId = null;
-                mapDraftPoint = { x: pin.x, y: pin.y, continent: pin.continent || continent?.name || 'Open Ocean', region: pin.region || 'Marked Reach', zone: 'Unknown Zone', name: pin.label };
-            }
-            renderMap(document.querySelector('[data-panel="map"]'), getState());
-            break;
-        }
+
         case 'delete-item':
             state.inventory = state.inventory.filter(entry => entry.id !== id);
             await persistState(state);
@@ -8374,31 +6381,6 @@ async function onPanelClick(event) {
             state.social.household.members = state.social.household.members.filter(entry => entry.id !== id);
             await persistState(state, 'household');
             break;
-        case 'toggle-npc-markers':
-            getSettings().showNpcMapMarkers = !getSettings().showNpcMapMarkers;
-            SillyTavern.getContext().saveSettingsDebounced();
-            if (document.getElementById('tretaresia-rpg-show-npc-map-markers') instanceof HTMLInputElement) {
-                document.getElementById('tretaresia-rpg-show-npc-map-markers').checked = getSettings().showNpcMapMarkers;
-            }
-            renderMap(document.querySelector('[data-panel="map"]'), state);
-            break;
-        case 'toggle-npc-map': {
-            const entry = state.npcs.find(value => value.id === id);
-            if (!entry) break;
-            entry.mapVisible = !entry.mapVisible;
-            if (entry.mapVisible) {
-                const point = npcMapPoint(entry, state);
-                if (point) {
-                    entry.mapX = point.x;
-                    entry.mapY = point.y;
-                } else {
-                    notify('info', getSettings().language === 'th' ? uiText("เปิด marker ของ {0} แล้ว แต่ยังไม่มีพิกัด ให้แก้ Current location หรือ World Map X/Y ในข้อมูล NPC",[entry.name]) : uiText("{0}'s marker is enabled, but its coordinates are unknown. Edit Current location or World Map X/Y in the NPC dossier.",[entry.name]));
-                }
-            }
-            entry.updatedAt = new Date().toISOString();
-            await persistState(state, 'npc-map');
-            break;
-        }
         case 'select-npc':
             selectedNpcId = id;
             renderPanel('npcs', document.querySelector('[data-panel="npcs"]'), getState());
@@ -8603,192 +6585,23 @@ function resizePortrait(file) {
     });
 }
 
-function updateMapTransform() {
-    clampMapView();
-    scheduleMapDraw();
-}
 
-function beginMapCompositorPreview(canvas) {
-    if (!(canvas instanceof HTMLCanvasElement)) return;
-    // Redraw the existing decoded tiles on each animation frame. Transforming
-    // one frozen canvas bitmap was fast on desktop but stalls on iOS WebKit.
-    mapGestureBase = null;
-    mapInteracting = true;
-}
 
-function applyMapCompositorPreview() {
-    return false;
-}
 
-function finishMapCompositorPreview(panel, state = getState()) {
-    mapGestureBase = null;
-    mapInteracting = false;
-    scheduleMapDraw(panel, state);
-}
 
-function clampMapView() {
-    mapView.scale = Number.isFinite(mapView.scale) ? Math.min(8, Math.max(1, mapView.scale)) : 1;
-    mapView.x = Number.isFinite(mapView.x) ? mapView.x : 0;
-    mapView.y = Number.isFinite(mapView.y) ? mapView.y : 0;
-    mapView.x = Math.min(0, Math.max(WORLD_MAP_WIDTH * (1 - mapView.scale), mapView.x));
-    mapView.y = Math.min(0, Math.max(WORLD_MAP_HEIGHT * (1 - mapView.scale), mapView.y));
-}
 
-function resetMapView() {
-    Object.assign(mapView, { scale: 1, x: 0, y: 0 });
-    updateMapTransform();
-}
 
-function setMapFullscreen(open) {
-    mapFullscreen = Boolean(open);
-    document.body.classList.toggle('tretaresia-map-fullscreen-open', mapFullscreen);
-    const panel = document.querySelector('[data-panel="map"]');
-    if (panel) renderMap(panel, getState());
-}
 
-function setMapZoom(scale, anchorX = WORLD_MAP_WIDTH / 2, anchorY = WORLD_MAP_HEIGHT / 2) {
-    const current = Number.isFinite(mapView.scale) ? mapView.scale : 1;
-    const next = Number.isFinite(scale) ? Math.min(8, Math.max(1, scale)) : current;
-    const safeAnchorX = Number.isFinite(anchorX) ? anchorX : WORLD_MAP_WIDTH / 2;
-    const safeAnchorY = Number.isFinite(anchorY) ? anchorY : WORLD_MAP_HEIGHT / 2;
-    const ratio = next / current;
-    mapView.x = safeAnchorX - (safeAnchorX - mapView.x) * ratio;
-    mapView.y = safeAnchorY - (safeAnchorY - mapView.y) * ratio;
-    mapView.scale = next;
-    clampMapView();
-    updateMapTransform();
-}
 
-function setupMapInteractions(panel) {
-    const scope = mapFullscreen ? panel.querySelector('.tretaresia-map-window') || panel : panel;
-    const svg = scope.querySelector('.tretaresia-world-map');
-    if (!(svg instanceof HTMLCanvasElement)) return;
-    mapResizeObserver?.disconnect();
-    if (typeof ResizeObserver === 'function') {
-        mapResizeObserver = new ResizeObserver(() => scheduleMapDraw(panel, getState()));
-        mapResizeObserver.observe(svg);
-    }
-    if (svg.dataset.mapInteractionsBound === 'true') return;
-    svg.dataset.mapInteractionsBound = 'true';
-    const pointers = new Map();
-    let previousCentroid = null;
-    let pinchDistance = 0;
-    let dragDistance = 0;
-    let pointerStart = null;
-    let gestureHadMultiplePointers = false;
-    const mapPoint = event => {
-        const rect = svg.parentElement?.getBoundingClientRect() || svg.getBoundingClientRect();
-        if (!rect.width || !rect.height || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return null;
-        const screenX = (event.clientX - rect.left) / rect.width * WORLD_MAP_WIDTH;
-        const screenY = (event.clientY - rect.top) / rect.height * WORLD_MAP_HEIGHT;
-        return { x: (screenX - mapView.x) / mapView.scale, y: (screenY - mapView.y) / mapView.scale, screenX, screenY };
-    };
-    const pointerCentroid = points => points.length ? {
-        x: points.reduce((sum, point) => sum + point.x, 0) / points.length,
-        y: points.reduce((sum, point) => sum + point.y, 0) / points.length,
-    } : null;
-    svg.addEventListener('wheel', event => {
-        event.preventDefault();
-        beginMapCompositorPreview(svg);
-        mapInteracting = true;
-        globalThis.clearTimeout(mapInteractionEndTimer);
-        const point = mapPoint(event);
-        if (!point) {
-            finishMapCompositorPreview(panel, getState());
-            return;
-        }
-        setMapZoom(mapView.scale * (event.deltaY < 0 ? 1.15 : .87), point.screenX, point.screenY);
-        mapInteractionEndTimer = globalThis.setTimeout(() => {
-            finishMapCompositorPreview(panel, getState());
-        }, MAP_INTERACTION_SETTLE);
-    }, { passive: false });
-    svg.addEventListener('pointerdown', event => {
-        if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
-        event.preventDefault();
-        mapInteracting = true;
-        globalThis.clearTimeout(mapInteractionEndTimer);
-        if (!pointers.size) beginMapCompositorPreview(svg);
-        svg.setPointerCapture?.(event.pointerId);
-        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        gestureHadMultiplePointers ||= pointers.size > 1;
-        previousCentroid = pointerCentroid([...pointers.values()]);
-        pinchDistance = 0;
-        pointerStart = { x: event.clientX, y: event.clientY, continentId: event.target.closest?.('[data-continent-id]')?.dataset.continentId || '' };
-        dragDistance = 0;
-        svg.classList.add('is-dragging');
-    });
-    svg.addEventListener('pointermove', event => {
-        if (!pointers.has(event.pointerId)) return;
-        if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
-        event.preventDefault();
-        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        const points = [...pointers.values()];
-        const rect = svg.parentElement?.getBoundingClientRect() || svg.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-        const centroid = pointerCentroid(points);
-        if (points.length === 1 && previousCentroid && centroid) {
-            const dx = centroid.x - previousCentroid.x;
-            const dy = centroid.y - previousCentroid.y;
-            const jumpLimit = Math.max(42, Math.min(rect.width, rect.height) * .22);
-            previousCentroid = centroid;
-            if (Math.abs(dx) > jumpLimit || Math.abs(dy) > jumpLimit) return;
-            dragDistance += Math.hypot(dx, dy);
-            mapView.x += dx / rect.width * WORLD_MAP_WIDTH;
-            mapView.y += dy / rect.height * WORLD_MAP_HEIGHT;
-            updateMapTransform();
-        } else if (points.length >= 2) {
-            const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
-            if (pinchDistance > 0 && Number.isFinite(distance) && centroid) {
-                const frameRatio = Math.min(1.22, Math.max(.82, distance / pinchDistance));
-                const anchorX = (centroid.x - rect.left) / rect.width * WORLD_MAP_WIDTH;
-                const anchorY = (centroid.y - rect.top) / rect.height * WORLD_MAP_HEIGHT;
-                setMapZoom(mapView.scale * frameRatio, anchorX, anchorY);
-            }
-            pinchDistance = distance;
-            previousCentroid = centroid;
-        }
-    }, { passive: false });
-    const end = event => {
-        if (!pointers.has(event.pointerId)) return;
-        const wasClick = event.type === 'pointerup' && !gestureHadMultiplePointers && pointers.size === 1 && dragDistance < 7 && pointerStart;
-        pointers.delete(event.pointerId);
-        try { svg.releasePointerCapture?.(event.pointerId); } catch {}
-        previousCentroid = pointerCentroid([...pointers.values()]);
-        pinchDistance = 0;
-        if (!pointers.size) {
-            svg.classList.remove('is-dragging');
-            gestureHadMultiplePointers = false;
-            finishMapCompositorPreview(panel, getState());
-        }
-        if (wasClick) {
-            const rect = svg.parentElement?.getBoundingClientRect() || svg.getBoundingClientRect();
-            const hitX = (event.clientX - rect.left) / rect.width * svg.width;
-            const hitY = (event.clientY - rect.top) / rect.height * svg.height;
-            const hit = [...mapRenderedPoints].reverse().find(entry => Math.hypot(entry.x - hitX, entry.y - hitY) <= entry.radius * Math.min(1.5, globalThis.devicePixelRatio || 1));
-            if (hit?.type === 'npc') {
-                selectedNpcId = hit.id;
-                if (mapFullscreen) setMapFullscreen(false);
-                activateTab('npcs');
-                pointerStart = null;
-                return;
-            }
-            if (hit?.type === 'character-life-npc') {
-                characterLifeBridge()?.openNpcLibrary?.({ scope: hit.scope, id: hit.id });
-                pointerStart = null;
-                return;
-            }
-            if (hit?.type === 'cluster') {
-                setMapZoom(mapView.scale * 1.55, hit.worldX, hit.worldY);
-                pointerStart = null;
-                return;
-            }
-        }
-        pointerStart = null;
-    };
-    svg.addEventListener('pointerup', end);
-    svg.addEventListener('pointercancel', end);
-    svg.addEventListener('lostpointercapture', end);
-}
+
+
+
+
+
+
+
+
+
 
 function restoreComposerDraft() {
     const pending = pendingComposerDraft;
@@ -8875,19 +6688,19 @@ const SCALAR_PATCH_PATHS = new Set([
     'player.survival.hunger', 'player.survival.thirst', 'player.aura.color', 'player.aura.infinite',
     'player.aura.output', 'player.aura.control', 'player.aura.efficiency', 'player.aura.recovery',
     'player.fitness.lungCapacity', 'player.fitness.aerobicSessions',
-    'onboarding.identitySeeded', 'onboarding.loadoutSeeded', 'onboarding.characterMapSeeded', 'onboarding.locationSeeded',
+    'onboarding.identitySeeded', 'onboarding.loadoutSeeded', 'onboarding.locationSeeded',
     'progression.adventurerRank', 'progression.customRankName', 'progression.magicRank', 'progression.swordRank', 'progression.experience',
     'progression.experienceMax', 'progression.reputation', 'progression.kills', 'progression.currency.gold', 'progression.currency.silver',
-    'progression.currency.name', 'progression.currency.copper', 'world.id', 'worldClock.day', 'worldClock.dayName', 'worldClock.time', 'worldClock.phase', 'location.continent',
-    'location.region', 'location.place', 'location.detail', 'location.zoneType', 'location.mapX', 'location.mapY', 'location.heading', 'scene.position', 'scene.weather', 'scene.temperature',
+    'progression.currency.name', 'progression.currency.copper', 'worldClock.day', 'worldClock.dayName', 'worldClock.time', 'worldClock.phase', 'location.continent',
+    'location.region', 'location.place', 'location.detail', 'location.zoneType', 'scene.position', 'scene.weather', 'scene.temperature',
     'travel.status', 'travel.origin', 'travel.destination', 'travel.route', 'travel.totalDays', 'travel.remainingDays', 'travel.notes',
-    'travel.originX', 'travel.originY', 'travel.originContinent', 'travel.originRegion', 'travel.destinationX', 'travel.destinationY',
+    'travel.originContinent', 'travel.originRegion',
     'travel.destinationContinent', 'travel.destinationRegion', 'travel.destinationPlace',
     'sceneMap.activeMapId', 'sceneMap.activeFloorId', 'sceneMap.playerRoomId',
     ...MAGIC_DISCIPLINES.map(entry => `proficiencies.magic.${entry.id}`),
     ...SWORD_STYLES.map(entry => `proficiencies.sword.${entry.id}`),
 ]);
-const PATCH_COLLECTIONS = new Set(['inventory', 'skills', 'proficiencies.customMagic', 'proficiencies.customSword', 'proficiencies.techniques', 'quests', 'npcs', 'contacts', 'letters', 'characterLifeMapActors', 'effects', 'combatLogs', 'regionalWeather']);
+const PATCH_COLLECTIONS = new Set(['inventory', 'skills', 'proficiencies.customMagic', 'proficiencies.customSword', 'proficiencies.techniques', 'quests', 'npcs', 'contacts', 'letters', 'effects', 'combatLogs', 'regionalWeather']);
 const SCENE_MAP_PATCH_COLLECTIONS = new Set(['sceneMaps', 'sceneFloors', 'sceneRooms', 'sceneConnections']);
 const NPC_RELATIONSHIP_FIELDS = new Set(['affection', 'trust', 'loyalty', 'fear', 'corruption', 'lust']);
 const NPC_STAT_FIELDS = new Set(['level', 'hp', 'mp', 'stamina', 'strength', 'agility', 'intelligence', 'endurance']);
@@ -8905,7 +6718,6 @@ const PATCH_PATH_ALIASES = Object.freeze({
     'status.thirst': 'player.survival.thirst', 'vitals.thirst': 'player.survival.thirst',
     'scene.currentRegion': 'location.region', 'scene.currentPlace': 'location.place',
     'scene.scenePosition': 'scene.position', 'scene.currentPosition': 'scene.position',
-    'scene.mapX': 'location.mapX', 'scene.mapY': 'location.mapY',
     'powers.falseMagic': 'proficiencies.magic.falseMagic', 'powers.trueMagic': 'proficiencies.magic.trueMagic',
     'powers.aura': 'proficiencies.magic.aura', 'powers.formlessAura': 'proficiencies.magic.formlessAura',
     'powers.bloodAura': 'proficiencies.magic.bloodAura', 'powers.sageMana': 'proficiencies.magic.sageMana',
@@ -9215,9 +7027,6 @@ function applyPatchOperation(state, operation) {
         target[key] = verb === 'inc' ? number(target[key], 0, -999999999, 999999999) + number(value, 0, -999999999, 999999999) : value;
         return true;
     }
-    if (verb === 'add' && path === 'location.discovered' && typeof value === 'string') {
-        return addDiscoveredLocation(state, text(value, '', 120));
-    }
     if (SCENE_MAP_PATCH_COLLECTIONS.has(path)) return applySceneMapPatchOperation(state, verb, path, value);
     if (path === 'playerHStats' && ['set', 'inc'].includes(verb) && value && typeof value === 'object') {
         if (!H_FIELD_MAP[value.field]) return false;
@@ -9374,12 +7183,11 @@ function applyPatchOperation(state, operation) {
             candidate = npcProfile({ ...candidate, updatedAt: new Date().toISOString() }, index >= 0 ? collection[index] : {});
             if (!candidate) return false;
         }
-        if (path === 'characterLifeMapActors') {
-            candidate = characterLifeMapActor({ ...candidate, updatedAt: new Date().toISOString() }, index >= 0 ? collection[index] : {});
-            if (!candidate) return false;
-        }
         if (path === 'quests') {
             const previousQuest = index >= 0 ? collection[index] : null;
+            if (previousQuest) candidate.id = previousQuest.id;
+            candidate.rewardClaimed = Boolean(previousQuest?.rewardClaimed);
+            candidate.rewardClaimedAt = previousQuest?.rewardClaimedAt || '';
             if (previousQuest && ['Completed', 'Failed'].includes(previousQuest.status)
                 && value.status && value.status !== previousQuest.status && value.reopen !== true) {
                 candidate.status = previousQuest.status;
@@ -9429,21 +7237,6 @@ function operationMeta(operation) {
         label: text(raw.label, '', 100),
         questId: text(raw.questId, text(raw.missionId, '', 100), 100),
     } : { reason: '', category: '', label: '' };
-}
-
-function isDuplicateQuestRewardOperation(state, operation) {
-    const meta = operationMeta(operation);
-    if (!['quest-reward', 'mission-reward', 'reward'].includes(meta.category)) return false;
-    const reason = meta.reason.toLocaleLowerCase();
-    const claimed = state.quests.find(entry => entry.rewardClaimed && entry.status === 'Completed'
-        && (meta.questId && entry.id === meta.questId || reason && reason.includes(entry.name.toLocaleLowerCase())));
-    if (!claimed) return false;
-    const [verb, path, value] = operation;
-    if (verb === 'inc') {
-        if (path === 'inventory') return number(value?.quantity ?? value?.amount ?? value?.delta, 0, -99999, 99999) > 0;
-        return Number(value) > 0 && (path === 'progression.experience' || path === 'progression.reputation' || path.startsWith('progression.currency.'));
-    }
-    return verb === 'upsert' && ['inventory', 'skills', 'proficiencies.techniques'].includes(path);
 }
 
 function derivePatchNotifications(current, next, operations, levelUps) {
@@ -9520,7 +7313,7 @@ function recordPatchTransactions(next, current, operations, summary) {
         const delta = after - before;
         if (!delta) continue;
         const meta = operationMeta(operation);
-        appendCurrencyTransaction(next, { [denomination]: delta }, meta.reason || summary || 'Role-play transaction', meta.category || 'roleplay', running);
+        appendCurrencyTransaction(next, { [denomination]: delta }, meta.reason || summary || 'Role-play transaction', meta.category || 'roleplay', running, meta.questId);
     }
     const residual = currencyDelta(running, next.progression.currency);
     if (residual.gold || residual.silver || residual.copper) {
@@ -9540,7 +7333,6 @@ function significantJourneyOperation(current, next, operation) {
         const after = next.quests.find(entry => matchesPatchIdentity(entry, value));
         return !before || before.status !== after?.status;
     }
-    if (path === 'location.discovered') return true;
     return false;
 }
 
@@ -9548,24 +7340,21 @@ function applyStatePatch(current, patch) {
     if (!patch || typeof patch !== 'object' || !Array.isArray(patch.ops)) throw new Error(uiText("State patch is missing an ops array."));
     const candidate = clone(current);
     const acceptedOps = [];
-    const rewardOps = new Set();
     const explicit = patch.ops.slice(0, 75).flatMap(canonicalPatchOperations).slice(0, 100);
     const operations = [...explicit, ...sceneTrackerOperations(patch.sceneTracker, explicit)];
+    const rewards = questRewardGuard(current, operations);
     for (const operation of operations) {
-        if (isDuplicateQuestRewardOperation(current, operation)) continue;
-        const meta = operationMeta(operation);
-        if (['quest-reward', 'mission-reward', 'reward'].includes(meta.category)) {
-            const rewardKey = `${meta.questId || meta.reason.toLocaleLowerCase()}::${operation[0]}::${operation[1]}::${patchIdentity(operation[2])}`;
-            if (rewardOps.has(rewardKey)) continue;
-            rewardOps.add(rewardKey);
-        }
-        if (applyPatchOperation(candidate, operation)) acceptedOps.push(operation);
+        const reward = rewards.inspect(operation, candidate);
+        if (reward.blocked) continue;
+        if (reward.record) operation[3] = {...operationMeta(operation), questId:reward.record.id, category:'quest-reward'};
+        if (applyPatchOperation(candidate, operation)) {acceptedOps.push(operation); rewards.accept(reward);}
     }
+    rewards.finish(candidate);
     if (acceptedOps.some(op => op[0] === 'set' && op[1] === 'location.place' && typeof op[2] === 'string' && op[2].trim() && !/^(?:unknown|none|n\/a|ไม่ทราบ|—|-)$/i.test(op[2].trim()))) {
         candidate.onboarding.locationSeeded = true;
-        // A first real place must not inherit the old atlas bootstrap region.
+        // A first real place must not inherit an unconfirmed hierarchy.
         if (!current.onboarding.locationSeeded) {
-            for (const [key, fallback] of Object.entries({continent:'Unknown',region:'Unknown',detail:''})) {
+            for (const [key, fallback] of Object.entries({continent:'',region:'',detail:''})) {
                 if (!operations.some(op => op[1] === `location.${key}`
                     && typeof op[2] === 'string' && op[2].trim() && !/^(?:unknown|none|n\/a|ไม่ทราบ|ไม่ระบุ|—|-)$/i.test(op[2].trim()))) {
                     candidate.location[key] = fallback;
@@ -9596,7 +7385,6 @@ function applyStatePatch(current, patch) {
         }
     });
     next.music = clone(current.music);
-    next.location.pins = clone(current.location.pins);
     const accepted = acceptedOps.length;
     const summary = text(patch.summary, accepted ? 'Role-play state updated.' : '', 300);
     if (accepted) {
@@ -10248,7 +8036,7 @@ function manualSyncHistoricalOperations(operations, historical, state, trackedTu
         if (path === 'npcs' && verb === 'upsert' && resolveNpc(state.npcs, value)) {
             const existing = resolveNpc(state.npcs, value);
             const updated = Object.keys(value || {}).filter(key => !['id','name','npcScope','npcOwner'].includes(key));
-            if (updated.some(key => ['location','lastSeen','activity','activityUpdatedDay','mapX','mapY','relationshipState'].includes(key))) return false;
+            if (updated.some(key => ['location','lastSeen','activity','activityUpdatedDay','relationshipState'].includes(key))) return false;
             if (updated.some(key => existing[key] && existing[key] !== 'Unknown' && JSON.stringify(existing[key]) !== JSON.stringify(value[key]))) return false;
         }
         return true;
@@ -10472,9 +8260,6 @@ async function openInterface() {
 function closeInterface() {
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (!overlay?.classList.contains('is-open')) return;
-    mapFullscreen = false;
-    suspendMapRendering(true);
-    document.body.classList.remove('tretaresia-map-fullscreen-open');
     clearTimeout(introTimer);
     clearInterval(introGateTimer);
     clearTimeout(introFinishTimer);
@@ -10693,16 +8478,10 @@ function bindChatEvents() {
         completedAssistantMessages = new WeakSet();
         assistantRollbackQueue = Promise.resolve();
         cleanupAudio();
-        invalidateCharacterLifeMapMarkers();
-        clearMapPortraitCache();
-        suspendMapRendering(true);
         clearNpcPortraitObjectUrls();
         closePortraitEditor();
         openedLetterId = null;
         selectedNpcId = null;
-        mapAtlasSelection = '';
-        mapSelectionId = null;
-        mapDraftPoint = null;
         const restored = await restoreContinuityForCurrentChat();
         if (!restored) {
             updatePrompt();
@@ -10805,25 +8584,17 @@ function bindChatEvents() {
     });
     if (eventTypes.MESSAGE_DELETED) eventSource.on(eventTypes.MESSAGE_DELETED, () => refreshCharacterForge());
     globalThis.addEventListener('character-life:rpg-bridge-ready', () => {
-        invalidateCharacterLifeMapMarkers();
-        clearMapPortraitCache();
         queueCharacterLifeCompatibilityRefresh({ save: true });
     });
     globalThis.addEventListener('character-life:skills-ready', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
     globalThis.addEventListener('character-life:skill-updated', () => queueCharacterLifeCompatibilityRefresh({ save: false }));
     globalThis.addEventListener('character-life:portrait-replaced', () => {
-        clearMapPortraitCache();
         queueCharacterLifeCompatibilityRefresh({ save: false });
     });
     globalThis.addEventListener('character-life:rpg-compatibility-updated', () => {
-        invalidateCharacterLifeMapMarkers();
         queueCharacterLifeCompatibilityRefresh({ save: false });
     });
-    globalThis.addEventListener('character-life:map-markers-updated', () => {
-        invalidateCharacterLifeMapMarkers();
-        const panel = document.querySelector('[data-panel="map"].is-active');
-        if (panel) scheduleMapDraw(panel, getState());
-    });
+
 }
 
 async function initialize() {
@@ -10873,16 +8644,6 @@ async function initialize() {
             recordRequest: recordExtensionRequest,
             portrait: readNpcPortrait,
         });
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) suspendMapRendering(true);
-            else {
-                const panel = document.querySelector('[data-panel="map"].is-active');
-                if (panel && document.getElementById('tretaresia-rpg-overlay')?.classList.contains('is-open')) {
-                    setupMapInteractions(panel);
-                    scheduleMapDraw(panel, getState());
-                }
-            }
-        });
         bindNewChatSummaryCompatibility();
         void scheduleArchiveMigration();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
@@ -10900,14 +8661,10 @@ async function initialize() {
         syncTravelTracker(getState());
         document.addEventListener('keydown', event => {
             if (event.key !== 'Escape') return;
-            if (mapFullscreen) {
-                setMapFullscreen(false);
-                return;
-            }
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.44.7 loaded.');
+        console.info('[RoleForge] Role-play interface v0.44.8 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

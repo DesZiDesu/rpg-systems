@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {sceneSnapshot,renderSceneTracker,missingSceneFields,SCENE_REQUIRED_FIELDS} from '../src/scene-tracker.js';
+import {sceneSnapshot,renderSceneTracker,missingSceneFields,SCENE_REQUIRED_FIELDS,sceneTrackerOperations,normalizeNarrativeLocation,narrativeLocationLabel} from '../src/scene-tracker.js';
 
 class Node {
     constructor(tag){this.tag=tag;this.children=[];this.attributes={};this.textContent='';}
@@ -41,7 +41,7 @@ test('a complete scene records the same full calendar and environment as Rune wi
     const details={month:'Harvest',year:'1286',era:'Silver Age',calendar:'Lunar',season:'Spring',
         lighting:'Lamps',participants:['Kohaku'],objective:'Find the book',safety:'Safe',atmosphere:'Quiet',elapsed:'0 minutes'};
     const snapshot=sceneSnapshot(state,details);
-    assert.equal(SCENE_REQUIRED_FIELDS.length,21);
+    assert.equal(SCENE_REQUIRED_FIELDS.length,19);
     assert.deepEqual(missingSceneFields(snapshot),[]);
     assert.equal(snapshot.calendar,'Lunar');
     assert.ok(missingSceneFields({...snapshot,weather:'Unknown',participants:[],month:''}).includes('participants'));
@@ -50,4 +50,24 @@ test('a complete scene records the same full calendar and environment as Rune wi
     const collect=node=>[node.textContent,...node.children.flatMap(collect)].join(' ');
     assert.match(collect(card),/Silver Age/);
     assert.match(collect(card),/SCENE STATUS \/ LIVE/);
+});
+
+test('location display never becomes stored geography across repeated scene updates',()=>{
+    const state={onboarding:{locationSeeded:true},location:{place:'Gaia Manor',region:'East Quarter · Central Continent · East Quarter',continent:'Central Continent'},worldClock:{},scene:{}};
+    for(let turn=0;turn<40;turn++) {
+        const snapshot=sceneSnapshot(state);
+        assert.equal(snapshot.region,'East Quarter');assert.equal(snapshot.continent,'Central Continent');
+        assert.equal(narrativeLocationLabel(state.location),'East Quarter · Central Continent');
+        for(const [,path,fact] of sceneTrackerOperations(snapshot))if(path.startsWith('location.'))state.location[path.split('.')[1]]=fact;
+    }
+    assert.equal(state.location.region,'East Quarter');
+});
+
+test('legacy atlas names require migration evidence; actual story names remain usable',()=>{
+    const old={place:'Central Crown',detail:'Gaia Manor',region:'Central Continent · Central Continent · Gaia Manor',continent:'Central Continent'};
+    assert.deepEqual(normalizeNarrativeLocation(old,{legacy:true}),{place:'',detail:'Gaia Manor',region:'',continent:''});
+    assert.equal(normalizeNarrativeLocation(old).place,'Central Crown');
+    assert.equal(narrativeLocationLabel({place:'Gaia Manor',region:'Gaia Manor · Moon District · Moon District',continent:'Moon District'}),'Moon District');
+    assert.equal(normalizeNarrativeLocation({place:'<script>alert(1)</script>'}).place,'<script>alert(1)</script>');
+    assert(!missingSceneFields({}).includes('region'));assert(!missingSceneFields({}).includes('continent'));
 });

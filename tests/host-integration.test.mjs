@@ -1,3 +1,4 @@
+import {questRewardGuard,normalizeQuestRewardReceipts} from '../src/quest-rewards.js';
 import * as uiLanguage from '../src/ui-language.js';
 import * as powers from '../src/power-presets.js';
 import * as forgePresets from '../src/forge-presets.js';
@@ -10,23 +11,103 @@ import {H_FIELDS,H_FIELD_MAP,hStats,updateHStat} from '../src/h-stats.js';
 import * as scopes from '../src/npc-scopes.js';
 import * as lore from '../src/lore-core.js';
 import * as archive from '../src/character-archive.js';
-import {sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene} from '../src/scene-tracker.js';
+import {sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel} from '../src/scene-tracker.js';
 import {normalizeAdultSettings,writingPreferencePrompt} from '../src/nsfw-enhance.js';
 import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded} from '../src/social-events.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
  vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
+test('quest payout is recorded once across paraphrased turns, set balances, archive removal and reload',()=>{
+ const start=host.defaultState();start.quests=[{id:'escort',name:'Urgent Merchant Caravan Escort',status:'Active',rewardClaimed:false}];
+ const first=host.applyStatePatch(start,{ops:[['upsert','quests',{id:'changed-id',name:'Urgent Merchant Caravan Escort',status:'Completed',rewardClaimed:true}],
+  ['inc','progression.currency.gold',6,{category:'quest-reward',questId:'changed-id',reason:'Fair share from Urgent Merchant Caravan Escort quest'}],
+  ['inc','progression.experience',20,{category:'quest-reward',questId:'changed-id',reason:'Mission experience'}]]});
+ assert.equal(first.next.progression.currency.gold,6);assert.equal(first.next.progression.experience,20);
+ assert.equal(first.next.quests[0].id,'escort');assert.equal(first.next.quests[0].rewardClaimed,true);
+ assert.equal(first.next.transactions.length,1);assert.equal(first.next.transactions[0].questId,'escort');
+ const reloaded=host.normalize(JSON.parse(JSON.stringify(first.next)));
+ const again=host.applyStatePatch(reloaded,{ops:[['inc','progression.currency.gold',7,{category:'quest-reward',reason:'Caravan escort mission reward share'}],
+  ['set','progression.currency.gold',13,{category:'currency',questId:'escort',reason:'Escort payout'}]]});
+ assert.equal(again.accepted,0);assert.equal(again.next.progression.currency.gold,6);assert.equal(again.next.transactions.length,1);
+ const deleted=host.applyStatePatch(reloaded,{ops:[['delete','quests',{id:'escort'}]]}).next;
+ const recreated=host.applyStatePatch(deleted,{ops:[['upsert','quests',{id:'recreated',name:'Urgent Merchant Caravan Escort',status:'Completed'}],
+  ['inc','progression.currency.gold',7,{category:'quest-reward',questId:'recreated',reason:'Final share'}]]}).next;
+ assert.equal(recreated.progression.currency.gold,6);assert.equal(recreated.quests[0].rewardClaimed,true);
+});
+test('completion without payment permits one delayed first reward; separate quests and manual corrections remain possible',()=>{
+ let state=host.applyStatePatch(host.defaultState(),{ops:[['upsert','quests',{id:'rescue',name:'Rescue Mira',status:'Completed',rewardClaimed:true}]]}).next;
+ assert.equal(state.quests[0].rewardClaimed,false);
+ state=host.applyStatePatch(state,{ops:[['inc','progression.currency.gold',3,{category:'quest-reward',questId:'rescue',reason:'Rescue reward'}]]}).next;
+ assert.equal(state.progression.currency.gold,3);assert.equal(state.quests[0].rewardClaimed,true);
+ state=host.applyStatePatch(state,{ops:[['upsert','quests',{id:'delivery',name:'Deliver the Letter',status:'Completed'}],
+  ['inc','progression.currency.gold',3,{category:'quest-reward',questId:'delivery',reason:'Delivery reward'}],
+  ['inc','progression.currency.gold',2,{category:'currency',reason:'Sold a sword'}]]}).next;
+ assert.equal(state.progression.currency.gold,8);assert.equal(state.questRewardReceipts.length,2);
+ state.progression.currency.gold=5;state=host.normalize(state);assert.equal(state.progression.currency.gold,5);assert.equal(state.questRewardReceipts.length,2);
+});
+test('an expense earlier in a patch cannot hide a repeated quest payout through a SET balance',()=>{
+ const state=host.normalize({...host.defaultState(),quests:[{id:'escort',name:'Urgent Merchant Caravan Escort',status:'Completed',rewardClaimed:true}],
+  progression:{currency:{gold:6,silver:0,copper:120}}});
+ const result=host.applyStatePatch(state,{ops:[['inc','progression.currency.gold',-2,{category:'purchase',reason:'Bought supplies'}],
+  ['set','progression.currency.gold',6,{category:'quest-reward',questId:'escort',reason:'Caravan escort mission reward share'}]]});
+ assert.equal(result.accepted,1);assert.equal(result.next.progression.currency.gold,4);
+ assert.equal(result.next.transactions.length,1);assert.equal(result.next.transactions[0].amounts.gold,-2);
+});
+test('old atlas contamination is removed while actual locations, wealth and local room layouts survive',()=>{
+ const old=host.defaultState();delete old.location.narrativeVersion;
+ Object.assign(old.location,{atlasVersion:4,place:'Central Crown',detail:"Gaia Manor - Girls’ Bedroom",region:'Central Continent · Central Continent',continent:'Central Continent',mapX:100,mapY:200,pins:[{id:'pin'}]});
+ old.world={id:'present-world'};old.progression.currency.gold=13;old.onboarding.locationSeeded=true;
+ old.sceneMap={activeMapId:'manor',activeFloorId:'floor',playerRoomId:'room',maps:[{id:'manor',name:'Gaia Manor',place:'Gaia Manor',floors:[{id:'floor',name:'Floor',rooms:[{id:'room',name:'Bedroom'}],connections:[]}]}]};
+ const migrated=host.normalize(old);
+ assert.equal(migrated.location.place,"Gaia Manor - Girls’ Bedroom");assert.equal(migrated.location.region,'');assert.equal(migrated.location.continent,'');
+ assert.equal(migrated.progression.currency.gold,13);assert.equal(migrated.sceneMap.maps[0].floors[0].rooms[0].name,'Bedroom');
+ assert.equal(Object.hasOwn(migrated,'world'),false);assert.equal(Object.hasOwn(migrated.location,'mapX'),false);assert.equal(Object.hasOwn(migrated.location,'pins'),false);
+ assert.equal(host.normalize(migrated).location.place,migrated.location.place);
+ const prompt=host.statePrompt(migrated);assert.doesNotMatch(prompt,/Central Crown|Central Continent|AUTHOR-ONLY ATLAS REFERENCE|2400 by 1800/);
+ const rejected=host.applyStatePatch(migrated,{ops:[['set','location.mapX',44],['set','world.id','alternate-present-world'],['add','location.discovered','Made-up city']]});assert.equal(rejected.accepted,0);
+});
+
+test('opening an old atlas chat migrates past scene cards once while preserving new confirmed geography',()=>{
+ const metadata=context.chatMetadata;
+ try {
+  const old=host.defaultState();delete old.location.narrativeVersion;old.location.atlasVersion=4;
+  context.chatMetadata={tretaresia_rpg_state:old,tretaresia_rpg_scene_history:{turn:{
+   legacy:{location:'Gaia Manor',region:'Central Crown · Central Continent · Central Continent · Gaia Manor',continent:'Central Continent'},
+   confirmed:{location:'New House',region:'Central Crown',continent:'Central Continent',narrativeVersion:1},
+  }}};
+  host.getState();const history=context.chatMetadata.tretaresia_rpg_scene_history.turn;
+  assert.equal(history.legacy.location,'Gaia Manor');assert.equal(history.legacy.region,'');assert.equal(history.legacy.continent,'');
+  assert.equal(history.legacy.narrativeVersion,1);assert.equal(context.chatMetadata.tretaresia_rpg_location_migration,1);
+  assert.equal(history.confirmed.region,'Central Crown');assert.equal(history.confirmed.continent,'Central Continent');
+  history.legacy.region='Moon District';host.getState();assert.equal(history.legacy.region,'Moon District');
+ }finally{context.chatMetadata=metadata;}
+});
+test('legacy travel cannot restore removed atlas names or repeated location breadcrumbs',()=>{
+ const old=host.defaultState();delete old.location.narrativeVersion;
+ Object.assign(old.location,{atlasVersion:4,place:'Central Crown',region:'Central Continent · Central Continent',continent:'Central Continent'});
+ Object.assign(old.travel,{status:'Traveling',origin:'Central Crown',originRegion:'Central Continent · Central Continent',originContinent:'Central Continent',
+  destination:'Gaia Manor',destinationPlace:'Gaia Manor',destinationRegion:'Central Continent · Crown Heartlands',destinationContinent:'Central Continent',
+  totalDays:1,remainingDays:.25});
+ const migrated=host.normalize(old);assert.equal(migrated.travel.origin,'');assert.equal(migrated.travel.originRegion,'');
+ assert.equal(migrated.travel.destinationPlace,'Gaia Manor');assert.equal(migrated.travel.destinationRegion,'');
+ host.synchronizeWorldState(migrated,migrated);assert.equal(migrated.location.region,'');assert.equal(migrated.location.continent,'');
+ const arrived=host.applyStatePatch(migrated,{ops:[['set','travel.remainingDays',0]]}).next;
+ assert.equal(arrived.travel.status,'Arrived');assert.equal(arrived.location.place,'Gaia Manor');
+ assert.equal(arrived.location.region,'');assert.equal(arrived.location.continent,'');
+ assert.doesNotMatch(host.statePrompt(arrived),/Central Crown|Central Continent|Crown Heartlands/);
+});
+
 test('real NPC normalization preserves new profile fields and existing dossier data',()=>{
  const p=host.npcProfile({id:'lysa',name:'Lysa',personality:'Calm',appearance:'Silver hair',background:'Archive',goals:'Find a book',speechStyle:'Formal',identityColor:'#7788aa',roleIcon:'scholar',aliases:['Lys'],portraitSize:100,portraitSource:'local',hasPortrait:true,notes:'Existing note',mapX:10,mapY:20,stats:{level:3},abilities:[{id:'a',name:'Read runes'}]});
  const state=host.normalize({...host.defaultState(),npcs:[p]});const result=state.npcs[0];
- assert.equal(result.personality,'Calm');assert.equal(result.portraitSize,100);assert.equal(result.portraitSource,'local');assert.equal(result.mapX,10);assert.equal(result.abilities[0].name,'Read runes');assert.equal(result.stats.level,3);
+ assert.equal(result.personality,'Calm');assert.equal(result.portraitSize,100);assert.equal(result.portraitSource,'local');assert.equal(Object.hasOwn(result,'mapX'),false);assert.equal(result.abilities[0].name,'Read runes');assert.equal(result.stats.level,3);
 });
 test('real model patch creates NPC in shared state and preserves manual appearance on later patches',()=>{
  const initial=host.defaultState();const created=host.applyStatePatch(initial,{ops:[['upsert','npcs',{id:'lysa',name:'Lysa',personality:'Calm',appearance:'Silver hair',identityColor:'#7788aa',roleIcon:'scholar'}]]});
@@ -774,7 +855,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.7');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.44.8');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -903,8 +984,8 @@ test('completed travel does not reset a later scene to the old destination',()=>
 test('unconfirmed opening coordinates are hidden from the roleplay prompt',()=>{
  const scene=host.roleplayState(host.defaultState()).sceneContext;
  assert.equal(scene.location.place,'Unknown');assert.equal(Object.hasOwn(scene.location,'mapX'),false);
- const confirmed=host.defaultState();confirmed.onboarding.locationSeeded=true;
- assert.equal(host.roleplayState(confirmed).sceneContext.location.place,'Central Crown');
+ const confirmed=host.defaultState();confirmed.onboarding.locationSeeded=true;confirmed.location.place='Story Capital';
+ assert.equal(host.roleplayState(confirmed).sceneContext.location.place,'Story Capital');
 });
 test('JSON parser accepts one balanced object with trailing model commentary',()=>{
  assert.equal(host.parseJson('```json\n{"name":"Lysa"}\n```\nextra text').name,'Lysa');
@@ -964,7 +1045,7 @@ test('scene-only patch seeds a non-atlas place and updates canonical environment
  assert.ok(patch);
  const {next,accepted}=host.applyStatePatch(host.defaultState(),patch);
  assert.equal(accepted,4);assert.equal(next.location.place,'ห้องพักของโคฮาคุ');
- assert.equal(next.onboarding.locationSeeded,true);assert.equal(next.location.region,'Unknown');
+ assert.equal(next.onboarding.locationSeeded,true);assert.equal(next.location.region,'');
  assert.equal(next.scene.weather,'ฝนตก');assert.equal(next.scene.temperature,24);
  assert.equal(sceneSnapshot(next).location,next.location.place);
  assert.equal(sceneSnapshot(next).region,'');

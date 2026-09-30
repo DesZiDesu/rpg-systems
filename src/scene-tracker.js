@@ -1,6 +1,37 @@
 // Small, per-reply scene records; the host may complete omitted scene details.
 const value = (source, limit = 180) => typeof source === 'string' ? source.trim().slice(0, limit) : '';
 const known = source => source && !/^(?:unknown|none|n\/a|unspecified|not specified|not known|undefined|null|tbd|ไม่ทราบ|ไม่ระบุ|ไม่รู้|—|–|-|\?|…|\.{2,})$/i.test(source) ? source : '';
+const locationKey = source => source.normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ').trim();
+const legacyAtlasNames = new Set(['central crown', 'crown heartlands', 'central continent']);
+const locationParts = source => {
+    const seen = new Set();
+    return value(source, 6000).split(/\s*[·•]\s*|\s+\|\s+/u).map(part => part.replace(/\s+/gu, ' ').trim())
+        .filter(part => {
+            const key = locationKey(part);
+            if (!known(part) || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+};
+
+// Location fields hold narrative facts, never an already-composed display breadcrumb.
+// Only a caller with evidence of an old atlas seed may discard its default names.
+export function normalizeNarrativeLocation(source, {legacy = false} = {}) {
+    const input = source && typeof source === 'object' && !Array.isArray(source) ? source : {};
+    const read = field => locationParts(input[field]).filter(part => !legacy || !legacyAtlasNames.has(locationKey(part)));
+    const place = read('place'), detail = read('detail'), continent = read('continent');
+    const other = new Set([...place, ...detail, ...continent].map(locationKey));
+    const region = read('region').filter(part => !other.has(locationKey(part)));
+    return {place: place.join(' · ').slice(0, 180), detail: detail.join(' · ').slice(0, 180),
+        region: region.join(' · ').slice(0, 120), continent: continent.join(' · ').slice(0, 100)};
+}
+
+export function narrativeLocationLabel(source) {
+    const location = normalizeNarrativeLocation(source);
+    const displayed = new Set(locationParts(location.place || location.detail).map(locationKey));
+    return locationParts([location.region, location.continent].filter(Boolean).join(' · '))
+        .filter(part => !displayed.has(locationKey(part))).join(' · ');
+}
 export const SCENE_KEYS = Object.freeze({dn:'dayName',d:'day',mo:'month',yr:'year',er:'era',cal:'calendar',t:'time',per:'period',se:'season',loc:'location',reg:'region',con:'continent',pos:'position',w:'weather',temp:'temperature',light:'lighting',who:'participants',goal:'objective',safe:'safety',mood:'atmosphere',dt:'elapsed'});
 
 export function expandScene(details) {
@@ -9,7 +40,7 @@ export function expandScene(details) {
 }
 
 export const SCENE_REQUIRED_FIELDS = Object.freeze(['dayName','day','month','year','era','calendar','time','period','season',
-    'location','region','continent','weather','temperature','lighting','participants','position','objective','safety','atmosphere','elapsed']);
+    'location','weather','temperature','lighting','participants','position','objective','safety','atmosphere','elapsed']);
 
 export function missingSceneFields(snapshot) {
     return SCENE_REQUIRED_FIELDS.filter(key => key === 'temperature'
@@ -23,12 +54,14 @@ export function missingSceneFields(snapshot) {
 // Only allow bounded scene facts; explicit canonical operations take precedence.
 export function sceneTrackerOperations(details, operations = []) {
     if (!details || typeof details !== 'object' || Array.isArray(details)) return [];
+    const location = normalizeNarrativeLocation({place: details.location, detail: details.detail,
+        region: details.region, continent: details.continent});
     const paths = {location:'location.place', continent:'location.continent', region:'location.region',
         detail:'location.detail', position:'scene.position', weather:'scene.weather', temperature:'scene.temperature',
         time:'worldClock.time', day:'worldClock.day', dayName:'worldClock.dayName', period:'worldClock.phase'};
     return Object.entries(paths).flatMap(([key,path]) => {
         if (operations.some(op => op[1] === path)) return [];
-        let fact = details[key];
+        let fact = key === 'location' ? location.place : Object.hasOwn(location, key) ? location[key] : details[key];
         if (key === 'temperature' || key === 'day') {
             if (fact === null || fact === undefined || typeof fact === 'boolean' || String(fact).trim() === '') return [];
             fact = Number(fact);
@@ -48,12 +81,17 @@ export function sceneSnapshot(state, supplement = {}, speakers = []) {
     const read = (key, fallback, limit) => known(value(extra[key], limit)) || known(value(fallback, limit)) || '';
     const participants = Array.isArray(extra.participants) && extra.participants.length ? extra.participants : speakers;
     const names = [...new Set(participants.filter(name => typeof name === 'string').map(name => value(name, 70)).filter(known))].slice(0, 8);
+    const narrativeLocation = normalizeNarrativeLocation({
+        place: known(value(extra.location, 6000)) || location.place || location.detail,
+        detail: location.detail,
+        region: known(value(extra.region, 6000)) || location.region,
+        continent: known(value(extra.continent, 6000)) || location.continent,
+    });
     return {
         day: Number.isFinite(Number(clock.day)) ? Math.max(1, Math.floor(Number(clock.day))) : null,
         dayName: read('dayName', clock.dayName, 50), time: read('time', clock.time, 20),
-        period: read('period', clock.phase, 50), location: read('location', location.place || location.detail, 180),
-        region: read('region', [location.region,location.continent].filter(known).filter((part,index,all) => all.indexOf(part) === index).join(' · '), 120),
-        continent: read('continent', location.continent, 100),
+        period: read('period', clock.phase, 50), location: narrativeLocation.place,
+        region: narrativeLocation.region, continent: narrativeLocation.continent,
         weather: read('weather', scene.weather, 100),
         temperature: Number.isFinite(Number(scene.temperature)) && scene.temperature !== null ? Number(scene.temperature) : null,
         participants: names, position: read('position', scene.position, 120),
@@ -87,7 +125,9 @@ export function renderSceneTracker(snapshot, language = 'en') {
         node('span', '', [snapshot.dayName,snapshot.day == null || snapshot.dayName === `Day ${snapshot.day}` ? '' : `${word('Day', 'วันที่')} ${snapshot.day}`].filter(Boolean).join(' · ') || '—'));
     const hero = node('div', 'trpg-scene-hero'), place = node('div');
     place.append(node('small', '', word('CURRENT LOCATION', 'ตำแหน่งในเนื้อเรื่อง')),
-        node('strong', '', snapshot.location || '—'), node('span', '', snapshot.region || '—'));
+        node('strong', '', snapshot.location || '—'), node('span', '', narrativeLocationLabel({
+            place: snapshot.location, region: snapshot.region, continent: snapshot.continent,
+        }) || '—'));
     const hour = node('div', 'trpg-scene-hour');
     hour.append(node('strong', '', snapshot.time || '—'), node('small', '', snapshot.period || '—'));
     hero.append(place, hour);
