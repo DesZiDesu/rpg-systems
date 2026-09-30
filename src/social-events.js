@@ -1,18 +1,120 @@
-import { parseStory } from './npc-core.js?v=0.44.6';
+import { parseStory } from './npc-core.js?v=0.44.7';
 // Pure guards shared by the inline turn tracker and its chat presentation.
 const rates = Object.freeze({ off: Infinity, rare: 12, normal: 5, often: 2 });
 export const diaryRates = Object.keys(rates);
 
 // A direct group upsert must cite an actual assertion of current membership.
 // Invitations, plans and hypothetical membership remain offers to the player.
-export function confirmedGroupMembership(value, story, userStory = '') {
+export function confirmedGroupMembership(value, story, userStory = '', playerName = '') {
     if (value?.membershipStatus !== 'established' || typeof value?.membershipEvidence !== 'string') return false;
     const evidence = value.membershipEvidence.trim();
     if (evidence.length < 8 || evidence.length > 300) return false;
-    const source = `${story || ''}\n${userStory || ''}`;
-    if (!source.toLocaleLowerCase().includes(evidence.toLocaleLowerCase())) return false;
-    if (/\b(?:if|might|could|would|want to|wish to|plan to|invited to|asked to|not|never|declined|rejected|former|used to|was|were|left|quit|no longer)\b|ถ้า|หาก|อยาก|อาจ|ชวน|เชิญ|ปฏิเสธ|ไม่ได้|เคย|ออกจาก/i.test(evidence)) return false;
-    return /\b(?:already (?:a |an )?member|(?:am|are|is) (?:already )?(?:a |an )?(?:member|part of)|(?:have|has) joined|joined|belong(?:s)? to)\b.{0,100}\b(?:party|guild)\b|\b(?:am|are|is) (?:already )?in (?:the|our|a) (?:party|guild)\b|\b(?:party|guild)\b.{0,100}\b(?:member|joined|belong)\b|(?:อยู่ใน|เป็นสมาชิก|สังกัด|เข้าร่วมแล้ว).{0,100}(?:ปาร์ตี้|กิลด์)|(?:ปาร์ตี้|กิลด์).{0,100}(?:อยู่แล้ว|เป็นสมาชิก|สังกัด|เข้าร่วมแล้ว)/iu.test(evidence);
+    const name = typeof value.name === 'string' ? value.name.trim() : '';
+    return membershipStatements(story, userStory, playerName).some(statement =>
+        statement.evidence.toLocaleLowerCase().includes(evidence.toLocaleLowerCase())
+        && (!name || statement.groups.some(group => group.unnamed || group.name.toLocaleLowerCase() === name.toLocaleLowerCase())));
+}
+
+const groupKind = label => /^(?:guild|กิลด์|กิล)$/iu.test(label) ? 'guild' : 'party';
+const groupLabel = '(?:\\b(?:party|guild)\\b|ปาร์ตี้|ปาร์ตี|กิลด์|กิล)';
+const clauseBoundary = /(?<=[.!?;。])\s*|\n+|\b(?:while|whereas)\b|(?:แต่|ขณะที่)|(?:,\s*(?:and\s+)?|\s+and\s+)(?=[A-Z][a-z]+\s+(?:is|has|was|stays|stayed|remains|remained|belongs|says)\b)/u;
+const escaped = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function namedGroups(statement) {
+    const groups = [], add = (label, raw) => {
+        const name = raw.trim().replace(/^(?:(?:the|a|an|our|my|your|called|named)\s+|(?:ชื่อ|ที่ชื่อ)\s*)/iu, '').trim();
+        if (name.length < 2 || name.length > 100 || /^(?:the|our|my|your|ของเรา|ของฉัน|ของคุณ)$/iu.test(name)
+            || /^(?:is|are|led by|with|as|and|has|have|includes|already|now|still|of|from)\b|^ของ/iu.test(name)) return;
+        if (!groups.some(group => group.kind === groupKind(label) && group.name.toLocaleLowerCase() === name.toLocaleLowerCase())) groups.push({kind:groupKind(label),name});
+    };
+    for (const match of statement.matchAll(new RegExp(`(${groupLabel})\\s*(?:ชื่อ\\s*)?["“‘']([^"”’'\\n]+)["”’']|["“‘']([^"”’'\\n]+)["”’']\\s*(${groupLabel})`, 'giu')))
+        add(match[1] || match[4], match[2] || match[3]);
+    // Unquoted names are bounded by the next clause. Only explicit membership
+    // statements call this parser; an ordinary mention cannot register a group.
+    for (const match of statement.matchAll(new RegExp(`(${groupLabel})\\s*(?:ชื่อ\\s*)?([^"“”‘’'.,!?;\\n]+)`, 'giu'))) {
+        const name = match[2].split(/\s+(?:led by|with|as|and|has|have|includes|already|now|still)\b|(?:โดย|ซึ่ง|และ|มีสมาชิก|อยู่แล้ว|แล้ว|ในฐานะ|นำโดย|ที่มี)/iu)[0];
+        add(match[1], name);
+    }
+    for (const match of statement.matchAll(/(?:\b(?:of|in|to|with)\s+(?:(?:the|our|a|an)\s+)?)?([\p{L}\p{N}][\p{L}\p{N}'’ -]{1,100}?)\s+\b(party|guild)\b/giu)) {
+        const name = match[1].replace(/^.*\b(?:of|in|to|with|lead|leads|joined|left|quit)\s+(?:(?:the|our|a|an)\s+)?/iu, '')
+            .split(/\b(?:and|but|while)\s+(?:the\s+)?/iu).at(-1);
+        if (!/\b(?:you|are|am|is|member|leader|captain|have|has)\b/iu.test(name)) add(match[2], name);
+    }
+    for (const match of statement.matchAll(/\b(?:your|my)\s+(party|guild),\s*([^,]+),/giu)) add(match[1],match[2]);
+    for (const match of statement.matchAll(new RegExp(groupLabel,'giu'))) {
+        const kind = groupKind(match[0]);
+        if (!groups.some(group => group.kind === kind)) groups.push({kind,name:kind === 'party' ? 'Party' : 'Guild',unnamed:true});
+    }
+    return groups;
+}
+function membershipStatements(story, userStory = '', playerName = '') {
+    const namedPlayer = playerName.trim().length >= 2 ? `|(?<![\\p{L}\\p{M}\\p{N}])${escaped(playerName.trim())}${/^[\x00-\x7f]+$/.test(playerName) ? '(?![\\p{L}\\p{M}\\p{N}])' : ''}` : '';
+    return [[story,false],[userStory,true]].flatMap(([source,user]) => {
+        const blocks = parseStory(source) || [{type:'plain',text:String(source || '').replace(/<[^>]*>/g,' ')}];
+        return blocks.filter(block => block.type !== 'header').flatMap(block => {
+            const firstPerson = block.name ? block.name.toLocaleLowerCase() === playerName.toLocaleLowerCase() : user;
+            const subject = `(?:\\b(?:you${firstPerson ? '|i|we|my character' : ''})\\b|(?:คุณ|เจ้า|ท่าน|ผู้เล่น|ตัวละคร${firstPerson ? '|ฉัน|ผม|ข้า|เรา|ดิฉัน' : ''})${namedPlayer})`;
+            const assertion = new RegExp(`${subject}\\s*(?:(?:are|am|is)\\s+(?:(?:already|now|still)\\s+)?(?:(?:a|an|the)\\s+)?(?:member|part of|leader|captain|guildmaster|in)\\b|(?:have|has)\\s+(?:already\\s+)?joined\\b|(?:already\\s+)?have\\s+(?:(?:a|the)\\s+)?${groupLabel}|joined\\b|belong(?:s)?\\s+to\\b|lead(?:s)?\\b|(?:formed|founded|created)\\s+(?:(?:a|the|an)\\s+)?(?=${groupLabel}\\b)|(?:are|am|is)\\s+registered\\s+with\\b|(?:เป็น|คือ)(?:สมาชิก|หัวหน้า|ผู้นำ)|อยู่ใน|สังกัด|เข้าร่วม|มี${groupLabel}|ก่อตั้ง(?=${groupLabel})|ตั้งปาร์ตี้)|\\b(?:your${firstPerson ? '|my' : ''})\\s+${groupLabel}(?=.{0,100}\\b(?:is|already|led by)\\b)`, 'iu');
+            return block.text.split(clauseBoundary).flatMap(raw => {
+                const evidence = raw.trim();
+                const normalized = evidence.replace(/\byou['’]re\b/giu,'you are').replace(/\bi['’]m\b/giu,'I am');
+                const membership = normalized.match(assertion);
+                if (evidence.length < 8 || evidence.length > 300 || /[?？]|\b(?:if|might|may|could|would|should|must|want|wish|plan|invite\w*|asked to|not|never|declin\w*|reject\w*|former|used to|was|were|left|quit|no longer)\b|ถ้า|หาก|อยาก|อาจ|ชวน|เชิญ|ปฏิเสธ|ไม่|เคย|ออกจาก|ลาออก|ยุบ/iu.test(evidence)
+                    || /\b(?:party|guild)\s+(?:room|hall|headquarters|office|counter|building|registration)\b/iu.test(evidence)
+                    || !membership || /เข้าร่วม/iu.test(evidence) && !/แล้ว/iu.test(evidence)) return [];
+                const groups = namedGroups(normalized.slice(membership.index));
+                const playerLeads = /\b(?:leader|captain|guildmaster|lead|leads|formed|founded|created)\b|หัวหน้า|ผู้นำ|ก่อตั้ง|ตั้งปาร์ตี้/iu.test(membership[0]);
+                return groups.length ? [{evidence,groups,playerLeads}] : [];
+            });
+        });
+    });
+}
+
+// Recover only named, affirmative current player memberships. Model hints can
+// enrich that assertion but cannot turn an invitation into acceptance.
+export function establishedGroupOperations(ops, npcs, story, userStory = '', playerName = '') {
+    const statements = membershipStatements(story, userStory, playerName), result = [], seen = new Set();
+    for (const statement of statements) for (const group of statement.groups) {
+        const key = `${group.kind}:${group.name.toLocaleLowerCase()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const hint = (ops || []).find(operation => ['upsert','offer'].includes(operation?.[0])
+            && (group.kind === 'party' ? ['party','partyInvitation'] : ['guilds','guildInvitation']).includes(operation[1])
+            && (group.unnamed || typeof operation[2]?.name === 'string' && operation[2].name.toLocaleLowerCase() === group.name.toLocaleLowerCase()));
+        const value = hint?.[2] || {};
+        const playerLeads = statement.playerLeads;
+        const leader = (npcs || []).find(npc => npc.met && !npc.isHostile && npc.enabled !== false
+            && new RegExp(`(?:led by|leader is|captain is|นำโดย|หัวหน้า(?:คือ|ชื่อ)?)\\s*["“']?${escaped(npc.name)}|${escaped(npc.name)}\\s*(?:เป็นหัวหน้า|คือหัวหน้า)`, 'iu').test(statement.evidence));
+        const requestedRole = typeof value.playerRole === 'string' ? value.playerRole : typeof value.role === 'string' ? value.role : 'Member';
+        const role = playerLeads ? 'Leader' : /^(?:leader|captain|guildmaster|หัวหน้า|ผู้นำ)$/iu.test(requestedRole) ? 'Member' : requestedRole;
+        const providedLeader = typeof value.leaderId === 'string' && value.leaderId !== 'player' ? value.leaderId : 'unidentified-leader';
+        const leaderId = playerLeads ? 'player' : leader?.id || providedLeader;
+        const knownLeader = (npcs || []).find(npc => npc.id === leaderId && npc.met && !npc.isHostile && npc.enabled !== false);
+        result.push(['upsert',group.kind === 'party' ? 'party' : 'guilds',{
+            ...value,name:group.unnamed && typeof value.name === 'string' && value.name.trim() ? value.name.trim() : group.name,playerRole:role,leaderId,
+            leaderName:playerLeads ? playerName : leader?.name || value.leaderName || '',
+            ...(knownLeader ? {memberIds:[...new Set([...(Array.isArray(value.memberIds) ? value.memberIds : []),knownLeader.id])],
+                knownMembers:[...(Array.isArray(value.knownMembers) ? value.knownMembers : []),{name:knownLeader.name,role:'Leader'}]} : {}),
+            ...(playerLeads ? {} : {joinedByInvitation:true}),createdByPlayer:false,membershipStatus:'established',membershipEvidence:statement.evidence,
+        }]);
+    }
+    return result;
+}
+
+export function groupMembershipEnded(story, userStory, group, playerName = '') {
+    const name = escaped(group.name || ''), label = group.kind === 'party' ? '(?:party|ปาร์ตี้|ปาร์ตี)' : '(?:guild|กิลด์|กิล)';
+    return [[story,false],[userStory,true]].some(([source,user]) => {
+        const blocks = parseStory(source) || [{type:'plain',text:String(source || '').replace(/<[^>]*>/g,' ')}];
+        return blocks.some(block => {
+            const firstPerson = block.name ? block.name.toLocaleLowerCase() === playerName.toLocaleLowerCase() : user;
+            const subject = `(?:\\b(?:you${firstPerson ? '|i|we' : ''})\\b|คุณ${firstPerson ? '|ฉัน|ผม|ข้า|เรา' : ''}${playerName ? `|${escaped(playerName)}` : ''})`;
+            return block.text.split(clauseBoundary).some(statement => {
+                if (/[?？]|\b(?:if|might|may|could|would|should|must|never|not left|not disbanded|not dissolved|did not|didn't)\b|ถ้า|หาก|อาจ|ไม่เคย|ไม่ได้ออก|ไม่ได้ลาออก|ไม่ได้ยุบ|ยังไม่ยุบ/iu.test(statement)) return false;
+                const groups = namedGroups(statement).filter(entry => entry.kind === group.kind && !entry.unnamed);
+                if (groups.length && !groups.some(entry => entry.name.toLocaleLowerCase() === group.name?.toLocaleLowerCase())) return false;
+                return new RegExp(`${subject}.{0,40}(?:left|quit|no longer|not (?:a )?member|ออกจาก|ลาออก|ไม่ได้เป็นสมาชิก|ไม่เป็นสมาชิก).{0,80}(?:${name}|${label})|(?:${name}).{0,40}(?:disbanded|dissolved|ยุบแล้ว|ถูกยุบ)`, 'iu').test(statement);
+            });
+        });
+    });
 }
 
 function mentioned(story, name) {

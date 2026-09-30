@@ -7143,7 +7143,7 @@ const aliases = {
   "If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.": 1031,
   "If no patch is returned, the activity capsule says “No state changes.” Tracking ran successfully but had nothing confirmed to save.": 1031,
   "หากไม่มีชุดอัปเดต แถบสถานะจะแสดงว่าไม่มีข้อมูลเปลี่ยนแปลง หมายถึงติดตามสำเร็จแต่ไม่มีข้อมูลยืนยันให้บันทึก": 1031,
-  "RoleForge engine 0.44.6 ready": 1032,
+  "RoleForge engine 0.44.7 ready": 1032,
   "RoleForge engine ready": 1032,
   "ระบบ RoleForge พร้อมใช้งาน": 1032,
   "พิมพ์ชื่อแท็ก…": 1033,
@@ -8307,7 +8307,7 @@ const aliases = {
   "after your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.": 1028,
   "the character produces its normal reply once. if a confirmed fact changed, it appends an invisible state patch to that same reply.": 1029,
   "the extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.": 1030,
-  "roleforge engine 0.44.6 ready": 1032,
+  "roleforge engine 0.44.7 ready": 1032,
   "roleforge engine ready": 1032,
   "name of the preferred tag": 1034,
   "character (all chats of this card)": 1048,
@@ -8645,4 +8645,82 @@ for(const pair of [
   ['Always · full style and all selected tags are sent','ทุกครั้ง · ส่งสไตล์ทั้งหมดและทุกแท็กที่เลือก'],
   ['Auto · {0}/{1} sections and {2} tags selected','อัตโนมัติ · เลือก {0}/{1} ส่วน และ {2} แท็ก'],
 ]){aliases[pair[0]]=messages.length;aliases[pair[1]]=messages.length;messages.push(pair);}
+for (const pair of [
+  [
+    "Directory layout",
+    "รูปแบบรายชื่อ"
+  ],
+  [
+    "Name tabs",
+    "แท็บชื่อ"
+  ],
+  [
+    "Portrait cards",
+    "การ์ดตัวละคร"
+  ],
+  [
+    "Compact selector",
+    "เมนูเลือกกะทัดรัด"
+  ],
+  [
+    "Quick switching · recommended",
+    "สลับคนได้เร็ว · แนะนำ"
+  ],
+  [
+    "Recognize characters by portrait",
+    "เลือกจากภาพตัวละคร"
+  ],
+  [
+    "Save space with many characters",
+    "ประหยัดพื้นที่เมื่อมีหลายคน"
+  ],
+  [
+    "Characters · {0}",
+    "ตัวละคร · {0} คน"
+  ],
+  [
+    "Manage directory",
+    "จัดการรายชื่อ"
+  ],
+  [
+    "Done managing",
+    "เสร็จแล้ว"
+  ],
+  [
+    "Hide characters here. Their dossiers and stats stay saved.",
+    "ซ่อนตัวละครจากรายชื่อได้ที่นี่ ข้อมูลและค่าสถานะยังเก็บไว้"
+  ],
+  [
+    "Hide {0} from H-Stats",
+    "ซ่อน {0} จาก H-Stats"
+  ],
+  [
+    "Hide",
+    "ซ่อน"
+  ],
+  [
+    "Confirm hide",
+    "ยืนยันซ่อน"
+  ],
+  [
+    "Hide {0} from this directory?",
+    "ซ่อน {0} จากรายชื่อนี้หรือไม่?"
+  ],
+  [
+    "The NPC and all H-Stats stay saved. Add them back anytime.",
+    "ตัวละครและ H-Stats ทั้งหมดยังเก็บไว้ เพิ่มกลับมาได้ทุกเมื่อ"
+  ],
+  [
+    "{0} hidden from directory",
+    "ซ่อน {0} จากรายชื่อแล้ว"
+  ],
+  [
+    "Undo hide",
+    "เลิกทำ"
+  ],
+  [
+    "Select character",
+    "เลือกตัวละคร"
+  ]
+]) { aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length; messages.push(pair); }
 export const UI_STRINGS = Object.freeze(Object.fromEntries(Object.entries(aliases).map(([key,index])=>[key,Object.freeze(messages[index])])));

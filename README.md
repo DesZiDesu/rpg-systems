@@ -1,4 +1,13 @@
-# ROLEFORGE — v0.44.6
+# ROLEFORGE — v0.44.7
+
+## v0.44.7 — Safer H-Stats and existing group recovery
+
+- Open **H-Stats → Directory layout** to try **Name tabs** (recommended for quick switching), **Portrait cards** (choose by picture), or **Compact selector** (save space with many characters). The preference is remembered across reloads and applies to each chat's own roster. Existing NPCs, H-Stats and portraits are preserved.
+- Character selection has no remove button. Open **Manage directory**, choose **Hide** beside a name, then confirm the named character. Cancel leaves the roster intact. **Undo hide** restores the previous order and selection; hidden characters can also be added back through the picker. Hiding changes the current chat's directory only and keeps every NPC record and H-Stats value. Pending confirmation and Undo reset when switching chats.
+- The directory remains usable while an initial H-Stats profile is loading. Controls have at least 44px touch targets and support Thai/English UI preferences.
+- Party/Guild tracking now recognizes explicit existing membership in common Thai/English narration and player statements even when the AI omits group operations or the extra membership flags. Normal turns and Manual Sync share the same validation. NPC leadership and the player's membership role are retained; recovering an existing guild does not charge a founding fee. Invitations remain offers to accept or decline.
+- Opening or switching to an existing chat locally checks up to 300 recent messages for missing group membership, after the player has replied. It also reads an opening message inside that range. Later departures, explicit deletion, saved removal audits and turn records prevent restoring groups the player already left. The recovery is saved per chat and makes no extra AI request. Statements outside this range or unclear membership descriptions are not guessed.
+- Try the production-based demo in [docs/previews/preview-h-stats.html](docs/previews/preview-h-stats.html) using a local static server (for example, `python3 -m http.server 8000` in the repository root). Open `http://localhost:8000/docs/previews/preview-h-stats.html`. The demo uses sample characters; changing its directory does not affect a SillyTavern chat.
 
 ## v0.44.6 — Established groups and selected H-Stats NPCs
 

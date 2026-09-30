@@ -1,22 +1,22 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.6';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.6';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.7';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.7';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.6';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.6';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.6';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.7';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.7';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene } from './src/scene-tracker.js?v=0.44.7';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.6';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.6';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.6';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.6';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.6';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.6';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.6';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.6';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.6';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership } from './src/social-events.js?v=0.44.6';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.6';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.7';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.7';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.7';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.7';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.7';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.7';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.7';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.7';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.7';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.44.7';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.7';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -43,6 +43,7 @@ const MANUAL_SYNC_HISTORY_KEY = 'tretaresia_rpg_manual_sync_history';
 const TURN_HISTORY_KEY = 'tretaresia_rpg_turn_history';
 const SCENE_HISTORY_KEY = 'tretaresia_rpg_scene_history';
 const SOCIAL_EVENTS_KEY = 'tretaresia_rpg_social_events';
+const GROUP_RECOVERY_KEY = 'tretaresia_rpg_group_recovery';
 const PROMPT_KEY = 'tretaresia_rpg_roleplay_state';
 const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
 const STATE_PACKAGE_FORMAT = 'tretaresia-rpg-state';
@@ -847,6 +848,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     npcDiaryFrequency: 'normal',
     injectState: true,
     language: 'en',
+    hStatsLayout: 'tabs',
     interactionMode: 'hidden',
     activityIndicator: 'full',
     themePreset: 'forge',
@@ -891,6 +893,9 @@ let selectedHStatsNpcId = null;
 let hStatsSelectionChatId = null;
 let selectedHStatsSection = 'Body';
 let hStatsEditing = false;
+let hStatsManageOpen = false;
+let hStatsPendingRemovalId = null;
+let hStatsLastHiddenNpc = null;
 let activeQuestSection = 'active';
 let characterLifeSkillSyncTimer = null;
 let characterLifeCompatibilityTimer = null;
@@ -1172,6 +1177,7 @@ function getSettings() {
     if (!hadVisualVersion && settings.accentColor === '#8fb4a3') settings.accentColor = DEFAULT_SETTINGS.accentColor;
     settings.visualVersion = Math.max(6, number(settings.visualVersion, 6, 1, 99));
     if (!['en', 'th'].includes(settings.language)) settings.language = DEFAULT_SETTINGS.language;
+    if (!['tabs', 'cards', 'compact'].includes(settings.hStatsLayout)) settings.hStatsLayout = DEFAULT_SETTINGS.hStatsLayout;
     if (!['hidden', 'visible', 'draft'].includes(settings.interactionMode)) settings.interactionMode = DEFAULT_SETTINGS.interactionMode;
     if (!['full', 'compact', 'off'].includes(settings.activityIndicator)) settings.activityIndicator = DEFAULT_SETTINGS.activityIndicator;
     if (!diaryRates.includes(settings.npcDiaryFrequency)) settings.npcDiaryFrequency = DEFAULT_SETTINGS.npcDiaryFrequency;
@@ -3388,7 +3394,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.6`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.7`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -6778,6 +6784,9 @@ function syncHStatsSelectionChat(context = SillyTavern.getContext()) {
         selectedHStatsNpcId = null;
         selectedHStatsSection = 'Body';
         hStatsEditing = false;
+        hStatsManageOpen = false;
+        hStatsPendingRemovalId = null;
+        hStatsLastHiddenNpc = null;
     }
     return context;
 }
@@ -6794,6 +6803,8 @@ function chooseHStatsNpc(id, state = getState()) {
     if (!ids.includes(id)) ids.push(id);
     selectedHStatsNpcId = id;
     hStatsEditing = false;
+    hStatsPendingRemovalId = null;
+    if (hStatsLastHiddenNpc?.id === id) hStatsLastHiddenNpc = null;
     if (context.getCurrentChatId?.() && context.chatMetadata) {
         context.chatMetadata[H_VISIBLE_KEY] = ids;
         context.chatMetadata[H_SELECTION_KEY] = id;
@@ -6803,14 +6814,122 @@ function chooseHStatsNpc(id, state = getState()) {
 }
 function removeHStatsNpc(id, state = getState()) {
     const context = syncHStatsSelectionChat();
-    const ids = visibleHStatsNpcs(state, context).map(entry => entry.id).filter(entry => entry !== id);
-    if (ids.length === visibleHStatsNpcs(state, context).length) return false;
+    const roster = visibleHStatsNpcs(state, context);
+    const index = roster.findIndex(entry => entry.id === id);
+    if (index < 0 || !context.chatMetadata) return false;
+    hStatsLastHiddenNpc = { id, name: roster[index].name, index, selectedId: selectedHStatsNpcId, chatId: hStatsSelectionChatId };
+    const ids = roster.map(entry => entry.id).filter(entry => entry !== id);
     context.chatMetadata[H_VISIBLE_KEY] = ids;
     if (selectedHStatsNpcId === id) selectedHStatsNpcId = ids[0] || null;
     context.chatMetadata[H_SELECTION_KEY] = selectedHStatsNpcId;
     hStatsEditing = false;
+    hStatsPendingRemovalId = null;
     void saveCurrentChatMetadata(context).catch(error => console.warn('[RoleForge] Could not save H-Stats selection.', error));
     return true;
+}
+function getHStatsLayout() {
+    return getSettings().hStatsLayout;
+}
+function setHStatsLayout(layout) {
+    if (!['tabs', 'cards', 'compact'].includes(layout)) return false;
+    getSettings().hStatsLayout = layout;
+    SillyTavern.getContext().saveSettingsDebounced?.();
+    return true;
+}
+function toggleHStatsManage() {
+    syncHStatsSelectionChat();
+    hStatsManageOpen = !hStatsManageOpen;
+    hStatsPendingRemovalId = null;
+    return hStatsManageOpen;
+}
+function requestHideHStatsNpc(id, state = getState()) {
+    syncHStatsSelectionChat();
+    if (!hStatsManageOpen || !visibleHStatsNpcs(state).some(entry => entry.id === id)) return false;
+    hStatsPendingRemovalId = id;
+    return true;
+}
+function cancelHideHStatsNpc() {
+    syncHStatsSelectionChat();
+    hStatsPendingRemovalId = null;
+}
+function confirmHideHStatsNpc(state = getState()) {
+    syncHStatsSelectionChat();
+    if (!hStatsManageOpen || !hStatsPendingRemovalId) return false;
+    return removeHStatsNpc(hStatsPendingRemovalId, state);
+}
+function undoHideHStatsNpc(state = getState()) {
+    const context = syncHStatsSelectionChat();
+    const hidden = hStatsLastHiddenNpc;
+    if (!hidden || hidden.chatId !== hStatsSelectionChatId || !context.chatMetadata
+        || !metFriendlyNpcs(state).some(entry => entry.id === hidden.id)) return false;
+    const ids = visibleHStatsNpcs(state, context).map(entry => entry.id);
+    if (ids.includes(hidden.id)) { hStatsLastHiddenNpc = null; return false; }
+    ids.splice(Math.min(hidden.index, ids.length), 0, hidden.id);
+    context.chatMetadata[H_VISIBLE_KEY] = ids;
+    selectedHStatsNpcId = ids.includes(hidden.selectedId) ? hidden.selectedId : hidden.id;
+    context.chatMetadata[H_SELECTION_KEY] = selectedHStatsNpcId;
+    hStatsEditing = false;
+    hStatsPendingRemovalId = null;
+    hStatsLastHiddenNpc = null;
+    void saveCurrentChatMetadata(context).catch(error => console.warn('[RoleForge] Could not restore H-Stats selection.', error));
+    return true;
+}
+const H_LAYOUT_CHOICES = [
+    ['tabs', 'Name tabs', 'fa-list', 'Quick switching · recommended'],
+    ['cards', 'Portrait cards', 'fa-id-card', 'Recognize characters by portrait'],
+    ['compact', 'Compact selector', 'fa-caret-down', 'Save space with many characters'],
+];
+function refreshHStats(focusAction, focusId) {
+    const panel = document.querySelector('[data-panel="hstats"]');
+    renderPanel('hstats', panel, getState());
+    const target = focusAction === 'compact-selector' ? panel?.querySelector('select[name="hStatsSelectedNpc"]')
+        : [...(panel?.querySelectorAll(`[data-action="${focusAction}"]`) || [])].find(node => !focusId || node.dataset.id === focusId);
+    target?.focus({preventScroll: true});
+}
+function renderHStatsControls(roster, layoutOptionsOpen = false) {
+    const layout = getHStatsLayout();
+    const layoutName = H_LAYOUT_CHOICES.find(([id]) => id === layout)[1];
+    const pending = roster.find(entry => entry.id === hStatsPendingRemovalId);
+    const hidden = hStatsLastHiddenNpc;
+    return `<div class="tretaresia-h-controls">
+        <details class="tretaresia-h-layout-settings"${layoutOptionsOpen ? ' open' : ''}>
+            <summary>${html(uiText('Directory layout'))} <span>${html(uiText(layoutName))}</span></summary>
+            <div class="tretaresia-h-layout-choices">${H_LAYOUT_CHOICES.map(([id, name, icon, description]) => `
+                <button type="button" data-action="set-hstats-layout" data-id="${id}" aria-pressed="${layout === id}">
+                    <i class="fa-solid ${icon}" aria-hidden="true"></i><strong>${html(uiText(name))}</strong><small>${html(uiText(description))}</small>
+                </button>`).join('')}</div>
+        </details>
+        ${roster.length ? `<div class="tretaresia-h-directory-header"><span>${html(uiText('Characters · {0}', [roster.length]))}</span>
+            <button type="button" data-action="toggle-hstats-manage" aria-expanded="${hStatsManageOpen}" aria-controls="tretaresia-h-manager">
+                <i class="fa-solid ${hStatsManageOpen ? 'fa-check' : 'fa-sliders'}" aria-hidden="true"></i> ${html(uiText(hStatsManageOpen ? 'Done managing' : 'Manage directory'))}
+            </button></div>` : ''}
+        ${hStatsManageOpen && roster.length ? `<section class="tretaresia-h-manager" id="tretaresia-h-manager" aria-label="${html(uiText('Manage directory'))}">
+            <p>${html(uiText('Hide characters here. Their dossiers and stats stay saved.'))}</p>
+            ${roster.map(entry => `<div class="tretaresia-h-manager-row"><span>${html(entry.name)}</span>
+                <button type="button" data-action="request-hide-hstats-npc" data-id="${html(entry.id)}" aria-label="${html(uiText('Hide {0} from H-Stats', [entry.name]))}">
+                    <i class="fa-solid fa-eye-slash" aria-hidden="true"></i> ${html(uiText('Hide'))}</button></div>`).join('')}
+            ${pending ? `<div class="tretaresia-h-confirm" role="group" aria-label="${html(uiText('Confirm hide'))}">
+                <p>${html(uiText('Hide {0} from this directory?', [pending.name]))}</p>
+                <small>${html(uiText('The NPC and all H-Stats stay saved. Add them back anytime.'))}</small>
+                <div class="tretaresia-h-confirm-actions"><button type="button" data-action="cancel-hide-hstats-npc">${html(uiText('Cancel'))}</button>
+                    <button type="button" data-action="confirm-hide-hstats-npc">${html(uiText('Confirm hide'))}</button></div>
+            </div>` : ''}</section>` : ''}
+        ${hidden ? `<div class="tretaresia-h-undo" role="status"><span>${html(uiText('{0} hidden from directory', [hidden.name]))}</span>
+            <button type="button" data-action="undo-hide-hstats-npc">${html(uiText('Undo hide'))}</button></div>` : ''}
+    </div>`;
+}
+function renderHStatsDirectory(roster, selected) {
+    const layout = getHStatsLayout();
+    const directoryLabel = html(uiText('Select character'));
+    if (layout === 'compact') return `<nav class="tretaresia-h-roster" data-h-layout="compact" aria-label="${directoryLabel}">
+        <label class="tretaresia-h-compact-label"><span>${directoryLabel}</span><select name="hStatsSelectedNpc">
+            ${roster.map(entry => `<option value="${html(entry.id)}"${selected?.id === entry.id ? ' selected' : ''}>${html(entry.name)}</option>`).join('')}
+        </select></label><small>${html(uiText('Characters · {0}', [roster.length]))}</small></nav>`;
+    return `<nav class="tretaresia-h-roster" data-h-layout="${layout}" aria-label="${directoryLabel}">
+        ${roster.map(entry => `<div class="tretaresia-h-roster-item"><button type="button" data-action="select-hstats-npc" data-id="${html(entry.id)}" class="${selected?.id === entry.id ? 'is-active' : ''}" aria-pressed="${selected?.id === entry.id}">
+            ${layout === 'cards' ? npcPortraitSlot(entry, 'tretaresia-h-card-portrait') + '<span class="tretaresia-h-card-copy">' : ''}
+            <strong>${html(entry.name)}</strong><small>${html(entry.location || entry.title || entry.gender || '—')}</small>${layout === 'cards' ? '</span>' : ''}
+        </button></div>`).join('')}</nav>`;
 }
 function hFieldControl(field, value) {
     const label = html(field.label), key = html(field.key), stored = value === null || value === undefined ? '' : value;
@@ -6927,6 +7046,9 @@ function renderHStats(panel, state) {
         selectedHStatsNpcId = [stored, roster[0]?.id].find(id => roster.some(entry => entry.id === id)) || null;
     }
     const selected = roster.find(entry => entry.id === selectedHStatsNpcId);
+    const controls = renderHStatsControls(roster, panel.querySelector?.('.tretaresia-h-layout-settings')?.open || false);
+    const directory = roster.length ? renderHStatsDirectory(roster, selected) : '';
+    const layout = getHStatsLayout();
     const available = metFriendlyNpcs(state).filter(entry => !roster.some(visible => visible.id === entry.id));
     const picker = available.length ? (uiMarkup('<div class="tretaresia-h-picker"><label><span>เลือกคนที่จะแสดง / Add to H-Stats</span><select name="hStatsNpcId">')
         + available.map(entry => (uiMarkup('<option value="')+html(entry.id)+uiMarkup('">')+html(entry.name)+uiMarkup('</option>'))).join('')
@@ -6936,7 +7058,8 @@ function renderHStats(panel, state) {
     if (selected && hStatsMissingFields(selected).length && openPanel) {
         const failed = hStatsBaselineFailures.has(hStatsBaselineKey(selected.id, context));
         if (!failed) void completeHStatsBaseline(selected.id);
-        panel.innerHTML = (uiMarkup("")+(heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse'))+picker+uiMarkup("\n            <section class=\"tretaresia-h-empty\" role=\"status\"><i class=\"fa-solid fa-heart-pulse\"></i><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(failed ? 'บันทึกโปรไฟล์ยังไม่สำเร็จ กรุณาลองใหม่' : 'กำลังสร้างโปรไฟล์ H-Stats ให้ครบทุกช่อง และเก็บค่าที่เนื้อเรื่องยืนยันไว้')+uiMarkup("</p>")+(failed ? uiMarkup("<button type=\"button\" class=\"tretaresia-primary-button\" data-action=\"retry-hstats-baseline\">ลองสร้างอีกครั้ง</button>") : '')+uiMarkup("</section>"));
+        panel.innerHTML = (uiMarkup("")+(heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse'))+picker+controls+`<div class="tretaresia-h-shell" data-h-layout="${layout}">${directory}<div class="tretaresia-h-main">`+uiMarkup("\n            <section class=\"tretaresia-h-empty\" role=\"status\"><i class=\"fa-solid fa-heart-pulse\"></i><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(failed ? 'บันทึกโปรไฟล์ยังไม่สำเร็จ กรุณาลองใหม่' : 'กำลังสร้างโปรไฟล์ H-Stats ให้ครบทุกช่อง และเก็บค่าที่เนื้อเรื่องยืนยันไว้')+uiMarkup("</p>")+(failed ? uiMarkup("<button type=\"button\" class=\"tretaresia-primary-button\" data-action=\"retry-hstats-baseline\">ลองสร้างอีกครั้ง</button>") : '')+uiMarkup("</section></div></div>"));
+        if (typeof panel.querySelectorAll === 'function') void hydrateNpcPortraits(panel, state);
         return;
     }
     const sheet = selected ? hStats(selected.hStats) : null;
@@ -6954,8 +7077,8 @@ function renderHStats(panel, state) {
     ] : [];
     const fields = H_FIELDS.filter(field => field.group === selectedHStatsSection);
     panel.innerHTML = `${heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse')}
-        ${picker}
-        ${roster.length ? (uiMarkup("<div class=\"tretaresia-h-shell\"><nav class=\"tretaresia-h-roster\" aria-label=\"NPC DIRECTORY · เลือกตัวละคร\"><small>NPC DIRECTORY · เลือกตัวละคร</small>")+(roster.map(entry => (uiMarkup("<div class=\"tretaresia-h-roster-item\"><button type=\"button\" data-action=\"select-hstats-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\" class=\"")+(selected?.id === entry.id ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selected?.id === entry.id)+uiMarkup("\"><strong>")+(html(entry.name))+uiMarkup("</strong><small>")+(html(entry.gender || '—'))+uiMarkup(" · ")+(html(entry.location || entry.title || '—'))+uiMarkup("</small></button><button type=\"button\" class=\"tretaresia-h-remove\" data-action=\"remove-hstats-npc\" data-id=\"")+(html(entry.id))+uiMarkup("\" aria-label=\"Remove ")+(html(entry.name))+uiMarkup(" from H-Stats\"><i class=\"fa-solid fa-xmark\"></i></button></div>"))).join(''))+uiMarkup("</nav>\n        <div class=\"tretaresia-h-main\"><section class=\"tretaresia-h-hero\"><div class=\"tretaresia-h-portrait-stage\"><span class=\"tretaresia-h-monogram\">")+(npcPortraitSlot(selected, 'tretaresia-npc-portrait tretaresia-h-photo'))+uiMarkup("</span><small>PARTNER · ")+(html(selected.name))+uiMarkup("</small></div><div class=\"tretaresia-h-hero-info\"><div class=\"tretaresia-h-identity\"><div><small>")+(html(selected.gender || '—'))+uiMarkup(" · ")+(html(selected.race || selected.location || '—'))+uiMarkup("</small><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(html(selected.title || selected.occupation || selected.relationship || '—'))+uiMarkup("</p><span>")+(html(selected.location || '—'))+uiMarkup("</span></div></div>\n        <div class=\"tretaresia-h-status\"><div><span>ความซื่อสัตย์ต่อผู้เล่น</span><div class=\"tretaresia-h-heart-value\"><div class=\"tretaresia-h-hearts\" aria-label=\"Loyalty ")+(hearts === null ? 'unknown' : hearts + ' of 5')+uiMarkup("\">")+(Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join(''))+uiMarkup("</div><small>")+(hearts === null ? 'ยังไม่ทราบ' : `${hearts} / 5${generated.has('loyaltyHearts') ? ' · AI' : ''}`)+uiMarkup("</small></div></div><div><span>แนวโน้มนอกใจ</span><strong>STAGE ")+(stage)+uiMarkup(" / 5 · ")+(progress ?? '—')+uiMarkup("%")+(generated.has('infidelityStage') || generated.has('infidelityProgress') ? ' · AI' : '')+uiMarkup("</strong></div><div class=\"tretaresia-h-track\" role=\"progressbar\" aria-label=\"Infidelity stage progress\" ")+(progress === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"`)+uiMarkup("><i style=\"width:")+(progress ?? 0)+uiMarkup("%\"></i></div><div><span>การตั้งครรภ์</span><strong>")+(sheet.pregnant === null ? 'ยังไม่ทราบ' : sheet.pregnant ? 'ท้อง' : 'ไม่ท้อง')+uiMarkup("")+(generated.has('pregnant') ? ' · AI' : '')+uiMarkup("</strong></div></div></div></section>\n        <section class=\"tretaresia-h-highlights\" aria-label=\"H-Stats overview\">")+(highlights.map(([title,icon,quality,stateKey,count]) => (uiMarkup("<article><header><i class=\"fa-solid ")+(icon)+uiMarkup("\" aria-hidden=\"true\"></i><strong>")+(title)+uiMarkup("</strong></header><div><span>")+(html(H_FIELD_MAP[quality].label))+uiMarkup("</span><b>")+(knownH(quality))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[stateKey].label))+uiMarkup("</span><b>")+(knownH(stateKey))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[count].label))+uiMarkup("</span><b>")+(knownH(count))+uiMarkup("</b></div></article>"))).join(''))+uiMarkup("</section>\n        <p class=\"tretaresia-h-sync-note\">")+(generated.size ? `${generated.size} ช่องเป็นค่าเริ่มต้นที่สร้างขึ้นและจะเปลี่ยนเมื่อเรื่องยืนยันข้อมูลใหม่` : 'ข้อมูลทุกช่องมาจากเรื่องหรือการแก้ไขของคุณ')+uiMarkup(" <button type=\"button\" data-action=\"open-manual-sync\">เลือกช่วงข้อความเพื่ออัปเดตทุกแท็บ</button></p>\n        <nav class=\"tretaresia-h-sections\" aria-label=\"H-Stats categories\">")+(H_GROUPS.map(group => (uiMarkup("<button type=\"button\" data-action=\"select-hstats-section\" data-id=\"")+(group)+uiMarkup("\" class=\"")+(selectedHStatsSection === group ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selectedHStatsSection === group)+uiMarkup("\">")+(H_GROUP_LABELS[group])+uiMarkup("</button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-h-detail\"><header><h4>")+(H_GROUP_LABELS[selectedHStatsSection])+uiMarkup("</h4><button type=\"button\" data-action=\"toggle-hstats-edit\" aria-pressed=\"")+(hStatsEditing)+uiMarkup("\"><i class=\"fa-solid ")+(hStatsEditing ? 'fa-xmark' : 'fa-pen')+uiMarkup("\"></i> ")+(hStatsEditing ? 'ยกเลิกแก้ไข / Cancel' : 'แก้ไขข้อมูล / Edit')+uiMarkup("</button></header>\n        ")+(hStatsEditing ? (uiMarkup("<form data-form=\"npc-hstats\" class=\"tretaresia-h-form\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(selected.id))+uiMarkup("\"><div class=\"tretaresia-h-grid\">")+(fields.map(field => hFieldControl(field, sheet[field.key])).join(''))+uiMarkup("</div><button type=\"submit\" class=\"tretaresia-primary-button\">บันทึกข้อมูล / Save</button></form>")) : (uiMarkup("<div class=\"tretaresia-h-readout\">")+(fields.map(field => (uiMarkup("<div><span>")+(html(field.label))+uiMarkup("</span><strong>")+(html(sheet[field.key] === null || sheet[field.key] === '' ? 'ยังไม่ทราบ' : field.type === 'boolean' ? sheet[field.key] ? 'ท้อง / Pregnant' : 'ไม่ท้อง / Not pregnant' : String(sheet[field.key])))+uiMarkup("")+(generated.has(field.key) ? uiMarkup("<small class=\"tretaresia-h-generated\">ค่าเริ่มต้น AI</small>") : '')+uiMarkup("</strong></div>"))).join(''))+uiMarkup("</div>")))+uiMarkup("</section></div></div>")) : (uiMarkup("<section class=\"tretaresia-h-empty\"><i class=\"fa-solid fa-users-viewfinder\"></i><h3>ยังไม่ได้เลือกตัวละคร</h3><p>เลือก NPC ที่เคยพบจากเมนูด้านบน หรือเปิดข้อมูล NPC แล้วกด H-Stats</p><button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open>เปิด NPC Management</button></section>"))}`;
+        ${picker}${controls}
+        ${roster.length ? (`<div class="tretaresia-h-shell" data-h-layout="${layout}">${directory}`+uiMarkup("<div class=\"tretaresia-h-main\"><section class=\"tretaresia-h-hero\"><div class=\"tretaresia-h-portrait-stage\"><span class=\"tretaresia-h-monogram\">")+(npcPortraitSlot(selected, 'tretaresia-npc-portrait tretaresia-h-photo'))+uiMarkup("</span><small>PARTNER · ")+(html(selected.name))+uiMarkup("</small></div><div class=\"tretaresia-h-hero-info\"><div class=\"tretaresia-h-identity\"><div><small>")+(html(selected.gender || '—'))+uiMarkup(" · ")+(html(selected.race || selected.location || '—'))+uiMarkup("</small><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(html(selected.title || selected.occupation || selected.relationship || '—'))+uiMarkup("</p><span>")+(html(selected.location || '—'))+uiMarkup("</span></div></div>\n        <div class=\"tretaresia-h-status\"><div><span>ความซื่อสัตย์ต่อผู้เล่น</span><div class=\"tretaresia-h-heart-value\"><div class=\"tretaresia-h-hearts\" aria-label=\"Loyalty ")+(hearts === null ? 'unknown' : hearts + ' of 5')+uiMarkup("\">")+(Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join(''))+uiMarkup("</div><small>")+(hearts === null ? 'ยังไม่ทราบ' : `${hearts} / 5${generated.has('loyaltyHearts') ? ' · AI' : ''}`)+uiMarkup("</small></div></div><div><span>แนวโน้มนอกใจ</span><strong>STAGE ")+(stage)+uiMarkup(" / 5 · ")+(progress ?? '—')+uiMarkup("%")+(generated.has('infidelityStage') || generated.has('infidelityProgress') ? ' · AI' : '')+uiMarkup("</strong></div><div class=\"tretaresia-h-track\" role=\"progressbar\" aria-label=\"Infidelity stage progress\" ")+(progress === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"`)+uiMarkup("><i style=\"width:")+(progress ?? 0)+uiMarkup("%\"></i></div><div><span>การตั้งครรภ์</span><strong>")+(sheet.pregnant === null ? 'ยังไม่ทราบ' : sheet.pregnant ? 'ท้อง' : 'ไม่ท้อง')+uiMarkup("")+(generated.has('pregnant') ? ' · AI' : '')+uiMarkup("</strong></div></div></div></section>\n        <section class=\"tretaresia-h-highlights\" aria-label=\"H-Stats overview\">")+(highlights.map(([title,icon,quality,stateKey,count]) => (uiMarkup("<article><header><i class=\"fa-solid ")+(icon)+uiMarkup("\" aria-hidden=\"true\"></i><strong>")+(title)+uiMarkup("</strong></header><div><span>")+(html(H_FIELD_MAP[quality].label))+uiMarkup("</span><b>")+(knownH(quality))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[stateKey].label))+uiMarkup("</span><b>")+(knownH(stateKey))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[count].label))+uiMarkup("</span><b>")+(knownH(count))+uiMarkup("</b></div></article>"))).join(''))+uiMarkup("</section>\n        <p class=\"tretaresia-h-sync-note\">")+(generated.size ? `${generated.size} ช่องเป็นค่าเริ่มต้นที่สร้างขึ้นและจะเปลี่ยนเมื่อเรื่องยืนยันข้อมูลใหม่` : 'ข้อมูลทุกช่องมาจากเรื่องหรือการแก้ไขของคุณ')+uiMarkup(" <button type=\"button\" data-action=\"open-manual-sync\">เลือกช่วงข้อความเพื่ออัปเดตทุกแท็บ</button></p>\n        <nav class=\"tretaresia-h-sections\" aria-label=\"H-Stats categories\">")+(H_GROUPS.map(group => (uiMarkup("<button type=\"button\" data-action=\"select-hstats-section\" data-id=\"")+(group)+uiMarkup("\" class=\"")+(selectedHStatsSection === group ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selectedHStatsSection === group)+uiMarkup("\">")+(H_GROUP_LABELS[group])+uiMarkup("</button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-h-detail\"><header><h4>")+(H_GROUP_LABELS[selectedHStatsSection])+uiMarkup("</h4><button type=\"button\" data-action=\"toggle-hstats-edit\" aria-pressed=\"")+(hStatsEditing)+uiMarkup("\"><i class=\"fa-solid ")+(hStatsEditing ? 'fa-xmark' : 'fa-pen')+uiMarkup("\"></i> ")+(hStatsEditing ? 'ยกเลิกแก้ไข / Cancel' : 'แก้ไขข้อมูล / Edit')+uiMarkup("</button></header>\n        ")+(hStatsEditing ? (uiMarkup("<form data-form=\"npc-hstats\" class=\"tretaresia-h-form\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(selected.id))+uiMarkup("\"><div class=\"tretaresia-h-grid\">")+(fields.map(field => hFieldControl(field, sheet[field.key])).join(''))+uiMarkup("</div><button type=\"submit\" class=\"tretaresia-primary-button\">บันทึกข้อมูล / Save</button></form>")) : (uiMarkup("<div class=\"tretaresia-h-readout\">")+(fields.map(field => (uiMarkup("<div><span>")+(html(field.label))+uiMarkup("</span><strong>")+(html(sheet[field.key] === null || sheet[field.key] === '' ? 'ยังไม่ทราบ' : field.type === 'boolean' ? sheet[field.key] ? 'ท้อง / Pregnant' : 'ไม่ท้อง / Not pregnant' : String(sheet[field.key])))+uiMarkup("")+(generated.has(field.key) ? uiMarkup("<small class=\"tretaresia-h-generated\">ค่าเริ่มต้น AI</small>") : '')+uiMarkup("</strong></div>"))).join(''))+uiMarkup("</div>")))+uiMarkup("</section></div></div>")) : (uiMarkup("<section class=\"tretaresia-h-empty\"><i class=\"fa-solid fa-users-viewfinder\"></i><h3>ยังไม่ได้เลือกตัวละคร</h3><p>เลือก NPC ที่เคยพบจากเมนูด้านบน หรือเปิดข้อมูล NPC แล้วกด H-Stats</p><button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open>เปิด NPC Management</button></section>"))}`;
     if (selected && typeof panel.querySelectorAll === 'function') void hydrateNpcPortraits(panel, state);
 }
 
@@ -7857,6 +7980,13 @@ async function onSubmit(event) {
 }
 
 async function onPanelChange(event) {
+    const hStatsSelector = event.target.closest('select[name="hStatsSelectedNpc"]');
+    if (hStatsSelector) {
+        const state = getState();
+        if (visibleHStatsNpcs(state).some(entry => entry.id === hStatsSelector.value)
+            && chooseHStatsNpc(hStatsSelector.value, state)) refreshHStats('compact-selector');
+        return;
+    }
     const stateImport = event.target.closest('#tretaresia-state-import');
     if (stateImport instanceof HTMLInputElement && stateImport.files?.[0]) {
         try { await importStatePackage(stateImport.files[0]); }
@@ -8278,8 +8408,27 @@ async function onPanelClick(event) {
             if (chooseHStatsNpc(chosen, state)) renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
             break;
         }
-        case 'remove-hstats-npc':
-            if (removeHStatsNpc(id, state)) renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
+        case 'set-hstats-layout':
+            if (setHStatsLayout(id)) refreshHStats('set-hstats-layout', id);
+            break;
+        case 'toggle-hstats-manage':
+            toggleHStatsManage();
+            refreshHStats('toggle-hstats-manage');
+            break;
+        case 'request-hide-hstats-npc':
+            if (requestHideHStatsNpc(id, state)) refreshHStats('cancel-hide-hstats-npc');
+            break;
+        case 'cancel-hide-hstats-npc': {
+            const pendingId = hStatsPendingRemovalId;
+            cancelHideHStatsNpc();
+            refreshHStats('request-hide-hstats-npc', pendingId);
+            break;
+        }
+        case 'confirm-hide-hstats-npc':
+            if (confirmHideHStatsNpc(state)) refreshHStats('undo-hide-hstats-npc');
+            break;
+        case 'undo-hide-hstats-npc':
+            if (undoHideHStatsNpc(state)) refreshHStats('toggle-hstats-manage');
             break;
         case 'select-hstats-npc':
             if (visibleHStatsNpcs(state).some(entry => entry.id === id) && chooseHStatsNpc(id, state)) renderPanel('hstats', document.querySelector('[data-panel="hstats"]'), getState());
@@ -9676,6 +9825,89 @@ function npcProgressionOperations(raw, targets, state, base) {
     });
 }
 
+function confirmedSocialOperations(operations, state, story, userStory = '') {
+    const recovered = establishedGroupOperations(operations, state.npcs, story, userStory, state.player.name)
+        .filter(([,path,value]) => !groupMembershipEnded(story, '', {kind:path === 'party' ? 'party' : 'guild',name:value.name}, state.player.name));
+    const used = new Set();
+    const result = operations.flatMap(([verb,path,value,...rest]) => {
+        if (['householdInvitation','partyInvitation','guildInvitation','npcDiary'].includes(path)
+            || verb === 'upsert' && path === 'householdMembers') return [];
+        if (verb === 'upsert' && path === 'household') return [[verb,path,{...value,members:undefined},...rest]];
+        if (verb !== 'upsert' || !['party','guilds'].includes(path)) return [[verb,path,value,...rest]];
+        const name = typeof value?.name === 'string' ? value.name.toLocaleLowerCase() : '';
+        const confirmation = recovered.find(operation => operation[1] === path
+            && operation[2].name.toLocaleLowerCase() === name);
+        if (confirmation) { used.add(confirmation); return [[verb,path,confirmation[2],...rest]]; }
+        const existing = path === 'party' ? state.social.party : state.social.guilds.find(group => group.id === value?.id
+            || group.name.toLocaleLowerCase() === name);
+        if (!existing || name && name !== existing.name.toLocaleLowerCase()) return [];
+        return [[verb,path,value,...rest]];
+    });
+    for (const operation of recovered) {
+        if (used.has(operation) || operation[1] === 'party' && state.social.party
+            || operation[1] === 'guilds' && state.social.guilds.some(group => group.name.toLocaleLowerCase() === operation[2].name.toLocaleLowerCase())) continue;
+        result.push(operation);
+    }
+    return result;
+}
+
+async function catchUpGroupMemberships() {
+    const context = SillyTavern.getContext(), chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata;
+    if (!chatId || !getSettings().autoTrack || !hasUserReply(context) || mainReplyGenerating(context)) return false;
+    const owner = characterOwner(context)?.key, chat = context.chat || [], base = getState();
+    const previous = metadata[GROUP_RECOVERY_KEY];
+    const start = Math.max(0, chat.length - 300, previous?.version === 1 ? Number(previous.scannedThrough) + 1 || 0 : 0);
+    const pending = new Map();
+    for (let index = start; index < chat.length; index += 1) {
+        const message = chat[index];
+        if (!message || message.is_system || message.is_user || typeof message.mes !== 'string') continue;
+        const user = [...chat.slice(0,index)].reverse().find(entry => entry?.is_user && !entry.is_system);
+        const extracted = extractStatePatch(message.mes), userStory = extractStatePatch(user?.mes).visible;
+        for (const [key,record] of pending) {
+            const kind = record.operation[1] === 'party' ? 'party' : 'guild';
+            const value = record.operation[2];
+            if (groupMembershipEnded(extracted.visible, userStory, {kind,name:value.name}, base.player.name)
+                || (extracted.patch?.ops || []).some(([verb,path,target]) => verb === 'delete' && path === record.operation[1]
+                    && (path === 'party' || target?.name === value.name || value.id && target?.id === value.id))) pending.delete(key);
+        }
+        for (const operation of confirmedSocialOperations(extracted.patch?.ops || [], base, extracted.visible, userStory)) {
+            if (operation[0] !== 'upsert' || !['party','guilds'].includes(operation[1])
+                || operation[2]?.membershipStatus !== 'established') continue;
+            const [ ,path,value] = operation;
+            if (path === 'party' && base.social.party || path === 'guilds' && base.social.guilds.some(group => group.name.toLocaleLowerCase() === value.name.toLocaleLowerCase())) continue;
+            if (groupMembershipWasRemoved(path,value,index,base,context)) continue;
+            pending.set(path === 'party' ? 'party' : `guild:${value.name.toLocaleLowerCase()}`,{operation,index});
+        }
+    }
+    const operations = [...pending.values()].map(record => record.operation);
+    const result = operations.length ? applyStatePatch(base,{ops:operations}) : null;
+    if (context.getCurrentChatId?.() !== chatId || context.chatMetadata !== metadata || characterOwner(context)?.key !== owner) return false;
+    if (result?.accepted && !await persistState(result.next,'group-membership-recovery',{deferMetadataSave:true})) return false;
+    if (context.getCurrentChatId?.() !== chatId || context.chatMetadata !== metadata || characterOwner(context)?.key !== owner) return false;
+    metadata[GROUP_RECOVERY_KEY] = {version:1,scannedThrough:chat.length-1};
+    await saveCurrentChatMetadata(context);
+    return Boolean(result?.accepted);
+}
+
+function groupMembershipWasRemoved(path,value,messageId,state,context = SillyTavern.getContext()) {
+    const removedByAudit = (state.systems.audit || []).some(audit => (audit.messageId ?? Infinity) >= messageId
+        && audit.changes.some(change => path === 'party' ? change.path === 'party' && change.after === 'Solo' && String(change.before).startsWith(`${value.name}:`)
+            : change.path === 'guilds' && String(change.before).includes(value.name) && !String(change.after).includes(value.name)));
+    const removedByCheckpoint = (turnHistory(context,false)?.entries || []).some(entry => entry.messageId >= messageId
+        && (path === 'party' ? entry.baseState?.social?.party?.name === value.name && entry.variants?.[entry.activeVariant]?.state && !entry.variants[entry.activeVariant].state.social?.party
+            : entry.baseState?.social?.guilds?.some(group => group.name === value.name)
+                && entry.variants?.[entry.activeVariant]?.state && !entry.variants[entry.activeVariant].state.social?.guilds?.some(group => group.name === value.name)));
+    if (removedByAudit || removedByCheckpoint) return true;
+    return (context.chat || []).slice(messageId+1).some(message => {
+        if (!message || message.is_system) return false;
+        const extracted = extractStatePatch(message.mes);
+        return groupMembershipEnded(message.is_user ? '' : extracted.visible,message.is_user ? extracted.visible : '',
+            {kind:path === 'party' ? 'party' : 'guild',name:value.name},state.player.name)
+            || (extracted.patch?.ops || []).some(([verb,target,identity]) => verb === 'delete' && target === path
+                && (path === 'party' || identity?.name === value.name || value.id && identity?.id === value.id));
+    });
+}
+
 async function processAssistantPatch(messageId, generationType = '') {
     const context = SillyTavern.getContext();
     if (mainReplyGenerating(context) && !completedAssistantMessages.has(context.chat?.[messageId])) return;
@@ -9730,22 +9962,9 @@ async function processAssistantPatch(messageId, generationType = '') {
                 break;
             }
         }
-        // Family membership still needs user consent. External party/guild
-        // membership can be recorded when the role-play already establishes it.
-        const safeOps = inlineOps.filter(([verb,path,value]) =>
-            !(verb === 'upsert' && path === 'householdMembers')
-            && !['householdInvitation','partyInvitation','guildInvitation','npcDiary'].includes(path)
-            && !(verb === 'upsert' && path === 'party' && !base.social.party && value?.leaderId !== 'player'
-                && !confirmedGroupMembership(value, extracted.visible, userMessage?.mes))
-            && !(verb === 'upsert' && path === 'guilds' && value?.leaderId !== 'player'
-                && !base.social.guilds.some(entry => entry.id === value?.id || entry.name === value?.name)
-                && !confirmedGroupMembership(value, extracted.visible, userMessage?.mes)));
-        const safePatch = extracted.patch && { ...extracted.patch, ops: safeOps.map(([verb,path,value,...rest]) =>
-            path === 'household' && verb === 'upsert' ? [verb,path,{...value,members:undefined},...rest]
-                : verb === 'upsert' && ['party','guilds'].includes(path) && value?.leaderId !== 'player'
-                    && confirmedGroupMembership(value, extracted.visible, userMessage?.mes)
-                    ? [verb,path,{...value,joinedByInvitation:true},...rest] : [verb,path,value,...rest]) };
-        if (safePatch) {
+        const safeOps = confirmedSocialOperations(inlineOps, base, extracted.visible, userMessage?.mes);
+        const safePatch = { ...(extracted.patch || {}), ops: safeOps };
+        if (safeOps.length || extracted.patch) {
             const result = applyStatePatch(base, safePatch);
             patched = result.next;
             accepted = result.accepted;
@@ -10002,9 +10221,13 @@ function queueAnalyze(options = {}) {
     return syncQueue;
 }
 
-function manualSyncHistoricalOperations(operations, historical, state, trackedTurn = false) {
+function manualSyncHistoricalOperations(operations, historical, state, trackedTurn = false, messageId = null) {
     if (!historical) return operations;
     return operations.filter(([verb,path,value]) => {
+        if (verb === 'upsert' && ['party','guilds'].includes(path) && value?.membershipStatus === 'established') {
+            const missing = path === 'party' ? !state.social.party : !state.social.guilds.some(group => group.name.toLocaleLowerCase() === value.name.toLocaleLowerCase());
+            return missing && Number.isInteger(messageId) && !groupMembershipWasRemoved(path,value,messageId,state);
+        }
         if (typeof path !== 'string' || /^(?:location\.|scene\.|worldClock\.|travel\.|music\.|world\.id)/.test(path)
             || ['party','partyMembers','guilds','guildMembers','household','householdMembers','letters','inventory'].includes(path)) return false;
         if (path === 'npcHStats' || path === 'playerHStats') {
@@ -10093,15 +10316,11 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
             const trackedTurn = Object.hasOwn(history.turns, key)
                 || Boolean(context.chatMetadata?.[TURN_HISTORY_KEY]?.entries?.some(entry => entry?.key === assistantTurnKey(marker.index, context)
                     && entry.variants?.[assistantVariantKey(message)]?.state));
-            const operations = manualSyncHistoricalOperations((parsed.ops || []).filter(operation => {
-                if (['householdInvitation','partyInvitation','guildInvitation','npcDiary'].includes(operation[1])
-                    || (operation[0] === 'upsert' && operation[1] === 'householdMembers')) return false;
-                if (operation[0] === 'upsert' && operation[1] === 'party' && !draft.social.party && operation[2]?.leaderId !== 'player') return false;
-                if (operation[0] === 'upsert' && operation[1] === 'guilds' && operation[2]?.leaderId !== 'player'
-                    && !draft.social.guilds.some(entry => entry.id === operation[2]?.id || entry.name === operation[2]?.name)) return false;
+            const operations = manualSyncHistoricalOperations(confirmedSocialOperations(parsed.ops || [], draft,
+                extractStatePatch(message.mes).visible, userIndex >= selection.start ? extractStatePatch(user?.mes).visible : '').filter(operation => {
                 const opKey = manualSyncOperationKey(operation, draft);
                 return opKey && !already.has(opKey) && !manualSyncPreviouslyChanged(context, marker.index, message, operation);
-            }), historical, draft, trackedTurn);
+            }), historical, draft, trackedTurn, marker.index);
             const result = applyStatePatch(draft, {...parsed, ops:operations, sceneTracker:historical ? {} : parsed.sceneTracker});
             draft = result.next;
             accepted += result.accepted;
@@ -10493,6 +10712,8 @@ function bindChatEvents() {
         catch (error) { console.warn('[RoleForge] Could not import player registration.', error); }
         try { await catchUpTravelHistory(); }
         catch (error) { console.warn('[RoleForge] Could not catch up travel history.', error); }
+        try { await catchUpGroupMemberships(); }
+        catch (error) { console.warn('[RoleForge] Could not recover established group membership.', error); }
         await refreshCharacterLifeCompatibility({ save: true });
         await backfillHistoricalScenes();
         resumeUnfinishedAssistantPatch();
@@ -10670,6 +10891,8 @@ async function initialize() {
         catch (error) { console.warn('[RoleForge] Could not import player registration.', error); }
         try { await catchUpTravelHistory(); }
         catch (error) { console.warn('[RoleForge] Could not catch up travel history.', error); }
+        try { await catchUpGroupMemberships(); }
+        catch (error) { console.warn('[RoleForge] Could not recover established group membership.', error); }
         await backfillHistoricalScenes();
         resumeUnfinishedAssistantPatch();
         refreshCharacterForge();
@@ -10684,7 +10907,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.44.6 loaded.');
+        console.info('[RoleForge] Role-play interface v0.44.7 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

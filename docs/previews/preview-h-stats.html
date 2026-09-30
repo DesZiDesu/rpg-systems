@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>RoleForge · H-Stats layout preview</title>
+    <style>
+        html,body{margin:0;min-height:100%;background:#080807;color:#ece7da;font-family:system-ui,sans-serif}
+        .preview-host{max-width:660px;margin:12vh auto;padding:24px;line-height:1.6}
+        .preview-host h1{font-size:24px;color:#e5c474}
+        .preview-host button,.preview-host select{min-height:44px;padding:10px 16px;margin:4px;border:1px solid #705f32;background:#17150e;color:#f1e2b6;font:inherit}
+        #extensionsMenu,#extensions_settings2,#chat,#send_textarea{display:none}
+        #preview-status{color:#bbb4a1}
+        /* SillyTavern supplies FontAwesome; the standalone host uses simple glyphs. */
+        .fa-solid::before{font-family:system-ui,sans-serif;font-style:normal;line-height:1}
+        .fa-xmark::before{content:'×'}.fa-sliders::before{content:'☷'}
+        .fa-angle-left::before{content:'‹'}.fa-angle-right::before{content:'›'}
+        .fa-circle::before{content:'●'}.fa-rotate::before{content:'↻'}
+        .fa-heart-pulse::before{content:'♡'}.fa-list::before{content:'☰'}
+        .fa-id-card::before{content:'▣'}.fa-caret-down::before{content:'▾'}
+        .fa-check::before{content:'✓'}.fa-eye-slash::before{content:'⊘'}
+        .fa-location-dot::before{content:'◇'}.fa-pen::before{content:'✎'}
+    </style>
+</head>
+<body>
+    <main class="preview-host">
+        <h1>H-Stats · ทดลองเลือกหน้าตา</h1>
+        <p>เปิด “รูปแบบรายชื่อ” เพื่อทดลองแท็บชื่อ การ์ดตัวละคร และเมนูเลือกกะทัดรัด ระบบซ่อนตัวละครต้องกดจัดการรายชื่อและยืนยันก่อน และมีปุ่มเลิกทำ</p>
+        <button type="button" id="preview-open">เปิด H-Stats</button>
+        <button type="button" id="preview-reset">เริ่มทดลองใหม่</button>
+        <label>ภาษา <select id="preview-language"><option value="th">ไทย</option><option value="en">English</option></select></label>
+        <p id="preview-status" role="status">กำลังโหลดหน้าจอจริงของ RoleForge…</p>
+        <p>ข้อมูล Ashe, Teresina และ Cora เป็นตัวอย่างสำหรับทดลองหน้าจอ การแก้ไขจะเก็บเฉพาะตัวอย่างในเบราว์เซอร์นี้</p>
+    </main>
+    <button id="extensionsMenuButton" hidden>Extensions</button>
+    <div id="extensionsMenu"></div><div id="extensions_settings2"></div><div id="chat"></div><textarea id="send_textarea"></textarea>
+    <script type="module">
+        import {startHStatsPreview} from './h-stats-fixture.js';
+        await startHStatsPreview();
+    </script>
+</body>
+</html>
