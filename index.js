@@ -1,31 +1,38 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.44.9';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.44.9';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.0';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.44.9';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.44.9';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.44.9';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.44.9';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.44.9';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.44.9';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.44.9';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.44.9';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.0';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.0';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.0';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.0';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.0';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.0';
+import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.0';
+import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.0';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.44.9';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.44.9';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.44.9';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.44.9';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.44.9';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.44.9';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.44.9';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.44.9';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.44.9';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.44.9';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.44.9';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
 let runtimeRequestUsage = null;
+let memorySummaries = null;
+let memoryObserveTimer = null;
+let memoryBadgeTimer = null;
+let memoryBadgeSignature = '';
 const SAFE_MODE = /(?:^|[?&])tretaresia-safe=(?:1|true)(?:&|$)/i.test(globalThis.location?.search || '');
 
 let liveGeneration = false;
@@ -190,16 +197,24 @@ const DEFAULT_SETTINGS = Object.freeze({
     showTravelTracker: true,
     travelTrackerPosition: { x: null, y: null },
     autoContinuity: true,
+    memoryAutoSummary: true,
+    memorySummaryInterval: 15,
+    memorySummaryProfile: '',
+    memoryInject: true,
+    memorySummaryBudget: 1200,
+    memoryRetrievalBudget: 1000,
+    memorySummaryInputBudget: 12000,
     visualVersion: 6,
 });
 
 const LAUNCHER_BIND_VERSION = '0.40.10';
-const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'memories', 'agenda', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
+const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'memories', 'summaries', 'agenda', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
     inventory: ['fa-solid fa-box-open', 'Inventory'], skills: ['fa-solid fa-layer-group', 'Skills'],
     techniques: ['fa-solid fa-fire-flame-curved', 'Powers'], quests: ['fa-solid fa-scroll', 'Quests'],
     memories: ['fa-solid fa-book-bookmark', 'Story Memory'], agenda: ['fa-solid fa-calendar-check', 'Appointments'],
+    summaries: ['fa-solid fa-box-archive', 'Memory Summaries'],
     rank: ['fa-solid fa-medal', 'Rank'],
     groups: ['fa-solid fa-people-group', 'Party & Guild'], household: ['fa-solid fa-house-chimney-user', 'Household'],
     npcs: ['fa-solid fa-users', 'NPCs'], hstats: ['fa-solid fa-heart-pulse', 'H-Stats'], mail: ['fa-solid fa-envelope', 'Mailbox'], music: ['fa-solid fa-music', 'Music'],
@@ -506,6 +521,13 @@ function getSettings() {
     settings.glassOpacity = number(settings.glassOpacity, DEFAULT_SETTINGS.glassOpacity, 55, 98);
     settings.glowStrength = number(settings.glowStrength, DEFAULT_SETTINGS.glowStrength, 0, 100);
     settings.notificationDuration = number(settings.notificationDuration, DEFAULT_SETTINGS.notificationDuration, 1500, 30000);
+    settings.memoryAutoSummary = Boolean(settings.memoryAutoSummary);
+    settings.memoryInject = Boolean(settings.memoryInject);
+    settings.memorySummaryInterval = Math.round(number(settings.memorySummaryInterval,15,5,100));
+    settings.memorySummaryProfile = text(settings.memorySummaryProfile,'',120);
+    settings.memorySummaryBudget = Math.round(number(settings.memorySummaryBudget,1200,200,12000));
+    settings.memoryRetrievalBudget = Math.round(number(settings.memoryRetrievalBudget,1000,200,12000));
+    settings.memorySummaryInputBudget = Math.round(number(settings.memorySummaryInputBudget,12000,4000,64000));
     for (const key of ['eventNotifications', 'notifyExperience', 'notifyLevel', 'notifyLearning', 'notifyCombat', 'notifyKills', 'notifyCurrency', 'notifyQuests', 'showTravelTracker', 'autoContinuity', 'showSceneTracker']) settings[key] = Boolean(settings[key]);
     const trackerPosition = settings.travelTrackerPosition && typeof settings.travelTrackerPosition === 'object' ? settings.travelTrackerPosition : {};
     settings.travelTrackerPosition = {
@@ -519,7 +541,7 @@ function requestUsage() {
     if (runtimeRequestUsage) return runtimeRequestUsage;
     runtimeRequestUsage = {
         total: 0, manualSync: 0, hiddenAction: 0, visibleAction: 0,
-        sceneCompletion: 0, npcProgression: 0, hStatsBaseline: 0, npcDraft: 0, npcPortrait: 0, opening: 0, lastReason: '', lastAt: '',
+        sceneCompletion: 0, npcProgression: 0, hStatsBaseline: 0, npcDraft: 0, npcPortrait: 0, opening: 0, memorySummary:0, lastReason: '', lastAt: '',
     };
     return runtimeRequestUsage;
 }
@@ -531,7 +553,7 @@ function renderRequestUsage() {
         output.title = usage.lastAt ? uiText("Last: {0} · {1}",[usage.lastReason || 'unknown',usage.lastAt]) : uiText("No separate extension request recorded yet.");
     });
     document.querySelectorAll('[data-tretaresia-request-breakdown]').forEach(output => {
-        output.textContent = uiText("เปิดเรื่อง {0} · Scene Tracker เติมฉาก {1} · NPC progress {2} · H-Stats โปรไฟล์ {3} · Manual Sync {4} · คำสั่ง RPG {5} · เจน NPC/ภาพ {6}",[usage.opening,usage.sceneCompletion,usage.npcProgression,usage.hStatsBaseline,usage.manualSync,usage.hiddenAction + usage.visibleAction,usage.npcDraft + usage.npcPortrait]);
+        output.textContent = uiText("เปิดเรื่อง {0} · Scene Tracker เติมฉาก {1} · NPC progress {2} · H-Stats โปรไฟล์ {3} · Manual Sync {4} · คำสั่ง RPG {5} · เจน NPC/ภาพ {6}",[usage.opening,usage.sceneCompletion,usage.npcProgression,usage.hStatsBaseline,usage.manualSync,usage.hiddenAction + usage.visibleAction,usage.npcDraft + usage.npcPortrait]) + ` · Memory Summaries ${usage.memorySummary}`;
     });
 }
 
@@ -1622,7 +1644,7 @@ function writeContinuitySnapshot(state) {
     const key = continuityStorageKey(activeContinuityKey(context));
     const chatId = context.getCurrentChatId?.();
     if (!key || !chatId) return;
-    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), state: withoutChatNpcContinuity(normalize(state)) };
+    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), state: withoutChatNpcContinuity(normalize(state)), memoryLink:memorySummaries?.continuityLink() };
     try {
         localStorage.setItem(key, JSON.stringify(record));
     } catch (error) {
@@ -1670,6 +1692,7 @@ async function restoreContinuityForCurrentChat() {
     const settings = getSettings();
     const context = SillyTavern.getContext();
     const chatId = context.getCurrentChatId?.();
+    const metadata = context.chatMetadata, characterKey = activeContinuityKey(context);
     if (!settings.autoContinuity || continuityRestoreInProgress || !chatId || context.chatMetadata?.[METADATA_KEY] || hasUserReply()) return false;
     const key = continuityStorageKey(activeContinuityKey(context));
     if (!key) return false;
@@ -1681,9 +1704,12 @@ async function restoreContinuityForCurrentChat() {
     try {
         // Also sanitize pre-0.31 continuity caches; never silently migrate old Chat NPCs.
         const continued = await copyContinuityMedia(withoutChatNpcContinuity(normalize(record.state)), record.sourceChatId, chatId);
+        const active = SillyTavern.getContext();
+        if (active.getCurrentChatId?.() !== chatId || active.chatMetadata !== metadata || activeContinuityKey(active) !== characterKey) return false;
         continued.syncCursor = { user: null, assistant: null };
         continued.updatedAt = null;
         continued.updateSource = 'continuity';
+        if (record.memoryLink?.owner === activeContinuityKey(context)) context.chatMetadata[MEMORY_LINK_KEY] = clone(record.memoryLink);
         const saved = await persistState(hydrateScopedNpcs(continued, characterNpcLibrary(), characterOwner(context)?.key), 'continuity');
         if (saved) {
             globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:continuity-restored', {
@@ -1707,6 +1733,8 @@ function captureContinuityBeforeNewChat(trigger = 'native-new-chat') {
     const chatId = context.getCurrentChatId?.();
     if (!getSettings().autoContinuity || !chatId) return false;
     writeContinuitySnapshot(getState());
+    const pending = memorySummaries?.view().coverage.linkedPendingSegments;
+    if (pending) notify('info',getSettings().language === 'th' ? 'ยังมีข้อความรอสรุป ใช้ Memory Summaries → เตรียมความจำสำหรับแชตใหม่ เพื่อเก็บให้ครบ' : 'Some messages are not summarized yet. Use Memory Summaries → Prepare for a new chat to finish them.');
     globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:continuity-captured', {
         detail: { sourceChatId: chatId, characterKey: activeContinuityKey(context), trigger },
     }));
@@ -2686,7 +2714,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.44.9`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -2884,12 +2912,14 @@ function updatePrompt(state = getState()) {
     const reference = context.getCurrentChatId?.() ? activeLorePrompt() : '';
     const prompt = enabled ? statePrompt(state, { includeState: settings.injectState || settings.autoTrack, track: settings.autoTrack }) : '';
     const writing=activeChat?writingPreferencePrompt(settings,context.chat):'';
-    context.setExtensionPrompt(PROMPT_KEY, [reference, prompt, writing, forgeProfilePrompt(context), forgeOpeningPrompt(context)].filter(Boolean).join('\n\n'), 1, 1, false, 0);
+    context.setExtensionPrompt(PROMPT_KEY, [reference, prompt, settings.memoryInject ? memorySummaries?.prompt() : '', writing, forgeProfilePrompt(context), forgeOpeningPrompt(context)].filter(Boolean).join('\n\n'), 1, 1, false, 0);
     adultPromptControls?.refresh();
 }
 
 globalThis.TretaresiaRpgGenerateInterceptor = async function () {
     if (SAFE_MODE) return;
+    try { await memorySummaries?.observe({forceCapture:true}); }
+    catch (error) { notify('warning',memoryJobMessage(error,getSettings().language)); }
     // Refresh at SillyTavern's official generation interception point. This
     // protects hosts that replace their extension-prompt collection after
     // MESSAGE_SENT while keeping tracking inside the one normal reply.
@@ -4493,11 +4523,38 @@ function renderSystems(panel, state) {
     panel.innerHTML = (uiMarkup("")+(heading(uiText("System Audit"), `${report.score}% · ${report.passed}/${report.total} checks passed`, 'fa-solid fa-microchip'))+uiMarkup("\n        <section class=\"tretaresia-diagnostic-card\"><header><div><span>")+(html(tr(uiText("Diagnostics"))))+uiMarkup("</span><strong>")+(report.score)+uiMarkup("%</strong></div><div class=\"tretaresia-diagnostic-track\"><i style=\"width:")+(report.score)+uiMarkup("%\"></i></div></header><div class=\"tretaresia-diagnostic-grid\">")+(report.checks.map(([name, ok, detail]) => (uiMarkup("<article class=\"")+(ok ? 'is-ok' : 'is-warning')+uiMarkup("\"><i class=\"fa-solid fa-")+(ok ? 'circle-check' : 'triangle-exclamation')+uiMarkup("\"></i><span><b>")+(html(name))+uiMarkup("</b><small>")+(html(detail))+uiMarkup("</small></span></article>"))).join(''))+uiMarkup("</div><footer><button class=\"tretaresia-primary-button\" type=\"button\" data-action=\"repair-state\"><i class=\"fa-solid fa-screwdriver-wrench\"></i>")+(html(tr(uiText("Repair current state"))))+uiMarkup("</button><button class=\"tretaresia-secondary-button\" type=\"button\" data-action=\"rollback-latest-turn\"><i class=\"fa-solid fa-rotate-left\"></i>")+(html(tr(uiText("Rollback latest turn"))))+uiMarkup("</button><button class=\"tretaresia-secondary-button\" type=\"button\" data-action=\"reapply-latest-turn\"><i class=\"fa-solid fa-rotate-right\"></i>Apply again</button></footer></section>\n        <section class=\"tretaresia-system-section\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-list-check\"></i><span>")+(html(tr(uiText("Turn Inspector"))))+uiMarkup("</span><b>")+(state.systems.audit.length)+uiMarkup("</b></div><div class=\"tretaresia-audit-list\">")+(audits || empty(uiText("No journal entries yet.")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-system-section\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-burst\"></i><span>")+(html(tr(uiText("Damage breakdown"))))+uiMarkup("</span><b>")+(state.systems.combatLogs.length)+uiMarkup("</b></div><div class=\"tretaresia-combat-list\">")+(combat || empty(uiText("No journal entries yet.")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-system-section\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-cloud-sun-rain\"></i><span>")+(html(tr(uiText("Regional weather"))))+uiMarkup("</span><b>")+(state.systems.regionalWeather.length)+uiMarkup("</b></div><div class=\"tretaresia-regional-weather\">")+(regional || empty(uiText("No journal entries yet.")))+uiMarkup("</div></section>"));
 }
 
+function onMemorySummariesChanged(view) {
+    const panel = document.querySelector('#tretaresia-rpg-overlay.is-open [data-panel="summaries"].is-active');
+    if (panel && !document.activeElement?.closest('[data-form="memory-summary-edit"]')) renderPanel('summaries',panel,getState());
+    updatePrompt();
+    let badge = document.getElementById('roleforge-memory-activity');
+    if (!badge) {
+        badge = document.createElement('aside'); badge.id = 'roleforge-memory-activity'; badge.className = 'rf-memory-activity'; badge.hidden = true;
+        badge.setAttribute('role','status'); badge.setAttribute('aria-live','polite');
+        const label = document.createElement('span'), open = document.createElement('button'), close = document.createElement('button');
+        open.type = close.type = 'button';
+        open.addEventListener('click',async () => { await openInterface(); activateTab('summaries'); });
+        close.addEventListener('click',() => { badge.hidden = true; });
+        badge.append(label,open,close); document.body.appendChild(badge);
+    }
+    const signature = JSON.stringify([SillyTavern.getContext().getCurrentChatId?.(),view.job.status,view.job.completed,view.job.updatedAt]);
+    if (signature === memoryBadgeSignature) return;
+    memoryBadgeSignature = signature; clearTimeout(memoryBadgeTimer);
+    const thai = getSettings().language === 'th';
+    badge.querySelector('span').textContent = memoryPhaseLabel(view.job.status,getSettings().language)
+        + (view.job.status === 'summarizing' ? ` · ${(view.job.completed || 0) + 1}/${view.job.total || '?'}` : '');
+    const buttons = badge.querySelectorAll('button'); buttons[0].textContent = thai ? 'ดู' : 'View'; buttons[1].textContent = '×'; buttons[1].setAttribute('aria-label',thai ? 'ซ่อนสถานะความจำ' : 'Dismiss memory status');
+    badge.dataset.status = view.job.status; badge.dataset.busy = String(memoryBusy(view.job.status));
+    badge.hidden = !SillyTavern.getContext().getCurrentChatId?.() || ['idle','partial'].includes(view.job.status);
+    if (['ready','cancelled'].includes(view.job.status)) memoryBadgeTimer = setTimeout(() => { badge.hidden = true; },8000);
+}
+
 function renderPanel(id, panel, state) {
     const renderers = {
         status: renderStatus, scene: renderScene, inventory: renderInventory, skills: renderSkillStorage,
         techniques: renderTechniques, quests: renderQuests, rank: renderRank, groups: renderGroups,
         memories: (target, snapshot) => renderStoryMemoryPanel(target, snapshot, getSettings().language),
+        summaries: target => { if (memorySummaries) renderMemorySummaries(target,memorySummaries.view(),SillyTavern.getContext().extensionSettings?.connectionManager?.profiles || []); },
         agenda: (target, snapshot) => renderStoryAgendaPanel(target, snapshot, getSettings().language),
         household: renderHousehold, npcs: renderNpcs, hstats: renderHStats, mail: renderMailbox, music: renderMusic, systems: renderSystems,
     };
@@ -5658,7 +5715,7 @@ async function saveStoryOperation(state, operation, source) {
 function stampStoryControls(panel) {
     const context = SillyTavern.getContext();
     const identity = {chatId:context.getCurrentChatId?.(), owner:characterOwner(context)?.key, metadata:context.chatMetadata};
-    for (const control of panel?.querySelectorAll?.('[data-form^="story-"],[data-form="quest-objective"],[data-action^="story-"],[data-action^="quest-objective-"],[data-action="quest-complete"]') || []) {
+    for (const control of panel?.querySelectorAll?.('[data-form^="story-"],[data-form="quest-objective"],[data-action^="story-"],[data-action^="quest-objective-"],[data-action="quest-complete"],[data-form^="memory-summary-"],[data-action^="memory-summary-"],[data-memory-import]') || []) {
         control.dataset.storyChatId = String(identity.chatId || '');
         storyControlContexts.set(control, identity);
     }
@@ -5674,12 +5731,26 @@ async function onSubmit(event) {
     const form = event.target.closest('form[data-form]');
     if (!form) return;
     event.preventDefault();
-    if (['story-memory','story-agenda','quest-objective'].includes(form.dataset.form)
+    if ((['story-memory','story-agenda','quest-objective'].includes(form.dataset.form) || form.dataset.form.startsWith('memory-summary-'))
         && !currentStoryControl(form)) {
         notify('warning', getSettings().language === 'th' ? 'แชตเปลี่ยนแล้ว กรุณาเปิดรายการในแชตปัจจุบัน' : 'The chat changed. Reopen the current record.');
         return;
     }
     const values = Object.fromEntries(new FormData(form).entries());
+    if (form.dataset.form.startsWith('memory-summary-')) {
+        try {
+            if (form.dataset.form === 'memory-summary-search') memorySummaries?.search(values.query);
+            if (form.dataset.form === 'memory-summary-edit') { await memorySummaries?.editChapter(values.id,values.summary,values.recap); notify('success',getSettings().language === 'th' ? 'บันทึกรุ่นสรุปใหม่แล้ว' : 'Summary revision saved.'); }
+            if (form.dataset.form === 'memory-summary-settings') {
+                const settings = getSettings();
+                for (const key of ['memorySummaryInterval','memorySummaryProfile','memorySummaryBudget','memoryRetrievalBudget','memorySummaryInputBudget']) settings[key] = values[key];
+                for (const key of ['memoryAutoSummary','memoryInject']) settings[key] = form.querySelector(`[name="${key}"]`)?.checked === true;
+                getSettings(); SillyTavern.getContext().saveSettingsDebounced?.(); await memorySummaries?.preparePrompt(); updatePrompt(); renderAll();
+                notify('success',settings.language === 'th' ? 'บันทึกการตั้งค่าความจำแล้ว' : 'Memory settings saved.');
+            }
+        } catch (error) { notify('error',memoryJobMessage(error,getSettings().language)); }
+        return;
+    }
     const state = clone(getState());
     switch (form.dataset.form) {
         case 'story-memory': {
@@ -6144,6 +6215,14 @@ async function onSubmit(event) {
 }
 
 async function onPanelChange(event) {
+    const memoryImport = event.target.closest('[data-memory-import]');
+    if (memoryImport instanceof HTMLInputElement && memoryImport.files?.[0]) {
+        if (!currentStoryControl(memoryImport)) return;
+        try { await memorySummaries?.import(JSON.parse(await memoryImport.files[0].text())); notify('success',getSettings().language === 'th' ? 'นำเข้าคลังความจำแล้ว' : 'Memory archive imported.'); }
+        catch (error) { notify('error',memoryJobMessage(error,getSettings().language)); }
+        finally { memoryImport.value = ''; }
+        return;
+    }
     const hStatsSelector = event.target.closest('select[name="hStatsSelectedNpc"]');
     if (hStatsSelector) {
         const state = getState();
@@ -6220,8 +6299,25 @@ async function onPanelChange(event) {
 async function onPanelClick(event) {
     const button = event.target.closest('[data-action]');
     if (!button) return;
-    if ((button.dataset.action.startsWith('story-') || button.dataset.action.startsWith('quest-objective-') || button.dataset.action === 'quest-complete')
+    if ((button.dataset.action.startsWith('story-') || button.dataset.action.startsWith('quest-objective-') || button.dataset.action === 'quest-complete' || button.dataset.action.startsWith('memory-summary-'))
         && !currentStoryControl(button)) return;
+    if (button.dataset.action.startsWith('memory-summary-')) {
+        try {
+            const action = button.dataset.action.slice('memory-summary-'.length);
+            if (['run','retry'].includes(action)) void memorySummaries?.run();
+            if (action === 'prepare') void memorySummaries?.run({prepare:true});
+            if (action === 'cancel') memorySummaries?.cancel();
+            if (action === 'source') memorySummaries?.previewSource(button.dataset.chat,button.dataset.key,button.dataset.fingerprint);
+            if (action === 'force') await memorySummaries?.force(button.dataset.id);
+            if (action === 'clear') await memorySummaries?.clearForced();
+            if (action === 'link') await memorySummaries?.linkChat(button.dataset.id,button.dataset.include === 'true');
+            if (action === 'export') {
+                const blob = new Blob([await memorySummaries.export()],{type:'application/json'}), url = URL.createObjectURL(blob), anchor = document.createElement('a');
+                anchor.href = url; anchor.download = `roleforge-memory-${new Date().toISOString().slice(0,10)}.json`; anchor.click(); setTimeout(() => URL.revokeObjectURL(url),1000);
+            }
+        } catch (error) { notify('error',memoryJobMessage(error,getSettings().language)); }
+        return;
+    }
     const state = clone(getState());
     const id = button.dataset.id;
     switch (button.dataset.action) {
@@ -8721,6 +8817,14 @@ async function addSettingsDrawer() {
 
 function bindChatEvents() {
     const { eventSource, eventTypes } = SillyTavern.getContext();
+    if (eventTypes.CHAT_CHANGED) eventSource.on(eventTypes.CHAT_CHANGED,() => { clearTimeout(memoryObserveTimer); memorySummaries?.cancel(); setTimeout(() => { void memorySummaries?.open(); },250); });
+    for (const type of ['MESSAGE_RECEIVED','GENERATION_ENDED','GENERATION_STOPPED','MESSAGE_SWIPED','MESSAGE_DELETED','MESSAGE_EDITED','MESSAGE_UPDATED']) {
+        if (eventTypes[type]) eventSource.on(eventTypes[type],(...args) => {
+            if (type === 'MESSAGE_RECEIVED' && ['quiet','impersonate'].includes(args[1])) return;
+            clearTimeout(memoryObserveTimer);
+            memoryObserveTimer = setTimeout(() => { void memorySummaries?.observe({auto:['MESSAGE_RECEIVED','GENERATION_ENDED'].includes(type)}); },600);
+        });
+    }
     eventSource.on(eventTypes.CHAT_CHANGED, async () => {
         clearTimeout(creationSaveTimer);
         creationSaveTimer = null;
@@ -8856,6 +8960,10 @@ async function initialize() {
     initialized = true;
     try {
         getSettings();
+        memorySummaries = createMemorySummaries({context:() => SillyTavern.getContext(),owner:activeContinuityKey,settings:getSettings,state:getState,
+            visible:value => extractStatePatch(value).visible,scene:sceneForMessage,notify,changed:onMemorySummariesChanged,
+            recordRequest:recordExtensionRequest,saveMetadata:saveCurrentChatMetadata,continuity:() => writeContinuitySnapshot(getState()),
+            isGenerating:() => liveGeneration,parse:parseJson});
         applyAppearance();
         buildActivityIndicator();
         buildTravelTracker();
@@ -8902,6 +9010,7 @@ async function initialize() {
         void scheduleArchiveMigration();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
+        await memorySummaries.open();
         try { await catchUpPlayerIdentity(); }
         catch (error) { console.warn('[RoleForge] Could not import player registration.', error); }
         try { await catchUpTravelHistory(); }
@@ -8918,7 +9027,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.44.9 loaded.');
+        console.info('[RoleForge] Role-play interface v0.45.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

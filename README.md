@@ -1,4 +1,15 @@
-# ROLEFORGE — v0.44.9
+# ROLEFORGE — v0.45.0
+
+## v0.45.0 — Memory Summaries and new-chat history
+
+- **Memory Summaries** archives loaded user/character messages in browser IndexedDB, including captured replaced/deleted versions. Separate API requests create cited chapter summaries, a continuity recap and searchable people/place/event entries. Original text remains searchable when a minor encounter was omitted from the event index.
+- Choose the current SillyTavern API or a **Connection Manager** profile for summarization. Automatic mode defaults to one batch after 15 pending character replies; manual summarization processes the current backlog, and **Prepare for a new chat** completes linked ancestor backlogs too.
+- Persistent job status and notifications report waiting, summarizing, validating, saving, success, partial coverage, failure, cancellation and interrupted reloads. Failed requests retain prior chapters and expose retry. Summary requests and prompt token counts are visible; budgets are configurable.
+- Continuity carries the exact RPG state and an archive ancestry link. Before each normal generation, relevant history is selected within overview/retrieval token budgets. Historical memory never executes state patches or grants rewards. NPC knowledge remains limited to established witnessed/told facts. Alternative branches are excluded unless explicitly linked.
+- Edited/swiped/deleted sources invalidate their summaries and dependent recaps; delayed results cannot cross chats. Summary edits retain up to 20 earlier revisions. Export the **full memory archive** separately from RPG state to back up originals or move devices; IndexedDB does not sync across browsers automatically.
+- Update and reload once. Real-model summary quality and billing depend on the selected API; matching source quotes validate provenance, not every semantic interpretation.
+
+อ่าน [คู่มือ Memory Summaries ภาษาไทย พร้อม workflow การย้ายแชต การค้นสถานที่ และ notifications](docs/memory-summaries-workflows.th.md)
 
 ## v0.44.9 — Story memory, quest steps and narrative deadlines
 
