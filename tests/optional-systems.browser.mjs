@@ -1,0 +1,73 @@
+// Production loader + real chat events + real persistence/UI; no model calls.
+import assert from 'node:assert/strict';
+import http from 'node:http';
+import {mkdir,readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+const require = createRequire(import.meta.url);
+const {chromium} = require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES ? `${process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES}/playwright` : 'playwright');
+const root = new URL('../',import.meta.url), base = '/scripts/extensions/third-party/rpg-systems/';
+const server = http.createServer(async(req,res) => {
+ try { const url = new URL(req.url,'http://localhost');
+  if(url.pathname.startsWith('/api/')){res.setHeader('content-type','application/json');res.end('[]');return;}
+  if(!url.pathname.startsWith(base)||url.pathname.includes('..')){res.writeHead(404).end();return;}
+  const path=url.pathname.slice(base.length),body=await readFile(new URL(path,root));
+  res.setHeader('content-type',path.endsWith('.css')?'text/css':path.endsWith('.html')?'text/html':path.endsWith('.json')?'application/json':path.endsWith('.js')?'text/javascript':'image/webp');res.end(body);
+ }catch{res.writeHead(404).end();}
+});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const url=`http://127.0.0.1:${server.address().port}${base}docs/previews/preview-h-stats.html?lang=th`;
+const artifacts=process.env.AUCTION_SCREENSHOT_DIR || '/workspace/artifacts/optional-systems-preview';await mkdir(artifacts,{recursive:true});
+const place='หอประมูลแสงจันทร์',story='คุณเดินเข้าหอประมูลแสงจันทร์และนั่งลงในห้องประมูล เจ้าหน้าที่นำสินค้ารายการแรกขึ้นแสดงบนแท่น';
+const offer={id:'moonhall-day-63',title:'หอประมูลแสงจันทร์',location:place,evidence:story,denomination:'gold',entryFee:2,deposit:5,lots:[
+ {id:'moonblade',name:'ดาบจันทร์เงิน',category:'อาวุธ',rarity:'Rare · ตรวจสอบแล้ว',description:'ดาบเหล็กเงินตีด้วยมือ คมดาบสะท้อนแสงจันทร์ ผู้ประเมินยืนยันว่าใบดาบและด้ามยังสมบูรณ์ ไม่มีข้อมูลพลังลับที่เปิดเผย',quantity:1,openingBid:6,minIncrement:2,bidders:[{name:'คอร่า',maxBid:12}]},
+ {id:'potions',name:'ยาฟื้นฟูคุณภาพสูง',category:'ไอเทมใช้แล้วหมด',rarity:'Uncommon',description:'ยาฟื้นฟูในขวดแก้วสองขวด ตรารับรองจากร้านโอสถประจำเมือง',quantity:2,openingBid:3,minIncrement:1,bidders:[]}
+]};
+async function capture(card,options){await card.page().waitForTimeout(200);const page=card.page(),style=await page.addStyleTag({content:'#tretaresia-event-stack{visibility:hidden!important}'});try{await card.screenshot(options);}finally{await style.evaluate(el=>el.remove());}}
+async function draw(page){await page.evaluate(()=>{document.querySelector('#chat').replaceChildren(...window.host.chat.map((message,id)=>{const row=document.createElement('div');row.className='mes';row.setAttribute('mesid',id);const text=document.createElement('div');text.className='mes_text';text.textContent=message.mes.replace(/<!--tretaresia_patch:[\s\S]*?-->/gu,'');row.append(text);return row;}));});}
+async function setup(page){await page.evaluate(()=>{
+ document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';document.querySelector('#chat').style.cssText='display:block;padding:12px;box-sizing:border-box;font-size:16px;line-height:1.5';
+ window.prompts=new Map();window.host.setExtensionPrompt=(key,value)=>window.prompts.set(key,value);
+ window.notices=[];const seen=new WeakSet();new MutationObserver(()=>{for(const el of document.querySelectorAll('.tretaresia-event-toast'))if(!seen.has(el)){seen.add(el);window.notices.push({kind:el.dataset.kind,text:el.innerText});}}).observe(document.body,{childList:true,subtree:true});
+});}
+async function receive(page,patch,text=story){const id=await page.evaluate(({patch,text})=>{window.host.chat.push({is_user:true,name:'ผู้เล่น',mes:'ฉันเดินเข้าไปในหอประมูล'});const id=window.host.chat.length;const mes=`${text}\n<!--tretaresia_patch:${JSON.stringify(patch)}-->`;window.host.chat.push({is_user:false,name:'ผู้บรรยาย',mes,swipe_id:0,swipes:[mes]});return id;},{patch,text});await draw(page);await page.evaluate(id=>window.host.eventSource.emit(window.host.eventTypes.MESSAGE_RECEIVED,id,'normal'),id);await page.waitForFunction(id=>!window.host.chat[id].mes.includes('tretaresia_patch')&&Object.keys(window.host.chatMetadata.tretaresia_rpg_scene_history||{}).some(key=>key.startsWith(`${id}:`)),id);return id;}
+async function saved(page,revision){await page.waitForFunction(revision=>window.host.chatMetadata.tretaresia_rpg_state.auctions?.[0]?.revision===revision,revision);await page.waitForFunction(()=>!document.querySelector('.trpg-auction[aria-busy]')&&document.querySelector('.trpg-auction [data-auction-action]:not(:disabled)'));await page.waitForTimeout(130);}
+async function panel(page,name){await page.evaluate(()=>document.querySelector('#preview-open').click());await page.waitForFunction(()=>document.querySelector('#tretaresia-rpg-overlay.is-ready'));await page.waitForTimeout(200);await page.evaluate(name=>document.querySelector(`[data-tab="${name}"]`).click(),name);await page.locator(`[data-panel="${name}"]`).waitFor({state:'visible'});}
+
+let browser;
+try{
+ browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']});
+ for(const width of [320,390,1280]){
+  const page=await browser.newPage({viewport:{width,height:1100},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
+  await page.addInitScript(({place})=>{localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'th',autoTrack:true,autoContinuity:false,chatPresentation:false,showSceneTracker:true,memoryAutoSummary:false}}));localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'ผู้เล่น'},npcs:[],quests:[],inventory:[],skills:[],location:{narrativeVersion:1,place},onboarding:{locationSeeded:true},progression:{currency:{gold:60,silver:15,copper:0}}}}));},{place});
+  await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready&&document.querySelector('#tretaresia-rpg-overlay.is-ready'));await setup(page);
+  await page.evaluate(()=>{window.apiCalls=0;window.host.generateRaw=async()=>{window.apiCalls++;return '{}';};document.querySelector('#extensions_settings2').style.display='block';});
+  const switches=page.locator('#roleforge-optional-settings [data-optional-setting]');assert.equal(await switches.count(),6);
+  for(const input of await switches.all())assert.equal(await input.isChecked(),false);
+  assert.equal(await page.evaluate(()=>window.host.extensionSettings.tretaresia_rpg.eventNotifications),false);
+  assert.equal(await page.evaluate(async()=>(await indexedDB.databases()).some(db=>db.name==='roleforge-memory-library')),false);
+  const board={title:'กระดานสมาคม',location:place,evidence:'คุณเดินเข้าหอประมูลและอ่านกระดานภารกิจ',missions:[{name:'ส่งจดหมาย',objective:'ส่งจดหมายให้คอร่า',reward:'3 silver'}]};
+  await receive(page,{auction:{...offer,evidence:board.evidence},missionBoard:board,ops:[['upsert','storyMemories',{id:'night',title:'คืนที่แม่น้ำ',detail:'พบคอร่า'}],['upsert','storyAgenda',{id:'visit',title:'พบคอร่า',dueDay:2}],['upsert','quests',{id:'job',name:'ทดสอบเควส',progress:25,objectives:[{id:'step',title:'พบคอร่า'}]}]]},board.evidence);
+  await page.waitForTimeout(220);assert.equal(await page.locator('#chat .trpg-auction,#chat .trpg-mission-board').count(),0);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.storyMemories.length),0);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.quests[0].objectives.length),0);
+  async function toggle(key,enabled){const input=page.locator(`#roleforge-optional-settings [data-optional-setting="${key}"]`);if(enabled)await input.check();else await input.uncheck();await page.waitForFunction(({key,enabled})=>window.host.extensionSettings.tretaresia_rpg[key]===enabled,{key,enabled});await page.waitForTimeout(150);}
+  await toggle('enableMissionBoard',true);await toggle('enableAuctions',true);await toggle('enableStoryMemory',true);await toggle('enableStoryAgenda',true);await toggle('enableQuestObjectives',true);
+  await receive(page,{auction:{...offer,evidence:board.evidence},missionBoard:board,ops:[['upsert','storyMemories',{id:'night',title:'คืนที่แม่น้ำ',detail:'พบคอร่าตอนตกปลา'}],['upsert','storyAgenda',{id:'visit',title:'พบคอร่า',dueDay:2}],['upsert','quests',{id:'job',name:'ทดสอบเควส',objectives:[{id:'step',title:'พบคอร่า'}]}]]},board.evidence);
+  await page.locator('#chat .trpg-auction').waitFor({state:'visible'});assert.equal(await page.locator('#chat .trpg-mission-board').count(),1);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.storyMemories.length),1);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.storyAgenda.length),1);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.quests[0].objectives.length),1);
+  const card=page.locator('#chat .trpg-auction');await card.locator('[data-auction-action="join"]').click();await saved(page,1);await card.locator('input').fill('20');await card.locator('.trpg-auction-custom button').click();await saved(page,2);
+  assert.match(await card.locator('.trpg-auction-funds').innerText(),/25/);await toggle('enableAuctions',false);await toggle('enableMissionBoard',false);await toggle('enableStoryMemory',false);await toggle('enableStoryAgenda',false);await toggle('enableQuestObjectives',false);
+  await page.waitForFunction(()=>!document.querySelector('#chat .trpg-auction,#chat .trpg-mission-board'));
+  const retained=await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state);assert.equal(retained.storyMemories[0].detail,'พบคอร่าตอนตกปลา');assert.equal(retained.storyAgenda.length,1);assert.equal(retained.quests[0].objectives.length,1);assert.equal(retained.progression.currency.gold,58);
+  await panel(page,'rank');const maintenance=page.locator('[data-panel="rank"] .trpg-auction');assert(await maintenance.locator('.trpg-auction-primary').isDisabled());assert(await maintenance.locator('[data-auction-action="leave"]').isDisabled());
+  for(const revision of [3,4,5]){await maintenance.locator('[data-auction-action="wait"]').click();await page.waitForFunction(rev=>window.host.chatMetadata.tretaresia_rpg_state.auctions[0].revision===rev,revision);await page.waitForTimeout(200);}
+  assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.gold),38);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory[0].quantity),1);assert(await maintenance.locator('[data-auction-action="next"]').isDisabled());
+  await maintenance.locator('[data-auction-action="leave"]').click();await page.waitForFunction(()=>window.host.chatMetadata.tretaresia_rpg_state.auctions[0].status==='Left');assert.equal(await maintenance.count(),0);
+  await page.evaluate(()=>document.querySelector('#tretaresia-rpg-close').click());await toggle('enableMemorySummaries',true);await page.waitForFunction(async()=>(await indexedDB.databases()).some(db=>db.name==='roleforge-memory-library'));
+  await panel(page,'summaries');await page.locator('[data-panel="summaries"] [data-form="memory-summary-settings"]').waitFor({state:'attached'});assert.equal(await page.evaluate(()=>window.apiCalls),0);
+  await page.evaluate(()=>document.querySelector('#tretaresia-rpg-close').click());await toggle('enableMemorySummaries',false);await panel(page,'summaries');assert.equal(await page.locator('[data-panel="summaries"] .trpg-optional-off').count(),1);assert.doesNotMatch(await page.evaluate(()=>[...window.prompts.values()].join('\n')),/คืนที่แม่น้ำ|พบคอร่าตอนตกปลา/);
+  await page.evaluate(()=>document.querySelector('#tretaresia-rpg-close').click());await toggle('enableStoryMemory',true);await panel(page,'memories');assert.match(await page.locator('[data-panel="memories"]').innerText(),/พบคอร่าตอนตกปลา/);
+  await page.evaluate(()=>document.querySelector('#extensions_settings2').style.display='none');await page.locator('[data-action="toggle-control-center"]').click();await page.locator('#tretaresia-control-dialog').waitFor({state:'visible'});assert.equal(await page.locator('#tretaresia-control-dialog .trpg-optional-systems input').count(),6);
+  const memorySwitch=page.locator('#tretaresia-control-dialog [data-ui-setting="enableStoryMemory"]');assert(await memorySwitch.isChecked());await memorySwitch.uncheck();await page.waitForFunction(()=>window.host.extensionSettings.tretaresia_rpg.enableStoryMemory===false);
+  await page.locator('#tretaresia-control-dialog .trpg-optional-systems').screenshot({path:`${artifacts}/optional-switches-${width}.png`});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,JSON.stringify(await page.evaluate(()=>({width:innerWidth,doc:document.documentElement.scrollWidth,wide:[...document.querySelectorAll('body *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).slice(0,6).map(el=>el.id||el.className)}))));assert.deepEqual(errors,[]);console.log(`PASS optional defaults OFF, live gates, prompt removal, saved records, pending auction recovery, memory storage/API pause and both settings entry points at ${width}px`);await page.close();
+ }
+}finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

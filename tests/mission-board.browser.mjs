@@ -76,7 +76,7 @@ try{
   await page.route('https://fonts.googleapis.com/**',route=>route.fulfill({contentType:'text/css',body:''}));
   await page.addInitScript(()=>{
    if(localStorage.getItem('roleforge-hstats-preview-metadata'))return;
-   localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'en',autoTrack:true,autoContinuity:false,chatPresentation:false,showSceneTracker:true,notificationDuration:1500}}));
+   localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{enableMissionBoard:true,enableQuestObjectives:true,eventNotifications:true,language:'en',autoTrack:true,autoContinuity:false,chatPresentation:false,showSceneTracker:true,notificationDuration:1500}}));
    localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'Nova'},npcs:[],quests:[],skills:[],inventory:[],location:{narrativeVersion:1,place:'Guild Hall'},onboarding:{locationSeeded:true},progression:{currency:{gold:0,silver:20,copper:0}},proficiencies:{magic:{aura:99},sword:{swordplay:5}}}}));
   });
   await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready&&document.querySelector('#tretaresia-rpg-overlay.is-ready'));await setup(page);

@@ -1,4 +1,13 @@
-# ROLEFORGE — v0.45.2
+# ROLEFORGE — v0.45.3
+
+## v0.45.3 — Optional systems and native chat compatibility
+
+- The Auction House uses a detailed wooden gavel with rounded striking faces, collars, a turned handle and a separate sound block, keeping the existing gold and dark aesthetic.
+- **Extension Settings → RoleForge → Optional systems**, or **Control center → Optional systems**, provides six independent switches: Mission Board, Auctions, Story Memory, Appointments & Deadlines, Quest Objective Checklists and Memory Summaries. Missing preferences default to **OFF**; explicitly saved preferences remain unchanged. Turning a system off preserves its records and removes its cards, AI instructions and context. Memory Summaries also stops archive writes and summary API requests. Existing auction commitments can still be settled or left through the Wallet without reopening bidding.
+- Event notifications default to OFF for new users; saved notification preferences and individual category switches remain available.
+- Main-chat cards now decorate SillyTavern's rendered message instead of rebuilding it from raw text. Display regex output, custom HTML, tables, form state and handlers survive scene/board/auction updates. Enabled assistant display regex disables RoleForge story restyling instructions; native message edits and asynchronous renders remain authoritative. Covered global, character and preset regex behavior; other add-ons that replace the message DOM may still require a specific compatibility check.
+
+อ่าน [คู่มือสวิตช์ระบบเสริมและการใช้ร่วมกับ regex ภาษาไทย](docs/optional-systems-and-regex.th.md)
 
 ## v0.45.2 — Auction House
 

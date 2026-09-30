@@ -4,9 +4,9 @@ import * as memory from '../src/memory-summaries.js';
 import {createMemorySummaries,requestMemorySummary} from '../src/memory-summary-runtime.js';
 import {renderMemorySummaries} from '../src/memory-summary-ui.js';
 
-const config = () => ({language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
+const config = () => ({enableMemorySummaries:true,language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
 function fixture(options = {}) {
-    const data = options.data || new Map(), notices = [], phases = [], calls = [], settings = config();
+    const data = options.data || new Map(), notices = [], phases = [], calls = [], storageCalls = [], settings = {...config(),...options.settings};
     const state = {player:{name:'Nova'},location:{place:'River'},worldClock:{day:7,time:'23:00'},progression:{currency:{gold:6,silver:0,copper:120}},quests:[],npcs:[],social:{},storyMemories:[],storyAgenda:[]};
     const context = {owner:'card:cora',chatId:'first',chatMetadata:{},chat:[{is_user:true,name:'Nova',mes:'I went fishing at the river at night.'},{is_user:false,name:'Cora',mes:'Cora met Nova at the river that night. It was their first meeting.'}],
         getCurrentChatId(){return this.chatId;},getTokenCountAsync:async value => Math.ceil(value.length / 3),extensionSettings:{}};
@@ -16,13 +16,94 @@ function fixture(options = {}) {
             title:'First meeting with Cora',detail:'Nova met Cora while fishing at the river at night.',kind:'Event',people:['Nova','Cora','คอร่า'],places:['River','แม่น้ำ'],keywords:['fishing','ตกปลา','กลางคืน'],knownBy:['Nova','Cora'],whenText:'Day 7, night',sourceKeys:[batch.at(-1).segmentKey],evidence:batch.at(-1).text.slice(0,100),
         }]});
     });
-    const store = {get:async owner => data.has(owner) ? structuredClone(data.get(owner)) : null,put:async(owner,value) => { if(options.failSave?.())throw Error('MEMORY_STORAGE_WRITE_FAILED'); data.set(owner,structuredClone(value)); }};
+    const store = {get:async owner => {storageCalls.push('get');return data.has(owner) ? structuredClone(data.get(owner)) : null;},put:async(owner,value) => { storageCalls.push('put');if(options.failSave?.())throw Error('MEMORY_STORAGE_WRITE_FAILED'); data.set(owner,structuredClone(value)); }};
     const runtime = createMemorySummaries({context:()=>context,owner:ctx=>ctx.owner,settings:()=>settings,state:()=>state,visible:value=>value.replace(/<!--[^]*?-->/g,''),scene:()=>({day:7,time:'23:00',location:'River'}),store,
         notify:(type,message)=>notices.push({type,message}),changed:view=>phases.push(view.job.status),parse:JSON.parse,timeout:options.timeout || 100,
         saveMetadata:async()=>options.metadataFail ? false : true,isGenerating:()=>options.generating?.() || false,
         request:async(ctx,prompt,profile,signal)=>{calls.push({prompt,profile,signal});return responder(prompt,signal);}});
-    return {runtime,data,notices,phases,calls,context,state,settings,setResponder:value=>{responder=value;}};
+    return {runtime,data,notices,phases,calls,storageCalls,context,state,settings,setResponder:value=>{responder=value;}};
 }
+
+test('disabled startup performs no archive access, capture, API request or prompt injection',async()=>{
+    const f=fixture({settings:{enableMemorySummaries:false}});
+    assert.equal(await f.runtime.open(),null);
+    assert.equal(await f.runtime.capture({force:true}),false);
+    assert.equal(await f.runtime.observe({auto:true,forceCapture:true}),false);
+    assert.equal(await f.runtime.run({prepare:true}),false);
+    assert.equal(await f.runtime.preparePrompt(),'');assert.equal(f.runtime.prompt(),'');
+    assert.equal(await f.runtime.import(memory.emptyMemoryLibrary('card:cora')),false);
+    await assert.rejects(f.runtime.export(),/MEMORY_DISABLED/);
+    assert.deepEqual(f.storageCalls,[]);assert.deepEqual(f.calls,[]);assert.deepEqual(f.notices,[]);
+    assert.equal(f.runtime.view().job.status,'disabled');assert.equal(f.runtime.isBusy(),false);
+    delete f.settings.enableMemorySummaries;
+    assert.equal(await f.runtime.open(),null);assert.deepEqual(f.storageCalls,[]);
+});
+
+test('pause preserves the same archive and re-enable captures the current chat deliberately',async()=>{
+    const f=fixture();await f.runtime.open();assert.equal(await f.runtime.run(),true);
+    const archive=structuredClone(f.data.get('card:cora')),writes=f.storageCalls.length;
+    assert.match(f.runtime.prompt(),/first met Cora/);
+    f.settings.enableMemorySummaries=false;f.runtime.pause();
+    f.context.chat.push({is_user:false,name:'Cora',mes:'Cora returned to the river after sunrise.'});
+    assert.equal(await f.runtime.observe({auto:true}),false);assert.equal(await f.runtime.run(),false);
+    assert.equal(f.runtime.prompt(),'');assert.equal(f.runtime.continuityLink(),null);
+    assert.equal(f.storageCalls.length,writes);assert.deepEqual(f.data.get('card:cora'),archive);
+    f.settings.enableMemorySummaries=true;await f.runtime.open();
+    assert.equal(f.runtime.view().chapters.length,1);assert.equal(f.runtime.view().coverage.messages,3);
+    f.runtime.search('Cora');assert(f.runtime.view().results.some(hit=>hit.type==='event'));
+    assert.match(f.runtime.prompt(),/first met Cora/);
+    assert.equal(f.data.get('card:cora').chapters[0].id,archive.chapters[0].id);
+});
+
+test('disabling during an API request invalidates the response even after a new job is enabled',async()=>{
+    let release;const f=fixture({respond:()=>new Promise(resolve=>{release=resolve;})});
+    await f.runtime.open();const oldJob=f.runtime.run({prepare:true});
+    while(!release)await new Promise(resolve=>setTimeout(resolve,1));
+    f.settings.enableMemorySummaries=false;f.runtime.pause();
+    assert(f.calls[0].signal.aborted);assert.equal(f.runtime.isBusy(),false);assert.equal(f.runtime.prompt(),'');
+    const savedWhileOff=structuredClone(f.data.get('card:cora'));assert.equal(await oldJob,false);
+    assert.deepEqual(f.data.get('card:cora'),savedWhileOff);assert(!f.context.chatMetadata[memory.MEMORY_LINK_KEY]);
+    f.settings.enableMemorySummaries=true;await f.runtime.open();
+    f.setResponder(()=>JSON.stringify({summary:'Current enabled summary.',recap:'Current enabled recap.',events:[]}));
+    assert.equal(await f.runtime.run(),true);
+    const current=structuredClone(f.data.get('card:cora'));
+    release(JSON.stringify({summary:'Stale disabled summary.',recap:'Stale disabled recap.',events:[]}));
+    await new Promise(resolve=>setTimeout(resolve,0));
+    assert.deepEqual(f.data.get('card:cora'),current);
+    assert.equal(f.runtime.view().chapters[0].summary,'Current enabled summary.');
+    assert.equal(f.notices.filter(notice=>notice.type==='success').length,1);
+    assert(!f.context.chatMetadata[memory.MEMORY_LINK_KEY]);
+});
+
+test('disabling during async result token counting cannot apply or save a stale chapter',async()=>{
+    const f=fixture();await f.runtime.open();
+    let release;
+    f.context.getTokenCountAsync=value=>value.startsWith('{"summary":')
+        ? new Promise(resolve=>{release=resolve;}) : Promise.resolve(Math.ceil(value.length/3));
+    const pending=f.runtime.run();while(!release)await new Promise(resolve=>setTimeout(resolve,1));
+    f.settings.enableMemorySummaries=false;f.runtime.pause();
+    const saved=structuredClone(f.data.get('card:cora'));release(20);
+    assert.equal(await pending,false);assert.deepEqual(f.data.get('card:cora'),saved);
+    f.context.getTokenCountAsync=async value=>Math.ceil(value.length/3);
+    f.settings.enableMemorySummaries=true;await f.runtime.open();
+    assert.equal(f.runtime.view().chapters.length,0);assert.equal(await f.runtime.run(),true);
+    assert.equal(f.runtime.view().chapters.length,1);
+});
+
+test('a paused prompt build cannot overwrite the prompt from a newly enabled lifecycle',async()=>{
+    const f=fixture();await f.runtime.open();await f.runtime.run();
+    f.context.chat.push({is_user:true,name:'Nova',mes:'Tell me about Cora and our first river encounter.'});
+    let release,block=true;
+    f.context.getTokenCountAsync=value=>{
+        if(block){block=false;return new Promise(resolve=>{release=resolve;});}
+        return Promise.resolve(Math.ceil(value.length/3));
+    };
+    const pending=f.runtime.preparePrompt();while(!release)await new Promise(resolve=>setTimeout(resolve,1));
+    f.settings.enableMemorySummaries=false;f.runtime.pause();assert.equal(f.runtime.prompt(),'');
+    f.settings.enableMemorySummaries=true;await f.runtime.open();const current=f.runtime.prompt();
+    assert.match(current,/first met Cora/);release(20);
+    assert.equal(await pending,'');assert.equal(f.runtime.prompt(),current);
+});
 
 test('archive preserves complete originals, long message segments and replaced/deleted variants',()=>{
     const library = memory.emptyMemoryLibrary('card:cora'), long = 'แม่น้ำกลางคืน'.repeat(3000);
@@ -137,7 +218,7 @@ test('token budgets retain complete reference records and originals stay outside
 
 test('full backup roundtrip includes originals, rejects a different owner, and never overwrites newer local history',async()=>{
     const f=fixture();await f.runtime.open();await f.runtime.run();const backup=JSON.parse(await f.runtime.export());assert.equal(backup.chats[0].messages[1].raw,f.context.chat[1].mes);
-    f.context.chat[1].mes='A newer local version.';await f.runtime.observe();await f.runtime.import(backup);assert.equal(f.runtime.source('first','1').raw,'A newer local version.');
+    f.context.chat[1].mes='A newer local version.';await f.runtime.observe();assert.equal(await f.runtime.import(backup),true);assert.equal(f.runtime.source('first','1').raw,'A newer local version.');
     await assert.rejects(f.runtime.import({...backup,owner:'another-character'}),/INVALID_ARCHIVE/);
 });
 

@@ -1,10 +1,10 @@
-import {renderAuctionCard} from './auction-ui.js?v=0.45.2';
-import { renderMissionBoard } from './mission-board-ui.js?v=0.45.2';
-import {uiText} from './ui-language.js?v=0.45.2';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.2';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.2';
-import { croppedPortrait } from './npc-portraits.js?v=0.45.2';
-import { renderSceneTracker } from './scene-tracker.js?v=0.45.2';
+import {renderAuctionCard} from './auction-ui.js?v=0.45.3';
+import { renderMissionBoard } from './mission-board-ui.js?v=0.45.3';
+import {uiText} from './ui-language.js?v=0.45.3';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.3';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.3';
+import { croppedPortrait } from './npc-portraits.js?v=0.45.3';
+import { renderSceneTracker } from './scene-tracker.js?v=0.45.3';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -183,6 +183,48 @@ function groupInvitation(offer, messageId, api) {
     return card;
 }
 
+// SillyTavern has already run Markdown, display regex and its HTML sanitizer on
+// .mes_text. Keep that DOM authoritative: reparsing message.mes loses custom
+// cards, formatting, bound listeners and display-only regex replacements.
+export function displayRegexEnabled(context = {}) {
+    const settings=context.extensionSettings||context.extension_settings||{};
+    if (settings.disabledExtensions?.includes('regex')) return false;
+    const character=context.characters?.[context.characterId];
+    const lists=[settings.regex];
+    // Honor ST's per-card/preset opt-in when the host exposes those lists.
+    if (!Array.isArray(settings.character_allowed_regex)||settings.character_allowed_regex.includes(character?.avatar)) lists.push(character?.data?.extensions?.regex_scripts);
+    try {
+        const manager=context.getPresetManager?.(),allowed=settings.preset_allowed_regex;
+        const name=manager?.getSelectedPresetName?.();
+        if (!allowed || !manager?.apiId || !name || allowed[manager.apiId]?.includes(name)) lists.push(manager?.readPresetExtensionField?.({path:'regex_scripts'}));
+    } catch { /* Older hosts may not expose an active preset. */ }
+    return lists.some(list=>Array.isArray(list)&&list.some(script=>script&&!script.disabled&&script.findRegex
+        && (!script.promptOnly||script.markdownOnly)
+        && Array.isArray(script.placement)&&script.placement.some(placement=>[0,2].includes(Number(placement)))));
+}
+
+function supportsStoryPresentation(nodes, source, blocks, context) {
+    if (!blocks || displayRegexEnabled(context)) return false;
+    // Explicit story tags and simple bold/italic are our presentation protocol.
+    // Links, tables, code, custom tags/attributes and regex widgets belong to the
+    // host renderer. Do not try to reconstruct them from unsanitized model HTML.
+    if (/<(?!\/?(?:tr-(?:header|narrative|dialogue)|header|narrative|dialogue)\b)[a-z!][^>]*>/i.test(source)) return false;
+    const allowed=new Set(['P','BR','STRONG','EM','Q','TR-HEADER','TR-NARRATIVE','TR-DIALOGUE']);
+    for (const node of nodes) {
+        const descendants=node.nodeType===1?[node,...node.querySelectorAll('*')]:[];
+        for (const child of descendants) {
+            if (!allowed.has(child.tagName)) return false;
+            if ([...child.attributes].some(attribute=>!child.tagName.startsWith('TR-')||attribute.name!=='name')) return false;
+        }
+    }
+    const hostText=nodes.map(node=>node.textContent||'').join('');
+    if (hostText===source) return true; // Hosts which escape the protocol tags.
+    const expected=element('span');
+    for (const block of blocks) if (block.text) appendStoryText(expected,block.text);
+    const compact=value=>value.replace(/\s+/g,'');
+    return compact(hostText)===compact(expected.textContent||'');
+}
+
 export function createChatPresentation(api, open) {
     const mounted=new Map(), portraits=new Map();let timer,revision=0,epoch=0,currentChat='';
     function clearPortraits(){++epoch;for(const record of portraits.values())if(record.url)URL.revokeObjectURL(record.url);portraits.clear();}
@@ -194,7 +236,25 @@ export function createChatPresentation(api, open) {
         record.promise=(async()=>{try{const blob=await api.portrait(p);if(!blob)return null;const result=await croppedPortrait(blob,frame);if(ticket!==epoch)return null;record.url=URL.createObjectURL(result);return record.url;}catch{return null;}})();
         portraits.set(key,record);return record.promise;
     }
-    function restore(host, entry){if(entry.root.parentNode===host)host.replaceChildren(...entry.original);mounted.delete(host);}
+    const nativeNodes=(host,entry)=>[...host.childNodes].filter(node=>!entry?.roots.includes(node));
+    function restore(host, entry, source){
+        // Never restore a stale snapshot over a native edit, swipe, streaming
+        // update or another extension's newly rendered content.
+        if(entry.storyRoot&&host.contains(entry.storyRoot)){
+            // Another formatter may wrap our existing story. Restore its
+            // original native nodes in place, preserving that new wrapper.
+            const unchanged=source!==undefined&&entry.source===source;
+            const restoreOriginal=source===undefined
+                ? entry.storyRoot.parentNode!==host||!nativeNodes(host,entry).length
+                : unchanged;
+            if(restoreOriginal)entry.storyRoot.replaceWith(...entry.original);
+            else entry.storyRoot.remove();
+        }
+        // Exact node references belong to us even after wrapInner()/reparenting.
+        // Never remove the other formatter's wrapper or its native child nodes.
+        for(const root of entry.roots)root.remove();
+        mounted.delete(host);
+    }
     function render(){
         timer=null;const context=api.context(),chatId=context.getCurrentChatId?.()||'';
         if(chatId!==currentChat){currentChat=chatId;clearPortraits();document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}
@@ -204,37 +264,51 @@ export function createChatPresentation(api, open) {
         for(const [host]of mounted)if(!host.isConnected)mounted.delete(host);
         for(const host of document.querySelectorAll('#chat .mes .mes_text')){
             const mes=host.closest('.mes'), id=Number(mes.getAttribute('mesid')), message=context.chat?.[id];
-            if(!message || message.is_user || message.is_system || mes.querySelector('.mes_edit_textarea'))continue;
-            const source=api.visible(message.mes||''),blocks=settings.chatPresentation?parseStory(source):null,old=mounted.get(host);
+            let old=mounted.get(host);
+            if(!message || message.is_user || message.is_system || mes.querySelector('.mes_edit_textarea')){if(old)restore(host,old);continue;}
+            const source=api.visible(message.mes||'');
+            // A host rerender may replace only part of .mes_text. Remove our old
+            // UI without overwriting the new nodes; use those nodes from here on.
+            if(old?.storyRoot && (old.storyRoot.parentNode!==host||nativeNodes(host,old).length)){
+                restore(host,old,source);old=null;
+            }
+            const original=old?.storyRoot?.parentNode===host?old.original:nativeNodes(host,old);
+            const parsed=settings.chatPresentation?parseStory(source):null;
+            const blocks=supportsStoryPresentation(original,source,parsed,context)?parsed:null;
             const scene=settings.showSceneTracker?api.sceneForMessage?.(id,message):null;
             const offers=api.socialEventsForMessage?.(id,message)?.offers||[];
             const groupOffers=api.socialEventsForMessage?.(id,message)?.groupOffers||[];
             const notes=api.diaryForMessage?.(id,message)||[];
             const board=api.missionBoardForMessage?.(id,message);
             const auction=api.auctionForMessage?.(id,message);
-            if(!blocks&&!scene&&!offers.length&&!groupOffers.length&&!notes.length&&!board&&!auction){if(old)restore(host,old);continue;}
+            if(!blocks&&!scene&&!offers.length&&!groupOffers.length&&!notes.length&&!board&&!auction){if(old)restore(host,old,source);continue;}
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
             const signature=`${revision}:${settings.chatEffects}:${settings.language}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(groupOffers)}:${JSON.stringify(notes)}:${JSON.stringify(board)}:${JSON.stringify(auction)}:${source}`;
-            if(old?.signature===signature && old.root.parentNode===host)continue;
-            const original=old?.root.parentNode===host?old.original:[...host.childNodes];
-            const root=element('div','trpg-chat');root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
-            if(scene)root.append(renderSceneTracker(scene,settings.language));
-            if(blocks)renderStoryBlocks(root, blocks, lookup, message.name, open, imageFor, previousSpeaker);
-            else root.append(appendStoryText(element('div','trpg-plain'),source));
-            if(board)root.append(renderMissionBoard(board,id,api));
-            if(auction)root.append(renderAuctionCard(auction,api,id));
-            for(const offer of offers)root.append(householdInvitation(offer,id,api));
-            for(const offer of groupOffers)root.append(groupInvitation(offer,id,api));
+            if(old?.signature===signature && old.roots.every(root=>root.parentNode===host))continue;
+            if(old)restore(host,old,source);
+            const prefix=element('div','trpg-chat'),suffix=element('div','trpg-chat');
+            for(const root of [prefix,suffix])root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
+            if(scene)prefix.append(renderSceneTracker(scene,settings.language));
+            const storyRoot=blocks?element('div','trpg-chat'):null;
+            if(storyRoot){storyRoot.classList.toggle('trpg-effects',Boolean(settings.chatEffects));renderStoryBlocks(storyRoot,blocks,lookup,message.name,open,imageFor,previousSpeaker);}
+            if(board)suffix.append(renderMissionBoard(board,id,api));
+            if(auction)suffix.append(renderAuctionCard(auction,api,id));
+            for(const offer of offers)suffix.append(householdInvitation(offer,id,api));
+            for(const offer of groupOffers)suffix.append(groupInvitation(offer,id,api));
             for(const note of notes){
                 const button=element('button','trpg-diary-trigger',uiText('✦  {0} · Open diary',[note.npcName]));button.type='button';
                 button.addEventListener('click',()=>{
                     document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());
                     const book=diaryBook(note);document.body.append(book);
-                });root.append(button);
+                });suffix.append(button);
             }
-            mounted.set(host,{root,original,signature});host.replaceChildren(root);
+            const roots=[];
+            if(storyRoot){host.replaceChildren(storyRoot);roots.push(storyRoot);}
+            if(prefix.childNodes.length){host.prepend(prefix);roots.push(prefix);}
+            if(suffix.childNodes.length){host.append(suffix);roots.push(suffix);}
+            mounted.set(host,{roots,storyRoot,original:storyRoot?original:null,source,signature});
         }
     }
     function schedule(){if(timer==null)timer=setTimeout(render,90);}
@@ -242,13 +316,14 @@ export function createChatPresentation(api, open) {
         if(records.some(r=>{
             const target=r.target.nodeType===1?r.target:r.target.parentElement;
             if(target?.closest('.trpg-chat'))return false;
-            if(r.type==='childList'&&r.addedNodes.length===1&&r.addedNodes[0].classList?.contains('trpg-chat'))return false;
+            // Our own sibling insertion/removal must not retrigger mounting.
+            if(r.type==='childList'&&[...r.addedNodes,...r.removedNodes].length&&[...r.addedNodes,...r.removedNodes].every(node=>node.nodeType===1&&node.classList.contains('trpg-chat')))return false;
             return target?.closest('#chat');
         }))schedule();
     });
     // Observe only the chat, not the full settings/editor tree. Host events handle chat replacement.
     function observe(){observer.disconnect();const chat=document.getElementById('chat');if(chat)observer.observe(chat,{childList:true,subtree:true,characterData:true});schedule();}
-    const context=api.context();for(const event of ['CHAT_CHANGED','CHARACTER_MESSAGE_RENDERED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED','STREAM_TOKEN_RECEIVED','GENERATION_STARTED']){
+    const context=api.context();for(const event of ['CHAT_CHANGED','CHARACTER_MESSAGE_RENDERED','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED','STREAM_TOKEN_RECEIVED','GENERATION_STARTED']){
         const type=(context.eventTypes||context.event_types)?.[event];if(type)context.eventSource?.on(type,observe);
     }
     observe();

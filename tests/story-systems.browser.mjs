@@ -129,7 +129,7 @@ try {
         await page.route('https://fonts.googleapis.com/**', route => route.fulfill({contentType: 'text/css', body: ''}));
         await page.addInitScript(({scene}) => {
             if (localStorage.getItem('roleforge-hstats-preview-metadata')) return;
-            localStorage.setItem('roleforge-hstats-preview-settings', JSON.stringify({tretaresia_rpg: {
+            localStorage.setItem('roleforge-hstats-preview-settings', JSON.stringify({tretaresia_rpg: {enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true,eventNotifications:true,
                 language: 'en', autoTrack: true, autoContinuity: false, chatPresentation: false, showSceneTracker: true,
             }}));
             localStorage.setItem('roleforge-hstats-preview-metadata', JSON.stringify({tretaresia_rpg_state: {

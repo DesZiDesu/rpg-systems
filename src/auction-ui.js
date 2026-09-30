@@ -1,6 +1,7 @@
 const scopes = new WeakMap();
 const node = (tag,cls,text) => { const el = document.createElement(tag); el.className = cls; if (text !== undefined) el.textContent = text; return el; };
 export const auctionErrorText = (error,thai) => ({
+    disabled:['ระบบประมูลปิดอยู่ เปิดจากการตั้งค่าระบบเสริมเมื่อต้องการใช้','Auctions are off. Enable the system in optional settings to use it.'],
     funds:['เงินที่ใช้ได้ไม่เพียงพอ (มีวงเงินกันไว้)','Not enough available funds.'],
     amount:['ราคาต้องเป็นจำนวนเต็มและไม่น้อยกว่าราคาขั้นต่ำ','Enter a whole amount at least equal to the next bid.'],
     away:['กลับไปยังสถานที่ประมูลก่อนเข้าร่วมหรือเสนอราคา','Return to this auction venue to join or bid.'],
@@ -31,8 +32,21 @@ export function renderAuctionCard(view, api, messageId = null) {
     const valid = () => root.isConnected && api.context().chatMetadata === metadata && api.context().getCurrentChatId?.() === chatId;
     const header = node('header','trpg-auction-header');
     const mark = node('span','trpg-auction-mark'); mark.setAttribute('aria-hidden','true');
-    // A monochrome engraved mark avoids platform-specific emoji colors.
-    mark.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><g transform="rotate(42 16 16)"><path d="M15 3h10v8H15zM13 2h14M13 12h14M20 12v17"/></g><path d="M18 27h11v3H18zM16 30h15"/></svg>';
+    // Turned wooden gavel, striking faces and a separate sound block; no emoji/font dependency.
+    mark.innerHTML = `<svg viewBox="0 0 64 64" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <g transform="rotate(-34 28 19)">
+            <path d="M25 28h6v5c-1 3-1 7 0 10l1 7c0 3-1 5-4 5s-4-2-4-5l1-7c1-3 1-7 0-10z" fill="currentColor" fill-opacity=".12"/>
+            <path d="M24.5 32h7M25 47h6M25 51h6" stroke-width="1.4"/>
+            <path d="M13 9h30v20H13z" fill="currentColor" fill-opacity=".14"/>
+            <ellipse cx="43" cy="19" rx="4" ry="10" fill="currentColor" fill-opacity=".12"/>
+            <ellipse cx="13" cy="19" rx="4" ry="10" fill="currentColor" fill-opacity=".08"/>
+            <path d="M19 9c-3 5-3 15 0 20M37 9c-3 5-3 15 0 20"/>
+            <path d="M22 13c5-1 8-1 11 0M21 24c5 1 8 1 11 0M12.5 13c-1 4-1 8 0 12M42.5 13c-1 4-1 8 0 12" stroke-width="1.25" opacity=".7"/>
+        </g>
+        <path d="M6 52v6c0 2 6 4 14 4s14-2 14-4v-6" fill="currentColor" fill-opacity=".12"/>
+        <ellipse cx="20" cy="52" rx="14" ry="4" fill="currentColor" fill-opacity=".08"/>
+        <path d="M11 52c3-2 15-2 18 0M7 58c6 3 20 3 26 0" stroke-width="1.25" opacity=".7"/>
+    </svg>`;
     const heading = node('div',''); heading.append(node('small','','ROLEFORGE · AUCTION HOUSE'),node('h3','',view.title));
     const toggle = node('button','trpg-auction-collapse',local.collapsed ? '+' : '−'); toggle.type = 'button';
     toggle.setAttribute('aria-label',t('ย่อหรือขยายการประมูล','Collapse or expand auction')); toggle.setAttribute('aria-expanded',String(!local.collapsed));

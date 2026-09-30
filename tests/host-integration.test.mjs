@@ -1,3 +1,4 @@
+import {displayRegexEnabled} from '../src/npc-chat.js';
 import * as auctionCore from '../src/auction-core.js';
 import {auctionErrorText} from '../src/auction-ui.js';
 import * as missionBoard from '../src/mission-board.js';
@@ -24,13 +25,53 @@ import {normalizeAdultSettings,writingPreferencePrompt} from '../src/nsfw-enhanc
 import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded} from '../src/social-events.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
-const context={extensionSettings:{},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...auctionCore,auctionErrorText,...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enableAuctions:true,enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true,enableMemorySummaries:true,eventNotifications:true}},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
+const sandbox={displayRegexEnabled,...auctionCore,auctionErrorText,...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={runAuctionAction,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={changeOptionalSystem,renderPanel,runAuctionAction,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
+
+test('fresh settings opt out of all six optional systems and popups, with no optional state or protocol in prompts',()=>{
+ const previous=context.extensionSettings;
+ try{
+  context.extensionSettings={};const settings=host.getSettings();
+  for(const key of ['enableMissionBoard','enableAuctions','enableStoryMemory','enableStoryAgenda','enableQuestObjectives','enableMemorySummaries','eventNotifications'])assert.equal(settings[key],false,key);
+  const state=host.defaultState();state.storyMemories=[{id:'secret',title:'Secret',detail:'Unique paused fact marker',status:'Active',kind:'Fact'}];state.storyAgenda=[{id:'visit',title:'Visit',status:'Scheduled',dueDay:1}];
+  const prompt=host.statePrompt(state,{includeState:true,track:true});assert.doesNotMatch(prompt,/Mission Board:|Auction UI:|Story memory: upsert|Appointments and deadlines:|Quest objectives: include|Unique paused fact marker/);
+  assert.equal(host.roleplayState(state).sceneContext.auctions,undefined);assert.equal(host.aiState(state).storyMemories,undefined);
+  settings.enableMissionBoard=true;settings.enableAuctions=true;settings.enableStoryMemory=true;
+  const enabled=host.statePrompt(state,{includeState:true,track:true});assert.match(enabled,/Mission Board:/);assert.match(enabled,/Auction UI:/);assert.match(enabled,/Story memory: upsert/);
+ }finally{context.extensionSettings=previous;}
+});
+
+test('disabled optional updates cannot create records or overwrite saved checklists; ordinary quest payment still works once',()=>{
+ const previous=context.extensionSettings;
+ try{
+  context.extensionSettings={};let state=host.defaultState();state.quests=[{id:'old',name:'Old quest',status:'Active',progress:25,rewardClaimed:false,objectives:[{id:'step',title:'Meet Cora',status:'Pending',optional:false}]}];
+  const result=host.applyStatePatch(state,{ops:[['upsert','storyMemories',{title:'Ignore',detail:'Ignore'}],['upsert','storyAgenda',{title:'Ignore'}],['upsert','questObjectives',{questId:'old',id:'step',status:'Completed'}],['upsert','quests',{id:'old',status:'Completed',objectives:[]}],['inc','progression.currency.gold',3,{questId:'old',category:'quest-reward',reason:'Old quest payment'}]]});
+  assert.equal(result.next.storyMemories.length,0);assert.equal(result.next.storyAgenda.length,0);assert.equal(result.next.quests[0].objectives[0].status,'Pending');assert.equal(result.next.quests[0].status,'Completed');assert.equal(result.next.progression.currency.gold,3);
+  assert.equal(host.applyStatePatch(result.next,{ops:[['inc','progression.currency.gold',3,{questId:'old',category:'quest-reward',reason:'Old quest payment'}]]}).next.progression.currency.gold,3);
+  host.getSettings().enableQuestObjectives=true;const restored=host.normalize(result.next);assert.equal(restored.quests[0].objectives[0].title,'Meet Cora');
+ }finally{context.extensionSettings=previous;}
+});
+
+test('optional switches preserve explicit saved choices and active auction reserves after turning off',async()=>{
+ const previous={settings:context.extensionSettings,state:context.chatMetadata};
+ try{
+  context.extensionSettings={tretaresia_rpg:{enableMissionBoard:true,enableMemorySummaries:false,eventNotifications:true}};const settings=host.getSettings();assert.equal(settings.enableMissionBoard,true);assert.equal(settings.eventNotifications,true);assert.equal(settings.enableAuctions,false);
+  const offer={id:'held',title:'Hall',location:'Hall',denomination:'gold',deposit:5,lots:[{id:'blade',name:'Blade',openingBid:6,minIncrement:1}]};let state=host.defaultState();state.progression.currency.gold=30;state=auctionCore.applyAuctionAction(state,offer,'join').next;state=auctionCore.applyAuctionAction(state,offer,'bid',{amount:20,revision:1}).next;
+  context.chatMetadata={tretaresia_rpg_state:state};const result=host.applyStatePatch(state,{ops:[['inc','progression.currency.gold',-6,{reason:'Purchase'}],['inc','progression.currency.gold',-20,{reason:'Auction payment'}]]});assert.equal(result.accepted,0);assert.equal(result.next.progression.currency.gold,30);
+  assert.equal((await host.runAuctionAction(null,'held','resume:held','bid',21,2)).error,'disabled');assert.equal(auctionCore.auctionAvailable(host.getState()).gold,5);
+ }finally{context.extensionSettings=previous.settings;context.chatMetadata=previous.state;}
+});
+
+test('display regex suppresses RoleForge story wrappers in the prompt while keeping enabled RPG tracking',()=>{
+ const previous=context.extensionSettings.regex;
+ try{context.extensionSettings.regex=[{disabled:false,placement:[2],markdownOnly:true,promptOnly:false,findRegex:'foo',replaceString:'bar'}];const prompt=host.statePrompt(host.defaultState(),{includeState:true,track:true});assert.doesNotMatch(prompt,/<tr-dialogue|<tr-narrative/);assert.match(prompt,/ROLEFORGE PATCH PROTOCOL/);}
+ finally{if(previous===undefined)delete context.extensionSettings.regex;else context.extensionSettings.regex=previous;}
+});
 
 test('auction patches survive state export and cannot replay locally settled money/items or spend reserves',()=>{
  let start=host.defaultState();start.progression.currency.gold=30;
@@ -55,7 +96,7 @@ test('a concurrent metadata save waits for auction failure and commits the resto
  const prior={metadata:context.chatMetadata,chat:context.chat,settings:context.extensionSettings,save:context.saveMetadata,get:sandbox.document.getElementById};
  try{
   const tracker={hidden:true};sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?tracker:null;
-  context.extensionSettings={tretaresia_rpg:{eventNotifications:false,autoContinuity:false}};
+  context.extensionSettings={tretaresia_rpg:{enableAuctions:true,eventNotifications:false,autoContinuity:false}};
   const offer={id:'atomic-auction',title:'Hall Auction',location:'Hall',denomination:'gold',entryFee:0,deposit:4,lots:[{id:'blade',name:'Blade',openingBid:5,minIncrement:1,bidders:[]}]};
   let state=host.defaultState();state.progression.currency.gold=30;state.location.place='Hall';state.onboarding.locationSeeded=true;
   state=auctionCore.applyAuctionAction(state,offer,'join').next;state=auctionCore.applyAuctionAction(state,offer,'bid',{amount:20,revision:1}).next;
@@ -956,7 +997,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.2');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.3');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -1820,4 +1861,22 @@ test('historical sync can complete older pending steps but cannot overwrite newe
  assert.equal(applied.quests[0].objectives.find(entry=>entry.id==='manual').status,'Pending');
  assert.equal(applied.quests[0].objectives.find(entry=>entry.id==='finished').status,'Completed');
  assert.equal(applied.quests[0].objectives.find(entry=>entry.id==='older').sourceMessageId,3);
+});
+
+
+test('auction opt-out permits normal story purchases without engine history while explicit engine records stay protected',()=>{
+ const settings=host.getSettings(),prior=settings.enableAuctions;settings.enableAuctions=false;
+ try {
+  const base=host.normalize({...host.defaultState(),progression:{currency:{gold:30}}});
+  const ops=[['inc','progression.currency.gold',-7,{category:'purchase',reason:'Bought a bow at the auction'}],
+   ['upsert','inventory',{id:'bow',name:'Auction bow',quantity:1},{category:'purchase',reason:'Bought at the auction'}]];
+  const result=host.applyStatePatch(base,{ops}).next;
+  assert.equal(result.progression.currency.gold,23);assert.equal(result.inventory[0].quantity,1);
+  const spoof=host.applyStatePatch(result,{ops:[['inc','progression.currency.gold',-7,{auctionId:'fake'}],
+   ['upsert','inventory',{id:'copy',name:'Duplicate bow',quantity:1},{lotId:'fake'}],['upsert','auctions',{id:'fake'}]]}).next;
+  assert.equal(spoof.progression.currency.gold,23);assert.equal(spoof.inventory.length,1);assert.equal(spoof.auctions.length,0);
+  const recorded=host.normalize({...base,auctionReceipts:[{id:'paid',auctionId:'old',lotId:'bow',winner:'player',amount:7,denomination:'gold',itemName:'Bow',quantity:1,savedAt:'2026-09-30'}]});
+  assert.equal(recorded.auctionReceipts.length,1);
+  const replay=host.applyStatePatch(recorded,{ops}).next;assert.equal(replay.progression.currency.gold,30);assert.equal(replay.inventory.length,0);
+ }finally{settings.enableAuctions=prior;}
 });

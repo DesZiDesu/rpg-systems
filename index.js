@@ -1,34 +1,35 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.2';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.2';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.3';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.3';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.2';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.2';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.2';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.2';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.2';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.2';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.2';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.2';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.45.2';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.45.2';
-import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.45.2';
-import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.45.2';
-import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.2';
-import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.2';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.2';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.3';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.3';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.3';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.3';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.3';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.3';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.3';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.3';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.45.3';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.45.3';
+import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.45.3';
+import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.45.3';
+import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.3';
+import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.3';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.3';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.2';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.2';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.2';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.2';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.2';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.2';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.2';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.2';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.2';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.2';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.2';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.3';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.3';
+import {displayRegexEnabled} from './src/npc-chat.js?v=0.45.3';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.3';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.3';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.3';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.3';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.3';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.3';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.3';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.3';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.3';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -161,7 +162,21 @@ const COLOR_PRESETS = {
     seafoam: { accent: '#3f8f7a', alt: '#8fd8c2', ink: '#1e2725', surface: '#e6efec' },
 };
 
+const OPTIONAL_SYSTEMS = [
+    {key:'enableMissionBoard',en:'Mission Board',th:'กระดานภารกิจ',helpEn:'Read and accept jobs from boards in the main chat.',helpTh:'อ่านและรับภารกิจจากกระดานในแชต'},
+    {key:'enableAuctions',en:'Auction House',th:'ระบบประมูล',helpEn:'Preview lots, bid and receive won items.',helpTh:'ดูสินค้า เสนอราคา และรับของที่ชนะประมูล'},
+    {key:'enableStoryMemory',en:'Story Memory',th:'บันทึกเรื่องสำคัญ',panel:'memories',helpEn:'Track important facts, promises, secrets and open threads.',helpTh:'เก็บข้อเท็จจริง คำสัญญา ความลับ และเรื่องค้าง'},
+    {key:'enableStoryAgenda',en:'Story Agenda',th:'นัดหมายและกำหนดเวลา',panel:'agenda',helpEn:'Track appointments and reminders using story time.',helpTh:'เก็บนัดหมายและเตือนตามเวลาในเนื้อเรื่อง'},
+    {key:'enableQuestObjectives',en:'Quest Checklists',th:'เช็กลิสต์เป้าหมายเควส',helpEn:'Track individual quest steps and derive progress.',helpTh:'แยกเป้าหมายย่อยและคำนวณความคืบหน้าเควส'},
+    {key:'enableMemorySummaries',en:'Memory Summaries',th:'คลังสรุปความจำ',panel:'summaries',helpEn:'Archive chat history and summarize with a separate API request.',helpTh:'เก็บประวัติแชตและสรุปด้วย API แยกจากคำตอบหลัก'},
+];
 const DEFAULT_SETTINGS = Object.freeze({
+    enableMissionBoard:false,
+    enableAuctions:false,
+    enableStoryMemory:false,
+    enableStoryAgenda:false,
+    enableQuestObjectives:false,
+    enableMemorySummaries:false,
     chatPresentation: true,
     nsfwEnhance: false,
     nsfwPromptMode: 'auto',
@@ -189,7 +204,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     glowStrength: 38,
     auraColor: '#6f8fe8',
     density: 'compact',
-    eventNotifications: true,
+    eventNotifications: false,
     notificationDuration: 6000,
     notifyExperience: true,
     notifyLevel: true,
@@ -523,6 +538,7 @@ function getSettings() {
         if (!Object.hasOwn(extensionSettings[SETTINGS_KEY], key)) extensionSettings[SETTINGS_KEY][key] = value;
     }
     const settings = extensionSettings[SETTINGS_KEY];
+    for (const {key} of OPTIONAL_SYSTEMS) settings[key] = Boolean(settings[key]);
     normalizeAdultSettings(settings);
     if (!hadVisualVersion && settings.accentColor === '#8fb4a3') settings.accentColor = DEFAULT_SETTINGS.accentColor;
     settings.visualVersion = Math.max(6, number(settings.visualVersion, 6, 1, 99));
@@ -1161,7 +1177,7 @@ function quest(value) {
         objective: text(value.objective, '', 500), reward: text(value.reward, '', 160),
         objectives,
         giver: text(value.giver, '', 120), source: text(value.source, '', 160),
-        progress: completed ? 100 : questObjectiveProgress({...value, objectives}),
+        progress: completed ? 100 : questObjectiveProgress({...value, objectives:getSettings().enableQuestObjectives ? objectives : []}),
         rewardClaimed: Boolean(value.rewardClaimed),
         rewardClaimedAt: value.rewardClaimed ? text(value.rewardClaimedAt, text(value.completedAt, updatedAt, 60), 60) : '',
         completedAt: completed ? text(value.completedAt, updatedAt, 60) : '',
@@ -1664,7 +1680,7 @@ function writeContinuitySnapshot(state) {
     const key = continuityStorageKey(activeContinuityKey(context));
     const chatId = context.getCurrentChatId?.();
     if (!key || !chatId) return;
-    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), state: withoutChatNpcContinuity(normalize(state)), memoryLink:memorySummaries?.continuityLink() };
+    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), state: withoutChatNpcContinuity(normalize(state)), memoryLink:getSettings().enableMemorySummaries ? memorySummaries?.continuityLink() : context.chatMetadata?.[MEMORY_LINK_KEY] };
     try {
         localStorage.setItem(key, JSON.stringify(record));
     } catch (error) {
@@ -1753,7 +1769,7 @@ function captureContinuityBeforeNewChat(trigger = 'native-new-chat') {
     const chatId = context.getCurrentChatId?.();
     if (!getSettings().autoContinuity || !chatId) return false;
     writeContinuitySnapshot(getState());
-    const pending = memorySummaries?.view().coverage.linkedPendingSegments;
+    const pending = getSettings().enableMemorySummaries ? memorySummaries?.view().coverage.linkedPendingSegments : 0;
     if (pending) notify('info',getSettings().language === 'th' ? 'ยังมีข้อความรอสรุป ใช้ Memory Summaries → เตรียมความจำสำหรับแชตใหม่ เพื่อเก็บให้ครบ' : 'Some messages are not summarized yet. Use Memory Summaries → Prepare for a new chat to finish them.');
     globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:continuity-captured', {
         detail: { sourceChatId: chatId, characterKey: activeContinuityKey(context), trigger },
@@ -1905,6 +1921,7 @@ function appendStateAudit(state, previous, source = 'manual') {
 }
 
 function storyAgendaAlerts(state, previous) {
+    if (!getSettings().enableStoryAgenda) return [];
     const alertStates = new Set(['Today','Due','Overdue']);
     return (state.storyAgenda || []).filter(entry => {
         const now = storyAgendaState(entry, state.worldClock);
@@ -1915,6 +1932,7 @@ function storyAgendaAlerts(state, previous) {
 }
 
 function storyAgendaNotice(state) {
+    if (!getSettings().enableStoryAgenda) return '';
     const summary = storyAgendaSummary(state.storyAgenda, state.worldClock);
     const count = summary.today + summary.due + summary.overdue;
     if (!count) return '';
@@ -2059,6 +2077,7 @@ function rememberMissionBoard(messageId, message, board) {
 }
 
 function missionBoardForMessage(messageId, message) {
+    if (!getSettings().enableMissionBoard) return null;
     if (!message || message.is_user || message.is_system) return null;
     const context = SillyTavern.getContext(), key = assistantTurnKey(messageId);
     const board = normalizeMissionBoard(context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[assistantVariantKey(message)]?.missionBoard);
@@ -2139,6 +2158,7 @@ function rememberAuctionOffer(messageId,message,offer) {
     for (const stale of Object.keys(history).slice(0,-300)) delete history[stale];
 }
 function auctionForMessage(messageId,message) {
+    if (!getSettings().enableAuctions) return null;
     if (!message || message.is_user || message.is_system) return null;
     const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), variant = assistantVariantKey(message);
     const offer = normalizeAuctionOffer(context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[variant]?.auction);
@@ -2170,6 +2190,7 @@ function auctionNotifications(result,view) {
     return out;
 }
 async function runAuctionAction(messageId,id,token,action,amount,revision) {
+    if (!getSettings().enableAuctions && (messageId !== null || !['wait','leave'].includes(action))) return {ok:false,error:'disabled'};
     const context = SillyTavern.getContext(), metadata = context.chatMetadata, chatId = context.getCurrentChatId?.(), owner = characterOwner(context)?.key;
     if (pendingAuctionSave) return {ok:false,error:'saving'};
     if (mainReplyGenerating(context)) return {ok:false,error:'generating'};
@@ -2214,12 +2235,14 @@ async function runAuctionAction(messageId,id,token,action,amount,revision) {
     }
 }
 function renderAuctionWallet(panel,state) {
-    if (!state.auctions.length) return;
+    const enabled = getSettings().enableAuctions;
+    if (!state.auctions.length || !enabled && !state.auctions.some(s => s.status === 'Joined')) return;
     const target = document.createElement('div'); target.className = 'trpg-auction-wallet';
     const title = document.createElement('h3'); title.className = 'trpg-auction-wallet-title'; title.textContent = getSettings().language === 'th' ? 'AUCTIONS · ประมูลและวงเงินที่กันไว้' : 'AUCTIONS · Sessions & reserved funds'; target.append(title);
     const api = {context:() => SillyTavern.getContext(),settings:getSettings,runAuctionAction,refreshAuctions};
-    const sessions = [...state.auctions.filter(s => s.status === 'Joined'),...state.auctions.filter(s => s.status !== 'Joined').slice(-3).reverse()];
-    for (const session of sessions) target.append(renderAuctionCard(auctionView(state,session,{token:`resume:${session.id}`,busy:Boolean(pendingAuctionSave),available:!mainReplyGenerating() && keyName(session.location) === keyName(state.location.place)}),api));
+    if (!enabled) { const note = document.createElement('p'); note.className='trpg-auction-hint'; note.textContent=getSettings().language==='th' ? 'ระบบประมูลปิดอยู่ จบรายการที่ผูกพันไว้หรือออกจากงานเพื่อปล่อยวงเงินได้' : 'Auctions are off. Resolve this existing commitment or leave to release reserved funds.'; target.append(note); }
+    const sessions = [...state.auctions.filter(s => s.status === 'Joined'),...(enabled ? state.auctions.filter(s => s.status !== 'Joined').slice(-3).reverse() : [])];
+    for (const session of sessions) target.append(renderAuctionCard(auctionView(state,session,{token:`resume:${session.id}`,busy:Boolean(pendingAuctionSave),available:enabled && !mainReplyGenerating() && keyName(session.location) === keyName(state.location.place)}),api));
     panel.querySelector('.tretaresia-wallet')?.after(target);
 }
 
@@ -2541,11 +2564,11 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
             techniques: state.proficiencies.techniques.slice(0, 40).map(({ id, name, category, proficiency }) => [id, name, category, proficiency]),
         },
         quests: activeQuests.map(({ id, name, type, status, objective, reward, giver, progress }) => [id, name, type, status, objective, reward, giver, progress]),
-        questObjectives: activeQuests.filter(entry => entry.objectives.length).map(({id,objectives}) => ({questId:id,objectives})),
-        storyMemories: relevantStoryMemories(state.storyMemories, focusTranscript || recentTranscript),
-        storyAgenda: storyAgendaSummary(state.storyAgenda, state.worldClock).entries,
+        ...(getSettings().enableQuestObjectives ? {questObjectives:activeQuests.filter(entry => entry.objectives.length).map(({id,objectives}) => ({questId:id,objectives}))} : {}),
+        ...(getSettings().enableStoryMemory ? {storyMemories:relevantStoryMemories(state.storyMemories, focusTranscript || recentTranscript)} : {}),
+        ...(getSettings().enableStoryAgenda ? {storyAgenda:storyAgendaSummary(state.storyAgenda, state.worldClock).entries} : {}),
         questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
-        auctions: auctionPublicSummary(state),
+        ...(getSettings().enableAuctions ? {auctions:auctionPublicSummary(state)} : {}),
         questArchive: questArchive.map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
         social: {
             party: state.social.party ? {
@@ -2605,7 +2628,7 @@ function roleplayState(state) {
     const characterLifeCharacters = characterLifeCharacterReferences();
     return {
         sceneContext: {
-            auctions: auctionPublicSummary(state),
+            ...(getSettings().enableAuctions ? {auctions:auctionPublicSummary(state)} : {}),
             worldClock: state.worldClock,
             location: {
                 continent: state.onboarding?.locationSeeded ? state.location.continent : 'Unknown',
@@ -2651,9 +2674,9 @@ function roleplayState(state) {
             onboarding: state.onboarding,
             characterLifeCharacters,
             quests: state.quests.filter(entry => !['Completed', 'Failed'].includes(entry.status)).slice(-12).map(({ id, name, type, status }) => [id, name, type, status]),
-            questObjectives: state.quests.filter(entry => !['Completed','Failed'].includes(entry.status) && entry.objectives.length).slice(-12).map(({id,objectives}) => ({questId:id,objectives})),
-            storyMemories: relevantStoryMemories(state.storyMemories, SillyTavern.getContext().chat.slice(-8).map(message => extractStatePatch(message.mes || '').visible).join(' ' )),
-            storyAgenda: storyAgendaSummary(state.storyAgenda, state.worldClock).entries,
+            ...(getSettings().enableQuestObjectives ? {questObjectives:state.quests.filter(entry => !['Completed','Failed'].includes(entry.status) && entry.objectives.length).slice(-12).map(({id,objectives}) => ({questId:id,objectives}))} : {}),
+            ...(getSettings().enableStoryMemory ? {storyMemories:relevantStoryMemories(state.storyMemories, SillyTavern.getContext().chat.slice(-8).map(message => extractStatePatch(message.mes || '').visible).join(' ' ))} : {}),
+            ...(getSettings().enableStoryAgenda ? {storyAgenda:storyAgendaSummary(state.storyAgenda, state.worldClock).entries} : {}),
             questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
             questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
             npcNames: state.npcs.map(({ id, name, aliases, enabled, met }) => [id, name, aliases || [], enabled !== false, met === true]),
@@ -2911,7 +2934,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.2`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.3`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -2990,19 +3013,22 @@ function onForgeMessage(event) {
     if (event.data.type === 'start') void startForgeOpening(event.data.data);
 }
 
-const STORY_TRACKING_RULES = [
-    'Story memory: upsert storyMemories with {id,title,detail,kind:"Fact"|"Promise"|"Secret"|"Thread",status:"Active"|"Resolved"|"Archived",people:[],keywords:[],importance:"Low"|"Normal"|"High",pinned:false,evidence,resolution}. Record only confirmed significant facts, explicit commitments and unresolved threads. A confirmed promise or appointment is a real commitment now, but its future action is not completed. Do not record guesses, casual plans, rejected offers or OOC as facts. Reuse the canonical id/title/kind. Update partially; resolve only after a confirmed outcome. Never delete or reopen a closed record without explicit story evidence. Source provenance is assigned by the extension; omit sourceDay/sourceMessageId/source and timestamps. Hidden memories, especially Secrets, do not grant any NPC knowledge.',
-    'Quest objectives: include objectives:[{id,title,status:"Pending"|"Completed"|"Skipped",optional:false,notes,evidence}] in the initial quest upsert, only for established requirements. Later upsert questObjectives with {questId,id,status,evidence} for each confirmed subgoal change. Preserve omitted objectives and stable IDs. Progress derives from required objectives; optional goals do not gate completion. A skipped required goal stays unsatisfied until the story explicitly makes it optional. 100% is readiness, not automatic completion or payment. Confirm Completed with a separate quests upsert only after the story establishes the full quest outcome and all required objectives are done; then grant every established reward in that same patch with canonical questId and the existing once-only receipt rules. Prefer objective changes before the completion upsert. Never resurrect archived quests or invent extra goals just to populate a checklist.',
-    'Appointments and deadlines: upsert storyAgenda with {id,title,kind:"Appointment"|"Deadline",status:"Scheduled"|"Completed"|"Cancelled",detail,dueDay:null,dueTime:"",whenText,people:[],location,questId:"",evidence,resolution}. Use the story day counter and 24-hour HH:mm time only. Resolve explicit relative dates against an established story clock; if the reference or time is unclear, keep the wording in whenText and leave dueDay/dueTime unknown. Do not substitute a real calendar or midnight. Preserve existing IDs when postponing or correcting a meeting. Closed records stay closed unless the story explicitly reschedules/reopens them. Reminders are derived from the current story clock; overdue alone never fails a quest, penalizes money, or proves an appointment occurred. Record actual completion/cancellation only from confirmed story outcomes. A free-text location is sufficient; there is no World Map.',
-].join('\n');
+function storyTrackingRules() {
+    const settings = getSettings();
+    return [
+    settings.enableStoryMemory && 'Story memory: upsert storyMemories with {id,title,detail,kind:"Fact"|"Promise"|"Secret"|"Thread",status:"Active"|"Resolved"|"Archived",people:[],keywords:[],importance:"Low"|"Normal"|"High",pinned:false,evidence,resolution}. Record only confirmed significant facts, explicit commitments and unresolved threads. A confirmed promise or appointment is a real commitment now, but its future action is not completed. Do not record guesses, casual plans, rejected offers or OOC as facts. Reuse the canonical id/title/kind. Update partially; resolve only after a confirmed outcome. Never delete or reopen a closed record without explicit story evidence. Source provenance is assigned by the extension; omit sourceDay/sourceMessageId/source and timestamps. Hidden memories, especially Secrets, do not grant any NPC knowledge.',
+    settings.enableQuestObjectives && 'Quest objectives: include objectives:[{id,title,status:"Pending"|"Completed"|"Skipped",optional:false,notes,evidence}] in the initial quest upsert, only for established requirements. Later upsert questObjectives with {questId,id,status,evidence} for each confirmed subgoal change. Preserve omitted objectives and stable IDs. Progress derives from required objectives; optional goals do not gate completion. A skipped required goal stays unsatisfied until the story explicitly makes it optional. 100% is readiness, not automatic completion or payment. Confirm Completed with a separate quests upsert only after the story establishes the full quest outcome and all required objectives are done; then grant every established reward in that same patch with canonical questId and the existing once-only receipt rules. Prefer objective changes before the completion upsert. Never resurrect archived quests or invent extra goals just to populate a checklist.',
+    settings.enableStoryAgenda && 'Appointments and deadlines: upsert storyAgenda with {id,title,kind:"Appointment"|"Deadline",status:"Scheduled"|"Completed"|"Cancelled",detail,dueDay:null,dueTime:"",whenText,people:[],location,questId:"",evidence,resolution}. Use the story day counter and 24-hour HH:mm time only. Resolve explicit relative dates against an established story clock; if the reference or time is unclear, keep the wording in whenText and leave dueDay/dueTime unknown. Do not substitute a real calendar or midnight. Preserve existing IDs when postponing or correcting a meeting. Closed records stay closed unless the story explicitly reschedules/reopens them. Reminders are derived from the current story clock; overdue alone never fails a quest, penalizes money, or proves an appointment occurred. Record actual completion/cancellation only from confirmed story outcomes. A free-text location is sufficient; there is no World Map.',
+].filter(Boolean).join('\n');
+}
 
 function legacyPatchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
-        STORY_TRACKING_RULES,
-        MISSION_BOARD_INSTRUCTIONS,
-        AUCTION_INSTRUCTIONS,
+        storyTrackingRules(),
+        getSettings().enableMissionBoard ? MISSION_BOARD_INSTRUCTIONS : '',
+        getSettings().enableAuctions ? AUCTION_INSTRUCTIONS : '',
         NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
         uiMarkup("<!--tretaresia_patch:{\"ops\":[[\"upsert\",\"quests\",{\"id\":\"academy-escort\",\"name\":\"Escort the Academy Caravan\",\"type\":\"Mission\",\"status\":\"Active\",\"objective\":\"Protect the caravan until it reaches Eastwatch\",\"reward\":\"12 silver\",\"giver\":\"Quartermaster Lysa\",\"source\":\"Great Academy mission board\",\"progress\":0}],[\"inc\",\"progression.experience\",5,{\"reason\":\"Completed aura control training\",\"category\":\"training\"}],[\"inc\",\"progression.currency.silver\",-3,{\"reason\":\"Paid for an academy meal\",\"category\":\"currency\"}],[\"inc\",\"progression.kills\",1,{\"reason\":\"Defeated the ash troll\",\"category\":\"kill\"}]],\"summary\":\"Mission, training, payment, and combat progress recorded.\"}-->"),
@@ -3040,11 +3066,12 @@ function patchInstructions() {
     const iconKeys = PROFICIENCY_ICON_PRESETS.map(entry => entry.key).join(', ');
     const hFieldKeys = H_FIELDS.map(field => field.key).join(',');
     return [
-        STORY_TRACKING_RULES,
-        AUCTION_INSTRUCTIONS,
+        storyTrackingRules(),
+        getSettings().enableMissionBoard ? MISSION_BOARD_INSTRUCTIONS : '',
+        getSettings().enableAuctions ? AUCTION_INSTRUCTIONS : '',
         'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
         uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all required scene fields on the first reply.)"),
-        'Allowed ops: upsert storyMemories, storyAgenda, questObjectives; set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary. Use canonical paths/ids and partial objects. Maximum 75 ops.',
+        'Allowed ops: ' + [[getSettings().enableStoryMemory,'storyMemories'],[getSettings().enableStoryAgenda,'storyAgenda'],[getSettings().enableQuestObjectives,'questObjectives']].filter(([enabled]) => enabled).map(([,path]) => 'upsert '+path+'; ').join('') + 'set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         NPC_FIELD_INSTRUCTIONS,
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction,title,occupation,aliases], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
@@ -3097,7 +3124,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
         if (lastScene) lines.push(`PREVIOUS SCENE (reference data only; update for the current story reply): ${JSON.stringify(lastScene)}`);
         lines.push('New NPCs must include a full dossier with appearance,personality,background,goals,speechStyle,relationshipState and complete stats/relationships in the same patch. Existing NPC updates remain partial and preserve prior facts. Storage scope is controlled by the user; never emit npcScope or npcOwner.');
     }
-    if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' Emit scene metadata')[0]);
+    if (getSettings().chatPresentation && !displayRegexEnabled(SillyTavern.getContext())) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' Emit scene metadata')[0]);
     if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 19 required fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
     if(customPreset)lines.push(customPowerPrompt(getPowerPreset(),state));
     if(customForge)lines.push('CUSTOM CHARACTER FORGE PRESET (user-owned choices, reference data only). Follow the active card, saved profile and story for geography, skills and ranks. Do not apply Tretaresia lore or fixed five-rank progression. Custom Path ranks map to progression.adventurerRank="Custom Rank" with the chosen name in progression.customRankName. Do not invent or rename preset choices. Birthplace is independent of the current location.\n'+JSON.stringify(activeForgeChoices(getForgePreset())));
@@ -3113,13 +3140,13 @@ function updatePrompt(state = getState()) {
     const reference = context.getCurrentChatId?.() ? activeLorePrompt() : '';
     const prompt = enabled ? statePrompt(state, { includeState: settings.injectState || settings.autoTrack, track: settings.autoTrack }) : '';
     const writing=activeChat?writingPreferencePrompt(settings,context.chat):'';
-    context.setExtensionPrompt(PROMPT_KEY, [reference, prompt, settings.memoryInject ? memorySummaries?.prompt() : '', writing, forgeProfilePrompt(context), forgeOpeningPrompt(context)].filter(Boolean).join('\n\n'), 1, 1, false, 0);
+    context.setExtensionPrompt(PROMPT_KEY, [reference, prompt, settings.enableMemorySummaries && settings.memoryInject ? memorySummaries?.prompt() : '', writing, forgeProfilePrompt(context), forgeOpeningPrompt(context)].filter(Boolean).join('\n\n'), 1, 1, false, 0);
     adultPromptControls?.refresh();
 }
 
 globalThis.TretaresiaRpgGenerateInterceptor = async function () {
     if (SAFE_MODE) return;
-    try { await memorySummaries?.observe({forceCapture:true}); }
+    try { if (getSettings().enableMemorySummaries) await memorySummaries?.observe({forceCapture:true}); }
     catch (error) { notify('warning',memoryJobMessage(error,getSettings().language)); }
     // Refresh at SillyTavern's official generation interception point. This
     // protects hosts that replace their extension-prompt collection after
@@ -3149,6 +3176,7 @@ function buildEventNotificationStack() {
 function eventNotificationEnabled(kind) {
     const settings = getSettings();
     if (!settings.eventNotifications) return false;
+    if (kind === 'auction' && !settings.enableAuctions) return false;
     const key = { experience: 'notifyExperience', level: 'notifyLevel', learning: 'notifyLearning', training: 'notifyTraining', inventory: 'notifyInventory', purchase: 'notifyPurchases', combat: 'notifyCombat', kill: 'notifyKills', currency: 'notifyCurrency', quest: 'notifyQuests' }[kind];
     return key ? settings[key] : true;
 }
@@ -4164,6 +4192,35 @@ function controlCenterTrigger() {
         html(tr(uiText("Control center"))) + '" title="' + html(tr(uiText("Control center"))) + uiMarkup("\" aria-expanded=\"false\"><i class=\"fa-solid fa-sliders\"></i></button>");
 }
 
+function optionalSystemsMarkup(consoleMode = false) {
+    const settings = getSettings(), thai = settings.language === 'th';
+    return `<section class="trpg-optional-systems"><h4>${thai ? 'ระบบเสริม · เลือกเปิดตามที่ต้องการ' : 'Optional systems · Enable what you use'}</h4><p>${thai ? 'เริ่มต้นเป็นปิด ปิดแล้วเก็บข้อมูลเดิมไว้' : 'Off by default. Turning a system off preserves its saved data.'}</p><div>${OPTIONAL_SYSTEMS.map(system => `<label><input type="checkbox" ${consoleMode ? 'data-ui-setting' : 'data-optional-setting'}="${system.key}"${settings[system.key] ? ' checked' : ''}><span><strong>${html(thai ? system.th : system.en)}</strong><small>${html(thai ? system.helpTh : system.helpEn)}</small></span></label>`).join('')}</div></section>`;
+}
+function refreshOptionalSettings() {
+    const container = document.getElementById('roleforge-optional-settings');
+    if (container) container.innerHTML = optionalSystemsMarkup();
+}
+async function changeOptionalSystem(key,enabled,control) {
+    if (!OPTIONAL_SYSTEMS.some(system => system.key === key)) return;
+    if (control) control.disabled = true;
+    try {
+        if (pendingAuctionSave) await pendingAuctionSave;
+        const settings = getSettings(); settings[key] = Boolean(enabled);
+        SillyTavern.getContext().saveSettingsDebounced?.();
+        if (key === 'enableMemorySummaries') {
+            clearTimeout(memoryObserveTimer);
+            if (enabled) void memorySummaries?.open();
+            else { memorySummaries?.pause(); clearTimeout(memoryBadgeTimer); const badge = document.getElementById('roleforge-memory-activity'); if (badge) badge.hidden = true; }
+        }
+        for (const input of document.querySelectorAll(`[data-optional-setting="${key}"],[data-ui-setting="${key}"]`)) input.checked = Boolean(enabled);
+        updatePrompt(); renderAll(); npcWorkspace?.refresh();
+    } finally { if (control?.isConnected) control.disabled = false; }
+}
+function disabledSystemMarkup(system) {
+    const thai = getSettings().language === 'th';
+    return `<article class="trpg-optional-off"><small>ROLEFORGE · ${thai ? 'ปิดอยู่' : 'OFF'}</small><h3>${html(thai ? system.th : system.en)}</h3><p>${thai ? 'เปิดระบบเมื่อต้องการใช้ ข้อมูลที่บันทึกไว้ยังอยู่' : 'Enable this system when you want to use it. Saved records are retained.'}</p><button type="button" data-action="enable-optional-system" data-system="${system.key}">${thai ? 'เปิดระบบนี้' : 'Enable this system'}</button></article>`;
+}
+
 function controlCenterMarkup() {
     const settings = getSettings();
     const presetOptions = Object.keys(COLOR_PRESETS).map(key =>
@@ -4197,7 +4254,7 @@ function controlCenterMarkup() {
         uiMarkup("<label class=\"tretaresia-continuity-toggle\"><input type=\"checkbox\" data-ui-setting=\"autoContinuity\"") + (settings.autoContinuity ? ' checked' : '') + uiMarkup("><span>") + html(tr(uiText("Carry this character into new chats automatically"))) + uiMarkup("</span></label>") +
         uiMarkup("<p class=\"tretaresia-control-note\">") + html(tr(uiText("State and player portrait are included. Device-only NPC portraits and audio are copied automatically only when continuing on this device."))) + uiMarkup("</p>") +
         uiMarkup("<div class=\"tretaresia-continuity-actions\"><button type=\"button\" data-action=\"export-state\"><i class=\"fa-solid fa-arrow-up-from-bracket\"></i>") + html(tr(uiText("Export state"))) + uiMarkup("</button><button type=\"button\" data-action=\"import-state\"><i class=\"fa-solid fa-arrow-down-to-bracket\"></i>") + html(tr(uiText("Import state"))) + uiMarkup("</button></div></section>") +
-        uiMarkup("</div></section>");
+        optionalSystemsMarkup(true) + uiMarkup("</div></section>");
 }
 
 function buildControlCenter() {
@@ -4386,6 +4443,7 @@ function restorePanelScroll(id, panel, { restoreBody = true } = {}) {
 
 function rebuildInterface() {
     refreshStaticUi();
+    refreshOptionalSettings();
     const powerPanel=document.getElementById('roleforge-power-editor');
     if(powerPanel?.rfController)powerPanel.rfController.refreshLanguage();else refreshPowerDrawer(true);
     const forgePanel=document.getElementById('roleforge-forge-editor');
@@ -4513,6 +4571,10 @@ function onInterfaceSettingChange(event) {
     const control = event.target.closest('[data-ui-setting]');
     if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
     const key = control.dataset.uiSetting;
+    if (OPTIONAL_SYSTEMS.some(system => system.key === key)) {
+        if (event.type === 'change') void changeOptionalSystem(key,control.checked,control);
+        return;
+    }
     const settings = getSettings();
     const next = control.type === 'checkbox' ? control.checked : control.type === 'range' ? Number(control.value) : control.value;
     const changed = settings[key] !== next;
@@ -4743,6 +4805,11 @@ function onMemorySummariesChanged(view) {
     const panel = document.querySelector('#tretaresia-rpg-overlay.is-open [data-panel="summaries"].is-active');
     if (panel && !document.activeElement?.closest('[data-form="memory-summary-edit"]')) renderPanel('summaries',panel,getState());
     updatePrompt();
+    if (!getSettings().enableMemorySummaries) {
+        clearTimeout(memoryBadgeTimer);
+        const badge = document.getElementById('roleforge-memory-activity'); if (badge) badge.hidden = true;
+        return;
+    }
     let badge = document.getElementById('roleforge-memory-activity');
     if (!badge) {
         badge = document.createElement('aside'); badge.id = 'roleforge-memory-activity'; badge.className = 'rf-memory-activity'; badge.hidden = true;
@@ -4766,6 +4833,8 @@ function onMemorySummariesChanged(view) {
 }
 
 function renderPanel(id, panel, state) {
+    const optional = OPTIONAL_SYSTEMS.find(system => system.panel === id);
+    if (optional && !getSettings()[optional.key]) { panel.innerHTML = disabledSystemMarkup(optional); return; }
     const renderers = {
         status: renderStatus, scene: renderScene, inventory: renderInventory, skills: renderSkillStorage,
         techniques: renderTechniques, quests: renderQuests, rank: renderRank, groups: renderGroups,
@@ -5050,7 +5119,7 @@ function questSectionId(entry) {
 function renderQuestCard(entry) {
     const progress = entry.status === 'Completed' ? 100 : number(entry.progress, 0, 0, 100);
     const rewardLabel = entry.status === 'Completed' && entry.rewardClaimed ? tr(uiText("Reward claimed")) : tr(uiText("Reward"));
-    return (uiMarkup("<article class=\"tretaresia-quest-card\" data-status=\"")+(html(entry.status.toLowerCase()))+uiMarkup("\"><div>\n        <span class=\"tretaresia-quest-status\">")+(html(entry.status))+uiMarkup(" · ")+(html(entry.type))+uiMarkup("")+(entry.type === 'Dungeon' ? ` ${html(entry.dungeonRank)}` : '')+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4>\n        <p>")+(html(entry.objective || tr(uiText("No objective recorded"))))+uiMarkup("</p>\n        <div class=\"tretaresia-quest-progress\" style=\"--quest-progress:")+(progress)+uiMarkup("%\"><span><i></i></span><b>")+(progress)+uiMarkup("%</b></div>\n        ")+((entry.giver || entry.source) ? (uiMarkup("<small><i class=\"fa-solid fa-user-tag\"></i> ")+(html(entry.giver || tr(uiText("Unknown giver"))))+uiMarkup("")+(entry.source ? ` · ${html(entry.source)}` : '')+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.reward ? (uiMarkup("<small class=\"tretaresia-quest-reward")+(entry.rewardClaimed ? ' is-claimed' : '')+uiMarkup("\"><i class=\"fa-solid ")+(entry.rewardClaimed ? 'fa-circle-check' : 'fa-gift')+uiMarkup("\"></i> ")+(html(rewardLabel))+uiMarkup(": ")+(html(entry.reward))+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.receivedAt ? (uiMarkup("<small><i class=\"fa-solid fa-clock\"></i> ")+(html(tr(uiText("Received"))))+uiMarkup(": ")+(html(formatDate(entry.receivedAt)))+uiMarkup("</small>")) : '')+renderQuestObjectives(entry,getSettings().language)+uiMarkup("</div>\n        <div class=\"tretaresia-card-actions\"><button type=\"button\" data-action=\"delete-quest\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"));
+    return (uiMarkup("<article class=\"tretaresia-quest-card\" data-status=\"")+(html(entry.status.toLowerCase()))+uiMarkup("\"><div>\n        <span class=\"tretaresia-quest-status\">")+(html(entry.status))+uiMarkup(" · ")+(html(entry.type))+uiMarkup("")+(entry.type === 'Dungeon' ? ` ${html(entry.dungeonRank)}` : '')+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4>\n        <p>")+(html(entry.objective || tr(uiText("No objective recorded"))))+uiMarkup("</p>\n        <div class=\"tretaresia-quest-progress\" style=\"--quest-progress:")+(progress)+uiMarkup("%\"><span><i></i></span><b>")+(progress)+uiMarkup("%</b></div>\n        ")+((entry.giver || entry.source) ? (uiMarkup("<small><i class=\"fa-solid fa-user-tag\"></i> ")+(html(entry.giver || tr(uiText("Unknown giver"))))+uiMarkup("")+(entry.source ? ` · ${html(entry.source)}` : '')+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.reward ? (uiMarkup("<small class=\"tretaresia-quest-reward")+(entry.rewardClaimed ? ' is-claimed' : '')+uiMarkup("\"><i class=\"fa-solid ")+(entry.rewardClaimed ? 'fa-circle-check' : 'fa-gift')+uiMarkup("\"></i> ")+(html(rewardLabel))+uiMarkup(": ")+(html(entry.reward))+uiMarkup("</small>")) : '')+uiMarkup("\n        ")+(entry.receivedAt ? (uiMarkup("<small><i class=\"fa-solid fa-clock\"></i> ")+(html(tr(uiText("Received"))))+uiMarkup(": ")+(html(formatDate(entry.receivedAt)))+uiMarkup("</small>")) : '')+(getSettings().enableQuestObjectives ? renderQuestObjectives(entry,getSettings().language) : '')+uiMarkup("</div>\n        <div class=\"tretaresia-card-actions\"><button type=\"button\" data-action=\"delete-quest\" data-id=\"")+(html(entry.id))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"));
 }
 
 function renderQuests(panel, state) {
@@ -5955,6 +6024,7 @@ async function onSubmit(event) {
     }
     const values = Object.fromEntries(new FormData(form).entries());
     if (form.dataset.form.startsWith('memory-summary-')) {
+        if (!getSettings().enableMemorySummaries) return;
         try {
             if (form.dataset.form === 'memory-summary-search') memorySummaries?.search(values.query);
             if (form.dataset.form === 'memory-summary-edit') { await memorySummaries?.editChapter(values.id,values.summary,values.recap); notify('success',getSettings().language === 'th' ? 'บันทึกรุ่นสรุปใหม่แล้ว' : 'Summary revision saved.'); }
@@ -6434,8 +6504,13 @@ async function onSubmit(event) {
 async function onPanelChange(event) {
     const memoryImport = event.target.closest('[data-memory-import]');
     if (memoryImport instanceof HTMLInputElement && memoryImport.files?.[0]) {
-        if (!currentStoryControl(memoryImport)) return;
-        try { await memorySummaries?.import(JSON.parse(await memoryImport.files[0].text())); notify('success',getSettings().language === 'th' ? 'นำเข้าคลังความจำแล้ว' : 'Memory archive imported.'); }
+        if (!getSettings().enableMemorySummaries || !currentStoryControl(memoryImport)) return;
+        try {
+            const data = JSON.parse(await memoryImport.files[0].text());
+            if (!getSettings().enableMemorySummaries || !currentStoryControl(memoryImport)) return;
+            if (!await memorySummaries?.import(data)) return;
+            notify('success',getSettings().language === 'th' ? 'นำเข้าคลังความจำแล้ว' : 'Memory archive imported.');
+        }
         catch (error) { notify('error',memoryJobMessage(error,getSettings().language)); }
         finally { memoryImport.value = ''; }
         return;
@@ -6516,9 +6591,11 @@ async function onPanelChange(event) {
 async function onPanelClick(event) {
     const button = event.target.closest('[data-action]');
     if (!button) return;
+    if (button.dataset.action === 'enable-optional-system') { await changeOptionalSystem(button.dataset.system,true,button); return; }
     if ((button.dataset.action.startsWith('story-') || button.dataset.action.startsWith('quest-objective-') || button.dataset.action === 'quest-complete' || button.dataset.action.startsWith('memory-summary-'))
         && !currentStoryControl(button)) return;
     if (button.dataset.action.startsWith('memory-summary-')) {
+        if (!getSettings().enableMemorySummaries) return;
         try {
             const action = button.dataset.action.slice('memory-summary-'.length);
             if (['run','retry'].includes(action)) void memorySummaries?.run();
@@ -7480,6 +7557,8 @@ function mergeTrackedQuestObjectives(previous, incoming, storySource = {}) {
 function applyPatchOperation(state, operation, storySource = {}) {
     if (!Array.isArray(operation) || operation.length < 3) return false;
     const [verb, path, value] = operation;
+    const systemKey = {storyMemories:'enableStoryMemory',storyAgenda:'enableStoryAgenda',questObjectives:'enableQuestObjectives'}[path];
+    if (systemKey && !getSettings()[systemKey]) return false;
     if(typeof path==='string' && path.startsWith('customPowers.')) return applyPowerOperation(state,getPowerPreset(),verb,path,value);
     if(getPowerPreset().mode==='custom' && /^(?:proficiencies\.(?:magic|sword|customMagic|customSword)(?:\.|$)|player\.aura(?:\.|$))/.test(path)) return false;
     if (['party', 'guilds', 'household', 'partyMembers', 'guildMembers', 'householdMembers'].includes(path)) {
@@ -7680,10 +7759,10 @@ function applyPatchOperation(state, operation, storySource = {}) {
             if (previousQuest) candidate.id = previousQuest.id;
             const closed = previousQuest && ['Completed','Failed'].includes(previousQuest.status);
             const reopened = closed && value.reopen === true && ['Active','Offered','On Hold'].includes(value.status);
-            candidate.objectives = closed && !reopened ? clone(previousQuest.objectives || [])
+            candidate.objectives = !getSettings().enableQuestObjectives ? clone(previousQuest?.objectives || []) : closed && !reopened ? clone(previousQuest.objectives || [])
                 : mergeTrackedQuestObjectives(previousQuest?.objectives, value.objectives, storySource);
             // Finish after every objective operation, so a later required step cannot be bypassed.
-            if (candidate.status === 'Completed' && candidate.objectives.length
+            if (getSettings().enableQuestObjectives && candidate.status === 'Completed' && candidate.objectives.length
                 && previousQuest?.status !== 'Completed') candidate.status = previousQuest?.status || 'Active';
             candidate.rewardClaimed = Boolean(previousQuest?.rewardClaimed);
             candidate.rewardClaimedAt = previousQuest?.rewardClaimedAt || '';
@@ -7825,6 +7904,7 @@ function significantJourneyOperation(current, next, operation) {
 }
 
 function finalizeQuestObjectives(state, previous, operations) {
+    if (!getSettings().enableQuestObjectives) return;
     for (const entry of state.quests) {
         const request = [...operations].reverse().find(([verb,path,value]) => verb === 'upsert' && path === 'quests' && matchesPatchIdentity(entry,value));
         if (request?.[2]?.status !== 'Completed' || !entry.objectives?.length || !questObjectivesReady(entry)) continue;
@@ -7853,8 +7933,14 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
     finalizeQuestObjectives(prospective, current, operations);
     const rewards = questRewardGuard(current, operations);
     const walletTrial = clone(current);
+    const tracksAuctions = getSettings().enableAuctions || current.auctions.length > 0 || current.auctionReceipts.length > 0;
+    // Opting out leaves ordinary story auctions to the normal tracker. Engine records
+    // and explicit engine IDs stay protected even when interactive auctions are off.
+    const blocksAuctionOperation = operation => auctionBlocksOperation(operation) && (tracksAuctions
+        || ['auctions','auctionReceipts'].includes(operation[1]) || /^auctions\./u.test(String(operation[1]))
+        || operation[3]?.auctionId || operation[3]?.lotId);
     let auctionSpendDenied = false;
-    for (const operation of operations) if (/^progression\.currency\./u.test(String(operation[1])) && !auctionBlocksOperation(operation)) {
+    for (const operation of operations) if (/^progression\.currency\./u.test(String(operation[1])) && !blocksAuctionOperation(operation)) {
         const attempted = clone(walletTrial);
         if (applyPatchOperation(attempted,operation,storySource)) {
             if (auctionFundsValid(attempted,walletTrial)) walletTrial.progression.currency = attempted.progression.currency;
@@ -7862,7 +7948,7 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
         }
     }
     for (const operation of operations) {
-        if (auctionBlocksOperation(operation)) continue;
+        if (blocksAuctionOperation(operation)) continue;
         // A rejected payment must not leave a free purchased item behind, even if inventory came first.
         if (auctionSpendDenied && operation[1] === 'inventory' && ['inc','upsert'].includes(operation[0])
             && (operationMeta(operation).category === 'purchase' || /bought|purchase|paid|ซื้อ|ชำระ/iu.test(operationMeta(operation).reason))) continue;
@@ -7874,7 +7960,7 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
         if (reward.blocked) continue;
         if (reward.record) {
             const owner = prospective.quests.find(entry => entry.id === reward.record.id || reward.record.names.has(entry.name.normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu,' ')));
-            if (owner?.objectives?.length && (owner.status !== 'Completed' || !questObjectivesReady(owner))) continue;
+            if (getSettings().enableQuestObjectives && owner?.objectives?.length && (owner.status !== 'Completed' || !questObjectivesReady(owner))) continue;
         }
         if (reward.record) operation[3] = {...operationMeta(operation), questId:reward.record.id, category:'quest-reward'};
         if (applyPatchOperation(candidate, operation, storySource)) {acceptedOps.push(operation); rewards.accept(reward);}
@@ -8286,13 +8372,13 @@ async function processAssistantPatch(messageId, generationType = '') {
                 break;
             }
         }
-        const board = confirmedMissionBoard(extracted.patch?.missionBoard, extracted.visible, userMessage?.mes,
-            extracted.patch?.sceneTracker?.location || base.location.place);
-        const auction = confirmedAuctionOffer(extracted.patch?.auction,extracted.visible,userMessage?.mes,
-            extracted.patch?.sceneTracker?.location || base.location.place);
+        const board = settings.enableMissionBoard ? confirmedMissionBoard(extracted.patch?.missionBoard, extracted.visible, userMessage?.mes,
+            extracted.patch?.sceneTracker?.location || base.location.place) : null;
+        const auction = settings.enableAuctions ? confirmedAuctionOffer(extracted.patch?.auction,extracted.visible,userMessage?.mes,
+            extracted.patch?.sceneTracker?.location || base.location.place) : null;
         const safeOps = confirmedSocialOperations(inlineOps, base, extracted.visible, userMessage?.mes).filter(operation =>
             !(auction && (operation[1] === 'inventory' || /^progression\.currency\./u.test(String(operation[1])))) &&
-            !(extracted.patch?.missionBoard && operation[1] === 'quests' && extracted.patch.missionBoard.missions.some(mission => matchesPatchIdentity(mission,operation[2]))
+            !(settings.enableMissionBoard && extracted.patch?.missionBoard && operation[1] === 'quests' && extracted.patch.missionBoard.missions.some(mission => matchesPatchIdentity(mission,operation[2]))
                 && !base.quests.some(quest => matchesPatchIdentity(quest,operation[2]))));
         rememberMissionBoard(messageId, message, board);
         rememberAuctionOffer(messageId,message,auction);
@@ -8560,7 +8646,7 @@ function analyzerPrompt(state, transcript, {messageId = null, historical = false
         .some(name => name && transcript.toLocaleLowerCase().includes(name.toLocaleLowerCase()))).slice(0, 8);
     const rules = patchInstructions().split('\n').filter(line => /^(?:Story memory:|Quest objectives:|Appointments and deadlines:|Allowed ops:|Compact state arrays:|EPISTEMIC FIREWALL:|Resource, injury, and damage rules:|Survival rules:|Aura mechanics:|World identity:|EXP:|Money:|Inventory lifecycle:|Quests:|Proficiency:|NPC identity:|NPCs and knowledge:|Player and NPC H-Stats:|Social auto-sync:)/.test(line)).join('\n');
     return `MANUAL SYNC: Audit this ONE completed reply (#${messageId === null ? '?' : messageId + 1}) across every story-driven tab. Return only changes genuinely missing from CURRENT STATE; never replay earlier rewards, costs, experience or counters already applied. Never treat another reply, an earlier plan, or a hypothetical as the event for this turn. ${historical ? 'This is an older reply: supply its historical sceneTracker, but do not move the CURRENT location, clock, weather, travel state or overwrite later known facts.' : 'This is the latest reply: the sceneTracker describes the actual current scene.'}
-Review story memory, appointments and deadlines, quest objectives, player status, scene, inventory, skills, techniques, quests, rank, groups, household, NPCs, all applicable H-Stats fields, physical mail and systems touched by the story. Preserve unrelated values. Include all sceneTracker keys dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed; carry forward established facts and create coherent fictional details only for unspecified scene properties. H-Stats fields (key/type): ${JSON.stringify(H_FIELDS.map(({key,type})=>[key,type]))}. Record separately every confirmed quality, current state, last partner, relevant counters, measured liters, pregnancy, relationships and preferences for the NPC named in the story. A single confirmed event may update multiple distinct counters; never guess measured volumes or a favorite. Do not add an H-Stats Condition field.
+Review ${[getSettings().enableStoryMemory && 'story memory',getSettings().enableStoryAgenda && 'appointments and deadlines',getSettings().enableQuestObjectives && 'quest objectives'].filter(Boolean).map(value => value+', ').join('')}player status, scene, inventory, skills, techniques, quests, rank, groups, household, NPCs, all applicable H-Stats fields, physical mail and systems touched by the story. Preserve unrelated values. Include all sceneTracker keys dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed; carry forward established facts and create coherent fictional details only for unspecified scene properties. H-Stats fields (key/type): ${JSON.stringify(H_FIELDS.map(({key,type})=>[key,type]))}. Record separately every confirmed quality, current state, last partner, relevant counters, measured liters, pregnancy, relationships and preferences for the NPC named in the story. A single confirmed event may update multiple distinct counters; never guess measured volumes or a favorite. Do not add an H-Stats Condition field.
 CURRENT STATE:
 ${JSON.stringify(aiState(state, {privateTracker:true,focusTranscript:transcript}))}
 PARTICIPATING NPC DOSSIERS:
@@ -8985,6 +9071,11 @@ async function addSettingsDrawer() {
     const container = document.getElementById('extensions_settings2');
     if (!container) throw new Error(uiText("Could not find the SillyTavern Extensions settings container."));
     container.insertAdjacentHTML('beforeend', await context.renderExtensionTemplateAsync(`${EXTENSION_FOLDER}/templates`, 'settings'));
+    refreshOptionalSettings();
+    document.getElementById('roleforge-optional-settings')?.addEventListener('change',event => {
+        const control = event.target.closest('[data-optional-setting]');
+        if (control instanceof HTMLInputElement) void changeOptionalSystem(control.dataset.optionalSetting,control.checked,control);
+    });
     bindStaticUi(document.getElementById('tretaresia-rpg-settings'));
     refreshPowerDrawer();
     refreshForgeDrawer();
@@ -9063,10 +9154,10 @@ async function addSettingsDrawer() {
 
 function bindChatEvents() {
     const { eventSource, eventTypes } = SillyTavern.getContext();
-    if (eventTypes.CHAT_CHANGED) eventSource.on(eventTypes.CHAT_CHANGED,() => { clearTimeout(memoryObserveTimer); memorySummaries?.cancel(); setTimeout(() => { void memorySummaries?.open(); },250); });
+    if (eventTypes.CHAT_CHANGED) eventSource.on(eventTypes.CHAT_CHANGED,() => { clearTimeout(memoryObserveTimer); memorySummaries?.cancel(); setTimeout(() => { if (getSettings().enableMemorySummaries) void memorySummaries?.open(); },250); });
     for (const type of ['MESSAGE_RECEIVED','GENERATION_ENDED','GENERATION_STOPPED','MESSAGE_SWIPED','MESSAGE_DELETED','MESSAGE_EDITED','MESSAGE_UPDATED']) {
         if (eventTypes[type]) eventSource.on(eventTypes[type],(...args) => {
-            if (type === 'MESSAGE_RECEIVED' && ['quiet','impersonate'].includes(args[1])) return;
+            if (!getSettings().enableMemorySummaries || type === 'MESSAGE_RECEIVED' && ['quiet','impersonate'].includes(args[1])) return;
             clearTimeout(memoryObserveTimer);
             memoryObserveTimer = setTimeout(() => { void memorySummaries?.observe({auto:['MESSAGE_RECEIVED','GENERATION_ENDED'].includes(type)}); },600);
         });
@@ -9259,7 +9350,7 @@ async function initialize() {
         void scheduleArchiveMigration();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
-        await memorySummaries.open();
+        if (getSettings().enableMemorySummaries) await memorySummaries.open();
         try { await catchUpPlayerIdentity(); }
         catch (error) { console.warn('[RoleForge] Could not import player registration.', error); }
         try { await catchUpTravelHistory(); }
@@ -9276,7 +9367,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.45.2 loaded.');
+        console.info('[RoleForge] Role-play interface v0.45.3 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

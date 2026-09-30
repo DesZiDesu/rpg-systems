@@ -39,7 +39,7 @@ try{
  await page.route('https://fonts.googleapis.com/**',route=>route.fulfill({contentType:'text/css',body:''}));
  await page.addInitScript(()=>{
  if(localStorage.getItem('roleforge-hstats-preview-metadata'))return;
- localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'en',autoTrack:false,autoContinuity:true,memoryAutoSummary:false,chatPresentation:false}}));
+ localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{enableMemorySummaries:true,language:'en',autoTrack:false,autoContinuity:true,memoryAutoSummary:false,chatPresentation:false}}));
  localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'Nova'},npcs:[],progression:{currency:{gold:6,silver:0,copper:120}},location:{place:'River',narrativeVersion:1},worldClock:{day:7,time:'23:00'},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true}}}));
  });
  await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready&&document.querySelector('#tretaresia-rpg-overlay.is-open.is-ready'));
