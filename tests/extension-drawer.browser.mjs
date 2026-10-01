@@ -10,14 +10,27 @@ const require = createRequire(import.meta.url);
 const {chromium} = require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES
     ? `${process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES}/playwright` : 'playwright');
 const root = new URL('../', import.meta.url), base = '/scripts/extensions/third-party/rpg-systems/';
-const artifacts = process.env.DRAWER_SCREENSHOT_DIR || '/workspace/artifacts/roleforge-drawer-0460';
+const artifacts = process.env.DRAWER_SCREENSHOT_DIR || '/workspace/artifacts/roleforge-drawer-0461';
 await mkdir(artifacts, {recursive:true});
 const template = await readFile(new URL('templates/settings.html', root), 'utf8');
 const ids = [...template.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 const fixture = pane => `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{margin:0;background:#090909;color:#ece7da;font:14px system-ui,sans-serif}#extensions_settings2{width:${pane};max-width:100%;box-sizing:border-box;padding:8px}.inline-drawer-content{display:none}.inline-drawer.is-open>.inline-drawer-content{display:block}#extensionsMenu,#chat,#send_textarea,#extensionsMenuButton{display:none}</style></head><body>
+<style>
+:root{--mainFontSize:14px;--SmartThemeBodyColor:#ece7da;--SmartThemeBlurTintColor:#161616;--SmartThemeBorderColor:#444;--SmartThemeQuoteColor:#b3b3b3;--white30a:rgba(255,255,255,.3);--grey30a:rgba(128,128,128,.3);--black70a:rgba(0,0,0,.7)}
+body{margin:0;background:#090909;color:var(--SmartThemeBodyColor);font:var(--mainFontSize) system-ui,sans-serif}
+#extensions_settings2{width:${pane};max-width:100%;box-sizing:border-box;padding:8px}
+/* SillyTavern release/public/style.css: native width:min-content reproduced the
+   mobile button collapse. Keep these host rules in this production fixture. */
+.menu_button{color:var(--SmartThemeBodyColor);filter:grayscale(.5);background-color:var(--SmartThemeBlurTintColor);border:1px solid var(--SmartThemeBorderColor);border-radius:5px;padding:3px 5px;width:min-content;cursor:pointer;margin:5px 0;display:flex;align-items:center;justify-content:center;text-align:center}
+#extensions_settings2 .inline-drawer-toggle.inline-drawer-header{background-image:linear-gradient(348deg,var(--white30a) 2%,var(--grey30a) 10%,var(--black70a) 95%,var(--SmartThemeQuoteColor) 100%);margin-bottom:5px;border-radius:10px;padding:2px 5px;border:1px solid var(--SmartThemeBorderColor)}
+.inline-drawer-header{display:flex;justify-content:space-between;align-items:center;padding:5px 0;cursor:pointer}
+.inline-drawer-icon{display:block;cursor:pointer;font-size:calc(var(--mainFontSize)*1.5);filter:brightness(75%)}
+.checkbox_label{display:flex;flex-direction:row;column-gap:5px;align-items:baseline}
+.inline-drawer-content{display:none}.inline-drawer.is-open>.inline-drawer-content{display:block}
+#extensionsMenu,#chat,#send_textarea,#extensionsMenuButton{display:none}
+</style></head><body>
 <button id="extensionsMenuButton">Extensions</button><div id="extensionsMenu"></div>
-<div id="extensions_settings2"></div><div id="chat"></div><textarea id="send_textarea"></textarea>
+<div id="extensions_settings2"><div id="native-neighbour" class="inline-drawer"><div class="inline-drawer-toggle inline-drawer-header interactable"><b>Regular Expression</b><div class="inline-drawer-icon fa-solid fa-circle-chevron-down down" aria-hidden="true"></div></div></div></div><div id="chat"></div><textarea id="send_textarea"></textarea>
 <script>
 const callbacks=new Map(),eventTypes=Object.fromEntries(['CHAT_CHANGED','MESSAGE_SENT','GENERATION_STARTED','GENERATION_AFTER_COMMANDS','MESSAGE_RECEIVED','MESSAGE_SWIPED','MESSAGE_DELETED','MESSAGE_EDITED','MESSAGE_UPDATED','CHARACTER_MESSAGE_RENDERED','GENERATION_ENDED','GENERATION_STOPPED','STREAM_TOKEN_RECEIVED'].map(type=>[type,type]));
 const initial={tretaresia_rpg:{language:'th',autoTrack:false,injectState:false,autoContinuity:false,chatPresentation:false,showSceneTracker:false,memoryAutoSummary:false}};
@@ -88,7 +101,29 @@ try {
         assert.equal(await page.locator('.trpg-presentation-status').count(),1);
         assert.match(await page.locator('.trpg-presentation-status').innerText(), /RoleForge.*คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบ/);
         assert.equal(await page.locator('#roleforge-optional-settings [data-optional-setting]').count(),6);
+        // Compare with a neighbouring native extension, including the closed
+        // header: RoleForge must inherit the host typography, colour and chrome.
+        const nativeStyle = await page.locator('#native-neighbour .inline-drawer-header').evaluate(node => {
+            const style=getComputedStyle(node);return [style.color,style.fontFamily,style.padding,style.borderRadius,style.backgroundImage];
+        });
+        const roleforgeStyle = await settings.locator('.inline-drawer-header').evaluate(node => {
+            const style=getComputedStyle(node);return [style.color,style.fontFamily,style.padding,style.borderRadius,style.backgroundImage];
+        });
+        assert.deepEqual(roleforgeStyle,nativeStyle,'drawer header matches native extensions');
+        assert.equal(await settings.locator('.rf-settings-brand').count(),0,'drawer has no oversized branded hero');
+        const actions = await settings.locator('.rf-settings-quick-actions').evaluate(node => {
+            const rect=node.getBoundingClientRect();return {width:rect.width,children:[...node.children].map(button=>{
+                const box=button.getBoundingClientRect();return {width:box.width,height:box.height,text:button.innerText};
+            })};
+        });
+        for(const action of actions.children){
+            assert(action.width >= (actions.width-8)/2-1,`native min-content must not shrink the action button: ${JSON.stringify(actions)}`);
+            assert(action.height <= 62,`action wraps by words, never one letter per row: ${JSON.stringify(actions)}`);
+        }
         await fit(page, `${name} default`);
+        await settings.locator('.inline-drawer-toggle').click();
+        await page.locator('#extensions_settings2').screenshot({path:`${artifacts}/drawer-closed-${name}.png`});
+        await settings.locator('.inline-drawer-toggle').click();
         await settings.screenshot({path:`${artifacts}/drawer-${name}.png`});
 
         // These click the production handlers. Opening either UI does not make
@@ -119,7 +154,7 @@ try {
         // Locale changes refresh translated groups without replacing their
         // runtime controls, saved values, listeners or unsent inputs.
         await page.locator('#tretaresia-rpg-language').selectOption('en');
-        assert.match(await settings.locator('.rf-settings-brand h2').innerText(),/Make the story yours/);
+        assert.match(await settings.locator('.tretaresia-rpg-settings-copy').innerText(),/persistent RoleForge role-play state/);
         assert.equal(await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').count(),3);
         await page.locator('#tretaresia-rpg-language').selectOption('th');
 

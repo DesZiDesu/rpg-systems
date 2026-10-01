@@ -4,7 +4,7 @@ import * as memory from '../src/memory-summaries.js';
 import {createMemorySummaries,requestMemorySummary} from '../src/memory-summary-runtime.js';
 import {renderMemorySummaries} from '../src/memory-summary-ui.js';
 
-const config = () => ({enableMemorySummaries:true,language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
+const config = () => ({enableMemorySummaries:true,language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryBatchSize:10,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
 function fixture(options = {}) {
     const data = options.data || new Map(), notices = [], phases = [], calls = [], storageCalls = [], settings = {...config(),...options.settings};
     const state = {player:{name:'Nova'},location:{place:'River'},worldClock:{day:7,time:'23:00'},progression:{currency:{gold:6,silver:0,copper:120}},quests:[],npcs:[],social:{},storyMemories:[],storyAgenda:[]};
@@ -16,7 +16,7 @@ function fixture(options = {}) {
             title:'First meeting with Cora',detail:'Nova met Cora while fishing at the river at night.',kind:'Event',people:['Nova','Cora','คอร่า'],places:['River','แม่น้ำ'],keywords:['fishing','ตกปลา','กลางคืน'],knownBy:['Nova','Cora'],whenText:'Day 7, night',sourceKeys:[batch.at(-1).segmentKey],evidence:batch.at(-1).text.slice(0,100),
         }]});
     });
-    const store = {get:async owner => {storageCalls.push('get');return data.has(owner) ? structuredClone(data.get(owner)) : null;},put:async(owner,value) => { storageCalls.push('put');if(options.failSave?.())throw Error('MEMORY_STORAGE_WRITE_FAILED'); data.set(owner,structuredClone(value)); }};
+    const store = {get:async owner => {storageCalls.push('get');return data.has(owner) ? structuredClone(data.get(owner)) : null;},put:async(owner,value) => { storageCalls.push('put');if(options.failSave?.(value))throw Error('MEMORY_STORAGE_WRITE_FAILED'); data.set(owner,structuredClone(value)); }};
     const runtime = createMemorySummaries({context:()=>context,owner:ctx=>ctx.owner,settings:()=>settings,state:()=>state,visible:value=>value.replace(/<!--[^]*?-->/g,''),scene:()=>({day:7,time:'23:00',location:'River'}),store,
         notify:(type,message)=>notices.push({type,message}),changed:view=>phases.push(view.job.status),parse:JSON.parse,timeout:options.timeout || 100,
         saveMetadata:async()=>options.metadataFail ? false : true,isGenerating:()=>options.generating?.() || false,
@@ -282,4 +282,167 @@ test('retrieval selects the matching incident inside a long original rather than
     const f=fixture();f.context.chat[1].mes='Unrelated   background.\n\n'.repeat(1000)+'Cora met Nova while night fishing at the river.';await f.runtime.open();
     const selected=await f.runtime.preparePrompt();assert.match(selected,/Cora met Nova while night fishing/);assert(!selected.includes(f.context.chat[1].mes));
     const excerpt=memory.memorySnippet(f.context.chat[1].mes,'Cora river fishing',400);assert.match(excerpt,/night fishing/);assert(excerpt.length<=402);
+});
+
+const simpleMemoryResponse = prompt => {
+    const batch=JSON.parse(prompt.split('SOURCE SEGMENTS: ')[1]);
+    return JSON.stringify({summary:`Saved ${batch.length} source segments.`,recap:'The story continued with the saved events.',events:[]});
+};
+function setBacklog(f,count) {
+    f.context.chat=Array.from({length:count},(_,index)=>({is_user:index%2===0,name:index%2===0?'Nova':'Cora',mes:`Message ${index+1}: The party continued along the river.`}));
+}
+
+test('batch limits count original messages and allow a bounded configurable size',()=>{
+    const library=memory.emptyMemoryLibrary('owner');
+    memory.captureMemoryChat(library,{chatId:'chat',messages:Array.from({length:25},(_,i)=>({mes:`Message ${i}: `+'scene '.repeat(500)}))});
+    const batch=memory.nextMemoryBatch(library,'chat',{maxChars:100000,maxMessages:5});
+    assert.equal(new Set(batch.map(segment=>segment.key)).size,5);
+    assert.equal(batch.length,10); // each original is stored as two segments
+    assert.equal(memory.countMemoryBatches(memory.memorySegments(library,'chat'),{maxChars:100000,maxMessages:10}),3);
+    assert.equal(memory.memoryCoverage(library,'chat').pendingMessages,25);
+    assert.equal(memory.memoryCoverage(library,'chat').pendingSegments,50);
+    for(const [input,expected] of [[undefined,10],[0,10],['bad',10],[5,5],[10.9,10],[1000,100],[1,1]])assert.equal(memory.normalizeMemoryBatchSize(input),expected);
+});
+
+test('manual backlog saves every ten messages and persists each completed checkpoint before the next API call',async()=>{
+    let f;
+    f=fixture({respond:prompt=>{
+        const completed=f.calls.length-1;
+        const archived=f.data.get('card:cora');
+        assert.equal(archived.chapters.length,completed);
+        assert.equal(archived.jobs.first.completed,completed);
+        assert.equal(archived.jobs.first.processedMessages,completed*10);
+        return simpleMemoryResponse(prompt);
+    }});
+    setBacklog(f,23);await f.runtime.open();assert.equal(await f.runtime.run(),true);
+    assert.deepEqual(f.calls.map(call=>new Set(JSON.parse(call.prompt.split('SOURCE SEGMENTS: ')[1]).map(segment=>segment.key)).size),[10,10,3]);
+    const view=f.runtime.view();assert.equal(view.job.completed,3);assert.equal(view.job.total,3);
+    assert.equal(view.job.processedMessages,23);assert.equal(view.job.totalMessages,23);assert.equal(view.job.remainingMessages,0);
+    assert.equal(view.job.savedChapters,3);assert.equal(view.coverage.pendingMessages,0);
+    const sources=f.data.get('card:cora').chapters.flatMap(chapter=>chapter.sources.map(source=>source.segmentKey));
+    assert.equal(sources.length,23);assert.equal(new Set(sources).size,23);
+});
+
+test('custom batches larger than ten messages are honored without exceeding source input limits',async()=>{
+    const f=fixture({settings:{memorySummaryBatchSize:20},respond:simpleMemoryResponse});setBacklog(f,41);await f.runtime.open();
+    assert.equal(await f.runtime.run(),true);
+    assert.deepEqual(f.calls.map(call=>new Set(JSON.parse(call.prompt.split('SOURCE SEGMENTS: ')[1]).map(segment=>segment.key)).size),[20,20,1]);
+    const long=fixture({settings:{memorySummaryBatchSize:100},respond:simpleMemoryResponse});
+    long.context.chat=[{is_user:false,mes:'x'.repeat(25000)},{is_user:true,mes:'The next message.'}];await long.runtime.open();
+    assert.equal(long.runtime.view().coverage.pendingMessages,2);assert.equal(long.runtime.view().coverage.pendingSegments,14);
+    assert.equal(await long.runtime.run(),true);assert(long.calls.length>1);
+    for(const call of long.calls){const batch=JSON.parse(call.prompt.split('SOURCE SEGMENTS: ')[1]);assert(batch.reduce((sum,source)=>sum+source.text.length,0)<=memory.MEMORY_BATCH_CHAR_LIMIT);}
+    assert.equal(long.runtime.view().job.processedMessages,2);assert.equal(long.runtime.view().coverage.pendingMessages,0);
+});
+
+test('failed later batch leaves earlier chapters durable and retry resumes only uncovered messages',async()=>{
+    let fail=true;
+    const f=fixture({respond:prompt=>f.calls.length===2 && fail ? '{"summary":' : simpleMemoryResponse(prompt)});setBacklog(f,23);await f.runtime.open();
+    assert.equal(await f.runtime.run(),false);
+    assert.equal(f.runtime.view().job.completed,1);assert.equal(f.runtime.view().job.processedMessages,10);
+    assert.equal(f.runtime.view().coverage.pendingMessages,13);assert.equal(f.data.get('card:cora').chapters.length,1);
+    const saved=structuredClone(f.data.get('card:cora').chapters[0]);
+    fail=false;assert.equal(await f.runtime.run(),true);
+    assert.deepEqual(f.data.get('card:cora').chapters[0],saved);
+    assert.deepEqual(f.calls.slice(2).map(call=>JSON.parse(call.prompt.split('SOURCE SEGMENTS: ')[1]).map(source=>source.key)),[
+        Array.from({length:10},(_,i)=>String(i+10)),['20','21','22']]);
+    assert.equal(f.data.get('card:cora').chapters.length,3);assert.equal(f.runtime.view().job.savedChapters,3);
+});
+
+test('a rejected chapter write rolls back uncovered sources in RAM and the error checkpoint',async()=>{
+    let fail=true;
+    const f=fixture({respond:simpleMemoryResponse,failSave:value=>{
+        if(fail && value.chapters.length===2 && value.jobs.first.status==='saving'){fail=false;return true;}
+        return false;
+    }});setBacklog(f,23);await f.runtime.open();assert.equal(await f.runtime.run(),false);
+    assert.equal(f.runtime.view().job.code,'MEMORY_STORAGE_WRITE_FAILED');
+    assert.equal(f.runtime.view().coverage.pendingMessages,13);assert.equal(f.runtime.view().chapters.length,1);
+    assert.equal(f.data.get('card:cora').chapters.length,1);assert.equal(f.data.get('card:cora').jobs.first.completed,1);
+    assert.equal(await f.runtime.run(),true);assert.equal(f.data.get('card:cora').chapters.length,3);
+    const sources=f.data.get('card:cora').chapters.flatMap(chapter=>chapter.sources.map(source=>source.segmentKey));
+    assert.equal(sources.length,23);assert.equal(new Set(sources).size,23);
+});
+
+test('cancel during a later API request retains the first saved batch and discards late results',async()=>{
+    let release;
+    const f=fixture({respond:prompt=>f.calls.length===2 ? new Promise(resolve=>{release=()=>resolve(simpleMemoryResponse(prompt));}) : simpleMemoryResponse(prompt)});
+    setBacklog(f,23);await f.runtime.open();const pending=f.runtime.run({prepare:true});
+    while(!release)await new Promise(resolve=>setTimeout(resolve,1));
+    assert.equal(f.data.get('card:cora').chapters.length,1);f.runtime.cancel();assert.equal(await pending,false);
+    assert(f.calls[1].signal.aborted);assert.equal(f.runtime.view().job.prepare,true);
+    assert.equal(f.runtime.view().job.completed,1);assert.equal(f.runtime.view().coverage.pendingMessages,13);
+    release();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(f.data.get('card:cora').chapters.length,1);
+});
+
+test('hung token counting times out before calling the API and cancellation unblocks it promptly',async()=>{
+    for(const cancel of [false,true]){
+        const f=fixture({timeout:30});await f.runtime.open();
+        let counting=false;f.context.getTokenCountAsync=()=>{counting=true;return new Promise(()=>{});};
+        const pending=f.runtime.run();while(!counting)await new Promise(resolve=>setTimeout(resolve,1));
+        if(cancel)f.runtime.cancel();
+        assert.equal(await pending,false);assert.equal(f.runtime.isBusy(),false);assert.equal(f.calls.length,0);
+        assert.equal(f.runtime.view().job.status,cancel?'cancelled':'error');
+        if(!cancel)assert.equal(f.runtime.view().job.code,'MEMORY_TIMEOUT');
+    }
+});
+
+test('waiting for the main reply has one timeout rather than resetting on every poll',async()=>{
+    const f=fixture({timeout:20,generating:()=>true});await f.runtime.open();
+    const start=Date.now();assert.equal(await f.runtime.run(),false);assert(Date.now()-start<200);
+    assert.equal(f.runtime.view().job.code,'MEMORY_TIMEOUT');assert.equal(f.calls.length,0);assert.equal(f.runtime.isBusy(),false);
+});
+
+test('post-summary prompt preparation is cancellable and does not report success before it finishes',async()=>{
+    const f=fixture();await f.runtime.open();const realCounter=f.context.getTokenCountAsync;
+    let counting=false;
+    f.context.getTokenCountAsync=value=>{
+        if(value==='The story continued with the saved events.') {counting=true;return new Promise(()=>{});}
+        return realCounter(value);
+    };
+    f.setResponder(simpleMemoryResponse);const pending=f.runtime.run();
+    while(!counting)await new Promise(resolve=>setTimeout(resolve,1));
+    assert.equal(f.data.get('card:cora').chapters.length,1);assert.equal(f.runtime.view().job.status,'counting');
+    assert(!f.notices.some(notice=>notice.type==='success'));f.runtime.cancel();assert.equal(await pending,false);
+    assert.equal(f.runtime.view().job.status,'cancelled');assert.equal(f.runtime.view().job.completed,1);
+});
+
+test('simultaneous runs on an unopened archive cannot start overlapping jobs',async()=>{
+    let release;
+    const f=fixture({respond:prompt=>new Promise(resolve=>{release=()=>resolve(simpleMemoryResponse(prompt));})});
+    const first=f.runtime.run(),second=f.runtime.run();
+    while(!release)await new Promise(resolve=>setTimeout(resolve,1));
+    assert.equal(f.calls.length,1);release();const results=await Promise.all([first,second]);
+    assert.equal(results.filter(Boolean).length,1);assert.equal(f.data.get('card:cora').chapters.length,1);
+});
+
+test('failed handoff archive writes roll back the capsule and retain the previous chat link',async()=>{
+    let fail=true;
+    const f=fixture({respond:simpleMemoryResponse,failSave:value=>{
+        if(fail && value.capsules.length){fail=false;return true;}return false;
+    }});
+    const previous={owner:'card:cora',ancestry:['first'],capsuleId:'previous-capsule'};
+    f.context.chatMetadata[memory.MEMORY_LINK_KEY]=previous;await f.runtime.open();
+    assert.equal(await f.runtime.run({prepare:true}),false);
+    assert.equal(f.runtime.view().job.code,'MEMORY_STORAGE_WRITE_FAILED');
+    assert.equal(f.runtime.view().capsules.length,0);assert.equal(f.data.get('card:cora').capsules.length,0);
+    assert.deepEqual(f.context.chatMetadata[memory.MEMORY_LINK_KEY],previous);
+    assert.equal(f.data.get('card:cora').chapters.length,1);
+    assert.equal(await f.runtime.run({prepare:true}),true);assert.equal(f.calls.length,1);
+    assert(f.context.chatMetadata[memory.MEMORY_LINK_KEY].capsuleId!=='previous-capsule');
+});
+
+test('failed chat metadata handoff keeps the durable capsule but restores the previous link',async()=>{
+    const f=fixture({metadataFail:true,respond:simpleMemoryResponse});
+    const previous={owner:'card:cora',ancestry:['first'],capsuleId:'previous-capsule'};
+    f.context.chatMetadata[memory.MEMORY_LINK_KEY]=previous;await f.runtime.open();
+    assert.equal(await f.runtime.run({prepare:true}),false);
+    assert.equal(f.runtime.view().job.code,'MEMORY_METADATA_SAVE_FAILED');
+    assert.deepEqual(f.context.chatMetadata[memory.MEMORY_LINK_KEY],previous);
+    assert.equal(f.data.get('card:cora').chapters.length,1);assert.equal(f.data.get('card:cora').capsules.length,1);
+});
+
+test('a prompt tokenizer failure clears an earlier injection cache instead of exposing it',async()=>{
+    const f=fixture({timeout:20});await f.runtime.open();await f.runtime.run();assert(f.runtime.prompt());
+    f.settings.memorySummaryBudget=100;f.context.getTokenCountAsync=()=>new Promise(()=>{});
+    await assert.rejects(f.runtime.preparePrompt(),/MEMORY_TIMEOUT/);assert.equal(f.runtime.prompt(),'');
 });

@@ -1,4 +1,13 @@
-# ROLEFORGE — v0.46.0
+# ROLEFORGE — v0.46.1
+
+## v0.46.1 — Saved summary batches and compact extension settings
+
+- Memory Summaries processes a backlog in sequential batches of **10 original messages** by default. Choose **5, 10, 20 or 50**, or set **1–100 messages per batch**. Input budgets can make a request smaller; a very long message can span multiple requests. The automatic-summary interval remains a separate setting.
+- Each validated batch is saved before the next request. Progress shows pending original messages, the current batch, completed saves and elapsed time. Cancel, API failure or reload retains completed chapters; **Retry / continue** processes the remaining sources. Summary preparation also uses these batches across explicitly linked history.
+- Added bounded waits for summary stages and clearer errors instead of leaving token counting or requests indefinitely pending. Summarization still uses the configured separate API/profile and consumes that provider's tokens.
+- Simplified the extension drawer to match SillyTavern settings. Fixed native `menu_button` minimum-content sizing that squeezed Open / Sync labels into vertical columns on mobile. Existing controls and collapsible groups remain available.
+
+อ่าน [วิธีตั้งจำนวนข้อความต่อชุดและทำต่อเมื่อสรุปหยุด](docs/memory-summaries-workflows.th.md)
 
 ## v0.46.0 — NPC Alternate Information and organized settings
 
