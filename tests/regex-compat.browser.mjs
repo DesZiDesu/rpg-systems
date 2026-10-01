@@ -24,7 +24,9 @@ const server=http.createServer(async(request,response)=>{
   const url=new URL(request.url,'http://localhost');
   if(url.pathname.startsWith('/api/')){response.setHeader('content-type','application/json');response.end('[]');return;}
   if(!url.pathname.startsWith(base)||url.pathname.includes('..')){response.writeHead(404).end();return;}
-  const path=url.pathname.slice(base.length),body=await readFile(new URL(path,root));
+  const path=url.pathname.slice(base.length);let body=await readFile(new URL(path,root));
+  // Include the real native editing events before RoleForge registers its hooks.
+  if(path==='docs/previews/h-stats-fixture.js')body=body.toString().replace("'MESSAGE_DELETED',","'MESSAGE_DELETED','MESSAGE_EDITED','MESSAGE_UPDATED',");
   response.setHeader('content-type',path.endsWith('.css')?'text/css':path.endsWith('.html')?'text/html':path.endsWith('.json')?'application/json':path.endsWith('.js')?'text/javascript':'image/webp');response.end(body);
  }catch{response.writeHead(404).end();}
 });
@@ -52,6 +54,56 @@ async function renderNative(page,id,heading='Display-only regex replacement'){
   window.nativeCard.querySelector('button').addEventListener('click',()=>{window.regexClicks++;});
   window.nativeCard.querySelector('input').checked=true;window.nativeHTML=window.nativeCard.outerHTML;
  },{id,heading});
+}
+// Match SillyTavern's messageEdit/messageEditDone lifecycle: the native editor
+// is #curEditTextarea.edit_textarea inside .mes_text, and MESSAGE_EDITED runs
+// before MESSAGE_UPDATED replaces that editor with the formatted saved body.
+async function exerciseNativeEditor(page,id,label){
+ await page.evaluate(id=>{
+  const row=document.querySelector(`[mesid="${id}"]`),text=row.querySelector('.mes_text');
+  const block=document.createElement('div');block.className='mes_block';text.replaceWith(block);block.append(text);
+  const buttons=document.createElement('div');buttons.className='mes_buttons';
+  const edit=document.createElement('button');edit.className='mes_edit';edit.textContent='Edit';buttons.append(edit);
+  const actions=document.createElement('div');actions.className='mes_edit_buttons';actions.hidden=true;
+  const save=document.createElement('button');save.className='mes_edit_done';save.textContent='Save';
+  const cancel=document.createElement('button');cancel.className='mes_edit_cancel';cancel.textContent='Cancel';actions.append(save,cancel);block.append(buttons,actions);
+  const update=()=>{const message=window.host.chat[id];message.mes=text.querySelector('.edit_textarea').value;message.swipes[message.swipe_id]=message.mes;};
+  const show=async()=>{text.textContent=window.host.chat[id].mes;buttons.hidden=false;actions.hidden=true;await window.host.eventSource.emit('MESSAGE_UPDATED',id);};
+  edit.addEventListener('click',()=>{
+   text.replaceChildren();buttons.hidden=true;actions.hidden=false;
+   const textarea=document.createElement('textarea');textarea.id='curEditTextarea';textarea.className='edit_textarea mdHotkeys';textarea.dataset.macros='';textarea.value=window.host.chat[id].mes;
+   text.append(textarea);textarea.focus();textarea.setSelectionRange(textarea.value.length,textarea.value.length);window.nativeEditor=textarea;
+   textarea.addEventListener('input',()=>{if(window.nativeEditorAutoSave)update();});
+  });
+  save.addEventListener('click',async()=>{update();await window.host.eventSource.emit('MESSAGE_EDITED',id);await show();});
+  cancel.addEventListener('click',()=>void show());
+ },id);
+ const row=page.locator(`[mesid="${id}"]`),original=await page.evaluate(id=>window.host.chat[id].mes,id);
+ const edited=`${original}\nNative editor saved changes.`;
+ await row.locator('.mes_edit').click();await row.locator('#curEditTextarea').fill(edited);
+ await page.evaluate(async id=>{window.nativeEditor.setSelectionRange(3,9);await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,id);},id);
+ await page.waitForTimeout(240);
+ const preserved=await page.evaluate(id=>{
+  const text=document.querySelector(`[mesid="${id}"] .mes_text`),editor=window.nativeEditor;
+  return {same:text.firstChild===editor&&text.childNodes.length===1,connected:editor.isConnected,focused:document.activeElement===editor,value:editor.value,start:editor.selectionStart,end:editor.selectionEnd,cards:text.querySelectorAll('.trpg-chat').length};
+ },id);
+ assert.deepEqual(preserved,{same:true,connected:true,focused:true,value:edited,start:3,end:9,cards:0},`${label}: native textarea stays untouched during refresh`);
+ assert.equal(await row.locator('.mes_edit_buttons').isVisible(),true,`${label}: native save/cancel toolbar remains visible`);
+ assert.equal(await row.locator('.mes_buttons').isVisible(),false,`${label}: the host controls editing mode`);
+ await row.locator('.mes_edit_done').click();await page.waitForFunction(({id,edited})=>window.host.chat[id].mes===edited&&!document.querySelector(`[mesid="${id}"] #curEditTextarea`),{id,edited});
+ assert.equal(await page.evaluate(id=>window.host.chat[id].swipes[window.host.chat[id].swipe_id],id),edited,`${label}: save updates the active swipe`);
+ await row.locator('.mes_edit').click();await row.locator('#curEditTextarea').fill('Unsaved changes to discard.');
+ await page.waitForTimeout(180);await row.locator('.mes_edit_cancel').click();
+ await page.waitForFunction(id=>!document.querySelector(`[mesid="${id}"] #curEditTextarea`),id);
+ assert.equal(await page.evaluate(id=>window.host.chat[id].mes,id),edited,`${label}: cancel preserves the saved message`);
+ // Auto-save can mutate the raw message while the textarea is still open.
+ await page.evaluate(()=>window.nativeEditorAutoSave=true);await row.locator('.mes_edit').click();
+ const autosaved=`${edited}\nNative editor auto-save.`;await row.locator('#curEditTextarea').fill(autosaved);
+ await page.evaluate(async id=>window.host.eventSource.emit('MESSAGE_UPDATED',id),id);await page.waitForTimeout(180);
+ assert.equal(await page.evaluate(id=>document.querySelector(`[mesid="${id}"] .mes_text`).firstChild===window.nativeEditor&&window.nativeEditor.isConnected,id),true,`${label}: auto-save never detaches the editor`);
+ assert.equal(await row.locator('.mes_text .trpg-chat').count(),0,`${label}: auto-save remains undecorated`);
+ await row.locator('.mes_edit_done').click();await page.waitForFunction(id=>!document.querySelector(`[mesid="${id}"] #curEditTextarea`),id);
+ await page.evaluate(()=>window.nativeEditorAutoSave=false);
 }
 let browser;
 try{
@@ -100,6 +152,8 @@ try{
   // Disabling the scene tracker removes only its own prefix, retaining widgets.
   await page.evaluate(()=>{const check=document.querySelector('#tretaresia-rpg-show-scene-tracker');check.checked=false;check.dispatchEvent(new Event('change',{bubbles:true}));});
   await page.waitForTimeout(180);await assertNative(page,'tracker off');
+  await exerciseNativeEditor(page,id,'Mission board / auction');
+  await renderNative(page,id,'Native rerender after editing');await page.waitForTimeout(180);await assertNative(page,'after native editing');
   // A safe RoleForge protocol template still gets the original NPC presentation.
   const structuredId=await page.evaluate(()=>{
    window.host.extensionSettings.tretaresia_rpg.showSceneTracker=false;
@@ -110,6 +164,9 @@ try{
    window.structuredOriginal=text.firstChild;return id;
   });
   await page.locator(`[mesid="${structuredId}"] .trpg-header`).waitFor();assert.equal(await page.locator(`[mesid="${structuredId}"] .trpg-dialogue strong`).textContent(),'Welcome');
+  await exerciseNativeEditor(page,structuredId,'Structured RoleForge story');
+  await page.evaluate(async id=>{window.host.chat[id].mes='<tr-header name="Ashe"/><tr-narrative>She waits quietly.</tr-narrative><tr-dialogue name="Ashe">**Welcome**, traveler.</tr-dialogue>';const text=document.querySelector(`[mesid="${id}"] .mes_text`);text.textContent=window.host.chat[id].mes;window.structuredOriginal=text.firstChild;await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,id);},structuredId);
+  await page.locator(`[mesid="${structuredId}"] .trpg-header`).waitFor();
   // Appended comments/action controls augment an unchanged story; they do not
   // replace it. Keep both the original body and those new native nodes.
   await page.evaluate(async id=>{

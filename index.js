@@ -1,35 +1,35 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.3';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.3';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.4';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.4';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.3';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.3';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.3';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.3';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.3';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.3';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.3';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.3';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.45.3';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.45.3';
-import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.45.3';
-import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.45.3';
-import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.3';
-import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.3';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.3';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.4';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.4';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.4';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.4';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.4';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.4';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.4';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.4';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.45.4';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.45.4';
+import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.45.4';
+import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.45.4';
+import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.4';
+import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.4';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.4';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.3';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.3';
-import {displayRegexEnabled} from './src/npc-chat.js?v=0.45.3';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.3';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.3';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.3';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.3';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.3';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.3';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.3';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.3';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.3';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.4';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.4';
+import {displayRegexEnabled} from './src/npc-chat.js?v=0.45.4';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.4';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.4';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.4';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.4';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.4';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.4';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.4';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.4';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.4';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -2934,7 +2934,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.3`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.4`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3058,6 +3058,7 @@ function legacyPatchInstructions() {
         'Maintain a sparse overhead local map only from confirmed or strongly implied spatial facts. Create a sceneMaps record, then its sceneFloors, sceneRooms, and sceneConnections. Room coordinates use x 0-100, y 0-70, width 8-70, height 7-50. Reveal or add rooms gradually; never invent a complete unseen building. Use canonical mapId/floorId/room ids, set the active ids and playerRoomId as the player moves, and preserve all locked maps, rooms, and connections.',
         'Handle all story genres and mature or NSFW scenes neutrally. Do not censor, rewrite, omit, or classify confirmed state merely because the scene is adult; follow the active SillyTavern, model, and provider settings.',
         'Record only outcomes confirmed by this reply. Never record plans, attempts, questions, hypotheticals, rejected actions, or out-of-character discussion. Keep proficiency changes conservative.',
+        'RoleForge bookkeeping belongs only inside the marked tretaresia_patch JSON comment. Do not print raw SET/INC command lines or standalone tracker key/value fields in the visible story; use canonical RoleForge ops inside that comment. Do not translate another system\'s protocol into guessed RoleForge paths.',
         'Omit the comment when nothing changed. Never print a full state, Markdown fence, explanation, or visible system text.',
     ].join('\n');
 }
@@ -3069,6 +3070,7 @@ function patchInstructions() {
         storyTrackingRules(),
         getSettings().enableMissionBoard ? MISSION_BOARD_INSTRUCTIONS : '',
         getSettings().enableAuctions ? AUCTION_INSTRUCTIONS : '',
+        'RoleForge bookkeeping belongs only inside the marked tretaresia_patch JSON comment. Do not print raw SET/INC command lines or standalone tracker key/value fields in the visible story; use canonical RoleForge ops inside that comment. Do not translate another system\'s protocol into guessed RoleForge paths.',
         'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
         uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all required scene fields on the first reply.)"),
         'Allowed ops: ' + [[getSettings().enableStoryMemory,'storyMemories'],[getSettings().enableStoryAgenda,'storyAgenda'],[getSettings().enableQuestObjectives,'questObjectives']].filter(([enabled]) => enabled).map(([,path]) => 'upsert '+path+'; ').join('') + 'set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary. Use canonical paths/ids and partial objects. Maximum 75 ops.',
@@ -9367,7 +9369,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.45.3 loaded.');
+        console.info('[RoleForge] Role-play interface v0.45.4 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

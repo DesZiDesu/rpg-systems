@@ -997,7 +997,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.3');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.4');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -1879,4 +1879,12 @@ test('auction opt-out permits normal story purchases without engine history whil
   assert.equal(recorded.auctionReceipts.length,1);
   const replay=host.applyStatePatch(recorded,{ops}).next;assert.equal(replay.progression.currency.gold,30);assert.equal(replay.inventory.length,0);
  }finally{settings.enableAuctions=prior;}
+});
+
+
+test('foreign command text survives extraction while only marked RoleForge bookkeeping is consumed',()=>{
+ const foreign='A status display from another preset.\nsex_stage: sex_scene\nSET clock.time 21:22\nSET rng.last 8\nSET npc.Melisia.task Resting\nSET npc.Melisia.next Speak tomorrow\nSET sex.stage sex_scene\nSET sex.arousal 100';
+ const bare=host.extractStatePatch(foreign);assert.equal(bare.found,false);assert.equal(bare.patch,null);assert.equal(bare.visible,foreign);
+ const mixed=host.extractStatePatch(foreign+'\n<!--tretaresia_patch:{"ops":[["set","worldClock.time","21:22"]]}-->');
+ assert.equal(mixed.found,true);assert.equal(mixed.visible,foreign);assert.deepEqual(Array.from(mixed.patch.ops[0]),['set','worldClock.time','21:22']);
 });

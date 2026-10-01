@@ -1,10 +1,10 @@
-import {renderAuctionCard} from './auction-ui.js?v=0.45.3';
-import { renderMissionBoard } from './mission-board-ui.js?v=0.45.3';
-import {uiText} from './ui-language.js?v=0.45.3';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.3';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.3';
-import { croppedPortrait } from './npc-portraits.js?v=0.45.3';
-import { renderSceneTracker } from './scene-tracker.js?v=0.45.3';
+import {renderAuctionCard} from './auction-ui.js?v=0.45.4';
+import { renderMissionBoard } from './mission-board-ui.js?v=0.45.4';
+import {uiText} from './ui-language.js?v=0.45.4';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.4';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.4';
+import { croppedPortrait } from './npc-portraits.js?v=0.45.4';
+import { renderSceneTracker } from './scene-tracker.js?v=0.45.4';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -265,7 +265,10 @@ export function createChatPresentation(api, open) {
         for(const host of document.querySelectorAll('#chat .mes .mes_text')){
             const mes=host.closest('.mes'), id=Number(mes.getAttribute('mesid')), message=context.chat?.[id];
             let old=mounted.get(host);
-            if(!message || message.is_user || message.is_system || mes.querySelector('.mes_edit_textarea')){if(old)restore(host,old);continue;}
+            // SillyTavern replaces .mes_text with #curEditTextarea.edit_textarea
+            // while editing. Leave that row to the host until save or cancel;
+            // mounting cards here can obscure the editor and its controls.
+            if(!message || message.is_user || message.is_system || mes.querySelector('#curEditTextarea,.edit_textarea,.mes_edit_textarea')){if(old)restore(host,old);continue;}
             const source=api.visible(message.mes||'');
             // A host rerender may replace only part of .mes_text. Remove our old
             // UI without overwriting the new nodes; use those nodes from here on.

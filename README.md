@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.45.3
+# ROLEFORGE — v0.45.4
+
+## v0.45.4 — Native message editing
+
+- Chat Presentation now recognizes SillyTavern's actual `#curEditTextarea.edit_textarea` editor and stops decorating a message while it is being edited. Native textarea identity, draft text, focus, cursor and save/cancel/autosave remain owned by the host; scene, mission and auction cards return after editing ends.
+- RoleForge instructions explicitly keep bookkeeping in its marked JSON patch. Bare `SET clock.time`, `SET npc...` or `sex_stage` lines are not RoleForge's protocol and are preserved rather than interpreted or deleted. Their origin requires the source card/preset/regex; existing foreign command text is not automatically removed.
+
+อ่าน [การแก้ข้อความและขอบเขตการแก้คำสั่งที่หลุด ภาษาไทย](docs/message-editing-and-protocol.th.md)
 
 ## v0.45.3 — Optional systems and native chat compatibility
 
