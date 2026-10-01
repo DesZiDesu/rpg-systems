@@ -1,4 +1,4 @@
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.45.6';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.46.0';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -217,6 +217,32 @@ export function retainManualNpcEdits(history, before, after) {
    if(!target){if(snapshot.npcs.length<200)snapshot.npcs.push(copy(npc));continue;}
    for(const key of keys){
     if(key==='stats'&&old){target.stats||={};for(const stat of Object.keys(npc.stats))if(npc.stats[stat]!==old.stats?.[stat])target.stats[stat]=npc.stats[stat];}
+    else if(key==='alternateProfiles'&&old){
+     const previous=new Map((old.alternateProfiles||[]).map(profile=>[profile.id,profile]));
+     const removed=new Set([...previous.keys()].filter(id=>!npc.alternateProfiles.some(profile=>profile.id===id)));
+     target.alternateProfiles=(target.alternateProfiles||[]).filter(profile=>!removed.has(profile.id));
+     for(const profile of npc.alternateProfiles){
+      const prior=previous.get(profile.id),saved=target.alternateProfiles.find(value=>value.id===profile.id);
+      if(!prior||!saved){if(saved)Object.assign(saved,copy(profile));else target.alternateProfiles.push(copy(profile));continue;}
+      for(const field of new Set([...Object.keys(prior),...Object.keys(profile)])){
+       if(field==='id'||JSON.stringify(profile[field])===JSON.stringify(prior[field]))continue;
+       if(field==='fields'){
+        saved.fields||={};
+        for(const part of new Set([...Object.keys(prior.fields||{}),...Object.keys(profile.fields||{})])){
+         if(JSON.stringify(profile.fields?.[part])===JSON.stringify(prior.fields?.[part]))continue;
+         if(!Object.hasOwn(profile.fields||{},part)){delete saved.fields[part];continue;}
+         if(part==='stats'){
+          saved.fields.stats||={};
+          for(const stat of new Set([...Object.keys(prior.fields?.stats||{}),...Object.keys(profile.fields.stats||{})])){
+           if(profile.fields.stats?.[stat]===prior.fields?.stats?.[stat])continue;
+           if(Object.hasOwn(profile.fields.stats||{},stat))saved.fields.stats[stat]=profile.fields.stats[stat];else delete saved.fields.stats[stat];
+          }
+         }else saved.fields[part]=copy(profile.fields[part]);
+        }
+       }else if(Object.hasOwn(profile,field))saved[field]=copy(profile[field]);else delete saved[field];
+      }
+     }
+    }
     else target[key]=copy(npc[key]);
    }
   }

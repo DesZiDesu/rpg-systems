@@ -1,34 +1,35 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.45.6';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.45.6';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.46.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.46.0';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.45.6';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.45.6';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.45.6';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.45.6';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.45.6';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.45.6';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.45.6';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.45.6';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.45.6';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.45.6';
-import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.45.6';
-import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.45.6';
-import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.45.6';
-import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.45.6';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.45.6';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.46.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.46.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.46.0';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.46.0';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.46.0';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.46.0';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.46.0';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.46.0';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.46.0';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.46.0';
+import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.46.0';
+import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.46.0';
+import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.46.0';
+import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.46.0';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.46.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.45.6';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.45.6';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.45.6';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.45.6';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.45.6';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.45.6';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.45.6';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.45.6';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.45.6';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.45.6';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.45.6';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.46.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.46.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.46.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.46.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.46.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.46.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.46.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.46.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.46.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.46.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.46.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.46.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -1032,7 +1033,7 @@ function isFriendlyNpc(entry) {
 }
 
 function friendlyNpcs(state) {
-    return (Array.isArray(state?.npcs) ? state.npcs : []).filter(isFriendlyNpc);
+    return (Array.isArray(state?.npcs) ? state.npcs : []).filter(entry => isFriendlyNpc(effectiveNpc(entry)));
 }
 
 function metFriendlyNpcs(state) {
@@ -1096,6 +1097,7 @@ function npcProfile(value, fallback = {}) {
     const sourceDiary = Array.isArray(value.diary) ? value.diary : Array.isArray(fallback.diary) ? fallback.diary : [];
     return {
         ...npcIdentity(value, fallback),
+        ...normalizeNpcAlternates(value, fallback),
         id: text(value.id, text(fallback.id, uid(), 100), 100), contactId: text(value.contactId, text(fallback.contactId, '', 100), 100),
         name: text(value.name, text(fallback.name, 'Unknown NPC', 120), 120), title: text(value.title, text(fallback.title, '', 120), 120),
         race: text(value.race, text(fallback.race, 'Unknown', 80), 80), age: text(value.age, text(fallback.age, '', 40), 40),
@@ -1696,18 +1698,26 @@ async function copyContinuityMedia(state, sourceChatId, targetChatId) {
     if (!sourceChatId || !targetChatId || sourceChatId === targetChatId) return state;
     const store = SillyTavern.libs?.localforage;
     if (!store) {
-        state.npcs.forEach(entry => { entry.hasPortrait = false; });
+        state.npcs.forEach(entry => {
+            for (const portrait of enumerateNpcPortraits(entry)) if (portrait.hasPortrait && portrait.portraitSource !== 'server')
+                Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, {hasPortrait:false,portraitSource:'none',portraitPath:'',portraitChatId:''}));
+        });
         state.music = { tracks: [], currentId: '', repeat: false, shuffle: false };
         return state;
     }
     for (const entry of state.npcs) {
-        if (!entry.hasPortrait) continue;
-        try {
-            const blob = await store.getItem(npcPortraitStorageKey(entry.id, sourceChatId));
-            if (blob) await store.setItem(npcPortraitStorageKey(entry.id, targetChatId), blob);
-            else entry.hasPortrait = false;
-        } catch (error) {
-            entry.hasPortrait = false;
+        for (const portrait of enumerateNpcPortraits(entry)) {
+            if (!portrait.hasPortrait || portrait.portraitSource === 'server' || portrait.npcScope === 'character') continue;
+            try {
+                const sourceKey = npcPortraitStorageKey(entry.id, portrait.portraitChatId || sourceChatId, portrait.npcAlternateId);
+                const blob = await store.getItem(sourceKey);
+                if (blob) {
+                    await store.setItem(npcPortraitStorageKey(entry.id, targetChatId, portrait.npcAlternateId), blob);
+                    Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, {portraitChatId:''}));
+                } else if (portrait.portraitSource === 'local') Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, {hasPortrait:false,portraitSource:'none'}));
+            } catch (error) {
+                Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, {hasPortrait:false,portraitSource:'none'}));
+            }
         }
     }
     const copiedTracks = [];
@@ -1795,7 +1805,15 @@ function bindNewChatSummaryCompatibility() {
 
 function portableState(state) {
     const portable = normalize(state);
-    portable.npcs.forEach(entry => { entry.hasPortrait = false; entry.npcScope = 'chat'; entry.npcOwner = ''; entry.portraitChatId = ''; });
+    portable.npcs.forEach(entry => {
+        for (const portrait of enumerateNpcPortraits(entry)) {
+            const server = portrait.portraitSource === 'server' && Boolean(portrait.portraitPath);
+            Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, server
+                ? {hasPortrait:true,portraitChatId:''}
+                : {hasPortrait:false,portraitSource:'none',portraitPath:'',portraitChatId:''}));
+        }
+        entry.npcScope = 'chat'; entry.npcOwner = '';
+    });
     portable.npcScopes = {};
     portable.music = { tracks: [], currentId: '', repeat: portable.music.repeat, shuffle: portable.music.shuffle };
     portable.syncCursor = { user: null, assistant: null };
@@ -2514,6 +2532,7 @@ function aiSceneMap(state) {
 }
 
 function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
+    state = { ...state, npcs: state.npcs.map(effectiveNpc) };
     const safePlayer = { ...state.player };
     delete safePlayer.portrait;
     delete safePlayer.portraitView;
@@ -2593,6 +2612,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         npcWorld: rankedNpcs.filter(entry => entry.lifeMode === 'Active' || socialNpcIds.has(entry.id)).slice(0, 12)
             .map(({ id, name, location, lifeMode, activity, activityUpdatedDay }) => [id, name, location, lifeMode, activity, activityUpdatedDay]),
         npcs: recentNpcs.map(entry => ({
+            ...alternatePromptContext(entry),
             id: entry.id, name: entry.name, title: entry.title, race: entry.race, age: entry.age, faction: entry.faction,
             occupation: entry.occupation, personality: entry.personality, appearance: entry.appearance,
             background: entry.background, goals: entry.goals, speechStyle: entry.speechStyle, aliases: entry.aliases,
@@ -2624,6 +2644,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
 }
 
 function roleplayState(state) {
+    state = { ...state, npcs: state.npcs.map(effectiveNpc) };
     const friendly = friendlyNpcs(state);
     const characterLifeCharacters = characterLifeCharacterReferences();
     return {
@@ -2681,6 +2702,7 @@ function roleplayState(state) {
             questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
             npcNames: state.npcs.map(({ id, name, aliases, enabled, met }) => [id, name, aliases || [], enabled !== false, met === true]),
             npcProfiles: state.npcs.slice(-16).map(entry => ({
+                ...alternatePromptContext(entry),
                 id: entry.id, name: entry.name, title: entry.title, occupation: entry.occupation,
                 race: entry.race, age: entry.age, gender: entry.gender, faction: entry.faction,
                 relationship: entry.relationship, isHostile: entry.isHostile, met: entry.met,
@@ -2934,7 +2956,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.45.6`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.46.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3126,6 +3148,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
         if (lastScene) lines.push(`PREVIOUS SCENE (reference data only; update for the current story reply): ${JSON.stringify(lastScene)}`);
         lines.push('New NPCs must include a full dossier with appearance,personality,background,goals,speechStyle,relationshipState and complete stats/relationships in the same patch. Existing NPC updates remain partial and preserve prior facts. Storage scope is controlled by the user; never emit npcScope or npcOwner.');
     }
+    if (state.npcs.some(npc => npc.alternateProfiles?.length)) lines.push(NPC_ALTERNATE_INSTRUCTIONS);
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' Emit scene metadata')[0]);
     if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 19 required fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
     if(customPreset)lines.push(customPowerPrompt(getPowerPreset(),state));
@@ -4718,6 +4741,7 @@ function playerCombatProfile(state) {
 }
 
 function npcCombatProfile(entry) {
+    entry = effectiveNpc(entry);
     const known = value => number(value, 0, 0, 999999) > 0 ? number(value, 0, 0, 999999) : null;
     const mastery = entry.abilities?.length ? Math.max(...entry.abilities.map(ability => ability.proficiency || 0)) : null;
     return {
@@ -5223,11 +5247,13 @@ const textareaField = (label, name, value, rows = 4, extra = '') =>
     (uiMarkup("<label class=\"tretaresia-field tretaresia-field-wide\"><span>")+(html(tr(label)))+uiMarkup("</span><textarea name=\"")+(name)+uiMarkup("\" rows=\"")+(rows)+uiMarkup("\" ")+(extra)+uiMarkup(">")+(html(value))+uiMarkup("</textarea></label>"));
 
 function npcPortraitStyle(entry) {
+    entry = effectiveNpc(entry);
     const frame = entry.portraitView;
     return `--portrait-desktop-x:${frame.desktop.x}%;--portrait-desktop-y:${frame.desktop.y}%;--portrait-desktop-zoom:${frame.desktop.zoom};--portrait-mobile-x:${frame.mobile.x}%;--portrait-mobile-y:${frame.mobile.y}%;--portrait-mobile-zoom:${frame.mobile.zoom}`;
 }
 
 function npcPortraitSlot(entry, className = 'tretaresia-npc-thumb') {
+    entry = effectiveNpc(entry);
     return (uiMarkup("<span class=\"")+(className)+uiMarkup("")+(entry.hasPortrait || entry.characterLifePortraitId ? ' has-photo' : '')+uiMarkup("\" data-npc-portrait=\"")+(html(entry.id))+uiMarkup("\" style=\"")+(npcPortraitStyle(entry))+uiMarkup("\">\n        <span class=\"tretaresia-npc-initial\">")+(html(entry.name.charAt(0).toUpperCase() || '?'))+uiMarkup("</span></span>"));
 }
 
@@ -5256,6 +5282,7 @@ function socialGroupSummary(group, state) {
 }
 
 function renderGroups(panel, state) {
+    state = {...state,npcs:state.npcs.map(effectiveNpc)};
     if (!panel) return;
     const party = state.social.party;
     const guilds = state.social.guilds;
@@ -5265,6 +5292,7 @@ function renderGroups(panel, state) {
 }
 
 function renderHousehold(panel, state) {
+    state = {...state,npcs:state.npcs.map(effectiveNpc)};
     if (!panel) return;
     const household = state.social.household;
     const members = household.members.length ? household.members.map(member => (uiMarkup("<article class=\"tretaresia-household-member\"><span class=\"tretaresia-social-member-icon\"><i class=\"fa-solid fa-user-group\"></i></span><span><strong>")+(html(member.name))+uiMarkup("</strong><small>")+(html(member.role))+uiMarkup("")+(member.notes ? ` · ${html(member.notes)}` : '')+uiMarkup("</small></span><button type=\"button\" data-action=\"remove-household-member\" data-id=\"")+(html(member.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove member"))))+uiMarkup("\"><i class=\"fa-solid fa-user-minus\"></i></button></article>"))).join('') : (uiMarkup("<div class=\"tretaresia-social-empty\">")+(html(tr(uiText("No household members"))))+uiMarkup("</div>"));
@@ -5279,7 +5307,7 @@ function npcLifeModeField(selected = 'Active') {
 
 function renderNpcs(panel, state) {
     if (!panel) return;
-    const visibleNpcs = metFriendlyNpcs(state);
+    const visibleNpcs = metFriendlyNpcs(state).map(effectiveNpc);
     if (!visibleNpcs.some(entry => entry.id === selectedNpcId)) selectedNpcId = visibleNpcs[0]?.id || null;
     const selected = visibleNpcs.find(entry => entry.id === selectedNpcId);
     const linkedContact = selected ? state.contacts.find(entry => entry.id === selected.contactId || entry.npcId === selected.id) : null;
@@ -5553,6 +5581,7 @@ async function completeHStatsBaseline(npcId) {
 }
 
 function renderHStats(panel, state) {
+    state = {...state,npcs:state.npcs.map(effectiveNpc)};
     if (!panel) return;
     const context = syncHStatsSelectionChat();
     const roster = visibleHStatsNpcs(state, context);
@@ -5598,6 +5627,7 @@ function renderHStats(panel, state) {
 }
 
 function renderNpcDossier(entry, linkedContact) {
+    entry = effectiveNpc(entry);
     const state = getState();
     const playerProfile = playerCombatProfile(state);
     const npcProfileValues = npcCombatProfile(entry);
@@ -5625,14 +5655,15 @@ function renderNpcDossier(entry, linkedContact) {
         }).join(''))+uiMarkup("</div><footer><span>")+(html(currentPersonaName(state)))+uiMarkup("</span><i class=\"fa-solid fa-bolt\"></i><span>")+(html(entry.name))+uiMarkup("</span></footer></section>\n        <section class=\"tretaresia-knowledge-card\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-brain\"></i><span>")+(html(tr(uiText("NPC knowledge"))))+uiMarkup("</span><b>")+(entry.knowledge.length)+uiMarkup("</b></div><p><i class=\"fa-solid fa-shield-halved\"></i>Only witnessed, explicitly told, publicly observable, or role-credible facts belong here.</p><div>")+(entry.knowledge.length ? [...entry.knowledge].reverse().map(fact => (uiMarkup("<article><span><b>")+(html(fact.fact))+uiMarkup("</b><small>")+(html(fact.source))+uiMarkup(" · confidence ")+(fact.confidence)+uiMarkup("% · Day ")+(fact.learnedDay)+uiMarkup("</small></span>")+(fact.private ? uiMarkup("<i class=\"fa-solid fa-lock\"></i>") : uiMarkup("<i class=\"fa-solid fa-eye\"></i>"))+uiMarkup("</article>"))).join('') : (uiMarkup("<span class=\"tretaresia-knowledge-empty\"><i class=\"fa-solid fa-eye-slash\"></i>No confirmed player knowledge recorded for this NPC</span>")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-npc-abilities\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-sparkles\"></i><span>")+(html(tr(uiText("Abilities"))))+uiMarkup("</span></div><div class=\"tretaresia-npc-ability-list\">")+(abilities)+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add ability"))))+uiMarkup("</summary><form data-form=\"npc-ability\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n                ")+(input('Ability name', 'name', ''))+uiMarkup("")+(input('Category', 'category', 'General'))+uiMarkup("")+(input('Ability level', 'level', 'Beginner'))+uiMarkup("")+(input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add ability"))))+uiMarkup("</button></form></details></section>\n        <section class=\"tretaresia-npc-diary\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-book\"></i><span>")+(html(tr(uiText("Diary"))))+uiMarkup("</span></div><div class=\"tretaresia-diary-list\">")+(diary)+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-feather\"></i> ")+(html(tr(uiText("Add diary entry"))))+uiMarkup("</summary><form data-form=\"npc-diary\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n                ")+(input('Mood', 'mood', ''))+uiMarkup("")+(textareaField('Thought', 'text', '', 4, 'maxlength="1200" required'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add diary entry"))))+uiMarkup("</button></form></details></section>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-gauge\"></i> ")+(html(tr(uiText("Add custom meter"))))+uiMarkup("</summary><form data-form=\"npc-meter\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(entry.id))+uiMarkup("\">\n            ")+(input('Name', 'name', ''))+uiMarkup("")+(input('Proficiency', 'value', 0, 'number', 'min="0" max="100"'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add custom meter"))))+uiMarkup("</button></form></details>\n        <details class=\"tretaresia-editor tretaresia-npc-edit\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Edit NPC"))))+uiMarkup("</summary><form data-form=\"npc-profile\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"id\" value=\"")+(html(entry.id))+uiMarkup("\">\n            ")+(input('Name', 'name', entry.name))+uiMarkup("")+(input('Title', 'title', entry.title))+uiMarkup("")+(input('Race', 'race', entry.race))+uiMarkup("")+(input('Age', 'age', entry.age))+uiMarkup("")+(input('Gender', 'gender', entry.gender))+uiMarkup("")+(input('Occupation', 'occupation', entry.occupation))+uiMarkup("\n            ")+(input('Faction', 'faction', entry.faction))+uiMarkup("")+(input('Alignment', 'alignment', entry.alignment))+uiMarkup("")+(input('Relationship', 'relationship', entry.relationship))+uiMarkup("")+(input('Current location', 'location', entry.location))+uiMarkup("\n            ")+(npcLifeModeField(entry.lifeMode))+uiMarkup("")+(input('Activity', 'activity', entry.activity))+uiMarkup("\n            ")+uiMarkup("")+uiMarkup("\n            <label class=\"tretaresia-checkbox-field\"><input type=\"checkbox\" name=\"met\"")+(entry.met ? ' checked' : '')+uiMarkup("><span>เคยพบแล้ว / Met</span></label>\n            ")+(input('Last seen', 'lastSeen', entry.lastSeen))+uiMarkup("")+(input('Marital status', 'maritalStatus', entry.maritalStatus))+uiMarkup("")+(input('Partner', 'partner', entry.partner))+uiMarkup("")+(input('Children', 'children', entry.children))+uiMarkup("\n            ")+(input('Affection', 'affection', entry.affection, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Trust', 'trust', entry.trust, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Loyalty', 'loyalty', entry.loyalty, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Fear', 'fear', entry.fear, 'number', 'min="0" max="100"'))+uiMarkup("\n            ")+(input('Corruption', 'corruption', entry.corruption, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Lust', 'lust', entry.lust, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Level', 'level', entry.stats.level, 'number', 'min="0"'))+uiMarkup("")+(input('Rank', 'rank', entry.stats.rank))+uiMarkup("\n            ")+(input('HP', 'hp', entry.stats.hp, 'number', 'min="0"'))+uiMarkup("")+(input('MP', 'mp', entry.stats.mp, 'number', 'min="0"'))+uiMarkup("")+(input('Stamina', 'stamina', entry.stats.stamina, 'number', 'min="0"'))+uiMarkup("\n            ")+(NPC_CORE_STATS.map(stat => input(stat.name, stat.id, entry.stats[stat.id], 'number', 'min="0"')).join(''))+uiMarkup("")+(textareaField('Relationship state', 'relationshipState', entry.relationshipState, 3))+uiMarkup("")+(textareaField('Notes', 'notes', entry.notes, 4))+uiMarkup("\n            <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save NPC"))))+uiMarkup("</button></form></details>"));
 }
 
-function npcPortraitStorageKey(npcId, chatId = SillyTavern.getContext().getCurrentChatId?.() || 'no-chat') {
-    return `tretaresia-rpg:npc-portrait:${chatId}:${npcId}`;
+function npcPortraitStorageKey(npcId, chatId = SillyTavern.getContext().getCurrentChatId?.() || 'no-chat', alternateId = '') {
+    return `tretaresia-rpg:npc-portrait:${chatId}:${npcId}${alternateId ? `:alternate:${encodeURIComponent(alternateId)}` : ''}`;
 }
 
 async function readNpcPortrait(entry) {
+    entry = Object.hasOwn(entry, 'npcAlternateId') ? entry : alternatePortraitRecord(entry);
     if(entry.portraitSource==='none')return null;
     if(entry.portraitSource==='server' && entry.portraitPath)return readServerPortrait(entry);
-    const key=entry.portraitChatId ? npcPortraitStorageKey(entry.id,entry.portraitChatId)
+    const key=entry.portraitChatId ? npcPortraitStorageKey(entry.id,entry.portraitChatId,entry.npcAlternateId)
         : scopedPortraitKey(entry,SillyTavern.getContext().getCurrentChatId?.());
     const blob=await SillyTavern.libs?.localforage?.getItem(key);
     if(blob instanceof Blob)return blob;
@@ -5656,11 +5687,12 @@ async function hydrateNpcPortraits(root, state = getState()) {
     const store = SillyTavern.libs?.localforage;
     const nodes = [...root.querySelectorAll('[data-npc-portrait]')];
     await Promise.all(nodes.map(async node => {
-        const entry = state.npcs.find(value => value.id === node.dataset.npcPortrait);
-        if (!entry) return;
+        const raw = state.npcs.find(value => value.id === node.dataset.npcPortrait);
+        if (!raw) return;
+        const entry = alternatePortraitRecord(raw);
         try {
             if (entry.portraitSource === 'none') return;
-            const key = entry.portraitChatId ? npcPortraitStorageKey(entry.id, entry.portraitChatId)
+            const key = entry.portraitChatId ? npcPortraitStorageKey(entry.id, entry.portraitChatId, entry.npcAlternateId)
                 : scopedPortraitKey(entry, SillyTavern.getContext().getCurrentChatId?.());
             let blob = entry.portraitSource === 'server' ? await readServerPortrait(entry) : entry.portraitSource === 'local' && store ? await store.getItem(key) : null;
             const bridge = characterLifeBridge();
@@ -5728,12 +5760,13 @@ function resizeImageBlob(file) {
 
 async function openNpcPortraitEditor(npcId) {
     const state = getState();
-    const entry = state.npcs.find(value => value.id === npcId);
+    const raw = state.npcs.find(value => value.id === npcId);
+    const entry = raw && effectiveNpc(raw);
     const modal = document.getElementById('tretaresia-portrait-editor');
     if (!entry || !modal) return;
     if (!entry.hasPortrait) {
         const inputElement = document.getElementById('tretaresia-npc-avatar-input');
-        if (inputElement) inputElement.dataset.npcId = entry.id;
+        if (inputElement) { inputElement.dataset.npcId = entry.id; inputElement.dataset.alternateId = entry.activeAlternateId || ''; }
         inputElement?.click();
         return;
     }
@@ -5743,7 +5776,7 @@ async function openNpcPortraitEditor(npcId) {
     if (!(blob instanceof Blob)) {
         notify('warning', getSettings().language === 'th' ? uiText("รูป NPC นี้ไม่ได้อยู่ในอุปกรณ์นี้ กรุณาเลือกไฟล์ใหม่") : uiText("This NPC portrait is not stored on this device. Choose it again here."));
         const inputElement = document.getElementById('tretaresia-npc-avatar-input');
-        if (inputElement) inputElement.dataset.npcId = entry.id;
+        if (inputElement) { inputElement.dataset.npcId = entry.id; inputElement.dataset.alternateId = entry.activeAlternateId || ''; }
         inputElement?.click();
         return;
     }
@@ -6079,10 +6112,11 @@ async function onSubmit(event) {
         case 'npc-portrait-frame': {
             const entry = state.npcs.find(value => value.id === values.npcId);
             if (!entry) break;
-            entry.portraitView = {
+            const portraitView = {
                 desktop: { x: values.desktopX, y: values.desktopY, zoom: values.desktopZoom },
                 mobile: { x: values.mobileX, y: values.mobileY, zoom: values.mobileZoom },
             };
+            Object.assign(entry, updateNpcAlternate(entry, entry.activeAlternateId, {portraitView}));
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc-portrait');
             closePortraitEditor();
@@ -6406,10 +6440,12 @@ async function onSubmit(event) {
             const index = state.npcs.findIndex(entry => entry.id === values.id);
             if (index < 0) break;
             const previous = state.npcs[index];
-            const nextNpc = npcProfile({ ...previous, ...values, met: values.met === 'on', stats: {
-                ...previous.stats, level: values.level, rank: values.rank, hp: values.hp, mp: values.mp, stamina: values.stamina,
+            const current = effectiveNpc(previous);
+            const edited = npcProfile({ ...current, ...values, met: values.met === 'on', stats: {
+                ...current.stats, level: values.level, rank: values.rank, hp: values.hp, mp: values.mp, stamina: values.stamina,
                 ...Object.fromEntries(NPC_CORE_STATS.map(stat => [stat.id, values[stat.id]])),
-            }, updatedAt: new Date().toISOString() }, previous);
+            }, updatedAt: new Date().toISOString() }, current);
+            const nextNpc = {...updateNpcAlternate(previous, previous.activeAlternateId, edited),met:edited.met,updatedAt:edited.updatedAt};
             state.npcs[index] = nextNpc;
             const linked = state.contacts.find(entry => entry.id === nextNpc.contactId || entry.npcId === nextNpc.id);
             if (linked) ensureContactForNpc(state, nextNpc);
@@ -6433,7 +6469,7 @@ async function onSubmit(event) {
             const entry = state.npcs.find(value => value.id === values.npcId);
             const ability = npcAbility(values);
             if (!entry || !ability) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อความสามารถ") : uiText("Enter an ability name first."));
-            entry.abilities.push(ability);
+            Object.assign(entry, updateNpcAlternate(entry, entry.activeAlternateId, {abilities:[...effectiveNpc(entry).abilities, ability]}));
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc');
             break;
@@ -6442,7 +6478,7 @@ async function onSubmit(event) {
             const entry = state.npcs.find(value => value.id === values.npcId);
             const meterEntry = npcMeter(values);
             if (!entry || !meterEntry) return notify('warning', getSettings().language === 'th' ? uiText("กรุณาใส่ชื่อค่าสถานะ") : uiText("Enter a meter name first."));
-            entry.customMeters.push(meterEntry);
+            Object.assign(entry, updateNpcAlternate(entry, entry.activeAlternateId, {customMeters:[...effectiveNpc(entry).customMeters, meterEntry]}));
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc');
             break;
@@ -6550,14 +6586,17 @@ async function onPanelChange(event) {
         const npcId = npcPortrait.dataset.npcId;
         try {
             const expectedChat = SillyTavern.getContext().getCurrentChatId?.();
-            if (!getState().npcs.some(value => value.id === npcId)) throw new Error(uiText("NPC profile was not found."));
+            const previous = getState().npcs.find(value => value.id === npcId);
+            if (!previous) throw new Error(uiText("NPC profile was not found."));
+            const alternateId = previous.activeAlternateId || '';
+            if (Object.hasOwn(npcPortrait.dataset, 'alternateId') && npcPortrait.dataset.alternateId !== alternateId) throw Error(uiText("Chat changed; please reopen the NPC before saving."));
             const reference = await saveNpcPortrait(npcPortrait.files[0]);
             if(expectedChat!==SillyTavern.getContext().getCurrentChatId?.())throw Error(uiText("Chat changed; please reopen the NPC before saving."));
             const state = clone(getState());
             const entry = state.npcs.find(value => value.id === npcId);
             if (!entry) throw new Error(uiText("NPC profile was removed during upload."));
-            Object.assign(entry,reference);
-            entry.portraitView = clone(defaultState().player.portraitView);
+            if ((entry.activeAlternateId || '') !== alternateId) throw Error(uiText("Chat changed; please reopen the NPC before saving."));
+            Object.assign(entry,updateNpcAlternate(entry,alternateId,{...reference,portraitView:clone(defaultState().player.portraitView)}));
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc-portrait');
             notify('success', getSettings().language === 'th' ? uiText("อัปเดตรูป NPC แล้ว") : uiText("NPC portrait updated."));
@@ -6757,7 +6796,7 @@ async function onPanelClick(event) {
             break;
         case 'choose-npc-portrait': {
             const inputElement = document.getElementById('tretaresia-npc-avatar-input');
-            if (inputElement) inputElement.dataset.npcId = id;
+            if (inputElement) { inputElement.dataset.npcId = id; inputElement.dataset.alternateId = state.npcs.find(entry => entry.id === id)?.activeAlternateId || ''; }
             inputElement?.click();
             break;
         }
@@ -6767,10 +6806,7 @@ async function onPanelClick(event) {
         case 'remove-npc-portrait': {
             const entry = state.npcs.find(value => value.id === id);
             if (!entry) break;
-            await SillyTavern.libs?.localforage?.removeItem(npcPortraitStorageKey(entry.id));
-            entry.hasPortrait = false;
-            entry.portraitSource = 'none';
-            entry.portraitView = clone(defaultState().player.portraitView);
+            Object.assign(entry, updateNpcAlternate(entry, entry.activeAlternateId, {hasPortrait:false,portraitSource:'none',portraitPath:'',portraitChatId:'',portraitView:clone(defaultState().player.portraitView)}));
             entry.updatedAt = new Date().toISOString();
             closePortraitEditor();
             await persistState(state, 'npc-portrait');
@@ -7007,7 +7043,7 @@ async function onPanelClick(event) {
         case 'delete-npc-ability': {
             const entry = state.npcs.find(value => value.id === button.dataset.npcId);
             if (!entry) break;
-            entry.abilities = entry.abilities.filter(value => value.id !== id);
+            Object.assign(entry, updateNpcAlternate(entry, entry.activeAlternateId, {abilities:effectiveNpc(entry).abilities.filter(value => value.id !== id)}));
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc');
             break;
@@ -7015,7 +7051,7 @@ async function onPanelClick(event) {
         case 'delete-npc-meter': {
             const entry = state.npcs.find(value => value.id === button.dataset.npcId);
             if (!entry) break;
-            entry.customMeters = entry.customMeters.filter(value => value.id !== id);
+            Object.assign(entry, updateNpcAlternate(entry, entry.activeAlternateId, {customMeters:effectiveNpc(entry).customMeters.filter(value => value.id !== id)}));
             entry.updatedAt = new Date().toISOString();
             await persistState(state, 'npc');
             break;
@@ -7558,7 +7594,8 @@ function mergeTrackedQuestObjectives(previous, incoming, storySource = {}) {
 
 function applyPatchOperation(state, operation, storySource = {}) {
     if (!Array.isArray(operation) || operation.length < 3) return false;
-    const [verb, path, value] = operation;
+    const [verb, path, incomingValue] = operation;
+    let value = incomingValue;
     const systemKey = {storyMemories:'enableStoryMemory',storyAgenda:'enableStoryAgenda',questObjectives:'enableQuestObjectives'}[path];
     if (systemKey && !getSettings()[systemKey]) return false;
     if(typeof path==='string' && path.startsWith('customPowers.')) return applyPowerOperation(state,getPowerPreset(),verb,path,value);
@@ -7609,7 +7646,8 @@ function applyPatchOperation(state, operation, storySource = {}) {
         return true;
     }
     if (path === 'npcValues' && ['set', 'inc'].includes(verb) && value && typeof value === 'object') {
-        const npc = resolveNpc(state.npcs, value);
+        const record = resolveNpc(state.npcs, value);
+        const npc = record && effectiveNpc(record);
         const field = text(value.field, '', 80);
         if (!npc) return false;
         if (NPC_RELATIONSHIP_FIELDS.has(field)) {
@@ -7622,7 +7660,8 @@ function applyPatchOperation(state, operation, storySource = {}) {
             const nextValue = verb === 'inc' ? number(npc.stats[key], 0, 0, 999999) + number(value.amount, 0, -999999, 999999) : value.value;
             npc.stats[key] = number(nextValue, npc.stats[key], 0, 999999);
         } else return false;
-        npc.updatedAt = new Date().toISOString();
+        Object.assign(record, updateNpcAlternate(record, record.activeAlternateId, field.startsWith('stats.') ? {stats:npc.stats} : {[field]:npc[field]}));
+        record.updatedAt = new Date().toISOString();
         return true;
     }
     if (path === 'npcHStats' && ['set', 'inc'].includes(verb) && value && typeof value === 'object') {
@@ -7641,7 +7680,8 @@ function applyPatchOperation(state, operation, storySource = {}) {
         return true;
     }
     if (['npcAbilities', 'npcMeters', 'npcDiary', 'npcKnowledge'].includes(path) && value && typeof value === 'object') {
-        const npc = resolveNpc(state.npcs, value);
+        const record = resolveNpc(state.npcs, value);
+        const npc = record && (['npcAbilities', 'npcMeters'].includes(path) ? effectiveNpc(record) : record);
         if (!npc) return false;
         if (path === 'npcDiary' && verb === 'append') {
             const entry = npcDiaryEntry(value);
@@ -7678,7 +7718,8 @@ function applyPatchOperation(state, operation, storySource = {}) {
             if (!ability || !Number.isFinite(amount) || amount === 0) return false;
             ability.proficiency = Math.max(0, Math.min(100, ability.proficiency + amount));
             if (typeof value.level === 'string' && value.level.trim()) ability.level = text(value.level, ability.level, 80);
-            npc.updatedAt = new Date().toISOString();
+            Object.assign(record, updateNpcAlternate(record, record.activeAlternateId, {abilities:npc.abilities}));
+            record.updatedAt = new Date().toISOString();
             return true;
         }
         if (verb === 'upsert') {
@@ -7687,13 +7728,17 @@ function applyPatchOperation(state, operation, storySource = {}) {
             if (!entry) return false;
             if (index >= 0) npc[key][index] = { ...npc[key][index], ...entry, id: npc[key][index].id };
             else npc[key].push(entry);
-            npc.updatedAt = new Date().toISOString();
+            Object.assign(record, updateNpcAlternate(record, record.activeAlternateId, {[key]:npc[key]}));
+            record.updatedAt = new Date().toISOString();
             return true;
         }
         if (verb === 'delete') {
             const previousLength = npc[key].length;
             npc[key] = npc[key].filter(entry => !matchesPatchIdentity(entry, value));
-            if (npc[key].length !== previousLength) npc.updatedAt = new Date().toISOString();
+            if (npc[key].length !== previousLength) {
+                Object.assign(record, updateNpcAlternate(record, record.activeAlternateId, {[key]:npc[key]}));
+                record.updatedAt = new Date().toISOString();
+            }
             return npc[key].length !== previousLength;
         }
         return false;
@@ -7725,6 +7770,11 @@ function applyPatchOperation(state, operation, storySource = {}) {
     const collection = collectionForPatch(state, path);
     if (!Array.isArray(collection)) return false;
     if (verb === 'upsert' && value && typeof value === 'object') {
+        if (path === 'npcs') {
+            value = {...value};
+            // Alternate selection, saved stages and images are user-owned.
+            for (const key of ['activeAlternateId','alternateProfiles','hasPortrait','portraitSource','portraitPath','portraitChatId','portraitView']) delete value[key];
+        }
         const identity = patchIdentity(value);
         if (!identity && path !== 'letters') return false;
         const index = path === 'regionalWeather'
@@ -7753,6 +7803,13 @@ function applyPatchOperation(state, operation, storySource = {}) {
             if (index >= 0 && collection[index].enabled === false) return false;
             // Enabled state belongs to the user, including on new NPCs.
             candidate.enabled = index >= 0 ? collection[index].enabled : true;
+            if (index >= 0 && collection[index].activeAlternateId) {
+                const existing = collection[index];
+                const updated = updateNpcAlternate(existing, existing.activeAlternateId, value);
+                candidate = {...updated, name:candidate.name, aliases:candidate.aliases, met:candidate.met,
+                    isHostile:candidate.isHostile, enabled:existing.enabled,
+                    hStats:candidate.hStats, hStatsGenerated:candidate.hStatsGenerated};
+            }
             candidate = npcProfile({ ...candidate, updatedAt: new Date().toISOString() }, index >= 0 ? collection[index] : {});
             if (!candidate) return false;
         }
@@ -8001,6 +8058,14 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
             entry.identityColor = previous.identityColor;
             entry.roleIcon = previous.roleIcon;
             entry.portraitSize = previous.portraitSize;
+            for (const alternate of entry.alternateProfiles) {
+                const original = previous.alternateProfiles?.find(value => value.id === alternate.id);
+                if (!original) continue;
+                for (const field of ['hasPortrait','portraitSource','portraitPath','portraitChatId','portraitView','portraitSize','identityColor','roleIcon']) {
+                    if (Object.hasOwn(original,field)) alternate[field]=clone(original[field]);
+                    else delete alternate[field];
+                }
+            }
         }
     });
     next.music = clone(current.music);
@@ -8187,19 +8252,21 @@ function npcProgressionCandidates(state, message) {
         const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         return new RegExp(`(^|[^\\p{L}\\p{M}\\p{N}])${escaped}(?=$|[^\\p{L}\\p{M}\\p{N}])`, 'iu').test(story);
     });
-    return metFriendlyNpcs(state).filter(npc => dialogueIds.has(npc.id) || mentioned(npc)).slice(0, 3);
+    return metFriendlyNpcs(state).filter(npc => dialogueIds.has(npc.id) || mentioned(npc)).slice(0, 3).map(effectiveNpc);
 }
 
 function npcProgressAlreadyRecorded(base, candidate, npcId) {
     const before = base.npcs.find(npc => npc.id === npcId);
     const after = candidate.npcs.find(npc => npc.id === npcId);
     if (!before || !after) return true;
-    const tracked = npc => [npc.affection, npc.trust, npc.loyalty, npc.fear, npc.corruption, npc.lust,
-        npc.stats, npc.abilities, npc.hStats];
+    const tracked = raw => { const npc = effectiveNpc(raw); return [npc.affection, npc.trust, npc.loyalty, npc.fear, npc.corruption, npc.lust,
+        npc.stats, npc.abilities, npc.hStats]; };
     return JSON.stringify(tracked(before)) !== JSON.stringify(tracked(after));
 }
 
 function npcProgressionOperations(raw, targets, state, base) {
+    state = {...state,npcs:state.npcs.map(effectiveNpc)};
+    base = {...base,npcs:base.npcs.map(effectiveNpc)};
     const allowedIds = new Set(targets.map(npc => npc.id));
     const valid = (Array.isArray(raw) ? raw : []).slice(0, 75).filter(operation => {
         if (!Array.isArray(operation) || operation.length < 3) return false;
@@ -8587,15 +8654,17 @@ function manualSyncOperationKey(operation, state = null) {
         const step = owner?.objectives?.find(entry => entry.id === value?.id || entry.title === value?.title);
         return `${path}:${owner?.id || value?.questId || ''}:${step?.id || value?.id || value?.title || ''}`;
     }
-    const npc = state && value && typeof value === 'object' ? resolveNpc(state.npcs, value) : null;
-    if (path === 'npcHStats' || path === 'npcValues') return `${path}:${npc?.id || value?.npcId || value?.npcName || ''}:${value?.field || ''}`;
+    const rawNpc = state && value && typeof value === 'object' ? resolveNpc(state.npcs, value) : null;
+    const npc = rawNpc && effectiveNpc(rawNpc);
+    const stageKey = npc?.activeAlternateId && ['npcValues','npcAbilities','npcMeters','npcs'].includes(path) ? `:alternate:${npc.activeAlternateId}` : '';
+    if (path === 'npcHStats' || path === 'npcValues') return `${path}:${npc?.id || value?.npcId || value?.npcName || ''}${stageKey}:${value?.field || ''}`;
     if (path === 'playerHStats') return `${path}:${value?.field || ''}`;
     if (path === 'npcAbilities' || path === 'npcMeters' || path === 'npcKnowledge') {
         const record = npc?.[path === 'npcAbilities' ? 'abilities' : path === 'npcMeters' ? 'customMeters' : 'knowledge']
             ?.find(entry => matchesPatchIdentity(entry, value));
-        return `${path}:${npc?.id || value?.npcId || value?.npcName || ''}:${record?.id || value?.id || value?.name || value?.fact || ''}`;
+        return `${path}:${npc?.id || value?.npcId || value?.npcName || ''}${stageKey}:${record?.id || value?.id || value?.name || value?.fact || ''}`;
     }
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) return `${path}:${value.id || value.name || value.npcId || ''}`;
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) return `${path}:${value.id || value.name || value.npcId || ''}${stageKey}`;
     return String(path || '');
 }
 
@@ -8611,10 +8680,11 @@ function manualSyncTargetValue(state, operation) {
     if (path === 'npcHStats') return resolveNpc(state.npcs, value)?.hStats?.[value.field];
     if (path === 'playerHStats') return state.player.hStats?.[value.field];
     if (path === 'npcValues') {
-        const npc = resolveNpc(state.npcs, value);
+        const raw = resolveNpc(state.npcs, value);
+        const npc = raw && effectiveNpc(raw);
         return value.field?.startsWith('stats.') ? npc?.stats?.[value.field.slice(6)] : npc?.[value.field];
     }
-    if (path === 'npcAbilities') return resolveNpc(state.npcs, value)?.abilities?.find(entry => matchesPatchIdentity(entry, value));
+    if (path === 'npcAbilities') { const npc = resolveNpc(state.npcs, value); return npc && effectiveNpc(npc).abilities?.find(entry => matchesPatchIdentity(entry, value)); }
     if (['inventory','skills','quests','npcs','contacts','letters'].includes(path) && value && typeof value === 'object')
         return state[path].find(entry => matchesPatchIdentity(entry, value));
     return path?.split('.').reduce((entry,key) => entry?.[key], state);
@@ -9369,7 +9439,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.45.6 loaded.');
+        console.info('[RoleForge] Role-play interface v0.46.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

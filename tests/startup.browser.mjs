@@ -60,7 +60,7 @@ try{
   page.on('response',response=>{if(response.status()>=400)missing.push(response.url());});
   await page.goto(`http://127.0.0.1:${server.address().port}/?${legacy?'legacy=1':''}`);
   await page.waitForFunction(()=>window.TretaresiaRelease&&document.getElementById('tretaresia-rpg-settings'));
-  assert.equal(await page.locator('#tretaresia-rpg-settings .tretaresia-settings-grid').evaluate(node=>getComputedStyle(node).display),'grid');
+  assert.equal(await page.locator('#tretaresia-rpg-settings .tretaresia-settings-grid').first().evaluate(node=>getComputedStyle(node).display),'grid');
   await page.locator('#tretaresia-rpg-wand-launcher').click();
   await page.waitForFunction(()=>document.getElementById('tretaresia-rpg-overlay')?.classList.contains('is-ready'));
   assert.equal(await page.locator('#extensionsMenu').evaluate(node=>getComputedStyle(node).display),'none');

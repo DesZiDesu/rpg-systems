@@ -86,3 +86,20 @@ test('explicit speaker header can precede narration or follow scene narration',(
  assert.deepEqual(later.map(b=>b.type),['narrative','header','narrative']);
  assert.deepEqual(parseStory('<tr-header name="Alice"/>'),[{type:'header',name:'Alice'}]);
 });
+
+test('manual alternate edits survive swipes without flattening unrelated story progression in rollback snapshots',()=>{
+ const before={npcs:[{id:'cora',age:'28',activeAlternateId:'child',alternateProfiles:[
+  {id:'child',label:'Childhood',portraitSource:'none',fields:{age:'9',appearance:'Old look',stats:{hp:100,strength:3}}},
+  {id:'adult',label:'Adult',fields:{stats:{hp:140}}}
+ ]}]};const after=structuredClone(before);after.npcs[0].alternateProfiles[0].fields.appearance='Manual look';after.npcs[0].alternateProfiles[0].fields.stats.hp=80;delete after.npcs[0].alternateProfiles[0].portraitSource;
+ const snapshot=structuredClone(before);snapshot.npcs[0].alternateProfiles[0].fields.stats.strength=2;snapshot.npcs[0].alternateProfiles[1].fields.stats.hp=120;
+ const history={entries:[{baseState:snapshot,variants:{reply:{state:structuredClone(snapshot)}}}]};retainManualNpcEdits(history,before,after);
+ for(const saved of [history.entries[0].baseState,history.entries[0].variants.reply.state]){const npc=saved.npcs[0];assert.equal(npc.age,'28');assert.equal(npc.alternateProfiles[0].fields.appearance,'Manual look');assert.equal(npc.alternateProfiles[0].fields.stats.hp,80);assert.equal(npc.alternateProfiles[0].fields.stats.strength,2);assert.equal(npc.alternateProfiles[1].fields.stats.hp,120);assert.equal(Object.hasOwn(npc.alternateProfiles[0],'portraitSource'),false);}
+});
+
+test('manual alternate addition and deletion are retained in turn snapshots without resurrecting removed stages',()=>{
+ const before={npcs:[{id:'cora',activeAlternateId:'child',alternateProfiles:[{id:'child',label:'Child',fields:{age:'9'}},{id:'adult',label:'Adult',fields:{age:'28'}}]}]};
+ const after=structuredClone(before);after.npcs[0].activeAlternateId='';after.npcs[0].alternateProfiles.shift();after.npcs[0].alternateProfiles.push({id:'future',label:'Future',fields:{age:'40'}});
+ const history={entries:[{baseState:structuredClone(before),variants:{}}]};retainManualNpcEdits(history,before,after);retainManualNpcEdits(history,before,after);
+ const saved=history.entries[0].baseState.npcs[0];assert.equal(saved.activeAlternateId,'');assert.deepEqual(saved.alternateProfiles.map(value=>value.id),['adult','future']);assert.equal(saved.alternateProfiles[1].fields.age,'40');
+});

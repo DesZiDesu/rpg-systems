@@ -1,4 +1,14 @@
-# ROLEFORGE — v0.45.6
+# ROLEFORGE — v0.46.0
+
+## v0.46.0 — NPC Alternate Information and organized settings
+
+- One NPC can keep its original dossier and up to **20 alternate versions**, such as childhood, adulthood or a later chapter. Each version has its own profile fields, stats, abilities, relationship values, portrait and presentation style. Stable identity, encounter/hostile status, contacts, group links, diary and knowledge remain shared.
+- **NPC Management → a character → Alternate Information** adds, edits, selects and removes versions. Selection is manual, saves immediately and updates NPC/chat presentation and the next model context. Draft edits save only when confirmed. Inactive biographies are kept in storage; prompts use current fields plus short version labels. Selecting a version does not rewind the chat or change scene time.
+- Story patches and optional progression updates target the selected version without replacing the original or switching versions. Character-scoped updates merge per version and per field, so unrelated archive edits still reach other chats. Image backups, scope copies and continuity include alternate images. JSON export retains same-server image references, without embedding image bytes.
+- Reorganized **Extension Settings → RoleForge** with Open / Sync at the top, separate General, Tracking, Chat/NPC, Optional Systems and Notifications groups, and collapsible appearance, presets, writing and diagnostics. Existing preferences and controls are retained, with layouts for mobile and narrow desktop drawers.
+- Preserved the original Header / Dialogue / Narrative default, optional native regex preservation and native Edit/save/cancel protections.
+
+อ่าน [วิธีใช้ Alternate Information และ Drawer ใหม่แบบเป็นขั้นตอน](docs/npc-alternate-information.th.md)
 
 ## v0.45.6 — Original story presentation by default
 

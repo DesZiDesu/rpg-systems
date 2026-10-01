@@ -1,0 +1,141 @@
+/* RoleForge Extension Drawer. Scoped so host settings and regex UI stay intact. */
+#tretaresia-rpg-settings {
+    container: roleforge-settings / inline-size;
+    min-width: 0;
+    color: var(--tretaresia-ink, #ece7da);
+    background: #0d0d0c;
+    border: 1px solid var(--tretaresia-line, rgba(214, 180, 88, .3));
+    border-radius: 4px;
+    font-family: 'Chakra Petch', system-ui, sans-serif;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+#tretaresia-rpg-settings *,
+#tretaresia-rpg-settings *::before,
+#tretaresia-rpg-settings *::after { box-sizing: border-box; }
+#tretaresia-rpg-settings .inline-drawer-header {
+    min-height: 48px;
+    padding: 12px 14px;
+    color: var(--tretaresia-accent, #d6b458);
+    background: linear-gradient(105deg, rgba(var(--tretaresia-accent-rgb, 214, 180, 88), .1), transparent 75%);
+    border-radius: 3px;
+}
+#tretaresia-rpg-settings .inline-drawer-header b { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; }
+#tretaresia-rpg-settings .rf-settings-content { padding: 16px 12px 12px; min-width: 0; }
+#tretaresia-rpg-settings .rf-settings-brand { display: flex; align-items: flex-start; gap: 12px; padding: 3px 2px 14px; }
+#tretaresia-rpg-settings .rf-settings-brand > div:last-child { min-width: 0; }
+#tretaresia-rpg-settings .rf-settings-brand-symbol svg { width: 26px; height: 34px; stroke: currentColor; stroke-width: 1; }
+#tretaresia-rpg-settings .rf-settings-brand-symbol {
+    display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 48px;
+    color: var(--tretaresia-accent, #d6b458); font-size: 22px;
+    border: 1px solid var(--tretaresia-line, rgba(214, 180, 88, .3));
+    background: rgba(var(--tretaresia-accent-rgb, 214, 180, 88), .04);
+}
+#tretaresia-rpg-settings .rf-settings-eyebrow { display: block; margin: 0 0 5px; font-family: 'Orbitron', system-ui, sans-serif; font-size: 9px; font-weight: 600; letter-spacing: .2em; color: var(--tretaresia-accent, #d6b458); }
+#tretaresia-rpg-settings .rf-settings-brand h2 { margin: 0 0 5px; font-size: 22px; font-weight: 600; line-height: 1.25; color: var(--tretaresia-ink, #ece7da); }
+#tretaresia-rpg-settings .tretaresia-rpg-settings-copy { margin: 0; opacity: 1; font-size: 12px; line-height: 1.5; color: var(--tretaresia-muted, #8f8777); }
+#tretaresia-rpg-settings .rf-settings-quick-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin: 0 0 18px; }
+#tretaresia-rpg-settings .menu_button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    min-width: 0; min-height: 42px; margin: 0; padding: 10px 12px;
+    border: 1px solid var(--tretaresia-line, rgba(214, 180, 88, .3)); border-radius: 2px;
+    background: rgba(var(--tretaresia-accent-rgb, 214, 180, 88), .04);
+    color: var(--tretaresia-soft, #cfc6b2); font: inherit; font-size: 13px; line-height: 1.4; white-space: normal;
+    cursor: pointer;
+}
+#tretaresia-rpg-settings .menu_button:hover { background: rgba(var(--tretaresia-accent-rgb, 214, 180, 88), .1); color: var(--tretaresia-accent, #d6b458); }
+#tretaresia-rpg-settings .rf-settings-primary { background: rgba(var(--tretaresia-accent-rgb, 214, 180, 88), .12); color: var(--tretaresia-accent, #d6b458); }
+#tretaresia-rpg-settings .rf-settings-sections { display: grid; gap: 12px; min-width: 0; }
+#tretaresia-rpg-settings .rf-settings-section,
+#tretaresia-rpg-settings .rf-settings-fold { margin: 0; min-width: 0; border: 1px solid var(--tretaresia-line-soft, rgba(214, 180, 88, .13)); border-radius: 3px; background: rgba(255, 255, 255, .015); }
+#tretaresia-rpg-settings .rf-settings-section-head { display: flex; align-items: flex-start; gap: 10px; padding: 13px 13px 10px; }
+#tretaresia-rpg-settings .rf-settings-section-head > i { flex: 0 0 17px; margin-top: 3px; color: var(--tretaresia-accent, #d6b458); font-size: 13px; text-align: center; }
+#tretaresia-rpg-settings .rf-settings-section-head > div { min-width: 0; }
+#tretaresia-rpg-settings .rf-settings-section-head h3 { margin: 0; color: var(--tretaresia-soft, #cfc6b2); font-size: 15px; font-weight: 600; line-height: 1.35; }
+#tretaresia-rpg-settings .rf-settings-section-head p { margin: 4px 0 0; color: var(--tretaresia-muted, #8f8777); font-size: 11px; line-height: 1.5; }
+#tretaresia-rpg-settings .rf-settings-section-body { display: grid; gap: 12px; min-width: 0; padding: 0 12px 12px; }
+#tretaresia-rpg-settings .rf-settings-toggles,
+#tretaresia-rpg-settings .trpg-settings { display: grid; gap: 7px; min-width: 0; margin: 0; }
+#tretaresia-rpg-settings .checkbox_label {
+    display: flex; align-items: flex-start; gap: 10px; min-width: 0; min-height: 44px;
+    margin: 0; padding: 11px 10px; border: 1px solid rgba(255, 255, 255, .05); border-radius: 2px;
+    background: rgba(255, 255, 255, .015); color: var(--tretaresia-soft, #cfc6b2); font-size: 12px; line-height: 1.5;
+    cursor: pointer;
+}
+#tretaresia-rpg-settings .checkbox_label:has(input:checked) { border-color: var(--tretaresia-line-soft, rgba(214, 180, 88, .13)); background: rgba(var(--tretaresia-accent-rgb, 214, 180, 88), .035); }
+#tretaresia-rpg-settings .checkbox_label > span { min-width: 0; }
+#tretaresia-rpg-settings input[type=checkbox] { flex: 0 0 17px; width: 17px !important; min-width: 17px; height: 17px !important; margin: 1px 0 0; accent-color: var(--tretaresia-accent, #d6b458); }
+#tretaresia-rpg-settings .tretaresia-settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; margin: 0; padding: 0; border: 0; min-width: 0; }
+#tretaresia-rpg-settings .tretaresia-settings-field { display: grid; align-content: start; gap: 6px; min-width: 0; margin: 0; font-size: 12px; line-height: 1.45; }
+#tretaresia-rpg-settings .tretaresia-settings-field > span { color: var(--tretaresia-soft, #cfc6b2); opacity: 1; }
+#tretaresia-rpg-settings select,
+#tretaresia-rpg-settings input:not([type=checkbox]):not([type=range]):not([type=color]),
+#tretaresia-rpg-settings textarea {
+    width: 100%; min-width: 0; max-width: 100%; margin: 0; padding: 9px 10px;
+    border: 1px solid var(--tretaresia-line-soft, rgba(214, 180, 88, .13)); border-radius: 2px;
+    background: #090909; color: var(--tretaresia-ink, #ece7da); font: inherit; font-size: 12px; line-height: 1.5;
+}
+#tretaresia-rpg-settings select { min-height: 42px; }
+#tretaresia-rpg-settings input[type=range] { width: 100%; min-width: 0; min-height: 32px; accent-color: var(--tretaresia-accent, #d6b458); }
+#tretaresia-rpg-settings input[type=color] { width: 100%; min-width: 0; height: 38px; padding: 3px; border: 1px solid var(--tretaresia-line-soft, rgba(214, 180, 88, .13)); border-radius: 2px; background: #090909; }
+#tretaresia-rpg-settings textarea { resize: vertical; }
+#tretaresia-rpg-settings :is(button, input, select, textarea, summary):focus-visible { outline: 2px solid var(--tretaresia-accent, #d6b458); outline-offset: 3px; }
+#tretaresia-rpg-settings .tretaresia-settings-help { color: var(--tretaresia-muted, #8f8777); font-size: 11px; line-height: 1.5; }
+#tretaresia-rpg-settings .rf-settings-fold > summary { display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 12px; color: var(--tretaresia-soft, #cfc6b2); cursor: pointer; list-style: none; }
+#tretaresia-rpg-settings .rf-settings-fold > summary::-webkit-details-marker { display: none; }
+#tretaresia-rpg-settings .rf-settings-fold > summary > i { flex: 0 0 17px; color: var(--tretaresia-accent, #d6b458); font-size: 13px; text-align: center; }
+#tretaresia-rpg-settings .rf-settings-fold > summary > span { display: grid; gap: 3px; flex: 1; min-width: 0; }
+#tretaresia-rpg-settings .rf-settings-fold > summary strong { font-size: 13px; font-weight: 500; line-height: 1.45; }
+#tretaresia-rpg-settings .rf-settings-fold > summary small { color: var(--tretaresia-muted, #8f8777); font-size: 11px; font-weight: 400; line-height: 1.5; }
+#tretaresia-rpg-settings .rf-settings-fold > summary::after { content: ''; flex: 0 0 6px; width: 6px; height: 6px; margin-right: 3px; border-right: 1px solid var(--tretaresia-accent, #d6b458); border-bottom: 1px solid var(--tretaresia-accent, #d6b458); transform: rotate(45deg); }
+#tretaresia-rpg-settings .rf-settings-fold[open] > summary::after { transform: rotate(225deg); }
+#tretaresia-rpg-settings .rf-settings-fold[open] > summary { border-bottom: 1px solid var(--tretaresia-line-soft, rgba(214, 180, 88, .13)); }
+#tretaresia-rpg-settings .rf-settings-fold-body { display: grid; gap: 12px; padding: 12px; min-width: 0; }
+#tretaresia-rpg-settings .rf-settings-section-body > .rf-settings-fold { background: transparent; }
+#tretaresia-rpg-settings .rf-settings-section-body > .rf-settings-fold > summary { min-height: 44px; }
+#tretaresia-rpg-settings .trpg-settings > .menu_button { justify-self: stretch; margin-bottom: 2px; color: var(--tretaresia-accent, #d6b458); }
+#tretaresia-rpg-settings .trpg-presentation-help { color: var(--tretaresia-muted, #8f8777); font-size: 11px; }
+#tretaresia-rpg-settings .trpg-presentation-status { padding: 9px 10px; border-left: 2px solid var(--tretaresia-line, rgba(214, 180, 88, .3)); background: rgba(var(--tretaresia-accent-rgb, 214, 180, 88), .025); color: var(--tretaresia-soft, #cfc6b2); font-size: 10px; }
+#tretaresia-rpg-settings .tretaresia-diary-setting { display: grid; gap: 8px; min-width: 0; margin: 0; padding-top: 12px; border-top: 1px solid var(--tretaresia-line-soft, rgba(214, 180, 88, .13)); color: var(--tretaresia-soft, #cfc6b2); font-size: 12px; }
+#tretaresia-rpg-settings .tretaresia-diary-frequency { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+#tretaresia-rpg-settings .tretaresia-diary-frequency button { min-width: 0; min-height: 36px; padding: 6px 4px; border: 1px solid var(--tretaresia-line-soft, rgba(214, 180, 88, .13)); border-radius: 2px; background: transparent; color: var(--tretaresia-soft, #cfc6b2); font: inherit; font-size: 11px; line-height: 1.4; cursor: pointer; }
+#tretaresia-rpg-settings .tretaresia-diary-frequency button[aria-pressed=true] { border-color: var(--tretaresia-line, rgba(214, 180, 88, .3)); color: var(--tretaresia-accent, #d6b458); background: rgba(var(--tretaresia-accent-rgb, 214, 180, 88), .09); }
+#tretaresia-rpg-settings .tretaresia-diary-setting > small { color: var(--tretaresia-muted, #8f8777); font-size: 10px; line-height: 1.5; }
+#tretaresia-rpg-settings .trpg-optional-systems { margin: 0; padding: 13px 12px 12px; border: 0; background: transparent; }
+#tretaresia-rpg-settings .trpg-optional-systems h4 { font-size: 15px; font-weight: 600; color: var(--tretaresia-soft, #cfc6b2); }
+#tretaresia-rpg-settings .trpg-optional-systems p { font-size: 11px; line-height: 1.5; }
+#tretaresia-rpg-settings .trpg-optional-systems > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+#tretaresia-rpg-settings .trpg-optional-systems label { align-items: flex-start; min-width: 0; gap: 10px; min-height: 68px; margin: 0; padding: 11px 10px; border-radius: 2px; }
+#tretaresia-rpg-settings .trpg-optional-systems label:has(input:checked) { background: rgba(var(--tretaresia-accent-rgb, 214, 180, 88), .055); border-color: var(--tretaresia-line, rgba(214, 180, 88, .3)); }
+#tretaresia-rpg-settings .trpg-optional-systems label strong { font-size: 13px; line-height: 1.4; }
+#tretaresia-rpg-settings .trpg-optional-systems label small { font-size: 11px; line-height: 1.45; }
+#tretaresia-rpg-settings .tretaresia-notification-settings { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; }
+#tretaresia-rpg-settings .tretaresia-settings-subheading { display: none; }
+#tretaresia-rpg-settings .rf-settings-fold-body > details:not(.rf-settings-fold) { min-width: 0; margin: 0; border: 1px solid var(--tretaresia-line-soft, rgba(214, 180, 88, .13)); border-radius: 2px; background: transparent; color: var(--tretaresia-soft, #cfc6b2); }
+#tretaresia-rpg-settings .rf-settings-fold-body > details:not(.rf-settings-fold) > summary { padding: 12px 10px; min-height: 44px; font-size: 12px; line-height: 1.5; cursor: pointer; }
+#tretaresia-rpg-settings .rf-settings-fold-body > details:not(.rf-settings-fold) > :not(summary) { margin-left: 10px; margin-right: 10px; }
+#tretaresia-rpg-settings .rf-settings-fold-body > details:not(.rf-settings-fold) > :is(input, select, textarea) { width: calc(100% - 20px); }
+#tretaresia-rpg-settings .rf-settings-fold-body > details:not(.rf-settings-fold) > :last-child { margin-bottom: 10px; }
+#tretaresia-rpg-settings .tretaresia-rpg-settings-note { gap: 8px; margin: 0; padding: 11px 10px; font-size: 11px; line-height: 1.6; }
+#tretaresia-rpg-settings .tretaresia-rpg-settings-note > span { min-width: 0; }
+#tretaresia-rpg-settings .tretaresia-tracking-explainer ol { font-size: 11px; line-height: 1.6; }
+#tretaresia-rpg-settings .rf-settings-footer { margin-top: 16px; padding: 12px 2px 0; border-top: 1px solid var(--tretaresia-line-soft, rgba(214, 180, 88, .13)); }
+#tretaresia-rpg-settings .tretaresia-rpg-ready-state { font-size: 10px; line-height: 1.5; color: var(--tretaresia-muted, #8f8777); }
+#tretaresia-rpg-settings .tretaresia-rpg-ready-state > i { color: var(--tretaresia-accent, #d6b458); }
+@container roleforge-settings (max-width: 480px) {
+    #tretaresia-rpg-settings .trpg-optional-systems > div { grid-template-columns: 1fr; }
+}
+@container roleforge-settings (max-width: 370px) {
+    #tretaresia-rpg-settings .rf-settings-content { padding: 14px 9px 10px; }
+    #tretaresia-rpg-settings .rf-settings-brand h2 { font-size: 19px; }
+    #tretaresia-rpg-settings .rf-settings-brand-symbol { flex-basis: 34px; width: 34px; height: 43px; font-size: 19px; }
+    #tretaresia-rpg-settings .tretaresia-settings-grid { grid-template-columns: 1fr; }
+    #tretaresia-rpg-settings .rf-settings-quick-actions .menu_button { padding: 9px 7px; font-size: 11px; }
+    #tretaresia-rpg-settings .tretaresia-notification-settings { grid-template-columns: 1fr; }
+    #tretaresia-rpg-settings .tretaresia-diary-frequency { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 380px) {
+    #tretaresia-rpg-settings .tretaresia-settings-grid,
+    #tretaresia-rpg-settings .trpg-optional-systems > div,
+    #tretaresia-rpg-settings .tretaresia-notification-settings { grid-template-columns: 1fr; }
+}

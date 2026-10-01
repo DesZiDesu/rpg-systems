@@ -1,0 +1,27 @@
+/* Alternate dossiers: one archive record, distinct chapters. */
+.trpg-manager .trpg-alternates{margin:22px 0;padding:22px;border:1px solid #67532d;background:radial-gradient(ellipse at 100% 0,#d6b45812,transparent 70%),linear-gradient(135deg,#17140d,#0b0c0c);box-shadow:inset 0 0 0 4px #080909,inset 0 0 0 5px #d6b45812;min-width:0}
+.trpg-alternate-heading{margin-bottom:17px}
+.trpg-alternate-heading>small{font-size:9px;letter-spacing:2px;color:#b8a06b}
+.trpg-manager .trpg-alternate-heading>h3{font-family:'Chakra Petch',sans-serif;font-size:18px;line-height:1.6;letter-spacing:.2px;margin:5px 0 0}
+.trpg-manager .trpg-alternates>label{font-size:11px;color:#c5b38a}
+.trpg-manager .trpg-alternates select{margin-top:2px;background:linear-gradient(100deg,#222017,#0c0d0d);border-color:#88703c;color:#eed79e;min-height:48px}
+.trpg-alternate-description{font-size:12px;color:#b8ae98;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere;margin:13px 0 17px}
+.trpg-alternate-actions{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.trpg-manager .trpg-alternate-actions>button{font-size:12px}
+.trpg-manager .trpg-alternate-delete{margin-left:auto;color:#c5aa91;background:#130f0e;border-color:#614c3c}
+.trpg-manager .trpg-alternate-create{display:grid;gap:15px;padding-top:20px;margin-top:20px;border-top:1px solid #544528;min-width:0}
+.trpg-manager .trpg-alternate-create>.trpg-check{font-size:12px;align-items:start;line-height:1.8}
+.trpg-alternate-hint{display:block;color:#a99d82;font-size:11px;line-height:1.9;overflow-wrap:anywhere}
+.trpg-alternate-badge{display:inline-block;width:fit-content;max-width:100%;color:#e0c789!important;padding:4px 9px;border:1px solid #6a5730;background:#d6b4580b;font-size:10px!important;line-height:1.5;letter-spacing:.4px;overflow-wrap:anywhere}
+.trpg-manager .trpg-dossier>.trpg-alternate-badge{margin:4px 0 10px}
+.trpg-alternate-metadata{margin-top:15px;padding-top:17px;border-top:1px solid #544528}
+.trpg-manager .trpg-shared-field>small{color:#9f947b;font-size:10px;line-height:1.8}
+.trpg-manager .trpg-shared-field>input[readonly]{color:#b0a48a;border-style:dashed;background:#12120e;cursor:default}
+@media(max-width:650px){
+ .trpg-manager .trpg-alternates{padding:17px;margin:18px 0}
+ .trpg-manager .trpg-alternate-heading>h3{font-size:16px}
+ .trpg-manager .trpg-alternate-actions>button{flex:1;min-width:0;font-size:11px;padding:10px 8px}
+ .trpg-manager .trpg-alternate-delete{margin-left:0}
+ .trpg-alternate-metadata{grid-template-columns:1fr}
+}
+@media(max-width:350px){.trpg-manager .trpg-alternate-actions{display:grid;grid-template-columns:1fr}.trpg-alternate-heading>small{letter-spacing:1px}}

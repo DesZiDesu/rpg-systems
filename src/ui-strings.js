@@ -7143,7 +7143,7 @@ const aliases = {
   "If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.": 1031,
   "If no patch is returned, the activity capsule says “No state changes.” Tracking ran successfully but had nothing confirmed to save.": 1031,
   "หากไม่มีชุดอัปเดต แถบสถานะจะแสดงว่าไม่มีข้อมูลเปลี่ยนแปลง หมายถึงติดตามสำเร็จแต่ไม่มีข้อมูลยืนยันให้บันทึก": 1031,
-  "RoleForge engine 0.45.6 ready": 1032,
+  "RoleForge engine 0.46.0 ready": 1032,
   "RoleForge engine ready": 1032,
   "ระบบ RoleForge พร้อมใช้งาน": 1032,
   "พิมพ์ชื่อแท็ก…": 1033,
@@ -8307,7 +8307,7 @@ const aliases = {
   "after your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.": 1028,
   "the character produces its normal reply once. if a confirmed fact changed, it appends an invisible state patch to that same reply.": 1029,
   "the extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.": 1030,
-  "roleforge engine 0.45.6 ready": 1032,
+  "roleforge engine 0.46.0 ready": 1032,
   "roleforge engine ready": 1032,
   "name of the preferred tag": 1034,
   "character (all chats of this card)": 1048,
@@ -8731,5 +8731,81 @@ for (const pair of [
   ["Training & skill progress", "การฝึกและพัฒนาสกิล"],
   ["Items received & removed", "ไอเทมเข้าและออก"],
   ["Purchases", "การซื้อของ"],
+]) { aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length; messages.push(pair); }
+for (const pair of [
+  [
+    "Make the story yours",
+    "ปรับเรื่องราวในแบบของคุณ"
+  ],
+  [
+    "General & continuity",
+    "ทั่วไปและการเล่นต่อเนื่อง"
+  ],
+  [
+    "Language, access and saved character state.",
+    "ภาษา การเข้าใช้งาน และข้อมูลตัวละครที่บันทึกไว้"
+  ],
+  [
+    "Story tracking",
+    "ติดตามเนื้อเรื่อง"
+  ],
+  [
+    "Keep your role-play state in step with the story.",
+    "อัปเดตสถานะตามเหตุการณ์ในเนื้อเรื่อง"
+  ],
+  [
+    "Chat appearance & NPCs",
+    "รูปแบบแชตและ NPC"
+  ],
+  [
+    "Character profiles and the way replies appear.",
+    "ข้อมูลตัวละครและรูปแบบการแสดงคำตอบ"
+  ],
+  [
+    "Choose the updates you want to see.",
+    "เลือกเหตุการณ์ที่ต้องการให้แจ้งเตือน"
+  ],
+  [
+    "Choose notification events",
+    "เลือกเหตุการณ์ที่แจ้งเตือน"
+  ],
+  [
+    "Interface appearance",
+    "หน้าตาส่วนเสริม"
+  ],
+  [
+    "Colors, density and aura effects.",
+    "สี ความหนาแน่น และเอฟเฟกต์ออร่า"
+  ],
+  [
+    "World rules & presets",
+    "กฎโลกและค่าตั้งต้น"
+  ],
+  [
+    "Power systems and character creation.",
+    "ระบบพลังและการสร้างตัวละคร"
+  ],
+  [
+    "Writing preferences",
+    "รูปแบบการเขียน"
+  ],
+  [
+    "Optional writing prompts and tags.",
+    "คำสั่งการเขียนและแท็กที่เลือกใช้"
+  ],
+  [
+    "Diagnostics & tracking guide",
+    "สถานะระบบและคู่มือการติดตาม"
+  ],
+  [
+    "Request usage and how tracking works.",
+    "จำนวนคำขอ AI และวิธีติดตามข้อมูล"
+  ]
+]) { aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length; messages.push(pair); }
+for (const pair of [["Notifications","การแจ้งเตือน"]]) { aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length; messages.push(pair); }
+for (const pair of [["Original preset","ชุดตั้งต้นเดิม"]]) { aliases["Original Preset · ชุดเดิม"]=messages.length; aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length; messages.push(pair); }
+for (const pair of [
+ ["No character selected","ยังไม่ได้เลือกตัวละคร"],
+ ["Select a met NPC above, or open its profile and choose H-Stats.","เลือก NPC ที่เคยพบจากเมนูด้านบน หรือเปิดข้อมูล NPC แล้วกด H-Stats"]
 ]) { aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length; messages.push(pair); }
 export const UI_STRINGS = Object.freeze(Object.fromEntries(Object.entries(aliases).map(([key,index])=>[key,Object.freeze(messages[index])])));

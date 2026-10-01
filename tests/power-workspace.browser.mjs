@@ -55,12 +55,12 @@ try{
   page.setDefaultTimeout(10000);page.on('pageerror',e=>{errors.push(e.message);console.error('BROWSER',e.message);});page.on('dialog',d=>d.accept());
   await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
   await page.goto('http://127.0.0.1:'+server.address().port);
-  await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.4');
+  await page.waitForFunction(()=>Boolean(window.TretaresiaRelease));
   const frame=page.frameLocator('#tretaresia-character-forge iframe');await frame.locator('#trapp').waitFor();
   await frame.locator('#trapp').evaluate(()=>window.TR.skip());
   assert.equal(await page.locator('#tretaresia-rpg-wand-launcher').innerText(),'RoleForge');
   await frame.locator('#tab_t3').click();assert.equal(await frame.locator('#managePowers').count(),0);
-  await page.locator('#roleforge-power-settings summary').click();
+  await page.locator('#tretaresia-rpg-settings .rf-settings-fold').filter({has:page.locator('#roleforge-power-settings')}).evaluate(n=>n.open=true);await page.locator('#roleforge-power-settings summary').click();
   const panel=page.locator('#roleforge-power-editor'),values=page.locator('[data-panel=techniques]');await panel.locator('.rf-power-workspace').waitFor();
   assert.equal(await panel.getByLabel('Power preset',{exact:true}).inputValue(),'tretaresia');
   await panel.getByLabel('Power preset',{exact:true}).selectOption('custom');
@@ -93,10 +93,10 @@ try{
   assert(!/TRETARESIA|Tretaresia|เตรทาเรเซีย/.test(await frame.locator('body').innerText()));
   await frame.getByText('Chakra',{exact:true}).click();await frame.locator('#tab_t1').click();await frame.locator('#fName').fill('Rin');
   await page.waitForFunction(id=>window.host.chatMetadata.tretaresia_rpg_character_creation?.draft?.power.includes(id),id);
-  await page.reload();await page.waitForFunction(()=>window.TretaresiaRelease==='0.44.4');
+  await page.reload();await page.waitForFunction(()=>Boolean(window.TretaresiaRelease));
   await page.locator('#tretaresia-rpg-wand-launcher').click();for(let i=0;i<4;i++)await page.getByRole('button',{name:'Next module',exact:true}).click();
   assert.equal(await values.getByLabel('Chakra value',{exact:true}).inputValue(),'80');
-  await page.locator('#tretaresia-rpg-close').click();await page.locator('#roleforge-power-settings summary').click();
+  await page.locator('#tretaresia-rpg-close').click();await page.locator('#tretaresia-rpg-settings .rf-settings-fold').filter({has:page.locator('#roleforge-power-settings')}).evaluate(n=>n.open=true);await page.locator('#roleforge-power-settings summary').click();
   await page.evaluate(()=>{window.host.characterId=1;window.host.chatMetadata={};window.host.eventSource.emit('CHAT_CHANGED');});
   await page.waitForFunction(()=>document.querySelector('[aria-label="Power preset"]')?.value==='tretaresia');
   await panel.getByLabel('Power preset',{exact:true}).selectOption('custom');await panel.getByText('Custom is empty',{exact:false}).waitFor();

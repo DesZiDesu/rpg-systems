@@ -1,4 +1,5 @@
-import { preparePortrait } from './npc-portraits.js?v=0.45.6';
+import { preparePortrait } from './npc-portraits.js?v=0.46.0';
+import { enumerateNpcPortraits } from './npc-alternates.js?v=0.46.0';
 
 export function portraitPath(value) {
     return typeof value==='string' && /^\/?user\/images\/tretaresia-npc\/[a-zA-Z0-9_-]+\.(webp|jpg|jpeg|png)$/.test(value) ? '/'+value.replace(/^\//,'') : '';
@@ -32,7 +33,7 @@ export async function readServerPortrait(entry, fetcher=fetch) {
 // Upload first, then let the caller persist links in the same scope. Never delete originals.
 export async function collectPortraitBackups(records,{read,upload,valid,onProgress=()=>{}}) {
     const updates=new Map();let missing=0;
-    const candidates=records.filter(p=>p.portraitSource!=='server'&&p.portraitSource!=='none'&&(p.hasPortrait||p.characterLifePortraitId));
+    const candidates=records.flatMap(enumerateNpcPortraits).filter(p=>p.portraitSource!=='server'&&p.portraitSource!=='none'&&(p.hasPortrait||p.characterLifePortraitId));
     for(const p of candidates){
         if(!valid())return {updates,missing,aborted:true};
         onProgress(updates.size+missing+1,candidates.length);
@@ -41,10 +42,9 @@ export async function collectPortraitBackups(records,{read,upload,valid,onProgre
             const blob=await read(p);if(!valid())return {updates,missing,aborted:true};
             if(!blob){missing++;continue;}
             const reference=await upload(blob);if(!valid())return {updates,missing,aborted:true};
-            updates.set(p.id,{reference,original});
+            updates.set(p.npcAlternateId ? `${p.id}:alternate:${p.npcAlternateId}` : p.id,{reference,original,alternateId:p.npcAlternateId||''});
         }catch{missing++;}
     }
     return {updates,missing,aborted:false};
 }
-
 

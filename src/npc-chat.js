@@ -1,10 +1,11 @@
-import {renderAuctionCard} from './auction-ui.js?v=0.45.6';
-import { renderMissionBoard } from './mission-board-ui.js?v=0.45.6';
-import {uiText} from './ui-language.js?v=0.45.6';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.6';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.6';
-import { croppedPortrait } from './npc-portraits.js?v=0.45.6';
-import { renderSceneTracker } from './scene-tracker.js?v=0.45.6';
+import {renderAuctionCard} from './auction-ui.js?v=0.46.0';
+import { renderMissionBoard } from './mission-board-ui.js?v=0.46.0';
+import {uiText} from './ui-language.js?v=0.46.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.46.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.46.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.46.0';
+import { renderSceneTracker } from './scene-tracker.js?v=0.46.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.46.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -235,7 +236,7 @@ export function createChatPresentation(api, open) {
     function clearPortraits(){++epoch;for(const record of portraits.values())if(record.url)URL.revokeObjectURL(record.url);portraits.clear();}
     async function imageFor(p){
         const frame=p.portraitView?.[matchMedia('(max-width: 650px)').matches?'mobile':'desktop']||{x:50,y:50,zoom:1};
-        const key=JSON.stringify([currentChat,p.id,p.updatedAt,p.characterLifePortraitId,frame]);
+        const key=JSON.stringify([currentChat,p.id,p.activeAlternateId,p.npcAlternateId,p.portraitSource,p.portraitPath,p.updatedAt,p.characterLifePortraitId,frame]);
         if(portraits.has(key))return portraits.get(key).promise;
         const record={url:null},ticket=epoch;
         record.promise=(async()=>{try{const blob=await api.portrait(p);if(!blob)return null;const result=await croppedPortrait(blob,frame);if(ticket!==epoch)return null;record.url=URL.createObjectURL(result);return record.url;}catch{return null;}})();
@@ -264,7 +265,7 @@ export function createChatPresentation(api, open) {
         timer=null;const context=api.context(),chatId=context.getCurrentChatId?.()||'';
         if(chatId!==currentChat){currentChat=chatId;clearPortraits();document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}
         const settings=api.settings(),preserveNativeChat=settings.preserveNativeChat===true;
-        const npcs=api.state().npcs||[], lookup=new Map();
+        const npcs=(api.state().npcs||[]).map(effectiveNpc), lookup=new Map();
         for(const npc of npcs)for(const name of [npc.name,...(npc.aliases||[])])if(!lookup.has(keyName(name)))lookup.set(keyName(name),npc);
         for(const [host]of mounted)if(!host.isConnected)mounted.delete(host);
         for(const host of document.querySelectorAll('#chat .mes .mes_text')){

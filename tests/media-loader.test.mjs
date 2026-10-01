@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 import vm from 'node:vm';
 import {uploadPortrait,readServerPortrait,portraitPath,collectPortraitBackups} from '../src/npc-media.js';
+import {alternatePortraitRecord} from '../src/npc-alternates.js';
 import {identity} from '../src/npc-core.js';
 import {releaseUrl} from '../loader.js';
 globalThis.crypto ||= webcrypto;
@@ -12,7 +13,7 @@ test('migration preserves originals, reports missing/failed photos, and skips se
  const records=['good','missing','failed','server'].map(id=>({id,hasPortrait:true,portraitSource:id==='server'?'server':'local'}));const before=JSON.stringify(records);
  const result=await collectPortraitBackups(records,{valid:()=>true,read:async p=>p.id==='missing'?null:new Blob([p.id]),upload:async blob=>{if(await blob.text()==='failed')throw Error('offline');return {portraitSource:'server',portraitPath:'/user/images/tretaresia-npc/good.webp'};}});
  assert.equal(result.updates.size,1);assert.equal(result.missing,2);assert.equal(result.aborted,false);assert.equal(JSON.stringify(records),before);
- assert.equal(result.updates.get('good').original,JSON.stringify(records[0]));
+ assert.equal(result.updates.get('good').original,JSON.stringify(alternatePortraitRecord(records[0],'')));
 });
 test('migration aborts after a scope change without publishing references',async()=>{
  let active=true,uploads=0;
@@ -87,4 +88,14 @@ test('update hook offers one explicit reload action and never reloads a draft au
  assert.match(button.textContent,/0.32.0/);assert.equal(reloads,0);const original=button;
  await vm.runInContext('onUpdate()',sandbox);assert.equal(button,original);
  button.onclick();assert.equal(reloads,0);accepted=true;button.onclick();assert.equal(reloads,1);
+});
+
+test('portrait backup uploads original and alternate assets independently without replacing either stored profile',async()=>{
+ const npc={id:'cora',hasPortrait:true,portraitSource:'local',activeAlternateId:'child',alternateProfiles:[
+  {id:'child',label:'Childhood',fields:{age:'9'},hasPortrait:true,portraitSource:'local'},
+  {id:'future',label:'Future',fields:{age:'40'},hasPortrait:true,portraitSource:'local'}
+ ]};const original=JSON.stringify(npc),reads=[];
+ const result=await collectPortraitBackups([npc],{valid:()=>true,read:async record=>{reads.push(record.npcAlternateId);return record.npcAlternateId==='future'?null:new Blob([record.npcAlternateId||'base']);},upload:async blob=>({hasPortrait:true,portraitSource:'server',portraitPath:`/user/images/tretaresia-npc/${await blob.text()}.webp`})});
+ assert.deepEqual(reads,['','child','future']);assert.equal(result.missing,1);assert.equal(result.updates.size,2);
+ assert.equal(result.updates.get('cora').reference.portraitPath,'/user/images/tretaresia-npc/base.webp');assert.equal(result.updates.get('cora:alternate:child').reference.portraitPath,'/user/images/tretaresia-npc/child.webp');assert.equal(result.updates.get('cora:alternate:child').alternateId,'child');assert.equal(JSON.stringify(npc),original);
 });

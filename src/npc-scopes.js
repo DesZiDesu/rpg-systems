@@ -1,8 +1,66 @@
-import { keyName, resolveNpc } from './npc-core.js?v=0.45.6';
+import { keyName, resolveNpc } from './npc-core.js?v=0.46.0';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const RESERVED = new Set(['id', 'npcScope', 'npcOwner', '__proto__', 'constructor', 'prototype']);
+const UNSAFE_ALTERNATE_IDS = new Set(['__proto__', 'constructor', 'prototype']);
+const record = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+const safeFields = value => Object.fromEntries(Object.entries(record(value)).filter(([key]) => !RESERVED.has(key)).map(([key, item]) => [key, clone(item)]));
+
+function alternateDeltas(value) {
+    return (Array.isArray(value) ? value : []).filter(entry => typeof entry?.id === 'string' && entry.id && !UNSAFE_ALTERNATE_IDS.has(entry.id)).slice(0, 20)
+        .map(entry => {
+            const next = { ...safeFields(entry), id: entry.id };
+            if (Object.hasOwn(entry, 'fields')) {
+                next.fields = safeFields(entry.fields);
+                if (Object.hasOwn(next.fields, 'stats')) next.fields.stats = safeFields(next.fields.stats);
+            }
+            return next;
+        });
+}
+
+// A chat changes only the fields of an existing Character alternate. Iterating
+// the current library, rather than the saved override, prevents a deleted stage
+// from returning when an older turn checkpoint is restored.
+function mergeAlternateDeltas(profiles, changes) {
+    const byId = new Map(alternateDeltas(changes).map(entry => [entry.id, entry]));
+    return (Array.isArray(profiles) ? profiles : []).map(profile => {
+        const delta = byId.get(profile.id);
+        if (!delta) return clone(profile);
+        const next = { ...clone(profile), ...clone(delta), id: profile.id };
+        if (delta.fields) {
+            next.fields = { ...clone(profile.fields || {}), ...clone(delta.fields) };
+            if (delta.fields.stats) next.fields.stats = { ...clone(profile.fields?.stats || {}), ...clone(delta.fields.stats) };
+        }
+        return next;
+    });
+}
+
+function packAlternateDeltas(profiles, baseline, originals) {
+    const byId = new Map((Array.isArray(baseline) ? baseline : []).map(entry => [entry.id, entry]));
+    const currentLibrary = new Map((Array.isArray(originals) ? originals : []).map(entry => [entry.id, entry]));
+    const changes = [];
+    for (const profile of alternateDeltas(profiles)) {
+        if (!currentLibrary.has(profile.id)) continue;
+        const prior = byId.get(profile.id) || currentLibrary.get(profile.id), delta = { id: profile.id };
+        for (const [key, value] of Object.entries(profile)) {
+            if (RESERVED.has(key) || same(value, prior[key])) continue;
+            if (key === 'fields') {
+                const fields = {};
+                for (const [field, item] of Object.entries(value)) {
+                    if (same(item, prior.fields?.[field])) continue;
+                    if (field === 'stats') {
+                        const stats = Object.fromEntries(Object.entries(item).filter(([stat, amount]) => !same(amount, prior.fields?.stats?.[stat])));
+                        if (Object.keys(stats).length) fields.stats = stats;
+                    } else fields[field] = clone(item);
+                }
+                if (Object.keys(fields).length) delta.fields = fields;
+            } else delta[key] = clone(value);
+        }
+        if (Object.keys(delta).length > 1) changes.push(delta);
+    }
+    return changes;
+}
 
 // Never identify a card by its display name or by a mutable array index.
 export function characterOwner(context) {
@@ -22,7 +80,9 @@ export function scopeEnvelope(value) {
         if (!value[field] || typeof value[field] !== 'object') continue;
         for (const [id, data] of Object.entries(value[field]).slice(0, 200)) {
             if (RESERVED.has(id) || !data || typeof data !== 'object' || Array.isArray(data)) continue;
-            Object.defineProperty(record[field], id, { value: Object.fromEntries(Object.entries(data).filter(([key]) => !RESERVED.has(key)).map(([key, item]) => [key, clone(item)])), enumerable: true, writable: true });
+            const sanitized = safeFields(data);
+            if (Array.isArray(data.alternateProfiles)) sanitized.alternateProfiles = alternateDeltas(data.alternateProfiles);
+            Object.defineProperty(record[field], id, { value: sanitized, enumerable: true, writable: true });
         }
     }
     record.hidden = (Array.isArray(value.hidden) ? value.hidden : []).filter(id => typeof id === 'string' && !RESERVED.has(id)).slice(0, 200);
@@ -46,6 +106,8 @@ export function hydrateScopedNpcs(state, library, owner) {
         const next = { ...clone(p), ...clone(delta), id: p.id, npcScope: 'character', npcOwner: owner };
         if (delta.stats) next.stats = { ...p.stats, ...delta.stats };
         if (delta.hStats) next.hStats = { ...p.hStats, ...delta.hStats };
+        if (delta.alternateProfiles) next.alternateProfiles = mergeAlternateDeltas(p.alternateProfiles, delta.alternateProfiles);
+        if (next.activeAlternateId && !next.alternateProfiles?.some(entry => entry.id === next.activeAlternateId)) next.activeAlternateId = '';
         if (names.has(keyName(next.name))) continue;
         shared.push(next); names.add(keyName(next.name)); ids.add(p.id);
     }
@@ -78,7 +140,10 @@ export function packScopedNpcs(state, library, owner) {
         const baseline = scoped.bases[original.id] || original, delta = {};
         for (const [key, value] of Object.entries(p)) {
             if (RESERVED.has(key) || same(value, baseline[key])) continue;
-            if (key === 'stats' || key === 'hStats') {
+            if (key === 'alternateProfiles') {
+                const changes = packAlternateDeltas(value, baseline.alternateProfiles, original.alternateProfiles);
+                if (changes.length) delta.alternateProfiles = changes;
+            } else if (key === 'stats' || key === 'hStats') {
                 const fields = Object.fromEntries(Object.entries(value).filter(([field, n]) => !same(n, baseline[key]?.[field])));
                 if (Object.keys(fields).length) delta[key] = fields;
             } else delta[key] = clone(value);
@@ -107,9 +172,10 @@ export function withoutChatNpcContinuity(state) {
 }
 
 export function scopedPortraitKey(profile, chatId, owner = '') {
-    return profile.npcScope === 'character'
+    const base = profile.npcScope === 'character'
         ? `tretaresia-rpg:npc-portrait:character:${encodeURIComponent(owner || profile.npcOwner)}:${profile.id}`
         : `tretaresia-rpg:npc-portrait:${chatId || 'no-chat'}:${profile.id}`;
+    return profile.npcAlternateId ? `${base}:alternate:${encodeURIComponent(profile.npcAlternateId)}` : base;
 }
 
 // The user, never an AI patch, chooses where NEW story NPCs are archived.
@@ -153,4 +219,3 @@ export function retainNpcDeletions(history, removedIds) {
         }
     }
 }
-

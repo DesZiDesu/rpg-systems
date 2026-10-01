@@ -1,61 +1,84 @@
 <div id="tretaresia-rpg-settings" class="tretaresia-rpg-settings">
     <div class="inline-drawer">
-        <div class="inline-drawer-toggle inline-drawer-header interactable" tabindex="0" role="button" aria-expanded="false">
+        <div class="inline-drawer-toggle inline-drawer-header interactable" tabindex="0" role="button">
             <b><i class="fa-solid fa-book-open" aria-hidden="true"></i> RoleForge</b>
             <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down" aria-hidden="true"></div>
         </div>
-        <div class="inline-drawer-content">
-            <p class="tretaresia-rpg-settings-copy">A persistent RoleForge role-play state linked to the current chat.</p>
-            <div id="roleforge-optional-settings"></div>
-            <details id="roleforge-power-settings">
-                <summary>Power Presets / จัดการระบบพลัง</summary>
-                <div id="roleforge-power-editor"></div>
-            </details>
-            <details id="roleforge-forge-settings">
-                <summary>Character Forge Presets / Origin · Skills · Mastery · Path</summary>
-                <div id="roleforge-forge-editor"></div>
-            </details>
-            <label class="checkbox_label" for="tretaresia-rpg-show-launcher">
+        <div class="inline-drawer-content rf-settings-content">
+            <header class="rf-settings-brand">
+                <div class="rf-settings-brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 40" fill="none"><path d="M16 2 29 10v20L16 38 3 30V10Z"/><path d="m16 8 6 12-6 12-6-12Z M16 12v16 M9 20h14"/><circle cx="16" cy="20" r="2"/></svg></div>
+                <div><span class="rf-settings-eyebrow">ROLEFORGE</span><h2>Make the story yours</h2><p class="tretaresia-rpg-settings-copy">A persistent RoleForge role-play state linked to the current chat.</p></div>
+            </header>
+            <div class="tretaresia-rpg-settings-actions rf-settings-quick-actions"><button id="tretaresia-rpg-open-from-settings" type="button" class="menu_button rf-settings-primary">
+                    <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
+                    Open RoleForge
+                </button><button id="tretaresia-rpg-sync-from-settings" type="button" class="menu_button">
+                    <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                    Sync latest turn
+                </button></div>
+            <div class="rf-settings-sections">
+<section class="rf-settings-section"><header class="rf-settings-section-head"><i class="fa-solid fa-sliders" aria-hidden="true"></i><div><h3>General & continuity</h3><p>Language, access and saved character state.</p></div></header><div class="rf-settings-section-body"><div class="tretaresia-settings-grid">
+<label class="tretaresia-settings-field" for="tretaresia-rpg-language">
+                    <span>Interface & action language / ภาษา</span>
+                    <select id="tretaresia-rpg-language">
+                        <option value="en">English</option>
+                        <option value="th">ไทย</option>
+                    </select>
+                </label>
+<label class="tretaresia-settings-field" for="tretaresia-rpg-roleplay-language">
+                    <span>Story language / ภาษาในเนื้อเรื่อง</span>
+                    <select id="tretaresia-rpg-roleplay-language">
+                        <option value="auto">Auto · ตามข้อความผู้เล่นล่าสุด</option>
+                        <option value="th">ไทย</option>
+                        <option value="en">English</option>
+                    </select>
+                </label>
+</div><div class="rf-settings-toggles">
+<label class="checkbox_label" for="tretaresia-rpg-show-launcher">
                 <input id="tretaresia-rpg-show-launcher" type="checkbox" />
                 <span>Show in the wand menu</span>
             </label>
-            <label class="checkbox_label" for="tretaresia-rpg-auto-track">
-                <input id="tretaresia-rpg-auto-track" type="checkbox" />
-                <span>Zero-call tracking from the normal AI reply</span>
-            </label>
-            <label class="checkbox_label" for="tretaresia-rpg-inject-state">
-                <input id="tretaresia-rpg-inject-state" type="checkbox" />
-                <span>Include current state in role-play prompts</span>
-            </label>
-            <label class="checkbox_label" for="tretaresia-rpg-auto-continuity">
+<label class="checkbox_label" for="tretaresia-rpg-auto-continuity">
                 <input id="tretaresia-rpg-auto-continuity" type="checkbox" />
                 <span>Continue the same character state into new chats</span>
             </label>
-            <label class="checkbox_label" for="tretaresia-rpg-nsfw-enhance">
-                <input id="tretaresia-rpg-nsfw-enhance" type="checkbox" />
-                <span>NSFW Enhance / แนวการเขียนสำหรับผู้ใหญ่ (ปิดไว้เป็นค่าเริ่มต้น)</span>
+</div></div></section><section class="rf-settings-section"><header class="rf-settings-section-head"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i><div><h3>Story tracking</h3><p>Keep your role-play state in step with the story.</p></div></header><div class="rf-settings-section-body"><div class="rf-settings-toggles">
+<label class="checkbox_label" for="tretaresia-rpg-auto-track">
+                <input id="tretaresia-rpg-auto-track" type="checkbox" />
+                <span>Zero-call tracking from the normal AI reply</span>
             </label>
-            <details class="tretaresia-adult-prompt" id="tretaresia-rpg-adult-prompt">
-                <summary>ดูและปรับ NSFW prompt / View &amp; edit writing prompt</summary>
-                <p>ตัวอย่างด้านล่างแสดงส่วนคำสั่งการเขียนจาก RPG System ตามค่าและแท็กที่เลือกในแชทนี้ ไม่รวม prompt อื่นของ SillyTavern การเปิดดูหรือแก้ไขไม่เรียก AI</p>
-                <label for="tretaresia-rpg-adult-mode">NSFW prompt delivery</label>
-                <select id="tretaresia-rpg-adult-mode" data-adult-prompt-mode>
-                    <option value="auto">Auto · relevant scenes and sections</option>
-                    <option value="always">Always · full saved prompt</option>
-                </select>
-                <p>Auto checks recent chat locally. Split a long prompt with Markdown headings (## or ###), or add [section:core], [section:romance], [section:voice] or [section:intense] to headings. An unsectioned prompt is used in full when a relevant scene is detected. Always sends everything on every turn.</p>
-                <label for="tretaresia-rpg-adult-style-editor">แก้สไตล์การเขียน / Edit writing style</label>
-                <textarea id="tretaresia-rpg-adult-style-editor" data-adult-style-editor rows="12" maxlength="50000" spellcheck="false"></textarea>
-                <button type="button" class="menu_button" data-adult-style-reset>คืนค่าสไตล์เริ่มต้น / Reset style</button>
-                <label for="tretaresia-rpg-adult-prompt-preview">คำสั่งที่ใช้งานจริง / Effective prompt (อ่านอย่างเดียว)</label>
-                <p role="status" data-adult-prompt-status></p>
-                <textarea id="tretaresia-rpg-adult-prompt-preview" data-adult-prompt-preview rows="7" readonly spellcheck="false"></textarea>
-            </details>
-            <label class="checkbox_label" for="tretaresia-rpg-show-scene-tracker">
+<label class="checkbox_label" for="tretaresia-rpg-inject-state">
+                <input id="tretaresia-rpg-inject-state" type="checkbox" />
+                <span>Include current state in role-play prompts</span>
+            </label>
+</div><div class="tretaresia-settings-grid">
+<label class="tretaresia-settings-field" for="tretaresia-rpg-interaction-mode">
+                    <span>Action delivery / รูปแบบข้อความ</span>
+                    <select id="tretaresia-rpg-interaction-mode">
+                        <option value="hidden">Hidden action — no user bubble</option>
+                        <option value="visible">Visible message — send now</option>
+                        <option value="draft">Draft only — review, do not send</option>
+                    </select>
+                    <small class="tretaresia-settings-help" data-action-mode-help></small>
+                </label>
+<label class="tretaresia-settings-field" for="tretaresia-rpg-activity-indicator">
+                    <span>Floating activity status / สถานะการทำงาน</span>
+                    <select id="tretaresia-rpg-activity-indicator">
+                        <option value="full">Full capsule</option>
+                        <option value="compact">Compact capsule</option>
+                        <option value="off">Off</option>
+                    </select>
+                </label>
+</div></div></section><section class="rf-settings-section"><header class="rf-settings-section-head"><i class="fa-solid fa-comments" aria-hidden="true"></i><div><h3>Chat appearance & NPCs</h3><p>Character profiles and the way replies appear.</p></div></header><div class="rf-settings-section-body"><div id="tretaresia-presentation-settings" data-presentation-settings></div><div class="rf-settings-toggles">
+<label class="checkbox_label" for="tretaresia-rpg-show-scene-tracker">
                 <input id="tretaresia-rpg-show-scene-tracker" type="checkbox" />
                 <span>Scene Tracker above each AI reply / แสดงฉากในแชท</span>
             </label>
-            <div class="tretaresia-diary-setting">
+<label class="checkbox_label" for="tretaresia-rpg-show-travel-tracker">
+                <input id="tretaresia-rpg-show-travel-tracker" type="checkbox" />
+                <span>Show draggable journey progress over the main chat</span>
+            </label>
+</div><div class="tretaresia-diary-setting">
                 <span>NPC Diary · ความถี่ในการเขียน</span>
                 <div class="tretaresia-diary-frequency" role="group" aria-label="NPC diary frequency">
                     <button type="button" data-diary-frequency="off" aria-pressed="false">ปิด</button>
@@ -64,16 +87,12 @@
                     <button type="button" data-diary-frequency="often" aria-pressed="false">บ่อยขึ้น</button>
                 </div>
                 <small>เฉพาะ NPC ที่อยู่ในฉากหรือถูกเอ่ยถึงในคำตอบนั้นเท่านั้น · บันทึกเป็นความคิดหรือคำพูด ไม่มีคำบรรยายการกระทำ</small>
-            </div>
-            <label class="checkbox_label" for="tretaresia-rpg-show-travel-tracker">
-                <input id="tretaresia-rpg-show-travel-tracker" type="checkbox" />
-                <span>Show draggable journey progress over the main chat</span>
-            </label>
-            <label class="checkbox_label" for="tretaresia-rpg-event-notifications">
+            </div></div></section><section class="rf-settings-section rf-settings-optional"><div id="roleforge-optional-settings"></div></section><section class="rf-settings-section"><header class="rf-settings-section-head"><i class="fa-solid fa-bell" aria-hidden="true"></i><div><h3>Notifications</h3><p>Choose the updates you want to see.</p></div></header><div class="rf-settings-section-body"><div class="rf-settings-toggles">
+<label class="checkbox_label" for="tretaresia-rpg-event-notifications">
                 <input id="tretaresia-rpg-event-notifications" type="checkbox" />
                 <span>Show RPG event pop-ups over the main chat</span>
             </label>
-            <div class="tretaresia-notification-settings">
+</div><details class="rf-settings-fold"><summary><i class="fa-solid fa-list-check" aria-hidden="true"></i><span><strong>Choose notification events</strong></span></summary><div class="rf-settings-fold-body"><div class="tretaresia-notification-settings">
                 <span class="tretaresia-settings-subheading">Notification events</span>
                 <label class="checkbox_label"><input id="tretaresia-rpg-notify-exp" type="checkbox" /><span>EXP</span></label>
                 <label class="checkbox_label"><input id="tretaresia-rpg-notify-level" type="checkbox" /><span>Level ups</span></label>
@@ -85,69 +104,47 @@
                 <label class="checkbox_label"><input id="tretaresia-rpg-notify-kills" type="checkbox" /><span>Kills</span></label>
                 <label class="checkbox_label"><input id="tretaresia-rpg-notify-currency" type="checkbox" /><span>Money gained or spent</span></label>
                 <label class="checkbox_label"><input id="tretaresia-rpg-notify-quests" type="checkbox" /><span>Missions & quests</span></label>
-            </div>
-            <div class="tretaresia-settings-grid">
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-language">
-                    <span>Interface & action language / ภาษา</span>
-                    <select id="tretaresia-rpg-language">
-                        <option value="en">English</option>
-                        <option value="th">ไทย</option>
-                    </select>
+            </div><div class="tretaresia-settings-grid">
+<label class="tretaresia-settings-field" for="tretaresia-rpg-notification-duration">
+                    <span>Pop-up auto-dismiss (milliseconds)</span>
+                    <input id="tretaresia-rpg-notification-duration" type="number" min="1500" max="30000" step="500" value="6000" />
                 </label>
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-roleplay-language">
-                    <span>Story language / ภาษาในเนื้อเรื่อง</span>
-                    <select id="tretaresia-rpg-roleplay-language">
-                        <option value="auto">Auto · ตามข้อความผู้เล่นล่าสุด</option>
-                        <option value="th">ไทย</option>
-                        <option value="en">English</option>
-                    </select>
-                </label>
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-interaction-mode">
-                    <span>Action delivery / รูปแบบข้อความ</span>
-                    <select id="tretaresia-rpg-interaction-mode">
-                        <option value="hidden">Hidden action — no user bubble</option>
-                        <option value="visible">Visible message — send now</option>
-                        <option value="draft">Draft only — review, do not send</option>
-                    </select>
-                    <small class="tretaresia-settings-help" data-action-mode-help></small>
-                </label>
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-activity-indicator">
-                    <span>Floating activity status / สถานะการทำงาน</span>
-                    <select id="tretaresia-rpg-activity-indicator">
-                        <option value="full">Full capsule</option>
-                        <option value="compact">Compact capsule</option>
-                        <option value="off">Off</option>
-                    </select>
-                </label>
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-accent">
+</div></div></details></div></section><details class="rf-settings-fold"><summary><i class="fa-solid fa-palette" aria-hidden="true"></i><span><strong>Interface appearance</strong><small>Colors, density and aura effects.</small></span></summary><div class="rf-settings-fold-body"><div class="tretaresia-settings-grid">
+<label class="tretaresia-settings-field" for="tretaresia-rpg-accent">
                     <span>Interface accent / สีหลัก</span>
                     <input id="tretaresia-rpg-accent" type="color" value="#d6b458" />
                 </label>
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-aura-color">
+<label class="tretaresia-settings-field" for="tretaresia-rpg-aura-color">
                     <span>Aura / Mana color / สีออร่า</span>
                     <input id="tretaresia-rpg-aura-color" type="color" value="#6f8fe8" />
                 </label>
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-density">
+<label class="tretaresia-settings-field" for="tretaresia-rpg-density">
                     <span>Information density / ความหนาแน่น</span>
                     <select id="tretaresia-rpg-density">
                         <option value="compact">Compact</option>
                         <option value="comfortable">Comfortable</option>
                     </select>
                 </label>
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-glass">
+<label class="tretaresia-settings-field" for="tretaresia-rpg-glass">
                     <span>Glass opacity</span>
                     <input id="tretaresia-rpg-glass" type="range" min="55" max="98" value="86" />
                 </label>
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-glow">
+<label class="tretaresia-settings-field" for="tretaresia-rpg-glow">
                     <span>Aura glow</span>
                     <input id="tretaresia-rpg-glow" type="range" min="0" max="100" value="38" />
                 </label>
-                <label class="tretaresia-settings-field" for="tretaresia-rpg-notification-duration">
-                    <span>Pop-up auto-dismiss (milliseconds)</span>
-                    <input id="tretaresia-rpg-notification-duration" type="number" min="1500" max="30000" step="500" value="6000" />
-                </label>
-            </div>
-            <details class="tretaresia-adult-tags" id="tretaresia-rpg-adult-tags">
+</div></div></details><details class="rf-settings-fold"><summary><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span><strong>World rules & presets</strong><small>Power systems and character creation.</small></span></summary><div class="rf-settings-fold-body"><details id="roleforge-power-settings">
+                <summary>Power Presets / จัดการระบบพลัง</summary>
+                <div id="roleforge-power-editor"></div>
+            </details><details id="roleforge-forge-settings">
+                <summary>Character Forge Presets / Origin · Skills · Mastery · Path</summary>
+                <div id="roleforge-forge-editor"></div>
+            </details></div></details><details class="rf-settings-fold" id="roleforge-writing-settings"><summary><i class="fa-solid fa-feather-pointed" aria-hidden="true"></i><span><strong>Writing preferences</strong><small>Optional writing prompts and tags.</small></span></summary><div class="rf-settings-fold-body"><div class="rf-settings-toggles">
+<label class="checkbox_label" for="tretaresia-rpg-nsfw-enhance">
+                <input id="tretaresia-rpg-nsfw-enhance" type="checkbox" />
+                <span>NSFW Enhance / แนวการเขียนสำหรับผู้ใหญ่ (ปิดไว้เป็นค่าเริ่มต้น)</span>
+            </label>
+</div><details class="tretaresia-adult-tags" id="tretaresia-rpg-adult-tags">
                 <summary>NSFW Tags / เลือกแนวที่ต้องการ <span data-adult-count></span></summary>
                 <p>เลือกเองทีละแท็ก · ปิดไว้ทั้งหมดเป็นค่าเริ่มต้น · ส่งเฉพาะชื่อแท็กที่เปิดเข้า AI เมื่อเปิด NSFW Enhance เท่านั้น</p>
                 <label for="tretaresia-rpg-adult-search">ค้นหาแท็ก / Search</label>
@@ -163,12 +160,25 @@
                 </label>
                 <small>รายการเริ่มต้นเป็นตัวอย่างสำหรับตัวละครผู้ใหญ่ ไม่ใช่รายการครบจาก nhentai.net · รายการที่นำเข้าจะเก็บในเบราว์เซอร์นี้ แต่แท็กที่เปิดจะเก็บเป็นค่าตั้งค่า</small>
                 <p data-adult-status role="status" aria-live="polite"></p>
-            </details>
-            <div class="tretaresia-rpg-settings-note">
+            </details><details class="tretaresia-adult-prompt" id="tretaresia-rpg-adult-prompt">
+                <summary>ดูและปรับ NSFW prompt / View &amp; edit writing prompt</summary>
+                <p>ตัวอย่างด้านล่างแสดงส่วนคำสั่งการเขียนจาก RPG System ตามค่าและแท็กที่เลือกในแชทนี้ ไม่รวม prompt อื่นของ SillyTavern การเปิดดูหรือแก้ไขไม่เรียก AI</p>
+                <label for="tretaresia-rpg-adult-mode">NSFW prompt delivery</label>
+                <select id="tretaresia-rpg-adult-mode" data-adult-prompt-mode>
+                    <option value="auto">Auto · relevant scenes and sections</option>
+                    <option value="always">Always · full saved prompt</option>
+                </select>
+                <p>Auto checks recent chat locally. Split a long prompt with Markdown headings (## or ###), or add [section:core], [section:romance], [section:voice] or [section:intense] to headings. An unsectioned prompt is used in full when a relevant scene is detected. Always sends everything on every turn.</p>
+                <label for="tretaresia-rpg-adult-style-editor">แก้สไตล์การเขียน / Edit writing style</label>
+                <textarea id="tretaresia-rpg-adult-style-editor" data-adult-style-editor rows="12" maxlength="50000" spellcheck="false"></textarea>
+                <button type="button" class="menu_button" data-adult-style-reset>คืนค่าสไตล์เริ่มต้น / Reset style</button>
+                <label for="tretaresia-rpg-adult-prompt-preview">คำสั่งที่ใช้งานจริง / Effective prompt (อ่านอย่างเดียว)</label>
+                <p role="status" data-adult-prompt-status></p>
+                <textarea id="tretaresia-rpg-adult-prompt-preview" data-adult-prompt-preview rows="7" readonly spellcheck="false"></textarea>
+            </details></div></details><details class="rf-settings-fold" id="roleforge-diagnostics-settings"><summary><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span><strong>Diagnostics & tracking guide</strong><small>Request usage and how tracking works.</small></span></summary><div class="rf-settings-fold-body"><div class="tretaresia-rpg-settings-note">
                 <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
                 <span>คำขอ AI ที่ RPG System เริ่มเองในหน้านี้: <strong data-tretaresia-request-usage>0 ครั้ง</strong>. นี่เป็นยอดสะสม ไม่ใช่จำนวนครั้งต่อข้อความ ระบบติดตามข้อมูลส่วนใหญ่ใช้คำตอบแชตปกติ; Scene Tracker, Diary และคำเชิญ Party/Guild ใช้ข้อมูลในคำตอบหลัก ไม่เรียก AI เพิ่ม หากข้อมูลขาดจะแสดงเท่าที่ได้รับ Manual Sync, เจน NPC และคำสั่งจาก UI ก็อาจใช้คำขอ <small data-tretaresia-request-breakdown></small></span>
-            </div>
-            <details class="tretaresia-tracking-explainer">
+            </div><details class="tretaresia-tracking-explainer">
                 <summary><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> How automatic UI updates work</summary>
                 <ol>
                     <li>After your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.</li>
@@ -176,21 +186,12 @@
                     <li>The extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.</li>
                     <li>If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.</li>
                 </ol>
-            </details>
-            <div class="tretaresia-rpg-settings-actions">
-                <button id="tretaresia-rpg-open-from-settings" class="menu_button">
-                    <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
-                    Open RoleForge
-                </button>
-                <button id="tretaresia-rpg-sync-from-settings" class="menu_button">
-                    <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-                    Sync latest turn
-                </button>
-                <span class="tretaresia-rpg-ready-state">
-                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                    RoleForge engine 0.44.6 ready
-                </span>
+            </details></div></details>
             </div>
+            <footer class="rf-settings-footer"><span class="tretaresia-rpg-ready-state">
+                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                    RoleForge engine ready
+                </span></footer>
         </div>
     </div>
 </div>

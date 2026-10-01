@@ -72,6 +72,72 @@ test('portrait keys isolate chat, card and distinct card files',()=>{
  assert.equal(scopedPortraitKey(library[0],'chat-A'),scopedPortraitKey(library[0],'chat-B'));
  assert.notEqual(scopedPortraitKey(library[0],'chat-A'),scopedPortraitKey(library[0],'chat-A','card:other.png'));
 });
+test('alternate portrait keys preserve legacy base keys and isolate life stages',()=>{
+ const base=scopedPortraitKey(library[0],'chat-A');
+ assert.equal(base,`tretaresia-rpg:npc-portrait:character:${encodeURIComponent(owner)}:s1`);
+ assert.equal(scopedPortraitKey({...library[0],npcAlternateId:''},'chat-A'),base);
+ assert.equal(scopedPortraitKey({...library[0],npcAlternateId:'วัยเด็ก:10'},'chat-A'),`${base}:alternate:${encodeURIComponent('วัยเด็ก:10')}`);
+ assert.notEqual(scopedPortraitKey({...local,npcAlternateId:'child'},'chat-A'),scopedPortraitKey({...local,npcAlternateId:'adult'},'chat-A'));
+ assert.equal(scopedPortraitKey({...library[0],npcAlternateId:'child'},'chat-A'),scopedPortraitKey({...library[0],npcAlternateId:'child'},'chat-B'));
+});
+
+const alternateLibrary=[{...library[0],activeAlternateId:'',alternateProfiles:[
+ {id:'child',label:'Childhood',description:'Before entering the academy',fields:{age:'10',title:'Student',personality:'Curious',stats:{level:1,hp:40,mp:5}},hasPortrait:true,portraitSource:'server',portraitPath:'/user/images/tretaresia-npc/child.webp'},
+ {id:'veteran',label:'Veteran',description:'Years later',fields:{age:'45',title:'Captain',personality:'Calm',stats:{level:20,hp:300}}},
+]}];
+test('packing an active Character alternate stores only its changed fields and selection',()=>{
+ const state=hydrateScopedNpcs({npcs:[]},alternateLibrary,owner),npc=state.npcs[0];
+ npc.activeAlternateId='child';npc.alternateProfiles[0].fields.personality='Brave';npc.alternateProfiles[0].fields.stats.hp=25;
+ const packed=packScopedNpcs(state,alternateLibrary,owner);
+ assert.deepEqual(packed.npcScopes.overrides.s1,{activeAlternateId:'child',alternateProfiles:[{id:'child',fields:{personality:'Brave',stats:{hp:25}}}]});
+ const restored=hydrateScopedNpcs(packed,alternateLibrary,owner).npcs[0];
+ assert.equal(restored.activeAlternateId,'child');assert.equal(restored.alternateProfiles[0].fields.stats.hp,25);
+ assert.equal(restored.alternateProfiles[0].fields.stats.mp,5);assert.equal(restored.alternateProfiles[0].label,'Childhood');
+ assert.deepEqual(restored.alternateProfiles[1],alternateLibrary[0].alternateProfiles[1]);
+ assert.equal(alternateLibrary[0].alternateProfiles[0].fields.stats.hp,40);
+});
+test('later Character edits and additional stages remain visible beside sparse chat changes',()=>{
+ const state=hydrateScopedNpcs({npcs:[]},alternateLibrary,owner);
+ state.npcs[0].alternateProfiles[0].fields.stats.hp=25;
+ const packed=packScopedNpcs(state,alternateLibrary,owner),edited=structuredClone(alternateLibrary);
+ Object.assign(edited[0].alternateProfiles[0],{label:'Early childhood',description:'Shared revised history'});
+ Object.assign(edited[0].alternateProfiles[0].fields,{title:'Apprentice',goals:'Learn healing'});
+ edited[0].alternateProfiles[0].fields.stats.mp=15;
+ edited[0].alternateProfiles[1].fields.personality='Patient';
+ edited[0].alternateProfiles.push({id:'elder',label:'Elder',fields:{age:'75'}});
+ const a=hydrateScopedNpcs(packed,edited,owner).npcs[0],b=hydrateScopedNpcs({npcs:[]},edited,owner).npcs[0];
+ assert.equal(a.alternateProfiles[0].fields.stats.hp,25);assert.equal(b.alternateProfiles[0].fields.stats.hp,40);
+ assert.equal(a.alternateProfiles[0].fields.stats.mp,15);assert.equal(a.alternateProfiles[0].fields.title,'Apprentice');
+ assert.equal(a.alternateProfiles[0].label,'Early childhood');assert.equal(a.alternateProfiles[0].description,'Shared revised history');
+ assert.equal(a.alternateProfiles[1].fields.personality,'Patient');assert.equal(a.alternateProfiles[2].id,'elder');
+});
+test('old turn checkpoints do not roll back Character alternate edits or restore deleted stages',()=>{
+ const state=hydrateScopedNpcs({npcs:[]},alternateLibrary,owner);
+ state.npcs[0].activeAlternateId='child';state.npcs[0].alternateProfiles[0].fields.stats.hp=25;
+ const edited=structuredClone(alternateLibrary);edited[0].alternateProfiles=edited[0].alternateProfiles.filter(p=>p.id!=='child');
+ edited[0].alternateProfiles[0].label='Veteran captain';edited[0].alternateProfiles[0].fields.stats.hp=350;
+ edited[0].alternateProfiles.push({id:'elder',label:'Elder',fields:{age:'75'}});
+ const packed=packScopedNpcs(state,edited,owner),restored=hydrateScopedNpcs(packed,edited,owner).npcs[0];
+ assert.deepEqual(packed.npcScopes.overrides.s1,{activeAlternateId:'child'});
+ assert.equal(restored.activeAlternateId,'');assert.deepEqual(restored.alternateProfiles.map(p=>p.id),['veteran','elder']);
+ assert.equal(restored.alternateProfiles[0].label,'Veteran captain');assert.equal(restored.alternateProfiles[0].fields.stats.hp,350);
+});
+test('alternate portrait changes and cleared fields remain isolated to their own chat',()=>{
+ const state=hydrateScopedNpcs({npcs:[]},alternateLibrary,owner),alternate=state.npcs[0].alternateProfiles[0];
+ alternate.fields.title='';alternate.hasPortrait=false;alternate.portraitSource='none';alternate.portraitPath='';
+ const packed=packScopedNpcs(state,alternateLibrary,owner);
+ assert.deepEqual(packed.npcScopes.overrides.s1.alternateProfiles,[{id:'child',fields:{title:''},hasPortrait:false,portraitSource:'none',portraitPath:''}]);
+ const a=hydrateScopedNpcs(packed,alternateLibrary,owner).npcs[0].alternateProfiles[0],b=hydrateScopedNpcs({npcs:[]},alternateLibrary,owner).npcs[0].alternateProfiles[0];
+ assert.equal(a.fields.title,'');assert.equal(a.portraitSource,'none');assert.equal(b.fields.title,'Student');assert.equal(b.hasPortrait,true);
+});
+test('nested alternate overrides reject prototype and identity spoofing keys',()=>{
+ const malicious=JSON.parse('{"owner":"card:first.png","overrides":{"s1":{"alternateProfiles":[{"id":"__proto__","fields":{"polluted":true}},{"id":"child","npcOwner":"evil","fields":{"__proto__":{"polluted":true},"npcScope":"chat","age":"11","stats":{"constructor":{"polluted":true},"hp":30}}}]}}}');
+ const envelope=scopeEnvelope(malicious),alternate=envelope.overrides.s1.alternateProfiles[0];
+ assert.deepEqual(envelope.overrides.s1.alternateProfiles,[{id:'child',fields:{age:'11',stats:{hp:30}}}]);
+ assert.equal(alternate.npcOwner,undefined);assert.equal({}.polluted,undefined);
+ const restored=hydrateScopedNpcs({npcs:[],npcScopes:malicious},alternateLibrary,owner).npcs[0];
+ assert.equal(restored.npcOwner,owner);assert.equal(restored.alternateProfiles[0].fields.age,'11');assert.equal(restored.alternateProfiles[0].fields.stats.mp,5);
+});
 test('scope metadata refuses prototype keys and scope spoofing',()=>{
  const result=scopeEnvelope(JSON.parse('{"owner":"card:first.png","overrides":{"__proto__":{"polluted":true},"s1":{"id":"evil","npcScope":"chat","personality":"Calm"}}}'));
  assert.deepEqual(result.overrides,{s1:{personality:'Calm'}});assert.equal({}.polluted,undefined);

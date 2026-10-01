@@ -71,7 +71,7 @@ try{
   assert.equal(await page.locator('[data-presentation-setting]').count(),3);
   assert.equal(await control(page,'preserveNativeChat').isChecked(),false,'missing preference uses original RoleForge priority');
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/original RoleForge format by default/);
-  await status(page,/RoleForge 0\.45\.6.*is off.*No character reply yet/);
+  await status(page,/RoleForge 0\.46\.0.*is off.*No character reply yet/);
   await toggle(page,'chatPresentation',true);await status(page,/Original RoleForge formatting.*No character reply yet/);
   const oldId=await reply(page,oldBody);await status(page,/Latest reply has no readable presentation blocks/);
   assert.equal(await page.locator(`[mesid="${oldId}"] .trpg-header,[mesid="${oldId}"] .trpg-narrative`).count(),0,'old untagged replies are never inferred or rewritten');

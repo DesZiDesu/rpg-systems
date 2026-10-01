@@ -21,7 +21,7 @@ function setup({image=true,enabled=true,available=true,retry=false,replies=null,
  };
  const env={...i18n,...core,...vision,Blob,btoa,Uint8Array,console,busy:false,referenceBlob:null,photoBlob:image?new Blob(['image'],{type:'image/webp'}):null,
   form:{querySelector:()=>checkbox,elements:{namedItem:key=>{if(!fields.has(key))fields.set(key,{value:draft[key]||''});return fields.get(key);}}},
-  brief:'A healer',draftId:'',changed:new Set(),token:1,base:{},dirty:false,
+  brief:'A healer',draftId:'',editAlternateId:'',recordBase:{},changed:new Set(),token:1,base:{},dirty:false,
   values:()=>({...draft}),lock(){},say(message){env.status=message;},confirm:()=>true,valid:()=>true,
   preparePortrait:async blob=>blob,buildForm(value){result=value;},editor:{async set(){}},async preview(){},
   api:{context:()=>context,supportsPortraitVision:()=>true,recordRequest(){},parseJson:JSON.parse,visible:x=>x,lorePrompt:()=>''},

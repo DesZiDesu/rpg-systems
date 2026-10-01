@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { identity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from '../src/npc-core.js';
 import {H_FIELDS,H_FIELD_MAP,hStats,updateHStat} from '../src/h-stats.js';
 import * as scopes from '../src/npc-scopes.js';
+import * as npcAlternates from '../src/npc-alternates.js';
 import * as lore from '../src/lore-core.js';
 import * as archive from '../src/character-archive.js';
 import * as storyMemory from '../src/story-memory.js';
@@ -25,12 +26,58 @@ import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMem
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enableAuctions:true,enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true,enableMemorySummaries:true,eventNotifications:true}},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...auctionCore,auctionErrorText,...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={...npcAlternates,...auctionCore,auctionErrorText,...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
  vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={changeOptionalSystem,renderPanel,runAuctionAction,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
+
+const alternateFixture=()=>host.npcProfile({id:'cora',name:'Cora',aliases:['コーラ'],met:true,age:'28',appearance:'Adult profile marker',background:'Adult background marker',personality:'Reserved',isHostile:false,
+ stats:{level:8,strength:18,mp:40},abilities:[{id:'adult-skill',name:'Tracking',proficiency:60}],customMeters:[{id:'focus',name:'Focus',value:50}],
+ hasPortrait:true,portraitSource:'server',portraitPath:'/user/images/tretaresia-npc/adult.webp',activeAlternateId:'child',alternateProfiles:[
+  {id:'child',label:'Childhood',fields:{age:'9',appearance:'Child profile marker',background:'Child background marker',stats:{level:1,strength:3,mp:0},abilities:[],customMeters:[{id:'focus',name:'Focus',value:12}]},hasPortrait:true,portraitSource:'server',portraitPath:'/user/images/tretaresia-npc/child.webp'},
+  {id:'future',label:'Later',fields:{age:'40',background:'Inactive future marker',stats:{strength:30}}}
+ ]});
+
+test('alternate NPC normalization and both model contexts use selected information without inactive biographies or images',()=>{
+ const state=host.normalize({...host.defaultState(),npcs:[alternateFixture()]});const npc=state.npcs[0];
+ assert.equal(npc.age,'28');assert.equal(npc.alternateProfiles.length,2);assert.equal(npc.id,'cora');assert.equal(npc.activeAlternateId,'child');
+ const tracker=host.aiState(state).npcs[0],roleplay=host.roleplayState(state).privateTrackerReferenceIndex.npcProfiles[0];
+ for(const view of [tracker,roleplay]){assert.equal(view.age,'9');assert.equal(view.appearance,'Child profile marker');assert.equal(view.activeAlternateId,'child');assert.equal(view.activeAlternateLabel,'Childhood');assert.doesNotMatch(JSON.stringify(view),/Adult profile marker|Adult background marker|Inactive future marker|user\/images|portraitView/);}
+ assert.equal(tracker.stats.mp,0);assert.deepEqual(Array.from(tracker.abilities),[]);
+ assert.equal(state.npcs[0].age,'28');
+});
+
+test('story upserts change only active alternate fields and cannot replace or select saved versions',()=>{
+ const state=host.normalize({...host.defaultState(),npcs:[alternateFixture()]});const future=JSON.stringify(state.npcs[0].alternateProfiles[1]);
+ const result=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'cora',name:'Cora',age:'10',personality:'Curious',stats:{mp:5},isHostile:true,activeAlternateId:'future',alternateProfiles:[]}]]});
+ assert.equal(result.accepted,1);assert.equal(result.next.npcs.length,1);const npc=result.next.npcs[0],view=npcAlternates.effectiveNpc(npc);
+ assert.equal(npc.activeAlternateId,'child');assert.equal(npc.age,'28');assert.equal(npc.personality,'Reserved');assert.equal(view.age,'10');assert.equal(view.personality,'Curious');assert.equal(view.stats.mp,5);assert.equal(view.stats.strength,3);assert.equal(npc.stats.strength,18);assert.equal(npc.isHostile,true);assert.equal(JSON.stringify(npc.alternateProfiles[1]),future);
+ assert.equal(npc.portraitPath,'/user/images/tretaresia-npc/adult.webp');assert.equal(view.portraitPath,'/user/images/tretaresia-npc/child.webp');
+});
+
+test('relationship, attribute, skill and custom meter operations evolve active alternate without overwriting base',()=>{
+ const state=host.normalize({...host.defaultState(),npcs:[alternateFixture()]});const before=state.npcs[0];
+ const {accepted,next}=host.applyStatePatch(state,{ops:[['inc','npcValues',{npcId:'cora',field:'stats.strength',amount:1}],['inc','npcValues',{npcId:'cora',field:'trust',amount:2}],['upsert','npcAbilities',{npcId:'cora',id:'child-skill',name:'Fishing',proficiency:10}],['inc','npcAbilities',{npcId:'cora',id:'child-skill',amount:3}],['upsert','npcMeters',{npcId:'cora',id:'focus',name:'Focus',value:15}]]});
+ assert.equal(accepted,5);const npc=next.npcs[0],view=npcAlternates.effectiveNpc(npc);
+ assert.equal(view.stats.strength,4);assert.equal(view.trust,before.trust+2);assert.equal(view.abilities[0].name,'Fishing');assert.equal(view.abilities[0].proficiency,13);assert.equal(view.customMeters[0].value,15);
+ assert.equal(npc.stats.strength,18);assert.equal(npc.trust,before.trust);assert.equal(npc.abilities[0].id,'adult-skill');assert.equal(npc.customMeters[0].value,50);
+ const restored=npcAlternates.effectiveNpc({...npc,activeAlternateId:''});assert.equal(restored.age,'28');assert.equal(restored.abilities[0].name,'Tracking');
+});
+
+test('progression follow-up compares selected alternate values and rejects a second update already in the main reply',()=>{
+ const base=host.normalize({...host.defaultState(),npcs:[alternateFixture()]});const skill=host.applyStatePatch(base,{ops:[['upsert','npcAbilities',{npcId:'cora',id:'fishing',name:'Fishing',proficiency:10}]]}).next;
+ const current=host.applyStatePatch(skill,{ops:[['inc','npcValues',{npcId:'cora',field:'stats.strength',amount:1}]]}).next;
+ const ops=host.npcProgressionOperations([['inc','npcValues',{npcId:'cora',field:'stats.strength',amount:1}],['inc','npcAbilities',{npcId:'cora',id:'fishing',amount:2}]],host.npcProgressionCandidates(current,{mes:'Cora learns fishing.'}),current,skill);
+ assert.equal(ops.length,1);assert.equal(ops[0][1],'npcAbilities');
+});
+
+test('portable data retains server image references for every alternate and marks local-only portraits unavailable',()=>{
+ const state=host.normalize({...host.defaultState(),npcs:[alternateFixture()]});state.npcs[0].alternateProfiles[1].hasPortrait=true;state.npcs[0].alternateProfiles[1].portraitSource='local';
+ const exported=host.portableState(state).npcs[0];assert.equal(exported.id,'cora');assert.equal(exported.activeAlternateId,'child');assert.equal(exported.hasPortrait,true);assert.equal(exported.alternateProfiles[0].portraitPath,'/user/images/tretaresia-npc/child.webp');assert.equal(exported.alternateProfiles[0].hasPortrait,true);assert.equal(exported.alternateProfiles[1].portraitSource,'none');assert.equal(exported.alternateProfiles[1].hasPortrait,false);
+ assert.equal(state.npcs[0].alternateProfiles[1].portraitSource,'local');
+});
 
 test('fresh settings opt out of all six optional systems and popups, with no optional state or protocol in prompts',()=>{
  const previous=context.extensionSettings;
@@ -599,7 +646,7 @@ test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in 
  let chatId='h-stats-test';context.chatMetadata={};context.getCurrentChatId=()=>chatId;context.saveMetadata=async()=>{};
  try{
   host.renderHStats(panel,base);
-  assert.match(panel.innerHTML,/ยังไม่ได้เลือกตัวละคร/);
+  assert.match(panel.innerHTML,/No character selected/);
   assert.match(panel.innerHTML,/<option value="lysa">Lysa<\/option>/);
   assert.doesNotMatch(panel.innerHTML,/data-id="lysa"|data-id="lore"|data-id="player"/);
   assert.equal(host.chooseHStatsNpc('lore',base),false);
@@ -617,11 +664,11 @@ test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in 
   assert.equal((panel.innerHTML.match(/class="is-filled"/g)||[]).length,4);
   assert.equal(host.removeHStatsNpc('rin',base),true);
   host.renderHStats(panel,base);
-  assert.match(panel.innerHTML,/ยังไม่ได้เลือกตัวละคร/);
+  assert.match(panel.innerHTML,/No character selected/);
   assert.deepEqual(Array.from(context.chatMetadata.tretaresia_rpg_visible_hstats_npcs),[]);
   chatId='another-chat';context.chatMetadata={};
   host.renderHStats(panel,base);
-  assert.match(panel.innerHTML,/ยังไม่ได้เลือกตัวละคร/);
+  assert.match(panel.innerHTML,/No character selected/);
   assert.doesNotMatch(panel.innerHTML,/data-id="rin" class="is-active"/);
  }finally{context.chatMetadata=saved.metadata;context.saveMetadata=saved.save;context.getCurrentChatId=saved.getId;}
 });
@@ -1004,7 +1051,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.6');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.46.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
