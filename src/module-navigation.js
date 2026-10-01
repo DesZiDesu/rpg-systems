@@ -50,9 +50,11 @@ let nextId = 0;
 export function mountModuleNavigation({host, carousel, tabs = [], activeId = tabs[0]?.id,
     mode = 'carousel', language = 'en', onActivate = () => {}} = {}) {
     if (!host) throw new TypeError('Module navigation requires a host element.');
-    const doc = host.ownerDocument, uid = `rf-module-chooser-${++nextId}`;
+    const doc = host.ownerDocument, win = doc.defaultView, uid = `rf-module-chooser-${++nextId}`;
+    const shell = host.closest('.tretaresia-app-shell'), panel = host.closest('.tretaresia-rpg-panel');
+    const footer = shell?.querySelector(':scope > .tretaresia-rpg-panel-footer');
     let state = {tabs:[...tabs], activeId, mode:normalizeModuleNavigationMode(mode), language};
-    let expanded = false, query = '', destroyed = false;
+    let expanded = false, query = '', destroyed = false, layoutFrame;
     const text = key => TEXT[key]?.[state.language === 'th' ? 1 : 0] || key;
     host.classList.add('rf-module-navigation');
     host.setAttribute('aria-label', text('navigation'));
@@ -77,6 +79,32 @@ export function mountModuleNavigation({host, carousel, tabs = [], activeId = tab
                 return `<button type="button" class="rf-nav-choice${active ? ' is-current' : ''}" data-rf-nav-tab="${escape(tab.id)}"${active ? ' aria-current="page"' : ''}>${icon(tab.id)}<span class="rf-nav-choice-label">${escape(tab.label)}</span><span class="rf-nav-choice-marker" aria-hidden="true">${active ? '●' : '›'}</span>${active ? `<span class="rf-nav-sr-only">${escape(text('active'))}</span>` : ''}</button>`;
             }).join('')}</div></section>`).join('');
     }
+    // The footer and the mobile browser's visible area are real boundaries.
+    // A viewport-only height lets the end of a long menu sit behind the footer,
+    // particularly with large fonts, safe-area padding or iOS browser toolbars.
+    function fitPicker() {
+        if (destroyed || !expanded || !host.isConnected) return;
+        const picker = host.querySelector('.rf-nav-picker');
+        if (!picker) return;
+        const viewport = win?.visualViewport;
+        const limits = [(viewport?.offsetTop || 0) + (viewport?.height || win?.innerHeight || doc.documentElement.clientHeight)];
+        for (const boundary of [footer, panel, shell]) {
+            const rect = boundary?.getBoundingClientRect();
+            if (rect?.height) limits.push(boundary === footer ? rect.top : rect.bottom);
+        }
+        const height = Math.max(0, Math.floor(Math.min(...limits) - picker.getBoundingClientRect().top - 8));
+        const value = `${height}px`;
+        if (host.style.getPropertyValue('--rf-nav-picker-available-height') !== value) {
+            // Keep the last rows reachable when the browser's toolbar or a
+            // taller footer shortens an already-scrolled chooser.
+            const atEnd = picker.scrollHeight > picker.clientHeight && picker.scrollTop + picker.clientHeight >= picker.scrollHeight - 1;
+            host.style.setProperty('--rf-nav-picker-available-height', value);
+            if (atEnd) picker.scrollTop = picker.scrollHeight;
+        }
+    }
+    function scheduleFit() {
+        if (!destroyed && expanded && layoutFrame === undefined) layoutFrame = win.requestAnimationFrame(() => {layoutFrame = undefined; fitPicker();});
+    }
     function render() {
         if (destroyed) return;
         host.dataset.mode = state.mode;
@@ -94,10 +122,13 @@ export function mountModuleNavigation({host, carousel, tabs = [], activeId = tab
               ${state.mode === 'menu' ? `<label class="rf-nav-search">${glyph('search')}<input type="search" data-rf-nav-search placeholder="${escape(text('search'))}" aria-label="${escape(text('search'))}" value="${escape(query)}" autocomplete="off"></label>` : `<p class="rf-nav-hint">${escape(text('gridHint'))}</p>`}
               <div class="rf-nav-groups">${choicesMarkup()}</div>
             </div>`;
+        fitPicker();
     }
     function openPicker() {
         expanded = true; query = ''; render();
-        (host.querySelector('[data-rf-nav-search]') || host.querySelector('[aria-current="page"]') || host.querySelector('[data-rf-nav-tab]'))?.focus({preventScroll:true});
+        // Opening a chooser should not summon a phone's keyboard. Search stays
+        // available on a deliberate tap or Tab; its ArrowDown shortcut remains.
+        host.querySelector('[data-rf-nav-close]')?.focus({preventScroll:true});
     }
     function closePicker({focus = false} = {}) {
         if (!expanded) return;
@@ -146,6 +177,15 @@ export function mountModuleNavigation({host, carousel, tabs = [], activeId = tab
     host.addEventListener('input',onInput);
     host.addEventListener('keydown',onKeydown);
     doc.addEventListener('click',onOutsideClick);
+    win?.addEventListener('resize',scheduleFit);
+    win?.visualViewport?.addEventListener('resize',scheduleFit);
+    win?.visualViewport?.addEventListener('scroll',scheduleFit);
+    doc.addEventListener('scroll',scheduleFit,true);
+    panel?.addEventListener('transitionend',scheduleFit);
+    const resizeObserver = win?.ResizeObserver ? new win.ResizeObserver(scheduleFit) : undefined;
+    for (const boundary of [host,shell,panel,footer]) {
+        if (boundary) resizeObserver?.observe(boundary);
+    }
     render();
     return {
         update(next = {}) {
@@ -164,6 +204,14 @@ export function mountModuleNavigation({host, carousel, tabs = [], activeId = tab
             host.removeEventListener('click',onClick);
             host.removeEventListener('input',onInput); host.removeEventListener('keydown',onKeydown);
             doc.removeEventListener('click',onOutsideClick);
+            win?.removeEventListener('resize',scheduleFit);
+            win?.visualViewport?.removeEventListener('resize',scheduleFit);
+            win?.visualViewport?.removeEventListener('scroll',scheduleFit);
+            doc.removeEventListener('scroll',scheduleFit,true);
+            panel?.removeEventListener('transitionend',scheduleFit);
+            resizeObserver?.disconnect();
+            if (layoutFrame !== undefined) win.cancelAnimationFrame(layoutFrame);
+            host.style.removeProperty('--rf-nav-picker-available-height');
             if (carousel) {carousel.hidden = false; carousel.removeAttribute('data-rf-navigation-hidden');}
             host.replaceChildren(); host.classList.remove('rf-module-navigation'); host.hidden = false;
         },

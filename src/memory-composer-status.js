@@ -179,9 +179,15 @@ export function createMemoryComposerStatus({document:doc = globalThis.document,c
         spinner.hidden = !activeJob();
         const total = Math.max(0,Number(job.totalMessages) || 0), processed = Math.min(total,Math.max(0,Number(job.processedMessages) || 0));
         const completed = Math.max(0,Number(job.completed) || 0);
-        const bits = total
-            ? [word(`${processed}/${total} messages saved`, `บันทึก ${processed}/${total} ข้อความ`),word(`${completed} batches`,`${completed} ชุด`)]
-            : [word(`${completed} batches saved`,`บันทึกแล้ว ${completed} ชุด`)];
+        const bits = job.queued
+            ? [word(`${Math.max(0,Number(job.savedChapters) || 0)} chapters saved`, `บันทึกแล้ว ${Math.max(0,Number(job.savedChapters) || 0)} บท`),
+                word(`${Math.max(0,Number(job.remainingMessages) || 0)} pending`, `รอ ${Math.max(0,Number(job.remainingMessages) || 0)} ข้อความ`),
+                completed
+                    ? word('Next summary request is queued','คำขอสรุปถัดไปรอคิว')
+                    : word('No summary API request this run yet','ยังไม่เรียก API สรุปรอบนี้')]
+            : total
+                ? [word(`${processed}/${total} messages saved`, `บันทึก ${processed}/${total} ข้อความ`),word(`${completed} batches`,`${completed} ชุด`)]
+                : [word(`${completed} batches saved`,`บันทึกแล้ว ${completed} ชุด`)];
         if (activeJob()) {
             const started = Date.parse(job.startedAt);
             bits.push(duration(Number.isFinite(started) ? Date.now() - started : job.elapsedMs));
@@ -189,9 +195,10 @@ export function createMemoryComposerStatus({document:doc = globalThis.document,c
         } else if (current.coverage?.pendingMessages > 0) bits.push(word(`${current.coverage.pendingMessages} remaining`, `เหลือ ${current.coverage.pendingMessages} ข้อความ`));
         text(progress,bits.join(' · '));
         const hasError = ['error','interrupted'].includes(status) && Boolean(job.error);
-        error.hidden = !hasError;
-        text(error,hasError ? job.error : '');
-        if (hasError && error.title !== job.error) error.title = job.error;
+        const problem = hasError ? job.error : job.promptWarning || '';
+        error.hidden = !problem;
+        text(error,problem);
+        if (error.title !== problem) error.title = problem;
         text(show,word('Details','รายละเอียด')); text(stop,word('Stop summary','หยุดสรุป')); text(again,word('Retry / continue','ลองใหม่ / ทำต่อ')); text(dismiss,'×');
         dismiss.setAttribute('aria-label',word('Dismiss summary status','ซ่อนสถานะสรุป'));
         show.title = word('Open Memory Summaries','เปิด Memory Summaries');

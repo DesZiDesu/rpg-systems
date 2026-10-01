@@ -154,7 +154,7 @@ try{
  await page.evaluate(()=>{window.setTimeout=window.memoryNativeTimeout;});
  assert.match(await current.locator('.rf-memory-error').innerText(),/summary API|API.*summary/i);
  await current.locator('.rf-memory-diagnostics summary').click();assert.equal(await current.locator('[data-memory-error-code]').innerText(),'MEMORY_API_TIMEOUT');
- assert.match(await current.locator('[data-memory-failed-stage]').innerText(),/separate API request/);
+ assert.equal(await current.locator('[data-memory-failed-stage]').innerText(),'Summarizing with SillyTavern’s API');
  assert.match(await current.locator('.rf-memory-diagnostics').innerText(),/Previously saved chapters are kept/);
  assert.equal(await current.locator('[data-memory-pending]').innerText(),'5');assert.match(await current.locator('[data-memory-retry-size]').innerText(),/2 messages/);
  assert.equal(await page.evaluate(()=>window.memoryCalls.length),timeoutCalls+2);

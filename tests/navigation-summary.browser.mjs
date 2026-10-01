@@ -75,6 +75,35 @@ try {
             assert.equal(await page.locator('[data-rf-nav-tab]').count(),17,'every existing RoleForge tab available directly');
             assert.equal(await page.locator('[data-rf-nav-tab="npcs"] .rf-nav-choice-label').innerText(),'NPC','NPC tile uses a short, readable label');
             if(mode==='menu'){
+                assert.equal(await page.evaluate(()=>document.activeElement.hasAttribute('data-rf-nav-close')),true,'opening Quick Menu does not focus Search or summon a mobile keyboard');
+                // Reach the final module by scrolling the chooser itself, then
+                // tap real screen coordinates. scrollIntoView can hide a footer
+                // overlap, so it is intentionally not used for this regression.
+                await page.setViewportSize({width,height:650});
+                if(width<600)await page.locator('.tretaresia-rpg-panel-footer').evaluate(node=>node.style.paddingBottom='32px');
+                await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+                await page.waitForFunction(()=>{
+                    const picker=document.querySelector('.rf-nav-picker').getBoundingClientRect(),footer=document.querySelector('.tretaresia-rpg-panel-footer').getBoundingClientRect();
+                    return picker.bottom<=footer.top-7&&picker.bottom<=visualViewport.offsetTop+visualViewport.height-7;
+                });
+                await page.locator('.rf-nav-picker').evaluate(node=>node.scrollTop=node.scrollHeight);
+                const auditTarget=await page.locator('[data-rf-nav-tab="systems"]').evaluate(node=>{
+                    const rect=node.getBoundingClientRect(),picker=node.closest('.rf-nav-picker').getBoundingClientRect(),footer=document.querySelector('.tretaresia-rpg-panel-footer').getBoundingClientRect();
+                    const x=rect.left+rect.width/2,y=rect.top+rect.height/2;
+                    return {x,y,rect:rect.toJSON(),picker:picker.toJSON(),footer:footer.toJSON(),
+                        scrollTop:node.closest('.rf-nav-picker').scrollTop,scrollHeight:node.closest('.rf-nav-picker').scrollHeight,
+                        visible:rect.top>=picker.top&&rect.bottom<=picker.bottom&&rect.bottom<footer.top,
+                        hit:document.elementFromPoint(x,y)?.closest('[data-rf-nav-tab]')?.dataset.rfNavTab};
+                });
+                assert(auditTarget.visible,`System Audit is completely visible above the real RoleForge footer: ${JSON.stringify(auditTarget)}`);
+                assert.equal(auditTarget.hit,'systems','the real footer cannot intercept the final module tap');
+                await capture(page,'navigation-menu-audit-bottom',width);
+                await page.mouse.click(auditTarget.x,auditTarget.y);
+                await page.locator('[data-panel="systems"].is-active').waitFor({state:'visible'});
+                assert.equal(await page.locator('.rf-nav-picker').isVisible(),false,'the last module routes to System Audit');
+                await page.locator('.tretaresia-rpg-panel-footer').evaluate(node=>node.style.removeProperty('padding-bottom'));
+                await page.setViewportSize({width,height:900});
+                await page.locator('[data-rf-nav-launch]').click();
                 await page.locator('[data-rf-nav-search]').fill('summaries');
                 assert.equal(await page.locator('[data-rf-nav-tab]').count(),1);
                 await capture(page,'navigation-menu-search',width);

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as memory from '../src/memory-summaries.js';
-import {createMemorySummaries,requestMemorySummary} from '../src/memory-summary-runtime.js';
+import {createMemorySummaries,requestMemorySummary,cleanMemorySummaryResponse} from '../src/memory-summary-runtime.js';
 import {renderMemorySummaries} from '../src/memory-summary-ui.js';
 
 const config = () => ({enableMemorySummaries:true,language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryBatchSize:10,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
@@ -224,10 +224,37 @@ test('full backup roundtrip includes originals, rejects a different owner, and n
 });
 
 test('API adapter uses standalone generation or a chosen profile without changing the main connection',async()=>{
-    let args;const current={generateRaw:async value=>{args=value;return '{}';}};await requestMemorySummary(current,'SOURCE','','signal');assert.equal(args.prompt,'SOURCE');assert.equal(args.trimNames,false);
+    let args;const chat=[{is_user:true,mes:'Continue our story.'}],current={chat,generateRaw:async value=>{args=value;return '{}';}};
+    await requestMemorySummary(current,'SOURCE','','signal');assert.equal(args.prompt,'SOURCE');assert.equal(args.trimNames,false);
+    assert.equal(args.responseLength,2400);assert.deepEqual(current.chat,chat);assert(!Object.hasOwn(args,'api'));assert(!Object.hasOwn(args,'quietToLoud'));
+    assert(!Object.hasOwn(args,'signal'));assert(!Object.hasOwn(args,'externalAbortSignal'));
     let sent;const profile={extensionSettings:{connectionManager:{profiles:[{id:'summary',name:'Summary'}]}},ConnectionManagerRequestService:{sendRequest:async(...values)=>{sent=values;return {content:'{}'};}}};
-    assert.equal(await requestMemorySummary(profile,'SOURCE','summary',null),'{}');assert.equal(sent[0],'summary');assert.equal(sent[4].temperature,0.15);
+    assert.equal(await requestMemorySummary(profile,'SOURCE','summary',null),'{}');assert.equal(sent[0],'summary');assert.equal(sent[2],2400);assert.equal(sent[4].temperature,0.15);
     await assert.rejects(requestMemorySummary(profile,'SOURCE','missing',null),/PROFILE_UNAVAILABLE/);
+});
+
+test('native raw reasoning is removed before parsing while literal summary tags and evidence remain intact',async()=>{
+    const literal=JSON.stringify({summary:'Cora wrote <think>stay calm</think> in her notebook.',recap:'Cora kept her note.',events:[]});
+    assert.equal(cleanMemorySummaryResponse(literal),literal);
+    for(const tag of ['think','thinking','analysis'])assert.equal(cleanMemorySummaryResponse(`<${tag}>{"summary":"wrong reasoning object"}</${tag}>\n${literal}`),literal);
+    assert.equal(cleanMemorySummaryResponse(`<think>unfinished\n${literal}`),`<think>unfinished\n${literal}`);
+    assert.equal(cleanMemorySummaryResponse(`[[custom reasoning]]${literal}`,{removeReasoningFromString:value=>value.replace('[[custom reasoning]]','')}),literal);
+    const f=fixture({respond:prompt=>`<think>{"summary":"not the answer"}</think>\n${simpleMemoryResponse(prompt)}`});
+    await f.runtime.open();assert.equal(await f.runtime.run(),true);assert.equal(f.calls.length,1);
+    assert.equal(f.runtime.view().chapters[0].recap,'The story continued with the saved events.');
+});
+
+test('native current-connection cancellation discards late raw results without stopping the main chat or appending messages',async()=>{
+    let release,stops=0;const f=fixture();
+    f.context.eventSource={emit:()=>{stops++;}};
+    f.context.generateRaw=({prompt})=>new Promise(resolve=>{release=()=>resolve(simpleMemoryResponse(prompt));});
+    f.setResponder(prompt=>requestMemorySummary(f.context,prompt,'',null));
+    await f.runtime.open();const original=structuredClone(f.context.chat),pending=f.runtime.run();
+    while(!release)await new Promise(resolve=>setTimeout(resolve,1));
+    f.runtime.cancel();assert.equal(await pending,false);assert.equal(stops,0);assert.deepEqual(f.context.chat,original);
+    assert.equal(f.data.get('card:cora').chapters.length,0);release();await new Promise(resolve=>setTimeout(resolve,0));
+    assert.equal(f.data.get('card:cora').chapters.length,0);assert.equal(stops,0);assert.deepEqual(f.context.chat,original);
+    assert.equal(f.calls.length,1);
 });
 
 test('summary UI escapes sources and errors, exposes job progress, retry and separate token budgets',async()=>{
@@ -302,7 +329,7 @@ test('batch limits count original messages and allow a bounded configurable size
     assert.equal(memory.countMemoryBatches(memory.memorySegments(library,'chat'),{maxChars:100000,maxMessages:10}),3);
     assert.equal(memory.memoryCoverage(library,'chat').pendingMessages,25);
     assert.equal(memory.memoryCoverage(library,'chat').pendingSegments,50);
-    for(const [input,expected] of [[undefined,10],[0,10],['bad',10],[5,5],[10.9,10],[1000,100],[1,1]])assert.equal(memory.normalizeMemoryBatchSize(input),expected);
+    for(const [input,expected] of [[undefined,5],[0,5],['bad',5],[5,5],[10.9,10],[1000,100],[1,1]])assert.equal(memory.normalizeMemoryBatchSize(input),expected);
 });
 
 test('manual backlog saves every ten messages and persists each completed checkpoint before the next API call',async()=>{
@@ -394,11 +421,53 @@ test('hung summary token counting uses a conservative local bound, while cancell
     }
 });
 
-test('waiting for the main reply has one timeout rather than resetting on every poll',async()=>{
-    const f=fixture({timeout:20,generating:()=>true});await f.runtime.open();
-    const start=Date.now();assert.equal(await f.runtime.run(),false);assert(Date.now()-start<200);
-    assert.equal(f.runtime.view().job.code,'MEMORY_GENERATION_WAIT_TIMEOUT');assert.equal(f.runtime.view().job.failedStage,'waiting');
-    assert.equal(f.calls.length,0);assert.equal(f.runtime.isBusy(),false);
+test('an active main reply queues memory beyond the API deadline and resumes immediately on the native end event',async()=>{
+    let generating=false;const f=fixture({timeout:20,generating:()=>generating});await f.runtime.open();generating=true;
+    const pending=f.runtime.run();
+    while(!f.runtime.view().job.queued)await new Promise(resolve=>setTimeout(resolve,1));
+    await new Promise(resolve=>setTimeout(resolve,60));
+    assert.equal(f.runtime.view().job.status,'waiting');assert.equal(f.runtime.view().job.code,'');
+    assert.equal(f.runtime.view().job.waitingFor,'main-generation');assert.equal(f.calls.length,0);assert.equal(f.runtime.isBusy(),true);
+    generating=false;const releasedAt=Date.now();f.runtime.notifyGenerationChanged();
+    assert.equal(await pending,true);assert(Date.now()-releasedAt<200);
+    assert.equal(f.calls.length,1);assert.equal(f.runtime.isBusy(),false);assert.equal(f.runtime.view().job.queued,false);
+    assert.equal(f.runtime.view().coverage.pendingMessages,0);
+});
+
+test('a queued summary can be cancelled without making an API call or losing earlier saved chapters',async()=>{
+    let generating=false;const f=fixture({timeout:20,generating:()=>generating});await f.runtime.open();assert.equal(await f.runtime.run(),true);
+    const saved=structuredClone(f.data.get('card:cora').chapters);
+    f.context.chat.push({is_user:false,name:'Cora',mes:'Cora arrived at the river again.'});await f.runtime.observe();generating=true;
+    const pending=f.runtime.run({prepare:true});
+    while(!f.runtime.view().job.queued)await new Promise(resolve=>setTimeout(resolve,1));
+    assert.equal(f.runtime.view().job.savedChapters,1);assert.equal(f.runtime.view().job.remainingMessages,1);assert.equal(f.runtime.view().job.totalMessages,1);
+    f.runtime.cancel();assert.equal(await pending,false);assert.equal(f.calls.length,1);
+    assert.equal(f.runtime.view().job.status,'cancelled');assert.equal(f.runtime.view().job.queued,false);
+    assert.deepEqual(f.data.get('card:cora').chapters,saved);assert.equal(f.runtime.view().coverage.pendingMessages,1);
+    generating=false;f.runtime.notifyGenerationChanged();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(f.calls.length,1);
+});
+
+test('background native events do not overwrite a queued worker or run its strict prompt tokenizer',async()=>{
+    let generating=false;const f=fixture({timeout:20,generating:()=>generating});await f.runtime.open();assert.equal(await f.runtime.run(),true);
+    f.context.chat.push({is_user:false,name:'Cora',mes:'Cora arrived at the river again.'});await f.runtime.observe();generating=true;
+    const pending=f.runtime.run();while(!f.runtime.view().job.queued)await new Promise(resolve=>setTimeout(resolve,1));
+    let tokenCalls=0;f.context.getTokenCountAsync=()=>{tokenCalls++;throw Error('Tokenizer unavailable');};
+    assert.equal(await f.runtime.observe(),true);assert.equal(tokenCalls,0);
+    assert.equal(f.runtime.view().job.status,'waiting');assert.equal(f.runtime.view().job.queued,true);
+    f.runtime.cancel();assert.equal(await pending,false);assert.equal(f.calls.length,1);
+});
+
+test('native main generation between memory batches queues without restarting the completed batch',async()=>{
+    let generating=false;const f=fixture({timeout:20,generating:()=>generating,respond:prompt=>{
+        if(f.calls.length===1)generating=true;
+        return simpleMemoryResponse(prompt);
+    }});setBacklog(f,12);await f.runtime.open();const pending=f.runtime.run();
+    while(!(f.runtime.view().job.queued && f.runtime.view().job.completed===1))await new Promise(resolve=>setTimeout(resolve,1));
+    assert.equal(f.calls.length,1);assert.equal(f.data.get('card:cora').chapters.length,1);
+    const saved=structuredClone(f.data.get('card:cora').chapters[0]);await new Promise(resolve=>setTimeout(resolve,50));
+    assert.equal(f.runtime.view().job.status,'waiting');assert.equal(f.runtime.view().coverage.pendingMessages,2);
+    generating=false;f.runtime.notifyGenerationChanged();assert.equal(await pending,true);assert.equal(f.calls.length,2);
+    assert.deepEqual(f.data.get('card:cora').chapters[0],saved);assert.equal(f.runtime.view().coverage.pendingMessages,0);
 });
 
 test('post-summary prompt preparation is cancellable and does not report success before it finishes',async()=>{
@@ -511,14 +580,27 @@ test('a complete validated AI response is saved even when output usage token cou
     assert.match(f.runtime.prompt(),/story continued/);
 });
 
-test('a prompt-injection tokenizer failure identifies the final step while preserving every saved chapter',async()=>{
+test('a prompt-injection tokenizer failure leaves the saved archive complete and warns separately until injection recovers',async()=>{
     const f=fixture({timeout:25,respond:simpleMemoryResponse});await f.runtime.open();
     const original=f.context.getTokenCountAsync;
     f.context.getTokenCountAsync=value=>value==='The story continued with the saved events.' ? new Promise(()=>{}) : original(value);
-    assert.equal(await f.runtime.run(),false);assert.equal(f.calls.length,1);
-    assert.equal(f.runtime.view().job.code,'MEMORY_TOKEN_COUNT_TIMEOUT');assert.equal(f.runtime.view().job.failedStage,'prompt');
+    assert.equal(await f.runtime.run(),true);assert.equal(f.calls.length,1);
+    assert.equal(f.runtime.view().job.code,'');assert.equal(f.runtime.view().job.status,'ready');
+    assert.equal(f.runtime.view().job.promptCode,'MEMORY_TOKEN_COUNT_TIMEOUT');assert(f.runtime.view().job.promptWarning);
     assert.equal(f.runtime.view().coverage.pendingMessages,0);assert.equal(f.data.get('card:cora').chapters.length,1);
     assert.equal(f.runtime.prompt(),'');
+    assert(!f.notices.some(notice=>notice.type==='success'));assert(f.notices.some(notice=>notice.type==='warning'));
+    f.context.getTokenCountAsync=original;await f.runtime.preparePrompt();assert.match(f.runtime.prompt(),/story continued/);
+    assert.equal(f.runtime.view().job.promptWarning,'');assert.equal(f.runtime.view().job.promptCode,'');assert.equal(f.calls.length,1);
+});
+
+test('preparing a new chat keeps a complete handoff even when strict prompt injection cannot be counted',async()=>{
+    const f=fixture({timeout:25,respond:simpleMemoryResponse});await f.runtime.open();const original=f.context.getTokenCountAsync;
+    f.context.getTokenCountAsync=value=>value==='The story continued with the saved events.' ? new Promise(()=>{}) : original(value);
+    assert.equal(await f.runtime.run({prepare:true}),true);assert.equal(f.runtime.view().coverage.pendingMessages,0);
+    assert.equal(f.runtime.view().job.status,'ready');assert.equal(f.runtime.view().job.promptCode,'MEMORY_TOKEN_COUNT_TIMEOUT');
+    assert.equal(f.data.get('card:cora').capsules.length,1);assert(f.context.chatMetadata[memory.MEMORY_LINK_KEY]?.capsuleId);
+    assert.equal(f.runtime.prompt(),'');assert(!f.notices.some(notice=>notice.type==='success'));
 });
 
 test('a tokenizer fallback re-bounds a multibyte prior recap before judging the next input batch',async()=>{

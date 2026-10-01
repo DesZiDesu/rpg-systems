@@ -7,6 +7,7 @@ const storagePrefix = 'roleforge-navigation-summary-preview';
 const settingsKey = `${storagePrefix}-settings`;
 const metadataKey = `${storagePrefix}-metadata`;
 const owner = 'card:roleforge-navigation-summary-demo.png';
+const memoryOwner = 'character:roleforge-navigation-summary-demo.png';
 const chatId = 'roleforge-navigation-summary-demo';
 const demoNpcs = [{id:'cora',name:'Cora',age:'28',gender:'Female',race:'Human',title:'River guide',occupation:'Guide',
     color:'#b0baa1',identityColor:'#b0baa1',roleIcon:'book',npcScope:'character',npcOwner:owner,
@@ -73,7 +74,7 @@ export async function startNavigationSummaryPreview() {
         renderExtensionTemplateAsync:async(folder,name)=>{const response=await fetch(new URL(`templates/${name}.html`,root));if(!response.ok)throw Error(`Template ${response.status}`);return response.text();},
     };
     window.SillyTavern={getContext:()=>window.host,libs:{localforage:{async getItem(){return null;},async setItem(){},async removeItem(){}}}};
-    const api={mode:params.get('api')||'manual',calls:[],pending:null,notice:[],nativeSends:0,nativeStops:0};
+    const api={mode:params.get('api')||'manual',calls:[],pending:null,notice:[],nativeSends:0,nativeStops:0,successDelay:1300};
     const status=document.querySelector('#preview-status');
     window.toastr=Object.fromEntries(['error','warning','info','success'].map(type=>[type,message=>{api.notice.push({type,message});status.textContent=message;} ]));
     window.host.generateRaw=async({prompt,signal})=>{
@@ -85,7 +86,7 @@ export async function startNavigationSummaryPreview() {
             const settle=()=>{if(settled)return;settled=true;signal?.removeEventListener('abort',abort);api.pending=null;document.querySelector('#preview-next').hidden=true;resolve(summaryResponse(prompt));};
             const abort=()=>{if(settled)return;settled=true;api.pending=null;document.querySelector('#preview-next').hidden=true;const error=Error('Aborted');error.name='AbortError';reject(error);};
             api.pending=settle;signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
-            if(api.mode==='success')setTimeout(settle,1300);
+            if(api.mode==='success')setTimeout(settle,api.successDelay);
         });
     };
     const nativeFetch=window.fetch.bind(window);
@@ -106,9 +107,17 @@ export async function startNavigationSummaryPreview() {
         if(document.querySelector('#tretaresia-rpg-overlay.is-open'))document.querySelector('#tretaresia-rpg-close')?.click();
         const drawer=document.querySelector('#preview-extension-drawer');drawer.hidden=false;drawer.scrollTop=0;
     };
-    window.navigationSummaryPreview={api,settingsKey,metadataKey,owner,chatId,demoChat,ready:false,open,openSettings,
+    window.navigationSummaryPreview={api,settingsKey,metadataKey,owner,memoryOwner,chatId,demoChat,ready:false,open,openSettings,
         setApiMode(mode){api.mode=mode;document.querySelector('#preview-api').value=mode;},resolveRequest(){api.pending?.();},
-        async resetMemory(){const {createMemoryStore}=await import('../../src/memory-store.js');const store=createMemoryStore();await store.put(owner,null);window.host.chatMetadata=freshMetadata();localStorage.removeItem(metadataKey);location.reload();},
+        setNativeStoryBusy(busy,{bodyState = false} = {}) {
+            // Official getContext() does not expose isGenerating. Model the
+            // host's native composer instead of adding a synthetic default flag.
+            document.querySelector('#mes_stop').style.display=busy?'grid':'none';
+            document.querySelector('#send_but').style.display=busy?'none':'';
+            if(bodyState)document.body.dataset.generating=String(busy);
+            else delete document.body.dataset.generating;
+        },
+        async resetMemory(){const {createMemoryStore}=await import('../../src/memory-store.js');const store=createMemoryStore();await store.put(memoryOwner,null);window.host.chatMetadata=freshMetadata();localStorage.removeItem(metadataKey);location.reload();},
     };
     document.querySelector('#preview-open').onclick=()=>open();
     document.querySelector('#preview-settings').onclick=openSettings;

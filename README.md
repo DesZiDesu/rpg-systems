@@ -1,4 +1,13 @@
-# ROLEFORGE — v0.46.2
+# ROLEFORGE — v0.46.3
+
+## v0.46.3 — Reliable summary scheduling and mobile module menus
+
+- Memory Summaries checks SillyTavern's actual generation state instead of relying on a Start event that can stay set after a dry run or an interrupted command. A real story reply queues the summary; it starts automatically when the reply finishes, with no summary API timeout or summary request while waiting.
+- **Main chat: current SillyTavern API and model** uses SillyTavern's native raw generation request, the same API and model as the story. A **Connection Manager** profile remains optional. Summaries are separate requests and do not add story messages. Requests target shorter output, use up to eight cited events, and request at most **2,400 output tokens**. New installations default to **five messages per batch**; saved preferences and completed chapters remain intact.
+- A stalled summary tokenizer falls back after **two seconds**. Each validated batch is saved before the next request. If final memory-prompt preparation fails, the completed summaries stay saved and the UI shows a warning; that memory prompt is cleared until it can be rebuilt within its budget. Provider/API failures still stop at the saved checkpoint without a paid automatic retry.
+- **Quick menu** opens without automatically focusing Search or opening the mobile keyboard. Its list scrolls within the available space, including **System Audit**, without the RoleForge footer covering the last items.
+
+อ่าน [คู่มือ Memory Summaries](docs/memory-summaries-workflows.th.md) และ [วิธีเลือกรูปแบบหมวด](docs/navigation-options-preview.th.md)
 
 ## v0.46.2 — Faster module navigation and visible summary progress
 

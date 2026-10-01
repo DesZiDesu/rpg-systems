@@ -1,37 +1,38 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.46.2';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.46.2';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.46.3';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.46.3';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.46.2';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.46.2';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.46.2';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.46.2';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.46.2';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.46.2';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.46.2';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.46.2';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.46.2';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.46.2';
-import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.46.2';
-import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.46.2';
-import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.46.2';
-import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.46.2';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.46.2';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.46.2';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.46.2';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.46.3';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.46.3';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.46.3';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.46.3';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.46.3';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.46.3';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.46.3';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.46.3';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.46.3';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.46.3';
+import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.46.3';
+import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.46.3';
+import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.46.3';
+import { createMemorySummaries, memoryJobMessage } from './src/memory-summary-runtime.js?v=0.46.3';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.46.3';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.46.3';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.46.3';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.46.3';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.46.2';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.46.2';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.46.2';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.46.2';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.46.2';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.46.2';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.46.2';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.46.2';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.46.2';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.46.2';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.46.2';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.46.2';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.46.3';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.46.3';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.46.3';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.46.3';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.46.3';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.46.3';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.46.3';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.46.3';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.46.3';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.46.3';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.46.3';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.46.3';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -45,13 +46,10 @@ let memoryBadgeSignature = '';
 const SAFE_MODE = /(?:^|[?&])tretaresia-safe=(?:1|true)(?:&|$)/i.test(globalThis.location?.search || '');
 
 let liveGeneration = false;
+let nativeGenerationState = null;
 let completedAssistantMessages = new WeakSet();
 function mainReplyGenerating(context = SillyTavern.getContext()) {
-    try {
-        const active = context?.isGenerating?.();
-        if (typeof active === 'boolean') return active;
-    } catch { /* Older hosts use the generation events below. */ }
-    return liveGeneration;
+    return hostReplyGenerating({context,native:nativeGenerationState,document,fallback:liveGeneration});
 }
 const livePreviewCache = new WeakMap();
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
@@ -227,7 +225,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     autoContinuity: true,
     memoryAutoSummary: true,
     memorySummaryInterval: 15,
-    memorySummaryBatchSize: 10,
+    memorySummaryBatchSize: 5,
     memorySummaryTimeoutSeconds: 240,
     memorySummaryProfile: '',
     memoryInject: true,
@@ -567,7 +565,7 @@ function getSettings() {
     settings.memoryAutoSummary = Boolean(settings.memoryAutoSummary);
     settings.memoryInject = Boolean(settings.memoryInject);
     settings.memorySummaryInterval = Math.round(number(settings.memorySummaryInterval,15,5,100));
-    settings.memorySummaryBatchSize = Math.round(number(settings.memorySummaryBatchSize,10,1,100));
+    settings.memorySummaryBatchSize = Math.round(number(settings.memorySummaryBatchSize,5,1,100));
     settings.memorySummaryTimeoutSeconds = Math.round(number(settings.memorySummaryTimeoutSeconds,240,60,600));
     settings.memorySummaryProfile = text(settings.memorySummaryProfile,'',120);
     settings.memorySummaryBudget = Math.round(number(settings.memorySummaryBudget,1200,200,12000));
@@ -2966,7 +2964,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.46.2`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.46.3`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -4247,7 +4245,7 @@ async function changeOptionalSystem(key,enabled,control) {
             if (enabled) void memorySummaries?.open();
             else {
                 memorySummaries?.pause(); clearTimeout(memoryBadgeTimer);
-                if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration});
+                if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration:mainReplyGenerating()});
                 const badge = document.getElementById('roleforge-memory-activity'); if (badge) badge.hidden = true;
             }
         }
@@ -4866,7 +4864,7 @@ function renderSystems(panel, state) {
 }
 
 function onMemorySummariesChanged(view) {
-    const composerMounted = memoryComposerStatus?.update(view,{liveGeneration});
+    const composerMounted = memoryComposerStatus?.update(view,{liveGeneration:mainReplyGenerating()});
     const panel = document.querySelector('#tretaresia-rpg-overlay.is-open [data-panel="summaries"].is-active');
     if (panel && !document.activeElement?.closest('[data-form="memory-summary-edit"]')) renderPanel('summaries',panel,getState());
     updatePrompt();
@@ -9322,9 +9320,11 @@ function bindChatEvents() {
         if (settings.autoTrack) setSync('working', tr(uiText("Waiting for AI")), settings.language === 'th' ? 'อ่านข้อมูลจากคำตอบหลักโดยไม่เรียก AI เพิ่ม' : 'Scene, diary, invitations and state updates use the main reply without extra AI requests.');
         else setSync('disabled', tr(uiText("Tracking is off")), settings.language === 'th' ? 'คำตอบนี้จะไม่อัปเดต RoleForge อัตโนมัติ' : 'This reply will not update RoleForge automatically.');
     });
-    if (eventTypes.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, generationType => {
+    if (eventTypes.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, (generationType, options, dryRun) => {
+        if (dryRun) return;
         if (!['quiet','impersonate'].includes(generationType)) liveGeneration = true;
-        if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration});
+        memorySummaries?.notifyGenerationChanged();
+        if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration:mainReplyGenerating()});
         if (openingGeneration?.requested && (!generationType || generationType === 'normal')) {
             const context = SillyTavern.getContext();
             if (openingGeneration.metadata === context.chatMetadata && openingGeneration.chatId === context.getCurrentChatId?.()) {
@@ -9380,7 +9380,8 @@ function bindChatEvents() {
     });
     if (eventTypes.GENERATION_STOPPED) eventSource.on(eventTypes.GENERATION_STOPPED, () => {
         liveGeneration = false;
-        if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration});
+        memorySummaries?.notifyGenerationChanged();
+        if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration:mainReplyGenerating()});
         const messageId = latestAssistantMessageId(), message = SillyTavern.getContext().chat?.[messageId];
         if (message) completedAssistantMessages.add(message);
         scheduleAssistantPatch(messageId, '', 0);
@@ -9388,11 +9389,13 @@ function bindChatEvents() {
     });
     if (eventTypes.CHAT_CHANGED) eventSource.on(eventTypes.CHAT_CHANGED, () => {
         liveGeneration = false;
-        if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration});
+        memorySummaries?.notifyGenerationChanged();
+        if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration:mainReplyGenerating()});
     });
     if (eventTypes.GENERATION_ENDED) eventSource.on(eventTypes.GENERATION_ENDED, () => {
         liveGeneration = false;
-        if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration});
+        memorySummaries?.notifyGenerationChanged();
+        if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration:mainReplyGenerating()});
         const messageId = latestAssistantMessageId();
         const message = SillyTavern.getContext().chat?.[messageId];
         if (message) completedAssistantMessages.add(message);
@@ -9425,7 +9428,12 @@ async function initialize() {
         memorySummaries = createMemorySummaries({context:() => SillyTavern.getContext(),owner:activeContinuityKey,settings:getSettings,state:getState,
             visible:value => extractStatePatch(value).visible,scene:sceneForMessage,notify,changed:onMemorySummariesChanged,
             recordRequest:recordExtensionRequest,saveMetadata:saveCurrentChatMetadata,continuity:() => writeContinuitySnapshot(getState()),
-            isGenerating:() => liveGeneration,parse:parseJson});
+            isGenerating:mainReplyGenerating,parse:parseJson});
+        void loadHostGenerationModule().then(module => {
+            nativeGenerationState = module;
+            memorySummaries?.notifyGenerationChanged();
+            if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration:mainReplyGenerating()});
+        });
         applyAppearance();
         buildActivityIndicator();
         buildTravelTracker();
@@ -9490,7 +9498,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.46.2 loaded.');
+        console.info('[RoleForge] Role-play interface v0.46.3 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
