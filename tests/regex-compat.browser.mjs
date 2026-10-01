@@ -1,4 +1,4 @@
-// Native SillyTavern-rendered HTML stays authoritative alongside RoleForge cards.
+// RoleForge story tags own default presentation; native compatibility is opt-in.
 // Run: CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/regex-compat.browser.mjs
 import assert from 'node:assert/strict';
 import http from 'node:http';
@@ -105,6 +105,109 @@ async function exerciseNativeEditor(page,id,label){
  await row.locator('.mes_edit_done').click();await page.waitForFunction(id=>!document.querySelector(`[mesid="${id}"] #curEditTextarea`),id);
  await page.evaluate(()=>window.nativeEditorAutoSave=false);
 }
+async function exerciseDefaultPresentation(page,width){
+ const source='<tr-header name="Ashe"/><tr-narrative>She waits **quietly**.</tr-narrative><tr-dialogue name="Ashe">Welcome, traveler.</tr-dialogue>';
+ await page.evaluate(async source=>{
+  window.host.chat=[];document.querySelector('#chat').replaceChildren();
+  await window.hStatsPreview.switchChat('default-presentation-chat',{tretaresia_rpg_state:{npcs:[],location:{narrativeVersion:1,place:'Library'},onboarding:{locationSeeded:true}}});
+  const settings=window.host.extensionSettings.tretaresia_rpg;
+  delete settings.preserveNativeChat;settings.chatPresentation=true;settings.showSceneTracker=false;
+  window.host.extensionSettings.regex=[{findRegex:'traveler',replaceString:'friend',placement:[2],markdownOnly:true}];
+  window.host.getPresetManager=()=>({readPresetExtensionField:()=>[]});
+  window.host.characters[window.host.characterId].data.extensions.regex_scripts=[];
+  window.host.chat.push({is_user:false,name:'Ashe',mes:source,swipe_id:0,swipes:[source]});
+  const row=document.createElement('div');row.className='mes';row.setAttribute('mesid',0);
+  const text=document.createElement('div');text.className='mes_text';
+  // Real formatters can add wrappers and paragraph attributes without altering
+  // story text. The old conservative guard rejected both independently.
+  text.innerHTML='<div class="markdown"><p dir="auto">She waits <strong>quietly</strong>.</p><p>Welcome, traveler.</p></div>';
+  row.append(text);document.querySelector('#chat').append(row);
+  await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);
+ },source);
+ const row=page.locator('[mesid="0"]');
+ await row.locator('.trpg-header').waitFor({timeout:3000});
+ assert.equal(await row.locator('.trpg-narrative strong').textContent(),'quietly','Missing compatibility preference restores source presentation');
+ assert.equal(await row.locator('.trpg-dialogue').textContent(),'Welcome, traveler.','Attributed native markup does not suppress dialogue');
+ assert.equal(await row.locator('.trpg-header').count(),1,'Default presentation has one header');
+ // Default mode intentionally prioritizes RoleForge's saved tags even when
+ // a display-only regex changed the native visible text.
+ await page.evaluate(async()=>{
+  const text=document.querySelector('[mesid="0"] .mes_text');
+  text.innerHTML='<p>Welcome, friend. Display-only regex replacement.</p>';
+  await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);
+ });
+ await row.locator('.trpg-header').waitFor({timeout:3000});
+ assert.equal(await row.locator('.trpg-dialogue').textContent(),'Welcome, traveler.','Default mode keeps the saved RoleForge story');
+ if(width===390&&process.env.REGEX_SCREENSHOT_DIR){
+  await mkdir(process.env.REGEX_SCREENSHOT_DIR,{recursive:true});
+  await row.locator('.mes_text').screenshot({path:`${process.env.REGEX_SCREENSHOT_DIR}/narrative-default-restored-0456.png`});
+ }
+ // Opt-in preserves a native widget, including identity, its listener and input
+ // state. Switching priorities restores the same saved nodes, not clones.
+ await page.evaluate(async()=>{
+  window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=true;
+  const text=document.querySelector('[mesid="0"] .mes_text');
+  text.innerHTML='<section class="default-native-widget" data-formatter="regex"><p>She waits quietly.</p><p>Welcome, friend.</p><button type="button">Native action</button><input type="checkbox"></section>';
+  window.defaultNativeWidget=text.firstChild;window.defaultNativeClicks=0;
+  text.querySelector('button').addEventListener('click',()=>window.defaultNativeClicks++);
+  text.querySelector('input').checked=true;
+  await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);
+ });
+ await page.waitForTimeout(180);
+ assert.equal(await page.evaluate(()=>document.querySelector('.default-native-widget')===window.defaultNativeWidget&&window.defaultNativeWidget.querySelector('input').checked),true,'Native opt-in preserves exact widget and input');
+ assert.equal(await row.locator('.trpg-header').count(),0,'Native opt-in keeps custom display priority');
+ await row.locator('.default-native-widget button').click();
+ assert.equal(await page.evaluate(()=>window.defaultNativeClicks),1,'Native opt-in preserves bound action');
+ await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=false;await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);});
+ await row.locator('.trpg-header').waitFor({timeout:3000});
+ await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=true;await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);});
+ await row.locator('.default-native-widget').waitFor();
+ assert.equal(await page.evaluate(()=>document.querySelector('.default-native-widget')===window.defaultNativeWidget&&window.defaultNativeWidget.querySelector('input').checked),true,'Changing priority restores exact widget');
+ await row.locator('.default-native-widget button').click();
+ assert.equal(await page.evaluate(()=>window.defaultNativeClicks),2,'Restored native listener remains bound');
+ // A formatter observing direct message children may wrap our story once.
+ // It must settle instead of continuously undoing and repeating both mounts.
+ await page.evaluate(async()=>{
+  window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=false;
+  const text=document.querySelector('[mesid="0"] .mes_text');
+  text.innerHTML='<p dir="auto">Current native body before RoleForge presentation.</p>';
+  window.defaultWrappedOriginal=text.firstChild;window.defaultWraps=0;
+  window.defaultFormatterObserver=new MutationObserver(()=>{
+   for(const root of text.querySelectorAll(':scope > .trpg-chat')){
+    const wrapper=document.createElement('div');wrapper.className='default-formatter-wrapper';
+    root.replaceWith(wrapper);wrapper.append(root);window.defaultWraps++;
+   }
+  });
+  window.defaultFormatterObserver.observe(text,{childList:true});
+  await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);
+ });
+ await page.waitForFunction(()=>window.defaultWraps===1);
+ await page.waitForTimeout(450);
+ assert.equal(await page.evaluate(()=>window.defaultWraps),1,'External formatter settles after one wrap');
+ assert.equal(await row.locator('.trpg-header').count(),1,'Wrapped default presentation never duplicates headers');
+ assert.equal(await row.locator('.default-formatter-wrapper').count(),1,'Wrapped presentation never accumulates containers');
+ await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.chatPresentation=false;await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);});
+ await page.waitForFunction(()=>window.defaultWrappedOriginal.isConnected&&!document.querySelector('[mesid="0"] .trpg-header'));
+ assert.equal(await page.evaluate(()=>window.defaultWraps),1,'Turning presentation off restores native body without remounting');
+ await page.evaluate(()=>window.defaultFormatterObserver.disconnect());
+ // The editor fix remains active in the restored default mode, including auto
+ // save while the raw message is changing underneath an open textarea.
+ await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.chatPresentation=true;await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);});
+ await row.locator('.trpg-header').waitFor({timeout:3000});
+ await exerciseNativeEditor(page,0,'Default RoleForge presentation');
+ // Neither priority mode invents blocks/speakers for an old reply without tags.
+ for(const preserveNativeChat of [false,true]){
+  await page.evaluate(async preserveNativeChat=>{
+   const settings=window.host.extensionSettings.tretaresia_rpg;settings.preserveNativeChat=preserveNativeChat;
+   const message=window.host.chat[0];message.mes='An existing reply without RoleForge tags.';message.swipes[message.swipe_id]=message.mes;
+   const text=document.querySelector('[mesid="0"] .mes_text');text.innerHTML='<p dir="auto">An existing reply without RoleForge tags.</p>';window.defaultPlainOriginal=text.firstChild;
+   await window.host.eventSource.emit(window.host.eventTypes.MESSAGE_UPDATED,0);
+  },preserveNativeChat);
+  await page.waitForTimeout(180);
+  assert.equal(await row.locator('.trpg-header,.trpg-narrative,.trpg-dialogue').count(),0,'Untagged source remains plain');
+  assert.equal(await page.evaluate(()=>document.querySelector('[mesid="0"] .mes_text').firstChild===window.defaultPlainOriginal),true,'Untagged native DOM remains intact');
+ }
+}
 let browser;
 try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -113,7 +216,7 @@ try{
   page.on('pageerror',error=>errors.push(error.message));
   await page.route('https://fonts.googleapis.com/**',route=>route.fulfill({contentType:'text/css',body:''}));
   await page.addInitScript(()=>{
-   localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'en',autoTrack:true,autoContinuity:false,chatPresentation:false,showSceneTracker:true,enableMissionBoard:true,enableAuctions:true,memoryAutoSummary:false}}));
+   localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'en',autoTrack:true,autoContinuity:false,chatPresentation:false,preserveNativeChat:true,showSceneTracker:true,enableMissionBoard:true,enableAuctions:true,memoryAutoSummary:false}}));
    localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'Nova'},npcs:[],quests:[],skills:[],inventory:[],location:{narrativeVersion:1,place:'Guild Hall'},onboarding:{locationSeeded:true},progression:{currency:{gold:20,silver:10,copper:0}}}}));
   });
   await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready&&document.querySelector('#tretaresia-rpg-overlay.is-ready'));
@@ -312,6 +415,7 @@ try{
   },{id,structuredId});
   await renderNative(page,0,'New chat native card');await page.waitForTimeout(180);await assertNative(page,'chat change');
   assert.equal(await page.locator('#chat .trpg-mission-board,#chat .trpg-auction').count(),0);
+  await exerciseDefaultPresentation(page,width);
   assert.deepEqual(errors,[]);console.log(`Regex/native HTML compatibility passed at ${width}px`);await page.close();
  }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

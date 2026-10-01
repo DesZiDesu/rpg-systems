@@ -1,12 +1,12 @@
-import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.45.5';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.45.5';
-import { createLoreWorkspace } from './lore-workspace.js?v=0.45.5';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS } from './npc-core.js?v=0.45.5';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext } from './npc-generation.js?v=0.45.5';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.45.5';
-import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.45.5';
-import { collectPortraitBackups } from './npc-media.js?v=0.45.5';
-import { H_FIELDS } from './h-stats.js?v=0.45.5';
+import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.45.6';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.45.6';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.45.6';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.45.6';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext } from './npc-generation.js?v=0.45.6';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.45.6';
+import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.45.6';
+import { collectPortraitBackups } from './npc-media.js?v=0.45.6';
+import { H_FIELDS } from './h-stats.js?v=0.45.6';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -14,7 +14,8 @@ const uuid=()=>globalThis.crypto?.randomUUID?.()||`npc-${Date.now()}-${Math.rand
 
 export function createNpcWorkspace(api) {
     let dialog,form,roster,status,editor,base={},draftId='',chatId='',ownerKey='',scope='chat',view='list',page=0,token=0,busy=false,dirty=false,photoBlob=null,photoDirty=false,frameDirty=false,previewUrl=null,previewGeneration=0;
-    let brief='',referenceBlob=null,referenceUrl=null,viewportFrame=0,unobscuredHeight=0,lore,tab='npc';
+    let brief='',referenceBlob=null,referenceUrl=null,viewportFrame=0,unobscuredHeight=0,lore,tab='npc',presentationStatus=null,presentationSettingsGroup=null,preserveNativeLabel=null,preserveNativeHelp=null;
+    const presentationSubscriptions=[];
     function syncViewport(){
         if(!dialog?.open)return;
         const viewport=globalThis.visualViewport;
@@ -43,8 +44,23 @@ export function createNpcWorkspace(api) {
         if(active){unobscuredHeight=0;syncViewport();}else{cancelAnimationFrame(viewportFrame);dialog?.classList.remove('trpg-keyboard-open');}
     }
     const changed=new Set();
+    function updatePresentationStatus(){
+        if(!presentationStatus?.isConnected)return;
+        const settings=api.settings(),thai=settings.language==='th';
+        if(preserveNativeLabel)preserveNativeLabel.textContent=thai?'รักษาหน้าตา regex / HTML (เลือกเปิดเอง)':'Preserve regex / HTML formatting (optional)';
+        if(preserveNativeHelp)preserveNativeHelp.textContent=thai?'ค่าเริ่มต้นใช้รูปแบบ RoleForge เดิม เปิดตัวเลือก regex เมื่ออยากเก็บหน้าตาที่ regex สร้าง ซึ่งอาจแสดงแทนบล็อก RoleForge ในข้อความนั้น':'Uses the original RoleForge format by default. Enable the regex option to retain its formatting, which can replace RoleForge blocks in that message.';
+        const message=(api.context().chat||[]).findLast(value=>!value.is_user&&!value.is_system);
+        const hasBlocks=message&&Boolean(parseStory(api.visible(message.mes||'')));
+        const mode=settings.chatPresentation
+            ? settings.preserveNativeChat ? (thai?'รักษาหน้าตา regex / SillyTavern':'Preserve regex / SillyTavern formatting') : (thai?'รูปแบบ RoleForge เดิม':'Original RoleForge formatting')
+            : (thai?'Header / Dialogue / Narrative ปิดอยู่':'Header / Dialogue / Narrative is off');
+        const source=!message ? (thai?'ยังไม่มีคำตอบ':'No character reply yet')
+            : hasBlocks ? (thai?'คำตอบล่าสุดมีบล็อกจัดรูปแบบ':'Latest reply has presentation blocks')
+                : (thai?'คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบที่อ่านได้ — ลองสร้างคำตอบใหม่':'Latest reply has no readable presentation blocks — try a new reply');
+        presentationStatus.textContent=`RoleForge 0.45.6 · ${mode} · ${source}`;
+    }
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.45.5',import.meta.url).href;document.head.append(sheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.45.6',import.meta.url).href;document.head.append(sheet);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
     const valid=t=>dialog?.open && token===t && chatId===currentChat() && ownerKey===(api.scopeInfo()?.key||'');
@@ -526,7 +542,17 @@ The visibleAppearance value is authoritative: copy it into appearance without ad
     document.addEventListener('click',e=>{if(e.target.closest('[data-trpg-open]'))open();});
     const settings=document.querySelector('#tretaresia-rpg-settings .inline-drawer-content')||document.getElementById('tretaresia-rpg-settings');
     if(settings){const group=element('div','trpg-settings');const button=element('button','menu_button',uiText("NPC Management"));button.dataset.trpgOpen='';button.type='button';group.append(button);
-        for(const [key,label]of [['chatPresentation','Header / Dialogue / Narrative'],['chatEffects',uiText("Gradient และเอฟเฟกต์แชต")]]){const row=element('label','checkbox_label'),check=element('input');check.type='checkbox';check.checked=Boolean(api.settings()[key]);check.addEventListener('change',()=>{api.settings()[key]=check.checked;api.context().saveSettingsDebounced?.();api.updatePrompt();chat.refresh();});row.append(check,document.createTextNode(uiText(label)));group.append(row);}settings.append(group);bindStaticUi(group);}
-    const context=api.context(),events=context.eventTypes||context.event_types;if(events?.CHAT_CHANGED)context.eventSource?.on(events.CHAT_CHANGED,()=>{close(true);chat.reset();});
-    return {open,refresh(){chat.refresh();if(dialog?.open){if(tab==='lore')lore.refresh();else list();}},destroy(){close(true);chat.destroy();sheet.remove();dialog?.remove();}};
+        const thai=api.settings().language==='th';
+        for(const [key,label]of [['chatPresentation','Header / Dialogue / Narrative'],['chatEffects',uiText("Gradient และเอฟเฟกต์แชต")],['preserveNativeChat',thai?'รักษาหน้าตา regex / HTML (เลือกเปิดเอง)':'Preserve regex / HTML formatting (optional)']]){
+            const row=element('label','checkbox_label'),check=element('input');check.type='checkbox';check.dataset.presentationSetting=key;check.checked=Boolean(api.settings()[key]);
+            check.addEventListener('change',()=>{api.settings()[key]=check.checked;api.context().saveSettingsDebounced?.();api.updatePrompt();chat.refresh();updatePresentationStatus();});const labelText=document.createTextNode(uiText(label));if(key==='preserveNativeChat')preserveNativeLabel=labelText;row.append(check,labelText);group.append(row);
+        }
+        const help=element('small','trpg-presentation-help',thai?'ค่าเริ่มต้นใช้รูปแบบ RoleForge เดิม เปิดตัวเลือก regex เมื่ออยากเก็บหน้าตาที่ regex สร้าง ซึ่งอาจแสดงแทนบล็อก RoleForge ในข้อความนั้น':'Uses the original RoleForge format by default. Enable the regex option to retain its formatting, which can replace RoleForge blocks in that message.');
+        preserveNativeHelp=help;help.style.cssText='display:block;line-height:1.5;white-space:normal;overflow-wrap:anywhere;margin:6px 0';group.append(help);
+        presentationStatus=element('small','trpg-presentation-status');presentationStatus.setAttribute('role','status');presentationStatus.style.cssText='display:block;line-height:1.5;white-space:normal;overflow-wrap:anywhere;margin:6px 0';group.append(presentationStatus);
+        presentationSettingsGroup=group;settings.append(group);bindStaticUi(group);updatePresentationStatus();
+    }
+    const context=api.context(),events=context.eventTypes||context.event_types;if(events?.CHAT_CHANGED)context.eventSource?.on(events.CHAT_CHANGED,()=>{close(true);chat.reset();updatePresentationStatus();});
+    for(const name of ['CHARACTER_MESSAGE_RENDERED','MESSAGE_RECEIVED','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED'])if(events?.[name]&&context.eventSource?.on){context.eventSource.on(events[name],updatePresentationStatus);presentationSubscriptions.push(events[name]);}
+    return {open,refresh(){chat.refresh();updatePresentationStatus();if(dialog?.open){if(tab==='lore')lore.refresh();else list();}},destroy(){close(true);chat.destroy();for(const event of presentationSubscriptions)context.eventSource?.off?.(event,updatePresentationStatus);presentationSettingsGroup?.remove();sheet.remove();dialog?.remove();}};
 }

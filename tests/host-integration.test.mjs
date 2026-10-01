@@ -37,6 +37,7 @@ test('fresh settings opt out of all six optional systems and popups, with no opt
  try{
   context.extensionSettings={};const settings=host.getSettings();
   for(const key of ['enableMissionBoard','enableAuctions','enableStoryMemory','enableStoryAgenda','enableQuestObjectives','enableMemorySummaries','eventNotifications'])assert.equal(settings[key],false,key);
+  assert.equal(settings.preserveNativeChat,false);
   const state=host.defaultState();state.storyMemories=[{id:'secret',title:'Secret',detail:'Unique paused fact marker',status:'Active',kind:'Fact'}];state.storyAgenda=[{id:'visit',title:'Visit',status:'Scheduled',dueDay:1}];
   const prompt=host.statePrompt(state,{includeState:true,track:true});assert.doesNotMatch(prompt,/Mission Board:|Auction UI:|Story memory: upsert|Appointments and deadlines:|Quest objectives: include|Unique paused fact marker/);
   assert.equal(host.roleplayState(state).sceneContext.auctions,undefined);assert.equal(host.aiState(state).storyMemories,undefined);
@@ -59,7 +60,7 @@ test('disabled optional updates cannot create records or overwrite saved checkli
 test('optional switches preserve explicit saved choices and active auction reserves after turning off',async()=>{
  const previous={settings:context.extensionSettings,state:context.chatMetadata};
  try{
-  context.extensionSettings={tretaresia_rpg:{enableMissionBoard:true,enableMemorySummaries:false,eventNotifications:true}};const settings=host.getSettings();assert.equal(settings.enableMissionBoard,true);assert.equal(settings.eventNotifications,true);assert.equal(settings.enableAuctions,false);
+  context.extensionSettings={tretaresia_rpg:{enableMissionBoard:true,enableMemorySummaries:false,eventNotifications:true,preserveNativeChat:true}};const settings=host.getSettings();assert.equal(settings.preserveNativeChat,true);assert.equal(settings.enableMissionBoard,true);assert.equal(settings.eventNotifications,true);assert.equal(settings.enableAuctions,false);
   const offer={id:'held',title:'Hall',location:'Hall',denomination:'gold',deposit:5,lots:[{id:'blade',name:'Blade',openingBid:6,minIncrement:1}]};let state=host.defaultState();state.progression.currency.gold=30;state=auctionCore.applyAuctionAction(state,offer,'join').next;state=auctionCore.applyAuctionAction(state,offer,'bid',{amount:20,revision:1}).next;
   context.chatMetadata={tretaresia_rpg_state:state};const result=host.applyStatePatch(state,{ops:[['inc','progression.currency.gold',-6,{reason:'Purchase'}],['inc','progression.currency.gold',-20,{reason:'Auction payment'}]]});assert.equal(result.accepted,0);assert.equal(result.next.progression.currency.gold,30);
   assert.equal((await host.runAuctionAction(null,'held','resume:held','bid',21,2)).error,'disabled');assert.equal(auctionCore.auctionAvailable(host.getState()).gold,5);
@@ -1003,7 +1004,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.5');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.6');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

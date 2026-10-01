@@ -1,4 +1,13 @@
-# ROLEFORGE — v0.45.5
+# ROLEFORGE — v0.45.6
+
+## v0.45.6 — Original story presentation by default
+
+- Restored the original source-based **Header / Dialogue / Narrative** behavior for replies with RoleForge tags. Extra host wrappers, attributes, or display regex rewrites no longer silently suppress all three blocks by default.
+- **Extension Settings → RoleForge**, beside NPC Management, adds **Preserve regex / HTML formatting (optional)**. It defaults OFF. Enable it to give native regex/HTML rendering priority for structured replies; unstructured messages keep their native DOM in both modes. The presentation switch still controls the format independently.
+- A status line shows the loaded module version, selected presentation mode and whether the latest character reply has readable presentation blocks. No private story text is shown. Untagged saved replies stay plain; update/reload cannot add missing speaker/block tags. Generate a new reply or regenerate when structure was not emitted.
+- Kept native Edit/save/cancel/autosave protection and source-aware restoration. An external formatter wrapping an existing story now settles without repeated remounting or duplicate headers.
+
+อ่าน [การเลือกโหมดแสดงผลและวิธีตรวจข้อความเดิม](docs/optional-systems-and-regex.th.md)
 
 ## v0.45.5 — Restore Header / Dialogue / Narrative with regex
 

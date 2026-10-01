@@ -1,10 +1,10 @@
-import {renderAuctionCard} from './auction-ui.js?v=0.45.5';
-import { renderMissionBoard } from './mission-board-ui.js?v=0.45.5';
-import {uiText} from './ui-language.js?v=0.45.5';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.5';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.5';
-import { croppedPortrait } from './npc-portraits.js?v=0.45.5';
-import { renderSceneTracker } from './scene-tracker.js?v=0.45.5';
+import {renderAuctionCard} from './auction-ui.js?v=0.45.6';
+import { renderMissionBoard } from './mission-board-ui.js?v=0.45.6';
+import {uiText} from './ui-language.js?v=0.45.6';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.6';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.6';
+import { croppedPortrait } from './npc-portraits.js?v=0.45.6';
+import { renderSceneTracker } from './scene-tracker.js?v=0.45.6';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -183,9 +183,9 @@ function groupInvitation(offer, messageId, api) {
     return card;
 }
 
-// SillyTavern has already run Markdown, display regex and its HTML sanitizer on
-// .mes_text. Keep that DOM authoritative: reparsing message.mes loses custom
-// cards, formatting, bound listeners and display-only regex replacements.
+// Identify native display regex for compatibility diagnostics. RoleForge's
+// default presentation uses its saved story tags; preserving native formatting
+// is an explicit opt-in because a host wrapper is not evidence of a rewrite.
 export function displayRegexEnabled(context = {}) {
     const settings=context.extensionSettings||context.extension_settings||{};
     if (settings.disabledExtensions?.includes('regex')) return false;
@@ -263,7 +263,7 @@ export function createChatPresentation(api, open) {
     function render(){
         timer=null;const context=api.context(),chatId=context.getCurrentChatId?.()||'';
         if(chatId!==currentChat){currentChat=chatId;clearPortraits();document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}
-        const settings=api.settings();
+        const settings=api.settings(),preserveNativeChat=settings.preserveNativeChat===true;
         const npcs=api.state().npcs||[], lookup=new Map();
         for(const npc of npcs)for(const name of [npc.name,...(npc.aliases||[])])if(!lookup.has(keyName(name)))lookup.set(keyName(name),npc);
         for(const [host]of mounted)if(!host.isConnected)mounted.delete(host);
@@ -275,14 +275,17 @@ export function createChatPresentation(api, open) {
             // mounting cards here can obscure the editor and its controls.
             if(!message || message.is_user || message.is_system || mes.querySelector('#curEditTextarea,.edit_textarea,.mes_edit_textarea')){if(old)restore(host,old);continue;}
             const source=api.visible(message.mes||'');
-            // A host rerender may replace only part of .mes_text. Remove our old
-            // UI without overwriting the new nodes; use those nodes from here on.
-            if(old?.storyRoot && (old.storyRoot.parentNode!==host||nativeNodes(host,old).length)){
+            // In native mode, newly rendered/wrapped content owns the display.
+            // Default RoleForge mode keeps an unchanged mounted story even if
+            // another formatter wraps it or appends controls. Replacing that
+            // story again would create a wrap/remount feedback loop.
+            if(old?.storyRoot && (old.storyRoot.parentNode!==host||nativeNodes(host,old).length)
+                && (preserveNativeChat||!host.contains(old.storyRoot)||old.source!==source)){
                 restore(host,old,source);old=null;
             }
-            const original=old?.storyRoot?.parentNode===host?old.original:nativeNodes(host,old);
+            const original=old?.storyRoot&&host.contains(old.storyRoot)?old.original:nativeNodes(host,old);
             const parsed=settings.chatPresentation?parseStory(source):null;
-            const blocks=supportsStoryPresentation(original,source,parsed)?parsed:null;
+            const blocks=preserveNativeChat?(supportsStoryPresentation(original,source,parsed)?parsed:null):parsed;
             const scene=settings.showSceneTracker?api.sceneForMessage?.(id,message):null;
             const offers=api.socialEventsForMessage?.(id,message)?.offers||[];
             const groupOffers=api.socialEventsForMessage?.(id,message)?.groupOffers||[];
@@ -293,8 +296,8 @@ export function createChatPresentation(api, open) {
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
-            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(groupOffers)}:${JSON.stringify(notes)}:${JSON.stringify(board)}:${JSON.stringify(auction)}:${source}`;
-            if(old?.signature===signature && old.roots.every(root=>root.parentNode===host))continue;
+            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${preserveNativeChat}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(groupOffers)}:${JSON.stringify(notes)}:${JSON.stringify(board)}:${JSON.stringify(auction)}:${source}`;
+            if(old?.signature===signature && old.roots.every(root=>preserveNativeChat?root.parentNode===host:host.contains(root)))continue;
             if(old)restore(host,old,source);
             const prefix=element('div','trpg-chat'),suffix=element('div','trpg-chat');
             for(const root of [prefix,suffix])root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
