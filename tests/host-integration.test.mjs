@@ -1,4 +1,3 @@
-import {displayRegexEnabled} from '../src/npc-chat.js';
 import * as auctionCore from '../src/auction-core.js';
 import {auctionErrorText} from '../src/auction-ui.js';
 import * as missionBoard from '../src/mission-board.js';
@@ -26,7 +25,7 @@ import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMem
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enableAuctions:true,enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true,enableMemorySummaries:true,eventNotifications:true}},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={displayRegexEnabled,...auctionCore,auctionErrorText,...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={...auctionCore,auctionErrorText,...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
@@ -67,10 +66,17 @@ test('optional switches preserve explicit saved choices and active auction reser
  }finally{context.extensionSettings=previous.settings;context.chatMetadata=previous.state;}
 });
 
-test('display regex suppresses RoleForge story wrappers in the prompt while keeping enabled RPG tracking',()=>{
- const previous=context.extensionSettings.regex;
- try{context.extensionSettings.regex=[{disabled:false,placement:[2],markdownOnly:true,promptOnly:false,findRegex:'foo',replaceString:'bar'}];const prompt=host.statePrompt(host.defaultState(),{includeState:true,track:true});assert.doesNotMatch(prompt,/<tr-dialogue|<tr-narrative/);assert.match(prompt,/ROLEFORGE PATCH PROTOCOL/);}
- finally{if(previous===undefined)delete context.extensionSettings.regex;else context.extensionSettings.regex=previous;}
+test('display regex keeps enabled header/narrative/dialogue instructions and only explicit presentation OFF removes them',()=>{
+ const settings=host.getSettings(),prior={regex:context.extensionSettings.regex,presentation:settings.chatPresentation};
+ try{
+  settings.chatPresentation=true;context.extensionSettings.regex=[{disabled:false,placement:[2],markdownOnly:true,promptOnly:false,findRegex:'foo',replaceString:'bar'}];
+  const prompt=host.statePrompt(host.defaultState(),{includeState:true,track:true});
+  for(const tag of ['tr-header','tr-narrative','tr-dialogue'])assert.match(prompt,new RegExp('<'+tag));
+  assert.match(prompt,/ROLEFORGE PATCH PROTOCOL/);
+  host.updatePrompt(host.defaultState());assert.match(context.lastPrompt[1],/<tr-dialogue/);
+  const presentationOnly=host.statePrompt(host.defaultState(),{includeState:false,track:false});assert.match(presentationOnly,/<tr-header/);assert.doesNotMatch(presentationOnly,/must be upserted/);
+  settings.chatPresentation=false;const off=host.statePrompt(host.defaultState(),{includeState:true,track:true});assert.doesNotMatch(off,/<tr-dialogue|<tr-narrative|<tr-header/);assert.match(off,/ROLEFORGE PATCH PROTOCOL/);
+ }finally{settings.chatPresentation=prior.presentation;if(prior.regex===undefined)delete context.extensionSettings.regex;else context.extensionSettings.regex=prior.regex;}
 });
 
 test('auction patches survive state export and cannot replay locally settled money/items or spend reserves',()=>{
@@ -997,7 +1003,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.4');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.45.5');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

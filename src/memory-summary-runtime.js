@@ -1,6 +1,6 @@
 import {MEMORY_LINK_KEY,MEMORY_FORMAT,emptyMemoryLibrary,normalizeMemoryLibrary,memoryAncestry,captureMemoryChat,memoryChapterValid,
-    memoryCoverage,memorySegments,nextMemoryBatch,memoryFingerprint,validateMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.45.4';
-import {createMemoryStore} from './memory-store.js?v=0.45.4';
+    memoryCoverage,memorySegments,nextMemoryBatch,memoryFingerprint,validateMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.45.5';
+import {createMemoryStore} from './memory-store.js?v=0.45.5';
 
 const busyPhases = new Set(['loading','archiving','waiting','summarizing','validating','saving']);
 const errors = {

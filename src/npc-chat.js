@@ -1,10 +1,10 @@
-import {renderAuctionCard} from './auction-ui.js?v=0.45.4';
-import { renderMissionBoard } from './mission-board-ui.js?v=0.45.4';
-import {uiText} from './ui-language.js?v=0.45.4';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.4';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.4';
-import { croppedPortrait } from './npc-portraits.js?v=0.45.4';
-import { renderSceneTracker } from './scene-tracker.js?v=0.45.4';
+import {renderAuctionCard} from './auction-ui.js?v=0.45.5';
+import { renderMissionBoard } from './mission-board-ui.js?v=0.45.5';
+import {uiText} from './ui-language.js?v=0.45.5';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.45.5';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.45.5';
+import { croppedPortrait } from './npc-portraits.js?v=0.45.5';
+import { renderSceneTracker } from './scene-tracker.js?v=0.45.5';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -203,8 +203,10 @@ export function displayRegexEnabled(context = {}) {
         && Array.isArray(script.placement)&&script.placement.some(placement=>[0,2].includes(Number(placement)))));
 }
 
-function supportsStoryPresentation(nodes, source, blocks, context) {
-    if (!blocks || displayRegexEnabled(context)) return false;
+function supportsStoryPresentation(nodes, source, blocks) {
+    if (!blocks) return false;
+    // A display regex can target another message or unrelated status data.
+    // Decide from this message's rendered DOM, not from enabled regex scripts.
     // Explicit story tags and simple bold/italic are our presentation protocol.
     // Links, tables, code, custom tags/attributes and regex widgets belong to the
     // host renderer. Do not try to reconstruct them from unsanitized model HTML.
@@ -219,10 +221,13 @@ function supportsStoryPresentation(nodes, source, blocks, context) {
     }
     const hostText=nodes.map(node=>node.textContent||'').join('');
     if (hostText===source) return true; // Hosts which escape the protocol tags.
+    // With ST's encode_tags setting, Markdown still formats the text between
+    // literal protocol tags. Compare that safe inline rendering as well.
+    const encoded=appendStoryText(element('span'),source);
     const expected=element('span');
     for (const block of blocks) if (block.text) appendStoryText(expected,block.text);
     const compact=value=>value.replace(/\s+/g,'');
-    return compact(hostText)===compact(expected.textContent||'');
+    return compact(hostText)===compact(encoded.textContent||'')||compact(hostText)===compact(expected.textContent||'');
 }
 
 export function createChatPresentation(api, open) {
@@ -277,7 +282,7 @@ export function createChatPresentation(api, open) {
             }
             const original=old?.storyRoot?.parentNode===host?old.original:nativeNodes(host,old);
             const parsed=settings.chatPresentation?parseStory(source):null;
-            const blocks=supportsStoryPresentation(original,source,parsed,context)?parsed:null;
+            const blocks=supportsStoryPresentation(original,source,parsed)?parsed:null;
             const scene=settings.showSceneTracker?api.sceneForMessage?.(id,message):null;
             const offers=api.socialEventsForMessage?.(id,message)?.offers||[];
             const groupOffers=api.socialEventsForMessage?.(id,message)?.groupOffers||[];

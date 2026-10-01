@@ -2,7 +2,7 @@
 // Run: CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/regex-compat.browser.mjs
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import {readFile} from 'node:fs/promises';
+import {mkdir,readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {displayRegexEnabled} from '../src/npc-chat.js';
 const activeRegex={findRegex:'Hello',placement:[2],markdownOnly:true};
@@ -167,6 +167,56 @@ try{
   await exerciseNativeEditor(page,structuredId,'Structured RoleForge story');
   await page.evaluate(async id=>{window.host.chat[id].mes='<tr-header name="Ashe"/><tr-narrative>She waits quietly.</tr-narrative><tr-dialogue name="Ashe">**Welcome**, traveler.</tr-dialogue>';const text=document.querySelector(`[mesid="${id}"] .mes_text`);text.textContent=window.host.chat[id].mes;window.structuredOriginal=text.firstChild;await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,id);},structuredId);
   await page.locator(`[mesid="${structuredId}"] .trpg-header`).waitFor();
+  // An enabled display regex is not evidence that it changed this message.
+  // Global, character and preset rules can target unrelated status blocks.
+  for(const [scope,mode] of ['global','character','preset'].flatMap(scope=>['unrelated','no-op'].map(mode=>[scope,mode]))){
+   await page.evaluate(async({id,scope,mode})=>{
+    delete window.host.extensionSettings.regex;
+    window.host.characters[window.host.characterId].data.extensions.regex_scripts=[];
+    const scripts=[{findRegex:mode==='unrelated'?'UNRELATED_STATUS_BLOCK':'Welcome',replaceString:mode==='unrelated'?'Status widget':'Welcome',disabled:false,placement:[2],markdownOnly:true}];
+    if(scope==='global')window.host.extensionSettings.regex=scripts;
+    if(scope==='character')window.host.characters[window.host.characterId].data.extensions.regex_scripts=scripts;
+    window.host.getPresetManager=()=>({readPresetExtensionField:()=>scope==='preset'?scripts:[]});
+    const text=document.querySelector(`[mesid="${id}"] .mes_text`);
+    text.textContent=window.host.chat[id].mes;window.structuredOriginal=text.firstChild;
+    await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,id);
+   },{id:structuredId,scope,mode});
+   await page.locator(`[mesid="${structuredId}"] .trpg-header`).waitFor({timeout:3000});
+   assert.equal(await page.locator(`[mesid="${structuredId}"] .trpg-narrative`).textContent(),'She waits quietly.',`${scope} ${mode}: unchanged narration still renders`);
+   assert.equal(await page.locator(`[mesid="${structuredId}"] .trpg-dialogue strong`).textContent(),'Welcome',`${scope} ${mode}: unchanged dialogue keeps its header and formatting`);
+  }
+  // Native ST Markdown uses p/br/em/strong/q after sanitizing custom story
+  // tags. Accept that unchanged text, including safe escaped-tag rendering.
+  for(const format of ['sanitized','protocol-tags','encoded-tags']){
+   await page.evaluate(async({id,format})=>{
+    const mes='<tr-header name="Ashe"/>\n<tr-narrative>She asks, "Are you **ready**?"</tr-narrative>\n<tr-dialogue name="Ashe">**Welcome**, *traveler*.</tr-dialogue>';
+    window.host.chat[id].mes=mes;window.host.chat[id].swipes[window.host.chat[id].swipe_id]=mes;
+    const text=document.querySelector(`[mesid="${id}"] .mes_text`);
+    if(format==='sanitized')text.innerHTML='<p><br>\nShe asks, <q>"Are you <strong>ready</strong>?"</q><br>\n<strong>Welcome</strong>, <em>traveler</em>.</p>';
+    if(format==='protocol-tags')text.innerHTML='<p><tr-header name="Ashe"></tr-header><tr-narrative>She asks, <q>"Are you <strong>ready</strong>?"</q></tr-narrative><tr-dialogue name="Ashe"><strong>Welcome</strong>, <em>traveler</em>.</tr-dialogue></p>';
+    if(format==='encoded-tags'){
+     text.innerHTML='<p>&lt;tr-header name=<q>"Ashe"</q>/&gt;<br>\n&lt;tr-narrative&gt;She asks, <q>"Are you <strong>ready</strong>?"</q>&lt;/tr-narrative&gt;<br>\n&lt;tr-dialogue name=<q>"Ashe"</q>&gt;<strong>Welcome</strong>, <em>traveler</em>.&lt;/tr-dialogue&gt;</p>';
+    }
+    window.structuredOriginal=text.firstChild;
+    await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,id);
+   },{id:structuredId,format});
+   await page.locator(`[mesid="${structuredId}"] .trpg-header`).waitFor({timeout:3000});
+   assert.equal(await page.locator(`[mesid="${structuredId}"] .trpg-narrative strong`).textContent(),'ready',`${format}: ST Markdown narration`);
+   assert.equal(await page.locator(`[mesid="${structuredId}"] .trpg-dialogue strong`).textContent(),'Welcome',`${format}: ST Markdown dialogue`);
+   if(format==='encoded-tags'&&width===390&&process.env.REGEX_SCREENSHOT_DIR){
+    await mkdir(process.env.REGEX_SCREENSHOT_DIR,{recursive:true});
+    await page.locator(`[mesid="${structuredId}"] .mes_text`).screenshot({path:`${process.env.REGEX_SCREENSHOT_DIR}/narrative-regex-restored-0455.png`});
+   }
+  }
+  await page.evaluate(async id=>{
+   delete window.host.extensionSettings.regex;window.host.getPresetManager=()=>({readPresetExtensionField:()=>[]});
+   window.host.characters[window.host.characterId].data.extensions.regex_scripts=[];
+   const mes='<tr-header name="Ashe"/><tr-narrative>She waits quietly.</tr-narrative><tr-dialogue name="Ashe">**Welcome**, traveler.</tr-dialogue>';
+   window.host.chat[id].mes=mes;window.host.chat[id].swipes[window.host.chat[id].swipe_id]=mes;
+   const text=document.querySelector(`[mesid="${id}"] .mes_text`);text.textContent=mes;window.structuredOriginal=text.firstChild;
+   await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,id);
+  },structuredId);
+  await page.locator(`[mesid="${structuredId}"] .trpg-header`).waitFor();
   // Appended comments/action controls augment an unchanged story; they do not
   // replace it. Keep both the original body and those new native nodes.
   await page.evaluate(async id=>{
@@ -222,21 +272,35 @@ try{
   await page.waitForTimeout(180);
   assert.equal(await page.evaluate(id=>document.querySelector(`[mesid="${id}"] .mes_text`).firstChild===window.plainRegexNode,structuredId),true);
   assert.equal(await page.locator(`[mesid="${structuredId}"] .trpg-header`).count(),0);
-  // Preset and character-card regex are also respected, even if their output
-  // happens to match raw text (there is no visible-text difference to detect).
+  // Scoped regex that actually changes text still owns the native display.
   for(const scope of ['preset','character']){
    await page.evaluate(async({id,scope})=>{
     delete window.host.extensionSettings.regex;
-    const scripts=[{findRegex:'Welcome',replaceString:'Welcome',disabled:false,placement:[2]}];
+    const scripts=[{findRegex:'Fresh native story after an edit.',replaceString:'Scoped display rewrite.',disabled:false,placement:[2],markdownOnly:true}];
     window.host.getPresetManager=()=>({readPresetExtensionField:()=>scope==='preset'?scripts:[]});
     window.host.characters[window.host.characterId].data.extensions.regex_scripts=scope==='character'?scripts:[];
-    const text=document.querySelector(`[mesid="${id}"] .mes_text`);text.replaceChildren(Object.assign(document.createElement('p'),{textContent:window.host.chat[id].mes}));window.scopedRegexNode=text.firstChild;
+    const text=document.querySelector(`[mesid="${id}"] .mes_text`);text.replaceChildren(Object.assign(document.createElement('p'),{textContent:'Scoped display rewrite.'}));window.scopedRegexNode=text.firstChild;
     await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,id);
    },{id:structuredId,scope});
    await page.waitForTimeout(180);
-   assert.equal(await page.evaluate(id=>document.querySelector(`[mesid="${id}"] .mes_text`).firstChild===window.scopedRegexNode,structuredId),true,`${scope} regex native identity`);
-   assert.equal(await page.locator(`[mesid="${structuredId}"] .trpg-header`).count(),0);
+   assert.equal(await page.evaluate(id=>document.querySelector(`[mesid="${id}"] .mes_text`).firstChild===window.scopedRegexNode,structuredId),true,`${scope} changed text retains native identity`);
+   assert.equal(await page.locator(`[mesid="${structuredId}"] .trpg-narrative`).count(),0);
   }
+  // Matching visible story text does not authorize replacing a styled widget.
+  // Its structure, attributes and bound listeners remain owned by the host.
+  await page.evaluate(async id=>{
+   const mes='<tr-header name="Ashe"/><tr-narrative>She waits quietly.</tr-narrative><tr-dialogue name="Ashe">**Welcome**, traveler.</tr-dialogue>';
+   window.host.chat[id].mes=mes;window.host.chat[id].swipes[window.host.chat[id].swipe_id]=mes;
+   const text=document.querySelector(`[mesid="${id}"] .mes_text`);
+   text.innerHTML='<section class="native-story-widget" data-regex-widget="true"><p>She waits quietly.</p><p><strong>Welcome</strong>, traveler.</p></section>';
+   window.storyRegexWidget=text.firstChild;window.storyRegexWidgetClicks=0;
+   window.storyRegexWidget.addEventListener('click',()=>window.storyRegexWidgetClicks++);
+   await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,id);
+  },structuredId);
+  await page.waitForTimeout(180);
+  assert.equal(await page.evaluate(()=>window.storyRegexWidget.isConnected&&document.querySelector('.native-story-widget')===window.storyRegexWidget),true,'Same visible text keeps custom native widget');
+  assert.equal(await page.locator(`[mesid="${structuredId}"] .trpg-header`).count(),0);
+  await page.locator('.native-story-widget').click();assert.equal(await page.evaluate(()=>window.storyRegexWidgetClicks),1,'Native widget listener remains bound');
   // Removing addons / changing chat cannot resurrect a previous host snapshot.
   await page.evaluate(async({id,structuredId})=>{
    window.host.chat[id].mes='The scene is over.';window.host.chat[id].swipe_id=1;window.host.chat[id].swipes[1]='The scene is over.';

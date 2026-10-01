@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.45.4
+# ROLEFORGE — v0.45.5
+
+## v0.45.5 — Restore Header / Dialogue / Narrative with regex
+
+- Enabled display regex no longer disables RoleForge's story instructions or all structured story rendering. **Header / Dialogue / Narrative** remains controlled by its own switch. An unrelated or no-op regex can coexist with unchanged RoleForge story blocks.
+- Presentation checks each message's actual native content. Custom HTML/widgets, transformed display text, bound actions and native message editing stay protected; ordinary protocol text can use RoleForge's character headers and narration/dialogue boxes.
+- Existing replies with RoleForge tags can render again after reload. Replies generated without those tags during the regression remain plain; continue with a new reply or regenerate the affected reply to request structure again. The extension does not guess speakers or rewrite saved prose.
+
+อ่าน [คู่มือการใช้ร่วมกับ regex และการตรวจข้อความเดิม](docs/optional-systems-and-regex.th.md)
 
 ## v0.45.4 — Native message editing
 
