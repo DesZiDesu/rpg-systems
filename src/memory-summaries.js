@@ -156,6 +156,46 @@ export function validateMemorySummary(value, batch) {
     });
     return {summary:value.summary.trim(),recap:value.recap.trim(),events};
 }
+// Repair formatting locally, never fabricate a quote. An unusable event index
+// must not throw away a complete recap or the separately archived originals.
+export function repairMemorySummary(value, batch) {
+    if (!object(value) || !Array.isArray(value.events)) return validateMemorySummary(value,batch);
+    // Validate the chapter envelope independently of optional event indexing.
+    const result = validateMemorySummary({...value,events:[]},batch);
+    let repairedEvents = 0, droppedEvents = 0;
+    if (value.events.length > 60) throw Error('MEMORY_INVALID_SUMMARY');
+    for (const original of value.events) {
+        if (!object(original)) { droppedEvents++; continue; }
+        const event = {...original};
+        for (const field of ['people','places','keywords','knownBy']) {
+            if (event[field] == null) event[field] = [];
+            else if (typeof event[field] === 'string') event[field] = [event[field]];
+        }
+        if (typeof event.kind === 'string') event.kind = ['Event','Claim','Plan'].find(kind => kind.toLowerCase() === event.kind.trim().toLowerCase()) || event.kind;
+        if (typeof event.sourceKeys === 'string') event.sourceKeys = [event.sourceKeys];
+        if (typeof event.evidence === 'string') {
+            const quote = event.evidence.trim();
+            const wrappers = [['"','"'],["'","'"],['“','”'],['‘','’']];
+            const unwrapped = wrappers.some(([open,close]) => quote.startsWith(open) && quote.endsWith(close)) ? quote.slice(1,-1).trim() : quote;
+            if (unwrapped && batch.some(source => memoryKey(source.text).includes(memoryKey(unwrapped)))) event.evidence = unwrapped;
+            const matching = batch.filter(source => memoryKey(source.text).includes(memoryKey(event.evidence)));
+            // Some models cite the original message key instead of segmentKey.
+            // Resolve only by an actual matching quote, never by proximity.
+            if (matching.length && Array.isArray(event.sourceKeys)) {
+                const resolved = event.sourceKeys.map(key => batch.find(source => source.segmentKey === key) ? key
+                    : matching.find(source => source.key === String(key))?.segmentKey);
+                if (resolved.every(Boolean)) event.sourceKeys = [...new Set(resolved)];
+            }
+        }
+        try {
+            const checked = validateMemorySummary({...value,events:[event]},batch).events[0];
+            checked.id = `event-${memoryFingerprint(JSON.stringify([checked.sourceKeys,checked.title,result.events.length]))}`;
+            result.events.push(checked);
+            if (JSON.stringify(original) !== JSON.stringify(event)) repairedEvents++;
+        } catch { droppedEvents++; }
+    }
+    return {...result,evidenceReport:{repairedEvents,droppedEvents,originalEvents:value.events.length,verifiedEvents:result.events.length}};
+}
 export function memorySummaryPrompt(batch, previousRecap, stateReference) {
     return `You are a factual role-play archivist. Return ONLY JSON, in the story's language:
 {"summary":"this chunk's events and cause/effect","recap":"updated concise continuity overview, preserving established important past facts","events":[{"title":"","detail":"","kind":"Event|Claim|Plan","people":[],"places":[],"keywords":[],"knownBy":[],"whenText":"","sourceKeys":["segmentKey"],"evidence":"exact verbatim quote from one cited segment"}]}.

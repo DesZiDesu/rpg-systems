@@ -89,6 +89,7 @@ export async function startNavigationSummaryPreview() {
             if(api.mode==='success')setTimeout(settle,api.successDelay);
         });
     };
+    window.host.generateQuietPrompt=({quietPrompt})=>window.host.generateRaw({prompt:quietPrompt});
     const nativeFetch=window.fetch.bind(window);
     window.fetch=(input,options)=>{const url=new URL(typeof input==='string'||input instanceof URL?input:input.url,location.href);
         return url.origin===location.origin&&url.pathname.startsWith('/api/')?Promise.resolve(new Response('[]',{headers:{'Content-Type':'application/json'}})):nativeFetch(input,options);};

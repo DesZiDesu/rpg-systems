@@ -1,5 +1,5 @@
 // Reproduce native SillyTavern lifecycle failures through the actual production
-// loader and the shared isolated preview, with a local raw-generation fixture.
+// loader and the shared isolated preview, with a local native-generation fixture.
 // CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/memory-host-lifecycle.browser.mjs
 import assert from 'node:assert/strict';
 import http from 'node:http';
@@ -53,7 +53,7 @@ async function saved(page) {
 }
 async function complete(page) {
     await page.locator('.rf-memory-composer-status[data-status="ready"]').waitFor({state:'visible',timeout:15000});
-    assert.equal(await page.evaluate(() => window.navigationSummaryPreview.api.calls.length),3,'12 original messages complete as 5 + 5 + 2 through the current native raw API');
+    assert.equal(await page.evaluate(() => window.navigationSummaryPreview.api.calls.length),3,'12 original messages complete as 5 + 5 + 2 through the current native preset API');
     assert.match(await page.locator('.rf-memory-composer-progress').innerText(),/12\/12/);
     assert.equal((await saved(page)).length,3);
     await page.evaluate(() => window.navigationSummaryPreview.open('summaries'));
@@ -77,7 +77,9 @@ async function capture(page,name,width) {
         const overlay = document.querySelector('#tretaresia-rpg-overlay.is-open');
         if (overlay) {
             const animations = overlay.getAnimations({subtree:true}).filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity);
-            await Promise.allSettled(animations.map(animation => animation.finished));
+            // A paused theme animation can have finite iterations without
+            // ever finishing. It must not hang the browser verification.
+            await Promise.race([Promise.allSettled(animations.map(animation => animation.finished)),new Promise(resolve=>setTimeout(resolve,1500))]);
         }
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     });
@@ -92,6 +94,7 @@ async function clean({page,errors,apiRequests}) {
 try {
     browser = await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE || undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
     for (const width of widths) {
+        console.log(`CHECK native lifecycle ${width}px: orphan Start`);
         // A normal START can occur without END in real host commands. Native
         // Send/Stop show idle, so a stale event cannot create an endless wait.
         let fixture = await createPage(width);
@@ -102,9 +105,79 @@ try {
         await capture(fixture.page,'memory-orphan-start-complete',width);
         await clean(fixture);
 
+        // Native preset generation emits quiet START/END itself. It must not
+        // wait on its own request, change RPG records, or reprocess old prose.
+        fixture = await createPage(width);
+        console.log(`CHECK native lifecycle ${width}px: preset generation`);
+        await fixture.page.evaluate(() => {
+            const nativeQuiet = window.host.generateQuietPrompt;
+            window.quietRequests=[];window.quietStoryPrompts=[];
+            window.beforeQuietState=JSON.stringify(window.host.chatMetadata.tretaresia_rpg_state);
+            window.beforeQuietChat=JSON.stringify(window.host.chat);
+            window.host.extensionPrompts={userPreset:{value:'KEEP USER PRESET'}};
+            window.host.setExtensionPrompt=(key,value)=>{if(key==='tretaresia_rpg_roleplay_state')window.quietStoryPrompt=value;};
+            window.host.generateQuietPrompt=async options=>{
+                window.quietRequests.push(options);
+                window.navigationSummaryPreview.setNativeStoryBusy(true,{bodyState:true});
+                await window.host.eventSource.emit('GENERATION_STARTED','quiet',{},false);
+                await window.TretaresiaRpgGenerateInterceptor();
+                window.quietStoryPrompts.push(window.quietStoryPrompt);
+                try{return await nativeQuiet(options);}
+                finally {
+                    window.navigationSummaryPreview.setNativeStoryBusy(false,{bodyState:true});
+                    await window.host.eventSource.emit('GENERATION_ENDED');
+                }
+            };
+            window.navigationSummaryPreview.setApiMode('success');
+        });
+        await start(fixture.page);await complete(fixture.page);
+        const nativeResult=await fixture.page.evaluate(()=>({
+            requests:window.quietRequests.map(({skipWIAN,responseLength,removeReasoning})=>({skipWIAN,responseLength,removeReasoning})),
+            prompts:window.quietStoryPrompts,sameState:window.beforeQuietState===JSON.stringify(window.host.chatMetadata.tretaresia_rpg_state),
+            sameChat:window.beforeQuietChat===JSON.stringify(window.host.chat),external:window.host.extensionPrompts.userPreset.value,
+        }));
+        assert.deepEqual(nativeResult.requests,Array.from({length:3},()=>({skipWIAN:false,responseLength:2400,removeReasoning:false})));
+        assert.deepEqual(nativeResult.prompts,['','','']);assert.equal(nativeResult.sameState,true);assert.equal(nativeResult.sameChat,true);
+        assert.equal(nativeResult.external,'KEEP USER PRESET');
+        await clean(fixture);
+
+        // Stopping the host's quiet request is cancellation, not an API error.
+        // A late response cannot save a chapter; later requests still work.
+        fixture = await createPage(width);
+        console.log(`CHECK native lifecycle ${width}px: native cancellation`);
+        await fixture.page.evaluate(() => {
+            const nativeQuiet=window.host.generateQuietPrompt;
+            document.querySelector('#mes_stop').addEventListener('click',async()=>{
+                window.navigationSummaryPreview.setNativeStoryBusy(false,{bodyState:true});
+                await window.host.eventSource.emit('GENERATION_STOPPED');
+            });
+            window.host.generateQuietPrompt=async options=>{
+                window.navigationSummaryPreview.setNativeStoryBusy(true,{bodyState:true});
+                await window.host.eventSource.emit('GENERATION_STARTED','quiet',{},false);
+                try{return await nativeQuiet(options);}
+                finally {
+                    window.navigationSummaryPreview.setNativeStoryBusy(false,{bodyState:true});
+                    await window.host.eventSource.emit('GENERATION_ENDED');
+                }
+            };
+        });
+        await start(fixture.page);
+        await fixture.page.waitForFunction(()=>window.navigationSummaryPreview.api.calls.length===1);
+        await fixture.page.locator('#mes_stop').click();
+        await fixture.page.locator('.rf-memory-composer-status[data-status="cancelled"]').waitFor({state:'visible'});
+        assert.equal((await saved(fixture.page)).length,0);
+        await fixture.page.evaluate(()=>window.navigationSummaryPreview.api.pending());
+        await fixture.page.waitForTimeout(120);assert.equal((await saved(fixture.page)).length,0);
+        await fixture.page.evaluate(()=>window.navigationSummaryPreview.setApiMode('success'));
+        await fixture.page.locator('[data-memory-composer-action="retry"]').click();
+        await fixture.page.locator('.rf-memory-composer-status[data-status="ready"]').waitFor({state:'visible',timeout:15000});
+        assert.equal((await saved(fixture.page)).length,3);
+        await clean(fixture);
+
         // Exercise the event fallback too: with no native state available, a
         // dry run must not set the event flag and queue a real summary.
         fixture = await createPage(width);
+        console.log(`CHECK native lifecycle ${width}px: dry run`);
         await fixture.page.evaluate(() => {
             document.querySelector('#mes_stop').remove();
             document.querySelector('#send_but').style.display = 'none';
@@ -164,7 +237,7 @@ try {
         await fixture.page.evaluate(() => window.navigationSummaryPreview.open('summaries'));
         await fixture.page.waitForFunction(() => document.querySelector('[data-memory-pending]')?.textContent === '7');
         await clean(fixture);
-        console.log(`PASS production native host lifecycle: orphan START, ignored dry run, real queued summary with zero API calls and automatic resume, and queued cancellation preserving the first saved batch at ${width}px`);
+        console.log(`PASS production native host lifecycle: native preset quiet requests without story changes, native Stop cancellation with late-result discard/retry, orphan START, ignored dry run, real queued summary with zero API calls/automatic resume, and saved-batch preservation at ${width}px`);
     }
 } finally {
     await browser?.close();

@@ -195,7 +195,8 @@ export function createMemoryComposerStatus({document:doc = globalThis.document,c
         } else if (current.coverage?.pendingMessages > 0) bits.push(word(`${current.coverage.pendingMessages} remaining`, `เหลือ ${current.coverage.pendingMessages} ข้อความ`));
         text(progress,bits.join(' · '));
         const hasError = ['error','interrupted'].includes(status) && Boolean(job.error);
-        const problem = hasError ? job.error : job.promptWarning || '';
+        const handoffWarning = job.rpgHandoff === 'disabled' ? word('Enable automatic character continuity before moving chats.', 'เปิดการสานต่อข้อมูลตัวละครก่อนย้ายแชต') : job.rpgHandoff === 'failed' ? word('RPG snapshot could not be saved. Export state before moving chats.', 'บันทึก snapshot RPG ไม่สำเร็จ ส่งออก State ก่อนย้ายแชต') : '';
+        const problem = hasError ? job.error : job.promptWarning || handoffWarning || (job.droppedEvents > 0 ? word(`${job.droppedEvents} unverified event entries omitted. Summaries and originals saved; review Details.`, `ตัดดัชนีที่ตรวจหลักฐานไม่ได้ ${job.droppedEvents} รายการ บันทึกสรุปและต้นฉบับแล้ว ตรวจที่รายละเอียด`) : '');
         error.hidden = !problem;
         text(error,problem);
         if (error.title !== problem) error.title = problem;

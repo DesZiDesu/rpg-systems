@@ -31,6 +31,7 @@ async function setupApi(page){await page.evaluate(()=>{
  const batch=JSON.parse(prompt.split('SOURCE SEGMENTS: ')[1]),source=batch.find(item=>item.text.includes('Cora'))||batch.at(-1);
  resolve(JSON.stringify({summary:'Nova met Cora while fishing at the river at night.',recap:'Nova first met Cora at the river while fishing at night. They spoke privately.',events:[{title:'First meeting with Cora <img src=x onerror=alert(1)>',detail:'Nova met Cora while fishing at the river at night.',kind:'Event',people:['Cora','Nova','คอร่า'],places:['River','แม่น้ำ'],keywords:['fishing','ตกปลา','กลางคืน'],knownBy:['Cora','Nova'],whenText:'Day 7, night',sourceKeys:[source.segmentKey],evidence:source.text.slice(0,100)}]}));window.memoryResolve=null;
  };});};
+ window.host.generateQuietPrompt=({quietPrompt})=>window.host.generateRaw({prompt:quietPrompt});
 });}
 let browser;
 try{

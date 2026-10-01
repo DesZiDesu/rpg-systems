@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as memory from '../src/memory-summaries.js';
-import {createMemorySummaries,requestMemorySummary,cleanMemorySummaryResponse} from '../src/memory-summary-runtime.js';
+import {createMemorySummaries,requestMemorySummary,cleanMemorySummaryResponse,memorySummaryNativeGenerationActive,diagnoseMemoryApiFailure,memoryJobMessage} from '../src/memory-summary-runtime.js';
 import {renderMemorySummaries} from '../src/memory-summary-ui.js';
 
 const config = () => ({enableMemorySummaries:true,language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryBatchSize:10,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
@@ -19,7 +19,7 @@ function fixture(options = {}) {
     const store = {get:async owner => {storageCalls.push('get');return data.has(owner) ? structuredClone(data.get(owner)) : null;},put:async(owner,value) => { storageCalls.push('put');if(options.failSave?.(value))throw Error('MEMORY_STORAGE_WRITE_FAILED'); data.set(owner,structuredClone(value)); }};
     const runtime = createMemorySummaries({context:()=>context,owner:ctx=>ctx.owner,settings:()=>settings,state:()=>state,visible:value=>value.replace(/<!--[^]*?-->/g,''),scene:()=>({day:7,time:'23:00',location:'River'}),store,
         notify:(type,message)=>notices.push({type,message}),changed:view=>phases.push(view.job.status),parse:JSON.parse,timeout:Object.hasOwn(options,'timeout') ? options.timeout : 100,
-        saveMetadata:async()=>options.metadataFail ? false : true,isGenerating:()=>options.generating?.() || false,
+        saveMetadata:async()=>options.metadataFail ? false : true,isGenerating:()=>options.generating?.() || false,continuity:options.continuity || (()=>{}),
         request:async(ctx,prompt,profile,signal)=>{calls.push({prompt,profile,signal});return responder(prompt,signal);}});
     return {runtime,data,notices,phases,calls,storageCalls,context,state,settings,setResponder:value=>{responder=value;}};
 }
@@ -225,12 +225,110 @@ test('full backup roundtrip includes originals, rejects a different owner, and n
 
 test('API adapter uses standalone generation or a chosen profile without changing the main connection',async()=>{
     let args;const chat=[{is_user:true,mes:'Continue our story.'}],current={chat,generateRaw:async value=>{args=value;return '{}';}};
-    await requestMemorySummary(current,'SOURCE','','signal');assert.equal(args.prompt,'SOURCE');assert.equal(args.trimNames,false);
+    await requestMemorySummary(current,'SOURCE','','signal','compact');assert.equal(args.prompt,'SOURCE');assert.equal(args.trimNames,false);
     assert.equal(args.responseLength,2400);assert.deepEqual(current.chat,chat);assert(!Object.hasOwn(args,'api'));assert(!Object.hasOwn(args,'quietToLoud'));
     assert(!Object.hasOwn(args,'signal'));assert(!Object.hasOwn(args,'externalAbortSignal'));
     let sent;const profile={extensionSettings:{connectionManager:{profiles:[{id:'summary',name:'Summary'}]}},ConnectionManagerRequestService:{sendRequest:async(...values)=>{sent=values;return {content:'{}'};}}};
-    assert.equal(await requestMemorySummary(profile,'SOURCE','summary',null),'{}');assert.equal(sent[0],'summary');assert.equal(sent[2],2400);assert.equal(sent[4].temperature,0.15);
+    assert.equal(await requestMemorySummary(profile,'SOURCE','summary',null),'{}');assert.equal(sent[0],'summary');assert.equal(sent[2],2400);assert.equal(sent[3].includePreset,true);assert.equal(sent[4],undefined);
     await assert.rejects(requestMemorySummary(profile,'SOURCE','missing',null),/PROFILE_UNAVAILABLE/);
+});
+
+test('default adapter uses native preset generation, including WI/AN, without raw fallback or connection changes',async()=>{
+    let args,release,raw=0;
+    const context={chat:[{mes:'Original story'}],generateRaw:()=>{raw++;},generateQuietPrompt:options=>{args=options;return new Promise(resolve=>{release=resolve;});}};
+    const pending=requestMemorySummary(context,'SUMMARY TASK','',null);
+    assert.equal(memorySummaryNativeGenerationActive(),true);
+    assert.deepEqual(args,{quietPrompt:'SUMMARY TASK',skipWIAN:false,responseLength:2400,removeReasoning:false});
+    release('{"summary":"done"}');assert.equal(await pending,'{"summary":"done"}');
+    assert.equal(memorySummaryNativeGenerationActive(),false);assert.equal(raw,0);assert.equal(context.chat.length,1);
+    context.generateQuietPrompt=async()=>{throw Error('HTTP 404');};
+    await assert.rejects(requestMemorySummary(context,'TASK','',null),/404/);
+    assert.equal(memorySummaryNativeGenerationActive(),false);assert.equal(raw,0);
+    await assert.rejects(requestMemorySummary({generateRaw:()=>{raw++;}},'TASK','',null),/PRESET_UNAVAILABLE/);
+    assert.equal(raw,0);
+});
+
+test('cancelled native requests release the prompt guard even when the provider never finishes',async()=>{
+    const controller=new AbortController();let release;
+    const context={generateQuietPrompt:()=>new Promise(resolve=>{release=resolve;})};
+    const pending=requestMemorySummary(context,'TASK','',controller.signal);assert.equal(memorySummaryNativeGenerationActive(),true);
+    controller.abort();assert.equal(memorySummaryNativeGenerationActive(),false);
+    release('Late reply');await pending;assert.equal(memorySummaryNativeGenerationActive(),false);
+    await assert.rejects(requestMemorySummary(context,'TASK','',controller.signal),/CANCELLED/);
+    const literal='{"summary":"Keep <think>the note</think>","recap":"Note saved","events":[]}';
+    assert.equal(cleanMemorySummaryResponse(literal,{removeReasoningFromString:()=>''}),literal);
+});
+
+test('local repairs resolve original message IDs and omitted optional metadata only with a real quote',()=>{
+    const batch=[{key:'7',segmentKey:'7.1',text:'คอร่าเดินไปตกปลาที่แม่น้ำตอนกลางคืน'}];
+    const input={summary:'พบคอร่า',recap:'คอร่าตกปลาตอนกลางคืน',events:[{title:'พบคอร่า',detail:'พบกันที่แม่น้ำ',kind:'event',sourceKeys:'7',evidence:'“คอร่าเดินไปตกปลา”',people:'คอร่า'}]};
+    const repaired=memory.repairMemorySummary(input,batch);
+    assert.deepEqual(repaired.events[0].sourceKeys,['7.1']);assert.deepEqual(repaired.events[0].people,['คอร่า']);assert.deepEqual(repaired.events[0].knownBy,[]);
+    assert.equal(repaired.events[0].evidence,'คอร่าเดินไปตกปลา');assert.equal(repaired.evidenceReport.repairedEvents,1);
+    assert.equal(input.events[0].kind,'event');assert.equal(input.events[0].sourceKeys,'7');
+    const unsupported=memory.repairMemorySummary({...input,events:[{...input.events[0],evidence:'คอร่าไม่ได้ไปตกปลา'}]},batch);
+    assert.equal(unsupported.events.length,0);assert.equal(unsupported.evidenceReport.droppedEvents,1);
+    const wrongId=memory.repairMemorySummary({...input,events:[{...input.events[0],sourceKeys:['99']}]},batch);
+    assert.equal(wrongId.events.length,0);
+    assert.throws(()=>memory.repairMemorySummary({...input,recap:''},batch),/INVALID_SUMMARY/);
+});
+
+test('one unsupported event does not discard good events, the chapter, originals, or later batches',async()=>{
+    const f=fixture({settings:{memorySummaryBatchSize:2},respond:prompt=>{
+        const value=JSON.parse(simpleMemoryResponse(prompt));
+        const source=JSON.parse(prompt.split('SOURCE SEGMENTS: ')[1])[0];
+        value.events=[{title:'Recorded source',detail:'An established event.',kind:'Event',people:[],places:[],keywords:[],knownBy:[],sourceKeys:[source.segmentKey],evidence:source.text},
+            {title:'Unsupported interpretation',detail:'An invented event.',kind:'Event',people:[],places:[],keywords:[],knownBy:[],sourceKeys:[source.segmentKey],evidence:'THIS QUOTE NEVER OCCURRED'}];
+        return JSON.stringify(value);
+    }});
+    setBacklog(f,5);await f.runtime.open();const originals=structuredClone(f.context.chat);
+    assert.equal(await f.runtime.run(),true);assert.equal(f.calls.length,3);assert.equal(f.runtime.view().coverage.pendingMessages,0);
+    assert.equal(f.runtime.view().job.droppedEvents,3);assert.equal(f.runtime.view().job.status,'ready');
+    const saved=f.data.get('card:cora');assert.equal(saved.chapters.length,3);assert.equal(saved.chats[0].messages.length,5);
+    assert(saved.chapters.every(chapter=>chapter.events.length===1 && chapter.evidenceReport.droppedEvents===1));
+    assert.deepEqual(f.context.chat,originals);assert(f.notices.some(notice=>notice.type==='warning' && /unverified/.test(notice.message)));
+    f.runtime.search('THIS QUOTE NEVER OCCURRED');assert.equal(f.runtime.view().results.length,0);
+    const markup={innerHTML:'',querySelectorAll:()=>[]};renderMemorySummaries(markup,f.runtime.view(),[]);assert.match(markup.innerHTML,/data-memory-evidence-warning/);
+});
+
+test('all unusable event citations leave originals searchable, without inventing evidence or paid repairs',async()=>{
+    const f=fixture({respond:()=>JSON.stringify({summary:'A source was archived.',recap:'A conversation happened.',events:[{title:'bad',detail:'bad',kind:'Event',evidence:'not in sources',sourceKeys:['unknown']}]})});
+    await f.runtime.open();assert.equal(await f.runtime.run(),true);assert.equal(f.calls.length,1);
+    assert.equal(f.runtime.view().chapters[0].events.length,0);assert.equal(f.runtime.view().job.droppedEvents,1);
+    f.runtime.search('fishing');assert(f.runtime.view().results.some(hit=>hit.type==='source'));
+    await f.runtime.run();assert.equal(f.runtime.view().job.droppedEvents,0);assert.equal(f.calls.length,1);
+});
+
+test('API diagnostics separate missing models, quota, permissions, context overflow and offline connections',()=>{
+    for(const [input,pattern] of [[{status:404},/not found/],['Not Found',/not found/],[{code:'model_not_found'},/not found/],[Error('HTTP 429'),/Quota/],[{response:{status:401}},/authorization/],[Error('context length exceeded'),/exceeds/],[{status:503},/unavailable/],[Error('Failed to fetch'),/reach/]]) {
+        const diagnosed=diagnoseMemoryApiFailure(input);assert.equal(diagnosed.message,'MEMORY_API_REQUEST_FAILED');assert.match(memoryJobMessage(diagnosed),pattern);
+        assert.notEqual(memoryJobMessage(diagnosed,'th'),memoryJobMessage(diagnosed));
+    }
+});
+
+test('empty and malformed responses stop once; explicit retry uses smaller batches and preserves preference',async()=>{
+    for(const bad of ['',undefined,'{"summary":"truncated']) {
+        const f=fixture({respond:()=>bad});setBacklog(f,12);await f.runtime.open();assert.equal(await f.runtime.run(),false);
+        assert.equal(f.calls.length,1);assert.equal(f.runtime.view().chapters.length,0);assert.equal(f.runtime.view().job.recommendedBatchSize,5);
+        f.setResponder(simpleMemoryResponse);assert.equal(await f.runtime.run({retry:true}),true);assert.equal(f.settings.memorySummaryBatchSize,10);
+        assert.deepEqual(f.calls.slice(1).map(call=>new Set(JSON.parse(call.prompt.split('SOURCE SEGMENTS: ')[1]).map(source=>source.key)).size),[5,5,2]);
+    }
+});
+
+test('preparing with character continuity off keeps archives and explicitly warns before changing chat',async()=>{
+    const f=fixture({settings:{autoContinuity:false}});await f.runtime.open();assert.equal(await f.runtime.run({prepare:true}),true);
+    assert.equal(f.runtime.view().job.rpgHandoff,'disabled');assert.equal(f.data.get('card:cora').capsules.length,1);
+    assert(f.notices.some(notice=>/continuity is off/.test(notice.message)));
+    const panel={innerHTML:'',querySelectorAll:()=>[]};renderMemorySummaries(panel,f.runtime.view(),[]);assert.match(panel.innerHTML,/data-memory-rpg-handoff-warning/);
+});
+
+test('preparing reports a failed RPG snapshot separately while keeping the saved archive and handoff link',async()=>{
+    let attempts=0;const f=fixture({settings:{autoContinuity:true},continuity:()=>{attempts++;return false;}});
+    await f.runtime.open();assert.equal(await f.runtime.run({prepare:true}),true);assert.equal(attempts,1);
+    assert.equal(f.runtime.view().job.status,'ready');assert.equal(f.runtime.view().job.rpgHandoff,'failed');
+    assert.equal(f.data.get('card:cora').capsules.length,1);assert(f.context.chatMetadata[memory.MEMORY_LINK_KEY].capsuleId);
+    assert(f.notices.some(notice=>/Export state/.test(notice.message)));
+    const panel={innerHTML:'',querySelectorAll:()=>[]};renderMemorySummaries(panel,f.runtime.view(),[]);assert.match(panel.innerHTML,/Export state as a backup/);
 });
 
 test('native raw reasoning is removed before parsing while literal summary tags and evidence remain intact',async()=>{
@@ -248,7 +346,7 @@ test('native current-connection cancellation discards late raw results without s
     let release,stops=0;const f=fixture();
     f.context.eventSource={emit:()=>{stops++;}};
     f.context.generateRaw=({prompt})=>new Promise(resolve=>{release=()=>resolve(simpleMemoryResponse(prompt));});
-    f.setResponder(prompt=>requestMemorySummary(f.context,prompt,'',null));
+    f.setResponder(prompt=>requestMemorySummary(f.context,prompt,'',null,'compact'));
     await f.runtime.open();const original=structuredClone(f.context.chat),pending=f.runtime.run();
     while(!release)await new Promise(resolve=>setTimeout(resolve,1));
     f.runtime.cancel();assert.equal(await pending,false);assert.equal(stops,0);assert.deepEqual(f.context.chat,original);

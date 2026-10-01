@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.46.3
+# ROLEFORGE — v0.46.4
+
+## v0.46.4 — Native preset summaries and recoverable event indexing
+
+- Main-chat summaries now default to SillyTavern's native `Generate('quiet')` path through `generateQuietPrompt()`, using enabled user preset prompts, JB, chat context and WI/Author’s Note according to host settings. Compact raw generation remains selectable. RoleForge pauses its own story/patch instructions for the archive task and never adds summary output as story or pays rewards from it.
+- Missing optional event metadata and message/segment ID formatting are repaired locally when the quoted source matches. Unsupported event entries are omitted with a visible warning; complete chapter summaries and original messages are saved before continuing. Local repairs use no additional API requests. Incomplete JSON and empty replies stop at the last saved batch; explicit Retry uses a smaller batch.
+- API diagnostics distinguish missing models/endpoints, access, quota, context and service failures when the host supplies that information. No automatic paid retry or silent connection fallback occurs. Native cancellation releases prompt guards and avoids reprocessing the last story reply.
+- Prepare for new chat reports whether automatic RPG continuity is disabled or its snapshot cannot be saved. Exact player state (including levels, resources, skills, inventory, currency and payment receipts) travels through character continuity, separately from story summaries; Chat NPCs remain scoped to their original chat.
 
 ## v0.46.3 — Reliable summary scheduling and mobile module menus
 
