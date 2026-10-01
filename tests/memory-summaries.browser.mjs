@@ -9,7 +9,9 @@ const root=new URL('../',import.meta.url),base='/scripts/extensions/third-party/
 const server=http.createServer(async(req,res)=>{
  try{const url=new URL(req.url,'http://localhost');if(url.pathname.startsWith('/api/')){res.setHeader('content-type','application/json');res.end('[]');return;}
  if(!url.pathname.startsWith(base)||url.pathname.includes('..')){res.writeHead(404).end();return;}
- const path=url.pathname.slice(base.length),content=await readFile(new URL(path,root));res.setHeader('content-type',path.endsWith('.css')?'text/css':path.endsWith('.html')?'text/html':path.endsWith('.json')?'application/json':/\.(m?js)$/.test(path)?'text/javascript':'image/webp');res.end(content);
+ const path=url.pathname.slice(base.length);let content=await readFile(new URL(path,root));
+ if(path==='docs/previews/preview-h-stats.html')content=content.toString().replace('<textarea id="send_textarea"></textarea>','<section id="form_sheld"><form id="send_form"><textarea id="send_textarea" aria-label="Story message" placeholder="Type a message, or /? for help"></textarea><div id="send_controls"><button id="send_but" type="button" aria-label="Send story message">➤</button><button id="mes_stop" type="button" hidden aria-label="Stop story generation">■</button></div></form></section>').replace('</style>','#form_sheld{position:fixed;bottom:12px;left:12px;right:12px;white-space:nowrap}#send_form{border:1px solid #444;border-radius:20px;background:#151515;padding:12px;display:flex;flex-wrap:wrap;gap:8px;box-sizing:border-box}#send_form #send_textarea{display:block;flex:1 1 100%;width:100%;min-height:64px;border:0;background:transparent;color:#eee;resize:none;font:inherit}#send_controls{margin-left:auto;display:flex;gap:6px}#send_but,#mes_stop{width:44px;height:44px;border-radius:50%;font-size:22px;border:0;background:#ddd;color:#111}</style>');
+ res.setHeader('content-type',path.endsWith('.css')?'text/css':path.endsWith('.html')?'text/html':path.endsWith('.json')?'application/json':/\.(m?js)$/.test(path)?'text/javascript':'image/webp');res.end(content);
  }catch{res.writeHead(404).end();}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -62,9 +64,12 @@ try{
  for(const control of await current.locator('button,input:not([type=hidden]):not([type=checkbox]):not([type=file]),select,textarea,summary').all())if(await control.isVisible())assert((await control.boundingBox()).height>=43.9,await control.getAttribute('data-action')||'control');
  await current.locator('.rf-memory-settings summary').click();assert(await current.locator('[name="memorySummaryProfile"]').isVisible());
  await current.locator('[data-memory-batch-size="5"]').click();assert.equal(await current.locator('[name="memorySummaryBatchSize"]').inputValue(),'5');
+ assert.equal(await current.locator('[name="memorySummaryTimeoutSeconds"]').inputValue(),'240');
+ await current.locator('[name="memorySummaryTimeoutSeconds"]').fill('60');
  await current.locator('[name="memorySummaryBudget"]').fill('800');await current.locator('[data-form="memory-summary-settings"] [type=submit]').click();
  assert.equal(await page.evaluate(()=>window.host.extensionSettings.tretaresia_rpg.memorySummaryBudget),800);
  assert.equal(await page.evaluate(()=>window.host.extensionSettings.tretaresia_rpg.memorySummaryBatchSize),5);
+ assert.equal(await page.evaluate(()=>window.host.extensionSettings.tretaresia_rpg.memorySummaryTimeoutSeconds),60);
  // The real continuity bridge carries an ancestry link, not a whole archive in every turn.
  await page.evaluate(async()=>{window.TretaresiaRpgContinuity.capture();window.host.chat=[{is_user:false,name:'Narrator',mes:'The next scene begins.'}];await window.hStatsPreview.switchChat('memory-continued',{});});
  await page.waitForFunction(()=>window.host.chatMetadata.tretaresia_rpg_memory_link?.ancestry?.includes('h-stats-preview'));
@@ -114,7 +119,19 @@ try{
  await current.locator('.rf-memory-settings summary').click();
  await current.evaluate(node=>{for(let parent=node;parent;parent=parent.parentElement)parent.scrollTop=0;window.scrollTo(0,0);});
  await mkdir('/workspace/artifacts',{recursive:true});await page.screenshot({path:`/workspace/artifacts/memory-batch-progress-${width}.png`});
- await current.locator('[data-action="memory-summary-cancel"]').click();await page.waitForFunction(()=>document.querySelector('.rf-memory-job')?.dataset.status==='cancelled');
+ // The live summary remains visible in the main composer after closing RoleForge.
+ await page.evaluate(()=>{window.originalStorySend=document.querySelector('#send_but');window.storySendClicks=0;window.originalStorySend.addEventListener('click',()=>window.storySendClicks++);});
+ await page.locator('#tretaresia-rpg-close').click();
+ const composer=page.locator('.rf-memory-composer-status');await composer.waitFor({state:'visible'});assert.equal(await composer.getAttribute('data-status'),'summarizing');
+ assert.match(await composer.innerText(),/10\s*\/\s*23/);assert(await page.locator('.rf-memory-composer-stop').isVisible());
+ assert.equal(await page.evaluate(()=>document.querySelector('#send_but')===window.originalStorySend),true);
+ assert.equal(await page.locator('#send_but').isVisible(),false);
+ const composerGeometry=await composer.evaluate(node=>({scroll:node.scrollWidth,width:node.clientWidth,left:node.getBoundingClientRect().left,right:node.getBoundingClientRect().right}));
+ assert(composerGeometry.scroll<=composerGeometry.width+1&&composerGeometry.left>=0&&composerGeometry.right<=width,JSON.stringify(composerGeometry));
+ await page.screenshot({path:`/workspace/artifacts/memory-main-chat-progress-${width}.png`});
+ await page.locator('.rf-memory-composer-stop').click();await page.waitForFunction(()=>document.querySelector('.rf-memory-composer-status')?.dataset.status==='cancelled');
+ assert.equal(await page.locator('#send_but').isVisible(),true);await page.locator('#send_but').click();assert.equal(await page.evaluate(()=>window.storySendClicks),1);
+ await composer.locator('[data-memory-composer-action="open"]').click();current=await panel(page);await current.locator('[data-memory-pending]').waitFor({state:'visible'});await page.waitForFunction(()=>document.querySelector('.rf-memory-job')?.dataset.status==='cancelled'&&document.querySelector('[data-memory-pending]')?.textContent==='13');
  await page.evaluate(()=>window.memoryResolve());assert.equal(await current.locator('[data-memory-pending]').innerText(),'13');
  // Reload, restore the same chat, and resume the thirteen remaining originals from IndexedDB.
  await page.reload();await page.waitForFunction(()=>window.hStatsPreview?.ready&&document.querySelector('#tretaresia-rpg-overlay.is-ready'));await setupApi(page);
@@ -127,12 +144,36 @@ try{
  const resumedLast=await page.evaluate(()=>JSON.parse(window.memoryCalls.at(-1).split('SOURCE SEGMENTS: ')[1]));assert.deepEqual([...new Set(resumedLast.map(source=>source.key))],['20','21','22']);
  await page.evaluate(()=>window.memoryResolve());await page.waitForFunction(()=>document.querySelector('.rf-memory-job')?.dataset.status==='ready');
  assert.equal(await current.locator('[data-memory-pending]').innerText(),'0');assert.match(await current.locator('.rf-memory-job').innerText(),/Saved chapters: 3/);assert.equal(await page.evaluate(()=>window.memoryCalls.length),2);
+ // An API deadline identifies the failed phase, retains the saved batch, and does not auto-spend another call.
+ await page.evaluate(async timeoutId=>{window.host.chat=Array.from({length:15},(_,index)=>({is_user:index%2===0,name:index%2===0?'Nova':'Cora',mes:`Timeout journey message ${index+1}: Nova and Cora visit the river.`}));await window.hStatsPreview.switchChat(timeoutId,{tretaresia_rpg_state:{player:{name:'Nova'},npcs:[],location:{place:'River',narrativeVersion:1}}});},`memory-timeout-${width}`);
+ current=await panel(page);await page.waitForFunction(()=>document.querySelector('[data-memory-pending]')?.textContent==='15');
+ const timeoutCalls=await page.evaluate(()=>window.memoryCalls.length);
+ await current.locator('[data-action="memory-summary-run"]').click();await page.waitForFunction(()=>typeof window.memoryResolve==='function');
+ await page.evaluate(()=>{window.memoryNativeTimeout=window.setTimeout;window.setTimeout=(callback,delay,...args)=>window.memoryNativeTimeout(callback,delay===60000?500:delay,...args);window.memoryResolve();});
+ await page.waitForFunction(()=>document.querySelector('.rf-memory-job')?.dataset.status==='error');
+ await page.evaluate(()=>{window.setTimeout=window.memoryNativeTimeout;});
+ assert.match(await current.locator('.rf-memory-error').innerText(),/summary API|API.*summary/i);
+ await current.locator('.rf-memory-diagnostics summary').click();assert.equal(await current.locator('[data-memory-error-code]').innerText(),'MEMORY_API_TIMEOUT');
+ assert.match(await current.locator('[data-memory-failed-stage]').innerText(),/separate API request/);
+ assert.match(await current.locator('.rf-memory-diagnostics').innerText(),/Previously saved chapters are kept/);
+ assert.equal(await current.locator('[data-memory-pending]').innerText(),'5');assert.match(await current.locator('[data-memory-retry-size]').innerText(),/2 messages/);
+ assert.equal(await page.evaluate(()=>window.memoryCalls.length),timeoutCalls+2);
+ await page.waitForTimeout(600);assert.equal(await page.evaluate(()=>window.memoryCalls.length),timeoutCalls+2);
+ await page.evaluate(()=>window.memoryResolve());assert.equal(await current.locator('[data-memory-pending]').innerText(),'5');assert.match(await current.locator('.rf-memory-job').innerText(),/Saved chapters: 1/);
+ await current.locator('[data-action="memory-summary-retry"]').click();await page.waitForFunction(()=>typeof window.memoryResolve==='function');
+ assert.equal(await page.evaluate(()=>new Set(JSON.parse(window.memoryCalls.at(-1).split('SOURCE SEGMENTS: ')[1]).map(source=>source.key)).size),2);
+ assert.match(await current.locator('[data-memory-adaptive]').innerText(),/2 messages/);
+ assert.equal(await page.evaluate(()=>window.host.extensionSettings.tretaresia_rpg.memorySummaryBatchSize),10);
+ await page.evaluate(()=>window.memoryResolve());await page.waitForFunction(()=>document.querySelector('[data-memory-pending]')?.textContent==='3'&&typeof window.memoryResolve==='function');
+ await page.evaluate(()=>window.memoryResolve());await page.waitForFunction(()=>document.querySelector('[data-memory-pending]')?.textContent==='1'&&typeof window.memoryResolve==='function');
+ await page.evaluate(()=>window.memoryResolve());await page.waitForFunction(()=>document.querySelector('.rf-memory-job')?.dataset.status==='ready');
+ assert.equal(await current.locator('[data-memory-pending]').innerText(),'0');assert.equal(await page.evaluate(()=>window.memoryCalls.length),timeoutCalls+5);
  assert.deepEqual(errors,[]);await mkdir('/workspace/artifacts',{recursive:true});await page.screenshot({path:`/workspace/artifacts/memory-summaries-${width}.png`});
  // Segments are explanatory: one long original remains one pending message.
  await page.evaluate(async longId=>{window.host.chat=[{is_user:false,name:'Cora',mes:'Cora remembers the river adventure. '.repeat(400)}];await window.hStatsPreview.switchChat(longId,{tretaresia_rpg_state:{player:{name:'Nova'},npcs:[],location:{place:'River',narrativeVersion:1}}});},`memory-long-${width}`);
  current=await panel(page);await page.waitForFunction(()=>document.querySelector('[data-memory-pending]')?.textContent==='1');
- assert.match(await current.locator('.rf-memory-job').innerText(),/A long original message can contain several segments/);assert.equal(await page.evaluate(()=>window.memoryCalls.length),2);
- console.log(`PASS production memory message batches, incremental IndexedDB save/reload/resume, pending counts, live elapsed progress, unsaved drafts, failure/cancel, source evidence/search, Thai/English, token budgets, full backup, continuity and branch isolation at ${width}px`);
+ assert.match(await current.locator('.rf-memory-job').innerText(),/A long original message can contain several segments/);assert.equal(await page.evaluate(()=>window.memoryCalls.length),timeoutCalls+5);
+ console.log(`PASS production memory batches, persisted save/reload/resume, API deadline diagnostics/manual adaptive retry, composer progress/native-send preservation/Stop with overlay closed, unsaved drafts, source evidence/search, Thai/English, token budgets, backup, continuity and branch isolation at ${width}px`);
  await page.close();
  }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

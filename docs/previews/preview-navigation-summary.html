@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>RoleForge · Navigation and memory preview</title>
+    <style>
+        :root{color-scheme:dark;--SmartThemeBodyColor:#ece7da;--SmartThemeBorderColor:#393732;--SmartThemeBlurTintColor:#141413;--SmartThemeQuoteColor:#d8bb6b}
+        *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#090909;color:#ece7da;font-family:system-ui,sans-serif}
+        body{padding:0 0 175px}button,select,textarea{font:inherit}
+        .preview-header{max-width:850px;margin:auto;padding:15px 20px;border-bottom:1px solid #262521;display:flex;align-items:center;gap:12px}
+        .preview-header strong{font-size:19px;letter-spacing:.02em}.preview-emblem{width:36px;height:36px;border:1px solid #9d874e;border-radius:50%;display:grid;place-items:center;color:#d6bd74}
+        #preview-toolbar{max-width:850px;margin:18px auto;padding:0 20px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        #preview-toolbar button,#preview-toolbar select{min-height:38px;padding:8px 12px;border:1px solid #615538;border-radius:4px;background:#171611;color:#e3d8ba;cursor:pointer}
+        #preview-toolbar label{display:flex;align-items:center;gap:6px;font-size:13px}.preview-note{max-width:850px;margin:0 auto 18px;padding:0 20px;color:#a9a495;font-size:13px;line-height:1.6}
+        #preview-status{margin:8px 0;color:#bdb6a4;flex-basis:100%;font-size:13px}
+        .preview-review #preview-toolbar,.preview-review .preview-note{display:none}
+        #chat{max-width:850px;margin:auto;padding:12px 20px 100px;line-height:1.8;overflow-wrap:anywhere}
+        .mes{padding:12px 0}.mes .name{font-weight:600;letter-spacing:.02em;color:#d8d2c3}.mes_text p{margin:12px 0}.mes.mes_last .mes_text{color:#e3dfd5}
+        .mes-avatar{float:left;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#282b24;border:1px solid #605c4c;margin-right:10px;color:#ded4b1;font:600 19px Georgia}
+        .mes .timestamp{font-size:12px;color:#858274}
+        .composer-host{position:fixed;z-index:5;left:50%;transform:translateX(-50%);bottom:12px;width:calc(100% - 24px);max-width:850px}
+        #send_form{width:100%;background:#141414;border:1px solid #3c3c39;border-radius:25px;padding:12px;display:flex;flex-wrap:wrap;gap:7px;align-items:center;box-shadow:0 0 0 9px #090909}
+        #send_textarea{width:100%;min-height:54px;resize:none;background:transparent;border:0;color:#ece7da;padding:4px 10px;outline:0;font-size:17px}
+        #send_textarea::placeholder{color:#878787}.composer-avatar{height:35px;width:35px;background:#45473c;border-radius:50%;display:grid;place-items:center;font:600 18px Georgia;color:#e1d8b8;margin-right:3px}
+        #send_form .native-control{width:42px;height:42px;border:0;background:transparent;color:#d3d3d1;cursor:pointer;font-size:24px;display:grid;place-items:center}
+        #send_but{margin-left:auto!important;background:#e5e5e3!important;color:#121212!important;border-radius:50%;font-size:24px!important}
+        #send_form #mes_stop{display:none;margin-left:auto;background:#e5e5e3!important;color:#121212!important;border-radius:50%;font-size:17px!important}
+        #extensionsMenu{display:none}
+        .preview-extension-drawer[hidden]{display:none!important}
+        .preview-extension-drawer{position:fixed;z-index:100010;inset:0 0 0 auto;width:min(100%,650px);background:#11110f;border-left:1px solid #4b4430;box-shadow:-20px 0 60px #0009;overflow-y:auto;padding:0 18px 24px}
+        .preview-extension-drawer>header{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;background:#11110f;border-bottom:1px solid #39372d;margin-bottom:14px}
+        .preview-extension-drawer>header button{height:34px;width:34px;background:transparent;border:1px solid #5b5136;border-radius:5px;color:#d9c589;font-size:24px;cursor:pointer}
+        .preview-extension-drawer .inline-drawer-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;color:#d8bb6b}
+        .fa-solid::before{font-family:system-ui,sans-serif;font-style:normal;line-height:1}
+        .fa-xmark::before{content:'×'}.fa-sliders::before{content:'☷'}.fa-angle-left::before{content:'‹'}.fa-angle-right::before{content:'›'}
+        .fa-circle::before{content:'●'}.fa-rotate::before{content:'↻'}.fa-list::before{content:'☰'}.fa-bars::before{content:'☰'}
+        .fa-user::before{content:'♟'}.fa-id-card::before{content:'▣'}.fa-caret-down::before{content:'▾'}.fa-chevron-down::before{content:'⌄'}
+        .fa-check::before{content:'✓'}.fa-location-dot::before{content:'◇'}.fa-pen::before{content:'✎'}.fa-box-archive::before{content:'▤'}
+        .fa-coins::before{content:'◉'}.fa-scroll::before{content:'▥'}.fa-book::before{content:'▣'}.fa-book-open::before{content:'▣'}.fa-users::before{content:'♟'}
+        .fa-wand-magic-sparkles::before{content:'✦'}.fa-heart-pulse::before{content:'♡'}.fa-magnifying-glass::before{content:'⌕'}
+        .fa-grip::before{content:'▦'}.fa-table-cells-large::before{content:'▦'}.fa-stop::before{content:'■'}.fa-paper-plane::before{content:'➤'}
+        @media(min-width:900px){.composer-host{bottom:22px}.preview-header{padding-top:23px;padding-bottom:23px}}
+    </style>
+</head>
+<body>
+    <header class="preview-header"><span class="preview-emblem">✦</span><strong>ROLEFORGE RPG</strong></header>
+    <aside id="preview-toolbar" aria-label="Preview controls">
+        <button type="button" id="preview-open">เปิด RoleForge</button>
+        <button type="button" id="preview-settings">ตั้งค่าส่วนเสริม</button>
+        <button type="button" id="preview-summarize">ทดลองสรุปความจำ</button>
+        <button type="button" id="preview-next" hidden>ให้ AI ส่งผลชุดนี้</button>
+        <button type="button" id="preview-reset">เริ่มตัวอย่างใหม่</button>
+        <label>API ตัวอย่าง <select id="preview-api"><option value="manual">รอให้กดส่งผล</option><option value="success">สำเร็จทีละชุด</option><option value="error">จำลองปัญหา API</option></select></label>
+        <label>ภาษา <select id="preview-language"><option value="th">ไทย</option><option value="en">English</option></select></label>
+        <p id="preview-status" role="status">กำลังโหลดหน้าจอจริงของ RoleForge…</p>
+    </aside>
+    <p class="preview-note">ตัวอย่างนี้ใช้หน้าจอและระบบจริงของส่วนเสริม แต่ API เป็นตัวอย่างในเครื่อง ข้อมูล Nova / Cora และประวัติทดลองแยกจากแชตของคุณ ไม่มีการเรียก API เสียเงิน เปลี่ยนหน้าตาการเลือกหมวดได้ที่ ตั้งค่าส่วนเสริม → RoleForge → รูปแบบเลือกหมวด</p>
+    <main id="chat">
+        <article class="mes" mesid="0"><span class="mes-avatar">N</span><div class="name">Nova <span class="timestamp">22:10</span></div><div class="mes_text"><p>ฉันหยิบเบ็ดแล้วเดินไปตกปลาที่แม่น้ำใกล้หมู่บ้านคืนนี้</p></div></article>
+        <article class="mes mes_last" mesid="1"><span class="mes-avatar">C</span><div class="name">Cora <span class="timestamp">22:12</span></div><div class="mes_text"><p>เสียงน้ำไหลเบา ๆ ใต้แสงจันทร์ ขณะที่ Nova กำลังเตรียมเบ็ด หญิงสาวคนหนึ่งเดินมานั่งริมแม่น้ำไม่ไกลนัก</p><p>“ตรงนี้ปลามักจะออกมากลางคืนค่ะ ฉันชื่อ Cora” เธอแนะนำตัวพร้อมรอยยิ้ม ทั้งคู่พูดคุยและแบ่งเหยื่อตกปลา ก่อนตกลงว่าจะกลับมาที่แม่น้ำอีกในวันพรุ่งนี้</p></div></article>
+    </main>
+    <div class="composer-host"><form id="send_form">
+        <textarea id="send_textarea" placeholder="Type a message, or /? for help" aria-label="Chat message"></textarea>
+        <span class="composer-avatar">N</span><button class="native-control" type="button" title="Chat menu">☰</button><button class="native-control" type="button" title="Extensions" id="extensionsMenuButton">✦</button><button class="native-control" type="submit" id="send_but" title="Send message" aria-label="Send message">➤</button><button class="native-control" type="button" id="mes_stop" title="Stop generation" aria-label="Stop generation">■</button>
+    </form></div>
+    <div id="extensionsMenu"></div>
+    <aside class="preview-extension-drawer" id="preview-extension-drawer" aria-label="Extension settings" hidden>
+        <header><strong>Extensions · ส่วนเสริม</strong><button type="button" id="preview-settings-close" title="Close extension settings" aria-label="Close extension settings">×</button></header>
+        <div id="extensions_settings2"></div>
+    </aside>
+    <script type="module">
+        import {startNavigationSummaryPreview} from './navigation-summary-fixture.js';
+        await startNavigationSummaryPreview();
+    </script>
+</body>
+</html>

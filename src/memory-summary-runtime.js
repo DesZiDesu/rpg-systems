@@ -1,6 +1,6 @@
 import {MEMORY_LINK_KEY,MEMORY_FORMAT,emptyMemoryLibrary,normalizeMemoryLibrary,memoryAncestry,captureMemoryChat,memoryChapterValid,
-    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,memoryFingerprint,validateMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.46.1';
-import {createMemoryStore} from './memory-store.js?v=0.46.1';
+    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,memoryFingerprint,validateMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.46.2';
+import {createMemoryStore} from './memory-store.js?v=0.46.2';
 
 const busyPhases = new Set(['loading','archiving','waiting','counting','summarizing','validating','saving']);
 const errors = {
@@ -12,6 +12,10 @@ const errors = {
     MEMORY_API_UNAVAILABLE:['No supported generation API is available. Connect an API in SillyTavern first.','ยังไม่มี API ที่ใช้งานได้ กรุณาเชื่อมต่อ API ใน SillyTavern ก่อน'],
     MEMORY_PROFILE_UNAVAILABLE:['The selected Connection Manager profile is unavailable. Choose an existing profile or the current API.','โปรไฟล์ Connection Manager ที่เลือกใช้งานไม่ได้ เลือกโปรไฟล์ที่มีอยู่หรือ API ปัจจุบัน'],
     MEMORY_TIMEOUT:['A summary request or token-counting step timed out. Retry to continue after the saved batches; no incomplete AI response was saved.','คำขอสรุปหรือขั้นตอนนับโทเคนรอนานเกินกำหนด ลองใหม่เพื่อทำต่อจากชุดที่บันทึกแล้ว ระบบไม่บันทึกคำตอบ AI ที่ยังไม่ครบ'],
+    MEMORY_API_TIMEOUT:['The summary API did not finish before its time limit. Completed batches remain saved. Continue with a smaller batch or increase the API time limit. The provider may still count the timed-out request.','API สรุปไม่ตอบกลับภายในเวลาที่ตั้งไว้ ชุดที่สำเร็จยังบันทึกอยู่ กดทำต่อด้วยชุดที่เล็กลงหรือเพิ่มเวลารอ API ผู้ให้บริการอาจนับโควต้าคำขอที่หมดเวลานี้แล้ว'],
+    MEMORY_TOKEN_COUNT_TIMEOUT:['The tokenizer did not respond within its time limit. Completed summaries remain saved. No new summary API request starts during this step.','ตัวนับโทเคนไม่ตอบกลับภายในเวลาที่กำหนด สรุปที่บันทึกแล้วไม่ได้หาย ขั้นตอนนี้ไม่ได้เรียก API สรุปเพิ่ม'],
+    MEMORY_GENERATION_WAIT_TIMEOUT:['Memory waited too long for the main chat reply to finish. Stop or finish the main generation, then continue; no summary API request was made while waiting.','รอคำตอบแชตหลักเสร็จนานเกินกำหนด หยุดหรือรอการเจนแชตหลักให้เสร็จแล้วกดทำต่อ ระหว่างรอไม่ได้เรียก API สรุป'],
+    MEMORY_API_REQUEST_FAILED:['The summary API rejected the request or its connection failed. Check the connection, model and remaining quota. Completed batches remain saved.','API สรุปปฏิเสธคำขอหรือการเชื่อมต่อล้มเหลว ตรวจการเชื่อมต่อ โมเดล และโควต้าที่เหลือ ชุดที่สำเร็จยังบันทึกอยู่'],
     MEMORY_CHANGED:['The source chat changed during summarization. Capture the current messages and retry.','ข้อความต้นทางเปลี่ยนระหว่างสรุป กรุณาสรุปข้อความปัจจุบันใหม่'],
     MEMORY_INVALID_ARCHIVE:['This backup is invalid or belongs to another character. No existing archive was replaced.','ไฟล์สำรองไม่ถูกต้องหรือเป็นของตัวละครอื่น ระบบไม่ได้เขียนทับคลังเดิม'],
     MEMORY_TOKEN_COUNT_FAILED:['Token counting failed. Memory injection is paused; retry when the tokenizer is available.','นับโทเคนไม่สำเร็จ พักการส่งความจำเข้า prompt ไว้ก่อน แล้วลองใหม่'],
@@ -35,7 +39,7 @@ export async function requestMemorySummary(context, prompt, profileId, signal) {
     throw Error('MEMORY_API_UNAVAILABLE');
 }
 // Accept a thunk so a cancelled operation never starts another API/tokenizer call.
-function abortable(task, signal, timeout = 120000, onTimeout = () => {}) {
+function abortable(task, signal, timeout = 240000, onTimeout = () => {}, timeoutCode = 'MEMORY_TIMEOUT') {
     return new Promise((resolve,reject) => {
         let settled = false, timer;
         const cancel = () => finish(Error('MEMORY_CANCELLED'));
@@ -46,17 +50,18 @@ function abortable(task, signal, timeout = 120000, onTimeout = () => {}) {
         }
         signal.addEventListener('abort',cancel,{once:true});
         if (signal.aborted) { cancel(); return; }
-        timer = setTimeout(() => { finish(Error('MEMORY_TIMEOUT')); onTimeout(); },timeout);
+        timer = setTimeout(() => { finish(Error(timeoutCode)); onTimeout(); },timeout);
         try { Promise.resolve(typeof task === 'function' ? task() : task).then(value => finish(null,value),finish); }
         catch (error) { finish(error); }
     });
 }
 export function createMemorySummaries({context,owner,settings,state,visible,scene,notify = () => {},changed = () => {},recordRequest = () => {},saveMetadata = async () => {},continuity = () => {},isGenerating = () => false,
-    store = createMemoryStore(),request = requestMemorySummary,parse = JSON.parse,timeout = 120000}) {
+    store = createMemoryStore(),request = requestMemorySummary,parse = JSON.parse,timeout}) {
     const libraries = new Map(), writes = new Map(), forced = new Map();
     let lifecycleController = new AbortController();
     let active = null, generation = 0, lifecycle = 0, job = null, promptCache = null, query = '', preview = null, openPromise = null;
     const config = () => settings();
+    const operationTimeout = () => Number.isFinite(timeout) && timeout > 0 ? timeout : normalizeMemorySummaryTimeoutSeconds(config().memorySummaryTimeoutSeconds) * 1000;
     const enabled = () => config().enableMemorySummaries === true;
     const storedJob = (library,id) => Object.hasOwn(library.jobs,id) ? library.jobs[id] : undefined;
     const descriptor = () => { const ctx = context(); return {ctx,owner:owner(ctx),chatId:String(ctx.getCurrentChatId?.() || ''),metadata:ctx.chatMetadata,lifecycle}; };
@@ -66,7 +71,9 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
     const requireCurrent = snapshot => { if (!same(snapshot)) throw Error('MEMORY_CANCELLED'); };
     const tell = (type,en,th) => notify(type,config().language === 'th' ? th : en);
     const tokenCounter = (ctx, signal = lifecycleController.signal) => async value => {
-        const tokens = await abortable(() => typeof ctx.getTokenCountAsync === 'function' ? ctx.getTokenCountAsync(value) : new TextEncoder().encode(value).length,signal,Math.min(timeout,15000));
+        let tokens;
+        try { tokens = await abortable(() => typeof ctx.getTokenCountAsync === 'function' ? ctx.getTokenCountAsync(value) : new TextEncoder().encode(value).length,signal,Math.min(operationTimeout(),15000),undefined,'MEMORY_TOKEN_COUNT_TIMEOUT'); }
+        catch (error) { throw Error(['MEMORY_CANCELLED','MEMORY_TOKEN_COUNT_TIMEOUT'].includes(error.message) ? error.message : 'MEMORY_TOKEN_COUNT_FAILED'); }
         if (!Number.isFinite(tokens) || tokens < 0) throw Error('MEMORY_TOKEN_COUNT_FAILED');
         return tokens;
     };
@@ -97,7 +104,11 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
     }
     function failure(snapshot,error) {
         if (!valid(snapshot)) return;
-        phase(snapshot,'error',{error:memoryJobMessage(error,config().language),code:error?.message});
+        const previous = storedJob(libraries.get(snapshot.owner),snapshot.chatId);
+        const failedAt = new Date().toISOString();
+        phase(snapshot,'error',{error:memoryJobMessage(error,config().language),code:error?.message,failedStage:error.stage || previous?.stage || previous?.status || '',
+            failedAfterSeconds:Math.round(Math.max(0,new Date(failedAt).getTime() - new Date(previous?.phaseStartedAt || failedAt).getTime()) / 1000),
+            requestFinishedAt:previous?.requestStartedAt && !previous.requestFinishedAt ? failedAt : previous?.requestFinishedAt || ''});
         if (same(snapshot)) notify('error',memoryJobMessage(error,config().language));
     }
     function reference() {
@@ -177,7 +188,8 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
             coverage.linkedPendingMessages = linked.reduce((total,entry) => total + entry.pendingMessages,0);
             const currentJob = storedJob(library,snapshot.chatId) || {status:coverage.pendingSegments ? 'partial' : 'idle'};
             const elapsedMs = currentJob.startedAt ? Math.max(0,new Date(currentJob.finishedAt || Date.now()).getTime() - new Date(currentJob.startedAt).getTime()) : 0;
-            return {ready:true,owner:snapshot.owner,chatId:snapshot.chatId,job:{...currentJob,elapsedMs},coverage,
+            const requestElapsedMs = currentJob.requestStartedAt ? Math.max(0,new Date(currentJob.requestFinishedAt || currentJob.finishedAt || Date.now()).getTime() - new Date(currentJob.requestStartedAt).getTime()) : 0;
+            return {ready:true,owner:snapshot.owner,chatId:snapshot.chatId,job:{...currentJob,elapsedMs,requestElapsedMs},coverage,
                 ancestry,settings:config(),query,results:query ? searchMemoryLibrary(library,ancestry,query) : [],
                 chapters:library.chapters.filter(chapter => ancestry.includes(chapter.chatId)).slice(-50).reverse().map(chapter => ({...chapter,valid:memoryChapterValid(library,chapter)})),
                 chats:library.chats.map(chat => ({id:chat.id,name:chat.name,messages:chat.messages.length})),capsules:library.capsules.filter(capsule => ancestry.includes(capsule.chatId)).slice(-10).reverse(),
@@ -205,7 +217,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
             return content;
         },
         prompt() { if (!enabled()) { api.pause(); return ''; } return promptCache && same(promptCache) && config().memoryInject ? promptCache.content : ''; },
-        async run({auto = false,prepare = false} = {}) {
+        async run({auto = false,prepare = false,retry = false} = {}) {
             if (!enabled()) { api.pause(); return false; }
             if (job) { tell('info','A memory summary job is already running.','มีงานสรุปความจำกำลังทำอยู่แล้ว'); return false; }
             if (!same(active)) await api.open();
@@ -216,26 +228,55 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
             const controller = new AbortController(), signal = controller.signal;
             job = {snapshot,controller};
             const batchSize = normalizeMemoryBatchSize(config().memorySummaryBatchSize);
+            const previousJob = storedJob(library,snapshot.chatId);
+            // A user-triggered continuation can reduce a failed batch without
+            // changing their saved preference or starting an automatic paid retry.
+            const adaptive = !auto && retry && previousJob?.recommendedBatchSize;
+            const activeBatchSize = adaptive ? Math.min(batchSize,normalizeMemoryBatchSize(previousJob.recommendedBatchSize)) : batchSize;
+            const activeBatchCharLimit = adaptive ? Math.min(MEMORY_BATCH_CHAR_LIMIT,Math.max(2000,Number(previousJob.recommendedBatchCharLimit) || MEMORY_BATCH_CHAR_LIMIT)) : MEMORY_BATCH_CHAR_LIMIT;
+            const apiTimeout = operationTimeout();
             let completed = 0, totalMessages = 0;
             const processed = new Set();
-            phase(snapshot,'waiting',{prepare,error:'',code:'',completed:0,total:0,processedMessages:0,totalMessages:0,remainingMessages:0,
-                batchMessages:0,batchSegments:0,batchSize,savedChapters:0,startedAt:new Date().toISOString(),finishedAt:'',inputTokens:0,outputTokens:0});
+            let summaryEstimated = typeof snapshot.ctx.getTokenCountAsync !== 'function';
+            const exactCount = tokenCounter(snapshot.ctx,signal);
+            const tokenCache = new Map();
+            const count = async value => {
+                if (signal.aborted) throw Error('MEMORY_CANCELLED');
+                if (summaryEstimated) return new TextEncoder().encode(value).length;
+                if (tokenCache.has(value)) return tokenCache.get(value);
+                try {
+                    const tokens = await exactCount(value); tokenCache.set(value,tokens); return tokens;
+                } catch (error) {
+                    if (!['MEMORY_TOKEN_COUNT_TIMEOUT','MEMORY_TOKEN_COUNT_FAILED'].includes(error.message)) throw error;
+                    requireCurrent(snapshot);
+                    summaryEstimated = true; tokenCache.clear();
+                    // UTF-8 byte length is a deliberately conservative bound,
+                    // not a claimed exact count for the selected model.
+                    phase(snapshot,storedJob(library,snapshot.chatId)?.status || 'counting',{tokenCountEstimated:true,tokenCountWarning:error.message});
+                    tell('warning','The tokenizer is unavailable. Summary batches use a conservative local byte estimate; chat memory injection still requires its normal tokenizer.','ตัวนับโทเคนใช้งานไม่ได้ ชุดสรุปจะใช้จำนวนไบต์ในเครื่องเป็นค่าประเมินเผื่อไว้ การส่งความจำเข้าแชตยังตรวจด้วยตัวนับโทเคนตามปกติ');
+                    return new TextEncoder().encode(value).length;
+                }
+            };
+            phase(snapshot,'waiting',{stage:'waiting',prepare,error:'',code:'',failedStage:'',failedAfterSeconds:0,completed:0,total:0,processedMessages:0,totalMessages:0,remainingMessages:0,
+                batchMessages:0,batchSegments:0,batchSize,activeBatchSize,activeBatchCharLimit,recommendedBatchSize:adaptive ? activeBatchSize : 0,recommendedBatchCharLimit:adaptive ? activeBatchCharLimit : 0,
+                apiTimeoutSeconds:apiTimeout / 1000,savedChapters:0,startedAt:new Date().toISOString(),finishedAt:'',requestStartedAt:'',requestFinishedAt:'',inputTokens:0,outputTokens:0,
+                tokenCountEstimated:typeof snapshot.ctx.getTokenCountAsync !== 'function',tokenCountWarning:''});
             tell('info',prepare ? 'Preparing memory for the next chat…' : 'Summarizing story memory…',prepare ? 'กำลังเตรียมความจำสำหรับแชตใหม่…' : 'กำลังสรุปความจำเนื้อเรื่อง…');
             const waitForGeneration = async () => {
                 if (!isGenerating()) return;
-                phase(snapshot,'waiting');
+                phase(snapshot,'waiting',{stage:'waiting'});
                 // One deadline covers the entire wait; polling does not reset it.
                 await abortable(async () => {
                     while (isGenerating()) {
                         requireCurrent(snapshot);
                         if (signal.aborted) throw Error('MEMORY_CANCELLED');
-                        await new Promise(resolve => setTimeout(resolve,Math.min(500,timeout)));
+                        await new Promise(resolve => setTimeout(resolve,Math.min(500,apiTimeout)));
                     }
-                },signal,timeout);
+                },signal,apiTimeout,undefined,'MEMORY_GENERATION_WAIT_TIMEOUT');
             };
             try {
                 await waitForGeneration();
-                phase(snapshot,'archiving'); await api.capture();
+                phase(snapshot,'archiving',{stage:'archiving'}); await api.capture();
                 requireCurrent(snapshot);
                 await save(library,snapshot);
                 requireCurrent(snapshot);
@@ -246,7 +287,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     const remainingMessages = entries.reduce((sum,entry) => sum + entry.coverage.pendingMessages,0);
                     totalMessages = Math.max(totalMessages,processed.size + remainingMessages);
                     return {completed,processedMessages:processed.size,totalMessages,remainingMessages,
-                        total:completed + entries.reduce((sum,entry) => sum + countMemoryBatches(entry.segments,{maxMessages:batchSize}),0),
+                        total:completed + entries.reduce((sum,entry) => sum + countMemoryBatches(entry.segments,{maxMessages:activeBatchSize,maxChars:activeBatchCharLimit}),0),
                         savedChapters:entries.reduce((sum,entry) => sum + entry.coverage.chapters,0)};
                 };
                 phase(snapshot,'archiving',progress());
@@ -256,34 +297,51 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     await api.capture();
                     requireCurrent(snapshot);
                     const targetId = targets.find(id => memorySegments(library,id).length);
-                    const batch = targetId ? nextMemoryBatch(library,targetId,{maxMessages:batchSize}) : [];
+                    const batch = targetId ? nextMemoryBatch(library,targetId,{maxMessages:activeBatchSize,maxChars:activeBatchCharLimit}) : [];
                     const parent = [...library.chapters].reverse().find(chapter => ancestry.includes(chapter.chatId) && memoryChapterValid(library,chapter));
                     if (!batch.length) break;
-                    phase(snapshot,'counting',{...progress(),batchMessages:new Set(batch.map(source => source.key)).size,batchSegments:batch.length});
+                    phase(snapshot,'counting',{stage:'counting',...progress(),batchMessages:new Set(batch.map(source => source.key)).size,batchSegments:batch.length,requestStartedAt:'',requestFinishedAt:''});
                     await save(library,snapshot);
                     requireCurrent(snapshot);
-                    const count = tokenCounter(snapshot.ctx,signal), inputBudget = config().memorySummaryInputBudget || 12000;
+                    const inputBudget = config().memorySummaryInputBudget || 12000;
                     const previous = await boundedMemoryText(parent?.recap || '',Math.floor(inputBudget / 4),count);
                     let summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference), inputTokens = await count(summaryPrompt);
+                    if (summaryEstimated) {
+                        // The tokenizer can fail after the recap was bounded with
+                        // exact tokens. Rebound that recap with the new byte count
+                        // before deciding that even one source cannot fit.
+                        const estimatedRecap = await boundedMemoryText(previous.text,Math.floor(inputBudget / 4),count);
+                        if (estimatedRecap.text !== previous.text) {
+                            previous.text = estimatedRecap.text;
+                            summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference); inputTokens = await count(summaryPrompt);
+                        }
+                    }
                     while (inputTokens > inputBudget && batch.length > 1) {
                         batch.pop(); summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference); inputTokens = await count(summaryPrompt);
                     }
                     requireCurrent(snapshot);
                     if (inputTokens > inputBudget) throw Error('MEMORY_INPUT_TOO_LARGE');
-                    phase(snapshot,'summarizing',{inputTokens,batchMessages:new Set(batch.map(source => source.key)).size,batchSegments:batch.length});
+                    phase(snapshot,'summarizing',{stage:'summarizing',inputTokens,batchMessages:new Set(batch.map(source => source.key)).size,batchSegments:batch.length,
+                        batchSourceChars:batch.reduce((sum,source) => sum + source.text.length,0),requestStartedAt:new Date().toISOString(),requestFinishedAt:''});
                     recordRequest('memorySummary',`Memory summary ${completed + 1}`);
                     const requestController = new AbortController(), stopRequest = () => requestController.abort();
                     signal.addEventListener('abort',stopRequest,{once:true});
                     let response;
                     try {
-                        response = await abortable(() => request(snapshot.ctx,summaryPrompt,config().memorySummaryProfile,requestController.signal),signal,timeout,stopRequest);
+                        response = await abortable(() => request(snapshot.ctx,summaryPrompt,config().memorySummaryProfile,requestController.signal),signal,apiTimeout,stopRequest,'MEMORY_API_TIMEOUT');
+                    } catch (error) {
+                        if (error.message === 'MEMORY_CANCELLED' || error.message.startsWith('MEMORY_')) throw error;
+                        const failure = Error('MEMORY_API_REQUEST_FAILED');
+                        const status = Number(error.status ?? error.statusCode ?? error.response?.status);
+                        if (Number.isFinite(status) && status >= 400 && status <= 599) failure.httpStatus = status;
+                        throw failure;
                     } finally { signal.removeEventListener('abort',stopRequest); }
                     if (!same(snapshot) || signal.aborted) throw Error('MEMORY_CANCELLED');
+                    phase(snapshot,'validating',{stage:'validating',requestFinishedAt:new Date().toISOString()});
                     for (const source of targetId === snapshot.chatId ? batch : []) {
                         const original = snapshot.ctx.chat?.[Number(source.key)];
                         if (!original || memoryFingerprint(JSON.stringify([original.is_user ? 'User' : 'Character',original.name || '',visible(original.mes || '')])) !== source.fingerprint) throw Error('MEMORY_CHANGED');
                     }
-                    phase(snapshot,'validating');
                     let value; try { value = validateMemorySummary(parse(response),batch); } catch (error) { throw Error(error.message === 'MEMORY_UNSUPPORTED_EVIDENCE' ? error.message : 'MEMORY_INVALID_SUMMARY'); }
                     const outputTokens = await count(response);
                     requireCurrent(snapshot);
@@ -300,7 +358,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     const previousUpdatedAt = library.updatedAt;
                     library.updatedAt = new Date().toISOString();
                     const chapterUpdatedAt = library.updatedAt;
-                    phase(snapshot,'saving');
+                    phase(snapshot,'saving',{stage:'saving'});
                     try { await save(library,snapshot); }
                     catch (error) {
                         // Rejected writes must not make unsaved sources appear covered
@@ -337,11 +395,12 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     if (same(snapshot)) continuity();
                 }
                 requireCurrent(snapshot);
-                phase(snapshot,'counting',{...progress(),batchMessages:0,batchSegments:0});
+                phase(snapshot,'counting',{stage:'prompt',...progress(),batchMessages:0,batchSegments:0});
                 await api.preparePrompt({signal});
                 requireCurrent(snapshot);
                 if (signal.aborted) throw Error('MEMORY_CANCELLED');
-                phase(snapshot,ancestry.some(id => memoryCoverage(library,id).pendingSegments) ? 'partial' : 'ready',{...progress(),error:'',failedPending:0,finishedAt:new Date().toISOString(),batchMessages:0,batchSegments:0});
+                phase(snapshot,ancestry.some(id => memoryCoverage(library,id).pendingSegments) ? 'partial' : 'ready',{stage:'',...progress(),error:'',failedPending:0,finishedAt:new Date().toISOString(),batchMessages:0,batchSegments:0,
+                    recommendedBatchSize:0,recommendedBatchCharLimit:0});
                 await save(library,snapshot);
                 requireCurrent(snapshot);
                 if (signal.aborted) throw Error('MEMORY_CANCELLED');
@@ -349,13 +408,18 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                 return true;
             } catch (error) {
                 if (!valid(snapshot)) return false;
-                if (error.message === 'MEMORY_TIMEOUT') controller.abort();
+                if (error.message.endsWith('_TIMEOUT')) controller.abort();
                 if (error.message === 'MEMORY_CANCELLED') {
                     phase(snapshot,'cancelled',{error:'',completed,processedMessages:processed.size,finishedAt:new Date().toISOString()});
                     if (same(snapshot)) tell('info','Memory job cancelled. Completed batches remain saved.','ยกเลิกงานความจำแล้ว ชุดที่บันทึกสำเร็จยังอยู่');
                 } else {
+                    if (error.message === 'MEMORY_API_TIMEOUT') {
+                        const failed = storedJob(library,snapshot.chatId);
+                        phase(snapshot,failed.status,{recommendedBatchSize:Math.max(1,Math.floor(failed.batchMessages / 2)),
+                            recommendedBatchCharLimit:Math.max(2000,Math.floor(failed.batchSourceChars / 2))});
+                    }
                     failure(snapshot,error);
-                    Object.assign(library.jobs[snapshot.chatId],{completed,processedMessages:processed.size,finishedAt:new Date().toISOString(),failedPending:memoryCoverage(library,snapshot.chatId).pendingReplies});
+                    Object.assign(library.jobs[snapshot.chatId],{completed,processedMessages:processed.size,finishedAt:new Date().toISOString(),failedPending:memoryCoverage(library,snapshot.chatId).pendingReplies,httpStatus:error.httpStatus || 0});
                 }
                 try { await save(library,snapshot); } catch { /* The persistent status panel still reports failed storage. */ }
                 return false;

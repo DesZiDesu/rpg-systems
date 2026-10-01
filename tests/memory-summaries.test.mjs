@@ -18,7 +18,7 @@ function fixture(options = {}) {
     });
     const store = {get:async owner => {storageCalls.push('get');return data.has(owner) ? structuredClone(data.get(owner)) : null;},put:async(owner,value) => { storageCalls.push('put');if(options.failSave?.(value))throw Error('MEMORY_STORAGE_WRITE_FAILED'); data.set(owner,structuredClone(value)); }};
     const runtime = createMemorySummaries({context:()=>context,owner:ctx=>ctx.owner,settings:()=>settings,state:()=>state,visible:value=>value.replace(/<!--[^]*?-->/g,''),scene:()=>({day:7,time:'23:00',location:'River'}),store,
-        notify:(type,message)=>notices.push({type,message}),changed:view=>phases.push(view.job.status),parse:JSON.parse,timeout:options.timeout || 100,
+        notify:(type,message)=>notices.push({type,message}),changed:view=>phases.push(view.job.status),parse:JSON.parse,timeout:Object.hasOwn(options,'timeout') ? options.timeout : 100,
         saveMetadata:async()=>options.metadataFail ? false : true,isGenerating:()=>options.generating?.() || false,
         request:async(ctx,prompt,profile,signal)=>{calls.push({prompt,profile,signal});return responder(prompt,signal);}});
     return {runtime,data,notices,phases,calls,storageCalls,context,state,settings,setResponder:value=>{responder=value;}};
@@ -195,7 +195,8 @@ test('cancel and chat switch discard delayed responses without contaminating ano
 });
 
 test('timeout, storage failure and metadata failure produce actionable failure instead of success',async()=>{
-    const timeout=fixture({respond:()=>new Promise(()=>{}),timeout:10});await timeout.runtime.open();assert.equal(await timeout.runtime.run(),false);assert.equal(timeout.runtime.view().job.code,'MEMORY_TIMEOUT');
+    const timeout=fixture({respond:()=>new Promise(()=>{}),timeout:10});await timeout.runtime.open();assert.equal(await timeout.runtime.run(),false);assert.equal(timeout.runtime.view().job.code,'MEMORY_API_TIMEOUT');
+    assert.equal(timeout.runtime.view().job.failedStage,'summarizing');assert.equal(timeout.calls.length,1);
     let fail=false;const storage=fixture({failSave:()=>fail});await storage.runtime.open();fail=true;assert.equal(await storage.runtime.run(),false);assert.equal(storage.runtime.view().job.code,'MEMORY_STORAGE_WRITE_FAILED');assert(!storage.notices.some(notice=>notice.type==='success'));
     const metadata=fixture({metadataFail:true});await metadata.runtime.open();assert.equal(await metadata.runtime.run({prepare:true}),false);assert.equal(metadata.runtime.view().job.code,'MEMORY_METADATA_SAVE_FAILED');
 });
@@ -374,22 +375,30 @@ test('cancel during a later API request retains the first saved batch and discar
     release();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(f.data.get('card:cora').chapters.length,1);
 });
 
-test('hung token counting times out before calling the API and cancellation unblocks it promptly',async()=>{
+test('hung summary token counting uses a conservative local bound, while cancellation starts no API call',async()=>{
     for(const cancel of [false,true]){
-        const f=fixture({timeout:30});await f.runtime.open();
+        const f=fixture({timeout:30,settings:{memoryInject:false}});await f.runtime.open();
         let counting=false;f.context.getTokenCountAsync=()=>{counting=true;return new Promise(()=>{});};
         const pending=f.runtime.run();while(!counting)await new Promise(resolve=>setTimeout(resolve,1));
         if(cancel)f.runtime.cancel();
-        assert.equal(await pending,false);assert.equal(f.runtime.isBusy(),false);assert.equal(f.calls.length,0);
-        assert.equal(f.runtime.view().job.status,cancel?'cancelled':'error');
-        if(!cancel)assert.equal(f.runtime.view().job.code,'MEMORY_TIMEOUT');
+        assert.equal(await pending,!cancel);assert.equal(f.runtime.isBusy(),false);assert.equal(f.calls.length,cancel?0:1);
+        assert.equal(f.runtime.view().job.status,cancel?'cancelled':'ready');
+        if(!cancel){
+            assert.equal(f.runtime.view().job.tokenCountWarning,'MEMORY_TOKEN_COUNT_TIMEOUT');
+            assert.equal(f.runtime.view().job.tokenCountEstimated,true);
+            assert.equal(f.runtime.view().job.inputTokens,new TextEncoder().encode(f.calls[0].prompt).length);
+            assert(f.runtime.view().job.inputTokens<=f.settings.memorySummaryInputBudget);
+            assert.equal(f.data.get('card:cora').chapters.length,1);
+            assert(f.notices.some(notice=>notice.type==='warning'));
+        }
     }
 });
 
 test('waiting for the main reply has one timeout rather than resetting on every poll',async()=>{
     const f=fixture({timeout:20,generating:()=>true});await f.runtime.open();
     const start=Date.now();assert.equal(await f.runtime.run(),false);assert(Date.now()-start<200);
-    assert.equal(f.runtime.view().job.code,'MEMORY_TIMEOUT');assert.equal(f.calls.length,0);assert.equal(f.runtime.isBusy(),false);
+    assert.equal(f.runtime.view().job.code,'MEMORY_GENERATION_WAIT_TIMEOUT');assert.equal(f.runtime.view().job.failedStage,'waiting');
+    assert.equal(f.calls.length,0);assert.equal(f.runtime.isBusy(),false);
 });
 
 test('post-summary prompt preparation is cancellable and does not report success before it finishes',async()=>{
@@ -444,5 +453,85 @@ test('failed chat metadata handoff keeps the durable capsule but restores the pr
 test('a prompt tokenizer failure clears an earlier injection cache instead of exposing it',async()=>{
     const f=fixture({timeout:20});await f.runtime.open();await f.runtime.run();assert(f.runtime.prompt());
     f.settings.memorySummaryBudget=100;f.context.getTokenCountAsync=()=>new Promise(()=>{});
-    await assert.rejects(f.runtime.preparePrompt(),/MEMORY_TIMEOUT/);assert.equal(f.runtime.prompt(),'');
+    await assert.rejects(f.runtime.preparePrompt(),/MEMORY_TOKEN_COUNT_TIMEOUT/);assert.equal(f.runtime.prompt(),'');
+});
+
+test('summary API time limits default to four minutes and remain configurable within safe bounds',async()=>{
+    for(const [input,expected] of [[undefined,240],[0,240],['bad',240],[30,60],[60,60],[180.9,180],[600,600],[900,600]]){
+        assert.equal(memory.normalizeMemorySummaryTimeoutSeconds(input),expected);
+    }
+    const f=fixture({timeout:null,settings:{memorySummaryTimeoutSeconds:60},respond:prompt=>new Promise(resolve=>setTimeout(()=>resolve(simpleMemoryResponse(prompt)),130))});
+    await f.runtime.open();assert.equal(await f.runtime.run(),true);
+    assert.equal(f.runtime.view().job.apiTimeoutSeconds,60);
+    assert(f.runtime.view().job.requestElapsedMs>=100);
+});
+
+test('an explicit continuation after an API timeout uses smaller batches without replaying saved sources',async()=>{
+    let fail=true;
+    const f=fixture({timeout:30,respond:(prompt,signal)=>{
+        if(f.calls.length===2 && fail)return new Promise((resolve,reject)=>signal.addEventListener('abort',()=>reject(Error('Aborted')),{once:true}));
+        return simpleMemoryResponse(prompt);
+    }});setBacklog(f,23);await f.runtime.open();assert.equal(await f.runtime.run(),false);
+    assert.equal(f.calls.length,2);assert.equal(f.runtime.view().job.code,'MEMORY_API_TIMEOUT');
+    assert.equal(f.runtime.view().job.recommendedBatchSize,5);assert.equal(f.settings.memorySummaryBatchSize,10);
+    assert.equal(f.runtime.view().coverage.pendingMessages,13);assert.equal(f.data.get('card:cora').chapters.length,1);
+    const saved=structuredClone(f.data.get('card:cora').chapters[0]);
+    fail=false;assert.equal(await f.runtime.run({retry:true}),true);
+    assert.equal(f.runtime.view().job.activeBatchSize,5);assert.equal(f.runtime.view().job.batchSize,10);
+    assert.deepEqual(f.calls.slice(2).map(call=>JSON.parse(call.prompt.split('SOURCE SEGMENTS: ')[1]).map(source=>source.key)),[
+        ['10','11','12','13','14'],['15','16','17','18','19'],['20','21','22']]);
+    assert.deepEqual(f.data.get('card:cora').chapters[0],saved);
+    const sources=f.data.get('card:cora').chapters.flatMap(chapter=>chapter.sources.map(source=>source.segmentKey));
+    assert.equal(sources.length,23);assert.equal(new Set(sources).size,23);
+    assert.equal(f.runtime.view().job.recommendedBatchSize,0);
+});
+
+test('starting a normal summary after a timeout retains the configured batch preference',async()=>{
+    let fail=true;
+    const f=fixture({timeout:20,respond:(prompt,signal)=>fail ? new Promise((resolve,reject)=>signal.addEventListener('abort',()=>reject(Error('Aborted')),{once:true})) : simpleMemoryResponse(prompt)});
+    setBacklog(f,12);await f.runtime.open();assert.equal(await f.runtime.run(),false);
+    fail=false;assert.equal(await f.runtime.run(),true);
+    assert.deepEqual(f.calls.slice(1).map(call=>new Set(JSON.parse(call.prompt.split('SOURCE SEGMENTS: ')[1]).map(source=>source.key)).size),[10,2]);
+});
+
+test('API rejections report their stage and HTTP status without automatic paid retries',async()=>{
+    const f=fixture({respond:()=>{throw Object.assign(Error('Provider rejected request'),{status:429});}});
+    await f.runtime.open();assert.equal(await f.runtime.run(),false);
+    assert.equal(f.calls.length,1);assert.equal(f.runtime.view().job.code,'MEMORY_API_REQUEST_FAILED');
+    assert.equal(f.runtime.view().job.httpStatus,429);assert.equal(f.runtime.view().job.failedStage,'summarizing');
+    assert.equal(f.data.get('card:cora').chapters.length,0);
+});
+
+test('a complete validated AI response is saved even when output usage token counting stalls',async()=>{
+    const f=fixture({timeout:25,respond:simpleMemoryResponse});await f.runtime.open();
+    const original=f.context.getTokenCountAsync;
+    f.context.getTokenCountAsync=value=>value.startsWith('{"summary":') ? new Promise(()=>{}) : original(value);
+    assert.equal(await f.runtime.run(),true);assert.equal(f.calls.length,1);assert.equal(f.data.get('card:cora').chapters.length,1);
+    assert.equal(f.runtime.view().job.tokenCountEstimated,true);assert.equal(f.runtime.view().job.tokenCountWarning,'MEMORY_TOKEN_COUNT_TIMEOUT');
+    assert.match(f.runtime.prompt(),/story continued/);
+});
+
+test('a prompt-injection tokenizer failure identifies the final step while preserving every saved chapter',async()=>{
+    const f=fixture({timeout:25,respond:simpleMemoryResponse});await f.runtime.open();
+    const original=f.context.getTokenCountAsync;
+    f.context.getTokenCountAsync=value=>value==='The story continued with the saved events.' ? new Promise(()=>{}) : original(value);
+    assert.equal(await f.runtime.run(),false);assert.equal(f.calls.length,1);
+    assert.equal(f.runtime.view().job.code,'MEMORY_TOKEN_COUNT_TIMEOUT');assert.equal(f.runtime.view().job.failedStage,'prompt');
+    assert.equal(f.runtime.view().coverage.pendingMessages,0);assert.equal(f.data.get('card:cora').chapters.length,1);
+    assert.equal(f.runtime.prompt(),'');
+});
+
+test('a tokenizer fallback re-bounds a multibyte prior recap before judging the next input batch',async()=>{
+    const f=fixture({timeout:25,settings:{memoryInject:false,memorySummaryInputBudget:4500},respond:()=>JSON.stringify({summary:'The earlier story was saved.',recap:'ก'.repeat(4000),events:[]})});
+    await f.runtime.open();assert.equal(await f.runtime.run(),true);
+    f.context.chat.push({is_user:false,name:'Cora',mes:'Cora returned to the river.'});await f.runtime.observe();
+    const original=f.context.getTokenCountAsync;
+    f.context.getTokenCountAsync=value=>value.startsWith('You are a factual role-play archivist.') ? new Promise(()=>{}) : original(value);
+    f.setResponder(simpleMemoryResponse);
+    assert.equal(await f.runtime.run(),true);assert.equal(f.calls.length,2);
+    const prompt=f.calls.at(-1).prompt;
+    const recap=JSON.parse(prompt.split('PRIOR CONTINUITY RECAP (may be incomplete): ')[1].split('\nCURRENT STATE REFERENCE: ')[0]);
+    assert(new TextEncoder().encode(recap).length<=Math.floor(f.settings.memorySummaryInputBudget/4));
+    assert(new TextEncoder().encode(prompt).length<=f.settings.memorySummaryInputBudget);
+    assert.equal(f.runtime.view().coverage.pendingMessages,0);
 });

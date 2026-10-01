@@ -1,9 +1,9 @@
-import {memorySnippet} from './memory-summaries.js?v=0.46.1';
+import {memorySnippet,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT} from './memory-summaries.js?v=0.46.2';
 const escape = value => String(value ?? '').replace(/[&<>"']/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export const memoryBusy = status => ['loading','archiving','waiting','counting','summarizing','validating','saving'].includes(status);
 export function memoryPhaseLabel(status, language = 'en') {
     const labels = {idle:['Ready to archive','พร้อมเก็บประวัติ'],loading:['Loading memory archive','กำลังเปิดคลังความจำ'],archiving:['Saving original messages','กำลังเก็บข้อความต้นฉบับ'],
-        waiting:['Waiting for the story reply to finish','รอคำตอบเนื้อเรื่องสร้างเสร็จ'],counting:['Checking tokens against the configured budget','กำลังตรวจจำนวนโทเคนตามงบที่ตั้งไว้'],summarizing:['Summarizing with a separate API request','กำลังเรียก API แยกเพื่อสรุป'],validating:['Checking source evidence','กำลังตรวจหลักฐานต้นทาง'],saving:['Saving memory summary','กำลังบันทึกสรุปความจำ'],
+        waiting:['Waiting for the story reply to finish','รอคำตอบเนื้อเรื่องสร้างเสร็จ'],counting:['Checking tokens against the configured budget','กำลังตรวจจำนวนโทเคนตามงบที่ตั้งไว้'],summarizing:['Summarizing with a separate API request','กำลังเรียก API แยกเพื่อสรุป'],validating:['Checking source evidence','กำลังตรวจหลักฐานต้นทาง'],saving:['Saving memory summary','กำลังบันทึกสรุปความจำ'],prompt:['Preparing memory for the story prompt','กำลังเตรียมความจำสำหรับคำตอบเนื้อเรื่อง'],
         ready:['Summary saved successfully','สรุปและบันทึกสำเร็จ'],partial:['Some messages still need summarizing','ยังมีข้อความรอสรุป'],error:['Memory operation failed','งานความจำไม่สำเร็จ'],cancelled:['Memory job cancelled','ยกเลิกงานความจำแล้ว'],interrupted:['Previous job was interrupted','งานก่อนหน้าหยุดกลางทาง']};
     return (labels[status] || labels.idle)[language === 'th' ? 1 : 0];
 }
@@ -43,7 +43,7 @@ function rememberPanel(panel, scope) {
     return {state,details:new Map([...panel.querySelectorAll('details[data-memory-section]')].map(node => [node.dataset.memorySection,node.open])),
         focus:!changedScope && panel.contains(focus) && focus.form?.dataset.form && focus.name ? {form:formKey(focus.form),name:focus.name,start:focus.selectionStart,end:focus.selectionEnd} : null};
 }
-function restorePanel(panel, remembered, busy, startedAt) {
+function restorePanel(panel, remembered, busy, startedAt, requestStartedAt) {
     if (!remembered) return;
     const {state,details,focus} = remembered;
     for (const node of panel.querySelectorAll('details[data-memory-section]')) if (details.has(node.dataset.memorySection)) node.open = details.get(node.dataset.memorySection);
@@ -69,6 +69,8 @@ function restorePanel(panel, remembered, busy, startedAt) {
         if (!panel.isConnected || panel.hasAttribute('data-panel') && !panel.classList.contains('is-active') || overlay && !overlay.classList.contains('is-open')) { clearInterval(state.timer); return; }
         const node = panel.querySelector('[data-memory-elapsed]');
         if (node) node.textContent = elapsedLabel(Date.now() - start);
+        const request = panel.querySelector('[data-memory-request-elapsed]'), requestStart = Date.parse(requestStartedAt);
+        if (request && Number.isFinite(requestStart)) request.textContent = elapsedLabel(Date.now() - requestStart);
     };
     update();
     state.timer = setInterval(update,1000);
@@ -89,7 +91,18 @@ export function renderMemorySummaries(panel, view, profiles = []) {
     const totalMessages = Math.max(0,Number(view.job.totalMessages) || 0), processedMessages = Math.min(totalMessages,Math.max(0,Number(view.job.processedMessages) || 0));
     const completed = Math.max(0,Number(view.job.completed) || 0), total = Math.max(completed,Number(view.job.total) || 0);
     const currentBatch = busy && view.job.batchMessages > 0 ? completed + 1 : completed;
-    const batchSize = Math.max(1,Math.min(100,Number(view.settings.memorySummaryBatchSize) || 10));
+    const batchSize = normalizeMemoryBatchSize(view.settings.memorySummaryBatchSize);
+    const apiTimeout = normalizeMemorySummaryTimeoutSeconds(view.settings.memorySummaryTimeoutSeconds);
+    const activeBatchSize = Math.max(1,Number(view.job.activeBatchSize) || batchSize);
+    const shorterSegments = view.job.activeBatchCharLimit > 0 && view.job.activeBatchCharLimit < MEMORY_BATCH_CHAR_LIMIT;
+    const diagnostics = view.job.error ? `<details class="rf-memory-diagnostics" data-memory-section="diagnostics"><summary>${e(word('Failure details','รายละเอียดปัญหา'))}</summary>
+        ${view.job.code ? `<div><span>${e(word('Error code','รหัสปัญหา'))}</span><code data-memory-error-code>${e(view.job.code)}</code></div>` : ''}
+        ${Number.isInteger(view.job.httpStatus) && view.job.httpStatus > 0 ? `<div><span>${e(word('API HTTP status','สถานะ HTTP ของ API'))}</span><strong>${e(view.job.httpStatus)}</strong></div>` : ''}
+        ${view.job.failedStage ? `<div><span>${e(word('Failed step','ขั้นตอนที่หยุด'))}</span><strong data-memory-failed-stage>${e(memoryPhaseLabel(view.job.failedStage,view.settings.language))}</strong></div>` : ''}
+        ${Number.isFinite(Number(view.job.failedAfterSeconds)) && view.job.failedAfterSeconds != null ? `<div><span>${e(word('Time waiting in that step','เวลาที่รอในขั้นตอนนั้น'))}</span><strong>${e(elapsedLabel(Number(view.job.failedAfterSeconds)*1000))}</strong></div>` : ''}
+        ${view.job.code === 'MEMORY_API_TIMEOUT' ? `<p>${e(word('The summary API did not finish within its request limit. A slow model, a long response or a connection problem can cause this; the timeout alone cannot identify which.','API สรุปส่งผลไม่เสร็จภายในเวลารอ อาจเกิดจากโมเดลช้า คำตอบยาว หรือการเชื่อมต่อมีปัญหา การหมดเวลาอย่างเดียวระบุสาเหตุแน่ชัดไม่ได้'))}</p>` : ''}
+        ${view.job.code === 'MEMORY_TOKEN_COUNT_TIMEOUT' ? `<p>${e(word('The tokenizer did not respond in time. This step counts text locally or through SillyTavern; it is separate from the summary model request.','ตัวนับโทเคนตอบไม่ทันเวลา ขั้นตอนนี้ใช้การนับของ SillyTavern และแยกจากคำขอให้โมเดลสรุป'))}</p>` : ''}
+        <p>${e(word('Previously saved chapters are kept. Retry processes only the remaining sources; this failed request did not save an incomplete summary.','บทที่บันทึกแล้วอยู่ครบ กดลองใหม่เพื่อทำเฉพาะต้นทางที่เหลือ คำขอที่ล้มเหลวนี้ไม่ได้บันทึกสรุปที่ยังไม่ครบ'))}</p></details>` : '';
     const chapters = view.chapters.map(chapter => `<details class="rf-memory-chapter" data-memory-section="chapter:${e(chapter.id)}"><summary><strong>${e(chapter.summary.slice(0,160))}</strong><small>${e(chapter.chatId)} · v${chapter.revision} · ${e(chapter.valid ? word('Current','ใช้งานได้') : word('Source changed — rebuild required','ต้นทางเปลี่ยน — ต้องสรุปใหม่'))}</small></summary>
         <p class="rf-memory-prose">${e(chapter.summary)}</p><details data-memory-section="versions:${e(chapter.id)}"><summary>${e(word('Sources and summary versions','ข้อความต้นทางและรุ่นสรุป'))}</summary>
         <div class="trpg-story-actions">${[...new Map(chapter.sources.map(source => [source.key,source])).values()].map(source => action('source',`#${Number(source.key) + 1}`,`data-chat="${e(chapter.chatId)}" data-key="${e(source.key)}" data-fingerprint="${e(source.fingerprint)}"`,'')).join('')}</div>
@@ -103,15 +116,20 @@ export function renderMemorySummaries(panel, view, profiles = []) {
         <div class="rf-memory-job" data-status="${e(status)}" role="status" aria-live="polite" aria-busy="${busy}"><strong>${e(label)}</strong>
         <span class="rf-memory-pending">${e(word('Pending messages','ข้อความรอสรุป'))}: <strong data-memory-pending>${pendingMessages}</strong></span>
         <span>${e(word('Saved chapters','บทสรุปที่บันทึกแล้ว'))}: ${view.coverage.chapters} · ${e(word('Original messages','ข้อความต้นฉบับ'))}: ${view.coverage.messages}</span>
-        <small>${e(word('Pending messages across linked history','ข้อความรอสรุปรวมประวัติที่เชื่อมไว้'))}: ${linkedPendingMessages}</small>
+        ${linkedPendingMessages !== pendingMessages ? `<small>${e(word('Pending messages across linked history','ข้อความรอสรุปรวมประวัติที่เชื่อมไว้'))}: ${linkedPendingMessages}</small>` : ''}
         ${totalMessages ? `<div class="rf-memory-progress"><span>${e(word('Messages saved in this run','ข้อความที่สรุปและบันทึกในงานนี้'))}: <strong data-memory-processed>${processedMessages}/${totalMessages}</strong></span><progress max="${totalMessages}" value="${processedMessages}" aria-label="${e(word('Messages summarized and saved','ข้อความที่สรุปและบันทึกแล้ว'))}"></progress>
         <small>${e(word('Saved batches','ชุดที่บันทึกแล้ว'))}: ${completed}${total ? ` · ${e(word('Batch','ชุดที่'))}: ${currentBatch}/${Math.max(total,currentBatch)} ${e(word('(estimate)','(ประมาณ)'))}` : ''}</small>
         ${busy && view.job.batchMessages ? `<small>${e(word('This request','คำขอชุดนี้'))}: ${view.job.batchMessages} ${e(word('messages','ข้อความ'))} · ${view.job.batchSegments} ${e(word('segments','ช่วงข้อความ'))}</small>` : ''}</div>` : ''}
         <small>${e(word('Batch size','ขนาดชุดสรุป'))}: ${batchSize} ${e(word('messages maximum per request','ข้อความสูงสุดต่อคำขอ'))}. ${e(word('Long messages may be split to fit the input budget.','ข้อความยาวอาจแบ่งเป็นหลายคำขอให้พอดีงบ input'))}</small>
         ${view.coverage.pendingSegments !== pendingMessages ? `<small>${e(word('Pending source segments','ช่วงข้อความต้นทางที่รอสรุป'))}: ${view.coverage.pendingSegments} · ${e(word('A long original message can contain several segments.','ข้อความต้นฉบับยาวหนึ่งข้อความอาจมีหลายช่วง'))}</small>` : ''}
+        ${activeBatchSize < batchSize || shorterSegments ? `<p class="rf-memory-adaptive" data-memory-adaptive>${e(word('Using smaller batches for this run','งานนี้ใช้ชุดเล็กลง'))}: ${activeBatchSize} ${e(word('messages per request.','ข้อความต่อคำขอ'))} ${shorterSegments ? e(word('Long messages use shorter source segments. ','ข้อความยาวใช้ช่วงต้นทางสั้นลง ')) : ''}${e(word('Your saved batch-size setting is unchanged.','การตั้งค่าขนาดชุดเดิมยังคงอยู่'))}</p>` : ''}
         ${busy && view.job.startedAt ? `<small>${e(word('Elapsed','เวลาที่ใช้'))}: <span data-memory-elapsed aria-live="off">${elapsedLabel(view.job.elapsedMs)}</span></small>` : ''}
-        ${view.job.error ? `<p class="rf-memory-error">${e(view.job.error)}</p>` : ''}${view.job.updatedAt ? `<small>${e(view.job.updatedAt)}</small>` : ''}
-        ${view.job.inputTokens != null ? `<small>${e(word('Latest summary request tokens, counted with the active tokenizer','โทเคนคำขอสรุปล่าสุด นับด้วย tokenizer ปัจจุบัน'))}: input ${view.job.inputTokens} · output ${view.job.outputTokens ?? '—'}</small>` : ''}
+        ${status === 'summarizing' && view.job.requestStartedAt ? `<small>${e(word('Waiting for this API request','รอ API ชุดนี้'))}: <span data-memory-request-elapsed aria-live="off">${elapsedLabel(view.job.requestElapsedMs)}</span> / ${elapsedLabel((view.job.apiTimeoutSeconds || apiTimeout)*1000)}</small>` : ''}
+        ${view.job.error ? `<p class="rf-memory-error">${e(view.job.error)}</p>` : ''}${diagnostics}
+        ${!busy && view.job.recommendedBatchSize && view.job.code === 'MEMORY_API_TIMEOUT' ? `<p class="rf-memory-adaptive" data-memory-retry-size>${e(word('Retry / continue will use up to','ลองใหม่ / ทำต่อ จะใช้ไม่เกิน'))} ${Math.min(batchSize,view.job.recommendedBatchSize)} ${e(word('messages per request to shorten the next call. No paid API retry starts until you press it.','ข้อความต่อคำขอให้คำขอถัดไปสั้นลง ยังไม่เรียก API เสียโควต้าซ้ำจนกว่าจะกด'))}</p>` : ''}
+        ${view.job.updatedAt ? `<small>${e(view.job.updatedAt)}</small>` : ''}
+        ${view.job.tokenCountWarning ? `<p class="rf-memory-token-warning">${e(view.job.tokenCountWarning)}</p>` : ''}
+        ${view.job.inputTokens != null ? `<small>${e(view.job.tokenCountEstimated ? word('Latest request token estimate (conservative UTF-8 byte count)','ค่าประมาณโทเคนคำขอล่าสุด (เผื่อจากจำนวนไบต์ UTF-8)') : word('Latest summary request tokens, counted with the active tokenizer','โทเคนคำขอสรุปล่าสุด นับด้วย tokenizer ปัจจุบัน'))}: input ${view.job.inputTokens} · output ${view.job.outputTokens ?? '—'}</small>` : ''}
         ${view.coverage.stale ? `<p>${e(word('Changed/swiped sources and dependent recaps are excluded until rebuilt.','สรุปที่ต้นทางถูกแก้หรือเปลี่ยน swipe รวมถึงสรุปที่อ้างอิงต่อ จะไม่ถูกใช้จนกว่าจะสร้างใหม่'))}</p>` : ''}</div>
         <div class="trpg-story-actions">${action('run',word('Summarize pending messages','สรุปข้อความที่ยังเหลือ'))}${action('prepare',word('Prepare for a new chat','เตรียมความจำสำหรับแชตใหม่'))}${busy ? action('cancel',word('Cancel job','ยกเลิกงาน'),'','') : ''}
         ${['error','cancelled','interrupted'].includes(status) ? action('retry',word('Retry / continue','ลองใหม่ / ทำต่อ')) : ''}</div>
@@ -123,6 +141,8 @@ export function renderMemorySummaries(panel, view, profiles = []) {
         <label class="trpg-story-check"><input type="checkbox" name="memoryAutoSummary"${view.settings.memoryAutoSummary ? ' checked' : ''}><span>${e(word('Summarize automatically after completed replies','สรุปอัตโนมัติหลังคำตอบสร้างเสร็จ'))}</span></label>
         <label>${e(word('Completed replies per automatic summary','จำนวนคำตอบต่อการสรุปอัตโนมัติ'))}<input name="memorySummaryInterval" type="number" min="5" max="100" value="${view.settings.memorySummaryInterval}"></label>
         <label>${e(word('API connection profile','โปรไฟล์ API'))}<select name="memorySummaryProfile"><option value="">${e(word('Current SillyTavern API','API ปัจจุบันของ SillyTavern'))}</option>${profiles.map(profile => `<option value="${e(profile.id)}"${profile.id === view.settings.memorySummaryProfile ? ' selected' : ''}>${e(profile.name)}</option>`).join('')}${view.settings.memorySummaryProfile && !profiles.some(profile => profile.id === view.settings.memorySummaryProfile) ? `<option selected value="${e(view.settings.memorySummaryProfile)}">${e(word('Unavailable profile','โปรไฟล์ไม่พร้อมใช้งาน'))}</option>` : ''}</select></label>
+        <label>${e(word('API request timeout (seconds)','เวลารอ API ต่อคำขอ (วินาที)'))}<input name="memorySummaryTimeoutSeconds" type="number" min="60" max="600" step="1" value="${apiTimeout}" required></label>
+        <small>${e(word('Default 240 seconds; choose 60–600 for each request. A longer limit can help slow models, but does not make them faster. Each batch uses a separate API call. Failed calls and manual retries may still consume provider quota/tokens.','เริ่มต้น 240 วินาที ตั้งได้ 60–600 ต่อคำขอ เพิ่มเวลาได้เมื่อโมเดลช้า แต่ไม่ได้ทำให้โมเดลเร็วขึ้น ทุกชุดใช้ API แยกหนึ่งครั้ง คำขอที่ล้มเหลวและการลองใหม่อาจยังใช้โควต้า/โทเคนของผู้ให้บริการ'))}</small>
         <label>${e(word('Summary request input token budget','งบ input tokens ของคำขอสรุป'))}<input name="memorySummaryInputBudget" type="number" min="4000" max="64000" value="${view.settings.memorySummaryInputBudget}"></label>
         <label class="trpg-story-check"><input type="checkbox" name="memoryInject"${view.settings.memoryInject ? ' checked' : ''}><span>${e(word('Include selected memories in story prompts','ส่งความจำที่เลือกเข้า prompt เนื้อเรื่อง'))}</span></label>
         <label>${e(word('Overview token budget','งบโทเคนภาพรวม'))}<input name="memorySummaryBudget" type="number" min="200" max="12000" value="${view.settings.memorySummaryBudget}"></label>
@@ -140,5 +160,5 @@ export function renderMemorySummaries(panel, view, profiles = []) {
         <div class="trpg-story-actions">${action('export',word('Export full memory backup','ส่งออกคลังความจำทั้งหมด'))}<label class="trpg-story-button rf-memory-import">${e(word('Import memory backup','นำเข้าคลังความจำ'))}<input type="file" accept="application/json,.json" data-memory-import${disabled}></label></div>
         <p>${e(word('Original messages are stored in this browser’s IndexedDB. Export this archive to move devices or back up originals; RPG state export alone does not include it.','ข้อความต้นฉบับเก็บใน IndexedDB ของเบราว์เซอร์นี้ ต้องส่งออกคลังนี้เพื่อย้ายอุปกรณ์หรือสำรองต้นฉบับ การส่งออกสถานะ RPG อย่างเดียวไม่รวมคลังนี้'))}</p>
         </section>`;
-    restorePanel(panel,remembered,busy,view.job.startedAt);
+    restorePanel(panel,remembered,busy,view.job.startedAt,view.job.requestStartedAt);
 }

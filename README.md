@@ -1,4 +1,13 @@
-# ROLEFORGE — v0.46.1
+# ROLEFORGE — v0.46.2
+
+## v0.46.2 — Faster module navigation and visible summary progress
+
+- **Extension Settings → RoleForge → General & continuity → Module navigation** selects **Classic carousel**, **Quick menu** or **Module grid**. The original carousel remains the default. The menu groups and searches all modules; the grid opens a module directly with RoleForge's dark surfaces and gold SVG icons. The layout selector stays in extension settings to keep the RPG window clear. The saved preference applies across reloads without changing RPG records.
+- Memory Summaries shows its current step, saved batches and elapsed time beside the **main-chat composer**, including while the RPG window is closed. Its own square Stop button cancels summary work and restores Send when finished; SillyTavern's story Stop keeps control of a story reply. Completed chapters and the unsent message draft remain intact.
+- Summary API requests allow **240 seconds** by default, configurable from **60–600 seconds**. Errors distinguish API timeouts, request failures, token-counting problems and waiting for the story reply. A stalled summary tokenizer falls back to a conservative estimate; memory injected into story prompts still requires token counting within its budget.
+- Every validated summary batch is saved before the next request. After an API timeout, **Retry / continue** uses smaller batches for the remaining sources and keeps the saved batch-size preference. RoleForge does not automatically make another paid request after a failure. Providers may still process and charge for a request already sent even after cancellation or timeout.
+
+อ่าน [วิธีเลือกรูปแบบหมวดและดูสถานะสรุปใน Main Chat](docs/navigation-options-preview.th.md) และ [คู่มือ Memory Summaries](docs/memory-summaries-workflows.th.md)
 
 ## v0.46.1 — Saved summary batches and compact extension settings
 

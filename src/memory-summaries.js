@@ -4,6 +4,11 @@ export const MEMORY_LINK_KEY = 'tretaresia_rpg_memory_link';
 export const DEFAULT_MEMORY_BATCH_SIZE = 10;
 export const MAX_MEMORY_BATCH_SIZE = 100;
 export const MEMORY_BATCH_CHAR_LIMIT = 18000;
+export const DEFAULT_MEMORY_SUMMARY_TIMEOUT_SECONDS = 240;
+export function normalizeMemorySummaryTimeoutSeconds(value) {
+    const seconds = Number(value);
+    return Number.isFinite(seconds) && seconds > 0 ? Math.min(600,Math.max(60,Math.floor(seconds))) : DEFAULT_MEMORY_SUMMARY_TIMEOUT_SECONDS;
+}
 export function normalizeMemoryBatchSize(value) {
     const size = Number(value);
     return Number.isFinite(size) && size > 0 ? Math.min(MAX_MEMORY_BATCH_SIZE,Math.max(1,Math.floor(size))) : DEFAULT_MEMORY_BATCH_SIZE;
