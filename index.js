@@ -14,8 +14,9 @@ import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoar
 import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.48.0';
 import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.48.0';
 import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.48.0';
-import { MARKETPLACE_INSTRUCTIONS, normalizeMarketplace, marketplaceView, createMarketplaceListing, applyMarketplaceAction, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.48.0';
+import { MARKETPLACE_INSTRUCTIONS, normalizeMarketplace, marketplaceView, marketplacePublicListing, createMarketplaceListing, applyMarketplaceAction, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.48.0';
 import { renderMarketplacePanel } from './src/marketplace-ui.js?v=0.48.0';
+import { renderMarketplaceChatCard } from './src/marketplace-chat-ui.js?v=0.48.0';
 import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.48.0';
 import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.48.0';
 import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.48.0';
@@ -2230,6 +2231,27 @@ function rememberAuctionOffer(messageId,message,offer) {
     for (const stale of Object.keys(history[key]).slice(0,-6)) delete history[key][stale];
     for (const stale of Object.keys(history).slice(0,-300)) delete history[stale];
 }
+function rememberMarketplaceListing(messageId, listingId) {
+    if (!Number.isInteger(Number(messageId)) || !listingId) return;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), message = context.chat?.[Number(messageId)];
+    if (!key || !message || message.is_user || message.is_system) return;
+    const history = context.chatMetadata[SOCIAL_EVENTS_KEY] ||= {};
+    const variant = assistantVariantKey(message);
+    history[key] ||= {};
+    history[key][variant] ||= {};
+    history[key][variant].marketplace = { listingId: String(listingId) };
+    for (const stale of Object.keys(history[key]).slice(0, -6)) delete history[key][stale];
+    for (const stale of Object.keys(history).slice(0, -300)) delete history[stale];
+}
+function marketplaceForMessage(messageId, message) {
+    if (!getSettings().enableMarketplace || !message || message.is_user || message.is_system) return null;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), variant = assistantVariantKey(message);
+    const marker = key && context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[variant]?.marketplace;
+    const listingId = typeof marker === 'string' ? marker : marker?.listingId;
+    const listing = listingId && getState().marketplace?.listings?.find(entry => entry.id === listingId);
+    if (!listing) return null;
+    return { ...marketplacePublicListing(listing), token: `${key}:${variant}`, busy: Boolean(pendingAuctionSave), available: !mainReplyGenerating(context) };
+}
 function auctionForMessage(messageId,message) {
     if (!getSettings().enableAuctions) return null;
     if (!message || message.is_user || message.is_system) return null;
@@ -2326,7 +2348,7 @@ async function commitMarketplaceResult(result, source = 'marketplace') {
     const context = SillyTavern.getContext(), chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata;
     if (!chatId || !metadata) return { ok: false, error: 'save' };
     if (pendingAuctionSave) return { ok: false, error: 'saving' };
-    const originalState = metadata[METADATA_KEY], current = () => {
+    const originalState = metadata[METADATA_KEY], originalSocialEvents = metadata[SOCIAL_EVENTS_KEY], current = () => {
         const active = SillyTavern.getContext();
         return active.getCurrentChatId?.() === chatId && active.chatMetadata === metadata;
     };
@@ -2346,6 +2368,8 @@ async function commitMarketplaceResult(result, source = 'marketplace') {
         if (!await persistState(result.next, source, { deferMetadataSave: true })) return { ok: false, error: 'save' };
         stagedState = metadata[METADATA_KEY];
         if (!current()) return { ok: false, error: 'stale' };
+        const listed = result.events?.find(entry => entry.type === 'listed' && entry.listingId);
+        if (listed) rememberMarketplaceListing(latestId, listed.listingId);
         if (checkpointState) checkpoint.variants[variant].state = clone(getState());
         if (!await saveCurrentChatMetadata(context, { marketplaceCommit: true })) return { ok: false, error: 'save' };
         saved = true;
@@ -2356,7 +2380,7 @@ async function commitMarketplaceResult(result, source = 'marketplace') {
         console.warn('[RoleForge] Marketplace could not be saved.', error);
         return { ok: false, error: 'save' };
     } finally {
-        if (!saved && stagedState && metadata[METADATA_KEY] === stagedState) { metadata[METADATA_KEY] = originalState; if (checkpointState) checkpoint.variants[variant].state = checkpointState; if (current()) updatePrompt(); }
+        if (!saved && stagedState && metadata[METADATA_KEY] === stagedState) { metadata[METADATA_KEY] = originalState; metadata[SOCIAL_EVENTS_KEY] = originalSocialEvents; if (checkpointState) checkpoint.variants[variant].state = checkpointState; if (current()) updatePrompt(); }
         pendingAuctionSave = null; release?.();
         if (current()) refreshMarketplace();
     }
@@ -9596,6 +9620,7 @@ async function initialize() {
             sceneForMessage,
             socialEventsForMessage, diaryForMessage, answerHouseholdOffer, answerGroupOffer, missionBoardForMessage, acceptBoardMission,
             auctionForMessage, runAuctionAction, refreshAuctions,
+            marketplaceForMessage, runMarketplaceAction, refreshMarketplace,
             profile: npcProfile, persist: persistState,
             scopeInfo: () => characterOwner(SillyTavern.getContext()),
             listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),

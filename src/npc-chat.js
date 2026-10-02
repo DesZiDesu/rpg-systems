@@ -1,4 +1,5 @@
 import {renderAuctionCard} from './auction-ui.js?v=0.48.0';
+import {renderMarketplaceChatCard} from './marketplace-chat-ui.js?v=0.48.0';
 import { renderMissionBoard } from './mission-board-ui.js?v=0.48.0';
 import {uiText} from './ui-language.js?v=0.48.0';
 import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.48.0';
@@ -293,11 +294,12 @@ export function createChatPresentation(api, open) {
             const notes=api.diaryForMessage?.(id,message)||[];
             const board=api.missionBoardForMessage?.(id,message);
             const auction=api.auctionForMessage?.(id,message);
-            if(!blocks&&!scene&&!offers.length&&!groupOffers.length&&!notes.length&&!board&&!auction){if(old)restore(host,old,source);continue;}
+            const marketplace=api.marketplaceForMessage?.(id,message);
+            if(!blocks&&!scene&&!offers.length&&!groupOffers.length&&!notes.length&&!board&&!auction&&!marketplace){if(old)restore(host,old,source);continue;}
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
-            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${preserveNativeChat}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(groupOffers)}:${JSON.stringify(notes)}:${JSON.stringify(board)}:${JSON.stringify(auction)}:${source}`;
+            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${preserveNativeChat}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(scene)}:${JSON.stringify(offers)}:${JSON.stringify(groupOffers)}:${JSON.stringify(notes)}:${JSON.stringify(board)}:${JSON.stringify(auction)}:${JSON.stringify(marketplace)}:${source}`;
             if(old?.signature===signature && old.roots.every(root=>preserveNativeChat?root.parentNode===host:host.contains(root)))continue;
             if(old)restore(host,old,source);
             const prefix=element('div','trpg-chat'),suffix=element('div','trpg-chat');
@@ -307,6 +309,7 @@ export function createChatPresentation(api, open) {
             if(storyRoot){storyRoot.classList.toggle('trpg-effects',Boolean(settings.chatEffects));renderStoryBlocks(storyRoot,blocks,lookup,message.name,open,imageFor,previousSpeaker);}
             if(board)suffix.append(renderMissionBoard(board,id,api));
             if(auction)suffix.append(renderAuctionCard(auction,api,id));
+            if(marketplace)suffix.append(renderMarketplaceChatCard(marketplace,id,api));
             for(const offer of offers)suffix.append(householdInvitation(offer,id,api));
             for(const offer of groupOffers)suffix.append(groupInvitation(offer,id,api));
             for(const note of notes){

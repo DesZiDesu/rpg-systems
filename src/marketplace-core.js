@@ -193,7 +193,7 @@ export function createMarketplaceListing(state, input, now = new Date().toISOStr
         status: 'Active', buyer, createdAt: now, updatedAt: now, offers: [], currencyName: state.progression.currency.name,
     });
     marketplace.listings.push(listing); next.marketplace = marketplace;
-    return { ok: true, next, events: [{ type: 'listed', itemName: listing.itemName, quantity, amount: askPrice }] };
+    return { ok: true, next, events: [{ type: 'listed', listingId: listing.id, itemName: listing.itemName, quantity, amount: askPrice }] };
 }
 
 function settleListing(next, listing, offer, now, events) {
