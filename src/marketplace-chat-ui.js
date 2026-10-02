@@ -22,15 +22,34 @@ export function renderMarketplaceChatCard(listing, messageId, api) {
         node('h4', '', `${listing.buyer.name} · ${listing.itemName}`));
     const status = node('span', 'trpg-marketplace-badge', labels[listing.status] || listing.status);
     head.append(copy, status); root.append(head);
-    root.append(node('p', '', `${t('จำนวน', 'Quantity')} ${listing.quantity} · ${t('ผู้ซื้อเป้าหมาย', 'Buyer profile')} ${listing.buyer.role}`));
+    const itemLine = node('p', 'trpg-marketplace-chat-itemline');
+    itemLine.append(node('span', '', `${listing.category || t('ไอเทม', 'Item')} · ×${listing.quantity}`), node('span', '', `${t('ผู้ซื้อ', 'Buyer')} ${listing.buyer.role}`));
+    root.append(itemLine);
+    if (listing.description) root.append(node('p', 'trpg-marketplace-chat-description', listing.description));
+    const intent = node('p', 'trpg-marketplace-chat-intent');
+    intent.append(node('strong', '', `${t('เจตนา', 'Intent')} · `), node('span', '', buyerIntent(listing.buyer, t)));
+    root.append(intent);
     const latest = listing.offers?.at(-1);
     const amount = latest?.counterAmount || latest?.amount || listing.askPrice;
-    root.append((() => {
-        const line = node('p', 'trpg-marketplace-chat-price', `${t('ราคาที่เสนอ', 'Offer')} `);
-        line.append(node('strong', '', price(amount)), node('span', '', ` · ${t('ราคาขั้นต่ำ', 'Floor')} ${price(listing.floorPrice)}`));
-        return line;
-    })());
+    const priceBox = node('div', 'trpg-marketplace-chat-pricebox');
+    const priceCell = (label, value, emphasis = false) => { const cell = node('div', `trpg-marketplace-chat-pricecell${emphasis ? ' is-emphasis' : ''}`); cell.append(node('small', '', label), node('strong', '', value)); return cell; };
+    priceBox.append(priceCell(t('ข้อเสนอล่าสุด', 'Latest offer'), price(amount), true), priceCell(t('ราคาตั้ง', 'Ask'), price(listing.askPrice)), priceCell(t('ราคาต่ำสุด', 'Floor'), price(listing.floorPrice)));
+    root.append(priceBox);
     if (latest?.message) root.append(node('p', '', `“${latest.message}”`));
+    if (latest?.history?.length) {
+        const details = node('details', 'trpg-marketplace-chat-history');
+        details.append(node('summary', '', `${t('ประวัติการต่อรอง', 'Negotiation history')} · ${latest.history.length} ${t('รอบ', 'rounds')}`));
+        const timeline = node('ol', 'trpg-marketplace-chat-history-list');
+        for (const entry of latest.history.slice().reverse()) {
+            const item = node('li', `is-${entry.actor}`);
+            const line = node('div', 'trpg-marketplace-chat-history-line');
+            line.append(node('span', '', entry.actor === 'seller' ? t('คุณ', 'You') : listing.buyer.name), node('strong', '', price(entry.amount)));
+            item.append(line);
+            if (entry.message) item.append(node('small', '', entry.message));
+            timeline.append(item);
+        }
+        details.append(timeline); root.append(details);
+    }
     const actions = node('div', 'trpg-marketplace-chat-actions');
     const valid = () => root.isConnected && api.marketplaceForMessage?.(messageId, api.context().chat?.[messageId])?.token === listing.token;
     let busy = false;
@@ -59,4 +78,12 @@ export function renderMarketplaceChatCard(listing, messageId, api) {
     if (actions.childNodes.length) root.append(actions);
     root.append(statusText);
     return root;
+}
+
+function buyerIntent(buyer, t) {
+    const id = buyer?.id;
+    if (id === 'collector') return t('ตามหาของหายากเพื่อเก็บเข้าคลังส่วนตัว', 'Seeking a rare piece for a private collection');
+    if (id === 'merchant') return t('มองหาสินค้าที่หมุนเวียนต่อในตลาดได้', 'Looking for stock that can be resold');
+    if (id === 'adventurer') return t('ต้องใช้ไอเทมสำหรับการเดินทางครั้งถัดไป', 'Needs the item for an upcoming expedition');
+    return t('ต้องการไอเทมชิ้นนี้จากตลาด', 'Interested in this item from the market');
 }

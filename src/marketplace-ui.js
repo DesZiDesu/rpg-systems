@@ -73,10 +73,28 @@ function renderListing(listing, context) {
     const card = node('article', `trpg-marketplace-listing is-${listing.status.toLowerCase()}`); card.dataset.listingId = listing.id;
     const top = node('header', 'trpg-marketplace-listing-head');
     const icon = node('span', `trpg-marketplace-buyer-mark is-${listing.buyer.tone}`, listing.buyer.glyph); icon.setAttribute('aria-hidden', 'true');
-    const title = node('div', 'trpg-marketplace-listing-title'); title.append(node('small', '', `${listing.category} · ×${listing.quantity}`), node('h4', '', listing.itemName), node('p', '', `${t('ผู้ซื้อเป้าหมาย', 'Buyer')} · ${listing.buyer.name} · ${listing.buyer.role}`));
+    const title = node('div', 'trpg-marketplace-listing-title');
+    title.append(node('small', '', `${listing.category} · ×${listing.quantity}`), node('h4', '', listing.itemName), node('p', '', `${t('ผู้ซื้อเป้าหมาย', 'Buyer')} · ${listing.buyer.name} · ${listing.buyer.role}`));
     const badge = node('b', 'trpg-marketplace-badge', t({ Active: 'เปิดรับข้อเสนอ', Negotiating: 'กำลังต่อรอง', Sold: 'ขายแล้ว', Cancelled: 'ยกเลิกแล้ว', Expired: 'หมดอายุ' }[listing.status], listing.status));
     top.append(icon, title, badge); card.append(top);
-    const priceLine = node('div', 'trpg-marketplace-price-line'); priceLine.append(node('span', '', `${t('ราคาตั้งรวม', 'Total ask')}: ${price(listing.askPrice, listing.denomination)}`), node('strong', '', `${t('รับขั้นต่ำ', 'Floor')} ${price(listing.floorPrice, listing.denomination)}`)); card.append(priceLine);
+    if (listing.description) card.append(node('p', 'trpg-marketplace-listing-description', listing.description));
+
+    const intent = node('div', 'trpg-marketplace-intent');
+    intent.append(node('span', 'trpg-marketplace-intent-label', t('เจตนาของผู้ซื้อ', 'Buyer intent')),
+        node('span', '', buyerIntent(listing.buyer, t)));
+    card.append(intent);
+
+    const priceLine = node('div', 'trpg-marketplace-price-line');
+    const askCell = node('div', 'trpg-marketplace-price-cell'); askCell.append(node('small', '', t('ราคาตั้งรวม', 'Total ask')), node('strong', '', price(listing.askPrice, listing.denomination)));
+    const floorCell = node('div', 'trpg-marketplace-price-cell'); floorCell.append(node('small', '', t('ราคาต่ำสุด', 'Lowest')), node('strong', '', price(listing.floorPrice, listing.denomination)));
+    const spread = Math.max(0, Number(listing.askPrice) - Number(listing.floorPrice));
+    const spreadCell = node('div', 'trpg-marketplace-price-cell'); spreadCell.append(node('small', '', t('ส่วนต่างต่อรอง', 'Negotiation room')), node('strong', '', price(spread, listing.denomination)));
+    priceLine.append(askCell, floorCell, spreadCell); card.append(priceLine);
+    if (listing.status === 'Sold' && listing.soldPrice) {
+        const settlement = node('div', 'trpg-marketplace-settlement');
+        settlement.append(node('span', '', t('ปิดบัญชีแล้ว', 'Settled')), node('strong', '', price(listing.soldPrice, listing.denomination)));
+        card.append(settlement);
+    }
     const offers = node('div', 'trpg-marketplace-offers');
     const latest = listing.offers.at(-1);
     if (!listing.offers.length && ['Active', 'Negotiating'].includes(listing.status)) {
@@ -101,6 +119,20 @@ function renderOffer(listing, offer, context) {
     const head = node('div', 'trpg-marketplace-offer-head'); head.append(node('strong', '', `${offer.buyerName} · ${t('รอบ', 'Round')} ${offer.round}`), node('b', '', `${t('เสนอ', 'Offer')} ${price(offer.amount, listing.denomination)}`)); row.append(head);
     if (offer.counterAmount) row.append(node('p', 'trpg-marketplace-counter-note', `${t('Counteroffer ของคุณ', 'Your counteroffer')}: ${price(offer.counterAmount, listing.denomination)}`));
     if (offer.message) row.append(node('p', 'trpg-marketplace-offer-message', offer.message));
+    if (offer.history?.length) {
+        const details = node('details', 'trpg-marketplace-history');
+        const summary = node('summary', '', `${t('เปิดสมุดบันทึกการต่อรอง', 'Open negotiation ledger')} · ${offer.history.length} ${t('รายการ', 'entries')}`);
+        const timeline = node('ol', 'trpg-marketplace-history-list');
+        for (const entry of offer.history.slice().reverse()) {
+            const item = node('li', `is-${entry.actor}`);
+            const line = node('div', 'trpg-marketplace-history-line');
+            line.append(node('strong', '', entry.actor === 'seller' ? t('คุณ', 'You') : offer.buyerName), node('b', '', price(entry.amount, listing.denomination)));
+            item.append(line);
+            if (entry.message) item.append(node('span', '', entry.message));
+            timeline.append(item);
+        }
+        details.append(summary, timeline); row.append(details);
+    }
     const controls = node('div', 'trpg-marketplace-offer-controls');
     if (['Active', 'Negotiating'].includes(listing.status) && ['Pending', 'Countered'].includes(offer.status)) {
         const accept = node('button', 'trpg-marketplace-primary', t('รับข้อเสนอ', 'Accept offer')); accept.type = 'button'; accept.dataset.marketAction = 'accept'; accept.dataset.listingId = listing.id; if (offer.status === 'Pending') controls.append(accept);
@@ -121,4 +153,12 @@ function renderOffer(listing, offer, context) {
         await context.execute(() => api.runAction(listing.id, button.dataset.marketAction, undefined, listing.revision));
     });
     return row;
+}
+
+function buyerIntent(buyer, t) {
+    const id = buyer?.id;
+    if (id === 'collector') return t('ตามหาของหายากเพื่อเก็บเข้าคลังส่วนตัว', 'Seeking a rare piece for a private collection');
+    if (id === 'merchant') return t('มองหาสินค้าที่หมุนเวียนต่อในตลาดได้', 'Looking for stock that can be resold');
+    if (id === 'adventurer') return t('ต้องใช้ไอเทมสำหรับการเดินทางครั้งถัดไป', 'Needs the item for an upcoming expedition');
+    return t('ต้องการไอเทมชิ้นนี้จากตลาด', 'Interested in this item from the market');
 }

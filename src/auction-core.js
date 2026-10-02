@@ -117,7 +117,7 @@ export function auctionView(state, offer, {available = true, busy = false, token
     const leader = lot.highestBidder === 'player' ? state.player.name : lot.bidders.find(b => b.id === lot.highestBidder)?.name || '';
     return {id:source.id,title:source.title,location:source.location,denomination:source.denomination,currencyName:session?.currencyName || state.progression.currency.name,
         entryFee:source.entryFee,deposit:source.deposit,status:session?.status || 'Offered',revision:session?.revision || 0,index:session?.index || 0,total:source.lots.length,
-        lots:source.lots.map(l => ({id:l.id,name:l.name,status:l.status || 'Pending',description:l.description,rarity:l.rarity,quantity:l.quantity,openingBid:l.openingBid,minIncrement:l.minIncrement})),
+        lots:source.lots.map(l => ({id:l.id,name:l.name,status:l.status || 'Pending',description:l.description,rarity:l.rarity,quantity:l.quantity,openingBid:l.openingBid,minIncrement:l.minIncrement,price:l.price || 0})),
         lot:{id:lot.id,name:lot.name,description:lot.description,rarity:lot.rarity,category:lot.category,quantity:lot.quantity,status:lot.status || 'Pending',
             price:lot.price || 0,openingBid:lot.openingBid,minIncrement:lot.minIncrement,leader,playerLeading:lot.highestBidder === 'player',closingCount:lot.closingCount || 0,
             nextBid:lot.highestBidder ? lot.price+lot.minIncrement : lot.openingBid,history:copy(lot.history || []),bidders:lot.bidders.map(b => b.name)},

@@ -5,25 +5,26 @@
 <title>RoleForge · Medieval Commerce preview</title>
 <link rel="stylesheet" href="../../styles/style.css?v=0.48.0"><link rel="stylesheet" href="../../styles/auctions.css?v=0.48.0"><link rel="stylesheet" href="../../styles/marketplace.css?v=0.48.0">
 <style>
-html,body{margin:0;min-height:100%;background:#170e0b;color:#f3ead8;font-family:var(--mainFontFamily,"Noto Sans Thai","Noto Sans",system-ui,sans-serif}.preview-shell{max-width:1180px;margin:0 auto;padding:25px 18px 60px}.preview-shell h1{margin:0;color:#e0b86e;font-size:25px;font-weight:700}.preview-shell>p{color:#c4b59c}.preview-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.preview-toolbar button{min-height:42px;padding:8px 14px;border:1px solid rgba(198,153,84,.55);border-radius:4px;background:#241814;color:#f3ead8;font:inherit;cursor:pointer}.preview-toolbar button.is-active{background:#a66d35;color:#fff2d1;border-color:#e0b86e}.preview-frame{padding:18px;border:1px solid rgba(198,153,84,.44);border-radius:6px;background:radial-gradient(circle at 5% 0,rgba(198,153,84,.1),transparent 38%),#241814;box-shadow:0 12px 30px rgba(0,0,0,.24)}.preview-frame.is-mobile{max-width:390px;margin-inline:auto;padding:11px}.preview-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(340px,.88fr);gap:18px}.preview-frame.is-mobile .preview-grid{display:block}.preview-column{min-width:0}.preview-label{margin:0 0 8px;color:#e0b86e;font-size:11px;letter-spacing:.08em}.fake-chat{padding:14px;border:1px solid rgba(198,153,84,.35);border-radius:5px;background:#1b100d}.fake-message{max-width:760px;margin:0 0 17px;padding:4px 0}.fake-message p{margin:7px 0;line-height:1.55}.fake-message .speaker{font-size:12px;color:#c4b59c}.preview-column .trpg-marketplace{margin:0}.preview-column .trpg-auction{margin-top:10px}
+html,body{margin:0;min-height:100%;background:#170e0b;color:#f3ead8;font-family:var(--mainFontFamily,"Noto Sans Thai","Noto Sans",system-ui,sans-serif)}.preview-shell{max-width:1180px;margin:0 auto;padding:25px 18px 60px}.preview-shell h1{margin:0;color:#e0b86e;font-size:25px;font-weight:700}.preview-shell>p{color:#c4b59c}.preview-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.preview-toolbar button{min-height:42px;padding:8px 14px;border:1px solid rgba(198,153,84,.55);border-radius:4px;background:#241814;color:#f3ead8;font:inherit;cursor:pointer}.preview-toolbar button.is-active{background:#a66d35;color:#fff2d1;border-color:#e0b86e}.preview-frame{padding:18px;border:1px solid rgba(198,153,84,.44);border-radius:6px;background:radial-gradient(circle at 5% 0,rgba(198,153,84,.1),transparent 38%),#241814;box-shadow:0 12px 30px rgba(0,0,0,.24)}.preview-frame.is-mobile{max-width:390px;margin-inline:auto;padding:11px}.preview-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(340px,.88fr);gap:18px}.preview-frame.is-mobile .preview-grid{display:block}.preview-column{min-width:0}.preview-label{margin:0 0 8px;color:#e0b86e;font-size:11px;letter-spacing:.08em}.fake-chat{padding:14px;border:1px solid rgba(198,153,84,.35);border-radius:5px;background:#1b100d}.fake-message{max-width:760px;margin:0 0 17px;padding:4px 0}.fake-message p{margin:7px 0;line-height:1.55}.fake-message .speaker{font-size:12px;color:#c4b59c}.preview-column .trpg-marketplace{margin:0}.preview-column .trpg-auction{margin-top:10px}
 @media(max-width:760px){.preview-shell{padding:18px 10px 40px}.preview-frame{padding:10px}.preview-grid{display:block}.preview-column+.preview-column{margin-top:22px}}
 </style>
 </head>
 <body>
 <main class="preview-shell">
 <h1>RoleForge · Medieval Commerce</h1>
-<p>การ์ดซื้อขายและประมูลใต้ข้อความ Main Chat ใช้ลายไม้ กระดาษ และตราทองเหลือง พร้อมปุ่มที่กดเล่นต่อได้ทันที</p>
+<p>ตัวอย่างนี้จำลอง Main Chat จริง: ข้อเสนอซื้อและรายการประมูลจะติดอยู่กับข้อความต้นทาง เปิดรายละเอียด ต่อรอง เสนอราคา และดูประวัติได้จากการ์ดเดียวกัน</p>
 <div class="preview-toolbar"><button type="button" data-mode="desktop" class="is-active">Desktop</button><button type="button" data-mode="mobile">Mobile</button><button type="button" id="preview-reset">เริ่มตัวอย่างใหม่</button></div>
 <div id="preview-frame" class="preview-frame"><div class="preview-grid">
 <section class="preview-column"><p class="preview-label">MAIN CHAT · INTERACTIVE CARDS</p><div class="fake-chat">
-<article class="fake-message"><div class="speaker">Mira · นักสะสม</div><p>“ดาบจันทร์เงินเล่มนี้เหมาะกับคอลเลกชันของฉันมาก ฉันขอซื้อไว้ที่ราคานี้ได้ไหม?”</p><div id="market-card"></div></article>
-<article class="fake-message"><div class="speaker">นายหน้าประมูลแห่งประตูเหนือ</div><p>“รายการถัดไปเปิดให้ผู้เข้าร่วมเสนอราคาแล้ว เชิญตัดสินใจจากการ์ดด้านล่าง”</p><div id="auction-card"></div></article>
+<article class="fake-message"><div class="speaker">Mira · นักสะสมของหายาก</div><p>“ดาบจันทร์เงินเล่มนี้เหมาะกับคอลเลกชันของฉันมาก ฉันขอซื้อไว้ที่ราคานี้ได้ไหม?”</p><div id="market-card"></div></article>
+<article class="fake-message"><div class="speaker">ผู้ดำเนินงานแห่งหอประมูลประตูเหนือ</div><p>“รายการที่หนึ่งขึ้นแท่นแล้ว ผู้เข้าร่วมเสนอราคาได้เมื่อพร้อม เสียงค้อนจะนับสามครั้งเมื่อไม่มีผู้สู้ราคา”</p><div id="auction-card"></div></article>
 </div></section>
-<section class="preview-column"><p class="preview-label">COMMERCE · LEDGER</p><div id="marketplace-preview"></div><p class="preview-label" style="margin-top:18px">AUCTION HOUSE · SESSION</p><p style="color:#c4b59c;font-size:13px">Auction card อยู่ใต้ข้อความต้นทางใน Main Chat เช่นเดียวกัน: Join, Bid, Wait และ Leave ทำงานกับ session เดียวกัน</p></section>
+<section class="preview-column"><p class="preview-label">COMMERCE · LEDGER</p><div id="marketplace-preview"></div><p class="preview-label" style="margin-top:18px">AUCTION HOUSE · SESSION LEDGER</p><div id="auction-ledger"></div></section>
 </div></div>
 </main>
 <script type="module">
 import {createMarketplaceListing,applyMarketplaceAction,marketplaceView,marketplacePublicListing} from '../../src/marketplace-core.js';
+import {applyAuctionAction,auctionView} from '../../src/auction-core.js';
 import {renderMarketplacePanel} from '../../src/marketplace-ui.js';
 import {renderMarketplaceChatCard} from '../../src/marketplace-chat-ui.js';
 import {renderAuctionCard} from '../../src/auction-ui.js';
@@ -31,12 +32,24 @@ const now='2026-10-02T12:00:00.000Z';
 let state={player:{name:'Nova'},progression:{currency:{name:'เหรียญเมือง',gold:48,silver:12,copper:0}},inventory:[{id:'moonblade',name:'ดาบจันทร์เงิน',category:'อาวุธ',quantity:2,description:'ใบดาบสีเงินจากช่างตีเหล็กแห่งหอจันทร์'},{id:'potion',name:'ยาฟื้นฟูคุณภาพสูง',category:'ยา',quantity:5,description:'ยาฟื้นฟูที่ปิดผนึกอย่างดี'}],marketplace:{listings:[],receipts:[]}};
 let created=createMarketplaceListing(state,{itemId:'moonblade',quantity:1,askPrice:20,floorPrice:14,denomination:'gold',buyer:{id:'collector'}},now);state=created.next;
 const listingId=state.marketplace.listings[0].id;state=applyMarketplaceAction(state,listingId,'invite',{revision:state.marketplace.listings[0].revision,now}).next;
-const settings=()=>({language:'th'}), panel=document.querySelector('#marketplace-preview'), marketMount=document.querySelector('#market-card'), auctionMount=document.querySelector('#auction-card');
-const fakeContext=()=>({chat:[null,{mes:'Mira asks about the blade'},{mes:'Auctioneer opens the lot'}],chatMetadata:{},getCurrentChatId:()=> 'preview'});
+const settings=()=>({language:'th'}), panel=document.querySelector('#marketplace-preview'), marketMount=document.querySelector('#market-card'), auctionMount=document.querySelector('#auction-card'), auctionLedgerMount=document.querySelector('#auction-ledger');
+const previewContext={chat:[null,{mes:'Mira asks about the blade'},{mes:'Auctioneer opens the lot'}],chatMetadata:{},getCurrentChatId:()=> 'preview'};
+const fakeContext=()=>previewContext;
 const marketApi={settings,context:fakeContext,marketplaceForMessage:()=>({...marketplacePublicListing(state.marketplace.listings[0]),token:'preview:marketplace',revision:state.marketplace.listings[0].revision}),runMarketplaceAction:async(id,action,amount,revision)=>{const result=applyMarketplaceAction(state,id,action,{amount,revision,now:new Date().toISOString()});if(result.ok)state=result.next;render();return result},refreshMarketplace:render};
-const auctionView={id:'preview-auction',token:'preview:auction',revision:0,status:'Offered',title:'ตลาดประมูลประตูเหนือ',location:'หอการค้าริมกำแพง',index:0,total:2,entryFee:1,deposit:4,funds:48,reserved:0,available:true,retired:false,currencyName:'เหรียญเมือง',denomination:'gold',lot:{id:'lot-1',name:'โล่ไม้โอ๊กตราราชสีห์',category:'อุปกรณ์',rarity:'หายาก',quantity:1,description:'โล่เก่าจากกองทหารรักษาประตู มีตราราชสีห์ยังคงชัดเจน',price:0,openingBid:12,minIncrement:2,leader:'',playerLeading:false,status:'Pending',closingCount:0,history:[]},lots:[]};
-const auctionApi={settings,context:fakeContext,runAuctionAction:async()=>({ok:true}),refreshAuctions:render};
-function render(){renderMarketplacePanel(panel,marketplaceView(state),{settings,createListing:async input=>{const result=createMarketplaceListing(state,input,new Date().toISOString());if(result.ok)state=result.next;render();return result},runAction:marketApi.runMarketplaceAction,refresh:render});marketMount.replaceChildren(renderMarketplaceChatCard({...marketplacePublicListing(state.marketplace.listings[0]),token:'preview:marketplace'},1,marketApi));auctionMount.replaceChildren(renderAuctionCard(auctionView,auctionApi,2));}
+let auctionState={player:{name:'Nova'},progression:{currency:{name:'เหรียญเมือง',gold:48,silver:12,copper:0}},inventory:[],auctions:[],auctionReceipts:[]};
+const auctionOffer={id:'north-gate-day-63',title:'ตลาดประมูลประตูเหนือ',location:'หอการค้าริมกำแพง',denomination:'gold',entryFee:1,deposit:4,lots:[
+    {id:'lion-shield',name:'โล่ไม้โอ๊กตราราชสีห์',category:'อุปกรณ์',rarity:'หายาก · ตรวจสอบแล้ว',quantity:1,description:'โล่เก่าจากกองทหารรักษาประตู มีตราราชสีห์ยังคงชัดเจน ชั้นไม้แน่นและขอบเหล็กไม่มีรอยร้าว',openingBid:12,minIncrement:2,bidders:[{id:'captain',name:'กัปตันคอร่า',maxBid:18},{id:'collector',name:'พ่อค้าอัลเดน',maxBid:16}]},
+    {id:'moon-potion',name:'ยาฟื้นฟูจากหอจันทรา',category:'ยา',rarity:'ไม่ธรรมดา',quantity:2,description:'ขวดแก้วผนึกตราหอจันทรา ใช้ในภารกิจที่ยาวนานได้',openingBid:6,minIncrement:1,bidders:[]}
+]};
+const auctionApi={settings,context:fakeContext,runAuctionAction:async(messageId,id,token,action,amount,revision)=>{const result=applyAuctionAction(auctionState,auctionOffer,action,{amount,revision,now:new Date().toISOString()});if(result.ok)auctionState=result.next;render();return result},refreshAuctions:render};
+function render(){
+    renderMarketplacePanel(panel,marketplaceView(state),{settings,createListing:async input=>{const result=createMarketplaceListing(state,input,new Date().toISOString());if(result.ok)state=result.next;render();return result},runAction:marketApi.runMarketplaceAction,refresh:render});
+    const listing=marketplacePublicListing(state.marketplace.listings[0]); marketMount.replaceChildren(renderMarketplaceChatCard({...listing,token:'preview:marketplace'},1,marketApi));
+    const mainAuction=auctionView(auctionState,auctionOffer,{token:'preview:auction',available:true});
+    auctionMount.replaceChildren(renderAuctionCard(mainAuction,auctionApi,2));
+    const ledgerAuction=auctionView(auctionState,auctionOffer,{token:'preview:auction-ledger',available:true});
+    auctionLedgerMount.replaceChildren(renderAuctionCard(ledgerAuction,auctionApi,'auction-ledger'));
+}
 render();
 document.querySelectorAll('[data-mode]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-mode]').forEach(item=>item.classList.toggle('is-active',item===button));document.querySelector('#preview-frame').classList.toggle('is-mobile',button.dataset.mode==='mobile');});
 document.querySelector('#preview-reset').onclick=()=>location.reload();

@@ -53,10 +53,17 @@ export function renderAuctionCard(view, api, messageId = null) {
     header.append(mark,heading,toggle); root.append(header);
     const body = node('div','trpg-auction-body'); body.hidden = local.collapsed;
     toggle.addEventListener('click',() => { if (!valid()) return; local.collapsed = !local.collapsed; body.hidden = local.collapsed; toggle.textContent = local.collapsed ? '+' : '−'; toggle.setAttribute('aria-expanded',String(!local.collapsed)); });
-    const top = node('div','trpg-auction-meta'); top.append(node('span','',view.location),node('b','',`LOT ${view.index+1} / ${view.total}`)); body.append(top);
+    const top = node('div','trpg-auction-meta');
+    const place = node('span','trpg-auction-place'); place.append(node('span','trpg-auction-pin','⌖'),node('span','',view.location));
+    const lotCounter = node('b','trpg-auction-lot-counter',`${t('รายการ','LOT')} ${view.index+1} / ${view.total}`);
+    top.append(place,lotCounter); body.append(top);
     const lot = view.lot, hero = node('article','trpg-auction-lot');
     const crest = node('div','trpg-auction-crest','◇'); crest.setAttribute('aria-hidden','true');
-    const item = node('div','trpg-auction-item'); item.append(node('small','',`${lot.category}${lot.rarity ? ` · ${lot.rarity}` : ''}`),node('h4','',lot.name),node('span','',`${t('จำนวน','Quantity')} ${lot.quantity}`));
+    const item = node('div','trpg-auction-item');
+    const tags = node('div','trpg-auction-tags');
+    tags.append(node('span','trpg-auction-tag',lot.category || t('ไอเทม','Item')));
+    if (lot.rarity) tags.append(node('span','trpg-auction-tag is-rarity',lot.rarity));
+    item.append(tags,node('h4','',lot.name),node('span','trpg-auction-quantity',`${t('จำนวน','Quantity')} ${lot.quantity}`));
     const detailButton = node('button','trpg-auction-detail-toggle',t('รายละเอียดไอเทม','Item details')); detailButton.type = 'button'; item.append(detailButton); hero.append(crest,item); body.append(hero);
     const details = node('div','trpg-auction-details'); details.hidden = !local.details;
     details.append(node('p','',lot.description || t('ยังไม่มีข้อมูลเพิ่มเติมที่เปิดเผย','No additional details have been revealed.')));
@@ -67,7 +74,15 @@ export function renderAuctionCard(view, api, messageId = null) {
     const leader = node('div','trpg-auction-leader'); leader.append(node('small','',t('ผู้เสนอราคาสูงสุด','HIGHEST BIDDER')),node('b','',lot.leader || t('ยังไม่มี','No bids yet')));
     leader.append(node('small','',`${t('เพิ่มขั้นต่ำ','Increment')} ${price(lot.minIncrement)}`));
     if (lot.playerLeading) leader.classList.add('is-player'); pricing.append(current,leader); body.append(pricing);
-    const funds = node('div','trpg-auction-funds'); funds.title = view.currencyName; funds.append(node('span','',`${t('ใช้ได้','Available')}  ${price(view.funds)}`),node('span','',`${t('กันไว้','Reserved')}  ${price(view.reserved)}`)); body.append(funds);
+    const purse = node('div','trpg-auction-funds'); purse.title = view.currencyName;
+    const wallet = node('span','trpg-auction-funds-cell'); wallet.append(node('small','',t('ใช้ได้','AVAILABLE')),node('b','',price(view.funds)));
+    const held = node('span','trpg-auction-funds-cell is-held'); held.append(node('small','',t('กันไว้','HELD')),node('b','',price(view.reserved)));
+    purse.append(wallet,held); body.append(purse);
+    const terms = node('div','trpg-auction-financials');
+    const feeTerm = node('span',''); feeTerm.append(node('span','',t('ค่าผ่านประตู','Entry fee')),node('b','',price(view.entryFee)));
+    const depositTerm = node('span',''); depositTerm.append(node('span','',t('มัดจำคืนได้','Refundable deposit')),node('b','',price(view.deposit)));
+    terms.append(feeTerm,depositTerm);
+    body.append(terms);
     const controls = node('div','trpg-auction-controls'), status = node('p','trpg-auction-status'); status.setAttribute('role','status'); status.setAttribute('aria-live','polite');
     const busy = local.busy || view.busy;
     if (busy) status.textContent = auctionErrorText('saving',thai);
@@ -97,7 +112,7 @@ export function renderAuctionCard(view, api, messageId = null) {
         controls.append(join);
         if (view.retired) status.textContent = auctionErrorText('joined',thai);
     } else if (view.status === 'Joined' && lot.status === 'Open') {
-        const count = node('div','trpg-auction-count'); count.append(node('span','',t('ผู้ดำเนินงานนับราคา','AUCTIONEER COUNT')));
+        const count = node('div','trpg-auction-count'); count.append(node('span','',t('จังหวะค้อนของผู้ดำเนินงาน','AUCTIONEER COUNT')));
         for (let i = 1; i <= 3; i++) count.append(node('b',i <= lot.closingCount ? 'is-counted' : '',String(i))); body.append(count);
         if (lot.playerLeading) body.append(node('p','trpg-auction-hint',t('คุณนำอยู่ · เงินถูกกันไว้จนถูกเสนอราคาทับหรือชนะรายการ','You are leading. Funds stay reserved until you are outbid or the lot closes.')));
         const quick = action(`${lot.playerLeading ? t('คุณนำอยู่ที่','Your leading bid') : t('เสนอราคา','Bid')} ${price(lot.playerLeading ? lot.price : lot.nextBid)}`,'bid',true,lot.nextBid); quick.disabled ||= !view.available || lot.playerLeading || lot.nextBid > view.funds; controls.append(quick);
@@ -108,7 +123,7 @@ export function renderAuctionCard(view, api, messageId = null) {
         form.append(input,custom); controls.append(form,action(t('รอ / ให้ผู้ดำเนินงานนับราคา','Wait / auctioneer count'),'wait'));
         form.hidden = lot.playerLeading;
         const leave = action(t('ออกจากการประมูล','Leave auction'),'leave'); leave.disabled ||= lot.playerLeading; controls.append(leave);
-        body.append(node('p','trpg-auction-hint',t('เพิ่มขั้นต่ำตามรายการ · เวลาเดินเมื่อกดปุ่มเท่านั้น ไม่มีนาฬิกานับถอยหลัง','Bids advance by the listed minimum. Rounds advance only when you act.')));
+        body.append(node('p','trpg-auction-hint',t('เพิ่มขั้นต่ำตามรายการ · จังหวะประมูลจะเดินเมื่อคุณกดปุ่มเท่านั้น','Bids advance by the listed minimum. The auction advances when you choose an action.')));
     } else {
         const won = lot.playerLeading && lot.status === 'Sold';
         const result = node('div',`trpg-auction-result${won ? ' is-won' : ''}`);
@@ -119,13 +134,14 @@ export function renderAuctionCard(view, api, messageId = null) {
     }
     if (!view.available && !['Completed','Left'].includes(view.status)) body.append(node('p','trpg-auction-hint',t('กลับมาสถานที่นี้เพื่อเสนอราคา · รายการที่ผูกพันไว้ยังจบด้วยปุ่มรอได้','Return here to bid. You can still resolve an existing commitment with Wait.')));
     body.append(controls,status);
-    const history = node('details','trpg-auction-history'); history.append(node('summary','',t('ประวัติราคาและรายการทั้งหมด','Bid history & catalog')));
+    const history = node('details','trpg-auction-history'); history.append(node('summary','',t(`บันทึกค้อน · ${lot.history.length} ครั้ง · รายการทั้งหมด`,'Hammer log · '+lot.history.length+' bids · Full catalog')));
     for (const h of lot.history.slice(-6).reverse()) { const row = node('div','trpg-auction-history-row'); row.append(node('span','',h.bidder),node('b','',price(h.amount))); history.append(row); }
     if (!lot.history.length) history.append(node('p','',t('ยังไม่มีการเสนอราคา','No bids yet.')));
     const list = node('ol','trpg-auction-catalog');
     for (const entry of view.lots) {
         const row = node('li',entry.id === lot.id ? 'is-current' : ''), preview = node('details','');
-        preview.append(node('summary','',entry.name),node('p','',`${t('ราคาเปิด','Opening bid')} ${price(entry.openingBid)} · ${t('เพิ่มขั้นต่ำ','Increment')} ${price(entry.minIncrement)} · ×${entry.quantity}`));
+        const catalogTitle = node('summary',''); catalogTitle.append(node('span','trpg-auction-catalog-name',entry.name),node('b','trpg-auction-catalog-price',entry.price ? price(entry.price) : price(entry.openingBid)));
+        preview.append(catalogTitle,node('p','',`${entry.status === 'Open' ? t('กำลังเปิด','Open now') : entry.status === 'Sold' ? t('ปิดการขาย','Sold') : t('รอเปิด','Pending')} · ${t('ราคาเปิด','Opening')} ${price(entry.openingBid)} · ${t('เพิ่ม','Step')} ${price(entry.minIncrement)} · ×${entry.quantity}`));
         if (entry.rarity) preview.append(node('p','',entry.rarity));
         if (entry.description) preview.append(node('p','',entry.description)); row.append(preview); list.append(row);
     }
