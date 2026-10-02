@@ -28,10 +28,12 @@ try {
   await page.evaluate(()=>{
    window.smartCalls=[];
    window.host.generateQuietPrompt=async({quietPrompt,responseLength})=>{
-    const source=JSON.parse(quietPrompt.split('SOURCE SEGMENTS: ')[1])[0],focus=quietPrompt.match(/extracts ONLY category (\w+)/)?.[1];
-    const categories=focus?[focus]:['scene','locations','places','relations','characters','missions','quests','chapters','keywords','story','resources','other'];
+    const batch=JSON.parse(quietPrompt.split('SOURCE SEGMENTS: ')[1]),source=batch[0],focus=quietPrompt.match(/extracts ONLY category (\w+)/)?.[1];
+    const categories=focus?[focus]:['scene','locations','places','relations','characters','missions','quests','chapters','keywords','story','resources','lore','timeline','preferences','other'];
     window.smartCalls.push({focus:focus||'combined',responseLength});
-    return JSON.stringify({summary:'A fishing trip and a meeting at the river.',recap:'Nova met Cora while fishing by the river at night.',events:categories.map(category=>({category,title:`${category}: river memory`,detail:source.text,kind:'Event',people:[source.name],places:['Moonlit River'],keywords:['river','fishing'],knownBy:[source.name],sourceKeys:[source.segmentKey],evidence:source.text.slice(0,90),speaker:source.name,quote:category==='keywords'?source.text.slice(0,90):'',importance:'High',status:'Historical'}))});
+    const prior=JSON.parse(quietPrompt.split('PRIOR FACT IDS (historical, may be incomplete): ')[1].split('\nPRIOR CONTINUITY RECAP')[0]);
+    const previousLore=prior.find(fact=>fact.category==='lore');
+    return JSON.stringify({summary:'A fishing trip and a meeting at the river.',recap:'Nova met Cora while fishing by the river at night.',events:categories.map(category=>({category,title:`${category}: river memory`,detail:source.text,kind:'Event',people:[source.name],places:['Moonlit River'],keywords:['river','fishing'],knownBy:[source.name],sourceKeys:[source.segmentKey],evidence:source.text.slice(0,90),speaker:source.name,quote:category==='keywords'?source.text.slice(0,90):'',importance:'High',status:category==='relations'?'Active':'Historical',threadKey:category==='relations'?'Nova river return':'',threadType:'Promise',timeline:{frame:category==='timeline'?'Flashback':'Current',day:category==='timeline'?2:null},visibility:category==='keywords'?'Private':'Unknown',knowledge:category==='keywords'?[{person:source.name,method:'Witnessed',sourceKeys:[source.segmentKey],evidence:source.text.slice(0,90)}]:[],topicKey:category==='lore'?'river rule':category==='preferences'?'Nova fishing preference':'',change:focus==='lore'&&previousLore?{type:'Correction',targets:[previousLore.id],reason:'The later visit clarified the rule'}:undefined}))});
    };
   });
   await page.evaluate(()=>window.navigationSummaryPreview.open('summaries'));
@@ -45,7 +47,7 @@ try {
   assert.equal(await page.evaluate(()=>window.smartCalls.length),1);
   assert.equal(await page.evaluate(()=>window.smartCalls[0].responseLength),4000);
   await panel.locator('.rf-memory-atlas>summary').click();
-  assert.equal(await panel.locator('.rf-memory-atlas [data-memory-section^="category:"]').count(),12);
+  assert.equal(await panel.locator('.rf-memory-atlas [data-memory-section^="category:"]').count(),15);
   await panel.locator('[data-memory-section="category:keywords"]>summary').click();
   assert.match(await panel.locator('[data-memory-section="category:keywords"] blockquote').innerText(),/Nova/);
   assert.match(await panel.locator('[data-memory-api-calls]').innerText(),/1/);
@@ -58,8 +60,25 @@ try {
   await panel.locator('[data-form="memory-summary-settings"] [type="submit"]').click();
   await panel.locator('[data-action="memory-summary-run"]').click();
   await panel.locator('.rf-memory-job[data-status="ready"]').waitFor();
-  assert.equal(await page.evaluate(()=>window.smartCalls.length),13);
-  assert.deepEqual(await page.evaluate(()=>window.smartCalls.slice(1).map(call=>call.focus)),['scene','locations','places','relations','characters','missions','quests','chapters','keywords','story','resources','other']);
+  assert.equal(await page.evaluate(()=>window.smartCalls.length),16);
+  assert.deepEqual(await page.evaluate(()=>window.smartCalls.slice(1).map(call=>call.focus)),['scene','locations','places','relations','characters','missions','quests','chapters','keywords','story','resources','lore','timeline','preferences','other']);
+  await panel.locator('.rf-memory-insights>summary').click();
+  for(const name of ['threads','timeline','knowledge','changes']) {
+   const group=panel.locator(`[data-memory-section="insight:${name}"]`);
+   await group.locator(':scope>summary').click();
+   assert(await group.locator('.rf-memory-fact').count()>0,`${name} has linked production records`);
+   if(name==='timeline')assert.match(await group.innerText(),/Day 2|Flashback/);
+   if(name==='changes'){await group.locator('details>summary').first().click();assert.match(await group.innerText(),/Linked correction/);}
+   await group.locator(':scope>summary').click();
+  }
+  await panel.locator('[data-memory-section="insight:threads"]>summary').click();
+  const thread=panel.locator('[data-memory-section="insight:threads"] details').first();
+  await thread.locator(':scope>summary').click();
+  await thread.scrollIntoViewIfNeeded();
+  await page.screenshot({path:`${artifacts}/smart-insights-${width}.png`});
+  await thread.locator('[data-action="memory-summary-force"]').first().click();
+  assert.equal(await page.evaluate(()=>window.smartCalls.length),16,'local views and prioritization make no extra AI calls');
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   // Force the full-state fallback store, while native chat metadata stays usable.
   await page.evaluate(()=>{
    const media=new Map(),oldChat=window.host.getCurrentChatId();window.fullMedia=media;window.oldFullChat=oldChat;
@@ -79,7 +98,7 @@ try {
   });
   await panel.locator('[data-action="memory-summary-prepare"]').click();
   await panel.locator('.rf-memory-job[data-status="ready"]').waitFor();
-  assert.equal(await page.evaluate(()=>window.smartCalls.length),13,'preparing completed archives does not call AI again');
+  assert.equal(await page.evaluate(()=>window.smartCalls.length),16,'preparing completed archives does not call AI again');
   assert.equal(await page.evaluate(()=>[...window.fullMedia.keys()].some(key=>key.startsWith('tretaresia-rpg:continuity:'))),true);
   await page.evaluate(async()=>{
    window.host.chatMetadata={};window.host.chat=[{is_user:false,name:'Cora',mes:'New chat greeting.'}];window.host.getCurrentChatId=()=> 'full-handoff-next-chat';
@@ -99,6 +118,10 @@ try {
   assert(result.link.includes(await page.evaluate(()=>window.oldFullChat)));
   await page.evaluate(()=>window.navigationSummaryPreview.open('hstats'));
   await page.screenshot({path:`${artifacts}/full-handoff-hstats-${width}.png`});
+  await page.evaluate(()=>window.navigationSummaryPreview.open('summaries'));
+  await page.waitForFunction(()=>document.querySelector('[data-panel="summaries"].is-active [data-memory-section="category:lore"] .rf-memory-fact'));
+  assert.equal(await panel.locator('[data-memory-section^="category:"]').count(),15);
+  assert(await panel.locator('[data-memory-section="insight:changes"] .rf-memory-fact').count()>0,'correction evidence survives the native new-chat handoff');
   assert.deepEqual(errors,[]);console.log(`PASS smart memory modes/call counts/output budget/categories/quotes and full native chat handoff with Chat NPCs, H-Stats, alternates, references, inventory and media/IndexedDB fallback at ${width}px`);
   await page.close();
  }

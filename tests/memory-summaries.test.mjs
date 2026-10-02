@@ -53,6 +53,18 @@ test('editing a source invalidates cached category extraction instead of reusing
  f.setResponder(simpleMemoryResponse);await f.runtime.observe();assert.equal(await f.runtime.run({retry:true}),true);
  assert.equal(f.calls.length,3+memory.MEMORY_CATEGORIES.length);
 });
+test('a saved twelve-category draft resumes only the three new categories after a taxonomy upgrade',async()=>{
+ const f=fixture({settings:{memorySummaryStrategy:'categories'},respond:prompt=>{if(prompt.includes('extracts ONLY category lore;'))throw Error('offline');return simpleMemoryResponse(prompt);}});
+ await f.runtime.open();assert.equal(await f.runtime.run(),false);
+ const saved=f.data.get('card:cora'),draft=saved.drafts[0],batch=JSON.parse(f.calls[0].prompt.split('SOURCE SEGMENTS: ')[1]);
+ draft.parts.other=memory.repairMemorySummary(JSON.parse(simpleMemoryResponse(f.calls[0].prompt)),batch);
+ draft.parts.other.events=draft.parts.other.events.map(event=>({...event,category:'other',id:`other-${event.id}`}));
+ assert.equal(Object.keys(draft.parts).length,12);
+ const resumed=fixture({data:f.data,settings:{memorySummaryStrategy:'categories'},respond:simpleMemoryResponse});
+ await resumed.runtime.open();assert.equal(await resumed.runtime.run({retry:true}),true);
+ assert.equal(resumed.calls.length,3);assert.deepEqual(resumed.calls.map(call=>call.prompt.match(/extracts ONLY category (\w+)/)[1]),['lore','timeline','preferences']);
+ assert.equal(resumed.runtime.view().coverage.pendingMessages,0);
+});
 test('typed quotes, speaker, priority and unresolved commitments are retrieved under the token budget',async()=>{
  const f=fixture({respond:prompt=>{
   const source=JSON.parse(prompt.split('SOURCE SEGMENTS: ')[1]).at(-1);
@@ -61,7 +73,7 @@ test('typed quotes, speaker, priority and unresolved commitments are retrieved u
  const library=f.data.get('card:cora'),count=text=>Math.ceil(text.length/3);
  const chosen=await memory.memoryPromptSelection(library,['first'],'unrelated topic',f.settings,count);assert.match(chosen.references,/River promise/);assert.match(chosen.references,/"quote":"Cora met Nova"/);
  assert(await count(chosen.references)<=f.settings.memoryRetrievalBudget);
- const next={...structuredClone(library.chapters[0]),id:'resolved',parentId:library.chapters[0].id,parentRevision:1,events:[{...fact,status:'Resolved'}]};library.chapters.push(next);
+ const next={...structuredClone(library.chapters[0]),id:'resolved',parentId:library.chapters[0].id,parentRevision:1,events:[{...fact,kind:'Event',status:'Resolved'}]};library.chapters.push(next);
  const index=memory.memoryFactIndex(library,['first']);assert.equal(index.length,1);assert.equal(index[0].status,'Resolved');
  const resolved=await memory.memoryPromptSelection(library,['first'],'River promise',f.settings,count,[fact]);
  assert.match(resolved.references,/"status":"Resolved"/);assert.doesNotMatch(resolved.references,/"status":"Active"/);

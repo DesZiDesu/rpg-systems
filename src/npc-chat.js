@@ -1,11 +1,11 @@
-import {renderAuctionCard} from './auction-ui.js?v=0.47.0';
-import { renderMissionBoard } from './mission-board-ui.js?v=0.47.0';
-import {uiText} from './ui-language.js?v=0.47.0';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.47.0';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.47.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.47.0';
-import { renderSceneTracker } from './scene-tracker.js?v=0.47.0';
-import { effectiveNpc } from './npc-alternates.js?v=0.47.0';
+import {renderAuctionCard} from './auction-ui.js?v=0.48.0';
+import { renderMissionBoard } from './mission-board-ui.js?v=0.48.0';
+import {uiText} from './ui-language.js?v=0.48.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.48.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.48.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.48.0';
+import { renderSceneTracker } from './scene-tracker.js?v=0.48.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.48.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;

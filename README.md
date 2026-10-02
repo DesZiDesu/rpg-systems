@@ -1,4 +1,14 @@
-# ROLEFORGE — v0.47.0
+# ROLEFORGE — v0.48.0
+
+## v0.48.0 — Lore, chronology, preferences and linked memory views
+
+- Added **Lore / Canon**, **Timeline** and **Preferences / Boundaries**, bringing the atlas to **15 categories**. Combined batches and one-request mode extract them within the same request. Category mode uses **15 requests per batch**; saved twelve-category drafts resume only missing categories.
+- Added local **Open Threads / Promises**, **Timeline**, **Knowledge / Secrets** and **Corrections / Contradictions** views with source links. Stable keys connect a promise to its confirmed resolution; claims cannot close or reopen a confirmed thread. Flashbacks retain their own dates and do not replace present preferences.
+- Knowledge methods have their own cited evidence. Explicitly unaware actors and inferred knowledge stay separate from witnessed/told knowledge; later disclosures update current recipient views while keeping previous knowledge in history. Unspecified visibility never makes a secret public.
+- Confirmed linked corrections replace stale context facts while preserving old records and originals. Unresolved contradictory accounts retain both evidence paths and carry an uncertainty marker. References to missing, future, ambiguous or excluded-branch records do not silently update canon.
+- Small local prior-record hints help extraction reuse existing keys without additional AI calls; hints and recaps shrink to the task budget. New metadata and linked views travel through existing archive backup and complete new-chat continuity. Existing completed summaries are retained without automatic paid reprocessing.
+
+อ่าน [Workflow ของหมวดและมุมมอง Smart Memory](docs/memory-summaries-workflows.th.md)
 
 ## v0.47.0 — Complete chat handoff and structured smart memory
 
