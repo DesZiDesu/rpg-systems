@@ -24,7 +24,7 @@
 
 ## หน้าจอ
 
-- Main Chat: การ์ดขอบซ้ายเรียบใต้ข้อความ NPC แสดงผู้ซื้อ ไอเทม จำนวน ราคา Floor และปุ่ม Accept/Counter/Decline
+- Main Chat: การ์ดการค้าและการ์ดประมูลใช้กรอบไม้เข้ม แผ่นกระดาษ และตราทองเหลืองใต้ข้อความ NPC แสดงผู้ซื้อ/ล็อต ราคา และปุ่ม Accept/Counter/Decline หรือ Join/Bid/Wait/Leave
 - Desktop: แสดงสถิติสามช่องและ Listing แบบสองคอลัมน์ พร้อมปุ่ม Offer/Counteroffer ในการ์ด
 - Mobile: Listing เรียงหนึ่งคอลัมน์, ฟอร์มสองคอลัมน์, การ์ด Main Chat เปลี่ยนเป็นปุ่มแนวตั้ง และไม่มี horizontal overflow
-- Preview: เปิด `docs/previews/marketplace.html` แล้วเลือก Desktop หรือ Mobile
+- Preview: เปิด `docs/previews/marketplace.html` แล้วเลือก Desktop หรือ Mobile เพื่อดูทั้งการค้าและประมูลใน Main Chat
