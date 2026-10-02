@@ -1,9 +1,11 @@
 import {MEMORY_LINK_KEY,MEMORY_FORMAT,emptyMemoryLibrary,normalizeMemoryLibrary,memoryAncestry,captureMemoryChat,memoryChapterValid,
-    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.46.4';
-import {createMemoryStore} from './memory-store.js?v=0.46.4';
+    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.47.0';
+import {createMemoryStore} from './memory-store.js?v=0.47.0';
+import {MEMORY_CATEGORIES,memoryFactIndex,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.47.0';
 
 const busyPhases = new Set(['loading','archiving','waiting','counting','summarizing','validating','saving']);
 const errors = {
+    MEMORY_SINGLE_INPUT_TOO_LARGE:['One-request mode cannot fit all pending sources in the task budget. No AI request was made. Increase the budget/context or select batches; no originals were discarded.','โหมดคำขอเดียวใส่ข้อความที่เหลือทั้งหมดในงบงานสรุปไม่ได้ ยังไม่เรียก AI เพิ่มงบ/context หรือเลือกแบ่งชุด ระบบไม่ตัดต้นฉบับทิ้ง'],
     MEMORY_STORAGE_UNAVAILABLE:['Local memory storage is unavailable. Enable browser storage and retry.','คลังความจำในเบราว์เซอร์ใช้งานไม่ได้ ตรวจการอนุญาตเก็บข้อมูลแล้วลองใหม่'],
     MEMORY_STORAGE_BLOCKED:['Another tab blocks the memory database. Close old tabs and retry.','แท็บเก่าขวางการเปิดคลังความจำ ปิดแท็บเก่าแล้วลองใหม่'],
     MEMORY_STORAGE_WRITE_FAILED:['Memory could not be saved. Check free browser storage; export a backup before clearing anything.','บันทึกคลังความจำไม่สำเร็จ ตรวจพื้นที่เบราว์เซอร์ และส่งออกสำรองก่อนล้างข้อมูล'],
@@ -80,11 +82,12 @@ export function cleanMemorySummaryResponse(value, context = {}) {
         response = response.slice(end).trimStart();
     }
 }
-export async function requestMemorySummary(context, prompt, profileId, signal, mode = 'preset') {
+export async function requestMemorySummary(context, prompt, profileId, signal, mode = 'preset', outputBudget = MEMORY_SUMMARY_OUTPUT_TOKENS) {
+    const responseLength = normalizeMemoryOutputTokens(outputBudget);
     if (profileId) {
         const service = context.ConnectionManagerRequestService;
         if (!service?.sendRequest || !(context.extensionSettings?.connectionManager?.profiles || []).some(profile => profile.id === profileId)) throw Error('MEMORY_PROFILE_UNAVAILABLE');
-        const response = await service.sendRequest(profileId,[{role:'user',content:prompt}],MEMORY_SUMMARY_OUTPUT_TOKENS,
+        const response = await service.sendRequest(profileId,[{role:'user',content:prompt}],responseLength,
             {stream:false,signal,extractData:true,includePreset:true,includeInstruct:true});
         return typeof response === 'string' ? response : response?.content;
     }
@@ -98,10 +101,10 @@ export async function requestMemorySummary(context, prompt, profileId, signal, m
         let owned = true;
         const release = () => { if (owned) { owned = false; nativeSummaryRequests--; } };
         signal?.addEventListener?.('abort',release,{once:true});
-        try { return await context.generateQuietPrompt({quietPrompt:prompt,skipWIAN:false,responseLength:MEMORY_SUMMARY_OUTPUT_TOKENS,removeReasoning:false}); }
+        try { return await context.generateQuietPrompt({quietPrompt:prompt,skipWIAN:false,responseLength,removeReasoning:false}); }
         finally { signal?.removeEventListener?.('abort',release); release(); }
     }
-    if (typeof context.generateRaw === 'function') return context.generateRaw({prompt,responseLength:MEMORY_SUMMARY_OUTPUT_TOKENS,trimNames:false,systemPrompt:'Summarize source material faithfully. Return only the requested JSON; never continue the role-play.'});
+    if (typeof context.generateRaw === 'function') return context.generateRaw({prompt,responseLength,trimNames:false,systemPrompt:'Summarize source material faithfully. Return only the requested JSON; never continue the role-play.'});
     throw Error('MEMORY_API_UNAVAILABLE');
 }
 // Accept a thunk so a cancelled operation never starts another API/tokenizer call.
@@ -261,6 +264,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
             const elapsedMs = currentJob.startedAt ? Math.max(0,new Date(currentJob.finishedAt || Date.now()).getTime() - new Date(currentJob.startedAt).getTime()) : 0;
             const requestElapsedMs = currentJob.requestStartedAt ? Math.max(0,new Date(currentJob.requestFinishedAt || currentJob.finishedAt || Date.now()).getTime() - new Date(currentJob.requestStartedAt).getTime()) : 0;
             return {ready:true,owner:snapshot.owner,chatId:snapshot.chatId,job:{...currentJob,elapsedMs,requestElapsedMs},coverage,
+                facts:memoryFactIndex(library,ancestry),
                 ancestry,settings:config(),query,results:query ? searchMemoryLibrary(library,ancestry,query) : [],
                 chapters:library.chapters.filter(chapter => ancestry.includes(chapter.chatId)).slice(-50).reverse().map(chapter => ({...chapter,valid:memoryChapterValid(library,chapter)})),
                 chats:library.chats.map(chat => ({id:chat.id,name:chat.name,messages:chat.messages.length})),capsules:library.capsules.filter(capsule => ancestry.includes(capsule.chatId)).slice(-10).reverse(),
@@ -301,10 +305,11 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
             const controller = new AbortController(), signal = controller.signal;
             job = {snapshot,controller};
             const batchSize = normalizeMemoryBatchSize(config().memorySummaryBatchSize);
+            const strategy = normalizeMemoryStrategy(config().memorySummaryStrategy);
             const previousJob = storedJob(library,snapshot.chatId);
             // A user-triggered continuation can reduce a failed batch without
             // changing their saved preference or starting an automatic paid retry.
-            const adaptive = !auto && retry && previousJob?.recommendedBatchSize;
+            const adaptive = !auto && retry && strategy !== 'categories' && previousJob?.recommendedBatchSize;
             const activeBatchSize = adaptive ? Math.min(batchSize,normalizeMemoryBatchSize(previousJob.recommendedBatchSize)) : batchSize;
             const activeBatchCharLimit = adaptive ? Math.min(MEMORY_BATCH_CHAR_LIMIT,Math.max(2000,Number(previousJob.recommendedBatchCharLimit) || MEMORY_BATCH_CHAR_LIMIT)) : MEMORY_BATCH_CHAR_LIMIT;
             const apiTimeout = operationTimeout();
@@ -312,7 +317,8 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
             const initialCoverage = initialTargets.map(id => memoryCoverage(library,id));
             const initialPending = initialCoverage.reduce((sum,entry) => sum + entry.pendingMessages,0);
             const initialSaved = initialCoverage.reduce((sum,entry) => sum + entry.chapters,0);
-            const initialBatches = initialTargets.reduce((sum,id) => sum + countMemoryBatches(memorySegments(library,id),{maxMessages:activeBatchSize,maxChars:activeBatchCharLimit}),0);
+            const initialBatches = strategy === 'single' ? Number(initialPending > 0) : initialTargets.reduce((sum,id) => sum + countMemoryBatches(memorySegments(library,id),{maxMessages:activeBatchSize,maxChars:activeBatchCharLimit}),0);
+            let apiCalls = 0, apiCallsTotal = Math.max(0,Number(previousJob?.apiCallsTotal) || 0);
             let completed = 0, totalMessages = initialPending, repairedEvents = 0, droppedEvents = 0;
             const processed = new Set();
             let summaryEstimated = typeof snapshot.ctx.getTokenCountAsync !== 'function';
@@ -336,6 +342,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                 }
             };
             phase(snapshot,'waiting',{stage:'waiting',prepare,rpgHandoff:'',error:'',code:'',httpStatus:0,failedStage:'',failedAfterSeconds:0,repairedEvents:0,droppedEvents:0,completed:0,total:initialBatches,processedMessages:0,totalMessages,remainingMessages:initialPending,
+                strategy,apiCalls,apiCallsTotal,plannedCalls:initialBatches * (strategy === 'categories' ? MEMORY_CATEGORIES.length : 1),category:'',categoryCompleted:0,
                 batchMessages:0,batchSegments:0,batchSize,activeBatchSize,activeBatchCharLimit,recommendedBatchSize:adaptive ? activeBatchSize : 0,recommendedBatchCharLimit:adaptive ? activeBatchCharLimit : 0,
                 apiTimeoutSeconds:apiTimeout / 1000,savedChapters:initialSaved,startedAt:new Date().toISOString(),finishedAt:'',requestStartedAt:'',requestFinishedAt:'',inputTokens:0,outputTokens:0,
                 tokenCountEstimated:typeof snapshot.ctx.getTokenCountAsync !== 'function',tokenCountWarning:'',promptWarning:'',promptCode:'',queued:Boolean(isGenerating()),waitingFor:isGenerating() ? 'main-generation' : '',
@@ -390,7 +397,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     const remainingMessages = entries.reduce((sum,entry) => sum + entry.coverage.pendingMessages,0);
                     totalMessages = Math.max(totalMessages,processed.size + remainingMessages);
                     return {completed,processedMessages:processed.size,totalMessages,remainingMessages,
-                        total:completed + entries.reduce((sum,entry) => sum + countMemoryBatches(entry.segments,{maxMessages:activeBatchSize,maxChars:activeBatchCharLimit}),0),
+                        total:completed + (strategy === 'single' ? Number(remainingMessages > 0) : entries.reduce((sum,entry) => sum + countMemoryBatches(entry.segments,{maxMessages:activeBatchSize,maxChars:activeBatchCharLimit}),0)),
                         savedChapters:entries.reduce((sum,entry) => sum + entry.coverage.chapters,0)};
                 };
                 phase(snapshot,'archiving',progress());
@@ -399,16 +406,18 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     await waitForGeneration();
                     await api.capture();
                     requireCurrent(snapshot);
-                    const targetId = targets.find(id => memorySegments(library,id).length);
-                    const batch = targetId ? nextMemoryBatch(library,targetId,{maxMessages:activeBatchSize,maxChars:activeBatchCharLimit}) : [];
+                    const targetId = strategy === 'single' ? snapshot.chatId : targets.find(id => memorySegments(library,id).length);
+                    const batch = strategy === 'single' ? targets.flatMap(chatId => memorySegments(library,chatId).map(source => ({...source,chatId,localSegmentKey:source.segmentKey,segmentKey:`${encodeURIComponent(chatId)}::${source.segmentKey}`})))
+                        : targetId ? nextMemoryBatch(library,targetId,{maxMessages:activeBatchSize,maxChars:activeBatchCharLimit}).map(source => ({...source,chatId:targetId})) : [];
                     const parent = [...library.chapters].reverse().find(chapter => ancestry.includes(chapter.chatId) && memoryChapterValid(library,chapter));
                     if (!batch.length) break;
                     phase(snapshot,'counting',{stage:'counting',...progress(),batchMessages:new Set(batch.map(source => source.key)).size,batchSegments:batch.length,requestStartedAt:'',requestFinishedAt:''});
                     await save(library,snapshot);
                     requireCurrent(snapshot);
-                    const inputBudget = config().memorySummaryInputBudget || 12000;
+                    const inputBudget = (config().memorySummaryInputBudget || 12000) - (strategy === 'categories' ? 64 : 0);
                     const previous = await boundedMemoryText(parent?.recap || '',Math.floor(inputBudget / 4),count);
-                    let summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference), inputTokens = await count(summaryPrompt);
+                    const focus = strategy === 'categories' ? MEMORY_CATEGORIES[0] : '';
+                    let summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference,focus,config().memorySummaryOutputTokens), inputTokens = await count(summaryPrompt);
                     if (summaryEstimated) {
                         // The tokenizer can fail after the recap was bounded with
                         // exact tokens. Rebound that recap with the new byte count
@@ -416,40 +425,87 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                         const estimatedRecap = await boundedMemoryText(previous.text,Math.floor(inputBudget / 4),count);
                         if (estimatedRecap.text !== previous.text) {
                             previous.text = estimatedRecap.text;
-                            summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference); inputTokens = await count(summaryPrompt);
+                            summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference,focus,config().memorySummaryOutputTokens); inputTokens = await count(summaryPrompt);
                         }
                     }
-                    while (inputTokens > inputBudget && batch.length > 1) {
-                        batch.pop(); summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference); inputTokens = await count(summaryPrompt);
+                    while (strategy !== 'single' && inputTokens > inputBudget && batch.length > 1) {
+                        batch.pop(); summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference,focus,config().memorySummaryOutputTokens); inputTokens = await count(summaryPrompt);
+                    }
+                    if (inputTokens > inputBudget && previous.text) {
+                        // Richer indexing instructions or a conservative tokenizer
+                        // fallback may leave less than a quarter for the recap.
+                        // Keep every source, and bound historical context to the
+                        // actual remaining space before rejecting the request.
+                        const sourceTokens = await count(memorySummaryPrompt(batch,'',stateReference,focus,config().memorySummaryOutputTokens));
+                        previous.text = (await boundedMemoryText(previous.text,Math.max(0,inputBudget - sourceTokens - 32),count)).text;
+                        summaryPrompt = memorySummaryPrompt(batch,previous.text,stateReference,focus,config().memorySummaryOutputTokens);
+                        inputTokens = await count(summaryPrompt);
                     }
                     requireCurrent(snapshot);
-                    if (inputTokens > inputBudget) throw Error('MEMORY_INPUT_TOO_LARGE');
-                    await waitForGeneration();
-                    requireCurrent(snapshot);
-                    if (signal.aborted) throw Error('MEMORY_CANCELLED');
-                    phase(snapshot,'summarizing',{stage:'summarizing',inputTokens,batchMessages:new Set(batch.map(source => source.key)).size,batchSegments:batch.length,
-                        batchSourceChars:batch.reduce((sum,source) => sum + source.text.length,0),requestStartedAt:new Date().toISOString(),requestFinishedAt:''});
-                    recordRequest('memorySummary',`Memory summary ${completed + 1}`);
-                    const requestController = new AbortController(), stopRequest = () => requestController.abort();
-                    signal.addEventListener('abort',stopRequest,{once:true});
-                    let response;
-                    try {
-                        response = await abortable(() => request(snapshot.ctx,summaryPrompt,config().memorySummaryProfile,requestController.signal,config().memorySummaryMode),signal,apiTimeout,stopRequest,'MEMORY_API_TIMEOUT');
-                    } catch (error) {
-                        if (error?.message?.startsWith('MEMORY_')) throw error;
-                        throw diagnoseMemoryApiFailure(error);
-                    } finally { signal.removeEventListener('abort',stopRequest); }
-                    if (!same(snapshot) || signal.aborted) throw Error('MEMORY_CANCELLED');
-                    if (typeof response !== 'string' || !response.trim()) throw Error('MEMORY_EMPTY_RESPONSE');
-                    phase(snapshot,'validating',{stage:'validating',requestFinishedAt:new Date().toISOString()});
-                    for (const source of targetId === snapshot.chatId ? batch : []) {
-                        const original = snapshot.ctx.chat?.[Number(source.key)];
-                        if (!original || memoryFingerprint(JSON.stringify([original.is_user ? 'User' : 'Character',original.name || '',visible(original.mes || '')])) !== source.fingerprint) throw Error('MEMORY_CHANGED');
-                    }
-                    let value; try { value = repairMemorySummary(parse(cleanMemorySummaryResponse(response,snapshot.ctx)),batch); } catch { throw Error('MEMORY_INVALID_SUMMARY'); }
-                    const outputTokens = await count(response);
-                    requireCurrent(snapshot);
-                    phase(snapshot,'validating',{outputTokens});
+                    if (inputTokens > inputBudget) throw Error(strategy === 'single' ? 'MEMORY_SINGLE_INPUT_TOO_LARGE' : 'MEMORY_INPUT_TOO_LARGE');
+                    const fetchPart = async category => {
+                        const prompt = category ? memorySummaryPrompt(batch,previous.text,stateReference,category,config().memorySummaryOutputTokens) : summaryPrompt;
+                        const partInput = await count(prompt);
+                        if (partInput > inputBudget) throw Error('MEMORY_INPUT_TOO_LARGE');
+                        await waitForGeneration();requireCurrent(snapshot);
+                        if (signal.aborted) throw Error('MEMORY_CANCELLED');
+                        apiCalls++;apiCallsTotal++;
+                        phase(snapshot,'summarizing',{stage:'summarizing',inputTokens:partInput,apiCalls,apiCallsTotal,category,
+                            batchMessages:new Set(batch.map(source => JSON.stringify([source.chatId,source.key]))).size,batchSegments:batch.length,
+                            batchSourceChars:batch.reduce((sum,source) => sum + source.text.length,0),requestStartedAt:new Date().toISOString(),requestFinishedAt:''});
+                        await save(library,snapshot);requireCurrent(snapshot);
+                        recordRequest('memorySummary',`Memory summary ${completed + 1}${category ? ` / ${category}` : ''}`);
+                        const requestController = new AbortController(), stopRequest = () => requestController.abort();
+                        signal.addEventListener('abort',stopRequest,{once:true});
+                        let response;
+                        try {
+                            response = await abortable(() => request(snapshot.ctx,prompt,config().memorySummaryProfile,requestController.signal,config().memorySummaryMode,config().memorySummaryOutputTokens),signal,apiTimeout,stopRequest,'MEMORY_API_TIMEOUT');
+                        } catch (error) {
+                            if (error?.message?.startsWith('MEMORY_')) throw error;
+                            throw diagnoseMemoryApiFailure(error);
+                        } finally { signal.removeEventListener('abort',stopRequest); }
+                        if (!same(snapshot) || signal.aborted) throw Error('MEMORY_CANCELLED');
+                        if (typeof response !== 'string' || !response.trim()) throw Error('MEMORY_EMPTY_RESPONSE');
+                        phase(snapshot,'validating',{stage:'validating',requestFinishedAt:new Date().toISOString()});
+                        for (const source of batch.filter(source => source.chatId === snapshot.chatId)) {
+                            const original = snapshot.ctx.chat?.[Number(source.key)];
+                            if (!original || memoryFingerprint(JSON.stringify([original.is_user ? 'User' : 'Character',original.name || '',visible(original.mes || '')])) !== source.fingerprint) throw Error('MEMORY_CHANGED');
+                        }
+                        let value;try { value = repairMemorySummary(parse(cleanMemorySummaryResponse(response,snapshot.ctx)),batch); }
+                        catch { throw Error('MEMORY_INVALID_SUMMARY'); }
+                        if (category) value.events = value.events.map(event => ({...event,category,id:`${category}-${event.id}`}));
+                        phase(snapshot,'validating',{outputTokens:await count(response)});requireCurrent(snapshot);
+                        return value;
+                    };
+                    let value, draft;
+                    if (strategy === 'categories') {
+                        const id = `draft-${memoryFingerprint(JSON.stringify([targetId,batch.map(source => [source.segmentKey,source.fingerprint]),parent?.id,parent?.revision]))}`;
+                        library.drafts ||= [];
+                        draft = library.drafts.find(entry => entry.id === id);
+                        if (!draft) {
+                            draft = {id,chatId:targetId,parts:{},createdAt:new Date().toISOString()};
+                            library.drafts.push(draft);library.drafts = library.drafts.slice(-24);
+                        }
+                        for (const category of MEMORY_CATEGORIES) {
+                            requireCurrent(snapshot);
+                            if (draft.parts[category]) {
+                                try { validateMemorySummary(draft.parts[category],batch); }
+                                catch { delete draft.parts[category]; }
+                            }
+                            if (!draft.parts[category]) {
+                                const part = await fetchPart(category);
+                                draft.parts[category] = part;
+                                phase(snapshot,'saving',{stage:'saving',category,categoryCompleted:Object.keys(draft.parts).length});
+                                try { await save(library,snapshot); } catch(error) { delete draft.parts[category];throw error; }
+                            }
+                        }
+                        const parts = MEMORY_CATEGORIES.map(category => draft.parts[category]);
+                        // All facts stay in typed records; only the compact overview
+                        // uses the story-focused pass. No extra paid merge call.
+                        value = {summary:draft.parts.story.summary,recap:draft.parts.story.recap,
+                            events:parts.flatMap(part => part.events),sections:MEMORY_CATEGORIES.map(category => ({category,summary:draft.parts[category].summary})),
+                            evidenceReport:{repairedEvents:parts.reduce((n,part)=>n+(part.evidenceReport?.repairedEvents||0),0),droppedEvents:parts.reduce((n,part)=>n+(part.evidenceReport?.droppedEvents||0),0)}};
+                    } else value = await fetchPart('');
                     const chapter = {id:`chapter-${memoryFingerprint(JSON.stringify([targetId,batch.map(source => [source.segmentKey,source.fingerprint])]))}`,
                         chatId:targetId,...value,sources:batch.map(({text,...source}) => source),parentId:parent?.id || '',parentRevision:parent?.revision || 0,revision:1,
                         createdAt:new Date().toISOString(),versions:[]};
@@ -475,13 +531,14 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     requireCurrent(snapshot); completed++; promptCache = null;
                     repairedEvents += value.evidenceReport?.repairedEvents || 0;
                     droppedEvents += value.evidenceReport?.droppedEvents || 0;
-                    const remainingKeys = new Set(memorySegments(library,targetId).map(source => source.key));
-                    for (const source of batch) if (!remainingKeys.has(source.key)) processed.add(JSON.stringify([targetId,source.key,source.fingerprint]));
+                    const pendingKeys = new Set(targets.flatMap(chatId => memorySegments(library,chatId).map(source => JSON.stringify([chatId,source.key]))));
+                    for (const source of batch) if (!pendingKeys.has(JSON.stringify([source.chatId,source.key]))) processed.add(JSON.stringify([source.chatId,source.key,source.fingerprint]));
+                    if (draft) library.drafts = library.drafts.filter(entry => entry !== draft);
                     phase(snapshot,'saving',{...progress(),batchMessages:0,batchSegments:0,repairedEvents,droppedEvents});
                     // Commit the completed count before starting the next API call.
                     await save(library,snapshot);
                     requireCurrent(snapshot);
-                    if (auto) break;
+                    if (auto || strategy === 'single') break;
                 }
                 if (prepare) {
                     requireCurrent(snapshot);
@@ -501,7 +558,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     if (same(snapshot)) {
                         let rpgHandoff = config().autoContinuity === false ? 'disabled' : '';
                         if (!rpgHandoff) {
-                            try { rpgHandoff = continuity() === false ? 'failed' : 'saved'; }
+                            try { rpgHandoff = await continuity() === false ? 'failed' : 'saved'; }
                             catch { rpgHandoff = 'failed'; }
                         }
                         phase(snapshot,'saving',{rpgHandoff});
@@ -522,7 +579,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                 }
                 requireCurrent(snapshot);
                 if (signal.aborted) throw Error('MEMORY_CANCELLED');
-                phase(snapshot,ancestry.some(id => memoryCoverage(library,id).pendingSegments) ? 'partial' : 'ready',{stage:'',...progress(),error:'',failedPending:0,finishedAt:new Date().toISOString(),batchMessages:0,batchSegments:0,
+                phase(snapshot,ancestry.some(id => memoryCoverage(library,id).pendingSegments) ? 'partial' : 'ready',{stage:'',category:'',...progress(),error:'',failedPending:0,finishedAt:new Date().toISOString(),batchMessages:0,batchSegments:0,
                     recommendedBatchSize:0,recommendedBatchCharLimit:0,promptWarning,promptCode,queued:false,waitingFor:''});
                 await save(library,snapshot);
                 requireCurrent(snapshot);
@@ -568,7 +625,8 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
         async force(id) {
             if (!enabled()) { api.pause(); return false; }
             const snapshot = descriptor(), library = libraries.get(snapshot.owner);
-            const hit = searchMemoryLibrary(library,memoryAncestry(snapshot.ctx,snapshot.owner),query,{limit:100}).find(entry => entry.id === id);
+            const hit = searchMemoryLibrary(library,memoryAncestry(snapshot.ctx,snapshot.owner),query,{limit:100}).find(entry => entry.id === id)
+                || memoryFactIndex(library,memoryAncestry(snapshot.ctx,snapshot.owner)).find(entry => entry.id === id);
             if (!hit) return;
             forced.set(forcedScope(snapshot),[{...hit,snippetQuery:query},...(forced.get(forcedScope(snapshot)) || []).filter(entry => entry.id !== id)].slice(0,5));
             promptCache = null; await api.preparePrompt();

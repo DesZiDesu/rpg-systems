@@ -1,7 +1,7 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.46.4';
-import { element } from './npc-chat.js?v=0.46.4';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.46.4';
-import { LORE_FILE_LIMIT, exportLore, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.46.4';
+import {uiText,uiMarkup} from './ui-language.js?v=0.47.0';
+import { element } from './npc-chat.js?v=0.47.0';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.47.0';
+import { LORE_FILE_LIMIT, exportLore, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.47.0';
 
 export function createLoreWorkspace(panel, api, say) {
     let owner = '', dirty = false, query = '', editing = null, saving = false;

@@ -5,6 +5,67 @@ import {createMemorySummaries,requestMemorySummary,cleanMemorySummaryResponse,me
 import {renderMemorySummaries} from '../src/memory-summary-ui.js';
 
 const config = () => ({enableMemorySummaries:true,language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryBatchSize:10,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
+test('detailed extraction targets grow with the selected output budget while retaining a finite response',()=>{
+ const compact=memory.memorySummaryPrompt([], '', {}, '', 2400),detailed=memory.memorySummaryPrompt([], '', {}, '', 12000);
+ assert.match(compact,/2400-token response limit/);assert.match(compact,/<=10 new events/);
+ assert.match(detailed,/12000-token response limit/);assert.match(detailed,/<=48 new events/);
+});
+test('single request processes every pending message without silently applying the batch-size limit',async()=>{
+ const f=fixture({settings:{memorySummaryStrategy:'single',memorySummaryBatchSize:2}});setBacklog(f,12);await f.runtime.open();
+ assert.equal(await f.runtime.run(),true);assert.equal(f.calls.length,1);assert.equal(f.runtime.view().coverage.pendingMessages,0);
+ assert.equal(f.runtime.view().job.apiCalls,1);assert.equal(f.runtime.view().job.plannedCalls,1);assert.equal(f.runtime.view().chapters[0].sources.length,12);
+});
+test('single request refuses oversized history before any AI attempt and keeps every original',async()=>{
+ const f=fixture({settings:{memorySummaryStrategy:'single',memorySummaryInputBudget:4000}});setBacklog(f,8);
+ f.context.chat.forEach(message=>message.mes+=' Long established story.'.repeat(250));await f.runtime.open();
+ assert.equal(await f.runtime.run(),false);assert.equal(f.calls.length,0);assert.equal(f.runtime.view().job.code,'MEMORY_SINGLE_INPUT_TOO_LARGE');
+ assert.equal(f.runtime.view().job.apiCalls,0);assert.equal(f.runtime.view().coverage.pendingMessages,8);assert.equal(f.data.get('card:cora').chats[0].messages.length,8);
+});
+test('one request prepares linked histories with colliding local message IDs and preserves source isolation',async()=>{
+ const f=fixture({settings:{memorySummaryStrategy:'single'}});await f.runtime.open();
+ f.context.chatId='second';f.context.chatMetadata={[memory.MEMORY_LINK_KEY]:{owner:'card:cora',ancestry:['first']}};
+ f.context.chat=[{is_user:true,name:'Nova',mes:'Nova moved to Willow Village.'},{is_user:false,name:'Cora',mes:'Cora recalled the earlier river meeting.'}];await f.runtime.open();
+ assert.equal(await f.runtime.run({prepare:true}),true);assert.equal(f.calls.length,1);
+ const library=f.data.get('card:cora');assert.equal(memory.memoryCoverage(library,'first').pendingMessages,0);assert.equal(memory.memoryCoverage(library,'second').pendingMessages,0);
+ const keys=library.chapters[0].sources.map(source=>source.segmentKey);assert.equal(new Set(keys).size,4);
+ assert.equal(memory.latestMemoryRecap(library,['second']),'');assert(memory.latestMemoryRecap(library,['first','second']));
+ library.chats[0].messages[0].fingerprint='edited';assert.equal(memory.memoryChapterValid(library,library.chapters[0]),false);
+});
+test('category mode uses exactly one call per category per batch with no paid merge request',async()=>{
+ const f=fixture({settings:{memorySummaryStrategy:'categories',memorySummaryBatchSize:2}});setBacklog(f,3);await f.runtime.open();
+ assert.equal(await f.runtime.run(),true);assert.equal(f.calls.length,memory.MEMORY_CATEGORIES.length*2);
+ assert.equal(f.runtime.view().job.apiCalls,f.calls.length);assert.equal(f.runtime.view().job.apiCallsTotal,f.calls.length);
+ assert.equal(f.runtime.view().coverage.pendingMessages,0);assert.equal(f.runtime.view().chapters.length,2);
+ assert.deepEqual(new Set(f.runtime.view().facts.map(fact=>fact.category)),new Set(memory.MEMORY_CATEGORIES));
+ assert.equal(f.data.get('card:cora').drafts.length,0);
+ const panel={innerHTML:'',querySelectorAll:()=>[]};renderMemorySummaries(panel,f.runtime.view(),[]);assert.match(panel.innerHTML,/data-memory-api-calls/);assert.match(panel.innerHTML,/category:relations/);
+ f.runtime.search('');const fact=f.runtime.view().facts[0];await f.runtime.force(fact.id);assert.match(f.runtime.prompt(),/First meeting/);
+});
+test('saved categories survive failure and reload; Retry calls only the remaining categories',async()=>{
+ let attempts=0;const f=fixture({settings:{memorySummaryStrategy:'categories'},respond:prompt=>{if(++attempts===4)throw Object.assign(Error('Service unavailable'),{status:503});return simpleMemoryResponse(prompt);}});
+ await f.runtime.open();assert.equal(await f.runtime.run(),false);assert.equal(f.calls.length,4);assert.equal(Object.keys(f.data.get('card:cora').drafts[0].parts).length,3);
+ const resumed=fixture({data:f.data,settings:{memorySummaryStrategy:'categories'},respond:simpleMemoryResponse});await resumed.runtime.open();assert.equal(await resumed.runtime.run({retry:true}),true);
+ assert.equal(resumed.calls.length,memory.MEMORY_CATEGORIES.length-3);assert.equal(resumed.runtime.view().job.apiCallsTotal,memory.MEMORY_CATEGORIES.length+1);assert.equal(resumed.runtime.view().coverage.pendingMessages,0);
+});
+test('editing a source invalidates cached category extraction instead of reusing old quoted facts',async()=>{
+ let attempts=0;const f=fixture({settings:{memorySummaryStrategy:'categories'},respond:prompt=>{if(++attempts===3)throw Error('offline');return simpleMemoryResponse(prompt);}});
+ await f.runtime.open();assert.equal(await f.runtime.run(),false);f.context.chat[0].mes='Nova met Cora in a DIFFERENT scene.';
+ f.setResponder(simpleMemoryResponse);await f.runtime.observe();assert.equal(await f.runtime.run({retry:true}),true);
+ assert.equal(f.calls.length,3+memory.MEMORY_CATEGORIES.length);
+});
+test('typed quotes, speaker, priority and unresolved commitments are retrieved under the token budget',async()=>{
+ const f=fixture({respond:prompt=>{
+  const source=JSON.parse(prompt.split('SOURCE SEGMENTS: ')[1]).at(-1);
+  return JSON.stringify({summary:'A promise was made.',recap:'Cora intends to return.',events:[{title:'River promise',detail:'Cora promised to return.',kind:'Plan',category:'relations',importance:'High',status:'Active',speaker:'Cora',quote:'Cora met Nova',sourceKeys:[source.segmentKey],evidence:'Cora met Nova'}]});
+ }});await f.runtime.open();assert.equal(await f.runtime.run(),true);const fact=f.runtime.view().facts[0];assert.equal(fact.quote,'Cora met Nova');assert.equal(fact.category,'relations');
+ const library=f.data.get('card:cora'),count=text=>Math.ceil(text.length/3);
+ const chosen=await memory.memoryPromptSelection(library,['first'],'unrelated topic',f.settings,count);assert.match(chosen.references,/River promise/);assert.match(chosen.references,/"quote":"Cora met Nova"/);
+ assert(await count(chosen.references)<=f.settings.memoryRetrievalBudget);
+ const next={...structuredClone(library.chapters[0]),id:'resolved',parentId:library.chapters[0].id,parentRevision:1,events:[{...fact,status:'Resolved'}]};library.chapters.push(next);
+ const index=memory.memoryFactIndex(library,['first']);assert.equal(index.length,1);assert.equal(index[0].status,'Resolved');
+ const resolved=await memory.memoryPromptSelection(library,['first'],'River promise',f.settings,count,[fact]);
+ assert.match(resolved.references,/"status":"Resolved"/);assert.doesNotMatch(resolved.references,/"status":"Active"/);
+});
 function fixture(options = {}) {
     const data = options.data || new Map(), notices = [], phases = [], calls = [], storageCalls = [], settings = {...config(),...options.settings};
     const state = {player:{name:'Nova'},location:{place:'River'},worldClock:{day:7,time:'23:00'},progression:{currency:{gold:6,silver:0,copper:120}},quests:[],npcs:[],social:{},storyMemories:[],storyAgenda:[]};

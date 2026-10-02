@@ -1,3 +1,5 @@
+import {MEMORY_CATEGORY_LABELS} from './memory-summaries.js?v=0.47.0';
+
 // A separate memory request must not borrow SillyTavern's story-generation
 // state or stop handler. Keep the native controls intact and restore their
 // current host styles when a memory job leaves the composer.
@@ -193,6 +195,11 @@ export function createMemoryComposerStatus({document:doc = globalThis.document,c
             bits.push(duration(Number.isFinite(started) ? Date.now() - started : job.elapsedMs));
             if (Number(job.requestAttempt || job.attempt) > 1) bits.push(word(`Attempt ${job.requestAttempt || job.attempt}`,`ครั้งที่ ${job.requestAttempt || job.attempt}`));
         } else if (current.coverage?.pendingMessages > 0) bits.push(word(`${current.coverage.pendingMessages} remaining`, `เหลือ ${current.coverage.pendingMessages} ข้อความ`));
+        if (job.apiCalls != null) bits.push(word(`${job.apiCalls} AI calls`,`${job.apiCalls} ครั้งที่เรียก AI`));
+        if (job.category) {
+            const labels = MEMORY_CATEGORY_LABELS[job.category];
+            bits.push(labels ? word(...labels) : job.category);
+        }
         text(progress,bits.join(' · '));
         const hasError = ['error','interrupted'].includes(status) && Boolean(job.error);
         const handoffWarning = job.rpgHandoff === 'disabled' ? word('Enable automatic character continuity before moving chats.', 'เปิดการสานต่อข้อมูลตัวละครก่อนย้ายแชต') : job.rpgHandoff === 'failed' ? word('RPG snapshot could not be saved. Export state before moving chats.', 'บันทึก snapshot RPG ไม่สำเร็จ ส่งออก State ก่อนย้ายแชต') : '';

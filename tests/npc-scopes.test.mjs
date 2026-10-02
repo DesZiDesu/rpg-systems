@@ -1,10 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {characterOwner,hydrateScopedNpcs,packScopedNpcs,withoutChatNpcContinuity,scopedPortraitKey,scopeEnvelope} from '../src/npc-scopes.js';
+import {characterOwner,hydrateScopedNpcs,packScopedNpcs,withoutChatNpcContinuity,completeNpcContinuity,restoreCompleteNpcContinuity,scopedPortraitKey,scopeEnvelope} from '../src/npc-scopes.js';
 
 const owner='card:first.png';
 const library=[{id:'s1',name:'Archivist',personality:'Calm',location:'Library',stats:{hp:100,level:5},npcScope:'character',npcOwner:owner,hasPortrait:true}];
 const local={id:'l1',name:'Traveler',location:'Forest'};
+test('complete handoff retains Chat dossiers, H-Stats, alternates, party references and shared overrides independently',()=>{
+ const state=hydrateScopedNpcs({npcs:[{...local,hStats:{loyalty:4},alternateProfiles:[{id:'past',label:'Childhood',fields:{age:'10'},hStats:{loyalty:2}}]}]},library,owner);
+ state.social={party:{memberIds:['l1','s1']},guilds:[{memberIds:['l1']}],household:{members:[{npcId:'l1'}]}};state.contacts=[{npcId:'l1',name:'Traveler'}];
+ state.npcs[1].stats.hp=37;state.npcs[1].hStats={loyalty:5};
+ const original=structuredClone(state),saved=completeNpcContinuity(state,library,owner),restored=restoreCompleteNpcContinuity(saved,library,owner);
+ assert.equal(restored.npcs.length,2);assert.equal(restored.npcs[0].npcScope,'chat');assert.deepEqual(restored.npcs[0].hStats,{loyalty:4});
+ assert.equal(restored.npcs[0].alternateProfiles[0].fields.age,'10');assert.equal(restored.npcs[1].stats.hp,37);assert.equal(restored.npcs[1].hStats.loyalty,5);
+ assert.deepEqual(restored.social,state.social);assert.deepEqual(restored.contacts,state.contacts);assert.deepEqual(state,original);
+ restored.npcs[0].hStats.loyalty=1;assert.equal(saved.npcs[0].hStats.loyalty,4);assert.equal(state.npcs[0].hStats.loyalty,4);
+ const missing=restoreCompleteNpcContinuity(saved,[],owner);assert.equal(missing.npcs.length,2);assert.equal(missing.npcs.find(npc=>npc.id==='s1').npcScope,'chat');
+ assert.equal(missing.npcs.find(npc=>npc.id==='s1').portraitChatId,`character:${encodeURIComponent(owner)}`);
+ assert.equal(scopedPortraitKey(missing.npcs.find(npc=>npc.id==='s1'),missing.npcs.find(npc=>npc.id==='s1').portraitChatId),scopedPortraitKey(state.npcs[1],'original',owner));
+});
 test('card ownership uses filename, supports index zero, and never guesses in group chats',()=>{
  assert.equal(characterOwner({characterId:0,characters:[{name:'A',avatar:'first.png'}]}).key,owner);
  assert.equal(characterOwner({characterId:0,characters:[{name:'A',avatar:'second.png'}]}).key,'card:second.png');

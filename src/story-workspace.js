@@ -1,6 +1,6 @@
-import {normalizeStoryMemories} from './story-memory.js?v=0.46.4';
-import {normalizeStoryAgenda, storyAgendaState, storyAgendaSummary} from './story-agenda.js?v=0.46.4';
-import {normalizeQuestObjectives, questObjectiveProgress, questObjectivesReady} from './quest-objectives.js?v=0.46.4';
+import {normalizeStoryMemories} from './story-memory.js?v=0.47.0';
+import {normalizeStoryAgenda, storyAgendaState, storyAgendaSummary} from './story-agenda.js?v=0.47.0';
+import {normalizeQuestObjectives, questObjectiveProgress, questObjectivesReady} from './quest-objectives.js?v=0.47.0';
 
 // The host owns mutations. These renderers provide escaped prose and delegated forms/actions.
 const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));

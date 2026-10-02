@@ -7,6 +7,7 @@ import * as uiLanguage from '../src/ui-language.js';
 import * as powers from '../src/power-presets.js';
 import * as forgePresets from '../src/forge-presets.js';
 import {normalizeModuleNavigationMode} from '../src/module-navigation.js';
+import * as memory from '../src/memory-summaries.js';
 import {memorySummaryNativeGenerationActive,requestMemorySummary} from '../src/memory-summary-runtime.js';
 import {hostReplyGenerating,loadHostGenerationModule} from '../src/host-generation-state.js';
 import test from 'node:test';
@@ -29,11 +30,11 @@ import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMem
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enableAuctions:true,enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true,enableMemorySummaries:true,eventNotifications:true}},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={writeContinuitySnapshot,activeContinuityKey,changeOptionalSystem,renderPanel,runAuctionAction,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,runAuctionAction,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('native summary task temporarily removes only RoleForge story instructions and restores them afterwards',async()=>{
@@ -68,6 +69,39 @@ const alternateFixture=()=>host.npcProfile({id:'cora',name:'Cora',aliases:['ã‚³ã
   {id:'child',label:'Childhood',fields:{age:'9',appearance:'Child profile marker',background:'Child background marker',stats:{level:1,strength:3,mp:0},abilities:[],customMeters:[{id:'focus',name:'Focus',value:12}]},hasPortrait:true,portraitSource:'server',portraitPath:'/user/images/tretaresia-npc/child.webp'},
   {id:'future',label:'Later',fields:{age:'40',background:'Inactive future marker',stats:{strength:30}}}
  ]});
+
+test('complete handoff uses durable fallback storage without dropping Chat NPCs, legacy H-Stats selection or alternate dossiers',async()=>{
+ const previous=context.character,originalStorage=sandbox.localStorage,originalLibs=sandbox.SillyTavern.libs,metadata=context.chatMetadata;
+ const records=new Map();
+ try {
+  context.character={avatar:'large-handoff.png'};
+  sandbox.localStorage={getItem:()=>null,setItem(){throw Error('Quota exhausted');}};
+  sandbox.SillyTavern.libs={localforage:{async setItem(key,value){records.set(key,structuredClone(value));}}};
+  context.chatMetadata={tretaresia_rpg_selected_hstats_npc:'cora'};
+  const state=host.normalize({...host.defaultState(),npcs:[{...alternateFixture(),npcScope:'chat',hStats:{loyaltyHearts:4}}]});
+  assert.equal(await host.writeContinuitySnapshot(state),true);
+  const saved=[...records.values()][0];assert.equal(saved.npcTransfer,'all');assert.equal(saved.state.npcs[0].npcScope,'chat');
+  assert.equal(saved.state.npcs[0].hStats.loyaltyHearts,4);assert.equal(saved.state.npcs[0].alternateProfiles.length,2);
+  assert.equal(saved.state.npcs[0].alternateProfiles[0].portraitPath,'/user/images/tretaresia-npc/child.webp');
+  assert.deepEqual(Array.from(saved.hStatsRoster.visible),['cora']);assert.equal(saved.hStatsRoster.selected,'cora');
+ } finally {context.character=previous;sandbox.localStorage=originalStorage;sandbox.SillyTavern.libs=originalLibs;context.chatMetadata=metadata;}
+});
+
+test('unavailable media retains every dossier and track with original references across repeated handoffs',async()=>{
+ const originalLibs=sandbox.SillyTavern.libs;
+ try {
+  sandbox.SillyTavern.libs={};
+  const state=host.normalize({...host.defaultState(),npcs:[{...alternateFixture(),npcScope:'chat',hasPortrait:true,portraitSource:'local',portraitPath:'',
+   alternateProfiles:[{id:'child',label:'Childhood',fields:{background:'Saved childhood'},hasPortrait:true,portraitSource:'local'}]}],
+   music:{tracks:[{id:'river',name:'River song',fileName:'river.wav'}],currentId:'river'}});
+  const carried=await host.copyContinuityMedia(state,'first','second');
+  assert.equal(carried.npcs.length,1);assert.equal(carried.npcs[0].hasPortrait,true);assert.equal(carried.npcs[0].portraitChatId,'first');
+  assert.equal(carried.npcs[0].alternateProfiles[0].hasPortrait,true);assert.equal(carried.npcs[0].alternateProfiles[0].portraitChatId,'first');
+  assert.equal(carried.music.tracks.length,1);assert.equal(carried.music.tracks[0].sourceChatId,'first');
+  const again=await host.copyContinuityMedia(carried,'second','third');
+  assert.equal(again.npcs[0].portraitChatId,'first');assert.equal(again.npcs[0].alternateProfiles[0].portraitChatId,'first');assert.equal(again.music.tracks[0].sourceChatId,'first');
+ } finally {sandbox.SillyTavern.libs=originalLibs;}
+});
 
 test('alternate NPC normalization and both model contexts use selected information without inactive biographies or images',()=>{
  const state=host.normalize({...host.defaultState(),npcs:[alternateFixture()]});const npc=state.npcs[0];
@@ -1080,7 +1114,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.46.4');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.47.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

@@ -1,4 +1,14 @@
-# ROLEFORGE — v0.46.4
+# ROLEFORGE — v0.47.0
+
+## v0.47.0 — Complete chat handoff and structured smart memory
+
+- **Prepare for new chat** now preserves Chat NPC dossiers as independent local records in the destination, including all alternate profiles, stats, abilities, relationship/H-Stats fields, selected stages, party/contact references and the H-Stats roster. Shared Character NPCs retain their chat overrides. Player progression, inventory, quests and payment receipts travel as exact RPG state, separately from AI summaries.
+- Complete snapshots fall back to IndexedDB when local storage is full, and preparation waits for the save. Local portraits (including alternates) and music are copied; failed copies retain their records and original references with a warning. Existing destination chats remain protected. Revisit the original chat and prepare again to include NPCs missing from an older handoff.
+- **Memory Summaries → Summary API and context budgets → Processing strategy** offers combined message batches, **one request for all pending sources** (only when they fit the input budget), or **one request per category per batch**. Category work saves each part immediately; explicit Retry resumes saved parts without a paid merge request. Progress in the workspace and main chat shows attempts in the current run and the workspace also shows cumulative attempts; these are not provider billing totals.
+- A structured memory atlas separates **Scene, Location, Place, Relations, Characters, Missions, Quests, Chapter, Key Words / Quotes, Story, Resources and Other**. Cited quotes retain their speaker, and facts distinguish events, claims, plans, importance and open/resolved threads. Retrieval keeps relevant important facts and unresolved commitments within the existing context budgets, limits repetition and avoids superseded open entries.
+- Choose **1,200–12,000 output tokens per request** (default 2,400). Extraction targets scale with this budget. Original messages remain searchable locally; only selected references and a bounded overview enter story context. Existing archives remain readable without automatic paid reprocessing. Native SillyTavern preset generation remains the default.
+
+อ่าน [คู่มือ Memory Summaries และการย้ายข้อมูลทั้งหมด](docs/memory-summaries-workflows.th.md)
 
 ## v0.46.4 — Native preset summaries and recoverable event indexing
 

@@ -1,38 +1,38 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.46.4';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.46.4';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.47.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.47.0';
 import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js';
 import {mountForgeWorkspace} from './src/forge-workspace.js';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.46.4';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.46.4';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.46.4';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.46.4';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.46.4';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.46.4';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.46.4';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.46.4';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.46.4';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.46.4';
-import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.46.4';
-import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.46.4';
-import { MEMORY_LINK_KEY } from './src/memory-summaries.js?v=0.46.4';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.46.4';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.46.4';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.46.4';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.46.4';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.46.4';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.47.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.47.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.47.0';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.47.0';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.47.0';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.47.0';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.47.0';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.47.0';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.47.0';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.47.0';
+import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.47.0';
+import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.47.0';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.47.0';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.47.0';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.47.0';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.47.0';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.47.0';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.47.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.46.4';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.46.4';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.46.4';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.46.4';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.46.4';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.46.4';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.46.4';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.46.4';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.46.4';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.46.4';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.46.4';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.46.4';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.47.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.47.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.47.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.47.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.47.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.47.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.47.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.47.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.47.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.47.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.47.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.47.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -50,6 +50,8 @@ let nativeGenerationState = null;
 let completedAssistantMessages = new WeakSet();
 let nativeMemoryGeneration = false;
 let nativeMemoryGenerationMetadata = null;
+const continuityWrites = new Map();
+const continuityFailures = new Map();
 function mainReplyGenerating(context = SillyTavern.getContext()) {
     return hostReplyGenerating({context,native:nativeGenerationState,document,fallback:liveGeneration});
 }
@@ -231,6 +233,8 @@ const DEFAULT_SETTINGS = Object.freeze({
     memorySummaryTimeoutSeconds: 240,
     memorySummaryProfile: '',
     memorySummaryMode: 'preset',
+    memorySummaryStrategy: 'batch',
+    memorySummaryOutputTokens: 2400,
     memoryInject: true,
     memorySummaryBudget: 1200,
     memoryRetrievalBudget: 1000,
@@ -336,7 +340,7 @@ let pendingComposerDraft = null;
 let audioPlayer = null;
 let audioObjectUrl = '';
 
-let continuityRestoreInProgress = false;
+let continuityRestoreTask = null;
 let processedAssistantMessages = new WeakMap();
 const assistantPatchTimers = new Map();
 let assistantRollbackQueue = Promise.resolve();
@@ -572,6 +576,8 @@ function getSettings() {
     settings.memorySummaryTimeoutSeconds = Math.round(number(settings.memorySummaryTimeoutSeconds,240,60,600));
     settings.memorySummaryProfile = text(settings.memorySummaryProfile,'',120);
     settings.memorySummaryMode = settings.memorySummaryMode === 'compact' ? 'compact' : 'preset';
+    settings.memorySummaryStrategy = normalizeMemoryStrategy(settings.memorySummaryStrategy);
+    settings.memorySummaryOutputTokens = normalizeMemoryOutputTokens(settings.memorySummaryOutputTokens);
     settings.memorySummaryBudget = Math.round(number(settings.memorySummaryBudget,1200,200,12000));
     settings.memoryRetrievalBudget = Math.round(number(settings.memoryRetrievalBudget,1000,200,12000));
     settings.memorySummaryInputBudget = Math.round(number(settings.memorySummaryInputBudget,12000,4000,64000));
@@ -1172,6 +1178,7 @@ function musicTrack(value) {
         id: text(value.id, uid(), 100), name: text(value.name, '', 180), fileName: text(value.fileName, '', 240),
         type: text(value.type, 'audio/mpeg', 80), duration: number(value.duration, 0, 0, 86400),
         addedAt: text(value.addedAt, new Date().toISOString(), 60),
+        sourceChatId: text(value.sourceChatId, '', 240),
     };
 }
 
@@ -1694,82 +1701,108 @@ function writeContinuitySnapshot(state) {
     const key = continuityStorageKey(activeContinuityKey(context));
     const chatId = context.getCurrentChatId?.();
     if (!key || !chatId) return false;
-    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), state: withoutChatNpcContinuity(normalize(state)), memoryLink:getSettings().enableMemorySummaries ? memorySummaries?.continuityLink() : context.chatMetadata?.[MEMORY_LINK_KEY] };
+    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), npcTransfer: 'all', state: completeNpcContinuity(normalize(state),characterNpcLibrary(),characterOwner(context)?.key),
+        hStatsRoster:{visible:clone(Array.isArray(context.chatMetadata?.[H_VISIBLE_KEY]) ? context.chatMetadata[H_VISIBLE_KEY]
+            : context.chatMetadata?.[H_SELECTION_KEY] ? [context.chatMetadata[H_SELECTION_KEY]] : []),selected:context.chatMetadata?.[H_SELECTION_KEY] || ''},
+        memoryLink:getSettings().enableMemorySummaries ? memorySummaries?.continuityLink() : context.chatMetadata?.[MEMORY_LINK_KEY] };
     try {
         localStorage.setItem(key, JSON.stringify(record));
+        continuityFailures.delete(key);
         return true;
     } catch (error) {
-        // A large embedded player portrait can exceed Safari's storage quota. The
-        // structured RPG state is still more important than failing continuity.
-        record.state.player.portrait = '';
-        try { localStorage.setItem(key, JSON.stringify(record)); return true; }
-        catch (storageError) { console.warn('[RoleForge] Could not cache character continuity.', storageError); return false; }
+        const store = SillyTavern.libs?.localforage;
+        continuityFailures.set(key,record.savedAt);
+        if (!store?.setItem) {
+            console.warn('[RoleForge] Complete character continuity could not be saved; export state before changing chats.', error);
+            notify('warning',getSettings().language === 'th' ? 'บันทึกข้อมูลสำหรับย้ายแชตไม่ได้ กรุณา Export state ก่อนย้าย ระบบไม่ได้ตัดข้อมูลหรือรูปออก' : 'Full handoff storage failed. Export state before changing chats; no profiles or portraits were removed.');
+            return false;
+        }
+        // Larger complete snapshots use IndexedDB without stripping images or
+        // dossiers. A new-chat restore awaits this write before reading it.
+        const previous = continuityWrites.get(key) || Promise.resolve();
+        const pending = previous.catch(()=>{}).then(()=>store.setItem(key,record)).then(()=>{
+            if ((continuityFailures.get(key) || '') <= record.savedAt) continuityFailures.delete(key);
+            return true;
+        }).catch(storageError=>{
+            console.warn('[RoleForge] Full handoff storage failed.',storageError);
+            notify('warning',getSettings().language === 'th' ? 'บันทึกข้อมูลย้ายแชตไม่สำเร็จ ส่งออก State สำรองก่อนย้าย' : 'Full handoff storage failed. Export state before changing chats.');return false;
+        }).finally(()=>{if(continuityWrites.get(key)===pending)continuityWrites.delete(key);});
+        continuityWrites.set(key,pending);return pending;
     }
 }
 
 async function copyContinuityMedia(state, sourceChatId, targetChatId) {
     if (!sourceChatId || !targetChatId || sourceChatId === targetChatId) return state;
     const store = SillyTavern.libs?.localforage;
-    if (!store) {
-        state.npcs.forEach(entry => {
-            for (const portrait of enumerateNpcPortraits(entry)) if (portrait.hasPortrait && portrait.portraitSource !== 'server')
-                Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, {hasPortrait:false,portraitSource:'none',portraitPath:'',portraitChatId:''}));
-        });
-        state.music = { tracks: [], currentId: '', repeat: false, shuffle: false };
-        return state;
-    }
+    let unavailable = 0;
     for (const entry of state.npcs) {
         for (const portrait of enumerateNpcPortraits(entry)) {
             if (!portrait.hasPortrait || portrait.portraitSource === 'server' || portrait.npcScope === 'character') continue;
+            const mediaChat = portrait.portraitChatId || sourceChatId;
+            Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, {portraitChatId:mediaChat}));
             try {
-                const sourceKey = npcPortraitStorageKey(entry.id, portrait.portraitChatId || sourceChatId, portrait.npcAlternateId);
-                const blob = await store.getItem(sourceKey);
+                const sourceKey = npcPortraitStorageKey(entry.id, mediaChat, portrait.npcAlternateId);
+                const blob = await store?.getItem(sourceKey);
                 if (blob) {
                     await store.setItem(npcPortraitStorageKey(entry.id, targetChatId, portrait.npcAlternateId), blob);
                     Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, {portraitChatId:''}));
-                } else if (portrait.portraitSource === 'local') Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, {hasPortrait:false,portraitSource:'none'}));
-            } catch (error) {
-                Object.assign(entry, updateNpcAlternate(entry, portrait.npcAlternateId, {hasPortrait:false,portraitSource:'none'}));
-            }
+                } else unavailable++;
+            } catch { unavailable++; }
         }
     }
-    const copiedTracks = [];
     for (const track of state.music.tracks) {
+        track.sourceChatId ||= sourceChatId;
         try {
-            const blob = await store.getItem(audioStorageKey(track.id, sourceChatId));
-            if (!blob) continue;
+            const blob = await store?.getItem(audioStorageKey(track.id, track.sourceChatId));
+            if (!blob) { unavailable++; continue; }
             await store.setItem(audioStorageKey(track.id, targetChatId), blob);
-            copiedTracks.push(track);
-        } catch (error) { /* Keep continuity usable even when one local file fails. */ }
+            track.sourceChatId = '';
+        } catch { unavailable++; }
     }
-    state.music.tracks = copiedTracks;
-    if (!copiedTracks.some(track => track.id === state.music.currentId)) state.music.currentId = copiedTracks[0]?.id || '';
+    if (unavailable) notify('warning',getSettings().language === 'th' ? `คงรายการรูป/เพลงไว้ครบ แต่คัดลอกไฟล์ ${unavailable} รายการไม่ได้ ยังอ้างอิงไฟล์จากแชตเดิม กรุณาสำรองสื่อก่อนล้างข้อมูล` : `${unavailable} media files could not be copied. Their records and original-chat references are retained; back up media before clearing storage.`);
     return state;
 }
 
 async function restoreContinuityForCurrentChat() {
+    if (continuityRestoreTask) {
+        await continuityRestoreTask;
+        return restoreContinuityForCurrentChat();
+    }
     const settings = getSettings();
     const context = SillyTavern.getContext();
     const chatId = context.getCurrentChatId?.();
     const metadata = context.chatMetadata, characterKey = activeContinuityKey(context);
-    if (!settings.autoContinuity || continuityRestoreInProgress || !chatId || context.chatMetadata?.[METADATA_KEY] || hasUserReply()) return false;
+    if (!settings.autoContinuity || !chatId || context.chatMetadata?.[METADATA_KEY] || hasUserReply()) return false;
     const key = continuityStorageKey(activeContinuityKey(context));
     if (!key) return false;
-    let record;
-    try { record = JSON.parse(localStorage.getItem(key) || 'null'); }
-    catch (error) { return false; }
-    if (!record?.state || record.format !== STATE_PACKAGE_FORMAT || record.sourceChatId === chatId) return false;
-    continuityRestoreInProgress = true;
-    try {
-        // Also sanitize pre-0.31 continuity caches; never silently migrate old Chat NPCs.
-        const continued = await copyContinuityMedia(withoutChatNpcContinuity(normalize(record.state)), record.sourceChatId, chatId);
+    const restoring = (async () => {
+        let record;
+        await continuityWrites.get(key);
+        let localRecord,largeRecord;
+        try { localRecord = JSON.parse(localStorage.getItem(key) || 'null'); } catch { /* IndexedDB may still hold the full snapshot. */ }
+        try { largeRecord = await SillyTavern.libs?.localforage?.getItem(key); } catch { /* Local storage remains usable. */ }
+        record = [localRecord,largeRecord].filter(value=>value?.state && value.format===STATE_PACKAGE_FORMAT).sort((a,b)=>String(b.savedAt).localeCompare(String(a.savedAt)))[0];
+        if (continuityFailures.has(key) && (!record || record.savedAt < continuityFailures.get(key))) return false;
+        if (!record?.state || record.format !== STATE_PACKAGE_FORMAT || record.sourceChatId === chatId) return false;
+        const beforeCopy = SillyTavern.getContext();
+        if (beforeCopy.getCurrentChatId?.() !== chatId || beforeCopy.chatMetadata !== metadata || activeContinuityKey(beforeCopy) !== characterKey || beforeCopy.chatMetadata?.[METADATA_KEY] || hasUserReply()) return false;
+        // Legacy snapshots keep their original scope rules; new complete handoffs
+        // carry local dossiers as independent records in the destination chat.
+        const restored = record.npcTransfer === 'all'
+            ? restoreCompleteNpcContinuity(normalize(record.state),characterNpcLibrary(),characterOwner(context)?.key)
+            : withoutChatNpcContinuity(normalize(record.state));
+        const continued = await copyContinuityMedia(restored, record.sourceChatId, chatId);
         const active = SillyTavern.getContext();
-        if (active.getCurrentChatId?.() !== chatId || active.chatMetadata !== metadata || activeContinuityKey(active) !== characterKey) return false;
+        if (active.getCurrentChatId?.() !== chatId || active.chatMetadata !== metadata || activeContinuityKey(active) !== characterKey || active.chatMetadata?.[METADATA_KEY] || hasUserReply()) return false;
         continued.syncCursor = { user: null, assistant: null };
         continued.updatedAt = null;
         continued.updateSource = 'continuity';
         if (record.memoryLink?.owner === activeContinuityKey(context)) context.chatMetadata[MEMORY_LINK_KEY] = clone(record.memoryLink);
-        const saved = await persistState(hydrateScopedNpcs(continued, characterNpcLibrary(), characterOwner(context)?.key), 'continuity');
+        if (record.npcTransfer === 'all' && record.hStatsRoster) {
+            context.chatMetadata[H_VISIBLE_KEY] = clone(record.hStatsRoster.visible || []);
+            context.chatMetadata[H_SELECTION_KEY] = record.hStatsRoster.selected || '';
+        }
+        const saved = await persistState(record.npcTransfer === 'all' ? restoreCompleteNpcContinuity(continued, characterNpcLibrary(), characterOwner(context)?.key) : hydrateScopedNpcs(continued, characterNpcLibrary(), characterOwner(context)?.key), 'continuity');
         if (saved) {
             globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:continuity-restored', {
                 detail: {
@@ -1782,9 +1815,10 @@ async function restoreContinuityForCurrentChat() {
             notify('success', settings.language === 'th' ? uiText("สานต่อข้อมูลตัวละครในแชตใหม่แล้ว") : uiText("Character state continued into this new chat."));
         }
         return saved;
-    } finally {
-        continuityRestoreInProgress = false;
-    }
+    })();
+    continuityRestoreTask = restoring;
+    try { return await restoring; }
+    finally { if (continuityRestoreTask === restoring) continuityRestoreTask = null; }
 }
 
 function captureContinuityBeforeNewChat(trigger = 'native-new-chat') {
@@ -2969,7 +3003,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.46.4`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.47.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -5972,7 +6006,7 @@ async function playTrack(id) {
     const track = state.music.tracks.find(entry => entry.id === id);
     if (!track) return;
     const store = SillyTavern.libs?.localforage;
-    const blob = await store?.getItem(audioStorageKey(id));
+    const blob = await store?.getItem(audioStorageKey(id,track.sourceChatId || undefined));
     if (!(blob instanceof Blob)) return notify('warning', getSettings().language === 'th'
         ? uiText("ไฟล์เพลงนี้ไม่อยู่ในอุปกรณ์นี้ กรุณาเพิ่มไฟล์ใหม่") : uiText("This audio file is not stored on this device. Add it again here."));
     const player = ensureAudioPlayer();
@@ -6115,7 +6149,7 @@ async function onSubmit(event) {
             if (form.dataset.form === 'memory-summary-edit') { await memorySummaries?.editChapter(values.id,values.summary,values.recap); notify('success',getSettings().language === 'th' ? 'บันทึกรุ่นสรุปใหม่แล้ว' : 'Summary revision saved.'); }
             if (form.dataset.form === 'memory-summary-settings') {
                 const settings = getSettings();
-                for (const key of ['memorySummaryInterval','memorySummaryBatchSize','memorySummaryTimeoutSeconds','memorySummaryProfile','memorySummaryMode','memorySummaryBudget','memoryRetrievalBudget','memorySummaryInputBudget']) settings[key] = values[key];
+                for (const key of ['memorySummaryInterval','memorySummaryBatchSize','memorySummaryTimeoutSeconds','memorySummaryProfile','memorySummaryMode','memorySummaryStrategy','memorySummaryOutputTokens','memorySummaryBudget','memoryRetrievalBudget','memorySummaryInputBudget']) settings[key] = values[key];
                 for (const key of ['memoryAutoSummary','memoryInject']) settings[key] = form.querySelector(`[name="${key}"]`)?.checked === true;
                 getSettings(); SillyTavern.getContext().saveSettingsDebounced?.(); await memorySummaries?.preparePrompt(); updatePrompt(); renderAll();
                 notify('success',settings.language === 'th' ? 'บันทึกการตั้งค่าความจำแล้ว' : 'Memory settings saved.');
@@ -9517,7 +9551,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.46.4 loaded.');
+        console.info('[RoleForge] Role-play interface v0.47.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

@@ -1,4 +1,4 @@
-import { keyName, resolveNpc } from './npc-core.js?v=0.46.4';
+import { keyName, resolveNpc } from './npc-core.js?v=0.47.0';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -169,6 +169,30 @@ export function withoutChatNpcContinuity(state) {
     for (const guild of social?.guilds || []) guild.memberIds = (guild.memberIds || []).filter(id => !localIds.has(id));
     if (social?.household) social.household.members = (social.household.members || []).filter(p => !localIds.has(p.npcId));
     return result;
+}
+
+// Complete handoffs preserve local NPCs, their profiles and every linked ID.
+// Pack shared deltas now so edits since the last metadata save also travel.
+export function completeNpcContinuity(state, library, owner) {
+    const packed = packScopedNpcs(state,library,owner);
+    packed.npcs = clone(state.npcs || []);
+    return packed;
+}
+
+export function restoreCompleteNpcContinuity(state, library, owner) {
+    const snapshot = clone(state);
+    snapshot.npcScopes ||= {};
+    // A missing shared base must not delete a dossier from the saved handoff.
+    snapshot.npcs = (snapshot.npcs || []).map(npc => {
+        if (npc.npcScope !== 'character' || library.some(base => base.id === npc.id)) return npc;
+        const mediaOwner = `character:${encodeURIComponent(npc.npcOwner || owner || '')}`;
+        const retainPortrait = portrait => portrait.hasPortrait && portrait.portraitSource !== 'server'
+            ? {...portrait,portraitChatId:portrait.portraitChatId || mediaOwner} : portrait;
+        return {...retainPortrait(npc),npcScope:'chat',npcOwner:'',
+            alternateProfiles:(npc.alternateProfiles || []).map(retainPortrait)};
+    });
+    snapshot.npcScopes.sharedIds = (snapshot.npcScopes.sharedIds || []).filter(id => library.some(base => base.id === id));
+    return hydrateScopedNpcs(snapshot,library,owner);
 }
 
 export function scopedPortraitKey(profile, chatId, owner = '') {
