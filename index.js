@@ -14,6 +14,8 @@ import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoar
 import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.48.0';
 import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.48.0';
 import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.48.0';
+import { MARKETPLACE_INSTRUCTIONS, normalizeMarketplace, marketplaceView, createMarketplaceListing, applyMarketplaceAction, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.48.0';
+import { renderMarketplacePanel } from './src/marketplace-ui.js?v=0.48.0';
 import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.48.0';
 import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.48.0';
 import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.48.0';
@@ -171,6 +173,7 @@ const COLOR_PRESETS = {
 const OPTIONAL_SYSTEMS = [
     {key:'enableMissionBoard',en:'Mission Board',th:'กระดานภารกิจ',helpEn:'Read and accept jobs from boards in the main chat.',helpTh:'อ่านและรับภารกิจจากกระดานในแชต'},
     {key:'enableAuctions',en:'Auction House',th:'ระบบประมูล',helpEn:'Preview lots, bid and receive won items.',helpTh:'ดูสินค้า เสนอราคา และรับของที่ชนะประมูล'},
+    {key:'enableMarketplace',en:'Negotiated Marketplace',th:'ตลาดต่อรองราคา',panel:'marketplace',helpEn:'List inventory items and negotiate NPC offers.',helpTh:'ลงขายไอเทมและต่อรองข้อเสนอจากผู้ซื้อ'},
     {key:'enableStoryMemory',en:'Story Memory',th:'บันทึกเรื่องสำคัญ',panel:'memories',helpEn:'Track important facts, promises, secrets and open threads.',helpTh:'เก็บข้อเท็จจริง คำสัญญา ความลับ และเรื่องค้าง'},
     {key:'enableStoryAgenda',en:'Story Agenda',th:'นัดหมายและกำหนดเวลา',panel:'agenda',helpEn:'Track appointments and reminders using story time.',helpTh:'เก็บนัดหมายและเตือนตามเวลาในเนื้อเรื่อง'},
     {key:'enableQuestObjectives',en:'Quest Checklists',th:'เช็กลิสต์เป้าหมายเควส',helpEn:'Track individual quest steps and derive progress.',helpTh:'แยกเป้าหมายย่อยและคำนวณความคืบหน้าเควส'},
@@ -179,6 +182,7 @@ const OPTIONAL_SYSTEMS = [
 const DEFAULT_SETTINGS = Object.freeze({
     enableMissionBoard:false,
     enableAuctions:false,
+    enableMarketplace:false,
     enableStoryMemory:false,
     enableStoryAgenda:false,
     enableQuestObjectives:false,
@@ -243,14 +247,14 @@ const DEFAULT_SETTINGS = Object.freeze({
 });
 
 const LAUNCHER_BIND_VERSION = '0.40.10';
-const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'memories', 'summaries', 'agenda', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
+const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'memories', 'summaries', 'agenda', 'rank', 'marketplace', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
     inventory: ['fa-solid fa-box-open', 'Inventory'], skills: ['fa-solid fa-layer-group', 'Skills'],
     techniques: ['fa-solid fa-fire-flame-curved', 'Powers'], quests: ['fa-solid fa-scroll', 'Quests'],
     memories: ['fa-solid fa-book-bookmark', 'Story Memory'], agenda: ['fa-solid fa-calendar-check', 'Appointments'],
     summaries: ['fa-solid fa-box-archive', 'Memory Summaries'],
-    rank: ['fa-solid fa-medal', 'Rank'],
+    rank: ['fa-solid fa-medal', 'Rank'], marketplace: ['fa-solid fa-handshake', 'Marketplace'],
     groups: ['fa-solid fa-people-group', 'Party & Guild'], household: ['fa-solid fa-house-chimney-user', 'Household'],
     npcs: ['fa-solid fa-users', 'NPCs'], hstats: ['fa-solid fa-heart-pulse', 'H-Stats'], mail: ['fa-solid fa-envelope', 'Mailbox'], music: ['fa-solid fa-music', 'Music'],
     systems: ['fa-solid fa-microchip', 'System Audit'],
@@ -286,10 +290,10 @@ let pendingAuctionSave = null;
 let creationSaveTimer = null;
 let openingGeneration = null;
 
-function saveCurrentChatMetadata(context = SillyTavern.getContext(), {auctionCommit = false} = {}) {
+function saveCurrentChatMetadata(context = SillyTavern.getContext(), {auctionCommit = false, marketplaceCommit = false} = {}) {
     const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata;
     // Hold unrelated metadata saves outside the queue so they cannot commit a tentative auction.
-    if (pendingAuctionSave && !auctionCommit) return pendingAuctionSave.then(() => {
+    if (pendingAuctionSave && !(auctionCommit || marketplaceCommit)) return pendingAuctionSave.then(() => {
         const active = SillyTavern.getContext();
         return active.getCurrentChatId?.() === chatId && active.chatMetadata === metadata ? saveCurrentChatMetadata(context) : false;
     });
@@ -522,6 +526,7 @@ function defaultState() {
         questRewardReceipts: [],
         auctions: [],
         auctionReceipts: [],
+        marketplace: { listings: [], receipts: [] },
         storyMemories: [],
         storyAgenda: [],
         npcs: [],
@@ -1454,6 +1459,7 @@ function normalize(candidate, base = defaultState()) {
     result.questRewardReceipts = normalizeQuestRewardReceipts(source.questRewardReceipts ?? result.questRewardReceipts, result.quests);
     result.auctions = normalizeAuctions(source.auctions ?? result.auctions);
     result.auctionReceipts = normalizeAuctionReceipts(source.auctionReceipts ?? result.auctionReceipts);
+    result.marketplace = normalizeMarketplace(source.marketplace ?? result.marketplace);
     result.storyMemories = normalizeStoryMemories(source.storyMemories ?? result.storyMemories);
     result.storyAgenda = normalizeStoryAgenda(source.storyAgenda ?? result.storyAgenda);
     if (Array.isArray(source.npcs)) {
@@ -1931,6 +1937,7 @@ function trackedStateSnapshot(state) {
         'player.thirst': state.player.survival.thirst,
         'player.condition': state.player.condition,
         'auctions': (state.auctions || []).map(s => `${s.id}:${s.status}:${s.index}:${s.revision}`).join('|'),
+        'marketplace': (state.marketplace?.listings || []).map(s => `${s.id}:${s.status}:${s.updatedAt}`).join('|'),
         'player.powerType': state.player.powerType,
         'player.identity': [state.player.race, state.player.gender, state.player.age, state.player.homeContinent, state.player.birthplace, state.player.standing, state.player.affiliation].filter(Boolean).join(' · '),
         'player.appearance': Object.values(state.player.appearance || {}).filter(Boolean).join(' · '),
@@ -2008,7 +2015,7 @@ function storyAgendaNotice(state) {
 }
 
 async function persistState(candidate, source = 'manual', { deferMetadataSave = false } = {}) {
-    if (pendingAuctionSave && source !== 'auction') return false;
+    if (pendingAuctionSave && !['auction', 'marketplace'].includes(source)) return false;
     const context = SillyTavern.getContext();
     const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata, owner = characterOwner(context)?.key;
     if (!chatId) {
@@ -2021,6 +2028,7 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
         notify('warning',getSettings().language === 'th' ? 'เงินส่วนนี้กันไว้สำหรับการประมูล ใช้ได้เฉพาะยอดที่ไม่ถูกกันไว้ และเปลี่ยนสกุลเงินได้เมื่อจบงาน' : 'These funds are reserved for an auction. Spend only available funds; finish the auction before changing currency.');
         return false;
     }
+    if (!marketplaceInventoryValid(state)) { notify('warning', getSettings().language === 'th' ? 'ไอเทมหรือสกุลเงินถูกกันไว้ในตลาด ยกเลิกรายการก่อนแก้ไข' : 'Items or currency are reserved by marketplace listings. Cancel the listing before editing them.'); return false; }
     synchronizeWorldState(state, previous);
     synchronizeDerivedPlayerState(state);
     state = normalize(state, previous);
@@ -2051,7 +2059,7 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
         catch (error) { console.warn('[RoleForge] The Character archive could not be saved; new NPCs remain in this chat.', error); }
     }
     if (context.getCurrentChatId?.() !== chatId || context.chatMetadata !== metadata || characterOwner(context)?.key !== owner) return false;
-    if (pendingAuctionSave && source !== 'auction') return false;
+    if (pendingAuctionSave && !['auction', 'marketplace'].includes(source)) return false;
     context.chatMetadata[METADATA_KEY] = storedNpcState(state);
     updatePrompt(state);
     renderAll(state);
@@ -2309,6 +2317,75 @@ function renderAuctionWallet(panel,state) {
     const sessions = [...state.auctions.filter(s => s.status === 'Joined'),...(enabled ? state.auctions.filter(s => s.status !== 'Joined').slice(-3).reverse() : [])];
     for (const session of sessions) target.append(renderAuctionCard(auctionView(state,session,{token:`resume:${session.id}`,busy:Boolean(pendingAuctionSave),available:enabled && !mainReplyGenerating() && keyName(session.location) === keyName(state.location.place)}),api));
     panel.querySelector('.tretaresia-wallet')?.after(target);
+}
+
+function refreshMarketplace() { renderAll(); npcWorkspace?.refresh(); }
+
+async function commitMarketplaceResult(result, source = 'marketplace') {
+    if (!result?.ok) return result || { ok: false, error: 'invalid' };
+    const context = SillyTavern.getContext(), chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata;
+    if (!chatId || !metadata) return { ok: false, error: 'save' };
+    if (pendingAuctionSave) return { ok: false, error: 'saving' };
+    const originalState = metadata[METADATA_KEY], current = () => {
+        const active = SillyTavern.getContext();
+        return active.getCurrentChatId?.() === chatId && active.chatMetadata === metadata;
+    };
+    const latestId = latestAssistantMessageId(), checkpoint = latestId === null ? null : assistantCheckpoint(latestId);
+    const variant = latestId === null ? '' : assistantVariantKey(context.chat[latestId]);
+    const checkpointState = checkpoint?.variants?.[variant]?.state;
+    let stagedState, saved = false, release;
+    pendingAuctionSave = new Promise(resolve => { release = resolve; });
+    try {
+        await pendingSave.catch(() => undefined);
+        if (!current()) return { ok: false, error: 'stale' };
+        const previous = getState(), delta = currencyDelta(previous.progression.currency, result.next.progression.currency);
+        if (delta.gold || delta.silver || delta.copper) {
+            const event = result.events?.find(entry => entry.type === 'sold');
+            appendCurrencyTransaction(result.next, delta, event ? `${event.itemName} · Marketplace sale` : 'Marketplace listing', 'marketplace');
+        }
+        if (!await persistState(result.next, source, { deferMetadataSave: true })) return { ok: false, error: 'save' };
+        stagedState = metadata[METADATA_KEY];
+        if (!current()) return { ok: false, error: 'stale' };
+        if (checkpointState) checkpoint.variants[variant].state = clone(getState());
+        if (!await saveCurrentChatMetadata(context, { marketplaceCommit: true })) return { ok: false, error: 'save' };
+        saved = true;
+        writeContinuitySnapshot(getState());
+        if (result.events?.length) showEventNotifications(result.events.map(event => ({ kind: 'marketplace', eyebrow: 'MARKETPLACE', title: event.type === 'sold' ? 'ขายสำเร็จ' : event.type === 'offer' ? 'มีข้อเสนอใหม่' : event.type === 'countered' ? 'ส่ง Counteroffer แล้ว' : 'Marketplace', detail: event.itemName || '' })));
+        return { ok: true };
+    } catch (error) {
+        console.warn('[RoleForge] Marketplace could not be saved.', error);
+        return { ok: false, error: 'save' };
+    } finally {
+        if (!saved && stagedState && metadata[METADATA_KEY] === stagedState) { metadata[METADATA_KEY] = originalState; if (checkpointState) checkpoint.variants[variant].state = checkpointState; if (current()) updatePrompt(); }
+        pendingAuctionSave = null; release?.();
+        if (current()) refreshMarketplace();
+    }
+}
+
+async function createMarketplaceListingAction(input) {
+    if (!getSettings().enableMarketplace) return { ok: false, error: 'disabled' };
+    if (mainReplyGenerating()) return { ok: false, error: 'generating' };
+    if (pendingAuctionSave) return { ok: false, error: 'saving' };
+    const state = getState(), result = createMarketplaceListing(state, input);
+    return result.ok ? commitMarketplaceResult(result) : result;
+}
+
+async function runMarketplaceAction(id, action, amount, revision) {
+    if (!getSettings().enableMarketplace) return { ok: false, error: 'disabled' };
+    if (mainReplyGenerating()) return { ok: false, error: 'generating' };
+    if (pendingAuctionSave) return { ok: false, error: 'saving' };
+    const state = getState(), result = applyMarketplaceAction(state, id, action, { amount, revision });
+    return result.ok ? commitMarketplaceResult(result) : result;
+}
+
+function renderMarketplace(panel, state) {
+    if (!panel) return;
+    const enabled = getSettings().enableMarketplace;
+    const view = marketplaceView(state);
+    const context = SillyTavern.getContext(), metadata = context.chatMetadata, chatId = context.getCurrentChatId?.();
+    const valid = () => SillyTavern.getContext().chatMetadata === metadata && SillyTavern.getContext().getCurrentChatId?.() === chatId;
+    const api = { valid, settings: getSettings, createListing: createMarketplaceListingAction, runAction: runMarketplaceAction, refresh: refreshMarketplace };
+    renderMarketplacePanel(panel, { ...view, enabled, busy: Boolean(pendingAuctionSave) || mainReplyGenerating() }, api);
 }
 
 function rememberHouseholdOffers(messageId, message, offers) {
@@ -2635,6 +2712,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         ...(getSettings().enableStoryAgenda ? {storyAgenda:storyAgendaSummary(state.storyAgenda, state.worldClock).entries} : {}),
         questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
         ...(getSettings().enableAuctions ? {auctions:auctionPublicSummary(state)} : {}),
+        ...(getSettings().enableMarketplace ? {marketplace:state.marketplace.receipts.slice(-10),marketplaceReservedItems:state.marketplace.listings.filter(entry => ['Active','Negotiating'].includes(entry.status)).map(({itemId,quantity}) => ({itemId,quantity}))} : {}),
         questArchive: questArchive.map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
         social: {
             party: state.social.party ? {
@@ -2697,6 +2775,7 @@ function roleplayState(state) {
     return {
         sceneContext: {
             ...(getSettings().enableAuctions ? {auctions:auctionPublicSummary(state)} : {}),
+        ...(getSettings().enableMarketplace ? {marketplace:state.marketplace.receipts.slice(-10),marketplaceReservedItems:state.marketplace.listings.filter(entry => ['Active','Negotiating'].includes(entry.status)).map(({itemId,quantity}) => ({itemId,quantity}))} : {}),
             worldClock: state.worldClock,
             location: {
                 continent: state.onboarding?.locationSeeded ? state.location.continent : 'Unknown',
@@ -3098,6 +3177,7 @@ function legacyPatchInstructions() {
         storyTrackingRules(),
         getSettings().enableMissionBoard ? MISSION_BOARD_INSTRUCTIONS : '',
         getSettings().enableAuctions ? AUCTION_INSTRUCTIONS : '',
+        getSettings().enableMarketplace ? MARKETPLACE_INSTRUCTIONS : '',
         NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
         uiMarkup("<!--tretaresia_patch:{\"ops\":[[\"upsert\",\"quests\",{\"id\":\"academy-escort\",\"name\":\"Escort the Academy Caravan\",\"type\":\"Mission\",\"status\":\"Active\",\"objective\":\"Protect the caravan until it reaches Eastwatch\",\"reward\":\"12 silver\",\"giver\":\"Quartermaster Lysa\",\"source\":\"Great Academy mission board\",\"progress\":0}],[\"inc\",\"progression.experience\",5,{\"reason\":\"Completed aura control training\",\"category\":\"training\"}],[\"inc\",\"progression.currency.silver\",-3,{\"reason\":\"Paid for an academy meal\",\"category\":\"currency\"}],[\"inc\",\"progression.kills\",1,{\"reason\":\"Defeated the ash troll\",\"category\":\"kill\"}]],\"summary\":\"Mission, training, payment, and combat progress recorded.\"}-->"),
@@ -3139,6 +3219,7 @@ function patchInstructions() {
         storyTrackingRules(),
         getSettings().enableMissionBoard ? MISSION_BOARD_INSTRUCTIONS : '',
         getSettings().enableAuctions ? AUCTION_INSTRUCTIONS : '',
+        getSettings().enableMarketplace ? MARKETPLACE_INSTRUCTIONS : '',
         'RoleForge bookkeeping belongs only inside the marked tretaresia_patch JSON comment. Do not print raw SET/INC command lines or standalone tracker key/value fields in the visible story; use canonical RoleForge ops inside that comment. Do not translate another system\'s protocol into guessed RoleForge paths.',
         'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
         uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all required scene fields on the first reply.)"),
@@ -3255,6 +3336,7 @@ function buildEventNotificationStack() {
 function eventNotificationEnabled(kind) {
     const settings = getSettings();
     if (!settings.eventNotifications) return false;
+    if (kind === 'marketplace' && !settings.enableMarketplace) return false;
     if (kind === 'auction' && !settings.enableAuctions) return false;
     const key = { experience: 'notifyExperience', level: 'notifyLevel', learning: 'notifyLearning', training: 'notifyTraining', inventory: 'notifyInventory', purchase: 'notifyPurchases', combat: 'notifyCombat', kill: 'notifyKills', currency: 'notifyCurrency', quest: 'notifyQuests' }[kind];
     return key ? settings[key] : true;
@@ -3265,7 +3347,7 @@ function showEventNotification(event) {
     buildEventNotificationStack();
     const stack = document.getElementById('tretaresia-event-stack');
     if (!stack) return;
-    const icons = { auction: 'fa-gavel', experience: 'fa-star', level: 'fa-arrow-up', learning: 'fa-book-open', training: 'fa-dumbbell', inventory: 'fa-box', purchase: 'fa-bag-shopping', combat: 'fa-khanda', kill: 'fa-skull', currency: 'fa-coins', quest: 'fa-scroll' };
+    const icons = { marketplace:'fa-handshake', auction: 'fa-gavel', experience: 'fa-star', level: 'fa-arrow-up', learning: 'fa-book-open', training: 'fa-dumbbell', inventory: 'fa-box', purchase: 'fa-bag-shopping', combat: 'fa-khanda', kill: 'fa-skull', currency: 'fa-coins', quest: 'fa-scroll' };
     const toast = document.createElement('article');
     toast.className = 'tretaresia-event-toast';
     toast.dataset.kind = event.kind;
@@ -4949,6 +5031,7 @@ function renderPanel(id, panel, state) {
         status: renderStatus, scene: renderScene, inventory: renderInventory, skills: renderSkillStorage,
         techniques: renderTechniques, quests: renderQuests, rank: renderRank, groups: renderGroups,
         memories: (target, snapshot) => renderStoryMemoryPanel(target, snapshot, getSettings().language),
+        marketplace: renderMarketplace,
         summaries: target => { if (memorySummaries) renderMemorySummaries(target,memorySummaries.view(),SillyTavern.getContext().extensionSettings?.connectionManager?.profiles || []); },
         agenda: (target, snapshot) => renderStoryAgendaPanel(target, snapshot, getSettings().language),
         household: renderHousehold, npcs: renderNpcs, hstats: renderHStats, mail: renderMailbox, music: renderMusic, systems: renderSystems,
@@ -8078,11 +8161,14 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
     const rewards = questRewardGuard(current, operations);
     const walletTrial = clone(current);
     const tracksAuctions = getSettings().enableAuctions || current.auctions.length > 0 || current.auctionReceipts.length > 0;
+    const tracksMarketplace = getSettings().enableMarketplace || Boolean(current.marketplace?.listings?.length || current.marketplace?.receipts?.length);
     // Opting out leaves ordinary story auctions to the normal tracker. Engine records
     // and explicit engine IDs stay protected even when interactive auctions are off.
     const blocksAuctionOperation = operation => auctionBlocksOperation(operation) && (tracksAuctions
         || ['auctions','auctionReceipts'].includes(operation[1]) || /^auctions\./u.test(String(operation[1]))
         || operation[3]?.auctionId || operation[3]?.lotId);
+    const blocksMarketplaceOperation = operation => marketplaceBlocksOperation(operation) && (tracksMarketplace
+        || operation[3]?.marketplaceId || operation[3]?.listingId || operation[3]?.offerId);
     let auctionSpendDenied = false;
     for (const operation of operations) if (/^progression\.currency\./u.test(String(operation[1])) && !blocksAuctionOperation(operation)) {
         const attempted = clone(walletTrial);
@@ -8092,13 +8178,17 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
         }
     }
     for (const operation of operations) {
-        if (blocksAuctionOperation(operation)) continue;
+        if (blocksAuctionOperation(operation) || blocksMarketplaceOperation(operation)) continue;
         // A rejected payment must not leave a free purchased item behind, even if inventory came first.
         if (auctionSpendDenied && operation[1] === 'inventory' && ['inc','upsert'].includes(operation[0])
             && (operationMeta(operation).category === 'purchase' || /bought|purchase|paid|ซื้อ|ชำระ/iu.test(operationMeta(operation).reason))) continue;
         if (/^progression\.currency\./u.test(String(operation[1]))) {
             const trial = clone(candidate);
-            if (applyPatchOperation(trial,operation,storySource) && !auctionFundsValid(trial,candidate)) continue;
+            if (applyPatchOperation(trial,operation,storySource) && (!auctionFundsValid(trial,candidate) || !marketplaceInventoryValid(trial))) continue;
+        }
+        if (operation[1] === 'inventory') {
+            const trial = clone(candidate);
+            if (applyPatchOperation(trial, operation, storySource) && !marketplaceInventoryValid(trial)) continue;
         }
         const reward = rewards.inspect(operation, candidate);
         if (reward.blocked) continue;

@@ -1,0 +1,28 @@
+# Marketplace · ตลาดขายของแบบต่อรอง
+
+ระบบนี้ต่อยอดจาก Auction House เดิม โดยแยกบทบาทให้ชัดเจน: Auction คือผู้เล่นเข้าไปเสนอราคาเพื่อซื้อ ส่วน Marketplace คือผู้เล่นนำไอเทมใน Inventory มาลงขายและเจรจากับผู้ซื้อ NPC
+
+## Workflow
+
+1. เปิด `Extensions → RoleForge → Optional systems → Negotiated Marketplace`
+2. เปิดแท็บ `Marketplace`
+3. เลือกไอเทม จำนวน ราคาตั้ง ราคาต่ำสุด และกลุ่มผู้ซื้อ
+4. กด `ลงรายการขาย` ระบบ Reserve จำนวนไอเทมนั้นทันที
+5. กด `ขอข้อเสนอจากผู้ซื้อ` เพื่อรับ Offer
+6. เลือก `รับข้อเสนอ`, `ปฏิเสธ` หรือกรอก `Counteroffer`
+7. เมื่อกดให้ผู้ซื้อพิจารณา ระบบจะตอบตามงบของผู้ซื้อแบบ deterministic
+8. เมื่อขายสำเร็จ ระบบลดไอเทม เพิ่มเงิน สร้าง Receipt และปิด Listing ใน Transaction เดียว
+
+ราคาขั้นต่ำถูกเก็บเป็นกติกาภายใน Listing ส่วนงบสูงสุดของผู้ซื้อไม่ถูกส่งเข้า UI หรือ prompt ของ AI การแก้ไขทุกอย่างต้องผ่านปุ่มใน UI และ story patch ไม่สามารถสร้างหรือชำระ Marketplace transaction ได้
+
+## สถานะ
+
+`Active → Negotiating → Sold`
+
+รายการที่ยังไม่มีข้อเสนอสามารถ `Cancelled` ได้ และการ Cancel จะคืนจำนวนไอเทมที่ Reserve ไว้โดยอัตโนมัติ
+
+## หน้าจอ
+
+- Desktop: แสดงสถิติสามช่องและ Listing แบบสองคอลัมน์ พร้อมปุ่ม Offer/Counteroffer ในการ์ด
+- Mobile: Listing เรียงหนึ่งคอลัมน์, ฟอร์มสองคอลัมน์, ปุ่มมี touch target อย่างน้อย 44px และไม่มี horizontal overflow
+- Preview: เปิด `docs/previews/marketplace.html` แล้วเลือก Desktop หรือ Mobile

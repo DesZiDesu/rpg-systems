@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>RoleForge · Marketplace preview</title>
+  <link rel="stylesheet" href="../../styles/style.css?v=0.48.0"><link rel="stylesheet" href="../../styles/marketplace.css?v=0.48.0">
+  <style>html,body{margin:0;min-height:100%;background:#080807;color:#ece7da;font-family:system-ui,sans-serif}.preview-shell{max-width:1120px;margin:0 auto;padding:24px 18px 60px}.preview-shell h1{margin:0;color:#e5c474;font-size:24px}.preview-shell p{color:#aaa18e}.preview-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.preview-toolbar button{min-height:44px;padding:9px 15px;border:1px solid #705f32;background:#17150e;color:#f1e2b6;font:inherit;cursor:pointer}.preview-toolbar button.is-active{background:#d6b458;color:#17150e}.preview-frame{padding:10px;border:1px solid rgba(214,180,88,.2);background:#050604}</style>
+</head>
+<body>
+  <main class="preview-shell"><h1>Marketplace · ตลาดต่อรองราคา</h1><p>หน้าจอจริงของตลาดขายของแบบต่อรองสำหรับ Desktop และ Mobile ใช้ข้อมูลจำลองในเบราว์เซอร์นี้เท่านั้น</p><div class="preview-toolbar"><button type="button" data-mode="desktop" class="is-active">Desktop</button><button type="button" data-mode="mobile">Mobile</button><button type="button" id="preview-reset">เริ่มตัวอย่างใหม่</button></div><div id="marketplace-preview" class="preview-frame"></div></main>
+  <script type="module">
+    import {createMarketplaceListing,applyMarketplaceAction,marketplaceView} from '../../src/marketplace-core.js';
+    import {renderMarketplacePanel} from '../../src/marketplace-ui.js';
+    const now='2026-10-02T12:00:00.000Z';
+    let state={player:{name:'Nova'},progression:{currency:{name:'เหรียญเมือง',gold:48,silver:12,copper:0}},inventory:[{id:'moonblade',name:'ดาบจันทร์เงิน',category:'อาวุธ',quantity:2,description:'ใบดาบสีเงินจากช่างตีเหล็กแห่งหอจันทร์'},{id:'potion',name:'ยาฟื้นฟูคุณภาพสูง',category:'ยา',quantity:5,description:'ยาฟื้นฟูที่ปิดผนึกอย่างดี'}],marketplace:{listings:[],receipts:[]}};
+    let created=createMarketplaceListing(state,{itemId:'moonblade',quantity:1,askPrice:20,floorPrice:14,denomination:'gold',buyer:{id:'collector'}},now);state=created.next;const listingId=state.marketplace.listings[0].id;state=applyMarketplaceAction(state,listingId,'invite',{revision:state.marketplace.listings[0].revision,now}).next;
+    const settings=()=>({language:'th'}), panel=document.querySelector('#marketplace-preview');
+    function render(){renderMarketplacePanel(panel,marketplaceView(state),{settings,createListing:async input=>{const result=createMarketplaceListing(state,input,new Date().toISOString());if(result.ok)state=result.next;render();return result},runAction:async(id,action,amount,revision)=>{const result=applyMarketplaceAction(state,id,action,{amount,revision,now:new Date().toISOString()});if(result.ok)state=result.next;render();return result},refresh:render});}
+    render();
+    document.querySelectorAll('[data-mode]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-mode]').forEach(item=>item.classList.toggle('is-active',item===button));panel.style.maxWidth=button.dataset.mode==='mobile'?'390px':'none';});
+    document.querySelector('#preview-reset').onclick=()=>location.reload();
+  </script>
+</body>
+</html>

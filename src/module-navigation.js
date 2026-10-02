@@ -4,7 +4,7 @@ export const MODULE_NAVIGATION_MODES = Object.freeze(['carousel', 'menu', 'grid'
 export const normalizeModuleNavigationMode = value => MODULE_NAVIGATION_MODES.includes(value) ? value : 'carousel';
 
 const GROUPS = [
-    {id:'character', label:['Character', 'ตัวละคร'], tabs:['status', 'inventory', 'skills', 'techniques', 'rank']},
+    {id:'character', label:['Character', 'ตัวละคร'], tabs:['status', 'inventory', 'skills', 'techniques', 'rank', 'marketplace']},
     {id:'story', label:['Story', 'เนื้อเรื่อง'], tabs:['scene', 'quests', 'memories', 'summaries', 'agenda']},
     {id:'people', label:['People & connections', 'ผู้คนและความสัมพันธ์'], tabs:['groups', 'household', 'npcs', 'hstats', 'mail']},
     {id:'tools', label:['Tools', 'เครื่องมือ'], tabs:['music', 'systems']},
@@ -28,6 +28,7 @@ const ICONS = {
     memories:'<path d="M12 6C9 3.5 5.5 3 2.5 4.5v15c3-1.5 6.5-1 9.5 1 3-2 6.5-2.5 9.5-1v-15C18.5 3 15 3.5 12 6Zm0 0v14.5M6 8h2.5M6 12h2.5M15.5 8H18m-2.5 4H18"/>',
     summaries:'<path d="M3 3h18v4H3Zm1 4v14h16V7M9 11h6m-5 4h4"/><path d="m12 14-2 2 2 2 2-2Z"/>',
     agenda:'<path d="M4 5h16v16H4ZM4 9h16M8 3v4m8-4v4M8 15l2.5 2.5L16 12"/>',
+    marketplace:'<path d="M3 7h17m-4-4 4 4-4 4M21 17H4m4-4-4 4 4 4"/>',
     rank:'<path d="m7 3 2.5 6m7.5-6-2.5 6M7 3h4l1 3 1-3h4"/><circle cx="12" cy="15" r="6"/><path d="m12 11 1.2 2.7 2.8.3-2 2 .5 2.8-2.5-1.5-2.5 1.5.5-2.8-2-2 2.8-.3Z"/>',
     groups:'<circle cx="12" cy="7" r="2.5"/><path d="M7 20v-3a5 5 0 0 1 10 0v3M5 5a2.5 2.5 0 0 0 0 5m14-5a2.5 2.5 0 0 1 0 5M3 18v-3a4 4 0 0 1 3-4m15 7v-3a4 4 0 0 0-3-4"/>',
     household:'<path d="m2.5 11 9.5-8 9.5 8M5 9v12h14V9M9 21v-7h6v7M16 5V3h3v5"/>',
