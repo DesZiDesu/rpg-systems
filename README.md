@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.51.7
+# ROLEFORGE — v0.51.8
+
+## v0.51.8 — Approved compact composer and latest-reply continuation
+
+- Apply the selected Summary compact A design to auction/buy/sell: quiet gold, thin borders, 32px actions, and one combined amount/denomination field. Keep short visible labels with full action names for accessibility. Expanded lists, bidder budgets, fee/deposit terms and stored coin sets remain available. Scoped sizing resists host-wide oversized input/select rules.
+- Button replies now continue the latest NPC bubble even if a previous role-play decision failed validation and left the financial session anchored to its opening. Keep the opening and user messages unchanged, make one API request, and settle the established interaction once.
+- Extend an existing SillyTavern `extra.display_text` together with canonical prose and the active swipe, preserving its existing content. Refresh RoleForge presentation after native rendering and fall back to formatting/text if the native renderer fails. Failed saves restore the prose, display override, swipe and resources together.
+- [Thai diagnosis and UI previews](docs/commerce-compact-continuation.th.md). Verified 671 unit/host tests, syntax checks, production-loader mobile/desktop auction settlement in RoleForge/native/preserved formatting, oversized host controls, optional systems, null regressions, and Summary coexistence. Provider replies are simulated. Update and reload once; no state reset is needed.
 
 ## v0.51.7 — Role-play evidence formatting and placard bids
 

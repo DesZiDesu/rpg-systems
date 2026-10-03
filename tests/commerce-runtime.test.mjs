@@ -12,6 +12,16 @@ function fixture(){
  return{runtime,context,settings,setState:fn=>fn(state),calls:()=>calls,commits:()=>commits,state:()=>state,perform:action=>{const v=runtime.view();return runtime.perform({id:v.session.id,token:v.token,action});}};
 }
 test('one game action makes one native API call, appends same message, hides on completion',async()=>{const f=fixture(),before=f.context.chat[1].mes;const result=await f.perform('confirm');assert.equal(result.ok,true);assert.equal(f.calls(),1);assert.equal(f.commits(),1);assert.equal(f.context.chat.length,2);assert.equal(f.context.chat[0].mes,'Show goods');assert.ok(f.context.chat[1].mes.startsWith(before));assert.match(f.context.chat[1].mes,/hands you/);assert.equal(f.state().progression.currency.silver,24);assert.equal(f.runtime.view(),null);});
+test('a button continues the latest NPC reply even when a preceding role-play decision was rejected',async()=>{
+ const f=fixture(),v=f.runtime.view();assert.equal((await f.runtime.perform({id:v.session.id,token:v.token,action:'offer',amount:6})).ok,true);
+ const earlier=f.context.chat[1].mes;
+ f.context.chat.push({is_user:true,mes:'I ask Rally again.'},{is_user:false,mes:'Rally considers the latest question.'});
+ const before=f.context.chat[3].mes;assert.equal(f.runtime.view().session.source.messageId,1);
+ const result=await f.perform('confirm');assert.equal(result.ok,true);
+ assert.equal(f.context.chat[1].mes,earlier);assert.equal(f.context.chat[2].mes,'I ask Rally again.');
+ assert.ok(f.context.chat[3].mes.startsWith(before));assert.match(f.context.chat[3].mes,/hands you/);
+ assert.equal(f.context.chat.length,4);assert.equal(f.state().commerce.sessions[0].source.messageId,3);assert.equal(f.state().inventory.length,1);
+});
 test('read-only view and refresh make no calls',()=>{const f=fixture();f.runtime.view();f.runtime.refresh();assert.equal(f.calls(),0);assert.equal(f.commits(),0);});
 test('double click cannot duplicate request',async()=>{const f=fixture(),gate=deferred();f.context.generateQuietPrompt=()=>gate.promise;const first=f.perform('confirm');const second=await f.perform('confirm');assert.equal(second.ok,false);gate.resolve(JSON.stringify({narrative:'Done',decision:{outcome:'accept',amount:6}}));assert.equal((await first).ok,true);assert.equal(f.commits(),1);});
 for(const [name,mutate] of [

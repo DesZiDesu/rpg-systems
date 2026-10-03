@@ -2092,17 +2092,34 @@ test('rebuilt commerce persists the continuation in the same swipe, journals fun
   context.extensionSettings={tretaresia_rpg:{autoTrack:true,enableMarketplace:true,eventNotifications:false,autoContinuity:false}};
   const state=host.defaultState();state.location.place='Hall';state.onboarding.locationSeeded=true;state.progression.currency.silver=10;
   const story='<tr-header name="Rally"></tr-header>Rally shows the shop goods for sale.\n- Potion: 3 silver';
-  context.chatMetadata={tretaresia_rpg_state:state};context.chat=[{is_user:true,mes:'Show me the shop goods.'},{is_user:false,mes:story,swipe_id:0,swipes:[story]}];
-  const saves=[];context.saveMetadata=async()=>{saves.push({state:structuredClone(context.chatMetadata.tretaresia_rpg_state),text:context.chat[1].mes});};
+  const display='<p>Rally shows the shop goods with host formatting.</p>';
+  context.chatMetadata={tretaresia_rpg_state:state};context.chat=[{is_user:true,mes:'Show me the shop goods.'},{is_user:false,mes:story,swipe_id:0,swipes:[story],extra:{display_text:display,custom:'retained'}}];
+  const saves=[];context.saveMetadata=async()=>{saves.push({state:structuredClone(context.chatMetadata.tretaresia_rpg_state),text:context.chat[1].mes,display:context.chat[1].extra.display_text});};
   await host.processAssistantPatch(1,'normal');host.initializeCommerce();let calls=0;
   context.generateQuietPrompt=async()=>{calls++;return JSON.stringify({narrative:'<tr-dialogue name="Rally">I agree to two silver.</tr-dialogue>',decision:{outcome:'accept',amount:2}});};
   const act=async(action)=>{const v=host.commerceRuntime().view();return host.commerceRuntime().perform({id:v.session.id,token:v.token,action,amount:2});};
   assert.equal((await act('offer')).ok,true);assert.equal(host.getState().progression.currency.silver,10);assert.equal(host.getState().inventory.length,0);
   assert.equal((await act('confirm')).ok,true);assert.equal(calls,2);assert.equal(context.chat.length,2);assert.equal(context.chat[0].mes,'Show me the shop goods.');
   assert.ok(context.chat[1].mes.startsWith(story));assert.equal(context.chat[1].swipes[0],context.chat[1].mes);assert.equal(host.getState().progression.currency.silver,8);assert.equal(host.getState().inventory[0].quantity,1);
+  assert.ok(context.chat[1].extra.display_text.startsWith(display));assert.equal(context.chat[1].extra.display_text.split('I agree to two silver.').length,3);assert.equal(context.chat[1].extra.custom,'retained');assert.equal(saves.at(-1).display,context.chat[1].extra.display_text);
   assert.equal(saves.at(-1).state.progression.currency.silver,8);assert.equal(saves.at(-1).text,context.chat[1].mes);assert.equal(host.getState().transactions.at(-1).source,'commerce');
   await host.processAssistantPatch(1,'normal');host.initializeCommerce();assert.equal(host.commerceRuntime().view(),null);assert.equal(calls,2);assert.equal(host.getState().progression.currency.silver,8);
   await host.replaceAssistantTurnState(1,{reuseVariant:true,reason:'test'});assert.equal(host.getState().progression.currency.silver,8);assert.equal(host.getState().inventory[0].quantity,1);assert.equal(host.commerceRuntime().view(),null);
+ }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateQuietPrompt=prior.quiet;}
+});
+
+test('failed commerce save restores the native display override with prose, swipe and resources',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,quiet:context.generateQuietPrompt};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,enableMarketplace:true,eventNotifications:false,autoContinuity:false}};
+  const state=host.defaultState();state.location.place='Hall';state.onboarding.locationSeeded=true;state.progression.currency.silver=10;
+  const story='<tr-header name="Rally"></tr-header>Rally shows the shop goods for sale.\n- Potion: 3 silver',display='<p>Existing native shop display</p>';
+  context.chatMetadata={tretaresia_rpg_state:state};context.chat=[{is_user:true,mes:'Show me the shop goods.'},{is_user:false,mes:story,swipe_id:0,swipes:[story],extra:{display_text:display,custom:'retained'}}];
+  context.saveMetadata=async()=>{};await host.processAssistantPatch(1,'normal');host.initializeCommerce();let calls=0;
+  context.generateQuietPrompt=async()=>{calls++;return JSON.stringify({narrative:'<tr-dialogue name="Rally">Here is your potion.</tr-dialogue>',decision:{outcome:'accept',amount:3}});};
+  context.saveMetadata=async()=>{throw Error('Disk unavailable');};
+  const v=host.commerceRuntime().view(),result=await host.commerceRuntime().perform({id:v.session.id,token:v.token,action:'confirm'});
+  assert.equal(result.error,'save');assert.equal(calls,1);assert.equal(context.chat[1].mes,story);assert.equal(context.chat[1].swipes[0],story);assert.equal(context.chat[1].extra.display_text,display);assert.equal(context.chat[1].extra.custom,'retained');assert.equal(host.getState().progression.currency.silver,10);assert.equal(host.getState().inventory.length,0);assert.equal(context.chat.length,2);
  }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateQuietPrompt=prior.quiet;}
 });
 

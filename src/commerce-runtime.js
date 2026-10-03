@@ -1,9 +1,9 @@
-import {requestCommerceDecision} from './commerce-generation.js?v=0.51.7';
-import {inspectCommerceResponse} from './commerce-protocol.js?v=0.51.7';
-import {requestedCommerceKind} from './main-chat-systems.js?v=0.51.7';
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.51.7';
-import {createCommerceComposer} from './commerce-composer.js?v=0.51.7';
-import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.51.7';
+import {requestCommerceDecision} from './commerce-generation.js?v=0.51.8';
+import {inspectCommerceResponse} from './commerce-protocol.js?v=0.51.8';
+import {requestedCommerceKind} from './main-chat-systems.js?v=0.51.8';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.51.8';
+import {createCommerceComposer} from './commerce-composer.js?v=0.51.8';
+import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.51.8';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.
@@ -62,7 +62,7 @@ export function createCommerceRuntime(api) {
             playerName:state.player.name,busy:busy||api.isBusy(),error:candidate.id===errorId?error:'',diagnostics:candidate.id===errorId?diagnostics:'',available:!api.isBusy()&&!context.chat.at(-1)?.is_user&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
     function refresh(){if(destroyed)return;const value=view(),signature=JSON.stringify([api.settings().language,api.settings().coinStyle,value]);if(signature!==rendered){rendered=signature;ui.update(value);}}
     function failureReport(session,action,code,raw,details,channel='button'){
-        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.51.7',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
+        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.51.8',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
     }
     async function recoverOpening(input){
         const context=api.context(),message=context.chat?.[input.messageId],variant=message&&api.variant(message);
@@ -91,7 +91,12 @@ export function createCommerceRuntime(api) {
     }
     async function perform(input){
         const current=view();if(destroyed||busy||!current?.session||!current.available||current.session.id!==input.id||current.token!==input.token)return{ok:false,error:'stale'};
-        const context=api.context(),metadata=context.chatMetadata,chatId=context.getCurrentChatId?.(),source=current.session.source,message=context.chat?.[source.messageId];
+        const context=api.context(),metadata=context.chatMetadata,chatId=context.getCurrentChatId?.();
+        // A rejected role-play decision leaves the financial session anchored
+        // to its previous reply. Buttons still continue the latest NPC bubble.
+        const latestId=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system);
+        const source=latestId>current.session.source.messageId?{...current.session.source,messageId:latestId,turnKey:api.turnKey(latestId),variant:api.variant(context.chat[latestId])}:current.session.source;
+        const message=context.chat?.[source.messageId];
         const state=api.state(),prepared=prepareCommerceAction(state,current.session,input.action,input);
         if(!prepared.ok){diagnostics='';errorId=input.id;error=errors[prepared.error]?.[api.settings().language==='th'?0:1]||prepared.error;refresh();return prepared;}
         prepared.session.source={...source};
