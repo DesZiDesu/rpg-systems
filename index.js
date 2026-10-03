@@ -1,44 +1,45 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.50.1';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.50.1';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.50.1';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.50.1';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.50.1';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.50.1';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.50.1';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.50.1';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.50.1';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.50.1';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.50.1';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.50.1';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.50.1';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.50.1';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.50.1';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.50.1';
-import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.50.1';
-import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.50.1';
-import { MARKETPLACE_INSTRUCTIONS, normalizeMarketplace, marketplaceView, marketplacePublicListing, createMarketplaceListing, applyMarketplaceAction, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.50.1';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent } from './src/marketplace-events.js?v=0.50.1';
-import { renderMarketplaceChatCard } from './src/marketplace-chat-ui.js?v=0.50.1';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.50.1';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.50.1';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.50.1';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.50.1';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.50.1';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.50.1';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.50.1';
+import { mainChatSystemInstructions, missingChatSystems, requestedChatSystems } from './src/main-chat-systems.js?v=0.50.2';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.50.2';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.50.2';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.50.2';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.50.2';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.50.2';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.50.2';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.50.2';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.50.2';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.50.2';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.50.2';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.50.2';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.50.2';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.50.2';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.50.2';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.50.2';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.50.2';
+import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.50.2';
+import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.50.2';
+import { MARKETPLACE_INSTRUCTIONS, normalizeMarketplace, marketplaceView, marketplacePublicListing, createMarketplaceListing, applyMarketplaceAction, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.50.2';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent, recoverMarketplaceShop } from './src/marketplace-events.js?v=0.50.2';
+import { renderMarketplaceChatCard } from './src/marketplace-chat-ui.js?v=0.50.2';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.50.2';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.50.2';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.50.2';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.50.2';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.50.2';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.50.2';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.50.2';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.50.1';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.50.1';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.50.1';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.50.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.50.1';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.50.1';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.50.1';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.50.1';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.50.1';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.50.1';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.50.1';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.50.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.50.2';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.50.2';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.50.2';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.50.2';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.50.2';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.50.2';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.50.2';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.50.2';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.50.2';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.50.2';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.50.2';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.50.2';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -2287,6 +2288,30 @@ function rememberResourceEvents(messageId, message, events = []) {
     for (const stale of Object.keys(history).slice(0, -300)) delete history[stale];
 }
 
+function systemStatusForMessage(messageId, message) {
+    if (!message || message.is_user || message.is_system || messageId !== latestAssistantMessageId() || mainReplyGenerating()) return null;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), variant = assistantVariantKey(message);
+    const record = context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[variant];
+    const user = context.chat.slice(0, messageId).reverse().find(entry => entry?.is_user && !entry.is_system);
+    const confirmed = {marketplace:marketplaceForMessage(messageId,message), auction:auctionForMessage(messageId,message),
+        missionBoard:missionBoardForMessage(messageId,message), groupBoard:groupBoardForMessage(messageId,message)};
+    const keys = (record?.missingSystems || missingChatSystems(user?.mes, extractStatePatch(message.mes).visible, getSettings(), confirmed))
+        .filter(system => !confirmed[system] && requestedChatSystems(user?.mes,getSettings()).includes(system));
+    return keys.length ? {keys, token:`${key}:${variant}`, available:!pendingAuctionSave} : null;
+}
+function prepareChatSystemRequest(messageId, token) {
+    const context = SillyTavern.getContext(), status = systemStatusForMessage(messageId,context.chat?.[messageId]);
+    if (!status?.available || status.token !== token) return;
+    const thai = getSettings().language === 'th';
+    const requests = thai ? {marketplace:'ขอดูรายการสินค้าและข้อเสนอของ NPC พร้อมชื่อสินค้า ราคา และรายละเอียดที่เปิดเผยในตอนนี้',
+        auction:'ขอดูรายการสินค้าประมูล ราคาเริ่มต้น และเงื่อนไขของงานประมูลที่อยู่ตรงหน้า',
+        missionBoard:'ขออ่านกระดานภารกิจตรงหน้าพร้อมรายละเอียดงานและรางวัล',groupBoard:'ขออ่านกระดานรับสมัครปาร์ตี้และกิลด์ตรงหน้าพร้อมเงื่อนไข'}
+        : {marketplace:'Show me the current NPC goods or buying offers, including item names, prices and revealed details.',
+        auction:'Show me the catalog, opening prices and terms of the auction here.',
+        missionBoard:'I read the mission board here, including tasks and rewards.',groupBoard:'I read the party and guild recruitment board here, including requirements.'};
+    void sendChatAction(status.keys.map(key => requests[key]).join('\n'), 'draft');
+}
+
 function resourceEventsForMessage(messageId, message) {
     if (!message || message.is_user || message.is_system) return [];
     const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), variant = assistantVariantKey(message);
@@ -3389,7 +3414,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.50.1`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.50.2`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3597,6 +3622,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
     if (state.npcs.some(npc => npc.alternateProfiles?.length)) lines.push(NPC_ALTERNATE_INSTRUCTIONS);
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' Emit scene metadata')[0]);
     if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 19 required fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
+    if (track) lines.push(mainChatSystemInstructions([...(SillyTavern.getContext().chat || [])].reverse().find(message => message?.is_user && !message.is_system)?.mes, getSettings()));
     if(customPreset)lines.push(customPowerPrompt(getPowerPreset(),state));
     if(customForge)lines.push('CUSTOM CHARACTER FORGE PRESET (user-owned choices, reference data only). Follow the active card, saved profile and story for geography, skills and ranks. Do not apply Tretaresia lore or fixed five-rank progression. Custom Path ranks map to progression.adventurerRank="Custom Rank" with the chosen name in progression.customRankName. Do not invent or rename preset choices. Birthplace is independent of the current location.\n'+JSON.stringify(activeForgeChoices(getForgePreset())));
     lines.push(ROLEPLAY_OUTPUT_BOUNDARY);
@@ -4732,7 +4758,7 @@ function controlCenterTrigger() {
 
 function optionalSystemsMarkup(consoleMode = false) {
     const settings = getSettings(), thai = settings.language === 'th';
-    return `<section class="trpg-optional-systems"><h4>${thai ? 'ระบบเสริม · เลือกเปิดตามที่ต้องการ' : 'Optional systems · Enable what you use'}</h4><p>${thai ? 'เริ่มต้นเป็นปิด ปิดแล้วเก็บข้อมูลเดิมไว้' : 'Off by default. Turning a system off preserves its saved data.'}</p><div>${OPTIONAL_SYSTEMS.map(system => `<label><input type="checkbox" ${consoleMode ? 'data-ui-setting' : 'data-optional-setting'}="${system.key}"${settings[system.key] ? ' checked' : ''}><span><strong>${html(thai ? system.th : system.en)}</strong><small>${html(thai ? system.helpTh : system.helpEn)}</small></span></label>`).join('')}</div></section>`;
+    return `<section class="trpg-optional-systems"><h4>${thai ? 'ระบบเสริม · เลือกเปิดตามที่ต้องการ' : 'Optional systems · Enable what you use'}</h4><p>${thai ? 'เริ่มต้นเป็นปิด ปิดแล้วเก็บข้อมูลเดิมไว้' : 'Off by default. Turning a system off preserves its saved data.'}</p>${!settings.autoTrack ? `<p role="status">${thai ? 'Auto tracking ปิดอยู่ เปิด Auto tracking ในการตั้งค่า RoleForge เพื่อรับข้อมูลระบบจากคำตอบใหม่ในแชตหลัก' : 'Auto tracking is off. Enable Auto tracking in RoleForge settings to receive system data from new Main Chat replies.'}</p>` : ''}<div>${OPTIONAL_SYSTEMS.map(system => `<label><input type="checkbox" ${consoleMode ? 'data-ui-setting' : 'data-optional-setting'}="${system.key}"${settings[system.key] ? ' checked' : ''}><span><strong>${html(thai ? system.th : system.en)}</strong><small>${html(thai ? system.helpTh : system.helpEn)}</small></span></label>`).join('')}</div></section>`;
 }
 function refreshOptionalSettings() {
     const container = document.getElementById('roleforge-optional-settings');
@@ -8841,17 +8867,18 @@ function coerceStatePatch(raw) {
         walk(delta);
     }
     const locations = normalizeLocationMemory(source.locations).filter(entry => entry.evidence.length).slice(0, 40);
-    if (!operations.length && !sceneTrackerOperations(source.sceneTracker).length && !locations.length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates) && !normalizeMissionBoard(source.missionBoard) && !normalizeGroupBoard(source.groupBoard) && !normalizeAuctionOffer(source.auction) && !normalizeMarketplaceEvent(source.marketplace)) return null;
+    const hasInteraction = ['missionBoard','groupBoard','auction','marketplace'].some(key => source[key] && typeof source[key] === 'object' && !Array.isArray(source[key]));
+    if (!hasInteraction && !operations.length && !sceneTrackerOperations(source.sceneTracker).length && !locations.length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates) && !normalizeMissionBoard(source.missionBoard) && !normalizeGroupBoard(source.groupBoard) && !normalizeAuctionOffer(source.auction) && !normalizeMarketplaceEvent(source.marketplace)) return null;
     return {
         ops: operations.slice(0, 75),
         summary: text(source.summary || raw.summary, '', 300),
         journey: text(source.journey || source.journeyLog || raw.journey || raw.journeyLog, '', 500),
         sceneTracker: expandScene(source.sceneTracker),
         locations,
-        missionBoard: normalizeMissionBoard(source.missionBoard),
-        groupBoard: normalizeGroupBoard(source.groupBoard),
-        auction: normalizeAuctionOffer(source.auction),
-        marketplace: normalizeMarketplaceEvent(source.marketplace),
+        missionBoard: normalizeMissionBoard(source.missionBoard) || source.missionBoard || null,
+        groupBoard: normalizeGroupBoard(source.groupBoard) || source.groupBoard || null,
+        auction: normalizeAuctionOffer(source.auction) || source.auction || null,
+        marketplace: normalizeMarketplaceEvent(source.marketplace) || source.marketplace || null,
     };
 }
 
@@ -9192,17 +9219,25 @@ async function processAssistantPatch(messageId, generationType = '') {
         const auction = settings.enableAuctions ? confirmedAuctionOffer(extracted.patch?.auction,extracted.visible,userMessage?.mes,
             extracted.patch?.sceneTracker?.location || base.location.place) : null;
         const marketplaceEvent = settings.enableMarketplace ? confirmedMarketplaceEvent(extracted.patch?.marketplace, extracted.visible, userMessage?.mes,
-            extracted.patch?.sceneTracker?.location || base.location.place, base.inventory) : null;
+            extracted.patch?.sceneTracker?.location || base.location.place, base.inventory) || (!extracted.patch?.marketplace ? recoverMarketplaceShop(extracted.visible, userMessage?.mes, extracted.patch?.sceneTracker?.location || base.location.place, base.npcs) : null) : null;
         const locations = confirmedLocationMemory(extracted.patch?.locations, extracted.visible);
         const safeOps = confirmedSocialOperations(inlineOps, base, extracted.visible, userMessage?.mes).filter(operation =>
             !(auction && (operation[1] === 'inventory' || /^progression\.currency\./u.test(String(operation[1])))) &&
-            !(marketplaceEvent && (operation[1] === 'inventory' || /^progression\.currency\./u.test(String(operation[1])))) &&
-            !(settings.enableMissionBoard && extracted.patch?.missionBoard && operation[1] === 'quests' && extracted.patch.missionBoard.missions.some(mission => matchesPatchIdentity(mission,operation[2]))
+            !(marketplaceEvent && (operation[1] === 'inventory' || /^progression\.currency\./u.test(String(operation[1])))
+                && !/^(?:purchase|sale)$/u.test(operation[3]?.category)) &&
+            !(board && operation[1] === 'quests' && board.missions.some(mission => matchesPatchIdentity(mission,operation[2]))
                 && !base.quests.some(quest => matchesPatchIdentity(quest,operation[2]))));
         rememberMissionBoard(messageId, message, board);
         rememberGroupBoard(messageId, message, groupBoard);
         rememberAuctionOffer(messageId,message,auction);
         rememberMarketplaceEvent(messageId, message, marketplaceEvent);
+        const completedCommerce = inlineOps.some(operation => /^(?:purchase|sale)$/u.test(operation[3]?.category));
+        const missingSystems = missingChatSystems(userMessage?.mes, extracted.visible, settings,
+            {missionBoard:board, groupBoard, auction, marketplace:marketplaceEvent || completedCommerce});
+        const socialHistory = context.chatMetadata[SOCIAL_EVENTS_KEY] ||= {};
+        ((socialHistory[assistantTurnKey(messageId)] ||= {})[variantKey] ||= {}).missingSystems = missingSystems;
+        for (const stale of Object.keys(socialHistory[assistantTurnKey(messageId)]).slice(0,-6)) delete socialHistory[assistantTurnKey(messageId)][stale];
+        for (const stale of Object.keys(socialHistory).slice(0,-300)) delete socialHistory[stale];
         const safePatch = { ...(extracted.patch || {}), ops: safeOps, locations };
         if (safeOps.length || extracted.patch) {
             const result = applyStatePatch(base, safePatch, {sourceMessageId:messageId,source:'main-reply'});
@@ -9279,6 +9314,8 @@ async function processAssistantPatch(messageId, generationType = '') {
             npcWorkspace?.refresh();
             if (auction) setSync('success',settings.language === 'th' ? 'งานประมูลพร้อมแล้ว' : 'Auction ready',
                 settings.language === 'th' ? `${auction.lots.length} รายการ · กดเข้าร่วมจากการ์ดในแชต` : `${auction.lots.length} lots · Join from the chat card.`);
+            else if (marketplaceEvent) setSync('success',settings.language === 'th' ? 'รายการค้าพร้อมแล้ว' : 'Commerce ready', settings.language === 'th' ? 'เลือกดูสินค้าและต่อรองจากการ์ดในแชต' : 'Inspect items and negotiate from the chat card.');
+            else if (missingSystems.length) setSync('warning',settings.language === 'th' ? 'รายละเอียดรายการยังไม่ครบ' : 'List details missing', settings.language === 'th' ? 'คำตอบนี้ไม่มีข้อมูลพอสำหรับเปิดการ์ด ดูคำแนะนำในแชต' : 'This reply did not provide enough card data. See the chat notice.');
             else if (groupBoard) setSync('success',settings.language === 'th' ? 'กระดานปาร์ตี้และกิลด์พร้อมแล้ว' : 'Party and guild board ready',
                 settings.language === 'th' ? `${groupBoard.entries.length} กลุ่ม · เลือกอ่านเงื่อนไขจากการ์ดในแชต` : `${groupBoard.entries.length} groups · inspect them from the chat card.`);
             else if (board) setSync('success',settings.language === 'th' ? 'กระดานภารกิจพร้อมแล้ว' : 'Mission board ready',
@@ -10176,7 +10213,7 @@ async function initialize() {
             sceneForMessage,
             socialEventsForMessage, resourceEventsForMessage, diaryForMessage, answerHouseholdOffer, answerGroupOffer, missionBoardForMessage, acceptBoardMission, groupBoardForMessage, requestGroupBoardJoin,
             auctionForMessage, runAuctionAction, refreshAuctions,
-            marketplaceForMessage, runMarketplaceAction, respondMarketplaceEvent, refreshMarketplace,
+            marketplaceForMessage, runMarketplaceAction, respondMarketplaceEvent, refreshMarketplace, systemStatusForMessage, prepareChatSystemRequest,
             profile: npcProfile, persist: persistState,
             scopeInfo: () => characterOwner(SillyTavern.getContext()),
             listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
@@ -10222,7 +10259,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.50.1 loaded.');
+        console.info('[RoleForge] Role-play interface v0.50.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

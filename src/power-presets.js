@@ -1,4 +1,4 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.50.1';
+import {uiText,uiMarkup} from './ui-language.js?v=0.50.2';
 // User-owned power definitions; AI may update values, never this schema.
 export const POWER_LIMIT=64;
 export const POWER_FILE_LIMIT=1024*1024;

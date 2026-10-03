@@ -132,7 +132,7 @@ function appendShopEvent(root, event, messageId, api, t, price, unit) {
         pageLabel.textContent = `${t('หน้า', 'Page')} ${page + 1}/${pages}`; previous.disabled = page === 0; next.disabled = page >= pages - 1; list.replaceChildren();
         for (const item of event.items.slice(page * pageSize, (page + 1) * pageSize)) {
             const row = node('article', 'trpg-marketplace-shop-item');
-            row.append(node('strong', '', item.item.name), node('small', '', `${item.item.category} · ${t('เหลือ', 'Stock')} ${item.stock} · ${item.negotiable ? t('ต่อรองได้', 'Negotiable') : t('ราคาตายตัว', 'Fixed price')}`));
+            row.append(node('strong', '', item.item.name), node('small', '', `${item.item.category} · ${t('เหลือ', 'Stock')} ${item.stockKnown === false ? t('ไม่ระบุ', 'unspecified') : item.stock} · ${item.negotiableKnown === false ? t('เงื่อนไขยังไม่ระบุ', 'Terms unspecified') : item.negotiable ? t('ต่อรองได้', 'Negotiable') : t('ราคาตายตัว', 'Fixed price')}`));
             if (item.item.description) row.append(node('p', '', item.item.description));
             if (item.item.properties?.length) row.append(node('p', 'trpg-marketplace-event-properties', item.item.properties.join(' · ')));
             const foot = node('div', 'trpg-marketplace-shop-item-foot'); foot.append(node('b', '', price(item.askPrice)));

@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.50.1
+# ROLEFORGE — v0.50.2
+
+## v0.50.2 — Main Chat interaction recovery
+
+- Enabled shop, auction and board cards now receive a final, request-specific patch reminder. Viewing or negotiating while already at the venue no longer requires a new arrival. Speaker headers identify an NPC outside their dialogue; conditional pricing in a separate sentence no longer cancels an actual interaction.
+- Missing evidence/current location can be repaired locally from the completed reply and confirmed scene. Explicit item/price lists with one named seller can recover a shop card without another API request. Unknown stock stays unspecified; mixed currencies and ambiguous sellers are not inferred.
+- A completed purchase or sale can update money/items in the same reply as a refreshed shop catalog. Pending offers still grant nothing. Incomplete requested card data now produces a Main Chat notice with a draft-request button. Turning systems off retains their records.
+- Read the [Thai diagnosis and validation report](docs/main-chat-systems-fix.th.md). Update the extension and reload once; existing RPG data does not need resetting.
 
 ## v0.50.1 — RoleForge workspaces, quiet Power Mastery and chat commerce
 

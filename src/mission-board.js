@@ -1,4 +1,5 @@
-import {normalizeQuestObjectives} from './quest-objectives.js?v=0.50.1';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.50.2';
+import {normalizeQuestObjectives} from './quest-objectives.js?v=0.50.2';
 
 const clean = (value, max = 300) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
@@ -28,13 +29,10 @@ export function normalizeMissionBoard(raw) {
 }
 
 export function confirmedMissionBoard(raw, story, user, location) {
-    const board = normalizeMissionBoard(raw);
+    const board = normalizeMissionBoard(withInteractionEvidence(raw, story, location, boardWords, /(?:read|examin|inspect|approach|arriv|stand|stop|reach|look|scan|brows|study|studies|walk|show|display|เปิดอ่าน|อ่าน|ดู|เดิน|มาถึง|ยืน|หยุด|สำรวจ|แสดง)/iu));
     if (!board || key(board.location) !== key(location) || !boardWords.test(String(story))) return null;
     const evidence = board.evidence;
-    if (evidence.length < 8 || !String(story).includes(evidence) || !boardWords.test(evidence)) return null;
-    if (/^(?:\s*\(?OOC\b|\s*\[OOC\b)/iu.test(String(user))) return null;
-    if (/(?:haven['’]?t|hasn['’]?t|not yet|did not|does not|do not|don['’]?t|didn['’]?t|can['’]?t|cannot|never|\bwill\b|tomorrow|plan(?:s|ning)? to|might|would|if you|ยังไม่ได้|ไม่ได้|พรุ่งนี้|ตั้งใจจะ|วางแผนจะ|ถ้า).{0,65}(?:board|กระดาน|บอร์ด)/iu.test(evidence)) return null;
-    if (!/(?:read|examin|inspect|approach|arriv|stand|stop|reach|look|scan|brows|study|studies|walk|เปิดอ่าน|อ่าน|ดู|เดิน|มาถึง|ยืน|หยุด|สำรวจ)/iu.test(evidence)) return null;
+    if (!interactionEvidence(evidence, story, user, boardWords, /(?:read|examin|inspect|approach|arriv|stand|stop|reach|look|scan|brows|study|studies|walk|show|display|เปิดอ่าน|อ่าน|ดู|เดิน|มาถึง|ยืน|หยุด|สำรวจ|แสดง)/iu)) return null;
     return board;
 }
 

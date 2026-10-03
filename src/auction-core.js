@@ -1,3 +1,4 @@
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.50.2';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
@@ -38,11 +39,9 @@ export function normalizeAuctionOffer(raw) {
 }
 
 export function confirmedAuctionOffer(raw, story, user, location) {
-    const offer = normalizeAuctionOffer(raw), evidence = offer?.evidence;
-    if (!offer || key(offer.location) !== key(location) || evidence.length < 8 || !String(story).includes(evidence) || !auctionWords.test(evidence)) return null;
-    if (/^\s*(?:\(?OOC\b|\[OOC\b)/iu.test(String(user))) return null;
-    if (/(?:not yet|haven['’]?t|hasn['’]?t|did not|do not|didn['’]?t|cannot|never|\bwill\b|tomorrow|plan(?:s|ning)? to|might|would|if you|ยังไม่ได้|ไม่ได้|พรุ่งนี้|ตั้งใจจะ|วางแผนจะ|ถ้า).{0,65}(?:auction|ประมูล)/iu.test(evidence)) return null;
-    if (!/(?:arriv|enter|reach|stand|sit|walk|approach|join|attend|มาถึง|เดิน|เข้า|ยืน|นั่ง|ร่วม)/iu.test(evidence)) return null;
+    const offer = normalizeAuctionOffer(withInteractionEvidence(raw, story, location, auctionWords, /(?:arriv|enter|reach|stand|sit|walk|approach|join|attend|inspect|browse|display|present|show|มาถึง|เดิน|เข้า|ยืน|นั่ง|ร่วม|ดู|อ่าน|แสดง|เปิด|วาง)/iu)), evidence = offer?.evidence;
+    if (!offer || key(offer.location) !== key(location)) return null;
+    if (!interactionEvidence(evidence, story, user, auctionWords, /(?:arriv|enter|reach|stand|sit|walk|approach|join|attend|inspect|browse|display|present|show|มาถึง|เดิน|เข้า|ยืน|นั่ง|ร่วม|ดู|อ่าน|แสดง|เปิด|วาง)/iu)) return null;
     return offer;
 }
 

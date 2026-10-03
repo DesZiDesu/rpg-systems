@@ -1,3 +1,4 @@
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.50.2';
 // Party/Guild Board protocol. A board is emitted only when the story confirms
 // that the player is physically reading the current board in this location.
 const clean = (value, max = 300) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -35,12 +36,10 @@ export function normalizeGroupBoard(raw) {
 }
 
 export function confirmedGroupBoard(raw, story, user, location) {
-    const board = normalizeGroupBoard(raw);
+    const board = normalizeGroupBoard(withInteractionEvidence(raw, story, location, boardWords, movementWords));
     if (!board || key(board.location) !== key(location) || !boardWords.test(String(story))) return null;
     const evidence = board.evidence;
-    if (evidence.length < 8 || !String(story).includes(evidence) || !boardWords.test(evidence) || !movementWords.test(evidence)) return null;
-    if (/^(?:\s*\(?OOC\b|\s*\[OOC\b)/iu.test(String(user))) return null;
-    if (/(?:haven['’]?t|hasn['’]?t|have not|has not|not yet|did not|does not|do not|don['’]t|didn['’]t|can['’]?t|cannot|never|\bwill\b|tomorrow|plan(?:s|ning)? to|might|would|if you|ยังไม่ได้|ไม่ได้|พรุ่งนี้|ตั้งใจจะ|วางแผนจะ|ถ้า).{0,70}(?:board|กระดาน|บอร์ด|กิลด์|ปาร์ตี้)/iu.test(evidence)) return null;
+    if (!interactionEvidence(evidence, story, user, boardWords, movementWords)) return null;
     return board;
 }
 

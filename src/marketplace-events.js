@@ -1,3 +1,4 @@
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.50.2';
 // Main Chat commerce events. These are narrative prompts, not local settlements.
 // A confirmed NPC offer/shop is rendered in the assistant message; the player's
 // button creates a normal visible role-play reply. The following AI turn owns
@@ -8,11 +9,11 @@ const integer = (value, fallback = 0, min = 0, max = 999999999) => Number.isSafe
 const hash = value => { let n = 2166136261; for (const ch of String(value)) n = Math.imul(n ^ ch.codePointAt(0), 16777619); return (n >>> 0).toString(36); };
 const denominations = new Set(['gold', 'silver', 'copper']);
 const buyWords = /(?:buy|purchase|offer|pay|sell\s+you|ซื้อ|ขอซื้อ|รับซื้อ|เสนอราคา|จ่าย)/iu;
-const shopWords = /(?:shop|store|stall|vendor|merchant|sell(?:s|ing)?|goods|ขาย|ร้าน|แผง|สินค้า|ของให้เลือก)/iu;
-const actionWords = /(?:say|tell|ask|offer|hand|show|bring|walk|enter|approach|visit|stand|open|พูด|บอก|ถาม|ขอ|ยื่น|นำ|เดิน|เข้า|เปิด|ไปหา|มาถึง|ดู)/iu;
-const futureWords = /(?:not yet|haven['’]?t|hasn['’]?t|did not|don['’]?t|cannot|can't|never|tomorrow|plan(?:s|ning)? to|might|would|if you|will|ยังไม่ได้|ไม่ได้|พรุ่งนี้|ตั้งใจจะ|วางแผนจะ|อาจ|ถ้า|หาก)/iu;
+const shopWords = /(?:shop|store|stall|vendor|merchant|sell(?:s|ing)?|goods|price|discount|haggl|counteroffer|ราคา|ลดให้|ลดราคา|ต่อรอง|ขาย|ร้าน|แผง|สินค้า|ของให้เลือก)/iu;
+const actionWords = /(?:say|tell|ask|offer|hand|show|bring|walk|enter|approach|visit|stand|open|inspect|browse|display|list|พูด|บอก|ถาม|ขอ|ยื่น|นำ|เดิน|เข้า|เปิด|ไปหา|มาถึง|ดู|แสดง|หยิบ|วาง|ลดราคา|ลดให้)/iu;
 
-export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player actually enters or approaches a named NPC shop/vendor and the NPC shows goods for sale, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,negotiable,note}]} with at most 40 items. Evidence must be an exact affirmative quote from this reply, include the current place and the interaction, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. Buttons send a normal visible player reply and wait for the next AI reply; do not patch inventory or currency for the offer itself. On the following reply, settle only the outcome explicitly accepted in the visible player action by applying the normal inventory and progression.currency operations together with metadata category:"sale" or "purchase" and a concrete reason. A counteroffer is not a sale until the NPC accepts it. Never create HTML or UI text in the patch.';
+
+export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player is interacting with a named NPC shop/vendor and the NPC shows goods or quotes an item for sale, including catalog requests, revisits and negotiation while already here, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,negotiable,note}]} with at most 40 items. Evidence must be an exact affirmative quote from this reply, show the present interaction; location must match the current sceneTracker location, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. Buttons send a normal visible player reply and wait for the next AI reply; do not patch inventory or currency for the offer itself. On the following reply, settle only the outcome explicitly accepted in the visible player action by applying the normal inventory and progression.currency operations together with metadata category:"sale" or "purchase" and a concrete reason. A counteroffer is not a sale until the NPC accepts it. Never create HTML or UI text in the patch.';
 
 function itemRecord(raw, fallback = {}) {
     const source = raw && typeof raw === 'object' ? raw : {};
@@ -42,14 +43,14 @@ function catalogEntry(raw, index, denomination) {
     const price = priceRecord(raw, { denomination });
     if (!item || !price) return null;
     return { id: clean(raw.id, 100) || `shop-item-${hash(`${index}|${key(item.name)}|${price.askPrice}`)}`, item, ...price,
-        negotiable: raw.negotiable !== false, stock: integer(raw.stock, item.quantity, 1, 99999), note: clean(raw.note || raw.terms, 220) };
+        negotiable: raw.negotiable !== false, negotiableKnown: raw.negotiableKnown !== false, stockKnown: raw.stockKnown !== false, stock: integer(raw.stock, item.quantity, 1, 99999), note: clean(raw.note || raw.terms, 220) };
 }
 
 export function normalizeMarketplaceEvent(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const kind = clean(raw.kind || raw.type || raw.event, 40).toLocaleLowerCase();
     const location = clean(raw.location, 180), evidence = clean(raw.evidence, 600);
-    if (!location || !evidence) return null;
+    if (!location) return null;
     if (kind === 'npcpurchase' || kind === 'purchaseoffer' || kind === 'npc-offer' || kind === 'offer') {
         const buyerRaw = raw.buyer || raw.npc || {};
         const buyer = { id: clean(buyerRaw.id || buyerRaw.npcId, 100), name: clean(buyerRaw.name || buyerRaw.npcName, 120), role: clean(buyerRaw.role, 100) || 'Buyer' };
@@ -77,18 +78,39 @@ export function normalizeMarketplaceEvent(raw) {
 }
 
 export function confirmedMarketplaceEvent(raw, story, user, location, inventory = []) {
-    const event = normalizeMarketplaceEvent(raw);
-    if (!event || key(event.location) !== key(location) || event.evidence.length < 8 || !String(story).includes(event.evidence)) return null;
+    const kind = String(raw?.kind || raw?.type || raw?.event || '').toLocaleLowerCase();
+    const event = normalizeMarketplaceEvent(withInteractionEvidence(raw, story, location, /purchase|offer/u.test(kind) ? buyWords : shopWords, actionWords));
+    if (!event || key(event.location) !== key(location) || !evidenceText(story).includes(evidenceText(event.evidence))) return null;
     if (/^\s*(?:\(?OOC\b|\[OOC\b)/iu.test(String(user || ''))) return null;
-    if (futureWords.test(event.evidence)) return null;
-    if (!actionWords.test(event.evidence)) return null;
+    if (!interactionEvidence(event.evidence, story, user, event.kind === 'npcPurchase' ? buyWords : shopWords, actionWords)) return null;
     if (event.kind === 'npcPurchase') {
-        if (!buyWords.test(event.evidence) || !event.item.name || !key(event.evidence).includes(key(event.item.name)) || !key(event.evidence).includes(key(event.buyer.name))) return null;
+        if (!buyWords.test(event.evidence) || !event.item.name || !key(event.evidence).includes(key(event.item.name)) || !namedInteraction(event.buyer.name, event.evidence, story)) return null;
         const owned = (inventory || []).find(entry => (event.item.id && entry.id === event.item.id && key(entry.name) === key(event.item.name)) || (!event.item.id && key(entry.name) === key(event.item.name)));
         if (!owned || integer(owned.quantity, 0) < event.item.quantity) return null;
     } else {
-        if (!shopWords.test(event.evidence) || !key(event.evidence).includes(key(event.seller.name))) return null;
+        if (!shopWords.test(event.evidence) || !namedInteraction(event.seller.name, event.evidence, story)) return null;
         if (!buyWords.test(event.evidence) && !shopWords.test(String(story))) return null;
     }
     return event;
+}
+
+// Recover a plainly listed catalog locally when the model omits the card object.
+// Only explicit item/price lines and one identified seller are usable. We never
+// invent stock, hidden properties, exchange rates, purchases or auction rules.
+export function recoverMarketplaceShop(story, user, location, npcs = []) {
+    if (!location || !shopWords.test(String(story)) || !/(?:shop|catalog|goods|buy|price|haggl|ร้าน|สินค้า|ซื้อ|ราคา|ต่อรอง|ดูของ)/iu.test(String(user))) return null;
+    const names = [...String(story).matchAll(/<tr-(?:header|dialogue)\b[^>]*\bname=["']([^"']+)["']/giu)].map(match => clean(match[1],120));
+    const known = npcs.filter(npc => npc?.name && key(story).includes(key(npc.name))).map(npc => npc.name);
+    const sellers = [...new Set(names.length ? names : known)];
+    if (sellers.length !== 1) return null;
+    const items = [];
+    const units = {gold:'gold',silver:'silver',copper:'copper','ทอง':'gold','เงิน':'silver','ทองแดง':'copper'};
+    const visible = String(story).replace(/<[^>]*>/gu,'\n');
+    for (const line of visible.split('\n')) {
+        const match = line.trim().match(/^(?:[-*•]\s*|\d+[.)]\s*)?([^:—–]{2,100}?)\s*[:—–]\s*([1-9]\d{0,8})\s*(?:เหรียญ\s*)?(gold|silver|copper|ทองแดง|ทอง|เงิน)\s*[.!]?$/iu);
+        if (!match) continue;
+        items.push({stockKnown:false,negotiableKnown:false,itemName:match[1].trim(),price:Number(match[2]),denomination:units[match[3].toLocaleLowerCase()]});
+    }
+    if (!items.length || new Set(items.map(item => item.denomination)).size !== 1) return null;
+    return confirmedMarketplaceEvent({kind:'npcShop',location,seller:{name:sellers[0]},denomination:items[0].denomination,items}, story, user, location);
 }
