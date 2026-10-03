@@ -1,3 +1,5 @@
+import * as commerceEngine from '../src/commerce-engine.js';
+import {createCommerceRuntime} from '../src/commerce-runtime.js';
 import * as mainChatSystems from '../src/main-chat-systems.js';
 import * as auctionCore from '../src/auction-core.js';
 import {auctionErrorText} from '../src/auction-ui.js';
@@ -38,11 +40,11 @@ import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMem
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enableAuctions:true,enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true,enableMemorySummaries:true,eventNotifications:true}},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...mainChatSystems,normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
-    createNpcWorkspace(){},...powerMastery,SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
+const sandbox={...mainChatSystems,normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,...commerceEngine,auctionAvailable:commerceEngine.commerceAvailable,auctionFundsValid:commerceEngine.commerceFundsValid,createCommerceRuntime,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+    createNpcWorkspace(){},...powerMastery,SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelector(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,runAuctionAction,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('native summary task temporarily removes only RoleForge story instructions and restores them afterwards',async()=>{
@@ -157,10 +159,10 @@ test('fresh settings opt out of all all optional systems and popups, with no opt
   for(const key of ['enableMissionBoard','enableAuctions','enableStoryMemory','enableStoryAgenda','enableQuestObjectives','enableMemorySummaries','eventNotifications'])assert.equal(settings[key],false,key);
   assert.equal(settings.preserveNativeChat,false);
   const state=host.defaultState();state.storyMemories=[{id:'secret',title:'Secret',detail:'Unique paused fact marker',status:'Active',kind:'Fact'}];state.storyAgenda=[{id:'visit',title:'Visit',status:'Scheduled',dueDay:1}];
-  const prompt=host.statePrompt(state,{includeState:true,track:true});assert.doesNotMatch(prompt,/Mission Board:|Auction UI:|Story memory: upsert|Appointments and deadlines:|Quest objectives: include|Unique paused fact marker/);
+  const prompt=host.statePrompt(state,{includeState:true,track:true});assert.doesNotMatch(prompt,/Mission Board:|When the current scene presents an auction|Story memory: upsert|Appointments and deadlines:|Quest objectives: include|Unique paused fact marker/);
   assert.equal(host.roleplayState(state).sceneContext.auctions,undefined);assert.equal(host.aiState(state).storyMemories,undefined);
   settings.enableMissionBoard=true;settings.enableAuctions=true;settings.enableStoryMemory=true;
-  const enabled=host.statePrompt(state,{includeState:true,track:true});assert.match(enabled,/Mission Board:/);assert.match(enabled,/Auction UI:/);assert.match(enabled,/Story memory: upsert/);
+  const enabled=host.statePrompt(state,{includeState:true,track:true});assert.match(enabled,/Mission Board:/);assert.match(enabled,/When the current scene presents an auction/);assert.match(enabled,/Story memory: upsert/);
  }finally{context.extensionSettings=previous;}
 });
 
@@ -181,7 +183,7 @@ test('optional switches preserve explicit saved choices and active auction reser
   context.extensionSettings={tretaresia_rpg:{enableMissionBoard:true,enableMemorySummaries:false,eventNotifications:true,preserveNativeChat:true}};const settings=host.getSettings();assert.equal(settings.preserveNativeChat,true);assert.equal(settings.enableMissionBoard,true);assert.equal(settings.eventNotifications,true);assert.equal(settings.enableAuctions,false);
   const offer={id:'held',title:'Hall',location:'Hall',denomination:'gold',deposit:5,lots:[{id:'blade',name:'Blade',openingBid:6,minIncrement:1}]};let state=host.defaultState();state.progression.currency.gold=30;state=auctionCore.applyAuctionAction(state,offer,'join').next;state=auctionCore.applyAuctionAction(state,offer,'bid',{amount:20,revision:1}).next;
   context.chatMetadata={tretaresia_rpg_state:state};const result=host.applyStatePatch(state,{ops:[['inc','progression.currency.gold',-6,{reason:'Purchase'}],['inc','progression.currency.gold',-20,{reason:'Auction payment'}]]});assert.equal(result.accepted,0);assert.equal(result.next.progression.currency.gold,30);
-  assert.equal((await host.runAuctionAction(null,'held','resume:held','bid',21,2)).error,'disabled');assert.equal(auctionCore.auctionAvailable(host.getState()).gold,5);
+  host.initializeCommerce();assert.equal(host.commerceRuntime().view(),null);host.commerceRuntime().destroy();assert.equal(auctionCore.auctionAvailable(host.getState()).gold,5);
  }finally{context.extensionSettings=previous.settings;context.chatMetadata=previous.state;}
 });
 
@@ -218,7 +220,7 @@ test('auction patches survive state export and cannot replay locally settled mon
 });
 
 test('a concurrent metadata save waits for auction failure and commits the restored wallet and inventory',async()=>{
- const prior={metadata:context.chatMetadata,chat:context.chat,settings:context.extensionSettings,save:context.saveMetadata,get:sandbox.document.getElementById};
+ const prior={metadata:context.chatMetadata,chat:context.chat,settings:context.extensionSettings,save:context.saveMetadata,quiet:context.generateQuietPrompt,get:sandbox.document.getElementById};
  try{
   const tracker={hidden:true};sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?tracker:null;
   context.extensionSettings={tretaresia_rpg:{enableAuctions:true,eventNotifications:false,autoContinuity:false}};
@@ -227,15 +229,15 @@ test('a concurrent metadata save waits for auction failure and commits the resto
   state=auctionCore.applyAuctionAction(state,offer,'join').next;state=auctionCore.applyAuctionAction(state,offer,'bid',{amount:20,revision:1}).next;
   for(let i=0;i<2;i++)state=auctionCore.applyAuctionAction(state,offer,'wait',{revision:state.auctions[0].revision}).next;
   context.chatMetadata={tretaresia_rpg_state:state};context.chat=[{is_user:true,mes:'I enter.'},{is_user:false,mes:'You enter the auction hall.',swipe_id:0}];
-  host.rememberAuctionOffer(1,context.chat[1],offer);const view=host.auctionForMessage(1,context.chat[1]);
+  host.rememberAuctionOffer(1,context.chat[1],offer);context.generateQuietPrompt=async()=>JSON.stringify({narrative:'The auctioneer awards the blade to you.',decision:{outcome:'sold',participants:[]}});host.initializeCommerce();const view=host.commerceRuntime().view();
   let rejectSave,started;const begun=new Promise(resolve=>{started=resolve;});const writes=[];
   context.saveMetadata=async()=>{writes.push(JSON.parse(JSON.stringify(context.chatMetadata.tretaresia_rpg_state)));if(writes.length===1){started();await new Promise((_resolve,reject)=>{rejectSave=reject;});}};
-  const action=host.runAuctionAction(1,offer.id,view.token,'wait',undefined,4);await begun;
+  const action=host.commerceRuntime().perform({id:view.session.id,token:view.token,action:'wait'});await begun;
   assert.equal(writes[0].progression.currency.gold,10);assert.equal(writes[0].inventory.length,1);
   const anotherSave=host.saveCurrentChatMetadata(context);await Promise.resolve();assert.equal(writes.length,1);
   rejectSave(Error('Offline atomic auction test'));assert.equal((await action).ok,false);assert.equal(await anotherSave,true);
-  assert.equal(writes.length,2);assert.equal(writes[1].progression.currency.gold,30);assert.equal(writes[1].inventory.length,0);assert.equal(writes[1].auctions[0].lots[0].closingCount,2);
- }finally{context.chatMetadata=prior.metadata;context.chat=prior.chat;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;sandbox.document.getElementById=prior.get;}
+  assert.equal(writes.length,3);assert.equal(writes[1].progression.currency.gold,30);assert.equal(writes[1].inventory.length,0);assert.equal(writes[1].auctions[0].lots[0].closingCount,2);
+ }finally{context.chatMetadata=prior.metadata;context.chat=prior.chat;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateQuietPrompt=prior.quiet;host.commerceRuntime()?.destroy();sandbox.document.getElementById=prior.get;}
 });
 
 test('quest payout is recorded once across paraphrased turns, set balances, archive removal and reload',()=>{
@@ -354,7 +356,7 @@ test('notification categories preserve a disabled legacy training preference and
 });
 
 test('main reply board offers stay unaccepted, persist per variant, accept once and give no immediate reward',async()=>{
- const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,get:sandbox.document.getElementById};const settings=host.getSettings();const notices=settings.eventNotifications;settings.eventNotifications=false;
+ const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,quiet:context.generateQuietPrompt,get:sandbox.document.getElementById};const settings=host.getSettings();const notices=settings.eventNotifications;settings.eventNotifications=false;
  try {
   context.saveMetadata=async()=>{};
   sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
@@ -507,7 +509,7 @@ test('group rank and completed quests survive reloads and partial updates',()=>{
  assert.match(panel.innerHTML,/Completed quests/);
 });
 test('confirmed existing party and guild membership joins immediately without accepting an offer or founding fee',async()=>{
- const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,get:sandbox.document.getElementById};
+ const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,quiet:context.generateQuietPrompt,get:sandbox.document.getElementById};
  const settings=host.getSettings(),prior=settings.autoTrack;
  try{
   settings.autoTrack=true;
@@ -573,7 +575,7 @@ test('normal replies recover current party and guild membership from story witho
 });
 
 test('current-membership recovery does not accept recruitment or revive membership ended by the completed reply',async()=>{
- const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,get:sandbox.document.getElementById};
+ const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,quiet:context.generateQuietPrompt,get:sandbox.document.getElementById};
  const settings=host.getSettings(),prior=settings.autoTrack;
  try{
   settings.autoTrack=true;context.saveMetadata=async()=>{};sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
@@ -675,7 +677,7 @@ test('opening an existing chat locally restores missing groups once and honors d
 });
 
 test('history recovery keeps an unrelated guild when a later named deletion omits an id',async()=>{
- const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,get:sandbox.document.getElementById,getId:context.getCurrentChatId};
+ const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,quiet:context.generateQuietPrompt,get:sandbox.document.getElementById,getId:context.getCurrentChatId};
  const settings=host.getSettings(),prior=settings.autoTrack;
  try{
   settings.autoTrack=true;context.getCurrentChatId=()=> 'selective-guild-recovery-test';context.saveMetadata=async()=>{};
@@ -689,7 +691,7 @@ test('history recovery keeps an unrelated guild when a later named deletion omit
 });
 
 test('group recovery stops before writing markers or saving another chat after a chat switch',async()=>{
- const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,get:sandbox.document.getElementById,getId:context.getCurrentChatId};
+ const saved={chat:context.chat,metadata:context.chatMetadata,save:context.saveMetadata,quiet:context.generateQuietPrompt,get:sandbox.document.getElementById,getId:context.getCurrentChatId};
  const settings=host.getSettings(),prior=settings.autoTrack;let chatId='group-recovery-a',saves=0;
  try{
   settings.autoTrack=true;context.getCurrentChatId=()=>chatId;context.saveMetadata=async()=>{saves++;};
@@ -1133,7 +1135,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.50.2');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,JSON.parse(readFileSync(new URL('../package.json',import.meta.url))).version);
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
@@ -1874,7 +1876,7 @@ test('tracked snapshots and audit include memory, agenda and objective changes',
 });
 
 test('one main reply updates all three story systems with canonical provenance and no extra AI request',async()=>{
- const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,get:sandbox.document.getElementById};
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,quiet:context.generateQuietPrompt,get:sandbox.document.getElementById};
  const settings=host.getSettings(),prior=settings.autoTrack,priorNotifications=settings.eventNotifications;
  try{
   settings.autoTrack=true;settings.eventNotifications=false;context.chatMetadata={};let requests=0;
@@ -1898,7 +1900,7 @@ test('one main reply updates all three story systems with canonical provenance a
 });
 
 test('Manual Sync fills story records in chronological order while protecting closed and manually edited records',async()=>{
- const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,get:sandbox.document.getElementById};
+ const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,quiet:context.generateQuietPrompt,get:sandbox.document.getElementById};
  const settings=host.getSettings(),prior=settings.autoTrack,priorNotifications=settings.eventNotifications;
  try{
   settings.autoTrack=true;settings.eventNotifications=false;sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
@@ -2062,7 +2064,7 @@ test('journey progress stays fixed for plans and same-place dialogue, then advan
  assert.equal(Math.round(host.travelProgress(elapsed)*100),20);
 });
 
-test('main-reply shop catalog is recovered locally and completed purchase ops survive a refreshed catalog', async () => {
+test('main-reply shop catalog recovers locally and its normal purchase ops cannot bypass composer settlement', async () => {
  const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata};
  try {
   context.extensionSettings={tretaresia_rpg:{autoTrack:true,enableMarketplace:true,eventNotifications:false,autoContinuity:false}};
@@ -2078,6 +2080,35 @@ test('main-reply shop catalog is recovered locally and completed purchase ops su
   const ops=[['inc','progression.currency.silver',-2,{category:'purchase',reason:'Paid Rally for Potion'}],['inc','inventory',{name:'Potion',quantity:1},{category:'purchase',reason:'Bought Potion from Rally'}]];
   context.chat.push({is_user:true,mes:'I buy one Potion for 2 silver.'},{is_user:false,mes:`Rally hands you the Potion after accepting payment. Rally shows goods for sale in the shop.<!--tretaresia_patch:${JSON.stringify({sceneTracker:{loc:'Guild'},marketplace,ops})}-->`});
   await host.processAssistantPatch(3,'normal');await host.processAssistantPatch(3,'normal');
-  assert.equal(host.getState().progression.currency.silver,8);assert.equal(host.getState().inventory.find(item=>item.name==='Potion').quantity,1);
+  assert.equal(host.getState().progression.currency.silver,10);assert.equal(host.getState().inventory.length,0);
  } finally {context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;}
+});
+
+test('rebuilt commerce persists the continuation in the same swipe, journals funds/items, and reload never replays a settlement',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,quiet:context.generateQuietPrompt};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,enableMarketplace:true,eventNotifications:false,autoContinuity:false}};
+  const state=host.defaultState();state.location.place='Hall';state.onboarding.locationSeeded=true;state.progression.currency.silver=10;
+  const story='<tr-header name="Rally"></tr-header>Rally shows the shop goods for sale.\n- Potion: 3 silver';
+  context.chatMetadata={tretaresia_rpg_state:state};context.chat=[{is_user:true,mes:'Show me the shop goods.'},{is_user:false,mes:story,swipe_id:0,swipes:[story]}];
+  const saves=[];context.saveMetadata=async()=>{saves.push({state:structuredClone(context.chatMetadata.tretaresia_rpg_state),text:context.chat[1].mes});};
+  await host.processAssistantPatch(1,'normal');host.initializeCommerce();let calls=0;
+  context.generateQuietPrompt=async()=>{calls++;return JSON.stringify({narrative:'<tr-dialogue name="Rally">I agree to two silver.</tr-dialogue>',decision:{outcome:'accept',amount:2}});};
+  const act=async(action)=>{const v=host.commerceRuntime().view();return host.commerceRuntime().perform({id:v.session.id,token:v.token,action,amount:2});};
+  assert.equal((await act('offer')).ok,true);assert.equal(host.getState().progression.currency.silver,10);assert.equal(host.getState().inventory.length,0);
+  assert.equal((await act('confirm')).ok,true);assert.equal(calls,2);assert.equal(context.chat.length,2);assert.equal(context.chat[0].mes,'Show me the shop goods.');
+  assert.ok(context.chat[1].mes.startsWith(story));assert.equal(context.chat[1].swipes[0],context.chat[1].mes);assert.equal(host.getState().progression.currency.silver,8);assert.equal(host.getState().inventory[0].quantity,1);
+  assert.equal(saves.at(-1).state.progression.currency.silver,8);assert.equal(saves.at(-1).text,context.chat[1].mes);assert.equal(host.getState().transactions.at(-1).source,'commerce');
+  await host.processAssistantPatch(1,'normal');host.initializeCommerce();assert.equal(host.commerceRuntime().view(),null);assert.equal(calls,2);assert.equal(host.getState().progression.currency.silver,8);
+  await host.replaceAssistantTurnState(1,{reuseVariant:true,reason:'test'});assert.equal(host.getState().progression.currency.silver,8);assert.equal(host.getState().inventory[0].quantity,1);assert.equal(host.commerceRuntime().view(),null);
+ }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateQuietPrompt=prior.quiet;}
+});
+
+test('optional story receipts use their source message and turn variant, and disappear when the switch is off',()=>{
+ const prior=context.extensionSettings,metadata=context.chatMetadata;
+ try{context.extensionSettings={tretaresia_rpg:{enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true}};
+  const state=host.normalize({...host.defaultState(),storyMemories:[{title:'Promise',detail:'Return a book',sourceMessageId:3}],storyAgenda:[{title:'Meeting',dueDay:2,sourceMessageId:3}],quests:[{name:'Delivery',objectives:[{title:'Bring a book',sourceMessageId:3}]}]});context.chatMetadata={tretaresia_rpg_state:state};
+  const receipt=host.storyEventsForMessage(3,{});assert.equal(receipt.memories.length,1);assert.equal(receipt.agenda.length,1);assert.equal(receipt.quests[0].objectives.length,1);assert.equal(host.storyEventsForMessage(4,{}),null);
+  host.getSettings().enableStoryMemory=false;host.getSettings().enableStoryAgenda=false;host.getSettings().enableQuestObjectives=false;assert.equal(host.storyEventsForMessage(3,{}),null);assert.equal(host.getState().storyMemories.length,1);
+ }finally{context.extensionSettings=prior;context.chatMetadata=metadata;}
 });

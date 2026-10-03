@@ -1,8 +1,6 @@
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.50.2';
-// Main Chat commerce events. These are narrative prompts, not local settlements.
-// A confirmed NPC offer/shop is rendered in the assistant message; the player's
-// button creates a normal visible role-play reply. The following AI turn owns
-// the actual inventory/currency patch.
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.51.0';
+// Read-only opening event normalization. Active commerce is handled only by
+// commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const key = value => clean(value, 600).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
 const integer = (value, fallback = 0, min = 0, max = 999999999) => Number.isSafeInteger(Number(value)) && Number(value) >= min && Number(value) <= max ? Number(value) : fallback;
@@ -13,7 +11,7 @@ const shopWords = /(?:shop|store|stall|vendor|merchant|sell(?:s|ing)?|goods|pric
 const actionWords = /(?:say|tell|ask|offer|hand|show|bring|walk|enter|approach|visit|stand|open|inspect|browse|display|list|พูด|บอก|ถาม|ขอ|ยื่น|นำ|เดิน|เข้า|เปิด|ไปหา|มาถึง|ดู|แสดง|หยิบ|วาง|ลดราคา|ลดให้)/iu;
 
 
-export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player is interacting with a named NPC shop/vendor and the NPC shows goods or quotes an item for sale, including catalog requests, revisits and negotiation while already here, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,negotiable,note}]} with at most 40 items. Evidence must be an exact affirmative quote from this reply, show the present interaction; location must match the current sceneTracker location, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. Buttons send a normal visible player reply and wait for the next AI reply; do not patch inventory or currency for the offer itself. On the following reply, settle only the outcome explicitly accepted in the visible player action by applying the normal inventory and progression.currency operations together with metadata category:"sale" or "purchase" and a concrete reason. A counteroffer is not a sale until the NPC accepts it. Never create HTML or UI text in the patch.';
+export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role,budget:actual-remaining-funds-if-known},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player is interacting with a named NPC shop/vendor and the NPC shows goods or quotes an item for sale, including catalog requests, revisits and negotiation while already here, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,negotiable,note}]} with at most 40 items. Evidence must be an exact affirmative quote from this reply, show the present interaction; location must match the current sceneTracker location, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. The extension opens a minimal composer strip; its offer/confirm/cancel buttons each call the current AI API and append a brief continuation to the same assistant message. The new commerce engine alone settles accepted, explicitly confirmed prices. With interactive Marketplace enabled, present terms and open the session first; do not narrate payment or delivery before its confirm action. Do not patch inventory/currency for catalog or offer events or replay already settled commerce. Preserve event IDs within an active negotiation; a new interaction after completion uses a new ID. Never create HTML or UI text in the patch.';
 
 function itemRecord(raw, fallback = {}) {
     const source = raw && typeof raw === 'object' ? raw : {};
@@ -53,7 +51,7 @@ export function normalizeMarketplaceEvent(raw) {
     if (!location) return null;
     if (kind === 'npcpurchase' || kind === 'purchaseoffer' || kind === 'npc-offer' || kind === 'offer') {
         const buyerRaw = raw.buyer || raw.npc || {};
-        const buyer = { id: clean(buyerRaw.id || buyerRaw.npcId, 100), name: clean(buyerRaw.name || buyerRaw.npcName, 120), role: clean(buyerRaw.role, 100) || 'Buyer' };
+        const buyer = { id: clean(buyerRaw.id || buyerRaw.npcId, 100), name: clean(buyerRaw.name || buyerRaw.npcName, 120), role: clean(buyerRaw.role, 100) || 'Buyer', ...(Number.isSafeInteger(buyerRaw.budget)&&buyerRaw.budget>=0 ? {budget:buyerRaw.budget} : {}) };
         const item = itemRecord(raw.item || raw, { id: raw.itemId, name: raw.itemName, quantity: raw.quantity });
         const price = priceRecord(raw);
         if (!buyer.name || !item || !price) return null;

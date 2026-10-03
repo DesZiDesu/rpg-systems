@@ -220,7 +220,7 @@ try{
    localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'Nova'},npcs:[],quests:[],skills:[],inventory:[],location:{narrativeVersion:1,place:'Guild Hall'},onboarding:{locationSeeded:true},progression:{currency:{gold:20,silver:10,copper:0}}}}));
   });
   await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready&&document.querySelector('#tretaresia-rpg-overlay.is-ready'));
-  await page.evaluate(()=>{document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';document.querySelector('#chat').style.cssText='display:block;padding:12px;font-size:16px;line-height:1.5;box-sizing:border-box';});
+  await page.evaluate(()=>{document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';document.querySelector('#chat').style.cssText='display:block;padding:12px;font-size:16px;line-height:1.5;box-sizing:border-box';const parent=document.createElement('div');parent.id='form_sheld';parent.style.cssText='width:100%;white-space:nowrap';const anchor=document.createElement('div');anchor.id='send_form';const input=document.querySelector('#send_textarea');input.style.cssText='display:block;width:100%;height:50px';anchor.append(input);parent.append(anchor);document.body.append(parent);});
   const id=await page.evaluate(({story,patch})=>{
    window.host.chat.push({is_user:true,name:'Nova',mes:'I enter the Guild Hall auction room and read the mission board.'});
    const id=window.host.chat.length,mes=`${story}\n<!--tretaresia_patch:${JSON.stringify(patch)}-->`;
@@ -228,7 +228,7 @@ try{
   },{story,patch});
   await renderNative(page,id);
   await page.evaluate(id=>window.host.eventSource.emit(window.host.eventTypes.MESSAGE_RECEIVED,id,'normal'),id);
-  await page.locator('#chat .trpg-mission-board').waitFor({state:'visible'});await page.locator('#chat .trpg-auction').waitFor({state:'visible'});
+  await page.locator('#chat .trpg-mission-board').waitFor({state:'visible'});await page.locator('.rf-commerce-composer').waitFor({state:'visible'});
   await assertNative(page,'scene + board + auction');
   await page.locator('.trpg-board-paper').first().click();assert(await page.locator('.trpg-board-detail').isVisible());await assertNative(page,'board details');
   // Even with character presentation enabled, rich/custom host output is kept.
@@ -237,7 +237,7 @@ try{
   // An asynchronous native rerender replaces its own DOM, never our stale copy.
   await renderNative(page,id,'Native rerender after MESSAGE_UPDATED');
   await page.evaluate(async id=>{await window.host.eventSource.emit('MESSAGE_UPDATED',id);await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,id);},id);
-  await page.waitForFunction(()=>document.querySelectorAll('#chat .trpg-mission-board').length===1&&document.querySelectorAll('#chat .trpg-auction').length===1);
+  await page.waitForFunction(()=>document.querySelectorAll('#chat .trpg-mission-board').length===1&&document.querySelectorAll('.rf-commerce-composer').length===1);
   await assertNative(page,'native rerender');
   // Some formatters use wrapInner() instead of replacing the entire message.
   // Our previous cards must not remain nested and duplicate new addon cards.
@@ -249,7 +249,7 @@ try{
   },id);
   await page.waitForTimeout(180);
   assert.equal(await page.locator('#chat .trpg-mission-board').count(),1,'wrapInner must not duplicate mission controls');
-  assert.equal(await page.locator('#chat .trpg-auction').count(),1,'wrapInner must not duplicate auction controls');
+  assert.equal(await page.locator('.rf-commerce-composer').count(),1,'wrapInner must not duplicate composer controls');
   assert.equal(await page.evaluate(()=>document.querySelector('.other-extension-wrapper')===window.nativeWrapper),true);
   await assertNative(page,'native wrapper');
   // Disabling the scene tracker removes only its own prefix, retaining widgets.
@@ -414,7 +414,7 @@ try{
    await window.hStatsPreview.switchChat('regex-new-chat',{tretaresia_rpg_state:{npcs:[],location:{narrativeVersion:1,place:'Library'},onboarding:{locationSeeded:true}}});
   },{id,structuredId});
   await renderNative(page,0,'New chat native card');await page.waitForTimeout(180);await assertNative(page,'chat change');
-  assert.equal(await page.locator('#chat .trpg-mission-board,#chat .trpg-auction').count(),0);
+  assert.equal(await page.locator('#chat .trpg-mission-board,.rf-commerce-composer').count(),0);
   await exerciseDefaultPresentation(page,width);
   assert.deepEqual(errors,[]);console.log(`Regex/native HTML compatibility passed at ${width}px`);await page.close();
  }

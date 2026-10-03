@@ -1,4 +1,15 @@
-# ROLEFORGE — v0.50.2
+# ROLEFORGE — v0.51.0
+
+## v0.51.0 — Rebuilt AI commerce in the chat composer
+
+- Replaced live auction and buying/selling/haggling flows with one new composer runtime and settlement engine. The collapsible bar sits above the chat input, shows the item/price, and expands for catalog details and fixed NPC funds.
+- Every game action makes **one call to the current SillyTavern API**. Brief NPC reactions append to the **same assistant message and active swipe**; no generated user command or extra chat bubble. Viewing details and selecting an item make no API calls. The bar disappears when its interaction ends.
+- AI decides rival bids, passes, withdrawal, all-in spending and closure from character motives. No fixed willingness ceiling, minimum-bid grind, forced player victory or three-click countdown. Actual NPC funds are shared across lots and cannot increase. Local rules validate funds, explicit price consent and once-only settlement.
+- Existing balances, inventory, commitments and paid receipts migrate without another charge. Stale responses after edit/swipe/chat switch, double clicks, malformed decisions and detectable save failures cannot settle twice.
+- Main Chat now also shows collapsible story-memory, appointment and objective receipts beside their source reply, plus party/guild and household invitations. Optional switches retain data when paused.
+- [Thai flow and validation notes](docs/commerce-rebuild.th.md) · [All Main Chat UI previews](docs/previews/main-chat-systems.html). The preview uses real extension UI with clearly labeled simulated data and replies.
+
+Older commerce release notes below describe retired behavior. Update the extension and reload once; do not clear RPG data.
 
 ## v0.50.2 — Main Chat interaction recovery
 

@@ -1,5 +1,5 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.50.2';
-import { clamp, cropGeometry } from './npc-core.js?v=0.50.2';
+import {uiText,uiMarkup} from './ui-language.js?v=0.51.0';
+import { clamp, cropGeometry } from './npc-core.js?v=0.51.0';
 
 export async function decodePortrait(blob) {
     if (!(blob instanceof Blob) || blob.size > 16 * 1024 * 1024) throw Error(uiText("ภาพต้องมีขนาดไม่เกิน 16 MB"));

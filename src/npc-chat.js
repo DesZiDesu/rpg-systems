@@ -1,15 +1,14 @@
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.50.2';
-import {renderAuctionCard} from './auction-ui.js?v=0.50.2';
-import {renderMarketplaceChatCard} from './marketplace-chat-ui.js?v=0.50.2';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.50.2';
-import {renderSceneTracker} from './scene-tracker.js?v=0.50.2';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.50.2';
-import {renderGroupBoard} from './group-board-ui.js?v=0.50.2';
-import {uiText} from './ui-language.js?v=0.50.2';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.50.2';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.50.2';
-import { croppedPortrait } from './npc-portraits.js?v=0.50.2';
-import { effectiveNpc } from './npc-alternates.js?v=0.50.2';
+import {renderStoryEvents} from './story-events-ui.js?v=0.51.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.51.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.51.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.51.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.51.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.51.0';
+import {uiText} from './ui-language.js?v=0.51.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.51.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.51.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.51.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.51.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -135,14 +134,14 @@ function diaryBook(note) {
     return window;
 }
 
-function householdInvitation(offer, messageId, api) {
+export function householdInvitation(offer, messageId, api) {
     const card=element('section','trpg-household-writ');
     card.append(element('span','trpg-writ-sigil','✦'),element('small','trpg-writ-eyebrow',uiText("THE HOUSEHOLD COVENANT")),element('h3','',offer.npcName),
         element('p','',uiText('Requests to join your household as {0}',[offer.role])));
     if(offer.status==='pending'){
         const actions=element('div','trpg-writ-actions');
         for(const [label,accepted] of [['Accept',true],['Decline',false]]){
-            const button=element('button',accepted?'trpg-writ-accept':'trpg-writ-reject',uiText(label));button.type='button';
+            const button=element('button',accepted?'trpg-writ-accept':'trpg-writ-reject',uiText(label));button.type='button';button.disabled=Boolean(offer.preview);
             button.addEventListener('click',async()=>{
                 actions.querySelectorAll('button').forEach(item=>item.disabled=true);
                 const saved=await api.answerHouseholdOffer(messageId,offer.npcId,accepted);
@@ -154,7 +153,7 @@ function householdInvitation(offer, messageId, api) {
     return card;
 }
 
-function groupInvitation(offer, messageId, api) {
+export function groupInvitation(offer, messageId, api) {
     const guild = offer.kind === 'guild';
     const card = element('section',`trpg-group-invite ${guild ? 'is-guild' : 'is-party'}`);
     card.append(element('small','trpg-group-invite-type',guild ? uiText("OFFICIAL CHARTER · GUILD INVITATION") : uiText("FIELD DISPATCH · PARTY INVITATION")));
@@ -301,15 +300,16 @@ export function createChatPresentation(api, open) {
             const scene=settings.showSceneTracker ? api.sceneForMessage?.(id,message) : null;
             const missionBoard=settings.enableMissionBoard ? api.missionBoardForMessage?.(id,message) : null;
             const groupBoard=settings.enableGroupBoard ? api.groupBoardForMessage?.(id,message) : null;
-            const auction=api.auctionForMessage?.(id,message);
-            const marketplace=api.marketplaceForMessage?.(id,message);
+            const storyEvents=api.storyEventsForMessage?.(id,message);
+            const social=api.socialEventsForMessage?.(id,message);
+            const invites=[...(settings.enableGroupBoard?social?.groupOffers||[]:[]),...(social?.offers||[])];
             const systemStatus=api.systemStatusForMessage?.(id,message);
             const resourceEvents=api.resourceEventsForMessage?.(id,message)||[];
-            if(!blocks&&!reasoningLeak&&!scene&&!missionBoard&&!groupBoard&&!auction&&!marketplace&&!systemStatus&&!resourceEvents.length){if(old)restore(host,old,source);continue;}
+            if(!blocks&&!reasoningLeak&&!scene&&!missionBoard&&!groupBoard&&!systemStatus&&!storyEvents&&!invites.length&&!resourceEvents.length){if(old)restore(host,old,source);continue;}
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
-            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${preserveNativeChat}:${Boolean(blocks)}:${reasoningLeak}:${JSON.stringify(scene)}:${JSON.stringify(missionBoard)}:${JSON.stringify(groupBoard)}:${previousKey}:${JSON.stringify(auction)}:${JSON.stringify(marketplace)}:${JSON.stringify(resourceEvents)}:${JSON.stringify(systemStatus)}:${source}`;
+            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${preserveNativeChat}:${Boolean(blocks)}:${reasoningLeak}:${JSON.stringify(scene)}:${JSON.stringify(missionBoard)}:${JSON.stringify(groupBoard)}:${previousKey}:${JSON.stringify(resourceEvents)}:${JSON.stringify(storyEvents)}:${JSON.stringify(invites)}:${JSON.stringify(systemStatus)}:${source}`;
             if(old?.signature===signature && old.roots.every(root=>preserveNativeChat?root.parentNode===host:host.contains(root)))continue;
             if(old)restore(host,old,source);
             const prefix=element('div','trpg-chat'),suffix=element('div','trpg-chat');
@@ -323,8 +323,11 @@ export function createChatPresentation(api, open) {
                 if (blocks) renderStoryBlocks(storyRoot,blocks,lookup,message.name,open,imageFor,previousSpeaker);
                 else if (source) storyRoot.append(appendStoryText(element('div','trpg-plain'),source));
             }
-            if(auction)suffix.append(renderAuctionCard(auction,api,id));
-            if(marketplace)suffix.append(renderMarketplaceChatCard(marketplace,id,api));
+
+
+            for(const offer of (settings.enableGroupBoard?social?.groupOffers||[]:[]))suffix.append(groupInvitation(offer,id,api));
+            for(const offer of social?.offers||[])suffix.append(householdInvitation(offer,id,api));
+            const storyCard=renderStoryEvents(storyEvents,settings.language);if(storyCard)suffix.append(storyCard);
             if(systemStatus)suffix.append(renderChatSystemStatus(systemStatus,id,api));
             const resourceCard=renderResourceEvents(resourceEvents,settings.language);
             if(resourceCard)suffix.append(resourceCard);

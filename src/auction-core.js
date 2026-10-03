@@ -1,4 +1,4 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.50.2';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.0';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
@@ -25,9 +25,9 @@ export function normalizeAuctionOffer(raw) {
         ids.add(lotId);
         const bidders = [], names = new Set();
         for (const bidder of Array.isArray(input.bidders) ? input.bidders : []) {
-            const name = clean(bidder?.name,100), maxBid = integer(bidder?.maxBid);
-            if (!name || names.has(key(name)) || maxBid < openingBid) continue;
-            names.add(key(name)); bidders.push({id:`bidder-${hash(key(name))}`,name,npcId:clean(bidder.npcId,100),maxBid});
+            const name = clean(bidder?.name,100), maxBid = integer(bidder?.budget ?? bidder?.maxBid);
+            if (!name || names.has(key(name)) || (bidder.budget === undefined && maxBid < openingBid)) continue;
+            names.add(key(name)); bidders.push({id:`bidder-${hash(key(name))}`,name,npcId:clean(bidder.npcId,100),maxBid,...(bidder.budget !== undefined ? {budget:maxBid} : {})});
             if (bidders.length === 5) break;
         }
         lots.push({id:lotId,name:clean(input.name,100),description:clean(input.description,1200),category:clean(input.category,60) || 'Item',
