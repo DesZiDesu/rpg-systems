@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.51.2
+# ROLEFORGE — v0.51.3
+
+## v0.51.3 — Isolate commerce decisions from story generation
+
+- Composer buttons use SillyTavern’s native task API with the current connection/model, bounded NPC/card/chat reference, and an action-specific JSON contract. This prevents the normal story preset from taking over a button request. Legacy hosts make one quiet request; failures never trigger a hidden retry or settlement.
+- Auctions and trades have separate normal-chat instructions. Unsupported trade confirmation on an auction reports an action error; unrelated role-play negation no longer looks like refusal or a price mismatch.
+- Read explicit decisions alongside NPC prose, fenced JSON, direct commerce objects and flattened results. Distinguish empty replies, missing decisions, missing NPC prose, conflicting results and unsupported markup. Increase the task output budget to 4096 while keeping NPC narration brief.
+- Failed actions expose expandable, copyable diagnostics on mobile with the action, system, error and raw reply. Funds/items remain unchanged and no absent NPC choice is invented.
+- [Thai cause, fix and verification](docs/commerce-task-fix.th.md). Update and reload once; existing RPG records stay intact.
 
 ## v0.51.2 — Automatic commerce UI and reliable decision parsing
 

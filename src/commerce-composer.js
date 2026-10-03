@@ -78,7 +78,10 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         }
         button(auction?t('ออกประมูล','Leave'):kind==='sell'?t('ยกเลิกการขาย','Cancel sale'):t('ยกเลิกการซื้อ','Cancel purchase'),auction?'leave':'cancel');bar.append(controls);
         if(view.busy){const status=node('p','rf-commerce-status',t('NPC กำลังพิจารณา…','NPCs are considering…'));status.setAttribute('role','status');bar.append(status);}
-        else if(view.error){const error=node('p','rf-commerce-error',view.error);error.setAttribute('role','alert');bar.append(error);}
+        else if(view.error){const error=node('p','rf-commerce-error',view.error);error.setAttribute('role','alert');bar.append(error);
+            if(view.diagnostics){const details=node('details','rf-commerce-diagnostics'),summary=node('summary','',t('ดูข้อมูลข้อผิดพลาด','View error details')),report=node('textarea','rf-commerce-diagnostic-report');report.readOnly=true;report.value=view.diagnostics;report.setAttribute('aria-label',t('ข้อมูลสำหรับตรวจสอบปัญหา','Diagnostic report'));
+                const copy=node('button','rf-commerce-diagnostic-copy',t('คัดลอกข้อมูลตรวจสอบ','Copy diagnostic report'));copy.type='button';copy.addEventListener('click',async()=>{try{await win.navigator.clipboard.writeText(view.diagnostics);copy.textContent=t('คัดลอกแล้ว','Copied');}catch{report.focus();report.select();}});details.append(summary,report,copy);bar.append(details);}
+        }
         else if(!view.available)bar.append(node('p','rf-commerce-status',t('รอแชตพร้อม หรือกลับไปยังสถานที่เดิม','Wait for the chat or return to this location')));
         observe();
         position();

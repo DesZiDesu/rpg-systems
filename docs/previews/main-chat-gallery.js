@@ -18,7 +18,7 @@ document.querySelector('#tretaresia-rpg-close').click();Object.assign(window.hos
 window.galleryCalls=0;
 window.host.updateMessageBlock=(id,message)=>{document.querySelector(`.mes[mesid="${id}"] .mes_text`).textContent=message.mes;};
 window.host.generateQuietPrompt=async({quietPrompt})=>{
- window.galleryCalls++;const data=JSON.parse(quietPrompt.split('REFERENCE DATA:\n')[1]),{interaction:s,playerAction:a}=data;
+ window.galleryCalls++;const data=JSON.parse(quietPrompt.split('REFERENCE DATA:\n')[1].split('\n')[0]),{interaction:s,playerAction:a}=data;
  let decision,narrative;
  if(s.kind==='auction'){
   const lot=s.lots[s.index],responses=lot.bidders.filter(id=>!lot.withdrawn.includes(id)&&id!==lot.leader).map(id=>({id,action:'withdraw',reason:'ของชิ้นนี้ไม่ตรงกับที่ตั้งใจมาหา'}));
@@ -27,6 +27,8 @@ window.host.generateQuietPrompt=async({quietPrompt})=>{
  }else{decision={outcome:a.action==='cancel'?'cancel':'accept',amount:a.action==='offer'?a.amount:s.quote};narrative=a.action==='cancel'?'<tr-dialogue name="'+s.npc.name+'">ไว้วันหน้าค่อยคุยกันใหม่ก็ได้</tr-dialogue>':a.action==='offer'?'<tr-dialogue name="'+s.npc.name+'">ราคานี้ข้ารับได้ ถ้าเจ้าพร้อมก็ตกลงตามนี้</tr-dialogue>':'<tr-dialogue name="'+s.npc.name+'">ตกลงตามที่คุยไว้ ยินดีที่ได้ค้าขายกับเจ้า</tr-dialogue>';}
  return JSON.stringify({narrative,decision});
 };
+// Both native paths are simulated in this portable preview.
+window.host.generateRaw=({prompt})=>window.host.generateQuietPrompt({quietPrompt:prompt});
 let memory=null,epoch=0;
 function draw(){document.querySelector('#chat').replaceChildren(...window.host.chat.map((message,id)=>{const row=document.createElement('article');row.className='mes'+(message.is_user?' mes-user':'');row.setAttribute('mesid',id);const name=document.createElement('b');name.className='mes-name';name.textContent=message.name;const text=document.createElement('div');text.className='mes_text';text.textContent=message.mes.replace(/<!--tretaresia_patch:[\s\S]*?-->/gu,'');row.append(name,text);return row;}));}
 async function show(key){

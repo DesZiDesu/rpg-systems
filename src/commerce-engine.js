@@ -1,4 +1,4 @@
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.51.2';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.51.3';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);
@@ -122,7 +122,8 @@ export function commercePublicSummary(state) {return normalizeCommerce(state.com
 
 export function prepareCommerceAction(state, candidate, action, {amount,itemId}={}) {
     if(candidate.kind==='auction'&&candidate.status==='offered'&&action==='bid'){
-        const joined=applyCommerceDecision(state,prepareCommerceAction(state,candidate,'join'),{narrative:'Entry authorized by the player bid.',decision:{outcome:'joined'}});
+        const entry=prepareCommerceAction(state,candidate,'join');if(!entry.ok)return entry;
+        const joined=applyCommerceDecision(state,entry,{narrative:'Entry authorized by the player bid.',decision:{outcome:'joined'}});
         if(!joined.ok)return joined;
         const prepared=prepareCommerceAction(joined.next,joined.session,'bid',{amount,itemId});
         return prepared.ok?{...prepared,baseRevision:candidate.revision,entryEvents:joined.events}:prepared;
@@ -299,19 +300,24 @@ export function applyCommerceRoleplay(state,candidate,raw,{user='',userMessageId
     if(!candidate||!active(candidate)||key(candidate.location)!==key(state.location?.place))return fail('stale');
     if(raw&&Number.isInteger(userMessageId)&&userMessageId<=candidate.source.messageId)return fail('stale');
     if(raw&&(raw.sessionId!==candidate.id||raw.revision!==candidate.revision))return fail('stale');
-    const action=raw?.action||'talk',evidence=clean(raw?.evidence,1000),userText=clean(user,30000);
+    const action=clean(raw?.action||'talk').toLocaleLowerCase(),evidence=clean(raw?.evidence,1000),userText=clean(user,30000);
+    const allowed=candidate.kind==='auction'?['talk','join','bid','wait','next','leave']:['talk','offer','confirm','cancel'];
+    if(!allowed.includes(action))return fail('action');
     if(raw&&(!evidence||!userText.includes(evidence)))return fail('evidence');
     const selected=raw?.itemId&&candidate.kind!=='auction'?candidate.items.find(item=>item.id===raw.itemId):null;
     if(raw?.itemId&&candidate.kind!=='auction'&&(!selected||selected.id!==candidate.selectedId&&!key(evidence).includes(key(selected.item.name))))return fail('item');
     const consentQuote=selected&&selected.id!==candidate.selectedId?selected.askPrice:candidate.quote;
     if(action!=='talk'){
         if(!raw?.decision)return fail('response');
-        if(['bid','offer','confirm','join'].includes(action)&&/(?:ไม่(?:อยาก|ต้องการ|พร้อม|ได้|เอา|ซื้อ|ขาย|ยืนยัน|ตกลง)|ยังไม่|อย่า|สมม[ุู]ติ|ถ้าหาก|\b(?:not|never|don't|do not|hypothetical|suppose)\b)/iu.test(evidence))return fail('consent');
-        if(['confirm','join','leave','cancel','next','wait'].includes(action)&&/(?:ถ้า|หาก|อาจจะ|คงจะ|น่าจะ|\b(?:if|might|maybe|would|could)\b)/iu.test(evidence))return fail('consent');
+        // Negation must concern commerce. 'I do not want to waste time; I bid 6'
+        // is an actual bid, whereas 'I do not want to bid 6' is not.
+        const refusal=/(?:ไม่(?:อยาก|ต้องการ|พร้อม|ได้|เอา)?\s*(?:จะ|ขอ)?\s*(?:ซื้อ|ขาย|บิด|ประมูล|เสนอ|เข้าร่วม|ลงทะเบียน|จ่าย|ยืนยัน|ตกลง)|ยังไม่\s*(?:ซื้อ|ขาย|บิด|ประมูล|เสนอ|เข้าร่วม|พร้อม|ยืนยัน|ตกลง)|อย่า\s*(?:ซื้อ|ขาย|บิด|ประมูล|เสนอ|เข้าร่วม)|\b(?:not|never|don't|do not)(?:\s+\w+){0,2}\s+(?:buy|sell|bid|join|offer(?:ing)?|pay|accept|confirm)\b|ไม่(?:เอา|ให้)\s*[0-9๐-๙]|สมม[ุู]ติ|\b(?:hypothetical|suppose)\b)/iu;
+        if(['bid','offer','confirm','join'].includes(action)&&refusal.test(evidence))return fail('intent');
+        if(['bid','confirm','join','leave','cancel','next','wait'].includes(action)&&/(?:ถ้า|หาก|อาจจะ|คงจะ|น่าจะ|\b(?:if|might|maybe|would|could)\b)/iu.test(evidence))return fail('intent');
         const signals={offer:/(?:เสนอ|ต่อรอง|ลด|ให้|ขาย|ซื้อ|ขอ|ได้ไหม|ได้มั้ย|\b(?:offer|price|sell|buy|take|how about)\b)/iu,bid:/(?:บิด|ประมูล|เสนอ|ยกป้าย|ให้|\bbid\b)/iu,join:/(?:เข้าร่วม|ลงทะเบียน|\bjoin\b)/iu,leave:/(?:ออก|ถอนตัว|เลิก|\b(?:leave|withdraw|quit)\b)/iu,cancel:/(?:ยกเลิก|ไม่เอา|ไม่ซื้อ|ไม่ขาย|เลิก|\b(?:cancel|never mind|forget it)\b)/iu,next:/(?:ถัดไป|ต่อไป|\bnext\b)/iu,wait:/(?:รอ|ตัดสิน|เคาะ|ปิดประมูล|\b(?:wait|await|going|close|finish)\b)/iu};
         const barePrice=/^[\s"'“”]*(?:[0-9๐-๙,]+|(?:หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|เอ็ด|ยี่|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน)+)\s*(?:เหรียญ(?:เงิน|ทองแดง|ทอง)?|gold|silver|copper|coins?)?[\s!?!."'“”]*$/iu.test(evidence);
-        if(signals[action]&&!signals[action].test(evidence)&&!(['offer','bid'].includes(action)&&barePrice))return fail('consent');
-        if(action==='confirm'&&!/(?:ตกลง|ยืนยัน|โอเค|รับข้อเสนอ|ซื้อเลย|ขอซื้อ|รับเลย|จ่าย|ขายให้|ขายเลย|เอาเลย|เอาราคานี้|เอาตามราคา|\b(?:confirm|accept|deal|buy|sell|pay|take it)\b)/iu.test(evidence))return fail('consent');
+        if(signals[action]&&!signals[action].test(evidence)&&!(['offer','bid'].includes(action)&&barePrice))return fail('intent');
+        if(action==='confirm'&&!/(?:ตกลง|ยืนยัน|โอเค|รับข้อเสนอ|ซื้อเลย|ขอซื้อ|รับเลย|จ่าย|ขายให้|ขายเลย|เอาเลย|เอาราคานี้|เอาตามราคา|\b(?:confirm|accept|deal|buy|sell|pay|take it)\b)/iu.test(evidence))return fail('intent');
         if(['offer','bid'].includes(action)&&(/[-−]\s*[0-9๐-๙]/u.test(evidence)||!statedPrices(evidence).includes(raw.amount)))return fail('amount');
         if(action==='confirm'){
             if(raw.amount!=null&&raw.amount!==consentQuote)return fail('consent');
@@ -335,7 +341,10 @@ export function applyCommerceRoleplay(state,candidate,raw,{user='',userMessageId
 export function commerceRoleplayPrompt(session,{npcs=[],story='',canon=''}={}) {
     if(!session||!active(session))return '';
     const reference=commerceDecisionPrompt({session,action:'roleplay',itemId:session.selectedId},{npcs,story,canon}).split('\n').slice(1).join('\n');
+    const flow=session.kind==='auction'
+        ? `This is AUCTION ONLY. Allowed actions: join/bid/wait/next/leave/talk. A raised price, including "เสนอราคา", is bid; NEVER use trade actions offer/confirm/cancel or trade outcomes accept/counter. For a role-play bid on an offered auction, entering is implicit: use the established entry fee/deposit and assess rivals against the proposed player bid. Prepare that player bid as leader before evaluating rivals; it is not already applied to the reference snapshot. The former NPC leader needs a fresh choice after being outbid. A question, reaction to an NPC bid, or discussion of future prices is talk and does not itself advance a round.`
+        : `This is TRADE ONLY. Allowed actions: offer/confirm/cancel/talk. A price proposal or request to lower the price is offer, never confirm. Explicit agreement to the CURRENT quote is confirm; if a new price is proposed, use offer and await consent. Resolve a named shop item to its existing itemId; clarify ambiguous items/prices with talk. You may select an explicitly named shop item during talk to inspect it, but do not change its established data. Do not use auction actions or outcomes.`;
     return `NORMAL CHAT COMMERCE — The active interaction below supports BOTH free role-play and buttons. Reply naturally AFTER the latest user message; do not append to an older bubble or request another API call. In this reply's invisible tretaresia_patch include commerce:{sessionId,revision,action,amount,itemId,denomination,evidence,decision}. Use the exact interaction.id and revision; evidence is an exact quote of the player's action from the LATEST user message, never NPC words, a quoted third party, or old chat. Do not emit another marketplace/auction catalog while this interaction is active.\n`
-      + `Interpret the player's actual intent, including in-character dialogue/action. Actions: trade offer/confirm/cancel/talk; auction join/bid/wait/next/leave/talk. Prices are TOTAL for the displayed quantity in the interaction denomination; do not silently change currency or quantity. Resolve a named shop item to its existing itemId; clarify ambiguous items/prices with talk. A price proposal or request to lower the price is offer, never confirm. Explicit agreement to the CURRENT quote is confirm; if a new price is proposed, use offer and await consent. Hypotheticals, refusal, discussion, inventory/budget numbers and quotes of someone else's offer never authorize a purchase or bid. Do not invent a price missing from the user's bid/offer. For talk (questions, persuasion, threats, unrelated chat) use decision:{outcome:"unchanged"}; preserve money, ownership, price and auction progress. You may select an explicitly named shop item during talk to inspect it, but do not change its established data.\n`
-      + `For a role-play bid on an offered auction, entering is implicit: use the established entry fee/deposit and assess rivals against the proposed player bid. For any bid, prepare that player bid as the leader before evaluating rivals; it is not already applied to the reference snapshot. The remaining rules below govern NPC decisions. Ignore the button-only requirement to return standalone JSON: put ONLY the decision in commerce.decision, and the short NPC reaction in normal visible prose. Do not settle any active commerce money/items via ops; the extension applies and journals the validated decision once. Never infer NPC willingness from player wallet or force a win.\n${reference}`;
+      + `Interpret the player's actual intent, including in-character dialogue/action. Quote only the exact clause authorizing the action in evidence; unrelated narrative negation is not a refusal to trade or bid. ${flow} Prices are TOTAL for the displayed quantity in the interaction denomination; do not silently change currency or quantity. Hypotheticals, refusal, discussion, inventory/budget numbers and quotes of someone else's offer never authorize a purchase or bid. Do not invent a price missing from the user's action. For talk (questions, persuasion, threats, unrelated chat) use decision:{outcome:"unchanged"}; preserve money, ownership, price and auction progress.\n`
+      + `The remaining rules below govern NPC decisions. The schema describes ONLY commerce.decision for this normal reply, not a standalone response. Put the short NPC reaction in normal visible prose. Do not settle any active commerce money/items via ops; the extension applies and journals the validated decision once. Never infer NPC willingness from player wallet or force a win.\n${reference}`;
 }

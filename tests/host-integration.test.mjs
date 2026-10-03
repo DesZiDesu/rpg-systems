@@ -2176,3 +2176,30 @@ test('auction goods cannot open a shop and old missing-shop metadata stays suppr
   await host.processAssistantPatch(3,'normal');assert.equal(host.systemStatusForMessage(3,context.chat[3]),null);assert.equal(host.getState().commerce.sessions.length,1);assert.equal(host.getState().commerce.sessions[0].lots[0].price,18);host.initializeCommerce();assert.equal(host.systemStatusForMessage(3,context.chat[3]),null);
  }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateQuietPrompt=prior.quiet;}
 });
+
+test('all auction buttons use an isolated native task, recover from prose-only replies, and journal only valid decisions',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,quiet:context.generateQuietPrompt,raw:context.generateRaw};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,enableAuctions:true,eventNotifications:false,autoContinuity:false}};
+  const state=host.defaultState();state.location.place='Hall';state.onboarding.locationSeeded=true;state.progression.currency.silver=30;context.chatMetadata={tretaresia_rpg_state:state};context.saveMetadata=async()=>{};
+  const bidders=[{name:'พ่อค้าผ้าคลุมดำ',budget:15},{name:'นักเวทชุดเทา',budget:18},{name:'นักสำรวจเคราดก',budget:10}];
+  const patch={auction:{id:'native-auction',denomination:'silver',lots:[{id:'dagger',name:'กริชเหล็กทมิฬโบราณ',openingBid:5,minIncrement:1,bidders},{id:'crystal',name:'คริสตัลมนตร์โบราณ',openingBid:8,minIncrement:1,bidders}]},ops:[]};
+  const story='Varek displays the auction catalog.';context.chat=[{is_user:true,mes:'ผมเข้าร่วมประมูล'},{is_user:false,mes:story+'<!--tretaresia_patch:'+JSON.stringify(patch)+'-->'}];await host.processAssistantPatch(1,'normal');host.initializeCommerce();
+  let calls=0,quiet=0;const actions=[];context.generateQuietPrompt=async()=>{quiet++;return '<tr-dialogue name="พ่อค้าผ้าคลุมดำ">ห้าเหรียญเงิน</tr-dialogue>';};
+  context.generateRaw=async args=>{calls++;assert.match(args.systemPrompt,/not a new normal role-play turn/);assert.equal(args.responseLength,4096);const data=JSON.parse(args.prompt.split('REFERENCE DATA:\n')[1].split('\n')[0]),s=data.interaction,a=data.playerAction.action;actions.push(a);
+   if(calls===1)return '<tr-dialogue name="พ่อค้าผ้าคลุมดำ">ห้าเหรียญเงิน</tr-dialogue>';
+   let decision;
+   if(a==='join')decision={outcome:'joined'};
+   else if(a==='next')decision={outcome:'next'};
+   else if(a==='leave')decision={outcome:'left'};
+   else if(a==='bid'){assert.equal(s.lots[s.index].leader,'player');assert.equal(s.lots[s.index].price,data.playerAction.amount);decision={outcome:'open',participants:s.participants.map(p=>({name:p.name,choice:s.index===0&&p.name==='พ่อค้าผ้าคลุมดำ'?'raise':'skip',bid_amount:'7',motive:s.index===0&&p.name==='พ่อค้าผ้าคลุมดำ'?'Wanted heirloom':'Saving for another item'}))};}
+   else{const lot=s.lots[s.index];decision={outcome:'sold',participants:s.participants.filter(p=>p.id!==lot.leader).map(p=>({name:p.name,action:'withdraw',reason:'Keeping funds for another lot'}))};}
+   return '<tr-dialogue name="Varek">Varek considers the round and announces the result.</tr-dialogue>\n```json\n'+JSON.stringify({decision})+'\n```';};
+  const act=async(action,amount)=>{const view=host.commerceRuntime().view();return host.commerceRuntime().perform({id:view.session.id,token:view.token,action,amount});};
+  assert.equal((await act('bid',6)).error,'response-decision');assert.equal(host.getState().progression.currency.silver,30);assert.equal(host.getState().commerce.receipts.length,0);assert.equal(JSON.parse(host.commerceRuntime().view().diagnostics).action,'bid');
+  assert.equal((await act('join')).ok,true);assert.equal((await act('bid',6)).ok,true);assert.equal(host.commerceRuntime().view().session.lots[0].price,7);assert.equal((await act('wait')).ok,true);assert.equal((await act('next')).ok,true);assert.equal((await act('bid',9)).ok,true);assert.equal((await act('wait')).ok,true);
+  assert.equal(host.commerceRuntime().view(),null);assert.equal(host.getState().progression.currency.silver,21);assert.equal(host.getState().inventory[0].name,'คริสตัลมนตร์โบราณ');assert.equal(host.getState().commerce.receipts.length,3);assert.equal(context.chat.length,2);assert.equal(quiet,0);assert.deepEqual(actions,['bid','join','bid','wait','next','bid','wait']);
+  host.initializeCommerce();assert.equal(host.commerceRuntime().view(),null);assert.equal(host.getState().progression.currency.silver,21);
+  context.chat.push({is_user:true,mes:'ขอดูประมูลใหม่'},{is_user:false,mes:story+'<!--tretaresia_patch:'+JSON.stringify({...patch,auction:{...patch.auction,id:'native-new-auction'}})+'-->'});await host.processAssistantPatch(3,'normal');assert.equal((await act('leave')).ok,true);assert.equal(host.commerceRuntime().view(),null);assert.equal(host.getState().progression.currency.silver,21);assert.equal(calls,8);
+ }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateQuietPrompt=prior.quiet;context.generateRaw=prior.raw;}
+});
