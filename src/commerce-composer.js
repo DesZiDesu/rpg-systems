@@ -51,6 +51,7 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
                 if(!session.participants.length)detail.append(node('p','rf-commerce-description',t('ยังไม่มีผู้เข้าประมูลรายอื่น','No other bidders are present')));
                 if(session.lots.length>1){detail.append(node('h5','',t('รายการประมูล','Catalog')));for(const entry of session.lots)detail.append(node('div','rf-commerce-catalog-row',`${entry.name} · ${price(entry.openingBid)}`));}
             }else if(session.agreed)detail.append(node('p','rf-commerce-agreed',t('ตกลงราคาแล้ว · รอยืนยัน','Price agreed · Awaiting confirmation')));
+            detail.append(node('p','rf-commerce-terms',t('โรลเสนอราคา ยืนยัน หรือถาม NPC ในแชตได้ · ปุ่มเป็นทางลัด','Role-play offers, confirmation or questions in chat · Buttons are shortcuts')));
             const last=session.history?.at(-1);if(last)detail.append(node('p','rf-commerce-last',t('ผลล่าสุด · ','Latest · ')+last.narrative.replace(/<[^>]*>/gu,' ').slice(0,500)));
             bar.append(detail);
         }

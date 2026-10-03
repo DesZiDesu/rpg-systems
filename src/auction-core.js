@@ -1,4 +1,4 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.0';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.1';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');

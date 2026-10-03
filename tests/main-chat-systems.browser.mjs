@@ -1,7 +1,7 @@
 // Production loader, ordinary reply events, saved settings and actual Main Chat DOM.
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES ? `${process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES}/playwright` : 'playwright');
@@ -17,19 +17,25 @@ const server=http.createServer(async(req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const url=`http://127.0.0.1:${server.address().port}${base}docs/previews/preview-h-stats.html?lang=th`;
 async function receive(page,user,story,patch){
- const id=await page.evaluate(({user,story,patch})=>{
-  window.host.chat.push({is_user:true,name:'Player',mes:user}); const id=window.host.chat.length;
-  const mes=story+(patch?`\n<!--tretaresia_patch:${JSON.stringify(patch)}-->`:'');
+ await page.evaluate(async user=>{
+  window.host.chat.push({is_user:true,name:'Player',mes:user});
+  await window.host.eventSource.emit(window.host.eventTypes.MESSAGE_SENT,window.host.chat.length-1);
+  await window.host.eventSource.emit(window.host.eventTypes.GENERATION_STARTED,'normal',{},false);
+  await window.TretaresiaRpgGenerateInterceptor();window.lastNormalPrompt=[...window.prompts.values()].join('\n');window.normalCalls=(window.normalCalls||0)+1;
+ },user);
+ const id=await page.evaluate(({story,patch})=>{
+  const id=window.host.chat.length,mes=story+(patch?`\n<!--tretaresia_patch:${JSON.stringify(patch)}-->`:'');
   window.host.chat.push({is_user:false,name:'Narrator',mes,swipe_id:0,swipes:[mes]});
   document.querySelector('#chat').replaceChildren(...window.host.chat.map((message,index)=>{
    const row=document.createElement('div');row.className='mes';row.setAttribute('mesid',index);
    const text=document.createElement('div');text.className='mes_text';text.textContent=message.mes.replace(/<!--tretaresia_patch:[\s\S]*?-->/gu,'');row.append(text);return row;
   })); return id;
- },{user,story,patch});
- await page.evaluate(id=>window.host.eventSource.emit(window.host.eventTypes.MESSAGE_RECEIVED,id,'normal'),id);
+ },{story,patch});
+ await page.evaluate(async id=>{await window.host.eventSource.emit(window.host.eventTypes.MESSAGE_RECEIVED,id,'normal');await window.host.eventSource.emit(window.host.eventTypes.GENERATION_ENDED);},id);
  await page.waitForFunction(id=>Object.keys(window.host.chatMetadata.tretaresia_rpg_scene_history||{}).some(key=>key.startsWith(`${id}:`)),id);
  await page.waitForTimeout(200);return page.locator(`#chat .mes[mesid="${id}"]`);
 }
+
 let browser;
 try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -44,9 +50,9 @@ try{
   await page.evaluate(()=>{
    document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';document.querySelector('#chat').style.cssText='display:block;padding:12px 12px 240px;box-sizing:border-box';
    window.host.extensionSettings.tretaresia_rpg.chatPresentation=true;
-   const style=document.createElement('style');style.textContent='#send_form{position:fixed;bottom:0;left:0;width:100%;padding:10px;background:#191816;box-sizing:border-box}#send_textarea{display:block;width:100%;height:60px;font:inherit}';document.head.append(style);
+   const style=document.createElement('style');style.textContent='#send_form{position:fixed;bottom:0;left:0;width:100%;padding:10px;background:#191816;box-sizing:border-box}#send_textarea{display:block;box-sizing:border-box;width:100%;height:60px;font:inherit;background:#191816;color:#eee;border:1px solid #53462e;border-radius:12px;padding:10px}#send_but{background:#d8c28c;color:#262016;border:0;border-radius:8px;padding:8px 14px;margin-top:5px}';document.head.append(style);
    const form=document.createElement('form');form.id='send_form';form.append(document.querySelector('#send_textarea'));const send=document.createElement('button');send.id='send_but';send.type='button';send.textContent='Send';form.append(send);document.body.append(form);
-   window.calls=0;window.responses=[];window.host.generateQuietPrompt=async args=>{window.calls++;await window.host.eventSource.emit(window.host.eventTypes.GENERATION_STARTED,'quiet',{},false);window.lastCommercePrompt=args.quietPrompt;const reply=window.responses.shift();if(!reply)throw Error('Unexpected request');await window.host.eventSource.emit(window.host.eventTypes.GENERATION_ENDED);return JSON.stringify(reply);};
+   window.calls=0;window.responses=[];window.host.generateQuietPrompt=async args=>{window.calls++;await window.host.eventSource.emit(window.host.eventTypes.GENERATION_STARTED,'quiet',{},false);window.lastCommercePrompt=args.quietPrompt;const reply=window.responses.shift();if(!reply)throw Error('Unexpected request');if(window.deferQuiet){window.deferQuiet=false;await new Promise(resolve=>{window.releaseQuiet=resolve;});}await window.host.eventSource.emit(window.host.eventTypes.GENERATION_ENDED);return JSON.stringify(reply);};
    window.host.updateMessageBlock=(id,message)=>{document.querySelector(`#chat .mes[mesid="${id}"] .mes_text`).textContent=message.mes;};
    window.prompts=new Map();window.host.setExtensionPrompt=(key,value)=>window.prompts.set(key,value);
   });
@@ -75,11 +81,48 @@ try{
   await bar.locator('.rf-commerce-amount').fill('4');await action('bid',{outcome:'open',participants:[{id:bidders[0],action:'bid',amount:20,reason:'This heirloom is worth all my savings'},{id:bidders[1],action:'withdraw',reason:'Beyond my means'}]},'<tr-dialogue name="Rally">ข้าจะลงทั้งยี่สิบเหรียญเพื่อดาบเล่มนี้</tr-dialogue>');
   assert.match(await bar.innerText(),/Rally/);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory.length),0);
   await action('wait',{outcome:'sold',participants:[]});assert.equal(await bar.count(),0);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.gold),50);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.commerce.sessions.at(-1).participants[0].spent),20);
+  // Real normal generation events use the user's role-play and one main reply,
+  // followed by a button continuation anchored to that latest NPC reply.
+  const quietBefore=await page.evaluate(()=>window.calls);
+  const roleCatalog=await receive(page,'ขอดูสินค้าในร้านใหม่','Rally shows goods for sale. Potion: 3 silver.',{marketplace:{kind:'npcShop',id:'role-shop',seller:{name:'Rally'},denomination:'silver',items:[{name:'Potion',price:3}]},ops:[]});
+  const openingText=await page.evaluate(()=>window.host.chat.at(-1).mes);
+  const role=async(user,story,action,decision,amount)=>{
+   // A catalog is persisted only once the first action occurs. Use the prompt's
+   // interaction reference for an untouched opening session.
+   const contract=await page.evaluate(async()=>{await window.TretaresiaRpgGenerateInterceptor();return [...window.prompts.values()].join('\n');});
+   assert.match(contract,/NORMAL CHAT COMMERCE/);
+   const reference=JSON.parse(contract.split('REFERENCE DATA:\n').at(-1).split('\n')[0]);
+   const current=reference.interaction;
+   return receive(page,user,story,{commerce:{sessionId:current.id,revision:current.revision,evidence:user,action,decision,amount},ops:[]});
+  };
+  const roleOffer=await role('ผมเสนอ 2 เหรียญเงิน','<tr-dialogue name="Rally">ตกลง สองเหรียญเงิน แต่ข้ารอเจ้ายืนยันก่อน</tr-dialogue>','offer',{outcome:'accept',amount:2},2);
+  assert.equal(await page.evaluate(()=>window.calls),quietBefore);assert.equal(await bar.locator('.rf-commerce-amount').inputValue(),'2');assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),13);
+  if(width===390&&process.env.ROLEPLAY_ARTIFACT_DIR){await mkdir(process.env.ROLEPLAY_ARTIFACT_DIR,{recursive:true});await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));await page.screenshot({path:`${process.env.ROLEPLAY_ARTIFACT_DIR}/offer-390.png`});}
+  const roleId=await roleOffer.getAttribute('mesid');await action('confirm',{outcome:'accept',amount:2},'<tr-dialogue name="Rally">นี่โพชั่นของเจ้า</tr-dialogue>');assert.equal(await bar.count(),0);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),11);assert.match(await roleOffer.innerText(),/นี่โพชั่นของเจ้า/);assert.equal(await page.evaluate(id=>window.host.chat[Number(id)-2].mes,roleId),openingText);
+  await receive(page,'เสนอขาย Potion ให้ Mira','Mira offers to buy your Potion for 5 silver.',{marketplace:{kind:'npcPurchase',id:'role-sale',buyer:{name:'Mira',budget:7},item:{itemName:'Potion',quantity:1},askPrice:5,denomination:'silver'},ops:[]});
+  const beforeRoleConfirm=await page.evaluate(()=>window.calls);
+  await role('ตกลง ขายให้ราคา 5 เหรียญเงิน','Mira pays five silver and takes the potion.','confirm',{outcome:'accept',amount:5},5);assert.equal(await bar.count(),0);assert.equal(await page.evaluate(()=>window.calls),beforeRoleConfirm);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),16);
+  await receive(page,'ขอดูประมูลครั้งใหม่','The auctioneer displays the auction catalog.',{auction:{id:'role-auction',denomination:'gold',entryFee:1,deposit:2,lots:[{id:'shield',name:'Shield',openingBid:3,minIncrement:1,bidders:[{name:'Rally',budget:20}]}]},ops:[]});
+  // Offered auction: the opening catalog has no saved canonical session yet.
+  const prompt=await page.evaluate(async()=>{await window.TretaresiaRpgGenerateInterceptor();return [...window.prompts.values()].join('\n');});
+  const referenceText=prompt.split('REFERENCE DATA:\n').at(-1);const payload=JSON.parse(referenceText.slice(0,referenceText.indexOf('\n')));
+  const rival=payload.interaction.participants[0].id;
+  await role('ผมยกป้ายบิด 4 เหรียญทอง','The auctioneer awards you the shield at four gold.','bid',{outcome:'sold',participants:[{id:rival,action:'withdraw',reason:'Saving my funds for a sword'}]},4);
+  assert.equal(await bar.count(),0);assert.equal(await page.evaluate(()=>window.calls),beforeRoleConfirm);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.gold),45);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory.some(i=>i.name==='Shield')),true);
+  await receive(page,'ขอดูร้านสุดท้าย','Rally shows shop goods for sale. Potion: 1 silver.',{marketplace:{kind:'npcShop',id:'race-shop',seller:{name:'Rally'},denomination:'silver',items:[{name:'Potion',price:1}]},ops:[]});
+  const contract=await page.evaluate(async()=>{await window.TretaresiaRpgGenerateInterceptor();return [...window.prompts.values()].join('\n');});const raceSession=JSON.parse(contract.split('REFERENCE DATA:\n').at(-1).split('\n')[0]).interaction;
+  await page.evaluate(()=>{window.deferQuiet=true;window.responses.push({narrative:'Rally receives your silver.',decision:{outcome:'accept',amount:1}});});
+  await bar.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>typeof window.releaseQuiet==='function');
+  const cancelUser='ไม่ซื้อแล้ว ยกเลิก',cancellation=receive(page,cancelUser,'Rally puts the potion back.',{commerce:{sessionId:raceSession.id,revision:raceSession.revision,evidence:cancelUser,action:'cancel',decision:{outcome:'cancel'}},ops:[]});
+  await page.waitForFunction(()=>window.host.chat.at(-1).mes.includes('Rally puts the potion back.'));
+  assert.match(await page.evaluate(()=>window.lastNormalPrompt),/NORMAL CHAT COMMERCE/);
+  await page.evaluate(()=>{window.releaseQuiet();delete window.releaseQuiet;});await cancellation;
+  assert.equal(await bar.count(),0);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),16);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.commerce.sessions.at(-1).status),'cancelled');
   const boards=await receive(page,'ขออ่านกระดานภารกิจและกระดานกิลด์','You read the mission board. You browse the guild board.',{sceneTracker:{loc:'Guild'},missionBoard:{missions:[{name:'Delivery',objective:'Deliver the letter',reward:'3 silver'}]},groupBoard:{entries:[{kind:'guild',name:'Dawn'}]},ops:[['upsert','storyMemories',{id:'promise',title:'Return a book',kind:'Promise',detail:'Promised to return the book'}],['upsert','storyAgenda',{id:'meeting',title:'Meet Rally',dueDay:2}],['upsert','quests',{id:'job',name:'Errand',objectives:[{id:'step',title:'Bring the book'}]}]]});
   await boards.locator('.trpg-mission-board').waitFor();await boards.locator('.trpg-group-board').waitFor();await boards.locator('.trpg-story-events').waitFor();await boards.locator('.trpg-story-events>summary').click();assert.match(await boards.innerText(),/Return a book/);assert.match(await boards.innerText(),/Bring the book/);assert.match(await boards.innerText(),/Meet Rally/);
   const missing=await receive(page,'ขอดูสินค้า','Rally แสดงสินค้าที่ขายในร้านให้ดู แต่ยังไม่ระบุราคา',{sceneTracker:{loc:'Guild'},ops:[]});await missing.locator('.trpg-system-status').waitFor();
   await page.evaluate(()=>window.TretaresiaRpgGenerateInterceptor());assert.match(await page.evaluate(()=>[...window.prompts.values()].join('\n')),/MAIN CHAT INTERACTION CHECK/);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.deepEqual(errors,[]);
-  console.log(`PASS production API-per-action composer, same-message continuation, consent settlement, independent NPC all-in winner, all story record cards and both boards at ${width}px`);await page.close();
+  console.log(`PASS hybrid role-play/buttons, one main reply with no extra commerce API, latest-bubble continuation, consent settlement, implicit auction entry, independent NPC all-in winner, all story cards and boards at ${width}px`);await page.close();
  }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

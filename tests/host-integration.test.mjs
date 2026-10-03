@@ -2112,3 +2112,51 @@ test('optional story receipts use their source message and turn variant, and dis
   host.getSettings().enableStoryMemory=false;host.getSettings().enableStoryAgenda=false;host.getSettings().enableQuestObjectives=false;assert.equal(host.storyEventsForMessage(3,{}),null);assert.equal(host.getState().storyMemories.length,1);
  }finally{context.extensionSettings=prior;context.chatMetadata=metadata;}
 });
+
+test('free role-play and buttons share one saved trade, follow the newest NPC reply and never replay transfers',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,quiet:context.generateQuietPrompt};
+ try{
+  context.extensionSettings={tretaresia_rpg:{enableMarketplace:true,enableAuctions:true,autoTrack:true,autoContinuity:false,eventNotifications:false,npcDiaryFrequency:'off'}};
+  const state=host.defaultState();state.location.place='Guild';state.onboarding.locationSeeded=true;state.progression.currency.silver=10;
+  context.chatMetadata={tretaresia_rpg_state:state};context.chat=[{is_user:true,mes:'Show goods'},{is_user:false,mes:'<tr-header name="Rally"></tr-header>Rally shows the shop goods for sale.\n- Potion: 3 silver'}];context.saveMetadata=async()=>{};
+  await host.processAssistantPatch(1,'normal');host.initializeCommerce();let calls=0;
+  context.generateQuietPrompt=async()=>{calls++;return JSON.stringify({narrative:'Rally accepts the agreed payment.',decision:{outcome:'accept',amount:2}});};
+  host.updatePrompt();assert.match(context.lastPrompt[1],/NORMAL CHAT COMMERCE/);
+  const turn=async(user,story,action,decision,amount,ops=[])=>{const session=host.commerceRuntime().view().session;const commerce={sessionId:session.id,revision:session.revision,action,decision,amount,evidence:user};const mes=`${story}\n<!--tretaresia_patch:${JSON.stringify({ops,commerce})}-->`;const id=context.chat.length+1;context.chat.push({is_user:true,mes:user},{is_user:false,mes,swipe_id:0,swipes:[mes]});await host.processAssistantPatch(id,'normal');return id;};
+  const offerId=await turn('ผมเสนอ 2 เหรียญเงิน','Rally agrees to two silver.','offer',{outcome:'accept',amount:2},2,[['inc','progression.currency.silver',-2],['upsert','inventory',{name:'Potion',quantity:1}]]);
+  assert.equal(host.getState().progression.currency.silver,10);assert.equal(host.getState().inventory.length,0);assert.equal(host.commerceRuntime().view().session.source.messageId,offerId);assert.equal(calls,0);assert.equal(host.commerceRuntime().view().session.quote,2);
+  // Even plain chat without a commerce payload follows the newest reply without settling.
+  context.chat.push({is_user:true,mes:'ขวดนี้มีรอยร้าวไหม'},{is_user:false,mes:'Rally turns the bottle to show intact glass.'});await host.processAssistantPatch(5,'normal');assert.equal(host.commerceRuntime().view().session.source.messageId,5);assert.equal(host.getState().progression.currency.silver,10);
+  const original=context.chat[1].mes,offerReply=context.chat[3].mes;let view=host.commerceRuntime().view();
+  assert.equal((await host.commerceRuntime().perform({id:view.session.id,token:view.token,action:'confirm'})).ok,true);
+  assert.equal(calls,1);assert.equal(context.chat.length,6);assert.equal(context.chat[1].mes,original);assert.equal(context.chat[3].mes,offerReply);assert.match(context.chat[5].mes,/agreed payment/);assert.equal(host.getState().progression.currency.silver,8);assert.equal(host.getState().inventory[0].quantity,1);assert.equal(host.commerceRuntime().view(),null);
+  await host.processAssistantPatch(5,'normal');host.initializeCommerce();assert.equal(host.commerceRuntime().view(),null);assert.equal(host.getState().progression.currency.silver,8);assert.equal(host.getState().commerce.receipts.length,1);assert.equal(host.getState().transactions.at(-1).source,'commerce');
+ }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateQuietPrompt=prior.quiet;}
+});
+
+test('normal-chat confirmation settles after the user, failed host saving restores funds and can retry without another API request',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,quiet:context.generateQuietPrompt};
+ try{
+  context.extensionSettings={tretaresia_rpg:{enableMarketplace:true,autoTrack:true,autoContinuity:false,eventNotifications:false,npcDiaryFrequency:'off'}};
+  const state=host.defaultState();state.location.place='Guild';state.onboarding.locationSeeded=true;state.progression.currency.silver=10;context.chatMetadata={tretaresia_rpg_state:state};context.chat=[{is_user:true,mes:'Show goods'},{is_user:false,mes:'<tr-header name="Rally"></tr-header>Rally shows the shop goods for sale.\n- Potion: 3 silver'}];context.saveMetadata=async()=>{};context.generateQuietPrompt=async()=>{throw Error('Normal chat must not call the quiet API');};
+  await host.processAssistantPatch(1,'normal');host.initializeCommerce();const session=host.commerceRuntime().view().session;
+  const user='ตกลง ซื้อราคา 3 เหรียญเงิน',story='Rally takes three silver and gives you the potion.';const mes=`${story}\n<!--tretaresia_patch:${JSON.stringify({commerce:{sessionId:session.id,revision:session.revision,evidence:user,action:'confirm',amount:3,decision:{outcome:'accept',amount:3}},ops:[]})}-->`;
+  context.chat.push({is_user:true,mes:user},{is_user:false,mes,swipe_id:0,swipes:[mes]});context.saveMetadata=async()=>{throw Error('Disk unavailable');};
+  await host.processAssistantPatch(3,'normal');assert.equal(host.getState().progression.currency.silver,10);assert.equal(host.getState().inventory.length,0);assert.equal(context.chat[3].mes,mes);assert.ok(host.commerceRuntime().view());
+  context.saveMetadata=async()=>{};await host.processAssistantPatch(3,'normal');assert.equal(host.getState().progression.currency.silver,7);assert.equal(host.getState().inventory[0].quantity,1);assert.equal(context.chat.length,4);assert.equal(context.chat[2].mes,user);assert.equal(context.chat[3].mes,story);assert.equal(context.chat[3].swipes[0],story);assert.equal(host.commerceRuntime().view(),null);
+  await host.processAssistantPatch(3,'normal');host.initializeCommerce();assert.equal(host.getState().progression.currency.silver,7);assert.equal(host.getState().commerce.receipts.length,1);
+  await host.replaceAssistantTurnState(3,{reuseVariant:true,reason:'test'});assert.equal(host.getState().progression.currency.silver,7);assert.equal(host.getState().inventory[0].quantity,1);
+ }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateQuietPrompt=prior.quiet;}
+});
+
+
+test('an unrelated once-only quest reward remains available during commerce conversation',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata};
+ try{
+  context.extensionSettings={tretaresia_rpg:{enableMarketplace:true,enableQuestObjectives:true,autoTrack:true,autoContinuity:false,eventNotifications:false,npcDiaryFrequency:'off'}};
+  const state=host.normalize({...host.defaultState(),quests:[{id:'errand',name:'Errand',status:'Active',reward:'4 silver',objective:'Deliver the letter'}]});state.location.place='Guild';state.onboarding.locationSeeded=true;state.progression.currency.silver=10;
+  context.chatMetadata={tretaresia_rpg_state:state};context.chat=[{is_user:true,mes:'Show goods'},{is_user:false,mes:'<tr-header name="Rally"></tr-header>Rally shows the shop goods for sale.\n- Potion: 3 silver'}];context.saveMetadata=async()=>{};await host.processAssistantPatch(1,'normal');host.initializeCommerce();
+  const mes='Rally confirms the errand is complete and pays the established four silver reward.\n<!--tretaresia_patch:'+JSON.stringify({ops:[['upsert','quests',{id:'errand',name:'Errand',status:'Completed'}],['inc','progression.currency.silver',4,{category:'quest-reward',questId:'errand',reason:'Delivered the letter'}]]})+'-->';
+  context.chat.push({is_user:true,mes:'I delivered the letter. Please pay the quest reward.'},{is_user:false,mes});await host.processAssistantPatch(3,'normal');assert.equal(host.getState().progression.currency.silver,14);assert.equal(host.getState().commerce.sessions[0].quote,3);assert.equal(host.commerceRuntime().view().session.source.messageId,3);await host.processAssistantPatch(3,'normal');assert.equal(host.getState().progression.currency.silver,14);
+ }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;}
+});

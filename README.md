@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.51.0
+# ROLEFORGE — v0.51.1
+
+## v0.51.1 — Role-play and buttons share the same commerce
+
+- Make offers, confirm trades, bid, wait or leave through ordinary in-character chat. The existing main API reply supplies NPC reactions and a validated hidden decision; no second commerce request is made.
+- Buttons remain shortcuts. After a user message, the next button continues the latest NPC reply. Questions and persuasion preserve prices and funds; inspecting a named catalog item updates its selection.
+- A proposal never pays automatically. Explicit consent uses the selected item's established quote; prices, stock, actual NPC budgets and once-only receipts use the same engine as buttons. Conditional/refused actions, stale decisions and failed saves do not settle a transaction.
+- A spoken first bid may enter an offered auction with its established fee and deposit in that same reply. NPCs retain independent choices and can win.
+- [Thai role-play flow and validation](docs/commerce-roleplay.th.md). Update and reload once; existing RPG data stays intact.
 
 ## v0.51.0 — Rebuilt AI commerce in the chat composer
 

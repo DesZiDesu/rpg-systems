@@ -1,5 +1,5 @@
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.51.0';
-import {createCommerceComposer} from './commerce-composer.js?v=0.51.0';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.51.1';
+import {createCommerceComposer} from './commerce-composer.js?v=0.51.1';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.
@@ -9,7 +9,7 @@ export function createCommerceRuntime(api) {
     let busy=false,error='',errorId='',request=0,destroyed=false;
     const ui=createCommerceComposer({document:api.document||globalThis.document,language:()=>api.settings().language,perform:perform});
     const word=(th,en)=>api.settings().language==='th'?th:en;
-    const errors={funds:['เงินที่ใช้ได้ไม่พอ','Insufficient available funds'],inventory:['สินค้าไม่พร้อมหรือจำนวนไม่พอ','The item is unavailable'],amount:['ราคาต้องเป็นจำนวนเต็มและสูงกว่าราคาปัจจุบัน','Enter a valid whole-number price'],
+    const errors={evidence:['ข้อความยังไม่ยืนยันการกระทำนี้ กรุณาระบุให้ชัดหรือใช้ปุ่ม','The message does not authorize this action. Clarify it or use a button.'],funds:['เงินที่ใช้ได้ไม่พอ','Insufficient available funds'],inventory:['สินค้าไม่พร้อมหรือจำนวนไม่พอ','The item is unavailable'],amount:['ราคาต้องเป็นจำนวนเต็มและสูงกว่าราคาปัจจุบัน','Enter a valid whole-number price'],
         budget:['คำตอบ NPC เกินงบหรือราคาไม่ถูกต้อง ลองอีกครั้งได้','NPC decision exceeded funds or used an invalid price. Try again.'],participants:['คำตอบยังตัดสินใจให้ผู้ประมูลไม่ครบ ลองอีกครั้งได้','The reply did not decide every bidder action. Try again.'],
         consent:['ราคายืนยันไม่ตรงกับที่ตกลง ลองอีกครั้งได้','The confirmation price did not match consent. Try again.'],committed:['ยังมีราคาประมูลที่ผูกพันอยู่ ให้รอการตัดสินก่อน','Your leading bid is still committed. Await a decision.'],
         response:['AI ส่งคำตอบไม่ครบ ลองอีกครั้งได้','AI returned an incomplete response. Try again.'],outcome:['ผลลัพธ์ไม่ตรงกับการกระทำ ลองอีกครั้งได้','The outcome did not match the action. Try again.'],
@@ -25,7 +25,9 @@ export function createCommerceRuntime(api) {
                 if(!existing&&latestInteractionSeen)continue;latestInteractionSeen=true;
                 const candidate=existing||createCommerceSession(event,{messageId:id,turnKey,variant});
                 if(!candidate||!['offered','open'].includes(candidate.status))continue;
-                out.push({...candidate,source:{...candidate.source,messageId:id,turnKey,variant}});
+                const anchor=existing?.source?.messageId;
+                if(Number.isInteger(anchor)&&anchor!==id){const target=context.chat[anchor];if(!target||target.is_user||api.variant(target)!==existing.source.variant)continue;out.push(candidate);}
+                else out.push({...candidate,source:{...candidate.source,messageId:id,turnKey,variant}});
             }
         }
         for(const session of commerce.sessions){if(!['offered','open'].includes(session.status)||seen.has(session.eventId))continue;
@@ -40,7 +42,7 @@ export function createCommerceRuntime(api) {
     }
     function view(){const candidate=candidates()[0];if(!candidate)return null;const context=api.context(),state=api.state();
         return{session:candidate,token:`${context.getCurrentChatId?.()}:${candidate.source.turnKey}:${candidate.source.variant}:${candidate.revision}`,
-            playerName:state.player.name,busy,error:candidate.id===errorId?error:'',available:!api.isBusy()&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
+            playerName:state.player.name,busy:busy||api.isBusy(),error:candidate.id===errorId?error:'',available:!api.isBusy()&&!context.chat.at(-1)?.is_user&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
     function refresh(){if(!destroyed)ui.update(view());}
     async function perform(input){
         const current=view();if(destroyed||busy||!current?.available||current.session.id!==input.id||current.token!==input.token)return{ok:false,error:'stale'};
@@ -73,5 +75,5 @@ export function createCommerceRuntime(api) {
             api.log?.(failure);return{ok:false,error:code};
         }finally{busy=false;api.setBusy(false);refresh();}
     }
-    return{view,refresh,perform,cancel(){request++;},isBusy:()=>busy,destroy(){destroyed=true;request++;ui.destroy();}};
+    return{view,refresh,perform,reportRoleplay(id,code){errorId=id;error=code?(errors[code]||errors.response)[api.settings().language==='th'?0:1]:'';refresh();},cancel(){request++;},isBusy:()=>busy,destroy(){destroyed=true;request++;ui.destroy();}};
 }

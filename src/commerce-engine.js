@@ -126,7 +126,10 @@ export function prepareCommerceAction(state, candidate, action, {amount,itemId}=
     if(!session){if(next.commerce.sessions.some(s=>s.eventId===candidate.eventId&&!active(s)))return fail('closed');session=copy(candidate);next.commerce.sessions.push(session);}
     if(!active(session))return fail('closed');
     const d=session.denomination;
-    if(session.kind==='auction'){
+    if(action==='talk'){
+        if(itemId&&session.kind!=='auction'){const selected=session.items.find(item=>item.id===itemId);if(!selected)return fail('item');
+            if(selected.id!==session.selectedId){session.selectedId=selected.id;session.quote=selected.askPrice;session.agreed=false;}}
+    }else if(session.kind==='auction'){
         const lot=session.lots[session.index];
         if(action==='join'){
             if(session.status!=='offered'||next.commerce.sessions.some(s=>s.id!==session.id&&s.kind==='auction'&&s.status==='open'))return fail('active');
@@ -170,7 +173,9 @@ export function applyCommerceDecision(state, prepared, result, now=new Date().to
         if(existing){if(existing.quantity+quantity>99999)return false;existing.quantity+=quantity;}
         else{if(next.inventory.length>=200)return false;next.inventory.push({id:item.id||`commerce-item-${hash(`${session.id}|${item.name}`)}`,name:item.name,quantity,category:item.category||'Item',description:clean(item.description,300)});}return true;
     };
-    if(session.kind==='auction'){
+    if(prepared.action==='talk'){
+        if(decision.outcome!=='unchanged'||decision.participants?.length||decision.amount!=null&&decision.amount!==session.quote)return fail('outcome');
+    }else if(session.kind==='auction'){
         if(prepared.action==='leave'&&session.status==='offered'){
             if(decision.outcome!=='left')return fail('outcome');session.status='cancelled';events.push({type:'left'});
         }else if(prepared.action==='join'){
@@ -242,7 +247,7 @@ export function applyCommerceDecision(state, prepared, result, now=new Date().to
     return{ok:true,next,session,events,narrative:result.narrative.trim()};
 }
 
-export const COMMERCE_AUCTION_OPENING = 'When the current scene presents an auction, include top-level auction in the invisible tretaresia_patch: {id,title,location,evidence:"exact affirmative quote from this reply",denomination:"gold|silver|copper",entryFee:0,deposit:0,lots:[{id,name,description,category,rarity,quantity:1,openingBid:5,minIncrement:1,bidders:[{name,npcId,budget:12}]}]}. Use 1–8 lots and 0–5 actual present rivals per lot. Each rival has fixed actual total funds budget shared across all lots, never a willingness ceiling or a target matching player wealth. Opening fees/deposit are zero unless established. Show known public item facts only. Preserve IDs while the interaction is active; a genuinely new auction has a new ID. The composer opens only for an actual present interaction; no future/rumored/OOC event. Do not settle auction money/items in normal patch ops. NPC decisions and auction closure come from each separate composer API action, with no deterministic counterbid or countdown.';
+export const COMMERCE_AUCTION_OPENING = 'When the current scene presents an auction, include top-level auction in the invisible tretaresia_patch: {id,title,location,evidence:"exact affirmative quote from this reply",denomination:"gold|silver|copper",entryFee:0,deposit:0,lots:[{id,name,description,category,rarity,quantity:1,openingBid:5,minIncrement:1,bidders:[{name,npcId,budget:12}]}]}. Use 1–8 lots and 0–5 actual present rivals per lot. Each rival has fixed actual total funds budget shared across all lots, never a willingness ceiling or a target matching player wealth. Opening fees/deposit are zero unless established. Show known public item facts only. Preserve IDs while the interaction is active; a genuinely new auction has a new ID. The composer opens only for an actual present interaction; no future/rumored/OOC event. Do not settle auction money/items in normal patch ops. NPC decisions and auction closure come from the normal role-play reply or each composer API action, with no deterministic counterbid or countdown.';
 
 export const COMMERCE_INSTRUCTIONS = 'RoleForge composer commerce: current NPC goods/offers and auction catalogs use the existing top-level marketplace/auction shapes in the normal tretaresia_patch. These open the composer interaction bar. Auctions: give each NPC bidder a fixed total available budget via budget (maxBid is accepted only for old data). The same bidder must have the same budget across all lots. Choose realistic funds from the established character/story, never from player wealth or an intended winning price. There is NO fixed willingness ceiling: a bidder may spend all available money if AI judges it consistent with their motives. Buttons call the current API to continue this same assistant message with brief NPC reactions and a validated commerce decision. Do not settle active composer transactions via normal story currency/inventory ops, do not invent another auction/trade to replace one in progress, and do not print controls in prose. Completed commerce receipts are already paid/delivered facts, never pay them again.';
 
@@ -257,4 +262,74 @@ export function commerceDecisionPrompt(prepared,{npcs=[],story='',canon=''}={}) 
         + (lot?`AUCTION: on join use outcome joined, on next use next. Leaving an offered auction before joining uses outcome left without a fee. On bid/wait/leave return a decision for EVERY active participant except the current leader: participants:[{id,action:"bid"|"pass"|"withdraw",amount:integer-for-bid,reason:"brief motive"}]. Bids must exceed the current price by minIncrement (or reach openingBid if no leader), respect budget minus spent, and follow array order. No new participants/budgets. The player's proposed bid is already in interaction.lots. Choose outcome open to continue, sold to finish to the actual leader, unsold when nobody bid, left for an uncommitted departure. A new NPC bid stays open so the player can respond; do not sell immediately after that new bid. There is no fixed three-click countdown: the auctioneer decides whether bidding has genuinely ended from the participants' considered decisions. Leaving while the player leads must settle their existing winning obligation or be outbid before departure.\n`
         :`TRADE: use outcome accept/counter/reject/cancel. Player offer proposes amount; accepting that price sets agreed terms, awaiting a separate confirm. Player confirm consents ONLY to interaction.quote for the selected item/quantity; accept with exactly that amount to complete. A different price is counter and awaits consent. Player cancel must return cancel and close without a transfer. NPC may counter or reject from their motives; never increase a known npcBudget. Preserve the named item, quantity and NPC.\n`)
         + `REFERENCE DATA:\n${JSON.stringify(payload).replace(/</gu,'\\u003c')}`;
+}
+
+
+// Normal chat and buttons share the same validator and receipts. The model
+// identifies intent; explicit player evidence authorizes financial actions.
+function statedPrices(evidence) {
+    const digits=evidence.replace(/[๐-๙]/gu,c=>String('๐๑๒๓๔๕๖๗๘๙'.indexOf(c)));
+    const values=[...digits.matchAll(/(?<![\d.])\d+(?:,\d{3})*(?![\d.])/gu)].map(m=>Number(m[0].replaceAll(',','')));
+    const words={'ศูนย์':0,'หนึ่ง':1,'เอ็ด':1,'สอง':2,'ยี่':2,'สาม':3,'สี่':4,'ห้า':5,'หก':6,'เจ็ด':7,'แปด':8,'เก้า':9};
+    for(const match of digits.matchAll(/(?:ศูนย์|หนึ่ง|เอ็ด|สอง|ยี่|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน)+/gu)) {
+        let total=0,part=0,digit=0;
+        for(const token of match[0].match(/ศูนย์|หนึ่ง|เอ็ด|สอง|ยี่|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน/gu)){
+            if(Object.hasOwn(words,token))digit=words[token];
+            else if(token==='ล้าน'){total=(total+part+digit)*1000000;part=0;digit=0;}
+            else{part+=(digit||1)*({'สิบ':10,'ร้อย':100,'พัน':1000,'หมื่น':10000,'แสน':100000}[token]);digit=0;}
+        }
+        values.push(total+part+digit);
+    }
+    return values;
+}
+
+export function applyCommerceRoleplay(state,candidate,raw,{user='',userMessageId,narrative='',source={}}={}) {
+    const fail=error=>({ok:false,error,next:state,events:[]});
+    if(!candidate||!active(candidate)||key(candidate.location)!==key(state.location?.place))return fail('stale');
+    if(raw&&Number.isInteger(userMessageId)&&userMessageId<=candidate.source.messageId)return fail('stale');
+    if(raw&&(raw.sessionId!==candidate.id||raw.revision!==candidate.revision))return fail('stale');
+    const action=raw?.action||'talk',evidence=clean(raw?.evidence,1000),userText=clean(user,30000);
+    if(raw&&(!evidence||!userText.includes(evidence)))return fail('evidence');
+    const selected=raw?.itemId&&candidate.kind!=='auction'?candidate.items.find(item=>item.id===raw.itemId):null;
+    if(raw?.itemId&&candidate.kind!=='auction'&&(!selected||selected.id!==candidate.selectedId&&!key(evidence).includes(key(selected.item.name))))return fail('item');
+    const consentQuote=selected&&selected.id!==candidate.selectedId?selected.askPrice:candidate.quote;
+    if(action!=='talk'){
+        if(!raw?.decision)return fail('response');
+        if(['bid','offer','confirm','join'].includes(action)&&/(?:ไม่(?:อยาก|ต้องการ|พร้อม|ได้|เอา|ซื้อ|ขาย|ยืนยัน|ตกลง)|ยังไม่|อย่า|สมม[ุู]ติ|ถ้าหาก|\b(?:not|never|don't|do not|hypothetical|suppose)\b)/iu.test(evidence))return fail('consent');
+        if(['confirm','join','leave','cancel','next','wait'].includes(action)&&/(?:ถ้า|หาก|อาจจะ|คงจะ|น่าจะ|\b(?:if|might|maybe|would|could)\b)/iu.test(evidence))return fail('consent');
+        const signals={offer:/(?:เสนอ|ต่อรอง|ลด|ให้|ขาย|ซื้อ|ขอ|ได้ไหม|ได้มั้ย|\b(?:offer|price|sell|buy|take|how about)\b)/iu,bid:/(?:บิด|ประมูล|เสนอ|ยกป้าย|ให้|\bbid\b)/iu,join:/(?:เข้าร่วม|ลงทะเบียน|\bjoin\b)/iu,leave:/(?:ออก|ถอนตัว|เลิก|\b(?:leave|withdraw|quit)\b)/iu,cancel:/(?:ยกเลิก|ไม่เอา|ไม่ซื้อ|ไม่ขาย|เลิก|\b(?:cancel|never mind|forget it)\b)/iu,next:/(?:ถัดไป|ต่อไป|\bnext\b)/iu,wait:/(?:รอ|ตัดสิน|เคาะ|ปิดประมูล|\b(?:wait|await|going|close|finish)\b)/iu};
+        const barePrice=/^[\s"'“”]*(?:[0-9๐-๙,]+|(?:หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|เอ็ด|ยี่|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน)+)\s*(?:เหรียญ(?:เงิน|ทองแดง|ทอง)?|gold|silver|copper|coins?)?[\s!?!."'“”]*$/iu.test(evidence);
+        if(signals[action]&&!signals[action].test(evidence)&&!(['offer','bid'].includes(action)&&barePrice))return fail('consent');
+        if(action==='confirm'&&!/(?:ตกลง|ยืนยัน|โอเค|รับข้อเสนอ|ซื้อเลย|ขอซื้อ|รับเลย|จ่าย|ขายให้|ขายเลย|เอาเลย|เอาราคานี้|เอาตามราคา|\b(?:confirm|accept|deal|buy|sell|pay|take it)\b)/iu.test(evidence))return fail('consent');
+        if(['offer','bid'].includes(action)&&(/[-−]\s*[0-9๐-๙]/u.test(evidence)||!statedPrices(evidence).includes(raw.amount)))return fail('amount');
+        if(action==='confirm'){
+            if(raw.amount!=null&&raw.amount!==consentQuote)return fail('consent');
+            const prices=statedPrices(evidence);if(prices.length&&!prices.includes(consentQuote))return fail('consent');
+        }
+    }
+    const denominationWords={gold:/(?:เหรียญทอง(?!แดง)|\bgold\b)/iu,silver:/(?:เหรียญเงิน|\bsilver\b)/iu,copper:/(?:เหรียญทองแดง|\bcopper\b)/iu};
+    if(['bid','offer','confirm'].includes(action)&&Object.entries(denominationWords).some(([unit,pattern])=>unit!==candidate.denomination&&pattern.test(evidence)))return fail('amount');
+    if(raw?.denomination&&raw.denomination!==candidate.denomination)return fail('amount');
+    // A role-play bid can enter an offered auction in the same provider reply.
+    const reaction=clean(narrative,6000);
+    let base=state,session=candidate,entryEvents=[];
+    if(action==='bid'&&session.kind==='auction'&&session.status==='offered'){
+        const joined=applyCommerceDecision(base,prepareCommerceAction(base,session,'join'),{narrative:reaction,decision:{outcome:'joined'}});
+        if(!joined.ok)return joined;base=joined.next;session=joined.session;entryEvents=joined.events;
+    }
+    const prepared=prepareCommerceAction(base,session,action,{amount:raw?.amount,itemId:raw?.itemId});
+    if(!prepared.ok)return prepared;
+    const result=applyCommerceDecision(base,prepared,{narrative:reaction,decision:raw?.decision||{outcome:'unchanged'}});
+    if(!result.ok)return fail(result.error);
+    result.session.source=copy(source);result.events.unshift(...entryEvents);
+    result.session.history.at(-1).channel='roleplay';
+    return result;
+}
+
+export function commerceRoleplayPrompt(session,{npcs=[],story='',canon=''}={}) {
+    if(!session||!active(session))return '';
+    const reference=commerceDecisionPrompt({session,action:'roleplay',itemId:session.selectedId},{npcs,story,canon}).split('\n').slice(1).join('\n');
+    return `NORMAL CHAT COMMERCE — The active interaction below supports BOTH free role-play and buttons. Reply naturally AFTER the latest user message; do not append to an older bubble or request another API call. In this reply's invisible tretaresia_patch include commerce:{sessionId,revision,action,amount,itemId,denomination,evidence,decision}. Use the exact interaction.id and revision; evidence is an exact quote of the player's action from the LATEST user message, never NPC words, a quoted third party, or old chat. Do not emit another marketplace/auction catalog while this interaction is active.\n`
+      + `Interpret the player's actual intent, including in-character dialogue/action. Actions: trade offer/confirm/cancel/talk; auction join/bid/wait/next/leave/talk. Prices are TOTAL for the displayed quantity in the interaction denomination; do not silently change currency or quantity. Resolve a named shop item to its existing itemId; clarify ambiguous items/prices with talk. A price proposal or request to lower the price is offer, never confirm. Explicit agreement to the CURRENT quote is confirm; if a new price is proposed, use offer and await consent. Hypotheticals, refusal, discussion, inventory/budget numbers and quotes of someone else's offer never authorize a purchase or bid. Do not invent a price missing from the user's bid/offer. For talk (questions, persuasion, threats, unrelated chat) use decision:{outcome:"unchanged"}; preserve money, ownership, price and auction progress. You may select an explicitly named shop item during talk to inspect it, but do not change its established data.\n`
+      + `For a role-play bid on an offered auction, entering is implicit: use the established entry fee/deposit and assess rivals against the proposed player bid. For any bid, prepare that player bid as the leader before evaluating rivals; it is not already applied to the reference snapshot. The remaining rules below govern NPC decisions. Ignore the button-only requirement to return standalone JSON: put ONLY the decision in commerce.decision, and the short NPC reaction in normal visible prose. Do not settle any active commerce money/items via ops; the extension applies and journals the validated decision once. Never infer NPC willingness from player wallet or force a win.\n${reference}`;
 }
