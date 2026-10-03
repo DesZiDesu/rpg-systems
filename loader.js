@@ -31,12 +31,11 @@ async function boot() {
     // Stable compatibility entry. The versioned runtime also verifies core and
     // polish styles, so stale bootstraps cannot silently leave the UI unstyled.
     const style=document.createElement('link'); style.rel='stylesheet'; style.href=releaseUrl('ui-polish.css',version); document.head.append(style);
-    await import(releaseUrl('index.js',version));
     globalThis.TretaresiaRelease=version;
+    await import(releaseUrl('index.js',version));
 }
 if (typeof document !== 'undefined') void boot().catch(error=>{
     globalThis.TretaresiaBootStarted=false;
     console.error('[RoleForge loader]',error);
     globalThis.toastr?.error('RoleForge could not load. Check your server connection and reload; do not clear browser data.');
 });
-
