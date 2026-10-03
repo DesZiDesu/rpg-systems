@@ -282,4 +282,4 @@ export function marketplaceBlocksOperation(operation) {
         || (path === 'inventory' || /^progression\.currency\./u.test(String(path))) && /marketplace|ตลาดต่อรอง/iu.test(`${meta?.reason || ''} ${meta?.category || ''}`);
 }
 
-export const MARKETPLACE_INSTRUCTIONS = 'Marketplace is local UI-owned state. Never create, edit, settle, cancel or pay marketplace listings or offers through story patches. Narrate a sale only after the UI has committed it.';
+export const MARKETPLACE_INSTRUCTIONS = 'Player-owned Marketplace listings and their local NPC offer simulation are UI-owned state. Never create, edit, settle, cancel or pay those listing records through story patches. Main Chat NPC purchase/shop events are a separate narrative flow: the event card sends a visible player action, and only the following AI reply may record the confirmed outcome with ordinary inventory and progression.currency operations plus category sale or purchase. Never grant, remove, or charge anything merely because a card was displayed, clicked, or countered.';

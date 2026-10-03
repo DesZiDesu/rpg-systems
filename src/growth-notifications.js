@@ -6,6 +6,18 @@ const metaFor = (ops,path,entry) => {
     return typeof operation?.[3] === 'string' ? {reason:operation[3]} : operation?.[3] || {};
 };
 const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+const categoryAction = category => {
+    const value = key(category);
+    if (['purchase','buy','shopping'].includes(value)) return 'purchased';
+    if (['sale','sell'].includes(value)) return 'sold';
+    if (['gift','give','given'].includes(value)) return 'gifted';
+    if (['use','consume','consumption','eat','drink'].includes(value)) return 'used';
+    if (['drop','discard','destroy','throw'].includes(value)) return value === 'discard' || value === 'destroy' ? 'discarded' : 'dropped';
+    if (['lost','loss','steal','stolen','remove'].includes(value)) return 'lost';
+    if (['store','stored','stash','deposit'].includes(value)) return 'stored';
+    if (['pick','pickup','pick-up','loot','receive','reward','craft','crafted'].includes(value)) return value.startsWith('craft') ? 'crafted' : value.startsWith('pick') ? 'picked' : 'received';
+    return '';
+};
 
 // Derive events from the committed before/after state. Repeated upserts and
 // clamped/no-op changes never masquerade as new skills or positive training.
@@ -54,10 +66,21 @@ export function growthInventoryNotifications(before,after,ops = [],language = 'e
         const identity = entry.id || key(entry.name); if (seen.has(identity)) continue; seen.add(identity);
         const old = list(before.inventory).find(value => match(value,entry)), next = list(after.inventory).find(value => match(value,entry));
         const delta = number(next?.quantity)-number(old?.quantity); if (!delta) continue;
-        const meta = metaFor(ops,'inventory',entry), purchase = delta > 0 && ['purchase','buy','shopping'].includes(key(meta.category));
+        const meta = metaFor(ops,'inventory',entry), action = categoryAction(meta.category), purchase = delta > 0 && action === 'purchased';
+        const lifecycle = action || (delta > 0 ? 'received' : 'lost');
+        const labels = thai ? {
+            received:'ได้รับไอเทม', picked:'หยิบไอเทม', stored:'เก็บไอเทม', used:'ใช้ไอเทม', lost:'ไอเทมหาย',
+            dropped:'ทิ้งไอเทม', discarded:'ทำลายไอเทม', sold:'ขายไอเทมสำเร็จ', gifted:'มอบไอเทม', crafted:'สร้างไอเทม', purchased:'ซื้อของสำเร็จ',
+        } : {
+            received:'ITEM RECEIVED', picked:'ITEM PICKED UP', stored:'ITEM STORED', used:'ITEM USED', lost:'ITEM LOST',
+            dropped:'ITEM DROPPED', discarded:'ITEM DISCARDED', sold:'ITEM SOLD', gifted:'ITEM GIVEN', crafted:'ITEM CRAFTED', purchased:'PURCHASE',
+        };
         events.push({kind:purchase ? 'purchase' : 'inventory',eyebrow:purchase ? thai ? 'ซื้อของสำเร็จ' : 'PURCHASE'
-            : delta > 0 ? thai ? 'ได้รับไอเทม' : 'ITEM RECEIVED' : thai ? 'ไอเทมออก' : 'ITEM REMOVED',title:next?.name || old?.name,
-            detail:meta.reason || (thai ? `คงเหลือ ${number(next?.quantity)}` : `Remaining: ${number(next?.quantity)}`),value:`${delta > 0 ? '+' : ''}${delta}`});
+            : labels[lifecycle],title:next?.name || old?.name,
+            action:lifecycle,
+            detail:meta.reason || (thai ? `คงเหลือ ${number(next?.quantity)}` : `Remaining: ${number(next?.quantity)}`),
+            value:`${delta > 0 ? '+' : ''}${delta}`,quantity:delta,
+            balance:next?.quantity ?? 0});
     }
     return events;
 }

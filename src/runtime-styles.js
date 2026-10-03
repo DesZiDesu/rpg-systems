@@ -19,7 +19,7 @@ export function ensureRuntimeStyles({
     }
     let loads = pending.get(doc);
     if (!loads) pending.set(doc, loads = new Map());
-    return Promise.all(['styles/style.css', 'styles/ui-polish.css', 'styles/powers.css', 'styles/story-workspace.css', 'styles/memory-summaries.css', 'styles/mission-board.css', 'styles/auctions.css', 'styles/marketplace.css', 'styles/optional-systems.css', 'styles/extension-settings.css', 'styles/module-navigation.css', 'styles/memory-composer-status.css'].map(file => {
+    return Promise.all(['styles/style.css', 'styles/ui-polish.css', 'styles/powers.css', 'styles/story-workspace.css', 'styles/memory-summaries.css', 'styles/mission-board.css', 'styles/group-board.css', 'styles/auctions.css', 'styles/marketplace.css', 'styles/optional-systems.css', 'styles/extension-settings.css', 'styles/module-navigation.css', 'styles/memory-composer-status.css'].map(file => {
         const url = new URL(file, root); url.searchParams.set('v', version);
         const href = url.href;
         if (loads.has(href)) return loads.get(href);

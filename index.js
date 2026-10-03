@@ -5,18 +5,23 @@ import {mountForgeWorkspace} from './src/forge-workspace.js';
 import {mountPowerWorkspace} from './src/power-workspace.js?v=0.48.0';
 import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.48.0';
 import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.48.0';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.48.0';
 import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.48.0';
 import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.48.0';
 import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.48.0';
 import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.48.0';
 import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.48.0';
 import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.48.0';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.48.0';
 import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.48.0';
 import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.48.0';
 import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.48.0';
 import { MARKETPLACE_INSTRUCTIONS, normalizeMarketplace, marketplaceView, marketplacePublicListing, createMarketplaceListing, applyMarketplaceAction, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.48.0';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent } from './src/marketplace-events.js?v=0.48.0';
 import { renderMarketplacePanel } from './src/marketplace-ui.js?v=0.48.0';
 import { renderMarketplaceChatCard } from './src/marketplace-chat-ui.js?v=0.48.0';
+import { startMasteryTraining, normalizeMasteryTraining, submitMasteryTraining, trainingActionText, trainingInstruction, trainingProgress, cancelMasteryTraining } from './src/mastery-training.js?v=0.48.0';
+import { renderMasteryTrainingPanel } from './src/mastery-training-ui.js?v=0.48.0';
 import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.48.0';
 import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.48.0';
 import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.48.0';
@@ -72,6 +77,14 @@ const SOCIAL_EVENTS_KEY = 'tretaresia_rpg_social_events';
 const GROUP_RECOVERY_KEY = 'tretaresia_rpg_group_recovery';
 const PROMPT_KEY = 'tretaresia_rpg_roleplay_state';
 const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
+const MASTERY_TRAINING_KEY = 'tretaresia_rpg_mastery_training';
+// SillyTavern and some providers support a private reasoning channel. Keep
+// the extension's visible role-play contract separate from that channel so
+// provider-specific planning/analysis labels do not leak into the story or
+// the bookkeeping patch. This is an instruction boundary, not a request to
+// disable the provider's reasoning feature.
+const ROLEPLAY_OUTPUT_BOUNDARY = 'VISIBLE OUTPUT BOUNDARY — Keep provider reasoning, planning, analysis, and chain-of-thought in the host\'s private reasoning channel. Never print hidden reasoning, planning notes, analysis labels, or their contents in the visible role-play, presentation blocks, or tretaresia_patch JSON. The final visible reply contains only the story and the required invisible patch.';
+const promptReferenceJson = value => JSON.stringify(value).replaceAll('<', '\\u003c');
 const STATE_PACKAGE_FORMAT = 'tretaresia-rpg-state';
 const CONTINUITY_STORAGE_PREFIX = 'tretaresia-rpg:continuity:';
 const SUMMARY_NEW_CHAT_MENU_ID = 'st_new_chat_with_summary_wand_button';
@@ -173,6 +186,7 @@ const COLOR_PRESETS = {
 
 const OPTIONAL_SYSTEMS = [
     {key:'enableMissionBoard',en:'Mission Board',th:'กระดานภารกิจ',helpEn:'Read and accept jobs from boards in the main chat.',helpTh:'อ่านและรับภารกิจจากกระดานในแชต'},
+    {key:'enableGroupBoard',en:'Party & Guild Board',th:'กระดานปาร์ตี้และกิลด์',helpEn:'Browse groups and request to join from the main chat.',helpTh:'ดูกลุ่มและส่งคำขอเข้าร่วมจากแชตหลัก'},
     {key:'enableAuctions',en:'Auction House',th:'ระบบประมูล',helpEn:'Preview lots, bid and receive won items.',helpTh:'ดูสินค้า เสนอราคา และรับของที่ชนะประมูล'},
     {key:'enableMarketplace',en:'Negotiated Marketplace',th:'ตลาดต่อรองราคา',panel:'marketplace',helpEn:'List inventory items and negotiate NPC offers.',helpTh:'ลงขายไอเทมและต่อรองข้อเสนอจากผู้ซื้อ'},
     {key:'enableStoryMemory',en:'Story Memory',th:'บันทึกเรื่องสำคัญ',panel:'memories',helpEn:'Track important facts, promises, secrets and open threads.',helpTh:'เก็บข้อเท็จจริง คำสัญญา ความลับ และเรื่องค้าง'},
@@ -182,6 +196,7 @@ const OPTIONAL_SYSTEMS = [
 ];
 const DEFAULT_SETTINGS = Object.freeze({
     enableMissionBoard:false,
+    enableGroupBoard:false,
     enableAuctions:false,
     enableMarketplace:false,
     enableStoryMemory:false,
@@ -305,6 +320,77 @@ function saveCurrentChatMetadata(context = SillyTavern.getContext(), {auctionCom
         return true;
     });
     return pendingSave;
+}
+
+function masteryTrainingForChat(context = SillyTavern.getContext()) {
+    return normalizeMasteryTraining(context.chatMetadata?.[MASTERY_TRAINING_KEY]);
+}
+
+async function startMasteryTrainingSession(input) {
+    const context = SillyTavern.getContext();
+    if (!context.getCurrentChatId?.() || masteryTrainingForChat(context)?.status === 'pending' || masteryTrainingForChat(context)?.status === 'submitted') return false;
+    const discipline = { kind: input?.kind === 'sword' ? 'sword' : 'magic', disciplineId: text(input?.disciplineId, '', 80), disciplineName: text(input?.disciplineName, '', 120), mode: input?.mode };
+    if (!discipline.disciplineId || !discipline.disciplineName) return false;
+    const training = startMasteryTraining(discipline);
+    context.chatMetadata[MASTERY_TRAINING_KEY] = training;
+    await saveCurrentChatMetadata(context);
+    updatePrompt();
+    await sendChatAction(trainingActionText(training, getSettings().language), 'visible');
+    return true;
+}
+
+async function cancelMasteryTrainingSession() {
+    const context = SillyTavern.getContext(), current = masteryTrainingForChat(context);
+    if (!current) return false;
+    context.chatMetadata[MASTERY_TRAINING_KEY] = cancelMasteryTraining(current);
+    await saveCurrentChatMetadata(context);
+    updatePrompt();
+    renderAll();
+    return true;
+}
+
+async function recordMasteryTrainingRole(messageId, message) {
+    const context = SillyTavern.getContext(), current = masteryTrainingForChat(context);
+    if (!current || current.status !== 'pending' || !message?.is_user) return false;
+    const numericMessageId = Number(messageId);
+    // The visible initiation sentence is itself a normal user turn. Register
+    // it as the session marker, then wait for the player's following role so
+    // the instruction never gets graded as the exercise response.
+    if (current.startMessageId === null || current.startMessageId === undefined) {
+        context.chatMetadata[MASTERY_TRAINING_KEY] = {
+            ...current,
+            startMessageId: Number.isInteger(numericMessageId) ? numericMessageId : null,
+            sourceMessageId: Number.isInteger(numericMessageId) ? numericMessageId : null,
+        };
+        await saveCurrentChatMetadata(context);
+        updatePrompt();
+        return false;
+    }
+    if (Number.isInteger(numericMessageId) && numericMessageId === current.startMessageId) return false;
+    const submitted = submitMasteryTraining(current, message.mes || '');
+    context.chatMetadata[MASTERY_TRAINING_KEY] = submitted.ok
+        ? { ...submitted.training, roleMessageId: Number.isInteger(numericMessageId) ? numericMessageId : null }
+        : { ...current, text: '', outcome: `Role length ${submitted.count || 0}/${submitted.minChars || current.minChars}; write the requested in-character practice.` };
+    await saveCurrentChatMetadata(context);
+    updatePrompt();
+    return submitted.ok;
+}
+
+function masteryTrainingForMessage(messageId, message) {
+    if (!message || message.is_user || message.is_system) return null;
+    const current = masteryTrainingForChat();
+    if (!current || !['pending', 'submitted', 'resolved'].includes(current.status)) return null;
+    return Number(messageId) === latestAssistantMessageId() ? current : null;
+}
+
+async function resolveMasteryTrainingAfterReply(messageId, message) {
+    const context = SillyTavern.getContext(), current = masteryTrainingForChat(context);
+    if (!current || current.status !== 'submitted' || !message || message.is_user || message.is_system) return false;
+    if (!Number.isInteger(Number(current.roleMessageId)) || Number(messageId) <= Number(current.roleMessageId)) return false;
+    context.chatMetadata[MASTERY_TRAINING_KEY] = { ...current, status: 'resolved', outcome: current.outcome || 'Narrator reply received.' };
+    await saveCurrentChatMetadata(context);
+    updatePrompt();
+    return true;
 }
 let syncQueue = Promise.resolve();
 let manualSyncQueued = false;
@@ -519,6 +605,9 @@ function defaultState() {
         },
         scene: { position: 'Unknown', weather: 'Unknown', temperature: null },
         sceneMap: { activeMapId: '', activeFloorId: '', playerRoomId: '', maps: [] },
+        // Long-lived, evidence-backed place records. Scene Tracker remains a
+        // per-reply snapshot; this ledger is what keeps revisits consistent.
+        locationMemory: [],
         inventory: [],
         inventoryLogs: [],
         skills: [],
@@ -1420,6 +1509,7 @@ function normalize(candidate, base = defaultState()) {
         temperature: optionalNumber(scene.temperature, result.scene.temperature, -1000, 1000),
     };
     result.sceneMap = normalizeSceneMap(source.sceneMap, result.sceneMap);
+    result.locationMemory = normalizeLocationMemory(source.locationMemory ?? result.locationMemory);
     if (Array.isArray(source.inventory)) result.inventory = source.inventory.map(item).filter(Boolean)
         .filter(entry => !/^traveler['’]s clothes$/i.test(entry.name.trim())).slice(0, 200);
     if (Array.isArray(source.inventoryLogs)) result.inventoryLogs = source.inventoryLogs.map(inventoryLogEntry).filter(Boolean).slice(-250);
@@ -1951,6 +2041,7 @@ function trackedStateSnapshot(state) {
         'scene.weather': state.scene.weather,
         'scene.position': state.scene.position,
         'location': [state.location.continent, state.location.region, state.location.place, state.location.detail].filter(Boolean).join(' · '),
+        'location.memory': (state.locationMemory || []).map(entry => `${entry.name}:${entry.visits}:${entry.lastVisitedAt || ''}`).join('|'),
         'travel': `${state.travel.status}:${Math.round(travelProgress(state) * 100)}%:${state.travel.destinationPlace || state.travel.destination || '—'}`,
         'party': state.social.party ? `${state.social.party.name}: ${state.social.party.memberIds.map(id => socialMemberName(state, id)).join(', ')}` : 'Solo',
         'guilds': state.social.guilds.map(entry => `${entry.name} Lv.${entry.level}`).join(', ') || '—',
@@ -2139,6 +2230,32 @@ function socialEventsForMessage(messageId, message) {
     return key && SillyTavern.getContext().chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[assistantVariantKey(message)] || liveReplyPreview(messageId,message) || null;
 }
 
+// Resource changes are committed state facts, so keep them beside the
+// assistant turn that caused them. This lets Main Chat replay the ledger after
+// reload or swipe without relying on a transient toast notification.
+function rememberResourceEvents(messageId, message, events = []) {
+    const resourceEvents = (Array.isArray(events) ? events : [])
+        .filter(event => ['inventory', 'purchase', 'currency'].includes(event?.kind))
+        .slice(0, 20);
+    if (!resourceEvents.length) return;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId);
+    if (!key || !message || message.is_user || message.is_system) return;
+    const history = context.chatMetadata[SOCIAL_EVENTS_KEY] ||= {};
+    const variant = assistantVariantKey(message);
+    history[key] ||= {};
+    history[key][variant] ||= {};
+    history[key][variant].resourceEvents = resourceEvents;
+    for (const stale of Object.keys(history[key]).slice(0, -6)) delete history[key][stale];
+    for (const stale of Object.keys(history).slice(0, -300)) delete history[stale];
+}
+
+function resourceEventsForMessage(messageId, message) {
+    if (!message || message.is_user || message.is_system) return [];
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), variant = assistantVariantKey(message);
+    const events = key && context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[variant]?.resourceEvents;
+    return Array.isArray(events) ? events : [];
+}
+
 function rememberMissionBoard(messageId, message, board) {
     if (!board) return;
     const context = SillyTavern.getContext(), key = assistantTurnKey(messageId);
@@ -2167,6 +2284,67 @@ function missionBoardForMessage(messageId, message) {
         available:latest === messageId && !mainReplyGenerating(context)
             && board.location.normalize('NFKC').toLocaleLowerCase() === state.location.place.normalize('NFKC').toLocaleLowerCase(),
         missions:board.missions.map(mission => ({...mission,questStatus:missionQuest(state,mission)?.status || ''}))};
+}
+
+function rememberGroupBoard(messageId, message, board) {
+    if (!board) return;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId);
+    if (!key || !message || message.is_user || message.is_system) return;
+    const history = context.chatMetadata[ SOCIAL_EVENTS_KEY ] ||= {};
+    const variant = assistantVariantKey(message);
+    history[key] ||= {};
+    const previous = history[key][variant]?.groupBoard;
+    history[key][variant] ||= {};
+    history[key][variant].groupBoard = {
+        board,
+        status: previous?.status || 'pending',
+        entryId: previous?.entryId || '',
+        respondedAt: previous?.respondedAt || '',
+    };
+    for (const stale of Object.keys(history[key]).slice(0, -6)) delete history[key][stale];
+    for (const stale of Object.keys(history).slice(0, -300)) delete history[stale];
+}
+
+function groupBoardForMessage(messageId, message) {
+    if (!getSettings().enableGroupBoard || !message || message.is_user || message.is_system) return null;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), variant = assistantVariantKey(message);
+    const record = key && context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[variant]?.groupBoard;
+    const board = normalizeGroupBoard(record?.board || record);
+    if (!board) return null;
+    const state = getState();
+    let latest = messageId;
+    for (let index = context.chat.length - 1; index > messageId; index -= 1) {
+        const candidate = context.chat[index];
+        if (!candidate || candidate.is_user || candidate.is_system) continue;
+        const candidateRecord = context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[assistantTurnKey(index)]?.[assistantVariantKey(candidate)]?.groupBoard;
+        if (candidateRecord) { latest = index; break; }
+    }
+    const currentLocation = String(state.location.place || '').normalize('NFKC').toLocaleLowerCase();
+    return {
+        ...board,
+        token: `${key}:${variant}`,
+        status: record?.status || 'pending',
+        available: latest === messageId && record?.status !== 'awaiting-reply' && !mainReplyGenerating(context)
+            && String(board.location).normalize('NFKC').toLocaleLowerCase() === currentLocation,
+    };
+}
+
+async function requestGroupBoardJoin(messageId, entryId, token) {
+    const context = SillyTavern.getContext(), message = context.chat?.[messageId];
+    const board = groupBoardForMessage(messageId, message);
+    const entry = groupBoardEntry(board, entryId);
+    if (!board?.available || board.token !== token || !entry || entry.openSpots === 0 || mainReplyGenerating(context)) return false;
+    const record = context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[assistantTurnKey(messageId)]?.[assistantVariantKey(message)]?.groupBoard;
+    if (!record || record.status === 'awaiting-reply') return false;
+    record.status = 'awaiting-reply'; record.entryId = entry.id; record.respondedAt = new Date().toISOString();
+    await saveCurrentChatMetadata(context);
+    const thai = getSettings().language === 'th';
+    const textMessage = thai
+        ? `ฉันขอสมัครเข้าร่วม${entry.kind === 'guild' ? 'กิลด์' : 'ปาร์ตี้'} ${entry.name} ตามเงื่อนไขที่ประกาศไว้`
+        : `I request to join the ${entry.kind} ${entry.name} under the posted requirements.`;
+    await sendChatAction(textMessage, 'visible');
+    npcWorkspace?.refresh();
+    return true;
 }
 
 const pendingBoardAccepts = new Set();
@@ -2243,14 +2421,82 @@ function rememberMarketplaceListing(messageId, listingId) {
     for (const stale of Object.keys(history[key]).slice(0, -6)) delete history[key][stale];
     for (const stale of Object.keys(history).slice(0, -300)) delete history[stale];
 }
+function rememberMarketplaceEvent(messageId, message, event) {
+    if (!Number.isInteger(Number(messageId)) || !event) return;
+    const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), variant = assistantVariantKey(message);
+    if (!key || !message || message.is_user || message.is_system) return;
+    const history = context.chatMetadata[SOCIAL_EVENTS_KEY] ||= {};
+    const previous = history[key]?.[variant]?.marketplace;
+    history[key] ||= {};
+    history[key][variant] ||= {};
+    history[key][variant].marketplace = {
+        kind: event.kind, event, status: previous?.status || 'pending', action: previous?.action || '', respondedAt: previous?.respondedAt || '', amount: previous?.amount || 0,
+    };
+    for (const stale of Object.keys(history[key]).slice(0, -6)) delete history[key][stale];
+    for (const stale of Object.keys(history).slice(0, -300)) delete history[stale];
+}
 function marketplaceForMessage(messageId, message) {
     if (!getSettings().enableMarketplace || !message || message.is_user || message.is_system) return null;
     const context = SillyTavern.getContext(), key = assistantTurnKey(messageId), variant = assistantVariantKey(message);
     const marker = key && context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[variant]?.marketplace;
+    if (marker?.event) {
+        const event = normalizeMarketplaceEvent(marker.event);
+        if (!event) return null;
+        return { ...event, event, status: marker.status || 'pending', action: marker.action || '', amount: marker.amount || 0,
+            token: `${key}:${variant}`, busy: Boolean(pendingAuctionSave), available: marker.status === 'pending' && !mainReplyGenerating(context) };
+    }
     const listingId = typeof marker === 'string' ? marker : marker?.listingId;
     const listing = listingId && getState().marketplace?.listings?.find(entry => entry.id === listingId);
     if (!listing) return null;
     return { ...marketplacePublicListing(listing), token: `${key}:${variant}`, busy: Boolean(pendingAuctionSave), available: !mainReplyGenerating(context) };
+}
+function resolveMarketplaceEventBeforeReply(messageId) {
+    const context = SillyTavern.getContext();
+    let passedUser = false;
+    for (let index = Number(messageId) - 1; index >= 0; index -= 1) {
+        const candidate = context.chat?.[index];
+        if (!candidate || candidate.is_system) continue;
+        if (candidate.is_user) { passedUser = true; continue; }
+        if (!passedUser) continue;
+        const key = assistantTurnKey(index), variant = assistantVariantKey(candidate);
+        const marker = key && context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[key]?.[variant]?.marketplace;
+        if (marker?.event && marker.status === 'awaiting-reply') { marker.status = 'resolved'; return true; }
+    }
+    return false;
+}
+async function respondMarketplaceEvent(messageId, token, action, amount, itemId = '') {
+    const context = SillyTavern.getContext(), message = context.chat?.[messageId];
+    const event = marketplaceForMessage(messageId, message);
+    if (!event?.event || event.token !== token || event.status !== 'pending' || mainReplyGenerating(context)) return { ok: false, error: 'stale' };
+    const composer = document.querySelector('#send_textarea'), send = document.querySelector('#send_but');
+    if (!(composer instanceof HTMLTextAreaElement) || !(send instanceof HTMLElement) || send.matches(':disabled, .disabled')) return { ok: false, error: 'composer' };
+    const thai = getSettings().language === 'th';
+    const selected = event.kind === 'npcShop' ? event.items?.find(entry => entry.id === itemId) : null;
+    const item = event.item?.name || selected?.item?.name || 'item', quantity = event.item?.quantity || 1;
+    const buyer = event.buyer?.name || 'the buyer', seller = event.seller?.name || 'the merchant';
+    const denomination = event.denomination || 'gold';
+    const askPrice = event.askPrice || selected?.askPrice || 0;
+    const floorPrice = event.floorPrice || selected?.floorPrice || 1;
+    const price = action === 'counter' ? Number(amount) : askPrice;
+    if (!['accept', 'decline', 'counter'].includes(action) || !askPrice || event.kind === 'npcShop' && !selected || (action === 'counter' && (!Number.isSafeInteger(price) || price < floorPrice))) return { ok: false, error: 'invalid' };
+    const marker = context.chatMetadata?.[SOCIAL_EVENTS_KEY]?.[assistantTurnKey(messageId)]?.[assistantVariantKey(message)]?.marketplace;
+    if (!marker?.event || marker.event.kind !== event.event.kind) return { ok: false, error: 'stale' };
+    marker.status = 'awaiting-reply'; marker.action = action; marker.respondedAt = new Date().toISOString(); marker.amount = price;
+    if (!await saveCurrentChatMetadata(context)) { marker.status = 'pending'; marker.action = ''; marker.respondedAt = ''; marker.amount = 0; return { ok: false, error: 'save' }; }
+    const textMessage = event.kind === 'npcPurchase'
+        ? action === 'accept'
+            ? (thai ? `ตกลงขาย ${item} จำนวน ${quantity} ให้ ${buyer} ในราคา ${askPrice} ${denomination}` : `I accept ${buyer}'s offer to buy ${quantity} ${item} for ${askPrice} ${denomination}.`)
+            : action === 'counter'
+                ? (thai ? `ฉันขอต่อรองกับ ${buyer}: ${item} จำนวน ${quantity} ราคา ${price} ${denomination}` : `I counter ${buyer}: ${quantity} ${item} for ${price} ${denomination}.`)
+                : (thai ? `ฉันปฏิเสธข้อเสนอซื้อ ${item} ของ ${buyer}` : `I decline ${buyer}'s offer for ${item}.`)
+        : action === 'accept'
+            ? (thai ? `ฉันขอซื้อ ${item} จำนวน ${quantity} จาก ${seller} ในราคาที่เสนอ ${askPrice} ${denomination}` : `I want to buy ${quantity} ${item} from ${seller} at the listed price of ${askPrice} ${denomination}.`)
+            : action === 'counter'
+                ? (thai ? `ฉันขอต่อรองราคา ${item} กับ ${seller} เป็น ${price} ${denomination}` : `I counter ${seller}'s price for ${item} at ${price} ${denomination}.`)
+                : (thai ? `ฉันยังไม่ซื้อ ${item} จาก ${seller}` : `I decline to buy ${item} from ${seller}.`);
+    await sendChatAction(textMessage, 'visible');
+    refreshMarketplace();
+    return { ok: true };
 }
 function auctionForMessage(messageId,message) {
     if (!getSettings().enableAuctions) return null;
@@ -2718,6 +2964,9 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         location: state.onboarding?.locationSeeded
             ? { continent:state.location.continent,region:state.location.region,place:state.location.place,detail:state.location.detail }
             : {continent:'Unknown',region:'Unknown',place:'Unknown',detail:''},
+        // Stable places and explicit route relationships are part of story
+        // context; do not substitute this ledger for the live scene above.
+        locationMemory: locationMemoryForPrompt(state.locationMemory),
         travel: state.onboarding?.locationSeeded ? state.travel : {status:state.travel.status,destination:state.travel.destination},
         scene: state.scene,
         sceneMap: aiSceneMap(state),
@@ -2807,6 +3056,7 @@ function roleplayState(state) {
                 place: state.onboarding?.locationSeeded ? state.location.place : 'Unknown',
                 detail: state.onboarding?.locationSeeded ? state.location.detail : '',
             },
+            locationMemory: locationMemoryForPrompt(state.locationMemory),
             travel: {
                 status: state.travel.status,
                 origin: state.travel.origin,
@@ -3075,7 +3325,7 @@ function forgeOpeningPrompt(context = SillyTavern.getContext()) {
 function forgeProfilePrompt(context = SillyTavern.getContext()) {
     const profile = forgeSession(context)?.profile;
     if (!profile) return '';
-    return `[PLAYER REGISTRATION — private narrator reference]\n${JSON.stringify(profile)}\n`
+    return `[PLAYER REGISTRATION — private narrator reference]\n${promptReferenceJson(profile)}\n`
         + 'Use the registered name and only the chosen powers from the active preset. Starting possessions and skills are already in RPG state; do not award them again. '
         + 'Keep private background from NPCs unless the story reveals it. Do not quote this JSON in the story.';
 }
@@ -3200,8 +3450,9 @@ function legacyPatchInstructions() {
     return [
         storyTrackingRules(),
         getSettings().enableMissionBoard ? MISSION_BOARD_INSTRUCTIONS : '',
+        getSettings().enableGroupBoard ? GROUP_BOARD_INSTRUCTIONS : '',
         getSettings().enableAuctions ? AUCTION_INSTRUCTIONS : '',
-        getSettings().enableMarketplace ? MARKETPLACE_INSTRUCTIONS : '',
+        getSettings().enableMarketplace ? `${MARKETPLACE_INSTRUCTIONS}\n${MARKETPLACE_EVENT_INSTRUCTIONS}` : '',
         NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
         uiMarkup("<!--tretaresia_patch:{\"ops\":[[\"upsert\",\"quests\",{\"id\":\"academy-escort\",\"name\":\"Escort the Academy Caravan\",\"type\":\"Mission\",\"status\":\"Active\",\"objective\":\"Protect the caravan until it reaches Eastwatch\",\"reward\":\"12 silver\",\"giver\":\"Quartermaster Lysa\",\"source\":\"Great Academy mission board\",\"progress\":0}],[\"inc\",\"progression.experience\",5,{\"reason\":\"Completed aura control training\",\"category\":\"training\"}],[\"inc\",\"progression.currency.silver\",-3,{\"reason\":\"Paid for an academy meal\",\"category\":\"currency\"}],[\"inc\",\"progression.kills\",1,{\"reason\":\"Defeated the ash troll\",\"category\":\"kill\"}]],\"summary\":\"Mission, training, payment, and combat progress recorded.\"}-->"),
@@ -3221,13 +3472,14 @@ function legacyPatchInstructions() {
         'Proficiency rules: increment a used or trained power system or combat discipline by 1-3 when the reply confirms genuine practice or successful use; use 4-8 only for a breakthrough. Do not increase unused proficiencies. When a confirmed power or combat style is not in the preset lists, upsert proficiencies.customMagic or proficiencies.customSword with {id,name,proficiency,description,iconKey}; later upserts may contain only id/name and changed fields.',
         'RoleForge sensing rule: a power can normally be sensed only by someone who wields the same kind. Formless Aura cannot be sensed by anyone. Divine Mana can be perceived only by another Divine Mana wielder. Never let observers identify a hidden power without valid same-kind perception or direct evidence.',
         'Power canon: False Magic is learnable structured human magic that normally needs a staff, wand, or medium. True Magic is a lost stronger art requiring deep mana understanding and no medium. Aura is innate and commonly carries one birth-given Origin skill. Formless Aura is exceptionally rare and wholly undetectable. Blood Aura is vampiric and a turning may preserve, mutate, split, or erase the prior power. Sage Mana is lost transformative training that can refill from natural energy. Divine Mana may switch among power modes. Constructs allow those without usable Aura to wield a forged ability; primordial Divine Constructs choose one owner and cannot be copied, remade, or manufactured.',
-        'Travel rules: follow destinations, routes and elapsed time explicitly established in the story. There is no fixed world map or coordinate-based distance estimate. Update remainingDays only from established travel progress; do not restore stale values. Mark Arrived only when arrival is confirmed and set the actual free-text destination. Never infer an unmentioned continent or region.',
+        'Travel rules: follow destinations, routes and elapsed time explicitly established in the story. There is no fixed world map or coordinate-based distance estimate. Update remainingDays only from an actual completed movement roll/action, an explicit elapsed-time result, or a confirmed sceneTracker location change. A conversation, plan, destination mention, or unchanged scene never advances travel. Mark Arrived only when arrival is confirmed and set the actual free-text destination. Never infer an unmentioned continent or region.',
         'Dungeon and rank rules: dungeonRank must be one of Unranked, E-, E, E+, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+, S-, S, S+, SS. Adventurer ranks are Rookie, Basic, Intermediate, Ember, and Custom Rank; a Custom Rank name is individually invented by an assessor and should be recorded in progression.customRankName.',
         'Currency rules: use the currency established by the current story; do not assume a region or a currency from a built-in world. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
         'NPC update rules: for every named friendly NPC who directly participates, consider relationship, location, lastSeen, abilities, custom meters, diary, and revealed stats. A substantive friendly/helpful exchange may change affection or trust by 1-3; hostility, deception, fear, romance, loyalty, or corruption should adjust only the relevant meters in proportion to what actually occurred. Use ["inc","npcValues",{"npcId":"...","field":"trust","amount":2}] for deltas or ["set","npcValues",{"npcId":"...","field":"stats.level","value":12}] for revealed absolute values. Valid relationship fields are affection, trust, loyalty, fear, corruption, lust. Valid stat fields are stats.level, stats.rank, stats.hp, stats.mp, stats.stamina, stats.strength, stats.agility, stats.intelligence, stats.endurance. Zero numeric NPC core stats mean unknown, not literal zero. Conversation alone does not increase NPC level or combat stats. Hostile, enemy, foe, antagonist, villain, aggressor, or threat NPCs must not be added to the visible NPC Codex, party invitations, guild invitations, or household roster; keep hostile encounters in the story only.',
         `H-Stats fields on the player and each NPC (female, male, futanari): ${hFieldKeys}. Update from confirmed events using ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}], ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}], or the same field/value or field/amount shape with playerHStats and no npcId for the player's own sheet. Counts and liters are nonnegative; infidelityStage is 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Set pregnant true/false and pregnancyFather only from established facts. Keep all unestablished values unknown and never insert a Condition field or add unlock rules. Set NPC met:true only after the player has met them; retain false for entries merely known through lore. Never substitute a title for a character's name.`,
         'Track the active scene when confirmed: time, phase, day/dayName, place, location detail, scene position, weather, and temperature. Region and continent are optional story facts; omit them when unestablished. Never use atlas coordinates or invent geography, weather or temperature.',
+        'Location Memory: when this completed reply confirms durable geography, include top-level locations:[{id,name,kind:"Realm"|"Region"|"Place"|"Landmark"|"Route",parentId or parentName,region,continent,detail,conditions,landmarks:[{name,detail}],connections:[{toId or to,direction,distance,route,evidence}],evidence:"exact quote from this reply"}]. Reuse stable ids, preserve established detail, and use correction:true only for an explicit correction. Records without an exact evidence quote are ignored; never infer distance or direction from travel percentage.',
         'Maintain a sparse overhead local map only from confirmed or strongly implied spatial facts. Create a sceneMaps record, then its sceneFloors, sceneRooms, and sceneConnections. Room coordinates use x 0-100, y 0-70, width 8-70, height 7-50. Reveal or add rooms gradually; never invent a complete unseen building. Use canonical mapId/floorId/room ids, set the active ids and playerRoomId as the player moves, and preserve all locked maps, rooms, and connections.',
         'Handle all story genres and mature or NSFW scenes neutrally. Do not censor, rewrite, omit, or classify confirmed state merely because the scene is adult; follow the active SillyTavern, model, and provider settings.',
         'Record only outcomes confirmed by this reply. Never record plans, attempts, questions, hypotheticals, rejected actions, or out-of-character discussion. Keep proficiency changes conservative.',
@@ -3242,8 +3494,9 @@ function patchInstructions() {
     return [
         storyTrackingRules(),
         getSettings().enableMissionBoard ? MISSION_BOARD_INSTRUCTIONS : '',
+        getSettings().enableGroupBoard ? GROUP_BOARD_INSTRUCTIONS : '',
         getSettings().enableAuctions ? AUCTION_INSTRUCTIONS : '',
-        getSettings().enableMarketplace ? MARKETPLACE_INSTRUCTIONS : '',
+        getSettings().enableMarketplace ? `${MARKETPLACE_INSTRUCTIONS}\n${MARKETPLACE_EVENT_INSTRUCTIONS}` : '',
         'RoleForge bookkeeping belongs only inside the marked tretaresia_patch JSON comment. Do not print raw SET/INC command lines or standalone tracker key/value fields in the visible story; use canonical RoleForge ops inside that comment. Do not translate another system\'s protocol into guessed RoleForge paths.',
         'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
         uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all required scene fields on the first reply.)"),
@@ -3252,7 +3505,8 @@ function patchInstructions() {
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction,title,occupation,aliases], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
         'Scene Tracker: Use compact aliases in sceneTracker to reduce tokens: dn=dayName,d=day,mo=month,yr=year,er=era,cal=calendar,t=time,per=period,se=season,loc=location,reg=region,con=continent,pos=position,w=weather,temp=temperature,light=lighting,who=participants,goal=objective,safe=safety,mood=atmosphere,dt=elapsed. Example {"sceneTracker":{"loc":"Market","t":"08:00","who":["Mira"]},"ops":[]}. In the final patch of the FIRST normal reply, provide all required scene fields: dayName,day,month,year,era,calendar,time,period,season,location,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. On later replies include changed fields AND any fields marked missing in PREVIOUS SCENE; the extension inherits the rest. Use strings in story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Establish the actual current place, including rooms and non-atlas places. Describe indoor climate when outdoor weather does not apply. Do not claim a planned destination is current. Omit coordinates. Region and continent are optional; omit them when unestablished. Never invent them to fill a field. Never send empty strings, Unknown, N/A, null or dashes for required fields. Supply participants and elapsed when they change. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Complete the scene before finishing the same reply. Do not show sceneTracker in prose.',
-        'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time and confirm arrival. Write the complete story first, then append one patch with sceneTracker and all gameplay, diary and invitation ops. A user asking an NPC to write a diary or invite them is not itself an event: portray the NPC doing it, then include the append/offer op in that same patch. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
+        'Location Memory: when this completed reply explicitly confirms a durable realm, region, place, landmark or route fact, add a top-level locations array (separate from sceneTracker) with at most 40 records: {id,name,kind:"Realm"|"Region"|"Place"|"Landmark"|"Route",parentId or parentName,region,continent,detail,conditions,landmarks:[{name,detail}],connections:[{toId or to,direction,distance,route,evidence}],evidence:"exact quote from this reply"}. Include only facts in the quote; no plans, rumors, guesses or OOC. Reuse stable ids and preserve existing detail. Set correction:true only when the story explicitly corrects an earlier geography fact. A location record without an exact evidence quote is ignored. Use connections for confirmed relationships such as distance and direction; never infer a distance from travel percentage.',
+        'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time only when the completed roll/action or sceneTracker confirms physical movement. A reply that stays in the same place must leave journey progress unchanged. Write the complete story first, then append one patch with sceneTracker and all gameplay, diary and invitation ops. A user asking an NPC to write a diary or invite them is not itself an event: portray the NPC doing it, then include the append/offer op in that same patch. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this main reply; never depend on a second AI request for scene, diary or invitations.',
         'Resource, injury, and damage rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
@@ -3274,7 +3528,7 @@ function patchInstructions() {
         'Social auto-sync: update Party and Guild for confirmed changes. Household invitations require consent: when a met friendly NPC in the current scene or named in this completed reply asks to enter the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. This leaves a permanent Accept/Decline card on that message; NEVER upsert householdMembers or embed members inside household. Only the player confirms entry, including a partner/spouse/child/relative. A confirmed departure may delete householdMembers.',
         'If an NPC explicitly invites the player to a party or guild, emit ["offer","partyInvitation" or "guildInvitation",{"npcId":"established inviter id","name":"group name","role":"specific player position","leaderName":"established leader if known","memberCount":128,"rank":"established rank","completedQuests":12,"reputation":742,"members":[{"name":"known member","role":"known role"}]}]. Include rank, completedQuests and reputation only if known, and update a group through a partial party/guilds upsert when a confirmed quest completion changes its record. Provide a coherent total including offscreen members for newly invented groups; preserve canonical totals, or omit genuinely unknown totals; never infer a famous guild has only the few named people or fabricate missing member records. An invitation alone requires the Accept/Decline button. If the story instead states the player is already a member, immediately upsert party or guilds with membershipStatus:"established" and membershipEvidence containing an exact 8–300 character quote from this completed reply or latest user role-play that asserts current membership. Supply name and playerRole; set leaderId to the established NPC id or "unidentified-leader" and leaderName to the established leader name when known. Include only established knownMembers and memberCount (already including the player); do not invent names or charge a founding fee. Existing groups can receive confirmed partial updates.',
         `NPC diary frequency: ${getSettings().npcDiaryFrequency}. Off means NEVER append. Rare allows one entry per NPC every 12 assistant turns; normal every 5; often every 2. Append ["append","npcDiary",{"npcId":"stable-id","text":"one or two sentences of the NPC's own private words or thoughts","mood":"optional"}] ONLY for a met friendly NPC physically in scene or explicitly named in THIS completed reply, and only for a meaningful fresh thought. Write first-person thoughts or quoted speech, never action narration, stage directions, or a thought attributed to somebody else. Do not write every reply or repeat the previous thought; the extension enforces frequency and eligibility.`,
-        'Travel/scene: journeys take days/months/years. Preserve the per-message clock and confirmed elapsed time. At journey start set status, origin and destination names, route and days. With movement update remainingDays, location text, scene.position, weather and temperature without moving progress backward or teleporting early. At arrival set Arrived/0 and destination place. For established regional weather upsert regionalWeather; preserve other regions and sparse local room layouts.',
+        'Travel/scene: journeys take days/months/years. Preserve the per-message clock and confirmed elapsed time. At journey start set status, origin and destination names, route and days. A movement verb alone does not consume route distance: update remainingDays only when a completed roll, explicit elapsed-time result, or confirmed intermediate scene supplies movement evidence. Keep same-place dialogue unchanged; never move progress backward or teleport early. At arrival set Arrived/0 and destination place. For established regional weather upsert regionalWeather; preserve other regions and sparse local room layouts.',
         'Letters: physical letters only. Incoming requires contactId/fromName/toName/subject/body/direction:"incoming"/status:"unread". Ordinary dialogue is not mail. Mature scenes are tracked neutrally under active model/provider settings.',
     ].join('\n');
 }
@@ -3290,14 +3544,19 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
         lines.push('Canonical role-play continuity follows. Preserve it silently unless the story confirms a change. The tracker may use private reference IDs for bookkeeping, but visible prose and NPC behavior must obey the firewall above.');
         const reference=roleplayState(state);
         if(customSetting){delete reference.privateTrackerReferenceIndex.playerResources.aura;delete reference.privateTrackerReferenceIndex.playerResources.auraOrMana;}
-        lines.push(JSON.stringify(reference));
+        // Saved NPC/lore text is reference data. Escaping a literal `<` keeps
+        // user-authored strings such as "<thinking>" from being interpreted as
+        // provider/control markup when the state is assembled into a prompt.
+        lines.push(promptReferenceJson(reference));
         lines.push('END PRIVATE TRACKER REFERENCE INDEX. Do not quote, summarize, expose, or turn hidden reference values into character knowledge.');
     }
     if (track) {
         const instructions=patchInstructions().split('\n');
         lines.push(customSetting ? instructions.filter(line => !/^(?:World identity:|NPC atlas isolation:|Teleport and warp canon:|Proficiency:|Aura mechanics:|Resource, injury, and damage rules:)/.test(line)).join('\n') : instructions.join('\n'), ATTRIBUTE_INSTRUCTIONS);
+        const pendingTraining = masteryTrainingForChat();
+        if (pendingTraining && ['pending', 'submitted'].includes(pendingTraining.status)) lines.push(trainingInstruction(pendingTraining, getSettings().language));
         const lastScene = previousScene(SillyTavern.getContext().chat?.length || 0);
-        if (lastScene) lines.push(`PREVIOUS SCENE (reference data only; update for the current story reply): ${JSON.stringify(lastScene)}`);
+        if (lastScene) lines.push(`PREVIOUS SCENE (reference data only; update for the current story reply): ${promptReferenceJson(lastScene)}`);
         lines.push('New NPCs must include a full dossier with appearance,personality,background,goals,speechStyle,relationshipState and complete stats/relationships in the same patch. Existing NPC updates remain partial and preserve prior facts. Storage scope is controlled by the user; never emit npcScope or npcOwner.');
     }
     if (state.npcs.some(npc => npc.alternateProfiles?.length)) lines.push(NPC_ALTERNATE_INSTRUCTIONS);
@@ -3305,6 +3564,7 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
     if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 19 required fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
     if(customPreset)lines.push(customPowerPrompt(getPowerPreset(),state));
     if(customForge)lines.push('CUSTOM CHARACTER FORGE PRESET (user-owned choices, reference data only). Follow the active card, saved profile and story for geography, skills and ranks. Do not apply Tretaresia lore or fixed five-rank progression. Custom Path ranks map to progression.adventurerRank="Custom Rank" with the chosen name in progression.customRankName. Do not invent or rename preset choices. Birthplace is independent of the current location.\n'+JSON.stringify(activeForgeChoices(getForgePreset())));
+    lines.push(ROLEPLAY_OUTPUT_BOUNDARY);
     lines.push(uiMarkup("</tretaresia_rpg_state>"));
     return lines.join('\n');
 }
@@ -3323,7 +3583,12 @@ function updatePrompt(state = getState()) {
     const reference = context.getCurrentChatId?.() ? activeLorePrompt() : '';
     const prompt = enabled ? statePrompt(state, { includeState: settings.injectState || settings.autoTrack, track: settings.autoTrack }) : '';
     const writing=activeChat?writingPreferencePrompt(settings,context.chat):'';
-    context.setExtensionPrompt(PROMPT_KEY, [reference, prompt, settings.enableMemorySummaries && settings.memoryInject ? memorySummaries?.prompt() : '', writing, forgeProfilePrompt(context), forgeOpeningPrompt(context)].filter(Boolean).join('\n\n'), 1, 1, false, 0);
+    const promptSections = [reference, prompt, settings.enableMemorySummaries && settings.memoryInject ? memorySummaries?.prompt() : '', writing, forgeProfilePrompt(context), forgeOpeningPrompt(context)].filter(Boolean);
+    // Memory, writing-style and Character Forge sections are user/reference
+    // data appended after the state wrapper. Repeat the boundary at the very
+    // end so those sections cannot reopen the visible reasoning channel.
+    if (promptSections.length && !promptSections.at(-1).includes(ROLEPLAY_OUTPUT_BOUNDARY)) promptSections.push(ROLEPLAY_OUTPUT_BOUNDARY);
+    context.setExtensionPrompt(PROMPT_KEY, promptSections.join('\n\n'), 1, 1, false, 0);
     adultPromptControls?.refresh();
 }
 
@@ -3838,22 +4103,39 @@ function synchronizeWorldState(state, previous = state) {
     if (moving) {
         const previousClock = optionalNumber(previousTravel.lastWorldMinutes, now, 0, 9999999999);
         const elapsedDays = Math.max(0, now - previousClock) / 1440;
+        const previousRemaining = number(previousTravel.remainingDays, travel.remainingDays, 0, 999999);
+        const candidatePlace = text(state.location.place, '', 180);
+        const previousPlace = text(previous?.location?.place, '', 180);
+        const sceneMoved = Boolean(candidatePlace && candidatePlace !== previousPlace
+            && !/^en route to\b|^destination$/i.test(candidatePlace));
         if (['Preparing', 'Traveling', 'Delayed'].includes(previousTravel.status)) {
             travel.remainingDays = Math.min(
                 number(travel.remainingDays, previousTravel.remainingDays, 0, 999999),
                 number(previousTravel.remainingDays, travel.remainingDays, 0, 999999),
             );
         }
-        if (elapsedDays > 0 && ['Preparing', 'Traveling', 'Delayed'].includes(previousTravel.status)) {
+        // Clock changes by themselves do not move a route.  Only an explicit
+        // remainingDays update or a confirmed scene place change may consume
+        // travel time; this prevents ordinary dialogue in one room from
+        // slowly reaching 100% completion.
+        if (elapsedDays > 0 && sceneMoved && ['Preparing', 'Traveling', 'Delayed'].includes(previousTravel.status)) {
             const clockRemaining = Math.max(0, number(previousTravel.remainingDays, travel.remainingDays, 0, 999999) - elapsedDays);
             travel.remainingDays = Math.min(number(travel.remainingDays, clockRemaining, 0, 999999), clockRemaining);
         }
+        // A changed scene proves that the story moved, but it does not reveal
+        // how far. Keep the route value unchanged until the patch supplies an
+        // explicit remainingDays/elapsed result; this prevents a sequence of
+        // room changes from silently completing a long journey.
         travel.lastWorldMinutes = now;
         const progress = travelProgress(state);
         state.location.continent = progress >= .5 && travel.destinationContinent ? travel.destinationContinent : travel.originContinent || state.location.continent;
         state.location.region = progress >= .5 && travel.destinationRegion ? travel.destinationRegion : travel.originRegion || state.location.region;
-        state.location.place = `En route to ${travel.destinationPlace || travel.destination || 'destination'}`;
-        state.location.detail = `${Math.round(progress * 100)}% via ${travel.route}`;
+        const preserveScenePlace = candidatePlace && candidatePlace === previousPlace
+            && !/^en route to\b|^destination$/i.test(candidatePlace);
+        if (!sceneMoved && !preserveScenePlace) {
+            state.location.place = `En route to ${travel.destinationPlace || travel.destination || 'destination'}`;
+            state.location.detail = `${Math.round(progress * 100)}% via ${travel.route}`;
+        }
         if (!previous?.scene?.position || state.scene.position === previous.scene.position || /^Traveling|^En route/i.test(state.scene.position)) {
             state.scene.position = `Traveling via ${travel.route} toward ${travel.destinationPlace || travel.destination}`;
         }
@@ -3875,6 +4157,36 @@ function synchronizeWorldState(state, previous = state) {
     }
 
     const playerLocationChanged = state.location.place !== previous?.location?.place || state.location.region !== previous?.location?.region;
+    // Persist only confirmed scene places.  En-route labels and generic
+    // destination placeholders are progress UI, not geography.  A repeated
+    // save of the same scene is idempotent, while a real revisit increments
+    // the visit count and refreshes its last-seen evidence.
+    const memoryPlace = text(state.location.place, '', 180);
+    if (memoryPlace && !/^en route to\b|^destination$/i.test(memoryPlace)) {
+        const known = (state.locationMemory || []).some(entry => entry.name.toLocaleLowerCase() === memoryPlace.toLocaleLowerCase());
+        const route = justArrived && text(previousTravel.origin, '', 180) ? {
+            // Store the route on the destination as a relation back to the
+            // origin. This keeps “from where did I arrive?” truthful when the
+            // place is revisited later.
+            to: previousTravel.origin,
+            direction: 'from origin',
+            distance: travel.totalDays ? `${formatTravelDays(travel.totalDays)} days` : '',
+            route: travel.route,
+        } : null;
+        state.locationMemory = rememberLocation(state.locationMemory || [], {
+            name: memoryPlace,
+            region: state.location.region,
+            continent: state.location.continent,
+            detail: state.location.detail,
+            conditions: [state.scene.weather, state.scene.temperature == null ? '' : `${state.scene.temperature}°C`].filter(Boolean).join(' · '),
+        }, {
+            visited: !known || memoryPlace.normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ').trim()
+                !== text(previous?.location?.place, '', 180).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ').trim(),
+            day: state.worldClock.dayName || `Day ${state.worldClock.day}`,
+            evidence: playerLocationChanged ? state.location.detail : '',
+            connection: route,
+        });
+    }
     if (playerLocationChanged) {
         const locationNames = [state.location.place, state.location.region].map(value => text(value, '', 180).toLocaleLowerCase()).filter(Boolean);
         const matchesPlace = map => {
@@ -3999,16 +4311,24 @@ function advanceActiveTravelFromUserMessage(messageId, message, current = getSta
     const arrivalWords = /\b(?:arrive[ds]?|reache[ds]?|reaching|entered?)\b|(?:มาถึง|เดินทางถึง|ไปถึง|เข้าสู่|เข้าเขต|ถึงจุดหมาย|ถึงปลายทาง)/i.test(source);
     const deniedArrival = /\b(?:not|haven't|hasn't|didn't)\s+(?:arrive|reach)|(?:ยังไม่ถึง|ไม่ได้ไปถึง|ไม่ได้มาถึง)/i.test(source);
     const genericDestination = /\b(?:destination|destination point)\b|(?:จุดหมาย|ปลายทาง)/i.test(source);
-    const arrived = arrivalWords && !deniedArrival && (destinationMentioned || genericDestination);
     const stopWords = /\b(?:stop|pause|halt)(?:ping|ped)?\s+(?:the\s+)?(?:trip|journey|travel)\b|(?:หยุด|พัก|ชะลอ)(?:การ)?เดินทาง/i.test(source);
     const resumeWords = /\b(?:resume[ds]?|continue[ds]?)\s+(?:the\s+)?(?:trip|journey|travel)|(?:เดินทางต่อ|ออกเดินทางต่อ|ไปต่อ|มุ่งหน้าต่อ)/i.test(source);
     const movementWords = /\b(?:walk|ride|sail|travel|journey|continue|proceed|advance|cross|pass)(?:s|ed|ing)?\b|(?:เดิน|ขี่|ล่อง|แล่น|เดินทาง|มุ่งหน้า|เคลื่อน|ผ่าน|ข้าม|ไปต่อ)/i.test(source);
+    const movementIntentOnly = /\b(?:plan|plans|planned|planning|intend|intends|intended|want|wants|wanted|hope|hopes|might|may|could|would|will|going to|suppose|maybe)\b.{0,60}(?:walk|ride|sail|travel|journey|continue|proceed|advance|cross|pass|destination|trip)\b|(?:วางแผน|ตั้งใจ|อยาก|หวัง|อาจจะ|คงจะ|จะไป|คิดว่าจะ).{0,60}(?:เดิน|ขี่|ล่อง|เดินทาง|ไปต่อ|จุดหมาย|ปลายทาง)/i.test(source);
+    const arrived = arrivalWords && !deniedArrival && !movementIntentOnly && (destinationMentioned || genericDestination);
+    const performedMovement = /(?:^|[.!?*\s])(?:i|we|the party|our group|the caravan|player)?\s*(?:walk|walked|walking|ride|rode|riding|sail|sailed|sailing|travel|traveled|travelling|journey|journeyed|continue|continued|proceed|proceeded|advance|advanced|cross|crossed|pass|passed)\b|(?:^|[.!?*\s])(?:ฉัน|ผม|เรา|ตัวละคร|กลุ่ม|คาราวาน)?\s*(?:เดิน|ขี่|ล่อง|แล่น|เดินทาง|มุ่งหน้า|เคลื่อน|ผ่าน|ข้าม|ไปต่อ)/i.test(source);
     const travelContext = movementWords || destinationMentioned || genericDestination
         || /\b(?:trip|journey|route)\b|(?:การเดินทาง|เส้นทาง)/i.test(source);
     const percentMatch = travelContext ? source.match(/(\d{1,3}(?:\.\d+)?)\s*(?:%|เปอร์เซ็นต์)/i) : null;
     const explicitProgress = percentMatch ? Math.min(100, Math.max(0, Number(percentMatch[1]))) : null;
-    const timePassage = movementWords || /\b(?:after|later|passed|elapsed)\b|(?:ผ่านไป|ล่วงเลย|เวลาผ่าน|ต่อมา)/i.test(source);
+    const timePassage = /\b(?:after|later|passed|elapsed)\b|(?:ผ่านไป|ล่วงเลย|เวลาผ่าน|ต่อมา)/i.test(source);
     const elapsedDays = timePassage ? travelElapsedDaysFromText(source) : 0;
+    const actualMovement = !movementIntentOnly && (performedMovement || elapsedDays > 0 || explicitProgress !== null);
+
+    // Plans, questions and ordinary conversation do not even create a travel
+    // checkpoint. This also lets historical catch-up inspect later turns if a
+    // player discussed a route before actually moving.
+    if (!actualMovement && !arrived && !stopWords && !resumeWords) return null;
 
     travel.lastUserProgressMessage = key;
     travel.trackedUserTurns = number(travel.trackedUserTurns, 0, 0, 999999) + 1;
@@ -4022,11 +4342,9 @@ function advanceActiveTravelFromUserMessage(messageId, message, current = getSta
         let nextRemaining = remaining;
         if (explicitProgress !== null) nextRemaining = Math.min(nextRemaining, total * (1 - explicitProgress / 100));
         if (elapsedDays > 0) nextRemaining = Math.max(0, nextRemaining - elapsedDays);
-        // Narrative movement advances faster. Every other substantive main-chat
-        // role-play turn still advances one percent, so a journey can never stay
-        // frozen for hundreds of messages when the model omits clock fields.
-        const turnAdvance = stopWords && !resumeWords ? 0 : total * (movementWords || resumeWords ? .03 : .01);
-        nextRemaining = Math.max(0, nextRemaining - turnAdvance);
+        // A movement verb proves intent/action, but not distance. Let the
+        // completed scene tracker or an explicit roll/time result provide the
+        // amount; never convert an arbitrary chat turn into a hidden 3% jump.
         travel.remainingDays = Math.min(remaining, nextRemaining);
         if (travel.remainingDays <= .0001) {
             travel.remainingDays = 0;
@@ -5211,6 +5529,22 @@ function renderJourneyLogs(state) {
     return (uiMarkup("<details class=\"tretaresia-card tretaresia-journey-logs tretaresia-log-disclosure\">\n        <summary><span><i class=\"fa-solid fa-book-open\"></i><b>")+(html(tr(uiText("Journey Logs"))))+uiMarkup("</b><small>")+(html(tr(uiText("Story milestones"))))+uiMarkup("</small></span><em>")+(entries.length)+uiMarkup("</em><i class=\"fa-solid fa-chevron-down\"></i></summary>\n        <div class=\"tretaresia-log-body\"><details class=\"tretaresia-journey-add\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add journey log"))))+uiMarkup("</summary>\n                <form data-form=\"journey-log-add\">")+(textareaField('What happened', 'text', '', 3, 'maxlength="500" required'))+uiMarkup("\n                    <button class=\"tretaresia-primary-button\" type=\"submit\">")+(html(tr(uiText("Save log"))))+uiMarkup("</button></form></details>\n        <div class=\"tretaresia-journey-list\">")+(entries.length ? entries.map(entry => (uiMarkup("\n            <article class=\"tretaresia-journey-entry\"><div class=\"tretaresia-journey-mark\"><i class=\"fa-solid fa-diamond\"></i></div>\n                <div class=\"tretaresia-journey-copy\"><small>")+(html(entry.day || ''))+uiMarkup("")+(entry.place ? ` · ${html(entry.place)}` : '')+uiMarkup("")+(entry.at ? ` · ${html(formatDate(entry.at))}` : '')+uiMarkup("</small><p>")+(html(entry.text))+uiMarkup("</p></div>\n                <div class=\"tretaresia-journey-actions\"><details><summary title=\"")+(html(tr(uiText("Edit log"))))+uiMarkup("\"><i class=\"fa-solid fa-pen\"></i></summary>\n                    <form data-form=\"journey-log-edit\"><input type=\"hidden\" name=\"id\" value=\"")+(html(entry.id))+uiMarkup("\">\n                        ")+(textareaField('What happened', 'text', entry.text, 3, 'maxlength="500" required'))+uiMarkup("\n                        <button class=\"tretaresia-primary-button\" type=\"submit\">")+(html(tr(uiText("Save log"))))+uiMarkup("</button></form></details>\n                    <button type=\"button\" data-action=\"delete-journey-log\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Delete log"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div>\n            </article>"))).join('') : (uiMarkup("<p class=\"tretaresia-journey-empty\">")+(html(tr(uiText("No journey logs yet."))))+uiMarkup("</p>")))+uiMarkup("</div></div>\n    </details>"));
 }
 
+function renderLocationMemory(state) {
+    const entries = [...(state.locationMemory || [])].reverse().slice(0, 12);
+    const byId = new Map((state.locationMemory || []).map(entry => [entry.id, entry]));
+    const thai = getSettings().language === 'th';
+    const word = (en, th) => thai ? th : en;
+    return `<details class="tretaresia-card tretaresia-location-memory tretaresia-log-disclosure"><summary><span><i class="fa-solid fa-compass"></i><b>${html(word('Location Memory', 'ความทรงจำสถานที่'))}</b><small>${html(word('Stable places and known routes', 'สถานที่และเส้นทางที่ยืนยันแล้ว'))}</small></span><em>${entries.length}</em><i class="fa-solid fa-chevron-down"></i></summary><div class="tretaresia-log-body tretaresia-location-memory-list">${entries.length ? entries.map(entry => {
+        const parent = entry.parentId ? byId.get(entry.parentId) : null;
+        const children = (state.locationMemory || []).filter(child => child.parentId === entry.id).slice(0, 4);
+        const routes = (entry.connections || []).slice(-3).map(route => {
+            const target = route.toId ? byId.get(route.toId)?.name : route.to;
+            return [target, route.distance, route.direction, route.route].filter(Boolean).join(' · ');
+        }).join(' / ');
+        return `<article><i class="fa-solid fa-location-dot"></i><span><strong>${html(entry.name)}</strong><small>${html([entry.kind, parent ? `${word('inside', 'ใน')} ${parent.name}` : '', entry.region, entry.continent].filter(Boolean).join(' · '))}</small>${entry.detail ? `<p>${html(entry.detail)}</p>` : ''}${entry.conditions ? `<small>${html(word('Conditions', 'สภาพ'))}: ${html(entry.conditions)}</small>` : ''}${children.length ? `<small>${html(word('Contains', 'มีสถานที่ย่อย'))}: ${html(children.map(child => child.name).join(', '))}</small>` : ''}${routes ? `<small>${html(word('Routes', 'เส้นทาง'))}: ${html(routes)}</small>` : ''}</span><b>${entry.visits || 0}×</b></article>`;
+    }).join('') : `<p>${html(word('Places become stable after the story confirms them.', 'สถานที่จะถูกจดจำเมื่อเนื้อเรื่องยืนยันแล้ว'))}</p>`}</div></details>`;
+}
+
 function renderScene(panel, state) {
     if (!panel) return;
     const phaseIndex = Math.max(0, DAY_PHASES.indexOf(state.worldClock.phase));
@@ -5227,7 +5561,7 @@ function renderScene(panel, state) {
                 ['Month',currentScene.month], ['Year',currentScene.year], ['Era',currentScene.era], ['Calendar',currentScene.calendar],
                 ['Season',currentScene.season], ['Lighting',currentScene.lighting], ['Participants',currentScene.participants?.join(', ')],
                 ['Objective',currentScene.objective], ['Safety',currentScene.safety], ['Atmosphere',currentScene.atmosphere], ['Elapsed',currentScene.elapsed],
-            ].map(([label, value]) => (uiMarkup("<div><dt>")+(html(tr(label)))+uiMarkup("</dt><dd>")+(html(value || '—'))+uiMarkup("</dd></div>"))).join(''))+uiMarkup("</dl></details>")) : '')+uiMarkup("\n        ")+(state.travel.status !== 'Idle' ? (uiMarkup("<section class=\"tretaresia-card tretaresia-travel-status\" data-status=\"")+(html(state.travel.status.toLowerCase()))+uiMarkup("\">\n            <div class=\"tretaresia-card-title\"><span>")+(html(tr(uiText("Journey"))))+uiMarkup("</span><em><i class=\"fa-solid fa-route\"></i> ")+(html(state.travel.status))+uiMarkup("</em></div>\n            <dl class=\"tretaresia-fact-list\"><div><dt>")+(html(tr(uiText("Origin"))))+uiMarkup("</dt><dd>")+(html(state.travel.origin || 'Unknown'))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Destination"))))+uiMarkup("</dt><dd>")+(html(state.travel.destination || 'Unknown'))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Travel route"))))+uiMarkup("</dt><dd>")+(html(state.travel.route))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Remaining travel"))))+uiMarkup("</dt><dd>")+(formatTravelDays(state.travel.remainingDays))+uiMarkup(" / ")+(formatTravelDays(state.travel.totalDays))+uiMarkup(" ")+(html(tr(uiText("days"))))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Current"))))+uiMarkup("</dt><dd>")+(Math.round(journeyProgress * 100))+uiMarkup("% · ")+(html(state.location.place))+uiMarkup("</dd></div></dl>\n            <div class=\"tretaresia-travel-progress\" style=\"--journey-progress:")+(Math.round(journeyProgress * 100))+uiMarkup("%\"><span></span><b>")+(Math.round(journeyProgress * 100))+uiMarkup("%</b></div>\n            ")+(state.travel.notes ? (uiMarkup("<p>")+(html(state.travel.notes))+uiMarkup("</p>")) : '')+uiMarkup("</section>")) : '')+uiMarkup("\n        ")+(renderJourneyLogs(state))+uiMarkup("\n        ")+(renderLocalStructure(state))+uiMarkup("\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Save scene"))))+uiMarkup("</summary>\n            <form data-form=\"scene\" class=\"tretaresia-form-grid\">\n                ")+(input('Day name', 'dayName', state.worldClock.dayName))+uiMarkup("")+(input('Day counter', 'day', state.worldClock.day, 'number', 'min="1"'))+uiMarkup("\n                ")+(input('World time', 'time', state.worldClock.time, 'time'))+uiMarkup("")+(select('Day phase', 'phase', DAY_PHASES, state.worldClock.phase))+uiMarkup("\n                ")+(input('Continent', 'continent', state.location.continent))+uiMarkup("")+(input('Current region', 'region', state.location.region))+uiMarkup("\n                ")+(input('Current place', 'place', state.location.place))+uiMarkup("")+(input('Current location detail', 'detail', state.location.detail))+uiMarkup("\n                ")+(input('Scene position', 'position', state.scene.position))+uiMarkup("")+(select('Zone type', 'zoneType', ZONE_TYPES, state.location.zoneType))+uiMarkup("\n                ")+(input('Weather', 'weather', state.scene.weather))+uiMarkup("")+(input('Temperature', 'temperature', state.scene.temperature, 'number', 'min="-1000" max="1000" step="0.1"'))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save scene"))))+uiMarkup("</button>\n            </form></details>"));
+            ].map(([label, value]) => (uiMarkup("<div><dt>")+(html(tr(label)))+uiMarkup("</dt><dd>")+(html(value || '—'))+uiMarkup("</dd></div>"))).join(''))+uiMarkup("</dl></details>")) : '')+uiMarkup("\n        ")+(state.travel.status !== 'Idle' ? (uiMarkup("<section class=\"tretaresia-card tretaresia-travel-status\" data-status=\"")+(html(state.travel.status.toLowerCase()))+uiMarkup("\">\n            <div class=\"tretaresia-card-title\"><span>")+(html(tr(uiText("Journey"))))+uiMarkup("</span><em><i class=\"fa-solid fa-route\"></i> ")+(html(state.travel.status))+uiMarkup("</em></div>\n            <dl class=\"tretaresia-fact-list\"><div><dt>")+(html(tr(uiText("Origin"))))+uiMarkup("</dt><dd>")+(html(state.travel.origin || 'Unknown'))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Destination"))))+uiMarkup("</dt><dd>")+(html(state.travel.destination || 'Unknown'))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Travel route"))))+uiMarkup("</dt><dd>")+(html(state.travel.route))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Remaining travel"))))+uiMarkup("</dt><dd>")+(formatTravelDays(state.travel.remainingDays))+uiMarkup(" / ")+(formatTravelDays(state.travel.totalDays))+uiMarkup(" ")+(html(tr(uiText("days"))))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Current"))))+uiMarkup("</dt><dd>")+(Math.round(journeyProgress * 100))+uiMarkup("% · ")+(html(state.location.place))+uiMarkup("</dd></div></dl>\n            <div class=\"tretaresia-travel-progress\" style=\"--journey-progress:")+(Math.round(journeyProgress * 100))+uiMarkup("%\"><span></span><b>")+(Math.round(journeyProgress * 100))+uiMarkup("%</b></div>\n            ")+(state.travel.notes ? (uiMarkup("<p>")+(html(state.travel.notes))+uiMarkup("</p>")) : '')+uiMarkup("</section>")) : '')+uiMarkup("\n        ")+(renderJourneyLogs(state))+uiMarkup("\n        ")+(renderLocationMemory(state))+uiMarkup("\n        ")+(renderLocalStructure(state))+uiMarkup("\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Save scene"))))+uiMarkup("</summary>\n            <form data-form=\"scene\" class=\"tretaresia-form-grid\">\n                ")+(input('Day name', 'dayName', state.worldClock.dayName))+uiMarkup("")+(input('Day counter', 'day', state.worldClock.day, 'number', 'min="1"'))+uiMarkup("\n                ")+(input('World time', 'time', state.worldClock.time, 'time'))+uiMarkup("")+(select('Day phase', 'phase', DAY_PHASES, state.worldClock.phase))+uiMarkup("\n                ")+(input('Continent', 'continent', state.location.continent))+uiMarkup("")+(input('Current region', 'region', state.location.region))+uiMarkup("\n                ")+(input('Current place', 'place', state.location.place))+uiMarkup("")+(input('Current location detail', 'detail', state.location.detail))+uiMarkup("\n                ")+(input('Scene position', 'position', state.scene.position))+uiMarkup("")+(select('Zone type', 'zoneType', ZONE_TYPES, state.location.zoneType))+uiMarkup("\n                ")+(input('Weather', 'weather', state.scene.weather))+uiMarkup("")+(input('Temperature', 'temperature', state.scene.temperature, 'number', 'min="-1000" max="1000" step="0.1"'))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save scene"))))+uiMarkup("</button>\n            </form></details>"));
     setupSceneMapInteractions(panel, state);
 }
 
@@ -5298,7 +5632,7 @@ function renderSkillStorage(panel, state) {
 function proficiencyCard(entry, group, value, custom = false) {
     const score = number(value, 0, 0, 100);
     const rank = proficiencyRank(score);
-    return (uiMarkup("<article class=\"tretaresia-proficiency-card")+(custom ? ' is-custom' : '')+uiMarkup("\" style=\"--discipline-tone:")+(entry.tone || 'var(--tretaresia-accent)')+uiMarkup(";--proficiency:")+(score)+uiMarkup("\">\n        <div class=\"tretaresia-proficiency-orbit\"><span><i class=\"")+(entry.icon)+uiMarkup("\"></i></span><b>")+(score)+uiMarkup("<small>%</small></b></div>\n        <div class=\"tretaresia-proficiency-card-copy\"><span>")+(html(custom ? tr(uiText("Custom proficiency")) : tr(group === 'magic' ? uiText("Preset discipline") : uiText("Preset style"))))+uiMarkup("</span>\n            <h4>")+(html(entry.name))+uiMarkup("</h4><p>")+(html(entry.description || `${tr(rank)} Rank`))+uiMarkup("</p></div>\n        <div class=\"tretaresia-proficiency-rank\"><small>")+(html(tr(uiText("Proficiency rank"))))+uiMarkup("</small><strong>")+(html(tr(rank)))+uiMarkup("</strong></div>\n        ")+(custom ? (uiMarkup("<button type=\"button\" class=\"tretaresia-proficiency-delete\" data-action=\"delete-custom-proficiency\" data-kind=\"")+(group)+uiMarkup("\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button>")) : '')+uiMarkup("\n        <label class=\"tretaresia-proficiency-control\"><span class=\"tretaresia-proficiency-track\"><i style=\"width:")+(score)+uiMarkup("%\"></i></span>\n            <input type=\"range\" name=\"")+(custom ? `custom-${group}` : group)+uiMarkup("-")+(entry.id)+uiMarkup("\" data-proficiency-kind=\"")+(group)+uiMarkup("\" data-proficiency-id=\"")+(html(entry.id))+uiMarkup("\" data-custom=\"")+(custom)+uiMarkup("\" min=\"0\" max=\"100\" value=\"")+(score)+uiMarkup("\" aria-label=\"")+(html(entry.name))+uiMarkup(" proficiency\"></label>\n    </article>"));
+    return (uiMarkup("<article class=\"tretaresia-proficiency-card")+(custom ? ' is-custom' : '')+uiMarkup("\" style=\"--discipline-tone:")+(entry.tone || 'var(--tretaresia-accent)')+uiMarkup(";--proficiency:")+(score)+uiMarkup("\">\n        <div class=\"tretaresia-proficiency-orbit\"><span><i class=\"")+(entry.icon)+uiMarkup("\"></i></span><b>")+(score)+uiMarkup("<small>%</small></b></div>\n        <div class=\"tretaresia-proficiency-card-copy\"><span>")+(html(custom ? tr(uiText("Custom proficiency")) : tr(group === 'magic' ? uiText("Preset discipline") : uiText("Preset style"))))+uiMarkup("</span>\n            <h4>")+(html(entry.name))+uiMarkup("</h4><p>")+(html(entry.description || `${tr(rank)} Rank`))+uiMarkup("</p></div>\n        <div class=\"tretaresia-proficiency-rank\"><small>")+(html(tr(uiText("Proficiency rank"))))+uiMarkup("</small><strong>")+(html(tr(rank)))+uiMarkup("</strong></div>\n        ")+(uiMarkup("<button type=\"button\" class=\"tretaresia-mastery-train-button\" data-action=\"start-mastery-training\" data-training-kind=\"")+(group)+uiMarkup("\" data-training-id=\"")+(html(entry.id))+uiMarkup("\" data-training-name=\"")+(html(entry.name))+uiMarkup("\"><i class=\"fa-solid fa-person-chalkboard\"></i>")+(html(tr(uiText("Train"))))+uiMarkup("</button>"))+(custom ? (uiMarkup("<button type=\"button\" class=\"tretaresia-proficiency-delete\" data-action=\"delete-custom-proficiency\" data-kind=\"")+(group)+uiMarkup("\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button>")) : '')+uiMarkup("\n        <label class=\"tretaresia-proficiency-control\"><span class=\"tretaresia-proficiency-track\"><i style=\"width:")+(score)+uiMarkup("%\"></i></span>\n            <input type=\"range\" name=\"")+(custom ? `custom-${group}` : group)+uiMarkup("-")+(entry.id)+uiMarkup("\" data-proficiency-kind=\"")+(group)+uiMarkup("\" data-proficiency-id=\"")+(html(entry.id))+uiMarkup("\" data-custom=\"")+(custom)+uiMarkup("\" min=\"0\" max=\"100\" value=\"")+(score)+uiMarkup("\" aria-label=\"")+(html(entry.name))+uiMarkup(" proficiency\"></label>\n    </article>"));
 }
 
 function proficiencyIconPicker(selected = 'arcane') {
@@ -5323,6 +5657,19 @@ function renderTechniques(panel, state) {
     ];
     const mastered = [...magicEntries, ...swordEntries].filter(entry => entry.value > 0).length;
     panel.innerHTML = (uiMarkup("")+(heading(uiText("Power & Combat"), `${mastered} ${tr(uiText("Active proficiencies")).toLowerCase()} · ${state.proficiencies.techniques.length} ${tr(uiText("Techniques")).toLowerCase()}`, 'fa-solid fa-fire-flame-curved'))+uiMarkup("\n        <section class=\"tretaresia-proficiency-overview\"><div><span>")+(html(tr(uiText("Mastery Archive"))))+uiMarkup("</span><strong>")+(mastered)+uiMarkup("</strong><small>")+(html(tr(uiText("Known disciplines and styles"))))+uiMarkup("</small></div>\n            ")+(MASTERY.slice(1).map(rank => (uiMarkup("<span><i></i>")+(html(tr(rank)))+uiMarkup("</span>"))).join(''))+uiMarkup("</section>\n        <div class=\"tretaresia-mastery-atlas\">\n            <section class=\"tretaresia-proficiency-section\"><header><div><i class=\"fa-solid fa-fire-flame-curved\"></i><span><strong>")+(html(tr(uiText("Power systems"))))+uiMarkup("</strong><small>")+(magicEntries.length)+uiMarkup(" ")+(html(tr(uiText("entries"))))+uiMarkup("</small></span></div>\n                <em>")+(state.proficiencies.customMagic.length)+uiMarkup(" ")+(html(tr(uiText("custom"))))+uiMarkup("</em></header>\n                <form data-form=\"proficiencies\" data-kind=\"magic\"><div class=\"tretaresia-proficiency-card-grid\">")+(magicEntries.map(entry => proficiencyCard(entry, 'magic', entry.value, entry.custom)).join(''))+uiMarkup("</div>\n                    <button class=\"tretaresia-primary-button tretaresia-mastery-save\" type=\"submit\"><i class=\"fa-solid fa-floppy-disk\"></i>")+(html(tr(uiText("Save proficiency"))))+uiMarkup("</button></form>")+(customProficiencyEditor('magic'))+uiMarkup("</section>\n            <section class=\"tretaresia-proficiency-section\"><header><div><i class=\"fa-solid fa-khanda\"></i><span><strong>")+(html(tr(uiText("Combat disciplines"))))+uiMarkup("</strong><small>")+(swordEntries.length)+uiMarkup(" ")+(html(tr(uiText("entries"))))+uiMarkup("</small></span></div>\n                <em>")+(state.proficiencies.customSword.length)+uiMarkup(" ")+(html(tr(uiText("custom"))))+uiMarkup("</em></header>\n                <form data-form=\"proficiencies\" data-kind=\"sword\"><div class=\"tretaresia-proficiency-card-grid tretaresia-sword-card-grid\">")+(swordEntries.map(entry => proficiencyCard(entry, 'sword', entry.value, entry.custom)).join(''))+uiMarkup("</div>\n                    <button class=\"tretaresia-primary-button tretaresia-mastery-save\" type=\"submit\"><i class=\"fa-solid fa-floppy-disk\"></i>")+(html(tr(uiText("Save proficiency"))))+uiMarkup("</button></form>")+(customProficiencyEditor('sword'))+uiMarkup("</section>\n        </div>\n        <section class=\"tretaresia-technique-section tretaresia-technique-revamp\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-list-check\"></i><span>")+(html(tr(uiText("Techniques"))))+uiMarkup("</span></div>\n            <div class=\"tretaresia-technique-grid\">")+(state.proficiencies.techniques.length ? state.proficiencies.techniques.map(entry => (uiMarkup("<article class=\"tretaresia-technique-card\">\n                <div><span>")+(html(entry.category))+uiMarkup("</span><strong>")+(html(entry.name))+uiMarkup("</strong><p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div>\n                <div class=\"tretaresia-technique-meter\"><em>")+(html(tr(proficiencyRank(entry.proficiency))))+uiMarkup(" Rank</em><span><i style=\"width:")+(entry.proficiency)+uiMarkup("%\"></i></span><b>")+(entry.proficiency)+uiMarkup("%</b></div>\n                <button type=\"button\" data-action=\"delete-technique\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('') : empty(uiText("Skills learned during role-play will appear here.")))+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add technique"))))+uiMarkup("</summary>\n                <form data-form=\"technique\" class=\"tretaresia-form-grid\">")+(input('Technique name', 'name', ''))+uiMarkup("")+(input('Category', 'category', 'General'))+uiMarkup("\n                    ")+(input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Description', 'description', ''))+uiMarkup("\n                    <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add technique"))))+uiMarkup("</button></form></details></section>"));
+    const activeTraining = masteryTrainingForChat();
+    const host = document.createElement('div');
+    host.className = 'tretaresia-mastery-training-mount';
+    panel.prepend(host);
+    const firstDiscipline = magicEntries[0] || swordEntries[0] || null;
+    host.append(renderMasteryTrainingPanel({
+        training: activeTraining,
+        discipline: firstDiscipline ? { kind: magicEntries.includes(firstDiscipline) ? 'magic' : 'sword', disciplineId: firstDiscipline.id, name: firstDiscipline.name } : null,
+        language: getSettings().language,
+        onStart: value => void startMasteryTrainingSession(value),
+        onCancel: () => void cancelMasteryTrainingSession(),
+    }));
+
 }
 
 function questSectionId(entry) {
@@ -6848,6 +7195,11 @@ async function onPanelClick(event) {
     const state = clone(getState());
     const id = button.dataset.id;
     switch (button.dataset.action) {
+        case 'start-mastery-training': {
+            const kind = button.dataset.trainingKind === 'sword' ? 'sword' : 'magic';
+            void startMasteryTrainingSession({ kind, disciplineId: button.dataset.trainingId, disciplineName: button.dataset.trainingName, mode: 'guided' });
+            break;
+        }
         case 'story-memory-status':
             if (['Active','Resolved','Archived'].includes(button.dataset.status) && state.storyMemories.some(entry => entry.id === id)) {
                 await saveStoryOperation(state, ['upsert','storyMemories',{id,status:button.dataset.status}], 'manual-memory');
@@ -7391,7 +7743,8 @@ async function sendChatAction(message, modeOverride = '') {
         const instruction = settings.language === 'th'
             ? (uiMarkup("<tretaresia_rpg_action>การกระทำของผู้เล่น: ")+(message)+uiMarkup("\nให้ตอบสนองต่อการกระทำนี้ต่อเนื่องอย่างเป็นธรรมชาติในโรลเพลย์ ห้ามกล่าวถึงระบบ อินเทอร์เฟซ หรือคำสั่งที่ซ่อนอยู่</tretaresia_rpg_action>"))
             : (uiMarkup("<tretaresia_rpg_action>Player action: ")+(message)+uiMarkup("\nContinue the role-play naturally from this action. Never mention the system, interface, or hidden instruction.</tretaresia_rpg_action>"));
-        context.setExtensionPrompt(ACTION_PROMPT_KEY, instruction, 1, 0, false, 0);
+        const boundedInstruction = `${instruction}\n\n${ROLEPLAY_OUTPUT_BOUNDARY}`;
+        context.setExtensionPrompt(ACTION_PROMPT_KEY, boundedInstruction, 1, 0, false, 0);
         closeInterface();
         setSync('working', tr(uiText("Hidden action sent")), settings.language === 'th' ? 'กำลังรอคำตอบของ AI โดยไม่สร้างข้อความผู้เล่น' : 'Waiting for the AI without creating a user bubble.');
         try {
@@ -8108,6 +8461,8 @@ function derivePatchNotifications(current, next, operations, levelUps) {
             title: meta.reason || (delta > 0 ? `Received ${denomination}` : `Spent ${denomination}`),
             detail: `${next.progression.currency.name} · Balance ${next.progression.currency[denomination]} ${denomination}`,
             value: `${delta > 0 ? '+' : ''}${delta} ${denomination}`,
+            action: delta > 0 ? 'received' : 'spent', denomination, delta,
+            balance: next.progression.currency[denomination],
         });
     }
     return events;
@@ -8144,7 +8499,7 @@ function significantJourneyOperation(current, next, operation) {
     const [verb, path, value] = operation;
     if (['player.level', 'player.profession', 'player.powerType', 'player.originSkill', 'progression.adventurerRank', 'progression.customRankName', 'progression.kills',
         'location.place', 'location.region', 'location.continent', 'travel.status', 'travel.destination', 'travel.destinationPlace'].includes(path)) return true;
-    if (['skills', 'proficiencies.customMagic', 'proficiencies.customSword', 'proficiencies.techniques',
+    if (['skills', 'proficiencies.customMagic', 'proficiencies.customSword', 'proficiencies.techniques', 'locationMemory',
         'party', 'guilds', 'household', 'partyMembers', 'guildMembers', 'householdMembers'].includes(path)) return ['upsert', 'delete'].includes(verb);
     if (path === 'quests' && verb === 'upsert') {
         const before = current.quests.find(entry => matchesPatchIdentity(entry, value));
@@ -8171,6 +8526,13 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
     const acceptedOps = [];
     const explicit = patch.ops.slice(0, 75).flatMap(canonicalPatchOperations).slice(0, 100);
     const operations = [...explicit, ...sceneTrackerOperations(patch.sceneTracker, explicit)];
+    const locationRecords = normalizeLocationMemory(patch.locations).filter(entry => entry.evidence.length).slice(0, 40);
+    let locationMemoryChanged = false;
+    if (locationRecords.length) {
+        const merged = mergeLocationMemory(current.locationMemory, locationRecords);
+        locationMemoryChanged = JSON.stringify(merged) !== JSON.stringify(current.locationMemory || []);
+        candidate.locationMemory = merged;
+    }
     let changedDay = current.worldClock.day;
     for (const [verb,path,value] of operations) if (path === 'worldClock.day' && ['set','inc'].includes(verb)) {
         changedDay = verb === 'inc' ? changedDay + number(value,0,-999999999,999999999) : number(value, current.worldClock.day,1,999999);
@@ -8225,6 +8587,7 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
     }
     finalizeQuestObjectives(candidate, current, operations);
     rewards.finish(candidate);
+    if (locationMemoryChanged) acceptedOps.push(['upsert', 'locationMemory', locationRecords]);
     if (acceptedOps.some(op => op[0] === 'set' && op[1] === 'location.place' && typeof op[2] === 'string' && op[2].trim() && !/^(?:unknown|none|n\/a|ไม่ทราบ|—|-)$/i.test(op[2].trim()))) {
         candidate.onboarding.locationSeeded = true;
         // A first real place must not inherit an unconfirmed hierarchy.
@@ -8355,14 +8718,18 @@ function coerceStatePatch(raw) {
         };
         walk(delta);
     }
-    if (!operations.length && !sceneTrackerOperations(source.sceneTracker).length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates) && !normalizeMissionBoard(source.missionBoard) && !normalizeAuctionOffer(source.auction)) return null;
+    const locations = normalizeLocationMemory(source.locations).filter(entry => entry.evidence.length).slice(0, 40);
+    if (!operations.length && !sceneTrackerOperations(source.sceneTracker).length && !locations.length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates) && !normalizeMissionBoard(source.missionBoard) && !normalizeGroupBoard(source.groupBoard) && !normalizeAuctionOffer(source.auction) && !normalizeMarketplaceEvent(source.marketplace)) return null;
     return {
         ops: operations.slice(0, 75),
         summary: text(source.summary || raw.summary, '', 300),
         journey: text(source.journey || source.journeyLog || raw.journey || raw.journeyLog, '', 500),
         sceneTracker: expandScene(source.sceneTracker),
+        locations,
         missionBoard: normalizeMissionBoard(source.missionBoard),
+        groupBoard: normalizeGroupBoard(source.groupBoard),
         auction: normalizeAuctionOffer(source.auction),
+        marketplace: normalizeMarketplaceEvent(source.marketplace),
     };
 }
 
@@ -8411,8 +8778,11 @@ function extractStatePatch(message) {
         summary: patches.map(patch => text(patch.summary, '', 300)).filter(Boolean).join('; ').slice(0, 300),
         journey: [...patches].reverse().map(patch => text(patch.journey, '', 500)).find(Boolean) || '',
         sceneTracker: Object.assign({}, ...patches.map(patch => patch.sceneTracker || {})),
+        locations: patches.flatMap(patch => patch.locations || []).slice(0, 40),
         missionBoard: [...patches].reverse().find(patch => patch.missionBoard)?.missionBoard || null,
+        groupBoard: [...patches].reverse().find(patch => patch.groupBoard)?.groupBoard || null,
         auction: [...patches].reverse().find(patch => patch.auction)?.auction || null,
+        marketplace: [...patches].reverse().find(patch => patch.marketplace)?.marketplace || null,
     } : null;
     return { visible: visible.replace(/<!--[^>]*$/, '').trimEnd(), patch: combined, found };
 }
@@ -8628,6 +8998,7 @@ async function processAssistantPatch(messageId, generationType = '') {
     }
     processedAssistantMessages.set(message, variantKey);
     try {
+        await resolveMasteryTrainingAfterReply(messageId, message);
         const base = getState();
         let patched = base;
         let accepted = 0;
@@ -8640,17 +9011,26 @@ async function processAssistantPatch(messageId, generationType = '') {
                 break;
             }
         }
+        resolveMarketplaceEventBeforeReply(messageId);
         const board = settings.enableMissionBoard ? confirmedMissionBoard(extracted.patch?.missionBoard, extracted.visible, userMessage?.mes,
+            extracted.patch?.sceneTracker?.location || base.location.place) : null;
+        const groupBoard = settings.enableGroupBoard ? confirmedGroupBoard(extracted.patch?.groupBoard, extracted.visible, userMessage?.mes,
             extracted.patch?.sceneTracker?.location || base.location.place) : null;
         const auction = settings.enableAuctions ? confirmedAuctionOffer(extracted.patch?.auction,extracted.visible,userMessage?.mes,
             extracted.patch?.sceneTracker?.location || base.location.place) : null;
+        const marketplaceEvent = settings.enableMarketplace ? confirmedMarketplaceEvent(extracted.patch?.marketplace, extracted.visible, userMessage?.mes,
+            extracted.patch?.sceneTracker?.location || base.location.place, base.inventory) : null;
+        const locations = confirmedLocationMemory(extracted.patch?.locations, extracted.visible);
         const safeOps = confirmedSocialOperations(inlineOps, base, extracted.visible, userMessage?.mes).filter(operation =>
             !(auction && (operation[1] === 'inventory' || /^progression\.currency\./u.test(String(operation[1])))) &&
+            !(marketplaceEvent && (operation[1] === 'inventory' || /^progression\.currency\./u.test(String(operation[1])))) &&
             !(settings.enableMissionBoard && extracted.patch?.missionBoard && operation[1] === 'quests' && extracted.patch.missionBoard.missions.some(mission => matchesPatchIdentity(mission,operation[2]))
                 && !base.quests.some(quest => matchesPatchIdentity(quest,operation[2]))));
         rememberMissionBoard(messageId, message, board);
+        rememberGroupBoard(messageId, message, groupBoard);
         rememberAuctionOffer(messageId,message,auction);
-        const safePatch = { ...(extracted.patch || {}), ops: safeOps };
+        rememberMarketplaceEvent(messageId, message, marketplaceEvent);
+        const safePatch = { ...(extracted.patch || {}), ops: safeOps, locations };
         if (safeOps.length || extracted.patch) {
             const result = applyStatePatch(base, safePatch, {sourceMessageId:messageId,source:'main-reply'});
             patched = result.next;
@@ -8691,6 +9071,7 @@ async function processAssistantPatch(messageId, generationType = '') {
         if (totalChanges) {
             notifications = notifications.filter(event => !['learning','training','inventory','purchase'].includes(event.kind));
             notifications.push(...growthInventoryNotifications(base,reconciled.next,safeOps,getSettings().language,getPowerPreset().definitions));
+            rememberResourceEvents(messageId, message, notifications);
             const saved = await persistState(reconciled.next, accepted ? 'inline-patch+turn-reconcile' : 'turn-reconcile-fallback', {deferMetadataSave:true});
             if (!saved) return;
             await rememberScene(messageId, message, getState(), details);
@@ -8725,6 +9106,8 @@ async function processAssistantPatch(messageId, generationType = '') {
             npcWorkspace?.refresh();
             if (auction) setSync('success',settings.language === 'th' ? 'งานประมูลพร้อมแล้ว' : 'Auction ready',
                 settings.language === 'th' ? `${auction.lots.length} รายการ · กดเข้าร่วมจากการ์ดในแชต` : `${auction.lots.length} lots · Join from the chat card.`);
+            else if (groupBoard) setSync('success',settings.language === 'th' ? 'กระดานปาร์ตี้และกิลด์พร้อมแล้ว' : 'Party and guild board ready',
+                settings.language === 'th' ? `${groupBoard.entries.length} กลุ่ม · เลือกอ่านเงื่อนไขจากการ์ดในแชต` : `${groupBoard.entries.length} groups · inspect them from the chat card.`);
             else if (board) setSync('success',settings.language === 'th' ? 'กระดานภารกิจพร้อมแล้ว' : 'Mission board ready',
                 settings.language === 'th' ? `มีภารกิจให้เลือก ${board.missions.length} รายการ` : `${board.missions.length} missions available to read.`);
             else setSync('unchanged', tr(uiText("No state changes")), settings.language === 'th' ? 'ตรวจทั้ง Patch และระบบสำรองแล้ว ไม่มีเหตุการณ์ที่ยืนยันให้เปลี่ยนค่า' : 'Both the inline patch and deterministic fallback found no confirmed change.');
@@ -8917,7 +9300,7 @@ function analyzerPrompt(state, transcript, {messageId = null, historical = false
         .some(name => name && transcript.toLocaleLowerCase().includes(name.toLocaleLowerCase()))).slice(0, 8);
     const rules = patchInstructions().split('\n').filter(line => /^(?:Story memory:|Quest objectives:|Appointments and deadlines:|Allowed ops:|Compact state arrays:|EPISTEMIC FIREWALL:|Resource, injury, and damage rules:|Survival rules:|Aura mechanics:|World identity:|EXP:|Money:|Inventory lifecycle:|Quests:|Proficiency:|NPC identity:|NPCs and knowledge:|Player and NPC H-Stats:|Social auto-sync:)/.test(line)).join('\n');
     return `MANUAL SYNC: Audit this ONE completed reply (#${messageId === null ? '?' : messageId + 1}) across every story-driven tab. Return only changes genuinely missing from CURRENT STATE; never replay earlier rewards, costs, experience or counters already applied. Never treat another reply, an earlier plan, or a hypothetical as the event for this turn. ${historical ? 'This is an older reply: supply its historical sceneTracker, but do not move the CURRENT location, clock, weather, travel state or overwrite later known facts.' : 'This is the latest reply: the sceneTracker describes the actual current scene.'}
-Review ${[getSettings().enableStoryMemory && 'story memory',getSettings().enableStoryAgenda && 'appointments and deadlines',getSettings().enableQuestObjectives && 'quest objectives'].filter(Boolean).map(value => value+', ').join('')}player status, scene, inventory, skills, techniques, quests, rank, groups, household, NPCs, all applicable H-Stats fields, physical mail and systems touched by the story. Preserve unrelated values. Include all sceneTracker keys dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed; carry forward established facts and create coherent fictional details only for unspecified scene properties. H-Stats fields (key/type): ${JSON.stringify(H_FIELDS.map(({key,type})=>[key,type]))}. Record separately every confirmed quality, current state, last partner, relevant counters, measured liters, pregnancy, relationships and preferences for the NPC named in the story. A single confirmed event may update multiple distinct counters; never guess measured volumes or a favorite. Do not add an H-Stats Condition field.
+Review ${[getSettings().enableStoryMemory && 'story memory',getSettings().enableStoryAgenda && 'appointments and deadlines',getSettings().enableQuestObjectives && 'quest objectives'].filter(Boolean).map(value => value+', ').join('')}player status, scene, inventory, skills, techniques, quests, rank, groups, household, NPCs, all applicable H-Stats fields, physical mail, stable location memory and systems touched by the story. Preserve unrelated values. Include all sceneTracker keys dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. For confirmed durable geography include locations:[{id,name,kind,parentId or parentName,detail,conditions,connections,distance,direction,evidence:"exact quote from this reply"}] and omit records without evidence; carry forward established facts and create coherent fictional details only for unspecified scene properties. H-Stats fields (key/type): ${JSON.stringify(H_FIELDS.map(({key,type})=>[key,type]))}. Record separately every confirmed quality, current state, last partner, relevant counters, measured liters, pregnancy, relationships and preferences for the NPC named in the story. A single confirmed event may update multiple distinct counters; never guess measured volumes or a favorite. Do not add an H-Stats Condition field.
 CURRENT STATE:
 ${JSON.stringify(aiState(state, {privateTracker:true,focusTranscript:transcript}))}
 PARTICIPATING NPC DOSSIERS:
@@ -9473,6 +9856,8 @@ function bindChatEvents() {
     if (eventTypes.PERSONA_CHANGED) eventSource.on(eventTypes.PERSONA_CHANGED, () => renderAll());
     if (eventTypes.MESSAGE_SENT) eventSource.on(eventTypes.MESSAGE_SENT, async messageId => {
         restoreComposerDraft();
+        try { await recordMasteryTrainingRole(messageId, SillyTavern.getContext().chat?.[Number(messageId)]); }
+        catch (error) { console.warn('[RoleForge] Could not record mastery training role.', error); }
         try { await processUserTravelIntent(messageId); }
         catch (error) { console.warn('[RoleForge] Could not apply user travel intent.', error); }
         updatePrompt();
@@ -9618,9 +10003,9 @@ async function initialize() {
         npcWorkspace = createNpcWorkspace({
             context: () => SillyTavern.getContext(), state: getState, settings: getSettings,
             sceneForMessage,
-            socialEventsForMessage, diaryForMessage, answerHouseholdOffer, answerGroupOffer, missionBoardForMessage, acceptBoardMission,
+            socialEventsForMessage, resourceEventsForMessage, diaryForMessage, answerHouseholdOffer, answerGroupOffer, missionBoardForMessage, acceptBoardMission, groupBoardForMessage, requestGroupBoardJoin, masteryTrainingForMessage,
             auctionForMessage, runAuctionAction, refreshAuctions,
-            marketplaceForMessage, runMarketplaceAction, refreshMarketplace,
+            marketplaceForMessage, runMarketplaceAction, respondMarketplaceEvent, refreshMarketplace,
             profile: npcProfile, persist: persistState,
             scopeInfo: () => characterOwner(SillyTavern.getContext()),
             listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),

@@ -7,6 +7,7 @@ const node = (tag, cls = '', text) => {
 
 export function renderMarketplaceChatCard(listing, messageId, api) {
     if (!listing) return null;
+    if (listing.kind === 'npcPurchase' || listing.kind === 'npcShop') return renderMarketplaceEvent(listing, messageId, api);
     const thai = api.settings().language === 'th';
     const t = (th, en) => thai ? th : en;
     const unit = t({ gold: 'ทอง', silver: 'เงิน', copper: 'ทองแดง' }[listing.denomination], listing.denomination);
@@ -78,6 +79,93 @@ export function renderMarketplaceChatCard(listing, messageId, api) {
     if (actions.childNodes.length) root.append(actions);
     root.append(statusText);
     return root;
+}
+
+function renderMarketplaceEvent(event, messageId, api) {
+    event = { ...event, status: event.status || 'pending' };
+    const thai = api.settings().language === 'th';
+    const t = (th, en) => thai ? th : en;
+    const unit = t({ gold: 'ทอง', silver: 'เงิน', copper: 'ทองแดง' }[event.denomination], event.denomination);
+    const price = value => `${Number(value || 0).toLocaleString(thai ? 'th-TH' : 'en-US')} ${unit}`;
+    const root = node('section', `trpg-marketplace-chat trpg-marketplace-event trpg-marketplace-event-${event.kind === 'npcShop' ? 'shop' : 'offer'}`);
+    root.dataset.status = event.status || 'pending'; root.dataset.eventId = event.id;
+    root.setAttribute('aria-label', t('เหตุการณ์การค้าใน Main Chat', 'Main Chat commerce event'));
+    const head = node('header', 'trpg-marketplace-chat-head');
+    const title = event.kind === 'npcPurchase'
+        ? `${event.buyer.name} · ${t('ต้องการซื้อ', 'wants to buy')} ${event.item.name}`
+        : `${event.seller.name} · ${event.title}`;
+    const copy = node('div'); copy.append(node('small', 'trpg-marketplace-chat-eyebrow', event.kind === 'npcPurchase' ? t('การค้า · NPC ขอซื้อ', 'COMMERCE · NPC BUY OFFER') : t('การค้า · ร้านค้า NPC', 'COMMERCE · NPC SHOP')), node('h4', '', title));
+    head.append(copy);
+    const badgeText = event.status === 'awaiting-reply' ? t('รอคำตอบจาก NPC', 'Waiting for NPC reply') : event.status === 'resolved' ? t('NPC ตอบแล้ว', 'NPC replied') : t('เหตุการณ์ใหม่', 'New scene event');
+    head.append(node('span', 'trpg-marketplace-badge', badgeText)); root.append(head);
+    if (event.kind === 'npcPurchase') appendPurchaseEvent(root, event, messageId, api, t, price);
+    else appendShopEvent(root, event, messageId, api, t, price, unit);
+    return root;
+}
+
+function appendPurchaseEvent(root, event, messageId, api, t, price) {
+    root.append(node('p', 'trpg-marketplace-chat-itemline', `${event.item.category} · ×${event.item.quantity} · ${t('ผู้ซื้อ', 'Buyer')} ${event.buyer.role}`));
+    if (event.item.description) root.append(node('p', 'trpg-marketplace-chat-description', event.item.description));
+    if (event.item.properties?.length) root.append(node('p', 'trpg-marketplace-event-properties', event.item.properties.join(' · ')));
+    const prices = node('div', 'trpg-marketplace-chat-pricebox');
+    const cell = (label, value, emphasis = false) => { const item = node('div', `trpg-marketplace-chat-pricecell${emphasis ? ' is-emphasis' : ''}`); item.append(node('small', '', label), node('strong', '', value)); return item; };
+    prices.append(cell(t('ข้อเสนอ', 'Offer'), price(event.askPrice), true), cell(t('ขั้นต่ำที่รับได้', 'Lowest acceptable'), event.floorPrice ? price(event.floorPrice) : t('ต่อรองได้', 'Negotiable'))); root.append(prices);
+    if (event.message) root.append(node('p', 'trpg-marketplace-chat-description', `“${event.message}”`));
+    appendEventActions(root, event, messageId, api, t, price, event.item);
+}
+
+function appendShopEvent(root, event, messageId, api, t, price, unit) {
+    if (event.description) root.append(node('p', 'trpg-marketplace-chat-description', event.description));
+    if (event.status !== 'pending') {
+        root.append(node('p', 'trpg-marketplace-chat-status', event.status === 'awaiting-reply' ? t('ส่งคำตอบแล้ว กำลังรอ NPC ตอบกลับในข้อความถัดไป…', 'Reply sent. Waiting for the NPC response in the next message…') : t('เหตุการณ์นี้ได้รับคำตอบแล้ว ดูผลลัพธ์ในข้อความถัดไป', 'This event has been answered. See the outcome in the next message.')));
+        return;
+    }
+    const pager = node('div', 'trpg-marketplace-shop-toolbar');
+    const pageSize = event.pageSize || 5; let page = 0;
+    const list = node('div', 'trpg-marketplace-shop-items');
+    const pageLabel = node('span', 'trpg-marketplace-shop-page');
+    const previous = node('button', '', t('‹ ก่อนหน้า', '‹ Previous')); previous.type = 'button';
+    const next = node('button', '', t('ถัดไป ›', 'Next ›')); next.type = 'button';
+    pager.append(previous, pageLabel, next); root.append(pager, list);
+    const renderPage = () => {
+        const pages = Math.max(1, Math.ceil(event.items.length / pageSize)); page = Math.min(page, pages - 1);
+        pageLabel.textContent = `${t('หน้า', 'Page')} ${page + 1}/${pages}`; previous.disabled = page === 0; next.disabled = page >= pages - 1; list.replaceChildren();
+        for (const item of event.items.slice(page * pageSize, (page + 1) * pageSize)) {
+            const row = node('article', 'trpg-marketplace-shop-item');
+            row.append(node('strong', '', item.item.name), node('small', '', `${item.item.category} · ${t('เหลือ', 'Stock')} ${item.stock} · ${item.negotiable ? t('ต่อรองได้', 'Negotiable') : t('ราคาตายตัว', 'Fixed price')}`));
+            if (item.item.description) row.append(node('p', '', item.item.description));
+            if (item.item.properties?.length) row.append(node('p', 'trpg-marketplace-event-properties', item.item.properties.join(' · ')));
+            const foot = node('div', 'trpg-marketplace-shop-item-foot'); foot.append(node('b', '', price(item.askPrice)));
+            const buy = node('button', 'trpg-marketplace-primary', t('ซื้อ', 'Buy')); buy.type = 'button'; buy.addEventListener('click', () => respond(event, messageId, api, 'accept', item.askPrice, item.id, root, t));
+            const counter = node('button', '', t('ต่อรอง', 'Counter')); counter.type = 'button'; counter.addEventListener('click', () => showCounter(item, event, messageId, api, root, t, price));
+            foot.append(buy); if (item.negotiable) foot.append(counter); row.append(foot); list.append(row);
+        }
+    };
+    previous.addEventListener('click', () => { page -= 1; renderPage(); }); next.addEventListener('click', () => { page += 1; renderPage(); }); renderPage();
+}
+
+function showCounter(item, event, messageId, api, root, t, price) {
+    const existing = root.querySelector('.trpg-marketplace-event-counter'); existing?.remove();
+    const form = node('form', 'trpg-marketplace-event-counter'); const input = node('input'); input.type = 'number'; input.min = String(item.floorPrice || 1); input.value = String(item.askPrice); input.required = true; input.inputMode = 'numeric'; input.setAttribute('aria-label', t('ราคาที่ต้องการต่อรอง', 'Counteroffer amount'));
+    const submit = node('button', 'trpg-marketplace-primary', t('ส่งข้อเสนอ', 'Send counter')); submit.type = 'submit'; form.append(input, submit); form.addEventListener('submit', e => { e.preventDefault(); void respond(event, messageId, api, 'counter', Number(input.value), item.id, root, t); }); root.append(form); input.focus();
+}
+
+function appendEventActions(root, event, messageId, api, t, price, item) {
+    const actions = node('div', 'trpg-marketplace-chat-actions');
+    if (event.status !== 'pending') { root.append(node('p', 'trpg-marketplace-chat-status', event.status === 'awaiting-reply' ? t('ส่งคำตอบแล้ว กำลังรอ NPC ตอบกลับในข้อความถัดไป…', 'Reply sent. Waiting for the NPC response in the next message…') : t('เหตุการณ์นี้ได้รับคำตอบแล้ว ดูผลลัพธ์ในข้อความถัดไป', 'This event has been answered. See the outcome in the next message.'))); return; }
+    const accept = node('button', 'trpg-marketplace-primary', event.kind === 'npcPurchase' ? t('รับข้อเสนอ', 'Accept offer') : t('ซื้อในราคานี้', 'Buy at this price')); accept.type = 'button'; accept.addEventListener('click', () => respond(event, messageId, api, 'accept', event.askPrice, item?.id, root, t)); actions.append(accept);
+    if (event.kind === 'npcPurchase' ? event.negotiable : item?.negotiable) {
+        const form = node('form', 'trpg-marketplace-chat-counter'); const input = node('input'); input.type = 'number'; input.min = String(event.floorPrice || 1); input.value = String(event.askPrice); input.required = true; input.inputMode = 'numeric'; input.setAttribute('aria-label', t('ราคาที่ต้องการต่อรอง', 'Counteroffer amount')); const submit = node('button', '', t('ต่อรอง', 'Counter')); submit.type = 'submit'; form.append(input, submit); form.addEventListener('submit', e => { e.preventDefault(); void respond(event, messageId, api, 'counter', Number(input.value), item?.id, root, t); }); actions.append(form);
+    }
+    const decline = node('button', '', event.kind === 'npcPurchase' ? t('ปฏิเสธการขาย', 'Decline sale') : t('ยังไม่ซื้อ', 'Decline')); decline.type = 'button'; decline.addEventListener('click', () => respond(event, messageId, api, 'decline', event.askPrice, item?.id, root, t)); actions.append(decline); root.append(actions);
+}
+
+async function respond(event, messageId, api, action, amount, itemId, root, t) {
+    if (root.dataset.status !== 'pending' || typeof api.respondMarketplaceEvent !== 'function') return;
+    root.dataset.status = 'awaiting-reply'; root.querySelectorAll('button,input').forEach(control => { control.disabled = true; });
+    const status = node('p', 'trpg-marketplace-chat-status', t('กำลังส่งคำตอบไปยัง Main Chat…', 'Sending your reply to Main Chat…')); root.append(status);
+    const result = await api.respondMarketplaceEvent(messageId, event.token, action, amount, itemId);
+    if (!result?.ok) { root.dataset.status = 'pending'; status.textContent = t('ส่งไม่สำเร็จ กรุณาลองใหม่', 'Could not send. Try again.'); root.querySelectorAll('button,input').forEach(control => { control.disabled = false; }); }
 }
 
 function buyerIntent(buyer, t) {

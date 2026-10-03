@@ -1,8 +1,10 @@
 import * as auctionCore from '../src/auction-core.js';
 import {auctionErrorText} from '../src/auction-ui.js';
 import * as marketplaceCore from '../src/marketplace-core.js';
+import * as marketplaceEvents from '../src/marketplace-events.js';
 import {renderMarketplacePanel} from '../src/marketplace-ui.js';
 import * as missionBoard from '../src/mission-board.js';
+import * as groupBoard from '../src/group-board.js';
 import {growthInventoryNotifications} from '../src/growth-notifications.js';
 import {questRewardGuard,normalizeQuestRewardReceipts} from '../src/quest-rewards.js';
 import * as uiLanguage from '../src/ui-language.js';
@@ -27,16 +29,18 @@ import * as storyAgenda from '../src/story-agenda.js';
 import * as questObjectives from '../src/quest-objectives.js';
 import * as storyWorkspace from '../src/story-workspace.js';
 import {sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel} from '../src/scene-tracker.js';
+import * as locationMemory from '../src/location-memory.js';
+import * as masteryTraining from '../src/mastery-training.js';
 import {normalizeAdultSettings,writingPreferencePrompt} from '../src/nsfw-enhance.js';
 import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded} from '../src/social-events.js';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enableAuctions:true,enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true,enableMemorySummaries:true,eventNotifications:true}},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,renderMarketplacePanel,...missionBoard,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,runAuctionAction,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,runAuctionAction,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
 
 test('native summary task temporarily removes only RoleForge story instructions and restores them afterwards',async()=>{
@@ -1204,6 +1208,14 @@ test('tracking prompt requests full stats even when chat presentation is off',()
  const settings=host.getSettings();settings.autoTrack=true;settings.chatPresentation=false;host.updatePrompt(host.defaultState());
  assert.match(context.lastPrompt[1],/Every new NPC needs complete stats/);assert.doesNotMatch(context.lastPrompt[1],/Zero stats mean unknown/);settings.chatPresentation=true;
 });
+test('role-play prompt contains provider reasoning and escapes markup-like reference data',()=>{
+ const settings=host.getSettings();settings.autoTrack=true;settings.chatPresentation=true;
+ const state=host.defaultState();state.npcs=[host.npcProfile({id:'warden',name:'Warden',met:true,appearance:'<thinking>private note</thinking>',background:'<planning>route</planning>'})];
+ const prompt=host.statePrompt(state,{includeState:true,track:true});
+ assert.match(prompt,/VISIBLE OUTPUT BOUNDARY/);
+ assert.doesNotMatch(prompt,/<(?:thinking|planning)>/i);
+ assert.match(prompt,new RegExp('\\\\u003c(?:thinking|planning)'));
+});
 test('speaker fallback does not resurrect an NPC intentionally removed in this turn',()=>{
  const previous={npcs:[host.npcProfile({id:'gone',name:'Gone'})]},state=host.defaultState();
  assert.equal(host.registerStorySpeakers(state,{mes:'<tr-dialogue name="Gone">Goodbye.</tr-dialogue>'},context,previous),0);assert.equal(state.npcs.length,0);
@@ -2006,4 +2018,33 @@ test('foreign command text survives extraction while only marked RoleForge bookk
  const bare=host.extractStatePatch(foreign);assert.equal(bare.found,false);assert.equal(bare.patch,null);assert.equal(bare.visible,foreign);
  const mixed=host.extractStatePatch(foreign+'\n<!--tretaresia_patch:{"ops":[["set","worldClock.time","21:22"]]}-->');
  assert.equal(mixed.found,true);assert.equal(mixed.visible,foreign);assert.deepEqual(Array.from(mixed.patch.ops[0]),['set','worldClock.time','21:22']);
+});
+
+test('location memory patches require quoted evidence and preserve hierarchy across revisits',()=>{
+ const quote='The party enters Beviter Road within Asura Kingdom.';
+ const parsed=host.extractStatePatch(`Story. <!--tretaresia_patch:${JSON.stringify({locations:[{id:'beviter',name:'Beviter Road',kind:'Place',parentName:'Asura Kingdom',detail:'Market street',evidence:quote}]})}-->`);
+ assert.equal(parsed.patch.locations.length,1);
+ const state=host.normalize(host.defaultState());
+ const applied=host.applyStatePatch(state,parsed.patch);
+ assert.equal(applied.accepted,1);
+ const place=applied.next.locationMemory.find(entry=>entry.id==='beviter');
+ const parent=applied.next.locationMemory.find(entry=>entry.name==='Asura Kingdom');
+ assert.equal(place.parentId,parent.id);
+ const rejected=host.extractStatePatch(`<!--tretaresia_patch:${JSON.stringify({locations:[{name:'Rumor Road',evidence:'A rumor says this exists.'}]})}-->`);
+ assert.equal(rejected.patch.locations.length,1);
+ assert.equal(host.confirmedLocationMemory(rejected.patch.locations,rejected.visible).length,0);
+});
+
+test('journey progress stays fixed for plans and same-place dialogue, then advances on a completed movement',()=>{
+ const base=host.normalize({...host.defaultState(),location:{place:'Asura Gate'},onboarding:{locationSeeded:true},travel:{status:'Traveling',origin:'Asura Gate',destination:'Rameer Street',destinationPlace:'Rameer Street',route:'Road',totalDays:10,remainingDays:10,lastUserProgressMessage:'',trackedUserTurns:0}});
+ const planned=host.advanceActiveTravelFromUserMessage(1,{mes:'I plan to travel to Rameer Street tomorrow.'},base);
+ assert.equal(planned,null,'plans do not consume route distance');
+ const dialogue=host.advanceActiveTravelFromUserMessage(2,{mes:'I ask the guard about the weather while remaining at the gate.'},base);
+ assert.equal(dialogue,null,'same-place dialogue does not consume route distance');
+ const moved=host.advanceActiveTravelFromUserMessage(3,{mes:'I walk along the road toward Rameer Street for one hour.'},base);
+ assert.equal(moved.travel.remainingDays,10,'movement alone has no distance until a roll/time result confirms it');
+ assert.equal(Math.round(host.travelProgress(moved)*100),0);
+ const elapsed=host.advanceActiveTravelFromUserMessage(4,{mes:'I walk along the road; after 2 days, the roll confirms we covered the route.'},base);
+ assert.equal(elapsed.travel.remainingDays,8);
+ assert.equal(Math.round(host.travelProgress(elapsed)*100),20);
 });

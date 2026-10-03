@@ -23,6 +23,18 @@ test('purchases, gifts, consumption, sale and deletion show saved inventory delt
     assert.equal(result.find(event=>event.title==='Ring').detail,'Sold the ring');
     assert.equal(events(before,after,[], 'th').find(event=>event.title==='Potion').eyebrow,'ได้รับไอเทม');
 });
+test('item lifecycle metadata is retained for the Main Chat ledger',()=>{
+    const before=state();before.inventory=[{id:'rope',name:'Rope',quantity:2},{id:'torch',name:'Torch',quantity:3}];
+    const after=structuredClone(before);after.inventory[0].quantity=1;after.inventory[1].quantity=2;
+    const result=events(before,after,[
+        ['inc','inventory',{id:'rope',quantity:-1},{category:'use',reason:'Used rope to secure the bridge'}],
+        ['inc','inventory',{id:'torch',quantity:-1},{category:'drop',reason:'Dropped the spent torch'}],
+    ]);
+    assert.deepEqual(result.map(entry=>entry.action),['used','dropped']);
+    assert.equal(result[0].eyebrow,'ITEM USED');
+    assert.equal(result[1].eyebrow,'ITEM DROPPED');
+    assert.equal(result[0].balance,1);
+});
 test('multiple custom skills report increases and ignore reductions or unchanged metadata',()=>{
     const before = state();before.proficiencies.customMagic=[{id:'fire',name:'Fire',proficiency:10}];before.proficiencies.techniques=[{id:'dash',name:'Dash',proficiency:20}];
     const after = structuredClone(before);after.proficiencies.customMagic[0].proficiency=12;after.proficiencies.techniques[0].proficiency=19;
