@@ -1,4 +1,10 @@
-# ROLEFORGE — v0.51.9
+# ROLEFORGE — v0.51.10
+
+## v0.51.10 — Compact party/guild notice grid
+
+- Show recruitment notices as compact pinned papers in two columns, including narrow mobile screens, matching the Mission Board. Each paper shows its kind, name and read-details hint; the entire paper is a keyboard-accessible button. Long titles are bounded in the overview and remain complete in the detail view and accessible label.
+- Keep descriptions, tags, leader/roster/capacity/rank, requirements and sharing terms in the selected notice. Preserve filters, pagination and joining rules. New boards default to four entries per page for a 2×2 layout; explicitly saved page sizes remain supported. Browsing makes no extra AI request.
+- [Mobile preview and usage](docs/group-board-paper.th.md). Verified relevant board/output tests, syntax checks and production-loader Main Chat at 320/390/1280 px, including the two-column layout, keyboard opening, filters, pagination, complete details and unchanged API/quest state. Provider replies are simulated. Update and reload to use the new appearance.
 
 ## v0.51.9 — Settled commerce and same-reply boards
 

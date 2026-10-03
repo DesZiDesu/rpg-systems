@@ -1,4 +1,4 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.9';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.10';
 // Party/Guild Board protocol. A board is emitted only when the story confirms
 // that the player is physically reading the current board in this location.
 const clean = (value, max = 300) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -8,7 +8,7 @@ export const GROUP_BOARD_WORDS = /(?:guild|party|adventurer|recruit(?:ment)?|not
 export const GROUP_BOARD_ACTIONS = /(?:read|examin|inspect|approach|arriv|stand|stop|reach|look|scan|brows|study|walk|show|display|post|list|เปิดอ่าน|อ่าน|ดู|มอง|เดิน|มาถึง|ยืน|หยุด|สำรวจ|แวะ|แสดง|ติด|ปัก|ระบุ|เขียน|รับสมัคร|เปิดรับ)/iu;
 const kindOf = value => /^(?:guild|กิลด์|กิล)$/iu.test(String(value || '').trim()) ? 'guild' : /^(?:party|ปาร์ตี้|ปาร์ตี)$/iu.test(String(value || '').trim()) ? 'party' : '';
 
-export const GROUP_BOARD_INSTRUCTIONS = 'Party/Guild Board: when the player looks at, reads or browses an accessible recruitment board in the CURRENT scene, include groupBoard in this same invisible patch: {"title":"board name","location":"actual current place","evidence":"exact quote from this reply showing the readable recruitment notices","pageSize":3,"entries":[{"kind":"party","name":"stable group name","description":"short premise","leader":"leader name if stated","memberCount":4,"maxMembers":8,"rank":"known rank","requirements":["known requirement"],"openSpots":4,"tags":["scout"],"notes":"stated roles and benefit-sharing terms"}]}. kind is exactly party or guild. Include 1–12 groups suited to the established world and present their notices in this reply, including named groups/conditions the prose shows. Looking while already standing here is enough; no new arrival, preliminary button, extra request or separate generation is required. Keep names, descriptions, leader and requirements stable when revisiting the same board. Omit genuinely unknown counts, capacity, leader and rank rather than inventing them. Do not invent membership, acceptance, rewards or player decisions. A board entry is only an invitation to request admission; the extension renders the cards and handles the request. Never emit this patch for a mere mention, planned visit, hypothetical, OOC question, inaccessible board or empty board.';
+export const GROUP_BOARD_INSTRUCTIONS = 'Party/Guild Board: when the player looks at, reads or browses an accessible recruitment board in the CURRENT scene, include groupBoard in this same invisible patch: {"title":"board name","location":"actual current place","evidence":"exact quote from this reply showing the readable recruitment notices","pageSize":4,"entries":[{"kind":"party","name":"stable group name","description":"short premise","leader":"leader name if stated","memberCount":4,"maxMembers":8,"rank":"known rank","requirements":["known requirement"],"openSpots":4,"tags":["scout"],"notes":"stated roles and benefit-sharing terms"}]}. kind is exactly party or guild. Include 1–12 groups suited to the established world and present their notices in this reply, including named groups/conditions the prose shows. Looking while already standing here is enough; no new arrival, preliminary button, extra request or separate generation is required. Keep names, descriptions, leader and requirements stable when revisiting the same board. Omit genuinely unknown counts, capacity, leader and rank rather than inventing them. Do not invent membership, acceptance, rewards or player decisions. A board entry is only an invitation to request admission; the extension renders the cards and handles the request. Never emit this patch for a mere mention, planned visit, hypothetical, OOC question, inaccessible board or empty board.';
 
 export function normalizeGroupBoard(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
@@ -31,7 +31,7 @@ export function normalizeGroupBoard(raw) {
         if (entries.length === 12) break;
     }
     if (!location || !entries.length) return null;
-    const pageSize = Number.isSafeInteger(raw.pageSize) && raw.pageSize >= 1 ? Math.min(raw.pageSize, 6) : 3;
+    const pageSize = Number.isSafeInteger(raw.pageSize) && raw.pageSize >= 1 ? Math.min(raw.pageSize, 6) : 4;
     return {title,location,evidence:clean(raw.evidence, 600),entries,pageSize};
 }
 

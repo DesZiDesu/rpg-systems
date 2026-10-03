@@ -1,7 +1,7 @@
-import {CURRENCY_RULE} from './commerce-currency.js?v=0.51.9';
-import { interactionEvidence } from './interaction-evidence.js?v=0.51.9';
-import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.51.9';
-import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.51.9';
+import {CURRENCY_RULE} from './commerce-currency.js?v=0.51.10';
+import { interactionEvidence } from './interaction-evidence.js?v=0.51.10';
+import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.51.10';
+import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.51.10';
 const systems = [
     {key:'marketplace', setting:'enableMarketplace', words:/(?:shop|store|merchant|vendor|goods|catalog|buy|sell|haggl|counteroffer|ร้าน|พ่อค้า|แม่ค้า|สินค้า|ซื้อ|ขาย|ต่อรอง|ดูของ)/iu},
     {key:'auction', setting:'enableAuctions', words:/auction|ประมูล/iu},
@@ -108,7 +108,7 @@ export function mainChatOutputContract(user,settings,{activeCommerce,settledComm
         patch.marketplace={kind:'npcPurchase',id:'unique-current-offer-id',location:location||'exact current place',evidence:'exact affirmative quote from THIS reply',buyer:{name:'actual buyer name',npcId:'known id or empty'},item:{itemId:'canonical owned item id',itemName:'canonical owned item name',quantity:1},askPrice:5,denomination:'silver'};
     }
     if(boards.includes('missionBoard'))patch.missionBoard={title:'current mission board title',location:location||'exact current place',evidence:'exact quote from THIS reply showing the readable mission notices',missions:[{name:'actual posted mission name',objective:'specific task stated on this notice',description:'public notice details',giver:'named issuer if stated',reward:'posted reward or empty when unstated',difficulty:'stated difficulty or empty',deadline:'stated deadline or empty'}]};
-    if(boards.includes('groupBoard'))patch.groupBoard={title:'current recruitment board title',location:location||'exact current place',evidence:'exact quote from THIS reply showing the readable recruitment notices',pageSize:3,entries:[{kind:'party',name:'actual posted group name',description:'public recruitment details',leader:'named leader if stated',requirements:['actual stated condition'],notes:'stated roles and benefit-sharing terms'}]};
+    if(boards.includes('groupBoard'))patch.groupBoard={title:'current recruitment board title',location:location||'exact current place',evidence:'exact quote from THIS reply showing the readable recruitment notices',pageSize:4,entries:[{kind:'party',name:'actual posted group name',description:'public recruitment details',leader:'named leader if stated',requirements:['actual stated condition'],notes:'stated roles and benefit-sharing terms'}]};
     return 'ROLEFORGE NORMAL REPLY OUTPUT CONTRACT — This applies to the FINAL assistant answer in this same normal generation, including swipe and regenerate.\n'
         +'Write the natural story first. Then append exactly ONE literal, closed <!--tretaresia_patch:{...}--> HTML comment OUTSIDE tr-header/tr-narrative/tr-dialogue blocks. The comment is the required machine payload; restrictions on visible prose or UI text do not prohibit this comment. Planning or saying you will emit the patch does not emit it. Never put the payload only in thinking/reasoning. No Markdown fence, extra user message, request button or second generation is needed.\n'
         +'A purely OOC answer with no scene or story event may omit the patch. For story replies, the contract below is required.\n'

@@ -8,7 +8,7 @@ const raw = { title:'กระดานสมาคมนักผจญภั�
 ]};
 
 test('normalizes board entries, computes stable IDs and open slots',()=>{
- const board=normalizeGroupBoard(raw); assert.equal(board.entries.length,2); assert.equal(board.entries[0].openSpots,4); assert.equal(board.entries[1].openSpots,1); assert.equal(board.entries[0].id,normalizeGroupBoard(raw).entries[0].id); assert.equal(board.pageSize,3);
+ const board=normalizeGroupBoard(raw); assert.equal(board.entries.length,2); assert.equal(board.entries[0].openSpots,4); assert.equal(board.entries[1].openSpots,1); assert.equal(board.entries[0].id,normalizeGroupBoard(raw).entries[0].id); assert.equal(board.pageSize,4);
 });
 
 test('limits duplicate names, invalid records and twelve entries',()=>{

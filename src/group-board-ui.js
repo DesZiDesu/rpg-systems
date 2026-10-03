@@ -7,7 +7,7 @@ export function renderGroupBoard(board, messageId, api) {
     const heading = node('div','trpg-group-board-heading');
     heading.append(node('span','trpg-group-board-eyebrow',text(thai,'กระดานรับสมัคร','RECRUITMENT BOARD')),node('h3','',board.title),node('p','trpg-group-board-location',`⌖ ${board.location}`));
     root.append(heading);
-    const summary = node('p','trpg-group-board-summary',text(thai,`พบ ${board.entries.length} กลุ่ม · เลือกดูรายละเอียดและส่งคำขอเข้าร่วม`,`${board.entries.length} groups · inspect a charter and request to join`));
+    const summary = node('p','trpg-group-board-summary',text(thai,`${board.entries.length} กลุ่ม · แตะใบประกาศเพื่ออ่าน`,`${board.entries.length} groups · select a notice to read`));
     const filters = node('div','trpg-group-board-filters');
     const list = node('div','trpg-group-board-list');
     const pager = node('div','trpg-group-board-pager');
@@ -23,18 +23,16 @@ export function renderGroupBoard(board, messageId, api) {
     filters.append(button(text(thai,'ทั้งหมด','All'),'all'),button(text(thai,'ปาร์ตี้','Parties'),'party'),button(text(thai,'กิลด์','Guilds'),'guild'));
     function renderList() {
         filters.replaceChildren(button(text(thai,'ทั้งหมด','All'),'all'),button(text(thai,'ปาร์ตี้','Parties'),'party'),button(text(thai,'กิลด์','Guilds'),'guild'));
-        const values = filtered(), size = board.pageSize || 3, pages = Math.max(1,Math.ceil(values.length / size)); page = Math.min(page,pages - 1);
+        const values = filtered(), size = board.pageSize || 4, pages = Math.max(1,Math.ceil(values.length / size)); page = Math.min(page,pages - 1);
         list.replaceChildren();
         for (const entry of values.slice(page * size,(page + 1) * size)) {
-            const card = node('article',`trpg-group-board-card is-${entry.kind}`);
-            card.append(node('small','trpg-group-board-kind',entry.kind === 'guild' ? text(thai,'กิลด์','GUILD') : text(thai,'ปาร์ตี้','PARTY')),node('h4','',entry.name));
-            if (entry.description) card.append(node('p','trpg-group-board-description',entry.description));
-            const facts = node('div','trpg-group-board-facts');
-            const people = entry.memberCount === null ? text(thai,'ไม่ทราบจำนวน','Unknown roster') : `${entry.memberCount}${entry.maxMembers === null ? '' : ` / ${entry.maxMembers}`} ${text(thai,'คน','members')}`;
-            facts.append(fact(text(thai,'หัวหน้า','Leader'),entry.leader || text(thai,'ไม่ระบุ','Unlisted')),fact(text(thai,'สมาชิก','Roster'),people),fact(text(thai,'ที่ว่าง','Open slots'),entry.openSpots === null ? text(thai,'ไม่ทราบ','Unknown') : String(entry.openSpots)),fact(text(thai,'แรงก์','Rank'),entry.rank || '—'));
-            card.append(facts);
-            if (entry.tags.length) card.append(node('p','trpg-group-board-tags',entry.tags.join(' · ')));
-            const inspect = node('button','trpg-group-board-inspect',text(thai,'อ่านใบประกาศ','Read charter')); inspect.type = 'button'; inspect.addEventListener('click',() => { if (!valid()) return; selected = entry.id; showDetail(entry); }); card.append(inspect); list.append(card);
+            const kind=entry.kind === 'guild' ? text(thai,'กิลด์','GUILD') : text(thai,'ปาร์ตี้','PARTY');
+            const card = node('button',`trpg-group-board-card trpg-group-board-inspect is-${entry.kind}`); card.type='button';card.dataset.groupId=entry.id;
+            card.title=entry.name;card.setAttribute('aria-label',`${kind} · ${entry.name} · ${text(thai,'อ่านรายละเอียด','Read details')}`);
+            card.append(node('small','trpg-group-board-kind',kind),node('strong','trpg-group-board-name',entry.name),
+                node('span','trpg-group-board-read',text(thai,'อ่านรายละเอียด','Read details')));
+            if(entry.openSpots===0)card.append(node('b','trpg-group-board-full',text(thai,'เต็มแล้ว','Full')));
+            card.addEventListener('click',() => { if (!valid()) return; selected = entry.id; showDetail(entry); });list.append(card);
         }
         pager.replaceChildren();
         if (pages > 1) {
@@ -47,6 +45,7 @@ export function renderGroupBoard(board, messageId, api) {
     function showDetail(entry) {
         detail.replaceChildren(node('span','trpg-group-board-eyebrow',entry.kind === 'guild' ? text(thai,'กิลด์','GUILD') : text(thai,'ปาร์ตี้','PARTY')),node('h4','',entry.name));
         if (entry.description) detail.append(node('p','trpg-group-board-detail-description',entry.description));
+        if (entry.tags.length) detail.append(node('p','trpg-group-board-tags',entry.tags.join(' · ')));
         const facts = node('div','trpg-group-board-detail-facts'); facts.append(fact(text(thai,'หัวหน้า','Leader'),entry.leader || text(thai,'ไม่ระบุ','Unlisted')),fact(text(thai,'สมาชิก','Roster'),entry.memberCount === null ? text(thai,'ไม่ทราบ','Unknown') : `${entry.memberCount}${entry.maxMembers === null ? '' : ` / ${entry.maxMembers}`}`),fact(text(thai,'ที่ว่าง','Open slots'),entry.openSpots === null ? text(thai,'ไม่ทราบ','Unknown') : String(entry.openSpots)),fact(text(thai,'แรงก์','Rank'),entry.rank || '—')); detail.append(facts);
         if (entry.requirements.length) { const list = node('ul','trpg-group-board-requirements'); for (const requirement of entry.requirements) list.append(node('li','',requirement)); detail.append(node('h5','',text(thai,'เงื่อนไขการเข้าร่วม','Requirements')),list); }
         if (entry.notes) detail.append(node('p','trpg-group-board-notes',entry.notes));
