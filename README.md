@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.51.1
+# ROLEFORGE — v0.51.2
+
+## v0.51.2 — Automatic commerce UI and reliable decision parsing
+
+- Requests to buy, sell or attend an auction open a waiting composer automatically; the NPC’s first reply supplies its goods and prices. Removed the preliminary commerce draft-request card. Bid directly from the opening auction; entry fees and refundable deposits are visible before bidding.
+- Auction goods no longer trigger a shop warning. An ongoing interaction updates through commerce rather than repeatedly asking for new catalogs; old missing-shop notices are cleared on continuation.
+- Explicit NPC decisions accept existing unique names, field aliases, numeric strings, and normal prose with hidden commerce patches. Simultaneous bids are evaluated by price; missing decisions and motives have specific errors. Unknown bidders, overspending and invented consent remain invalid.
+- [Thai diagnosis and validation](docs/commerce-auto-open.th.md). Update and reload once; existing data stays intact.
 
 ## v0.51.1 — Role-play and buttons share the same commerce
 

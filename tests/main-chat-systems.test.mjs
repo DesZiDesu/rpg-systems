@@ -58,3 +58,6 @@ test('request-specific contract and missing-detail feedback follow enabled switc
     assert.deepEqual(missingChatSystems('OOC: ขอดูสินค้า','Rally แสดงสินค้าที่ขาย',settings,{}),[]);
     assert.deepEqual(missingChatSystems('ขอดูสินค้า','Rally แสดงสินค้าที่ขาย',{},{}),[]);
 });
+
+test('goods vocabulary within an auction cannot create a second shop warning or prompt',()=>{for(const user of ['ขอดูสินค้าประมูล','อยากซื้อของในงานประมูล','Show auction goods catalog']){assert.deepEqual(requestedChatSystems(user,settings),['auction']);assert.deepEqual(missingChatSystems(user,'The auctioneer displays auction goods for sale.',settings,{auction:{id:'auction'}}),[]);}});
+test('an existing composer interaction suppresses stale commerce warnings, preserving board requests',()=>{assert.deepEqual(missingChatSystems('ขอดูสินค้าและกระดานภารกิจ','Rally shows shop goods. You read the mission board.',settings,{commerce:{kind:'auction'}}),['missionBoard']);const p=mainChatSystemInstructions('ขอดูสินค้า',settings,{activeCommerce:{kind:'auction'}});assert.match(p,/never emit marketplace\/auction again/);assert.doesNotMatch(p,/corresponding top-level object/);});
