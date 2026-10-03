@@ -1,4 +1,4 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.3';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.4';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
@@ -32,6 +32,11 @@ export function normalizeAuctionOffer(raw) {
         }
         lots.push({id:lotId,name:clean(input.name,100),description:clean(input.description,1200),category:clean(input.category,60) || 'Item',
             rarity:clean(input.rarity,80),quantity:integer(input.quantity,1,1,9999),openingBid,minIncrement,bidders});
+        if(input.currentBidder||input.currentBid){
+            const leader=bidders.find(b=>b.id===input.currentBidder||b.name===input.currentBidder),price=integer(input.currentBid);
+            if(!leader||price<openingBid||price>(leader.budget??leader.maxBid))return null;
+            Object.assign(lots.at(-1),{currentBid:price,currentBidder:leader.id});
+        }
         if (lots.length === 8) break;
     }
     if (!lots.length) return null;
@@ -39,9 +44,17 @@ export function normalizeAuctionOffer(raw) {
 }
 
 export function confirmedAuctionOffer(raw, story, user, location) {
-    const offer = normalizeAuctionOffer(withInteractionEvidence(raw, story, location, auctionWords, /(?:arriv|enter|reach|stand|sit|walk|approach|join|attend|inspect|browse|display|present|show|มาถึง|เดิน|เข้า|ยืน|นั่ง|ร่วม|ดู|อ่าน|แสดง|เปิด|วาง)/iu)), evidence = offer?.evidence;
+    // An auctioneer can quote a bid without repeating the word "auction".
+    // A current explicit auction request supplies that context; the price still
+    // needs an exact affirmative quote in this reply, never a future plan.
+    const pricing=/[0-9๐-๙]+\s*(?:เหรียญ\s*)?(?:gold|silver|copper|ทองแดง|ทอง|เงิน)/iu;
+    const contextual=auctionWords.test(String(user||''))&&!/(?:พรุ่งนี้|เมื่อวาน|สมมุติ|ยังไม่|tomorrow|yesterday|hypothetical)/iu.test(String(user||''));
+    const subject=contextual?new RegExp(`${auctionWords.source}|${pricing.source}`,'iu'):auctionWords;
+    const action=/(?:arriv|enter|reach|stand|sit|walk|approach|join|attend|inspect|browse|display|present|show|มาถึง|เดิน|เข้า|ยืน|นั่ง|ร่วม|ดู|อ่าน|แสดง|เปิด|วาง)/iu;
+    const activity=contextual?new RegExp(`${action.source}|${pricing.source}`,'iu'):action;
+    const offer = normalizeAuctionOffer(withInteractionEvidence(raw, story, location, subject, activity)), evidence = offer?.evidence;
     if (!offer || key(offer.location) !== key(location)) return null;
-    if (!interactionEvidence(evidence, story, user, auctionWords, /(?:arriv|enter|reach|stand|sit|walk|approach|join|attend|inspect|browse|display|present|show|มาถึง|เดิน|เข้า|ยืน|นั่ง|ร่วม|ดู|อ่าน|แสดง|เปิด|วาง)/iu)) return null;
+    if (!interactionEvidence(evidence, story, user, subject, activity)) return null;
     return offer;
 }
 

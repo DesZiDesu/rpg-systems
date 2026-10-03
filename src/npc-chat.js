@@ -1,14 +1,14 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.51.3';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.51.3';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.51.3';
-import {renderSceneTracker} from './scene-tracker.js?v=0.51.3';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.51.3';
-import {renderGroupBoard} from './group-board-ui.js?v=0.51.3';
-import {uiText} from './ui-language.js?v=0.51.3';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.51.3';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.51.3';
-import { croppedPortrait } from './npc-portraits.js?v=0.51.3';
-import { effectiveNpc } from './npc-alternates.js?v=0.51.3';
+import {renderStoryEvents} from './story-events-ui.js?v=0.51.4';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.51.4';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.51.4';
+import {renderSceneTracker} from './scene-tracker.js?v=0.51.4';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.51.4';
+import {renderGroupBoard} from './group-board-ui.js?v=0.51.4';
+import {uiText} from './ui-language.js?v=0.51.4';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.51.4';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.51.4';
+import { croppedPortrait } from './npc-portraits.js?v=0.51.4';
+import { effectiveNpc } from './npc-alternates.js?v=0.51.4';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -328,7 +328,8 @@ export function createChatPresentation(api, open) {
             for(const offer of (settings.enableGroupBoard?social?.groupOffers||[]:[]))suffix.append(groupInvitation(offer,id,api));
             for(const offer of social?.offers||[])suffix.append(householdInvitation(offer,id,api));
             const storyCard=renderStoryEvents(storyEvents,settings.language);if(storyCard)suffix.append(storyCard);
-            if(systemStatus)suffix.append(renderChatSystemStatus(systemStatus,id,api));
+            const systemCard=systemStatus?renderChatSystemStatus(systemStatus,id,api):null;
+            if(systemCard)suffix.append(systemCard);
             const resourceCard=renderResourceEvents(resourceEvents,settings.language);
             if(resourceCard)suffix.append(resourceCard);
             const roots=[];

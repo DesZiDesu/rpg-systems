@@ -1,15 +1,17 @@
-import {requestCommerceDecision} from './commerce-generation.js?v=0.51.3';
-import {inspectCommerceResponse} from './commerce-protocol.js?v=0.51.3';
-import {requestedCommerceKind} from './main-chat-systems.js?v=0.51.3';
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.51.3';
-import {createCommerceComposer} from './commerce-composer.js?v=0.51.3';
+import {requestCommerceDecision} from './commerce-generation.js?v=0.51.4';
+import {inspectCommerceResponse} from './commerce-protocol.js?v=0.51.4';
+import {requestedCommerceKind} from './main-chat-systems.js?v=0.51.4';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.51.4';
+import {createCommerceComposer} from './commerce-composer.js?v=0.51.4';
+import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.51.4';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.
 const stateFingerprint=state=>JSON.stringify(state,(key,value)=>['createdAt','updatedAt'].includes(key)?undefined:value);
 
 export function createCommerceRuntime(api) {
-    let busy=false,error='',errorId='',diagnostics='',request=0,destroyed=false;
+    let busy=false,error='',errorId='',diagnostics='',request=0,destroyed=false,opening=null;
+    const openingAttempts=new WeakMap();
     const ui=createCommerceComposer({document:api.document||globalThis.document,language:()=>api.settings().language,perform:perform});
     const word=(th,en)=>api.settings().language==='th'?th:en;
     const errors={'intent':['ข้อความนี้ยังไม่ยืนยันเจตนาทำรายการนั้น รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The message does not authorize that action; funds and items are unchanged'],'action':['AI เลือกการกระทำที่ไม่รองรับในระบบนี้','AI chose an action unsupported by this system'],'response-empty':['API ส่งคำตอบว่าง รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The API returned an empty reply; funds and items are unchanged'],'response-decision':['คำตอบ API ไม่มีผลตัดสินที่ระบบอ่านได้ รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The API reply has no readable decision; funds and items are unchanged'],'response-narrative':['API ส่งผลตัดสินแต่ไม่มีคำตอบ NPC รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The API returned a decision without an NPC reply; funds and items are unchanged'],'response-conflict':['API ส่งผลตัดสินหลายชุดที่ขัดกัน รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The API returned conflicting decisions; funds and items are unchanged'],'response-markup':['คำตอบ NPC มีข้อมูลระบบหรือรูปแบบที่แสดงไม่ได้','The NPC reply includes system data or unsupported markup'],'participants-missing':['AI ยังไม่ได้ตัดสินใจให้ผู้ประมูลบางคน รอบนี้ยังไม่เปลี่ยนเงินหรือของ','AI omitted a bidder decision; funds and items are unchanged'],'participant-identity':['AI ระบุผู้ประมูลที่ไม่อยู่ในรายการหรือชื่อกำกวม','AI identified an unknown or ambiguous bidder'],'participant-format':['AI ส่งรูปแบบผลผู้ประมูลที่อ่านไม่ได้','AI returned an unreadable bidder result'],'participant-action':['AI ยังไม่ระบุว่าจะบิด ผ่าน หรือถอนตัว','AI did not specify bid, pass or withdrawal'],'participant-reason':['AI ยังไม่ให้เหตุผลการตัดสินใจของผู้ประมูล','AI omitted a bidder motive'],'participant-duplicate':['AI ให้ผลของผู้ประมูลคนเดียวขัดกัน','AI returned conflicting decisions for one bidder'],evidence:['ข้อความยังไม่ยืนยันการกระทำนี้ กรุณาระบุให้ชัดหรือใช้ปุ่ม','The message does not authorize this action. Clarify it or use a button.'],funds:['เงินที่ใช้ได้ไม่พอ','Insufficient available funds'],inventory:['สินค้าไม่พร้อมหรือจำนวนไม่พอ','The item is unavailable'],amount:['ราคาต้องเป็นจำนวนเต็มและสูงกว่าราคาปัจจุบัน','Enter a valid whole-number price'],
@@ -49,17 +51,42 @@ export function createCommerceRuntime(api) {
         const lastId=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system),last=context.chat[lastId];
         const complete=normalizeCommerce(state.commerce,state).sessions.some(s=>!['offered','open'].includes(s.status)&&s.source.messageId>userId);
         if(complete)return null;
-        const waiting=lastId<userId||api.isBusy();
-        const missing=lastId>=0?(api.record(lastId,last)?.missingSystems||[]):[];
-        if(!waiting&&!missing.some(key=>['marketplace','auction'].includes(key)))return null;
-        return{pending:{kind,waiting},busy:waiting,token:`pending:${userId}`,available:false};
+        const waiting=lastId<userId||busy||api.isBusy();
+        if(lastId>userId&&api.record(lastId,last)?.marketplace?.status==='resolved')return null;
+        if(!waiting&&commerceOpeningRefused(api.visible(last?.mes||'')))return null;
+        return{pending:{kind,waiting},busy:waiting,token:`pending:${userId}`,available:false,error:opening&&opening.message===last?opening.error:'',diagnostics:opening&&opening.message===last?opening.diagnostics:''};
     }
     function view(){const candidate=candidates()[0],context=api.context(),state=api.state();if(!candidate)return pendingView(context,state);
         return{session:candidate,token:`${context.getCurrentChatId?.()}:${candidate.source.turnKey}:${candidate.source.variant}:${candidate.revision}`,
             playerName:state.player.name,busy:busy||api.isBusy(),error:candidate.id===errorId?error:'',diagnostics:candidate.id===errorId?diagnostics:'',available:!api.isBusy()&&!context.chat.at(-1)?.is_user&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
     function refresh(){if(!destroyed)ui.update(view());}
     function failureReport(session,action,code,raw,details,channel='button'){
-        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.51.3',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
+        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.51.4',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
+    }
+    async function recoverOpening(input){
+        const context=api.context(),message=context.chat?.[input.messageId],variant=message&&api.variant(message);
+        if(destroyed||busy||!message||message.is_user||openingAttempts.get(message)===variant)return{ok:false,error:'skipped'};
+        openingAttempts.set(message,variant);
+        const metadata=context.chatMetadata,chatId=context.getCurrentChatId?.(),length=context.chat.length,state=stateFingerprint(api.state()),ticket=++request;
+        const enabled=()=>input.kind==='auction'?api.settings().enableAuctions:api.settings().enableMarketplace;
+        const unchanged=()=>!destroyed&&ticket===request&&enabled()&&api.context().chatMetadata===metadata&&api.context().getCurrentChatId?.()===chatId
+            &&api.context().chat.length===length&&api.context().chat[input.messageId]===message&&api.variant(message)===variant&&stateFingerprint(api.state())===state;
+        const reference={...input,facts:context.chat.filter(m=>m&&!m.is_user&&!m.is_system).slice(-3).map(m=>api.visible(m.mes)).join('\n'),eventId:`recovered-${input.kind}-${api.turnKey(input.messageId)}-${variant}`};
+        busy=true;opening={message,error:'',diagnostics:''};api.setBusy(true);refresh();let raw;
+        try{
+            api.recordRequest('commerce',`${input.kind} · recover opening`);
+            raw=await requestCommerceOpening(context,reference,{visible:api.visible});
+            if(!unchanged())return{ok:false,error:'stale'};
+            let parsed;try{parsed=typeof raw==='object'?raw:api.parse(raw);}catch{}
+            const result=validateCommerceOpening(parsed?.patch||parsed,reference);
+            if(!result)throw Error('opening-data');
+            opening=null;return{ok:true,...result};
+        }catch(failure){
+            if(!unchanged())return{ok:false,error:'stale'};
+            const code=failure.message==='unavailable'?'unavailable':failure.message==='opening-data'?'opening-data':'opening-api';
+            opening={message,error:word(code==='opening-data'?'AI ยังส่งข้อมูลรายการไม่ครบ เงินและของยังไม่เปลี่ยน โรลถามต่อในแชตได้':code==='unavailable'?'โฮสต์ยังไม่มี API สำหรับกู้รายการ':'กู้ข้อมูลรายการจาก API ไม่สำเร็จ เงินและของยังไม่เปลี่ยน',code==='opening-data'?'AI returned incomplete opening data. Funds/items are unchanged. Continue in chat.':code==='unavailable'?'The host has no opening recovery API.':'Opening recovery API failed. Funds/items are unchanged.'),diagnostics:failureReport({kind:input.kind},'recover-opening',code,raw,{},'opening')};
+            return{ok:false,error:code};
+        }finally{busy=false;api.setBusy(false);refresh();}
     }
     async function perform(input){
         const current=view();if(destroyed||busy||!current?.session||!current.available||current.session.id!==input.id||current.token!==input.token)return{ok:false,error:'stale'};
@@ -95,5 +122,5 @@ export function createCommerceRuntime(api) {
             api.log?.(failure);return{ok:false,error:code};
         }finally{busy=false;api.setBusy(false);refresh();}
     }
-    return{view,refresh,perform,reportRoleplay(id,code,details,report={}){diagnostics=code?failureReport(view()?.session,report.action,code,report.raw,details,'roleplay'):'';errorId=id;error=code?(errors[code]||errors.response)[api.settings().language==='th'?0:1]+(details?.people?.length?' · '+details.people.join(', '):''):'';refresh();},cancel(){request++;},isBusy:()=>busy,destroy(){destroyed=true;request++;ui.destroy();}};
+    return{view,refresh,perform,recoverOpening,reportRoleplay(id,code,details,report={}){diagnostics=code?failureReport(view()?.session,report.action,code,report.raw,details,'roleplay'):'';errorId=id;error=code?(errors[code]||errors.response)[api.settings().language==='th'?0:1]+(details?.people?.length?' · '+details.people.join(', '):''):'';refresh();},cancel(){request++;},isBusy:()=>busy,destroy(){destroyed=true;request++;ui.destroy();}};
 }

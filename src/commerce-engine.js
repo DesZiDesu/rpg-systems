@@ -1,4 +1,4 @@
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.51.3';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.51.4';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);
@@ -33,6 +33,11 @@ export function createCommerceSession(event, source = {}) {
             }
             session.lots.push({id:lot.id,name:lot.name,description:lot.description||'',category:lot.category||'Item',rarity:lot.rarity||'',quantity:lot.quantity||1,
                 openingBid:lot.openingBid,minIncrement:lot.minIncrement,bidders,withdrawn:[],status:'pending',price:0,leader:''});
+            if(lot.currentBidder||lot.currentBid){
+                const leader=participants.get(lot.currentBidder);
+                if(!bidders.includes(lot.currentBidder)||!leader||!money(lot.currentBid)||lot.currentBid<lot.openingBid||lot.currentBid>leader.budget)return null;
+                Object.assign(session.lots.at(-1),{price:lot.currentBid,leader:lot.currentBidder});
+            }
         }
         if (!session.lots.length) return null;
         session.participants=[...participants.values()];

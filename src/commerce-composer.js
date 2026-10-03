@@ -24,13 +24,19 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
     }
     function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;position();});}
     function observe(){if(!observer){observer=new win.MutationObserver(records=>{if(records.some(record=>!bar.contains(record.target)))schedule();});observer.observe(doc.body,{childList:true,subtree:true});timer=setInterval(position,400);}}
+    function showError(){
+        if(!view.error)return;
+        const error=node('p','rf-commerce-error',view.error);error.setAttribute('role','alert');bar.append(error);
+        if(view.diagnostics){const details=node('details','rf-commerce-diagnostics'),summary=node('summary','',t('ดูข้อมูลข้อผิดพลาด','View error details')),report=node('textarea','rf-commerce-diagnostic-report');report.readOnly=true;report.value=view.diagnostics;report.setAttribute('aria-label',t('ข้อมูลสำหรับตรวจสอบปัญหา','Diagnostic report'));
+            const copy=node('button','rf-commerce-diagnostic-copy',t('คัดลอกข้อมูลตรวจสอบ','Copy diagnostic report'));copy.type='button';copy.addEventListener('click',async()=>{try{await win.navigator.clipboard.writeText(view.diagnostics);copy.textContent=t('คัดลอกแล้ว','Copied');}catch{report.focus();report.select();}});details.append(summary,report,copy);bar.append(details);}
+    }
     function render(){
         if(!view){detach();return;}
         if(view.pending){
             const pending=view.pending;bar.replaceChildren();bar.dataset.kind=pending.kind;delete bar.dataset.session;bar.setAttribute('aria-busy',String(pending.waiting));
             const title=node('strong','rf-commerce-pending-title',pending.kind==='auction'?t('ประมูล','AUCTION'):pending.kind==='sell'?t('ขายสินค้า','SELL'):t('ซื้อสินค้า','BUY'));
             const status=node('p','rf-commerce-status',pending.waiting?t('รอ NPC แสดงรายการและราคา…','Waiting for NPC goods and prices…'):t('NPC ยังไม่ได้ให้รายละเอียดรายการครบ คุณโรลถามต่อในแชตได้','NPC list details are incomplete. Continue the conversation in chat.'));
-            status.setAttribute('role','status');bar.append(title,status);observe();position();return;
+            status.setAttribute('role','status');bar.append(title,status);if(!pending.waiting)showError();observe();position();return;
         }
         const session=view.session,lot=session.lots?.[session.index],kind=session.kind,auction=kind==='auction';
         const item=session.items?.find(entry=>entry.id===selected)||session.items?.find(entry=>entry.id===session.selectedId);
@@ -78,10 +84,7 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         }
         button(auction?t('ออกประมูล','Leave'):kind==='sell'?t('ยกเลิกการขาย','Cancel sale'):t('ยกเลิกการซื้อ','Cancel purchase'),auction?'leave':'cancel');bar.append(controls);
         if(view.busy){const status=node('p','rf-commerce-status',t('NPC กำลังพิจารณา…','NPCs are considering…'));status.setAttribute('role','status');bar.append(status);}
-        else if(view.error){const error=node('p','rf-commerce-error',view.error);error.setAttribute('role','alert');bar.append(error);
-            if(view.diagnostics){const details=node('details','rf-commerce-diagnostics'),summary=node('summary','',t('ดูข้อมูลข้อผิดพลาด','View error details')),report=node('textarea','rf-commerce-diagnostic-report');report.readOnly=true;report.value=view.diagnostics;report.setAttribute('aria-label',t('ข้อมูลสำหรับตรวจสอบปัญหา','Diagnostic report'));
-                const copy=node('button','rf-commerce-diagnostic-copy',t('คัดลอกข้อมูลตรวจสอบ','Copy diagnostic report'));copy.type='button';copy.addEventListener('click',async()=>{try{await win.navigator.clipboard.writeText(view.diagnostics);copy.textContent=t('คัดลอกแล้ว','Copied');}catch{report.focus();report.select();}});details.append(summary,report,copy);bar.append(details);}
-        }
+        else if(view.error)showError();
         else if(!view.available)bar.append(node('p','rf-commerce-status',t('รอแชตพร้อม หรือกลับไปยังสถานที่เดิม','Wait for the chat or return to this location')));
         observe();
         position();

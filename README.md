@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.51.3
+# ROLEFORGE — v0.51.4
+
+## v0.51.4 — Recover missing commerce openings and remove null
+
+- Hidden shop/auction notices return no card. The chat renderer now checks the rendered card before appending it, preventing DOM.append(null) from injecting literal “null” after NPC dialogue. Existing story text and board notices are preserved.
+- If a current buy/sell/auction reply quotes prices but omits readable opening data, recover the catalog automatically through one task call to the current API. Valid inline data and explicit local shop catalogs need no recovery call. No preliminary request button, extra story message, bidding advance or money/item transfer occurs during recovery.
+- Keep an established NPC standing bid and fixed actual budgets; a narrated six-silver bid opens at six with the next Bid at seven. Reject invented goods, prices, bidders, fees, deposits, increments and player bids. Cancel or discard stale recovery after stop, chat switch, new turn, edit or disabling the system. Failed recovery stays visible with copyable diagnostics and does not retry in a loop.
+- Reproduced the null failure in a browser before the fix; added regression coverage for shop/auction notices, board notices, intentional “null” in prose and stable refresh with presentation on/off at mobile and desktop widths. [Thai cause and fix](docs/commerce-opening-fix.th.md). Update and reload once; no RPG data reset is needed.
 
 ## v0.51.3 — Isolate commerce decisions from story generation
 
