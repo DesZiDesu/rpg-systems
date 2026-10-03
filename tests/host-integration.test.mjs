@@ -2237,3 +2237,23 @@ test('the official interceptor sends a separate depth-zero SYSTEM contract for n
   host.getSettings().autoTrack=false;host.updatePrompt();assert.equal(prompts.get('tretaresia_rpg_response_contract').value,'');
  }finally{host.commerceRuntime()?.destroy();context.extensionSettings=prior.settings;context.chatMetadata=prior.metadata;context.chat=prior.chat;context.setExtensionPrompt=prior.prompt;}
 });
+
+test('a settled auction venue does not seed a new catalog or accept a stale opening during collection',async()=>{
+ const prior={settings:context.extensionSettings,metadata:context.chatMetadata,chat:context.chat,prompt:context.setExtensionPrompt,save:context.saveMetadata,raw:context.generateRaw};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,injectState:true,enableAuctions:true,enableMarketplace:true,enableMemorySummaries:false}};
+  const state=host.defaultState();state.location.place='Auction House';state.onboarding.locationSeeded=true;
+  const offer=auctionCore.normalizeAuctionOffer({id:'closed-auction',title:'Morning Auction',location:'Auction House',denomination:'silver',lots:[{name:'Shield',openingBid:5,minIncrement:1}]});
+  const session=commerceEngine.createCommerceSession(offer,{messageId:1,turnKey:'closed',variant:'old'});session.status='completed';state.commerce.sessions=[session];
+  const story='The handler shows the previous auction lot. Shield: 5 silver.';
+  context.chatMetadata={tretaresia_rpg_state:state};context.chat=[{is_user:true,mes:'เข้าร่วมประมูล'},{is_user:false,mes:'old'},{is_user:true,mes:'ทำความรู้จักกับคนดูแล'}];
+  let calls=0;context.generateRaw=async()=>{calls++;throw Error('No extra generation allowed');};context.saveMetadata=async()=>{};
+  const prompts=new Map();context.setExtensionPrompt=(key,value)=>prompts.set(key,value);host.initializeCommerce();
+  await sandbox.TretaresiaRpgGenerateInterceptor(structuredClone(context.chat),100000,()=>{},'normal');
+  assert.match(prompts.get('tretaresia_rpg_response_contract'),/AFTER SETTLEMENT/);assert.doesNotMatch(prompts.get('tretaresia_rpg_response_contract'),/unique-current-auction-id/);
+  context.chat[2].mes='หลังจากจบการประมูลฉันไปรับของที่ตัวเองซื้อมา';
+  context.chat.push({is_user:false,mes:story+'<!--tretaresia_patch:'+JSON.stringify({sceneTracker:{loc:'Auction House'},ops:[],auction:{...offer,id:'accidental-new-auction',evidence:story}})+'-->'});
+  await host.processAssistantPatch(3,'normal');
+  assert.equal(host.auctionForMessage(3,context.chat[3]),null);assert.equal(host.commerceRuntime().view(),null);assert.equal(host.getState().commerce.sessions.length,1);assert.equal(calls,0);
+ }finally{host.commerceRuntime()?.destroy();context.extensionSettings=prior.settings;context.chatMetadata=prior.metadata;context.chat=prior.chat;context.setExtensionPrompt=prior.prompt;context.saveMetadata=prior.save;context.generateRaw=prior.raw;}
+});

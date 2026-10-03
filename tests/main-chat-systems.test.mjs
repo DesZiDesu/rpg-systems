@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mainChatSystemInstructions, requestedChatSystems, missingChatSystems} from '../src/main-chat-systems.js';
+import {mainChatSystemInstructions, requestedChatSystems, requestedCommerceKind, missingChatSystems} from '../src/main-chat-systems.js';
 import {confirmedMarketplaceEvent, recoverMarketplaceShop} from '../src/marketplace-events.js';
 import {confirmedAuctionOffer} from '../src/auction-core.js';
 import {confirmedMissionBoard} from '../src/mission-board.js';
@@ -61,3 +61,26 @@ test('request-specific contract and missing-detail feedback follow enabled switc
 
 test('goods vocabulary within an auction cannot create a second shop warning or prompt',()=>{for(const user of ['ขอดูสินค้าประมูล','อยากซื้อของในงานประมูล','Show auction goods catalog']){assert.deepEqual(requestedChatSystems(user,settings),['auction']);assert.deepEqual(missingChatSystems(user,'The auctioneer displays auction goods for sale.',settings,{auction:{id:'auction'}}),[]);}});
 test('an existing composer interaction suppresses stale commerce warnings, preserving board requests',()=>{assert.deepEqual(missingChatSystems('ขอดูสินค้าและกระดานภารกิจ','Rally shows shop goods. You read the mission board.',settings,{commerce:{kind:'auction'}}),['missionBoard']);const p=mainChatSystemInstructions('ขอดูสินค้า',settings,{activeCommerce:{kind:'auction'}});assert.match(p,/never emit marketplace\/auction again/);assert.doesNotMatch(p,/corresponding top-level object/);});
+
+test('collecting settled goods is not a fresh auction, purchase or sale request',()=>{
+ for(const user of [
+  'หลังจากจบการประมูลฉันก็ไปรับตัวทาสมาก่อนจะทำความรู้จัก\nฉันยืนมองทาสที่ตัวเองซื้อมาก่อนจะคิดต่อว่าเอาไงดี',
+  'ประมูลจบแล้ว ฉันไปรับของที่ซื้อมา',
+  'ฉันมารับสินค้าที่ซื้อแล้วจากร้านค้า',
+  'ฉันยืนดูสินค้าที่ซื้อแล้วจากร้านค้า',
+  'After the auction ended I collect the item I bought from the merchant.',
+ ]){assert.equal(requestedCommerceKind(user,settings),'',user);assert.deepEqual(requestedChatSystems(user,settings),[],user);}
+ assert.equal(requestedCommerceKind('หลังจากจบการประมูล ฉันขอซื้อยา',settings),'buy');
+ assert.equal(requestedCommerceKind('หลังจากจบการประมูล ฉันเข้าร่วมประมูลรอบใหม่',settings),'auction');
+});
+test('current posted recruitment notices and job papers validate without requiring a literal board label',()=>{
+ const group='บนกระดานไม้มีใบประกาศรับสมัครสมาชิกปาร์ตี้ รูอิน สตาฟฟ์ ระบุเงื่อนไขและบทบาทที่ขาดแคลนไว้อย่างชัดเจน';
+ assert.ok(confirmedGroupBoard({entries:[{kind:'party',name:'รูอิน สตาฟฟ์'}]},group,'ยืนดูกระดานปาร์ตี้และกิลด์','Guild'));
+ assert.deepEqual(missingChatSystems('ยืนดูกระดานปาร์ตี้และกิลด์',group,settings,{}),['groupBoard']);
+ const mission='แผ่นประกาศภารกิจที่ติดอยู่ระดับสายตาระบุงานล่าหมาป่าเขี้ยวดาบและเงินรางวัล 5 เหรียญเงิน';
+ assert.ok(confirmedMissionBoard({missions:[{name:'ล่าหมาป่าเขี้ยวดาบ',objective:'ล่าหมาป่าเขี้ยวดาบ',reward:'5 เงิน'}]},mission,'ยืนอ่านกระดานภารกิจ','Guild'));
+ assert.deepEqual(missingChatSystems('ยืนอ่านกระดานภารกิจ',mission,settings,{}),['missionBoard']);
+ const screenshot='โคฮาคุชะโงกหน้ามองแผ่นกระดาษที่ติดอยู่ระดับสายตาพลางเอ่ยถามเสียงแผ่วเบา ดวงตาสีอำพันเป็นประกายสะท้อนข้อความระบุเงินรางวัลและเงื่อนไขบนแผ่นหนังแกะ ขณะที่นักผจญภัยสองสามคนข้างๆ ปรายตามองมาครู่หนึ่งก่อนจะหันกลับไปถกเถียงกันเรื่องภารกิจล่าหมาป่าเขี้ยวดาบต่อ';
+ assert.ok(confirmedMissionBoard({missions:[{name:'ล่าหมาป่าเขี้ยวดาบ',objective:'ล่าหมาป่าเขี้ยวดาบ'}]},screenshot,'ยืนอ่านกระดานภารกิจ','Guild'));
+ for(const text of ['พรุ่งนี้จะติดใบประกาศรับสมัครปาร์ตี้','You have not reached the recruitment board.'])assert.equal(confirmedGroupBoard({entries:[{kind:'party',name:'Dawn'}]},text,'Continue','Guild'),null);
+});

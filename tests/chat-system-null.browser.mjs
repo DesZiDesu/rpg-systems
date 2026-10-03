@@ -25,7 +25,7 @@ try{
   },presentation);
   await page.locator('.trpg-system-status').first().waitFor();
   const inspect=()=>page.evaluate(()=>[...document.querySelectorAll('.mes_text')].map(host=>({plainInjected:[...host.querySelectorAll('.trpg-chat')].flatMap(root=>[...root.childNodes].filter(node=>node.nodeType===3).map(node=>node.textContent)),cards:host.querySelectorAll('.trpg-system-status').length,text:host.textContent})));
-  let rows=await inspect();assert.deepEqual(rows[0].plainInjected,[],'hidden shop status must not inject literal null');assert.deepEqual(rows[1].plainInjected,[],'hidden auction status must not inject literal null');assert.equal(rows[0].cards,0);assert.equal(rows[1].cards,0);assert.equal(rows[2].cards,1);assert.equal(rows[3].cards,1);assert.match(rows[4].text,/คำว่า null อยู่ในบทพูดนี้โดยตั้งใจ/);
+  let rows=await inspect();assert.deepEqual(rows[0].plainInjected,[],'hidden shop status must not inject literal null');assert.deepEqual(rows[1].plainInjected,[],'hidden auction status must not inject literal null');assert.equal(rows[0].cards,0);assert.equal(rows[1].cards,0);assert.equal(rows[2].cards,1);assert.equal(rows[3].cards,1);assert.match(rows[4].text,/คำว่า null อยู่ในบทพูดนี้โดยตั้งใจ/);assert.equal(await page.locator('.trpg-system-status button').count(),0);assert.doesNotMatch(rows[2].text,/เตรียมข้อความขอดูรายการ/);
   await page.evaluate(()=>window.ui.refresh());await page.waitForTimeout(150);rows=await inspect();assert.deepEqual(rows[0].plainInjected,[]);assert.equal(rows[2].cards,1);assert.deepEqual(errors,[]);
   console.log(`PASS hidden commerce notices inject no null; board notices and intentional prose retained; refresh stable at ${width}px, presentation=${presentation}`);await page.close();
  }

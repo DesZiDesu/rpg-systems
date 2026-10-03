@@ -1,14 +1,14 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.8';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.9';
 // Party/Guild Board protocol. A board is emitted only when the story confirms
 // that the player is physically reading the current board in this location.
 const clean = (value, max = 300) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
 const hash = value => { let result = 2166136261; for (const char of value) result = Math.imul(result ^ char.codePointAt(0), 16777619); return (result >>> 0).toString(36); };
-const boardWords = /(?:guild|party|adventurer|recruit(?:ment)?|notice|bulletin)\s*(?:board|hall|roster)|(?:กระดาน|บอร์ด)\s*(?:กิลด์|ปาร์ตี้|นักผจญภัย|รับสมัคร|ประกาศ)|กิลด์ฮอลล์|สมาคมนักผจญภัย/iu;
-const movementWords = /(?:read|examin|inspect|approach|arriv|stand|stop|reach|look|scan|browse|study|walk|เปิดอ่าน|อ่าน|ดู|เดิน|มาถึง|ยืน|หยุด|สำรวจ|แวะ)/iu;
+export const GROUP_BOARD_WORDS = /(?:guild|party|adventurer|recruit(?:ment)?|notice|bulletin)\s*(?:board|hall|roster|notice|posting)|(?:กระดาน|บอร์ด)\s*(?:กิลด์|ปาร์ตี้|นักผจญภัย|รับสมัคร|ประกาศ)|(?:ประกาศ|กระดานไม้)[^.!?。\n]{0,100}(?:รับสมัคร|เปิดรับ)[^.!?。\n]{0,60}(?:ปาร์ตี้|กิลด์|สมาชิก)|กิลด์ฮอลล์|สมาคมนักผจญภัย/iu;
+export const GROUP_BOARD_ACTIONS = /(?:read|examin|inspect|approach|arriv|stand|stop|reach|look|scan|brows|study|walk|show|display|post|list|เปิดอ่าน|อ่าน|ดู|มอง|เดิน|มาถึง|ยืน|หยุด|สำรวจ|แวะ|แสดง|ติด|ปัก|ระบุ|เขียน|รับสมัคร|เปิดรับ)/iu;
 const kindOf = value => /^(?:guild|กิลด์|กิล)$/iu.test(String(value || '').trim()) ? 'guild' : /^(?:party|ปาร์ตี้|ปาร์ตี)$/iu.test(String(value || '').trim()) ? 'party' : '';
 
-export const GROUP_BOARD_INSTRUCTIONS = 'Party/Guild Board: when the player actually arrives at and reads a recruitment board in the CURRENT scene, include groupBoard in this same invisible patch: {"title":"board name","location":"actual current place","evidence":"exact quote from this reply showing the player at/reading the board","entries":[{"kind":"guild or party","name":"stable group name","description":"short premise","leader":"leader name","memberCount":4,"maxMembers":8,"rank":"rank","requirements":["known requirement"],"openSpots":4,"tags":["scout"]}]}. Include 1–12 groups suited to the established world. Keep names, descriptions, leader and requirements stable when revisiting the same board. Do not invent membership, acceptance, rewards or player decisions. A board entry is only an invitation to request admission; the extension renders the cards and handles the request. Never emit this patch for a mention, planned visit, hypothetical, OOC question, or a board the player has not reached.';
+export const GROUP_BOARD_INSTRUCTIONS = 'Party/Guild Board: when the player looks at, reads or browses an accessible recruitment board in the CURRENT scene, include groupBoard in this same invisible patch: {"title":"board name","location":"actual current place","evidence":"exact quote from this reply showing the readable recruitment notices","pageSize":3,"entries":[{"kind":"party","name":"stable group name","description":"short premise","leader":"leader name if stated","memberCount":4,"maxMembers":8,"rank":"known rank","requirements":["known requirement"],"openSpots":4,"tags":["scout"],"notes":"stated roles and benefit-sharing terms"}]}. kind is exactly party or guild. Include 1–12 groups suited to the established world and present their notices in this reply, including named groups/conditions the prose shows. Looking while already standing here is enough; no new arrival, preliminary button, extra request or separate generation is required. Keep names, descriptions, leader and requirements stable when revisiting the same board. Omit genuinely unknown counts, capacity, leader and rank rather than inventing them. Do not invent membership, acceptance, rewards or player decisions. A board entry is only an invitation to request admission; the extension renders the cards and handles the request. Never emit this patch for a mere mention, planned visit, hypothetical, OOC question, inaccessible board or empty board.';
 
 export function normalizeGroupBoard(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
@@ -36,10 +36,10 @@ export function normalizeGroupBoard(raw) {
 }
 
 export function confirmedGroupBoard(raw, story, user, location) {
-    const board = normalizeGroupBoard(withInteractionEvidence(raw, story, location, boardWords, movementWords));
-    if (!board || key(board.location) !== key(location) || !boardWords.test(String(story))) return null;
+    const board = normalizeGroupBoard(withInteractionEvidence(raw, story, location, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS));
+    if (!board || key(board.location) !== key(location) || !GROUP_BOARD_WORDS.test(String(story))) return null;
     const evidence = board.evidence;
-    if (!interactionEvidence(evidence, story, user, boardWords, movementWords)) return null;
+    if (!interactionEvidence(evidence, story, user, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS)) return null;
     return board;
 }
 

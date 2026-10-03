@@ -16,6 +16,10 @@ const server=http.createServer(async(req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const url=`http://127.0.0.1:${server.address().port}${base}docs/previews/preview-h-stats.html?lang=th`;
+async function captureCard(card,path){
+ const style=await card.page().addStyleTag({content:'#send_form,#tretaresia-event-stack,#tretaresia-activity-island{display:none!important}'});
+ try{await card.screenshot({path});}finally{await style.evaluate(el=>el.remove());}
+}
 async function receive(page,user,story,patch){
  await page.evaluate(async user=>{
   window.host.chat.push({is_user:true,name:'Player',mes:user});
@@ -23,6 +27,7 @@ async function receive(page,user,story,patch){
   await window.host.eventSource.emit(window.host.eventTypes.GENERATION_STARTED,'normal',{},false);
   await window.TretaresiaRpgGenerateInterceptor(structuredClone(window.host.chat),100000,()=>{},'normal');window.lastNormalPrompt=[...window.prompts.values()].join('\n');window.lastGenerationInjections=structuredClone(window.promptInjections);window.normalCalls=(window.normalCalls||0)+1;
  },user);
+ if(user.startsWith('หลังจากจบการประมูล'))assert.equal(await page.locator('.rf-commerce-composer').count(),0,'collection must not reopen a composer during generation');
  if(user==='ขอดูสินค้าประมูล'){await page.locator('.rf-commerce-pending-title').waitFor();assert.equal(await page.locator('.rf-commerce-composer').getAttribute('data-kind'),'auction');assert.equal(await page.locator('.rf-commerce-composer button').count(),0);if(page.viewportSize().width===390&&process.env.COMMERCE_ARTIFACT_DIR){await mkdir(process.env.COMMERCE_ARTIFACT_DIR,{recursive:true});await page.locator(".rf-commerce-composer").screenshot({path:`${process.env.COMMERCE_ARTIFACT_DIR}/auction-waiting-390.png`});}}
  const id=await page.evaluate(({story,patch})=>{
   const id=window.host.chat.length,mes=story+(patch?`\n<!--tretaresia_patch:${JSON.stringify(patch)}-->`:'');
@@ -144,6 +149,17 @@ try{
   const rival=payload.interaction.participants[0].id;
   await role('ผมยกป้ายบิด 4 เหรียญทอง','The auctioneer awards you the shield at four gold.','bid',{outcome:'sold',participants:[{id:rival,action:'withdraw',reason:'Saving my funds for a sword'}]},4);
   assert.equal(await bar.count(),0);assert.equal(await page.evaluate(()=>window.calls),beforeRoleConfirm);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.gold),45);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory.some(i=>i.name==='Shield')),true);
+  const afterSale=await page.evaluate(()=>({calls:window.calls,normal:window.normalCalls,wallet:window.host.chatMetadata.tretaresia_rpg_state.progression.currency,inventory:window.host.chatMetadata.tretaresia_rpg_state.inventory}));
+  const collection=await receive(page,'หลังจากจบการประมูลฉันก็ไปรับของมาก่อนจะทำความรู้จัก\nฉันยืนมองโล่ที่ตัวเองซื้อมาก่อนจะคิดต่อว่าเอาไงดี','เจ้าหน้าที่นำโล่ที่ชำระเงินแล้วมาส่งมอบ พร้อมยื่นเอกสารให้ตรวจสอบ',{sceneTracker:{loc:'Guild'},ops:[]});
+  assert.equal(await bar.count(),0);assert.equal(await collection.locator('.trpg-system-status').count(),0);
+  const afterCollection=await page.evaluate(()=>({calls:window.calls,normal:window.normalCalls,wallet:window.host.chatMetadata.tretaresia_rpg_state.progression.currency,inventory:window.host.chatMetadata.tretaresia_rpg_state.inventory}));
+  assert.deepEqual(afterCollection,{...afterSale,normal:afterSale.normal+1});
+  assert.doesNotMatch(await page.evaluate(()=>window.lastNormalPrompt),/"id":"unique-current-auction-id"/);assert.match(await page.evaluate(()=>window.lastNormalPrompt),/AFTER SETTLEMENT/);
+  await page.evaluate(()=>{document.querySelector('#preview-open').click();document.querySelector('[data-tab="rank"]').click();});
+  const rank=page.locator('[data-panel="rank"]');await rank.waitFor({state:'visible'});
+  assert.equal(await rank.locator('.trpg-auction-wallet').count(),0);assert.doesNotMatch(await rank.innerText(),/ใช้แถบเหนือช่องพิมพ์|Continue auctions from| · completed/);
+  if(width===390&&process.env.BOARD_ARTIFACT_DIR){await mkdir(process.env.BOARD_ARTIFACT_DIR,{recursive:true});await captureCard(rank,`${process.env.BOARD_ARTIFACT_DIR}/rank-clean-390.png`);}
+  await page.evaluate(()=>document.querySelector('#tretaresia-rpg-close').click());
   await receive(page,'ขอดูร้านสุดท้าย','Rally shows shop goods for sale. Potion: 1 silver.',{marketplace:{kind:'npcShop',id:'race-shop',seller:{name:'Rally'},denomination:'silver',items:[{name:'Potion',price:1}]},ops:[]});
   const contract=await page.evaluate(async()=>{await window.TretaresiaRpgGenerateInterceptor();return [...window.prompts.values()].join('\n');});const raceSession=JSON.parse(contract.split('REFERENCE DATA:\n').at(-1).split('\n')[0]).interaction;
   await page.evaluate(()=>{window.deferQuiet=true;window.responses.push({narrative:'Rally receives your silver.',decision:{outcome:'accept',amount:1}});});
@@ -155,6 +171,18 @@ try{
   assert.equal(await bar.count(),0);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),16);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.commerce.sessions.at(-1).status),'cancelled');
   const boards=await receive(page,'ขออ่านกระดานภารกิจและกระดานกิลด์','You read the mission board. You browse the guild board.',{sceneTracker:{loc:'Guild'},missionBoard:{missions:[{name:'Delivery',objective:'Deliver the letter',reward:'3 silver'}]},groupBoard:{entries:[{kind:'guild',name:'Dawn'}]},ops:[['upsert','storyMemories',{id:'promise',title:'Return a book',kind:'Promise',detail:'Promised to return the book'}],['upsert','storyAgenda',{id:'meeting',title:'Meet Rally',dueDay:2}],['upsert','quests',{id:'job',name:'Errand',objectives:[{id:'step',title:'Bring the book'}]}]]});
   await boards.locator('.trpg-mission-board').waitFor();await boards.locator('.trpg-group-board').waitFor();await boards.locator('.trpg-story-events').waitFor();await boards.locator('.trpg-story-events>summary').click();assert.match(await boards.innerText(),/Return a book/);assert.match(await boards.innerText(),/Bring the book/);assert.match(await boards.innerText(),/Meet Rally/);
+  const beforeBoards=await page.evaluate(()=>({calls:window.calls,normal:window.normalCalls,user:document.querySelector('#send_textarea').value,quests:window.host.chatMetadata.tretaresia_rpg_state.quests}));
+  const thaiBoards=await receive(page,'ยืนดูกระดานภารกิจและกระดานปาร์ตี้และกิลด์','บนกระดานไม้มีใบประกาศรับสมัครสมาชิกปาร์ตี้ รูอิน สตาฟฟ์ ระบุเงื่อนไขและบทบาทที่ขาดแคลนไว้อย่างชัดเจน\nแผ่นประกาศภารกิจที่ติดอยู่ระดับสายตาระบุงานล่าหมาป่าเขี้ยวดาบและเงินรางวัล 5 เหรียญเงิน',{
+   sceneTracker:{loc:'Guild'},ops:[],missionBoard:{title:'กระดานภารกิจสมาคม',missions:[{name:'ล่าหมาป่าเขี้ยวดาบ',objective:'กำจัดหมาป่าเขี้ยวดาบที่ขวางเส้นทาง',giver:'สมาคมนักผจญภัย',reward:'5 เหรียญเงิน'},...Array.from({length:3},(_,i)=>({name:['ส่งจดหมาย','คุ้มกันขบวนสินค้า','สำรวจเส้นทางป่า'][i],objective:['ส่งจดหมายถึงเจ้าหน้าที่หมู่บ้าน','นำขบวนสินค้าไปถึงจุดหมาย','บันทึกอุปสรรคบนเส้นทาง'][i],reward:['3 เหรียญเงิน','8 เหรียญเงิน','6 เหรียญเงิน'][i]}))]},
+   groupBoard:{title:'กระดานปาร์ตี้และกิลด์',entries:[{kind:'party',name:'รูอิน สตาฟฟ์',description:'กลุ่มสำรวจซากโบราณสถาน เปิดรับสมาชิกแนวหน้า',leader:'เอซ',memberCount:3,maxMembers:5,requirements:['รับหน้าที่แนวหน้า'],notes:'แบ่งผลประโยชน์เท่ากันหลังหักค่าเสบียง'},...Array.from({length:6},(_,i)=>({kind:i%2?'party':'guild',name:['กิลด์แสงรุ่งอรุณ','หน่วยสำรวจเส้นทาง','กิลด์คุ้มกันพ่อค้า','กลุ่มนักล่าป่าเหนือ','กิลด์ผู้ใช้เวท','ปาร์ตี้แผนที่จันทร์'][i],description:'เปิดรับเพื่อนร่วมทางตามบทบาทที่ประกาศ',requirements:['ติดต่อหัวหน้าก่อนออกเดินทาง']}))]}
+  });
+  const missionCard=thaiBoards.locator('.trpg-mission-board'),groupCard=thaiBoards.locator('.trpg-group-board');await missionCard.waitFor();await groupCard.waitFor();assert.equal(await thaiBoards.locator('.trpg-system-status').count(),0);
+  assert.match(await page.evaluate(()=>window.lastNormalPrompt),/REQUIRED THIS REPLY: missionBoard, groupBoard/);
+  assert.equal(await groupCard.locator('.trpg-group-board-card').count(),3);await groupCard.locator('.trpg-group-board-pager button').last().click();assert.match(await groupCard.locator('.trpg-group-board-pager').innerText(),/หน้า 2 \/ 3/);await groupCard.locator('.trpg-group-board-pager button').first().click();
+  await groupCard.locator('.trpg-group-board-inspect').first().click();assert.match(await groupCard.locator('.trpg-group-board-detail').innerText(),/แบ่งผลประโยชน์เท่ากัน/);await groupCard.locator('.trpg-group-board-actions button').first().click();
+  assert.deepEqual(await page.evaluate(()=>({calls:window.calls,normal:window.normalCalls,user:document.querySelector('#send_textarea').value,quests:window.host.chatMetadata.tretaresia_rpg_state.quests})),{...beforeBoards,normal:beforeBoards.normal+1});
+  if(width===390&&process.env.BOARD_ARTIFACT_DIR){await captureCard(missionCard,`${process.env.BOARD_ARTIFACT_DIR}/mission-board-390.png`);await captureCard(groupCard,`${process.env.BOARD_ARTIFACT_DIR}/party-guild-board-390.png`);}
+  const incomplete=await receive(page,'ยืนอ่านกระดานภารกิจ','แผ่นประกาศภารกิจที่ติดอยู่ระดับสายตาระบุงานและเงินรางวัล',{sceneTracker:{loc:'Guild'},ops:[]});await incomplete.locator('.trpg-system-status').waitFor();assert.equal(await incomplete.locator('.trpg-system-status button').count(),0);assert.doesNotMatch(await incomplete.innerText(),/เตรียมข้อความขอดูรายการ/);
   // Exact failure pattern: an auctioneer quotes prices but the final reply
   // contains no patch, even if provider reasoning promises to emit one.
   const beforeOpening=await page.evaluate(()=>({calls:window.calls,wallet:JSON.stringify(window.host.chatMetadata.tretaresia_rpg_state.progression.currency),items:JSON.stringify(window.host.chatMetadata.tretaresia_rpg_state.inventory)}));

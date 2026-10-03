@@ -6,11 +6,8 @@ export function renderChatSystemStatus(status, messageId, api) {
     const root = document.createElement('section'); root.className = 'trpg-marketplace-chat trpg-system-status'; root.setAttribute('role','status');
     const title = document.createElement('strong'); title.textContent = status.keys.filter(key=>!['marketplace','auction'].includes(key)).map(key => labels[key]).join(' · ');
     const detail = document.createElement('p'); detail.textContent = thai
-        ? 'คำตอบนี้ยังให้รายละเอียดสำหรับเปิดรายการไม่ครบ กดเพื่อเตรียมข้อความขอให้ NPC แสดงรายการพร้อมรายละเอียด แล้วตรวจสอบก่อนส่งในแชตหลัก'
-        : 'This reply did not provide enough detail to open the list. Draft a request for the list and details, then review it before sending in Main Chat.';
+        ? 'AI ไม่ได้แนบข้อมูลกระดานที่ครบถ้วนในคำตอบนี้ การ์ดต้องแสดงพร้อมคำตอบหลัก ลอง Swipe หรือ Regenerate คำตอบนี้ได้'
+        : 'The AI did not include complete board data in this reply. The card should appear with the main reply. You can swipe or regenerate this reply.';
     root.append(title,detail);
-    const button = document.createElement('button'); button.type = 'button'; button.disabled = !status.available;
-    button.textContent = thai ? 'เตรียมข้อความขอดูรายการ' : 'Draft a request for the list';
-    button.addEventListener('click',() => api.prepareChatSystemRequest?.(messageId,status.token)); root.append(button);
     return root;
 }

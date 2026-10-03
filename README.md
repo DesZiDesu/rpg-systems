@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.51.8
+# ROLEFORGE — v0.51.9
+
+## v0.51.9 — Settled commerce and same-reply boards
+
+- Remove the leftover raw auction session dump and continue-auction instruction from Ranks & Progression. Keep balances and transaction receipts.
+- Distinguish collecting paid goods and historical auction/buy/sell references from new requests. A completed interaction at the current venue no longer seeds another opening example just because the place is named Auction House. Still allow explicit new auctions and purchases. Ignore accidental catalog openings on a collection turn.
+- Give requested mission/recruitment boards complete, request-specific examples in the separate normal-reply SYSTEM contract, including when commerce is also active. Reuse the canonical board instructions, teach stationary browsing and public posted notices, and keep all applicable objects in the same final patch. No preliminary request or extra board generation is needed.
+- Validate natural Thai posted recruitment/job notices as current board evidence, while retaining exact quotes, location, future/OOC and valid-entry checks. Remove the incomplete-board request-draft button; a missing payload remains an explicit generation error, never a requirement to send another request.
+- [Thai diagnosis and verified UI previews](docs/settled-commerce-boards.th.md). Verified 677 unit/host tests, syntax checks and production-loader Main Chat at 320/390/1280 px, plus optional switches and null regressions. Provider replies are simulated. Update and reload; regenerate old incomplete board replies to use the new prompt. Board settings remain user-controlled.
 
 ## v0.51.8 — Approved compact composer and latest-reply continuation
 

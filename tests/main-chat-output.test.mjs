@@ -24,6 +24,22 @@ test('a current auction location teaches an opening on a stationary action but f
  assert.ok(example(mainChatOutputContract('นั่งดูอยู่ด้านหลัง',settings,{location:'โรงประมูล'})).auction);
  for(const user of ['OOC: ประมูลทำงานยังไง','พรุ่งนี้ค่อยเข้าประมูล'])assert.equal(example(mainChatOutputContract(user,settings,{location:'โรงประมูล'})).auction,undefined);
 });
+test('post-auction collection and unrelated board browsing do not inherit a stale auction opening example',()=>{
+ for(const user of ['หลังจากจบการประมูลฉันไปรับตัวที่ซื้อมาทำความรู้จัก','ประมูลจบแล้ว ฉันไปรับของที่ซื้อมา']){
+  const prompt=mainChatOutputContract(user,settings,{location:'Slave Auction House',scene:'The auctioneer sold the last lot.'});
+  const patch=example(prompt);assert.equal(patch.auction,undefined);assert.equal(patch.marketplace,undefined);assert.match(prompt,/AFTER SETTLEMENT/);
+ }
+ assert.equal(example(mainChatOutputContract('ยืนดูกระดานปาร์ตี้และกิลด์',settings,{location:'Auction House'})).auction,undefined);
+ const settledCommerce={kind:'auction',status:'completed'};
+ assert.equal(example(mainChatOutputContract('ทำความรู้จักกับคนดูแล',settings,{location:'Auction House',settledCommerce})).auction,undefined);
+ assert.ok(example(mainChatOutputContract('ขอเข้าร่วมประมูลรอบใหม่',settings,{location:'Auction House',settledCommerce})).auction);
+});
+test('requested boards have complete same-reply examples even alongside an existing commerce session',()=>{
+ for(const activeCommerce of [undefined,{id:'a',revision:2,kind:'auction'}]){
+  const prompt=mainChatOutputContract('ยืนดูกระดานภารกิจและกระดานปาร์ตี้และกิลด์',settings,{location:'Guild',activeCommerce});
+  const patch=example(prompt);assert.equal(patch.missionBoard.location,'Guild');assert.ok(patch.missionBoard.missions[0].objective);assert.equal(patch.groupBoard.location,'Guild');assert.equal(patch.groupBoard.entries[0].kind,'party');assert.match(prompt,/REQUIRED THIS REPLY: missionBoard, groupBoard/);assert.match(prompt,/not a second request/);
+ }
+});
 for(const [phrase,amount,denomination]of [['สิบเหรียญเงิน',10,'silver'],['ยี่สิบเอ็ดเหรียญทองแดง',21,'copper'],['หนึ่งร้อยห้าสิบเงิน',150,'silver'],['สองพันสิบเหรียญทอง',2010,'gold'],['หนึ่งล้านสองแสนเหรียญทอง',1200000,'gold'],['๑๐ เหรียญเงิน',10,'silver'],['10 silver',10,'silver']])test(`natural price ${phrase} maps to the same numeric payload without an API`,()=>{assert.equal(readCommercePrices(phrase)[0].amount,amount);assert.equal(readCommercePrices(phrase)[0].denomination,denomination);});
 test('a valid numeric auction patch is accepted when the NPC spells the standing price in Thai',()=>{
  const story='<tr-dialogue name="Mira">สิบเหรียญเงิน!</tr-dialogue>',offer=confirmedAuctionOffer({location:'Hall',evidence:'สิบเหรียญเงิน!',denomination:'silver',lots:[{name:'Blade',openingBid:5,minIncrement:1,bidders:[{name:'Mira',budget:18}],currentBid:10,currentBidder:'Mira'}]},story,'นั่งลงเข้าร่วมการประมูล','Hall');assert.ok(offer);assert.equal(offer.lots[0].currentBid,10);assert.equal(offer.lots[0].bidders[0].budget,18);

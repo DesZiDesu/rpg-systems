@@ -1,31 +1,49 @@
-import {CURRENCY_RULE} from './commerce-currency.js?v=0.51.8';
-import { interactionEvidence } from './interaction-evidence.js?v=0.51.8';
+import {CURRENCY_RULE} from './commerce-currency.js?v=0.51.9';
+import { interactionEvidence } from './interaction-evidence.js?v=0.51.9';
+import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.51.9';
+import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.51.9';
 const systems = [
     {key:'marketplace', setting:'enableMarketplace', words:/(?:shop|store|merchant|vendor|goods|catalog|buy|sell|haggl|counteroffer|ร้าน|พ่อค้า|แม่ค้า|สินค้า|ซื้อ|ขาย|ต่อรอง|ดูของ)/iu},
     {key:'auction', setting:'enableAuctions', words:/auction|ประมูล/iu},
     {key:'missionBoard', setting:'enableMissionBoard', words:/(?:mission|quest|job|bounty|notice)\s*board|(?:กระดาน|บอร์ด)\s*(?:ภารกิจ|เควส|งาน|ประกาศ)/iu},
     {key:'groupBoard', setting:'enableGroupBoard', words:/(?:party|guild|recruitment)\s*board|(?:กระดาน|บอร์ด)\s*(?:ปาร์ตี้|กิลด์|รับสมัคร)/iu},
 ];
+// Historical transactions and collecting paid goods do not request another
+// catalog. Remove those references before routing a genuinely new request.
+function commerceRequestText(user) {
+    return String(user ?? '').replace(/<[^>]*>/gu,' ')
+        .replace(/(?:หลัง(?:จาก)?|เมื่อ)?(?:จบ|เสร็จ(?:สิ้น)?)(?:การ|งาน)?ประมูล|(?:การ|งาน)?ประมูล(?:ได้)?(?:จบ(?:แล้ว)?|เสร็จ(?:สิ้น)?(?:แล้ว)?|สิ้นสุด(?:แล้ว)?)/giu,' ')
+        .replace(/(?:after\s+(?:the\s+)?|(?:the\s+)?)(?:auction|purchase|sale)\s+(?:(?:has|had|is|was)\s+)?(?:ended|finished|completed|closed)|(?:completed|finished|closed)\s+(?:auction|purchase|sale)/giu,' ')
+        .replace(/(?:ซื้อ|ขาย)(?:มา|ไป)(?:แล้ว)?|(?:ซื้อ|ขาย)[^\n.!?]{0,40}?แล้ว|\b(?:bought|sold|purchased)\b/giu,' ');
+}
+export function settledCommerceFollowup(user) {
+    const value=String(user??'').replace(/<[^>]*>/gu,' '), current=commerceRequestText(value);
+    const settled=current!==value || /(?:รับ(?:ตัว|ของ|สินค้า)|collect|pick\s*up|take\s*delivery)[^\n.!?]{0,80}(?:ซื้อ|ชำระ|จ่าย|bought|paid|purchased)/iu.test(value);
+    const fresh=/(?:ซื้อ|ขาย|ประมูล)|(?:ขอ|อยาก|ต้องการ)[^\n.!?]{0,20}(?:ดู|อ่าน)[^\n.!?]{0,20}(?:สินค้า|ร้าน|รายการ)|(?:เดิน|แวะ)[^\n.!?]{0,20}(?:ร้านใหม่|ร้านถัดไป)|\b(?:buy|sell|bid|join|enter|browse|show|visit|read)\b[^\n.!?]{0,40}\b(?:auction|shop|store|goods|catalog)\b|\b(?:buy|sell|bid)\b/iu.test(current);
+    return settled&&!fresh;
+}
 export function requestedChatSystems(user, settings) {
     if (/^\s*(?:\(?OOC\b|\[OOC\b)/iu.test(String(user ?? ''))) return [];
-    const requested=systems.filter(system => settings[system.setting] && system.words.test(String(user ?? ''))).map(system => system.key);
-    return systems.find(system=>system.key==='auction').words.test(String(user??''))?requested.filter(key=>key!=='marketplace'):requested;
+    const commerce=settledCommerceFollowup(user)?'':commerceRequestText(user);
+    const requested=systems.filter(system => settings[system.setting] && system.words.test(['marketplace','auction'].includes(system.key)?commerce:String(user??''))).map(system => system.key);
+    return systems.find(system=>system.key==='auction').words.test(commerce)?requested.filter(key=>key!=='marketplace'):requested;
 }
-export function mainChatSystemInstructions(user, settings, {activeCommerce}={}) {
+export function mainChatSystemInstructions(user, settings, {activeCommerce,settledCommerce}={}) {
     const enabled = systems.filter(system => settings[system.setting]).map(system => system.key);
     const requested = requestedChatSystems(user, settings);
     if (!enabled.length) return '';
     if(activeCommerce)return 'MAIN CHAT INTERACTION CHECK: An existing '+activeCommerce.kind+' interaction is already open. Use commerce in this SAME reply to update it from the latest user role-play; never emit marketplace/auction again or open a second commerce UI. Goods, catalogs and buying/selling vocabulary here refer to that current interaction. Mission/group boards still use their own top-level objects only when actually requested and presented.';
     return 'MAIN CHAT INTERACTION CHECK: Enabled cards: ' + enabled.join(', ') + '. '
         + (requested.length ? 'The latest player action concerns ' + requested.join(', ') + '. ' : '')
-        + 'When THIS reply actually presents goods, an NPC buying offer, auction lots or board entries, include its corresponding top-level object in the SAME tretaresia_patch alongside sceneTracker and ops. Scene data and money/item notifications alone do not create these cards. For a present-tense request to buy, sell or join an auction, open the appropriate interaction automatically in this FIRST NPC reply with the public goods, numeric prices and actual participant budgets. No preliminary request button or second AI call is needed. Do not ask the player to request a list again. Do this even when the player is already standing here, asks to see the catalog, revisits or negotiates; a new arrival is not required. marketplace.kind must be npcShop (NPC selling to player) or npcPurchase (NPC buying an owned player item). Use the current sceneTracker.loc/location exactly for every card location. Include item names and explicit numeric prices/denomination, and choose an exact short affirmative evidence quote from this reply; use the interaction sentence rather than conditional pricing dialogue. Do not omit a catalog because nothing was purchased. Keep offers/catalogs separate from a completed sale: an offer alone changes no currency/inventory; commerce opened by these objects is settled through its validated commerce decision from role-play or a composer action after player consent; do not duplicate transfers through normal story ops. Never create a card for rejected, future, hypothetical or OOC actions. Follow the schemas above; do not put card objects inside ops or prose.';
+        + (settledCommerceFollowup(user)||settledCommerce&&!requestedCommerceKind(user,settings)?'AFTER SETTLEMENT: the player is collecting paid goods or continuing the story after a finished transaction. Do not reopen that auction/shop, charge again or deliver the paid items twice. The venue name and historical buying/bidding words are not a new request. ':'')
+        + 'When THIS reply actually presents goods, an NPC buying offer, auction lots or board entries, include its corresponding top-level object in the SAME tretaresia_patch alongside sceneTracker and ops. Scene data and money/item notifications alone do not create these cards. For a present-tense request to buy, sell, join an auction or read a mission/recruitment board, open the appropriate interaction automatically in this FIRST NPC reply with its complete entries. No preliminary request button or second AI call is needed. Do not ask the player to request a list again. Do this even when the player is already standing here, asks to see the catalog, revisits or negotiates; a new arrival is not required. marketplace.kind must be npcShop (NPC selling to player) or npcPurchase (NPC buying an owned player item). Use the current sceneTracker.loc/location exactly for every card location. Include item names and explicit numeric prices/denomination, and choose an exact short affirmative evidence quote from this reply; use the interaction sentence rather than conditional pricing dialogue. Do not omit a catalog because nothing was purchased. Keep offers/catalogs separate from a completed sale: an offer alone changes no currency/inventory; commerce opened by these objects is settled through its validated commerce decision from role-play or a composer action after player consent; do not duplicate transfers through normal story ops. Never create a card for rejected, future, hypothetical or OOC actions. Follow the schemas above; do not put card objects inside ops or prose.';
 }
 export function missingChatSystems(user, story, settings, confirmed) {
     // Only warn when a requested interaction is visibly taking place. A rejected
     // visit, rumor or future plan does not need a card.
     return requestedChatSystems(user, settings).filter(key => !(confirmed.commerce&&['marketplace','auction'].includes(key)) && !confirmed[key]
-        && interactionEvidence(story, story, user, systems.find(system => system.key === key).words,
-            /(?:show|display|offer|read|inspect|browse|enter|stand|ask|sell|ลด|หยิบ|วาง|ยื่น|แสดง|ขาย|เสนอ|อ่าน|ดู|เดิน|เข้า|ยืน)/iu));
+        && interactionEvidence(story, story, user, key==='missionBoard'?MISSION_BOARD_WORDS:key==='groupBoard'?GROUP_BOARD_WORDS:systems.find(system => system.key === key).words,
+            key==='missionBoard'?MISSION_BOARD_ACTIONS:key==='groupBoard'?GROUP_BOARD_ACTIONS:/(?:show|display|offer|read|inspect|browse|enter|stand|ask|sell|ลด|หยิบ|วาง|ยื่น|แสดง|ขาย|เสนอ|อ่าน|ดู|เดิน|เข้า|ยืน)/iu));
 }
 
 export function requestedCommerceKind(user,settings) {
@@ -40,7 +58,7 @@ export function requestedCommerceKind(user,settings) {
 // A dedicated final-output contract is injected separately from the large state
 // reference. This is executable protocol guidance for the normal reply, not
 // instructions to call another model or a request for hidden reasoning.
-export function mainChatOutputContract(user,settings,{activeCommerce,location='',scene='',roleplay=''}={}){
+export function mainChatOutputContract(user,settings,{activeCommerce,settledCommerce,location='',scene='',roleplay=''}={}){
     if(!settings.autoTrack)return '';
     const routes=[
         'HEADER / DIALOGUE / NARRATIVE: when chat presentation is enabled, use <tr-header name="Exact NPC Name"/>, <tr-narrative>scene/actions</tr-narrative> and <tr-dialogue name="Exact NPC Name">spoken words</tr-dialogue> in natural story order. Keep one header per uninterrupted speaker turn. Never nest/mix tags, invent player words/decisions, or put JSON inside a story block. When presentation is off, ordinary prose is allowed and the final machine comment still applies.',
@@ -69,14 +87,16 @@ export function mainChatOutputContract(user,settings,{activeCommerce,location=''
         routes.push('SELL: when a named NPC offers to buy items the player owns, emit marketplace with kind:"npcPurchase". Shape: {kind:"npcPurchase",id,location,evidence,buyer:{name,npcId,budget:actual-funds-if-known},item:{itemId,itemName,quantity:1},askPrice:5,denomination:"gold|silver|copper",negotiable:true}. Use the canonical owned item id/name and valid owned quantity. The offer alone does not remove inventory or pay the player.');
     }
     if(settings.enableMarketplace)routes.push('MULTI-ITEM SALE: the NPC may choose several genuinely owned items from the supplied inventory and quote each in the story. Use marketplace:{kind:"npcPurchase",id,location,evidence,buyer:{name,npcId,budget},denomination,items:[{itemId:"canonical owned id",itemName:"canonical name",quantity:1,askPrice:3}]}. Omit legacy item/askPrice when using items. All prices are totals for each listed quantity; buyer budget covers the combined total. Mention every offered item in the exact evidence. This offer authorizes no sale. The user may exclude items/reduce quantity or negotiate the basket through UI or role-play; commerce.items selects existing line IDs and quantities. Never re-add declined items or sell their whole inventory by default.');
-    if(settings.enableMissionBoard)routes.push('MISSION BOARD: when the reply lets the player read a mission/quest board, emit missionBoard:{id,title,location,evidence,missions:[{id,name,objective,reward,giver,type:"Mission",description}]}, up to 4 missions. A displayed unaccepted board task is not an Active quest; selection/acceptance is handled separately.');
-    if(settings.enableGroupBoard)routes.push('GUILD / PARTY BOARD: when showing a guild, party or recruitment board, emit groupBoard:{id,title,location,evidence,entries:[{id,kind:"guild"|"party",name,description,requirements:[],leaderName,memberCount}]}, up to 12 entries with pageSize 1–6 (default 3). Browsing or sending a join request is not confirmed membership.');
+    if(settings.enableMissionBoard)routes.push('MISSION BOARD: '+MISSION_BOARD_INSTRUCTIONS);
+    if(settings.enableGroupBoard)routes.push('GUILD / PARTY BOARD: '+GROUP_BOARD_INSTRUCTIONS);
     if(settings.enableStoryMemory)routes.push('IMPORTANT FACT / PROMISE / SECRET / OPEN THREAD: include ["upsert","storyMemories",{id,title,detail,kind:"Fact"|"Promise"|"Secret"|"Thread",status:"Active"|"Resolved"|"Archived",people:[],evidence}] in ops when a significant fact is established or changes. Reuse its id and resolve only after the story confirms resolution.');
     if(settings.enableStoryAgenda)routes.push('APPOINTMENT / DEADLINE: include ["upsert","storyAgenda",{id,title,kind:"Appointment"|"Deadline",status:"Scheduled"|"Completed"|"Cancelled",dueDay,dueTime,whenText,location,people:[],evidence}] in ops. Use story dates/time; preserve ambiguous wording in whenText rather than inventing a date.');
     if(settings.enableQuestObjectives)routes.push('QUEST CHECKLIST: include objectives:[{id,title,status:"Pending"|"Completed"|"Skipped",optional:false}] in a new quests upsert. For a confirmed subgoal update include ["upsert","questObjectives",{questId,id,status,evidence}] in ops. Progress is not completion/payment; quest rewards still need the confirmed quest completion and once-only receipt.');
     if(settings.enableMemorySummaries)routes.push('MEMORY SUMMARIES: the extension manages saved chat segments and summary API tasks. Do not output a memorySummaries field or fabricate a summary in this reply. Continue the story using only the supplied memory reference.');
+    const requested=requestedChatSystems(user,settings), boards=requested.filter(key=>['missionBoard','groupBoard'].includes(key));
     let kind=requestedCommerceKind(user,settings);
-    if(!kind&&!/(?:^\s*\(?OOC\b|^\s*\[OOC\b|พรุ่งนี้|เมื่อวาน|สมมุติ|ยังไม่|tomorrow|yesterday|hypothetical)/iu.test(String(user||''))&&settings.enableAuctions&&/auction|ประมูล/iu.test(`${location} ${scene}`))kind='auction';
+    const afterSettlement=!activeCommerce&&(settledCommerceFollowup(user)||settledCommerce&&!kind);
+    if(!kind&&!boards.length&&!afterSettlement&&!/(?:^\s*\(?OOC\b|^\s*\[OOC\b|พรุ่งนี้|เมื่อวาน|สมมุติ|ยังไม่|tomorrow|yesterday|hypothetical)/iu.test(String(user||''))&&settings.enableAuctions&&/auction|ประมูล/iu.test(`${location} ${scene}`))kind='auction';
     const patch={sceneTracker:{loc:location||'exact current place'},ops:[]};
     if(activeCommerce){
         patch.commerce={sessionId:activeCommerce.id,revision:activeCommerce.revision,evidence:'exact latest player action quote',action:'talk',decision:{outcome:'unchanged'}};
@@ -87,14 +107,18 @@ export function mainChatOutputContract(user,settings,{activeCommerce,location=''
     }else if(kind==='sell'){
         patch.marketplace={kind:'npcPurchase',id:'unique-current-offer-id',location:location||'exact current place',evidence:'exact affirmative quote from THIS reply',buyer:{name:'actual buyer name',npcId:'known id or empty'},item:{itemId:'canonical owned item id',itemName:'canonical owned item name',quantity:1},askPrice:5,denomination:'silver'};
     }
+    if(boards.includes('missionBoard'))patch.missionBoard={title:'current mission board title',location:location||'exact current place',evidence:'exact quote from THIS reply showing the readable mission notices',missions:[{name:'actual posted mission name',objective:'specific task stated on this notice',description:'public notice details',giver:'named issuer if stated',reward:'posted reward or empty when unstated',difficulty:'stated difficulty or empty',deadline:'stated deadline or empty'}]};
+    if(boards.includes('groupBoard'))patch.groupBoard={title:'current recruitment board title',location:location||'exact current place',evidence:'exact quote from THIS reply showing the readable recruitment notices',pageSize:3,entries:[{kind:'party',name:'actual posted group name',description:'public recruitment details',leader:'named leader if stated',requirements:['actual stated condition'],notes:'stated roles and benefit-sharing terms'}]};
     return 'ROLEFORGE NORMAL REPLY OUTPUT CONTRACT — This applies to the FINAL assistant answer in this same normal generation, including swipe and regenerate.\n'
         +'Write the natural story first. Then append exactly ONE literal, closed <!--tretaresia_patch:{...}--> HTML comment OUTSIDE tr-header/tr-narrative/tr-dialogue blocks. The comment is the required machine payload; restrictions on visible prose or UI text do not prohibit this comment. Planning or saying you will emit the patch does not emit it. Never put the payload only in thinking/reasoning. No Markdown fence, extra user message, request button or second generation is needed.\n'
         +'A purely OOC answer with no scene or story event may omit the patch. For story replies, the contract below is required.\n'
         +CURRENCY_RULE+'\n'
         +'SYSTEM ROUTING GUIDE — Use only enabled systems and only events taking place in this reply:\n'+routes.join('\n')+'\n'
+        +(boards.length?'REQUIRED THIS REPLY: '+boards.join(', ')+'. If these current boards are accessible, write their public entries and include EVERY corresponding top-level board object in the final comment. Looking/standing at a board is sufficient; the player need not move again or pick an entry first. Present the available missions or named recruiting groups with their details now, not a second request. If access is refused or the board is empty, state that truth explicitly and do not invent entries. Exact evidence may quote the displayed/posted notices, not only a sentence saying the player walked there.\n':'')
+        +(afterSettlement?'AFTER SETTLEMENT: collect/handover paid goods and continue ordinary role-play. Do not reopen the finished auction/shop, re-charge money or grant the same item again. A venue name or mention of an already bought/sold item alone does not present a new lot/catalog.\n':'')
         +(activeCommerce?'CURRENT INTERACTION: '+activeCommerce.kind+' is already open. Update it with top-level commerce; do not emit another auction/marketplace or invent new rivals/budgets. Questions are talk/unchanged; explicit bids, offers, confirmation, leave/cancel use the appropriate action and independently considered NPC decisions.\n'+roleplay+'\n':'')
         +'One reply can include multiple applicable board/story systems. Use auction or marketplace for an opening; commerce for an existing interaction; ordinary affected tracker changes go in ops. SceneTracker and currency notifications alone never replace a catalog. An opening offer changes no money/items. Never pay/deliver active commerce through ordinary ops.\n'
         +'Prices/budgets/amounts in JSON are integer numbers even if the dialogue spells them as words (for example สิบเหรียญเงิน means 10 silver). All object locations equal this reply\'s sceneTracker.loc. evidence is a short exact affirmative quote from the story; commerce.evidence quotes the latest user action. Preserve canonical ids and receipts. No card for a rejected, hypothetical, future or OOC action.\n'
         +'LITERAL OUTPUT EXAMPLE (replace ALL example facts, ids, numbers and quotes with the actual current story; merge required scene fields and confirmed ops into this same comment):\n<!--tretaresia_patch:'+JSON.stringify(patch).replace(/</gu,'\\u003c')+'-->\n'
-        +'FINAL CHECK BEFORE ENDING THE ANSWER: close all story tags, then emit the complete comment with sceneTracker, ops and EVERY applicable system object. If auction/shop/buying goods appear, check that their corresponding object is actually present in the final text. Keep private reasoning separate.';
+        +'FINAL CHECK BEFORE ENDING THE ANSWER: close all story tags, then emit the complete comment with sceneTracker, ops and EVERY applicable system object. For new auction/shop offers and readable mission/recruitment notices, check that their corresponding object is actually present in the final text with complete entries. Historical completed transactions are not new offers. Keep private reasoning separate.';
 }
