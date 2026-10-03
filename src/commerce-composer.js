@@ -1,12 +1,16 @@
+import {commerceBasketQuote} from './commerce-engine.js?v=0.51.6';
+import {commerceIcon} from './commerce-icons.js?v=0.51.6';
+import {convertMoney} from './commerce-currency.js?v=0.51.6';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
-export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{}}={}) {
+export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({})}={}) {
     if(!doc?.createElement)return{update(){},destroy(){}};
-    const win=doc.defaultView||globalThis;let view=null,expanded=false,identity='',revision=-1,selected='',draft='',observer,timer,queued=false;
+    const win=doc.defaultView||globalThis;let view=null,expanded=false,identity='',revision=-1,selected='',draft='',inputUnit='',chosen=null,observer,timer,queued=false;
     const node=(tag,cls,text)=>{const el=doc.createElement(tag);el.className=cls||'';if(text!==undefined)el.textContent=text;return el;};
     const bar=node('section','rf-commerce-composer');bar.setAttribute('aria-label','RoleForge commerce');
     const t=(th,en)=>language()==='th'?th:en;
-    const price=value=>`${Number(value||0).toLocaleString()} ${t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[view?.session.denomination],view?.session.denomination)}`;
+    const moneyNode=(value,cls='',unit=view?.session.denomination)=>{const el=node('span',`rf-commerce-money ${cls}`);el.append(commerceIcon(doc,'coin',unit,appearance().coinStyle),doc.createTextNode(`${Number(value||0).toLocaleString()} ${t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[unit],unit)}`));return el;};
+    const terms=()=>{const el=node('p','rf-commerce-terms');if(!view.session.entryFee&&!view.session.deposit){el.textContent=t('เข้าร่วมฟรี · ไม่มีมัดจำ','Free entry · No deposit');return el;}el.append(doc.createTextNode(t('ค่าเข้าไม่คืน ','Nonrefundable entry ')),moneyNode(view.session.entryFee),doc.createTextNode(t(' · เงินกันไว้คืนเมื่อจบ ',' · Refundable hold ')),moneyNode(view.session.deposit));return el;};
     function detach(){bar.remove();observer?.disconnect();observer=null;clearInterval(timer);timer=null;}
     function locate(){const textarea=doc.querySelector('#send_textarea'),anchor=doc.querySelector('#send_form')||textarea?.closest('form')||textarea?.parentElement;
         if(!textarea||!anchor?.parentElement||win.getComputedStyle(textarea).display==='none'||win.getComputedStyle(anchor).display==='none')return null;return anchor;}
@@ -40,45 +44,54 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         }
         const session=view.session,lot=session.lots?.[session.index],kind=session.kind,auction=kind==='auction';
         const item=session.items?.find(entry=>entry.id===selected)||session.items?.find(entry=>entry.id===session.selectedId);
-        const newItem=selected&&selected!==session.selectedId,quote=auction?lot?.price||lot?.openingBid:newItem?item?.askPrice:session.quote;
+        const lines=chosen||session.basket||[{itemId:session.selectedId,quantity:item?.item.quantity||1}],basketTotal=!auction?commerceBasketQuote(session,lines):null;
+        const newItem=selected&&selected!==session.selectedId,quote=auction?lot?.price||lot?.openingBid:chosen?basketTotal:newItem?item?.askPrice:session.quote;
         bar.replaceChildren();bar.dataset.kind=kind;bar.dataset.session=session.id;bar.setAttribute('aria-busy',String(Boolean(view.busy)));
         const header=node('button','rf-commerce-summary');header.type='button';header.setAttribute('aria-expanded',String(expanded));
-        const glyph=node('span','rf-commerce-glyph',auction?'⚖︎':kind==='sell'?'↗':'↙');glyph.setAttribute('aria-hidden','true');
+        const glyph=node('span','rf-commerce-glyph');glyph.append(commerceIcon(doc,kind));glyph.setAttribute('aria-hidden','true');
         const copy=node('span','rf-commerce-summary-copy'),eyebrow=node('small','',auction?t('ประมูล','AUCTION'):kind==='sell'?t('ขาย · '+session.npc.name,'SELL · '+session.npc.name):t('ซื้อ · '+session.npc.name,'BUY · '+session.npc.name));
-        const name=node('strong','',auction?lot?.name:item?.item?.name||session.title);copy.append(eyebrow,name);
-        const amount=node('span','rf-commerce-price',price(quote)),chevron=node('span','rf-commerce-chevron',expanded?'⌃':'⌄');header.append(glyph,copy,amount,chevron);
+        const name=node('strong','',auction?lot?.name:lines.length>1?t(`${lines.length} รายการ`,`${lines.length} items`):session.items.find(entry=>entry.id===lines[0]?.itemId)?.item.name||session.title);copy.append(eyebrow,name);
+        const amount=moneyNode(quote,'rf-commerce-price'),chevron=node('span','rf-commerce-chevron');chevron.append(commerceIcon(doc,'chevron'));if(expanded)chevron.classList.add('is-expanded');header.append(glyph,copy,amount,chevron);
         header.addEventListener('click',()=>{expanded=!expanded;render();});bar.append(header);
-        if(auction&&session.status==='offered'&&(session.entryFee||session.deposit))bar.append(node('p','rf-commerce-terms',t('Bid รวมค่าเข้า ','Bid includes entry ')+price(session.entryFee)+t(' · มัดจำคืนได้ ',' · Refundable deposit ')+price(session.deposit)));
+        if(auction&&session.status==='offered'&&(session.entryFee||session.deposit))bar.append(terms());
         if(auction&&lot?.leader){const leader=lot.leader==='player'?view.playerName:session.participants.find(p=>p.id===lot.leader)?.name;bar.append(node('p','rf-commerce-leader',t('ผู้เสนอราคาสูงสุด · ','Leading · ')+leader));}
         if(expanded){
             const detail=node('div','rf-commerce-details');
-            if(!auction&&session.items.length>1){const select=node('select','rf-commerce-select');select.setAttribute('aria-label',t('เลือกสินค้า','Choose item'));
-                for(const entry of session.items){const option=node('option','',`${entry.item.name} · ${price(entry.askPrice)}`);option.value=entry.id;option.selected=entry.id===(selected||session.selectedId);select.append(option);}
-                select.disabled=view.busy;select.addEventListener('change',()=>{selected=select.value;draft='';render();});detail.append(select);}
+            if(!auction){
+                const list=node('div','rf-commerce-basket');
+                for(const entry of session.items){
+                    const line=lines.find(line=>line.itemId===entry.id),row=node('div','rf-commerce-basket-row'),check=node('input');check.type='checkbox';check.checked=Boolean(line);check.disabled=view.busy;check.setAttribute('aria-label',t('เลือก ','Select ')+entry.item.name);check.dataset.basketItem=entry.id;
+                    const copy=node('label'),label=node('strong','',entry.item.name),quantity=node('input','rf-commerce-quantity');quantity.type='number';quantity.min='1';quantity.max=String(kind==='sell'?entry.item.quantity:entry.stock);quantity.step='1';quantity.value=String(line?.quantity||entry.item.quantity||1);quantity.disabled=!line||view.busy;quantity.setAttribute('aria-label',t('จำนวน ','Quantity ')+entry.item.name);quantity.dataset.basketQuantity=entry.id;
+                    copy.append(check,label);const update=()=>{const map=new Map(lines.map(line=>[line.itemId,line.quantity]));if(check.checked)map.set(entry.id,Number(quantity.value));else map.delete(entry.id);chosen=[...map].map(([itemId,quantity])=>({itemId,quantity}));draft='';render();};check.addEventListener('change',update);quantity.addEventListener('change',update);
+                    row.append(copy,quantity,moneyNode(entry.askPrice*Number(quantity.value)/(entry.item.quantity||1)));list.append(row);
+                }
+                detail.append(list,node('p','rf-commerce-terms',t('เลือกหลายรายการและจำนวนได้ · เสนอราคาเป็นยอดรวม','Choose items and quantities · Offers apply to the total')));
+            }
             const description=auction?lot?.description:item?.item?.description;if(description)detail.append(node('p','rf-commerce-description',description));
-            detail.append(node('div','rf-commerce-itemmeta',`${auction?lot?.category:item?.item?.category||t('สินค้า','Item')} · ×${auction?lot?.quantity:item?.item?.quantity||1}`));
+            detail.append(node('div','rf-commerce-itemmeta',auction?`${lot?.category} · ×${lot?.quantity}`:t(`รวม ${lines.reduce((sum,line)=>sum+line.quantity,0)} ชิ้น`,`${lines.reduce((sum,line)=>sum+line.quantity,0)} items total`)));
             if(!auction){if(item?.item?.properties?.length)detail.append(node('p','rf-commerce-description',item.item.properties.join(' · ')));if(item?.note)detail.append(node('p','rf-commerce-description',item.note));if(kind==='buy')detail.append(node('p','rf-commerce-terms',item?.stockKnown===false?t('จำนวนในร้านยังไม่ระบุ','Stock not yet specified'):t(`เหลือในร้าน ${item?.stock} ชิ้น`,`${item?.stock} in stock`)));}
             if(auction){
-                detail.append(node('p','rf-commerce-terms',t('ค่าเข้า ','Entry ')+price(session.entryFee)+t(' · มัดจำคืนได้ ',' · Refundable deposit ')+price(session.deposit)));
+                detail.append(terms());
                 const title=node('h5','',t('ผู้เข้าประมูล · เงินคงเหลือ','Bidders · Remaining funds'));detail.append(title);
-                for(const participant of session.participants){const row=node('div','rf-commerce-bidder');row.append(node('span','',participant.name),node('strong','',price(participant.budget-participant.spent)));if(lot?.withdrawn.includes(participant.id))row.append(node('small','',t('ถอนตัวแล้ว','Withdrawn')));detail.append(row);}
+                for(const participant of session.participants){const row=node('div','rf-commerce-bidder');row.append(node('span','',participant.name),moneyNode(participant.budget-participant.spent));if(lot?.withdrawn.includes(participant.id))row.append(node('small','',t('ถอนตัวแล้ว','Withdrawn')));detail.append(row);}
                 if(!session.participants.length)detail.append(node('p','rf-commerce-description',t('ยังไม่มีผู้เข้าประมูลรายอื่น','No other bidders are present')));
-                if(session.lots.length>1){detail.append(node('h5','',t('รายการประมูล','Catalog')));for(const entry of session.lots)detail.append(node('div','rf-commerce-catalog-row',`${entry.name} · ${price(entry.openingBid)}`));}
+                if(session.lots.length>1){detail.append(node('h5','',t('รายการประมูล','Catalog')));for(const entry of session.lots){const row=node('div','rf-commerce-catalog-row');row.append(node('span','',entry.name),moneyNode(entry.openingBid));detail.append(row);}}
             }else if(session.agreed)detail.append(node('p','rf-commerce-agreed',t('ตกลงราคาแล้ว · รอยืนยัน','Price agreed · Awaiting confirmation')));
             detail.append(node('p','rf-commerce-terms',t('โรลเสนอราคา ยืนยัน หรือถาม NPC ในแชตได้ · ปุ่มเป็นทางลัด','Role-play offers, confirmation or questions in chat · Buttons are shortcuts')));
             const last=session.history?.at(-1);if(last)detail.append(node('p','rf-commerce-last',t('ผลล่าสุด · ','Latest · ')+last.narrative.replace(/<[^>]*>/gu,' ').slice(0,500)));
             bar.append(detail);
         }
         const controls=node('div','rf-commerce-controls');
-        const button=(label,action,primary=false,disabled=false)=>{const el=node('button',`rf-commerce-action${primary?' is-primary':''}`,label);el.type='button';el.dataset.commerceAction=action;el.disabled=view.busy||!view.available||disabled;
-            el.addEventListener('click',()=>{void perform({id:session.id,token:view.token,action,amount:Number(draft||input?.value),itemId:selected||session.selectedId});});controls.append(el);return el;};
+        const button=(label,action,primary=false,disabled=false)=>{const el=node('button',`rf-commerce-action${primary?' is-primary':''}`,label);el.type='button';el.dataset.commerceAction=action;el.disabled=view.busy||!view.available||disabled||(!auction&&!['cancel'].includes(action)&&(!lines.length||basketTotal===null));
+            el.addEventListener('click',()=>{void perform({id:session.id,token:view.token,action,amount:Number(draft||input?.value),denomination:['bid','offer'].includes(action)?inputUnit||session.denomination:session.denomination,items:auction?undefined:chosen||session.basket,itemId:auction?undefined:lines[0]?.itemId||session.selectedId});});controls.append(el);return el;};
         let input;
         if(auction&&['sold','unsold'].includes(lot?.status))button(t('รายการถัดไป','Next lot'),'next',true);
         else{
             if(auction&&session.status==='offered'&&expanded)button(t('เข้าร่วมโดยยังไม่บิด','Join without bidding'),'join');
             input=node('input','rf-commerce-amount');input.type='number';input.inputMode='numeric';input.step='1';input.min=auction?String(lot?.leader?lot.price+lot.minIncrement:lot.openingBid):'1';
-            input.value=draft||String(auction?lot?.leader?lot.price+lot.minIncrement:lot?.openingBid:quote);input.disabled=view.busy||!view.available;input.setAttribute('aria-label',t('ราคาที่เสนอ','Offer amount'));
+            const defaultAmount=auction?lot?.leader?lot.price+lot.minIncrement:lot?.openingBid:quote;input.value=draft||String(inputUnit&&inputUnit!==session.denomination?convertMoney(defaultAmount,session.denomination,inputUnit)||1:defaultAmount);if(inputUnit&&inputUnit!==session.denomination)input.min='1';input.disabled=view.busy||!view.available;input.setAttribute('aria-label',t('ราคาที่เสนอ','Offer amount'));
             input.addEventListener('input',()=>{draft=input.value;});controls.append(input);
+            const unitSelect=node('select','rf-commerce-unit');unitSelect.setAttribute('aria-label',t('หน่วยเงินที่เสนอ','Offer denomination'));for(const unit of ['gold','silver','copper']){const option=node('option','',t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[unit],unit));option.value=unit;option.selected=unit===(inputUnit||session.denomination);unitSelect.append(option);}unitSelect.disabled=view.busy||!view.available;unitSelect.addEventListener('change',()=>{inputUnit=unitSelect.value;draft='';render();});controls.append(unitSelect);
             if(auction){button('Bid','bid',true,lot?.leader==='player');button(t('รอการตัดสิน','Await decision'),'wait',false,session.status==='offered');}
             else{button(t('เสนอราคา','Offer'),'offer',true);button(t('ยืนยันราคา','Confirm'),'confirm');}
         }
@@ -90,5 +103,5 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         position();
     }
     win.addEventListener('resize',schedule);win.visualViewport?.addEventListener('resize',schedule);win.visualViewport?.addEventListener('scroll',schedule);
-    return{update(value){view=value;if(value?.session?.id!==identity){identity=value?.session?.id||'';expanded=false;selected='';draft='';revision=value?.session?.revision??-1;}else if(value?.session&&value.session.revision!==revision){revision=value.session.revision;selected=value.session.selectedId;draft='';}render();},destroy(){view=null;detach();win.removeEventListener('resize',schedule);win.visualViewport?.removeEventListener('resize',schedule);win.visualViewport?.removeEventListener('scroll',schedule);}};
+    return{update(value){view=value;if(value?.session?.id!==identity){identity=value?.session?.id||'';expanded=false;selected='';draft='';inputUnit='';chosen=null;revision=value?.session?.revision??-1;}else if(value?.session&&value.session.revision!==revision){revision=value.session.revision;selected=value.session.selectedId;draft='';inputUnit='';chosen=null;}render();},destroy(){view=null;detach();win.removeEventListener('resize',schedule);win.visualViewport?.removeEventListener('resize',schedule);win.visualViewport?.removeEventListener('scroll',schedule);}};
 }

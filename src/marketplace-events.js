@@ -1,5 +1,5 @@
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.51.5';
-import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.51.5';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.51.6';
+import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.51.6';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -12,7 +12,7 @@ const shopWords = /(?:shop|store|stall|vendor|merchant|sell(?:s|ing)?|goods|pric
 const actionWords = /(?:say|tell|ask|offer|hand|show|bring|walk|enter|approach|visit|stand|open|inspect|browse|display|list|พูด|บอก|ถาม|ขอ|ยื่น|นำ|เดิน|เข้า|เปิด|ไปหา|มาถึง|ดู|แสดง|หยิบ|วาง|ลดราคา|ลดให้)/iu;
 
 
-export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role,budget:actual-remaining-funds-if-known},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player is interacting with a named NPC shop/vendor and the NPC shows goods or quotes an item for sale, including catalog requests, revisits and negotiation while already here, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,negotiable,note}]} with at most 40 items. Evidence must be an exact affirmative quote from this reply, show the present interaction; location must match the current sceneTracker location, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. The extension opens a minimal composer strip; its offer/confirm/cancel buttons each call the current AI API and append a brief continuation to the same assistant message. The new commerce engine alone settles accepted, explicitly confirmed prices. With interactive Marketplace enabled, present terms and open the session first; do not narrate payment or delivery before its confirm action. Do not patch inventory/currency for catalog or offer events or replay already settled commerce. Preserve event IDs within an active negotiation; a new interaction after completion uses a new ID. Never create HTML or UI text in the patch.';
+export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role,budget:actual-remaining-funds-if-known},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player is interacting with a named NPC shop/vendor and the NPC shows goods or quotes an item for sale, including catalog requests, revisits and negotiation while already here, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,negotiable,note}]} with at most 40 items. For an NPC buying several owned items use npcPurchase with items:[{itemId,itemName,quantity,askPrice}] instead of legacy item/askPrice. Quote every item in the same story/evidence; one budget covers the basket. The user may exclude items, change quantities and negotiate one total; never transfer before confirmation. Evidence must be an exact affirmative quote from this reply, show the present interaction; location must match the current sceneTracker location, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. The extension opens a minimal composer strip; its offer/confirm/cancel buttons each call the current AI API and append a brief continuation to the same assistant message. The new commerce engine alone settles accepted, explicitly confirmed prices. With interactive Marketplace enabled, present terms and open the session first; do not narrate payment or delivery before its confirm action. Do not patch inventory/currency for catalog or offer events or replay already settled commerce. Preserve event IDs within an active negotiation; a new interaction after completion uses a new ID. Never create HTML or UI text in the patch.';
 
 function itemRecord(raw, fallback = {}) {
     const source = raw && typeof raw === 'object' ? raw : {};
@@ -55,9 +55,12 @@ export function normalizeMarketplaceEvent(raw) {
         const buyer = { id: clean(buyerRaw.id || buyerRaw.npcId, 100), name: clean(buyerRaw.name || buyerRaw.npcName, 120), role: clean(buyerRaw.role, 100) || 'Buyer', ...(Number.isSafeInteger(buyerRaw.budget)&&buyerRaw.budget>=0 ? {budget:buyerRaw.budget} : {}) };
         const item = itemRecord(raw.item || raw, { id: raw.itemId, name: raw.itemName, quantity: raw.quantity });
         const price = priceRecord(raw);
-        if (!buyer.name || !item || !price) return null;
-        return { kind: 'npcPurchase', id: clean(raw.id, 120) || `purchase-${hash(`${key(location)}|${key(buyer.name)}|${key(item.name)}|${evidence}`)}`,
-            location, evidence, buyer, item, ...price, status: ['pending','awaiting-reply','resolved'].includes(raw.status) ? raw.status : 'pending',
+        const entries=Array.isArray(raw.items)&&(!raw.item||raw.batch)?raw.items.map((entry,index)=>catalogEntry(entry,index,raw.denomination)):null;
+        if(entries&&(!entries.length||entries.length>40||entries.some(entry=>!entry)||new Set(entries.map(entry=>entry.item.id||key(entry.item.name))).size!==entries.length))return null;
+        const first=entries?.[0];
+        if (!buyer.name || !(first?.item||item) || !(first||price)) return null;
+        return { kind: 'npcPurchase', id: clean(raw.id, 120) || `purchase-${hash(`${key(location)}|${key(buyer.name)}|${key(first?.item.name||item.name)}|${evidence}`)}`,
+            location, evidence, buyer, item:first?.item||item, ...(first?{askPrice:first.askPrice,floorPrice:first.floorPrice,denomination:first.denomination,items:entries,batch:true}:price), status: ['pending','awaiting-reply','resolved'].includes(raw.status) ? raw.status : 'pending',
             message: clean(raw.message || raw.offerMessage, 360), negotiable: raw.negotiable !== false,
             terms: clean(raw.terms, 260) };
     }
@@ -89,9 +92,13 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
     if (/^\s*(?:\(?OOC\b|\[OOC\b)/iu.test(String(user || ''))) return null;
     if (!interactionEvidence(event.evidence, story, user, subject, activity)) return null;
     if (event.kind === 'npcPurchase') {
-        if (!buyWords.test(event.evidence) || !event.item.name || !key(event.evidence).includes(key(event.item.name)) || !namedInteraction(event.buyer.name, event.evidence, story)) return null;
-        const owned = (inventory || []).find(entry => (event.item.id && entry.id === event.item.id && key(entry.name) === key(event.item.name)) || (!event.item.id && key(entry.name) === key(event.item.name)));
-        if (!owned || integer(owned.quantity, 0) < event.item.quantity) return null;
+        if (!buyWords.test(event.evidence) || !namedInteraction(event.buyer.name, event.evidence, story)) return null;
+        for(const item of (event.items||[{item:event.item}]).map(entry=>entry.item)){
+            if(!key(event.evidence).includes(key(item.name)))return null;
+            const owned=(inventory||[]).find(entry=>(item.id&&entry.id===item.id&&key(entry.name)===key(item.name))||(!item.id&&key(entry.name)===key(item.name)));
+            if(!owned||integer(owned.quantity,0)<item.quantity)return null;
+            item.id=owned.id;
+        }
     } else {
         if (!subject.test(event.evidence) || !namedInteraction(event.seller.name, event.evidence, story)) return null;
         if (!buyWords.test(event.evidence) && !shopWords.test(String(story)) && !(contextShop&&COMMERCE_PRICE_PATTERN.test(event.evidence))) return null;

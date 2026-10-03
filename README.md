@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.51.5
+# ROLEFORGE — v0.51.6
+
+## v0.51.6 — Mixed currency, basket trades and Inventory wallet
+
+- Apply the established exchange rate: 1 gold = 100 silver and 1 silver = 100 copper. Role-play and button offers convert into the interaction denomination before comparison; funds and auction holds share a single value. Payments can make exact change from larger coins while preserving total wealth minus the actual cost.
+- Use coin stacks for gold/silver/copper and add balances at the top of Inventory. Choose Coin stacks, Minted coins or Outline in either RoleForge Control center or extension settings; the saved choice updates Inventory and commerce together, without an API call. Commerce symbols remain vector artwork independent of emoji/icon fonts. The composer has an offer denomination selector and an expandable item list with checkboxes, quantities, line totals and a combined quote.
+- Buy several catalog items in one basket, or let an NPC offer for several actually owned items. Remove unwanted sale lines, adjust quantities and negotiate one total through UI or ordinary role-play. Changing the selection resets stale agreed totals; one explicit confirmation commits the entire basket and one payment receipt. Unknown/duplicate lines, excess stock/ownership, insufficient funds or any failed item transfer commit nothing.
+- Teach formal auctions to announce a reasonable once-only entry charge and refundable commitment hold before joining, while casual events may remain free. Entry is nonrefundable; deposit stays in the wallet, is unavailable during participation and unlocks at closure/departure. Existing auction terms are preserved; there is no new hidden penalty or retroactive charge.
+- [Thai mechanics and verification](docs/commerce-currency-baskets.th.md). Update and reload; existing single-item negotiations and recorded payments remain compatible. Browser/provider responses in verification are simulated.
 
 ## v0.51.5 — Teach every system in the normal reply prompt
 

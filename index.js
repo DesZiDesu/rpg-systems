@@ -1,47 +1,48 @@
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.51.5';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.51.5';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind } from './src/main-chat-systems.js?v=0.51.5';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.51.5';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.51.5';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.51.5';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.51.5';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.51.5';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.51.5';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.51.5';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.51.5';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.51.5';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.51.5';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.51.5';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.51.5';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.51.5';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.51.5';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.51.5';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.51.5';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.51.5';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.51.5';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.51.5';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.51.5';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent, recoverMarketplaceShop } from './src/marketplace-events.js?v=0.51.5';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.51.5';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.51.5';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.51.5';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.51.5';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.51.5';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.51.5';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.51.5';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.51.6';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.51.6';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.51.6';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind } from './src/main-chat-systems.js?v=0.51.6';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.51.6';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.51.6';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.51.6';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.51.6';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.51.6';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.51.6';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.51.6';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.51.6';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.51.6';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.51.6';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.51.6';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.51.6';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.51.6';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.51.6';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.51.6';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.51.6';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.51.6';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.51.6';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.51.6';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.51.6';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent, recoverMarketplaceShop } from './src/marketplace-events.js?v=0.51.6';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.51.6';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.51.6';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.51.6';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.51.6';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.51.6';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.51.6';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.51.6';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.51.5';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.51.5';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.51.5';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.51.5';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.51.5';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.51.5';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.51.5';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.51.5';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.51.5';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.51.5';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.51.5';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.51.5';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.51.6';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.51.6';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.51.6';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.51.6';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.51.6';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.51.6';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.51.6';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.51.6';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.51.6';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.51.6';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.51.6';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.51.6';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -206,6 +207,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     enableStoryAgenda:false,
     enableQuestObjectives:false,
     enableMemorySummaries:false,
+    coinStyle:'stack',
     chatPresentation: true,
     preserveNativeChat: false,
     nsfwEnhance: false,
@@ -766,6 +768,7 @@ function getSettings() {
     if (!['full', 'compact', 'off'].includes(settings.activityIndicator)) settings.activityIndicator = DEFAULT_SETTINGS.activityIndicator;
     if (!diaryRates.includes(settings.npcDiaryFrequency)) settings.npcDiaryFrequency = DEFAULT_SETTINGS.npcDiaryFrequency;
     if (!['compact', 'comfortable'].includes(settings.density)) settings.density = DEFAULT_SETTINGS.density;
+    settings.coinStyle=['stack','minted','outline'].includes(settings.coinStyle)?settings.coinStyle:'stack';
     settings.moduleNavigationMode = normalizeModuleNavigationMode(settings.moduleNavigationMode);
     for (const key of ['accentColor', 'accentAltColor', 'inkColor', 'surfaceColor', 'auraColor']) {
         if (!/^#[0-9a-f]{6}$/i.test(settings[key])) settings[key] = DEFAULT_SETTINGS[key];
@@ -3304,7 +3307,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.51.5`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.51.6`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -4705,6 +4708,14 @@ function disabledSystemMarkup(system) {
     return `<article class="trpg-optional-off"><small>ROLEFORGE · ${thai ? 'ปิดอยู่' : 'OFF'}</small><h3>${html(thai ? system.th : system.en)}</h3><p>${thai ? 'เปิดระบบเมื่อต้องการใช้ ข้อมูลที่บันทึกไว้ยังอยู่' : 'Enable this system when you want to use it. Saved records are retained.'}</p><button type="button" data-action="enable-optional-system" data-system="${system.key}">${thai ? 'เปิดระบบนี้' : 'Enable this system'}</button></article>`;
 }
 
+function coinStyleOptions(){const th=getSettings().language==='th';return ['stack','minted','outline'].map(style=>`<option value="${style}"${getSettings().coinStyle===style?' selected':''}>${{stack:th?'เหรียญซ้อน':'Coin stacks',minted:th?'เหรียญตราดาว':'Minted coins',outline:th?'เส้นรอบนอก':'Outline'}[style]}</option>`).join('');}
+function syncCoinAppearance(){
+    const settings=getSettings();
+    for(const control of document.querySelectorAll('[data-ui-setting="coinStyle"],#tretaresia-rpg-coin-style'))control.value=settings.coinStyle;
+    for(const icon of document.querySelectorAll('svg.rf-commerce-icon[data-currency]'))icon.outerHTML=commerceIconMarkup('coin',icon.dataset.currency,settings.coinStyle);
+    commerceRuntime?.refresh();
+}
+
 function controlCenterMarkup() {
     const settings = getSettings();
     const presetOptions = Object.keys(COLOR_PRESETS).map(key =>
@@ -4730,6 +4741,7 @@ function controlCenterMarkup() {
         uiMarkup("<label class=\"tretaresia-control-field full\"><span>") + html(tr(uiText("Glow"))) + uiMarkup("<output>") + settings.glowStrength + uiMarkup("%</output></span><input type=\"range\" data-ui-setting=\"glowStrength\" min=\"0\" max=\"100\" value=\"") + settings.glowStrength + uiMarkup("\"></label>") +
         uiMarkup("<label class=\"tretaresia-control-field\"><span>") + html(tr(uiText("Density"))) + uiMarkup("</span><select data-ui-setting=\"density\"><option value=\"compact\"") + (settings.density === 'compact' ? ' selected' : '') + '>' + html(tr(uiText("Compact"))) + uiMarkup("</option><option value=\"comfortable\"") + (settings.density === 'comfortable' ? ' selected' : '') + '>' + html(tr(uiText("Comfortable"))) + uiMarkup("</option></select></label>") +
         uiMarkup("<label class=\"tretaresia-control-field\"><span>") + html(tr(uiText("Language"))) + uiMarkup("</span><select data-ui-setting=\"language\"><option value=\"en\"") + (settings.language === 'en' ? ' selected' : '') + uiMarkup(">English</option><option value=\"th\"") + (settings.language === 'th' ? ' selected' : '') + uiMarkup(">ไทย</option></select></label>") +
+        `<label class="tretaresia-control-field full"><span>${settings.language==='th'?'ชุดไอคอนเงิน':'Coin icon set'}</span><select data-ui-setting="coinStyle">${coinStyleOptions()}</select><span class="rf-coin-set-preview">${['gold','silver','copper'].map(unit=>commerceIconMarkup('coin',unit,settings.coinStyle)).join('')}</span></label>` +
         uiMarkup("<label class=\"tretaresia-control-field full\"><span>") + html(tr(uiText("Action delivery"))) + uiMarkup("</span><select data-ui-setting=\"interactionMode\"><option value=\"hidden\"") + (settings.interactionMode === 'hidden' ? ' selected' : '') + '>' + html(tr(uiText("Hidden"))) + uiMarkup("</option><option value=\"visible\"") + (settings.interactionMode === 'visible' ? ' selected' : '') + '>' + html(tr(uiText("Visible"))) + uiMarkup("</option><option value=\"draft\"") + (settings.interactionMode === 'draft' ? ' selected' : '') + '>' + html(tr(uiText("Draft only"))) + uiMarkup("</option></select></label>") +
         uiMarkup("<small class=\"tretaresia-action-mode-help full\" data-action-mode-help>") + html(activityCopy()) + uiMarkup("</small>") +
         uiMarkup("<label class=\"tretaresia-control-field full\"><span>") + html(tr(uiText("Activity indicator"))) + uiMarkup("</span><select data-ui-setting=\"activityIndicator\"><option value=\"full\"") + (settings.activityIndicator === 'full' ? ' selected' : '') + '>' + html(tr(uiText("Full"))) + uiMarkup("</option><option value=\"compact\"") + (settings.activityIndicator === 'compact' ? ' selected' : '') + '>' + html(tr(uiText("Compact"))) + uiMarkup("</option><option value=\"off\"") + (settings.activityIndicator === 'off' ? ' selected' : '') + '>' + html(tr(uiText("Off"))) + uiMarkup("</option></select></label>") +
@@ -5126,6 +5138,7 @@ function onInterfaceSettingChange(event) {
         if (reopen) setControlCenterOpen(true);
         return;
     }
+    if (key === 'coinStyle') syncCoinAppearance();
     if (key === 'interactionMode') updateActionModeHelp();
     if (key === 'activityIndicator') syncActivityIndicator();
     if (key === 'auraColor') scheduleAuraColorSetting();
@@ -5579,7 +5592,7 @@ function renderJournal(state) {
 
 function renderInventory(panel, state) {
     if (!panel) return;
-    panel.innerHTML = (uiMarkup("")+(heading(uiText("Inventory"), `${state.inventory.length} item types`, 'fa-solid fa-box-open'))+uiMarkup("\n        <div class=\"tretaresia-item-grid\">")+(state.inventory.length ? state.inventory.map(entry => (uiMarkup("\n            <article class=\"tretaresia-list-card\"><div class=\"tretaresia-item-icon\"><i class=\"fa-solid fa-cube\"></i></div>\n                <div class=\"tretaresia-item-copy\"><strong>")+(html(entry.name))+uiMarkup("</strong><span>")+(html(entry.category))+uiMarkup(" · ×")+(entry.quantity)+uiMarkup("</span>\n                <p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div><div class=\"tretaresia-card-actions\">\n                <button type=\"button\" data-action=\"delete-item\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"))).join('') : empty(uiText("Your inventory is empty.")))+uiMarkup("</div>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add inventory item"))))+uiMarkup("</summary>\n            <form data-form=\"inventory\" class=\"tretaresia-form-grid\">")+(input('Item name', 'name', ''))+uiMarkup("\n                ")+(input('Quantity', 'quantity', 1, 'number', 'min="0"'))+uiMarkup("")+(input('Category', 'category', 'Other'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add item"))))+uiMarkup("</button>\n            </form></details>")+(renderInventoryLogs(state))+uiMarkup("")+(renderJournal(state))+uiMarkup(""));
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Inventory"), `${state.inventory.length} item types`, 'fa-solid fa-box-open'))+(`<section class="rf-inventory-wallet" aria-label="${html(getSettings().language==='th'?'เงินของคุณ':'Your wallet')}"><header>${html(getSettings().language==='th'?'เงินของคุณ':'Your wallet')}</header><div>${['gold','silver','copper'].map(unit=>`<span class="rf-commerce-money">${commerceIconMarkup('coin',unit,getSettings().coinStyle)}<strong>${Number(state.progression.currency[unit]||0).toLocaleString()}</strong><small>${html(getSettings().language==='th'?{gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[unit]:unit)}</small></span>`).join('')}</div></section>` )+uiMarkup("\n        <div class=\"tretaresia-item-grid\">")+(state.inventory.length ? state.inventory.map(entry => (uiMarkup("\n            <article class=\"tretaresia-list-card\"><div class=\"tretaresia-item-icon\"><i class=\"fa-solid fa-cube\"></i></div>\n                <div class=\"tretaresia-item-copy\"><strong>")+(html(entry.name))+uiMarkup("</strong><span>")+(html(entry.category))+uiMarkup(" · ×")+(entry.quantity)+uiMarkup("</span>\n                <p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div><div class=\"tretaresia-card-actions\">\n                <button type=\"button\" data-action=\"delete-item\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"))).join('') : empty(uiText("Your inventory is empty.")))+uiMarkup("</div>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add inventory item"))))+uiMarkup("</summary>\n            <form data-form=\"inventory\" class=\"tretaresia-form-grid\">")+(input('Item name', 'name', ''))+uiMarkup("\n                ")+(input('Quantity', 'quantity', 1, 'number', 'min="0"'))+uiMarkup("")+(input('Category', 'category', 'Other'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add item"))))+uiMarkup("</button>\n            </form></details>")+(renderInventoryLogs(state))+uiMarkup("")+(renderJournal(state))+uiMarkup(""));
 }
 
 function proficiencyRank(value) {
@@ -9953,6 +9966,7 @@ async function addSettingsDrawer() {
     bindSettingControl('tretaresia-rpg-activity-indicator', 'activityIndicator', settings, syncActivityIndicator);
     bindSettingControl('tretaresia-rpg-accent', 'accentColor', settings, applyAppearance);
     bindSettingControl('tretaresia-rpg-aura-color', 'auraColor', settings, scheduleAuraColorSetting);
+    bindSettingControl('tretaresia-rpg-coin-style','coinStyle',settings,syncCoinAppearance);
     bindSettingControl('tretaresia-rpg-density', 'density', settings, applyAppearance);
     bindSettingControl('tretaresia-rpg-glass', 'glassOpacity', settings, applyAppearance);
     bindSettingControl('tretaresia-rpg-glow', 'glowStrength', settings, applyAppearance);
@@ -10217,7 +10231,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.51.5 loaded.');
+        console.info('[RoleForge] Role-play interface v0.51.6 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

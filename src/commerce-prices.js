@@ -3,7 +3,7 @@
 const thaiTokens=/ศูนย์|หนึ่ง|เอ็ด|สอง|ยี่|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ|ร้อย|พัน|หมื่น|แสน/gu;
 const digits={ศูนย์:0,หนึ่ง:1,เอ็ด:1,สอง:2,ยี่:2,สาม:3,สี่:4,ห้า:5,หก:6,เจ็ด:7,แปด:8,เก้า:9};
 const scales={สิบ:10,ร้อย:100,พัน:1000,หมื่น:10000,แสน:100000};
-const amountPattern='(?:[0-9๐-๙]+|(?:ศูนย์|หนึ่ง|เอ็ด|สอง|ยี่|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน)+)';
+const amountPattern='(?:[0-9๐-๙]+(?:,[0-9๐-๙]{3})*|(?:ศูนย์|หนึ่ง|เอ็ด|สอง|ยี่|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน)+)';
 export const COMMERCE_PRICE_PATTERN=new RegExp(amountPattern+'\\s*(?:เหรียญ\\s*)?(?:gold|silver|copper|ทองแดง|ทอง|เงิน)','iu');
 function thaiNumber(source){
     if(source.includes('ล้าน')){const parts=source.split('ล้าน');if(parts.length!==2)return null;
@@ -21,9 +21,9 @@ function thaiNumber(source){
 export function readCommercePrices(value){
     const source=String(value??'').replace(/<[^>]*>/gu,' ').normalize('NFKC');
     const units={gold:'gold',silver:'silver',copper:'copper',ทอง:'gold',เงิน:'silver',ทองแดง:'copper'};
-    const pattern=new RegExp(`(${amountPattern})\\s*(?:เหรียญ\\s*)?(gold|silver|copper|ทองแดง|ทอง|เงิน)`,'giu');
+    const pattern=new RegExp(`(?<![0-9๐-๙.,])(${amountPattern})\\s*(?:เหรียญ\\s*)?(gold|silver|copper|ทองแดง|ทอง|เงิน)`,'giu');
     return [...source.matchAll(pattern)].flatMap(match=>{
-        const number=match[1].replace(/[๐-๙]/gu,c=>'๐๑๒๓๔๕๖๗๘๙'.indexOf(c));
+        const number=match[1].replaceAll(',','').replace(/[๐-๙]/gu,c=>'๐๑๒๓๔๕๖๗๘๙'.indexOf(c));
         const amount=/^[0-9]+$/u.test(number)?Number(number):thaiNumber(number);
         return Number.isSafeInteger(amount)&&amount>=0&&amount<=999999999?[{amount,denomination:units[match[2].toLowerCase()],text:match[0]}]:[];
     });
