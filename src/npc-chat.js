@@ -1,11 +1,14 @@
-import {renderAuctionCard} from './auction-ui.js?v=0.49.0';
-import {renderMarketplaceChatCard} from './marketplace-chat-ui.js?v=0.49.0';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.49.0';
-import {uiText} from './ui-language.js?v=0.49.0';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.49.0';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.49.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.49.0';
-import { effectiveNpc } from './npc-alternates.js?v=0.49.0';
+import {renderAuctionCard} from './auction-ui.js?v=0.50.0';
+import {renderMarketplaceChatCard} from './marketplace-chat-ui.js?v=0.50.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.50.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.50.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.50.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.50.0';
+import {uiText} from './ui-language.js?v=0.50.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.50.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.50.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.50.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.50.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -275,7 +278,14 @@ export function createChatPresentation(api, open) {
             // while editing. Leave that row to the host until save or cancel;
             // mounting cards here can obscure the editor and its controls.
             if(!message || message.is_user || message.is_system || mes.querySelector('#curEditTextarea,.edit_textarea,.mes_edit_textarea')){if(old)restore(host,old);continue;}
-            const source=api.visible(message.mes||'');
+            const rawSource=String(message.mes||'');
+            const source=api.visible(rawSource);
+            // Even with RoleForge presentation disabled, never leave provider
+            // reasoning visible in the host's native `.mes_text` node.
+            const reasoningLeak=/<(?:think|thinking|analysis|reasoning|planning)(?:\s[^>]*)?>/iu.test(rawSource)
+                || /\[\s*(?:think|thinking|analysis|reasoning|planning)\s*\]/iu.test(rawSource)
+                || /(?:^|\n)\s*\{\s*(?:c(?:hain\s*of\s*)?o\s*t)\s*\}\s*(?:\n|$)/iu.test(rawSource)
+                || /(?:^|\n)\s*S1\s*[·:.\-]/iu.test(rawSource);
             // In native mode, newly rendered/wrapped content owns the display.
             // Default RoleForge mode keeps an unchanged mounted story even if
             // another formatter wraps it or appends controls. Replacing that
@@ -287,20 +297,30 @@ export function createChatPresentation(api, open) {
             const original=old?.storyRoot&&host.contains(old.storyRoot)?old.original:nativeNodes(host,old);
             const parsed=settings.chatPresentation?parseStory(source):null;
             const blocks=preserveNativeChat?(supportsStoryPresentation(original,source,parsed)?parsed:null):parsed;
+            const scene=settings.showSceneTracker ? api.sceneForMessage?.(id,message) : null;
+            const missionBoard=settings.enableMissionBoard ? api.missionBoardForMessage?.(id,message) : null;
+            const groupBoard=settings.enableGroupBoard ? api.groupBoardForMessage?.(id,message) : null;
             const auction=api.auctionForMessage?.(id,message);
             const marketplace=api.marketplaceForMessage?.(id,message);
             const resourceEvents=api.resourceEventsForMessage?.(id,message)||[];
-            if(!blocks&&!auction&&!marketplace&&!resourceEvents.length){if(old)restore(host,old,source);continue;}
+            if(!blocks&&!reasoningLeak&&!scene&&!missionBoard&&!groupBoard&&!auction&&!marketplace&&!resourceEvents.length){if(old)restore(host,old,source);continue;}
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
-            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${preserveNativeChat}:${Boolean(blocks)}:${previousKey}:${JSON.stringify(auction)}:${JSON.stringify(marketplace)}:${JSON.stringify(resourceEvents)}:${source}`;
+            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${preserveNativeChat}:${Boolean(blocks)}:${reasoningLeak}:${JSON.stringify(scene)}:${JSON.stringify(missionBoard)}:${JSON.stringify(groupBoard)}:${previousKey}:${JSON.stringify(auction)}:${JSON.stringify(marketplace)}:${JSON.stringify(resourceEvents)}:${source}`;
             if(old?.signature===signature && old.roots.every(root=>preserveNativeChat?root.parentNode===host:host.contains(root)))continue;
             if(old)restore(host,old,source);
             const prefix=element('div','trpg-chat'),suffix=element('div','trpg-chat');
             for(const root of [prefix,suffix])root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
-            const storyRoot=blocks?element('div','trpg-chat'):null;
-            if(storyRoot){storyRoot.classList.toggle('trpg-effects',Boolean(settings.chatEffects));renderStoryBlocks(storyRoot,blocks,lookup,message.name,open,imageFor,previousSpeaker);}
+            if(scene) prefix.append(renderSceneTracker(scene,settings.language));
+            if(missionBoard) prefix.append(renderMissionBoard(missionBoard,id,api));
+            if(groupBoard) prefix.append(renderGroupBoard(groupBoard,id,api));
+            const storyRoot=blocks||reasoningLeak?element('div','trpg-chat'):null;
+            if(storyRoot){
+                storyRoot.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
+                if (blocks) renderStoryBlocks(storyRoot,blocks,lookup,message.name,open,imageFor,previousSpeaker);
+                else if (source) storyRoot.append(appendStoryText(element('div','trpg-plain'),source));
+            }
             if(auction)suffix.append(renderAuctionCard(auction,api,id));
             if(marketplace)suffix.append(renderMarketplaceChatCard(marketplace,id,api));
             const resourceCard=renderResourceEvents(resourceEvents,settings.language);

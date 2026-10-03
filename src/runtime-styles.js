@@ -5,7 +5,7 @@ const pending = new WeakMap();
 export function ensureRuntimeStyles({
     document: doc = globalThis.document,
     root = new URL('../', import.meta.url),
-    version = globalThis.TretaresiaRelease || new URL(import.meta.url).searchParams.get('v') || '0.49.0',
+    version = globalThis.TretaresiaRelease || new URL(import.meta.url).searchParams.get('v') || '0.50.0',
     timeout = 12000,
 } = {}) {
     if (!doc) return Promise.resolve();

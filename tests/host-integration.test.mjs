@@ -149,7 +149,7 @@ test('portable data retains server image references for every alternate and mark
  assert.equal(state.npcs[0].alternateProfiles[1].portraitSource,'local');
 });
 
-test('fresh settings opt out of all six optional systems and popups, with no optional state or protocol in prompts',()=>{
+test('fresh settings opt out of all all optional systems and popups, with no optional state or protocol in prompts',()=>{
  const previous=context.extensionSettings;
  try{
   context.extensionSettings={};const settings=host.getSettings();
@@ -1093,6 +1093,17 @@ test('patch extraction leaves story blocks intact and does not expose patch JSON
  const parsed=host.extractStatePatch('<tr-dialogue name="Lysa">Hello.</tr-dialogue><!-- tretaresia_patch: {"ops":[["upsert","npcs",{"name":"Lysa"}]]} -->');
  assert.equal(parsed.visible,'<tr-dialogue name="Lysa">Hello.</tr-dialogue>');assert.equal(parsed.patch.ops.length,1);
 });
+test('provider reasoning envelopes stay out of visible story and patch evidence',()=>{
+ const parsed=host.extractStatePatch('{CoT}\nS1 · INGEST\nprivate planning notes\n\nS2 · LOCK\nFirewall: hidden\n\nA merchant sets a lantern on the counter.\n<!--tretaresia_patch:{"ops":[]}-->');
+ assert.equal(parsed.visible,'A merchant sets a lantern on the counter.');
+ assert.doesNotMatch(parsed.visible,/CoT|INGEST|LOCK|Firewall|planning notes/iu);
+ const tagged=host.extractStatePatch('<thinking>do not show this</thinking>Visible reply');
+ assert.equal(tagged.visible,'Visible reply');
+ const bare=host.extractStatePatch('S1 · INGEST: private prompt\nS2 · LOCK: hidden constraints\nS7 · CONTINUITY: secret notes\n\n<tr-narrative>A merchant opens the shop.</tr-narrative>');
+ assert.equal(bare.visible,'<tr-narrative>A merchant opens the shop.</tr-narrative>');
+ const spaced=host.extractStatePatch('{CoT}\nS1 · INGEST\nIdentity and world\n\nstyle · facts · so far\n\nAuthor Notes: hidden\nS2 · LOCK\nFirewall: sealed\n\n<tr-dialogue name="Rally">Welcome.</tr-dialogue>');
+ assert.equal(spaced.visible,'<tr-dialogue name="Rally">Welcome.</tr-dialogue>');
+});
 test('presentation prompt works independently; disabled tracking does not request an NPC patch',()=>{
  const settings=host.getSettings();settings.injectState=false;settings.autoTrack=false;settings.chatPresentation=true;host.updatePrompt(host.defaultState());
  assert.match(context.lastPrompt[1],/<tr-dialogue/);assert.doesNotMatch(context.lastPrompt[1],/must be upserted/);
@@ -1121,7 +1132,7 @@ test('manual profiles reach the canonical model prompt without portrait bytes',(
  const prompt=JSON.stringify(host.roleplayState(state));assert.match(prompt,/Silver hair/);assert.match(prompt,/Formal/);assert.doesNotMatch(prompt,/data:image|portraitView|hasPortrait/);
 });
 test('production asset references and release version stay in sync',()=>{
- const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.49.0');
+ const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,'0.50.0');
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{

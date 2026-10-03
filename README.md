@@ -1,11 +1,11 @@
-# ROLEFORGE — v0.49.0
+# ROLEFORGE — v0.50.0
 
-## v0.49.0 — RoleForge workspaces, quiet Power Mastery and chat commerce
+## v0.50.0 — RoleForge workspaces, quiet Power Mastery and chat commerce
 
 - Added a RoleForge signature **Power & Combat** workspace with only the powers selected by the active preset. Each power has its own mastery record and a four-choice practice flow; the evaluator runs through quiet AI and returns to the workspace without posting a training card in Main Chat.
 - Added evidence-backed **Location Memory** to the Scene workspace. It keeps hierarchy, conditions, visits, child places and confirmed routes with distance and direction, while journey progress still advances only from explicit movement evidence.
-- Main Chat now reserves system cards for **commerce and ledger events**: NPC buying/selling negotiations, pagination-ready NPC shops, item lifecycle events and money changes. Social invitations, mission/group boards and mastery practice stay in their relevant RoleForge workspaces.
-- Bumped the release to **0.49.0**. The loader fetches a fresh manifest and every runtime module/style uses the release query, so iOS Safari can load the new build without clearing site data.
+- Main Chat now owns the per-reply **Scene Tracker**, commerce and ledger events, plus evidence-backed mission and party/guild boards. Power Mastery and Location Memory stay in their dedicated RoleForge workspaces; Marketplace has no RoleForge tab.
+- Bumped the release to **0.50.0**. The loader fetches a fresh manifest and every runtime module/style uses the release query, so iOS Safari can load the new build without clearing site data.
 
 อ่าน [ภาพเปรียบเทียบ UI v3](docs/previews/roleforge-v3-comparison.html)
 

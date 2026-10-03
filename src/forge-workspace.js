@@ -1,5 +1,5 @@
-import { FORGE_DEFAULTS, FORGE_PRESET_FIELDS, validateForgePreset, exportForgePreset, importForgePreset } from './forge-presets.js?v=0.49.0';
-import { uiText } from './ui-language.js?v=0.49.0';
+import { FORGE_DEFAULTS, FORGE_PRESET_FIELDS, validateForgePreset, exportForgePreset, importForgePreset } from './forge-presets.js?v=0.50.0';
+import { uiText } from './ui-language.js?v=0.50.0';
 
 const labels = { origins: 'Origin locations / ถิ่นกำเนิด', standings: 'Social standings / สถานะทางสังคม', skillCategories: 'Skill categories / หมวดสกิล', masteryRanks: 'Mastery ranks / ขั้นความเชี่ยวชาญ', pathRanks: 'Path ranks / อันดับเส้นทาง' };
 const node = (tag, value = '') => { const result = document.createElement(tag); result.textContent = value; return result; };

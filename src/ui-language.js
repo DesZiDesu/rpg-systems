@@ -1,4 +1,4 @@
-import {UI_STRINGS} from './ui-strings.js?v=0.49.0';
+import {UI_STRINGS} from './ui-strings.js?v=0.50.0';
 
 let languageProvider=()=>globalThis.SillyTavern?.getContext?.().extensionSettings?.tretaresia_rpg?.language||'en';
 export const setUiLanguageProvider=provider=>{languageProvider=provider;};

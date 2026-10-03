@@ -1,47 +1,44 @@
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.49.0';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.49.0';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.49.0';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.49.0';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.49.0';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.49.0';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.49.0';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.49.0';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.49.0';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.49.0';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.49.0';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.49.0';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.49.0';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.49.0';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.49.0';
-import { renderMissionBoard } from './src/mission-board-ui.js?v=0.49.0';
-import { renderGroupBoard } from './src/group-board-ui.js?v=0.49.0';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.49.0';
-import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.49.0';
-import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.49.0';
-import { MARKETPLACE_INSTRUCTIONS, normalizeMarketplace, marketplaceView, marketplacePublicListing, createMarketplaceListing, applyMarketplaceAction, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.49.0';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent } from './src/marketplace-events.js?v=0.49.0';
-import { renderMarketplacePanel } from './src/marketplace-ui.js?v=0.49.0';
-import { renderMarketplaceChatCard } from './src/marketplace-chat-ui.js?v=0.49.0';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.49.0';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.49.0';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.49.0';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.49.0';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.49.0';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.49.0';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.49.0';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.50.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.50.0';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.50.0';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.50.0';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.50.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.50.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.50.0';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.50.0';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.50.0';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.50.0';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.50.0';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.50.0';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.50.0';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.50.0';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.50.0';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.50.0';
+import { AUCTION_INSTRUCTIONS, normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionAvailable, auctionFundsValid, auctionPublicSummary, auctionBlocksOperation, auctionView, applyAuctionAction } from './src/auction-core.js?v=0.50.0';
+import { renderAuctionCard, auctionErrorText } from './src/auction-ui.js?v=0.50.0';
+import { MARKETPLACE_INSTRUCTIONS, normalizeMarketplace, marketplaceView, marketplacePublicListing, createMarketplaceListing, applyMarketplaceAction, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.50.0';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent } from './src/marketplace-events.js?v=0.50.0';
+import { renderMarketplaceChatCard } from './src/marketplace-chat-ui.js?v=0.50.0';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.50.0';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.50.0';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.50.0';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.50.0';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.50.0';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.50.0';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.50.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.49.0';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.49.0';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.49.0';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.49.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.49.0';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.49.0';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.49.0';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.49.0';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.49.0';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.49.0';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.49.0';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.49.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.50.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.50.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.50.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.50.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.50.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.50.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.50.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.50.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.50.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.50.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.50.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.50.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -188,7 +185,7 @@ const OPTIONAL_SYSTEMS = [
     {key:'enableMissionBoard',en:'Mission Board',th:'กระดานภารกิจ',helpEn:'Read and accept jobs from boards in the main chat.',helpTh:'อ่านและรับภารกิจจากกระดานในแชต'},
     {key:'enableGroupBoard',en:'Party & Guild Board',th:'กระดานปาร์ตี้และกิลด์',helpEn:'Browse groups and request to join from the main chat.',helpTh:'ดูกลุ่มและส่งคำขอเข้าร่วมจากแชตหลัก'},
     {key:'enableAuctions',en:'Auction House',th:'ระบบประมูล',helpEn:'Preview lots, bid and receive won items.',helpTh:'ดูสินค้า เสนอราคา และรับของที่ชนะประมูล'},
-    {key:'enableMarketplace',en:'Negotiated Marketplace',th:'ตลาดต่อรองราคา',panel:'marketplace',helpEn:'List inventory items and negotiate NPC offers.',helpTh:'ลงขายไอเทมและต่อรองข้อเสนอจากผู้ซื้อ'},
+    {key:'enableMarketplace',en:'Negotiated Marketplace',th:'ตลาดต่อรองราคา',helpEn:'Use item sales, NPC shops and negotiation directly in the main chat.',helpTh:'ใช้การขายของ ร้านค้า NPC และการต่อรองโดยตรงในแชตหลัก'},
     {key:'enableStoryMemory',en:'Story Memory',th:'บันทึกเรื่องสำคัญ',panel:'memories',helpEn:'Track important facts, promises, secrets and open threads.',helpTh:'เก็บข้อเท็จจริง คำสัญญา ความลับ และเรื่องค้าง'},
     {key:'enableStoryAgenda',en:'Story Agenda',th:'นัดหมายและกำหนดเวลา',panel:'agenda',helpEn:'Track appointments and reminders using story time.',helpTh:'เก็บนัดหมายและเตือนตามเวลาในเนื้อเรื่อง'},
     {key:'enableQuestObjectives',en:'Quest Checklists',th:'เช็กลิสต์เป้าหมายเควส',helpEn:'Track individual quest steps and derive progress.',helpTh:'แยกเป้าหมายย่อยและคำนวณความคืบหน้าเควส'},
@@ -263,14 +260,14 @@ const DEFAULT_SETTINGS = Object.freeze({
 });
 
 const LAUNCHER_BIND_VERSION = '0.40.10';
-const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'memories', 'summaries', 'agenda', 'rank', 'marketplace', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
+const TAB_ORDER = ['status', 'scene', 'inventory', 'skills', 'techniques', 'quests', 'memories', 'summaries', 'agenda', 'rank', 'groups', 'household', 'npcs', 'hstats', 'mail', 'music', 'systems'];
 const TAB_META = {
     status: ['fa-solid fa-user', 'Status'], scene: ['fa-solid fa-cloud-sun', 'Scene'],
     inventory: ['fa-solid fa-box-open', 'Inventory'], skills: ['fa-solid fa-layer-group', 'Skills'],
     techniques: ['fa-solid fa-fire-flame-curved', 'Powers'], quests: ['fa-solid fa-scroll', 'Quests'],
     memories: ['fa-solid fa-book-bookmark', 'Story Memory'], agenda: ['fa-solid fa-calendar-check', 'Appointments'],
     summaries: ['fa-solid fa-box-archive', 'Memory Summaries'],
-    rank: ['fa-solid fa-medal', 'Rank'], marketplace: ['fa-solid fa-handshake', 'Marketplace'],
+    rank: ['fa-solid fa-medal', 'Rank'],
     groups: ['fa-solid fa-people-group', 'Party & Guild'], household: ['fa-solid fa-house-chimney-user', 'Household'],
     npcs: ['fa-solid fa-users', 'NPCs'], hstats: ['fa-solid fa-heart-pulse', 'H-Stats'], mail: ['fa-solid fa-envelope', 'Mailbox'], music: ['fa-solid fa-music', 'Music'],
     systems: ['fa-solid fa-microchip', 'System Audit'],
@@ -2689,16 +2686,6 @@ async function runMarketplaceAction(id, action, amount, revision) {
     return result.ok ? commitMarketplaceResult(result) : result;
 }
 
-function renderMarketplace(panel, state) {
-    if (!panel) return;
-    const enabled = getSettings().enableMarketplace;
-    const view = marketplaceView(state);
-    const context = SillyTavern.getContext(), metadata = context.chatMetadata, chatId = context.getCurrentChatId?.();
-    const valid = () => SillyTavern.getContext().chatMetadata === metadata && SillyTavern.getContext().getCurrentChatId?.() === chatId;
-    const api = { valid, settings: getSettings, createListing: createMarketplaceListingAction, runAction: runMarketplaceAction, refresh: refreshMarketplace };
-    renderMarketplacePanel(panel, { ...view, enabled, busy: Boolean(pendingAuctionSave) || mainReplyGenerating() }, api);
-}
-
 function rememberHouseholdOffers(messageId, message, offers) {
     const key = assistantTurnKey(messageId);
     if (!key || !offers.length) return;
@@ -3402,7 +3389,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.49.0`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.50.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -5421,7 +5408,6 @@ function renderPanel(id, panel, state) {
         status: renderStatus, scene: renderScene, inventory: renderInventory, skills: renderSkillStorage,
         techniques: renderTechniques, quests: renderQuests, rank: renderRank, groups: renderGroups,
         memories: (target, snapshot) => renderStoryMemoryPanel(target, snapshot, getSettings().language),
-        marketplace: renderMarketplace,
         summaries: target => { if (memorySummaries) renderMemorySummaries(target,memorySummaries.view(),SillyTavern.getContext().extensionSettings?.connectionManager?.profiles || []); },
         agenda: (target, snapshot) => renderStoryAgendaPanel(target, snapshot, getSettings().language),
         household: renderHousehold, npcs: renderNpcs, hstats: renderHStats, mail: renderMailbox, music: renderMusic, systems: renderSystems,
@@ -5750,8 +5736,6 @@ function renderTechniques(panel, state) {
         settingsPanel.className = 'tretaresia-power-settings-shell';
         panel.append(settingsPanel);
         mountPowerSettings(settingsPanel, state, true);
-    } else {
-        panel.insertAdjacentHTML('beforeend', `<div class="tretaresia-mastery-legacy-tools"><section class="tretaresia-proficiency-section"><header><div><i class="fa-solid fa-fire-flame-curved"></i><span><strong>${html(tr(uiText('Power systems')))}</strong><small>Additional proficiency records</small></span></div></header>${customProficiencyEditor('magic')}</section><section class="tretaresia-proficiency-section"><header><div><i class="fa-solid fa-khanda"></i><span><strong>${html(tr(uiText('Combat disciplines')))}</strong><small>Additional combat records</small></span></div></header>${customProficiencyEditor('sword')}</section></div>`);
     }
 }
 
@@ -5780,7 +5764,6 @@ function renderQuests(panel, state) {
     const openCount = grouped.story.length + grouped['side-story'].length + grouped.active.length;
     panel.innerHTML = (uiMarkup("")+(heading(uiText("Mission & Quest Log"), `${openCount} open · ${grouped.completed.length} completed · ${grouped.failed.length} failed`, 'fa-solid fa-scroll'))+uiMarkup("\n        <nav class=\"tretaresia-quest-sections\" aria-label=\"")+(html(tr(uiText("Mission archive"))))+uiMarkup("\">")+(QUEST_SECTIONS.map(entry => (uiMarkup("<button type=\"button\" data-action=\"quest-section\" data-section=\"")+(entry.id)+uiMarkup("\" class=\"")+(entry.id === section.id ? 'is-active' : '')+uiMarkup("\"><span>")+(html(tr(entry.label)))+uiMarkup("</span><b>")+(grouped[entry.id].length)+uiMarkup("</b></button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-quest-section\"><header><span>")+(html(tr(section.label)))+uiMarkup("</span><small>")+(visible.length)+uiMarkup("</small></header>\n            <div class=\"tretaresia-quest-list\">")+(visible.length ? visible.map(renderQuestCard).join('') : empty(uiText("No quests have been recorded yet.")))+uiMarkup("</div></section>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add mission or quest"))))+uiMarkup("</summary>\n            <form data-form=\"quest\" class=\"tretaresia-form-grid\">")+(input('Mission / quest name', 'name', ''))+uiMarkup("\n                ")+(select('Type', 'type', QUEST_TYPES, 'Quest'))+uiMarkup("")+(select('Dungeon rank', 'dungeonRank', DUNGEON_RANKS, 'Unranked'))+uiMarkup("\n                ")+(select('Status', 'status', ['Offered', 'Active', 'Completed', 'Failed', 'On Hold'], 'Active'))+uiMarkup("\n                ")+(input('Objective', 'objective', ''))+uiMarkup("")+(input('Reward', 'reward', ''))+uiMarkup("")+(input('Quest giver', 'giver', ''))+uiMarkup("")+(input('Source', 'source', 'Manual entry'))+uiMarkup("\n                ")+(input('Progress', 'progress', 0, 'number', 'min="0" max="100"'))+uiMarkup("")+(input('Notes', 'notes', ''))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add to log"))))+uiMarkup("</button></form></details>"));
     stampStoryControls(panel);
-    mountWorkspaceBoards(panel, 'mission');
 }
 
 const rankRow = (label, value, icon) => (uiMarkup("<article class=\"tretaresia-rank-row\"><i class=\"")+(icon)+uiMarkup("\"></i><span>")+(html(tr(label)))+uiMarkup("</span><strong>")+(html(tr(String(value))))+uiMarkup("</strong></article>"));
@@ -5916,21 +5899,6 @@ function workspaceInvitations(kind) {
     return rows.length ? `<section class="tretaresia-workspace-invitations"><h3>${html(getSettings().language === 'th' ? 'คำเชิญที่รอคำตอบ' : 'Pending invitations')}</h3>${rows.slice(-20).join('')}</section>` : '';
 }
 
-function mountWorkspaceBoards(panel, kind) {
-    if (typeof document.createElement !== 'function') return;
-    const context = SillyTavern.getContext();
-    for (let messageId = context.chat.length - 1; messageId >= 0; messageId--) {
-        const message = context.chat[messageId];
-        const board = kind === 'mission' ? missionBoardForMessage(messageId, message) : groupBoardForMessage(messageId, message);
-        if (!board) continue;
-        const wrapper = document.createElement('section'); wrapper.className = 'tretaresia-workspace-board';
-        const api = { acceptBoardMission, requestGroupBoardJoin, missionBoardForMessage, groupBoardForMessage, context: () => SillyTavern.getContext(), settings: getSettings };
-        wrapper.append(kind === 'mission' ? renderMissionBoard(board, messageId, api) : renderGroupBoard(board, messageId, api));
-        panel.append(wrapper);
-        break;
-    }
-}
-
 function renderGroups(panel, state) {
     state = {...state,npcs:state.npcs.map(effectiveNpc)};
     if (!panel) return;
@@ -5940,7 +5908,6 @@ function renderGroups(panel, state) {
     const guildCards = guilds.length ? guilds.map(guild => (uiMarkup("<article class=\"tretaresia-social-card tretaresia-guild-card\">\n        <header><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Guild management"))))+uiMarkup("</span><h4>")+(html(guild.name))+uiMarkup("</h4><small>")+(html(guild.rank))+uiMarkup(" · Lv.")+(guild.level)+uiMarkup(" · ")+(html(guild.joinedByInvitation ? (guild.memberCount === null ? (getSettings().language === 'th' ? 'ไม่ทราบจำนวนสมาชิก' : 'Member count unknown') : `${guild.memberCount} ${tr(uiText("Members")).toLowerCase()}`) : `${guild.memberIds.length + 1} ${tr(uiText("Members")).toLowerCase()}`))+uiMarkup("</small></div><button type=\"button\" class=\"tretaresia-danger-button\" data-action=\"dissolve-guild\" data-id=\"")+(html(guild.id))+uiMarkup("\"><i class=\"fa-solid fa-xmark\"></i>")+(html(guild.joinedByInvitation ? (getSettings().language === 'th' ? 'ออกจากกิลด์' : 'Leave guild') : tr(uiText("Dissolve guild"))))+uiMarkup("</button></header>\n        ")+(socialGroupSummary(guild,state))+uiMarkup("\n        ")+(guild.description ? (uiMarkup("<p class=\"tretaresia-social-description\">")+(html(guild.description))+uiMarkup("</p>")) : '')+uiMarkup("<div class=\"tretaresia-guild-progress\"><article><span>Reputation</span><strong>")+(guild.reputation === null ? html(getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown') : guild.reputation)+uiMarkup("</strong></article><article><span>Headquarters</span><strong>")+(html(guild.headquarters))+uiMarkup("</strong></article><article><span>Alliances</span><strong>")+(guild.alliances.length)+uiMarkup("</strong></article><article><span>Enemies</span><strong>")+(guild.enemies.length)+uiMarkup("</strong></article><article><span>Guild quests</span><strong>")+(guild.quests.length)+uiMarkup("</strong></article></div><div class=\"tretaresia-social-treasury\"><span><i class=\"fa-solid fa-coins\"></i>")+(html(tr(uiText("Guild treasury"))))+uiMarkup("</span><strong>")+(html(currencyLabel(guild.treasury)))+uiMarkup("</strong></div>\n        <div class=\"tretaresia-social-member-list\">")+(socialMemberCards(state, guild.memberIds, guild.joinedByInvitation ? '' : 'remove-guild-member', guild.id, guild.leaderId, {player:guild.playerRole}))+uiMarkup("</div>\n        ")+(guild.joinedByInvitation ? '' : (uiMarkup("<form data-form=\"guild-invite\" class=\"tretaresia-social-invite\"><input type=\"hidden\" name=\"guildId\" value=\"")+(html(guild.id))+uiMarkup("\"><label class=\"tretaresia-field\"><span>")+(html(tr(uiText("Friendly NPCs"))))+uiMarkup("</span><select name=\"npcId\" required>")+(socialNpcOptions(state))+uiMarkup("</select></label><button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-user-plus\"></i>")+(html(tr(uiText("Invite to guild"))))+uiMarkup("</button></form>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-landmark\"></i> Guild progression</summary><form data-form=\"guild-progression\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"guildId\" value=\"")+(html(guild.id))+uiMarkup("\">")+(input('Guild name', 'name', guild.name))+uiMarkup("")+(input('Guild rank', 'rank', guild.rank))+uiMarkup("")+(input('Completed quests', 'completedQuests', guild.completedQuests, 'number', 'min="0" max="999999"'))+uiMarkup("")+(input('Level', 'level', guild.level, 'number', 'min="1"'))+uiMarkup("")+(input('Reputation', 'reputation', guild.reputation, 'number'))+uiMarkup("")+(input('Headquarters', 'headquarters', guild.headquarters))+uiMarkup("")+(input('Alliances', 'alliances', guild.alliances.join(', ')))+uiMarkup("")+(input('Enemies', 'enemies', guild.enemies.join(', ')))+uiMarkup("")+(input('Guild quests', 'quests', guild.quests.join(', ')))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">Save guild progression</button></form></details>")))+uiMarkup("\n    </article>"))).join('') : (uiMarkup("<article class=\"tretaresia-social-card tretaresia-social-empty-card\"><i class=\"fa-solid fa-landmark-dome\"></i><strong>")+(html(tr(uiText("No guilds yet"))))+uiMarkup("</strong><p>")+(html(getSettings().language === 'th' ? 'กิลด์ต้องเสียค่าก่อตั้งเป็นเงิน 10 เหรียญทอง' : 'A guild costs 10 gold to establish.'))+uiMarkup("</p></article>"));
     panel.innerHTML = (uiMarkup("")+(heading(uiText("Party & Guild"), `${party ? 1 : 0} ${tr(uiText("party"))} · ${guilds.length} ${tr(uiText("guilds"))}`, 'fa-solid fa-people-group'))+uiMarkup("\n        <p class=\"tretaresia-social-note\"><i class=\"fa-solid fa-circle-info\"></i>")+(html(tr(uiText("Friendly NPCs only"))))+uiMarkup(" · ")+(html(tr(uiText("Hostile NPCs are excluded from the list."))))+uiMarkup("</p>\n        <div class=\"tretaresia-social-grid\">")+(partyMarkup)+uiMarkup("<section class=\"tretaresia-social-stack\"><div class=\"tretaresia-social-subheading\"><span><i class=\"fa-solid fa-landmark\"></i>")+(html(tr(uiText("Guild management"))))+uiMarkup("</span><small>")+(html(tr(uiText("Current balance"))))+uiMarkup(": ")+(html(currencyLabel(state.progression.currency)))+uiMarkup("</small></div>\n        <article class=\"tretaresia-social-card tretaresia-guild-create\"><form data-form=\"guild-create\" class=\"tretaresia-social-form\">")+(input('Guild name', 'name', ''))+uiMarkup("")+(input('Guild description', 'description', ''))+uiMarkup("<div class=\"tretaresia-fee-line\"><span>")+(html(tr(uiText("Guild creation fee"))))+uiMarkup("</span><strong>")+(html(currencyLabel(GUILD_CREATION_FEE)))+uiMarkup("</strong></div><button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-plus\"></i>")+(html(tr(uiText("Create guild"))))+uiMarkup("</button></form></article>")+(guildCards)+uiMarkup("</section></div>"));
     panel.insertAdjacentHTML?.('beforeend', workspaceInvitations('group'));
-    mountWorkspaceBoards(panel, 'group');
 }
 
 function renderHousehold(panel, state) {
@@ -8866,6 +8833,56 @@ function coerceStatePatch(raw) {
     };
 }
 
+// Some providers return their private reasoning in the message field when the
+// host cannot separate reasoning from the final answer. Keep that material out
+// of both the visible chat renderer and the state parser. The host helper is
+// preferred when available; the fallbacks cover common XML and Gemini-style
+// `{CoT}`/S1…S7 envelopes without touching ordinary role-play prose.
+function stripProviderReasoning(source) {
+    let value = String(source ?? '');
+    try {
+        const helper = SillyTavern?.getContext?.()?.removeReasoningFromString;
+        if (typeof helper === 'function') {
+            const cleaned = helper(value);
+            if (typeof cleaned === 'string') value = cleaned;
+        }
+    } catch { /* Older hosts do not expose a reasoning helper. */ }
+    value = value.replace(/<(?:think|thinking|analysis|reasoning|planning)(?:\s[^>]*)?>[\s\S]*?<\/(?:think|thinking|analysis|reasoning|planning)>/gi, '');
+    value = value.replace(/\[(?:think|thinking|analysis|reasoning|planning)\][\s\S]*?\[\/(?:think|thinking|analysis|reasoning|planning)\]/gi, '');
+
+    // Providers sometimes omit the CoT envelope but still emit their numbered
+    // planning preamble. When story tags delimit the actual reply, remove that
+    // preamble as a whole, including blank lines within a planning section.
+    const preamble = /(?:^|\n)\s*(?:\{\s*c(?:hain\s*of\s*)?o\s*t\s*\}|(?:chain\s+of\s+thought|private\s+reasoning)|S1\s*[·:.\-]\s*INGEST\b)/iu.exec(value);
+    if (preamble) {
+        const tail = value.slice(preamble.index);
+        const storyStart = /<(?:tr-(?:header|narrative|dialogue)|narrative|dialogue)\b|(?:^|\n)\s*(?:visible\s+(?:answer|output)|final\s+(?:answer|response)|story|narrative|response)\s*:/iu.exec(tail);
+        if (storyStart) value = value.slice(0, preamble.index) + tail.slice(storyStart.index);
+    }
+    const lines = value.split(/\r?\n/u), output = [];
+    let cot = false, continuation = false;
+    const header = /^\s*(?:\{\s*c(?:hain\s*of\s*)?o\s*t\s*\}|(?:chain\s+of\s+thought|private\s+reasoning))\s*$/iu;
+    const section = /^\s*S\d+\s*[·:.\-]/iu;
+    const labelled = /^\s*(?:TRE[T]?ARESIA RPG identity\/limits|Author Notes?|Main Prompt|Source check|Perspective|Firewall|Language|Length|Vectors|Sense|Extension|Continuity)\s*:/iu;
+    const lastSection = lines.reduce((last, line, index) => section.test(line) ? index : last, -1);
+    for (const [index, line] of lines.entries()) {
+        const trimmed = line.trim();
+        if (header.test(line)) { cot = true; continuation = false; continue; }
+        if (/^\s*S1\s*[·:.\-]\s*INGEST\b/iu.test(line)) { cot = true; continuation = true; continue; }
+        if (cot && section.test(line)) { continuation = true; continue; }
+        if (cot && labelled.test(line)) { continuation = true; continue; }
+        if (cot && !trimmed) { continuation = false; continue; }
+        if (cot && index < lastSection) continue;
+        if (cot && continuation) continue;
+        if (cot && /^(?:visible\s+(?:answer|output)|final\s+(?:answer|response)|story|narrative|response)\s*:/iu.test(line)) {
+            cot = false;
+        }
+        if (cot && trimmed && !/^\s*(?:[<{[])/u.test(line)) cot = false;
+        output.push(line);
+    }
+    return output.join('\n').replace(/^\s*(?:thought\s+for\s+some\s+time|\{\s*CoT\s*\})\s*$/gimu, '').trim();
+}
+
 function extractStatePatch(message) {
     const patches = [];
     let found = false;
@@ -8882,7 +8899,7 @@ function extractStatePatch(message) {
         accept(payload);
         return '';
     });
-    let visible = String(message || '');
+    let visible = stripProviderReasoning(message || '');
     for (const pattern of [PATCH_COMMENT_PATTERN, PATCH_TAG_PATTERN, PATCH_BRACKET_PATTERN, PATCH_FENCE_PATTERN]) {
         pattern.lastIndex = 0;
         visible = strip(visible, pattern);
@@ -10183,7 +10200,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.49.0 loaded.');
+        console.info('[RoleForge] Role-play interface v0.50.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
