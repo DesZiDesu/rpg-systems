@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.51.4
+# ROLEFORGE — v0.51.5
+
+## v0.51.5 — Teach every system in the normal reply prompt
+
+- Add an enabled-system routing guide with triggers and exact output shapes for every story-driven tracker and Main Chat system. Header, scene, player resources/progression, inventory, skills/powers/techniques, NPC facts/knowledge/diary/relationships, contacts/letters, social invitations, quests, combat, travel/maps, H-Stats and optional boards/memory/agenda/checklists share one final patch. User-owned settings and API summary/training tasks stay under their existing controls.
+- Send the output contract as a separate SYSTEM injection at chat depth zero, outside the large state/reference wrapper. Resolve the conflicting instruction about patch placement: complete the story first, then emit one closed comment containing sceneTracker, ops and every applicable system object. The payload must appear in the final answer, rather than only being planned in Thinking.
+- Refresh at the official generation interceptor using the actual outgoing chat and generation type. Normal replies, swipe and regenerate receive the appropriate opening/ongoing interaction instructions; a replaced catalog does not become a stale ongoing interaction. Valid normal opening and role-play decisions use the same reply without another API call. Existing opening recovery is retained.
+- Accept explicitly quoted Thai written prices such as “สิบเหรียญเงิน” alongside numeric JSON. Preserve seller/buyer identity, owned-item and present-scene checks. Refresh composer completion when host busy flags change late; incomplete finished replies show a Swipe/Regenerate hint instead of waiting indefinitely.
+- [Thai diagnosis and system guide](docs/normal-reply-system-instructions.th.md). Verification covers native SillyTavern prompt assembly, unit/host tests and production-loader normal commerce, role-play, swipe/regenerate, board/settings and null flows at mobile/desktop widths. Provider responses in these tests are simulated. Update and reload once; no RPG data reset is needed.
 
 ## v0.51.4 — Recover missing commerce openings and remove null
 

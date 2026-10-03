@@ -1,4 +1,4 @@
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.51.4';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.51.5';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);

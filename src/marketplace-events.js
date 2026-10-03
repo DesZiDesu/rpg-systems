@@ -1,4 +1,5 @@
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.51.4';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.51.5';
+import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.51.5';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -77,17 +78,23 @@ export function normalizeMarketplaceEvent(raw) {
 
 export function confirmedMarketplaceEvent(raw, story, user, location, inventory = []) {
     const kind = String(raw?.kind || raw?.type || raw?.event || '').toLocaleLowerCase();
-    const event = normalizeMarketplaceEvent(withInteractionEvidence(raw, story, location, /purchase|offer/u.test(kind) ? buyWords : shopWords, actionWords));
+    const purchase=/purchase|offer/u.test(kind);
+    const quotedPrice=[...String(story||'').matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)].some(match=>COMMERCE_PRICE_PATTERN.test(match[1]));
+    const contextShop=!purchase&&quotedPrice&&/(?:buy|shop|goods|catalog|ซื้อ|ร้าน|สินค้า|ดูของ|ต่อรอง)/iu.test(String(user||''))
+        && !/(?:auction|ประมูล|พรุ่งนี้|เมื่อวาน|สมมุติ|ยังไม่|tomorrow|yesterday|hypothetical)/iu.test(String(user||''));
+    const subject=purchase?buyWords:contextShop?new RegExp(`${shopWords.source}|${COMMERCE_PRICE_PATTERN.source}`,'iu'):shopWords;
+    const activity=purchase?new RegExp(`${actionWords.source}|${buyWords.source}`,'iu'):contextShop?new RegExp(`${actionWords.source}|${COMMERCE_PRICE_PATTERN.source}`,'iu'):actionWords;
+    const event = normalizeMarketplaceEvent(withInteractionEvidence(raw, story, location, subject, activity));
     if (!event || key(event.location) !== key(location) || !evidenceText(story).includes(evidenceText(event.evidence))) return null;
     if (/^\s*(?:\(?OOC\b|\[OOC\b)/iu.test(String(user || ''))) return null;
-    if (!interactionEvidence(event.evidence, story, user, event.kind === 'npcPurchase' ? buyWords : shopWords, actionWords)) return null;
+    if (!interactionEvidence(event.evidence, story, user, subject, activity)) return null;
     if (event.kind === 'npcPurchase') {
         if (!buyWords.test(event.evidence) || !event.item.name || !key(event.evidence).includes(key(event.item.name)) || !namedInteraction(event.buyer.name, event.evidence, story)) return null;
         const owned = (inventory || []).find(entry => (event.item.id && entry.id === event.item.id && key(entry.name) === key(event.item.name)) || (!event.item.id && key(entry.name) === key(event.item.name)));
         if (!owned || integer(owned.quantity, 0) < event.item.quantity) return null;
     } else {
-        if (!shopWords.test(event.evidence) || !namedInteraction(event.seller.name, event.evidence, story)) return null;
-        if (!buyWords.test(event.evidence) && !shopWords.test(String(story))) return null;
+        if (!subject.test(event.evidence) || !namedInteraction(event.seller.name, event.evidence, story)) return null;
+        if (!buyWords.test(event.evidence) && !shopWords.test(String(story)) && !(contextShop&&COMMERCE_PRICE_PATTERN.test(event.evidence))) return null;
     }
     return event;
 }

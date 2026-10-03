@@ -44,3 +44,10 @@ for(const [name,mutate]of [['chat switch',f=>f.context.chatMetadata={}],['new tu
  const f=fixture(),gate=deferred();f.context.generateRaw=()=>gate.promise;
  const request=f.runtime.recoverOpening({messageId:1,kind:'auction',user:'เข้าร่วมประมูล',story:f.context.chat[1].mes,location:'Hall'});mutate(f);gate.resolve('{}');assert.equal((await request).error,'stale');assert.equal(f.commits(),0);assert.equal(f.state().progression.currency.silver,30);
 });
+
+test('completed normal replies stop the pending wait even when the host generation flag is late',()=>{
+ const f=fixture();f.context.chat=[{is_user:true,mes:'เข้าร่วมประมูล'},{is_user:false,mes:'ไม่มีราคาเปิดรายการในคำตอบนี้'}];
+ // Separate instance with no offered event, reproducing a completed prose-only reply.
+ let live=true,complete=false;const runtime=createCommerceRuntime({document:{},context:()=>f.context,state:f.state,settings:()=>f.settings,isBusy:()=>live,isReplyComplete:()=>complete,record:()=>null,variant:m=>m.mes,turnKey:id=>String(id),visible:v=>v});
+ assert.equal(runtime.view().pending.waiting,true);complete=true;assert.equal(runtime.view().pending.waiting,false);runtime.refresh();runtime.refresh();assert.equal(f.calls(),0);live=false;assert.equal(runtime.view().pending.waiting,false);runtime.destroy();
+});

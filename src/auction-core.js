@@ -1,4 +1,5 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.4';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.51.5';
+import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.51.5';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
@@ -47,7 +48,7 @@ export function confirmedAuctionOffer(raw, story, user, location) {
     // An auctioneer can quote a bid without repeating the word "auction".
     // A current explicit auction request supplies that context; the price still
     // needs an exact affirmative quote in this reply, never a future plan.
-    const pricing=/[0-9๐-๙]+\s*(?:เหรียญ\s*)?(?:gold|silver|copper|ทองแดง|ทอง|เงิน)/iu;
+    const pricing=COMMERCE_PRICE_PATTERN;
     const contextual=auctionWords.test(String(user||''))&&!/(?:พรุ่งนี้|เมื่อวาน|สมมุติ|ยังไม่|tomorrow|yesterday|hypothetical)/iu.test(String(user||''));
     const subject=contextual?new RegExp(`${auctionWords.source}|${pricing.source}`,'iu'):auctionWords;
     const action=/(?:arriv|enter|reach|stand|sit|walk|approach|join|attend|inspect|browse|display|present|show|มาถึง|เดิน|เข้า|ยืน|นั่ง|ร่วม|ดู|อ่าน|แสดง|เปิด|วาง)/iu;

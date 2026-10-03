@@ -1,6 +1,6 @@
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
-export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en'}={}) {
+export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{}}={}) {
     if(!doc?.createElement)return{update(){},destroy(){}};
     const win=doc.defaultView||globalThis;let view=null,expanded=false,identity='',revision=-1,selected='',draft='',observer,timer,queued=false;
     const node=(tag,cls,text)=>{const el=doc.createElement(tag);el.className=cls||'';if(text!==undefined)el.textContent=text;return el;};
@@ -23,7 +23,7 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
             if(bar.nextElementSibling!==slot)slot.before(bar);}
     }
     function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;position();});}
-    function observe(){if(!observer){observer=new win.MutationObserver(records=>{if(records.some(record=>!bar.contains(record.target)))schedule();});observer.observe(doc.body,{childList:true,subtree:true});timer=setInterval(position,400);}}
+    function observe(){if(!observer){observer=new win.MutationObserver(records=>{if(records.some(record=>!bar.contains(record.target)))schedule();});observer.observe(doc.body,{childList:true,subtree:true});timer=setInterval(()=>{position();poll();},400);}}
     function showError(){
         if(!view.error)return;
         const error=node('p','rf-commerce-error',view.error);error.setAttribute('role','alert');bar.append(error);
@@ -35,7 +35,7 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         if(view.pending){
             const pending=view.pending;bar.replaceChildren();bar.dataset.kind=pending.kind;delete bar.dataset.session;bar.setAttribute('aria-busy',String(pending.waiting));
             const title=node('strong','rf-commerce-pending-title',pending.kind==='auction'?t('ประมูล','AUCTION'):pending.kind==='sell'?t('ขายสินค้า','SELL'):t('ซื้อสินค้า','BUY'));
-            const status=node('p','rf-commerce-status',pending.waiting?t('รอ NPC แสดงรายการและราคา…','Waiting for NPC goods and prices…'):t('NPC ยังไม่ได้ให้รายละเอียดรายการครบ คุณโรลถามต่อในแชตได้','NPC list details are incomplete. Continue the conversation in chat.'));
+            const status=node('p','rf-commerce-status',pending.waiting?t('รอ NPC แสดงรายการและราคา…','Waiting for NPC goods and prices…'):t('คำตอบนี้ยังไม่มีข้อมูลเปิดรายการครบ ลอง Swipe หรือ Regenerate ได้','This reply lacks complete opening data. Try Swipe or Regenerate.'));
             status.setAttribute('role','status');bar.append(title,status);if(!pending.waiting)showError();observe();position();return;
         }
         const session=view.session,lot=session.lots?.[session.index],kind=session.kind,auction=kind==='auction';

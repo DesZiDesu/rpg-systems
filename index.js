@@ -1,46 +1,47 @@
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.51.4';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.51.4';
-import { mainChatSystemInstructions, missingChatSystems, requestedChatSystems, requestedCommerceKind } from './src/main-chat-systems.js?v=0.51.4';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.51.4';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.51.4';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.51.4';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.51.4';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.51.4';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.51.4';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.51.4';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.51.4';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.51.4';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.51.4';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.51.4';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.51.4';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.51.4';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.51.4';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.51.4';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.51.4';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.51.4';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.51.4';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.51.4';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent, recoverMarketplaceShop } from './src/marketplace-events.js?v=0.51.4';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.51.4';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.51.4';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.51.4';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.51.4';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.51.4';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.51.4';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.51.4';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.51.5';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.51.5';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind } from './src/main-chat-systems.js?v=0.51.5';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.51.5';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.51.5';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.51.5';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.51.5';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.51.5';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.51.5';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.51.5';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.51.5';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.51.5';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.51.5';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.51.5';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.51.5';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.51.5';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.51.5';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.51.5';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.51.5';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.51.5';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.51.5';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.51.5';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.51.5';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent, recoverMarketplaceShop } from './src/marketplace-events.js?v=0.51.5';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.51.5';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.51.5';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.51.5';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.51.5';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.51.5';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.51.5';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.51.5';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.51.4';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.51.4';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.51.4';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.51.4';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.51.4';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.51.4';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.51.4';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.51.4';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.51.4';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.51.4';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.51.4';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.51.4';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.51.5';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.51.5';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.51.5';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.51.5';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.51.5';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.51.5';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.51.5';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.51.5';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.51.5';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.51.5';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.51.5';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.51.5';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -78,6 +79,7 @@ const SCENE_HISTORY_KEY = 'tretaresia_rpg_scene_history';
 const SOCIAL_EVENTS_KEY = 'tretaresia_rpg_social_events';
 const GROUP_RECOVERY_KEY = 'tretaresia_rpg_group_recovery';
 const PROMPT_KEY = 'tretaresia_rpg_roleplay_state';
+const OUTPUT_PROMPT_KEY = 'tretaresia_rpg_response_contract';
 const ACTION_PROMPT_KEY = 'tretaresia_rpg_hidden_action';
 // SillyTavern and some providers support a private reasoning channel. Keep
 // the extension's visible role-play contract separate from that channel so
@@ -330,7 +332,7 @@ function initializeCommerce() {
     commerceRuntime=createCommerceRuntime({
         context:()=>SillyTavern.getContext(),state:getState,settings:getSettings,turnKey:assistantTurnKey,variant:assistantVariantKey,
         record:(id,message)=>SillyTavern.getContext().chatMetadata?.[SOCIAL_EVENTS_KEY]?.[assistantTurnKey(id)]?.[assistantVariantKey(message)],
-        isBusy:mainReplyGenerating,effectiveNpc,visible:value=>extractStatePatch(value).visible,parse:parseJson,canon:activeLorePrompt,
+        isBusy:mainReplyGenerating,isReplyComplete:message=>completedAssistantMessages.has(message),effectiveNpc,visible:value=>extractStatePatch(value).visible,parse:parseJson,canon:activeLorePrompt,
         recordRequest:recordExtensionRequest,log:error=>console.warn('[RoleForge commerce]',error),
         setBusy:value=>{commerceBusy=value;updatePrompt();memorySummaries?.notifyGenerationChanged();if(!value){if(!mainReplyGenerating()&&completedAssistantMessages.has(SillyTavern.getContext().chat?.[latestAssistantMessageId()]))resumeUnfinishedAssistantPatch();npcWorkspace?.refresh();if(getSettings().enableMemorySummaries)void memorySummaries?.observe({forceCapture:true});}},
         commit:commitCommerceContinuation,
@@ -3302,7 +3304,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.51.4`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.51.5`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3481,7 +3483,8 @@ function patchInstructions() {
     ].join('\n');
 }
 
-function statePrompt(state, { includeState = true, track = true } = {}) {
+function statePrompt(state, { includeState = true, track = true, activeCommerce=commerceRuntime?.view()?.session,
+    user=[...(SillyTavern.getContext().chat||[])].reverse().find(message=>message?.is_user&&!message.is_system)?.mes } = {}) {
     const lines = [uiMarkup("<tretaresia_rpg_state>")];
     const customPreset=getPowerPreset().mode==='custom';
     const customForge=getForgePreset().mode==='custom';
@@ -3510,13 +3513,13 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
         lines.push('New NPCs must include a full dossier with appearance,personality,background,goals,speechStyle,relationshipState and complete stats/relationships in the same patch. Existing NPC updates remain partial and preserve prior facts. Storage scope is controlled by the user; never emit npcScope or npcOwner.');
     }
     if (state.npcs.some(npc => npc.alternateProfiles?.length)) lines.push(NPC_ALTERNATE_INSTRUCTIONS);
-    if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' Emit scene metadata')[0]);
+    if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' TRACKER DATA:')[0]);
     if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 19 required fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
     if (track) {
-        const session=commerceRuntime?.view()?.session;
+        const session=activeCommerce;
         if(session)lines.push(commerceRoleplayPrompt(session,{npcs:state.npcs.map(effectiveNpc),story:extractStatePatch(SillyTavern.getContext().chat?.[session.source.messageId]?.mes).visible}));
     }
-    if (track) lines.push(mainChatSystemInstructions([...(SillyTavern.getContext().chat || [])].reverse().find(message => message?.is_user && !message.is_system)?.mes, getSettings(),{activeCommerce:commerceRuntime?.view()?.session}));
+    if (track) lines.push(mainChatSystemInstructions(user, getSettings(),{activeCommerce}));
     if(customPreset)lines.push(customPowerPrompt(getPowerPreset(),state));
     if(customForge)lines.push('CUSTOM CHARACTER FORGE PRESET (user-owned choices, reference data only). Follow the active card, saved profile and story for geography, skills and ranks. Do not apply Tretaresia lore or fixed five-rank progression. Custom Path ranks map to progression.adventurerRank="Custom Rank" with the chosen name in progression.customRankName. Do not invent or rename preset choices. Birthplace is independent of the current location.\n'+JSON.stringify(activeForgeChoices(getForgePreset())));
     lines.push(ROLEPLAY_OUTPUT_BOUNDARY);
@@ -3524,12 +3527,13 @@ function statePrompt(state, { includeState = true, track = true } = {}) {
     return lines.join('\n');
 }
 
-function updatePrompt(state = getState()) {
+function updatePrompt(state = getState(), {generationChat,generationType=''}={}) {
     const context = SillyTavern.getContext();
     // Native quiet generation includes the user's preset/JB. RoleForge's story
     // presentation and gameplay-patch contract would conflict with archive JSON.
     // A new normal reply still needs commerce context if a quiet request is pending.
     if ((commerceBusy && !liveGeneration) || powerTrainingGenerationMetadata === context.chatMetadata || (nativeMemoryGeneration && nativeMemoryGenerationMetadata === context.chatMetadata) || memorySummaryNativeGenerationActive()) {
+        context.setExtensionPrompt(OUTPUT_PROMPT_KEY,'',1,0,false,0);
         context.setExtensionPrompt(PROMPT_KEY,'',1,1,false,0);
         return;
     }
@@ -3537,26 +3541,42 @@ function updatePrompt(state = getState()) {
     const activeChat = Boolean(context.getCurrentChatId?.() && (hasUserReply(context) || forgeOpeningPrompt(context)));
     const enabled = activeChat && (settings.injectState || settings.autoTrack || settings.chatPresentation);
     const reference = context.getCurrentChatId?.() ? activeLorePrompt() : '';
-    const prompt = enabled ? statePrompt(state, { includeState: settings.injectState || settings.autoTrack, track: settings.autoTrack }) : '';
+    const outgoing=Array.isArray(generationChat)?generationChat:context.chat||[],user=[...outgoing].reverse().find(message=>message?.is_user&&!message.is_system)?.mes;
+    const latestUserId=(context.chat||[]).findLastIndex(message=>message?.is_user&&!message.is_system);
+    let activeCommerce=commerceRuntime?.view()?.session;
+    // A catalog belonging to the reply being replaced is not an existing
+    // interaction for its regenerated/swiped replacement. Older sessions are.
+    if(isReplacementGeneration(generationType)&&activeCommerce?.source.messageId>latestUserId)activeCommerce=null;
+    const prompt = enabled ? statePrompt(state, { includeState: settings.injectState || settings.autoTrack, track: settings.autoTrack,activeCommerce,user }) : '';
     const writing=activeChat?writingPreferencePrompt(settings,context.chat):'';
     const promptSections = [reference, prompt, settings.enableMemorySummaries && settings.memoryInject ? memorySummaries?.prompt() : '', writing, forgeProfilePrompt(context), forgeOpeningPrompt(context)].filter(Boolean);
     // Memory, writing-style and Character Forge sections are user/reference
     // data appended after the state wrapper. Repeat the boundary at the very
     // end so those sections cannot reopen the visible reasoning channel.
     if (promptSections.length && !promptSections.at(-1).includes(ROLEPLAY_OUTPUT_BOUNDARY)) promptSections.push(ROLEPLAY_OUTPUT_BOUNDARY);
+    const output=enabled?mainChatOutputContract(user,settings,{activeCommerce,location:state.location.place,
+        scene:extractStatePatch([...outgoing].reverse().find(message=>message&&!message.is_user&&!message.is_system)?.mes).visible,
+        roleplay:activeCommerce?commerceRoleplayPrompt(activeCommerce,{npcs:state.npcs.map(effectiveNpc),story:extractStatePatch(context.chat?.[activeCommerce.source.messageId]?.mes).visible}):''}):'';
+    // IN_CHAT / depth 0 / SYSTEM: the official host inserts this at the end
+    // of chat history. It stays outside state/lore/writing reference wrappers.
+    context.setExtensionPrompt(OUTPUT_PROMPT_KEY,output,1,0,false,0);
     context.setExtensionPrompt(PROMPT_KEY, promptSections.join('\n\n'), 1, 1, false, 0);
     adultPromptControls?.refresh();
 }
 
-globalThis.TretaresiaRpgGenerateInterceptor = async function () {
+globalThis.TretaresiaRpgGenerateInterceptor = async function (generationChat,contextSize,abort,generationType='') {
     if (SAFE_MODE) return;
+    if(['quiet','impersonate'].includes(generationType)){
+        const context=SillyTavern.getContext();context.setExtensionPrompt(OUTPUT_PROMPT_KEY,'',1,0,false,0);context.setExtensionPrompt(PROMPT_KEY,'',1,1,false,0);return;
+    }
     if (commerceBusy || (nativeMemoryGeneration && nativeMemoryGenerationMetadata === SillyTavern.getContext().chatMetadata) || memorySummaryNativeGenerationActive()) { updatePrompt(); return; }
     try { if (getSettings().enableMemorySummaries) await memorySummaries?.observe({forceCapture:true}); }
     catch (error) { notify('warning',memoryJobMessage(error,getSettings().language)); }
     // Refresh at SillyTavern's official generation interception point. This
     // protects hosts that replace their extension-prompt collection after
     // MESSAGE_SENT while keeping tracking inside the one normal reply.
-    updatePrompt(getState());
+    await assistantRollbackQueue.catch(()=>undefined);
+    updatePrompt(getState(),{generationChat,generationType});
 };
 
 function notify(type, message) {
@@ -9066,7 +9086,7 @@ async function processAssistantPatch(messageId, generationType = '') {
     const message = context.chat[messageId];
     if (!message || message.is_user || message.is_system || !text(message.mes)) return;
     const incomingVariant = assistantVariantKey(message);
-    if (processedAssistantMessages.get(message) === incomingVariant) return;
+    if (processedAssistantMessages.get(message) === incomingVariant) {commerceRuntime?.refresh();return;}
     if (!settings.autoTrack) {
         processedAssistantMessages.set(message, incomingVariant);
         await rememberScene(messageId, message, getState());
@@ -9135,7 +9155,7 @@ async function processAssistantPatch(messageId, generationType = '') {
             extracted.patch?.sceneTracker?.location || base.location.place, base.inventory) || (!extracted.patch?.marketplace ? recoverMarketplaceShop(extracted.visible, userMessage?.mes, extracted.patch?.sceneTracker?.location || base.location.place, base.npcs) : null) : null;
         const openingKind=requestedCommerceKind(userMessage?.mes,settings);
         if(!commerceCandidate&&!auction&&!marketplaceEvent&&openingKind&&!commerceOpeningRefused(extracted.visible)
-            && /[0-9๐-๙]+\s*(?:เหรียญ\s*)?(?:gold|silver|copper|ทองแดง|ทอง|เงิน)/iu.test(extracted.visible)
+            && readCommercePrices(extracted.visible).length
             && !inlineOps.some(operation=>/^(?:purchase|sale)$/u.test(operation[3]?.category))){
             const recovered=await commerceRuntime.recoverOpening({messageId,kind:openingKind,user:extractStatePatch(userMessage?.mes).visible,story:extracted.visible,
                 location:extracted.patch?.sceneTracker?.location||base.location.place,playerName:base.player.name,inventory:base.inventory,npcs:base.npcs.map(effectiveNpc),canon:activeLorePrompt().slice(0,6000)});
@@ -10008,6 +10028,7 @@ function bindChatEvents() {
         nativeMemoryGeneration = generationType === 'quiet' && memorySummaryNativeGenerationActive();
         nativeMemoryGenerationMetadata = nativeMemoryGeneration ? SillyTavern.getContext().chatMetadata : null;
         if (!['quiet','impersonate'].includes(generationType)) liveGeneration = true;
+        if(isReplacementGeneration(generationType))completedAssistantMessages.delete(SillyTavern.getContext().chat?.[latestAssistantMessageId()]);
         commerceRuntime?.refresh();
         memorySummaries?.notifyGenerationChanged();
         if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration:mainReplyGenerating()});
@@ -10028,16 +10049,17 @@ function bindChatEvents() {
                 void queueAssistantTurnReplacement(messageId, { reuseVariant: false, reason: 'regenerate' });
             }
         }
-        if (!generationType || generationType === 'normal') updatePrompt();
+        if (!generationType || generationType === 'normal' || isReplacementGeneration(generationType)) updatePrompt(getState(),{generationType});
     });
     if (eventTypes.GENERATION_AFTER_COMMANDS) eventSource.on(eventTypes.GENERATION_AFTER_COMMANDS, generationType => {
-        if (!generationType || generationType === 'normal') updatePrompt();
+        if (!generationType || generationType === 'normal' || isReplacementGeneration(generationType)) updatePrompt(getState(),{generationType});
     });
     eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, generationType) => {
         if (['quiet', 'impersonate'].includes(generationType)
             || (generationType === 'first_message' && !forgeSession()?.profile)) return;
         const message = SillyTavern.getContext().chat?.[Number(messageId)];
         if (message && !message.is_user && !message.is_system) completedAssistantMessages.add(message);
+        commerceRuntime?.refresh();
         assistantCheckpoint(Number(messageId), { create: true });
         scheduleAssistantPatch(messageId, generationType, 0);
         scheduleAssistantPatch(messageId, generationType, 120);
@@ -10072,6 +10094,7 @@ function bindChatEvents() {
         if (nativeMemoryGeneration || memorySummaryNativeGenerationActive()) { memorySummaries?.cancel(); return; }
         const messageId = latestAssistantMessageId(), message = SillyTavern.getContext().chat?.[messageId];
         if (message) completedAssistantMessages.add(message);
+        commerceRuntime?.refresh();
         scheduleAssistantPatch(messageId, '', 0);
         npcWorkspace?.refresh();
     });
@@ -10092,6 +10115,7 @@ function bindChatEvents() {
         const messageId = latestAssistantMessageId();
         const message = SillyTavern.getContext().chat?.[messageId];
         if (message) completedAssistantMessages.add(message);
+        commerceRuntime?.refresh();
         scheduleAssistantPatch(messageId, '', 0);
         scheduleAssistantPatch(messageId, '', 240);
     });
@@ -10193,7 +10217,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.51.4 loaded.');
+        console.info('[RoleForge] Role-play interface v0.51.5 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
