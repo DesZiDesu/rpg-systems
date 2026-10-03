@@ -1,5 +1,5 @@
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.51.6';
-import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.51.6';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.51.7';
+import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.51.7';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';

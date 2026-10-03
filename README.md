@@ -1,4 +1,10 @@
-# ROLEFORGE — v0.51.6
+# ROLEFORGE — v0.51.7
+
+## v0.51.7 — Role-play evidence formatting and placard bids
+
+- Accept the same latest-user clause when a provider uses smart quotation marks or joins paragraphs with spaces. Comparison preserves words, numbers, currency, refusal and conditional intent; fabricated or changed action evidence remains invalid.
+- Recognize both Thai placard actions ยกป้าย and ชูป้าย alongside an explicit price. Teach short original evidence such as `1 เหรียญทอง` while the engine compares the normalized `100 silver` offer. This fixes the supplied `evidence` rejection through the normal reply without another API call.
+- [Thai diagnosis and verification](docs/commerce-roleplay-evidence.th.md). Verified the supplied formatting/action case, buy/sell quotes, negative cases, 669 unit/host tests and production-loader browser flows at 320/390/1280 px with simulated provider replies. This release retains the existing composer appearance; proposed UI designs await selection.
 
 ## v0.51.6 — Mixed currency, basket trades and Inventory wallet
 

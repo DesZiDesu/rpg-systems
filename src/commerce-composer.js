@@ -1,6 +1,6 @@
-import {commerceBasketQuote} from './commerce-engine.js?v=0.51.6';
-import {commerceIcon} from './commerce-icons.js?v=0.51.6';
-import {convertMoney} from './commerce-currency.js?v=0.51.6';
+import {commerceBasketQuote} from './commerce-engine.js?v=0.51.7';
+import {commerceIcon} from './commerce-icons.js?v=0.51.7';
+import {convertMoney} from './commerce-currency.js?v=0.51.7';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
 export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({})}={}) {

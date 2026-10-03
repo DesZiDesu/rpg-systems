@@ -28,3 +28,33 @@ test('failure after one basket item was staged rolls back the complete wallet, i
 test('AI cannot silently increase a newly named basket item quantity',()=>{const s=state(),session=shop(),r=applyCommerceRoleplay(s,session,{sessionId:session.id,revision:0,action:'talk',items:[{itemId:session.items[0].id,quantity:1},{itemId:session.items[1].id,quantity:2}],evidence:'ขอซื้อ Rope',decision:{outcome:'unchanged'}},{user:'ขอซื้อ Rope',userMessageId:2,narrative:'Mira shows the rope.'});assert.equal(r.ok,false);assert.equal(r.error,'evidence');assert.deepEqual(r.next,s);});
 
 test('an empty local basket can still cancel without a transfer',()=>{const s=state(),r=apply(s,shop(),'cancel',{outcome:'cancel'},{items:[]});assert.equal(r.ok,true);assert.deepEqual(r.next.inventory,s.inventory);assert.deepEqual(r.next.progression,s.progression);});
+
+test('reported gold bid with smart quotes, line breaks and a raised placard validates the same player clause',()=>{
+ const s=state(),session=auction();
+ const user='"1 เหรียญทอง"\n\nฉันชูป้ายก่อนจะเอ่ยขึ้นเบาๆแบบไม่แสดงใบหน้าเพราะเงามันทับช่วงหน้าผากไม่ให้เห็นดวงตา ฉันค่อยๆวางป้ายลงหลังจากเสนอราคา';
+ const raw={sessionId:session.id,revision:0,evidence:'“1 เหรียญทอง” ฉันชูป้ายก่อนจะเอ่ยขึ้นเบาๆ',action:'bid',amount:100,denomination:'silver',decision:{outcome:'open',participants:[{id:'m',action:'pass',reason:'The proposed gold exceeds my funds'}]}};
+ const result=applyCommerceRoleplay(s,session,raw,{user,userMessageId:2,narrative:'หนึ่งเหรียญทองจากด้านหลัง!',source:{...source,messageId:3}});
+ assert.equal(result.ok,true,result.error);assert.equal(result.session.lots[0].price,100);assert.equal(result.session.lots[0].leader,'player');
+ assert.equal(result.next.commerce.receipts.filter(r=>r.lotId==='@join').length,1);
+ assert.equal(walletValue(result.next.progression.currency),walletValue(s.progression.currency)-100);
+});
+
+test('buy and sell role-play evidence can differ only in quotation typography and spacing',()=>{
+ for(const session of [shop(),sale()]){
+  const s=state(),result=applyCommerceRoleplay(s,session,{sessionId:session.id,revision:0,evidence:'เสนอ “2 เหรียญเงิน”',action:'offer',amount:2,decision:{outcome:'accept',amount:2}},{user:'เสนอ\n"2 เหรียญเงิน"',userMessageId:2,narrative:'ตกลงราคานี้ รอเจ้าตัดสินใจ'});
+  assert.equal(result.ok,true,result.error);assert.equal(result.session.quote,2);assert.deepEqual(result.next.inventory,s.inventory);assert.deepEqual(result.next.progression,s.progression);
+ }
+});
+
+test('evidence normalization never changes financial words, price, refusal or conditional intent',()=>{
+ const session=auction();
+ for(const [user,evidence,error] of [
+  ['"2 เหรียญทอง"\nฉันชูป้าย','“1 เหรียญทอง” ฉันชูป้าย','evidence'],
+  ['"1 เหรียญทอง"\nฉันเก็บป้าย','“1 เหรียญทอง” ฉันชูป้าย','evidence'],
+  ['ถ้าฉันชูป้าย “1 เหรียญทอง”','ถ้าฉันชูป้าย "1 เหรียญทอง"','intent'],
+  ['ไม่เสนอ “1 เหรียญทอง”','ไม่เสนอ "1 เหรียญทอง"','intent'],
+ ]){
+  const s=state(),before=structuredClone(s),result=applyCommerceRoleplay(s,session,{sessionId:session.id,revision:0,evidence,action:'bid',amount:100,denomination:'silver',decision:{outcome:'open',participants:[{id:'m',action:'pass',reason:'Wait'}]}},{user,userMessageId:2,narrative:'One gold!'});
+  assert.equal(result.error,error);assert.deepEqual(result.next,before);assert.deepEqual(s,before);
+ }
+});

@@ -1,5 +1,5 @@
-import {CURRENCY_RULE} from './commerce-currency.js?v=0.51.6';
-import { interactionEvidence } from './interaction-evidence.js?v=0.51.6';
+import {CURRENCY_RULE} from './commerce-currency.js?v=0.51.7';
+import { interactionEvidence } from './interaction-evidence.js?v=0.51.7';
 const systems = [
     {key:'marketplace', setting:'enableMarketplace', words:/(?:shop|store|merchant|vendor|goods|catalog|buy|sell|haggl|counteroffer|ร้าน|พ่อค้า|แม่ค้า|สินค้า|ซื้อ|ขาย|ต่อรอง|ดูของ)/iu},
     {key:'auction', setting:'enableAuctions', words:/auction|ประมูล/iu},
