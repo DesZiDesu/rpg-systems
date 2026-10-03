@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>RoleForge · Main Chat systems preview</title>
-<link rel="stylesheet" href="../../styles/style.css?v=0.50.0">
-<link rel="stylesheet" href="../../styles/ui-polish.css?v=0.50.0">
-<link rel="stylesheet" href="../../styles/group-board.css?v=0.50.0">
-<link rel="stylesheet" href="../../styles/marketplace.css?v=0.50.0">
-<link rel="stylesheet" href="../../styles/npc-ui.css?v=0.50.0">
+<link rel="stylesheet" href="../../styles/style.css?v=0.50.1">
+<link rel="stylesheet" href="../../styles/ui-polish.css?v=0.50.1">
+<link rel="stylesheet" href="../../styles/group-board.css?v=0.50.1">
+<link rel="stylesheet" href="../../styles/marketplace.css?v=0.50.1">
+<link rel="stylesheet" href="../../styles/npc-ui.css?v=0.50.1">
 <style>
 :root{--rf-bg:#180f0b;--rf-wood:#2b1b13;--rf-wood-deep:#160d09;--rf-parchment:#ead8ad;--rf-brass:#c7954d;--rf-ink:#2e2015;--rf-muted:#c8b697;--rf-line:rgba(199,149,77,.42);--rf-green:#8db37e}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 20% -5%,#53362155,transparent 34%),var(--rf-bg);color:#f0e4ca;font-family:var(--mainFontFamily,"Noto Sans Thai","Noto Sans",system-ui,sans-serif)}.rf-shell{max-width:1240px;margin:auto;padding:30px 20px 70px}.rf-title{margin:0;color:#f0cd82;font:700 clamp(1.5rem,3vw,2.4rem)/1.2 Georgia,"Noto Sans Thai",serif}.rf-intro{max-width:850px;color:var(--rf-muted);line-height:1.65}.rf-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.rf-toolbar button{min-height:42px;padding:8px 14px;border:1px solid var(--rf-line);border-radius:5px;background:#27170f;color:#f2e4c7;font:inherit;cursor:pointer}.rf-toolbar button.is-active,.rf-toolbar button:hover{background:#ad7135;border-color:#e8be73;color:#fff5d8}.rf-frame{border:1px solid var(--rf-line);border-radius:8px;padding:18px;background:linear-gradient(145deg,rgba(56,34,22,.8),rgba(22,12,9,.95));box-shadow:0 18px 42px #0008}.rf-frame.is-mobile{max-width:390px;margin:auto;padding:10px}.rf-grid{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(350px,.82fr);gap:18px}.rf-frame.is-mobile .rf-grid{display:block}.rf-column{min-width:0}.rf-label{margin:0 0 8px;color:#e7bb6e;font-size:.7rem;letter-spacing:.15em}.rf-chat{padding:14px;border:1px solid #a77c442f;border-radius:6px;background:#180e0c}.rf-message{margin:0 0 20px;padding:4px 0}.rf-message:last-child{margin-bottom:0}.rf-speaker{color:#c9b890;font-size:.78rem}.rf-message>p{margin:7px 0 12px;line-height:1.7}.rf-ledger{display:grid;gap:14px}.rf-ledger-section{margin-top:18px}.rf-location-memory{display:block;margin:0!important}.rf-location-memory>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--rf-line);background:rgba(0,0,0,.16)}.rf-location-memory>summary::-webkit-details-marker{display:none}.rf-location-memory>summary span{display:grid;gap:3px}.rf-location-memory>summary b{color:#f0ce83;font:600 1rem Georgia,serif}.rf-location-memory>summary small{color:var(--rf-muted);font-size:.73rem}.rf-location-memory>summary em{color:#f0ce83;font-style:normal}.rf-location-body{padding:10px;border:1px solid var(--rf-line);border-top:0}.rf-location-list{display:grid;gap:7px}.rf-location-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:start;padding:9px 10px;border:1px solid #c7954d33;background:#0003}.rf-location-row i{padding-top:3px;color:#e5b968}.rf-location-row span{display:grid;gap:3px;min-width:0}.rf-location-row strong{color:#f0e1c1;font:600 .93rem Georgia,serif;overflow-wrap:anywhere}.rf-location-row small,.rf-location-row p{color:var(--rf-muted);font-size:.73rem;overflow-wrap:anywhere}.rf-location-row p{margin:0}.rf-location-row>b{color:#efc776;font-size:.75rem;white-space:nowrap}.rf-frame .trpg-resource-events{margin:0}.rf-frame .trpg-group-board{margin:0}.rf-frame .tretaresia-mastery-training-panel,.rf-frame .trpg-mastery-training-card{margin:0}.rf-note{margin:9px 0 0;color:#bcae92;font-size:.77rem;line-height:1.5}.rf-subsection{margin-top:18px}.rf-subsection .rf-label{margin-top:0}@media(max-width:760px){.rf-shell{padding:20px 10px 45px}.rf-frame{padding:10px}.rf-grid{display:block}.rf-column+.rf-column{margin-top:22px}.rf-message>p{line-height:1.55}.rf-location-row{grid-template-columns:auto minmax(0,1fr) auto}}
 </style>
@@ -38,14 +38,14 @@
 </div></div>
 </main>
 <script type="module">
-import { renderMarketplaceChatCard } from '../../src/marketplace-chat-ui.js?v=0.50.0';
-import { normalizeMarketplaceEvent } from '../../src/marketplace-events.js?v=0.50.0';
-import { renderResourceEvents } from '../../src/resource-events-ui.js?v=0.50.0';
-import { renderGroupBoard } from '../../src/group-board-ui.js?v=0.50.0';
-import { normalizeGroupBoard } from '../../src/group-board.js?v=0.50.0';
-import { renderMasteryTrainingPanel, renderMasteryTrainingCard } from '../../src/mastery-training-ui.js?v=0.50.0';
-import { startMasteryTraining, trainingActionText } from '../../src/mastery-training.js?v=0.50.0';
-import { normalizeLocationMemory } from '../../src/location-memory.js?v=0.50.0';
+import { renderMarketplaceChatCard } from '../../src/marketplace-chat-ui.js?v=0.50.1';
+import { normalizeMarketplaceEvent } from '../../src/marketplace-events.js?v=0.50.1';
+import { renderResourceEvents } from '../../src/resource-events-ui.js?v=0.50.1';
+import { renderGroupBoard } from '../../src/group-board-ui.js?v=0.50.1';
+import { normalizeGroupBoard } from '../../src/group-board.js?v=0.50.1';
+import { renderMasteryTrainingPanel, renderMasteryTrainingCard } from '../../src/mastery-training-ui.js?v=0.50.1';
+import { startMasteryTraining, trainingActionText } from '../../src/mastery-training.js?v=0.50.1';
+import { normalizeLocationMemory } from '../../src/location-memory.js?v=0.50.1';
 
 const settings=()=>({language:'th'});
 const context={chat:[null,{mes:'Mira offers to buy the moonblade.'},{mes:'Alden opens the white horse shop.'}],chatMetadata:{},getCurrentChatId:()=> 'main-chat-systems-preview'};
