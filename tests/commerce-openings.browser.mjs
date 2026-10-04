@@ -19,7 +19,7 @@ const server=http.createServer(async(req,res)=>{
     }catch{res.writeHead(404).end();}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const artifacts='/workspace/artifacts/commerce-openings',fixArtifacts='/workspace/artifacts/roleforge-v0532',newArtifacts=new URL('docs/previews/commerce-v0552/',root).pathname;await mkdir(artifacts,{recursive:true});await mkdir(fixArtifacts,{recursive:true});await mkdir(newArtifacts,{recursive:true});
+const artifacts='/workspace/artifacts/commerce-openings',fixArtifacts='/workspace/artifacts/roleforge-v0532',newArtifacts=process.env.COMMERCE_ARTIFACT_DIR||new URL('docs/previews/commerce-v0552/',root).pathname;await mkdir(artifacts,{recursive:true});await mkdir(fixArtifacts,{recursive:true});await mkdir(newArtifacts,{recursive:true});
 async function receive(page,user,story,patch,type='normal'){
     await page.evaluate(async({user,type})=>{
         window.host.chat.push({is_user:true,name:'Noah',mes:user});await window.host.eventSource.emit('MESSAGE_SENT',window.host.chat.length-1);

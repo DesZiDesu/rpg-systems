@@ -1,7 +1,7 @@
-import {publicTradeDialogues,optionPriceFacts,publicInclusions} from './commerce-dialogue-facts.js?v=0.55.2';
-import {readCommercePrices} from './commerce-prices.js?v=0.55.2';
-import {storyMinute} from './commerce-rights.js?v=0.55.2';
-import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.55.2';
+import {publicTradeDialogues,optionPriceFacts,publicInclusions} from './commerce-dialogue-facts.js?v=0.55.3';
+import {readCommercePrices} from './commerce-prices.js?v=0.55.3';
+import {storyMinute} from './commerce-rights.js?v=0.55.3';
+import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.55.3';
 
 // Compile only facts already present in a Thai inn's current reply. No model
 // request, invented room number, stock, hidden feature or default stay length.
@@ -29,34 +29,35 @@ export function disclosedRoomCatalog(story,user,location,{clock,eventId}={}){
     const time=deadline?(/เที่ยง/u.test(deadline[2])?'12:00':deadline[2].padStart(5,'0')):null;
     const validUntil=deadline?{day:clock.day+(deadline[4]==='พรุ่งนี้'?1:0),time}:null;
     if(validUntil&&storyMinute(validUntil)<=storyMinute(clock))return null;
-    const keysPresented=/(?:หยิบ|ยื่น|ส่ง|วาง|นำ|พวง)[^.!?。\n]{0,80}กุญแจ|กุญแจ[^.!?。\n]{0,80}(?:วาง|ยื่น|ส่ง|ให้|บนโต๊ะ|บนเคาน์เตอร์)/iu.test(source.replace(/<[^>]*>/gu,' '));
-    if(!keysPresented)return null;
+    // A priced offer comes before payment/delivery. The inventory key is a
+    // scoped receipt on confirmation, not a required prop in the offer scene.
     // Deposits/extra fees need structured AI terms; do not guess which room a
     // second money phrase belongs to or silently drop an announced surcharge.
     if(/(?:มัดจำ|ค่าประกัน|ค่าธรรมเนียม|ค่าเข้า|ค่าบริการเพิ่ม)/u.test(agreement))return null;
     const options=dialogue.flatMap(block=>optionPriceFacts(block).map(price=>{
-        const prefix=price.preceding.replace(/^["“”\s]+/u,'').replace(/(?:\.{2,}|…)+/gu,' ').trim();
+        const prefix=price.preceding;
         const marker=[...prefix.matchAll(/ห้อง(?!น้ำ|ครัว)/gu)].at(-1)?.index;if(marker===undefined)return null;
-        const named=prefix.slice(marker).replace(/\s*(?:ก็)?(?:คืนละ|ต่อคืน|ราคา|ในราคา|คิดราคา|ค่าห้อง|เป็นเงิน)\s*$/u,'').trim();
+        const named=prefix.slice(marker).replace(/(?:\.{2,}|…)+/gu,' ').replace(/\s*(?:ก็)?(?:คืนละ|ต่อคืน|ราคา|ในราคา|คิดราคา|ค่าห้อง|เป็นเงิน)\s*$/u,'').trim();
         if(/(?:ไม่ว่าง|ไม่มี|แต่ถ้า|ห้อง(?!น้ำ))/u.test(named.replace(/^ห้อง(?:พัก)?/u,'')))return null;
         const name=named.replace(/\s*สำหรับ(?:หนึ่ง|1|๑)\s*คืน\s*$/u,'').split(/\s+(?=เตียง|นอนได้|พร้อม|มี(?:อ่าง|ระเบียง|ห้องน้ำ))/u)[0].trim();
         if(!name||name.length>120||/["“”]/u.test(name))return null;
-        return{block,price,name};
+        return{block,price,name,start:price.start-price.preceding.length+marker};
     }));
     if(!options.length||options.length>8||options.some(option=>!option)||readCommercePrices(agreement).length!==options.length)return null;
     const rules=agreement.match(/(?:กฎ|เงื่อนไข)[^?。\n]+/u)?.[0];
     const conditions=(rules||deadline?.[0]||'พัก 1 คืน · ยังไม่ระบุเวลาเช็กเอาต์').replace(/\s*เจ้าจะเลือก[\s\S]*$/u,'').trim();
     const supporting=spoken.filter(block=>block.name===seller&&!block.prices.length).map(block=>block.quote);
-    const items=options.map(({block,price,name},index)=>{
-        const detailEnd=options[index+1]?.block===block?options[index+1].price.start:block.quote.length;
-        const detail=block.quote.slice(Math.max(0,price.start-price.preceding.length),detailEnd).trim();
+    const items=options.map(({block,price,name,start},index)=>{
+        const detailEnd=options[index+1]?.block===block?options[index+1].start:block.quote.length;
+        const detail=block.quote.slice(start,detailEnd).replace(/\s*(?:ส่วน|แต่)(?:ถ้า|หาก)[\s\S]*$/u,'').replace(/["“”]+$/u,'').trim();
         // Single-option support applies to that exact room. For multiple rooms
         // avoid assigning "this price includes" from a separate ambiguous quote.
         const details=[detail,...(options.length===1?supporting:[])];
-        if(price.amount<=0||block.quote.length>600)return null;
-        return{itemName:name,category:'Access',description:details.join('\n').slice(0,1000),properties:[],price:price.amount,denomination:price.denomination,stockKnown:false,negotiableKnown:false,evidence:block.quote,
+        const evidenceEnd=Math.min(detailEnd,start+600);if(price.amount<=0||price.end>evidenceEnd)return null;
+        const evidence=block.quote.slice(start,evidenceEnd).trim();
+        return{itemName:name,category:'Access',description:details.join('\n').slice(0,1000),properties:[],price:price.amount,denomination:price.denomination,stockKnown:false,negotiableKnown:false,evidence,
             terms:{mode:validUntil?'access':'rental',scope:name,...(validUntil?{validUntil}:{}),conditions:[validUntil?conditions:`พัก 1 คืน · ยังไม่ระบุเวลาเช็กเอาต์${rules?' · '+conditions:''}`,...(options.length===1?supporting:[])].join('\n'),includes:publicInclusions(details.join('\n')),delivery:{name:`กุญแจ${name}`,category:'Key',description:`${name} · ${location}`}}};
     });
-    if(items.some(x=>!x)||new Set(items.map(x=>x.denomination)).size!==1||new Set(items.map(x=>x.itemName)).size!==items.length)return null;
-    return{kind:'npcShop',...(typeof eventId==='string'&&eventId?{id:eventId.slice(0,120)}:{}),location,evidence:dialogue[0].quote,seller:{name:seller},denomination:items[0].denomination,items};
+    if(items.some(x=>!x)||new Set(items.map(x=>x.itemName)).size!==items.length)return null;
+    return{kind:'npcShop',...(typeof eventId==='string'&&eventId?{id:eventId.slice(0,120)}:{}),location,evidence:items[0].evidence,seller:{name:seller},denomination:items[0].denomination,items};
 }

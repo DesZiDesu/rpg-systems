@@ -34,7 +34,10 @@ test('finishing newest interaction does not reopen an older unanswered catalog',
 test('resolved legacy offers never reopen or duplicate a narrative settlement',()=>{const f=fixture();f.context.chat[1].eventStatus='resolved';assert.equal(f.runtime.view(),null);assert.equal(f.calls(),0);});
 test('incidental normalization timestamps do not invalidate a genuine action',async()=>{const f=fixture();f.context.generateQuietPrompt=async()=>{f.setState(s=>{s.updatedAt=new Date().toISOString();});return JSON.stringify({narrative:'Done',decision:{outcome:'accept',amount:6}});};assert.equal((await f.perform('confirm')).ok,true);assert.equal(f.commits(),1);});
 
-test('buy/sell requests wait for a validated NPC offer instead of opening a keyword-based pending window',()=>{for(const mes of ['อยากซื้อของ','ฉันขอขายดาบ','ของนี้ขายยาก','พูดคำว่าซื้อเฉยๆ']){const f=fixture();f.context.chat=[{is_user:true,mes}];assert.equal(f.runtime.view(),null);assert.equal(f.calls(),0);}});
+test('real buy/sell requests show a read-only waiting state; mere commerce words do not',()=>{
+ for(const [mes,kind]of [['อยากซื้อของ','buy'],['“ผมอยากเช่าห้อง 1 คืนครับ”','buy'],['ฉันขอขายดาบ','sell']]){const f=fixture();f.context.chat=[{is_user:true,mes}];const view=f.runtime.view();assert.equal(view.pending.kind,kind);assert.equal(view.pending.waiting,true);assert.equal(view.available,false);assert.equal(view.session,undefined);assert.equal(f.calls(),0);}
+ for(const mes of ['ของนี้ขายยาก','พูดคำว่าซื้อเฉยๆ']){const f=fixture();f.context.chat=[{is_user:true,mes}];assert.equal(f.runtime.view(),null);assert.equal(f.calls(),0);}
+});
 test('auction requests with goods vocabulary show only the auction pending state',()=>{const f=fixture();f.context.chat=[{is_user:true,mes:'ขอดูสินค้าประมูล'}];assert.equal(f.runtime.view().pending.kind,'auction');f.settings.enableAuctions=false;assert.equal(f.runtime.view(),null);});
 test('future or OOC requests do not open a pending commerce UI',()=>{for(const mes of ['OOC: อยากประมูล','พรุ่งนี้อยากซื้อของ','ยังไม่อยากขาย']){const f=fixture();f.context.chat=[{is_user:true,mes}];assert.equal(f.runtime.view(),null);}});
 test('collecting an earlier auction purchase never reopens a pending composer before or after the next reply',()=>{
@@ -65,4 +68,21 @@ test('completed normal replies stop the pending wait even when the host generati
  // Separate instance with no offered event, reproducing a completed prose-only reply.
  let live=true,complete=false;const runtime=createCommerceRuntime({document:{},context:()=>f.context,state:f.state,settings:()=>f.settings,isBusy:()=>live,isReplyComplete:()=>complete,record:()=>null,variant:m=>m.mes,turnKey:id=>String(id),visible:v=>v});
  assert.equal(runtime.view().pending.waiting,true);complete=true;assert.equal(runtime.view().pending.waiting,false);runtime.refresh();runtime.refresh();assert.equal(f.calls(),0);live=false;assert.equal(runtime.view().pending.waiting,false);runtime.destroy();
+});
+
+import {mixedRoomUser,mixedRoomStory} from './fixtures/mixed-room-offer.mjs';
+test('a previously failed public reply reopens locally after upgrade, without replaying a settled offer or reading planning',()=>{
+ const state={player:{name:'Noah'},npcs:[],worldClock:{day:1,time:'10:20'},location:{place:'Oakland Inn'},inventory:[],progression:{currency:{gold:0,silver:10,copper:30}}};
+ const record={commerceOpening:{status:'no-disclosed-offer',source:'public-dialogue'},commerceIntent:{kind:'buy',evidence:mixedRoomUser}};
+ const flags={enableMarketplace:true,enableAuctions:true,autoTrack:true,language:'th'};
+ const context={chat:[{is_user:true,mes:mixedRoomUser},{is_user:false,mes:mixedRoomStory}],getCurrentChatId:()=> 'upgraded'};let calls=0;
+ const runtime=createCommerceRuntime({document:{},state:()=>structuredClone(state),context:()=>context,settings:()=>flags,
+  record:()=>record,variant:m=>String(m.mes.length),turnKey:id=>String(id),isBusy:()=>false,visible:v=>v,recordRequest:()=>calls++});
+ const view=runtime.view();assert.equal(view.session.items.length,2);assert.equal(view.session.denomination,'copper');runtime.refresh();runtime.refresh();assert.equal(calls,0);
+ flags.enableMarketplace=false;assert.equal(runtime.view(),null);flags.enableMarketplace=true;
+ record.commerceOpening.status='invalid-data';assert.equal(runtime.view().session,undefined);assert.equal(runtime.view().pending.status,'invalid-data');
+ record.commerceOpening.status='no-disclosed-offer';state.commerce={sessions:[{...view.session,status:'completed'}]};assert.equal(runtime.view(),null,'a settled old room cannot open a fresh invoice');
+ state.commerce={};record.commerceOpening.status='settled';assert.equal(runtime.view(),null);
+ record.commerceOpening.status='no-disclosed-offer';record.commerceIntent.kind='none';assert.equal(runtime.view(),null);
+ runtime.destroy();
 });

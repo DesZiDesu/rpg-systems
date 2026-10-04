@@ -18,3 +18,12 @@
    complete feedback readable within the composer at narrow mobile widths. */
 .rf-training-result{min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
 .rf-training-composer .rf-training-result :is(strong,p,small,b){min-width:0;max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal}
+
+/* Ability metadata shares the host's dl/span tags. Explicit grid sizes and
+   wrapping keep host nowrap and large dd styles out of the compact dock. */
+.rf-composer-dock .rf-incantation .rf-ability-details{grid-template-columns:minmax(0,25%) minmax(0,1fr);width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.rf-composer-dock .rf-incantation .rf-ability-details :is(dt,dd){font-size:11px;font-weight:400;line-height:1.6;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+.rf-composer-dock .rf-incantation :is(.rf-ability-note,.rf-ability-stats span,.rf-ability-title strong,.rf-ability-muted){min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+.rf-composer-dock .rf-incantation .rf-ability-stats{min-width:0;max-width:100%;flex-wrap:wrap}
+.rf-composer-dock .rf-incantation .rf-ability-title>div{min-width:0;flex:1}
+.rf-composer-dock .rf-incantation .rf-ability-select-label{min-width:0;max-width:45%}

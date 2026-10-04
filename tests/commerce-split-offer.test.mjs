@@ -58,5 +58,6 @@ test('latest exact no-patch reply opens a five-silver room and uses the separate
     assert.deepEqual(entry.terms.validUntil,{day:2,time:'12:00'});assert.equal(entry.terms.delivery.name,'กุญแจห้องพักธรรมดา');
     assert.match(entry.item.description,/เตียงเดี่ยว.*โต๊ะเล็ก/s);assert.ok(entry.terms.includes.some(x=>x.includes('อาหารเช้า')));
     const other=latestRoomStory.replace('name="Garrick" delivery="calm"','name="Other" delivery="calm"');
-    assert.equal(recoverMarketplaceShop(other,splitRoomUser,'Oakland Inn',[],{clock:{day:1,time:'10:16'}}),null,'another speaker cannot authorize this seller key');
+    const independent=recoverMarketplaceShop(other,splitRoomUser,'Oakland Inn',[],{clock:{day:1,time:'10:16'}});
+    assert.ok(independent,'a present room offer need not fetch its key first');assert.equal(independent.items[0].terms.validUntil,null,'another speaker cannot set this seller checkout');
 });

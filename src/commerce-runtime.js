@@ -1,9 +1,10 @@
-import {requestCommerceDecision} from './commerce-generation.js?v=0.55.2';
-import {inspectCommerceResponse} from './commerce-protocol.js?v=0.55.2';
-import {requestedCommerceKind} from './main-chat-systems.js?v=0.55.2';
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.55.2';
-import {createCommerceComposer} from './commerce-composer.js?v=0.55.2';
-import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.55.2';
+import {requestCommerceDecision} from './commerce-generation.js?v=0.55.3';
+import {inspectCommerceResponse} from './commerce-protocol.js?v=0.55.3';
+import {resolveMarketplaceReply} from './marketplace-events.js?v=0.55.3';
+import {requestedCommerceKind} from './main-chat-systems.js?v=0.55.3';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.55.3';
+import {createCommerceComposer} from './commerce-composer.js?v=0.55.3';
+import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.55.3';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.
@@ -11,7 +12,7 @@ const stateFingerprint=state=>JSON.stringify(state,(key,value)=>['createdAt','up
 
 export function createCommerceRuntime(api) {
     let busy=false,error='',errorId='',diagnostics='',request=0,destroyed=false,opening=null;
-    const openingAttempts=new WeakMap();
+    const openingAttempts=new WeakMap(),publicReplyCache=new WeakMap();
     let rendered='';
     const ui=createCommerceComposer({dock:api.dock,document:api.document||globalThis.document,language:()=>api.settings().language,perform:perform,poll:refresh,appearance:()=>api.settings()});
     const word=(th,en)=>api.settings().language==='th'?th:en;
@@ -21,8 +22,29 @@ export function createCommerceRuntime(api) {
         response:['AI ส่งคำตอบไม่ครบ ลองอีกครั้งได้','AI returned an incomplete response. Try again.'],outcome:['ผลลัพธ์ไม่ตรงกับการกระทำ ลองอีกครั้งได้','The outcome did not match the action. Try again.'],
         stale:['แชตหรือรายการเปลี่ยนระหว่างรอ กรุณาตรวจรายการปัจจุบัน','The chat or item changed. Review the current interaction.'],save:['บันทึกไม่สำเร็จ ข้อความ เงิน และของยังเป็นค่าเดิม','Save failed. The previous message, funds and items were restored.'],
         unavailable:['โฮสต์นี้ยังไม่รองรับ API และการบันทึกข้อความที่จำเป็น','The host does not provide the required API or chat saving.'],active:['มีงานประมูลที่เปิดอยู่แล้ว','Another auction is active'],closed:['รายการนี้จบแล้ว','This interaction is closed'],cancelled:['หยุดการขอคำตอบแล้ว','The request was stopped']};
+    function latestPublicOffer(context,state,commerce){
+        const id=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system),message=context.chat?.[id];
+        const userId=(context.chat||[]).findLastIndex(m=>m?.is_user&&!m.is_system),record=message&&api.record(id,message);
+        // Re-read only the latest saved *failed public* opening after upgrades.
+        // Never reinterpret a paid/cancelled offer or contradictory machine data.
+        if(!api.settings().enableMarketplace||!message||userId<0||id<userId||record?.marketplace||record?.commerceOpening?.status!=='no-disclosed-offer'
+            ||record.commerceOpening.source!=='public-dialogue'||record.commerceIntent?.kind==='none'||api.settings().autoTrack===false
+            ||commerce.sessions.some(s=>s.source.messageId===id&&!['offered','open'].includes(s.status)))return null;
+        const variant=api.variant(message),turnKey=api.turnKey(id),signature=JSON.stringify([variant,state.location?.place,state.worldClock,state.inventory]);
+        let cached=publicReplyCache.get(message);
+        if(cached?.signature!==signature){
+            const result=resolveMarketplaceReply({story:api.visible(message.mes),user:api.visible(context.chat[userId].mes),location:state.location?.place,
+                inventory:state.inventory,npcs:state.npcs,intent:record.commerceIntent,options:{clock:state.worldClock,eventId:`shop-${turnKey}-${variant}`}});
+            cached={signature,event:result.event};publicReplyCache.set(message,cached);
+        }
+        const event=cached.event;if(!event)return null;
+        const existing=commerce.sessions.find(s=>s.eventId===event.id);
+        const candidate=existing||createCommerceSession(event,{messageId:id,turnKey,variant});
+        return candidate&&['offered','open'].includes(candidate.status)?candidate:null;
+    }
     function candidates(){
         const context=api.context(),state=api.state(),commerce=normalizeCommerce(state.commerce,state),out=[],seen=new Set();let latestInteractionSeen=false;
+        const currentPublic=latestPublicOffer(context,state,commerce);if(currentPublic){out.push(currentPublic);seen.add(currentPublic.eventId);latestInteractionSeen=true;}
         for(let id=(context.chat||[]).length-1;id>=0;id--){const message=context.chat[id];if(!message||message.is_user||message.is_system)continue;
             const turnKey=api.turnKey(id),variant=api.variant(message),record=api.record(id,message);if(!record)continue;
             const events=[...(api.settings().enableAuctions&&record.auction?[record.auction]:[]),...(api.settings().enableMarketplace&&record.marketplace?.event&&(!['resolved','awaiting-reply'].includes(record.marketplace.status)||commerce.sessions.some(s=>s.eventId===record.marketplace.event.id))?[record.marketplace.event]:[])];
@@ -49,23 +71,27 @@ export function createCommerceRuntime(api) {
     function pendingView(context,state){
         const userId=(context.chat||[]).findLastIndex(m=>m?.is_user&&!m.is_system);if(userId<0)return null;
         const kind=requestedCommerceKind(context.chat[userId].mes,api.settings());
-        // Buying/selling windows open from a validated present AI offer, never
-        // from words in a user message, including while its reply is streaming.
-        if(kind!=='auction')return null;
+        // A genuine request shows a read-only waiting panel. It becomes a
+        // transaction only after the completed reply supplies a valid offer.
+        if(!kind)return null;
         const lastId=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system),last=context.chat[lastId];
         const complete=normalizeCommerce(state.commerce,state).sessions.some(s=>!['offered','open'].includes(s.status)&&s.source.messageId>userId);
         if(complete)return null;
         const waiting=lastId<userId||busy||api.isBusy()&&!api.isReplyComplete?.(last);
-        if(lastId>userId&&api.record(lastId,last)?.marketplace?.status==='resolved')return null;
+        const record=lastId>userId?api.record(lastId,last):null;
+        if(record?.marketplace?.status==='resolved'||record?.commerceIntent?.kind==='none'||['no-intent','settled'].includes(record?.commerceOpening?.status))return null;
         if(!waiting&&commerceOpeningRefused(api.visible(last?.mes||'')))return null;
-        return{pending:{kind,waiting},busy:waiting,token:`pending:${userId}`,available:false,error:opening&&opening.message===last?opening.error:'',diagnostics:opening&&opening.message===last?opening.diagnostics:''};
+        const rejected=record?.commerceOpening?.status==='invalid-data';
+        return{pending:{kind,waiting,status:waiting?'waiting':rejected?'invalid-data':'no-disclosed-offer'},busy:waiting,token:`pending:${userId}`,available:false,
+            error:opening&&opening.message===last?opening.error:rejected?word('ข้อมูลรายการไม่ตรงกับข้อเสนอ NPC จึงยังยืนยันซื้อขายไม่ได้','Catalog data conflicts with the NPC offer; confirmation is unavailable'):'',
+            diagnostics:opening&&opening.message===last?opening.diagnostics:rejected?JSON.stringify({release:globalThis.TretaresiaRelease||'0.55.3',system:kind,channel:'opening',error:'invalid-data',source:record.commerceOpening.source},null,2):''};
     }
     function view(){const candidate=candidates()[0],context=api.context(),state=api.state();if(!candidate)return pendingView(context,state);
         return{session:candidate,token:`${context.getCurrentChatId?.()}:${candidate.source.turnKey}:${candidate.source.variant}:${candidate.revision}`,
             playerName:state.player.name,busy:busy||api.isBusy(),error:candidate.id===errorId?error:'',diagnostics:candidate.id===errorId?diagnostics:'',available:!api.isBusy()&&!context.chat.at(-1)?.is_user&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
     function refresh(){if(destroyed)return;const value=view(),signature=JSON.stringify([api.settings().language,api.settings().coinStyle,value]);if(signature!==rendered){rendered=signature;ui.update(value);}}
     function failureReport(session,action,code,raw,details,channel='button'){
-        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.55.2',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
+        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.55.3',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
     }
     async function recoverOpening(input){
         const context=api.context(),message=context.chat?.[input.messageId],variant=message&&api.variant(message);

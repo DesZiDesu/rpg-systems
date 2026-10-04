@@ -1,13 +1,13 @@
-import {purchaseDeposit} from './commerce-rights.js?v=0.55.2';
-import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.55.2';
-import {commerceBasketQuote} from './commerce-engine.js?v=0.55.2';
-import {commerceIcon} from './commerce-icons.js?v=0.55.2';
-import {convertMoney} from './commerce-currency.js?v=0.55.2';
+import {purchaseDeposit} from './commerce-rights.js?v=0.55.3';
+import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.55.3';
+import {commerceBasketQuote} from './commerce-engine.js?v=0.55.3';
+import {commerceIcon} from './commerce-icons.js?v=0.55.3';
+import {convertMoney} from './commerce-currency.js?v=0.55.3';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
 export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {
     if(!doc?.createElement)return{update(){},destroy(){}};
-    const win=doc.defaultView||globalThis;let view=null,expanded=false,identity='',revision=-1,selected='',draft='',inputUnit='',chosen=null,observer,timer,queued=false;
+    const win=doc.defaultView||globalThis;let view=null,expanded=false,identity='',revision=-1,selected='',draft='',inputUnit='',chosen=null,observer,timer,queued=false,activate=false;
     const node=(tag,cls,text)=>{const el=doc.createElement(tag);el.className=cls||'';if(text!==undefined)el.textContent=text;return el;};
     const bar=node('section','rf-commerce-composer');bar.setAttribute('aria-label','RoleForge commerce');
     const t=(th,en)=>language()==='th'?th:en;
@@ -16,7 +16,7 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
     function detach(){dock?.remove('commerce');bar.remove();observer?.disconnect();observer=null;clearInterval(timer);timer=null;}
     function locate(){const textarea=doc.querySelector('#send_textarea'),anchor=doc.querySelector('#send_form')||textarea?.closest('form')||textarea?.parentElement;
         if(!textarea||!anchor?.parentElement||win.getComputedStyle(textarea).display==='none'||win.getComputedStyle(anchor).display==='none')return null;return anchor;}
-    function position(){if(!view)return;if(dock){bar.classList.remove('is-fixed');dock.panel('commerce',bar,{label:t({auction:'ประมูล',buy:'ซื้อ',sell:'ขาย'}[view.session?.kind||view.kind]||'ซื้อขาย',{auction:'Auction',buy:'Buy',sell:'Sell'}[view.session?.kind||view.kind]||'Commerce'),busy:view.busy});return;}const anchor=locate();if(!anchor)return;
+    function position(){if(!view)return;if(dock){bar.classList.remove('is-fixed');dock.panel('commerce',bar,{label:t({auction:'ประมูล',buy:'ซื้อ',sell:'ขาย'}[view.session?.kind||view.pending?.kind||view.kind]||'ซื้อขาย',{auction:'Auction',buy:'Buy',sell:'Sell'}[view.session?.kind||view.pending?.kind||view.kind]||'Commerce'),busy:view.busy,activate});activate=false;return;}const anchor=locate();if(!anchor)return;
         const anchorStyle=win.getComputedStyle(anchor),parentStyle=win.getComputedStyle(anchor.parentElement);
         const fixed=['fixed','absolute'].includes(anchorStyle.position)||(['flex','inline-flex'].includes(parentStyle.display)&&parentStyle.flexDirection.startsWith('row'));
         if(fixed){const rect=anchor.getBoundingClientRect(),memory=doc.querySelector('.rf-memory-composer-status.rf-memory-composer-fixed'),memoryRect=memory?.getBoundingClientRect();
@@ -41,12 +41,13 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         if(view.pending){
             const pending=view.pending;bar.replaceChildren();bar.dataset.kind=pending.kind;delete bar.dataset.session;bar.setAttribute('aria-busy',String(pending.waiting));
             const title=node('strong','rf-commerce-pending-title',pending.kind==='auction'?t('ประมูล','AUCTION'):pending.kind==='sell'?t('ขายสินค้า','SELL'):t('ซื้อสินค้า','BUY'));
-            const status=node('p','rf-commerce-status',pending.waiting?t('รอ NPC แสดงรายการและราคา…','Waiting for NPC goods and prices…'):t('คำตอบนี้ยังไม่มีข้อมูลเปิดรายการครบ ลอง Swipe หรือ Regenerate ได้','This reply lacks complete opening data. Try Swipe or Regenerate.'));
+            const status=node('p','rf-commerce-status',pending.waiting?t('รอ AI ตอบข้อเสนอและราคา…','Waiting for AI offer and prices…'):pending.status==='invalid-data'?t('ตรวจข้อมูลข้อเสนอไม่ผ่าน · เงินและของยังไม่เปลี่ยน','Offer data could not be validated; funds and items are unchanged'):t('NPC ยังไม่ได้เสนอรายการพร้อมราคา · พิมพ์ถามต่อในแชตได้','The NPC has not quoted a priced offer; continue in chat'));
             status.setAttribute('role','status');bar.append(title,status);if(!pending.waiting)showError();observe();position();return;
         }
         const session=view.session,lot=session.lots?.[session.index],kind=session.kind,auction=kind==='auction';
         const item=session.items?.find(entry=>entry.id===selected)||session.items?.find(entry=>entry.id===session.selectedId);
         const lines=chosen||session.basket||[{itemId:session.selectedId,quantity:item?.item.quantity||1}],basketTotal=!auction?commerceBasketQuote(session,lines):null;
+        if(!auction&&!inputUnit&&lines.length===1)inputUnit=session.items.find(entry=>entry.id===lines[0].itemId)?.quotedDenomination||session.denomination;
         const newItem=selected&&selected!==session.selectedId,quote=auction?lot?.price||lot?.openingBid:chosen?basketTotal:newItem?item?.askPrice:session.quote;
         bar.replaceChildren();bar.classList.toggle('has-purchase-types',kind==='buy');bar.dataset.kind=kind;bar.dataset.session=session.id;bar.setAttribute('aria-busy',String(Boolean(view.busy)));
         const header=node('button','rf-commerce-summary');header.type='button';header.setAttribute('aria-expanded',String(expanded));
@@ -54,11 +55,14 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         const copy=node('span','rf-commerce-summary-copy'),eyebrow=node('small','',auction?t('ประมูล','AUCTION'):kind==='sell'?t('ขาย · '+session.npc.name,'SELL · '+session.npc.name):t('ซื้อ · '+session.npc.name,'BUY · '+session.npc.name));
         const names=!auction?lines.map(line=>session.items.find(entry=>entry.id===line.itemId)?.item.name).filter(Boolean):[];
         const name=node('strong','',auction?lot?.name:lines.length>1?t(`${lines.length} รายการ · ${names.slice(0,2).join(' / ')}`,`${lines.length} items · ${names.slice(0,2).join(' / ')}`):names[0]?(names[0]+(lines[0].quantity>1?` ×${lines[0].quantity}`:'')):session.title);name.title=auction?lot?.name||'':names.join(' / ');copy.append(eyebrow,name);
-        const amount=moneyNode(quote,'rf-commerce-price'),chevron=node('span','rf-commerce-chevron');chevron.append(commerceIcon(doc,'chevron'));if(expanded)chevron.classList.add('is-expanded');header.append(glyph,copy,amount,chevron);
+        const quotedUnit=!auction&&lines.length===1?session.items.find(entry=>entry.id===lines[0].itemId)?.quotedDenomination:session.denomination;
+        const displayQuote=convertMoney(quote,session.denomination,quotedUnit||session.denomination);
+        const amount=moneyNode(displayQuote??quote,'rf-commerce-price',displayQuote===null?session.denomination:quotedUnit||session.denomination),chevron=node('span','rf-commerce-chevron');chevron.append(commerceIcon(doc,'chevron'));if(expanded)chevron.classList.add('is-expanded');header.append(glyph,copy,amount,chevron);
         header.addEventListener('click',()=>{expanded=!expanded;render();});bar.append(header);
         if(auction&&session.status==='offered'&&(session.entryFee||session.deposit))bar.append(terms());
         if(auction&&lot?.leader){const leader=lot.leader==='player'?view.playerName:session.participants.find(p=>p.id===lot.leader)?.name;bar.append(node('p','rf-commerce-leader',t('ผู้เสนอราคาสูงสุด · ','Leading · ')+leader));}
         if(!auction)bar.append(node('p','rf-commerce-leader',session.agreed?t('ตกลงราคาแล้ว · รอยืนยัน','Price agreed · Awaiting confirmation'):kind==='sell'?t('ข้อเสนอรับซื้อ · เลือกของที่จะขายได้','Purchase offer · Choose goods to sell'):t('ราคาทั้งตะกร้า · ยังไม่ยืนยัน','Basket total · Awaiting confirmation')));
+        if(session.priceUnitsUpdated)bar.append(node('p','rf-commerce-status',t('อัปเดตการแปลงหน่วยเงินของรายการเดิมแล้ว · ตรวจราคาก่อนยืนยัน','Updated the existing catalog currency conversion; review the price before confirmation')));
         if(kind==='buy'){
             const deposit=purchaseDeposit(lines.map(line=>({...line,entry:session.items.find(e=>e.id===line.itemId)})).filter(line=>line.entry));
             const info=node('p','rf-purchase-summary-terms');
@@ -66,6 +70,7 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
             info.textContent=modes.map(mode=>mode==='unknown'?t('เงื่อนไขยังไม่ครบ','Terms incomplete'):purchaseTypeLabel(mode,language()==='th')).join(' / ');
             if(deposit){info.append(doc.createTextNode(t(' · มัดจำเพิ่ม ',' · Additional deposit ')),moneyNode(deposit),doc.createTextNode(t(' · จ่ายรวม ',' · Total due ')),moneyNode((quote||0)+deposit));}
             else if(!modes.includes('unknown'))info.append(doc.createTextNode(t(' · ไม่มีมัดจำ',' · No deposit')));
+            if(session.items.some(entry=>entry.quotedDenomination&&entry.quotedDenomination!==session.denomination))info.append(doc.createTextNode(t(' · รวมตามอัตรา 1 ทอง = 100 เงิน · 1 เงิน = 100 ทองแดง',' · Rate: 1 gold = 100 silver; 1 silver = 100 copper')));
             bar.append(info);
         }
         if(expanded){
@@ -75,8 +80,8 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
                 for(const entry of session.items){
                     const line=lines.find(line=>line.itemId===entry.id),row=node('div','rf-commerce-basket-row'),check=node('input');check.type='checkbox';check.checked=Boolean(line);check.disabled=view.busy;check.setAttribute('aria-label',t('เลือก ','Select ')+entry.item.name);check.dataset.basketItem=entry.id;
                     const copy=node('label'),label=node('span','rf-purchase-choice-copy'),itemName=node('strong','',entry.item.name),quantity=node('input','rf-commerce-quantity');quantity.type='number';quantity.min='1';quantity.max=String(kind==='buy'&&(entry.terms?.mode&&entry.terms.mode!=='permanent'||entry.terms?.delivery)?1:kind==='sell'?entry.item.quantity:entry.stock);quantity.step='1';quantity.value=String(line?.quantity||entry.item.quantity||1);quantity.disabled=!line||view.busy||kind==='buy'&&(entry.terms?.mode&&entry.terms.mode!=='permanent'||entry.terms?.delivery);quantity.setAttribute('aria-label',t('จำนวน ','Quantity ')+entry.item.name);quantity.dataset.basketQuantity=entry.id;
-                    label.append(itemName);if(kind==='buy')label.append(node('small','',entry.termsRequired?t('เงื่อนไขยังไม่ครบ','Terms incomplete'):purchaseTypeLabel(entry.terms?.mode||'permanent',language()==='th')));copy.append(check,label);const update=()=>{const map=new Map(lines.map(line=>[line.itemId,line.quantity]));if(check.checked)map.set(entry.id,Number(quantity.value));else map.delete(entry.id);chosen=[...map].map(([itemId,quantity])=>({itemId,quantity}));draft='';render();};check.addEventListener('change',update);quantity.addEventListener('change',update);
-                    row.append(copy,quantity,moneyNode(entry.askPrice*Number(quantity.value)/(entry.item.quantity||1)));list.append(row);
+                    label.append(itemName);if(kind==='buy')label.append(node('small','',entry.termsRequired?t('เงื่อนไขยังไม่ครบ','Terms incomplete'):purchaseTypeLabel(entry.terms?.mode||'permanent',language()==='th')));copy.append(check,label);const update=()=>{const map=new Map(lines.map(line=>[line.itemId,line.quantity]));if(check.checked)map.set(entry.id,Number(quantity.value));else map.delete(entry.id);chosen=[...map].map(([itemId,quantity])=>({itemId,quantity}));draft='';inputUnit='';render();};check.addEventListener('change',update);quantity.addEventListener('change',update);
+                    row.append(copy,quantity,moneyNode((entry.quotedPrice??entry.askPrice)*Number(quantity.value)/(entry.item.quantity||1),'',entry.quotedDenomination||session.denomination));list.append(row);
                     if(kind==='buy'&&line){const terms=node('div','rf-purchase-option-terms');if(entry.item.description)terms.append(node('p','rf-commerce-description',entry.item.description));if(entry.item.properties?.length)terms.append(node('p','rf-commerce-description',entry.item.properties.join(' · ')));for(const text of purchaseTermLines(entry.terms,language()==='th',entry.termsRequired))terms.append(node('p','',text));if(entry.termsRequired)terms.append(node('p','rf-commerce-error',t('ยังไม่มีประเภทและเงื่อนไขครบ · Swipe หรือ Regenerate ได้','Purchase type/terms are incomplete · Swipe or Regenerate')));if(entry.terms?.deposit)terms.append(node('p','',t('มัดจำเพิ่ม ','Additional deposit ')+entry.terms.deposit+' '+t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[session.denomination],session.denomination)));list.append(terms);}
                 }
                 detail.append(list,node('p','rf-commerce-terms',kind==='buy'&&session.items.some(e=>e.terms?.mode&&e.terms.mode!=='permanent'||e.terms?.delivery)?session.items.some(e=>e.terms?.mode==='permanent'&&!e.terms.delivery&&!e.termsRequired)?t('ซื้อถาวรปรับจำนวนได้ · สิทธิ์และสัญญารายการละ 1 · เสนอราคาเป็นยอดรวม','Owned goods allow quantities · One contract per entry · Offers apply to the total'):t('เลือกสถานที่ สิทธิ์ หรือสัญญารายการละ 1 · เสนอราคาเป็นยอดรวม','One property, right or contract per entry · Offers apply to the total'):t('เลือกหลายรายการและจำนวนได้ · เสนอราคาเป็นยอดรวม','Choose items and quantities · Offers apply to the total')));
@@ -121,5 +126,5 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         position();
     }
     win.addEventListener('resize',schedule);win.visualViewport?.addEventListener('resize',schedule);win.visualViewport?.addEventListener('scroll',schedule);
-    return{update(value){view=value;if(value?.session?.id!==identity){identity=value?.session?.id||'';expanded=false;selected='';draft='';inputUnit='';chosen=null;revision=value?.session?.revision??-1;}else if(value?.session&&value.session.revision!==revision){revision=value.session.revision;selected=value.session.selectedId;draft='';inputUnit='';chosen=null;}render();},destroy(){view=null;detach();win.removeEventListener('resize',schedule);win.visualViewport?.removeEventListener('resize',schedule);win.visualViewport?.removeEventListener('scroll',schedule);}};
+    return{update(value){const nextIdentity=value?.session?.id||value?.token||'';activate=nextIdentity!==identity&&Boolean(value);view=value;if(nextIdentity!==identity){identity=nextIdentity;expanded=false;selected='';draft='';inputUnit='';chosen=null;revision=value?.session?.revision??-1;}else if(value?.session&&value.session.revision!==revision){revision=value.session.revision;selected=value.session.selectedId;draft='';inputUnit='';chosen=null;}render();},destroy(){view=null;detach();win.removeEventListener('resize',schedule);win.visualViewport?.removeEventListener('resize',schedule);win.visualViewport?.removeEventListener('scroll',schedule);}};
 }

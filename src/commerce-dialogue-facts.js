@@ -1,10 +1,15 @@
-import {parseStory} from './npc-core.js?v=0.55.2';
-import {readCommercePrices} from './commerce-prices.js?v=0.55.2';
+import {parseStory} from './npc-core.js?v=0.55.3';
+import {readCommercePrices} from './commerce-prices.js?v=0.55.3';
+
+export function publicCommerceStory(story){
+    return String(story??'').replace(/<(?:think|thinking|analysis)\b[^>]*>[\s\S]*?<\/(?:think|thinking|analysis)>/giu,'')
+        .replace(/\{CoT\}[\s\S]*?(?:>\s*end\s*\{CoT\}|\{\/CoT\})/giu,'');
+}
 
 // One source for public NPC facts. Price offsets bind options to their speaker;
 // punctuation, narration between quotes and delivery attributes do not matter.
 export function publicTradeDialogues(story){
-    return (parseStory(String(story??''))||[]).filter(block=>block.type==='dialogue'&&block.name&&block.text?.trim())
+    return (parseStory(publicCommerceStory(story))||[]).filter(block=>block.type==='dialogue'&&block.name&&block.text?.trim())
         .map(block=>({name:block.name,quote:block.text.trim(),prices:readCommercePrices(block.text)}));
 }
 export function optionPriceFacts(block){
@@ -28,7 +33,7 @@ export function quotedTradeRefused(text){
 export function publicInclusions(text){
     // Negation applies to inclusion; never report "ไม่รวมอาหารเช้า" as breakfast.
     const source=String(text),includes=[];
-    for(const match of source.matchAll(/(?<!ไม่)(?<!ไม่ได้)(?:ราคา(?:นี้)?(?:ได้)?รวม|รวม)([^.!?。\n]+?)(?=\s*(?:แล้ว|แต่|จ่ายเงิน|กฎ|เงื่อนไข|(?:เจ้า|ท่าน)จะ(?:เลือก|เอา))|$)/gu)){
+    for(const match of source.matchAll(/(?<!ไม่)(?<!ไม่ได้)(?:ราคา(?:นี้)?(?:ได้)?รวม|(?:แล้วก็|และ|พร้อม)รวม|(?<!\S)รวม)(?!กับ)([^.!?。\n]+?)(?=\s*(?:[.!?。]|แล้ว|แต่|จ่ายเงิน|กฎ|เงื่อนไข|(?:เจ้า|ท่าน)จะ(?:เลือก|เอา))|$)/gu)){
         const value=match[1].replace(/^ทั้ง/u,'').trim();if(value&&!includes.includes(value))includes.push(value);
     }
     return includes;

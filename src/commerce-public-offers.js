@@ -1,6 +1,6 @@
-import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.55.2';
-import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.55.2';
-import {readCommercePrices} from './commerce-prices.js?v=0.55.2';
+import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.55.3';
+import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.55.3';
+import {readCommercePrices} from './commerce-prices.js?v=0.55.3';
 
 // A same-reply compiler for explicit NPC prices when a model omits its machine
 // object. No API, payment, assumed stock, inferred item or invented NPC funds.
@@ -44,7 +44,7 @@ export function disclosedGoodsOffer(story,user,location,inventory=[],{eventId}={
         }
         if(items.length-before!==prices.length)return null;
     }
-    if(!items.length||items.length>40||new Set(items.map(item=>item.denomination)).size!==1||new Set(items.map(item=>item.itemName)).size!==items.length||items.some(item=>(item.price??item.askPrice)<=0))return null;
+    if(!items.length||items.length>40||new Set(items.map(item=>item.itemName)).size!==items.length||items.some(item=>(item.price??item.askPrice)<=0))return null;
     const common={location,evidence:blocks[0].quote,denomination:items[0].denomination,...(eventId?{id:eventId}:{})};
     return kind==='sell'?{...common,kind:'npcPurchase',buyer:{name:blocks[0].name},items}:{...common,kind:'npcShop',seller:{name:blocks[0].name},items};
 }
