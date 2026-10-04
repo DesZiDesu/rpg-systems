@@ -46,7 +46,7 @@ try{
  localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{enableMemorySummaries:true,language:'en',autoTrack:false,autoContinuity:true,memoryAutoSummary:false,chatPresentation:false}}));
  localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'Nova'},npcs:[],progression:{currency:{gold:6,silver:0,copper:120}},location:{place:'River',narrativeVersion:1},worldClock:{day:7,time:'23:00'},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true}}}));
  });
- await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready&&document.querySelector('#tretaresia-rpg-overlay.is-open.is-ready'));
+ await page.goto(url);await page.waitForFunction(()=>document.querySelector('#roleforge-memory-addons>details'));assert.equal(await page.locator('#roleforge-memory-addons>details').evaluate(node=>node.open),false,'saved enabled Memory starts collapsed');assert.equal(await page.locator('[data-memory-addons-panel]').isVisible(),false);await page.waitForFunction(()=>window.hStatsPreview?.ready&&document.querySelector('#tretaresia-rpg-overlay.is-open.is-ready'));
  await setupApi(page);
  await page.evaluate(async()=>{window.host.chat=[{is_user:true,name:'Nova',mes:'I go fishing at the river at night.'},{is_user:false,name:'Cora',mes:'Cora meets Nova at the river that night. It is their first meeting.'}];await window.host.eventSource.emit(window.host.eventTypes.CHAT_CHANGED);});
  let current=await panel(page);await page.waitForFunction(()=>document.querySelector('[data-memory-pending]')?.textContent==='2');await page.evaluate(()=>localStorage.setItem('memory-original-chat',JSON.stringify(window.host.chat)));

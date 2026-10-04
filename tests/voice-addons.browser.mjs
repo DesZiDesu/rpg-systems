@@ -28,7 +28,9 @@ try{
         assert.equal(await page.locator('.trpg-dialogue .rf-voice-play').count(),0);assert.equal(await page.locator('#roleforge-voice-addons').isVisible(),false);
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.length),0);
         await page.evaluate(()=>window.navigationSummaryPreview.openSettings());await toggle.check();
-        const panel=page.locator('[data-voice-panel]');await panel.waitFor({state:'visible'});
+        const panel=page.locator('[data-voice-panel]'),drawer=page.locator('#roleforge-voice-addons>details');
+        assert.equal(await drawer.evaluate(node=>node.open),false,'enabling Voice starts its settings collapsed');assert.equal(await panel.isVisible(),false);
+        await drawer.locator(':scope>summary').click();await panel.waitFor({state:'visible'});
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.length),0,'enabling without a key never calls ElevenLabs');
         await page.locator('#tretaresia-rpg-settings>.inline-drawer>.inline-drawer-content').evaluate(node=>node.style.display='none');
         await page.locator('#roleforge-voice-addons').scrollIntoViewIfNeeded();
@@ -85,7 +87,7 @@ try{
         await editor.locator('[data-speech-action="generate"]').click();await page.waitForFunction(()=>document.querySelector('.trpg-dialogue .rf-voice-play')?.textContent==='พักเสียง');
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').at(-1).body.inputs[0].text),'[laughs] ระวังทางข้างหน้านะคะ');assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').at(-1).body.inputs[0].voice_id),'demo-garrick','per-block voice override applies without changing NPC assignment');assert.equal(await editor.locator('[data-speech-action="generate"]').isDisabled(),true,'a playing draft cannot accidentally dispatch the same generation twice');
         await editor.locator('[data-speech-action="stop"]').click();
-        await page.keyboard.press('Escape');await page.reload();await page.waitForFunction(()=>window.voicePreview?.ready&&document.querySelector('[data-voice-connection]')?.textContent==='เชื่อมแล้ว');
+        await page.keyboard.press('Escape');await page.reload();await page.waitForFunction(()=>window.voicePreview?.ready&&document.querySelector('[data-voice-connection]')?.textContent==='เชื่อมแล้ว');assert.equal(await drawer.evaluate(node=>node.open),false,'saved enabled Voice still starts collapsed on reload');
         await page.locator('.trpg-dialogue .rf-voice-setup').first().click();await editor.waitFor();
         assert.equal(await editor.locator('[data-speech-text]').inputValue(),'[laughs] ระวังทางข้างหน้านะคะ','saved drafts survive reload separately from the original');assert.equal(await editor.locator('[data-speech-voice]').inputValue(),'demo-garrick');
         assert.equal(await page.evaluate(()=>window.host.chat[1].mes),original);
@@ -95,7 +97,7 @@ try{
         assert.equal(await page.locator('.trpg-header button').count(),0);
         await page.locator('.trpg-header').first().click();await page.locator('dialog.trpg-manager[open]').waitFor({state:'visible'});await page.keyboard.press('Escape');
         // Saved key restores independently of message-generation credentials.
-        await page.reload();await page.waitForFunction(()=>window.voicePreview?.ready&&document.querySelector('[data-voice-connection]')?.textContent==='เชื่อมแล้ว');
+        await page.reload();await page.waitForFunction(()=>window.voicePreview?.ready&&document.querySelector('[data-voice-connection]')?.textContent==='เชื่อมแล้ว');assert.equal(await drawer.evaluate(node=>node.open),false,'saved enabled Voice still starts collapsed on reload');
         await page.waitForFunction(()=>document.querySelectorAll('.trpg-dialogue .rf-voice-play').length===2&&!document.querySelector('.trpg-dialogue .rf-voice-play').disabled);
         await page.locator('.trpg-dialogue .rf-voice-play').first().click();await page.waitForFunction(()=>document.querySelector('.trpg-dialogue .rf-voice-play')?.textContent==='พักเสียง');
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),0,'IndexedDB audio is reused across reload');await page.evaluate(()=>window.voicePreview.finishAudio());

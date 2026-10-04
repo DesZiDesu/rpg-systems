@@ -1,4 +1,4 @@
-import {renderMemorySummaries} from './memory-summary-ui.js?v=0.55.0';
+import {renderMemorySummaries} from './memory-summary-ui.js?v=0.55.1';
 
 // A separate extension drawer, using the existing memory runtime and library.
 export function createMemoryAddons({settings,view,profiles=()=>[],stamp=()=>{},click,submit,change,document:doc=globalThis.document}) {
@@ -26,7 +26,7 @@ export function createMemoryAddons({settings,view,profiles=()=>[],stamp=()=>{},c
         if(!mount())return;
         const next=settings().enableMemorySummaries===true;
         root.hidden=!next;
-        if(next&&!enabled)drawer.open=true;
+        if(next&&!enabled)drawer.open=false;
         enabled=next;
         // Update ownership and visible state even when the drawer is collapsed.
         render(current);

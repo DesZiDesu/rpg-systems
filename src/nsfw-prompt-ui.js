@@ -1,5 +1,5 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.55.0';
-import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,selectAdultWriting,writingPreferencePrompt} from './nsfw-enhance.js?v=0.55.0';
+import {uiText,uiMarkup} from './ui-language.js?v=0.55.1';
+import {DEFAULT_ADULT_STYLE,normalizeWritingStyle,selectAdultWriting,writingPreferencePrompt} from './nsfw-enhance.js?v=0.55.1';
 
 // This renders the exact optional writing block sent by updatePrompt. Reading
 // or editing it never calls the model; only committed changes save settings.

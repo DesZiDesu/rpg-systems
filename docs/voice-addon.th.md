@@ -1,6 +1,6 @@
-# RoleForge Voice Addon — 0.55.0
+# RoleForge Voice Addon — 0.55.1
 
-Voice และ Memory ปิดโดยค่าเริ่มต้น ค่าเปิดใช้งานที่ผู้ใช้บันทึกไว้ยังคงอยู่ เปิด Voice ในตั้งค่าส่วนเสริม RoleForge แล้ว drawer **RoleForge Voice Addon** จะแสดงขึ้น ระบบใช้ ElevenLabs API key แยกจากการเจนข้อความของ SillyTavern
+Voice และ Memory ปิดโดยค่าเริ่มต้น ค่าเปิดใช้งานที่ผู้ใช้บันทึกไว้ยังคงอยู่ เปิด Voice ในตั้งค่าส่วนเสริม RoleForge แล้ว drawer **RoleForge Voice Addon** จะแสดงแบบพับไว้ กดหัวข้อเพื่อขยายเองได้ ระบบใช้ ElevenLabs API key แยกจากการเจนข้อความของ SillyTavern
 
 ## เลือกเสียง
 

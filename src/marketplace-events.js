@@ -1,9 +1,9 @@
-import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.55.0';
-import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.55.0';
-import {commerceDiscussionOnly} from './commerce-intent.js?v=0.55.0';
-import {normalizePurchaseTerms} from './commerce-rights.js?v=0.55.0';
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.55.0';
-import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.55.0';
+import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.55.1';
+import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.55.1';
+import {commerceDiscussionOnly} from './commerce-intent.js?v=0.55.1';
+import {normalizePurchaseTerms} from './commerce-rights.js?v=0.55.1';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.55.1';
+import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.55.1';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';

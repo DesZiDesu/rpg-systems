@@ -1,5 +1,5 @@
-import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.55.0';
-import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.55.0';
+import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.55.1';
+import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.55.1';
 
 // A same-reply compiler for explicit NPC prices when a model omits its machine
 // object. No API, payment, assumed stock, inferred item or invented NPC funds.
