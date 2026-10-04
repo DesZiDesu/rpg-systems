@@ -1,7 +1,7 @@
 import {MEMORY_LINK_KEY,MEMORY_FORMAT,emptyMemoryLibrary,normalizeMemoryLibrary,memoryAncestry,captureMemoryChat,memoryChapterValid,
-    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.52.0';
-import {createMemoryStore} from './memory-store.js?v=0.52.0';
-import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.52.0';
+    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.52.1';
+import {createMemoryStore} from './memory-store.js?v=0.52.1';
+import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.52.1';
 
 const busyPhases = new Set(['loading','archiving','waiting','counting','summarizing','validating','saving']);
 const errors = {
@@ -458,12 +458,14 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                             batchMessages:new Set(batch.map(source => JSON.stringify([source.chatId,source.key]))).size,batchSegments:batch.length,
                             batchSourceChars:batch.reduce((sum,source) => sum + source.text.length,0),requestStartedAt:new Date().toISOString(),requestFinishedAt:''});
                         await save(library,snapshot);requireCurrent(snapshot);
-                        recordRequest('memorySummary',`Memory summary ${completed + 1}${category ? ` / ${category}` : ''}`);
                         const requestController = new AbortController(), stopRequest = () => requestController.abort();
                         signal.addEventListener('abort',stopRequest,{once:true});
                         let response;
                         try {
-                            response = await abortable(() => request(snapshot.ctx,prompt,config().memorySummaryProfile,requestController.signal,config().memorySummaryMode,config().memorySummaryOutputTokens),signal,apiTimeout,stopRequest,'MEMORY_API_TIMEOUT');
+                            response = await abortable(() => {
+                                recordRequest('memorySummary',`Memory summary ${completed + 1}${category ? ` / ${category}` : ''}`);
+                                return request(snapshot.ctx,prompt,config().memorySummaryProfile,requestController.signal,config().memorySummaryMode,config().memorySummaryOutputTokens);
+                            },signal,apiTimeout,stopRequest,'MEMORY_API_TIMEOUT');
                         } catch (error) {
                             if (error?.message?.startsWith('MEMORY_')) throw error;
                             throw diagnoseMemoryApiFailure(error);

@@ -1,4 +1,10 @@
-# ROLEFORGE — v0.52.0
+# ROLEFORGE — v0.52.1
+
+## v0.52.1 — Native API request notifications
+
+- Show a native SillyTavern information toast before each RoleForge AI request, identifying training, commerce, Memory Summary, NPC generation/image reading, H-Stats or Manual Sync. Include every NPC retry and summary batch; local browsing, copying, queued work and normal user chat do not add a request notification. Extension-started story actions are described as main API calls rather than additional tasks.
+- Keep notifications nonblocking and request counters session-only. Use escaped native toast text and allow separate notifications for repeated calls. [Thai usage notes](docs/api-request-notices.th.md).
+- Include a grayscale, interactive [RoleForge Memory Addons design preview](docs/previews/memory-addons-concept.html) with a separate extension drawer, compact actions, token budget and collapsible sections. This is a preview for selection; the production Summary UI and memory storage stay in their current locations until the design is approved. [Preview details and mobile images](docs/memory-addons-design.th.md).
 
 ## v0.52.0 — Incantations and separate composer training
 

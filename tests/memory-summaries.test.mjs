@@ -91,7 +91,7 @@ function fixture(options = {}) {
     });
     const store = {get:async owner => {storageCalls.push('get');return data.has(owner) ? structuredClone(data.get(owner)) : null;},put:async(owner,value) => { storageCalls.push('put');if(options.failSave?.(value))throw Error('MEMORY_STORAGE_WRITE_FAILED'); data.set(owner,structuredClone(value)); }};
     const runtime = createMemorySummaries({context:()=>context,owner:ctx=>ctx.owner,settings:()=>settings,state:()=>state,visible:value=>value.replace(/<!--[^]*?-->/g,''),scene:()=>({day:7,time:'23:00',location:'River'}),store,
-        notify:(type,message)=>notices.push({type,message}),changed:view=>phases.push(view.job.status),parse:JSON.parse,timeout:Object.hasOwn(options,'timeout') ? options.timeout : 100,
+        recordRequest:options.recordRequest || (()=>{}),notify:(type,message)=>notices.push({type,message}),changed:view=>phases.push(view.job.status),parse:JSON.parse,timeout:Object.hasOwn(options,'timeout') ? options.timeout : 100,
         saveMetadata:async()=>options.metadataFail ? false : true,isGenerating:()=>options.generating?.() || false,continuity:options.continuity || (()=>{}),
         request:async(ctx,prompt,profile,signal)=>{calls.push({prompt,profile,signal});return responder(prompt,signal);}});
     return {runtime,data,notices,phases,calls,storageCalls,context,state,settings,setResponder:value=>{responder=value;}};
@@ -787,4 +787,15 @@ test('a tokenizer fallback re-bounds a multibyte prior recap before judging the 
     assert(new TextEncoder().encode(recap).length<=Math.floor(f.settings.memorySummaryInputBudget/4));
     assert(new TextEncoder().encode(prompt).length<=f.settings.memorySummaryInputBudget);
     assert.equal(f.runtime.view().coverage.pendingMessages,0);
+});
+
+
+test('memory request notices precede each dispatched batch and do not appear during local reads',async()=>{
+ let f;const records=[];
+ f=fixture({settings:{memorySummaryBatchSize:1},recordRequest:(kind,reason)=>{assert.equal(records.length,f.calls.length);records.push({kind,reason});}});
+ await f.runtime.open();await f.runtime.capture({force:true});await f.runtime.preparePrompt('River');
+ assert.equal(records.length,0);
+ await f.runtime.run();assert.ok(f.calls.length>0);assert.equal(records.length,f.calls.length);
+ assert.ok(records.every(record=>record.kind==='memorySummary'));
+ const before=records.length;await f.runtime.preparePrompt('River');await f.runtime.export();assert.equal(records.length,before);
 });
