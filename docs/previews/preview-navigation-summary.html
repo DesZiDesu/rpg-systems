@@ -65,10 +65,10 @@
         <span class="composer-avatar">N</span><button class="native-control" type="button" title="Chat menu">☰</button><button class="native-control" type="button" title="Extensions" id="extensionsMenuButton">✦</button><button class="native-control" type="submit" id="send_but" title="Send message" aria-label="Send message">➤</button><button class="native-control" type="button" id="mes_stop" title="Stop generation" aria-label="Stop generation">■</button>
     </form></div>
     <div id="extensionsMenu"></div>
-    <aside class="preview-extension-drawer" id="preview-extension-drawer" aria-label="Extension settings" hidden>
+    <div id="extensions-settings-button"><button type="button" class="drawer-toggle" hidden></button><div id="rm_extensions_block" class="closedDrawer"><aside class="preview-extension-drawer" id="preview-extension-drawer" aria-label="Extension settings" hidden>
         <header><strong>Extensions · ส่วนเสริม</strong><button type="button" id="preview-settings-close" title="Close extension settings" aria-label="Close extension settings">×</button></header>
         <div id="extensions_settings2"></div>
-    </aside>
+    </aside></div></div>
     <script type="module">
         import {startNavigationSummaryPreview} from './navigation-summary-fixture.js';
         await startNavigationSummaryPreview();

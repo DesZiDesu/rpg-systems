@@ -63,7 +63,7 @@ export async function startNavigationSummaryPreview() {
     if(['carousel','menu','grid'].includes(params.get('mode')))storedSettings.tretaresia_rpg.moduleNavigationMode=params.get('mode');
     const eventTypes=Object.fromEntries(['CHAT_CHANGED','MESSAGE_SENT','GENERATION_STARTED','GENERATION_AFTER_COMMANDS','MESSAGE_RECEIVED',
         'MESSAGE_SWIPED','MESSAGE_DELETED','CHARACTER_MESSAGE_RENDERED','GENERATION_ENDED','GENERATION_STOPPED','STREAM_TOKEN_RECEIVED'].map(type=>[type,type]));
-    window.host={name1:'Nova',extensionSettings:storedSettings,chatMetadata:readStored(metadataKey,freshMetadata()),chat:structuredClone(demoChat),
+    window.host={name1:'Nova',name2:'Nova · คืนที่แม่น้ำ',extensionSettings:storedSettings,chatMetadata:readStored(metadataKey,freshMetadata()),chat:structuredClone(demoChat),
         characters:[{name:'Navigation preview',avatar:'roleforge-navigation-summary-demo.png',first_mes:'',data:{extensions:{tretaresia_rpg_npcs:demoNpcs}}}],
         characterId:0,eventTypes,eventSource:{on(type,callback){const list=callbacks.get(type)||[];list.push(callback);callbacks.set(type,list);},
             async emit(type,...args){await Promise.all((callbacks.get(type)||[]).map(callback=>callback(...args)));}},
@@ -97,7 +97,9 @@ export async function startNavigationSummaryPreview() {
         if(frame.getAttribute('src')?.startsWith(prefix))frame.src=new URL(frame.getAttribute('src').slice(prefix.length),root).href;}));
     iframeObserver.observe(document.body,{childList:true,subtree:true});
     const open=async(tab='status')=>{
+        if(tab==='summaries'){await waitFor(()=>document.querySelector('#roleforge-memory-addons > details'),'Memory drawer mount');openSettings();const drawer=document.querySelector('#roleforge-memory-addons > details');if(!drawer.open)drawer.querySelector('summary').click();await waitFor(()=>document.querySelector('#roleforge-memory-addons .rf-memory-workspace'),'Memory drawer');return;}
         document.querySelector('#preview-extension-drawer').hidden=true;
+        document.querySelector('#rm_extensions_block')?.classList.add('closedDrawer');
         if(!document.querySelector('#tretaresia-rpg-overlay.is-open'))document.querySelector('#tretaresia-rpg-wand-launcher')?.click();
         await waitFor(()=>document.querySelector('#tretaresia-rpg-overlay.is-open.is-ready'),'RoleForge interface');
         // Existing native tab callbacks handle all routing in this demo.
@@ -106,7 +108,7 @@ export async function startNavigationSummaryPreview() {
     };
     const openSettings=()=>{
         if(document.querySelector('#tretaresia-rpg-overlay.is-open'))document.querySelector('#tretaresia-rpg-close')?.click();
-        const drawer=document.querySelector('#preview-extension-drawer');drawer.hidden=false;drawer.scrollTop=0;
+        const drawer=document.querySelector('#preview-extension-drawer');drawer.hidden=false;drawer.scrollTop=0;document.querySelector('#rm_extensions_block')?.classList.remove('closedDrawer');
     };
     window.navigationSummaryPreview={api,settingsKey,metadataKey,owner,memoryOwner,chatId,demoChat,ready:false,open,openSettings,
         setApiMode(mode){api.mode=mode;document.querySelector('#preview-api').value=mode;},resolveRequest(){api.pending?.();},
@@ -122,9 +124,10 @@ export async function startNavigationSummaryPreview() {
     };
     document.querySelector('#preview-open').onclick=()=>open();
     document.querySelector('#preview-settings').onclick=openSettings;
+    document.querySelector('#extensions-settings-button > .drawer-toggle').onclick=openSettings;
     document.querySelector('#extensionsMenuButton').onclick=openSettings;
-    document.querySelector('#preview-settings-close').onclick=()=>{document.querySelector('#preview-extension-drawer').hidden=true;};
-    document.querySelector('#preview-summarize').onclick=async()=>{await open('summaries');await waitFor(()=>document.querySelector('[data-memory-pending]')&&document.querySelector('[data-panel="summaries"] [data-action="memory-summary-run"]:not(:disabled)'),'Memory capture');document.querySelector('[data-panel="summaries"] [data-action="memory-summary-run"]').click();};
+    document.querySelector('#preview-settings-close').onclick=()=>{document.querySelector('#preview-extension-drawer').hidden=true;document.querySelector('#rm_extensions_block')?.classList.add('closedDrawer');};
+    document.querySelector('#preview-summarize').onclick=async()=>{await open('summaries');await waitFor(()=>document.querySelector('[data-memory-pending]')&&document.querySelector('#roleforge-memory-addons [data-action="memory-summary-run"]:not(:disabled)'),'Memory capture');document.querySelector('#roleforge-memory-addons [data-action="memory-summary-run"]').click();};
     document.querySelector('#preview-next').onclick=()=>api.pending?.();
     document.querySelector('#preview-api').value=api.mode;document.querySelector('#preview-api').onchange=event=>{api.mode=event.target.value;};
     document.querySelector('#preview-reset').onclick=async()=>{localStorage.removeItem(settingsKey);localStorage.removeItem(metadataKey);await window.navigationSummaryPreview.resetMemory();};

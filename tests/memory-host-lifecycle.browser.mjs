@@ -39,8 +39,8 @@ async function createPage(width) {
     return {page,errors,apiRequests};
 }
 async function start(page) {
-    await page.locator('[data-panel="summaries"].is-active [data-action="memory-summary-run"]').click();
-    await page.locator('#tretaresia-rpg-close').click();
+    await page.locator('[data-memory-addons-panel] [data-action="memory-summary-run"]').click();
+    await page.locator('#preview-settings-close').click();
 }
 async function emit(page,type,...args) {
     await page.evaluate(async ({type,args}) => { await window.host.eventSource.emit(window.host.eventTypes[type],...args); },{type,args});
@@ -58,9 +58,9 @@ async function complete(page) {
     assert.equal((await saved(page)).length,3);
     await page.evaluate(() => window.navigationSummaryPreview.open('summaries'));
     await page.waitForFunction(() => document.querySelector('[data-memory-pending]')?.textContent === '0');
-    await page.locator('[data-panel="summaries"].is-active [data-memory-pending]').scrollIntoViewIfNeeded();
+    await page.locator('[data-memory-addons-panel] [data-memory-pending]').scrollIntoViewIfNeeded();
     await page.waitForFunction(() => {
-        const node = document.querySelector('[data-panel="summaries"].is-active [data-memory-pending]');
+        const node = document.querySelector('[data-memory-addons-panel] [data-memory-pending]');
         if (!node || !node.getBoundingClientRect().height) return false;
         for (let current = node;current;current = current.parentElement) {
             const style = getComputedStyle(current);

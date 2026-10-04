@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.52.1
+# ROLEFORGE — v0.52.2
+
+## v0.52.2 — RoleForge Memory Addons drawer
+
+- Move Summary from the RoleForge overlay into its own **RoleForge Memory Addons** drawer in native Extension Settings. Enable it through the existing optional-system switch under RoleForge; an already enabled Summary stays enabled. Disabling pauses memory work and hides the drawer while keeping the library and preferences. No separate extension installation or storage migration is required.
+- Use the approved compact grayscale layout: current chat, summarized/pending/saved counts, summary and new-chat actions, memory token budget, and collapsible search/archive, categories, insights, automatic summary, context, API, linked-history, backup and job sections. Native drawer collapse preserves running jobs; new failures expose diagnostic details. Settings save independently by group, and unsaved drafts survive progress refreshes while clearing on chat changes.
+- Keep the existing IndexedDB archive, source evidence, revisions, search, backups, branch isolation and new-chat handoff. Memory progress stays above the chatbar; **View** opens the native memory drawer directly. Reading/searching/rendering makes no additional AI call. Summary requests retain the native pre-request API notifications introduced in v0.52.1.
+- [Thai usage and verification](docs/memory-addons.th.md). Update the extension and reload once; do not clear site data. Browser verification uses controlled provider replies and real local memory storage.
 
 ## v0.52.1 — Native API request notifications
 

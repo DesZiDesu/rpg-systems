@@ -37,11 +37,11 @@ try {
    };
   });
   await page.evaluate(()=>window.navigationSummaryPreview.open('summaries'));
-  let panel=page.locator('[data-panel="summaries"].is-active');
+  let panel=page.locator('[data-memory-addons-panel]');
   await panel.locator('.rf-memory-settings>summary').click();
   await panel.locator('[name="memorySummaryStrategy"]').selectOption('single');
   await panel.locator('[name="memorySummaryOutputTokens"]').fill('4000');
-  await panel.locator('[data-form="memory-summary-settings"] [type="submit"]').click();
+  await panel.locator('[data-memory-settings-group="api"] [type="submit"]').click();
   await panel.locator('[data-action="memory-summary-run"]').click();
   await panel.locator('.rf-memory-job[data-status="ready"]').waitFor();
   assert.equal(await page.evaluate(()=>window.smartCalls.length),1);
@@ -50,6 +50,7 @@ try {
   assert.equal(await panel.locator('.rf-memory-atlas [data-memory-section^="category:"]').count(),15);
   await panel.locator('[data-memory-section="category:keywords"]>summary').click();
   assert.match(await panel.locator('[data-memory-section="category:keywords"] blockquote').innerText(),/Nova/);
+  await panel.locator('[data-memory-section="job"]>summary').click();
   assert.match(await panel.locator('[data-memory-api-calls]').innerText(),/1/);
   await panel.locator('.rf-memory-atlas').scrollIntoViewIfNeeded();
   await page.screenshot({path:`${artifacts}/memory-atlas-${width}.png`});
@@ -57,7 +58,7 @@ try {
   await page.evaluate(()=>window.host.chat.push({is_user:true,name:'Nova',mes:'Nova visits the village market.'},{is_user:false,name:'Cora',mes:'Cora walks to the village market with Nova.'}));
   if (!await panel.locator('[name="memorySummaryStrategy"]').isVisible()) await panel.locator('.rf-memory-settings>summary').click();
   await panel.locator('[name="memorySummaryStrategy"]').selectOption('categories');
-  await panel.locator('[data-form="memory-summary-settings"] [type="submit"]').click();
+  await panel.locator('[data-memory-settings-group="api"] [type="submit"]').click();
   await panel.locator('[data-action="memory-summary-run"]').click();
   await panel.locator('.rf-memory-job[data-status="ready"]').waitFor();
   assert.equal(await page.evaluate(()=>window.smartCalls.length),16);
@@ -119,7 +120,7 @@ try {
   await page.evaluate(()=>window.navigationSummaryPreview.open('hstats'));
   await page.screenshot({path:`${artifacts}/full-handoff-hstats-${width}.png`});
   await page.evaluate(()=>window.navigationSummaryPreview.open('summaries'));
-  await page.waitForFunction(()=>document.querySelector('[data-panel="summaries"].is-active [data-memory-section="category:lore"] .rf-memory-fact'));
+  await page.waitForFunction(()=>document.querySelector('[data-memory-addons-panel] [data-memory-section="category:lore"] .rf-memory-fact'));
   assert.equal(await panel.locator('[data-memory-section^="category:"]').count(),15);
   assert(await panel.locator('[data-memory-section="insight:changes"] .rf-memory-fact').count()>0,'correction evidence survives the native new-chat handoff');
   assert.deepEqual(errors,[]);console.log(`PASS smart memory modes/call counts/output budget/categories/quotes and full native chat handoff with Chat NPCs, H-Stats, alternates, references, inventory and media/IndexedDB fallback at ${width}px`);

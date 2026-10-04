@@ -28,7 +28,7 @@ async function noOverflow(page,width){const sizes=await page.evaluate(()=>({docu
     width:document.querySelector('#roleforge-module-navigation').clientWidth}));
     assert(sizes.document<=width+1,`document overflow at ${width}: ${JSON.stringify(sizes)}`);
     assert(sizes.navigation<=sizes.width+1,`navigation overflow at ${width}: ${JSON.stringify(sizes)}`);}
-async function panel(page,id){await page.evaluate(id=>window.navigationSummaryPreview.open(id),id);await page.locator(`[data-panel="${id}"].is-active`).waitFor();return page.locator(`[data-panel="${id}"].is-active`);}
+async function panel(page,id){await page.evaluate(id=>window.navigationSummaryPreview.open(id),id);const selector=id==='summaries'?'[data-memory-addons-panel]':`[data-panel="${id}"].is-active`;await page.locator(selector).waitFor();return page.locator(selector);}
 async function chooseLayoutInSettings(page,mode,width){
     await page.evaluate(()=>window.navigationSummaryPreview.openSettings());
     const control=page.locator('#tretaresia-rpg-module-navigation');
@@ -71,8 +71,8 @@ try {
             await page.locator('.rf-nav-picker').waitFor({state:'visible'});
             assert.equal(await page.locator('[data-rf-nav-launch]').getAttribute('aria-expanded'),'true');
             await capture(page,`navigation-${mode}-open`,width);
-            assert(await page.locator('[data-rf-nav-tab="summaries"]').count(),'enabled memory module listed');
-            assert.equal(await page.locator('[data-rf-nav-tab]').count(),17,'every existing RoleForge tab available directly');
+            assert.equal(await page.locator('[data-rf-nav-tab="summaries"]').count(),0,'memory summary moved out of RoleForge navigation');
+            assert.equal(await page.locator('[data-rf-nav-tab]').count(),16,'every existing RoleForge tab available directly');
             assert.equal(await page.locator('[data-rf-nav-tab="npcs"] .rf-nav-choice-label').innerText(),'NPC','NPC tile uses a short, readable label');
             if(mode==='menu'){
                 assert.equal(await page.evaluate(()=>document.activeElement.hasAttribute('data-rf-nav-close')),true,'opening Quick Menu does not focus Search or summon a mobile keyboard');
@@ -104,12 +104,12 @@ try {
                 await page.locator('.tretaresia-rpg-panel-footer').evaluate(node=>node.style.removeProperty('padding-bottom'));
                 await page.setViewportSize({width,height:900});
                 await page.locator('[data-rf-nav-launch]').click();
-                await page.locator('[data-rf-nav-search]').fill('summaries');
+                await page.locator('[data-rf-nav-search]').fill('memories');
                 assert.equal(await page.locator('[data-rf-nav-tab]').count(),1);
                 await capture(page,'navigation-menu-search',width);
             }
-            await page.locator('[data-rf-nav-tab="summaries"]').click();
-            await page.locator('[data-panel="summaries"].is-active .rf-memory-workspace').waitFor();
+            await page.locator('[data-rf-nav-tab="memories"]').click();
+            await page.locator('[data-panel="memories"].is-active').waitFor();
             assert.equal(await page.locator('.rf-nav-picker').isVisible(),false);
             await capture(page,`navigation-${mode}-selected`,width);
             await panel(page,'status');
@@ -123,7 +123,7 @@ try {
         assert.equal(await page.evaluate(()=>window.navigationSummaryPreview.api.calls.length),0,'preview startup does not call the summary API');
         await current.locator('[data-action="memory-summary-run"]').click();
         await page.waitForFunction(()=>typeof window.navigationSummaryPreview.api.pending==='function');
-        await page.locator('#tretaresia-rpg-close').click();
+        await page.locator('#preview-settings-close').click();
         await page.locator('.rf-memory-composer-status[data-status="summarizing"]').waitFor({state:'visible'});
         assert.equal(await page.locator('#send_but').isVisible(),false);
         assert.equal(await page.locator('.rf-memory-composer-stop').isVisible(),true);
@@ -148,14 +148,14 @@ try {
         assert.equal(await page.locator('#send_but').isVisible(),true);
         await capture(page,'main-chat-memory-error',width);
         await page.locator('[data-memory-composer-action="open"]').click();
-        await page.locator('[data-panel="summaries"].is-active').waitFor({state:'visible'});
-        const diagnostics=page.locator('.rf-memory-diagnostics');await diagnostics.locator('summary').click();
+        await page.locator('[data-memory-addons-panel]').waitFor({state:'visible'});
+        const job=page.locator('[data-memory-section="job"]');if(!await job.evaluate(node=>node.open))await job.locator(':scope>summary').click();const diagnostics=page.locator('.rf-memory-diagnostics');await diagnostics.locator('summary').click();
         assert.equal(await page.locator('[data-memory-error-code]').innerText(),'MEMORY_API_REQUEST_FAILED');
         assert.equal(await page.locator('[data-memory-pending]').innerText(),'7','saved batch survives failed retry');
         await capture(page,'memory-error-diagnostics',width);
         await page.evaluate(()=>window.navigationSummaryPreview.setApiMode('success'));
         await page.locator('[data-action="memory-summary-retry"]').click();
-        await page.locator('#tretaresia-rpg-close').click();
+        await page.locator('#preview-settings-close').click();
         await page.locator('.rf-memory-composer-status[data-status="ready"]').waitFor({state:'visible',timeout:20000});
         assert.equal(await page.locator('#send_but').isVisible(),true);
         assert.match(await page.locator('.rf-memory-composer-progress').innerText(),/7\/7/);
@@ -177,7 +177,7 @@ try {
         await page.waitForFunction(()=>document.querySelector('[data-memory-pending]')?.textContent==='1');
         await page.locator('[data-action="memory-summary-run"]').click();
         await page.waitForFunction(()=>typeof window.navigationSummaryPreview.api.pending==='function');
-        await page.locator('#tretaresia-rpg-close').click();
+        await page.locator('#preview-settings-close').click();
         await page.locator('.rf-memory-composer-stop').waitFor({state:'visible'});
         const disabled = await page.evaluate(()=>{
             const control=document.querySelector('[data-optional-setting="enableMemorySummaries"]');
@@ -191,7 +191,7 @@ try {
         // The preview never touches another demo's settings or any user owner.
         assert.equal(await page.evaluate(()=>localStorage.getItem('roleforge-hstats-preview-settings')),null);
         assert.deepEqual(errors,[]);
-        console.log(`PASS actual Extension Settings layouts carousel/menu/grid with no modal preferences, all 17 direct module selections/search/persistence, unchanged RPG state, composer summary Stop/save/cancel/error/retry/success and native Send identity at ${width}px`);
+        console.log(`PASS actual Extension Settings layouts carousel/menu/grid with no modal preferences, all 16 direct module selections/search/persistence, unchanged RPG state, composer summary Stop/save/cancel/error/retry/success and native Send identity at ${width}px`);
         await page.close();
     }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

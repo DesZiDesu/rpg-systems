@@ -5,7 +5,7 @@ export const normalizeModuleNavigationMode = value => MODULE_NAVIGATION_MODES.in
 
 const GROUPS = [
     {id:'character', label:['Character', 'ตัวละคร'], tabs:['status', 'inventory', 'skills', 'techniques', 'rank']},
-    {id:'story', label:['Story', 'เนื้อเรื่อง'], tabs:['scene', 'quests', 'memories', 'summaries', 'agenda']},
+    {id:'story', label:['Story', 'เนื้อเรื่อง'], tabs:['scene', 'quests', 'memories', 'agenda']},
     {id:'commerce', label:['Commerce', 'การค้า'], tabs:['marketplace']},
     {id:'people', label:['People & connections', 'ผู้คนและความสัมพันธ์'], tabs:['groups', 'household', 'npcs', 'hstats', 'mail']},
     {id:'tools', label:['Tools', 'เครื่องมือ'], tabs:['music', 'systems']},

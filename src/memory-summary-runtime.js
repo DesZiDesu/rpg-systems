@@ -1,7 +1,7 @@
 import {MEMORY_LINK_KEY,MEMORY_FORMAT,emptyMemoryLibrary,normalizeMemoryLibrary,memoryAncestry,captureMemoryChat,memoryChapterValid,
-    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.52.1';
-import {createMemoryStore} from './memory-store.js?v=0.52.1';
-import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.52.1';
+    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.52.2';
+import {createMemoryStore} from './memory-store.js?v=0.52.2';
+import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.52.2';
 
 const busyPhases = new Set(['loading','archiving','waiting','counting','summarizing','validating','saving']);
 const errors = {
@@ -254,8 +254,8 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
         view() {
             const snapshot = descriptor(), library = libraries.get(snapshot.owner);
             const ancestry = memoryAncestry(snapshot.ctx,snapshot.owner);
-            if (!enabled()) return {ready:false,enabled:false,job:{status:'disabled'},coverage:{messages:0,pendingMessages:0,pendingSegments:0,pendingReplies:0,chapters:0,stale:0},chapters:[],chats:[],results:[],query:'',ancestry,settings:config(),prompt:{tokens:0,selected:[]}};
-            if (!library || !same(active)) return {ready:false,job:{status:snapshot.owner && snapshot.chatId ? 'loading' : 'idle'},coverage:{messages:0,pendingMessages:0,pendingSegments:0,pendingReplies:0,chapters:0,stale:0},chapters:[],chats:[],results:[],query,ancestry,settings:config()};
+            if (!enabled()) return {ready:false,owner:snapshot.owner,chatId:snapshot.chatId,enabled:false,job:{status:'disabled'},coverage:{messages:0,pendingMessages:0,pendingSegments:0,pendingReplies:0,chapters:0,stale:0},chapters:[],chats:[],results:[],query:'',ancestry,settings:config(),prompt:{tokens:0,selected:[]}};
+            if (!library || !same(active)) return {ready:false,owner:snapshot.owner,chatId:snapshot.chatId,job:{status:snapshot.owner && snapshot.chatId ? 'loading' : 'idle'},coverage:{messages:0,pendingMessages:0,pendingSegments:0,pendingReplies:0,chapters:0,stale:0},chapters:[],chats:[],results:[],query,ancestry,settings:config()};
             const coverage = memoryCoverage(library,snapshot.chatId);
             const linked = ancestry.map(id => memoryCoverage(library,id));
             coverage.linkedPendingSegments = linked.reduce((total,entry) => total + entry.pendingSegments,0);

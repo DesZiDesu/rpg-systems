@@ -11,12 +11,12 @@ const root=new URL('../',import.meta.url), artifacts=process.env.MODULE_NAVIGATI
 await mkdir(artifacts,{recursive:true});
 const fixture=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/styles/module-navigation.css">
 <style>body{margin:0;background:#090a08;color:#eee9de;font:14px system-ui,sans-serif}button{width:min-content;display:flex;font-size:18px;margin:5px 0;filter:grayscale(.5);border-radius:8px}select{width:100%;font-size:18px}#tretaresia-rpg-overlay{width:100%;max-width:860px;margin:auto;overflow:hidden}.fixture-heading{display:flex;justify-content:space-between;padding:22px 20px 18px;border-bottom:1px solid #7b6634}.fixture-heading small{display:block;letter-spacing:2px;color:#b8a06a;font-size:8px}.fixture-heading strong{display:block;letter-spacing:1px;color:#e3c77b;font-size:23px;margin-top:5px}.fixture-heading span{align-self:center;color:#b9b09b;font-size:23px}.old-carousel{display:flex;justify-content:space-between;align-items:center;border:1px solid #6d5d37;color:#dbbf71;margin:12px;padding:22px 14px;font-size:16px;letter-spacing:2px}.tretaresia-rpg-panel{height:100dvh;overflow:hidden}.tretaresia-app-shell{display:grid;height:100%;grid-template-rows:auto auto minmax(0,1fr) auto}.tretaresia-rpg-panel-footer{display:flex;align-items:center;min-height:82px;padding:18px 20px;background:#11120f;border-top:1px solid #5e5230}.fixture-content{min-height:0;overflow:auto;padding:25px 20px;background:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:40px 40px}.fixture-content h1{font-size:21px;font-weight:500;letter-spacing:1px}.fixture-content p{color:#827b67;font-size:13px}</style></head><body>
-<div id="tretaresia-rpg-overlay"><section class="tretaresia-rpg-panel"><div class="tretaresia-app-shell"><header class="fixture-heading"><div><small>ROLEFORGE ROLE-PLAY</small><strong>ROLEFORGE</strong></div><span>×</span></header><div id="carousel" class="old-carousel"><span>‹</span><span>STATUS</span><span>01 / 17</span><span>›</span></div><nav id="navigation"></nav><main class="fixture-content"><h1 id="active-title">Status</h1><p>Character overview</p></main><footer class="tretaresia-rpg-panel-footer">Current location · Sync latest turn</footer></div></section></div>
+<div id="tretaresia-rpg-overlay"><section class="tretaresia-rpg-panel"><div class="tretaresia-app-shell"><header class="fixture-heading"><div><small>ROLEFORGE ROLE-PLAY</small><strong>ROLEFORGE</strong></div><span>×</span></header><div id="carousel" class="old-carousel"><span>‹</span><span>STATUS</span><span>01 / 16</span><span>›</span></div><nav id="navigation"></nav><main class="fixture-content"><h1 id="active-title">Status</h1><p>Character overview</p></main><footer class="tretaresia-rpg-panel-footer">Current location · Sync latest turn</footer></div></section></div>
 <script type="module">
 import {mountModuleNavigation} from '/src/module-navigation.js';
-const ids=['status','scene','inventory','skills','techniques','quests','memories','summaries','agenda','rank','groups','household','npcs','hstats','mail','music','systems'];
-const en=['Status','Scene','Inventory','Skills','Powers','Quests','Story Memory','Memory Summaries','Appointments','Rank','Party & Guild','Household','NPCs','H-Stats','Mailbox','Music','System Audit'];
-const th=['สถานะ','ฉากปัจจุบัน','กระเป๋า','สกิล','พลัง','เควสต์','ความทรงจำเนื้อเรื่อง','สรุปความทรงจำ','นัดหมาย','แรงก์','ปาร์ตี้และกิลด์','ครัวเรือน','NPC','H-Stats','จดหมาย','เพลง','ตรวจสอบระบบ'];
+const ids=['status','scene','inventory','skills','techniques','quests','memories','agenda','rank','groups','household','npcs','hstats','mail','music','systems'];
+const en=['Status','Scene','Inventory','Skills','Powers','Quests','Story Memory','Appointments','Rank','Party & Guild','Household','NPCs','H-Stats','Mailbox','Music','System Audit'];
+const th=['สถานะ','ฉากปัจจุบัน','กระเป๋า','สกิล','พลัง','เควสต์','ความทรงจำเนื้อเรื่อง','นัดหมาย','แรงก์','ปาร์ตี้และกิลด์','ครัวเรือน','NPC','H-Stats','จดหมาย','เพลง','ตรวจสอบระบบ'];
 const language=new URLSearchParams(location.search).get('language')||'en';
 window.tabs=ids.map((id,index)=>({id,label:(language==='th'?th:en)[index]}));window.activations=[];
 // Layout belongs to Extension Settings; the component accepts only updates.
@@ -65,16 +65,16 @@ try{
         assert(!await page.locator('#carousel').isVisible());
         assert.equal(await page.locator('#carousel').innerHTML(),original,'classic DOM is preserved');
         await page.locator('[data-rf-nav-launch]').click();
-        assert.equal(await page.locator('[data-rf-nav-tab]').count(),17);
+        assert.equal(await page.locator('[data-rf-nav-tab]').count(),16);
         assert.equal(await page.locator('[data-rf-nav-launch]').getAttribute('aria-expanded'),'true');
         assert.equal(await page.evaluate(()=>document.activeElement.hasAttribute('data-rf-nav-close')),true,'opening a menu focuses a control without summoning the mobile keyboard');
         await page.locator('[data-rf-nav-search]').focus();
         await page.evaluate(()=>window.navigation.update({activeId:'status',tabs:window.tabs.map(tab=>({...tab}))}));
         assert.equal(await page.evaluate(()=>document.activeElement.hasAttribute('data-rf-nav-search')),true,'a deliberate search keeps focus during unchanged progress refresh');
         if(language==='en'){
-            await page.locator('[data-rf-nav-search]').fill('summ');
+            await page.locator('[data-rf-nav-search]').fill('story memory');
             assert.equal(await page.locator('[data-rf-nav-tab]').count(),1);
-            assert.equal(await page.locator('[data-rf-nav-tab]').getAttribute('data-rf-nav-tab'),'summaries');
+            assert.equal(await page.locator('[data-rf-nav-tab]').getAttribute('data-rf-nav-tab'),'memories');
             await page.locator('[data-rf-nav-search]').fill('definitely no such module');
             assert.equal(await page.locator('[data-rf-nav-tab]').count(),0);
             assert(await page.locator('.rf-nav-empty').isVisible());
@@ -117,14 +117,14 @@ try{
         });
         await page.setViewportSize({width,height:960});
         await page.locator('[data-rf-nav-launch]').click();
-        await page.locator('[data-rf-nav-tab="summaries"]').click();
-        assert.deepEqual(await page.evaluate(()=>window.activations),['systems','systems','systems','summaries']);
+        await page.locator('[data-rf-nav-tab="memories"]').click();
+        assert.deepEqual(await page.evaluate(()=>window.activations),['systems','systems','systems','memories']);
         assert.equal(await page.locator('[data-rf-nav-launch]').getAttribute('aria-expanded'),'false');
-        assert.match(await page.locator('.rf-nav-current-label').innerText(),language==='th'?/สรุปความทรงจำ/:/Memory Summaries/);
+        assert.match(await page.locator('.rf-nav-current-label').innerText(),language==='th'?/ความทรงจำเนื้อเรื่อง/:/Story Memory/);
         await page.evaluate(()=>window.setMode('grid'));
         await page.locator('[data-rf-nav-launch]').click();
-        assert.equal(await page.locator('[data-rf-nav-tab]').count(),17);
-        assert.equal(await page.locator('[aria-current="page"]').getAttribute('data-rf-nav-tab'),'summaries');
+        assert.equal(await page.locator('[data-rf-nav-tab]').count(),16);
+        assert.equal(await page.locator('[aria-current="page"]').getAttribute('data-rf-nav-tab'),'memories');
         // Every module is a normal keyboard-focusable button in both layouts.
         assert(await page.locator('[data-rf-nav-tab]').evaluateAll(nodes=>nodes.every(node=>node.tabIndex===0)));
         const fit=await page.locator('#navigation').evaluate(node=>{
@@ -142,7 +142,7 @@ try{
             });
             assert.equal(grid.columns,1,'five character modules occupy a single row at 390px');
             assert(grid.targets,'all module targets meet 44px minimum size');
-            assert(grid.allVisible,'all seventeen modules are visible without scrolling at 390px');
+            assert(grid.allVisible,'all sixteen modules are visible without scrolling at 390px');
         }
         const iconBounds=await page.locator('.rf-nav-choice .rf-nav-icon').evaluateAll(nodes=>nodes.map(svg=>{
             const bounds=svg.getBBox();return {id:svg.closest('[data-rf-nav-tab]').dataset.rfNavTab,x:bounds.x,y:bounds.y,right:bounds.x+bounds.width,bottom:bounds.y+bounds.height};
@@ -150,7 +150,7 @@ try{
         assert(iconBounds.every(bounds=>bounds.x>=1&&bounds.y>=1&&bounds.right<=23&&bounds.bottom<=23),`inset SVG contours: ${JSON.stringify(iconBounds)}`);
         await page.locator('.rf-nav-picker').screenshot({path:`${artifacts}/grid-${width}-${language}.png`});
         await page.locator('[data-rf-nav-tab="npcs"]').click();
-        assert.deepEqual(await page.evaluate(()=>window.activations),['systems','systems','systems','summaries','npcs']);
+        assert.deepEqual(await page.evaluate(()=>window.activations),['systems','systems','systems','memories','npcs']);
         await page.reload();await page.waitForFunction(()=>window.ready);
         assert.equal(await page.locator('#navigation').getAttribute('data-mode'),'grid','mode persists through Extension Settings owner');
         assert.equal(await page.locator('[data-rf-nav-mode], .rf-nav-preferences').count(),0);
