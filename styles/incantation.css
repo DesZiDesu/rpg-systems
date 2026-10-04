@@ -13,3 +13,8 @@
 .rf-training-diagnostics summary{cursor:pointer;padding:6px 0}
 .rf-training-diagnostics pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:160px;overflow:auto;background:#151515;padding:8px;font:10px/1.5 monospace}
 @media(max-width:350px){.rf-composer-dock .rf-training-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Host themes may apply nowrap and minimum widths to result text. Keep the
+   complete feedback readable within the composer at narrow mobile widths. */
+.rf-training-result{min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+.rf-training-composer .rf-training-result :is(strong,p,small,b){min-width:0;max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal}

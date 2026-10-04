@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
+import {currentRoomUser,currentRoomStory} from './fixtures/current-room-offer.mjs';
 import {roomUser,roomQuote,roomStory} from './fixtures/disclosed-rooms.mjs';
 import {latestRoomStory,latestRoomThoughts} from './fixtures/latest-room-offer.mjs';
 import {splitRoomUser,splitRoomStory} from './fixtures/split-room-offer.mjs';
@@ -18,7 +19,7 @@ const server=http.createServer(async(req,res)=>{
     }catch{res.writeHead(404).end();}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const artifacts='/workspace/artifacts/commerce-openings',fixArtifacts='/workspace/artifacts/roleforge-v0532',newArtifacts=new URL('docs/previews/commerce-v0550/',root).pathname;await mkdir(artifacts,{recursive:true});await mkdir(fixArtifacts,{recursive:true});await mkdir(newArtifacts,{recursive:true});
+const artifacts='/workspace/artifacts/commerce-openings',fixArtifacts='/workspace/artifacts/roleforge-v0532',newArtifacts=new URL('docs/previews/commerce-v0552/',root).pathname;await mkdir(artifacts,{recursive:true});await mkdir(fixArtifacts,{recursive:true});await mkdir(newArtifacts,{recursive:true});
 async function receive(page,user,story,patch,type='normal'){
     await page.evaluate(async({user,type})=>{
         window.host.chat.push({is_user:true,name:'Noah',mes:user});await window.host.eventSource.emit('MESSAGE_SENT',window.host.chat.length-1);
@@ -41,7 +42,7 @@ try{
         const page=await browser.newPage({viewport:{width,height:950},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
         await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
         await page.addInitScript(()=>{
-            localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'th',autoTrack:true,autoContinuity:false,chatPresentation:true,enableMarketplace:true,enableAuctions:false,enableMemorySummaries:false,eventNotifications:false}}));
+            localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'th',autoTrack:true,autoContinuity:false,chatPresentation:true,enableMarketplace:true,enableIncantation:true,enableAuctions:false,enableMemorySummaries:false,eventNotifications:false}}));
             localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'Noah'},npcs:[],skills:[],inventory:[{id:'sword',name:'ดาบเหล็ก',quantity:1,category:'Weapon'},{id:'shield',name:'โล่ไม้',quantity:1,category:'Armor'}],location:{place:'Oakland Inn',narrativeVersion:1},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true},worldClock:{day:7,time:'18:30'},progression:{currency:{gold:2,silver:100,copper:50}}}}));
         });
         await page.goto(`http://127.0.0.1:${server.address().port}${base}docs/previews/preview-h-stats.html?lang=th`);await page.waitForFunction(()=>window.hStatsPreview?.ready);
@@ -158,6 +159,36 @@ try{
         await page.evaluate(()=>window.responses.push({narrative:'<tr-narrative>Garrick รับดาบเหล็กเพียงเล่มเดียวและจ่ายเงินสิบสองเหรียญเงิน โล่ไม้ยังอยู่กับผู้เล่น</tr-narrative>',decision:{outcome:'accept',amount:12}}));
         await sale.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
         const sold=await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state);assert.equal(sold.progression.currency.silver,91);assert.equal(sold.inventory.some(item=>item.id==='sword'),false);assert.equal(sold.inventory.find(item=>item.id==='shield').quantity,1);assert.equal(await page.evaluate(()=>window.calls.length),7);
-        assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);console.log(`PASS latest exact no-patch/ellipsis/separate-checkout reply and split room quote; speech editor preserves the open commerce window; same-reply room/goods/sale lists with zero extra opening API; one-night key receipt and repeat-event protection; excluded sale item retained and exact wallet settlement at ${width}px`);await page.close();
+        // Exact latest report: a training window is already open, no machine
+        // marketplace object exists, and opening must make commerce visible.
+        await receive(page,'ฉันมีวิชา Fire Ball','<tr-narrative>คุณรู้จักวิชา Fire Ball แต่ยังไม่เข้าใจรายละเอียด</tr-narrative>',{ops:[['upsert','proficiencies.techniques',{id:'fire',name:'Fire Ball',category:'Magic',description:'',proficiency:0}]]});
+        const abilities=page.locator('.rf-incantation');await abilities.locator('[data-ability-select]').selectOption('technique:fire');await abilities.locator('[data-ability-action="train"]').click();
+        const training=page.locator('.rf-training-composer');await training.locator('[data-ability-action="practice-understanding"]').waitFor();
+        await receive(page,currentRoomUser,currentRoomStory,null);await bar.locator('[data-commerce-action="confirm"]').waitFor();
+        assert.equal(await training.isVisible(),false);assert.equal(await bar.isVisible(),true);assert.equal(await page.locator('.rf-composer-dock [role="tab"]').count(),3);
+        assert.equal(await page.evaluate(()=>window.calls.length),7,'latest screenshot opens alongside training with zero extra API');
+        const opening=await page.evaluate(()=>Object.values(window.host.chatMetadata.tretaresia_rpg_social_events||{}).flatMap(v=>Object.values(v)).at(-1)?.commerceOpening);
+        if(opening){assert.equal(opening.status,'ready');assert.equal(opening.source,'public-dialogue');}
+        await bar.locator('.rf-commerce-summary').click();assert.match(await bar.innerText(),/5 เงิน/);assert.match(await bar.innerText(),/ไม่รวมอาหารเช้า/);
+        await page.locator('.rf-composer-dock').screenshot({path:`${newArtifacts}current-room-training-${width}.png`});
+        await page.evaluate(()=>window.responses.push({narrative:'<tr-narrative>การ์ริกรับเงินห้าเหรียญเงินแล้วส่งกุญแจห้องพักให้</tr-narrative><tr-dialogue name="Garrick">พักหนึ่งคืน ไม่รวมอาหารเช้านะ</tr-dialogue>',decision:{outcome:'accept',amount:5}}));
+        await bar.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
+        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),86);
+        const currentRight=await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.commerce.rights.at(-1));assert.equal(currentRight.ends,null);
+        await page.locator('[data-dock-panel="training"]').click();
+        await page.addStyleTag({content:'.rf-training-result small{white-space:nowrap}'});
+        await page.evaluate(()=>window.responses.push({outcome:'partial',title:'ทำความเข้าใจ Fire Ball',narration:'คุณเข้าใจว่าลูกไฟเกิดจากการรวบรวมพลังให้เป็นรูปทรง แล้วรักษาสมาธิขณะส่งไปยังเป้าหมาย',masteryDelta:3,reason:'Character is attempting to understand Fire Ball in Oakland Inn. Long feedback must remain completely visible rather than disappear beyond the edge of the mobile training window. '+ 'LongUnbrokenReason'.repeat(20),abilityDetails:{targetId:'technique:fire',description:'รวมพลังเป็นลูกไฟแล้วปล่อยไปยังเป้าหมาย',ability:{kind:'magic',effect:'สร้างลูกไฟเพื่อโจมตีเป้าหมายที่มองเห็น',element:'ไฟ',costKnown:false,costs:[],cooldown:{unit:'unknown'},strengths:['ใช้โจมตีจากระยะไกล'],weaknesses:['เสียสมาธิได้ระหว่างร่าย'],incantation:{required:true,language:'th',short:'เปลวไฟ จงพุ่งไป!',full:'เปลวไฟผู้ส่องทางในราตรี\nจงรวมตัวในฝ่ามือของข้า\nแล้วพุ่งไปยังเป้าหมายที่ข้ามองเห็น!',silent:{available:false}}}}}));
+        await training.locator('[data-ability-action="practice-understanding"]').click();await training.locator('.rf-training-result').waitFor();
+        assert.equal(await page.evaluate(()=>window.calls.length),9);assert.match(await training.innerText(),/บันทึกรายละเอียด/);
+        const learned=await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.proficiencies.techniques.find(t=>t.id==='fire'));
+        assert.equal(learned.proficiency,3);assert.equal(learned.ability.element,'ไฟ');assert.equal(learned.ability.costKnown,false);assert.match(learned.description,/รวมพลัง/);assert.notEqual(learned.ability.incantation.short,learned.ability.incantation.full);
+        assert.match(await page.evaluate(()=>window.calls.at(-1).prompt),/SAME training JSON add abilityDetails/);
+        const fits=await training.locator('.rf-training-result').evaluate(el=>({width:el.clientWidth,scroll:el.scrollWidth,whiteSpace:getComputedStyle(el.querySelector('small')).whiteSpace}));
+        assert.ok(fits.scroll<=fits.width+1,JSON.stringify(fits));assert.equal(fits.whiteSpace,'pre-wrap');
+        await page.locator('.rf-composer-dock').screenshot({path:`${newArtifacts}understanding-result-${width}.png`});
+        await training.locator('[data-ability-action="stop"]').first().click();await abilities.waitFor({state:'visible'});
+        await abilities.locator('[data-ability-action="details"]').click();assert.match(await abilities.innerText(),/สร้างลูกไฟ/);
+        await page.locator('.rf-composer-dock').screenshot({path:`${newArtifacts}learned-fire-ball-${width}.png`});
+        assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);console.log(`PASS latest current-room reply alongside training, understanding writes persisted ability details and long result wraps; exact no-patch/ellipsis/separate-checkout reply and split room quote; speech editor preserves the open commerce window; same-reply room/goods/sale lists with zero extra opening API; one-night key receipt and repeat-event protection; excluded sale item retained and exact wallet settlement at ${width}px`);await page.close();
     }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

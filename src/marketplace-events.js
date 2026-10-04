@@ -1,9 +1,9 @@
-import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.55.1';
-import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.55.1';
-import {commerceDiscussionOnly} from './commerce-intent.js?v=0.55.1';
-import {normalizePurchaseTerms} from './commerce-rights.js?v=0.55.1';
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.55.1';
-import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.55.1';
+import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.55.2';
+import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.55.2';
+import {commerceDiscussionOnly} from './commerce-intent.js?v=0.55.2';
+import {normalizePurchaseTerms} from './commerce-rights.js?v=0.55.2';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.55.2';
+import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.55.2';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -21,10 +21,11 @@ const nonCurrentRequest = /(?:auction|ประมูล|พรุ่งนี�
 // hypothetical visit. Keep this exception local to exact, named shop catalogs.
 const pricingCondition = /(?:ถ้า|หาก)(?:เป็น|อยาก(?:ได้)?|ต้องการ|เลือก|เอา|(?:เจ้า|ท่าน|คุณ)(?:อยาก(?:ได้)?|ต้องการ|เลือก|เอา))\s*|\bif\s+(?:you\s+(?:want|prefer|choose|take)|it(?:'s| is))\s+/giu;
 function pricedEntriesDisclosed(event,story,entries=event.items){
+    const allEntries=event.items||entries;
     return entries.every(entry=>{
         const ownQuote=entry.evidence||event.evidence,menu=evidenceText(ownQuote),start=menu.indexOf(evidenceText(entry.item.name));
         if(!evidenceText(story).includes(menu)||!namedInteraction((event.seller||event.buyer).name,ownQuote,story)||start<0)return false;
-        const end=Math.min(...event.items.map(other=>other===entry?-1:menu.indexOf(evidenceText(other.item.name))).filter(index=>index>start),menu.length);
+        const end=Math.min(...allEntries.map(other=>other===entry?-1:menu.indexOf(evidenceText(other.item.name))).filter(index=>index>start),menu.length);
         return readCommercePrices(menu.slice(start+evidenceText(entry.item.name).length,end)).some(price=>price.amount===entry.askPrice&&price.denomination===entry.denomination);
     });
 }
@@ -152,7 +153,7 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
     const kind = String(raw?.kind || raw?.type || raw?.event || '').toLocaleLowerCase();
     const purchase=/purchase|offer/u.test(kind);
     if(intent&&intent.kind!==(purchase?'sell':'buy'))return null;
-    const quotedPrice=[...String(story||'').matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)].some(match=>COMMERCE_PRICE_PATTERN.test(match[1]));
+    const quotedPrice=[...String(story||'').matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)].some(match=>readCommercePrices(match[1]).length>0);
     const contextShop=!purchase&&quotedPrice&&catalogRequestWords.test(String(user||''))&&!nonCurrentRequest.test(String(user||''));
     const subject=purchase?buyWords:contextShop?new RegExp(`${shopWords.source}|${COMMERCE_PRICE_PATTERN.source}`,'iu'):shopWords;
     const activity=purchase?new RegExp(`${actionWords.source}|${buyWords.source}`,'iu'):contextShop?new RegExp(`${actionWords.source}|${COMMERCE_PRICE_PATTERN.source}`,'iu'):actionWords;
@@ -198,7 +199,7 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
         }
     } else {
         if (!subject.test(event.evidence) || !namedInteraction(event.seller.name, event.evidence, story)) return null;
-        if (!buyWords.test(event.evidence) && !shopWords.test(String(story)) && !(contextShop&&COMMERCE_PRICE_PATTERN.test(event.evidence))) return null;
+        if (!buyWords.test(event.evidence) && !shopWords.test(String(story)) && !(contextShop&&readCommercePrices(event.evidence).length>0)) return null;
     }
     return event;
 }
@@ -227,4 +228,17 @@ export function recoverMarketplaceShop(story, user, location, npcs = [], options
     }
     if (!items.length || new Set(items.map(item => item.denomination)).size !== 1) return null;
     return confirmedMarketplaceEvent({kind:'npcShop',location,seller:{name:sellers[0]},denomination:items[0].denomination,items}, story, user, location);
+}
+
+// The completed public reply is the only opening boundary. Both machine data
+// and inline dialogue facts pass the same validator before reaching the dock.
+export function resolveMarketplaceReply({marketplace,story,user,location,inventory=[],npcs=[],intent=null,options={}}){
+    if(intent?.kind==='none'||commerceDiscussionOnly(user))return {event:null,status:'no-intent',source:'none'};
+    if(marketplace){
+        let event=confirmedMarketplaceEvent(marketplace,story,user,location,inventory,intent,options);
+        if(event&&!pricedEntriesDisclosed(event,story,event.items||[{item:event.item,askPrice:event.askPrice,denomination:event.denomination}]))event=null;
+        return {event,status:event?'ready':'invalid-data',source:'inline-patch'};
+    }
+    const event=recoverMarketplaceShop(story,user,location,npcs,{...options,inventory});
+    return {event,status:event?'ready':'no-disclosed-offer',source:'public-dialogue'};
 }
