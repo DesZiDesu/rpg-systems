@@ -1,4 +1,4 @@
-import {normalizeVoiceSettings,splitSpeech,voiceCacheKey} from './voice-core.js?v=0.54.0';
+import {normalizeVoiceSettings,splitSpeech,voiceCacheKey} from './voice-core.js?v=0.54.1';
 
 export function createVoiceRuntime({settings,storage,client,changed=()=>{},notify=()=>{},audio:makeAudio=()=>new Audio(),url=globalThis.URL}={}) {
     let credential='',connectionTicket=0,playTicket=0,connectionController,controller,player,releasePlayer,unlockedPlayer;

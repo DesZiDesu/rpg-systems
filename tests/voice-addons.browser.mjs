@@ -13,7 +13,7 @@ const server=http.createServer(async(req,res)=>{try{
     const path=url.pathname.slice(base.length),body=await readFile(new URL(path,root));res.setHeader('content-type',path.endsWith('.css')?'text/css':path.endsWith('.html')?'text/html':path.endsWith('.json')?'application/json':path.endsWith('.js')?'text/javascript':'image/webp');res.end(body);
 }catch{res.writeHead(404).end();}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const artifacts=new URL('docs/previews/voice-v0540/',root);await mkdir(artifacts,{recursive:true});
+const artifacts=new URL('docs/previews/voice-v0541/',root);await mkdir(artifacts,{recursive:true});
 let browser;
 try{
     browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -51,37 +51,37 @@ try{
         assert.equal(vault.extractable,false);assert.equal(vault.encrypted,true);assert(!vault.settings.includes('sk_demo'));assert(!vault.metadata.includes('sk_demo'));
         await page.locator('#roleforge-voice-addons').scrollIntoViewIfNeeded();await page.screenshot({path:new URL(`settings-connected-${width}.png`,artifacts).pathname});
         await page.locator('#preview-settings-close').click();
-        assert.equal(await page.locator('.rf-voice-play').first().isDisabled(),false);assert.equal(await page.locator('.trpg-dialogue').first().innerText(),'ทางเดินข้างหน้ามืดมาก ระวังด้วยนะคะ');
+        assert.equal(await page.locator('.rf-voice-play').first().isDisabled(),false);assert.equal(await page.locator('.trpg-dialogue').first().evaluate(node=>{const copy=node.cloneNode(true);copy.querySelector('.rf-voice-dialogue-controls')?.remove();return copy.textContent;}),'ทางเดินข้างหน้ามืดมาก ระวังด้วยนะคะ');assert.equal(await page.locator('.trpg-dialogue > .rf-voice-dialogue-controls').count(),2);assert(await page.locator('.rf-voice-play').first().evaluate(button=>{const outer=button.closest('.trpg-dialogue').getBoundingClientRect(),inner=button.getBoundingClientRect();return inner.left>=outer.left&&inner.right<=outer.right&&inner.bottom<=outer.bottom;}));
         await page.screenshot({path:new URL(`dialogue-ready-${width}.png`,artifacts).pathname});
-        const play=page.locator('.rf-voice-play').first();await play.click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พัก');
+        const play=page.locator('.rf-voice-play').first();await play.click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พักเสียง');
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),1);
         const firstRequest=await page.evaluate(()=>window.voicePreview.calls.find(c=>c.path==='/v1/text-to-dialogue'));
         assert.deepEqual(firstRequest.body,{model_id:'eleven_v4',inputs:[{text:'[whispers] ทางเดินข้างหน้ามืดมาก ระวังด้วยนะคะ',voice_id:'demo-cora'}]});
         await page.screenshot({path:new URL(`dialogue-playing-${width}.png`,artifacts).pathname});
-        await play.click();assert.equal(await play.innerText(),'ฟังต่อ');await play.click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พัก');
-        await page.locator('.rf-voice-stop').first().click();await play.click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พัก');
+        await play.click();assert.equal(await play.innerText(),'ฟังต่อ');await play.click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พักเสียง');
+        await page.locator('.rf-voice-stop').first().click();await play.click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พักเสียง');
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),1,'replay uses the cached audio');
         await page.evaluate(()=>window.voicePreview.finishAudio());
-        await page.locator('[data-voice-play-all]').click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พัก');await page.evaluate(()=>window.voicePreview.finishAudio());
-        await page.waitForFunction(()=>document.querySelectorAll('.rf-voice-play')[1]?.textContent==='พัก');
+        await page.locator('[data-voice-play-all]').click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พักเสียง');await page.evaluate(()=>window.voicePreview.finishAudio());
+        await page.waitForFunction(()=>document.querySelectorAll('.rf-voice-play')[1]?.textContent==='พักเสียง');
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').at(-1).body.inputs[0].voice_id),'demo-garrick');await page.evaluate(()=>window.voicePreview.finishAudio());
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),2);
         assert(await page.evaluate(()=>window.navigationSummaryPreview.api.notice.some(n=>n.type==='info'&&n.message.includes('สร้างเสียงบทพูด'))));
         assert.equal(await page.evaluate(()=>window.navigationSummaryPreview.api.calls.length),0,'Voice never calls the story model');
-        // A native header still opens the NPC record; Play is a sibling button.
+        // A native header still opens the NPC record; audio belongs inside its quote.
         assert.equal(await page.locator('.trpg-header button').count(),0);
         await page.locator('.trpg-header').first().click();await page.locator('dialog.trpg-manager[open]').waitFor({state:'visible'});await page.keyboard.press('Escape');
         // Saved key restores independently of message-generation credentials.
         await page.reload();await page.waitForFunction(()=>window.voicePreview?.ready&&document.querySelector('[data-voice-connection]')?.textContent==='เชื่อมแล้ว');
         await page.waitForFunction(()=>document.querySelectorAll('.rf-voice-play').length===2&&!document.querySelector('.rf-voice-play').disabled);
-        await page.locator('.rf-voice-play').first().click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พัก');
+        await page.locator('.rf-voice-play').first().click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='พักเสียง');
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),0,'IndexedDB audio is reused across reload');await page.evaluate(()=>window.voicePreview.finishAudio());
         // Switching / editing cancels a pending generation and cannot play late audio.
         await page.evaluate(async()=>{window.voicePreview.holdSpeech();window.host.chat[1].mes=window.voicePreview.story.replace('ระวังด้วยนะคะ','ระวังลื่นด้วยนะคะ');await window.host.eventSource.emit('MESSAGE_UPDATED',1);});
         await page.waitForFunction(()=>document.querySelector('.trpg-dialogue')?.textContent.includes('ลื่น'));
         await page.locator('.rf-voice-play').first().click();await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='ยกเลิก');
         await page.evaluate(async()=>{await window.host.eventSource.emit('MESSAGE_SWIPED',1);window.voicePreview.releaseSpeech();});
-        await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='ฟัง');assert.equal(await page.evaluate(()=>window.voicePreview.sounds.length),1,'late provider output does not start playback');
+        await page.waitForFunction(()=>document.querySelector('.rf-voice-play')?.textContent==='ฟังบทพูด');assert.equal(await page.evaluate(()=>window.voicePreview.sounds.length),1,'late provider output does not start playback');
         // The Library picker loads and adds actual voice IDs, without generating audio.
         await page.locator('.rf-voice-setup').first().click();await panel.locator('[data-voice-library]>summary').click();await panel.locator('[name="library-search"]').fill('Mira');await panel.locator('[data-voice-library-search] button').click();
         await panel.locator('[data-voice-action="add"]').click();await page.waitForFunction(()=>document.querySelector('[name="default"] option[value="demo-library"]'));
@@ -101,7 +101,7 @@ try{
         });
         await page.waitForTimeout(550);assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),before);
         await page.evaluate(async()=>{window.navigationSummaryPreview.setNativeStoryBusy(false);await window.host.eventSource.emit('GENERATION_ENDED');});
-        await page.waitForFunction(()=>document.querySelector('#chat [mesid="2"] .rf-voice-play')?.textContent==='พัก');
+        await page.waitForFunction(()=>document.querySelector('#chat [mesid="2"] .rf-voice-play')?.textContent==='พักเสียง');
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),before+1);
         await page.evaluate(async()=>{await window.host.eventSource.emit('GENERATION_ENDED');});await page.waitForTimeout(100);
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),before+1);

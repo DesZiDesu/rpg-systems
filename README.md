@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.54.0
+# ROLEFORGE — v0.54.1
+
+## v0.54.1 — Same-reply trade offers and integrated dialogue audio
+
+- Open the reported 5/10-silver inn menu directly from its two NPC dialogue blocks even when the model emits no machine patch. Validate each option against its own same-seller quote. A future included breakfast does not turn a present priced room offer into a future shop; no extra catalog API runs.
+- A specifically requested one-night stay without a disclosed checkout hour remains a temporary rental with an explicit unknown-checkout condition and a scoped key. Do not invent a 24-hour expiry or permanent room ownership. Existing exact checkout, rental deposits, property keys and services retain their established terms.
+- Compile explicit ordinary goods prices and owned-item NPC buying offers from the same reply, including split-dialogue sale baskets. Preserve discussion/refusal/intent-none guards and require matching owner, price, currency and inventory. Offers alone transfer nothing; confirmation still requests the NPC decision, settles once and appends the role-play continuation. Excluded sale items remain owned.
+- Move small **Listen / Pause / Resume / Cancel** controls inside the dialogue frame, using its existing ink/paper colors. Keep native speaker headers separate and read only the spoken content. [Thai change notes](docs/commerce-dialogue-fix.th.md) · [current mobile/desktop UI](docs/previews/v0541/index.html).
+- Validation: **786 unit/host tests**, syntax checks and production-loader browsers at **320 / 390 / 1280 px** cover the exact reported no-patch reply, room-key payment, duplicate-event protection, ordinary goods, multi-item sale exclusions, rental/service rights and Voice playback/cache/cancellation. Model and voice responses are fixtures; no live account or paid API requests used.
 
 ## v0.54.0 — Optional ElevenLabs dialogue voices
 

@@ -28,8 +28,16 @@
 .rf-voice-choice{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #303034}.rf-voice-choice>div{flex:1;min-width:0}.rf-voice-choice strong{display:block;font-size:12px;color:#d5d5dd;overflow-wrap:anywhere}.rf-voice-choice .rf-voice-button{font-size:11px;padding:5px 7px}.rf-voice-choice small{font-size:10px}
 [data-voice-library-search]{flex-wrap:nowrap!important}[data-voice-library-search] input{flex:1;width:0!important}[data-voice-library-search] button{flex-shrink:0}
 .rf-voice-footer{display:flex;gap:7px;justify-content:space-between;border-top:1px solid #343438;margin-top:14px;padding-top:11px;flex-wrap:wrap}
-.rf-voice-dialogue-controls{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:-2px 0 15px;padding:0;font-family:system-ui,"Noto Sans Thai",sans-serif}
-.rf-voice-dialogue-controls .rf-voice-button{min-height:32px;font-size:11px;background:#1b1b1e;border-color:#434348;color:#d8d8df;padding:4px 9px}.rf-voice-dialogue-controls .rf-voice-setup{color:#b0b0ba}.rf-voice-dialogue-controls .rf-voice-button.is-playing{background:#d9d9df;color:#17171b}
+.trpg-chat .trpg-dialogue:has(.rf-voice-dialogue-controls){padding-bottom:13px}
+.rf-voice-dialogue-controls{display:flex;align-items:center;gap:8px;min-width:0;margin:16px 0 0;padding:8px 0 0;border-top:1px solid #26251f25;white-space:normal;font-family:system-ui,"Noto Sans Thai",sans-serif}
+.trpg-chat .trpg-dialogue .rf-voice-button{min-height:34px;font-size:11px;line-height:1.4;background:transparent;border:0;border-radius:4px;color:inherit;padding:2px 0;box-shadow:none;flex-shrink:0}
+.trpg-chat .trpg-dialogue .rf-voice-button:hover:enabled{background:transparent;color:inherit;text-decoration:underline;text-underline-offset:4px}
+.trpg-chat .trpg-dialogue .rf-voice-play{gap:7px;justify-content:flex-start}
+.trpg-chat .trpg-dialogue .rf-voice-play>svg{width:28px;height:28px;border:1px solid currentColor;border-radius:50%;padding:6px;box-sizing:border-box;background:#ffffff20}
+.trpg-chat .trpg-dialogue .rf-voice-play.is-playing>svg{color:#eee8da;background:#403d34;border-color:#403d34}
+.trpg-chat .trpg-dialogue .rf-voice-setup{margin-left:auto;opacity:.75;min-width:34px;padding:2px 5px}
+.trpg-chat .trpg-dialogue .rf-voice-stop{width:28px;min-width:28px;opacity:.8}
+.trpg-chat .trpg-dialogue .rf-voice-button:focus-visible{outline-color:currentColor}
 .rf-voice-message-controls{display:flex;align-items:center;justify-content:flex-end;gap:6px;border-top:1px solid #303034;padding-top:9px;margin:4px 0 8px;font-family:system-ui,"Noto Sans Thai",sans-serif;flex-wrap:wrap}.rf-voice-message-controls>span{font-size:10px;color:#92929b;margin-right:auto}.rf-voice-message-controls .rf-voice-button{min-height:32px;font-size:11px}
-@media(max-width:360px){.rf-voice-header>b{font-size:12px}.rf-voice-header>[data-voice-connection]{max-width:60px}.rf-voice-settings{padding:10px!important}.rf-voice-choice .rf-voice-button{padding:5px;gap:3px}.rf-voice-npc{grid-template-columns:minmax(60px,.65fr) minmax(0,1.35fr)}.rf-voice-quota strong{font-size:11px}.rf-voice-dialogue-controls .rf-voice-button{min-height:34px}}
+@media(max-width:360px){.rf-voice-header>b{font-size:12px}.rf-voice-header>[data-voice-connection]{max-width:60px}.rf-voice-settings{padding:10px!important}.rf-voice-choice .rf-voice-button{padding:5px;gap:3px}.rf-voice-npc{grid-template-columns:minmax(60px,.65fr) minmax(0,1.35fr)}.rf-voice-quota strong{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.rf-voice-header>svg:first-child{transition:none}}

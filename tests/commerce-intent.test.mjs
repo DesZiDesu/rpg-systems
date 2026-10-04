@@ -42,7 +42,9 @@ test('a complete public Thai room menu compiles locally with its quoted prices, 
     assert.ok(event.items[0].item.description.includes('ซุปร้อน'));assert.ok(event.items[1].item.description.includes('ระเบียง'));
 });
 test('room compilation never invents an omitted key, deadline, clock, deposit, seller or price',()=>{
-    for(const story of [roomStory.replace('คืนกุญแจก่อนเที่ยงวันพรุ่งนี้','คืนกุญแจภายหลัง'),roomStory.replace(/<tr-narrative>[\s\S]*?<\/tr-narrative>/u,''),roomStory.replace('กฎมีแค่','มัดจำสามเหรียญเงิน กฎมีแค่'),roomStory.replace('ถ้าเป็นห้อง','สมมุติถ้าเป็นห้อง'),roomStory.replace('คืนละห้าเหรียญเงิน','ไม่ว่าง'),roomStory.replace('คืนละสิบเหรียญเงิน','คืนละสิบเหรียญทอง')])assert.equal(recoverMarketplaceShop(story,roomUser,'Oakland Inn',[],{clock:{day:1,time:'18:30'}}),null);
+    for(const story of [roomStory.replace(/<tr-narrative>[\s\S]*?<\/tr-narrative>/u,''),roomStory.replace('กฎมีแค่','มัดจำสามเหรียญเงิน กฎมีแค่'),roomStory.replace('ถ้าเป็นห้อง','สมมุติถ้าเป็นห้อง'),roomStory.replace('คืนละห้าเหรียญเงิน','ไม่ว่าง'),roomStory.replace('คืนละสิบเหรียญเงิน','คืนละสิบเหรียญทอง')])assert.equal(recoverMarketplaceShop(story,roomUser,'Oakland Inn',[],{clock:{day:1,time:'18:30'}}),null);
+    const oneNight=recoverMarketplaceShop(roomStory.replace('คืนกุญแจก่อนเที่ยงวันพรุ่งนี้','คืนกุญแจภายหลัง'),roomUser,'Oakland Inn',[],{clock:{day:1,time:'18:30'}});
+    assert.ok(oneNight);assert.ok(oneNight.items.every(entry=>entry.terms.mode==='rental'&&entry.terms.validUntil===null&&entry.terms.durationMinutes===0),'a stated one-night rental does not invent an exact checkout');
     assert.equal(recoverMarketplaceShop(roomStory,'ยังไม่อยากซื้อห้อง แค่พูดถึง','Oakland Inn',[],{clock:{day:1,time:'18:30'}}),null);
     assert.equal(recoverMarketplaceShop(roomStory,roomUser,'Oakland Inn'),null);
 });

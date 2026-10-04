@@ -1,8 +1,8 @@
-import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText} from './voice-core.js?v=0.54.0';
-import {parseStory,resolveNpcSpeaker} from './npc-core.js?v=0.54.0';
-import {createVoiceStorage} from './voice-storage.js?v=0.54.0';
-import {createElevenLabsClient} from './voice-api.js?v=0.54.0';
-import {createVoiceRuntime} from './voice-runtime.js?v=0.54.0';
+import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText} from './voice-core.js?v=0.54.1';
+import {parseStory,resolveNpcSpeaker} from './npc-core.js?v=0.54.1';
+import {createVoiceStorage} from './voice-storage.js?v=0.54.1';
+import {createElevenLabsClient} from './voice-api.js?v=0.54.1';
+import {createVoiceRuntime} from './voice-runtime.js?v=0.54.1';
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shapes={play:'<path d="m9 5 11 7-11 7z"/>',pause:'<path d="M8 5v14M16 5v14"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="1"/>',wave:'<path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/>',chevron:'<path d="m9 5 7 7-7 7"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5M18 5a8 8 0 0 0-14 5M6 19a8 8 0 0 0 14-5"/>'};
@@ -100,8 +100,9 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
             const voice=runtime.selectedVoice(entry),ready=data.connected&&Boolean(voice)&&data.voices.some(v=>v.voice_id===voice);
             control.play.disabled=!ready||busy();
             const loading=current&&data.phase==='loading',paused=current&&data.phase==='paused',playing=current&&data.phase==='playing';
-            control.play.innerHTML=svg(playing?'pause':loading?'stop':'play')+t(playing?'Pause':loading?'Cancel':paused?'Resume':'Play',playing?'พัก':loading?'ยกเลิก':paused?'ฟังต่อ':'ฟัง');
+            control.play.innerHTML=svg(playing?'pause':loading?'stop':'play')+`<span>${t(playing?'Pause':loading?'Cancel':paused?'Resume':'Listen',playing?'พักเสียง':loading?'ยกเลิก':paused?'ฟังต่อ':'ฟังบทพูด')}</span>`;
             control.play.classList.toggle('is-playing',playing||paused);control.play.setAttribute('aria-label',t('Dialogue: ','บทพูด: ')+(playing?t('Pause','พักเสียง'):loading?t('Cancel audio request','ยกเลิกการสร้างเสียง'):t('Play','ฟัง'))+' · '+entry.name);
+            control.play.setAttribute('aria-busy',String(loading));control.play.title=!ready?t('Connect and choose a voice in Voice Addon','เชื่อมต่อและเลือกเสียงใน Voice Addon'):busy()?t('Wait for this reply to finish','รอให้คำตอบเขียนเสร็จก่อน'):control.play.getAttribute('aria-label');
             control.setup.textContent=!data.connected?t('Connect voice','เชื่อมเสียง'):!voice?t('Choose voice','เลือกเสียง'):t('Voice','เสียง');
             control.setup.title=t('Voice settings for ','ตั้งค่าเสียงของ ')+entry.name;
             control.setup.setAttribute('aria-label',control.setup.title);
@@ -127,7 +128,8 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
             if(!nodes[index])return;const row=doc.createElement('div');row.className='rf-voice-dialogue-controls';
             row.innerHTML=`<button type="button" class="rf-voice-button rf-voice-play">${svg('play')}${t('Play','ฟัง')}</button><button type="button" class="rf-voice-button rf-voice-stop" aria-label="${t('Stop audio','หยุดเสียง')}" hidden>${svg('stop')}</button><button type="button" class="rf-voice-button rf-voice-setup">${t('Voice','เสียง')}</button>`;
             const play=row.querySelector('.rf-voice-play'),stop=row.querySelector('.rf-voice-stop'),setup=row.querySelector('.rf-voice-setup');
-            play.addEventListener('click',()=>{runtime.activate();run(()=>runtime.toggle(entry));});stop.addEventListener('click',()=>runtime.stop());setup.addEventListener('click',()=>open(entry.speakerKey));nodes[index].insertAdjacentElement('afterend',row);controls.add({root:row,play,stop,setup,entry});
+            row.setAttribute('role','group');row.setAttribute('aria-label',t('Dialogue audio for ','เสียงบทพูดของ ')+entry.name);
+            play.addEventListener('click',()=>{runtime.activate();run(()=>runtime.toggle(entry));});stop.addEventListener('click',()=>runtime.stop());setup.addEventListener('click',()=>open(entry.speakerKey));nodes[index].append(row);controls.add({root:row,play,stop,setup,entry});
         });
         if(entries.length>1){const bar=doc.createElement('div');bar.className='rf-voice-message-controls';bar.innerHTML=`<span>${entries.length} ${t('dialogues','บทพูด')}</span><button type="button" class="rf-voice-button" data-voice-play-all>${svg('play')}${t('Play all','ฟังทั้งหมด')}</button><button type="button" class="rf-voice-button" data-voice-stop-all>${svg('stop')}${t('Stop','หยุด')}</button>`;const play=bar.querySelector('[data-voice-play-all]'),stop=bar.querySelector('[data-voice-stop-all]');play.addEventListener('click',()=>{runtime.activate();run(()=>runtime.listen(entries,{queue:true}));});stop.addEventListener('click',()=>runtime.stop());storyRoot.append(bar);controls.add({root:bar,play,stop,all:true,entries});}
         messages.set(id,{root:storyRoot,entries,message});for(const [key,value]of messages)if(!value.root.isConnected&&key!==id)messages.delete(key);refreshButtons();

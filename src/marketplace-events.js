@@ -1,8 +1,9 @@
-import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.54.0';
-import {commerceDiscussionOnly} from './commerce-intent.js?v=0.54.0';
-import {normalizePurchaseTerms} from './commerce-rights.js?v=0.54.0';
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.54.0';
-import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.54.0';
+import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.54.1';
+import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.54.1';
+import {commerceDiscussionOnly} from './commerce-intent.js?v=0.54.1';
+import {normalizePurchaseTerms} from './commerce-rights.js?v=0.54.1';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.54.1';
+import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.54.1';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -19,16 +20,26 @@ const nonCurrentRequest = /(?:auction|ประมูล|พรุ่งนี�
 // Choosing between currently quoted products is a price condition, not a
 // hypothetical visit. Keep this exception local to exact, named shop catalogs.
 const pricingCondition = /(?:ถ้า|หาก)(?:เป็น|อยาก(?:ได้)?|ต้องการ|เลือก|เอา|(?:เจ้า|ท่าน|คุณ)(?:อยาก(?:ได้)?|ต้องการ|เลือก|เอา))\s*|\bif\s+(?:you\s+(?:want|prefer|choose|take)|it(?:'s| is))\s+/giu;
+function pricedEntriesDisclosed(event,story,entries=event.items){
+    return entries.every(entry=>{
+        const ownQuote=entry.evidence||event.evidence,menu=evidenceText(ownQuote),start=menu.indexOf(evidenceText(entry.item.name));
+        if(!evidenceText(story).includes(menu)||!namedInteraction((event.seller||event.buyer).name,ownQuote,story)||start<0)return false;
+        const end=Math.min(...event.items.map(other=>other===entry?-1:menu.indexOf(evidenceText(other.item.name))).filter(index=>index>start),menu.length);
+        return readCommercePrices(menu.slice(start+evidenceText(entry.item.name).length,end)).some(price=>price.amount===entry.askPrice&&price.denomination===entry.denomination);
+    });
+}
 function pricedCatalogEvidence(event,story,user,subject,activity) {
     const quote=event.evidence;
     if(!catalogRequestWords.test(String(user||''))||nonCurrentRequest.test(String(user||''))||/(?:ถ้า|หาก|\bif\b)/iu.test(String(user||'')))return false;
     if(/(?:ไม่มี|ไม่เหลือ)(?:ห้อง|ที่พัก)|ห้อง(?:พัก)?(?:เต็ม|หมด|ไม่ว่าง)|no (?:available |vacant )?rooms|fully booked|no vacancy|sold out|unavailable|not available|not for (?:rent|sale)|ข่าวลือ|ลือว่า|สมมุติ|hypothetical/iu.test(quote))return false;
     if(!evidenceText(story).includes(evidenceText(quote))||!namedInteraction(event.seller.name,quote,story))return false;
-    const menu=evidenceText(quote),options=event.items.map(entry=>({entry,start:menu.indexOf(evidenceText(entry.item.name))})).sort((a,b)=>a.start-b.start);
-    if(!options.every(({entry,start},index)=>start>=0&&readCommercePrices(menu.slice(start+evidenceText(entry.item.name).length,options[index+1]?.start)).some(price=>price.amount===entry.askPrice&&price.denomination===entry.denomination)))return false;
+    if(!pricedEntriesDisclosed(event,story))return false;
     const strip=value=>String(value).replace(pricingCondition,'');
-    const current=strip(quote).split(/คืนกุญแจ|คืนของเช่า|กำหนดคืน|\bcheckout\b/iu)[0];
-    return interactionEvidence(current,strip(story),user,subject,activity);
+    const current=strip(quote).split(/คืนกุญแจ|คืนของเช่า|กำหนดคืน|\bcheckout\b/iu)[0],price=readCommercePrices(current)[0];
+    // A present room offer may include tomorrow's breakfast in the same Thai
+    // sentence. Test the priced offer, not that future included service.
+    const offered=price?current.slice(0,current.indexOf(price.text)+price.text.length):current;
+    return interactionEvidence(offered,strip(story),user,subject,activity);
 }
 
 // A current paid offer may state a future checkout/collection deadline. Only
@@ -43,7 +54,7 @@ function typedCatalogEvidence(event,story,user,subject,activity){
 function deliveredKeyDisclosed(entry,event,story){
     const {terms,item}=entry;if(!terms.delivery)return true;
     if(namedInteraction(event.seller.name,terms.delivery.name,story))return true;
-    if(!['permanent','access'].includes(terms.mode)||terms.delivery.category!=='Key')return false;
+    if(!['permanent','access','rental'].includes(terms.mode)||terms.delivery.category!=='Key')return false;
     const labels=[item.name,terms.scope].map(evidenceText);
     const keyName=evidenceText(terms.delivery.name).toLocaleLowerCase();
     const derived=labels.some(label=>keyName===`กุญแจ${label}`.toLocaleLowerCase()||keyName===`key to ${label}`.toLocaleLowerCase()||keyName===`${label} key`.toLocaleLowerCase());
@@ -68,7 +79,7 @@ function typedTermsDisclosed(event,story){
 }
 
 
-export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role,budget:actual-remaining-funds-if-known},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player is interacting with a named NPC shop/vendor and the NPC shows goods or quotes an item or present room/rental/service option for sale, including catalog requests, revisits and negotiation while already here, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,stockKnown,negotiable,negotiableKnown,note,terms:{mode:"permanent|rental|access|service",scope,validFrom,validUntil,durationMinutes,uses,deposit,includes,conditions,delivery}}}]} with at most 40 items. Emit the full item details and typed terms in this SAME normal reply; never defer them to an opening recovery/API. Every option needs its own description, category and properties. Ordinary owned goods use terms:{mode:"permanent"}. Owned places (houses/rooms/buildings) use category:"Property", terms:{mode:"permanent",scope:"exact place",delivery:{name:"exact named property key",category:"Key",description:"public details"}}; put the key in Inventory rather than the building. Present its property/price and physical key now. Derive the key label from that exact property in the role-play language; do not require the NPC to literally recite a UI label. Temporary stays remain access/rental, never permanent ownership. An overnight room is timed access, never permanent ownership of the room; explicitly state checkout/duration and included services in NPC dialogue, and show the physical key for each quoted room, then put them in its access terms. Rentals need their return deadline and physical delivery; prepaid services need their agreed scope/completion terms. Stock/negotiability remain unknown when not established (stockKnown:false,negotiableKnown:false). For an NPC buying several owned items use npcPurchase with items:[{itemId,itemName,quantity,askPrice}] instead of legacy item/askPrice. Quote every item in the same story/evidence; one budget covers the basket. The user may exclude items, change quantities and negotiate one total; never transfer before confirmation. Evidence must be an exact affirmative quote from this reply, show the present interaction; location must match the current sceneTracker location, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. The extension opens a minimal composer strip; its offer/confirm/cancel buttons each call the current AI API and append a brief continuation to the same assistant message. The new commerce engine alone settles accepted, explicitly confirmed prices. With interactive Marketplace enabled, present terms and open the session first; do not narrate payment or delivery before its confirm action. Do not patch inventory/currency for catalog or offer events or replay already settled commerce. Preserve event IDs within an active negotiation; a new interaction after completion uses a new ID. Never create HTML or UI text in the patch.';
+export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role,budget:actual-remaining-funds-if-known},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player is interacting with a named NPC shop/vendor and the NPC shows goods or quotes an item or present room/rental/service option for sale, including catalog requests, revisits and negotiation while already here, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,stockKnown,negotiable,negotiableKnown,note,terms:{mode:"permanent|rental|access|service",scope,validFrom,validUntil,durationMinutes,uses,deposit,includes,conditions,delivery}}}]} with at most 40 items. Emit the full item details and typed terms in this SAME normal reply; never defer them to an opening recovery/API. Every option needs its own description, category and properties. Ordinary owned goods use terms:{mode:"permanent"}. Owned places (houses/rooms/buildings) use category:"Property", terms:{mode:"permanent",scope:"exact place",delivery:{name:"exact named property key",category:"Key",description:"public details"}}; put the key in Inventory rather than the building. Present its property/price and physical key now. Derive the key label from that exact property in the role-play language; do not require the NPC to literally recite a UI label. Temporary stays remain access/rental, never permanent ownership. An overnight room is temporary, never permanent ownership. State actual checkout/duration and included services in the reply and show its physical key. Use access with validUntil/durationMinutes when an exact story expiry is established. For a specifically agreed one-night stay with no checkout hour, use rental with scope, conditions describing that one night and the unspecified checkout, includes and delivery key; omit validUntil/durationMinutes rather than guessing 24 hours or withholding the offer. Rentals need their actual return agreement and physical delivery; prepaid services need their agreed scope/completion terms. Stock/negotiability remain unknown when not established (stockKnown:false,negotiableKnown:false). For an NPC buying several owned items use npcPurchase with items:[{itemId,itemName,quantity,askPrice}] instead of legacy item/askPrice. Quote every item in the same story/evidence; one budget covers the basket. The user may exclude items, change quantities and negotiate one total; never transfer before confirmation. Evidence must be an exact affirmative quote from this reply, show the present interaction; location must match the current sceneTracker location, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. The extension opens a minimal composer strip; its offer/confirm/cancel buttons each call the current AI API and append a brief continuation to the same assistant message. The new commerce engine alone settles accepted, explicitly confirmed prices. With interactive Marketplace enabled, present terms and open the session first; do not narrate payment or delivery before its confirm action. Do not patch inventory/currency for catalog or offer events or replay already settled commerce. Preserve event IDs within an active negotiation; a new interaction after completion uses a new ID. Never create HTML or UI text in the patch.';
 
 function itemRecord(raw, fallback = {}) {
     const source = raw && typeof raw === 'object' ? raw : {};
@@ -98,7 +109,7 @@ function catalogEntry(raw, index, denomination, catalogEvidence = '') {
     const price = priceRecord(raw, { denomination });
     const terms=normalizePurchaseTerms(typeof raw.terms==='string'?undefined:raw.terms);
     if (!item || !price || !terms || (terms.mode!=='permanent'||terms.delivery)&&item.quantity!==1) return null;
-    return { id: clean(raw.id, 100) || `shop-item-${hash(`${index}|${key(item.name)}|${price.askPrice}`)}`, item, ...price,
+    return { id: clean(raw.id, 100) || `shop-item-${hash(`${index}|${key(item.name)}|${price.askPrice}`)}`, item, ...price, ...(raw.evidence?{evidence:clean(raw.evidence,600)}:{}),
         negotiable: raw.negotiable !== false, negotiableKnown: raw.negotiableKnown !== false, stockKnown: raw.stockKnown !== false, stock: integer(raw.stock, item.quantity, 1, 99999), terms, termsRequired:terms.mode==='permanent'&&!terms.delivery&&/^(?:Property|Real Estate|Building|House|Location|อสังหาริมทรัพย์|สถานที่|บ้าน|อาคาร)$/iu.test(item.category)||terms.mode==='permanent'&&/(?:ห้อง|\broom\b)/iu.test(item.name)&&/(?:คืนละ|ต่อคืน|ต่อวัน|\b(?:per|a) (?:night|day)\b)/iu.test(catalogEvidence)||(raw.terms===undefined||typeof raw.terms==='string')&&/(?:ห้อง(?:พัก|เดี่ยว|เช่า|ส่วนตัว|ชั้น|ธรรมดา|พิเศษ|กว้าง|เตียง)|พัก(?:หนึ่ง|1|หนึ่งคืน)|เช่า|ค่าบริการ|สั่ง(?:ทำ|ตี)|ตั๋ว|บัตรผ่าน|\broom\b|\brental\b|\bticket\b|\bservice\b|\blodging\b|\baccommodation\b)/iu.test(item.name+' '+item.description), note: clean(raw.note || (typeof raw.terms==='string'?raw.terms:''), 220) };
 }
 
@@ -157,6 +168,7 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
     }
     const event = normalizeMarketplaceEvent(candidate);
     if (!event || key(event.location) !== key(location) || !evidenceText(story).includes(evidenceText(event.evidence))) return null;
+    if(event.items?.some(entry=>entry.evidence)&&!pricedEntriesDisclosed(event,story,event.items.filter(entry=>entry.evidence)))return null;
     // An older price-only room object can use the complete terms already
     // disclosed in THIS reply. Keep its identities/prices; never repair a
     // conflicting amount, unrelated option or an explicit typed contract.
@@ -178,7 +190,8 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
     if (event.kind === 'npcPurchase') {
         if (!buyWords.test(event.evidence) || !namedInteraction(event.buyer.name, event.evidence, story)) return null;
         for(const item of (event.items||[{item:event.item}]).map(entry=>entry.item)){
-            if(!key(event.evidence).includes(key(item.name)))return null;
+            const quote=(event.items||[]).find(entry=>entry.item===item)?.evidence||event.evidence;
+            if(!key(quote).includes(key(item.name))||!evidenceText(story).includes(evidenceText(quote))||!namedInteraction(event.buyer.name,quote,story)||!buyWords.test(quote))return null;
             const owned=(inventory||[]).find(entry=>(item.id&&entry.id===item.id&&key(entry.name)===key(item.name))||(!item.id&&key(entry.name)===key(item.name)));
             if(!owned||integer(owned.quantity,0)<item.quantity)return null;
             item.id=owned.id;
@@ -196,7 +209,9 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
 export function recoverMarketplaceShop(story, user, location, npcs = [], options = {}) {
     if(commerceDiscussionOnly(user))return null;
     const room=disclosedRoomCatalog(story,user,location,options);
-    if(room)return confirmedMarketplaceEvent(room,story,user,location);
+    if(room)return confirmedMarketplaceEvent(room,story,user,location,[],null,options);
+    const goods=disclosedGoodsOffer(story,user,location,options.inventory||[],options);
+    if(goods)return confirmedMarketplaceEvent(goods,story,user,location,options.inventory||[],null,options);
     if (!location || !shopWords.test(String(story)) || !/(?:shop|catalog|goods|buy|price|haggl|ร้าน|สินค้า|ซื้อ|ราคา|ต่อรอง|ดูของ)/iu.test(String(user))) return null;
     const names = [...String(story).matchAll(/<tr-(?:header|dialogue)\b[^>]*\bname=["']([^"']+)["']/giu)].map(match => clean(match[1],120));
     const known = npcs.filter(npc => npc?.name && key(story).includes(key(npc.name))).map(npc => npc.name);

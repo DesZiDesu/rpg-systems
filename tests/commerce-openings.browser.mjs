@@ -5,6 +5,7 @@ import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {roomUser,roomQuote,roomStory} from './fixtures/disclosed-rooms.mjs';
+import {splitRoomUser,splitRoomStory} from './fixtures/split-room-offer.mjs';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?`${process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES}/playwright`:'playwright');
 const root=new URL('../',import.meta.url),base='/scripts/extensions/third-party/rpg-systems/';
@@ -16,7 +17,7 @@ const server=http.createServer(async(req,res)=>{
     }catch{res.writeHead(404).end();}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const artifacts='/workspace/artifacts/commerce-openings',fixArtifacts='/workspace/artifacts/roleforge-v0532';await mkdir(artifacts,{recursive:true});await mkdir(fixArtifacts,{recursive:true});
+const artifacts='/workspace/artifacts/commerce-openings',fixArtifacts='/workspace/artifacts/roleforge-v0532',newArtifacts=new URL('docs/previews/commerce-v0541/',root).pathname;await mkdir(artifacts,{recursive:true});await mkdir(fixArtifacts,{recursive:true});await mkdir(newArtifacts,{recursive:true});
 async function receive(page,user,story,patch,type='normal'){
     await page.evaluate(async({user,type})=>{
         window.host.chat.push({is_user:true,name:'Noah',mes:user});await window.host.eventSource.emit('MESSAGE_SENT',window.host.chat.length-1);
@@ -40,7 +41,7 @@ try{
         await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
         await page.addInitScript(()=>{
             localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'th',autoTrack:true,autoContinuity:false,chatPresentation:true,enableMarketplace:true,enableAuctions:false,enableMemorySummaries:false,eventNotifications:false}}));
-            localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'Noah'},npcs:[],skills:[],inventory:[{id:'sword',name:'ดาบเหล็ก',quantity:1,category:'Weapon'}],location:{place:'Oakland Inn',narrativeVersion:1},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true},worldClock:{day:7,time:'18:30'},progression:{currency:{gold:2,silver:100,copper:50}}}}));
+            localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'Noah'},npcs:[],skills:[],inventory:[{id:'sword',name:'ดาบเหล็ก',quantity:1,category:'Weapon'},{id:'shield',name:'โล่ไม้',quantity:1,category:'Armor'}],location:{place:'Oakland Inn',narrativeVersion:1},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true},worldClock:{day:7,time:'18:30'},progression:{currency:{gold:2,silver:100,copper:50}}}}));
         });
         await page.goto(`http://127.0.0.1:${server.address().port}${base}docs/previews/preview-h-stats.html?lang=th`);await page.waitForFunction(()=>window.hStatsPreview?.ready);
         await page.evaluate(()=>{
@@ -106,6 +107,38 @@ try{
         await receive(page,sellUser,`<tr-dialogue name="Garrick">${sellQuote}</tr-dialogue>`,{sceneTracker:{loc:'Oakland Inn'},commerceIntent:{kind:'sell',evidence:sellUser},marketplace:{kind:'npcPurchase',id:'real-sword-sale',location:'Oakland Inn',evidence:sellQuote,buyer:{name:'Garrick',budget:20},item:{itemId:'sword',itemName:'ดาบเหล็ก',quantity:1},askPrice:12,denomination:'silver'},ops:[]});
         await page.locator('.rf-commerce-composer[data-kind="sell"] [data-commerce-action="offer"]').waitFor();
         assert.equal(await page.evaluate(()=>window.calls.length),2);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory.find(i=>i.id==='sword').quantity),1);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),95);
-        assert.deepEqual(errors,[]);console.log(`PASS intent-none prevents buy/sell windows; a complete no-object Thai room menu opens in the same reply with no API; checkout/key settlement and permanent property key at ${width}px`);await page.close();
+        // Close that older offer, then replay the reported reply verbatim with
+        // NO tretaresia_patch at all, not a hand-built correct model payload.
+        await page.evaluate(()=>window.responses.push({narrative:'<tr-dialogue name="Garrick">ไม่ขายก็ไม่เป็นไร</tr-dialogue>',decision:{outcome:'cancel'}}));
+        await page.locator('.rf-commerce-composer [data-commerce-action="cancel"]').click();await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
+        assert.equal(await page.evaluate(()=>window.calls.length),3);
+        await receive(page,splitRoomUser,splitRoomStory,null);
+        await bar.locator('[data-commerce-action="confirm"]').waitFor();await bar.locator('.rf-commerce-summary').click();
+        assert.equal(await bar.locator('.rf-commerce-basket-row').count(),2);assert.match(await bar.innerText(),/พัก 1 คืน/);assert.match(await bar.innerText(),/ยังไม่ระบุเวลาเช็กเอาต์/);
+        assert.equal(await bar.locator('[data-commerce-action="confirm"]').isEnabled(),true);assert.equal(await page.evaluate(()=>window.calls.length),3,'the reported same reply needs no opening recovery API');
+        await page.locator('.rf-composer-dock').screenshot({path:`${newArtifacts}room-offer-${width}.png`});
+        await page.evaluate(()=>window.responses.push({narrative:'<tr-narrative>Garrick รับเงินห้าเหรียญเงินแล้วส่งกุญแจห้องพักธรรมดาให้สำหรับคืนนี้</tr-narrative><tr-dialogue name="Garrick">อาหารเช้าพรุ่งนี้รวมแล้ว พักผ่อนให้สบายนะ</tr-dialogue>',decision:{outcome:'accept',amount:5}}));
+        await bar.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
+        const rented=await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state);assert.equal(rented.progression.currency.silver,90);
+        const rentedKey=rented.inventory.find(item=>item.name==='กุญแจห้องพักธรรมดา');assert.ok(rentedKey);assert.equal(rentedKey.quantity,1);const right=rented.commerce.rights.find(right=>right.inventoryItemId===rentedKey.id);assert.equal(right.terms.mode,'rental');assert.equal(right.ends,null);assert.match(right.terms.conditions,/พัก 1 คืน/);
+        assert.equal(await page.evaluate(()=>window.calls.length),4);await page.locator('#chat .mes').last().locator('.trpg-narrative').filter({hasText:'รับเงินห้าเหรียญเงินแล้วส่งกุญแจ'}).waitFor();
+        await page.evaluate(async()=>{const id=window.host.chat.length-1;await window.host.eventSource.emit('MESSAGE_RECEIVED',id,'normal');await window.host.eventSource.emit('GENERATION_ENDED');});
+        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),90,'duplicate message events cannot repay or redeliver');
+        // Ordinary goods also open from explicit quotes in the same reply.
+        await receive(page,'ฉันขอซื้อเชือก','<tr-dialogue name="Garrick">ข้าขายเชือก ราคา 6 เหรียญเงิน</tr-dialogue>',null);
+        await bar.locator('[data-commerce-action="confirm"]').waitFor();assert.equal(await page.evaluate(()=>window.calls.length),4);
+        await page.evaluate(()=>window.responses.push({narrative:'<tr-narrative>Garrick ส่งเชือกให้แล้วรับเงินหกเหรียญเงิน</tr-narrative>',decision:{outcome:'accept',amount:6}}));
+        await bar.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
+        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory.find(item=>item.name==='เชือก').quantity),1);assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),84);
+        // Sell two genuinely owned items, exclude one and settle just the sword.
+        await receive(page,'ฉันขอขายดาบเหล็กกับโล่ไม้','<tr-dialogue name="Garrick">ข้ารับซื้อดาบเหล็ก 12 เหรียญเงิน</tr-dialogue><tr-narrative>เขาชี้ไปที่โล่</tr-narrative><tr-dialogue name="Garrick">ข้ารับซื้อโล่ไม้ 4 เหรียญเงิน</tr-dialogue>',null);
+        const sale=page.locator('.rf-commerce-composer[data-kind="sell"]');await sale.locator('[data-commerce-action="confirm"]').waitFor();await sale.locator('.rf-commerce-summary').click();
+        assert.equal(await sale.locator('.rf-commerce-basket-row').count(),2);assert.equal(await page.evaluate(()=>window.calls.length),5);
+        await sale.locator('input[aria-label="เลือก โล่ไม้"]').uncheck();assert.equal(await sale.locator('.rf-commerce-amount').inputValue(),'12');
+        await page.locator('.rf-composer-dock').screenshot({path:`${newArtifacts}sell-selected-${width}.png`});
+        await page.evaluate(()=>window.responses.push({narrative:'<tr-narrative>Garrick รับดาบเหล็กเพียงเล่มเดียวและจ่ายเงินสิบสองเหรียญเงิน โล่ไม้ยังอยู่กับผู้เล่น</tr-narrative>',decision:{outcome:'accept',amount:12}}));
+        await sale.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
+        const sold=await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state);assert.equal(sold.progression.currency.silver,96);assert.equal(sold.inventory.some(item=>item.id==='sword'),false);assert.equal(sold.inventory.find(item=>item.id==='shield').quantity,1);assert.equal(await page.evaluate(()=>window.calls.length),6);
+        assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);console.log(`PASS no-patch reported split room quote; same-reply room/goods/sale lists with zero extra opening API; one-night key receipt and repeat-event protection; excluded sale item retained and exact wallet settlement at ${width}px`);await page.close();
     }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
