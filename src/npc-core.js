@@ -1,4 +1,4 @@
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.53.2';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.54.0';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -132,6 +132,10 @@ export function parseStory(source) {
   const speakerName=clean(name?.[1]??name?.[2]??name?.[3],120);
   if(match[2].toLowerCase()==='header') { blocks.push({type:'header',name:speakerName});active={type:'plain'};continue; }
   active={type:match[2].toLowerCase(),name:speakerName};
+  if(active.type==='dialogue'){
+   const delivery=match[3].match(/\bdelivery\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+   if(delivery)active.delivery=clean(delivery[1]??delivery[2]??delivery[3],240);
+  }
  }
  append(text.slice(cursor));
  return blocks.length?blocks:null;

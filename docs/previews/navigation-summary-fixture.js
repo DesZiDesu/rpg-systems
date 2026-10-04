@@ -3,7 +3,7 @@
 import {packScopedNpcs} from '../../src/npc-scopes.js';
 
 const root = new URL('../../',import.meta.url);
-const storagePrefix = 'roleforge-navigation-summary-preview';
+const storagePrefix = location.pathname.endsWith('/voice-addon.html')?'roleforge-voice-preview':'roleforge-navigation-summary-preview';
 const settingsKey = `${storagePrefix}-settings`;
 const metadataKey = `${storagePrefix}-metadata`;
 const owner = 'card:roleforge-navigation-summary-demo.png';
@@ -51,18 +51,18 @@ function summaryResponse(prompt) {
             sourceKeys:[source.segmentKey],evidence:source.text.slice(0,120)}]});
 }
 
-export async function startNavigationSummaryPreview() {
+export async function startNavigationSummaryPreview(settingsOverrides={}) {
     const params=new URLSearchParams(location.search),callbacks=new Map();
     document.body.classList.toggle('preview-review',params.get('review')==='1');
     const storedSettings=readStored(settingsKey,{});
     storedSettings.tretaresia_rpg ||= {};
     Object.assign(storedSettings.tretaresia_rpg,{autoContinuity:false,chatPresentation:false,autoTrack:false,
-        enableMemorySummaries:true,memoryAutoSummary:false,showSceneTracker:false,showTravelTracker:false});
+        enableMemorySummaries:true,memoryAutoSummary:false,showSceneTracker:false,showTravelTracker:false,...settingsOverrides});
     storedSettings.tretaresia_rpg.memorySummaryBatchSize ||= 5;
     storedSettings.tretaresia_rpg.language=params.get('lang')||storedSettings.tretaresia_rpg.language||'th';
     if(['carousel','menu','grid'].includes(params.get('mode')))storedSettings.tretaresia_rpg.moduleNavigationMode=params.get('mode');
     const eventTypes=Object.fromEntries(['CHAT_CHANGED','MESSAGE_SENT','GENERATION_STARTED','GENERATION_AFTER_COMMANDS','MESSAGE_RECEIVED',
-        'MESSAGE_SWIPED','MESSAGE_DELETED','CHARACTER_MESSAGE_RENDERED','GENERATION_ENDED','GENERATION_STOPPED','STREAM_TOKEN_RECEIVED'].map(type=>[type,type]));
+        'MESSAGE_SWIPED','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_DELETED','CHARACTER_MESSAGE_RENDERED','GENERATION_ENDED','GENERATION_STOPPED','STREAM_TOKEN_RECEIVED'].map(type=>[type,type]));
     window.host={name1:'Nova',name2:'Nova · คืนที่แม่น้ำ',extensionSettings:storedSettings,chatMetadata:readStored(metadataKey,freshMetadata()),chat:structuredClone(demoChat),
         characters:[{name:'Navigation preview',avatar:'roleforge-navigation-summary-demo.png',first_mes:'',data:{extensions:{tretaresia_rpg_npcs:demoNpcs}}}],
         characterId:0,eventTypes,eventSource:{on(type,callback){const list=callbacks.get(type)||[];list.push(callback);callbacks.set(type,list);},

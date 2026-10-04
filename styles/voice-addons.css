@@ -1,0 +1,35 @@
+/* Neutral addon palette independent of RoleForge's gold world theme. */
+#roleforge-voice-addons[hidden],.rf-voice-drawer [hidden],.rf-voice-dialogue-controls [hidden]{display:none!important}
+#roleforge-voice-addons{scroll-margin-top:74px}
+.rf-voice-drawer{color-scheme:dark;background:#19191b;color:#e6e6e8;border:1px solid #343437;border-radius:9px;margin:10px 0;font:14px/1.55 system-ui,"Noto Sans Thai",sans-serif;overflow:hidden}
+.rf-voice-header{display:flex!important;align-items:center;gap:9px;min-height:46px;padding:10px 12px!important;color:#ededee!important;background:#202022;cursor:pointer;list-style:none}
+.rf-voice-header::-webkit-details-marker,.rf-voice-fold>summary::-webkit-details-marker{display:none}
+.rf-voice-header>svg:first-child{width:13px;transition:transform .15s}.rf-voice-drawer[open]>.rf-voice-header>svg:first-child{transform:rotate(90deg)}
+.rf-voice-header>b{font-size:14px;font-weight:600;flex:1}.rf-voice-header>[data-voice-connection]{font-size:10px;color:#aaa;max-width:76px;text-align:right;line-height:1.5}
+.rf-voice-drawer svg,.rf-voice-button svg{width:15px;height:15px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rf-voice-settings{display:block!important;padding:12px!important}
+.rf-voice-drawer input:not([type=checkbox]),.rf-voice-drawer select,.rf-voice-drawer textarea{width:100%;min-width:0;max-width:100%;background:#111113;color:#e9e9eb;border:1px solid #404044;border-radius:6px;padding:7px 9px;font:inherit;min-height:36px;margin:4px 0;box-sizing:border-box}
+.rf-voice-drawer label{display:block;font-size:12px;color:#bcbcc2}.rf-voice-drawer small{display:block;font-size:11px;color:#96969e;line-height:1.65}
+.rf-voice-drawer form{margin:0}.rf-voice-connect{padding-bottom:10px;border-bottom:1px solid #303034}
+.rf-voice-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.rf-voice-row>span:first-child{flex:1}.rf-voice-connect .rf-voice-row{justify-content:flex-end}.rf-voice-connect .rf-voice-check{margin-right:auto}
+.rf-voice-check{display:flex!important;align-items:center;gap:7px;margin:9px 0;color:#ceced3!important;cursor:pointer}.rf-voice-check input{accent-color:#bbb;width:15px;height:15px;margin:0}
+.rf-voice-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;min-width:34px;max-width:100%;padding:5px 10px;border:1px solid #45454a;border-radius:6px;background:#242427;color:#e0e0e5;font:500 12px/1.4 system-ui,"Noto Sans Thai",sans-serif;cursor:pointer;box-shadow:none;letter-spacing:0;box-sizing:border-box;text-decoration:none}
+.rf-voice-button:hover:enabled{background:#323236;border-color:#77777d;color:#fff}.rf-voice-button.is-primary{background:#d9d9de;border-color:#d9d9de;color:#151517}.rf-voice-button.is-primary:hover:enabled{background:#f0f0f3;color:#111}
+.rf-voice-button:disabled{opacity:.4;cursor:not-allowed}.rf-voice-button:focus-visible,.rf-voice-drawer input:focus-visible,.rf-voice-drawer select:focus-visible,.rf-voice-drawer summary:focus-visible{outline:2px solid #aaa;outline-offset:3px}
+.rf-voice-button.is-playing{background:#e0e0e3;color:#18181b;border-color:#e0e0e3}.rf-voice-icon-button{padding:5px;width:34px}
+.rf-voice-copy{color:#aaaab1!important;font-size:12px!important;margin:0 0 10px!important;line-height:1.7!important}.rf-voice-copy:empty{display:none}
+.rf-voice-status{font-size:11px;color:#adadb5;padding:8px 0;overflow-wrap:anywhere}.rf-voice-status[data-error=true],[data-voice-quota-error]:not(:empty){color:#d7a9a9}
+.rf-voice-quota{padding:9px 10px;background:#141416;border:1px solid #303034;border-radius:7px;margin-bottom:12px}.rf-voice-quota .rf-voice-row{flex-wrap:nowrap}.rf-voice-quota strong{font-size:12px;font-weight:600;white-space:nowrap}.rf-voice-quota .rf-voice-row>span{font-size:11px}
+.rf-voice-meter{height:3px;background:#35353a;margin:9px 0;border-radius:2px;overflow:hidden}.rf-voice-meter>i{display:block;height:100%;background:#c0c0c7;max-width:100%}
+.rf-voice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.rf-voice-field{margin-top:7px}
+.rf-voice-fold{border-top:1px solid #343438;margin-top:12px;padding-top:3px}.rf-voice-fold>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;min-height:38px;color:#d9d9df;font-size:12px;font-weight:600}.rf-voice-fold>summary:before{content:'›';font-size:17px;display:inline-block;width:9px}.rf-voice-fold[open]>summary:before{transform:rotate(90deg)}.rf-voice-fold>summary>span,.rf-voice-fold>summary>button{margin-left:auto}.rf-voice-fold>summary>span{color:#92929a;font-size:11px}
+.rf-voice-npc-list,.rf-voice-list{max-height:265px;overflow:auto;overscroll-behavior:contain}
+.rf-voice-npc{display:grid!important;grid-template-columns:minmax(65px,.8fr) minmax(0,1.2fr);align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #2c2c30}.rf-voice-npc>span{overflow-wrap:anywhere;font-size:12px;color:#dedee3}.rf-voice-npc select{font-size:11px;margin:0}
+.rf-voice-choice{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #303034}.rf-voice-choice>div{flex:1;min-width:0}.rf-voice-choice strong{display:block;font-size:12px;color:#d5d5dd;overflow-wrap:anywhere}.rf-voice-choice .rf-voice-button{font-size:11px;padding:5px 7px}.rf-voice-choice small{font-size:10px}
+[data-voice-library-search]{flex-wrap:nowrap!important}[data-voice-library-search] input{flex:1;width:0!important}[data-voice-library-search] button{flex-shrink:0}
+.rf-voice-footer{display:flex;gap:7px;justify-content:space-between;border-top:1px solid #343438;margin-top:14px;padding-top:11px;flex-wrap:wrap}
+.rf-voice-dialogue-controls{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:-2px 0 15px;padding:0;font-family:system-ui,"Noto Sans Thai",sans-serif}
+.rf-voice-dialogue-controls .rf-voice-button{min-height:32px;font-size:11px;background:#1b1b1e;border-color:#434348;color:#d8d8df;padding:4px 9px}.rf-voice-dialogue-controls .rf-voice-setup{color:#b0b0ba}.rf-voice-dialogue-controls .rf-voice-button.is-playing{background:#d9d9df;color:#17171b}
+.rf-voice-message-controls{display:flex;align-items:center;justify-content:flex-end;gap:6px;border-top:1px solid #303034;padding-top:9px;margin:4px 0 8px;font-family:system-ui,"Noto Sans Thai",sans-serif;flex-wrap:wrap}.rf-voice-message-controls>span{font-size:10px;color:#92929b;margin-right:auto}.rf-voice-message-controls .rf-voice-button{min-height:32px;font-size:11px}
+@media(max-width:360px){.rf-voice-header>b{font-size:12px}.rf-voice-header>[data-voice-connection]{max-width:60px}.rf-voice-settings{padding:10px!important}.rf-voice-choice .rf-voice-button{padding:5px;gap:3px}.rf-voice-npc{grid-template-columns:minmax(60px,.65fr) minmax(0,1.35fr)}.rf-voice-quota strong{font-size:11px}.rf-voice-dialogue-controls .rf-voice-button{min-height:34px}}
+@media(prefers-reduced-motion:reduce){.rf-voice-header>svg:first-child{transition:none}}

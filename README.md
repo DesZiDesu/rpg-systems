@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.53.2
+# ROLEFORGE — v0.54.0
+
+## v0.54.0 — Optional ElevenLabs dialogue voices
+
+- Add **RoleForge Voice Addon** as a separate native Extension Settings drawer. Voice and Memory Addons default to off; saved opt-in choices remain intact. Connect a dedicated ElevenLabs key independently of the text-generation connection. Keep keys out of prompts, chat metadata and exported settings; optionally remember an encrypted key in this browser on HTTPS/localhost, with session-only keys on plain HTTP.
+- Add compact grayscale **Play / Pause / Resume / Cancel**, stop and per-NPC voice-settings buttons beside dialogue, plus a play-all queue. Preserve clickable NPC headers and canonical aliases with Chat / Character scope. Use Eleven v4/v3 through the official Text to Dialogue API, account My Voices and public Library search/add, existing voice samples, a deliberate quota-consuming test and local playback speed.
+- Teach the normal story reply and commerce continuation task to include optional hidden delivery directions. Read only dialogue, including spoken NPC incantations; create no extra story-model request for emotion analysis. Audio generation is manual by default, with optional autoplay after a completed new reply. Cache audio across replay/reload, bound stored clips, cancel stale queues on edits/swipes/regeneration/chat changes, and display native notifications at the voice API request boundaries.
+- Display provider quota, reset date and last refresh; keep read-permission failures separate from usable speech. Do not infer dollars or exact v4 speech allowance from legacy quota fields. [Thai usage and UI](docs/voice-addon.th.md) · [interactive production UI preview](docs/previews/voice-addon.html) · [mobile/desktop screenshots](docs/previews/voice-v0540/index.html).
+- Validation: **780 unit/host tests**, syntax checks and production-loader browsers at **320 / 390 / 1280 px** for Voice, existing optional systems and Memory. Voice tests use controlled provider responses, real browser audio and encrypted IndexedDB; no live ElevenLabs account or paid voice requests are used.
 
 ## v0.53.2 — Actual trade intent, inline room offers and property keys
 

@@ -1,14 +1,15 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.53.2';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.53.2';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.53.2';
-import {renderSceneTracker} from './scene-tracker.js?v=0.53.2';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.53.2';
-import {renderGroupBoard} from './group-board-ui.js?v=0.53.2';
-import {uiText} from './ui-language.js?v=0.53.2';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.53.2';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.53.2';
-import { croppedPortrait } from './npc-portraits.js?v=0.53.2';
-import { effectiveNpc } from './npc-alternates.js?v=0.53.2';
+import {renderStoryEvents} from './story-events-ui.js?v=0.54.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.54.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.54.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.54.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.54.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.54.0';
+import {uiText} from './ui-language.js?v=0.54.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.54.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.54.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.54.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.54.0';
+import {speechDisplayText} from './voice-core.js?v=0.54.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -89,7 +90,7 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
         if (block.type === 'header') { startSpeaker(block.name || fallbackName || 'NPC'); continue; }
         if (block.type === 'narrative') { (section || root).append(narrative(block.text)); continue; }
         if (block.type === 'plain') { (section || root).append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
-        if (block.type === 'dialogue') startSpeaker(block.name || fallbackName || 'NPC').append(appendStoryText(element('div', 'trpg-dialogue'),block.text));
+        if (block.type === 'dialogue') startSpeaker(block.name || fallbackName || 'NPC').append(appendStoryText(element('div', 'trpg-dialogue'),speechDisplayText(block.text)));
     }
 }
 
@@ -320,7 +321,9 @@ export function createChatPresentation(api, open) {
             const storyRoot=blocks||reasoningLeak?element('div','trpg-chat'):null;
             if(storyRoot){
                 storyRoot.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
-                if (blocks) renderStoryBlocks(storyRoot,blocks,lookup,message.name,open,imageFor,previousSpeaker);
+                if (blocks) {
+                    renderStoryBlocks(storyRoot,blocks,lookup,message.name,open,imageFor,previousSpeaker);
+                }
                 else if (source) storyRoot.append(appendStoryText(element('div','trpg-plain'),source));
             }
 
@@ -333,7 +336,7 @@ export function createChatPresentation(api, open) {
             const resourceCard=renderResourceEvents(resourceEvents,settings.language);
             if(resourceCard)suffix.append(resourceCard);
             const roots=[];
-            if(storyRoot){host.replaceChildren(storyRoot);roots.push(storyRoot);}
+            if(storyRoot){host.replaceChildren(storyRoot);roots.push(storyRoot);if(blocks)api.voice?.decorateMessage(storyRoot,blocks,{id,message});}
             if(prefix.childNodes.length){host.prepend(prefix);roots.push(prefix);}
             if(suffix.childNodes.length){host.append(suffix);roots.push(suffix);}
             mounted.set(host,{roots,storyRoot,original:storyRoot?original:null,source,signature});
