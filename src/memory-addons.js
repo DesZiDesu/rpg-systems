@@ -1,4 +1,4 @@
-import {renderMemorySummaries} from './memory-summary-ui.js?v=0.54.1';
+import {renderMemorySummaries} from './memory-summary-ui.js?v=0.55.0';
 
 // A separate extension drawer, using the existing memory runtime and library.
 export function createMemoryAddons({settings,view,profiles=()=>[],stamp=()=>{},click,submit,change,document:doc=globalThis.document}) {

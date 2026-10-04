@@ -1,9 +1,9 @@
-import {requestCommerceDecision} from './commerce-generation.js?v=0.54.1';
-import {inspectCommerceResponse} from './commerce-protocol.js?v=0.54.1';
-import {requestedCommerceKind} from './main-chat-systems.js?v=0.54.1';
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.54.1';
-import {createCommerceComposer} from './commerce-composer.js?v=0.54.1';
-import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.54.1';
+import {requestCommerceDecision} from './commerce-generation.js?v=0.55.0';
+import {inspectCommerceResponse} from './commerce-protocol.js?v=0.55.0';
+import {requestedCommerceKind} from './main-chat-systems.js?v=0.55.0';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.55.0';
+import {createCommerceComposer} from './commerce-composer.js?v=0.55.0';
+import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.55.0';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.
@@ -65,7 +65,7 @@ export function createCommerceRuntime(api) {
             playerName:state.player.name,busy:busy||api.isBusy(),error:candidate.id===errorId?error:'',diagnostics:candidate.id===errorId?diagnostics:'',available:!api.isBusy()&&!context.chat.at(-1)?.is_user&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
     function refresh(){if(destroyed)return;const value=view(),signature=JSON.stringify([api.settings().language,api.settings().coinStyle,value]);if(signature!==rendered){rendered=signature;ui.update(value);}}
     function failureReport(session,action,code,raw,details,channel='button'){
-        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.54.1',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
+        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.55.0',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
     }
     async function recoverOpening(input){
         const context=api.context(),message=context.chat?.[input.messageId],variant=message&&api.variant(message);

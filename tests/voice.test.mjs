@@ -143,3 +143,21 @@ test('gesture activation reuses one media element for delayed speech and native 
     const before=f.calls.length,sample=f.runtime.preview({voice_id:'voice-a',preview_url:'https://sample.example/preview.mp3'});
     await waitFor(()=>f.runtime.state.phase==='playing');assert.equal(f.sounds.length,1);assert.equal(f.sounds[0].src,'https://sample.example/preview.mp3');assert.equal(f.calls.length,before);f.sounds[0].end();await sample;
 });
+
+import {assignedVoice,voiceGender,speechDraftKey} from '../src/voice-core.js';
+test('NPC assignment wins over gender defaults; narration uses its own voice and unknown gender uses fallback',()=>{
+    const settings=normalizeVoiceSettings({voiceDefaultId:'generic',voiceMaleId:'man',voiceFemaleId:'woman',voiceNarratorId:'narrator',voiceBindings:{known:'specific'}});
+    assert.equal(assignedVoice(settings,{gender:'หญิง'}),'woman');assert.equal(assignedVoice(settings,{gender:'male'}),'man');
+    assert.equal(assignedVoice(settings,{name:'Alice',gender:''}),'generic');assert.equal(voiceGender('female or male'),'');
+    assert.equal(assignedVoice(settings,{speakerKey:'known',gender:'female'}),'specific');
+    assert.equal(assignedVoice(settings,{kind:'narrative',gender:'male'}),'narrator');
+    assert.equal(assignedVoice(settings,{kind:'narrative',voiceOverride:'local'}),'local');
+    assert.equal(assignedVoice({...settings,voiceNarratorId:''},{kind:'narrative'}),'');
+});
+test('speech drafts stay local, scoped to card/chat/message/swipe/block and the exact AI source',async()=>{
+    const context={character:{avatar:'card.png'},getCurrentChatId:()=> 'chat'},block={type:'dialogue',name:'Cora',delivery:'calm',text:'Hello'};
+    const key=speechDraftKey(context,1,0,2,block),store=createVoiceStorage({indexedDB:null});
+    await store.saveDraft(key,{text:'[laughs] Hello',voice:'voice-f'});assert.deepEqual(await store.readDraft(key),{text:'[laughs] Hello',voice:'voice-f'});
+    for(const other of [speechDraftKey(context,1,1,2,block),speechDraftKey(context,1,0,3,block),speechDraftKey(context,1,0,2,{...block,text:'Changed'}),speechDraftKey(context,1,0,2,{...block,delivery:'sad'}),speechDraftKey({...context,getCurrentChatId:()=> 'other'},1,0,2,block)]){assert.notEqual(other,key);assert.equal(await store.readDraft(other),null);}
+    await store.saveDraft(key,null);assert.equal(await store.readDraft(key),null);assert.equal(block.text,'Hello');
+});

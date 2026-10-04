@@ -36,7 +36,8 @@ export async function startVoicePreview(){
     await waitFor(()=>document.querySelector('[data-optional-setting="enableVoiceAddon"]')&&document.querySelector('[data-voice-panel]'));
     document.querySelector('#tretaresia-rpg-close')?.click();
     const local=window.host.chatMetadata.tretaresia_rpg_state;
-    local.npcs ||= [];if(!local.npcs.some(npc=>npc.id==='garrick'))local.npcs.push({id:'garrick',name:'Garrick',aliases:['Garrick Oak'],npcScope:'chat',met:true,title:'Innkeeper',occupation:'Merchant',race:'Human',relationship:'Acquaintance',identityColor:'#aaa',location:'Oakland Inn'});
+    local.npcs ||= [];if(!local.npcs.some(npc=>npc.id==='garrick'))local.npcs.push({id:'garrick',name:'Garrick',gender:'male',aliases:['Garrick Oak'],npcScope:'chat',met:true,title:'Innkeeper',occupation:'Merchant',race:'Human',relationship:'Acquaintance',identityColor:'#aaa',location:'Oakland Inn'});
+    const cora=local.npcs.find(n=>n.name==='Cora');if(cora)cora.gender='female';
     const story='<tr-header name="Cora"/><tr-narrative>คอร่าหยุดตรงประตู ก่อนหันกลับมาพูดกับคุณเบา ๆ</tr-narrative><tr-dialogue name="Cora" delivery="whispers">'+speech.replace('[whispers] ','')+'</tr-dialogue><tr-header name="Garrick"/><tr-dialogue name="Garrick" delivery="warmly">ห้องพักพร้อมแล้วครับ พรุ่งนี้เช้าข้าจะเตรียมอาหารไว้ให้</tr-dialogue>';
     window.host.chat=[{name:'Nova',is_user:true,mes:'ฉันเดินตามคอร่าไปดูห้องพัก'},{name:'Narrator',is_user:false,mes:story,swipe_id:0,swipes:[story]}];
     const chat=document.querySelector('#chat');chat.replaceChildren(...window.host.chat.map((message,id)=>{const row=document.createElement('article');row.className='mes';row.setAttribute('mesid',id);const text=document.createElement('div');text.className='mes_text';text.textContent=message.mes;row.append(text);return row;}));
@@ -52,7 +53,7 @@ export async function startVoicePreview(){
     document.querySelector('#preview-status').textContent='Voice Addon · ตัวอย่าง UI จริง / เสียงตัวอย่างเป็นโทนสั้นในเครื่อง';
     if(new URLSearchParams(location.search).get('connected')==='1'){
         await window.voicePreview.enable();await window.voicePreview.connect();
-        const select=document.querySelector('[data-voice-panel] [name="default"]');select.value='demo-cora';select.dispatchEvent(new Event('change',{bubbles:true}));
+        for(const [name,value]of [['default','demo-cora'],['male','demo-garrick'],['female','demo-cora'],['narrator','demo-garrick']]){const select=document.querySelector(`[data-voice-panel] [name="${name}"]`);select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}));}
     }
     window.voicePreview.ready=true;
 }

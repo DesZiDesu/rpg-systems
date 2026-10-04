@@ -1,4 +1,4 @@
-import { normalizeMasteryTraining, TRAINING_MODES, trainingMode, trainingProgress, submitMasteryTraining } from './mastery-training.js?v=0.54.1';
+import { normalizeMasteryTraining, TRAINING_MODES, trainingMode, trainingProgress, submitMasteryTraining } from './mastery-training.js?v=0.55.0';
 
 const copy = (language, en, th) => language === 'th' ? th : en;
 const node = (tag, className = '', text = '') => { const value = document.createElement(tag); value.className = className; if (text !== undefined) value.textContent = text; return value; };

@@ -48,3 +48,15 @@ test('a genuine NPC buy offer for owned items opens a sale list from split dialo
     assert.equal(recoverMarketplaceShop(story,'ฉันไม่ได้จะขาย แค่ถามเรื่องขายของ','Shop',[],{inventory}),null);
     assert.equal(recoverMarketplaceShop(story,'ฉันขอขายดาบเหล็กกับโล่ไม้','Shop',[],{inventory:[]}),null);
 });
+
+// Ellipsis and a separate checkout/key dialogue must not suppress a real offer.
+import {latestRoomStory} from './fixtures/latest-room-offer.mjs';
+test('latest exact no-patch reply opens a five-silver room and uses the separately spoken checkout',()=>{
+    const event=recoverMarketplaceShop(latestRoomStory,splitRoomUser,'Oakland Inn',[],{clock:{day:1,time:'10:16'}});
+    assert.ok(event);assert.equal(event.items.length,1);const entry=event.items[0];
+    assert.equal(entry.item.name,'ห้องพักธรรมดา');assert.equal(entry.askPrice,5);assert.equal(entry.denomination,'silver');
+    assert.deepEqual(entry.terms.validUntil,{day:2,time:'12:00'});assert.equal(entry.terms.delivery.name,'กุญแจห้องพักธรรมดา');
+    assert.match(entry.item.description,/เตียงเดี่ยว.*โต๊ะเล็ก/s);assert.ok(entry.terms.includes.some(x=>x.includes('อาหารเช้า')));
+    const other=latestRoomStory.replace('name="Garrick" delivery="calm"','name="Other" delivery="calm"');
+    assert.equal(recoverMarketplaceShop(other,splitRoomUser,'Oakland Inn',[],{clock:{day:1,time:'10:16'}}),null,'another speaker cannot authorize this seller key');
+});

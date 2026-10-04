@@ -1,4 +1,4 @@
-import {normalizeVoiceSettings,splitSpeech,voiceCacheKey} from './voice-core.js?v=0.54.1';
+import {normalizeVoiceSettings,splitSpeech,voiceCacheKey,assignedVoice} from './voice-core.js?v=0.55.0';
 
 export function createVoiceRuntime({settings,storage,client,changed=()=>{},notify=()=>{},audio:makeAudio=()=>new Audio(),url=globalThis.URL}={}) {
     let credential='',connectionTicket=0,playTicket=0,connectionController,controller,player,releasePlayer,unlockedPlayer;
@@ -13,7 +13,7 @@ export function createVoiceRuntime({settings,storage,client,changed=()=>{},notif
         Object.assign(state,{phase:'idle',currentId:'',queue:false,previewId:''});emit();
     }
     const hasKey=()=>Boolean(credential);
-    const selectedVoice=entry=>settings().voiceBindings?.[entry.speakerKey]||settings().voiceDefaultId||'';
+    const selectedVoice=entry=>assignedVoice(settings(),entry);
     async function quota(){
         const ticket=connectionTicket,read=++quotaTicket;
         try{const result=await client.quota(connectionController?.signal);if(ticket!==connectionTicket||read!==quotaTicket||!settings().enableVoiceAddon)return;

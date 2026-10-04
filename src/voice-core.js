@@ -10,7 +10,7 @@ const audioTag = value => directions.has(direction(value));
 export function normalizeVoiceSettings(settings={}) {
     settings.enableVoiceAddon=settings.enableVoiceAddon===true;
     settings.voiceModel=VOICE_MODELS.some(model=>model.id===settings.voiceModel)?settings.voiceModel:'eleven_v4';
-    settings.voiceDefaultId=typeof settings.voiceDefaultId==='string'?settings.voiceDefaultId.slice(0,160):'';
+    for(const field of ['voiceDefaultId','voiceMaleId','voiceFemaleId','voiceNarratorId'])settings[field]=typeof settings[field]==='string'?settings[field].slice(0,160):'';
     settings.voiceBindings=settings.voiceBindings&&typeof settings.voiceBindings==='object'&&!Array.isArray(settings.voiceBindings)?settings.voiceBindings:{};
     settings.voiceSpeed=Math.max(.75,Math.min(1.5,Number(settings.voiceSpeed)||1));
     settings.voiceAutoplay=settings.voiceAutoplay===true;
@@ -66,4 +66,23 @@ export function subscriptionQuota(raw={}) {
         percent:valid&&limit>0?Math.max(0,Math.min(100,(limit-used)/limit*100)):null,
         resetAt:Number.isFinite(reset)&&reset>0?reset*1000:null,
         overage:raw.current_overage||null,updatedAt:Date.now()};
+}
+
+// Gender comes only from the stored profile, never from a name or chosen voice.
+export function voiceGender(value='') {
+    const gender=String(value).normalize('NFKC').trim().toLowerCase();
+    if(['female','woman','หญิง','ผู้หญิง','เพศหญิง'].includes(gender))return 'female';
+    if(['male','man','ชาย','ผู้ชาย','เพศชาย'].includes(gender))return 'male';
+    return '';
+}
+export function assignedVoice(settings={},entry={}) {
+    if(entry.voiceOverride)return entry.voiceOverride;
+    if(entry.kind==='narrative')return settings.voiceNarratorId||'';
+    const bound=settings.voiceBindings?.[entry.speakerKey];if(bound)return bound;
+    const gender=voiceGender(entry.gender);
+    return (gender==='female'?settings.voiceFemaleId:gender==='male'?settings.voiceMaleId:'')||settings.voiceDefaultId||'';
+}
+export function speechDraftKey(context={},messageId,swipeId,blockIndex,block={}) {
+    const owner=context.character?.avatar??context.characters?.[context.characterId]?.avatar??context.characterId??'';
+    return JSON.stringify(['rf-speech-1',owner,context.getCurrentChatId?.()||'',messageId,swipeId||0,blockIndex,block.type,block.name||'',block.delivery||'',String(block.text||'')]);
 }

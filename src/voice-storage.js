@@ -5,8 +5,8 @@ export function createVoiceStorage({indexedDB:db=globalThis.indexedDB,crypto:cry
     function database(){
         if(!db)return Promise.resolve(null);
         opening ||= new Promise(resolve=>{
-            const request=db.open('roleforge-voice-v1',1);
-            request.onupgradeneeded=()=>{for(const name of ['secrets','audio'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name);};
+            const request=db.open('roleforge-voice-v1',2);
+            request.onupgradeneeded=()=>{for(const name of ['secrets','audio','drafts'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name);};
             request.onsuccess=()=>resolve(request.result);request.onerror=()=>resolve(null);request.onblocked=()=>resolve(null);
         });return opening;
     }
@@ -55,5 +55,15 @@ export function createVoiceStorage({indexedDB:db=globalThis.indexedDB,crypto:cry
         for(const key of memory.keys())if(owns(key))memory.delete(key);
         await operation('audio','readwrite',store=>{const request=store.openCursor();request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;if(owns(cursor.key))cursor.delete();cursor.continue();};});
     }
-    return {canRemember,saveKey,readKey,forgetKey,audio,saveAudio,clearAudio};
+    const drafts=new Map();
+    async function readDraft(key){
+        if(drafts.has(key))return drafts.get(key);
+        try{return await operation('drafts','readonly',store=>store.get(key))||null;}catch{return null;}
+    }
+    async function saveDraft(key,value){
+        const draft=value?{text:String(value.text||'').slice(0,20000),voice:String(value.voice||'').slice(0,160)}:null;
+        drafts.set(key,draft);
+        try{await operation('drafts','readwrite',store=>draft?store.put(draft,key):store.delete(key));}catch{/* The session draft is still usable. */}
+    }
+    return {canRemember,saveKey,readKey,forgetKey,audio,saveAudio,clearAudio,readDraft,saveDraft};
 }
