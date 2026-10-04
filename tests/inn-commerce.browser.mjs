@@ -103,11 +103,9 @@ try{
         // Incomplete legacy room options remain blocked, never permanent ownership.
 
         await receive(page,innUser,innStory,{sceneTracker:{loc:'Oakland Inn'},ops:[]});
-        await bar.waitFor();
+        await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
         assert.equal(await page.evaluate(()=>window.calls.length),2);
-        const confirm=bar.locator('[data-commerce-action="confirm"]');
-        if(await confirm.count())assert.equal(await confirm.isDisabled(),true);
-        assert.equal(await bar.locator('.rf-commerce-diagnostic-report').count(),0);
+        assert.equal(await bar.count(),0,'no missing-data commerce window is opened from a purchase keyword');
         assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),95);
         assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory.length),1);
         assert.deepEqual(errors,[]);console.log(`PASS current conditional inn room prices inline with zero extra calls, same-turn ability registration, swipe/regenerate contract, complete access terms, missing catalog without extra calls and unchanged wallet/inventory at ${width}px`);await page.close();

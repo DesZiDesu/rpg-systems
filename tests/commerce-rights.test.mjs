@@ -55,3 +55,31 @@ test('legacy room descriptions and nightly permanent-room mistakes cannot sell o
  const owned=normalizeMarketplaceEvent({kind:'npcShop',id:'home',location:'Town',evidence:'ขายกรรมสิทธิ์ห้องส่วนตัวชั้นบน ห้าสิบเหรียญเงิน',seller:{name:'Garrick'},denomination:'silver',items:[{name:'ห้องส่วนตัวชั้นบน',price:50,terms:{mode:'permanent'}}]});
  assert.equal(owned.items[0].termsRequired,false);
 });
+
+test('permanent property purchase gives an owned named key instead of a building inventory item',()=>{
+ const terms={mode:'permanent',scope:'บ้านริมแม่น้ำ',delivery:{name:'กุญแจบ้านริมแม่น้ำ',category:'Key',description:'กุญแจประตูหน้าบ้าน'}};
+ assert.deepEqual(normalizePurchaseTerms(terms),terms);
+ const result=buy(terms);assert.equal(result.ok,true);assert.equal(result.next.inventory.length,1);
+ const key=result.next.inventory[0];assert.equal(key.name,'กุญแจบ้านริมแม่น้ำ');assert.equal(key.category,'Key');assert.equal(key.quantity,1);
+ assert.match(key.description,/กรรมสิทธิ์ถาวร · บ้านริมแม่น้ำ/);assert.equal(key.commerceRightId,undefined);
+ assert.equal(result.next.commerce.rights.length,0);assert.equal(itemSaleBlocked(result.next,key.id),false);
+ assert.equal(result.next.progression.currency.silver,95);
+ assert.equal(applyCommerceDecision(result.next,prepareCommerceAction(result.next,result.session,'confirm'),{narrative:'Duplicate',decision:{outcome:'accept',amount:5}}).ok,false);
+});
+
+test('permanent property keys need a scope/name, remain idempotent and cannot gain expiry or deposits',()=>{
+ const valid={mode:'permanent',scope:'Oak Manor',delivery:{name:'Key to Oak Manor'}};
+ const normalized=normalizePurchaseTerms(valid);assert.deepEqual(normalizePurchaseTerms(normalized),normalized);
+ for(const raw of [{mode:'permanent',scope:'Oak Manor'},{mode:'permanent',delivery:{name:'Key'}},{...valid,delivery:{name:'Door',category:'Building'}},{...valid,deposit:5},{...valid,validUntil:{day:2,time:'10:00'}}])assert.equal(normalizePurchaseTerms(raw),null);
+ assert.equal(prepareCommerceAction(initial(),createCommerceSession(event(valid)),'confirm',{items:[{itemId:'room',quantity:2}]}).ok,false);
+});
+
+test('property key and scope must be publicly stated by the seller in the same opening reply',()=>{
+ const quote='ข้าขายบ้านริมแม่น้ำ ห้าเหรียญเงิน พร้อมกุญแจบ้านริมแม่น้ำ';
+ const raw={kind:'npcShop',id:'house-key',location:'Oakland Inn',evidence:quote,seller:{name:'Garrick'},denomination:'silver',items:[{name:'บ้านริมแม่น้ำ',category:'Property',price:5,terms:{mode:'permanent',scope:'บ้านริมแม่น้ำ',delivery:{name:'กุญแจบ้านริมแม่น้ำ'}}}]};
+ const story='<tr-dialogue name="Garrick">'+quote+'</tr-dialogue>';
+ const offer=confirmedMarketplaceEvent(raw,story,'ขอซื้อบ้านริมแม่น้ำ','Oakland Inn',[]);assert.ok(offer);assert.equal(offer.items[0].termsRequired,false);
+ assert.equal(confirmedMarketplaceEvent({...raw,items:[{...raw.items[0],terms:{...raw.items[0].terms,delivery:{name:'กุญแจปราสาทอื่น'}}}]},story,'ขอซื้อบ้านริมแม่น้ำ','Oakland Inn',[]),null);
+ const legacy=normalizeMarketplaceEvent({...raw,items:[{name:'บ้านริมแม่น้ำ',category:'Property',price:5,terms:{mode:'permanent'}}]});
+ assert.equal(legacy.items[0].termsRequired,true);assert.equal(prepareCommerceAction(initial(),createCommerceSession(legacy),'confirm').error,'terms');
+});

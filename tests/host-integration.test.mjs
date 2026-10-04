@@ -2292,3 +2292,19 @@ test('a settled auction venue does not seed a new catalog or accept a stale open
   assert.equal(host.auctionForMessage(3,context.chat[3]),null);assert.equal(host.commerceRuntime().view(),null);assert.equal(host.getState().commerce.sessions.length,1);assert.equal(calls,0);
  }finally{host.commerceRuntime()?.destroy();context.extensionSettings=prior.settings;context.chatMetadata=prior.metadata;context.chat=prior.chat;context.setExtensionPrompt=prior.prompt;context.saveMetadata=prior.save;context.generateRaw=prior.raw;}
 });
+
+test('normal reply AI intent survives the real parser and blocks a spurious catalog/payment for mere discussion',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,raw:context.generateRaw};
+ try{
+  context.extensionSettings={tretaresia_rpg:{enableMarketplace:true,autoTrack:true,autoContinuity:false,eventNotifications:false,npcDiaryFrequency:'off'}};
+  const state=host.normalize({...host.defaultState(),location:{place:'Shop'},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true},progression:{currency:{gold:0,silver:10,copper:0}}});
+  context.chatMetadata={tretaresia_rpg_state:state};context.saveMetadata=async()=>{};let calls=0;context.generateRaw=async()=>{calls++;throw Error('Unexpected extra intent/catalog API');};
+  const user='ซื้อหรือขายดีนะ ฉันยังตัดสินใจไม่ได้',quote='Rally shows shop goods for sale. Potion: 3 silver.';
+  const patch={sceneTracker:{loc:'Shop'},commerceIntent:{kind:'none',evidence:user},marketplace:{kind:'npcShop',location:'Shop',seller:{name:'Rally'},evidence:quote,denomination:'silver',items:[{name:'Potion',price:3}]},ops:[['inc','progression.currency.silver',-3,{category:'purchase'}],['inc','inventory',{name:'Potion',quantity:1},{category:'purchase'}]]};
+  context.chat=[{is_user:true,mes:user},{is_user:false,mes:`<tr-dialogue name="Rally">${quote}</tr-dialogue><!--tretaresia_patch:${JSON.stringify(patch)}-->`}];
+  assert.equal(host.extractStatePatch(context.chat[1].mes).patch.commerceIntent.kind,'none');
+  host.initializeCommerce();await host.processAssistantPatch(1,'normal');
+  assert.equal(host.getState().progression.currency.silver,10);assert.equal(host.getState().inventory.length,0);assert.equal(host.commerceRuntime().view(),null);assert.equal(calls,0);
+  const record=Object.values(context.chatMetadata.tretaresia_rpg_social_events).flatMap(Object.values).at(-1);assert.equal(record.commerceIntent.kind,'none');assert.equal(record.marketplace,undefined);assert.equal(record.missingSystems.length,0);
+ }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateRaw=prior.raw;}
+});

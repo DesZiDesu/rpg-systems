@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.53.1
+# ROLEFORGE — v0.53.2
+
+## v0.53.2 — Actual trade intent, inline room offers and property keys
+
+- Read the whole player role-play in the normal reply and emit an evidence-backed buy/sell/none intent. Buy/sell composers open only from a validated current NPC offer, never a keyword-driven waiting strip. Mentions, refusal, past sales and hypothetical plans do not open commerce. Real catalog/price inquiries and owned-item sale requests still work; classification adds no API call.
+- Accept a room/property key label derived from the exact disclosed place when the same seller presents its physical key. Keep wrong-place keys rejected. Compile a fully explicit Thai inn menu locally when its object is omitted: only quoted prices, visible keys, inclusions/rules and an unambiguous checkout on the story clock are used. Missing facts, deposits or ambiguous menus require proper AI data; no automatic second catalog request runs.
+- Keep the full house/room/building name and price in permanent purchase lists, but deliver a named owned key to Inventory with its permanent ownership scope. Temporary stays retain timed access keys. Property quantity is one; receipts report the actual delivered key, and payment/delivery remain once-only after confirmation.
+- [Thai behavior and production UI gallery](docs/commerce-intent-keys.th.md). Validation: 757 unit/host tests and syntax checks; real-loader browsers with controlled provider replies at 320/390/1280 px cover intent, room/property keys and existing commerce/training/optional systems. No user live-model account is called.
 
 ## v0.53.1 — Complete inline buy data, formatted continuations and mobile training
 

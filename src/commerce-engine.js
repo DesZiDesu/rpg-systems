@@ -1,7 +1,7 @@
-import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.53.1';
-import {CURRENCY_VALUES,CURRENCY_RULE,walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.53.1';
-import {readCommercePrices} from './commerce-prices.js?v=0.53.1';
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.53.1';
+import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.53.2';
+import {CURRENCY_VALUES,CURRENCY_RULE,walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.53.2';
+import {readCommercePrices} from './commerce-prices.js?v=0.53.2';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.53.2';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);
@@ -136,7 +136,7 @@ export function commercePublicSummary(state) {return normalizeCommerce(state.com
 function tradeLines(session){return(Array.isArray(session.basket)?session.basket:[{itemId:session.selectedId,quantity:session.items.find(entry=>entry.id===session.selectedId)?.item.quantity||1}]).map(line=>({...line,entry:session.items.find(entry=>entry.id===line.itemId)}));}
 export function commerceBasketQuote(session,lines){
     if(!Array.isArray(lines)||!lines.length||lines.length>40||new Set(lines.map(line=>line.itemId)).size!==lines.length)return null;
-    let total=0;for(const line of lines){const entry=session.items.find(item=>item.id===line.itemId);if(!entry||entry.terms?.mode&&entry.terms.mode!=='permanent'&&line.quantity!==1||!Number.isSafeInteger(line.quantity)||line.quantity<1||line.quantity>99999)return null;const price=entry.askPrice*line.quantity/(entry.item.quantity||1);if(!money(price)||!price)return null;total+=price;}
+    let total=0;for(const line of lines){const entry=session.items.find(item=>item.id===line.itemId);if(!entry||(entry.terms?.mode&&entry.terms.mode!=='permanent'||entry.terms?.delivery&&entry.terms.mode==='permanent')&&line.quantity!==1||!Number.isSafeInteger(line.quantity)||line.quantity<1||line.quantity>99999)return null;const price=entry.askPrice*line.quantity/(entry.item.quantity||1);if(!money(price)||!price)return null;total+=price;}
     return money(total)?total:null;
 }
 
@@ -281,7 +281,7 @@ export function applyCommerceDecision(state, prepared, result, now=new Date().to
                     if(session.kind==='buy'){
                         if(commerceAvailable(next)[d]<price+deposit||!debitWallet(next.progression.currency,price+deposit,d))return fail('funds');
                         if(!grantPurchaseRights(next,session,lines,inventory,now))return fail('terms');
-                        for(const line of lines){line.entry.stock-=line.quantity;events.push({type:'purchase',name:line.entry.item.name,quantity:line.quantity});}
+                        for(const line of lines){line.entry.stock-=line.quantity;events.push({type:'purchase',name:line.entry.terms?.mode!=='service'&&line.entry.terms?.delivery?.name||line.entry.item.name,quantity:line.quantity});}
                         if(deposit)events.push({type:'deposit',amount:deposit});
                     }else{
                         for(const line of lines){if(!inventory(line.entry.item,-line.quantity))return fail('inventory');events.push({type:'sale',name:line.entry.item.name,quantity:line.quantity});}

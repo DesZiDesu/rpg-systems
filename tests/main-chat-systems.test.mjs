@@ -96,3 +96,15 @@ test('normal buy contract gives complete room access terms in its final example 
  const goods=mainChatOutputContract('ขอซื้อดาบ',{...settings,autoTrack:true},{location:'Market'});
  assert.equal(JSON.parse([...goods.matchAll(/<!--tretaresia_patch:([\s\S]*?)-->/gu)].at(-1)[1]).marketplace.items[0].terms.mode,'permanent');
 });
+
+test('permanent place purchases use named key delivery and temporary stays keep timed access',()=>{
+ for(const user of ['ซื้อบ้านริมแม่น้ำ','ฉันขอซื้อห้องแบบถาวร','ซื้ออาคารพาณิชย์','I buy a warehouse']){
+  const contract=mainChatOutputContract(user,{...settings,autoTrack:true},{location:'Town'});
+  const entry=JSON.parse([...contract.matchAll(/<!--tretaresia_patch:([\s\S]*?)-->/gu)].at(-1)[1]).marketplace.items[0];
+  assert.equal(entry.terms.mode,'permanent',user);assert.equal(entry.category,'Property');assert.equal(entry.terms.delivery.category,'Key');assert.ok(entry.terms.scope);
+ }
+ for(const user of ['ซื้อห้องพัก 1 คืน','ฉันขอเช่าบ้านหนึ่งคืน','I rent a house']){
+  const contract=mainChatOutputContract(user,{...settings,autoTrack:true},{location:'Town'});
+  assert.equal(JSON.parse([...contract.matchAll(/<!--tretaresia_patch:([\s\S]*?)-->/gu)].at(-1)[1]).marketplace.items[0].terms.mode,'access',user);
+ }
+});

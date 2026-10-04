@@ -1,11 +1,12 @@
-import {rightsView} from './commerce-rights.js?v=0.53.1';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.53.1';
+import {rightsView} from './commerce-rights.js?v=0.53.2';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.53.2';
 const escape=value=>String(value??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function purchaseTypeLabel(mode,thai=true){return(thai?{permanent:'ซื้อถาวร',rental:'เช่า',access:'สิทธิ์ใช้งาน',service:'งานบริการ'}:{permanent:'Own permanently',rental:'Rental',access:'Access',service:'Service'})[mode]||'';}
 export function storyDateLabel(value,thai=true){return value?`${thai?'วันที่':'Day'} ${value.day} · ${value.time}`:'';}
 export function purchaseTermLines(terms,thai=true,incomplete=false){
     if(incomplete)return[thai?'ประเภทและระยะเวลายังไม่ยืนยัน · ยังซื้อไม่ได้':'Type and duration are unconfirmed · Purchase unavailable'];
-    if(!terms||terms.mode==='permanent')return[thai?'เป็นกรรมสิทธิ์ของคุณ · ไม่มีวันหมดอายุ':'Your property · No expiry'];
+    if(!terms||terms.mode==='permanent')return[thai?'เป็นกรรมสิทธิ์ของคุณ · ไม่มีวันหมดอายุ':'Your property · No expiry',
+        ...(terms?.delivery?[(thai?'สถานที่ · ':'Property · ')+terms.scope,(thai?'ได้รับ · ':'Receive · ')+terms.delivery.name]:[])];
     const lines=[purchaseTypeLabel(terms.mode,thai)+' · '+terms.scope];
     if(terms.validFrom)lines.push((thai?'เริ่ม ':'Starts ')+storyDateLabel(terms.validFrom,thai));
     if(terms.validUntil)lines.push((thai?'ถึง ':'Until ')+storyDateLabel(terms.validUntil,thai));
