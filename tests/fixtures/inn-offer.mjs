@@ -1,0 +1,4 @@
+export const innUser='ฉันพยักหน้าก่อนจะผายมือขอซื้อห้องพัก 1 คืน\n“เท่าไหร่ครับสำหรับ 1 คืน”';
+export const innEvidence='ถ้าเป็นห้องพักธรรมดาชั้นสอง เตียงเดี่ยวสะอาดสะอ้าน คืนละห้าเหรียญเงิน รวมอาหารเช้าง่ายๆ กับน้ำอุ่นหนึ่งถัง แต่ถ้าอยากได้ห้องกว้างหน่อย มีอ่างอาบน้ำส่วนตัว ก็สิบเหรียญเงิน เจ้าจะเลือกแบบไหนล่ะ?';
+export const innStory='<tr-header name="Garrick"/><tr-dialogue name="Garrick">เรื่องที่ซุกหัวนอนน่ะไม่ต้องห่วง โรงเตี๊ยมของข้าต้อนรับคนเดินทางเสมอ '+innEvidence+'</tr-dialogue><tr-narrative>เถ้าแก่โรงเตี๊ยมดึงสมุดบัญชีออกมาเปิด รอคำตอบของลูกค้า</tr-narrative>';
+export function innOffer(){return {kind:'npcShop',location:'Oakland Inn',evidence:innEvidence,seller:{name:'Garrick',npcId:'garrick-innkeeper-1'},denomination:'silver',items:[{name:'ห้องพักธรรมดาชั้นสอง',price:5,stockKnown:false,negotiableKnown:false},{name:'ห้องกว้างหน่อย มีอ่างอาบน้ำส่วนตัว',price:10,stockKnown:false,negotiableKnown:false}]};}

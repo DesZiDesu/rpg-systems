@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.52.2
+# ROLEFORGE — v0.52.3
+
+## v0.52.3 — Current inn prices in the normal buy reply
+
+- Accept a present named NPC price menu such as “ถ้าเป็นห้องพักธรรมดา...คืนละห้าเหรียญเงิน” as current alternatives, rather than treating every conditional pricing phrase as a hypothetical visit. Validate the exact speaker, quote, item names and each option’s quoted price/currency. Keep rejection of invented/swapped prices, unavailable rooms, rumors, future/OOC requests and hypothetical availability. Unknown stock/negotiability stay unknown; opening alone transfers nothing.
+- Teach the main reply contract to emit the complete npcShop list for rooms, rentals and priced services alongside the story, even while asking which option the player wants. Add a direct required-buy reminder for ordinary replies, swipe and regenerate. A valid inline list opens without an additional API call. Retain the existing missing-payload recovery path; the supplied fenced JSON response now validates too.
+- Clarify already-known player ability registration after starting-loadout onboarding: acknowledge an established ability and upsert its full metadata in the same reply, preserving IDs/mastery. A wish or contradicted claim is not acquisition. Auto tracking remains required; hiding the Incantation window does not disable ability storage or chant rules.
+- [Thai diagnosis and ability usage](docs/inn-commerce.th.md). Update and reload; regenerate/swipe an old incomplete reply to apply the new prompt. Validation uses controlled browser provider responses and preserves existing commerce behavior.
 
 ## v0.52.2 — RoleForge Memory Addons drawer
 

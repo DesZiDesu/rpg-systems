@@ -1,14 +1,14 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.52.2';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.52.2';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.52.2';
-import {renderSceneTracker} from './scene-tracker.js?v=0.52.2';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.52.2';
-import {renderGroupBoard} from './group-board-ui.js?v=0.52.2';
-import {uiText} from './ui-language.js?v=0.52.2';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.52.2';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.52.2';
-import { croppedPortrait } from './npc-portraits.js?v=0.52.2';
-import { effectiveNpc } from './npc-alternates.js?v=0.52.2';
+import {renderStoryEvents} from './story-events-ui.js?v=0.52.3';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.52.3';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.52.3';
+import {renderSceneTracker} from './scene-tracker.js?v=0.52.3';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.52.3';
+import {renderGroupBoard} from './group-board-ui.js?v=0.52.3';
+import {uiText} from './ui-language.js?v=0.52.3';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.52.3';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.52.3';
+import { croppedPortrait } from './npc-portraits.js?v=0.52.3';
+import { effectiveNpc } from './npc-alternates.js?v=0.52.3';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;

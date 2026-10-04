@@ -1,5 +1,5 @@
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.52.2';
-import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.52.2';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.52.3';
+import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.52.3';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -10,9 +10,25 @@ const denominations = new Set(['gold', 'silver', 'copper']);
 const buyWords = /(?:buy|purchase|offer|pay|sell\s+you|ซื้อ|ขอซื้อ|รับซื้อ|เสนอราคา|จ่าย)/iu;
 const shopWords = /(?:shop|store|stall|vendor|merchant|sell(?:s|ing)?|goods|price|discount|haggl|counteroffer|ราคา|ลดให้|ลดราคา|ต่อรอง|ขาย|ร้าน|แผง|สินค้า|ของให้เลือก)/iu;
 const actionWords = /(?:say|tell|ask|offer|hand|show|bring|walk|enter|approach|visit|stand|open|inspect|browse|display|list|พูด|บอก|ถาม|ขอ|ยื่น|นำ|เดิน|เข้า|เปิด|ไปหา|มาถึง|ดู|แสดง|หยิบ|วาง|ลดราคา|ลดให้)/iu;
+export const MARKETPLACE_REQUEST_WORDS = /(?:shop|store|merchant|vendor|goods|catalog|buy|sell|haggl|counteroffer|\brent\b|\bbook(?:ing)?\s+(?:(?:a|an|the)\s+)?(?:room|lodging|accommodation|stay)\b|(?:room|lodging|accommodation)\s+(?:rates?|prices?)|ร้าน|พ่อค้า|แม่ค้า|สินค้า|ซื้อ|ขาย|ต่อรอง|ดูของ|เช่าห้อง|จองห้อง|ขอห้อง|ค่าห้อง|(?:ขอ|หา|จอง|เช่า)ที่พัก)/iu;
+const catalogRequestWords = /(?:buy|shop|goods|catalog|ซื้อ|ร้าน|สินค้า|ดูของ|ต่อรอง|เช่า|จอง|ห้องพัก|ที่พัก|ค่าห้อง|เท่าไหร่|how much|\brent\b|\bbook(?:ing)?\s+(?:(?:a|an|the)\s+)?(?:room|lodging|accommodation|stay)\b|lodging|accommodation)/iu;
+const nonCurrentRequest = /(?:auction|ประมูล|พรุ่งนี้|เมื่อวาน|สมมุติ|ยังไม่|tomorrow|yesterday|hypothetical)/iu;
+// Choosing between currently quoted products is a price condition, not a
+// hypothetical visit. Keep this exception local to exact, named shop catalogs.
+const pricingCondition = /(?:ถ้า|หาก)(?:เป็น|อยาก(?:ได้)?|ต้องการ|เลือก|เอา|(?:เจ้า|ท่าน|คุณ)(?:อยาก(?:ได้)?|ต้องการ|เลือก|เอา))\s*|\bif\s+(?:you\s+(?:want|prefer|choose|take)|it(?:'s| is))\s+/giu;
+function pricedCatalogEvidence(event,story,user,subject,activity) {
+    const quote=event.evidence;
+    if(!catalogRequestWords.test(String(user||''))||nonCurrentRequest.test(String(user||''))||/(?:ถ้า|หาก|\bif\b)/iu.test(String(user||'')))return false;
+    if(/(?:ไม่มี|ไม่เหลือ)(?:ห้อง|ที่พัก)|ห้อง(?:พัก)?(?:เต็ม|หมด|ไม่ว่าง)|no (?:available |vacant )?rooms|fully booked|no vacancy|sold out|unavailable|not available|not for (?:rent|sale)|ข่าวลือ|ลือว่า|สมมุติ|hypothetical/iu.test(quote))return false;
+    if(!evidenceText(story).includes(evidenceText(quote))||!namedInteraction(event.seller.name,quote,story))return false;
+    const menu=evidenceText(quote),options=event.items.map(entry=>({entry,start:menu.indexOf(evidenceText(entry.item.name))})).sort((a,b)=>a.start-b.start);
+    if(!options.every(({entry,start},index)=>start>=0&&readCommercePrices(menu.slice(start+evidenceText(entry.item.name).length,options[index+1]?.start)).some(price=>price.amount===entry.askPrice&&price.denomination===entry.denomination)))return false;
+    const strip=value=>String(value).replace(pricingCondition,'');
+    return strip(quote)!==quote&&interactionEvidence(strip(quote),strip(story),user,subject,activity);
+}
 
 
-export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role,budget:actual-remaining-funds-if-known},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player is interacting with a named NPC shop/vendor and the NPC shows goods or quotes an item for sale, including catalog requests, revisits and negotiation while already here, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,negotiable,note}]} with at most 40 items. For an NPC buying several owned items use npcPurchase with items:[{itemId,itemName,quantity,askPrice}] instead of legacy item/askPrice. Quote every item in the same story/evidence; one budget covers the basket. The user may exclude items, change quantities and negotiate one total; never transfer before confirmation. Evidence must be an exact affirmative quote from this reply, show the present interaction; location must match the current sceneTracker location, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. The extension opens a minimal composer strip; its offer/confirm/cancel buttons each call the current AI API and append a brief continuation to the same assistant message. The new commerce engine alone settles accepted, explicitly confirmed prices. With interactive Marketplace enabled, present terms and open the session first; do not narrate payment or delivery before its confirm action. Do not patch inventory/currency for catalog or offer events or replay already settled commerce. Preserve event IDs within an active negotiation; a new interaction after completion uses a new ID. Never create HTML or UI text in the patch.';
+export const MARKETPLACE_EVENT_INSTRUCTIONS = 'Main Chat Marketplace: when the current completed scene explicitly shows a named NPC asking to buy an item the player owns, include marketplace:{kind:"npcPurchase",id,location,evidence:"exact quote",buyer:{npcId,npcName,role,budget:actual-remaining-funds-if-known},item:{itemId,itemName,category,description,quantity},askPrice,floorPrice,denomination,negotiable,message} in the same invisible patch. When the player is interacting with a named NPC shop/vendor and the NPC shows goods or quotes an item or present room/rental/service option for sale, including catalog requests, revisits and negotiation while already here, include marketplace:{kind:"npcShop",id,location,evidence:"exact quote",seller:{npcId,npcName,role},title,description,denomination,items:[{id,itemId,itemName,category,description,properties:["..."],price,stock,negotiable,note}]} with at most 40 items. For an NPC buying several owned items use npcPurchase with items:[{itemId,itemName,quantity,askPrice}] instead of legacy item/askPrice. Quote every item in the same story/evidence; one budget covers the basket. The user may exclude items, change quantities and negotiate one total; never transfer before confirmation. Evidence must be an exact affirmative quote from this reply, show the present interaction; location must match the current sceneTracker location, and must not describe a plan, question, rumor, or OOC text. The extension renders the event in Main Chat. The extension opens a minimal composer strip; its offer/confirm/cancel buttons each call the current AI API and append a brief continuation to the same assistant message. The new commerce engine alone settles accepted, explicitly confirmed prices. With interactive Marketplace enabled, present terms and open the session first; do not narrate payment or delivery before its confirm action. Do not patch inventory/currency for catalog or offer events or replay already settled commerce. Preserve event IDs within an active negotiation; a new interaction after completion uses a new ID. Never create HTML or UI text in the patch.';
 
 function itemRecord(raw, fallback = {}) {
     const source = raw && typeof raw === 'object' ? raw : {};
@@ -83,14 +99,24 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
     const kind = String(raw?.kind || raw?.type || raw?.event || '').toLocaleLowerCase();
     const purchase=/purchase|offer/u.test(kind);
     const quotedPrice=[...String(story||'').matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)].some(match=>COMMERCE_PRICE_PATTERN.test(match[1]));
-    const contextShop=!purchase&&quotedPrice&&/(?:buy|shop|goods|catalog|ซื้อ|ร้าน|สินค้า|ดูของ|ต่อรอง)/iu.test(String(user||''))
-        && !/(?:auction|ประมูล|พรุ่งนี้|เมื่อวาน|สมมุติ|ยังไม่|tomorrow|yesterday|hypothetical)/iu.test(String(user||''));
+    const contextShop=!purchase&&quotedPrice&&catalogRequestWords.test(String(user||''))&&!nonCurrentRequest.test(String(user||''));
     const subject=purchase?buyWords:contextShop?new RegExp(`${shopWords.source}|${COMMERCE_PRICE_PATTERN.source}`,'iu'):shopWords;
     const activity=purchase?new RegExp(`${actionWords.source}|${buyWords.source}`,'iu'):contextShop?new RegExp(`${actionWords.source}|${COMMERCE_PRICE_PATTERN.source}`,'iu'):actionWords;
-    const event = normalizeMarketplaceEvent(withInteractionEvidence(raw, story, location, subject, activity));
+    let candidate=withInteractionEvidence(raw, story, location, subject, activity);
+    // If no evidence was supplied, the NPC's own current price dialogue can
+    // provide it. Never replace incorrect evidence supplied by the model.
+    if(contextShop&&!raw?.evidence&&!candidate?.evidence){
+        for(const match of String(story||'').matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)){
+            const quote=match[1].trim();if(quote.length>600)continue;
+            const test=normalizeMarketplaceEvent({...candidate,evidence:quote});
+            if(test&&pricedCatalogEvidence(test,story,user,subject,activity)){candidate={...candidate,evidence:quote};break;}
+        }
+    }
+    const event = normalizeMarketplaceEvent(candidate);
     if (!event || key(event.location) !== key(location) || !evidenceText(story).includes(evidenceText(event.evidence))) return null;
     if (/^\s*(?:\(?OOC\b|\[OOC\b)/iu.test(String(user || ''))) return null;
-    if (!interactionEvidence(event.evidence, story, user, subject, activity)) return null;
+    if (!interactionEvidence(event.evidence, story, user, subject, activity)
+        && !(contextShop&&pricedCatalogEvidence(event,story,user,subject,activity))) return null;
     if (event.kind === 'npcPurchase') {
         if (!buyWords.test(event.evidence) || !namedInteraction(event.buyer.name, event.evidence, story)) return null;
         for(const item of (event.items||[{item:event.item}]).map(entry=>entry.item)){
