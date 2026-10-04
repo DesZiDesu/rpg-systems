@@ -1,0 +1,30 @@
+/* Review-only inventory styling. Not imported by the extension runtime. */
+.rf-inventory-rights-preview .rf-rights-inventory{color:var(--tf-text,#d3cec2);margin:14px 0 16px}
+.rf-inventory-rights-preview .rf-rights-inventory h4{font:500 12px/1.6 'Noto Sans Thai',sans-serif!important;color:var(--tf-muted,#929087)!important;border-bottom:1px solid var(--tf-line,#403925);padding-bottom:8px;margin-bottom:12px!important}
+.rf-inventory-rights-preview .rf-rights-grid{grid-template-columns:1fr;gap:12px}
+.rf-inventory-rights-preview .rf-right-card{border:1px solid var(--tf-line-soft,#30302c);border-left:2px solid var(--tf-gold,#c1a255);border-radius:0;background:var(--tf-field,#101010);padding:14px;box-shadow:none;overflow-wrap:anywhere}
+.rf-inventory-rights-preview .rf-right-card header{gap:12px;align-items:flex-start}
+.rf-inventory-rights-preview .rf-right-icon{width:34px;height:34px;background:rgba(var(--tretaresia-accent-rgb,193,162,85),.04);color:var(--tf-gold,#c1a255);border:1px solid var(--tf-line,#403925);border-radius:0;box-sizing:border-box}
+.rf-inventory-rights-preview .rf-right-icon svg{width:20px;height:20px}
+.rf-inventory-rights-preview .rf-right-card header strong{font:600 14px/1.6 var(--tf-disp,'Noto Sans Thai'),sans-serif;color:var(--tf-gold2,#d8be77);letter-spacing:.02em}
+.rf-inventory-rights-preview .rf-right-card header small{font-size:10px;color:var(--tf-muted,#929087);margin-top:3px;line-height:1.7}
+.rf-inventory-rights-preview .rf-right-card header em{font:400 10px/1.5 'Noto Sans Thai',sans-serif;color:var(--tf-gold,#c1a255);border:0;border-radius:0;background:transparent;padding:3px 0 0;white-space:nowrap}
+.rf-inventory-rights-preview .rf-right-card header em::before{content:'●';font-size:6px;vertical-align:2px;margin-right:5px}
+.rf-inventory-rights-preview .rf-right-card[data-right-status=expired] header em,.rf-inventory-rights-preview .rf-right-card[data-right-status=returned] header em{color:var(--tf-muted,#929087)}
+.rf-inventory-rights-preview .rf-right-validity,.rf-inventory-rights-preview .rf-right-card[data-right-status=expired] .rf-right-validity{display:grid;grid-template-columns:70px minmax(0,1fr);gap:6px 10px;border-top:1px solid var(--tf-line,#403925);margin:12px 0 0;padding:10px 0 0;background:transparent;border-radius:0}
+.rf-inventory-rights-preview .rf-right-validity span{color:var(--tf-muted,#929087);font:400 10px/1.7 'Noto Sans Thai',sans-serif}
+.rf-inventory-rights-preview .rf-right-validity strong{color:var(--tf-text,#d3cec2);font:400 11px/1.7 'Noto Sans Thai',sans-serif;margin:0;min-width:0}
+.rf-inventory-rights-preview .rf-right-validity small{grid-column:2;color:var(--tf-muted,#929087);margin:0}
+.rf-inventory-rights-preview .rf-right-card details{border-color:var(--tf-line,#403925);margin-top:10px;padding:0}
+.rf-inventory-rights-preview .rf-right-card summary{display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;min-height:40px;line-height:1.5;font-size:11px;color:var(--tf-gold,#c1a255);cursor:pointer}
+.rf-inventory-rights-preview .rf-right-card summary::-webkit-details-marker{display:none}
+.rf-inventory-rights-preview .rf-right-card summary::after{content:'＋';font-size:17px;line-height:1;color:var(--tf-gold,#c1a255)}
+.rf-inventory-rights-preview .rf-right-card details[open]>summary::after{content:'−'}
+.rf-inventory-rights-preview .rf-right-card summary:hover{color:var(--tf-gold2,#d8be77)}
+.rf-inventory-rights-preview .rf-right-card summary:focus-visible{outline:1px solid var(--tf-gold,#c1a255);outline-offset:3px;border-radius:0}
+.rf-inventory-rights-preview .rf-right-card dl{grid-template-columns:95px minmax(0,1fr);gap:9px 14px;border-top:1px solid var(--tf-line,#403925);padding-top:12px;margin:0 0 12px;font-size:11px;line-height:1.7}
+.rf-inventory-rights-preview .rf-right-card dt{color:var(--tf-muted,#929087);font-size:11px;min-width:0;white-space:normal}
+.rf-inventory-rights-preview .rf-right-card dd{font:400 11px/1.7 'Noto Sans Thai',sans-serif;color:var(--tf-text,#d3cec2);text-align:left;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.rf-inventory-rights-preview .rf-right-card dd.rf-commerce-money{justify-content:flex-start;gap:5px;color:var(--tf-gold2,#d8be77);align-items:center}
+.rf-inventory-rights-preview .rf-right-card p{color:var(--tf-muted,#929087);font-size:10px;line-height:1.8;border-top:1px solid var(--tf-line,#403925);padding-top:9px;margin:9px 0 0!important}
+@media(max-width:360px){.rf-inventory-rights-preview .rf-right-card{padding:11px}.rf-inventory-rights-preview .rf-right-card header{gap:9px}.rf-inventory-rights-preview .rf-right-card header strong{font-size:12px}.rf-inventory-rights-preview .rf-right-card dl{grid-template-columns:80px minmax(0,1fr);gap:8px 10px}}

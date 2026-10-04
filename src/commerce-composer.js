@@ -1,8 +1,8 @@
-import {purchaseDeposit} from './commerce-rights.js?v=0.55.3';
-import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.55.3';
-import {commerceBasketQuote} from './commerce-engine.js?v=0.55.3';
-import {commerceIcon} from './commerce-icons.js?v=0.55.3';
-import {convertMoney} from './commerce-currency.js?v=0.55.3';
+import {purchaseDeposit} from './commerce-rights.js?v=0.55.4';
+import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.55.4';
+import {commerceBasketQuote} from './commerce-engine.js?v=0.55.4';
+import {commerceIcon} from './commerce-icons.js?v=0.55.4';
+import {convertMoney} from './commerce-currency.js?v=0.55.4';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
 export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {
@@ -47,8 +47,11 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         const session=view.session,lot=session.lots?.[session.index],kind=session.kind,auction=kind==='auction';
         const item=session.items?.find(entry=>entry.id===selected)||session.items?.find(entry=>entry.id===session.selectedId);
         const lines=chosen||session.basket||[{itemId:session.selectedId,quantity:item?.item.quantity||1}],basketTotal=!auction?commerceBasketQuote(session,lines):null;
-        if(!auction&&!inputUnit&&lines.length===1)inputUnit=session.items.find(entry=>entry.id===lines[0].itemId)?.quotedDenomination||session.denomination;
         const newItem=selected&&selected!==session.selectedId,quote=auction?lot?.price||lot?.openingBid:chosen?basketTotal:newItem?item?.askPrice:session.quote;
+        if(!auction&&!inputUnit&&lines.length===1){
+            const preferred=session.items.find(entry=>entry.id===lines[0].itemId)?.quotedDenomination||session.denomination;
+            inputUnit=convertMoney(quote,session.denomination,preferred)===null?session.denomination:preferred;
+        }
         bar.replaceChildren();bar.classList.toggle('has-purchase-types',kind==='buy');bar.dataset.kind=kind;bar.dataset.session=session.id;bar.setAttribute('aria-busy',String(Boolean(view.busy)));
         const header=node('button','rf-commerce-summary');header.type='button';header.setAttribute('aria-expanded',String(expanded));
         const glyph=node('span','rf-commerce-glyph');glyph.append(commerceIcon(doc,kind==='buy'&&item?.terms?.mode&&item.terms.mode!=='permanent'?{rental:'rental',access:'key',service:'service'}[item.terms.mode]:kind));glyph.setAttribute('aria-hidden','true');
@@ -112,7 +115,7 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         else{
             const priceField=node('div','rf-commerce-price-field');controls.append(priceField);
             input=node('input','rf-commerce-amount');input.type='number';input.inputMode='numeric';input.step='1';input.min=auction?String(lot?.leader?lot.price+lot.minIncrement:lot.openingBid):'1';
-            const defaultAmount=auction?lot?.leader?lot.price+lot.minIncrement:lot?.openingBid:quote;input.value=draft||String(inputUnit&&inputUnit!==session.denomination?convertMoney(defaultAmount,session.denomination,inputUnit)||1:defaultAmount);if(inputUnit&&inputUnit!==session.denomination)input.min='1';input.disabled=view.busy||!view.available;input.setAttribute('aria-label',t('ราคาที่เสนอ','Offer amount'));
+            const defaultAmount=auction?lot?.leader?lot.price+lot.minIncrement:lot?.openingBid:quote,displayAmount=inputUnit&&inputUnit!==session.denomination?convertMoney(defaultAmount,session.denomination,inputUnit):defaultAmount;input.value=draft||(displayAmount===null?'':String(displayAmount));input.placeholder=t('ระบุราคา','Enter price');if(inputUnit&&inputUnit!==session.denomination)input.min='1';input.disabled=view.busy||!view.available;input.setAttribute('aria-label',t('ราคาที่เสนอ','Offer amount'));
             input.addEventListener('input',()=>{draft=input.value;});const divider=node('span','rf-commerce-unit-divider');divider.setAttribute('aria-hidden','true');priceField.append(input,divider);
             const unitSelect=node('select','rf-commerce-unit');unitSelect.setAttribute('aria-label',t('หน่วยเงินที่เสนอ','Offer denomination'));for(const unit of ['gold','silver','copper']){const option=node('option','',t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[unit],unit));option.value=unit;option.selected=unit===(inputUnit||session.denomination);unitSelect.append(option);}unitSelect.disabled=view.busy||!view.available;unitSelect.addEventListener('change',()=>{inputUnit=unitSelect.value;draft='';render();});priceField.append(unitSelect);
             if(auction){button('Bid','bid',true,lot?.leader==='player');button(t('รอผล','Wait'),'wait',false,session.status==='offered');}
