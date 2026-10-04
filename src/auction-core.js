@@ -1,5 +1,5 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.52.3';
-import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.52.3';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.53.0';
+import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.53.0';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');

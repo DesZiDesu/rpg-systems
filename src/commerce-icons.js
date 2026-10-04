@@ -1,5 +1,8 @@
 // Static inline SVG, independent of emoji fonts and icon-font loading.
 const paths={
+ key:'M11 11l9 9m-5-5 3-3m0 6 3-3M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
+ rental:'M3 10h18v10H3V10zm5 0V6h8v4M9 15h6',
+ service:'m14 7 3 3 4-4a6 6 0 0 1-8 8l-7 7-3-3 7-7a6 6 0 0 1 8-8l-4 4',
  auction:'M12 3v18M5 21h14M4 6h16M6 4v2M18 4v2M6 7l-4 8h8L6 7zm12 0-4 8h8l-4-8zM2 15c0 3 8 3 8 0m4 0c0 3 8 3 8 0',
  buy:'M3 3h2l3 12h11l2-9H6M10 19h.01M18 19h.01M10 6h6m-3-3v6',
  sell:'M4 10h16v10H4V10zm3-3h10M12 3v10m-3-3 3 3 3-3',

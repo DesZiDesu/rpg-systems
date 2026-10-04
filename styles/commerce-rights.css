@@ -1,0 +1,30 @@
+/* Purchase types: neutral compact surfaces; story-clock rights stay in Inventory. */
+.rf-commerce-composer.has-purchase-types{background:#141517;border-color:#3a3d42;color:#e1e3e6}
+.has-purchase-types .rf-commerce-glyph,.has-purchase-types .rf-commerce-price,.has-purchase-types .rf-commerce-summary-copy small,.has-purchase-types .rf-commerce-chevron{color:#b6bcc5}
+.has-purchase-types .rf-commerce-action.is-primary{background:#d7dade!important;border-color:#d7dade!important;color:#17191d!important}
+.has-purchase-types .rf-commerce-action{color:#bbc0c7!important;border-color:#41464e!important}
+.has-purchase-types .rf-commerce-action:focus-visible,.has-purchase-types .rf-commerce-summary:focus-visible,.has-purchase-types .rf-commerce-price-field:focus-within{outline-color:#c8cfd9!important}
+.has-purchase-types .rf-commerce-basket-row input[type=checkbox]{accent-color:#ccd2dd}
+.rf-purchase-summary-terms{font:10px/1.6 'Noto Sans Thai',sans-serif;color:#a5abb5;margin:5px 0!important}
+.rf-purchase-summary-terms .rf-commerce-money{font-size:10px}.rf-purchase-summary-terms svg{width:13px;height:13px}
+.rf-purchase-choice-copy{display:flex;flex-direction:column;min-width:0;flex:1}.rf-purchase-choice-copy small{font-size:9px;color:#888f99;font-weight:400}
+.rf-purchase-option-terms{padding:5px 0 7px 20px;font:10px/1.7 'Noto Sans Thai',sans-serif;color:#a3aab5;border-bottom:1px solid #ffffff0c}
+.rf-purchase-option-terms p{margin:0!important}
+.rf-rights-inventory{font-family:'Noto Sans Thai',sans-serif;margin:14px 0 20px;color:#d9dde4}
+.rf-rights-inventory h4{font-size:12px!important;font-weight:500!important;display:flex;justify-content:space-between;align-items:center;margin:0 0 10px!important;color:#aeb5c0!important}
+.rf-rights-inventory h4 small{font-size:10px;color:#828a96}.rf-rights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:10px}
+.rf-right-card{box-sizing:border-box;min-width:0;border:1px solid #3b4049;border-radius:9px;padding:12px;background:#15171a;font-size:11px;overflow-wrap:anywhere}
+.rf-right-card header{display:flex;gap:9px;align-items:center}.rf-right-card header>span:nth-child(2){flex:1;min-width:0}.rf-right-card strong{font-size:12px;font-weight:500}.rf-right-card header small{display:block;font-size:9px;color:#959da9;margin-top:2px}
+.rf-right-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:7px;background:#25282e;color:#b9c2d0;flex:none}
+.rf-right-card header em{font-size:9px;font-style:normal;flex:none;border:1px solid #515a67;border-radius:20px;padding:2px 7px;color:#c0c8d4}
+.rf-right-validity{margin-top:12px;padding:8px 10px;background:#22262d;border-radius:6px}.rf-right-validity span{display:block;font-size:10px;color:#b2bac7}.rf-right-validity strong{display:block;font-size:10px;margin-top:2px;color:#d3d9e3}.rf-right-validity small{display:block;font-size:9px;color:#a6aebd;margin-top:3px}
+.rf-right-card[data-right-status=expired] .rf-right-validity{background:#272320}.rf-right-card[data-right-status=expired] header em{color:#c7b4a4;border-color:#5c4f46}
+.rf-right-card details{margin-top:9px;border-top:1px solid #343a44;padding-top:7px}.rf-right-card summary,.rf-rights-history>summary{cursor:pointer;min-height:30px;color:#c7cdd8;font-size:10px;line-height:30px}
+.rf-right-card summary:focus-visible,.rf-rights-history>summary:focus-visible{outline:2px solid #cbd3df;outline-offset:2px;border-radius:3px}
+.rf-right-card dl{display:grid;grid-template-columns:minmax(80px,1fr) minmax(0,1.4fr);gap:7px 12px;margin:6px 0;font-size:10px}
+.rf-right-card dt{color:#939cad}.rf-right-card dd{margin:0;text-align:right;color:#c8d0de}.rf-right-card dd.rf-commerce-money{display:flex;justify-content:flex-end;white-space:normal}.rf-right-card dd .rf-commerce-icon{width:13px;height:13px}
+.rf-right-card p{font-size:10px;color:#9da7b8;line-height:1.8;margin:8px 0 0!important}.rf-right-refund-pending{border-top:1px solid #383a40;padding-top:7px;color:#c4b9ac!important}.rf-right-refund-pending svg{width:13px;height:13px;vertical-align:middle}
+.rf-rights-history{margin-top:10px}.rf-rights-history .rf-rights-grid{margin-top:8px}
+@media(max-width:400px){.rf-right-card{padding:10px}.rf-right-card dl{gap:6px 8px}.rf-right-card strong{font-size:11px}}
+
+.rf-owned-caption{display:block;color:#9da5b2;font:10px/1.6 'Noto Sans Thai',sans-serif;margin-top:5px}.tretaresia-card-actions button:disabled{opacity:.35;cursor:not-allowed}

@@ -1,4 +1,11 @@
-# ROLEFORGE — v0.52.3
+# ROLEFORGE — v0.53.0
+
+## v0.53.0 — Permanent purchases, rentals, access and prepaid services
+
+- Extend the existing NPC shop list with explicit purchase types. Ordinary goods stay permanently owned; rental assets and access keys link to saved contracts; prepaid services open tracked orders and deliver their agreed output only after the provider confirms completion. Track story-clock deadlines, relative durations, single/multiple uses and permanent access. Expiry never silently deletes held keys, charges another period or refunds a deposit.
+- Disclose refundable deposits alongside the price before consent. Settle the basket price plus deposits once; record actual returns and confirmed full/partial refunds from the normal reply without another API call. Protect rented/access assets and items with service providers against resale and ordinary deletion. Preserve older goods, receipts and saved chats; legacy room/service catalogs without types can be inspected/cancelled but need a complete regenerated reply before purchase.
+- Add compact neutral buy controls with per-entry terms, linked Inventory cards, expiry/use/order states, refund balances and collapsible history. Keep independent composer tabs and flat minimize behavior. AI receives complete schemas for opening, delivery, actual use, return, completion and refund in the same story patch, including swipe/regenerate; renewals require a new offer and purchase consent.
+- [Thai mechanics, supported scope and UI gallery](docs/commerce-rights.th.md). Browser tests use the real loader and controlled provider replies at 320/390/1280 px; ordinary catalogs and lifecycle updates add no API calls. Explicit game buttons retain their existing native tasks and API notifications.
 
 ## v0.52.3 — Current inn prices in the normal buy reply
 

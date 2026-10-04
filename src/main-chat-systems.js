@@ -1,8 +1,9 @@
-import {CURRENCY_RULE} from './commerce-currency.js?v=0.52.3';
-import { interactionEvidence } from './interaction-evidence.js?v=0.52.3';
-import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.52.3';
-import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.52.3';
-import {MARKETPLACE_REQUEST_WORDS} from './marketplace-events.js?v=0.52.3';
+import {COMMERCE_RIGHTS_INSTRUCTIONS} from './commerce-rights.js?v=0.53.0';
+import {CURRENCY_RULE} from './commerce-currency.js?v=0.53.0';
+import { interactionEvidence } from './interaction-evidence.js?v=0.53.0';
+import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.53.0';
+import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.53.0';
+import {MARKETPLACE_REQUEST_WORDS} from './marketplace-events.js?v=0.53.0';
 const systems = [
     {key:'marketplace', setting:'enableMarketplace', words:MARKETPLACE_REQUEST_WORDS},
     {key:'auction', setting:'enableAuctions', words:/auction|ประมูล/iu},
@@ -19,8 +20,9 @@ function commerceRequestText(user) {
 }
 export function settledCommerceFollowup(user) {
     const value=String(user??'').replace(/<[^>]*>/gu,' '), current=commerceRequestText(value);
-    const settled=current!==value || /(?:รับ(?:ตัว|ของ|สินค้า)|collect|pick\s*up|take\s*delivery)[^\n.!?]{0,80}(?:ซื้อ|ชำระ|จ่าย|bought|paid|purchased)/iu.test(value);
-    const fresh=/(?:ซื้อ|ขาย|ประมูล)|(?:ขอ|อยาก|ต้องการ)[^\n.!?]{0,20}(?:ดู|อ่าน)[^\n.!?]{0,20}(?:สินค้า|ร้าน|รายการ)|(?:เดิน|แวะ)[^\n.!?]{0,20}(?:ร้านใหม่|ร้านถัดไป)|\b(?:buy|sell|bid|join|enter|browse|show|visit|read)\b[^\n.!?]{0,40}\b(?:auction|shop|store|goods|catalog)\b|\b(?:buy|sell|bid)\b/iu.test(current);
+    const lifecycle=/(?:มารับ|รับคืน)[^\n.!?]{0,50}(?:สั่ง(?:ทำ|ตี)|ฝาก(?:ไว้|ซ่อม))|(?:คืน|ส่งคืน)[^\n.!?]{0,30}(?:กุญแจ|ของเช่า|ม้าเช่า|มัดจำ)|(?:collect|pick up)[^\n.!?]{0,40}(?:order|repair)|return[^\n.!?]{0,30}(?:rented|rental|key)/iu.test(value);
+    const settled=lifecycle || current!==value || /(?:รับ(?:ตัว|ของ|สินค้า)|collect|pick\s*up|take\s*delivery)[^\n.!?]{0,80}(?:ซื้อ|ชำระ|จ่าย|bought|paid|purchased)/iu.test(value);
+    const fresh=/(?:ซื้อ|ขาย|ประมูล)|(?:ขอ|ต้องการ|อยาก)[^\n.!?]{0,10}(?:เช่า|จ้าง|สั่ง)|\b(?:rent|hire)\b[^\n.!?]{0,30}\b(?:another|new)\b|(?:ขอ|อยาก|ต้องการ)[^\n.!?]{0,20}(?:ดู|อ่าน)[^\n.!?]{0,20}(?:สินค้า|ร้าน|รายการ)|(?:เดิน|แวะ)[^\n.!?]{0,20}(?:ร้านใหม่|ร้านถัดไป)|\b(?:buy|sell|bid|join|enter|browse|show|visit|read)\b[^\n.!?]{0,40}\b(?:auction|shop|store|goods|catalog)\b|\b(?:buy|sell|bid)\b/iu.test(current);
     return settled&&!fresh;
 }
 export function requestedChatSystems(user, settings) {
@@ -84,6 +86,7 @@ export function mainChatOutputContract(user,settings,{activeCommerce,settledComm
     else routes.push('NPC DIARY is OFF: never append npcDiary.');
     if(settings.enableAuctions)routes.push('AUCTION: when the current reply presents an auction, its lots or opening bids, emit top-level auction. This includes arriving, sitting to watch, joining, browsing and announcing the first lot. Ordinary shop vocabulary inside an auction still means auction. Use 1–8 lots and 0–5 actual present rivals per lot. Shape: {id,title,location,evidence,denomination:"gold|silver|copper",entryFee:0,deposit:0,lots:[{id,name,description,category,quantity:1,openingBid:5,minIncrement:1,bidders:[{name,npcId,budget:18}]}]}. Establish realistic actual total funds for every present rival from their character/story; the same rival has the same fixed budget across lots. Never target player wealth or a forced winning price. If an NPC already made a bid in THIS reply, include currentBid and currentBidder (that exact NPC name) on the current lot, preserving the actual highest bid. No player bid or winner is assigned by opening a catalog. Casual public auctions may be free; formal valuable auctions may announce a once-only nonrefundable entry fee (about 1–2% of a representative opening price, rounded down) and refundable deposit hold (about 5–10%, whole denomination) in THIS reply before entry. Zero remains appropriate when free; never add or change terms after opening. The deposit is reserved, not spent, and unlocks on closure; it does not buy the item.');
     if(settings.enableMarketplace){
+        routes.push(COMMERCE_RIGHTS_INSTRUCTIONS);
         routes.push('BUY / SHOP: when a named NPC shows goods or quotes prices to the player, emit marketplace with kind:"npcShop". Shape: {kind:"npcShop",id,title,location,evidence,seller:{name,npcId},denomination:"gold|silver|copper",items:[{id,itemName,description,category,price:3,stock:1,stockKnown:false,negotiableKnown:false}]}. Use stockKnown:false or negotiableKnown:false when those terms have not been established. A catalog, price inquiry, stationary conversation or negotiation needs the object even if nothing is bought. The player can choose several entries and quantities, then negotiate one total basket price and confirm once.');
         routes.push('ROOMS / RENTALS / PRICED SERVICES: present inn accommodation, room booking/rental and other priced services are BUY offers, using marketplace.kind="npcShop" in THIS reply. When the named innkeeper quotes several room options, include every offered option with its exact spoken name, numeric price and denomination now, even while asking which option the player wants. A quoted current option such as ถ้าเป็นห้องพักธรรมดา...คืนละห้าเหรียญเงิน or if you want the larger room...10 silver is a current price menu, not a hypothetical future interaction. Use an exact current speaker quote containing the options; do not invent availability, stock, discounts, payment or booking completion. If a price is per night, preserve the stated duration and inclusions in description/note. A future visit, rumor, refusal or genuinely hypothetical room is not an opening.');
         routes.push('SELL: when a named NPC offers to buy items the player owns, emit marketplace with kind:"npcPurchase". Shape: {kind:"npcPurchase",id,location,evidence,buyer:{name,npcId,budget:actual-funds-if-known},item:{itemId,itemName,quantity:1},askPrice:5,denomination:"gold|silver|copper",negotiable:true}. Use the canonical owned item id/name and valid owned quantity. The offer alone does not remove inventory or pay the player.');

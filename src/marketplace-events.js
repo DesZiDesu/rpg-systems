@@ -1,5 +1,6 @@
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.52.3';
-import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.52.3';
+import {normalizePurchaseTerms} from './commerce-rights.js?v=0.53.0';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.53.0';
+import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.53.0';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -10,8 +11,8 @@ const denominations = new Set(['gold', 'silver', 'copper']);
 const buyWords = /(?:buy|purchase|offer|pay|sell\s+you|ซื้อ|ขอซื้อ|รับซื้อ|เสนอราคา|จ่าย)/iu;
 const shopWords = /(?:shop|store|stall|vendor|merchant|sell(?:s|ing)?|goods|price|discount|haggl|counteroffer|ราคา|ลดให้|ลดราคา|ต่อรอง|ขาย|ร้าน|แผง|สินค้า|ของให้เลือก)/iu;
 const actionWords = /(?:say|tell|ask|offer|hand|show|bring|walk|enter|approach|visit|stand|open|inspect|browse|display|list|พูด|บอก|ถาม|ขอ|ยื่น|นำ|เดิน|เข้า|เปิด|ไปหา|มาถึง|ดู|แสดง|หยิบ|วาง|ลดราคา|ลดให้)/iu;
-export const MARKETPLACE_REQUEST_WORDS = /(?:shop|store|merchant|vendor|goods|catalog|buy|sell|haggl|counteroffer|\brent\b|\bbook(?:ing)?\s+(?:(?:a|an|the)\s+)?(?:room|lodging|accommodation|stay)\b|(?:room|lodging|accommodation)\s+(?:rates?|prices?)|ร้าน|พ่อค้า|แม่ค้า|สินค้า|ซื้อ|ขาย|ต่อรอง|ดูของ|เช่าห้อง|จองห้อง|ขอห้อง|ค่าห้อง|(?:ขอ|หา|จอง|เช่า)ที่พัก)/iu;
-const catalogRequestWords = /(?:buy|shop|goods|catalog|ซื้อ|ร้าน|สินค้า|ดูของ|ต่อรอง|เช่า|จอง|ห้องพัก|ที่พัก|ค่าห้อง|เท่าไหร่|how much|\brent\b|\bbook(?:ing)?\s+(?:(?:a|an|the)\s+)?(?:room|lodging|accommodation|stay)\b|lodging|accommodation)/iu;
+export const MARKETPLACE_REQUEST_WORDS = /(?:shop|store|merchant|vendor|goods|catalog|buy|sell|haggl|counteroffer|\brent\b|\bbook(?:ing)?\s+(?:(?:a|an|the)\s+)?(?:room|lodging|accommodation|stay)\b|(?:room|lodging|accommodation)\s+(?:rates?|prices?)|ร้าน|พ่อค้า|แม่ค้า|สินค้า|ซื้อ|ขาย|ต่อรอง|ดูของ|เช่า|จองห้อง|ขอห้อง|ค่าห้อง|จ้าง|ซ่อม|ตีอุปกรณ์|ฝากของ|บัตรผ่าน|ตั๋ว|ค่าเรียน|(?:ขอ|หา|จอง|เช่า)ที่พัก)/iu;
+const catalogRequestWords = /(?:buy|shop|goods|catalog|ซื้อ|ร้าน|สินค้า|ดูของ|ต่อรอง|เช่า|จอง|ห้องพัก|ที่พัก|ค่าห้อง|เท่าไหร่|จ้าง|ซ่อม|สั่ง(?:ตี|ทำ|อาหาร)|ฝากของ|ตั๋ว|บัตรผ่าน|สมาชิก|how much|repair|hire|ticket|membership|\brent\b|\bbook(?:ing)?\s+(?:(?:a|an|the)\s+)?(?:room|lodging|accommodation|stay)\b|lodging|accommodation)/iu;
 const nonCurrentRequest = /(?:auction|ประมูล|พรุ่งนี้|เมื่อวาน|สมมุติ|ยังไม่|tomorrow|yesterday|hypothetical)/iu;
 // Choosing between currently quoted products is a price condition, not a
 // hypothetical visit. Keep this exception local to exact, named shop catalogs.
@@ -25,6 +26,28 @@ function pricedCatalogEvidence(event,story,user,subject,activity) {
     if(!options.every(({entry,start},index)=>start>=0&&readCommercePrices(menu.slice(start+evidenceText(entry.item.name).length,options[index+1]?.start)).some(price=>price.amount===entry.askPrice&&price.denomination===entry.denomination)))return false;
     const strip=value=>String(value).replace(pricingCondition,'');
     return strip(quote)!==quote&&interactionEvidence(strip(quote),strip(story),user,subject,activity);
+}
+
+// A current paid offer may state a future checkout/collection deadline. Only
+// the already-present price clause can authorize opening, never a future shop.
+function typedCatalogEvidence(event,story,user,subject,activity){
+    if(event.kind!=='npcShop'||!event.items.some(e=>e.terms.mode!=='permanent')||!catalogRequestWords.test(String(user||''))||nonCurrentRequest.test(String(user||''))||/(?:ถ้า|หาก|\bif\b)/iu.test(String(user||'')))return false;
+    if(!namedInteraction(event.seller.name,event.evidence,story))return false;
+    const clauses=event.evidence.split(/(?:คืน(?:กุญแจ|ของ|อุปกรณ์)|กำหนด(?:คืน|รับ)|รับ(?:ของ|งาน)(?:ได้|วัน)|\b(?:return (?:the|it)|checkout|collect|ready (?:at|on|tomorrow)))|[.!?。\n]/iu);
+    return clauses.some(clause=>interactionEvidence(clause,story,user,subject,activity)&&readCommercePrices(clause).length);
+}
+
+function typedTermsDisclosed(event,story){
+    if(event.kind!=='npcShop')return true;
+    for(const entry of event.items){
+        const terms=entry.terms;if(terms.mode==='permanent')continue;
+        if(terms.delivery&&!namedInteraction(event.seller.name,terms.delivery.name,story))return false;
+        if(terms.deposit){
+            const quotes=[...String(story).matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)].map(m=>m[1]);
+            if(!quotes.some(quote=>namedInteraction(event.seller.name,quote,story)&&[...quote.matchAll(/(?:มัดจำ|deposit)([^.!?。\n]{0,70})/giu)].some(m=>readCommercePrices(m[1]).some(p=>p.denomination===entry.denomination&&p.amount===terms.deposit))))return false;
+        }
+    }
+    return true;
 }
 
 
@@ -56,9 +79,10 @@ function catalogEntry(raw, index, denomination) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const item = itemRecord(raw.item || raw, { id: raw.itemId, name: raw.itemName, quantity: raw.quantity });
     const price = priceRecord(raw, { denomination });
-    if (!item || !price) return null;
+    const terms=normalizePurchaseTerms(typeof raw.terms==='string'?undefined:raw.terms);
+    if (!item || !price || !terms || terms.mode!=='permanent'&&item.quantity!==1) return null;
     return { id: clean(raw.id, 100) || `shop-item-${hash(`${index}|${key(item.name)}|${price.askPrice}`)}`, item, ...price,
-        negotiable: raw.negotiable !== false, negotiableKnown: raw.negotiableKnown !== false, stockKnown: raw.stockKnown !== false, stock: integer(raw.stock, item.quantity, 1, 99999), note: clean(raw.note || raw.terms, 220) };
+        negotiable: raw.negotiable !== false, negotiableKnown: raw.negotiableKnown !== false, stockKnown: raw.stockKnown !== false, stock: integer(raw.stock, item.quantity, 1, 99999), terms, termsRequired:raw.terms===undefined&&/(?:ห้อง(?:พัก|เดี่ยว|เช่า)|เช่า|ค่าบริการ|สั่ง(?:ทำ|ตี)|ตั๋ว|บัตรผ่าน|\broom\b|\brental\b|\bticket\b|\bservice\b)/iu.test(item.name+' '+item.description), note: clean(raw.note || (typeof raw.terms==='string'?raw.terms:''), 220) };
 }
 
 export function normalizeMarketplaceEvent(raw) {
@@ -86,8 +110,8 @@ export function normalizeMarketplaceEvent(raw) {
         const denomination = clean(raw.denomination, 20);
         if (!seller.name || !denominations.has(denomination)) return null;
         const entries = (Array.isArray(raw.items) ? raw.items : Array.isArray(raw.catalog) ? raw.catalog : [])
-            .map((entry, index) => catalogEntry(entry, index, denomination)).filter(Boolean).slice(0, 40);
-        if (!entries.length) return null;
+            .map((entry, index) => catalogEntry(entry, index, denomination)).slice(0, 40);
+        if (!entries.length || entries.some(entry=>!entry)) return null;
         return { kind: 'npcShop', id: clean(raw.id, 120) || `shop-${hash(`${key(location)}|${key(seller.name)}|${evidence}`)}`,
             location, evidence, seller, denomination, status: ['pending','awaiting-reply','resolved'].includes(raw.status) ? raw.status : 'pending',
             title: clean(raw.title, 160) || `${seller.name} · Shop`, description: clean(raw.description, 360), pageSize: Math.min(8, Math.max(3, integer(raw.pageSize, 5, 3, 8))), items: entries };
@@ -116,7 +140,9 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
     if (!event || key(event.location) !== key(location) || !evidenceText(story).includes(evidenceText(event.evidence))) return null;
     if (/^\s*(?:\(?OOC\b|\[OOC\b)/iu.test(String(user || ''))) return null;
     if (!interactionEvidence(event.evidence, story, user, subject, activity)
-        && !(contextShop&&pricedCatalogEvidence(event,story,user,subject,activity))) return null;
+        && !(contextShop&&pricedCatalogEvidence(event,story,user,subject,activity))
+        && !typedCatalogEvidence(event,story,user,subject,activity)) return null;
+    if(!typedTermsDisclosed(event,story))return null;
     if (event.kind === 'npcPurchase') {
         if (!buyWords.test(event.evidence) || !namedInteraction(event.buyer.name, event.evidence, story)) return null;
         for(const item of (event.items||[{item:event.item}]).map(entry=>entry.item)){

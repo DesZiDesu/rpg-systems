@@ -1,3 +1,4 @@
+import {itemSaleBlocked} from './commerce-rights.js?v=0.53.0';
 // Player-owned marketplace listings and NPC offer negotiation.
 // All item and currency changes are local, explicit UI actions; story patches
 // never get to create or settle a marketplace transaction.
@@ -129,7 +130,7 @@ export function marketplaceReservedQuantity(state, itemId, itemName = '') {
 }
 
 export function marketplaceAvailableQuantity(state, item) {
-    if (!item) return 0;
+    if (!item || itemSaleBlocked(state,item.id)) return 0;
     return Math.max(0, integer(item.quantity, 0) - marketplaceReservedQuantity(state, item.id, item.name));
 }
 

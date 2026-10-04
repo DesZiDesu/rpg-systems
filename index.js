@@ -1,53 +1,55 @@
-import {createMemoryAddons} from './src/memory-addons.js?v=0.52.3';
-import {showApiRequestNotice} from './src/api-request-notice.js?v=0.52.3';
-import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.52.3';
-import {createComposerDock} from './src/composer-dock.js?v=0.52.3';
-import {createIncantationComposer} from './src/incantation-composer.js?v=0.52.3';
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.52.3';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.52.3';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.52.3';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup } from './src/main-chat-systems.js?v=0.52.3';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.52.3';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.52.3';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.52.3';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.52.3';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.52.3';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.52.3';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.52.3';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.52.3';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.52.3';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.52.3';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.52.3';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.52.3';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.52.3';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.52.3';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.52.3';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.52.3';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.52.3';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.52.3';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.52.3';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.52.3';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent, recoverMarketplaceShop } from './src/marketplace-events.js?v=0.52.3';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.52.3';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.52.3';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.52.3';
-import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.52.3';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.52.3';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.52.3';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.52.3';
+import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.53.0';
+import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.53.0';
+import {createMemoryAddons} from './src/memory-addons.js?v=0.53.0';
+import {showApiRequestNotice} from './src/api-request-notice.js?v=0.53.0';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.53.0';
+import {createComposerDock} from './src/composer-dock.js?v=0.53.0';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.53.0';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.53.0';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.53.0';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.53.0';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup } from './src/main-chat-systems.js?v=0.53.0';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.53.0';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.53.0';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.53.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.53.0';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.53.0';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.53.0';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.53.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.53.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.53.0';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.53.0';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.53.0';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.53.0';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.53.0';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.53.0';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.53.0';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.53.0';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.53.0';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.53.0';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.53.0';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.53.0';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent, recoverMarketplaceShop } from './src/marketplace-events.js?v=0.53.0';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.53.0';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.53.0';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.53.0';
+import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.53.0';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.53.0';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.53.0';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.53.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.52.3';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.52.3';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.52.3';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.52.3';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.52.3';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.52.3';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.52.3';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.52.3';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.52.3';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.52.3';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.52.3';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.52.3';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.53.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.53.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.53.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.53.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.53.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.53.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.53.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.53.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.53.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.53.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.53.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.53.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -900,6 +902,7 @@ function item(value, fallbackCategory = 'Other') {
         id: text(value.id, uid(), 100), name: text(value.name, '', 100),
         quantity: number(value.quantity, 1, 0, 99999), category: text(value.category, fallbackCategory, 60),
         description: text(value.description, '', 300),
+        ...(text(value.commerceRightId)?{commerceRightId:text(value.commerceRightId,'',180)}:{}),
     };
 }
 
@@ -2955,6 +2958,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
         ...(getSettings().enableAuctions ? {auctions:auctionPublicSummary(state)} : {}),
         ...((getSettings().enableMarketplace || getSettings().enableAuctions) ? {commerce:commercePublicSummary(state)} : {}),
+        commerceRights:rightsPromptReference(state),
         ...(getSettings().enableMarketplace ? {marketplace:state.marketplace.receipts.slice(-10),marketplaceReservedItems:state.marketplace.listings.filter(entry => ['Active','Negotiating'].includes(entry.status)).map(({itemId,quantity}) => ({itemId,quantity}))} : {}),
         questArchive: questArchive.map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
         social: {
@@ -3019,6 +3023,7 @@ function roleplayState(state) {
         sceneContext: {
             ...(getSettings().enableAuctions ? {auctions:auctionPublicSummary(state)} : {}),
         ...((getSettings().enableMarketplace || getSettings().enableAuctions) ? {commerce:commercePublicSummary(state)} : {}),
+        commerceRights:rightsPromptReference(state),
         ...(getSettings().enableMarketplace ? {marketplace:state.marketplace.receipts.slice(-10),marketplaceReservedItems:state.marketplace.listings.filter(entry => ['Active','Negotiating'].includes(entry.status)).map(({itemId,quantity}) => ({itemId,quantity}))} : {}),
             worldClock: state.worldClock,
             location: {
@@ -3328,7 +3333,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.52.3`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.53.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3426,6 +3431,7 @@ function legacyPatchInstructions() {
         getSettings().enableAuctions ? COMMERCE_AUCTION_OPENING : '',
         getSettings().enableMarketplace ? MARKETPLACE_EVENT_INSTRUCTIONS : '',
         (getSettings().enableAuctions || getSettings().enableMarketplace) ? COMMERCE_INSTRUCTIONS : '',
+        (!getSettings().enableMarketplace && rightsView(getState()).length) ? COMMERCE_RIGHTS_INSTRUCTIONS+' Marketplace offers are OFF: only maintain already-paid rights and their actual lifecycle events; do not open new offers.' : '',
         NPC_FIELD_INSTRUCTIONS,
         'Use invisible HTML comments in this same reply for scene metadata and confirmed events:',
         uiMarkup("<!--tretaresia_patch:{\"ops\":[[\"upsert\",\"quests\",{\"id\":\"academy-escort\",\"name\":\"Escort the Academy Caravan\",\"type\":\"Mission\",\"status\":\"Active\",\"objective\":\"Protect the caravan until it reaches Eastwatch\",\"reward\":\"12 silver\",\"giver\":\"Quartermaster Lysa\",\"source\":\"Great Academy mission board\",\"progress\":0}],[\"inc\",\"progression.experience\",5,{\"reason\":\"Completed aura control training\",\"category\":\"training\"}],[\"inc\",\"progression.currency.silver\",-3,{\"reason\":\"Paid for an academy meal\",\"category\":\"currency\"}],[\"inc\",\"progression.kills\",1,{\"reason\":\"Defeated the ash troll\",\"category\":\"kill\"}]],\"summary\":\"Mission, training, payment, and combat progress recorded.\"}-->"),
@@ -3475,6 +3481,7 @@ function patchInstructions() {
         uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all required scene fields on the first reply.)"),
         'Allowed ops: ' + [[getSettings().enableStoryMemory,'storyMemories'],[getSettings().enableStoryAgenda,'storyAgenda'],[getSettings().enableQuestObjectives,'questObjectives']].filter(([enabled]) => enabled).map(([,path]) => 'upsert '+path+'; ').join('') + 'set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         (getSettings().enableAuctions || getSettings().enableMarketplace) ? COMMERCE_INSTRUCTIONS : '',
+        (!getSettings().enableMarketplace && rightsView(getState()).length) ? COMMERCE_RIGHTS_INSTRUCTIONS+' Marketplace offers are OFF: only maintain already-paid rights and their actual lifecycle events; do not open new offers.' : '',
         NPC_FIELD_INSTRUCTIONS,
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction,title,occupation,aliases], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
@@ -5623,7 +5630,14 @@ function renderJournal(state) {
 
 function renderInventory(panel, state) {
     if (!panel) return;
-    panel.innerHTML = (uiMarkup("")+(heading(uiText("Inventory"), `${state.inventory.length} item types`, 'fa-solid fa-box-open'))+(`<section class="rf-inventory-wallet" aria-label="${html(getSettings().language==='th'?'เงินของคุณ':'Your wallet')}"><header>${html(getSettings().language==='th'?'เงินของคุณ':'Your wallet')}</header><div>${['gold','silver','copper'].map(unit=>`<span class="rf-commerce-money">${commerceIconMarkup('coin',unit,getSettings().coinStyle)}<strong>${Number(state.progression.currency[unit]||0).toLocaleString()}</strong><small>${html(getSettings().language==='th'?{gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[unit]:unit)}</small></span>`).join('')}</div></section>` )+uiMarkup("\n        <div class=\"tretaresia-item-grid\">")+(state.inventory.length ? state.inventory.map(entry => (uiMarkup("\n            <article class=\"tretaresia-list-card\"><div class=\"tretaresia-item-icon\"><i class=\"fa-solid fa-cube\"></i></div>\n                <div class=\"tretaresia-item-copy\"><strong>")+(html(entry.name))+uiMarkup("</strong><span>")+(html(entry.category))+uiMarkup(" · ×")+(entry.quantity)+uiMarkup("</span>\n                <p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div><div class=\"tretaresia-card-actions\">\n                <button type=\"button\" data-action=\"delete-item\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"))).join('') : empty(uiText("Your inventory is empty.")))+uiMarkup("</div>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add inventory item"))))+uiMarkup("</summary>\n            <form data-form=\"inventory\" class=\"tretaresia-form-grid\">")+(input('Item name', 'name', ''))+uiMarkup("\n                ")+(input('Quantity', 'quantity', 1, 'number', 'min="0"'))+uiMarkup("")+(input('Category', 'category', 'Other'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add item"))))+uiMarkup("</button>\n            </form></details>")+(renderInventoryLogs(state))+uiMarkup("")+(renderJournal(state))+uiMarkup(""));
+    const ordinaryInventory=state.inventory.filter(entry=>!entry.commerceRightId);
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Inventory"), `${state.inventory.length} item types`, 'fa-solid fa-box-open'))+(`<section class="rf-inventory-wallet" aria-label="${html(getSettings().language==='th'?'เงินของคุณ':'Your wallet')}"><header>${html(getSettings().language==='th'?'เงินของคุณ':'Your wallet')}</header><div>${['gold','silver','copper'].map(unit=>`<span class="rf-commerce-money">${commerceIconMarkup('coin',unit,getSettings().coinStyle)}<strong>${Number(state.progression.currency[unit]||0).toLocaleString()}</strong><small>${html(getSettings().language==='th'?{gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[unit]:unit)}</small></span>`).join('')}</div></section>` )+renderRightsInventory(state,{thai:getSettings().language==='th',coinStyle:getSettings().coinStyle})+uiMarkup("\n        <div class=\"tretaresia-item-grid\">")+(ordinaryInventory.length ? ordinaryInventory.map(entry => (uiMarkup("\n            <article class=\"tretaresia-list-card\"><div class=\"tretaresia-item-icon\"><i class=\"fa-solid fa-cube\"></i></div>\n                <div class=\"tretaresia-item-copy\"><strong>")+(html(entry.name))+uiMarkup("</strong><span>")+(html(entry.category))+uiMarkup(" · ×")+(entry.quantity)+uiMarkup("</span>\n                <p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div><div class=\"tretaresia-card-actions\">\n                <button type=\"button\" data-action=\"delete-item\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"))).join('') : (state.inventory.length||rightsView(state).length?'':empty(uiText("Your inventory is empty."))))+uiMarkup("</div>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add inventory item"))))+uiMarkup("</summary>\n            <form data-form=\"inventory\" class=\"tretaresia-form-grid\">")+(input('Item name', 'name', ''))+uiMarkup("\n                ")+(input('Quantity', 'quantity', 1, 'number', 'min="0"'))+uiMarkup("")+(input('Category', 'category', 'Other'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add item"))))+uiMarkup("</button>\n            </form></details>")+(renderInventoryLogs(state))+uiMarkup("")+(renderJournal(state))+uiMarkup(""));
+    panel.querySelectorAll('[data-action="delete-item"]').forEach(button=>{
+        const locked=itemSaleBlocked(state,button.dataset.id);button.disabled=locked;
+        if(locked)button.title=getSettings().language==='th'?'รายการนี้อยู่กับผู้ให้บริการ ต้องรับคืนผ่านเนื้อเรื่อง':'This item is with a service provider; collect it through role-play.';
+        const copy=button.closest('article')?.querySelector('.tretaresia-item-copy');
+        if(copy){const label=document.createElement('small');label.className='rf-owned-caption';label.textContent=getSettings().language==='th'?(locked?'อยู่กับผู้ให้บริการ':'เป็นกรรมสิทธิ์ของคุณ'):(locked?'With service provider':'Your property');copy.append(label);}
+    });
 }
 
 function proficiencyRank(value) {
@@ -7532,6 +7546,7 @@ async function onPanelClick(event) {
         }
 
         case 'delete-item':
+            if(itemSaleBlocked(state,id)){notify('warning',getSettings().language==='th'?'ของเช่าหรือสิทธิ์นี้ต้องคืนผ่านเนื้อเรื่อง':'Return this rental/access item through role-play.');return;}
             state.inventory = state.inventory.filter(entry => entry.id !== id);
             await persistState(state);
             break;
@@ -8251,6 +8266,7 @@ function mergeTrackedQuestObjectives(previous, incoming, storySource = {}) {
 function applyPatchOperation(state, operation, storySource = {}) {
     if (!Array.isArray(operation) || operation.length < 3) return false;
     const [verb, path, incomingValue] = operation;
+    if(path==='inventory'&&incomingValue?.commerceRightId)return false;
     let value = incomingValue;
     const systemKey = {storyMemories:'enableStoryMemory',storyAgenda:'enableStoryAgenda',questObjectives:'enableQuestObjectives'}[path];
     if (systemKey && !getSettings()[systemKey]) return false;
@@ -8844,6 +8860,7 @@ function coerceStatePatch(raw) {
         auction: normalizeAuctionOffer(source.auction) || source.auction || null,
         marketplace: normalizeMarketplaceEvent(source.marketplace) || source.marketplace || null,
         commerce: source.commerce && typeof source.commerce==='object' && !Array.isArray(source.commerce) ? source.commerce : null,
+        commerceRights:Array.isArray(source.commerceRights)?source.commerceRights.slice(0,20):[],
     };
 }
 
@@ -8948,6 +8965,7 @@ function extractStatePatch(message) {
         auction: [...patches].reverse().find(patch => patch.auction)?.auction || null,
         marketplace: [...patches].reverse().find(patch => patch.marketplace)?.marketplace || null,
         commerce: [...patches].reverse().find(patch => patch.commerce)?.commerce || null,
+        commerceRights:patches.flatMap(patch=>patch.commerceRights||[]).slice(0,20),
     } : null;
     return { visible: visible.replace(/<!--[^>]*$/, '').trimEnd(), patch: combined, found };
 }
@@ -9212,6 +9230,7 @@ async function processAssistantPatch(messageId, generationType = '') {
         }
         const locations = confirmedLocationMemory(extracted.patch?.locations, extracted.visible);
         const safeOps = confirmedSocialOperations(inlineOps, base, extracted.visible, userMessage?.mes).filter(operation =>
+            !((extracted.patch?.commerceRights?.length) && (operation[1]==='inventory'||/^progression\.currency(?:\.|$)/u.test(String(operation[1]))) && !(operation[3]?.category==='quest-reward'&&operation[3]?.questId)) &&
             !((commerceCandidate || extracted.patch?.commerce) && (operation[1] === 'inventory' || /^progression\.currency(?:\.|$)/u.test(String(operation[1])))
                 && !(operation[3]?.category==='quest-reward' && operation[3]?.questId)) &&
             !(auction && (operation[1] === 'inventory' || /^progression\.currency\./u.test(String(operation[1])))) &&
@@ -9266,7 +9285,15 @@ async function processAssistantPatch(messageId, generationType = '') {
             accepted += recovered.accepted;
             notifications.push(...recovered.notifications);
         }
-        const totalChanges = accepted + reconciled.changes + Number(trainingNoticeConsumed) + Number(Boolean(commerceResult?.ok));
+        const rightsResult=applyRightsEvents(reconciled.next,extracted.patch?.commerceRights,{story:extracted.visible,user:userMessage?.mes||''});
+        if(rightsResult.errors.length)notify('warning',settings.language==='th'?'ข้อมูลสิทธิ์หรือการคืนยังยืนยันไม่ครบ รายการนั้นยังไม่เปลี่ยน':'An entitlement action lacks valid confirmation; that right is unchanged.');
+        if(rightsResult.ok){
+            if(!commerceRollback){commerceRollback={metadata:context.chatMetadata,chatId:context.getCurrentChatId?.(),values:{}};for(const key of [METADATA_KEY,SOCIAL_EVENTS_KEY,SCENE_HISTORY_KEY,TURN_HISTORY_KEY])commerceRollback.values[key]=context.chatMetadata[key]===undefined?undefined:clone(context.chatMetadata[key]);}
+            const prior=reconciled.next;reconciled.next=rightsResult.next;
+            const delta=currencyDelta(prior.progression.currency,reconciled.next.progression.currency);
+            if(Object.values(delta).some(Boolean))appendCurrencyTransaction(reconciled.next,delta,'Commerce deposit refund','commerce');
+        }
+        const totalChanges = rightsResult.events.length + accepted + reconciled.changes + Number(trainingNoticeConsumed) + Number(Boolean(commerceResult?.ok));
         if (totalChanges) {
             notifications = notifications.filter(event => !['learning','training','inventory','purchase'].includes(event.kind));
             notifications.push(...growthInventoryNotifications(base,reconciled.next,safeOps,getSettings().language,getPowerPreset().definitions));
@@ -9318,7 +9345,7 @@ async function processAssistantPatch(messageId, generationType = '') {
         if(commerceRollback&&context.chatMetadata===commerceRollback.metadata&&context.getCurrentChatId?.()===commerceRollback.chatId){
             for(const [key,value]of Object.entries(commerceRollback.values)){if(value===undefined)delete context.chatMetadata[key];else context.chatMetadata[key]=value;}
             message.mes=originalReply;if(Array.isArray(message.swipes)&&Number.isInteger(message.swipe_id))message.swipes[message.swipe_id]=originalReply;
-            processedAssistantMessages.delete(message);commerceRuntime?.reportRoleplay(commerceRuntime.view()?.session.id,'save');
+            processedAssistantMessages.delete(message);commerceRuntime?.reportRoleplay(commerceRuntime.view()?.session?.id,'save');
             updatePrompt();renderAll();
         }
         console.error('[RoleForge] Inline state patch failed.', error);
@@ -10277,7 +10304,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.52.3 loaded.');
+        console.info('[RoleForge] Role-play interface v0.53.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
