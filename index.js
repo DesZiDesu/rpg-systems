@@ -1,48 +1,51 @@
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.51.10';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.51.10';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.51.10';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup } from './src/main-chat-systems.js?v=0.51.10';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.51.10';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.51.10';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.51.10';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.51.10';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.51.10';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.51.10';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.51.10';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.51.10';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.51.10';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.51.10';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.51.10';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.51.10';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.51.10';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.51.10';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.51.10';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.51.10';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.51.10';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.51.10';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.51.10';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.51.10';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent, recoverMarketplaceShop } from './src/marketplace-events.js?v=0.51.10';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.51.10';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.51.10';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.51.10';
-import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.51.10';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.51.10';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.51.10';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.51.10';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.52.0';
+import {createComposerDock} from './src/composer-dock.js?v=0.52.0';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.52.0';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.52.0';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.52.0';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.52.0';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup } from './src/main-chat-systems.js?v=0.52.0';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.52.0';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.52.0';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.52.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.52.0';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.52.0';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.52.0';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.52.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.52.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.52.0';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.52.0';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.52.0';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.52.0';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.52.0';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.52.0';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.52.0';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.52.0';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.52.0';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.52.0';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.52.0';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.52.0';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, confirmedMarketplaceEvent, normalizeMarketplaceEvent, recoverMarketplaceShop } from './src/marketplace-events.js?v=0.52.0';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, powerTrainingPrompt, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.52.0';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.52.0';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.52.0';
+import { renderMemorySummaries, memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.52.0';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.52.0';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.52.0';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.52.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.51.10';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.51.10';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.51.10';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.51.10';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.51.10';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.51.10';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.51.10';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.51.10';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.51.10';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.51.10';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.51.10';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.51.10';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.52.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.52.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.52.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.52.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.52.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.52.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.52.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.52.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.52.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.52.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.52.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.52.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -50,6 +53,8 @@ let runtimeRequestUsage = null;
 let memorySummaries = null;
 let memoryComposerStatus = null;
 let commerceRuntime = null;
+let composerDock = null;
+let incantationComposer = null;
 let commerceBusy = false;
 let moduleNavigation = null;
 let memoryObserveTimer = null;
@@ -65,7 +70,7 @@ let nativeMemoryGenerationMetadata = null;
 const continuityWrites = new Map();
 const continuityFailures = new Map();
 function mainReplyGenerating(context = SillyTavern.getContext()) {
-    return commerceBusy || hostReplyGenerating({context,native:nativeGenerationState,document,fallback:liveGeneration});
+    return commerceBusy || powerTrainingBusy || hostReplyGenerating({context,native:nativeGenerationState,document,fallback:liveGeneration});
 }
 const livePreviewCache = new WeakMap();
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
@@ -199,6 +204,10 @@ const OPTIONAL_SYSTEMS = [
     {key:'enableMemorySummaries',en:'Memory Summaries',th:'คลังสรุปความจำ',panel:'summaries',helpEn:'Archive chat history and summarize with a separate API request.',helpTh:'เก็บประวัติแชตและสรุปด้วย API แยกจากคำตอบหลัก'},
 ];
 const DEFAULT_SETTINGS = Object.freeze({
+    enableIncantation:false,
+    npcIncantation:false,
+    incantationLanguage:'auto',
+    incantationCustomLanguage:'',
     enableMissionBoard:false,
     enableGroupBoard:false,
     enableAuctions:false,
@@ -332,11 +341,11 @@ function saveCurrentChatMetadata(context = SillyTavern.getContext(), {commerceCo
 function initializeCommerce() {
     commerceRuntime?.destroy();
     commerceRuntime=createCommerceRuntime({
-        context:()=>SillyTavern.getContext(),state:getState,settings:getSettings,turnKey:assistantTurnKey,variant:assistantVariantKey,
+        dock:composerDock,context:()=>SillyTavern.getContext(),state:getState,settings:getSettings,turnKey:assistantTurnKey,variant:assistantVariantKey,
         record:(id,message)=>SillyTavern.getContext().chatMetadata?.[SOCIAL_EVENTS_KEY]?.[assistantTurnKey(id)]?.[assistantVariantKey(message)],
         isBusy:mainReplyGenerating,isReplyComplete:message=>completedAssistantMessages.has(message),effectiveNpc,visible:value=>extractStatePatch(value).visible,parse:parseJson,canon:activeLorePrompt,
         recordRequest:recordExtensionRequest,log:error=>console.warn('[RoleForge commerce]',error),
-        setBusy:value=>{commerceBusy=value;updatePrompt();memorySummaries?.notifyGenerationChanged();if(!value){if(!mainReplyGenerating()&&completedAssistantMessages.has(SillyTavern.getContext().chat?.[latestAssistantMessageId()]))resumeUnfinishedAssistantPatch();npcWorkspace?.refresh();if(getSettings().enableMemorySummaries)void memorySummaries?.observe({forceCapture:true});}},
+        setBusy:value=>{commerceBusy=value;updatePrompt();refreshIncantationComposer();memorySummaries?.notifyGenerationChanged();if(!value){if(!mainReplyGenerating()&&completedAssistantMessages.has(SillyTavern.getContext().chat?.[latestAssistantMessageId()]))resumeUnfinishedAssistantPatch();npcWorkspace?.refresh();if(getSettings().enableMemorySummaries)void memorySummaries?.observe({forceCapture:true});}},
         commit:commitCommerceContinuation,
     });
     commerceRuntime.refresh();
@@ -408,7 +417,8 @@ async function commitCommerceContinuation({context,source,message,previous,resul
 }
 
 function currentPowerForTraining(state, id) {
-    return masteryPowerEntries(state).find(power => power.id === id) || null;
+    const extras=[...state.proficiencies.customMagic.map(e=>({...e,kind:'magic',value:e.proficiency})),...state.proficiencies.customSword.map(e=>({...e,kind:'sword',value:e.proficiency}))];
+    return [...masteryPowerEntries(state), ...extras, ...abilityTrainingTargets(state)].find(power => power.id === id) || null;
 }
 
 async function beginPowerTrainingSession(powerId) {
@@ -421,7 +431,7 @@ async function beginPowerTrainingSession(powerId) {
     state.powerMastery.lastResult = null;
     const saved = await persistState(state, 'power-training-start');
     if (!saved) return false;
-    updatePrompt(); renderAll();
+    updatePrompt(); renderAll(); closeInterface(); incantationComposer?.openTraining();
     return true;
 }
 
@@ -448,20 +458,21 @@ async function runPowerTrainingChoice(choiceId) {
         recordExtensionRequest('powerMastery', `Power Mastery · ${power.name}`);
         const response = await context.generateQuietPrompt({
             quietPrompt: powerTrainingPrompt({ power, choice, currentValue: masteryPowerValue(current, power), round: session.round,
-                player: current.player, stateSummary: { location: current.location?.place, powerDescription: power.description || '', canon: activeLorePrompt(`Training ${power.name}`), recentPractice: current.powerMastery.entries[power.id]?.history?.slice(-3) || [], previousResult: current.powerMastery.lastResult?.summary || '' } }),
+                player: current.player, stateSummary: { location: current.location?.place, powerDescription: power.description || '', ability:power.ability||null, canon: activeLorePrompt(`Training ${power.name}`), recentPractice: current.powerMastery.entries[power.id]?.history?.slice(-3) || [], previousResult: current.powerMastery.lastResult?.summary || '' } }),
             skipWIAN: true, responseLength: 1200, removeReasoning: true,
         });
         if (!stillHere()) return false;
         const result = normalizePowerTrainingResult(response);
         if (!result) throw Error(getSettings().language === 'th' ? 'AI ส่งผลการฝึกที่อ่านไม่ได้' : 'The quiet AI returned an invalid training result.');
         const fresh = clone(getState());
-        if (fresh.powerMastery?.session?.id !== session.id) throw Error('Training session changed; reopen Power & Combat.');
+        if (fresh.powerMastery?.session?.id !== session.id) return false; // Ended or replaced while quiet AI was running.
         const tracked = fresh.powerMastery.entries[power.id] || { value: masteryPowerValue(current, power), attempts: 0, history: [] };
         tracked.value = Math.max(number(tracked.value, 0, 0, 100), masteryPowerValue(current, power));
         fresh.powerMastery.entries[power.id] = tracked;
         fresh.powerMastery = applyPowerTrainingResult(fresh.powerMastery, { ...session, phase: 'working', choiceId: choice.id }, result);
         const masteryValue = fresh.powerMastery.entries[power.id].value;
-        if (power.kind !== 'custom') {
+        if (['skill','technique'].includes(power.kind)) writeAbilityTrainingMastery(fresh,power,masteryValue);
+        else if (power.kind !== 'custom') {
             if (Object.hasOwn(fresh.proficiencies[power.kind], power.id)) fresh.proficiencies[power.kind][power.id] = masteryValue;
             else {
                 const entries = power.kind === 'magic' ? fresh.proficiencies.customMagic : fresh.proficiencies.customSword;
@@ -482,7 +493,7 @@ async function runPowerTrainingChoice(choiceId) {
         notify('error', error.message || 'Power training failed.');
         renderAll();
         return false;
-    } finally { powerTrainingBusy = false; powerTrainingGenerationMetadata = null; updatePrompt(); }
+    } finally { powerTrainingBusy = false; powerTrainingGenerationMetadata = null; updatePrompt(); renderAll(); }
 }
 
 async function continuePowerTraining() {
@@ -498,7 +509,6 @@ async function continuePowerTraining() {
 }
 
 async function stopPowerTraining() {
-    if (powerTrainingBusy) return false;
     const state = clone(getState());
     if (!state.powerMastery?.session) return false;
     state.powerMastery.session = null;
@@ -774,6 +784,8 @@ function getSettings() {
     normalizeAdultSettings(settings);
     if (!hadVisualVersion && settings.accentColor === '#8fb4a3') settings.accentColor = DEFAULT_SETTINGS.accentColor;
     settings.visualVersion = Math.max(6, number(settings.visualVersion, 6, 1, 99));
+    settings.enableIncantation=Boolean(settings.enableIncantation); settings.npcIncantation=Boolean(settings.npcIncantation);
+    settings.incantationLanguage=text(settings.incantationLanguage,'auto',100);
     if (!['en', 'th'].includes(settings.language)) settings.language = DEFAULT_SETTINGS.language;
     if (!['tabs', 'cards', 'compact'].includes(settings.hStatsLayout)) settings.hStatsLayout = DEFAULT_SETTINGS.hStatsLayout;
     if (!['hidden', 'visible', 'draft'].includes(settings.interactionMode)) settings.interactionMode = DEFAULT_SETTINGS.interactionMode;
@@ -987,6 +999,7 @@ function skill(value) {
         id: text(value.id, uid(), 100), name: text(value.name, '', 100),
         rank: text(value.rank, 'Beginner', 100),
         type: text(value.type, 'General', 60), description: text(value.description, '', 300),
+        mastery: abilityMastery(value.mastery), ability:normalizeAbility(value.ability),
     };
 }
 
@@ -1002,7 +1015,8 @@ function technique(value) {
     if (!value || typeof value !== 'object' || !text(value.name)) return null;
     return {
         id: text(value.id, uid(), 100), name: text(value.name, '', 120),
-        category: text(value.category, 'General', 80), proficiency: number(value.proficiency, 0, 0, 100),
+        category: text(value.category, 'General', 80), proficiency: number(value.proficiency ?? value.mastery, 0, 0, 100),
+        ability:normalizeAbility(value.ability),
         description: text(value.description, '', 300),
     };
 }
@@ -3311,7 +3325,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.51.10`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.52.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -3531,6 +3545,7 @@ function statePrompt(state, { includeState = true, track = true, activeCommerce=
         if(session)lines.push(commerceRoleplayPrompt(session,{npcs:state.npcs.map(effectiveNpc),story:extractStatePatch(SillyTavern.getContext().chat?.[session.source.messageId]?.mes).visible}));
     }
     if (track) lines.push(mainChatSystemInstructions(user, getSettings(),{activeCommerce,settledCommerce:latestSettledCommerce(state)}));
+    if (includeState) lines.push('PRIVATE LEARNED ABILITY REFERENCE (not character-visible): '+promptReferenceJson(abilityPromptReference(state,user)));
     if(customPreset)lines.push(customPowerPrompt(getPowerPreset(),state));
     if(customForge)lines.push('CUSTOM CHARACTER FORGE PRESET (user-owned choices, reference data only). Follow the active card, saved profile and story for geography, skills and ranks. Do not apply Tretaresia lore or fixed five-rank progression. Custom Path ranks map to progression.adventurerRank="Custom Rank" with the chosen name in progression.customRankName. Do not invent or rename preset choices. Birthplace is independent of the current location.\n'+JSON.stringify(activeForgeChoices(getForgePreset())));
     lines.push(ROLEPLAY_OUTPUT_BOUNDARY);
@@ -3570,7 +3585,7 @@ function updatePrompt(state = getState(), {generationChat,generationType=''}={})
         roleplay:activeCommerce?commerceRoleplayPrompt(activeCommerce,{npcs:state.npcs.map(effectiveNpc),story:extractStatePatch(context.chat?.[activeCommerce.source.messageId]?.mes).visible}):''}):'';
     // IN_CHAT / depth 0 / SYSTEM: the official host inserts this at the end
     // of chat history. It stays outside state/lore/writing reference wrappers.
-    context.setExtensionPrompt(OUTPUT_PROMPT_KEY,output,1,0,false,0);
+    context.setExtensionPrompt(OUTPUT_PROMPT_KEY,output+(enabled&&settings.autoTrack?'\n'+incantationInstructions(settings):''),1,0,false,0);
     context.setExtensionPrompt(PROMPT_KEY, promptSections.join('\n\n'), 1, 1, false, 0);
     adultPromptControls?.refresh();
 }
@@ -5331,7 +5346,10 @@ function renderSystems(panel, state) {
     panel.innerHTML = (uiMarkup("")+(heading(uiText("System Audit"), `${report.score}% · ${report.passed}/${report.total} checks passed`, 'fa-solid fa-microchip'))+uiMarkup("\n        <section class=\"tretaresia-diagnostic-card\"><header><div><span>")+(html(tr(uiText("Diagnostics"))))+uiMarkup("</span><strong>")+(report.score)+uiMarkup("%</strong></div><div class=\"tretaresia-diagnostic-track\"><i style=\"width:")+(report.score)+uiMarkup("%\"></i></div></header><div class=\"tretaresia-diagnostic-grid\">")+(report.checks.map(([name, ok, detail]) => (uiMarkup("<article class=\"")+(ok ? 'is-ok' : 'is-warning')+uiMarkup("\"><i class=\"fa-solid fa-")+(ok ? 'circle-check' : 'triangle-exclamation')+uiMarkup("\"></i><span><b>")+(html(name))+uiMarkup("</b><small>")+(html(detail))+uiMarkup("</small></span></article>"))).join(''))+uiMarkup("</div><footer><button class=\"tretaresia-primary-button\" type=\"button\" data-action=\"repair-state\"><i class=\"fa-solid fa-screwdriver-wrench\"></i>")+(html(tr(uiText("Repair current state"))))+uiMarkup("</button><button class=\"tretaresia-secondary-button\" type=\"button\" data-action=\"rollback-latest-turn\"><i class=\"fa-solid fa-rotate-left\"></i>")+(html(tr(uiText("Rollback latest turn"))))+uiMarkup("</button><button class=\"tretaresia-secondary-button\" type=\"button\" data-action=\"reapply-latest-turn\"><i class=\"fa-solid fa-rotate-right\"></i>Apply again</button></footer></section>\n        <section class=\"tretaresia-system-section\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-list-check\"></i><span>")+(html(tr(uiText("Turn Inspector"))))+uiMarkup("</span><b>")+(state.systems.audit.length)+uiMarkup("</b></div><div class=\"tretaresia-audit-list\">")+(audits || empty(uiText("No journal entries yet.")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-system-section\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-burst\"></i><span>")+(html(tr(uiText("Damage breakdown"))))+uiMarkup("</span><b>")+(state.systems.combatLogs.length)+uiMarkup("</b></div><div class=\"tretaresia-combat-list\">")+(combat || empty(uiText("No journal entries yet.")))+uiMarkup("</div></section>\n        <section class=\"tretaresia-system-section\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-cloud-sun-rain\"></i><span>")+(html(tr(uiText("Regional weather"))))+uiMarkup("</span><b>")+(state.systems.regionalWeather.length)+uiMarkup("</b></div><div class=\"tretaresia-regional-weather\">")+(regional || empty(uiText("No journal entries yet.")))+uiMarkup("</div></section>"));
 }
 
+function refreshIncantationComposer(){incantationComposer?.update(getState(),SillyTavern.getContext().getCurrentChatId?.()||'');}
+
 function onMemorySummariesChanged(view) {
+    refreshIncantationComposer();
     const composerMounted = memoryComposerStatus?.update(view,{liveGeneration:mainReplyGenerating()});
     const panel = document.querySelector('#tretaresia-rpg-overlay.is-open [data-panel="summaries"].is-active');
     if (panel && !document.activeElement?.closest('[data-form="memory-summary-edit"]')) renderPanel('summaries',panel,getState());
@@ -5386,6 +5404,7 @@ function renderAll(state = getState()) {
     refreshPowerDrawer();
     refreshForgeDrawer();
     commerceRuntime?.refresh();
+    incantationComposer?.update(state,SillyTavern.getContext().getCurrentChatId?.()||'');
     syncTravelTracker(state);
     const overlay = document.getElementById('tretaresia-rpg-overlay');
     if (!overlay?.classList.contains('is-open')) return;
@@ -5652,18 +5671,7 @@ function powerMasteryCard(power, state, selected = false) {
 }
 
 function renderPowerMasteryWorkspace(state, powers) {
-    const mastery = state.powerMastery || { entries: {}, session: null, lastResult: null };
-    const session = mastery.session;
-    const selected = powers.find(power => power.id === session?.powerId) || powers[0];
-    const value = selected ? masteryPowerValue(state, selected) : 0;
-    const result = session?.phase === 'result' ? session.result : null;
-    const choiceButtons = POWER_TRAINING_CHOICES.map(choice => `<button type="button" class="tretaresia-power-training-choice" data-action="power-training-choice" data-choice-id="${choice.id}"${session?.choiceId === choice.id ? ' aria-pressed="true"' : ''} ${session?.phase === 'working' ? 'disabled' : ''}>
-        <strong>${choice.id === 'control' ? '01' : choice.id === 'application' ? '02' : choice.id === 'understanding' ? '03' : '04'} · ${html(getSettings().language === 'th' ? choice.th : choice.title)}</strong><small>${html(getSettings().language === 'th' ? choice.description : choice.prompt)}</small></button>`).join('');
-    const training = session ? `<section class="tretaresia-power-training-panel ${result ? 'has-result' : ''}">
-        <header><div><span class="tretaresia-section-eyebrow">${html(getSettings().language === 'th' ? `ฝึกรอบที่ ${session.round} · ${selected?.name || session.powerName}` : `ROUND ${session.round} · ${selected?.name || session.powerName}`)}</span><h3>${html(result ? result.title : getSettings().language === 'th' ? 'เลือกแนวฝึก 1 จาก 4 แบบ' : 'Choose one of four practice approaches')}</h3></div><span class="tretaresia-mastery-quiet-badge">AI · quiet</span></header>
-        ${result ? `<div class="tretaresia-power-training-result"><strong>${html(result.title)}</strong><p>${html(result.narration)}</p>${result.reason ? `<small>${html(result.reason)}</small>` : ''}<b>${result.masteryDelta > 0 ? '+' : ''}${result.masteryDelta}% mastery</b></div><div class="tretaresia-power-training-actions"><button type="button" class="tretaresia-primary-button" data-action="power-training-continue">${html(tr(uiText('Train again')))}</button><button type="button" class="tretaresia-secondary-button" data-action="power-training-stop">${html(tr(uiText('Stop training')))}</button></div>` : `<p class="tretaresia-power-training-help">${html(getSettings().language === 'th' ? `กดตัวเลือกเพื่อให้ AI ประเมิน ${selected?.name || session.powerName} แบบเงียบ ผลจะกลับมาที่หน้านี้โดยไม่ส่งข้อความเข้า Main Chat` : `Choose an approach. AI evaluates ${selected?.name || session.powerName} quietly and returns here without a Main Chat message.`)}</p><div class="tretaresia-power-training-choices">${choiceButtons}</div><div class="tretaresia-power-training-actions"><button type="button" class="tretaresia-secondary-button" data-action="power-training-stop">${html(tr(uiText('Stop training')))}</button><span>${value}% · ${html(tr(proficiencyRank(value)))}</span></div>`}
-    </section>` : `<section class="tretaresia-power-mastery-empty"><i class="fa-solid fa-person-chalkboard"></i><div><strong>${html(getSettings().language === 'th' ? 'เลือกพลังเพื่อเริ่มฝึก' : 'Choose a power to train')}</strong><p>${html(getSettings().language === 'th' ? 'การฝึกอยู่ใน Power & Combat เท่านั้น จะไม่สร้างการ์ดใน Main Chat' : 'Training stays in Power & Combat and never creates a Main Chat card.')}</p></div></section>`;
-    return `<section class="tretaresia-power-mastery-workspace"><div class="tretaresia-power-mastery-intro"><div><span class="tretaresia-section-eyebrow">${html(tr(uiText('Power systems')))}</span><h3>${html(getSettings().language === 'th' ? 'Mastery ของพลังที่เลือก' : 'Mastery of selected powers')}</h3><p>${html(getSettings().language === 'th' ? 'แต่ละพลังมีความหมาย ข้อจำกัด และแนวฝึกของตัวเอง' : 'Each selected power keeps its own identity, limits and practice flow.')}</p></div><b>${powers.length} ${html(tr(uiText('entries')))}</b></div><div class="tretaresia-power-mastery-list">${powers.map(power => powerMasteryCard(power, state, power.id === session?.powerId)).join('')}</div>${training}</section>`;
+    return `<section class="tretaresia-power-mastery-workspace"><div class="tretaresia-power-mastery-list">${powers.map(power => powerMasteryCard(power, state, power.id === state.powerMastery?.session?.powerId)).join('')}</div><p class="tretaresia-power-training-help">${html(getSettings().language === 'th' ? 'กดฝึกเพื่อกลับไป Main Chat และเปิดหน้าต่างฝึกเหนือช่องพิมพ์' : 'Train returns to Main Chat and opens a separate training window above the input.')}</p></section>`;
 }
 
 function renderSkillStorage(panel, state) {
@@ -5675,6 +5683,11 @@ function renderSkillStorage(panel, state) {
     const localCards = state.skills.map(entry => (uiMarkup("<article class=\"tretaresia-skill-card\">\n        <div class=\"tretaresia-skill-rank\"><strong>")+(html(tr(entry.rank)))+uiMarkup("</strong><small>")+(html(tr(uiText("Proficiency rank"))))+uiMarkup("</small></div>\n        <div><span>")+(html(entry.type))+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4><p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div>\n        <button type=\"button\" data-action=\"delete-skill\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('');
     const linkedCards = linkedSkills.map(entry => (uiMarkup("<article class=\"tretaresia-skill-card is-character-life-linked\">\n        <div class=\"tretaresia-skill-rank\"><strong>")+(html(entry.rank || 'Unranked'))+uiMarkup("</strong><small>Character Life</small></div>\n        <div><span>")+(html(entry.category || 'General'))+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4><p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div>\n        <i class=\"fa-solid fa-link\" title=\"Character Life Skill Storage\"></i></article>"))).join('');
     panel.innerHTML = (uiMarkup("")+(heading(uiText("Skill Storage"), `${total} ${tr(uiText("Skills")).toLowerCase()}`, 'fa-solid fa-layer-group'))+uiMarkup("\n        <section class=\"tretaresia-skill-storage\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-box-archive\"></i><span>")+(html(tr(uiText("All acquired user skills"))))+uiMarkup("</span></div>\n            <div class=\"tretaresia-skill-storage-grid\">")+(total ? localCards + linkedCards : empty(uiText("Skills learned during role-play will appear here.")))+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add skill"))))+uiMarkup("</summary>\n                <form data-form=\"skill\" class=\"tretaresia-form-grid\">")+(input('Skill name', 'name', ''))+uiMarkup("")+(input('Type', 'type', 'General'))+uiMarkup("\n                    ")+((getForgePreset().mode === 'custom' ? input('Proficiency rank', 'rank', activeForgeChoices(getForgePreset()).masteryRanks[0] || '') : select('Proficiency rank', 'rank', MASTERY, 'Dormant')))+uiMarkup("")+(input('Description', 'description', ''))+uiMarkup("\n                    <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add skill"))))+uiMarkup("</button></form></details></section>"));
+    panel.querySelectorAll('.tretaresia-skill-card').forEach((card,index) => {
+        const entry=state.skills[index]; if(!entry)return;
+        const controls=document.createElement('div');controls.className='rf-ability-actions';
+        controls.innerHTML=`<span>${entry.mastery}% · ${html(tr(abilityLevel(entry.mastery)))}</span><button type="button" class="tretaresia-secondary-button" data-action="begin-power-training" data-power-id="${html('skill:'+entry.id)}">${html(getSettings().language==='th'?'ฝึกทักษะ':'Train skill')}</button><button type="button" class="tretaresia-secondary-button" data-action="view-incantation" data-ability-key="${html('skill:'+entry.id)}">${html(getSettings().language==='th'?'ดูวิชา / บทร่าย':'Ability / chant')}</button>`;card.append(controls);
+    });
 }
 
 function proficiencyIconPicker(selected = 'arcane') {
@@ -5697,7 +5710,7 @@ function customProficiencySection(kind, state) {
         return `<article class="tretaresia-custom-discipline-card" style="--discipline-tone:${tone}">
             <span class="tretaresia-custom-discipline-icon"><i class="${html(entry.icon || `fa-solid ${icon}`)}"></i></span>
             <div class="tretaresia-custom-discipline-copy"><strong>${html(entry.name)}</strong><small>${html(tr(proficiencyRank(entry.proficiency)))} · ${entry.proficiency}%</small><p>${html(entry.description || tr(uiText('No description')))}</p><span class="tretaresia-custom-discipline-track"><i style="width:${entry.proficiency}%"></i></span></div>
-            <button type="button" class="tretaresia-custom-discipline-delete" data-action="delete-custom-proficiency" data-kind="${kind}" data-id="${html(entry.id)}" title="${html(tr(uiText('Remove')))}"><i class="fa-solid fa-trash"></i></button>
+            <div class="rf-ability-actions"><button type="button" class="tretaresia-secondary-button" data-action="begin-power-training" data-power-id="${html(entry.id)}">${html(getSettings().language==='th'?'ฝึก':'Train')}</button><button type="button" class="tretaresia-custom-discipline-delete" data-action="delete-custom-proficiency" data-kind="${kind}" data-id="${html(entry.id)}" title="${html(tr(uiText('Remove')))}"><i class="fa-solid fa-trash"></i></button></div>
         </article>`;
     }).join('') : `<p class="tretaresia-custom-discipline-empty"><i class="fa-solid fa-sparkles"></i><span>${html(getSettings().language === 'th' ? emptyLabel : (magic ? 'No extra magic has been recorded yet.' : 'No extra combat discipline has been recorded yet.'))}</span></p>`;
     return `<section class="tretaresia-custom-discipline-section" data-discipline-kind="${kind}">
@@ -5716,13 +5729,17 @@ function renderTechniques(panel, state) {
         ${renderPowerMasteryWorkspace(state, powers)}
         <section class="tretaresia-technique-section tretaresia-technique-revamp"><div class="tretaresia-section-label"><i class="fa-solid fa-list-check"></i><span>${html(tr(uiText('Techniques')))}</span></div><div class="tretaresia-technique-grid">${techniqueCards}</div>
             <details class="tretaresia-editor"><summary><i class="fa-solid fa-plus"></i> ${html(tr(uiText('Add technique')))}</summary><form data-form="technique" class="tretaresia-form-grid">${input('Technique name', 'name', '')}${input('Category', 'category', 'General')}${input('Proficiency', 'proficiency', 0, 'number', 'min="0" max="100"')}${input('Description', 'description', '')}<button class="tretaresia-primary-button tretaresia-form-submit" type="submit">${html(tr(uiText('Add technique')))}</button></form></details></section>
-        ${getPowerPreset().mode === 'custom' ? '' : `<section class="tretaresia-custom-disciplines"><div class="tretaresia-custom-disciplines-heading"><div><span class="tretaresia-section-eyebrow">${html(getSettings().language === 'th' ? 'บันทึกเพิ่มเติม' : 'ADDITIONAL RECORDS')}</span><h3>${html(getSettings().language === 'th' ? 'พลังและสำนักที่ค้นพบภายหลัง' : 'Discovered powers & disciplines')}</h3><p>${html(getSettings().language === 'th' ? 'รายการนี้แยกออกจากการ์ดพลังหลัก เพื่อให้เพิ่มรายการได้โดยไม่ทำให้หน้าแน่น' : 'Custom records stay separate from the selected preset powers.')}</p></div><i class="fa-solid fa-book-sparkles"></i></div><div class="tretaresia-custom-disciplines-grid">${customProficiencySection('magic', state)}${customProficiencySection('sword', state)}</div></section>`}`;
+        ${getPowerPreset().mode === 'custom' ? '' : `<section class="tretaresia-custom-disciplines"><div class="tretaresia-custom-disciplines-heading"><div><span class="tretaresia-section-eyebrow">${html(getSettings().language === 'th' ? 'บันทึกเพิ่มเติม' : 'ADDITIONAL RECORDS')}</span><h3>${html(getSettings().language === 'th' ? 'พลังและสำนักที่ค้นพบภายหลัง' : 'Discovered powers & disciplines')}</h3><p>${html(getSettings().language === 'th' ? 'รายการนี้แยกออกจากการ์ดพลังหลัก เพื่อให้เพิ่มรายการได้โดยไม่ทำให้หน้าแน่น' : 'Custom records stay separate from the selected preset powers.')}</p></div><i class="fa-solid fa-book-open"></i></div><div class="tretaresia-custom-disciplines-grid">${customProficiencySection('magic', state)}${customProficiencySection('sword', state)}</div></section>`}`;
     if (getPowerPreset().mode === 'custom') {
         const settingsPanel = document.createElement('section');
         settingsPanel.className = 'tretaresia-power-settings-shell';
         panel.append(settingsPanel);
         mountPowerSettings(settingsPanel, state, true);
     }
+    panel.querySelectorAll('.tretaresia-technique-card').forEach((card,index) => {
+        const entry=state.proficiencies.techniques[index];if(!entry)return;
+        const controls=document.createElement('div');controls.className='rf-ability-actions';controls.innerHTML=`<button type="button" class="tretaresia-secondary-button" data-action="begin-power-training" data-power-id="${html('technique:'+entry.id)}">${html(getSettings().language==='th'?'ฝึกวิชา':'Train technique')}</button><button type="button" class="tretaresia-secondary-button" data-action="view-incantation" data-ability-key="${html('technique:'+entry.id)}">${html(getSettings().language==='th'?'ดูวิชา / บทร่าย':'Ability / chant')}</button>`;card.append(controls);
+    });
 }
 
 function questSectionId(entry) {
@@ -7273,6 +7290,10 @@ async function onPanelClick(event) {
             } catch (error) { button.disabled = false; notify('error', error.message); }
             break;
         }
+        case 'view-incantation':
+            getSettings().enableIncantation=true; SillyTavern.getContext().saveSettingsDebounced();
+            renderAll(); closeInterface(); incantationComposer?.openAbility(button.dataset.abilityKey);
+            break;
         case 'begin-power-training':
             await beginPowerTrainingSession(button.dataset.powerId);
             break;
@@ -8411,6 +8432,7 @@ function applyPatchOperation(state, operation, storySource = {}) {
             ? collection.findIndex(entry => entry.region.toLocaleLowerCase() === text(value.region, '', 120).toLocaleLowerCase())
             : path === 'npcs' ? collection.indexOf(resolveNpcSpeaker(collection, value)) : collection.findIndex(entry => matchesPatchIdentity(entry, value));
         let candidate = { ...(index >= 0 ? collection[index] : {}), ...value };
+        if (['skills','proficiencies.techniques'].includes(path)) candidate.ability=normalizeAbility(value.ability,index>=0?collection[index].ability:null);
         if (!candidate.id) candidate.id = uid();
         if (path === 'npcs') {
             if (index < 0 && !usableNpcName(value.name)) return false;
@@ -9918,6 +9940,10 @@ async function addSettingsDrawer() {
     bindCheckbox('tretaresia-rpg-show-launcher', 'showWandLauncher', settings, syncLauncherVisibility);
     bindCheckbox('tretaresia-rpg-nsfw-enhance', 'nsfwEnhance', settings, updatePrompt);
     bindSettingControl('tretaresia-rpg-roleplay-language', 'roleplayLanguage', settings, updatePrompt);
+    bindCheckbox('tretaresia-rpg-incantation','enableIncantation',settings,()=>{updatePrompt();renderAll();});
+    bindCheckbox('tretaresia-rpg-npc-incantation','npcIncantation',settings,updatePrompt);
+    bindSettingControl('tretaresia-rpg-incantation-language','incantationLanguage',settings,updatePrompt);
+    bindSettingControl('tretaresia-rpg-incantation-custom-language','incantationCustomLanguage',settings,updatePrompt);
     bindSettingControl('tretaresia-rpg-module-navigation', 'moduleNavigationMode', settings, syncModuleNavigation);
     adultPromptControls=mountAdultPromptControls(document.getElementById('tretaresia-rpg-adult-prompt'),{
         settings,
@@ -10051,7 +10077,7 @@ function bindChatEvents() {
         nativeMemoryGenerationMetadata = nativeMemoryGeneration ? SillyTavern.getContext().chatMetadata : null;
         if (!['quiet','impersonate'].includes(generationType)) liveGeneration = true;
         if(isReplacementGeneration(generationType))completedAssistantMessages.delete(SillyTavern.getContext().chat?.[latestAssistantMessageId()]);
-        commerceRuntime?.refresh();
+        commerceRuntime?.refresh(); refreshIncantationComposer();
         memorySummaries?.notifyGenerationChanged();
         if (memorySummaries) memoryComposerStatus?.update(memorySummaries.view(),{liveGeneration:mainReplyGenerating()});
         if (openingGeneration?.requested && (!generationType || generationType === 'normal')) {
@@ -10081,7 +10107,7 @@ function bindChatEvents() {
             || (generationType === 'first_message' && !forgeSession()?.profile)) return;
         const message = SillyTavern.getContext().chat?.[Number(messageId)];
         if (message && !message.is_user && !message.is_system) completedAssistantMessages.add(message);
-        commerceRuntime?.refresh();
+        commerceRuntime?.refresh(); refreshIncantationComposer();
         assistantCheckpoint(Number(messageId), { create: true });
         scheduleAssistantPatch(messageId, generationType, 0);
         scheduleAssistantPatch(messageId, generationType, 120);
@@ -10116,7 +10142,7 @@ function bindChatEvents() {
         if (nativeMemoryGeneration || memorySummaryNativeGenerationActive()) { memorySummaries?.cancel(); return; }
         const messageId = latestAssistantMessageId(), message = SillyTavern.getContext().chat?.[messageId];
         if (message) completedAssistantMessages.add(message);
-        commerceRuntime?.refresh();
+        commerceRuntime?.refresh(); refreshIncantationComposer();
         scheduleAssistantPatch(messageId, '', 0);
         npcWorkspace?.refresh();
     });
@@ -10137,7 +10163,7 @@ function bindChatEvents() {
         const messageId = latestAssistantMessageId();
         const message = SillyTavern.getContext().chat?.[messageId];
         if (message) completedAssistantMessages.add(message);
-        commerceRuntime?.refresh();
+        commerceRuntime?.refresh(); refreshIncantationComposer();
         scheduleAssistantPatch(messageId, '', 0);
         scheduleAssistantPatch(messageId, '', 240);
     });
@@ -10161,8 +10187,10 @@ async function initialize() {
     initialized = true;
     try {
         getSettings();
+        composerDock=createComposerDock({language:()=>getSettings().language});
+        incantationComposer=createIncantationComposer({dock:composerDock,settings:getSettings,train:beginPowerTrainingSession,choose:runPowerTrainingChoice,stop:stopPowerTraining,again:continuePowerTraining,level:tr,busy:()=>mainReplyGenerating()||memorySummaryNativeGenerationActive(),notify});
         initializeCommerce();
-        memoryComposerStatus = createMemoryComposerStatus({language:() => getSettings().language,
+        memoryComposerStatus = createMemoryComposerStatus({dock:composerDock,language:() => getSettings().language,
             cancel:() => memorySummaries?.cancel(),open:async () => { await openInterface(); activateTab('summaries'); },
             retry:() => { const view = memorySummaries?.view(); if (view) void memorySummaries.run({prepare:Boolean(view.job.prepare),retry:true}); }});
         memorySummaries = createMemorySummaries({context:() => SillyTavern.getContext(),owner:activeContinuityKey,settings:getSettings,state:getState,
@@ -10232,14 +10260,17 @@ async function initialize() {
         await backfillHistoricalScenes();
         resumeUnfinishedAssistantPatch();
         refreshCharacterForge();
+        const interruptedTraining=clone(getState());
+        if(interruptedTraining.powerMastery?.session?.phase==='working'&&!powerTrainingBusy){interruptedTraining.powerMastery.session.phase='choices';interruptedTraining.powerMastery.session.choiceId='';await persistState(interruptedTraining,'power-training-interrupted');}
         updatePrompt();
+        renderAll();
         syncTravelTracker(getState());
         document.addEventListener('keydown', event => {
             if (event.key !== 'Escape') return;
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.51.10 loaded.');
+        console.info('[RoleForge] Role-play interface v0.52.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

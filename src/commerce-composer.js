@@ -1,9 +1,9 @@
-import {commerceBasketQuote} from './commerce-engine.js?v=0.51.10';
-import {commerceIcon} from './commerce-icons.js?v=0.51.10';
-import {convertMoney} from './commerce-currency.js?v=0.51.10';
+import {commerceBasketQuote} from './commerce-engine.js?v=0.52.0';
+import {commerceIcon} from './commerce-icons.js?v=0.52.0';
+import {convertMoney} from './commerce-currency.js?v=0.52.0';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
-export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({})}={}) {
+export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {
     if(!doc?.createElement)return{update(){},destroy(){}};
     const win=doc.defaultView||globalThis;let view=null,expanded=false,identity='',revision=-1,selected='',draft='',inputUnit='',chosen=null,observer,timer,queued=false;
     const node=(tag,cls,text)=>{const el=doc.createElement(tag);el.className=cls||'';if(text!==undefined)el.textContent=text;return el;};
@@ -11,10 +11,10 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
     const t=(th,en)=>language()==='th'?th:en;
     const moneyNode=(value,cls='',unit=view?.session.denomination)=>{const el=node('span',`rf-commerce-money ${cls}`);el.append(commerceIcon(doc,'coin',unit,appearance().coinStyle),doc.createTextNode(`${Number(value||0).toLocaleString()} ${t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[unit],unit)}`));return el;};
     const terms=()=>{const el=node('p','rf-commerce-terms');if(!view.session.entryFee&&!view.session.deposit){el.textContent=t('เข้าร่วมฟรี · ไม่มีมัดจำ','Free entry · No deposit');return el;}el.append(doc.createTextNode(t('ค่าเข้าไม่คืน ','Nonrefundable entry ')),moneyNode(view.session.entryFee),doc.createTextNode(t(' · เงินกันไว้คืนเมื่อจบ ',' · Refundable hold ')),moneyNode(view.session.deposit));return el;};
-    function detach(){bar.remove();observer?.disconnect();observer=null;clearInterval(timer);timer=null;}
+    function detach(){dock?.remove('commerce');bar.remove();observer?.disconnect();observer=null;clearInterval(timer);timer=null;}
     function locate(){const textarea=doc.querySelector('#send_textarea'),anchor=doc.querySelector('#send_form')||textarea?.closest('form')||textarea?.parentElement;
         if(!textarea||!anchor?.parentElement||win.getComputedStyle(textarea).display==='none'||win.getComputedStyle(anchor).display==='none')return null;return anchor;}
-    function position(){if(!view)return;const anchor=locate();if(!anchor)return;
+    function position(){if(!view)return;if(dock){bar.classList.remove('is-fixed');dock.panel('commerce',bar,{label:t({auction:'ประมูล',buy:'ซื้อ',sell:'ขาย'}[view.session?.kind||view.kind]||'ซื้อขาย',{auction:'Auction',buy:'Buy',sell:'Sell'}[view.session?.kind||view.kind]||'Commerce'),busy:view.busy});return;}const anchor=locate();if(!anchor)return;
         const anchorStyle=win.getComputedStyle(anchor),parentStyle=win.getComputedStyle(anchor.parentElement);
         const fixed=['fixed','absolute'].includes(anchorStyle.position)||(['flex','inline-flex'].includes(parentStyle.display)&&parentStyle.flexDirection.startsWith('row'));
         if(fixed){const rect=anchor.getBoundingClientRect(),memory=doc.querySelector('.rf-memory-composer-status.rf-memory-composer-fixed'),memoryRect=memory?.getBoundingClientRect();

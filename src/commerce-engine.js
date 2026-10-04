@@ -1,6 +1,6 @@
-import {CURRENCY_VALUES,CURRENCY_RULE,walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.51.10';
-import {readCommercePrices} from './commerce-prices.js?v=0.51.10';
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.51.10';
+import {CURRENCY_VALUES,CURRENCY_RULE,walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.52.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.52.0';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.52.0';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);

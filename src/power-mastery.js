@@ -39,8 +39,8 @@ export function normalizePowerMastery(raw) {
     const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
     const rawEntries = source.entries && typeof source.entries === 'object' && !Array.isArray(source.entries) ? source.entries : {};
     const entries = {};
-    for (const [id, value] of Object.entries(rawEntries).slice(-80)) {
-        if (!/^[\w:-]{1,120}$/u.test(id) || !value || typeof value !== 'object') continue;
+    for (const [id, value] of Object.entries(rawEntries).slice(-300)) {
+        if (!/^[^\u0000-\u001f]{1,120}$/u.test(id) || !value || typeof value !== 'object') continue;
         entries[id] = {
             name: clean(value.name, 160),
             value: clamp(value.value, 0, 100), attempts: clamp(value.attempts, 0, 9999),
@@ -57,7 +57,7 @@ export function normalizePowerMastery(raw) {
     }
     const session = source.session && typeof source.session === 'object' && !Array.isArray(source.session) ? {
         id: clean(source.session.id, 120), powerId: clean(source.session.powerId, 120), powerName: clean(source.session.powerName, 160),
-        kind: ['magic', 'sword', 'custom'].includes(source.session.kind) ? source.session.kind : 'magic',
+        kind: ['magic', 'sword', 'custom', 'skill', 'technique'].includes(source.session.kind) ? source.session.kind : 'magic',
         phase: ['choices', 'working', 'result'].includes(source.session.phase) ? source.session.phase : 'choices',
         round: clamp(source.session.round, 1, 9999), choiceId: choiceIds.has(source.session.choiceId) ? source.session.choiceId : '',
         result: normalizeResult(source.session.result), startedAt: clean(source.session.startedAt, 50),
@@ -76,7 +76,7 @@ export function beginPowerTraining(power, round = 1, now = new Date().toISOStrin
     if (!power?.id || !power?.name) return null;
     return {
         id: `power-training-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
-        powerId: clean(power.id, 120), powerName: clean(power.name, 160), kind: ['magic', 'sword', 'custom'].includes(power.kind) ? power.kind : 'magic',
+        powerId: clean(power.id, 120), powerName: clean(power.name, 160), kind: ['magic', 'sword', 'custom', 'skill', 'technique'].includes(power.kind) ? power.kind : 'magic',
         phase: 'choices', round: clamp(round, 1, 9999), choiceId: '', result: null, startedAt: now,
     };
 }

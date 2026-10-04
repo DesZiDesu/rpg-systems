@@ -1,7 +1,7 @@
-import {CURRENCY_RULE} from './commerce-currency.js?v=0.51.10';
-import { interactionEvidence } from './interaction-evidence.js?v=0.51.10';
-import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.51.10';
-import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.51.10';
+import {CURRENCY_RULE} from './commerce-currency.js?v=0.52.0';
+import { interactionEvidence } from './interaction-evidence.js?v=0.52.0';
+import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.52.0';
+import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.52.0';
 const systems = [
     {key:'marketplace', setting:'enableMarketplace', words:/(?:shop|store|merchant|vendor|goods|catalog|buy|sell|haggl|counteroffer|ร้าน|พ่อค้า|แม่ค้า|สินค้า|ซื้อ|ขาย|ต่อรอง|ดูของ)/iu},
     {key:'auction', setting:'enableAuctions', words:/auction|ประมูล/iu},

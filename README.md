@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.51.10
+# ROLEFORGE — v0.52.0
+
+## v0.52.0 — Incantations and separate composer training
+
+- Store complete skill/technique effects, costs, cooldowns, strengths/weaknesses and distinct short/full chants with the normal AI reply. Skills now keep 0–100 Mastery and derived mastery levels; meaningful practice and casting update the existing canonical records without a level reset. Powerful short/silent casting follows established mastery and lore, not fixed damage multipliers or score unlocks.
+- Add the approved grayscale incantation window: clear active/disabled buttons, copy-only chants, ability selection, expandable details and per-window minimize/close. Hiding the window retains player chant rules. NPC chanting and chant language have independent settings.
+- Move the existing four-choice quiet training flow above the chat input and support powers, skills and techniques. Train closes the RoleForge overlay. Ending a pending exercise discards its late result; completed gains persist once.
+- Keep ability, training and commerce windows independent. Show conditional tabs when multiple windows are open, preserving each draft and task. Minimize all above-input windows, including Summary status, to a flat strip; restore compact views and expand details without cancelling work. Bound their height to protect the message input.
+- [Mechanics, settings and production previews](docs/incantation.th.md). Old abilities with unknown metadata remain unknown until established by a normal role-play reply; no extra metadata-generation request is made.
 
 ## v0.51.10 — Compact party/guild notice grid
 

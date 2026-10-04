@@ -1,9 +1,9 @@
-import {requestCommerceDecision} from './commerce-generation.js?v=0.51.10';
-import {inspectCommerceResponse} from './commerce-protocol.js?v=0.51.10';
-import {requestedCommerceKind} from './main-chat-systems.js?v=0.51.10';
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.51.10';
-import {createCommerceComposer} from './commerce-composer.js?v=0.51.10';
-import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.51.10';
+import {requestCommerceDecision} from './commerce-generation.js?v=0.52.0';
+import {inspectCommerceResponse} from './commerce-protocol.js?v=0.52.0';
+import {requestedCommerceKind} from './main-chat-systems.js?v=0.52.0';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.52.0';
+import {createCommerceComposer} from './commerce-composer.js?v=0.52.0';
+import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.52.0';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.
@@ -13,7 +13,7 @@ export function createCommerceRuntime(api) {
     let busy=false,error='',errorId='',diagnostics='',request=0,destroyed=false,opening=null;
     const openingAttempts=new WeakMap();
     let rendered='';
-    const ui=createCommerceComposer({document:api.document||globalThis.document,language:()=>api.settings().language,perform:perform,poll:refresh,appearance:()=>api.settings()});
+    const ui=createCommerceComposer({dock:api.dock,document:api.document||globalThis.document,language:()=>api.settings().language,perform:perform,poll:refresh,appearance:()=>api.settings()});
     const word=(th,en)=>api.settings().language==='th'?th:en;
     const errors={'intent':['ข้อความนี้ยังไม่ยืนยันเจตนาทำรายการนั้น รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The message does not authorize that action; funds and items are unchanged'],'action':['AI เลือกการกระทำที่ไม่รองรับในระบบนี้','AI chose an action unsupported by this system'],'response-empty':['API ส่งคำตอบว่าง รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The API returned an empty reply; funds and items are unchanged'],'response-decision':['คำตอบ API ไม่มีผลตัดสินที่ระบบอ่านได้ รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The API reply has no readable decision; funds and items are unchanged'],'response-narrative':['API ส่งผลตัดสินแต่ไม่มีคำตอบ NPC รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The API returned a decision without an NPC reply; funds and items are unchanged'],'response-conflict':['API ส่งผลตัดสินหลายชุดที่ขัดกัน รอบนี้ยังไม่เปลี่ยนเงินหรือของ','The API returned conflicting decisions; funds and items are unchanged'],'response-markup':['คำตอบ NPC มีข้อมูลระบบหรือรูปแบบที่แสดงไม่ได้','The NPC reply includes system data or unsupported markup'],'participants-missing':['AI ยังไม่ได้ตัดสินใจให้ผู้ประมูลบางคน รอบนี้ยังไม่เปลี่ยนเงินหรือของ','AI omitted a bidder decision; funds and items are unchanged'],'participant-identity':['AI ระบุผู้ประมูลที่ไม่อยู่ในรายการหรือชื่อกำกวม','AI identified an unknown or ambiguous bidder'],'participant-format':['AI ส่งรูปแบบผลผู้ประมูลที่อ่านไม่ได้','AI returned an unreadable bidder result'],'participant-action':['AI ยังไม่ระบุว่าจะบิด ผ่าน หรือถอนตัว','AI did not specify bid, pass or withdrawal'],'participant-reason':['AI ยังไม่ให้เหตุผลการตัดสินใจของผู้ประมูล','AI omitted a bidder motive'],'participant-duplicate':['AI ให้ผลของผู้ประมูลคนเดียวขัดกัน','AI returned conflicting decisions for one bidder'],evidence:['ข้อความยังไม่ยืนยันการกระทำนี้ กรุณาระบุให้ชัดหรือใช้ปุ่ม','The message does not authorize this action. Clarify it or use a button.'],funds:['เงินที่ใช้ได้ไม่พอ','Insufficient available funds'],inventory:['สินค้าไม่พร้อมหรือจำนวนไม่พอ','The item is unavailable'],amount:['ราคาต้องเป็นจำนวนเต็มและสูงกว่าราคาปัจจุบัน','Enter a valid whole-number price'],
         budget:['คำตอบ NPC เกินงบหรือราคาไม่ถูกต้อง ลองอีกครั้งได้','NPC decision exceeded funds or used an invalid price. Try again.'],participants:['คำตอบยังตัดสินใจให้ผู้ประมูลไม่ครบ ลองอีกครั้งได้','The reply did not decide every bidder action. Try again.'],
@@ -62,7 +62,7 @@ export function createCommerceRuntime(api) {
             playerName:state.player.name,busy:busy||api.isBusy(),error:candidate.id===errorId?error:'',diagnostics:candidate.id===errorId?diagnostics:'',available:!api.isBusy()&&!context.chat.at(-1)?.is_user&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
     function refresh(){if(destroyed)return;const value=view(),signature=JSON.stringify([api.settings().language,api.settings().coinStyle,value]);if(signature!==rendered){rendered=signature;ui.update(value);}}
     function failureReport(session,action,code,raw,details,channel='button'){
-        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.51.10',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
+        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.52.0',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
     }
     async function recoverOpening(input){
         const context=api.context(),message=context.chat?.[input.messageId],variant=message&&api.variant(message);

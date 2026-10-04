@@ -1,4 +1,4 @@
-import {MEMORY_CATEGORY_LABELS} from './memory-summaries.js?v=0.51.10';
+import {MEMORY_CATEGORY_LABELS} from './memory-summaries.js?v=0.52.0';
 
 // A separate memory request must not borrow SillyTavern's story-generation
 // state or stop handler. Keep the native controls intact and restore their
@@ -25,7 +25,7 @@ const duration = milliseconds => {
 };
 const text = (node,value) => { if (node.textContent !== String(value)) node.textContent = String(value); };
 
-export function createMemoryComposerStatus({document:doc = globalThis.document,cancel = () => {},open = () => {},retry = () => {},language = () => 'en'} = {}) {
+export function createMemoryComposerStatus({document:doc = globalThis.document,cancel = () => {},open = () => {},retry = () => {},language = () => 'en',dock=null} = {}) {
     if (!doc?.createElement) return {update() { return false; },destroy() {}};
     const win = doc.defaultView || globalThis;
     let current = null, liveGeneration = false, scope = '', observedBusy = false, dismissed = '', mounted = null, nativeSend = null;
@@ -65,6 +65,7 @@ export function createMemoryComposerStatus({document:doc = globalThis.document,c
         nativeSend = null; slotStop.remove();
     }
     function detach() {
+        dock?.removeStatus(bar);
         releaseSend(); bar.remove(); mounted = null;
         observer?.disconnect(); observer = null;
         resizeObserver?.disconnect(); resizeObserver = null;
@@ -113,6 +114,7 @@ export function createMemoryComposerStatus({document:doc = globalThis.document,c
         if (!timer) timer = win.setInterval(() => { if (!destroyed) render(); },1000);
     }
     function placeBar(anchor) {
+        if(dock){dock.status(bar);mounted=anchor;return;}
         const anchorStyle = win.getComputedStyle(anchor), parentStyle = win.getComputedStyle(anchor.parentElement);
         const constrainedFlow = ['fixed','absolute'].includes(anchorStyle.position)
             || (['flex','inline-flex'].includes(parentStyle.display) && parentStyle.flexDirection.startsWith('row'));
@@ -216,6 +218,7 @@ export function createMemoryComposerStatus({document:doc = globalThis.document,c
         stop.hidden = !activeJob() || replaced;
         again.hidden = !['error','interrupted','cancelled'].includes(status) || current.ready === false;
         dismiss.hidden = activeJob();
+        dock?.status(bar);
     }
     return {
         update(view,{liveGeneration:generating = false} = {}) {
