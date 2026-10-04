@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.53.0
+# ROLEFORGE — v0.53.1
+
+## v0.53.1 — Complete inline buy data, formatted continuations and mobile training
+
+- Align every shop schema/example with complete per-item descriptions and typed purchase terms in the normal reply, including swipe/regenerate. Overnight rooms use timed access and an explicitly disclosed key. Missing legacy room terms cannot silently become permanent ownership; inspect/cancel remains available. Remove automatic follow-up catalog API tasks from normal buy/sell replies; retain the recovery implementation and existing auction recovery behavior.
+- Require narrative/dialogue markup in commerce button continuations. Locally wrap loose legacy prose, preserve existing speech blocks and remove embedded reasoning without another API request. Show each selected item's description, properties and terms in its basket details.
+- Use a separate native JSON task for training when available, with a larger response budget and a compatible single-request legacy fallback. Accept complete fenced/wrapped training results after reasoning; reject prose-only, truncated, incomplete or conflicting results without awarding mastery or automatically retrying. Expose raw failure details and clear them after a valid result.
+- Make training grid tracks and buttons shrink to the mobile panel width, wrap long text, and use one column on narrow screens. Keep independent tabs, minimize/close and cancellation behavior.
+- Validation: 745 unit/host tests, syntax checks, production-loader browsers at 320/390/1280 px for inline room purchase and narrative rendering, native training, rejected-result diagnostics and existing commerce/boards/rights regressions. Model responses are controlled fixtures. [Thai diagnosis, behavior and UI screenshots](docs/commerce-training-fixes.th.md).
 
 ## v0.53.0 — Permanent purchases, rentals, access and prepaid services
 

@@ -5,6 +5,16 @@ const number=value=>typeof value==='string'&&/^[0-9๐-๙]+(?:\.0+)?$/u.test(va
 const aliases={ongoing:'open',continue:'open',accepted:'accept',agreed:'accept',counteroffer:'counter',rejected:'reject',cancelled:'cancel',canceled:'cancel',withdrawn:'withdraw',skip:'pass',hold:'pass',wait:'pass',no_bid:'pass',raise:'bid','ผ่าน':'pass','รอ':'pass','ถอนตัว':'withdraw','เสนอราคา':'bid'};
 const action=value=>{const normalized=identity(value);return aliases[normalized]||normalized;};
 const fault=(code,people=[])=>({ok:false,error:code,details:{people}});
+function storyMarkup(value) {
+    const source = value.replace(/<(?:think|thinking|analysis)\b[^>]*>[\s\S]*?<\/(?:think|thinking|analysis)>/giu, '');
+    const wrap = prose => prose.trim() ? '<tr-narrative>' + prose.trim().replace(/&/gu, '&amp;').replace(/</gu, '&lt;').replace(/>/gu, '&gt;') + '</tr-narrative>' : '';
+    const blocks = /<tr-header\b[^>]*\/>|<tr-(narrative|dialogue)\b[^>]*>[\s\S]*?<\/tr-\1>/giu;
+    let result = '', end = 0;
+    for (const match of source.matchAll(blocks)) {
+        result += wrap(source.slice(end, match.index)) + match[0]; end = match.index + match[0].length;
+    }
+    return result + wrap(source.slice(end));
+}
 export function requiredCommerceParticipants(session) {
     const lot=session.kind==='auction'?session.lots[session.index]:null;
     return lot?session.participants.filter(p=>lot.bidders.includes(p.id)&&!lot.withdrawn.includes(p.id)&&p.id!==lot.leader):[];
@@ -95,7 +105,12 @@ export function inspectCommerceResponse(raw,{parse=JSON.parse,visible=value=>val
     const distinct=[...new Map(answers.map(answer=>[JSON.stringify(answer.decision),answer])).values()];
     if(distinct.length>1)return{ok:false,error:'response-conflict'};
     if(!distinct.length)return{ok:false,error:hasDecision?'response-narrative':'response-decision'};
-    return{ok:true,answer:distinct[0]};
+    const answer = distinct[0];
+    // Older models may still return prose. Preserve it locally in a narrative
+    // block so the continuation uses the same renderer without another API.
+    answer.narrative = storyMarkup(answer.narrative);
+    if (!answer.narrative) return {ok:false,error:'response-narrative'};
+    return{ok:true,answer};
 }
 export function parseCommerceResponse(raw,options={}) {
     const result=inspectCommerceResponse(raw,options);return result.ok?result.answer:null;
@@ -121,6 +136,6 @@ export function commerceDecisionContract(prepared) {
     else if(session.kind==='auction')properties.participants={type:'array',items:{type:'object',required:['id','action','reason'],properties:{id:{type:'string',enum:roster.map(p=>p.id)},action:{type:'string',enum:['bid','pass','withdraw']},reason:{type:'string',minLength:1,description:'Short actual motive; required even for pass'},amount:{type:'integer',minimum:1,description:'Only for an NPC bid; choose an actual valid price within their funds'}}}};
     else if(playerAction!=='cancel'&&playerAction!=='talk')properties.amount={type:'integer',minimum:1};
     const decisionSchema={type:'object',required:['outcome',...(round&&playerAction!=='roleplay'?['participants']:[])],properties};
-    const schema=playerAction==='roleplay'?decisionSchema:{type:'object',required:['narrative','decision'],properties:{narrative:{type:'string',minLength:1,description:'2–5 brief sentences of natural NPC dialogue/actions'},decision:decisionSchema}};
+    const schema=playerAction==='roleplay'?decisionSchema:{type:'object',required:['narrative','decision'],properties:{narrative:{type:'string',minLength:1,description:'2–5 brief sentences: actions inside <tr-narrative>...</tr-narrative>, speech inside <tr-dialogue name="Exact NPC Name">...</tr-dialogue>; required story markup'},decision:decisionSchema}};
     return `OUTPUT CONTRACT FOR THIS ACTION (JSON Schema, not a response to copy): ${JSON.stringify(schema)}\nREQUIRED NPC DECISIONS: ${JSON.stringify(roster.map(p=>({id:p.id,name:p.name,remainingBudget:p.budget-p.spent})))}\nCurrent system: ${session.kind}. Player action: ${playerAction}. Allowed outcomes: ${outcome.join(', ')}. For bid decide every listed NPC, including those who pass and the former NPC leader the player just outbid. For wait/leave decide every listed NPC except the current standing NPC leader (they retain their existing bid). On talk use unchanged and no participant decisions; on join/next use joined/next without a bidding round. Never omit one because they did not bid. No narrative-only answer, no empty participants array when the list is nonempty. This is a fresh decision, not a restatement of old history.`;
 }

@@ -1,6 +1,6 @@
-import {CURRENCY_VALUES} from './commerce-currency.js?v=0.53.0';
-import {readCommercePrices} from './commerce-prices.js?v=0.53.0';
-import {evidenceText,namedInteraction} from './interaction-evidence.js?v=0.53.0';
+import {CURRENCY_VALUES} from './commerce-currency.js?v=0.53.1';
+import {readCommercePrices} from './commerce-prices.js?v=0.53.1';
+import {evidenceText,namedInteraction} from './interaction-evidence.js?v=0.53.1';
 
 const clean=(value,max=300)=>typeof value==='string'?value.trim().slice(0,max):'';
 const whole=(value,max=999999999)=>Number.isSafeInteger(value)&&value>=0&&value<=max;

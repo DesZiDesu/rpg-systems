@@ -12,7 +12,7 @@ test('duplicate conflicting choices cannot override one another',()=>{const a={i
 test('unchanged withdrawn NPC and standing leader restatements do not become new bids',()=>{const s=session();s.lots[0].withdrawn=['npc-2'];s.lots[0].leader='npc-1';s.lots[0].price=18;const r=normalizeCommerceDecision({outcome:'sold',participants:[{name:'Rally',action:'bid',amount:18},{name:'Mira',action:'withdraw'}]},s);assert.equal(r.ok,true);assert.deepEqual(r.decision.participants,[]);});
 test('simultaneous bids are evaluated in price order independent of response array order',()=>{const r=normalizeCommerceDecision({outcome:'open',participants:[{id:'npc-1',action:'bid',amount:18,reason:'Heirloom'},{id:'npc-2',action:'bid',amount:9,reason:'Useful weapon'}]},session());assert.equal(r.ok,true);assert.deepEqual(r.decision.participants.map(p=>p.amount),[9,18]);});
 const expected={narrative:'NPC considers the price.',decision:{outcome:'accept',amount:6}};
-for(const [label,raw]of [['plain JSON',JSON.stringify(expected)],['fenced JSON','```json\n'+JSON.stringify(expected)+'\n```'],['alternate narrative',JSON.stringify({narration:expected.narrative,decision:expected.decision})],['nested result',JSON.stringify({result:expected})],['story plus patch',expected.narrative+'\n<!--tretaresia_patch:'+JSON.stringify({commerce:{decision:expected.decision}})+'-->']])test(`reads ${label} with an explicit decision`,()=>assert.deepEqual(parseCommerceResponse(raw,{visible:v=>v.replace(/<!--[\s\S]*?-->/gu,'').trim()}),expected));
+for(const [label,raw]of [['plain JSON',JSON.stringify(expected)],['fenced JSON','```json\n'+JSON.stringify(expected)+'\n```'],['alternate narrative',JSON.stringify({narration:expected.narrative,decision:expected.decision})],['nested result',JSON.stringify({result:expected})],['story plus patch',expected.narrative+'\n<!--tretaresia_patch:'+JSON.stringify({commerce:{decision:expected.decision}})+'-->']])test(`reads ${label} with an explicit decision`,()=>assert.deepEqual(parseCommerceResponse(raw,{visible:v=>v.replace(/<!--[\s\S]*?-->/gu,'').trim()}),{...expected,narrative:'<tr-narrative>'+expected.narrative+'</tr-narrative>'}));
 for(const raw of ['NPC agrees.', '{"narrative":"NPC agrees.","decision":',JSON.stringify({narrative:'NPC agrees.'})])test(`incomplete provider response is not interpreted as consent: ${raw}`,()=>assert.equal(parseCommerceResponse(raw),null));
 test('quiet prompt gives exact roster, while role-play bids still include the former NPC leader',()=>{const s=session();s.lots[0].leader='npc-1';assert.doesNotMatch(commerceDecisionContract({session:s,action:'wait'}).split('REQUIRED NPC DECISIONS:')[1].split('\n')[0],/npc-1/);assert.match(commerceDecisionContract({session:s,action:'roleplay'}).split('REQUIRED NPC DECISIONS:')[1].split('\n')[0],/npc-1/);assert.match(commerceDecisionContract({session:s,action:'bid'}),/required even for pass/);});
 
@@ -23,8 +23,22 @@ for(const [label,raw]of [
  ['response text alias',JSON.stringify({response:'The auctioneer acknowledges entry.',decision:{outcome:'joined'}})],
  ['decorative JSON before the decision','{"scene":"Hall"}\nThe auctioneer acknowledges entry.\n'+JSON.stringify({decision:{outcome:'joined'}})],
 ])test(`recover ${label} without an extra API request`,()=>{const result=parseCommerceResponse(raw);assert.ok(result);assert.equal(result.decision.outcome,'joined');assert.doesNotMatch(result.narrative,/```|tretaresia_patch|"decision"|"scene"/);});
-test('external private reasoning never becomes the visible NPC reaction',()=>{const raw='<think>Private model reasoning.</think>\nThe auctioneer acknowledges entry.\n'+JSON.stringify({decision:{outcome:'joined'}});assert.equal(parseCommerceResponse(raw).narrative,'The auctioneer acknowledges entry.');});
+test('external private reasoning never becomes the visible NPC reaction',()=>{const raw='<think>Private model reasoning.</think>\nThe auctioneer acknowledges entry.\n'+JSON.stringify({decision:{outcome:'joined'}});assert.equal(parseCommerceResponse(raw).narrative,'<tr-narrative>The auctioneer acknowledges entry.</tr-narrative>');});
 test('two conflicting explicit decisions are rejected rather than choosing the convenient result',()=>assert.equal(parseCommerceResponse('NPC reacts.\n'+JSON.stringify({decision:{outcome:'open'}})+'\n'+JSON.stringify({decision:{outcome:'sold'}})),null));
 test('a complete decision with no NPC prose is still incomplete',()=>assert.equal(parseCommerceResponse(JSON.stringify({decision:{outcome:'joined'}})),null));
 test('button contracts use typed fields instead of copyable fake choices and prices',()=>{const prompt=commerceDecisionContract({session:session(),action:'bid'});assert.match(prompt,/"enum":\["open","sold","unsold"\]/);assert.doesNotMatch(prompt,/"amount":0|AI chooses|"accept"|"counter"/);});
 test('normal auction contract allows joining and talk and does not require standalone narration JSON',()=>{const prompt=commerceDecisionContract({session:session(),action:'roleplay'});assert.match(prompt,/"unchanged","joined","open"/);assert.doesNotMatch(prompt,/"narrative"|"accept"|"counter"/);});
+
+test('legacy prose is safely rendered as narrative and required markup survives unchanged',()=>{
+ const text='Garrick counts five silver & hands over the key. <img src=x onerror=alert(1)>';
+ const response=parseCommerceResponse({narrative:text,decision:{outcome:'accept',amount:5}});
+ assert.match(response.narrative,/^<tr-narrative>/);assert.match(response.narrative,/&amp;/);assert.match(response.narrative,/&lt;img/);assert.doesNotMatch(response.narrative,/<img\b/);
+ const marked='<tr-narrative>Garrick counts the payment.</tr-narrative><tr-dialogue name="Garrick">Here is your key.</tr-dialogue>';
+ assert.equal(parseCommerceResponse({narrative:marked,decision:{outcome:'accept',amount:5}}).narrative,marked);
+});
+
+test('mixed provider markup wraps every loose prose span without exposing embedded reasoning',()=>{
+ const marked='<tr-dialogue name="Garrick">Here is your key.</tr-dialogue>';
+ const response=parseCommerceResponse({narrative:'<think>Private planning</think>He counts the money.\n'+marked+'\nHe writes the receipt.',decision:{outcome:'accept',amount:5}});
+ assert.equal(response.narrative,'<tr-narrative>He counts the money.</tr-narrative>'+marked+'<tr-narrative>He writes the receipt.</tr-narrative>');
+});

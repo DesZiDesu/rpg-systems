@@ -1,8 +1,8 @@
-import {purchaseDeposit} from './commerce-rights.js?v=0.53.0';
-import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.53.0';
-import {commerceBasketQuote} from './commerce-engine.js?v=0.53.0';
-import {commerceIcon} from './commerce-icons.js?v=0.53.0';
-import {convertMoney} from './commerce-currency.js?v=0.53.0';
+import {purchaseDeposit} from './commerce-rights.js?v=0.53.1';
+import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.53.1';
+import {commerceBasketQuote} from './commerce-engine.js?v=0.53.1';
+import {commerceIcon} from './commerce-icons.js?v=0.53.1';
+import {convertMoney} from './commerce-currency.js?v=0.53.1';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
 export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {
@@ -62,10 +62,10 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         if(kind==='buy'){
             const deposit=purchaseDeposit(lines.map(line=>({...line,entry:session.items.find(e=>e.id===line.itemId)})).filter(line=>line.entry));
             const info=node('p','rf-purchase-summary-terms');
-            const modes=[...new Set(lines.map(line=>session.items.find(e=>e.id===line.itemId)?.terms?.mode||'permanent'))];
-            info.textContent=modes.map(mode=>purchaseTypeLabel(mode,language()==='th')).join(' / ');
+            const modes=[...new Set(lines.map(line=>session.items.find(e=>e.id===line.itemId)?.termsRequired?'unknown':session.items.find(e=>e.id===line.itemId)?.terms?.mode||'permanent'))];
+            info.textContent=modes.map(mode=>mode==='unknown'?t('เงื่อนไขยังไม่ครบ','Terms incomplete'):purchaseTypeLabel(mode,language()==='th')).join(' / ');
             if(deposit){info.append(doc.createTextNode(t(' · มัดจำเพิ่ม ',' · Additional deposit ')),moneyNode(deposit),doc.createTextNode(t(' · จ่ายรวม ',' · Total due ')),moneyNode((quote||0)+deposit));}
-            else info.append(doc.createTextNode(t(' · ไม่มีมัดจำ',' · No deposit')));
+            else if(!modes.includes('unknown'))info.append(doc.createTextNode(t(' · ไม่มีมัดจำ',' · No deposit')));
             bar.append(info);
         }
         if(expanded){
@@ -75,11 +75,11 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
                 for(const entry of session.items){
                     const line=lines.find(line=>line.itemId===entry.id),row=node('div','rf-commerce-basket-row'),check=node('input');check.type='checkbox';check.checked=Boolean(line);check.disabled=view.busy;check.setAttribute('aria-label',t('เลือก ','Select ')+entry.item.name);check.dataset.basketItem=entry.id;
                     const copy=node('label'),label=node('span','rf-purchase-choice-copy'),itemName=node('strong','',entry.item.name),quantity=node('input','rf-commerce-quantity');quantity.type='number';quantity.min='1';quantity.max=String(kind==='buy'&&entry.terms?.mode&&entry.terms.mode!=='permanent'?1:kind==='sell'?entry.item.quantity:entry.stock);quantity.step='1';quantity.value=String(line?.quantity||entry.item.quantity||1);quantity.disabled=!line||view.busy||kind==='buy'&&entry.terms?.mode&&entry.terms.mode!=='permanent';quantity.setAttribute('aria-label',t('จำนวน ','Quantity ')+entry.item.name);quantity.dataset.basketQuantity=entry.id;
-                    label.append(itemName);if(kind==='buy')label.append(node('small','',purchaseTypeLabel(entry.terms?.mode||'permanent',language()==='th')));copy.append(check,label);const update=()=>{const map=new Map(lines.map(line=>[line.itemId,line.quantity]));if(check.checked)map.set(entry.id,Number(quantity.value));else map.delete(entry.id);chosen=[...map].map(([itemId,quantity])=>({itemId,quantity}));draft='';render();};check.addEventListener('change',update);quantity.addEventListener('change',update);
+                    label.append(itemName);if(kind==='buy')label.append(node('small','',entry.termsRequired?t('เงื่อนไขยังไม่ครบ','Terms incomplete'):purchaseTypeLabel(entry.terms?.mode||'permanent',language()==='th')));copy.append(check,label);const update=()=>{const map=new Map(lines.map(line=>[line.itemId,line.quantity]));if(check.checked)map.set(entry.id,Number(quantity.value));else map.delete(entry.id);chosen=[...map].map(([itemId,quantity])=>({itemId,quantity}));draft='';render();};check.addEventListener('change',update);quantity.addEventListener('change',update);
                     row.append(copy,quantity,moneyNode(entry.askPrice*Number(quantity.value)/(entry.item.quantity||1)));list.append(row);
-                    if(kind==='buy'&&line){const terms=node('div','rf-purchase-option-terms');for(const text of purchaseTermLines(entry.terms,language()==='th'))terms.append(node('p','',text));if(entry.termsRequired)terms.append(node('p','rf-commerce-error',t('ยังไม่มีประเภทและเงื่อนไขครบ · Swipe หรือ Regenerate ได้','Purchase type/terms are incomplete · Swipe or Regenerate')));if(entry.terms?.deposit)terms.append(node('p','',t('มัดจำเพิ่ม ','Additional deposit ')+entry.terms.deposit+' '+t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[session.denomination],session.denomination)));list.append(terms);}
+                    if(kind==='buy'&&line){const terms=node('div','rf-purchase-option-terms');if(entry.item.description)terms.append(node('p','rf-commerce-description',entry.item.description));if(entry.item.properties?.length)terms.append(node('p','rf-commerce-description',entry.item.properties.join(' · ')));for(const text of purchaseTermLines(entry.terms,language()==='th',entry.termsRequired))terms.append(node('p','',text));if(entry.termsRequired)terms.append(node('p','rf-commerce-error',t('ยังไม่มีประเภทและเงื่อนไขครบ · Swipe หรือ Regenerate ได้','Purchase type/terms are incomplete · Swipe or Regenerate')));if(entry.terms?.deposit)terms.append(node('p','',t('มัดจำเพิ่ม ','Additional deposit ')+entry.terms.deposit+' '+t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[session.denomination],session.denomination)));list.append(terms);}
                 }
-                detail.append(list,node('p','rf-commerce-terms',kind==='buy'&&session.items.some(e=>e.terms?.mode&&e.terms.mode!=='permanent')?t('ซื้อถาวรปรับจำนวนได้ · สิทธิ์และสัญญารายการละ 1 · เสนอราคาเป็นยอดรวม','Owned goods allow quantities · One contract per entry · Offers apply to the total'):t('เลือกหลายรายการและจำนวนได้ · เสนอราคาเป็นยอดรวม','Choose items and quantities · Offers apply to the total')));
+                detail.append(list,node('p','rf-commerce-terms',kind==='buy'&&session.items.some(e=>e.terms?.mode&&e.terms.mode!=='permanent')?session.items.some(e=>e.terms?.mode==='permanent'&&!e.termsRequired)?t('ซื้อถาวรปรับจำนวนได้ · สิทธิ์และสัญญารายการละ 1 · เสนอราคาเป็นยอดรวม','Owned goods allow quantities · One contract per entry · Offers apply to the total'):t('เลือกสิทธิ์หรือสัญญารายการละ 1 · เสนอราคาเป็นยอดรวม','One right or contract per entry · Offers apply to the total'):t('เลือกหลายรายการและจำนวนได้ · เสนอราคาเป็นยอดรวม','Choose items and quantities · Offers apply to the total')));
             }
             const description=auction?lot?.description:item?.item?.description;if(description)detail.append(node('p','rf-commerce-description',description));
             detail.append(node('div','rf-commerce-itemmeta',auction?`${lot?.category} · ×${lot?.quantity}`:t(`รวม ${lines.reduce((sum,line)=>sum+line.quantity,0)} ชิ้น`,`${lines.reduce((sum,line)=>sum+line.quantity,0)} items total`)));

@@ -16,7 +16,7 @@ const server=http.createServer(async(req,res)=>{
     }catch{res.writeHead(404).end();}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const artifacts='/workspace/artifacts/inn-commerce';await mkdir(artifacts,{recursive:true});
+const artifacts='/workspace/artifacts/inn-commerce',fixArtifacts='/workspace/artifacts/roleforge-v0531';await mkdir(artifacts,{recursive:true});await mkdir(fixArtifacts,{recursive:true});
 async function receive(page,user,story,patch,type='normal'){
     await page.evaluate(async({user,type})=>{
         window.host.chat.push({is_user:true,name:'Noah',mes:user});await window.host.eventSource.emit('MESSAGE_SENT',window.host.chat.length-1);
@@ -32,6 +32,8 @@ async function receive(page,user,story,patch,type='normal'){
     await page.evaluate(async id=>{await window.host.eventSource.emit('MESSAGE_RECEIVED',id,'normal');await window.host.eventSource.emit('GENERATION_ENDED');},id);
     await page.waitForFunction(id=>Object.keys(window.host.chatMetadata.tretaresia_rpg_scene_history||{}).some(key=>key.startsWith(`${id}:`)),id);
 }
+const typedInnStory=innStory+'<tr-dialogue name="Garrick">ห้องพักแต่ละแบบใช้ได้หนึ่งคืน รวมอาหารเช้าง่ายๆ กับน้ำอุ่นหนึ่งถัง ห้องพักธรรมดาชั้นสองใช้กุญแจห้องพักธรรมดาชั้นสอง ห้องกว้างหน่อย มีอ่างอาบน้ำส่วนตัวใช้กุญแจห้องอ่างอาบน้ำส่วนตัว ไม่มีมัดจำ</tr-dialogue>';
+function typedInnOffer(id='inline-room-offer'){const offer=innOffer();offer.id=id;offer.items=offer.items.map((e,i)=>({...e,category:'Access',description:i?'ห้องกว้างพร้อมอ่างอาบน้ำส่วนตัว':'ห้องชั้นสอง เตียงเดี่ยวสะอาดสะอ้าน',properties:['สิทธิ์พักหนึ่งคืน','รวมอาหารเช้าและน้ำอุ่น'],terms:{mode:'access',scope:e.name,durationMinutes:1440,deposit:0,includes:['อาหารเช้าง่ายๆ','น้ำอุ่นหนึ่งถัง'],conditions:'สิทธิ์พักหนึ่งคืน',delivery:{name:i?'กุญแจห้องอ่างอาบน้ำส่วนตัว':'กุญแจห้องพักธรรมดาชั้นสอง',category:'Key',description:'กุญแจสำหรับห้องที่เลือกเท่านั้น'}}}));return offer;}
 let browser;
 try{
     browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -44,6 +46,7 @@ try{
         });
         await page.goto(`http://127.0.0.1:${server.address().port}${base}docs/previews/preview-h-stats.html?lang=th`);await page.waitForFunction(()=>window.hStatsPreview?.ready);
         await page.evaluate(()=>{
+            window.host.extensionSettings.tretaresia_rpg.chatPresentation=true;
             document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';
             document.querySelector('#chat').style.cssText='display:block;padding:12px 12px 250px;font-size:16px;line-height:1.6;box-sizing:border-box';
             const form=document.createElement('form');form.id='send_form';form.style.cssText='position:fixed;bottom:0;left:0;width:100%;padding:10px;background:#181818;box-sizing:border-box';const input=document.querySelector('#send_textarea');input.style.cssText='display:block;width:100%;min-height:60px';form.append(input);document.body.append(form);
@@ -56,36 +59,57 @@ try{
         assert.match(await page.evaluate(()=>window.outgoingContract),/already-known skills/);
         assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.skills.find(s=>s.id==='demon-eye').mastery),20);
         assert.equal(await page.evaluate(()=>window.calls.length),0,'recording an established skill from the normal reply adds no API call');
-        await receive(page,innUser,innStory,{sceneTracker:{loc:'Oakland Inn'},marketplace:innOffer(),ops:[]});
+        await receive(page,innUser,typedInnStory,{sceneTracker:{loc:'Oakland Inn',d:1,t:'10:20'},marketplace:typedInnOffer(),ops:[]});
         const bar=page.locator('.rf-commerce-composer[data-kind="buy"]');await bar.locator('[data-commerce-action="confirm"]').waitFor();
         assert.equal(await page.evaluate(()=>window.calls.length),0,'the room list opens from the same reply, without recovery');
         assert.match(await page.evaluate(()=>window.outgoingContract),/REQUIRED THIS REPLY: marketplace.kind="npcShop"/);
         assert.match(await page.evaluate(()=>window.outgoingContract),/ROOMS \/ RENTALS \/ PRICED SERVICES/);
+        assert.match(await page.evaluate(()=>window.outgoingContract),/Every item needs description, category, properties/);
+        assert.equal(await bar.locator('[data-commerce-action="confirm"]').isEnabled(),true);
         assert.deepEqual(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency),{gold:2,silver:100,copper:50,name:'Coins'});
         assert.equal(await bar.locator('.rf-commerce-diagnostic-report').count(),0);
+        if(width===390)await page.locator('.rf-composer-dock').screenshot({path:fixArtifacts+'/buy-compact-390.png'});
         await bar.locator('.rf-commerce-summary').click();assert.equal(await bar.locator('.rf-commerce-basket-row').count(),2);
         assert.match(await bar.innerText(),/ห้องพักธรรมดาชั้นสอง/);assert.match(await bar.innerText(),/อ่างอาบน้ำส่วนตัว/);
+        assert.match(await bar.innerText(),/สิทธิ์ใช้งาน/);assert.match(await bar.innerText(),/1440/);assert.doesNotMatch(await bar.innerText(),/เงื่อนไขยังไม่ครบ|ซื้อถาวร/);
         assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
         await page.screenshot({path:`${artifacts}/rooms-inline-${width}.png`});
+        if(width===390)await page.locator('.rf-composer-dock').screenshot({path:fixArtifacts+'/buy-details-390.png'});
         // Swipe/regenerate prompt assembly uses the opening schema, not a stale
         // interaction from the reply being replaced.
         for(const type of ['swipe','regenerate']){
             await page.evaluate(async type=>{await window.TretaresiaRpgGenerateInterceptor(structuredClone(window.host.chat.slice(0,-1)),100000,()=>{},type);window.replacementContract=window.prompts.get('tretaresia_rpg_response_contract');},type);
             assert.match(await page.evaluate(()=>window.replacementContract),/REQUIRED THIS REPLY: marketplace.kind="npcShop"/);
         }
+        // One explicit purchase task appends markup to the original message,
+        // settles five silver once and delivers a linked timed-access key.
+        await page.evaluate(()=>window.responses.push({narrative:'Garrick นับเหรียญเงินห้าเหรียญ แล้วส่งกุญแจห้องพักธรรมดาชั้นสองให้\n<tr-dialogue name="Garrick">พักได้หนึ่งคืน อาหารเช้ารวมแล้ว</tr-dialogue>',decision:{outcome:'accept',amount:5}}));
+        await bar.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
+        assert.equal(await page.evaluate(()=>window.calls.length),1);assert.match(await page.evaluate(()=>window.calls[0].systemPrompt),/Always wrap actions in <tr-narrative>/);
+        assert.match(await page.evaluate(()=>window.host.chat.at(-1).mes),/<tr-narrative>Garrick นับเหรียญเงิน/);
+        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),95);
+        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.commerce.rights.length),1);
+        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory[0].name),'กุญแจห้องพักธรรมดาชั้นสอง');
+        const purchased=page.locator('#chat .mes').last();await purchased.locator('.trpg-narrative').filter({hasText:'Garrick นับเหรียญเงิน'}).waitFor();
+        if(width===390){const captureStyle=await page.addStyleTag({content:'#send_form,.rf-composer-dock,#tretaresia-event-stack,#tretaresia-activity-island{display:none!important}'});try{await page.waitForTimeout(200);await purchased.locator('.trpg-narrative').filter({hasText:'Garrick นับเหรียญเงิน'}).screenshot({path:fixArtifacts+'/purchase-continuation-390.png'});await purchased.locator('.trpg-dialogue').filter({hasText:'พักได้หนึ่งคืน อาหารเช้ารวมแล้ว'}).screenshot({path:fixArtifacts+'/purchase-dialogue-390.png'});}finally{await captureStyle.evaluate(el=>el.remove());}}
+        // A fresh normal offer adds no catalog-generation API after settlement.
+        await receive(page,innUser,typedInnStory,{sceneTracker:{loc:'Oakland Inn',d:1,t:'10:20'},marketplace:typedInnOffer('fresh-room-offer'),ops:[]});
+        await bar.locator('[data-commerce-action="cancel"]').waitFor();
         await page.evaluate(()=>window.responses.push({narrative:'Garrick เก็บสมุดบัญชี รอให้ตัดสินใจภายหลัง',decision:{outcome:'cancel'}}));
         await bar.locator('[data-commerce-action="cancel"]').click();await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
-        assert.equal(await page.evaluate(()=>window.calls.length),1);
-        // Retained recovery path: the exact fenced response in the bug report
-        // also validates if a provider fails to emit an inline payload.
-        await page.evaluate(raw=>window.responses.push('```json\n'+JSON.stringify({marketplace:raw},null,2)+'\n```'),innOffer());
-        await receive(page,innUser,innStory,{sceneTracker:{loc:'Oakland Inn'},ops:[]});
-        await bar.locator('[data-commerce-action="confirm"]').waitFor();
         assert.equal(await page.evaluate(()=>window.calls.length),2);
-        assert.match(await page.evaluate(()=>window.calls.at(-1).systemPrompt),/Recover ONE/);
+        assert.match(await page.evaluate(()=>window.host.chat.at(-1).mes),/<tr-narrative>Garrick เก็บสมุดบัญชี/);
+        // A provider omitting the catalog must not trigger another API automatically.
+        // Incomplete legacy room options remain blocked, never permanent ownership.
+
+        await receive(page,innUser,innStory,{sceneTracker:{loc:'Oakland Inn'},ops:[]});
+        await bar.waitFor();
+        assert.equal(await page.evaluate(()=>window.calls.length),2);
+        const confirm=bar.locator('[data-commerce-action="confirm"]');
+        if(await confirm.count())assert.equal(await confirm.isDisabled(),true);
         assert.equal(await bar.locator('.rf-commerce-diagnostic-report').count(),0);
-        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),100);
-        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory.length),0);
-        assert.deepEqual(errors,[]);console.log(`PASS current conditional inn room prices inline with zero extra calls, same-turn ability registration, swipe/regenerate contract, exact fenced recovery and unchanged wallet/inventory at ${width}px`);await page.close();
+        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),95);
+        assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory.length),1);
+        assert.deepEqual(errors,[]);console.log(`PASS current conditional inn room prices inline with zero extra calls, same-turn ability registration, swipe/regenerate contract, complete access terms, missing catalog without extra calls and unchanged wallet/inventory at ${width}px`);await page.close();
     }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

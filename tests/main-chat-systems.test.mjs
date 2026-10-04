@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mainChatSystemInstructions, requestedChatSystems, requestedCommerceKind, missingChatSystems} from '../src/main-chat-systems.js';
+import {mainChatSystemInstructions, mainChatOutputContract, requestedChatSystems, requestedCommerceKind, missingChatSystems} from '../src/main-chat-systems.js';
 import {confirmedMarketplaceEvent, recoverMarketplaceShop} from '../src/marketplace-events.js';
 import {confirmedAuctionOffer} from '../src/auction-core.js';
 import {confirmedMissionBoard} from '../src/mission-board.js';
@@ -83,4 +83,16 @@ test('current posted recruitment notices and job papers validate without requiri
  const screenshot='โคฮาคุชะโงกหน้ามองแผ่นกระดาษที่ติดอยู่ระดับสายตาพลางเอ่ยถามเสียงแผ่วเบา ดวงตาสีอำพันเป็นประกายสะท้อนข้อความระบุเงินรางวัลและเงื่อนไขบนแผ่นหนังแกะ ขณะที่นักผจญภัยสองสามคนข้างๆ ปรายตามองมาครู่หนึ่งก่อนจะหันกลับไปถกเถียงกันเรื่องภารกิจล่าหมาป่าเขี้ยวดาบต่อ';
  assert.ok(confirmedMissionBoard({missions:[{name:'ล่าหมาป่าเขี้ยวดาบ',objective:'ล่าหมาป่าเขี้ยวดาบ'}]},screenshot,'ยืนอ่านกระดานภารกิจ','Guild'));
  for(const text of ['พรุ่งนี้จะติดใบประกาศรับสมัครปาร์ตี้','You have not reached the recruitment board.'])assert.equal(confirmedGroupBoard({entries:[{kind:'party',name:'Dawn'}]},text,'Continue','Guild'),null);
+});
+
+test('normal buy contract gives complete room access terms in its final example instead of the old price-only schema',()=>{
+ const contract=mainChatOutputContract('ฉันขอซื้อห้องพักหนึ่งคืน',{...settings,autoTrack:true},{location:'Oakland Inn'});
+ const sample=JSON.parse([...contract.matchAll(/<!--tretaresia_patch:([\s\S]*?)-->/gu)].at(-1)[1]);
+ const entry=sample.marketplace.items[0];
+ assert.equal(entry.terms.mode,'access');assert.equal(entry.terms.durationMinutes,1440);assert.equal(entry.category,'Access');
+ assert.ok(entry.description);assert.ok(entry.properties.length);assert.ok(entry.terms.delivery.name);assert.ok(entry.terms.includes.length);
+ assert.match(contract,/Every item needs description, category, properties/);
+ assert.match(contract,/Include EVERY quoted option/);assert.doesNotMatch(contract,/items:\[\{id,itemName,description,category,price:3,stock:1,stockKnown:false,negotiableKnown:false\}\]/);
+ const goods=mainChatOutputContract('ขอซื้อดาบ',{...settings,autoTrack:true},{location:'Market'});
+ assert.equal(JSON.parse([...goods.matchAll(/<!--tretaresia_patch:([\s\S]*?)-->/gu)].at(-1)[1]).marketplace.items[0].terms.mode,'permanent');
 });

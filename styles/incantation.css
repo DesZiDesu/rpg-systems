@@ -3,3 +3,13 @@
 .rf-dock-navigation{display:flex;align-items:center;gap:5px;padding:4px 7px;background:#202020;border:1px solid #444;border-radius:7px;margin-bottom:5px;min-height:33px;position:sticky;top:0;z-index:2}.rf-dock-navigation button{min-height:26px;padding:3px 8px;border:1px solid #484848;border-radius:5px;background:#292929;color:#bbb;font:11px/1.5 system-ui,sans-serif;cursor:pointer}.rf-dock-navigation button:hover{background:#3a3a3a;border-color:#777}.rf-dock-navigation button:focus-visible{outline:2px solid #ddd;outline-offset:1px}.rf-dock-navigation [aria-selected=true]{background:#cecece;color:#1b1b1b;border-color:#cecece}.rf-dock-navigation .rf-dock-collapse{margin-left:auto;color:#ddd;flex-shrink:0}.rf-dock-single-label{font-size:11px;color:#aaa}.rf-dock-job{font-size:9px;color:#aaa;white-space:nowrap}.rf-composer-dock.is-minimized{padding-bottom:0;overflow:visible}.rf-composer-dock.is-minimized .rf-dock-navigation{margin:0;border-radius:5px;min-height:31px}.rf-dock-body>section[hidden],.rf-dock-body[hidden],.rf-dock-passive[hidden]{display:none!important}.rf-dock-navigation .rf-dock-tab{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}@media(max-width:350px){.rf-dock-navigation{gap:3px;padding:3px 5px}.rf-dock-navigation button{font-size:10px;padding:3px 5px}.rf-dock-job{font-size:8px}}
 
 .rf-dock-navigation[hidden]{display:none!important}
+
+/* Grid tracks and host buttons must shrink to the available mobile width. */
+.rf-composer-dock,.rf-dock-body,.rf-dock-body>section,.rf-ability-body{min-width:0;max-width:100%}
+.rf-composer-dock .rf-training-grid{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0;width:100%}
+.rf-composer-dock .rf-training-grid .rf-ability-button{min-width:0!important;width:100%;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.rf-composer-dock .rf-training-grid strong,.rf-composer-dock .rf-training-grid small{min-width:0;white-space:normal;overflow-wrap:anywhere}
+.rf-training-diagnostics{margin-top:8px;font-size:11px;color:#c4c4c4}
+.rf-training-diagnostics summary{cursor:pointer;padding:6px 0}
+.rf-training-diagnostics pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:160px;overflow:auto;background:#151515;padding:8px;font:10px/1.5 monospace}
+@media(max-width:350px){.rf-composer-dock .rf-training-grid{grid-template-columns:minmax(0,1fr)}}
