@@ -1,7 +1,7 @@
-import {itemSaleBlocked,rightsView,storyMinute} from './commerce-rights.js?v=0.56.1';
-import {commerceInventoryValid} from './commerce-engine.js?v=0.56.1';
-import {marketplaceInventoryValid} from './marketplace-core.js?v=0.56.1';
-import {evidenceText} from './interaction-evidence.js?v=0.56.1';
+import {itemSaleBlocked,rightsView,storyMinute} from './commerce-rights.js?v=0.56.2';
+import {commerceInventoryValid} from './commerce-engine.js?v=0.56.2';
+import {marketplaceInventoryValid} from './marketplace-core.js?v=0.56.2';
+import {evidenceText} from './interaction-evidence.js?v=0.56.2';
 const clean=(s,n=300)=>typeof s==='string'?s.trim().slice(0,n):'';
 const clone=s=>structuredClone(s);
 const whole=(n,max=99999)=>Number.isSafeInteger(n)&&n>=0&&n<=max;

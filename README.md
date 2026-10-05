@@ -1,4 +1,10 @@
-# ROLEFORGE — v0.56.1
+# ROLEFORGE — v0.56.2
+
+## v0.56.2 — AI stock and requested purchase quantities
+
+- Have the normal story reply establish realistic shop stock from merchant/location/supply/canon, separately from unit prices and the player's requested basket. Render each item's remaining stock even before selecting it; preserve undisclosed historical stock without inventing a local count or another API request.
+- Fill an evidence-backed initial basket from the actual player request: three healing potions and three antidotes open as 3+3 for 240 copper, alongside stocks of 12/8. Reject invented purchase counts, preserve exact quoted lot pricing and shortages, and keep payment behind explicit confirmation. Parse explicitly named request quantities and disclosed NPC stock locally when the machine object is omitted.
+- Debit known stock only after validated settlement (12/8 becomes 9/5), and include merchant/product/remaining counts in subsequent AI context. Validation: **869 unit/host tests**, syntax checks and production-loader browsers at **320 / 390 / 1280 px**, covering preselection, stock labels on unselected items, payment, reload, old unknown-stock sessions and known shortages. Controlled model responses; no paid API calls. [Thai notes](docs/commerce-ai-stock.th.md) · [actual UI](docs/previews/commerce-stock-v0562/index.html).
 
 ## v0.56.1 — Multi-quantity purchases with undisclosed stock
 

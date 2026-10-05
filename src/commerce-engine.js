@@ -1,7 +1,8 @@
-import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.56.1';
-import {CURRENCY_VALUES,CURRENCY_RULE,walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.56.1';
-import {readCommercePrices} from './commerce-prices.js?v=0.56.1';
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.56.1';
+import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.56.2';
+import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.56.2';
+import {CURRENCY_VALUES,CURRENCY_RULE,walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.56.2';
+import {readCommercePrices} from './commerce-prices.js?v=0.56.2';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.56.2';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);
@@ -76,6 +77,7 @@ export function createCommerceSession(event, source = {}) {
     } else {
         if (!session.items.length || session.items.some(entry=>!entry||!normalizePurchaseTerms(entry.terms))) return null;
         session.selectedId=session.items[0].id;session.quote=session.items[0].askPrice;
+        if(event.selection?.items){const total=commerceBasketQuote(session,event.selection.items);if(total!==null){session.basket=copy(event.selection.items);session.selectedId=session.basket[0].itemId;session.quote=total;}}
     }
     return session;
 }
@@ -159,8 +161,8 @@ export function commerceInventoryValid(state) {
     }
     return rightsInventoryValid(state)&&[...held].every(([identity,count])=>(state.inventory||[]).filter(item=>item.id===identity||key(item.name)===identity).reduce((sum,item)=>sum+item.quantity,0)>=count);
 }
-export function commercePublicSummary(state) {return normalizeCommerce(state.commerce,state).sessions.slice(-8).map(s=>({id:s.id,kind:s.kind,status:s.status,title:s.title,location:s.location,denomination:s.denomination,
-    item:s.kind==='auction'?s.lots[s.index]?.name:s.items.find(i=>i.id===s.selectedId)?.item?.name,quote:s.quote,lot:s.kind==='auction'?(({id,name,status,price,leader})=>({id,name,status,price,leader}))(s.lots[s.index]):undefined,participants:s.participants}));}
+export function commercePublicSummary(state) {return normalizeCommerce(state.commerce,state).sessions.slice(-8).map(s=>({id:s.id,kind:s.kind,status:s.status,title:s.title,location:s.location,denomination:s.denomination,npc:s.npc,
+    item:s.kind==='auction'?s.lots[s.index]?.name:s.items.find(i=>i.id===s.selectedId)?.item?.name,quote:s.quote,catalog:s.kind==='auction'?undefined:s.items.filter(entry=>entry?.item?.name).map(entry=>({id:entry.id,name:entry.item.name,quotedQuantity:entry.item.quantity,askPrice:entry.askPrice,stock:commerceStockLimit(entry),stockKnown:commerceStockLimit(entry)!==null})),lot:s.kind==='auction'?(({id,name,status,price,leader})=>({id,name,status,price,leader}))(s.lots[s.index]):undefined,participants:s.participants}));}
 
 function tradeLines(session){return(Array.isArray(session.basket)?session.basket:[{itemId:session.selectedId,quantity:session.items.find(entry=>entry.id===session.selectedId)?.item.quantity||1}]).map(line=>({...line,entry:session.items.find(entry=>entry.id===line.itemId)}));}
 // A catalog's quoted quantity is not a stock count. Older unknown-stock
@@ -336,7 +338,7 @@ export function applyCommerceDecision(state, prepared, result, now=new Date().to
 
 export const COMMERCE_AUCTION_OPENING = 'When the current scene presents an auction, include top-level auction in the invisible tretaresia_patch: {id,title,location,evidence:"exact affirmative quote from this reply",denomination:"gold|silver|copper",entryFee:0,deposit:0,lots:[{id,name,description,category,rarity,quantity:1,openingBid:5,minIncrement:1,bidders:[{name,npcId,budget:12}]}]}. Use 1–8 lots and 0–5 actual present rivals per lot. Each rival has fixed actual total funds budget shared across all lots, never a willingness ceiling or a target matching player wealth. Public casual auctions may be free. For a formal managed venue or valuable lots, establish and announce reasonable entry terms in THIS opening narrative: entryFee is a once-only nonrefundable service charge (typically about 1–2% of the representative opening price, rounded down); deposit is a refundable commitment hold (typically 5–10%, rounded to a whole denomination). Show the exact terms before joining. Use zero where no charge makes sense; do not charge just to fill fields, target the player wallet, add fees after opening, or invent forfeiture. Deposit stays in the wallet but is unavailable while joined, then unlocks at completion/departure; winning prices are paid separately. Show known public item facts only. Preserve IDs while the interaction is active; a genuinely new auction has a new ID. The composer opens only for an actual present interaction; no future/rumored/OOC event. Do not settle auction money/items in normal patch ops. NPC decisions and auction closure come from the normal role-play reply or each composer API action, with no deterministic counterbid or countdown.';
 
-export const COMMERCE_INSTRUCTIONS = 'RoleForge composer commerce: current NPC goods/offers and auction catalogs use the existing top-level marketplace/auction shapes in the normal tretaresia_patch. These open the composer interaction bar. Auctions: give each NPC bidder a fixed total available budget via budget (maxBid is accepted only for old data). The same bidder must have the same budget across all lots. Choose realistic funds from the established character/story, never from player wealth or an intended winning price. There is NO fixed willingness ceiling: a bidder may spend all available money if AI judges it consistent with their motives. Buttons call the current API to continue this same assistant message with brief NPC reactions and a validated commerce decision. Do not settle active composer transactions via normal story currency/inventory ops, do not invent another auction/trade to replace one in progress, and do not print controls in prose. Completed commerce receipts are already paid/delivered facts, never pay them again.';
+export const COMMERCE_INSTRUCTIONS = 'RoleForge composer commerce: current NPC goods/offers and auction catalogs use the existing top-level marketplace/auction shapes in the normal tretaresia_patch. These open the composer interaction bar. Auctions: give each NPC bidder a fixed total available budget via budget (maxBid is accepted only for old data). The same bidder must have the same budget across all lots. Choose realistic funds from the established character/story, never from player wealth or an intended winning price. There is NO fixed willingness ceiling: a bidder may spend all available money if AI judges it consistent with their motives. Buttons call the current API to continue this same assistant message with brief NPC reactions and a validated commerce decision. Do not settle active composer transactions via normal story currency/inventory ops, do not invent another auction/trade to replace one in progress, and do not print controls in prose. Completed commerce receipts are already paid/delivered facts, never pay them again. The public catalog stock counts record the remaining goods after validated purchases. Preserve those counts for the same merchant/product on revisits unless actual restocking or another sale is established; do not reset stock each reply.';
 
 export function commerceDecisionPrompt(prepared,{npcs=[],story='',canon=''}={}) {
     const session=prepared.session,lot=session.kind==='auction'?session.lots[session.index]:null;
@@ -401,7 +403,7 @@ export function applyCommerceRoleplay(state,candidate,raw,{user='',userMessageId
         const named=item=>key(evidence).includes(key(item.name));
         for(const line of raw.items){const entry=candidate.items.find(item=>item.id===line.itemId),prior=previous.find(item=>item.itemId===line.itemId);
             if((!prior||prior.quantity!==line.quantity)&&!named(entry.item))return fail('evidence');
-            if((prior?prior.quantity!==line.quantity:line.quantity!==(entry.item.quantity||1))&&!statedPrices(evidence).includes(line.quantity))return fail('evidence');
+            if((prior?prior.quantity!==line.quantity:line.quantity!==(entry.item.quantity||1))&&!commerceQuantityFacts(evidence).some(f=>f.quantity===line.quantity)&&!statedPrices(evidence).includes(line.quantity))return fail('evidence');
         }
         const excluded=previous.filter(line=>!raw.items.some(item=>item.itemId===line.itemId));
         if(excluded.some(line=>!(removal&&named(line.entry.item)||only&&raw.items.every(item=>named(candidate.items.find(entry=>entry.id===item.itemId).item)))))return fail('evidence');

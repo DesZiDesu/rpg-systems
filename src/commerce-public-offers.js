@@ -1,6 +1,7 @@
-import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.56.1';
-import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.56.1';
-import {readCommercePrices} from './commerce-prices.js?v=0.56.1';
+import {disclosedShopStock} from './commerce-stock-selection.js?v=0.56.2';
+import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.56.2';
+import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.56.2';
+import {readCommercePrices} from './commerce-prices.js?v=0.56.2';
 
 // A same-reply compiler for explicit NPC prices when a model omits its machine
 // object. No API, payment, assumed stock, inferred item or invented NPC funds.
@@ -33,12 +34,13 @@ export function disclosedGoodsOffer(story,user,location,inventory=[],{eventId}={
                     .replace(/^(?:ข้า|เรา|ร้านนี้)?(?:ขาย|มี|เสนอขาย)\s*/u,'').replace(/^(?:I (?:can )?sell you|I offer|we sell)\s+(?:an? |the )?/iu,'');
                 const connector=prefix.match(/(?:ราคา|ในราคา|ชิ้นละ|เล่มละ|ขวดละ|อันละ|เป็นเงิน|คิดราคา|[:—–]|\b(?:for|costs?|is|priced at))\s*$/iu);
                 if(!connector)return null;
-                const name=prefix.slice(0,connector.index).trim().replace(/(?:เล่มนี้|ชิ้นนี้|อันนี้|ขวดนี้|หลังนี้)\s*$/u,'').trim();
+                const name=prefix.slice(0,connector.index).replace(/(?:คงเหลือ|เหลือ|มีอยู่|มี)\s*(?:[0-9๐-๙]+|[หนึ่งสองสามสี่ห้าหกเจ็ดแปดเก้าสิบร้อยพัน]+)\s*(?:ขวด|ชิ้น|อัน|เล่ม|ชุด|กล่อง|ใบ)\s*$/u,'').trim().replace(/(?:เล่มนี้|ชิ้นนี้|อันนี้|ขวดนี้|หลังนี้)\s*$/u,'').trim();
                 if(!name||name.length>120||/(?:เช่า|บริการ|ซ่อม|ตั๋ว|บัตรผ่าน|\b(?:rent|service|ticket))/iu.test(name))return null;
                 const place=/(?:บ้าน|อาคาร|ตึก|คฤหาสน์|ที่ดิน|\b(?:house|building|property))/iu.test(name);
                 if(/(?:ห้อง|\broom)/iu.test(name))return null; // Room duration lives in the room facts compiler.
                 if(place&&(!/(?:ขาย|\bsell)/iu.test(block.quote)||/(?:เช่า|\brent)/iu.test(block.quote)))return null;
-                items.push({itemName:name,description:block.quote,category:place?'Property':'Item',properties:[],quantity:1,price:fact.amount,denomination:fact.denomination,stockKnown:false,negotiableKnown:false,
+                const beforePrice=block.quote.slice(0,fact.start),afterPrice=block.quote.slice(fact.end),start=Math.max(beforePrice.lastIndexOf(';'),beforePrice.lastIndexOf('.'),beforePrice.lastIndexOf('\n'))+1,end=afterPrice.search(/[.;\n]/u);const clause=block.quote.slice(start,end<0?block.quote.length:fact.end+end);const stock=disclosedShopStock(clause);
+                items.push({itemName:name,description:block.quote,category:place?'Property':'Item',properties:[],quantity:1,price:fact.amount,denomination:fact.denomination,stockKnown:stock!==null,...(stock!==null?{stock}:{}),negotiableKnown:false,
                     terms:place?{mode:'permanent',scope:name,delivery:{name:`กุญแจ${name}`,category:'Key',description:`${name} · ${location}`}}:{mode:'permanent'},evidence:block.quote});
             }
         }
