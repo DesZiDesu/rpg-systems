@@ -1,13 +1,14 @@
-import {requestCommerceDecision} from './commerce-generation.js?v=0.58.2';
-import {inspectCommerceResponse} from './commerce-protocol.js?v=0.58.2';
-import {resolveMarketplaceReply} from './marketplace-events.js?v=0.58.2';
-import {requestedCommerceKind} from './main-chat-systems.js?v=0.58.2';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.2';
-import {commerceRepairReference,requestCommerceRepair,validateCommerceRepair} from './commerce-repair.js?v=0.58.2';
-import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.58.2';
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.58.2';
-import {createCommerceComposer} from './commerce-composer.js?v=0.58.2';
-import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.58.2';
+import {requestCommerceDecision} from './commerce-generation.js?v=0.58.3';
+import {inspectCommerceResponse} from './commerce-protocol.js?v=0.58.3';
+import {resolveMarketplaceReply} from './marketplace-events.js?v=0.58.3';
+import {requestedCommerceKind} from './main-chat-systems.js?v=0.58.3';
+import {readCommercePrices} from './commerce-prices.js?v=0.58.3';
+import {commerceRepairReference,requestCommerceRepair,validateCommerceRepair} from './commerce-repair.js?v=0.58.3';
+import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.58.3';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.58.3';
+import {createCommerceComposer} from './commerce-composer.js?v=0.58.3';
+import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.58.3';
+import {commerceGenerationMode} from './commerce-task.js?v=0.58.3';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.
@@ -25,6 +26,7 @@ export function createCommerceRuntime(api) {
         response:['AI ส่งคำตอบไม่ครบ ลองอีกครั้งได้','AI returned an incomplete response. Try again.'],outcome:['ผลลัพธ์ไม่ตรงกับการกระทำ ลองอีกครั้งได้','The outcome did not match the action. Try again.'],
         stale:['แชตหรือรายการเปลี่ยนระหว่างรอ กรุณาตรวจรายการปัจจุบัน','The chat or item changed. Review the current interaction.'],save:['บันทึกไม่สำเร็จ ข้อความ เงิน และของยังเป็นค่าเดิม','Save failed. The previous message, funds and items were restored.'],
         unavailable:['โฮสต์นี้ยังไม่รองรับ API และการบันทึกข้อความที่จำเป็น','The host does not provide the required API or chat saving.'],active:['มีงานประมูลที่เปิดอยู่แล้ว','Another auction is active'],closed:['รายการนี้จบแล้ว','This interaction is closed'],cancelled:['หยุดการขอคำตอบแล้ว','The request was stopped']};
+    errors['response-truncated']=['คำตอบรายการซื้อขายถูกตัดเพราะครบขีดจำกัดโทเคน · เพิ่มขีดจำกัดคำตอบแล้วลองใหม่ เงินและของยังไม่เปลี่ยน','The commerce reply reached the output token limit. Increase the response limit and retry. Funds and items are unchanged.'];
     function latestPublicOffer(context,state,commerce){
         const id=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system),message=context.chat?.[id];
         const userId=(context.chat||[]).findLastIndex(m=>m?.is_user&&!m.is_system),record=message&&api.record(id,message);
@@ -86,17 +88,29 @@ export function createCommerceRuntime(api) {
         const story=waiting?'':publicCommerceStory(api.visible(last?.mes||''));
         if(!waiting&&commerceOpeningRefused(story))return null;
         const rejected=record?.commerceOpening?.status==='invalid-data';
+        const reason=record?.commerceOpening?.details?.reasons?.[0];
+        const reasonText=reason?({
+            'offer-format':word('รูปแบบรายการหรือข้อมูลสินค้ายังไม่ครบ','The offer format or item data is incomplete'),
+            'location':word('สถานที่ในรายการไม่ตรงกับฉากปัจจุบัน','The offer location does not match the current scene'),
+            'evidence-missing':word('ไม่มีบทพูด NPC ที่ใช้อ้างอิงข้อเสนอ','The offer is missing its NPC evidence'),
+            'evidence-not-public':word('ข้อความอ้างอิงไม่มีในบทโรลที่แสดง','The evidence is absent from the public reply'),
+            'merchant':word('ชื่อผู้ขายหรือผู้ซื้อไม่ตรงกับผู้พูด','The merchant does not match the speaker'),
+            'item-not-public':word('ชื่อสินค้าไม่มีในบทพูด NPC','The item name is absent from the NPC reply'),
+            'item-price-evidence':word('ราคาของสินค้าไม่ตรงกับข้อความอ้างอิง NPC','The item price does not match its NPC evidence'),
+            'terms':word('เงื่อนไขสิทธิ์หรือการส่งมอบยังไม่ครบ','Purchase or delivery terms are incomplete'),
+            'interaction-or-terms':word('ข้อเสนอหรือเงื่อนไขยังยืนยันจากบทโรลไม่ได้','The interaction or terms cannot be verified')
+        }[reason.code]||reason.code)+(reason.item?' · '+reason.item:''):'';
         const priced=!waiting&&readCommercePrices(story).length>0;
         return{pending:{kind,waiting,repairing:busy&&opening?.message===last&&opening.repairing,status:waiting?'waiting':rejected?'invalid-data':priced?'incomplete-offer':'no-disclosed-offer'},busy:waiting,token:`pending:${context.getCurrentChatId?.()}:${userId}:${lastId}:${last?api.variant(last):''}`,available:false,
-            error:opening&&opening.message===last?opening.error:rejected?word('ข้อมูลรายการไม่ตรงกับข้อเสนอ NPC จึงยังยืนยันซื้อขายไม่ได้','Catalog data conflicts with the NPC offer; confirmation is unavailable'):'',
-            diagnostics:opening&&opening.message===last?opening.diagnostics:rejected?JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.2',system:kind,channel:'opening',error:'invalid-data',source:record.commerceOpening.source},null,2):''};
+            error:opening&&opening.message===last?opening.error:rejected?(reasonText||word('ข้อมูลรายการไม่ตรงกับข้อเสนอ NPC จึงยังยืนยันซื้อขายไม่ได้','Catalog data conflicts with the NPC offer; confirmation is unavailable')):'',
+            diagnostics:opening&&opening.message===last?opening.diagnostics:rejected?JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.3',system:kind,channel:'opening',error:'invalid-data',source:record.commerceOpening.source,details:record.commerceOpening.details||null},null,2):''};
     }
     function view(){const candidate=candidates()[0],context=api.context(),state=api.state();if(!candidate)return pendingView(context,state);
         return{session:candidate,token:`${context.getCurrentChatId?.()}:${candidate.source.turnKey}:${candidate.source.variant}:${candidate.revision}`,
             playerName:state.player.name,busy:busy||api.isBusy(),error:candidate.id===errorId?error:'',diagnostics:candidate.id===errorId?diagnostics:'',available:!api.isBusy()&&!context.chat.at(-1)?.is_user&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
     function refresh(){if(destroyed)return;const value=view(),signature=JSON.stringify([api.settings().language,api.settings().coinStyle,value]);if(signature!==rendered){rendered=signature;ui.update(value);}}
     function failureReport(session,action,code,raw,details,channel='button'){
-        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.2',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:typeof api.context().generateRaw==='function'?'native-task':'legacy-quiet',rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
+        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.3',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:commerceGenerationMode(api.context()),details:details||null,rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
     }
     async function repairOpening(input){
         const current=view();
@@ -124,8 +138,11 @@ export function createCommerceRuntime(api) {
             opening=null;return{ok:true};
         }catch(failure){
             if(!unchanged())return{ok:false,error:'stale'};
-            const code=['unavailable','save','opening-data'].includes(failure.message)?failure.message:'opening-api';
+            const code=['unavailable','save','opening-data'].includes(failure.message)?failure.message:failure.code==='response-empty'?'opening-empty':failure.code==='response-truncated'?'opening-truncated':'opening-api';
             opening={message,error:word(code==='opening-data'?'AI ยังเติมรายการได้ไม่ครบหรือไม่ตรงกับบทโรล · ลองใหม่ได้ หรือโรลถาม NPC ให้ระบุสินค้าและราคา':code==='save'?'บันทึกรายการไม่สำเร็จ · ลองใหม่ได้':'เติมรายการไม่สำเร็จ · ตรวจ API แล้วลองใหม่ได้',code==='opening-data'?'AI details are incomplete or conflict with the role-play. Retry or ask the NPC to clarify goods and prices.':code==='save'?'The repaired offer could not be saved. Retry.':'Offer repair failed. Check the API and retry.')+word(' · เงินและของยังไม่เปลี่ยน',' Funds and items are unchanged.'),diagnostics:failureReport({kind:reference.kind},'fill-offer',code,raw,{},'opening')};
+            if(code==='opening-empty')opening.error=word('API ไม่มีข้อความคำตอบสำหรับรายการซื้อขาย · ลองใหม่ได้','The API returned no commerce reply. Retry.')+word(' · เงินและของยังไม่เปลี่ยน',' Funds and items are unchanged.');
+            if(code==='opening-truncated')opening.error=word('คำตอบรายการซื้อขายถูกตัดเพราะครบขีดจำกัดโทเคน · เพิ่มขีดจำกัดคำตอบแล้วลองใหม่','The commerce reply reached the output token limit. Increase the response limit and retry.')+word(' · เงินและของยังไม่เปลี่ยน',' Funds and items are unchanged.');
+            opening.diagnostics=failureReport({kind:reference.kind},'fill-offer',code,raw??failure.responseText,failure.details||{providerError:failure.message},'opening');
             return{ok:false,error:code};
         }finally{busy=false;api.setBusy(false);refresh();}
     }
@@ -149,8 +166,9 @@ export function createCommerceRuntime(api) {
             opening=null;return{ok:true,...result};
         }catch(failure){
             if(!unchanged())return{ok:false,error:'stale'};
-            const code=failure.message==='unavailable'?'unavailable':failure.message==='opening-data'?'opening-data':'opening-api';
+            const code=failure.message==='unavailable'?'unavailable':failure.message==='opening-data'?'opening-data':failure.code==='response-empty'?'opening-empty':failure.code==='response-truncated'?'opening-truncated':'opening-api';
             opening={message,error:word(code==='opening-data'?'AI ยังส่งข้อมูลรายการไม่ครบ เงินและของยังไม่เปลี่ยน โรลถามต่อในแชตได้':code==='unavailable'?'โฮสต์ยังไม่มี API สำหรับกู้รายการ':'กู้ข้อมูลรายการจาก API ไม่สำเร็จ เงินและของยังไม่เปลี่ยน',code==='opening-data'?'AI returned incomplete opening data. Funds/items are unchanged. Continue in chat.':code==='unavailable'?'The host has no opening recovery API.':'Opening recovery API failed. Funds/items are unchanged.'),diagnostics:failureReport({kind:input.kind},'recover-opening',code,raw,{},'opening')};
+            opening.diagnostics=failureReport({kind:input.kind},'recover-opening',code,raw??failure.responseText,failure.details||{providerError:failure.message},'opening');
             return{ok:false,error:code};
         }finally{busy=false;api.setBusy(false);refresh();}
     }
@@ -188,7 +206,7 @@ export function createCommerceRuntime(api) {
             error='';diagnostics='';return{ok:true};
         }catch(failure){
             const nativeEmpty=failure.message==='No message generated';
-            const code=nativeEmpty?'response-empty':errors[failure.message]?failure.message:'response';diagnostics=failureReport(current.session,input.action,code,raw,failure.details);errorId=input.id;error=errors[code][api.settings().language==='th'?0:1]+(failure.details?.people?.length?' · '+failure.details.people.join(', '):'');
+            const code=nativeEmpty?'response-empty':errors[failure.code]?failure.code:errors[failure.message]?failure.message:'response';diagnostics=failureReport(current.session,input.action,code,raw??failure.responseText,failure.details);errorId=input.id;error=errors[code][api.settings().language==='th'?0:1]+(failure.details?.people?.length?' · '+failure.details.people.join(', '):'');
             if(!nativeEmpty&&!errors[failure.message])error=word('API ไม่สามารถตอบได้ กรุณาตรวจการเชื่อมต่อแล้วลองใหม่','The API request failed. Check the connection and try again.');
             api.log?.(failure);return{ok:false,error:code};
         }finally{busy=false;api.setBusy(false);refresh();}

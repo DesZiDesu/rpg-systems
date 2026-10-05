@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.58.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.58.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.3-development.md)
 
@@ -88,7 +88,7 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.58.2** has **1,005 passing unit/host tests** and syntax checks. Production-loader browser regressions at 320/390/1280px cover explicit AI offer repair, missing-commerce guidance, prior named goods and current bundle discounts, malformed output, metadata-save rollback, saved reload, one confirmed payment, pending panels and basket stock/quantity handling. Earlier release reports cover purchase rights, optional systems, item-granted abilities, Memory, Loot and Incantation. The older combined chat fixture has a known baseline assertion failure; see the release reports. Provider responses are controlled fixtures; this does not certify every live model or preset. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
+Version **0.58.3** has **1,020 passing unit/host tests** and syntax checks. Browser checks described below are historical results from 0.58.2; Chromium was unavailable for this fix. Production-loader browser regressions at 320/390/1280px cover explicit AI offer repair, missing-commerce guidance, prior named goods and current bundle discounts, malformed output, metadata-save rollback, saved reload, one confirmed payment, pending panels and basket stock/quantity handling. Earlier release reports cover purchase rights, optional systems, item-granted abilities, Memory, Loot and Incantation. The older combined chat fixture has a known baseline assertion failure; see the release reports. Provider responses are controlled fixtures; this does not certify every live model or preset. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
 
 [Repository audit](docs/repository-audit-v0.56.3.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.3.th.md) · [Full audited inventory](docs/repository-audit-v0.56.3.json)
 
@@ -105,3 +105,5 @@ Item-granted abilities and per-chat Memory deletion in 0.58.0: [Thai update and 
 Thai purchase routing and missing commerce UI in 0.58.1: [Thai fix and validation report](docs/commerce-pending-v0.58.1.th.md).
 
 Explicit AI fill-offer button in 0.58.2: [Thai usage and validation report](docs/commerce-repair-v0.58.2.th.md).
+
+Commerce API isolation, all-three selection and actionable diagnostics in 0.58.3: [Thai diagnosis and validation report](docs/commerce-api-v0.58.3.th.md).

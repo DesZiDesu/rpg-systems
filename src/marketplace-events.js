@@ -1,12 +1,12 @@
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.2';
-import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.58.2';
-import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.58.2';
-import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.58.2';
-import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.58.2';
-import {commerceDiscussionOnly} from './commerce-intent.js?v=0.58.2';
-import {normalizePurchaseTerms} from './commerce-rights.js?v=0.58.2';
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.58.2';
-import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.58.2';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.3';
+import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.58.3';
+import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.58.3';
+import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.58.3';
+import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.58.3';
+import {commerceDiscussionOnly} from './commerce-intent.js?v=0.58.3';
+import {normalizePurchaseTerms} from './commerce-rights.js?v=0.58.3';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.58.3';
+import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.58.3';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -245,8 +245,30 @@ export function resolveMarketplaceReply({marketplace,story,user,location,invento
     if(marketplace){
         let event=confirmedMarketplaceEvent(marketplace,story,user,location,inventory,intent,options);
         if(event&&!pricedEntriesDisclosed(event,story,event.items||[{item:event.item,askPrice:event.askPrice,denomination:event.denomination}]))event=null;
-        return {event,status:event?'ready':'invalid-data',source:'inline-patch'};
+        return {event,status:event?'ready':'invalid-data',source:'inline-patch',...(!event?{details:marketplaceRejection(marketplace,story,location)}:{})};
     }
     const event=recoverMarketplaceShop(story,user,location,npcs,{...options,inventory});
     return {event,status:event?'ready':'no-disclosed-offer',source:'public-dialogue'};
+}
+
+// Explain the rejected public opening without accepting contradictory data or
+// requesting another model call. Record only offer fields, never host settings.
+function marketplaceRejection(raw,story,location){
+    const reasons=[],event=normalizeMarketplaceEvent({...raw,location:raw.location||location});
+    if(!event)reasons.push({code:'offer-format'});
+    else{
+        if(key(event.location)!==key(location))reasons.push({code:'location',expected:location,received:event.location});
+        const person=event.seller||event.buyer;
+        if(!event.evidence)reasons.push({code:'evidence-missing'});
+        else if(!evidenceText(story).includes(evidenceText(event.evidence)))reasons.push({code:'evidence-not-public'});
+        if(event.evidence&&!namedInteraction(person.name,event.evidence,story))reasons.push({code:'merchant',received:person.name});
+        const entries=event.items||[{item:event.item,askPrice:event.askPrice,denomination:event.denomination}];
+        for(const entry of entries){
+            if(!evidenceText(story).includes(evidenceText(entry.item.name)))reasons.push({code:'item-not-public',item:entry.item.name});
+            else if(!pricedEntriesDisclosed(event,story,[entry]))reasons.push({code:'item-price-evidence',item:entry.item.name,amount:entry.askPrice,denomination:entry.denomination});
+            if(entry.termsRequired)reasons.push({code:'terms',item:entry.item.name});
+        }
+    }
+    if(!reasons.length)reasons.push({code:'interaction-or-terms'});
+    return {reasons};
 }

@@ -1,7 +1,7 @@
-import {publicTradeDialogues,optionPriceFacts,publicInclusions} from './commerce-dialogue-facts.js?v=0.58.2';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.2';
-import {storyMinute} from './commerce-rights.js?v=0.58.2';
-import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.58.2';
+import {publicTradeDialogues,optionPriceFacts,publicInclusions} from './commerce-dialogue-facts.js?v=0.58.3';
+import {readCommercePrices} from './commerce-prices.js?v=0.58.3';
+import {storyMinute} from './commerce-rights.js?v=0.58.3';
+import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.58.3';
 
 // Compile only facts already present in a Thai inn's current reply. No model
 // request, invented room number, stock, hidden feature or default stay length.
