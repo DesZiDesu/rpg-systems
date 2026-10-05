@@ -9,7 +9,7 @@ import {discountUser,discountCommerce,discountStory} from './fixtures/accepted-r
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?`${process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES}/playwright`:'playwright');
 const root=new URL('../',import.meta.url),base='/scripts/extensions/third-party/rpg-systems/';
-const artifacts=new URL('docs/previews/inventory-rights-v0554/',root).pathname;await mkdir(artifacts,{recursive:true});
+const artifacts=process.env.COMMERCE_ARTIFACT_DIR||new URL('docs/previews/inventory-rights-v0554/',root).pathname;await mkdir(artifacts,{recursive:true});
 const prototype=await readFile(new URL('docs/previews/inventory-rights-v0554/prototype.css',root),'utf8');
 const server=http.createServer(async(req,res)=>{try{
  const url=new URL(req.url,'http://localhost');if(url.pathname.startsWith('/api/')){res.setHeader('content-type','application/json');res.end('[]');return;}
@@ -62,6 +62,18 @@ try{
   await page.evaluate(()=>document.querySelector('#tretaresia-rpg-wand-launcher').click());await page.locator('#tretaresia-rpg-overlay').waitFor({state:'visible'});await page.evaluate(()=>document.querySelector('[data-tab="inventory"]').click());
   const rights=page.locator('.rf-rights-inventory');await rights.waitFor();await rights.locator('.rf-right-card').scrollIntoViewIfNeeded();assert.match(await rights.textContent(),/กุญแจห้องพักเดี่ยวชั้นบน/);
   const runtimeStyles=await page.evaluate(()=>[...document.styleSheets].map(s=>s.href||'').filter(Boolean));assert.ok(runtimeStyles.every(href=>!href.includes('prototype.css')),'the review design is not enabled in the extension');
+  if(process.env.INVENTORY_UI_LIVE==='1'){
+   const card=rights.locator('.rf-right-card');await card.scrollIntoViewIfNeeded();
+   const shape=await card.evaluate(el=>({radius:getComputedStyle(el).borderRadius,scroll:el.scrollWidth,width:el.clientWidth}));assert.equal(shape.radius,'0px');assert.ok(shape.scroll<=shape.width+1,JSON.stringify(shape));
+   const titleLayout=await card.evaluate(el=>({titleBottom:el.querySelector('header strong').getBoundingClientRect().bottom,locationTop:el.querySelector('header small').getBoundingClientRect().top}));assert.ok(titleLayout.locationTop>=titleLayout.titleBottom-1,JSON.stringify(titleLayout));
+   assert.equal(await card.locator('.rf-right-icon svg').count(),1);assert.equal(await card.locator('details').getAttribute('open'),null);
+   const remove=page.locator('[data-action="delete-item"][data-id="apple"]');assert.equal(await remove.locator('svg').count(),1);assert.match(await remove.innerText(),/ลบ|Remove/);assert.match(await remove.getAttribute('aria-label'),/Red Apple/);assert.equal(await remove.isEnabled(),true);
+   await page.screenshot({animations:'disabled',path:artifacts+`inventory-collapsed-${width}.png`});
+   await card.locator('summary').click();assert.equal(await card.locator('details').getAttribute('open'),'');assert.match(await card.locator('summary').innerText(),/ซ่อน/);assert.match(await card.innerText(),/190 ทองแดง/);
+   const expanded=await card.evaluate(el=>({scroll:el.scrollWidth,width:el.clientWidth}));assert.ok(expanded.scroll<=expanded.width+1,JSON.stringify(expanded));await page.screenshot({animations:'disabled',path:artifacts+`inventory-expanded-${width}.png`});
+   await card.locator('summary').focus();await page.keyboard.press('Space');assert.equal(await card.locator('details').getAttribute('open'),null);assert.match(await card.locator('summary').innerText(),/ดูสิทธิ์/);assert.equal(await page.evaluate(()=>window.calls.length),1);assert.deepEqual(errors,[]);
+   console.log(`PASS ${width}px: accepted inventory design loaded by production runtime, linked key SVG, explicit accessible remove control without icon fonts, native mouse/keyboard collapse; negotiated 190 payment/key/receipt unchanged and no display API calls`);await page.close();continue;
+  }
   // Review-only styling retains real state and real native expand/collapse.
   await page.addStyleTag({content:prototype});await page.evaluate(()=>{
    document.querySelector('#tretaresia-rpg-overlay').classList.add('rf-inventory-rights-preview');

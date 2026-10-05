@@ -1,5 +1,7 @@
 // Static inline SVG, independent of emoji fonts and icon-font loading.
 const paths={
+ trash:'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
+ item:'m12 3 9 5-9 5-9-5 9-5ZM3 8v10l9 5 9-5V8M12 13v10',
  key:'M11 11l9 9m-5-5 3-3m0 6 3-3M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
  rental:'M3 10h18v10H3V10zm5 0V6h8v4M9 15h6',
  service:'m14 7 3 3 4-4a6 6 0 0 1-8 8l-7 7-3-3 7-7a6 6 0 0 1 8-8l-4 4',

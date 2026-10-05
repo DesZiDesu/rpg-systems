@@ -10,21 +10,54 @@
 .rf-purchase-choice-copy{display:flex;flex-direction:column;min-width:0;flex:1}.rf-purchase-choice-copy small{font-size:9px;color:#888f99;font-weight:400}
 .rf-purchase-option-terms{padding:5px 0 7px 20px;font:10px/1.7 'Noto Sans Thai',sans-serif;color:#a3aab5;border-bottom:1px solid #ffffff0c}
 .rf-purchase-option-terms p{margin:0!important}
-.rf-rights-inventory{font-family:'Noto Sans Thai',sans-serif;margin:14px 0 20px;color:#d9dde4}
-.rf-rights-inventory h4{font-size:12px!important;font-weight:500!important;display:flex;justify-content:space-between;align-items:center;margin:0 0 10px!important;color:#aeb5c0!important}
-.rf-rights-inventory h4 small{font-size:10px;color:#828a96}.rf-rights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:10px}
-.rf-right-card{box-sizing:border-box;min-width:0;border:1px solid #3b4049;border-radius:9px;padding:12px;background:#15171a;font-size:11px;overflow-wrap:anywhere}
-.rf-right-card header{display:flex;gap:9px;align-items:center}.rf-right-card header>span:nth-child(2){flex:1;min-width:0}.rf-right-card strong{font-size:12px;font-weight:500}.rf-right-card header small{display:block;font-size:9px;color:#959da9;margin-top:2px}
-.rf-right-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:7px;background:#25282e;color:#b9c2d0;flex:none}
-.rf-right-card header em{font-size:9px;font-style:normal;flex:none;border:1px solid #515a67;border-radius:20px;padding:2px 7px;color:#c0c8d4}
-.rf-right-validity{margin-top:12px;padding:8px 10px;background:#22262d;border-radius:6px}.rf-right-validity span{display:block;font-size:10px;color:#b2bac7}.rf-right-validity strong{display:block;font-size:10px;margin-top:2px;color:#d3d9e3}.rf-right-validity small{display:block;font-size:9px;color:#a6aebd;margin-top:3px}
-.rf-right-card[data-right-status=expired] .rf-right-validity{background:#272320}.rf-right-card[data-right-status=expired] header em{color:#c7b4a4;border-color:#5c4f46}
-.rf-right-card details{margin-top:9px;border-top:1px solid #343a44;padding-top:7px}.rf-right-card summary,.rf-rights-history>summary{cursor:pointer;min-height:30px;color:#c7cdd8;font-size:10px;line-height:30px}
-.rf-right-card summary:focus-visible,.rf-rights-history>summary:focus-visible{outline:2px solid #cbd3df;outline-offset:2px;border-radius:3px}
-.rf-right-card dl{display:grid;grid-template-columns:minmax(80px,1fr) minmax(0,1.4fr);gap:7px 12px;margin:6px 0;font-size:10px}
-.rf-right-card dt{color:#939cad}.rf-right-card dd{margin:0;text-align:right;color:#c8d0de}.rf-right-card dd.rf-commerce-money{display:flex;justify-content:flex-end;white-space:normal}.rf-right-card dd .rf-commerce-icon{width:13px;height:13px}
-.rf-right-card p{font-size:10px;color:#9da7b8;line-height:1.8;margin:8px 0 0!important}.rf-right-refund-pending{border-top:1px solid #383a40;padding-top:7px;color:#c4b9ac!important}.rf-right-refund-pending svg{width:13px;height:13px;vertical-align:middle}
-.rf-rights-history{margin-top:10px}.rf-rights-history .rf-rights-grid{margin-top:8px}
-@media(max-width:400px){.rf-right-card{padding:10px}.rf-right-card dl{gap:6px 8px}.rf-right-card strong{font-size:11px}}
+/* Approved inventory card design; share the panel theme and item surfaces. */
+.tretaresia-rpg-overlay .rf-rights-inventory{color:var(--tf-txt,#d3cec2);margin:14px 0 16px}
+.tretaresia-rpg-overlay .rf-rights-inventory h4{font:500 12px/1.6 'Noto Sans Thai',sans-serif!important;color:var(--tf-dim,#929087)!important;border-bottom:1px solid var(--tf-line,#403925);padding-bottom:8px;margin-bottom:12px!important}
+.tretaresia-rpg-overlay .rf-rights-grid{grid-template-columns:1fr;gap:12px}
+.tretaresia-rpg-overlay .rf-right-card{border:1px solid var(--tf-line-soft,#30302c);border-left:2px solid var(--tf-gold,#c1a255);border-radius:0;background:var(--tf-field,#101010);padding:14px;box-shadow:none;overflow-wrap:anywhere}
+.tretaresia-rpg-overlay .rf-right-card header{gap:12px;align-items:flex-start}
+.tretaresia-rpg-overlay .rf-right-icon{width:34px;height:34px;background:rgba(var(--tretaresia-accent-rgb,193,162,85),.04);color:var(--tf-gold,#c1a255);border:1px solid var(--tf-line,#403925);border-radius:0;box-sizing:border-box}
+.tretaresia-rpg-overlay .rf-right-icon svg{width:20px;height:20px}
+.tretaresia-rpg-overlay .rf-right-card header strong{font:600 14px/1.6 var(--tf-disp,'Noto Sans Thai'),sans-serif;color:var(--tf-gold2,#d8be77);letter-spacing:.02em}
+.tretaresia-rpg-overlay .rf-right-card header small{font-size:10px;color:var(--tf-dim,#929087);margin-top:3px;line-height:1.7}
+.tretaresia-rpg-overlay .rf-right-card header em{font:400 10px/1.5 'Noto Sans Thai',sans-serif;color:var(--tf-gold,#c1a255);border:0;border-radius:0;background:transparent;padding:3px 0 0;white-space:nowrap}
+.tretaresia-rpg-overlay .rf-right-card header em::before{content:'●';font-size:6px;vertical-align:2px;margin-right:5px}
+.tretaresia-rpg-overlay .rf-right-card[data-right-status=expired] header em,.tretaresia-rpg-overlay .rf-right-card[data-right-status=returned] header em{color:var(--tf-dim,#929087)}
+.tretaresia-rpg-overlay .rf-right-validity,.tretaresia-rpg-overlay .rf-right-card[data-right-status=expired] .rf-right-validity{display:grid;grid-template-columns:70px minmax(0,1fr);gap:6px 10px;border-top:1px solid var(--tf-line,#403925);margin:12px 0 0;padding:10px 0 0;background:transparent;border-radius:0}
+.tretaresia-rpg-overlay .rf-right-validity span{color:var(--tf-dim,#929087);font:400 10px/1.7 'Noto Sans Thai',sans-serif}
+.tretaresia-rpg-overlay .rf-right-validity strong{color:var(--tf-txt,#d3cec2);font:400 11px/1.7 'Noto Sans Thai',sans-serif;margin:0;min-width:0}
+.tretaresia-rpg-overlay .rf-right-validity small{grid-column:2;color:var(--tf-dim,#929087);margin:0}
+.tretaresia-rpg-overlay .rf-right-card details{border-color:var(--tf-line,#403925);margin-top:10px;padding:0}
+.tretaresia-rpg-overlay .rf-right-card summary{display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;min-height:40px;line-height:1.5;font-size:11px;color:var(--tf-gold,#c1a255);cursor:pointer}
+.tretaresia-rpg-overlay .rf-right-card summary::-webkit-details-marker{display:none}
+.tretaresia-rpg-overlay .rf-right-card summary::after{content:'＋';font-size:17px;line-height:1;color:var(--tf-gold,#c1a255)}
+.tretaresia-rpg-overlay .rf-right-card details[open]>summary::after{content:'−'}
+.tretaresia-rpg-overlay .rf-right-card summary:hover{color:var(--tf-gold2,#d8be77)}
+.tretaresia-rpg-overlay .rf-right-card summary:focus-visible{outline:1px solid var(--tf-gold,#c1a255);outline-offset:3px;border-radius:0}
+.tretaresia-rpg-overlay .rf-right-card dl{display:grid;grid-template-columns:95px minmax(0,1fr);gap:9px 14px;border-top:1px solid var(--tf-line,#403925);padding-top:12px;margin:0 0 12px;font-size:11px;line-height:1.7}
+.tretaresia-rpg-overlay .rf-right-card dt{color:var(--tf-dim,#929087);font-size:11px;min-width:0;white-space:normal}
+.tretaresia-rpg-overlay .rf-right-card dd{font:400 11px/1.7 'Noto Sans Thai',sans-serif;color:var(--tf-txt,#d3cec2);text-align:left;min-width:0;margin:0;white-space:normal;overflow-wrap:anywhere}
+.tretaresia-rpg-overlay .rf-right-card dd.rf-commerce-money{justify-content:flex-start;gap:5px;color:var(--tf-gold2,#d8be77);align-items:center}
+.tretaresia-rpg-overlay .rf-right-card p{color:var(--tf-dim,#929087);font-size:10px;line-height:1.8;border-top:1px solid var(--tf-line,#403925);padding-top:9px;margin:9px 0 0!important}
+@media(max-width:360px){.tretaresia-rpg-overlay .rf-right-card{padding:11px}.tretaresia-rpg-overlay .rf-right-card header{gap:9px}.tretaresia-rpg-overlay .rf-right-card header strong{font-size:12px}.tretaresia-rpg-overlay .rf-right-card dl{grid-template-columns:80px minmax(0,1fr);gap:8px 10px}}
 
+.rf-right-card details:not([open]) .rf-right-collapse,.rf-right-card details[open] .rf-right-expand{display:none}
+.rf-right-refund-pending svg{width:13px;height:13px;vertical-align:middle}
+.rf-rights-history{margin-top:10px}.rf-rights-history .rf-rights-grid{margin-top:8px}
+.tretaresia-rpg-overlay .rf-rights-inventory{font-family:'Noto Sans Thai',sans-serif}
+.tretaresia-rpg-overlay .rf-rights-inventory h4{display:flex;justify-content:space-between;align-items:center}
+.tretaresia-rpg-overlay .rf-rights-grid{display:grid}
+.tretaresia-rpg-overlay .rf-right-card{box-sizing:border-box;min-width:0;font-size:11px}
+.tretaresia-rpg-overlay .rf-right-card header{display:flex}
+.tretaresia-rpg-overlay .rf-right-card header>span:nth-child(2){flex:1;min-width:0}
+.tretaresia-rpg-overlay .rf-right-icon{display:grid;place-items:center;flex:none}
+.tretaresia-rpg-overlay .rf-right-card header small{display:block}
+.tretaresia-rpg-overlay .rf-right-card header em{flex:none}
+.tretaresia-rpg-overlay .rf-right-card details{border-top:1px solid var(--tf-line,#403925)}
+.tretaresia-rpg-overlay .rf-right-card dd .rf-commerce-icon{width:13px;height:13px}
+.rf-rights-history>summary{cursor:pointer;min-height:30px;line-height:30px;font-size:11px;color:var(--tf-dim,#929087)}
 .rf-owned-caption{display:block;color:#9da5b2;font:10px/1.6 'Noto Sans Thai',sans-serif;margin-top:5px}.tretaresia-card-actions button:disabled{opacity:.35;cursor:not-allowed}
+
+.tretaresia-rpg-overlay .tretaresia-card-actions .rf-inventory-remove{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:auto;min-width:52px;min-height:36px;height:auto;aspect-ratio:auto;padding:7px 9px;font-size:10px;line-height:1.5;color:var(--tf-txt,#ece7da)}
+.tretaresia-rpg-overlay .rf-inventory-remove svg{width:16px;height:16px;flex-shrink:0}
+.tretaresia-rpg-overlay .tretaresia-item-icon svg{width:20px;height:20px}
