@@ -133,7 +133,14 @@ try{
         await bar.locator('[data-commerce-action="confirm"]').waitFor();await bar.locator('.rf-commerce-summary').click();
         assert.equal(await bar.locator('.rf-commerce-basket-row').count(),1);assert.match(await bar.innerText(),/ห้องพักธรรมดา/);
         assert.equal(await page.evaluate(()=>window.calls.length),4,'the latest exact report opens without another API');
-        await page.locator('#chat .mes').last().locator('.trpg-dialogue .rf-voice-setup').first().click();await page.locator('dialog.rf-speech-editor[open]').waitFor();
+        // The fixture scrolls the document instead of SillyTavern's chat pane.
+        // Leave room to move the last reply above the fixed, expanded dock;
+        // Playwright's default visibility scroll does not account for overlays.
+        const speechButton=page.locator('#chat .mes').last().locator('.trpg-dialogue .rf-voice-setup').first();
+        await speechButton.evaluate(el=>{document.querySelector('#chat').style.paddingBottom='80vh';el.scrollIntoView({block:'start'});});
+        const speechBox=await speechButton.boundingBox(),dockBox=await page.locator('.rf-composer-dock').boundingBox();
+        assert.ok(speechBox.y+speechBox.height<=dockBox.y,'the speech button must be above the open dock for a real pointer click');
+        await speechButton.click();await page.locator('dialog.rf-speech-editor[open]').waitFor();
         assert.equal(await page.locator('[data-speech-action="generate"]').isDisabled(),true,'a speech editor without a key can edit but cannot generate');
         assert.equal(await page.locator('.rf-commerce-composer').count(),1,'speech editing does not replace the open commerce window');await page.keyboard.press('Escape');
         await page.locator('.rf-composer-dock').screenshot({path:`${newArtifacts}latest-room-${width}.png`});

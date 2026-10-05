@@ -1,11 +1,11 @@
-import {commerceRequestHint,COMMERCE_INTENT_INSTRUCTIONS} from './commerce-intent.js?v=0.58.0';
-export {confirmedCommerceIntent} from './commerce-intent.js?v=0.58.0';
-import {COMMERCE_RIGHTS_INSTRUCTIONS} from './commerce-rights.js?v=0.58.0';
-import {CURRENCY_RULE} from './commerce-currency.js?v=0.58.0';
-import { interactionEvidence } from './interaction-evidence.js?v=0.58.0';
-import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.58.0';
-import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.58.0';
-import {MARKETPLACE_REQUEST_WORDS} from './marketplace-events.js?v=0.58.0';
+import {commerceRequestHint,COMMERCE_INTENT_INSTRUCTIONS} from './commerce-intent.js?v=0.58.1';
+export {confirmedCommerceIntent} from './commerce-intent.js?v=0.58.1';
+import {COMMERCE_RIGHTS_INSTRUCTIONS} from './commerce-rights.js?v=0.58.1';
+import {CURRENCY_RULE} from './commerce-currency.js?v=0.58.1';
+import { interactionEvidence } from './interaction-evidence.js?v=0.58.1';
+import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.58.1';
+import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.58.1';
+import {MARKETPLACE_REQUEST_WORDS} from './marketplace-events.js?v=0.58.1';
 const systems = [
     {key:'marketplace', setting:'enableMarketplace', words:MARKETPLACE_REQUEST_WORDS},
     {key:'auction', setting:'enableAuctions', words:/auction|ประมูล/iu},
@@ -18,7 +18,10 @@ function commerceRequestText(user) {
     return String(user ?? '').replace(/<[^>]*>/gu,' ')
         .replace(/(?:หลัง(?:จาก)?|เมื่อ)?(?:จบ|เสร็จ(?:สิ้น)?)(?:การ|งาน)?ประมูล|(?:การ|งาน)?ประมูล(?:ได้)?(?:จบ(?:แล้ว)?|เสร็จ(?:สิ้น)?(?:แล้ว)?|สิ้นสุด(?:แล้ว)?)/giu,' ')
         .replace(/(?:after\s+(?:the\s+)?|(?:the\s+)?)(?:auction|purchase|sale)\s+(?:(?:has|had|is|was)\s+)?(?:ended|finished|completed|closed)|(?:completed|finished|closed)\s+(?:auction|purchase|sale)/giu,' ')
-        .replace(/(?:ซื้อ|ขาย)(?:มา|ไป)(?:แล้ว)?|(?:ซื้อ|ขาย)[^\n.!?]{0,40}?แล้ว|\b(?:bought|sold|purchased)\b/giu,' ');
+        // Thai “แล้วกัน” expresses a present choice, not a completed sale.
+        // Stop at the first “แล้ว” so a later historical clause cannot swallow it.
+        .replace(/(?:ซื้อ|ขาย)(?:(?!แล้ว)[^\n.!?]){0,40}?แล้ว(?:\s*กัน)?|(?:ซื้อ|ขาย)(?:มา|ไป)(?:แล้ว)?|\b(?:bought|sold|purchased)\b/giu,
+            reference=>/แล้ว\s*กัน$/u.test(reference)?reference:' ');
 }
 export function settledCommerceFollowup(user) {
     const value=String(user??'').replace(/<[^>]*>/gu,' '), current=commerceRequestText(value);

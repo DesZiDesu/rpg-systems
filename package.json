@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.58.0",
+  "version": "0.58.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,6 +12,7 @@
     "test:incantation": "node tests/incantation.browser.mjs",
     "test:voice": "node tests/voice-addons.browser.mjs",
     "test:items": "node tests/items.browser.mjs",
-    "test:commerce-stock": "node tests/commerce-stock.browser.mjs && node tests/commerce-stock-selection.browser.mjs"
+    "test:commerce-stock": "node tests/commerce-stock.browser.mjs && node tests/commerce-stock-selection.browser.mjs",
+    "test:commerce-pending": "node tests/commerce-pending.browser.mjs"
   }
 }

@@ -3,6 +3,37 @@ import assert from 'node:assert/strict';
 import {createCommerceRuntime} from '../src/commerce-runtime.js';
 import {normalizeMarketplaceEvent} from '../src/marketplace-events.js';
 const deferred=()=>{let resolve;return{promise:new Promise(r=>{resolve=r}),resolve:v=>resolve(v)};};
+
+test('a prose-only three-book discount keeps its read-only commerce panel on refresh and reload without charging or asking another API',()=>{
+ const state={player:{name:'Noah'},npcs:[],location:{place:'Oakland Bookstore'},progression:{currency:{gold:0,silver:100,copper:0}},inventory:[]};
+ const flags={enableMarketplace:true,enableAuctions:false,autoTrack:true,language:'th'};
+ const user='“ซื้อทั้งสามเล่มเลยแล้วกัน.. ช่วยลดให้หน่อยได้มั้ยครับ..? สักนิดก็ยังดี..”';
+ const story='<tr-header name="Barth"/><tr-dialogue name="Barth">ปกติสามเล่มรวมกันอยู่ที่สี่สิบห้าเหรียญเงิน ข้าลดให้เหลือสี่สิบเหรียญเงินถ้วนก็แล้วกัน</tr-dialogue>';
+ const context={chat:[{is_user:true,mes:user},{is_user:false,mes:story}],getCurrentChatId:()=> 'books'};
+ // Older versions saved no opening record for this exact request.
+ const record={missingSystems:[],commerceIntent:null};let calls=0,busy=false;
+ const options={document:{},state:()=>structuredClone(state),context:()=>context,settings:()=>flags,record:()=>record,
+  variant:m=>m.mes,turnKey:id=>String(id),isBusy:()=>busy,visible:v=>v,recordRequest:()=>calls++};
+ const before=structuredClone(state);
+ for(let reload=0;reload<2;reload++){
+  const runtime=createCommerceRuntime(options);let view=runtime.view();
+  assert.equal(view.pending.kind,'buy');assert.equal(view.pending.status,'incomplete-offer');assert.equal(view.available,false);assert.equal(view.session,undefined);
+  runtime.refresh();runtime.refresh();assert.deepEqual(state,before);assert.equal(calls,0);
+  flags.enableMarketplace=false;assert.equal(runtime.view(),null);flags.enableMarketplace=true;
+  busy=true;assert.equal(runtime.view().pending.status,'waiting');busy=false;
+  context.chat[1].mes='<planning>Offer three books for 40 silver.</planning><tr-dialogue name="Barth">ข้าขอตรวจรายการก่อน</tr-dialogue>';
+  assert.equal(runtime.view().pending.status,'no-disclosed-offer','private planning is not a public quote');context.chat[1].mes=story;
+  context.chat[1].mes='<planning>The shop is closed in a hypothetical scenario.</planning>'+story;
+  assert.equal(runtime.view().pending.status,'incomplete-offer','private planning cannot hide a public offer');
+  context.chat[1].mes='<tr-dialogue name="Barth">ร้านปิดแล้ว ไม่มีสินค้าขาย</tr-dialogue>';assert.equal(runtime.view(),null);
+  context.chat[1].mes=story;
+  record.commerceOpening={status:'invalid-data',source:'patch'};assert.equal(runtime.view().pending.status,'invalid-data');
+  record.commerceOpening={status:'settled'};assert.equal(runtime.view(),null);delete record.commerceOpening;
+  record.commerceIntent={kind:'none'};assert.equal(runtime.view(),null);record.commerceIntent=null;
+  context.chat[0].mes='ซื้อหนังสือมาแล้ว ฉันเดินออกจากร้าน';assert.equal(runtime.view(),null);context.chat[0].mes=user;
+  runtime.destroy();
+ }
+});
 function fixture(){
  let state={player:{name:'Player'},npcs:[],location:{place:'Hall'},progression:{currency:{gold:0,silver:30,copper:0}},inventory:[]},busy=false,calls=0,commits=0;
  const event=normalizeMarketplaceEvent({kind:'npcShop',id:'shop',location:'Hall',seller:{name:'Rally'},denomination:'silver',items:[{name:'Potion',price:6}]});

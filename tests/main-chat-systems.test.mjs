@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mainChatSystemInstructions, mainChatOutputContract, requestedChatSystems, requestedCommerceKind, missingChatSystems} from '../src/main-chat-systems.js';
+import {mainChatSystemInstructions, mainChatOutputContract, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, missingChatSystems} from '../src/main-chat-systems.js';
 import {confirmedMarketplaceEvent, recoverMarketplaceShop} from '../src/marketplace-events.js';
 import {confirmedAuctionOffer} from '../src/auction-core.js';
 import {confirmedMissionBoard} from '../src/mission-board.js';
@@ -8,6 +8,30 @@ import {confirmedGroupBoard} from '../src/group-board.js';
 
 const settings = {enableMarketplace:true,enableAuctions:true,enableMissionBoard:true,enableGroupBoard:true};
 const shop = {kind:'npcShop',location:'Guild',seller:{name:'Rally'},denomination:'silver',items:[{itemName:'Potion',price:2,stock:4}]};
+
+test('Thai choice particle แล้วกัน keeps present purchases and sales routed to the composer and normal reply contract',()=>{
+    for(const [user,kind] of [
+        ['“ซื้อทั้งสามเล่มเลยแล้วกัน.. ช่วยลดให้หน่อยได้มั้ยครับ..? สักนิดก็ยังดี..”','buy'],
+        ['ขอซื้อยาสองขวดแล้วกันครับ','buy'],
+        ['ซื้อไปสองเล่มแล้วกัน','buy'],
+        ['ซื้อดาบแล้ว กันครับ','buy'],
+        ['ขายดาบเล่มนี้แล้วกันครับ','sell'],
+        ['ฉันซื้อดาบมาแล้ว ขอซื้อยาแล้วกัน','buy'],
+        ['ซื้อยาแล้วกัน ของที่ซื้อก่อนหน้านี้ได้รับแล้ว','buy'],
+    ]){
+        assert.equal(settledCommerceFollowup(user),false,user);
+        assert.equal(requestedCommerceKind(user,settings),kind,user);
+        assert.deepEqual(requestedChatSystems(user,settings),['marketplace'],user);
+        assert.match(mainChatSystemInstructions(user,settings),/latest player action concerns marketplace/);
+        assert.match(mainChatOutputContract(user,{...settings,autoTrack:true}),new RegExp(`CURRENT TRADE OUTPUT: the player is requesting a ${kind} offer`));
+        assert.equal(requestedCommerceKind(user,{...settings,enableMarketplace:false}),'');
+    }
+    for(const user of ['ซื้อดาบมาแล้ว ขอเก็บใส่กระเป๋า','ขายดาบแล้ว ฉันเดินออกจากร้าน']){
+        assert.equal(settledCommerceFollowup(user),true,user);
+        assert.equal(requestedCommerceKind(user,settings),'',user);
+    }
+    assert.equal(requestedCommerceKind('OOC: ซื้อทั้งสามเล่มแล้วกัน',settings),'');
+});
 
 test('Thai haggling keeps the shop open when a separate sentence has conditional pricing', () => {
     const evidence = 'Rally แสดงสินค้าที่ขายในร้านให้ดู. ถ้าซื้อสองขวดจะลดราคาให้';

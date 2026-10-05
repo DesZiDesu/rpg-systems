@@ -1,11 +1,11 @@
-import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.0';
-import {completeItemDefinition} from './item-definition.js?v=0.58.0';
-import {itemStatSummary} from './item-effects.js?v=0.58.0';
-import {purchaseDeposit} from './commerce-rights.js?v=0.58.0';
-import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.58.0';
-import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.58.0';
-import {commerceIcon} from './commerce-icons.js?v=0.58.0';
-import {convertMoney} from './commerce-currency.js?v=0.58.0';
+import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.1';
+import {completeItemDefinition} from './item-definition.js?v=0.58.1';
+import {itemStatSummary} from './item-effects.js?v=0.58.1';
+import {purchaseDeposit} from './commerce-rights.js?v=0.58.1';
+import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.58.1';
+import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.58.1';
+import {commerceIcon} from './commerce-icons.js?v=0.58.1';
+import {convertMoney} from './commerce-currency.js?v=0.58.1';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
 export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {
@@ -44,7 +44,7 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         if(view.pending){
             const pending=view.pending;bar.replaceChildren();bar.dataset.kind=pending.kind;delete bar.dataset.session;bar.setAttribute('aria-busy',String(pending.waiting));
             const title=node('strong','rf-commerce-pending-title',pending.kind==='auction'?t('ประมูล','AUCTION'):pending.kind==='sell'?t('ขายสินค้า','SELL'):t('ซื้อสินค้า','BUY'));
-            const status=node('p','rf-commerce-status',pending.waiting?t('รอ AI ตอบข้อเสนอและราคา…','Waiting for AI offer and prices…'):pending.status==='invalid-data'?t('ตรวจข้อมูลข้อเสนอไม่ผ่าน · เงินและของยังไม่เปลี่ยน','Offer data could not be validated; funds and items are unchanged'):t('NPC ยังไม่ได้เสนอรายการพร้อมราคา · พิมพ์ถามต่อในแชตได้','The NPC has not quoted a priced offer; continue in chat'));
+            const status=node('p','rf-commerce-status',pending.waiting?t('รอ AI ตอบข้อเสนอและราคา…','Waiting for AI offer and prices…'):pending.status==='invalid-data'?t('ตรวจข้อมูลข้อเสนอไม่ผ่าน · เงินและของยังไม่เปลี่ยน','Offer data could not be validated; funds and items are unchanged'):pending.status==='incomplete-offer'?t('พบข้อเสนอราคา แต่ AI ยังส่งข้อมูลรายการไม่ครบ · เงินและของยังไม่เปลี่ยน','A price was quoted, but AI offer details are incomplete; funds and items are unchanged'):t('AI ยังไม่ได้ส่งรายการพร้อมราคาที่ระบบอ่านได้ · เงินและของยังไม่เปลี่ยน','AI has not supplied a readable priced offer; funds and items are unchanged'));
             status.setAttribute('role','status');bar.append(title,status);if(!pending.waiting)showError();observe();position();return;
         }
         const session=view.session,lot=session.lots?.[session.index],kind=session.kind,auction=kind==='auction';
