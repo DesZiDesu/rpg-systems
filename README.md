@@ -90,7 +90,7 @@ For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your brow
 
 Version **0.56.2** has **869 passing unit/host tests**, syntax checks and production-loader browser coverage for startup and shop workflows on mobile/desktop. Provider responses are controlled fixtures; this does not certify every live model, preset or ElevenLabs account. Historical results remain in the [development README](docs/archive/README-v0.56.2-development.md).
 
-[Repository audit and cleanup candidates](docs/repository-audit-v0.56.2.th.md) · [Full audited inventory](docs/repository-audit-v0.56.2.json)
+[Repository audit](docs/repository-audit-v0.56.2.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.2.th.md) · [Full audited inventory](docs/repository-audit-v0.56.2.json)
 
 ## License
 

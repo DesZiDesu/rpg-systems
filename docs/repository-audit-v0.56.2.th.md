@@ -1,5 +1,7 @@
 # ตรวจ Repository สำหรับ Public release 0.56.2
 
+**รายงานนี้เป็น snapshot ก่อน cleanup** รายการที่ลบภายหลังและผลทดสอบอยู่ใน [รายงาน cleanup](repository-cleanup-v0.56.2.th.md)
+
 ตรวจวันที่ 5 ตุลาคม 2026 จาก commit `859fa6e66a65345328eaadcc2d99550a6d717dfc` ครบ 605 ไฟล์ที่ Git ติดตาม ก่อนเพิ่มเอกสาร Public ชุดนี้ ขนาดเนื้อหาไฟล์รวม 25.33 MiB โฟลเดอร์ `.git` ในเครื่องมีประวัติและ object เพิ่มอีกประมาณ 66 MiB ซึ่งเป็นข้อมูล Git ไม่ใช่ไฟล์ของส่วนเสริมที่ควรลบทิ้ง
 
 **ไม่พบไฟล์ขยะชัดเจนอย่าง node_modules, cache, log, .tmp, .bak, .env หรือผลทดสอบชั่วคราวที่ถูกติดตามใน snapshot นี้** พบไฟล์สำหรับพัฒนา/ประวัติที่ไม่จำเป็นต่อการเล่น และภาพซ้ำจริง แต่บางไฟล์ยังใช้ใน tests หรือเอกสาร จึงแยกเป็นรายการตรวจเพื่อจัดการได้โดยมีหลักฐาน
@@ -25,9 +27,9 @@
 | --- | --- | --- |
 | [src/auction-ui.js](../src/auction-ui.js) | UI เดิม ไม่อยู่ใน bootstrap ปัจจุบัน; host tests ยัง import helper | tests ที่ใช้ helper จะพัง |
 | [src/marketplace-ui.js](../src/marketplace-ui.js) | UI เดิม; host tests ยัง import renderer | tests ที่ใช้ renderer จะพัง |
-| [src/marketplace-chat-ui.js](../src/marketplace-chat-ui.js) | การ์ดตลาดเดิม; syntax-check script ยังระบุไฟล์ | คำสั่ง check จะพังหากไม่แก้พร้อมกัน |
+| [src/marketplace-chat-ui.js](https://github.com/DesZiDesu/rpg-systems/blob/c590f77369711b039a8b567a8f882c09cba072f6/src/marketplace-chat-ui.js) | การ์ดตลาดเดิม; syntax-check script ยังระบุไฟล์ | คำสั่ง check จะพังหากไม่แก้พร้อมกัน |
 | [src/mastery-training.js](../src/mastery-training.js) | engine ฝึกแบบเดิม; unit/host tests และ UI เดิมยังอ้าง | ต้องย้ายหรือปรับ legacy tests ก่อน |
-| [src/mastery-training-ui.js](../src/mastery-training-ui.js) | UI ฝึกเดิม; syntax-check script ยังระบุไฟล์ | ต้องแก้คำสั่ง check และตรวจ UI ปัจจุบันใหม่ |
+| [src/mastery-training-ui.js](https://github.com/DesZiDesu/rpg-systems/blob/c590f77369711b039a8b567a8f882c09cba072f6/src/mastery-training-ui.js) | UI ฝึกเดิม; syntax-check script ยังระบุไฟล์ | ต้องแก้คำสั่ง check และตรวจ UI ปัจจุบันใหม่ |
 
 รวม 5 ไฟล์ประมาณ 65.53 KiB การสแกนยืนยันได้ว่า loader ปัจจุบันไม่เรียกไฟล์เหล่านี้ ไม่ได้พิสูจน์ว่าไม่มีผู้ใช้ภายนอก import API เก่าเอง รายงานนี้เก็บไฟล์ไว้พร้อมบอก dependency เพื่อให้การลบภายหลังทำพร้อม tests/checks ได้
 
