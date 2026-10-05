@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.57.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.58.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.3-development.md)
 
@@ -88,7 +88,7 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.57.0** has **945 passing unit/host tests**, syntax checks and production-loader browser coverage for multi-stat items, Loot recovery, shops, purchase rights and optional systems on mobile/desktop. The older combined chat browser fixture still fails an assertion also reproduced on the prior baseline; see the release report. Provider responses are controlled fixtures; this does not certify every live model, preset or ElevenLabs account. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
+Version **0.58.0** has **968 passing unit/host tests**, syntax checks and production-loader browser coverage for item-granted skills/techniques, Memory deletion and native summary lifecycle, items/Loot, shops, purchase rights, Incantation and optional systems at 320/390/1280px. The older combined chat fixture has a known baseline assertion failure; see the release reports. Provider responses are controlled fixtures; this does not certify every live model or preset. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
 
 [Repository audit](docs/repository-audit-v0.56.3.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.3.th.md) · [Full audited inventory](docs/repository-audit-v0.56.3.json)
 
@@ -99,3 +99,5 @@ Version **0.57.0** has **945 passing unit/host tests**, syntax checks and produc
 Loot and mobile item panel fixes in 0.56.3: [Thai diagnosis and validation report](docs/loot-items-fix-v0.56.3.th.md).
 
 Multi-stat consumables and automatic Loot recovery in 0.57.0: [Thai update and validation report](docs/items-loot-v0.57.0.th.md).
+
+Item-granted abilities and per-chat Memory deletion in 0.58.0: [Thai update and validation report](docs/item-learning-memory-v0.58.0.th.md).

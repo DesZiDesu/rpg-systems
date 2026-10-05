@@ -1,5 +1,6 @@
-import {normalizeMemoryDetails,buildMemoryInsights,memoryRecordKey} from './memory-insights.js?v=0.57.0';
-export {memoryRecordKey} from './memory-insights.js?v=0.57.0';
+import {removeMemoryChat} from './memory-deletion.js?v=0.58.0';
+import {normalizeMemoryDetails,buildMemoryInsights,memoryRecordKey} from './memory-insights.js?v=0.58.0';
+export {memoryRecordKey} from './memory-insights.js?v=0.58.0';
 // The archive retains original messages. Only selected, bounded text enters a model prompt.
 export const MEMORY_FORMAT = 'roleforge-memory-library';
 export const MEMORY_LINK_KEY = 'tretaresia_rpg_memory_link';
@@ -40,7 +41,7 @@ export function memoryFingerprint(value) {
     return `${(a >>> 0).toString(36)}-${(b >>> 0).toString(36)}-${String(value).length}`;
 }
 export function emptyMemoryLibrary(owner) {
-    return {format:MEMORY_FORMAT,version:1,owner,chats:[],chapters:[],capsules:[],drafts:[],jobs:{},updatedAt:''};
+    return {format:MEMORY_FORMAT,version:1,owner,deletedRecords:[],deletedChapters:[],deletedCapsules:[],deletedChats:[],chats:[],chapters:[],capsules:[],drafts:[],jobs:{},updatedAt:''};
 }
 export function normalizeMemoryLibrary(value, owner) {
     if (!object(value) || value.format !== MEMORY_FORMAT || value.version !== 1 || value.owner !== owner
@@ -56,8 +57,11 @@ export function normalizeMemoryLibrary(value, owner) {
             || !Array.isArray(event.sourceKeys) || !Array.isArray(event.people) || !Array.isArray(event.places) || !Array.isArray(event.keywords)))) throw Error('MEMORY_INVALID_ARCHIVE');
     if (result.capsules.some(capsule => !object(capsule) || typeof capsule.id !== 'string' || typeof capsule.chatId !== 'string'
         || typeof capsule.recap !== 'string' || !Array.isArray(capsule.ancestry))) throw Error('MEMORY_INVALID_ARCHIVE');
+    for(const field of ['deletedChapters','deletedCapsules','deletedRecords'])result[field]=[...new Set((Array.isArray(result[field])?result[field]:[]).filter(id=>typeof id==='string'&&id))];
+    result.deletedChats=[...new Set((Array.isArray(result.deletedChats)?result.deletedChats:[]).filter(id=>typeof id==='string'&&id))];
     result.jobs = object(result.jobs) ? result.jobs : {};
     result.drafts = Array.isArray(result.drafts) ? result.drafts.filter(draft => object(draft) && typeof draft.id === 'string' && object(draft.parts)).slice(-24) : [];
+    const updatedAt=result.updatedAt;if(result.deletedChats.length||result.deletedChapters.length||result.deletedCapsules.length||result.deletedRecords.length)Object.assign(result,removeMemoryChat(result,result.deletedChats).next);result.updatedAt=updatedAt;
     return result;
 }
 export function memoryAncestry(context, owner) {
@@ -66,6 +70,7 @@ export function memoryAncestry(context, owner) {
     return [...new Set([chatId, ...(link?.owner === owner ? list(link.ancestry) : [])])].filter(Boolean);
 }
 export function captureMemoryChat(library, {chatId,name,messages,visible = value => value,scene = () => null}) {
+    if(library.deletedChats?.includes(chatId))return false;
     const prior = library.chats.find(chat => chat.id === chatId);
     const archived = (messages || []).map((message,index) => {
         if (!message || message.is_system || typeof message.mes !== 'string' || !message.mes.trim()) return null;

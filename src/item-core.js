@@ -1,10 +1,11 @@
-import {normalizeItemUsage,completeItemDefinition,validStatEffects,normalizeStatEffects,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.57.0';
-import {applyItemStats,itemStatOptions,normalizeItemBuffs,expireItemBuffs} from './item-effects.js?v=0.57.0';
-export {normalizeItemUsage} from './item-definition.js?v=0.57.0';
-import {itemSaleBlocked,rightsView,storyMinute} from './commerce-rights.js?v=0.57.0';
-import {commerceInventoryValid} from './commerce-engine.js?v=0.57.0';
-import {marketplaceInventoryValid} from './marketplace-core.js?v=0.57.0';
-import {evidenceText} from './interaction-evidence.js?v=0.57.0';
+import {itemLearningMissing,applyItemLearning,itemLearningAvailability,validItemLearning,normalizeItemLearning} from './item-learning.js?v=0.58.0';
+import {normalizeItemUsage,completeItemDefinition,validStatEffects,normalizeStatEffects,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.0';
+import {applyItemStats,itemStatOptions,normalizeItemBuffs,expireItemBuffs} from './item-effects.js?v=0.58.0';
+export {normalizeItemUsage} from './item-definition.js?v=0.58.0';
+import {itemSaleBlocked,rightsView,storyMinute} from './commerce-rights.js?v=0.58.0';
+import {commerceInventoryValid} from './commerce-engine.js?v=0.58.0';
+import {marketplaceInventoryValid} from './marketplace-core.js?v=0.58.0';
+import {evidenceText} from './interaction-evidence.js?v=0.58.0';
 const clean=(s,n=300)=>typeof s==='string'?s.trim().slice(0,n):'';
 const clone=s=>structuredClone(s);
 const whole=(n,max=99999)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
@@ -15,6 +16,7 @@ const actions=['use','eat','drink','unknown','passive'];
 // Descriptive corrections may refine known facts, but cannot refill charges or erase use history.
 export function mergeItemUsage(previous, update, entry={}){
  const prior=normalizeItemUsage(previous,entry),raw=update&&typeof update==='object'?update:{};
+ if(raw.learns!==undefined&&validItemLearning(raw.learns)&&!prior.configured)delete prior.learningInvalid;
  return normalizeItemUsage({...prior,...raw,cooldown:{...prior.cooldown,...raw.cooldown,...(prior.cooldown.lastUse?{lastUse:prior.cooldown.lastUse}:{})},charges:prior.charges||raw.charges,...(prior.configured?{...prior,configured:true}:{} )},entry);
 }
 export function itemRecord(raw){
@@ -78,7 +80,7 @@ export function itemReserved(state,itemId,quantity=1){
  const trial={...state,inventory:(state.inventory||[]).map(i=>i.id===itemId?{...i,quantity:i.quantity-quantity}:i)};
  return !marketplaceInventoryValid(trial)||!commerceInventoryValid(trial);
 }
-export function itemAvailability(state,item,{turn=0}={}){
+export function itemAvailability(state,item,{turn=0,quantity=1}={}){
  const usage=normalizeItemUsage(item?.usage,item),cooldown=usage.cooldown,last=cooldown.lastUse;
  if(!item||!whole(item.quantity)||!item.quantity)return{ok:false,error:'inventory',usage};
  if(item.commerceRightId){const r=rightsView(state).find(r=>r.id===item.commerceRightId);if(!r||r.effectiveStatus!=='active')return{ok:false,error:'expired',usage};if(r.terms.uses)return{ok:false,error:'provider',usage};}
@@ -91,6 +93,7 @@ export function itemAvailability(state,item,{turn=0}={}){
   const required=cooldown.unit==='turns'?cooldown.value:cooldown.value*({seconds:1,minutes:60,hours:3600,days:86400}[cooldown.unit]||0);
   if(elapsed===null||elapsed<required)return{ok:false,error:'cooldown',remaining:elapsed===null?null:required-elapsed,usage};
  }
+ const learning=itemLearningAvailability(state,item,quantity);if(!learning.ok)return{ok:false,error:learning.error,usage};
  return{ok:true,usage};
 }
 export function prepareItemAction(state,input,{participants=[],turn=0,requestId='item-'+globalThis.crypto?.randomUUID?.(),location=state.location?.place}={}){
@@ -104,7 +107,7 @@ export function prepareItemAction(state,input,{participants=[],turn=0,requestId=
   if(!entries.length)return{ok:false,error:'inventory'};data={...data,poolId:pool.id,revision:pool.revision,entries,title:pool.title};
  }else{
   const item=state.inventory?.find(i=>i.id===input.itemId);if(!item||!whole(input.quantity)||!input.quantity||input.quantity>item.quantity)return{ok:false,error:'inventory'};
-  if(input.action==='use'){const availability=itemAvailability(state,item,{turn});if(!availability.ok)return availability;if(availability.usage.charges&&input.quantity>availability.usage.charges.remaining)return{ok:false,error:'charges'};if(!availability.usage.consumable&&input.quantity!==1)return{ok:false,error:'quantity'};}
+  if(input.action==='use'){const availability=itemAvailability(state,item,{turn,quantity:input.quantity});if(!availability.ok)return availability;if(availability.usage.charges&&input.quantity>availability.usage.charges.remaining)return{ok:false,error:'charges'};if(!availability.usage.consumable&&input.quantity!==1)return{ok:false,error:'quantity'};}
   if((input.action!=='use'||normalizeItemUsage(item.usage,item).consumable)&&itemReserved(state,item.id,input.quantity))return{ok:false,error:'reserved'};
   if(input.action!=='use'&&itemSaleBlocked(state,item.id))return{ok:false,error:'ownership'};
   const npc=input.action==='gift'?currentItemNpcs(state,participants).find(n=>n.id===input.npcId):null;if(input.action==='gift'&&!npc)return{ok:false,error:'npc'};
@@ -161,6 +164,8 @@ export function applyItemDecision(state,request,result){
     // Authored per-item effects are authoritative; legacy result deltas never add a second restoration.
     const applied=applyItemStats(next,Array.isArray(configured)?configured:result.decision.stats||legacy,{quantity:Array.isArray(configured)||result.decision.stats?request.quantity:1,requestId:request.id,itemName:item.name,turn:request.turn});
     if(!applied.ok)return applied;Object.assign(next,applied.next);events.push(...applied.events);
+    if(usage.learningInvalid)return{ok:false,error:'learning'};
+    const learned=applyItemLearning(next,usage.learns||[],{quantity:request.quantity});if(!learned.ok)return learned;Object.assign(next,learned.next);events.push(...learned.events);
    }
    if(!item.quantity)next.inventory=next.inventory.filter(i=>i.id!==item.id);
   }
@@ -193,7 +198,7 @@ export function applyStoryItemEvents(state,input,{story='',user='',source={},par
 
 const unknownValue=value=>!clean(value)||/^(?:unknown|none known|no details|no description|ยังไม่ทราบ|ไม่ทราบ|ไม่มีรายละเอียด|ไม่มีข้อมูล|ไม่ระบุ|—|-)$/iu.test(clean(value));
 export function itemMissingFields(item){
- const u=normalizeItemUsage(item?.usage,item),fields=[];if(u.consumable&&!Array.isArray(u.stats))fields.push('stats');
+ const u=normalizeItemUsage(item?.usage,item),fields=[];if(u.learningInvalid||itemLearningMissing(item)||(!Array.isArray(u.learns)||u.action==='unknown'&&!u.learns.length)&&/(?:skill.?book|spell.?book|manual|scroll|คัมภีร์|ตำรา|ปลุกพลัง)/iu.test((item?.name||'')+' '+(item?.category||'')))fields.push('learns');if(u.consumable&&!Array.isArray(u.stats))fields.push('stats');
  if(unknownValue(item?.description))fields.push('description');
  if(u.action==='unknown')fields.push('action');
  if(unknownValue(u.effect)||u.effect===item?.description)fields.push('effect');
@@ -216,7 +221,9 @@ export function applyItemDetails(state,request,raw){
   if(data.description!==undefined&&(typeof data.description!=='string'||data.description.length>600))return{ok:false,error:'response'};
   if(missing.includes('description')&&!unknownValue(data.description))current.description=clean(data.description,600);
   if(incoming!==undefined){
-   if(!incoming||typeof incoming!=='object'||Array.isArray(incoming)||Object.keys(incoming).some(k=>!['action','consumable','effect','conditions','target','cooldown','charges','stats'].includes(k)))return{ok:false,error:'response'};
+   if(!incoming||typeof incoming!=='object'||Array.isArray(incoming)||Object.keys(incoming).some(k=>!['action','consumable','effect','conditions','target','cooldown','charges','stats','learns'].includes(k)))return{ok:false,error:'response'};
+   if(incoming.learns!==undefined&&!validItemLearning(incoming.learns))return{ok:false,error:'response'};
+   if(missing.includes('learns')&&incoming.learns!==undefined){u.learns=normalizeItemLearning(incoming.learns);delete u.learningInvalid;}
    if(incoming.stats!==undefined&&!validStatEffects(incoming.stats))return{ok:false,error:'response'};
    if(missing.includes('stats')&&incoming.stats!==undefined)u.stats=normalizeStatEffects(incoming.stats);
    if(incoming.action!==undefined&&!actions.includes(incoming.action)||incoming.consumable!==undefined&&typeof incoming.consumable!=='boolean'||incoming.effect!==undefined&&typeof incoming.effect!=='string'||incoming.target!==undefined&&typeof incoming.target!=='string'||incoming.conditions!==undefined&&(!Array.isArray(incoming.conditions)||incoming.conditions.some(c=>typeof c!=='string'))||incoming.cooldown!==undefined&&(!incoming.cooldown||!units.includes(incoming.cooldown.unit)||!whole(incoming.cooldown.value,52560000)))return{ok:false,error:'response'};
@@ -234,6 +241,7 @@ export function applyItemDetails(state,request,raw){
 
 export function configureItemUsage(state,itemId,usage){
  const current=state.inventory?.find(i=>i.id===itemId);if(!current)return{ok:false,error:'inventory'};
+ if(usage?.learns!==undefined&&!validItemLearning(usage.learns))return{ok:false,error:'learning'};
  if(!usage||!actions.includes(usage.action)||typeof usage.consumable!=='boolean'||!validStatEffects(usage.stats))return{ok:false,error:'effects'};
  const options=itemStatOptions(state);if(usage.stats.some(e=>!options.some(o=>o.stat===e.stat&&o.type===typeof e.value)))return{ok:false,error:'effects'};
  const next=clone(state),entry=next.inventory.find(i=>i.id===itemId);

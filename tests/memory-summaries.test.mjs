@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as memory from '../src/memory-summaries.js';
 import {createMemorySummaries,requestMemorySummary,cleanMemorySummaryResponse,memorySummaryNativeGenerationActive,diagnoseMemoryApiFailure,memoryJobMessage} from '../src/memory-summary-runtime.js';
 import {renderMemorySummaries} from '../src/memory-summary-ui.js';
+import {removeMemoryChat} from '../src/memory-deletion.js';
 
 const config = () => ({enableMemorySummaries:true,language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryBatchSize:10,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
 test('detailed extraction targets grow with the selected output budget while retaining a finite response',()=>{
@@ -89,7 +90,7 @@ function fixture(options = {}) {
             title:'First meeting with Cora',detail:'Nova met Cora while fishing at the river at night.',kind:'Event',people:['Nova','Cora','คอร่า'],places:['River','แม่น้ำ'],keywords:['fishing','ตกปลา','กลางคืน'],knownBy:['Nova','Cora'],whenText:'Day 7, night',sourceKeys:[batch.at(-1).segmentKey],evidence:batch.at(-1).text.slice(0,100),
         }]});
     });
-    const store = {get:async owner => {storageCalls.push('get');return data.has(owner) ? structuredClone(data.get(owner)) : null;},put:async(owner,value) => { storageCalls.push('put');if(options.failSave?.(value))throw Error('MEMORY_STORAGE_WRITE_FAILED'); data.set(owner,structuredClone(value)); }};
+    const store = {get:async owner => {storageCalls.push('get');await options.beforeRead?.();return data.has(owner) ? structuredClone(data.get(owner)) : null;},put:async(owner,value) => { storageCalls.push('put');await options.beforeWrite?.(value);if(options.failSave?.(value))throw Error('MEMORY_STORAGE_WRITE_FAILED'); data.set(owner,structuredClone(value)); }};
     const runtime = createMemorySummaries({context:()=>context,owner:ctx=>ctx.owner,settings:()=>settings,state:()=>state,visible:value=>value.replace(/<!--[^]*?-->/g,''),scene:()=>({day:7,time:'23:00',location:'River'}),store,
         recordRequest:options.recordRequest || (()=>{}),notify:(type,message)=>notices.push({type,message}),changed:view=>phases.push(view.job.status),parse:JSON.parse,timeout:Object.hasOwn(options,'timeout') ? options.timeout : 100,
         saveMetadata:async()=>options.metadataFail ? false : true,isGenerating:()=>options.generating?.() || false,continuity:options.continuity || (()=>{}),
@@ -431,7 +432,7 @@ test('native current-connection cancellation discards late raw results without s
 test('summary UI escapes sources and errors, exposes job progress, retry and separate token budgets',async()=>{
     const f=fixture();await f.runtime.open();await f.runtime.run();f.runtime.search('Cora');f.runtime.previewSource('first','1');const view=f.runtime.view();view.job.status='error';view.job.error='<img src=x onerror=alert(1)>';
     view.preview.text='<script>alert(1)</script>';const panel={innerHTML:''};renderMemorySummaries(panel,view,[{id:'s',name:'<unsafe profile>'}]);
-    assert.match(panel.innerHTML,/aria-live="polite"/);assert.match(panel.innerHTML,/memory-summary-retry/);assert.match(panel.innerHTML,/memorySummaryInputBudget/);assert.match(panel.innerHTML,/&lt;script&gt;/);assert.doesNotMatch(panel.innerHTML,/<script>|<img src=x/);
+    assert.match(panel.innerHTML,/data-memory-section="handoffs"/);assert.match(panel.innerHTML,/aria-live="polite"/);assert.match(panel.innerHTML,/memory-summary-retry/);assert.match(panel.innerHTML,/memorySummaryInputBudget/);assert.match(panel.innerHTML,/&lt;script&gt;/);assert.doesNotMatch(panel.innerHTML,/<script>|<img src=x/);
     renderMemorySummaries(panel,{...view,settings:{...view.settings,language:'th'}});assert.match(panel.innerHTML,/งานความจำไม่สำเร็จ/);assert.match(panel.innerHTML,/เตรียมความจำสำหรับแชตใหม่/);
 });
 
@@ -798,4 +799,42 @@ test('memory request notices precede each dispatched batch and do not appear dur
  await f.runtime.run();assert.ok(f.calls.length>0);assert.equal(records.length,f.calls.length);
  assert.ok(records.every(record=>record.kind==='memorySummary'));
  const before=records.length;await f.runtime.preparePrompt('River');await f.runtime.export();assert.equal(records.length,before);
+});
+
+async function deletionFixture(options={}){
+ const f=fixture(options);await f.runtime.open();assert.equal(await f.runtime.run(),true);
+ f.context.chatId='second';f.context.chatMetadata={[memory.MEMORY_LINK_KEY]:{owner:'card:cora',ancestry:['first']}};
+ f.context.chat=[{is_user:true,name:'Nova',mes:'New separate scene.'},{is_user:false,name:'Cora',mes:'A new day begins.'}];await f.runtime.open();return f;
+}
+test('archive deletion is confirmed, durable, unlinks the prompt, preserves the real chat and makes no AI call',async()=>{
+ const f=await deletionFixture(),source=structuredClone(f.context.chat),calls=f.calls.length;
+ await assert.rejects(f.runtime.deleteChat('first'),/MEMORY_CHANGED/);f.runtime.previewDeletion('first');assert.equal(f.runtime.view().deletionPlan.counts.messages,2);
+ assert.equal(await f.runtime.deleteChat('first'),true);assert.equal(f.data.get('card:cora').chats.length,1);assert.deepEqual(f.data.get('card:cora').deletedChats,['first']);assert.deepEqual(f.context.chat,source);assert.equal(f.calls.length,calls);
+ assert(!f.context.chatMetadata[memory.MEMORY_LINK_KEY].ancestry.includes('first'));assert(!f.runtime.prompt().includes('first met Cora'));assert.equal(JSON.parse(await f.runtime.export()).chats[0].id,'second');
+ const resumed=fixture({data:f.data});await resumed.runtime.open();assert.equal(resumed.runtime.view().currentArchiveDeleted,true);assert(!f.data.get('card:cora').chats.some(c=>c.id==='first'));assert.equal(await resumed.runtime.run(),false);
+ assert.equal(await resumed.runtime.restoreCurrentChat(),true);assert(f.data.get('card:cora').chats.some(c=>c.id==='first'));assert(!f.data.get('card:cora').deletedChats.includes('first'));assert.equal(await resumed.runtime.run(),true);const restored=resumed.data.get('card:cora');assert.equal(restored.chapters.length,1);assert(!restored.deletedChapters.includes(restored.chapters[0].id));
+});
+test('current chat cannot be deleted and generating or changed previews are rejected',async()=>{
+ let generating=false;const f=await deletionFixture({generating:()=>generating});assert.throws(()=>f.runtime.previewDeletion('second'),/MEMORY_DELETE_CURRENT/);
+ f.runtime.previewDeletion('first');generating=true;await assert.rejects(f.runtime.deleteChat('first'),/MEMORY_CHANGED/);generating=false;
+ f.context.chat.push({is_user:false,mes:'Another message.'});await f.runtime.capture({force:true});await assert.rejects(f.runtime.deleteChat('first'),/MEMORY_CHANGED/);assert(f.data.get('card:cora').chats.some(c=>c.id==='first'));
+});
+test('failed deletion writes preserve the archive and links; failed metadata saves roll back storage',async()=>{
+ let rejectDeletion=false;const f=await deletionFixture({failSave:v=>rejectDeletion&&v.deletedChats.includes('first')});f.runtime.previewDeletion('first');const before=structuredClone(f.data.get('card:cora')),link=structuredClone(f.context.chatMetadata);rejectDeletion=true;
+ await assert.rejects(f.runtime.deleteChat('first'),/MEMORY_STORAGE_WRITE_FAILED/);assert.deepEqual(f.data.get('card:cora'),before);assert.deepEqual(f.context.chatMetadata,link);assert.equal(f.runtime.isBusy(),false);
+ const failed=await deletionFixture({metadataFail:true});failed.runtime.previewDeletion('first');const old=structuredClone(failed.data.get('card:cora'));await assert.rejects(failed.runtime.deleteChat('first'),/MEMORY_METADATA_SAVE_FAILED/);assert.deepEqual(failed.data.get('card:cora'),old);assert(failed.context.chatMetadata[memory.MEMORY_LINK_KEY].ancestry.includes('first'));
+});
+test('deletion reserves its scope before asynchronous reads and stale confirmations cannot overwrite another tab',async()=>{
+ let armed=false,release;const f=await deletionFixture({beforeRead:()=>armed?new Promise(r=>{release=r;}):undefined});f.runtime.previewDeletion('first');armed=true;const removing=f.runtime.deleteChat('first');
+ while(!release)await new Promise(r=>setTimeout(r,0));assert.equal(f.runtime.isBusy(),true);await assert.rejects(f.runtime.deleteChat('first'),/MEMORY_CHANGED/);await assert.rejects(f.runtime.import(memory.emptyMemoryLibrary('card:cora')),/MEMORY_CHANGED/);
+ f.data.get('card:cora').updatedAt='other tab changed';release();await assert.rejects(removing,/MEMORY_CHANGED/);assert(f.data.get('card:cora').chats.some(c=>c.id==='first'));assert.equal(f.runtime.isBusy(),false);
+});
+test('changing character while deletion reads storage never deletes the old or new owner',async()=>{
+ let armed=false,release;const f=await deletionFixture({beforeRead:()=>armed?new Promise(r=>{release=r;}):undefined});f.runtime.previewDeletion('first');armed=true;const removing=f.runtime.deleteChat('first');while(!release)await new Promise(r=>setTimeout(r,0));f.context.owner='card:other';release();await assert.rejects(removing,/MEMORY_CANCELLED/);assert(f.data.get('card:cora').chats.some(c=>c.id==='first'));assert.equal(f.runtime.isBusy(),false);
+});
+test('importing an older backup cannot restore deleted originals or their summaries',async()=>{
+ const f=await deletionFixture(),backup=JSON.parse(await f.runtime.export());f.runtime.previewDeletion('first');await f.runtime.deleteChat('first');await f.runtime.import(backup);const saved=f.data.get('card:cora');assert(!saved.chats.some(c=>c.id==='first'));assert(!saved.chapters.some(c=>c.chatId==='first'));assert(saved.deletedChats.includes('first'));
+});
+test('rollback failure invalidates the in-memory archive and reports recovery failure instead of claiming success',async()=>{
+ let writes=0,armed=false;const f=await deletionFixture({metadataFail:true,failSave:()=>armed&&++writes===2});f.runtime.previewDeletion('first');armed=true;await assert.rejects(f.runtime.deleteChat('first'),/MEMORY_DELETE_RECOVERY_FAILED/);assert.equal(f.runtime.isBusy(),false);assert(!f.notices.some(n=>n.message.includes('were deleted')));
 });
