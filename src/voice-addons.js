@@ -1,9 +1,9 @@
-import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.58.1';
-import {resolveNpcSpeaker} from './npc-core.js?v=0.58.1';
-import {createVoiceStorage} from './voice-storage.js?v=0.58.1';
-import {createElevenLabsClient} from './voice-api.js?v=0.58.1';
-import {createSpeechEditor} from './voice-editor.js?v=0.58.1';
-import {createVoiceRuntime} from './voice-runtime.js?v=0.58.1';
+import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.58.2';
+import {resolveNpcSpeaker} from './npc-core.js?v=0.58.2';
+import {createVoiceStorage} from './voice-storage.js?v=0.58.2';
+import {createElevenLabsClient} from './voice-api.js?v=0.58.2';
+import {createSpeechEditor} from './voice-editor.js?v=0.58.2';
+import {createVoiceRuntime} from './voice-runtime.js?v=0.58.2';
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shapes={play:'<path d="m9 5 11 7-11 7z"/>',pause:'<path d="M8 5v14M16 5v14"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="1"/>',wave:'<path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/>',chevron:'<path d="m9 5 7 7-7 7"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5M18 5a8 8 0 0 0-14 5M6 19a8 8 0 0 0 14-5"/>'};

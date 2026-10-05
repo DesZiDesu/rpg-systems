@@ -1,7 +1,7 @@
-import {disclosedShopStock} from './commerce-stock-selection.js?v=0.58.1';
-import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.58.1';
-import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.58.1';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.1';
+import {disclosedShopStock} from './commerce-stock-selection.js?v=0.58.2';
+import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.58.2';
+import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.58.2';
+import {readCommercePrices} from './commerce-prices.js?v=0.58.2';
 
 // A same-reply compiler for explicit NPC prices when a model omits its machine
 // object. No API, payment, assumed stock, inferred item or invented NPC funds.

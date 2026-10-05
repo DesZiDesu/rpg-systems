@@ -1,14 +1,14 @@
-import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.1';
-import {completeItemDefinition} from './item-definition.js?v=0.58.1';
-import {itemStatSummary} from './item-effects.js?v=0.58.1';
-import {purchaseDeposit} from './commerce-rights.js?v=0.58.1';
-import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.58.1';
-import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.58.1';
-import {commerceIcon} from './commerce-icons.js?v=0.58.1';
-import {convertMoney} from './commerce-currency.js?v=0.58.1';
+import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.2';
+import {completeItemDefinition} from './item-definition.js?v=0.58.2';
+import {itemStatSummary} from './item-effects.js?v=0.58.2';
+import {purchaseDeposit} from './commerce-rights.js?v=0.58.2';
+import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.58.2';
+import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.58.2';
+import {commerceIcon} from './commerce-icons.js?v=0.58.2';
+import {convertMoney} from './commerce-currency.js?v=0.58.2';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
-export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {
+export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},repair=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {
     if(!doc?.createElement)return{update(){},destroy(){}};
     const win=doc.defaultView||globalThis;let view=null,expanded=false,identity='',revision=-1,selected='',draft='',inputUnit='',chosen=null,observer,timer,queued=false,activate=false;
     const node=(tag,cls,text)=>{const el=doc.createElement(tag);el.className=cls||'';if(text!==undefined)el.textContent=text;return el;};
@@ -45,7 +45,15 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
             const pending=view.pending;bar.replaceChildren();bar.dataset.kind=pending.kind;delete bar.dataset.session;bar.setAttribute('aria-busy',String(pending.waiting));
             const title=node('strong','rf-commerce-pending-title',pending.kind==='auction'?t('ประมูล','AUCTION'):pending.kind==='sell'?t('ขายสินค้า','SELL'):t('ซื้อสินค้า','BUY'));
             const status=node('p','rf-commerce-status',pending.waiting?t('รอ AI ตอบข้อเสนอและราคา…','Waiting for AI offer and prices…'):pending.status==='invalid-data'?t('ตรวจข้อมูลข้อเสนอไม่ผ่าน · เงินและของยังไม่เปลี่ยน','Offer data could not be validated; funds and items are unchanged'):pending.status==='incomplete-offer'?t('พบข้อเสนอราคา แต่ AI ยังส่งข้อมูลรายการไม่ครบ · เงินและของยังไม่เปลี่ยน','A price was quoted, but AI offer details are incomplete; funds and items are unchanged'):t('AI ยังไม่ได้ส่งรายการพร้อมราคาที่ระบบอ่านได้ · เงินและของยังไม่เปลี่ยน','AI has not supplied a readable priced offer; funds and items are unchanged'));
-            status.setAttribute('role','status');bar.append(title,status);if(!pending.waiting)showError();observe();position();return;
+            if(pending.repairing)status.textContent=t('AI กำลังอ่านบทโรลและเติมข้อมูลรายการ…','AI is reading the role-play and filling offer details…');
+            status.setAttribute('role','status');bar.append(title,status);
+            if(['buy','sell'].includes(pending.kind)&&(!pending.waiting||pending.repairing)){
+                const help=node('p','rf-commerce-repair-help',t('กดเมื่อ NPC เสนอสินค้าและราคาแล้ว แต่แผงแจ้งข้อมูลไม่ครบ · AI จะอ่านบทโรลล่าสุดและบทสนทนาก่อนหน้าที่เกี่ยวข้อง · ใช้ API 1 ครั้ง และยังไม่ซื้อหรือขาย','Use when the NPC has offered goods and prices but details are incomplete. AI reads the latest role-play and relevant preceding conversation. One API request; no purchase or sale.'));
+                const button=node('button','rf-commerce-action rf-commerce-repair',pending.repairing?t('กำลังเติมข้อมูล…','Filling details…'):t('ให้ AI เติมข้อมูลรายการ','Let AI fill offer details'));button.type='button';button.dataset.commerceRepair='';button.disabled=Boolean(view.busy);button.setAttribute('aria-describedby','rf-commerce-repair-help');help.id='rf-commerce-repair-help';
+                button.addEventListener('click',()=>{void repair({token:view.token});});bar.append(help,button);
+                bar.append(node('p','rf-commerce-repair-help',t('หลังเติมสำเร็จ ตรวจสินค้า ผลไอเทม และราคาก่อนกดยืนยัน · ถ้ายังไม่มีชื่อสินค้าหรือราคา ให้โรลถาม NPC ก่อน','After filling, review goods, effects and prices before confirming. If names or prices have not been offered, ask the NPC first.')));
+            }
+            if(!pending.waiting)showError();observe();position();return;
         }
         const session=view.session,lot=session.lots?.[session.index],kind=session.kind,auction=kind==='auction';
         const item=session.items?.find(entry=>entry.id===selected)||session.items?.find(entry=>entry.id===session.selectedId);
@@ -68,6 +76,9 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
         if(auction&&session.status==='offered'&&(session.entryFee||session.deposit))bar.append(terms());
         if(auction&&lot?.leader){const leader=lot.leader==='player'?view.playerName:session.participants.find(p=>p.id===lot.leader)?.name;bar.append(node('p','rf-commerce-leader',t('ผู้เสนอราคาสูงสุด · ','Leading · ')+leader));}
         if(!auction)bar.append(node('p','rf-commerce-leader',session.agreed?t('ตกลงราคาแล้ว · รอยืนยัน','Price agreed · Awaiting confirmation'):kind==='sell'?t('ข้อเสนอรับซื้อ · เลือกของที่จะขายได้','Purchase offer · Choose goods to sell'):t('ราคาทั้งตะกร้า · ยังไม่ยืนยัน','Basket total · Awaiting confirmation')));
+        if(!auction&&!chosen&&!newItem&&lines.length>1&&basketTotal!==null&&quote!==basketTotal){
+            const pricing=node('p','rf-commerce-status',t('ราคาตามรายการ ','Catalog total '));pricing.append(moneyNode(basketTotal,'',session.denomination),doc.createTextNode(t(' · ข้อเสนอทั้งชุด ',' · Bundle offer ')),moneyNode(quote,'',session.denomination));bar.append(pricing);
+        }
         if(session.priceUnitsUpdated)bar.append(node('p','rf-commerce-status',t('อัปเดตการแปลงหน่วยเงินของรายการเดิมแล้ว · ตรวจราคาก่อนยืนยัน','Updated the existing catalog currency conversion; review the price before confirmation')));
         if(kind==='buy'){
             const deposit=purchaseDeposit(lines.map(line=>({...line,entry:session.items.find(e=>e.id===line.itemId)})).filter(line=>line.entry));

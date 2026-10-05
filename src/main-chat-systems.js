@@ -1,11 +1,11 @@
-import {commerceRequestHint,COMMERCE_INTENT_INSTRUCTIONS} from './commerce-intent.js?v=0.58.1';
-export {confirmedCommerceIntent} from './commerce-intent.js?v=0.58.1';
-import {COMMERCE_RIGHTS_INSTRUCTIONS} from './commerce-rights.js?v=0.58.1';
-import {CURRENCY_RULE} from './commerce-currency.js?v=0.58.1';
-import { interactionEvidence } from './interaction-evidence.js?v=0.58.1';
-import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.58.1';
-import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.58.1';
-import {MARKETPLACE_REQUEST_WORDS} from './marketplace-events.js?v=0.58.1';
+import {commerceRequestHint,COMMERCE_INTENT_INSTRUCTIONS} from './commerce-intent.js?v=0.58.2';
+export {confirmedCommerceIntent} from './commerce-intent.js?v=0.58.2';
+import {COMMERCE_RIGHTS_INSTRUCTIONS} from './commerce-rights.js?v=0.58.2';
+import {CURRENCY_RULE} from './commerce-currency.js?v=0.58.2';
+import { interactionEvidence } from './interaction-evidence.js?v=0.58.2';
+import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.58.2';
+import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.58.2';
+import {MARKETPLACE_REQUEST_WORDS} from './marketplace-events.js?v=0.58.2';
 const systems = [
     {key:'marketplace', setting:'enableMarketplace', words:MARKETPLACE_REQUEST_WORDS},
     {key:'auction', setting:'enableAuctions', words:/auction|ประมูล/iu},

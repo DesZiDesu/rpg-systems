@@ -37,6 +37,8 @@
 .rf-commerce-status,.rf-commerce-error{margin:7px 0 0!important;font-size:10px;line-height:1.4}
 .rf-commerce-error{color:#df9b89}
 .rf-commerce-status{color:#b7a677}
+.rf-commerce-repair-help{margin:8px 0!important;font-size:11px;line-height:1.5;overflow-wrap:anywhere;color:#aaa99c}
+.rf-commerce-action.rf-commerce-repair{width:100%;min-height:40px!important;height:auto!important;white-space:normal!important;font-size:12px!important;padding:8px!important}
 .rf-commerce-composer[aria-busy=true] .rf-commerce-glyph{animation:rf-commerce-pulse 1.3s ease-in-out infinite}
 @keyframes rf-commerce-pulse{50%{opacity:.35}}
 @media(prefers-reduced-motion:reduce){.rf-commerce-composer[aria-busy=true] .rf-commerce-glyph{animation:none}}
