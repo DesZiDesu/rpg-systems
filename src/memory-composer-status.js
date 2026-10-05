@@ -1,4 +1,4 @@
-import {MEMORY_CATEGORY_LABELS} from './memory-summaries.js?v=0.56.0';
+import {MEMORY_CATEGORY_LABELS} from './memory-summaries.js?v=0.56.1';
 
 // A separate memory request must not borrow SillyTavern's story-generation
 // state or stop handler. Keep the native controls intact and restore their

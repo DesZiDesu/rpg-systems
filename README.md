@@ -1,4 +1,10 @@
-# ROLEFORGE — v0.56.0
+# ROLEFORGE — v0.56.1
+
+## v0.56.1 — Multi-quantity purchases with undisclosed stock
+
+- Separate the quoted/selected item quantity from actual disclosed shop stock. Unknown stock no longer borrows the default one-item quantity or blocks a three-bottle basket; disclosed stock, including zero, still prevents overselling before an API request.
+- Keep negotiated totals and existing saved baskets intact. The reported pharmacy purchase delivers three healing potions plus three antidotes for one 240-copper payment after confirmation. Preserve once-only receipts, funds checks, NPC refusal, rental/access limits and sale reservations. Send unknown stock as `null` to the native task and label availability clearly for each selected item.
+- Validation: **862 unit/host tests**, syntax checks, and production-loader browser tests at **320 / 390 / 1280 px** cover quantities, line totals, no payment on offers, saved-session reload, known shortages, exact settlement and the existing accepted 190-copper room discount. Model responses are controlled fixtures; no paid API requests. [Thai fix notes](docs/commerce-stock-fix.th.md) · [actual UI](docs/previews/commerce-stock-v0561/index.html).
 
 ## v0.56.0 — Loot and item actions
 

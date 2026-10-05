@@ -1,4 +1,4 @@
-import {normalizeTrainingDetails,understandingDetailsPrompt} from './ability-learning.js?v=0.56.0';
+import {normalizeTrainingDetails,understandingDetailsPrompt} from './ability-learning.js?v=0.56.1';
 // Power-specific mastery sessions. This state is deliberately separate from
 // customPowers (runtime resources) and from the visible Main Chat stream.
 const clean = (value, max = 500) => typeof value === 'string' ? value.trim().slice(0, max) : '';
