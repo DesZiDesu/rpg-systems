@@ -1,7 +1,7 @@
-import {itemSaleBlocked,rightsView,storyMinute} from './commerce-rights.js?v=0.56.2';
-import {commerceInventoryValid} from './commerce-engine.js?v=0.56.2';
-import {marketplaceInventoryValid} from './marketplace-core.js?v=0.56.2';
-import {evidenceText} from './interaction-evidence.js?v=0.56.2';
+import {itemSaleBlocked,rightsView,storyMinute} from './commerce-rights.js?v=0.56.3';
+import {commerceInventoryValid} from './commerce-engine.js?v=0.56.3';
+import {marketplaceInventoryValid} from './marketplace-core.js?v=0.56.3';
+import {evidenceText} from './interaction-evidence.js?v=0.56.3';
 const clean=(s,n=300)=>typeof s==='string'?s.trim().slice(0,n):'';
 const clone=s=>structuredClone(s);
 const whole=(n,max=99999)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
@@ -39,7 +39,7 @@ export function normalizeItemSystem(raw){
  for(const p of Array.isArray(raw?.loot)?raw.loot:[]){
   if(!p||!clean(p.id,180)||ids.has(p.id)||!whole(p.revision,9999999)||!clean(p.location,180))continue;
   const seen=new Set(),entries=[];
-  for(const e of Array.isArray(p.entries)?p.entries:[]){const item=itemRecord(e.item);if(!item||item.commerceRightId||!clean(e.id,100)||seen.has(e.id)||!whole(e.initial)||!whole(e.remaining)||e.remaining>e.initial)continue;entries.push({id:e.id,item,initial:e.initial,remaining:e.remaining});seen.add(e.id);}
+  for(const e of Array.isArray(p.entries)?p.entries:[]){const item=itemRecord(e?.item);if(!item||item.commerceRightId||!clean(e.id,100)||seen.has(e.id)||!whole(e.initial)||!whole(e.remaining)||e.remaining>e.initial)continue;entries.push({id:e.id,item,initial:e.initial,remaining:e.remaining});seen.add(e.id);}
   if(!entries.length)continue;ids.add(p.id);out.loot.push({id:p.id,title:clean(p.title,180),location:p.location,origin:p.origin==='drop'?'drop':'found',revision:p.revision,source:p.source&&typeof p.source==='object'?clone(p.source):{},evidence:clean(p.evidence,2000),entries});
  }
  out.loot=out.loot.slice(-120);
@@ -48,26 +48,36 @@ export function normalizeItemSystem(raw){
  return out;
 }
 const includes=(hay,needle)=>Boolean(clean(needle))&&evidenceText(hay).includes(evidenceText(needle));
-const denial=/(?:ยังไม่(?:ได้)?(?:เก็บ|หยิบ|รับ|พบ)|ไม่ได้(?:เก็บ|หยิบ|พบ)|ไม่มี(?:ไอเทม|สิ่งของ)|\b(?:hypothetical|did not find|not found)\b)/iu;
+// Uncollected is the expected state of Loot, not a denial of discovery.
+const denial=/(?:ยังไม่(?:ได้)?พบ|ไม่ได้พบ|ไม่พบ|ไม่มี(?:ไอเทม|สิ่งของ)|\b(?:hypothetical|did not find|not found)\b)/iu;
 export function ingestLoot(state,input,{story='',source={},location=state.location?.place||''}={}){
  const next=clone(state);next.itemSystem=normalizeItemSystem(next.itemSystem);const errors=[],added=[];
  for(const raw of (Array.isArray(input)?input:input?[input]:[]).slice(0,12)){
-  const evidence=clean(raw?.evidence,2000),title=clean(raw?.title,180),place=clean(raw?.location,180)||location;
+  const evidence=clean(raw?.evidence,2000),title=clean(raw?.title,180)||clean(raw?.items?.[0]?.name,100),place=clean(raw?.location,180)||clean(location,180);
   if(!title||!place||!evidence||!includes(story,evidence)||denial.test(evidence)){errors.push('loot-evidence');continue;}
   const id=clean(raw.id,100)||hash([title,evidence,place].join('|')),key='loot-'+hash([source.turnKey,source.variant,id].join('|'));
   if(next.itemSystem.loot.some(p=>p.id===key))continue;
   const entries=[];
   for(const [index,value]of (Array.isArray(raw.items)?raw.items:[]).entries()){
    const name=clean(value?.name,100),quantity=value?.quantity;
-   if(!name||!whole(quantity)||!quantity||!includes(story,name)||value.commerceRightId){errors.push('loot-item');continue;}
+   if(!name||!whole(quantity)||!quantity||!includes(evidence,name)||value.commerceRightId){errors.push('loot-item');continue;}
    const item=itemRecord({...value,id:clean(value.id,100)||'loot-item-'+hash([key,index,name].join('|'))});
    if(!item)continue;entries.push({id:hash([key,index,item.id].join('|')),item,initial:quantity,remaining:quantity});
   }
-  if(!entries.length||entries.length!==raw.items?.length||entries.length>30){errors.push('loot-items');continue;}
+  if(!entries.length||entries.length>30){errors.push('loot-items');continue;}
   if(next.itemSystem.loot.length>=120){const old=next.itemSystem.loot.findIndex(p=>p.entries.every(e=>!e.remaining));if(old<0){errors.push('capacity');continue;}next.itemSystem.loot.splice(old,1);}
   const pool={id:key,title,location:place,origin:'found',revision:0,source:clone(source),evidence,entries};next.itemSystem.loot.push(pool);added.push(pool);
  }
  return{next,added,errors};
+}
+export function lootErrorText(errors,language='en'){
+ const th=language==='th',reasons={
+  'loot-evidence':th?'ไม่มีคำยืนยันว่าพบของในบทโรล':'missing or mismatched discovery quote',
+  'loot-item':th?'ชื่อไม่อยู่ในคำยืนยัน หรือจำนวนไม่ใช่จำนวนเต็มบวก':'item absent from the quote or quantity is not a positive integer',
+  'loot-items':th?'ไม่มีรายการที่ยืนยันได้ หรือเกิน 30 รายการต่อแหล่ง':'no valid items or more than 30 items per source',
+  capacity:th?'แหล่ง Loot ที่ยังไม่เก็บครบถึงขีดจำกัด 120 แหล่ง':'120 uncollected loot sources already stored',
+ };
+ return(th?'ข้าม Loot เฉพาะรายการที่ยืนยันไม่ได้: ':'Skipped unconfirmed Loot: ')+[...new Set(errors)].map(e=>reasons[e]||e).join(' · ');
 }
 export function currentItemNpcs(state,participants=[]){
  const names=new Set(list(participants,30).map(evidenceText));return(state.npcs||[]).filter(n=>n.enabled!==false&&[n.name,...n.aliases||[]].some(name=>names.has(evidenceText(name))));
@@ -162,7 +172,7 @@ export function applyItemDecision(state,request,result){
 
  return{ok:true,next,receipt,events,narrative:result.narrative};
 }
-export const ITEM_INSTRUCTIONS=`RoleForge Loot/Items: put all discovered-but-uncollected named items in the SAME normal reply's hidden tretaresia_patch. Schema loot:[{id,title,location,evidence:exact visible quote,items:[{id,name,quantity:positive integer,category,description,usage:{action:"use|eat|drink|unknown|passive",consumable:boolean,effect,conditions:[],target,cooldown:{unit:"none|seconds|minutes|hours|days|turns|unknown",value:0},charges:null}}]}]. Finding or defeating does not collect items: no inventory increment until picked up, received or acquired. Quote evidence and item names in visible narrative. Quantities must be confirmed; never fabricate properties of unknown contents. Reusable weapons/tools/keys have consumable:false. Include usage metadata with every inventory acquisition or metadata correction. For direct collection of a KNOWN loot pool use itemEvents.collect with its IDs and revision so its remaining quantities are decremented. Other items already acquired directly in the story use existing inventory ops, never duplicate them as uncollected loot. Preserve stable IDs and existing unknowns. For confirmed user-initiated collect/use/drop/gift output itemEvents:[{id,action,outcome:"success|refused|failed",itemId,quantity,npcId,target,poolId,revision,entries:[{id,quantity}],userEvidence:exact latest user quote,evidence:exact visible outcome quote,reason,meters:[]}]. These events replace inventory ops for the SAME items; do not emit both. For collect refer to known loot pool and entry IDs. Gift recipients must be current scene participants; refusal does not transfer items. Drop moves items to the current location, not deletion. meters only on successful use: [{meter:"hp|mp|stamina|hunger|thirst",delta:number,reason,evidence:exact visible quote}]; do not invent numerical restoration if unknown. Do not reset cooldown/charges. Only confirmed current outcomes, never hypothetical/future plans or thoughts. Normal replies never require a separate loot recovery API.`;
+export const ITEM_INSTRUCTIONS=`RoleForge Loot/Items: put all discovered-but-uncollected named items in the SAME normal reply's hidden tretaresia_patch. Schema loot:[{id,title,location,evidence:exact visible quote,items:[{id,name,quantity:positive integer,category,description,usage:{action:"use|eat|drink|unknown|passive",consumable:boolean,effect,conditions:[],target,cooldown:{unit:"none|seconds|minutes|hours|days|turns|unknown",value:0},charges:null}}]}]. Finding or defeating does not collect items: no inventory increment until picked up, received or acquired. Quote evidence and item names in visible narrative; the evidence quote must include every listed item name. Include only items with confirmed positive integer quantities; omit unknown contents rather than sending null, zero or invented quantities. Quantities must be confirmed; never fabricate properties of unknown contents. Reusable weapons/tools/keys have consumable:false. Include usage metadata with every inventory acquisition or metadata correction. For direct collection of a KNOWN loot pool use itemEvents.collect with its IDs and revision so its remaining quantities are decremented. Other items already acquired directly in the story use existing inventory ops, never duplicate them as uncollected loot. Preserve stable IDs and existing unknowns. For confirmed user-initiated collect/use/drop/gift output itemEvents:[{id,action,outcome:"success|refused|failed",itemId,quantity,npcId,target,poolId,revision,entries:[{id,quantity}],userEvidence:exact latest user quote,evidence:exact visible outcome quote,reason,meters:[]}]. These events replace inventory ops for the SAME items; do not emit both. For collect refer to known loot pool and entry IDs. Gift recipients must be current scene participants; refusal does not transfer items. Drop moves items to the current location, not deletion. meters only on successful use: [{meter:"hp|mp|stamina|hunger|thirst",delta:number,reason,evidence:exact visible quote}]; do not invent numerical restoration if unknown. Do not reset cooldown/charges. Only confirmed current outcomes, never hypothetical/future plans or thoughts. Normal replies never require a separate loot recovery API.`;
 export function itemPromptReference(state){const system=normalizeItemSystem(state.itemSystem);return{inventory:(state.inventory||[]).slice(-60).map(i=>({id:i.id,name:i.name,quantity:i.quantity,category:i.category,description:i.description,usage:normalizeItemUsage(i.usage,i),commerceRightId:i.commerceRightId||''})),loot:system.loot.filter(p=>p.entries.some(e=>e.remaining)&&evidenceText(p.location)===evidenceText(state.location?.place)).slice(-12),transfers:system.transfers.slice(-16),receipts:system.receipts.slice(-12).map(({id,action,outcome})=>({id,action,outcome}))};}
 const actionWords={use:/(?:ใช้|กิน|ดื่ม|use|eat|drink|consume)/iu,drop:/(?:ทิ้ง|วาง|drop|discard|leave)/iu,gift:/(?:ให้|มอบ|ส่ง|give|gift|hand|offer)/iu,collect:/(?:เก็บ|หยิบ|รับ|collect|pick|take|loot)/iu};
 const deniedUser=/(?:สมมุติ|ถ้า|หาก|แค่พูด|พูดเฉย|ไม่(?:ได้)?(?:กิน|ดื่ม|ใช้|ทิ้ง|มอบ|เก็บ|หยิบ)|\bif\b|hypothetical|just saying|do not|don't|did not)/iu;

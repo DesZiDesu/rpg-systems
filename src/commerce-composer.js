@@ -1,8 +1,8 @@
-import {purchaseDeposit} from './commerce-rights.js?v=0.56.2';
-import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.56.2';
-import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.56.2';
-import {commerceIcon} from './commerce-icons.js?v=0.56.2';
-import {convertMoney} from './commerce-currency.js?v=0.56.2';
+import {purchaseDeposit} from './commerce-rights.js?v=0.56.3';
+import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.56.3';
+import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.56.3';
+import {commerceIcon} from './commerce-icons.js?v=0.56.3';
+import {convertMoney} from './commerce-currency.js?v=0.56.3';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
 export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {

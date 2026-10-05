@@ -2339,3 +2339,19 @@ test('inventory metadata normalization and descriptive AI correction preserve co
  assert.equal(result.next.inventory[0].usage.charges.remaining,1);assert.equal(result.next.inventory[0].usage.cooldown.lastUse.turn,3);assert.equal(result.next.inventory[0].usage.effect,'Bright light');assert.equal(result.next.inventory[0].usage.action,'use');assert.equal(result.next.inventory[0].usage.cooldown.unit,'turns');
  const normalized=host.normalize(result.next);assert.equal(normalized.itemSystem.version,1);assert.equal(normalized.inventory[0].usage.charges.remaining,1);
 });
+
+for(const valid of [false,true])test(`only validated Loot suppresses an overlapping inventory op (${valid?'valid':'invalid'} discovery)`,async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,raw:context.generateRaw};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,eventNotifications:false,enableMemorySummaries:false,npcDiaryFrequency:'off'}};
+  const state=host.normalize({...host.defaultState(),location:{place:'Camp'},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true}});
+  context.chatMetadata={tretaresia_rpg_state:state};context.saveMetadata=async()=>{};let calls=0;context.generateRaw=async()=>{calls++;throw Error('Unexpected Loot API');};
+  const quote=valid?'พบ Red Apple 2 ผล ยังไม่ได้เก็บ':'รับ Red Apple 2 ผลเข้ากระเป๋าเรียบร้อย';
+  const patch={loot:[{id:'basket',title:'Basket',evidence:valid?quote:'quote absent from story',items:[{id:'apple',name:'Red Apple',category:'Food',quantity:2}]}],ops:[['inc','inventory',{id:'apple',name:'Red Apple',category:'Food',quantity:2},{category:'loot',reason:quote}]]};
+  context.chat=[{is_user:true,mes:valid?'ตรวจดูตะกร้า':'ฉันเก็บ Red Apple ใส่กระเป๋า'},{is_user:false,mes:`<tr-narrative>${quote}</tr-narrative><!--tretaresia_patch:${JSON.stringify(patch)}-->`}];
+  await host.processAssistantPatch(1,'normal');
+  assert.equal(host.getState().itemSystem.loot.length,valid?1:0);
+  assert.equal(host.getState().inventory.find(i=>i.name==='Red Apple')?.quantity||0,valid?0:2);
+  await host.processAssistantPatch(1,'normal');assert.equal(host.getState().itemSystem.loot.length,valid?1:0);assert.equal(host.getState().inventory.find(i=>i.name==='Red Apple')?.quantity||0,valid?0:2);assert.equal(calls,0);
+ }finally{context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateRaw=prior.raw;}
+});

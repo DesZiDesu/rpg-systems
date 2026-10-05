@@ -1,8 +1,8 @@
 # RoleForge
 
-**Public release: 0.56.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.56.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
-[คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
+[คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.3-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
@@ -88,10 +88,12 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.56.2** has **869 passing unit/host tests**, syntax checks and production-loader browser coverage for startup and shop workflows on mobile/desktop. Provider responses are controlled fixtures; this does not certify every live model, preset or ElevenLabs account. Historical results remain in the [development README](docs/archive/README-v0.56.2-development.md).
+Version **0.56.3** has **869 passing unit/host tests**, syntax checks and production-loader browser coverage for startup and shop workflows on mobile/desktop. Provider responses are controlled fixtures; this does not certify every live model, preset or ElevenLabs account. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
 
-[Repository audit](docs/repository-audit-v0.56.2.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.2.th.md) · [Full audited inventory](docs/repository-audit-v0.56.2.json)
+[Repository audit](docs/repository-audit-v0.56.3.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.3.th.md) · [Full audited inventory](docs/repository-audit-v0.56.3.json)
 
 ## License
 
 [MIT](LICENSE) · Copyright © 2026 DesZiDesu
+
+Loot and mobile item panel fixes in 0.56.3: [Thai diagnosis and validation report](docs/loot-items-fix-v0.56.3.th.md).

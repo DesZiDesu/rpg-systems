@@ -33,3 +33,21 @@ test('batch consumable use cannot exceed finite charges',()=>{const s=state();s.
 test('bounded receipt ledger still reports a newly committed typed event',()=>{const s=state();s.itemSystem.receipts=Array.from({length:240},(_,i)=>({id:'prior-'+i,outcome:'success'}));const user='ฉันกิน Red Apple 1 ผล',story='ใช้ Red Apple เรียบร้อย';const a=applyStoryItemEvents(s,[{id:'eat',action:'use',itemId:'apple',quantity:1,outcome:'success',userEvidence:user,evidence:story,reason:'ate'}],{story,user,source});assert.equal(a.changes,1);assert.equal(a.next.itemSystem.receipts.length,240);assert.equal(a.next.inventory[0].quantity,3);});
 test('items reserved for market sale cannot be consumed, dropped or gifted before any API',()=>{const s=state();s.marketplace={listings:[{status:'Active',itemId:'apple',quantity:4}]};for(const action of ['use','drop','gift'])assert.equal(prepareItemAction(s,{action,itemId:'apple',quantity:1,npcId:'g'},{participants:['Garrick']}).error,'reserved');assert.equal(itemAvailability(s,s.inventory[0]).error,'reserved');});
 test('dropping reuses an exhausted pool slot without evicting uncollected items',()=>{const s=state(),sample=loot(s).added[0];s.itemSystem.loot=Array.from({length:120},(_,i)=>({...structuredClone(sample),id:'pool-'+i,entries:sample.entries.map(e=>({...e,remaining:0}))}));const a=commit(s,prep(s,{action:'drop',itemId:'apple',quantity:1}));assert.equal(a.ok,true);assert.equal(a.next.itemSystem.loot.length,120);assert.equal(a.next.itemSystem.loot.at(-1).origin,'drop');assert.equal(a.next.inventory[0].quantity,3);});
+
+for(const ending of ['ยังไม่ได้เก็บ','ยังไม่หยิบ','ยังไม่ได้รับ','not yet collected'])test(`discovered but uncollected Loot is valid: ${ending}`,()=>{
+ const evidence=`พบ Red Apple 2 ผล ${ending}`;
+ const r=ingestLoot(state(),[{id:'basket',evidence,items:[{...apple(),quantity:2}]}],{story:`<tr-narrative>${evidence}</tr-narrative>`,source});
+ assert.deepEqual(r.errors,[]);assert.equal(r.added[0].title,'Red Apple');assert.equal(r.added[0].entries[0].remaining,2);assert.deepEqual(r.next.inventory,state().inventory);
+});
+for(const evidence of ['ยังไม่ได้พบ Red Apple','ไม่ได้พบ Red Apple','ไม่พบ Red Apple','Red Apple not found','did not find Red Apple','hypothetical Red Apple'])test(`undiscovered Loot stays blocked: ${evidence}`,()=>{
+ const r=ingestLoot(state(),[{title:'Basket',evidence,items:[{...apple(),quantity:2}]}],{story:evidence,source});assert.equal(r.added.length,0);assert.ok(r.errors.includes('loot-evidence'));
+});
+test('a malformed entry does not discard confirmed Loot or throw, and repeats cannot duplicate it',()=>{
+ const evidence='พบ Red Apple 2 ผล',input=[{id:'basket',title:'Basket',evidence,items:[null,{...apple(),quantity:2},{name:'Unknown contents',quantity:null}]}];
+ const r=ingestLoot(state(),input,{story:evidence,source});assert.equal(r.added.length,1);assert.equal(r.added[0].entries.length,1);assert.ok(r.errors.includes('loot-item'));assert.deepEqual(r.next.inventory,state().inventory);
+ const again=ingestLoot(r.next,input,{story:evidence,source});assert.equal(again.added.length,0);assert.equal(again.next.itemSystem.loot[0].entries[0].remaining,2);
+});
+test('another item mentioned elsewhere cannot supply discovery evidence',()=>{
+ const evidence='พบ Red Apple 2 ผล',r=ingestLoot(state(),[{title:'Basket',evidence,items:[{...apple(),quantity:2},{id:'sword',name:'ดาบเหล็ก',quantity:1}]}],{story:evidence+' เขาถือดาบเหล็กอยู่',source});
+ assert.equal(r.added[0].entries.length,1);assert.equal(r.added[0].entries[0].item.name,'Red Apple');assert.ok(r.errors.includes('loot-item'));
+});
