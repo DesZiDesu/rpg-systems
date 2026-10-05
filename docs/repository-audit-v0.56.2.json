@@ -1,0 +1,5193 @@
+{
+  "commit": "859fa6e66a65345328eaadcc2d99550a6d717dfc",
+  "trackedFiles": 605,
+  "trackedBytes": 26557859,
+  "categories": {
+    "design-source": {
+      "files": 3,
+      "bytes": 92314
+    },
+    "documentation": {
+      "files": 38,
+      "bytes": 446662
+    },
+    "history": {
+      "files": 2,
+      "bytes": 68945
+    },
+    "needs-review": {
+      "files": 5,
+      "bytes": 67100
+    },
+    "preview-assets": {
+      "files": 291,
+      "bytes": 21164826
+    },
+    "preview-source": {
+      "files": 35,
+      "bytes": 292636
+    },
+    "project-metadata": {
+      "files": 3,
+      "bytes": 102275
+    },
+    "runtime": {
+      "files": 117,
+      "bytes": 2922207
+    },
+    "tests": {
+      "files": 111,
+      "bytes": 1400894
+    }
+  },
+  "runtimeRoots": [
+    "manifest.json",
+    "style.css",
+    "ui-polish.css",
+    "npc-ui.css"
+  ],
+  "runtimeFiles": [
+    ".",
+    "index.js",
+    "loader.js",
+    "manifest.json",
+    "npc-ui.css",
+    "src/ability-learning.js",
+    "src/api-request-notice.js",
+    "src/auction-core.js",
+    "src/character-archive.js",
+    "src/commerce-composer.js",
+    "src/commerce-currency.js",
+    "src/commerce-dialogue-facts.js",
+    "src/commerce-engine.js",
+    "src/commerce-generation.js",
+    "src/commerce-icons.js",
+    "src/commerce-intent.js",
+    "src/commerce-opening.js",
+    "src/commerce-prices.js",
+    "src/commerce-protocol.js",
+    "src/commerce-public-offers.js",
+    "src/commerce-rights-ui.js",
+    "src/commerce-rights.js",
+    "src/commerce-room-catalog.js",
+    "src/commerce-runtime.js",
+    "src/commerce-stock-selection.js",
+    "src/composer-dock.js",
+    "src/forge-presets.js",
+    "src/forge-workspace.js",
+    "src/group-board-ui.js",
+    "src/group-board.js",
+    "src/growth-notifications.js",
+    "src/h-stats.js",
+    "src/host-generation-state.js",
+    "src/incantation-composer.js",
+    "src/incantation-core.js",
+    "src/interaction-evidence.js",
+    "src/item-composer.js",
+    "src/item-core.js",
+    "src/item-generation.js",
+    "src/item-runtime.js",
+    "src/location-memory.js",
+    "src/lore-core.js",
+    "src/lore-transfer.js",
+    "src/lore-workspace.js",
+    "src/main-chat-systems-ui.js",
+    "src/main-chat-systems.js",
+    "src/marketplace-core.js",
+    "src/marketplace-events.js",
+    "src/memory-addons.js",
+    "src/memory-composer-status.js",
+    "src/memory-insights-ui.js",
+    "src/memory-insights.js",
+    "src/memory-store.js",
+    "src/memory-summaries.js",
+    "src/memory-summary-runtime.js",
+    "src/memory-summary-ui.js",
+    "src/mission-board-ui.js",
+    "src/mission-board.js",
+    "src/module-navigation.js",
+    "src/npc-alternates.js",
+    "src/npc-chat.js",
+    "src/npc-core.js",
+    "src/npc-generation.js",
+    "src/npc-medallions.js",
+    "src/npc-media.js",
+    "src/npc-portraits.js",
+    "src/npc-scopes.js",
+    "src/npc-workspace.js",
+    "src/nsfw-enhance.js",
+    "src/nsfw-prompt-ui.js",
+    "src/nsfw-tags-ui.js",
+    "src/power-mastery.js",
+    "src/power-presets.js",
+    "src/power-workspace.js",
+    "src/quest-objectives.js",
+    "src/quest-rewards.js",
+    "src/resource-events-ui.js",
+    "src/runtime-styles.js",
+    "src/scene-tracker.js",
+    "src/social-events.js",
+    "src/story-agenda.js",
+    "src/story-events-ui.js",
+    "src/story-memory.js",
+    "src/story-workspace.js",
+    "src/ui-language.js",
+    "src/ui-strings.js",
+    "src/voice-addons.js",
+    "src/voice-api.js",
+    "src/voice-core.js",
+    "src/voice-editor.js",
+    "src/voice-runtime.js",
+    "src/voice-storage.js",
+    "style.css",
+    "styles/auctions.css",
+    "styles/commerce-composer.css",
+    "styles/commerce-rights.css",
+    "styles/extension-settings.css",
+    "styles/group-board.css",
+    "styles/incantation.css",
+    "styles/item-composer.css",
+    "styles/marketplace.css",
+    "styles/memory-composer-status.css",
+    "styles/memory-summaries.css",
+    "styles/mission-board.css",
+    "styles/module-navigation.css",
+    "styles/npc-alternates.css",
+    "styles/npc-ui.css",
+    "styles/optional-systems.css",
+    "styles/power-mastery.css",
+    "styles/powers.css",
+    "styles/story-events.css",
+    "styles/story-workspace.css",
+    "styles/style.css",
+    "styles/ui-polish.css",
+    "styles/voice-addons.css",
+    "templates/character-creation.html",
+    "templates/settings.html",
+    "ui-polish.css"
+  ],
+  "nonRuntimeCode": [
+    "src/auction-ui.js",
+    "src/marketplace-chat-ui.js",
+    "src/marketplace-ui.js",
+    "src/mastery-training-ui.js",
+    "src/mastery-training.js"
+  ],
+  "missingLocalReferences": [],
+  "duplicateGroups": [
+    {
+      "files": [
+        "docs/previews/commerce-rights-v0530/14-ticket-used.png",
+        "docs/previews/commerce-rights-v0530/15-rental-expired.png",
+        "docs/previews/commerce-rights-v0530/17-owned-goods.png"
+      ],
+      "bytesEach": 58089
+    },
+    {
+      "files": [
+        "docs/previews/commerce-v0541/room-offer-1280.png",
+        "docs/previews/commerce-v0550/room-offer-1280.png"
+      ],
+      "bytesEach": 40288
+    },
+    {
+      "files": [
+        "docs/previews/commerce-v0541/room-offer-320.png",
+        "docs/previews/commerce-v0550/room-offer-320.png"
+      ],
+      "bytesEach": 32898
+    },
+    {
+      "files": [
+        "docs/previews/commerce-v0541/room-offer-390.png",
+        "docs/previews/commerce-v0550/room-offer-390.png"
+      ],
+      "bytesEach": 35090
+    },
+    {
+      "files": [
+        "docs/previews/inventory-rights-v0554/discount-agreed-1280.png",
+        "docs/previews/inventory-v0555/discount-agreed-1280.png",
+        "docs/previews/items-v0560/commerce-regression/discount-agreed-1280.png"
+      ],
+      "bytesEach": 14715
+    },
+    {
+      "files": [
+        "docs/previews/inventory-rights-v0554/discount-agreed-320.png",
+        "docs/previews/items-v0560/commerce-regression/discount-agreed-320.png"
+      ],
+      "bytesEach": 13961
+    },
+    {
+      "files": [
+        "docs/previews/inventory-rights-v0554/discount-agreed-390.png",
+        "docs/previews/items-v0560/commerce-regression/discount-agreed-390.png"
+      ],
+      "bytesEach": 14263
+    }
+  ],
+  "unreferencedPreviews": [
+    "docs/previews/commerce-v0541/room-offer-1280.png",
+    "docs/previews/commerce-v0541/room-offer-320.png",
+    "docs/previews/commerce-v0541/room-offer-390.png",
+    "docs/previews/commerce-v0541/sell-selected-1280.png",
+    "docs/previews/commerce-v0541/sell-selected-320.png",
+    "docs/previews/commerce-v0541/sell-selected-390.png",
+    "docs/previews/commerce-v0550/latest-room-1280.png",
+    "docs/previews/commerce-v0550/latest-room-320.png",
+    "docs/previews/commerce-v0550/latest-room-390.png",
+    "docs/previews/commerce-v0550/room-offer-1280.png",
+    "docs/previews/commerce-v0550/room-offer-320.png",
+    "docs/previews/commerce-v0550/room-offer-390.png",
+    "docs/previews/commerce-v0550/sell-selected-1280.png",
+    "docs/previews/commerce-v0550/sell-selected-320.png",
+    "docs/previews/commerce-v0550/sell-selected-390.png",
+    "docs/previews/commerce-v0552/current-room-training-1280.png",
+    "docs/previews/commerce-v0552/latest-room-1280.png",
+    "docs/previews/commerce-v0552/latest-room-320.png",
+    "docs/previews/commerce-v0552/latest-room-390.png",
+    "docs/previews/commerce-v0552/learned-fire-ball-1280.png",
+    "docs/previews/commerce-v0552/learned-fire-ball-320.png",
+    "docs/previews/commerce-v0552/room-offer-1280.png",
+    "docs/previews/commerce-v0552/room-offer-320.png",
+    "docs/previews/commerce-v0552/room-offer-390.png",
+    "docs/previews/commerce-v0552/sell-selected-1280.png",
+    "docs/previews/commerce-v0552/sell-selected-320.png",
+    "docs/previews/commerce-v0552/sell-selected-390.png",
+    "docs/previews/commerce-v0552/understanding-result-1280.png",
+    "docs/previews/commerce-v0552/understanding-result-320.png",
+    "docs/previews/commerce-v0553/ability-details-1280.png",
+    "docs/previews/commerce-v0553/mixed-sale-1280.png",
+    "docs/previews/commerce-v0553/mixed-sale-320.png",
+    "docs/previews/commerce-v0553/selected-private-room-1280.png",
+    "docs/previews/commerce-v0553/selected-private-room-320.png",
+    "docs/previews/commerce-v0553/waiting-buy-1280.png",
+    "docs/previews/commerce-v0553/waiting-buy-320.png",
+    "docs/previews/commerce-v0553/waiting-sell-1280.png",
+    "docs/previews/commerce-v0553/waiting-sell-320.png",
+    "docs/previews/fixes-v0531/index.html",
+    "docs/previews/inventory-rights-v0554/discount-agreed-1280.png",
+    "docs/previews/inventory-rights-v0554/discount-agreed-320.png",
+    "docs/previews/inventory-rights-v0554/inventory-collapsed-1280.png",
+    "docs/previews/inventory-rights-v0554/inventory-expanded-320.png",
+    "docs/previews/inventory-rights-v0554/prototype-content.html",
+    "docs/previews/inventory-v0555/discount-agreed-1280.png",
+    "docs/previews/inventory-v0555/discount-agreed-320.png",
+    "docs/previews/inventory-v0555/discount-agreed-390.png",
+    "docs/previews/inventory-v0555/inventory-collapsed-1280.png",
+    "docs/previews/inventory-v0555/inventory-collapsed-320.png",
+    "docs/previews/inventory-v0555/inventory-expanded-1280.png",
+    "docs/previews/items-loot-design/drink-320.png",
+    "docs/previews/items-loot-design/drop-320.png",
+    "docs/previews/items-loot-design/eat-320.png",
+    "docs/previews/items-loot-design/gift-320.png",
+    "docs/previews/items-loot-design/interactive-desktop.png",
+    "docs/previews/items-loot-design/inventory-320.png",
+    "docs/previews/items-loot-design/key-320.png",
+    "docs/previews/items-loot-design/loot-320.png",
+    "docs/previews/items-loot-design/loot-detail-320.png",
+    "docs/previews/items-loot-design/loot-list-320.png",
+    "docs/previews/items-loot-design/minimized-320.png",
+    "docs/previews/items-loot-design/no-npc-320.png",
+    "docs/previews/items-loot-design/overview.html",
+    "docs/previews/items-loot-design/overview.png",
+    "docs/previews/items-loot-design/queued-320.png",
+    "docs/previews/items-loot-design/receipt-320.png",
+    "docs/previews/items-loot-design/refused-320.png",
+    "docs/previews/items-loot-design/unknown-320.png",
+    "docs/previews/items-loot-design/waiting-320.png",
+    "docs/previews/items-v0560/capture-manifest.json",
+    "docs/previews/items-v0560/commerce-regression/discount-agreed-1280.png",
+    "docs/previews/items-v0560/commerce-regression/discount-agreed-320.png",
+    "docs/previews/items-v0560/commerce-regression/discount-agreed-390.png",
+    "docs/previews/items-v0560/commerce-regression/inventory-collapsed-1280.png",
+    "docs/previews/items-v0560/commerce-regression/inventory-collapsed-320.png",
+    "docs/previews/items-v0560/commerce-regression/inventory-collapsed-390.png",
+    "docs/previews/items-v0560/commerce-regression/inventory-expanded-1280.png",
+    "docs/previews/items-v0560/commerce-regression/inventory-expanded-320.png",
+    "docs/previews/items-v0560/commerce-regression/inventory-expanded-390.png",
+    "docs/previews/items-v0560/details-partial-1280.png",
+    "docs/previews/items-v0560/details-partial-320.png",
+    "docs/previews/items-v0560/details-partial-390.png",
+    "docs/previews/items-v0560/details-updated-1280.png",
+    "docs/previews/items-v0560/details-updated-320.png",
+    "docs/previews/items-v0560/details-updated-390.png",
+    "docs/previews/items-v0560/details-working-1280.png",
+    "docs/previews/items-v0560/details-working-320.png",
+    "docs/previews/items-v0560/details-working-390.png",
+    "docs/previews/items-v0560/drink-details-1280.png",
+    "docs/previews/items-v0560/drink-details-320.png",
+    "docs/previews/items-v0560/drink-details-390.png",
+    "docs/previews/items-v0560/drop-1280.png",
+    "docs/previews/items-v0560/drop-320.png",
+    "docs/previews/items-v0560/drop-390.png",
+    "docs/previews/items-v0560/eat-summary-1280.png",
+    "docs/previews/items-v0560/eat-summary-320.png",
+    "docs/previews/items-v0560/eat-summary-390.png",
+    "docs/previews/items-v0560/gift-1280.png",
+    "docs/previews/items-v0560/gift-320.png",
+    "docs/previews/items-v0560/gift-390.png",
+    "docs/previews/items-v0560/inventory-1280.png",
+    "docs/previews/items-v0560/inventory-320.png",
+    "docs/previews/items-v0560/inventory-390.png",
+    "docs/previews/items-v0560/item-summary-1280.png",
+    "docs/previews/items-v0560/item-summary-320.png",
+    "docs/previews/items-v0560/item-summary-390.png",
+    "docs/previews/items-v0560/key-1280.png",
+    "docs/previews/items-v0560/key-320.png",
+    "docs/previews/items-v0560/key-390.png",
+    "docs/previews/items-v0560/loot-compact-1280.png",
+    "docs/previews/items-v0560/loot-compact-320.png",
+    "docs/previews/items-v0560/loot-compact-390.png",
+    "docs/previews/items-v0560/loot-details-1280.png",
+    "docs/previews/items-v0560/loot-details-320.png",
+    "docs/previews/items-v0560/loot-details-390.png",
+    "docs/previews/items-v0560/loot-selected-1280.png",
+    "docs/previews/items-v0560/loot-selected-320.png",
+    "docs/previews/items-v0560/loot-selected-390.png",
+    "docs/previews/items-v0560/minimized-1280.png",
+    "docs/previews/items-v0560/minimized-320.png",
+    "docs/previews/items-v0560/minimized-390.png",
+    "docs/previews/items-v0560/no-npc-1280.png",
+    "docs/previews/items-v0560/no-npc-320.png",
+    "docs/previews/items-v0560/no-npc-390.png",
+    "docs/previews/items-v0560/overview.png",
+    "docs/previews/items-v0560/queued-1280.png",
+    "docs/previews/items-v0560/queued-320.png",
+    "docs/previews/items-v0560/queued-390.png",
+    "docs/previews/items-v0560/result-refusal-1280.png",
+    "docs/previews/items-v0560/result-refusal-320.png",
+    "docs/previews/items-v0560/result-refusal-390.png",
+    "docs/previews/items-v0560/result-success-1280.png",
+    "docs/previews/items-v0560/result-success-320.png",
+    "docs/previews/items-v0560/result-success-390.png",
+    "docs/previews/items-v0560/unknown-1280.png",
+    "docs/previews/items-v0560/unknown-320.png",
+    "docs/previews/items-v0560/unknown-390.png",
+    "docs/previews/main-chat-systems-desktop.png",
+    "docs/previews/main-chat-systems-mobile.png",
+    "docs/previews/marketplace.html",
+    "docs/previews/memory-addons-v0521/overview-desktop.png",
+    "docs/previews/memory-addons-v0522/running-1280.png",
+    "docs/previews/memory-addons-v0522/running-320.png",
+    "docs/previews/preview-navigation-summary.html",
+    "docs/previews/preview.html",
+    "docs/previews/v3-artifacts/roleforge-v3-chat-desktop.png",
+    "docs/previews/v3-artifacts/roleforge-v3-chat-mobile.png",
+    "docs/previews/v3-artifacts/roleforge-v3-power-desktop.png",
+    "docs/previews/v3-artifacts/roleforge-v3-power-mobile.png",
+    "docs/previews/v3-artifacts/roleforge-v3-scene-desktop.png",
+    "docs/previews/v3-artifacts/roleforge-v3-scene-mobile.png",
+    "docs/previews/voice-addon-fixture.js",
+    "docs/previews/voice-v0540/dialogue-playing-1280.png",
+    "docs/previews/voice-v0540/dialogue-playing-320.png",
+    "docs/previews/voice-v0540/dialogue-playing-390.png",
+    "docs/previews/voice-v0540/dialogue-ready-1280.png",
+    "docs/previews/voice-v0540/dialogue-ready-320.png",
+    "docs/previews/voice-v0540/dialogue-ready-390.png",
+    "docs/previews/voice-v0540/library-and-quota-1280.png",
+    "docs/previews/voice-v0540/library-and-quota-320.png",
+    "docs/previews/voice-v0540/library-and-quota-390.png",
+    "docs/previews/voice-v0540/library-ready-1280.png",
+    "docs/previews/voice-v0540/library-ready-320.png",
+    "docs/previews/voice-v0540/library-ready-390.png",
+    "docs/previews/voice-v0540/settings-compact-1280.png",
+    "docs/previews/voice-v0540/settings-compact-320.png",
+    "docs/previews/voice-v0540/settings-compact-390.png",
+    "docs/previews/voice-v0540/settings-connected-1280.png",
+    "docs/previews/voice-v0540/settings-connected-320.png",
+    "docs/previews/voice-v0540/settings-connected-390.png",
+    "docs/previews/voice-v0540/settings-disconnected-1280.png",
+    "docs/previews/voice-v0540/settings-disconnected-320.png",
+    "docs/previews/voice-v0540/settings-disconnected-390.png",
+    "docs/previews/voice-v0540/settings-http-390.png",
+    "docs/previews/voice-v0540/test-dialogue-1280.png",
+    "docs/previews/voice-v0540/test-dialogue-320.png",
+    "docs/previews/voice-v0540/test-dialogue-390.png",
+    "docs/previews/voice-v0541/dialogue-playing-1280.png",
+    "docs/previews/voice-v0541/dialogue-playing-320.png",
+    "docs/previews/voice-v0541/dialogue-playing-390.png",
+    "docs/previews/voice-v0541/dialogue-ready-1280.png",
+    "docs/previews/voice-v0541/dialogue-ready-320.png",
+    "docs/previews/voice-v0541/dialogue-ready-390.png",
+    "docs/previews/voice-v0550/dialogue-playing-1280.png",
+    "docs/previews/voice-v0550/dialogue-playing-320.png",
+    "docs/previews/voice-v0550/dialogue-playing-390.png",
+    "docs/previews/voice-v0550/dialogue-ready-1280.png",
+    "docs/previews/voice-v0550/dialogue-ready-320.png",
+    "docs/previews/voice-v0550/dialogue-ready-390.png",
+    "docs/previews/voice-v0550/library-and-quota-1280.png",
+    "docs/previews/voice-v0550/library-and-quota-320.png",
+    "docs/previews/voice-v0550/library-and-quota-390.png",
+    "docs/previews/voice-v0550/settings-connected-1280.png",
+    "docs/previews/voice-v0550/settings-connected-320.png",
+    "docs/previews/voice-v0550/settings-connected-390.png",
+    "docs/previews/voice-v0550/settings-disconnected-1280.png",
+    "docs/previews/voice-v0550/settings-disconnected-320.png",
+    "docs/previews/voice-v0550/settings-disconnected-390.png",
+    "docs/previews/voice-v0550/speech-editor-1280.png",
+    "docs/previews/voice-v0550/speech-editor-320.png",
+    "docs/previews/voice-v0550/speech-editor-390.png"
+  ],
+  "largestFiles": [
+    {
+      "path": "docs/previews/main-chat-systems-desktop.png",
+      "bytes": 1233077
+    },
+    {
+      "path": "docs/previews/main-chat-systems-mobile.png",
+      "bytes": 896303
+    },
+    {
+      "path": "index.js",
+      "bytes": 844561
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-power-desktop.png",
+      "bytes": 410804
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-scene-desktop.png",
+      "bytes": 382967
+    },
+    {
+      "path": "src/ui-strings.js",
+      "bytes": 334406
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-chat-desktop.png",
+      "bytes": 331723
+    },
+    {
+      "path": "docs/previews/h-stats-comparison.png",
+      "bytes": 262589
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-scene-mobile.png",
+      "bytes": 247673
+    },
+    {
+      "path": "docs/previews/voice-v0550/library-and-quota-1280.png",
+      "bytes": 240552
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-power-mobile.png",
+      "bytes": 236301
+    },
+    {
+      "path": "docs/previews/voice-v0550/settings-connected-1280.png",
+      "bytes": 231326
+    },
+    {
+      "path": "docs/previews/items-loot-design/overview.png",
+      "bytes": 227245
+    },
+    {
+      "path": "tests/host-integration.test.mjs",
+      "bytes": 225292
+    },
+    {
+      "path": "docs/previews/voice-v0550/settings-disconnected-1280.png",
+      "bytes": 221553
+    },
+    {
+      "path": "docs/previews/boards-v0519/party-guild-board-390.png",
+      "bytes": 216773
+    },
+    {
+      "path": "docs/previews/voice-v0540/library-ready-1280.png",
+      "bytes": 205676
+    },
+    {
+      "path": "docs/previews/voice-v0540/library-and-quota-1280.png",
+      "bytes": 205675
+    },
+    {
+      "path": "docs/previews/voice-v0541/dialogue-ready-1280.png",
+      "bytes": 203503
+    },
+    {
+      "path": "docs/previews/voice-v0541/dialogue-playing-1280.png",
+      "bytes": 202790
+    }
+  ],
+  "inventory": [
+    {
+      "path": "LICENSE",
+      "category": "project-metadata",
+      "bytes": 1066,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "README.md",
+      "category": "project-metadata",
+      "bytes": 96899,
+      "referencedBy": []
+    },
+    {
+      "path": "design/NPC-Seven-New-Medallions.svg",
+      "category": "design-source",
+      "bytes": 13546,
+      "referencedBy": []
+    },
+    {
+      "path": "design/build-medallions.py",
+      "category": "design-source",
+      "bytes": 4504,
+      "referencedBy": []
+    },
+    {
+      "path": "design/npc-medallions.json",
+      "category": "design-source",
+      "bytes": 74264,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/api-request-notices.th.md",
+      "category": "documentation",
+      "bytes": 3096,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/archive/README-v0.40.10.md",
+      "category": "history",
+      "bytes": 51272,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/archive/README-v0.42.0.md",
+      "category": "history",
+      "bytes": 17673,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/auction-workflows.th.md",
+      "category": "documentation",
+      "bytes": 17464,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-ai-stock.th.md",
+      "category": "documentation",
+      "bytes": 7150,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-auto-open.th.md",
+      "category": "documentation",
+      "bytes": 6897,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-compact-continuation.th.md",
+      "category": "documentation",
+      "bytes": 8426,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-currency-baskets.th.md",
+      "category": "documentation",
+      "bytes": 10369,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-dialogue-fix.th.md",
+      "category": "documentation",
+      "bytes": 6806,
+      "referencedBy": [
+        "README.md",
+        "docs/previews/v0541/index.html"
+      ]
+    },
+    {
+      "path": "docs/commerce-discount-fix.th.md",
+      "category": "documentation",
+      "bytes": 7737,
+      "referencedBy": [
+        "docs/previews/inventory-rights-v0554/index.html"
+      ]
+    },
+    {
+      "path": "docs/commerce-intent-keys.th.md",
+      "category": "documentation",
+      "bytes": 11021,
+      "referencedBy": [
+        "README.md",
+        "docs/previews/commerce-v0532/index.html"
+      ]
+    },
+    {
+      "path": "docs/commerce-lifecycle-fixes.th.md",
+      "category": "documentation",
+      "bytes": 9741,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/commerce-opening-fix.th.md",
+      "category": "documentation",
+      "bytes": 4994,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-rebuild.th.md",
+      "category": "documentation",
+      "bytes": 12615,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-rights.th.md",
+      "category": "documentation",
+      "bytes": 14049,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-roleplay-evidence.th.md",
+      "category": "documentation",
+      "bytes": 5633,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-roleplay.th.md",
+      "category": "documentation",
+      "bytes": 8437,
+      "referencedBy": [
+        "README.md",
+        "docs/commerce-rebuild.th.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-stock-fix.th.md",
+      "category": "documentation",
+      "bytes": 7541,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-task-fix.th.md",
+      "category": "documentation",
+      "bytes": 8270,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/commerce-training-fixes.th.md",
+      "category": "documentation",
+      "bytes": 8957,
+      "referencedBy": [
+        "README.md",
+        "docs/previews/commerce-v0552/index.html"
+      ]
+    },
+    {
+      "path": "docs/group-board-paper.th.md",
+      "category": "documentation",
+      "bytes": 2770,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/incantation.th.md",
+      "category": "documentation",
+      "bytes": 12213,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/inn-commerce.th.md",
+      "category": "documentation",
+      "bytes": 7922,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/inventory-ui-update.th.md",
+      "category": "documentation",
+      "bytes": 3389,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/items-update.th.md",
+      "category": "documentation",
+      "bytes": 17608,
+      "referencedBy": [
+        "README.md",
+        "docs/previews/items-v0560/index.html"
+      ]
+    },
+    {
+      "path": "docs/main-chat-systems-fix.th.md",
+      "category": "documentation",
+      "bytes": 11627,
+      "referencedBy": [
+        "README.md",
+        "docs/optional-systems-and-regex.th.md"
+      ]
+    },
+    {
+      "path": "docs/marketplace-workflows.th.md",
+      "category": "documentation",
+      "bytes": 3887,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/memory-addons-design.th.md",
+      "category": "documentation",
+      "bytes": 4583,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/memory-addons.th.md",
+      "category": "documentation",
+      "bytes": 8052,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/memory-summaries-workflows.th.md",
+      "category": "documentation",
+      "bytes": 84111,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/message-editing-and-protocol.th.md",
+      "category": "documentation",
+      "bytes": 3638,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/mission-board-workflows.th.md",
+      "category": "documentation",
+      "bytes": 12795,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/navigation-options-preview.th.md",
+      "category": "documentation",
+      "bytes": 9739,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/normal-reply-system-instructions.th.md",
+      "category": "documentation",
+      "bytes": 11734,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/npc-alternate-information.th.md",
+      "category": "documentation",
+      "bytes": 20681,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/optional-systems-and-regex.th.md",
+      "category": "documentation",
+      "bytes": 16092,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/previews/boards-v0519/mission-board-390.png",
+      "category": "preview-assets",
+      "bytes": 97537,
+      "referencedBy": [
+        "docs/settled-commerce-boards.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/boards-v0519/party-guild-board-390.png",
+      "category": "preview-assets",
+      "bytes": 216773,
+      "referencedBy": [
+        "docs/settled-commerce-boards.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/boards-v0519/rank-clean-390.png",
+      "category": "preview-assets",
+      "bytes": 56800,
+      "referencedBy": [
+        "docs/settled-commerce-boards.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/01-catalog.png",
+      "category": "preview-assets",
+      "bytes": 60197,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/02-room-offer.png",
+      "category": "preview-assets",
+      "bytes": 62196,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/03-rental-offer.png",
+      "category": "preview-assets",
+      "bytes": 59450,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/04-ticket-offer.png",
+      "category": "preview-assets",
+      "bytes": 58508,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/05-service-offer.png",
+      "category": "preview-assets",
+      "bytes": 57729,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/06-lifetime-offer.png",
+      "category": "preview-assets",
+      "bytes": 57755,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/07-minimized.png",
+      "category": "preview-assets",
+      "bytes": 40249,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/08-room-active.png",
+      "category": "preview-assets",
+      "bytes": 90643,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/09-room-expired.png",
+      "category": "preview-assets",
+      "bytes": 81522,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/10-returned-refund.png",
+      "category": "preview-assets",
+      "bytes": 89380,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/11-service-pending.png",
+      "category": "preview-assets",
+      "bytes": 81673,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/12-service-completed.png",
+      "category": "preview-assets",
+      "bytes": 86833,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/13-owned-rental-ticket-lifetime.png",
+      "category": "preview-assets",
+      "bytes": 86991,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/14-ticket-used.png",
+      "category": "preview-assets",
+      "bytes": 58089,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/15-rental-expired.png",
+      "category": "preview-assets",
+      "bytes": 58089,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/16-rental-returned.png",
+      "category": "preview-assets",
+      "bytes": 87313,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/17-owned-goods.png",
+      "category": "preview-assets",
+      "bytes": 58089,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/18-service-due.png",
+      "category": "preview-assets",
+      "bytes": 82199,
+      "referencedBy": [
+        "docs/previews/commerce-rights-v0530/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-rights-v0530/index.html",
+      "category": "preview-source",
+      "bytes": 8863,
+      "referencedBy": [
+        "docs/commerce-rights.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-stock-v0561/index.html",
+      "category": "preview-source",
+      "bytes": 2421,
+      "referencedBy": [
+        "README.md",
+        "docs/commerce-stock-fix.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-stock-v0561/pharmacy-agreed-1280.png",
+      "category": "preview-assets",
+      "bytes": 42074,
+      "referencedBy": [
+        "docs/previews/commerce-stock-v0561/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-stock-v0561/pharmacy-agreed-320.png",
+      "category": "preview-assets",
+      "bytes": 37704,
+      "referencedBy": [
+        "docs/previews/commerce-stock-v0561/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-stock-v0561/pharmacy-agreed-390.png",
+      "category": "preview-assets",
+      "bytes": 39609,
+      "referencedBy": [
+        "docs/previews/commerce-stock-v0561/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-stock-v0562/index.html",
+      "category": "preview-source",
+      "bytes": 2353,
+      "referencedBy": [
+        "README.md",
+        "docs/commerce-ai-stock.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-stock-v0562/pharmacy-stock-1280.png",
+      "category": "preview-assets",
+      "bytes": 39872,
+      "referencedBy": [
+        "docs/previews/commerce-stock-v0562/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-stock-v0562/pharmacy-stock-320.png",
+      "category": "preview-assets",
+      "bytes": 35855,
+      "referencedBy": [
+        "docs/previews/commerce-stock-v0562/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-stock-v0562/pharmacy-stock-390.png",
+      "category": "preview-assets",
+      "bytes": 37626,
+      "referencedBy": [
+        "docs/previews/commerce-stock-v0562/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0516/auction-gold-390.png",
+      "category": "preview-assets",
+      "bytes": 24822,
+      "referencedBy": [
+        "docs/commerce-currency-baskets.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0516/buy-list-390.png",
+      "category": "preview-assets",
+      "bytes": 21434,
+      "referencedBy": [
+        "docs/commerce-currency-baskets.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0516/coin-sets-390.png",
+      "category": "preview-assets",
+      "bytes": 7172,
+      "referencedBy": [
+        "docs/commerce-currency-baskets.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0516/inventory-wallet-390.png",
+      "category": "preview-assets",
+      "bytes": 14186,
+      "referencedBy": [
+        "docs/commerce-currency-baskets.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0516/sell-list-390.png",
+      "category": "preview-assets",
+      "bytes": 19964,
+      "referencedBy": [
+        "docs/commerce-currency-baskets.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0518/auction-continuation-390.png",
+      "category": "preview-assets",
+      "bytes": 127170,
+      "referencedBy": [
+        "docs/commerce-compact-continuation.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0518/auction-ready-390.png",
+      "category": "preview-assets",
+      "bytes": 7494,
+      "referencedBy": [
+        "docs/commerce-compact-continuation.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0518/buy-compact-390.png",
+      "category": "preview-assets",
+      "bytes": 8241,
+      "referencedBy": [
+        "docs/commerce-compact-continuation.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0518/buy-list-390.png",
+      "category": "preview-assets",
+      "bytes": 19509,
+      "referencedBy": [
+        "docs/commerce-compact-continuation.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0518/sell-compact-390.png",
+      "category": "preview-assets",
+      "bytes": 7383,
+      "referencedBy": [
+        "docs/commerce-compact-continuation.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0532/index.html",
+      "category": "preview-source",
+      "bytes": 3781,
+      "referencedBy": [
+        "docs/commerce-intent-keys.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0532/property-key-card-390.png",
+      "category": "preview-assets",
+      "bytes": 6511,
+      "referencedBy": [
+        "docs/previews/commerce-v0532/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0532/property-key-inventory-390.png",
+      "category": "preview-assets",
+      "bytes": 86579,
+      "referencedBy": [
+        "docs/previews/commerce-v0532/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0532/property-offer-390.png",
+      "category": "preview-assets",
+      "bytes": 30177,
+      "referencedBy": [
+        "docs/previews/commerce-v0532/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0532/room-offer-390.png",
+      "category": "preview-assets",
+      "bytes": 43216,
+      "referencedBy": [
+        "docs/previews/commerce-v0532/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0532/talk-no-commerce-390.png",
+      "category": "preview-assets",
+      "bytes": 39302,
+      "referencedBy": [
+        "docs/previews/commerce-v0532/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0541/room-offer-1280.png",
+      "category": "preview-assets",
+      "bytes": 40288,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0541/room-offer-320.png",
+      "category": "preview-assets",
+      "bytes": 32898,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0541/room-offer-390.png",
+      "category": "preview-assets",
+      "bytes": 35090,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0541/sell-selected-1280.png",
+      "category": "preview-assets",
+      "bytes": 22180,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0541/sell-selected-320.png",
+      "category": "preview-assets",
+      "bytes": 20499,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0541/sell-selected-390.png",
+      "category": "preview-assets",
+      "bytes": 18914,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0550/latest-room-1280.png",
+      "category": "preview-assets",
+      "bytes": 42953,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0550/latest-room-320.png",
+      "category": "preview-assets",
+      "bytes": 35817,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0550/latest-room-390.png",
+      "category": "preview-assets",
+      "bytes": 36278,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0550/room-offer-1280.png",
+      "category": "preview-assets",
+      "bytes": 40288,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0550/room-offer-320.png",
+      "category": "preview-assets",
+      "bytes": 32898,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0550/room-offer-390.png",
+      "category": "preview-assets",
+      "bytes": 35090,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0550/sell-selected-1280.png",
+      "category": "preview-assets",
+      "bytes": 22484,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0550/sell-selected-320.png",
+      "category": "preview-assets",
+      "bytes": 21561,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0550/sell-selected-390.png",
+      "category": "preview-assets",
+      "bytes": 21022,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/current-room-training-1280.png",
+      "category": "preview-assets",
+      "bytes": 60747,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/current-room-training-320.png",
+      "category": "preview-assets",
+      "bytes": 43220,
+      "referencedBy": [
+        "docs/previews/commerce-v0552/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0552/current-room-training-390.png",
+      "category": "preview-assets",
+      "bytes": 47057,
+      "referencedBy": [
+        "docs/previews/commerce-v0552/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0552/index.html",
+      "category": "preview-source",
+      "bytes": 2871,
+      "referencedBy": [
+        "docs/commerce-training-fixes.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0552/latest-room-1280.png",
+      "category": "preview-assets",
+      "bytes": 52899,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/latest-room-320.png",
+      "category": "preview-assets",
+      "bytes": 44003,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/latest-room-390.png",
+      "category": "preview-assets",
+      "bytes": 44317,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/learned-fire-ball-1280.png",
+      "category": "preview-assets",
+      "bytes": 67944,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/learned-fire-ball-320.png",
+      "category": "preview-assets",
+      "bytes": 46415,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/learned-fire-ball-390.png",
+      "category": "preview-assets",
+      "bytes": 48478,
+      "referencedBy": [
+        "docs/previews/commerce-v0552/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0552/room-offer-1280.png",
+      "category": "preview-assets",
+      "bytes": 41809,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/room-offer-320.png",
+      "category": "preview-assets",
+      "bytes": 34116,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/room-offer-390.png",
+      "category": "preview-assets",
+      "bytes": 36205,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/sell-selected-1280.png",
+      "category": "preview-assets",
+      "bytes": 27578,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/sell-selected-320.png",
+      "category": "preview-assets",
+      "bytes": 22345,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/sell-selected-390.png",
+      "category": "preview-assets",
+      "bytes": 21871,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/understanding-result-1280.png",
+      "category": "preview-assets",
+      "bytes": 46710,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/understanding-result-320.png",
+      "category": "preview-assets",
+      "bytes": 37482,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0552/understanding-result-390.png",
+      "category": "preview-assets",
+      "bytes": 37926,
+      "referencedBy": [
+        "docs/previews/commerce-v0552/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/ability-details-1280.png",
+      "category": "preview-assets",
+      "bytes": 144855,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0553/ability-details-320.png",
+      "category": "preview-assets",
+      "bytes": 65326,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/ability-details-390.png",
+      "category": "preview-assets",
+      "bytes": 74994,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/index.html",
+      "category": "preview-source",
+      "bytes": 4492,
+      "referencedBy": [
+        "docs/commerce-lifecycle-fixes.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/mixed-room-1280.png",
+      "category": "preview-assets",
+      "bytes": 45381,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/mixed-room-320.png",
+      "category": "preview-assets",
+      "bytes": 37459,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/mixed-room-390.png",
+      "category": "preview-assets",
+      "bytes": 39824,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/mixed-sale-1280.png",
+      "category": "preview-assets",
+      "bytes": 21984,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0553/mixed-sale-320.png",
+      "category": "preview-assets",
+      "bytes": 19938,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0553/mixed-sale-390.png",
+      "category": "preview-assets",
+      "bytes": 20635,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/selected-private-room-1280.png",
+      "category": "preview-assets",
+      "bytes": 45819,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0553/selected-private-room-320.png",
+      "category": "preview-assets",
+      "bytes": 38653,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0553/selected-private-room-390.png",
+      "category": "preview-assets",
+      "bytes": 41531,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/waiting-buy-1280.png",
+      "category": "preview-assets",
+      "bytes": 6865,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0553/waiting-buy-320.png",
+      "category": "preview-assets",
+      "bytes": 5775,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0553/waiting-buy-390.png",
+      "category": "preview-assets",
+      "bytes": 6068,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/commerce-v0553/waiting-sell-1280.png",
+      "category": "preview-assets",
+      "bytes": 6270,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0553/waiting-sell-320.png",
+      "category": "preview-assets",
+      "bytes": 5280,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/commerce-v0553/waiting-sell-390.png",
+      "category": "preview-assets",
+      "bytes": 5531,
+      "referencedBy": [
+        "docs/previews/commerce-v0553/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/fixes-v0531/buy-compact-390.png",
+      "category": "preview-assets",
+      "bytes": 13715,
+      "referencedBy": [
+        "docs/previews/fixes-v0531/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/fixes-v0531/buy-details-390.png",
+      "category": "preview-assets",
+      "bytes": 37613,
+      "referencedBy": [
+        "docs/previews/fixes-v0531/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/fixes-v0531/index.html",
+      "category": "preview-source",
+      "bytes": 3176,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/fixes-v0531/purchase-continuation-390.png",
+      "category": "preview-assets",
+      "bytes": 14850,
+      "referencedBy": [
+        "docs/previews/fixes-v0531/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/fixes-v0531/purchase-dialogue-390.png",
+      "category": "preview-assets",
+      "bytes": 29500,
+      "referencedBy": [
+        "docs/previews/fixes-v0531/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/fixes-v0531/training-390.png",
+      "category": "preview-assets",
+      "bytes": 21953,
+      "referencedBy": [
+        "docs/previews/fixes-v0531/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/fixes-v0531/training-error-details-390.png",
+      "category": "preview-assets",
+      "bytes": 34410,
+      "referencedBy": [
+        "docs/previews/fixes-v0531/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/fixes-v0531/training-result-390.png",
+      "category": "preview-assets",
+      "bytes": 16125,
+      "referencedBy": [
+        "docs/previews/fixes-v0531/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/groups-v05110/mobile-390.png",
+      "category": "preview-assets",
+      "bytes": 125342,
+      "referencedBy": [
+        "docs/group-board-paper.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/h-stats-comparison.png",
+      "category": "preview-assets",
+      "bytes": 262589,
+      "referencedBy": [
+        "docs/previews/roleforge-v3-comparison.html"
+      ]
+    },
+    {
+      "path": "docs/previews/h-stats-fixture.js",
+      "category": "preview-source",
+      "bytes": 9892,
+      "referencedBy": [
+        "docs/previews/main-chat-gallery.js"
+      ]
+    },
+    {
+      "path": "docs/previews/incantation-v0520/full-chant-390.png",
+      "category": "preview-assets",
+      "bytes": 34417,
+      "referencedBy": [
+        "docs/incantation.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/incantation-v0520/minimized-tabs-390.png",
+      "category": "preview-assets",
+      "bytes": 2460,
+      "referencedBy": [
+        "docs/incantation.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/incantation-v0520/separate-windows-390.png",
+      "category": "preview-assets",
+      "bytes": 24913,
+      "referencedBy": [
+        "docs/incantation.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/discount-agreed-1280.png",
+      "category": "preview-assets",
+      "bytes": 14715,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/discount-agreed-320.png",
+      "category": "preview-assets",
+      "bytes": 13961,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/discount-agreed-390.png",
+      "category": "preview-assets",
+      "bytes": 14263,
+      "referencedBy": [
+        "docs/previews/inventory-rights-v0554/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/index.html",
+      "category": "preview-source",
+      "bytes": 3769,
+      "referencedBy": [
+        "docs/commerce-discount-fix.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/inventory-collapsed-1280.png",
+      "category": "preview-assets",
+      "bytes": 157866,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/inventory-collapsed-320.png",
+      "category": "preview-assets",
+      "bytes": 83129,
+      "referencedBy": [
+        "docs/previews/inventory-rights-v0554/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/inventory-collapsed-390.png",
+      "category": "preview-assets",
+      "bytes": 91945,
+      "referencedBy": [
+        "docs/previews/inventory-rights-v0554/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/inventory-expanded-1280.png",
+      "category": "preview-assets",
+      "bytes": 161647,
+      "referencedBy": [
+        "docs/previews/inventory-rights-v0554/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/inventory-expanded-320.png",
+      "category": "preview-assets",
+      "bytes": 91067,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/inventory-expanded-390.png",
+      "category": "preview-assets",
+      "bytes": 99946,
+      "referencedBy": [
+        "docs/previews/inventory-rights-v0554/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/prototype-content.html",
+      "category": "preview-source",
+      "bytes": 3748,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/prototype.css",
+      "category": "preview-source",
+      "bytes": 4755,
+      "referencedBy": [
+        "docs/previews/inventory-rights-v0554/prototype.html"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-rights-v0554/prototype.html",
+      "category": "preview-source",
+      "bytes": 6976,
+      "referencedBy": [
+        "docs/previews/inventory-rights-v0554/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-v0555/discount-agreed-1280.png",
+      "category": "preview-assets",
+      "bytes": 14715,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-v0555/discount-agreed-320.png",
+      "category": "preview-assets",
+      "bytes": 13993,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-v0555/discount-agreed-390.png",
+      "category": "preview-assets",
+      "bytes": 14298,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-v0555/index.html",
+      "category": "preview-source",
+      "bytes": 1859,
+      "referencedBy": [
+        "docs/inventory-ui-update.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-v0555/inventory-collapsed-1280.png",
+      "category": "preview-assets",
+      "bytes": 158328,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-v0555/inventory-collapsed-320.png",
+      "category": "preview-assets",
+      "bytes": 83580,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-v0555/inventory-collapsed-390.png",
+      "category": "preview-assets",
+      "bytes": 92452,
+      "referencedBy": [
+        "docs/previews/inventory-v0555/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-v0555/inventory-expanded-1280.png",
+      "category": "preview-assets",
+      "bytes": 161736,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/inventory-v0555/inventory-expanded-320.png",
+      "category": "preview-assets",
+      "bytes": 91058,
+      "referencedBy": [
+        "docs/previews/inventory-v0555/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/inventory-v0555/inventory-expanded-390.png",
+      "category": "preview-assets",
+      "bytes": 100424,
+      "referencedBy": [
+        "docs/previews/inventory-v0555/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/drink-320.png",
+      "category": "preview-assets",
+      "bytes": 41085,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/drink-390.png",
+      "category": "preview-assets",
+      "bytes": 41418,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html",
+        "docs/previews/items-loot-design/overview.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/drop-320.png",
+      "category": "preview-assets",
+      "bytes": 44586,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/drop-390.png",
+      "category": "preview-assets",
+      "bytes": 44963,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html",
+        "docs/previews/items-loot-design/overview.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/eat-320.png",
+      "category": "preview-assets",
+      "bytes": 45749,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/eat-390.png",
+      "category": "preview-assets",
+      "bytes": 46284,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/gallery.html",
+      "category": "preview-source",
+      "bytes": 5934,
+      "referencedBy": [
+        "docs/previews/items-loot-design/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/gift-320.png",
+      "category": "preview-assets",
+      "bytes": 42997,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/gift-390.png",
+      "category": "preview-assets",
+      "bytes": 43507,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html",
+        "docs/previews/items-loot-design/overview.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/index.html",
+      "category": "preview-source",
+      "bytes": 2595,
+      "referencedBy": [
+        "README.md",
+        "docs/items-update.th.md",
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/interactive-desktop.png",
+      "category": "preview-assets",
+      "bytes": 104198,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/inventory-320.png",
+      "category": "preview-assets",
+      "bytes": 40746,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/inventory-390.png",
+      "category": "preview-assets",
+      "bytes": 41344,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html",
+        "docs/previews/items-loot-design/overview.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/key-320.png",
+      "category": "preview-assets",
+      "bytes": 42472,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/key-390.png",
+      "category": "preview-assets",
+      "bytes": 42825,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html",
+        "docs/previews/items-loot-design/overview.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/loot-320.png",
+      "category": "preview-assets",
+      "bytes": 38885,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/loot-390.png",
+      "category": "preview-assets",
+      "bytes": 39932,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html",
+        "docs/previews/items-loot-design/overview.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/loot-detail-320.png",
+      "category": "preview-assets",
+      "bytes": 44606,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/loot-detail-390.png",
+      "category": "preview-assets",
+      "bytes": 45416,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/loot-list-320.png",
+      "category": "preview-assets",
+      "bytes": 42862,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/loot-list-390.png",
+      "category": "preview-assets",
+      "bytes": 43986,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html",
+        "docs/previews/items-loot-design/overview.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/minimized-320.png",
+      "category": "preview-assets",
+      "bytes": 28888,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/minimized-390.png",
+      "category": "preview-assets",
+      "bytes": 29077,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/no-npc-320.png",
+      "category": "preview-assets",
+      "bytes": 34478,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/no-npc-390.png",
+      "category": "preview-assets",
+      "bytes": 34915,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/overview.html",
+      "category": "preview-source",
+      "bytes": 3531,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/overview.png",
+      "category": "preview-assets",
+      "bytes": 227245,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/preview.css",
+      "category": "preview-source",
+      "bytes": 15725,
+      "referencedBy": [
+        "docs/previews/items-loot-design/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/preview.js",
+      "category": "preview-source",
+      "bytes": 38358,
+      "referencedBy": [
+        "docs/previews/items-loot-design/index.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/queued-320.png",
+      "category": "preview-assets",
+      "bytes": 43104,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/queued-390.png",
+      "category": "preview-assets",
+      "bytes": 45675,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/receipt-320.png",
+      "category": "preview-assets",
+      "bytes": 43128,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/receipt-390.png",
+      "category": "preview-assets",
+      "bytes": 43741,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/refused-320.png",
+      "category": "preview-assets",
+      "bytes": 42873,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/refused-390.png",
+      "category": "preview-assets",
+      "bytes": 43109,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/unknown-320.png",
+      "category": "preview-assets",
+      "bytes": 43172,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/unknown-390.png",
+      "category": "preview-assets",
+      "bytes": 43605,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/waiting-320.png",
+      "category": "preview-assets",
+      "bytes": 43563,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-loot-design/waiting-390.png",
+      "category": "preview-assets",
+      "bytes": 44163,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html",
+        "docs/previews/items-loot-design/overview.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-loot-design/workflow.th.md",
+      "category": "preview-source",
+      "bytes": 10057,
+      "referencedBy": [
+        "docs/previews/items-loot-design/gallery.html"
+      ]
+    },
+    {
+      "path": "docs/previews/items-v0560/capture-manifest.json",
+      "category": "preview-source",
+      "bytes": 4156,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/commerce-regression/discount-agreed-1280.png",
+      "category": "preview-assets",
+      "bytes": 14715,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/commerce-regression/discount-agreed-320.png",
+      "category": "preview-assets",
+      "bytes": 13961,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/commerce-regression/discount-agreed-390.png",
+      "category": "preview-assets",
+      "bytes": 14263,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/commerce-regression/inventory-collapsed-1280.png",
+      "category": "preview-assets",
+      "bytes": 159341,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/commerce-regression/inventory-collapsed-320.png",
+      "category": "preview-assets",
+      "bytes": 85623,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/commerce-regression/inventory-collapsed-390.png",
+      "category": "preview-assets",
+      "bytes": 94503,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/commerce-regression/inventory-expanded-1280.png",
+      "category": "preview-assets",
+      "bytes": 162287,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/commerce-regression/inventory-expanded-320.png",
+      "category": "preview-assets",
+      "bytes": 90681,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/commerce-regression/inventory-expanded-390.png",
+      "category": "preview-assets",
+      "bytes": 100870,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/details-partial-1280.png",
+      "category": "preview-assets",
+      "bytes": 35794,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/details-partial-320.png",
+      "category": "preview-assets",
+      "bytes": 25812,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/details-partial-390.png",
+      "category": "preview-assets",
+      "bytes": 26172,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/details-updated-1280.png",
+      "category": "preview-assets",
+      "bytes": 36625,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/details-updated-320.png",
+      "category": "preview-assets",
+      "bytes": 24337,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/details-updated-390.png",
+      "category": "preview-assets",
+      "bytes": 25356,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/details-working-1280.png",
+      "category": "preview-assets",
+      "bytes": 33229,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/details-working-320.png",
+      "category": "preview-assets",
+      "bytes": 21754,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/details-working-390.png",
+      "category": "preview-assets",
+      "bytes": 21623,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/drink-details-1280.png",
+      "category": "preview-assets",
+      "bytes": 57244,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/drink-details-320.png",
+      "category": "preview-assets",
+      "bytes": 34400,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/drink-details-390.png",
+      "category": "preview-assets",
+      "bytes": 37996,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/drop-1280.png",
+      "category": "preview-assets",
+      "bytes": 44732,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/drop-320.png",
+      "category": "preview-assets",
+      "bytes": 32198,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/drop-390.png",
+      "category": "preview-assets",
+      "bytes": 32406,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/eat-summary-1280.png",
+      "category": "preview-assets",
+      "bytes": 38636,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/eat-summary-320.png",
+      "category": "preview-assets",
+      "bytes": 25230,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/eat-summary-390.png",
+      "category": "preview-assets",
+      "bytes": 28174,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/gift-1280.png",
+      "category": "preview-assets",
+      "bytes": 53608,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/gift-320.png",
+      "category": "preview-assets",
+      "bytes": 34428,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/gift-390.png",
+      "category": "preview-assets",
+      "bytes": 36400,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/index.html",
+      "category": "preview-source",
+      "bytes": 7440,
+      "referencedBy": [
+        "README.md",
+        "docs/items-update.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/items-v0560/inventory-1280.png",
+      "category": "preview-assets",
+      "bytes": 162926,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/inventory-320.png",
+      "category": "preview-assets",
+      "bytes": 87213,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/inventory-390.png",
+      "category": "preview-assets",
+      "bytes": 95347,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/item-summary-1280.png",
+      "category": "preview-assets",
+      "bytes": 38011,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/item-summary-320.png",
+      "category": "preview-assets",
+      "bytes": 24596,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/item-summary-390.png",
+      "category": "preview-assets",
+      "bytes": 28379,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/key-1280.png",
+      "category": "preview-assets",
+      "bytes": 46608,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/key-320.png",
+      "category": "preview-assets",
+      "bytes": 31476,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/key-390.png",
+      "category": "preview-assets",
+      "bytes": 31741,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/loot-compact-1280.png",
+      "category": "preview-assets",
+      "bytes": 25735,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/loot-compact-320.png",
+      "category": "preview-assets",
+      "bytes": 15830,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/loot-compact-390.png",
+      "category": "preview-assets",
+      "bytes": 17603,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/loot-details-1280.png",
+      "category": "preview-assets",
+      "bytes": 44828,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/loot-details-320.png",
+      "category": "preview-assets",
+      "bytes": 28649,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/loot-details-390.png",
+      "category": "preview-assets",
+      "bytes": 29763,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/loot-selected-1280.png",
+      "category": "preview-assets",
+      "bytes": 50443,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/loot-selected-320.png",
+      "category": "preview-assets",
+      "bytes": 32331,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/loot-selected-390.png",
+      "category": "preview-assets",
+      "bytes": 33935,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/minimized-1280.png",
+      "category": "preview-assets",
+      "bytes": 2763,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/minimized-320.png",
+      "category": "preview-assets",
+      "bytes": 2200,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/minimized-390.png",
+      "category": "preview-assets",
+      "bytes": 2422,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/no-npc-1280.png",
+      "category": "preview-assets",
+      "bytes": 40222,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/no-npc-320.png",
+      "category": "preview-assets",
+      "bytes": 29448,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/no-npc-390.png",
+      "category": "preview-assets",
+      "bytes": 33208,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/overview.png",
+      "category": "preview-assets",
+      "bytes": 159231,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/queued-1280.png",
+      "category": "preview-assets",
+      "bytes": 24055,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/queued-320.png",
+      "category": "preview-assets",
+      "bytes": 14999,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/queued-390.png",
+      "category": "preview-assets",
+      "bytes": 16179,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/result-refusal-1280.png",
+      "category": "preview-assets",
+      "bytes": 34020,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/result-refusal-320.png",
+      "category": "preview-assets",
+      "bytes": 23805,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/result-refusal-390.png",
+      "category": "preview-assets",
+      "bytes": 23638,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/result-success-1280.png",
+      "category": "preview-assets",
+      "bytes": 35103,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/result-success-320.png",
+      "category": "preview-assets",
+      "bytes": 21687,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/result-success-390.png",
+      "category": "preview-assets",
+      "bytes": 23645,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/unknown-1280.png",
+      "category": "preview-assets",
+      "bytes": 54509,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/unknown-320.png",
+      "category": "preview-assets",
+      "bytes": 36565,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/items-v0560/unknown-390.png",
+      "category": "preview-assets",
+      "bytes": 37566,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/main-chat-gallery.js",
+      "category": "preview-source",
+      "bytes": 15194,
+      "referencedBy": [
+        "docs/previews/main-chat-systems.html",
+        "tests/commerce-preview.test.mjs"
+      ]
+    },
+    {
+      "path": "docs/previews/main-chat-systems-desktop.png",
+      "category": "preview-assets",
+      "bytes": 1233077,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/main-chat-systems-mobile.png",
+      "category": "preview-assets",
+      "bytes": 896303,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/main-chat-systems.html",
+      "category": "preview-source",
+      "bytes": 3601,
+      "referencedBy": [
+        "README.md",
+        "docs/commerce-rebuild.th.md",
+        "docs/previews/marketplace.html",
+        "tests/commerce-preview.test.mjs"
+      ]
+    },
+    {
+      "path": "docs/previews/marketplace.html",
+      "category": "preview-source",
+      "bytes": 350,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/memory-addons-concept.html",
+      "category": "preview-source",
+      "bytes": 25373,
+      "referencedBy": [
+        "README.md",
+        "docs/memory-addons-design.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/memory-addons-v0521/overview-390.png",
+      "category": "preview-assets",
+      "bytes": 52547,
+      "referencedBy": [
+        "docs/memory-addons-design.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/memory-addons-v0521/overview-desktop.png",
+      "category": "preview-assets",
+      "bytes": 61966,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/memory-addons-v0521/running-390.png",
+      "category": "preview-assets",
+      "bytes": 58097,
+      "referencedBy": [
+        "docs/memory-addons-design.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/memory-addons-v0521/settings-390.png",
+      "category": "preview-assets",
+      "bytes": 78937,
+      "referencedBy": [
+        "docs/memory-addons-design.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/memory-addons-v0522/overview-1280.png",
+      "category": "preview-assets",
+      "bytes": 91924,
+      "referencedBy": [
+        "docs/memory-addons.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/memory-addons-v0522/overview-320.png",
+      "category": "preview-assets",
+      "bytes": 46677,
+      "referencedBy": [
+        "docs/memory-addons.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/memory-addons-v0522/overview-390.png",
+      "category": "preview-assets",
+      "bytes": 49666,
+      "referencedBy": [
+        "docs/memory-addons.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/memory-addons-v0522/running-1280.png",
+      "category": "preview-assets",
+      "bytes": 99253,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/memory-addons-v0522/running-320.png",
+      "category": "preview-assets",
+      "bytes": 43911,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/memory-addons-v0522/running-390.png",
+      "category": "preview-assets",
+      "bytes": 47006,
+      "referencedBy": [
+        "docs/memory-addons.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/navigation-summary-fixture.js",
+      "category": "preview-source",
+      "bytes": 13709,
+      "referencedBy": [
+        "docs/previews/voice-addon-fixture.js"
+      ]
+    },
+    {
+      "path": "docs/previews/preview-h-stats.html",
+      "category": "preview-source",
+      "bytes": 3147,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/previews/preview-navigation-summary.html",
+      "category": "preview-source",
+      "bytes": 10074,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/preview.html",
+      "category": "preview-source",
+      "bytes": 20640,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/roleforge-v3-comparison.html",
+      "category": "preview-source",
+      "bytes": 25153,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/previews/v0541/index.html",
+      "category": "preview-source",
+      "bytes": 3239,
+      "referencedBy": [
+        "README.md",
+        "docs/commerce-dialogue-fix.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/v0550/index.html",
+      "category": "preview-source",
+      "bytes": 3986,
+      "referencedBy": [
+        "docs/voice-addon.th.md",
+        "docs/voice-commerce-v0550.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-chat-desktop.png",
+      "category": "preview-assets",
+      "bytes": 331723,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-chat-mobile.png",
+      "category": "preview-assets",
+      "bytes": 187813,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-power-desktop.png",
+      "category": "preview-assets",
+      "bytes": 410804,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-power-mobile.png",
+      "category": "preview-assets",
+      "bytes": 236301,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-scene-desktop.png",
+      "category": "preview-assets",
+      "bytes": 382967,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/v3-artifacts/roleforge-v3-scene-mobile.png",
+      "category": "preview-assets",
+      "bytes": 247673,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-addon-fixture.js",
+      "category": "preview-source",
+      "bytes": 7605,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-addon.html",
+      "category": "preview-source",
+      "bytes": 9791,
+      "referencedBy": [
+        "README.md",
+        "docs/commerce-dialogue-fix.th.md",
+        "docs/previews/v0541/index.html",
+        "docs/previews/v0550/index.html",
+        "docs/previews/voice-v0540/index.html",
+        "docs/voice-addon.th.md"
+      ]
+    },
+    {
+      "path": "docs/previews/voice-v0540/dialogue-playing-1280.png",
+      "category": "preview-assets",
+      "bytes": 166521,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/dialogue-playing-320.png",
+      "category": "preview-assets",
+      "bytes": 105218,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/dialogue-playing-390.png",
+      "category": "preview-assets",
+      "bytes": 106556,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/dialogue-ready-1280.png",
+      "category": "preview-assets",
+      "bytes": 166207,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/dialogue-ready-320.png",
+      "category": "preview-assets",
+      "bytes": 104963,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/dialogue-ready-390.png",
+      "category": "preview-assets",
+      "bytes": 106446,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/index.html",
+      "category": "preview-source",
+      "bytes": 4022,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/previews/voice-v0540/library-and-quota-1280.png",
+      "category": "preview-assets",
+      "bytes": 205675,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/library-and-quota-320.png",
+      "category": "preview-assets",
+      "bytes": 58128,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/library-and-quota-390.png",
+      "category": "preview-assets",
+      "bytes": 59768,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/library-ready-1280.png",
+      "category": "preview-assets",
+      "bytes": 205676,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/library-ready-320.png",
+      "category": "preview-assets",
+      "bytes": 59113,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/library-ready-390.png",
+      "category": "preview-assets",
+      "bytes": 60330,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-compact-1280.png",
+      "category": "preview-assets",
+      "bytes": 199910,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-compact-320.png",
+      "category": "preview-assets",
+      "bytes": 54332,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-compact-390.png",
+      "category": "preview-assets",
+      "bytes": 56142,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-connected-1280.png",
+      "category": "preview-assets",
+      "bytes": 201635,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-connected-320.png",
+      "category": "preview-assets",
+      "bytes": 56192,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-connected-390.png",
+      "category": "preview-assets",
+      "bytes": 57894,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-disconnected-1280.png",
+      "category": "preview-assets",
+      "bytes": 197151,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-disconnected-320.png",
+      "category": "preview-assets",
+      "bytes": 51442,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-disconnected-390.png",
+      "category": "preview-assets",
+      "bytes": 52877,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/settings-http-390.png",
+      "category": "preview-assets",
+      "bytes": 56748,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/test-dialogue-1280.png",
+      "category": "preview-assets",
+      "bytes": 198662,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/test-dialogue-320.png",
+      "category": "preview-assets",
+      "bytes": 54785,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0540/test-dialogue-390.png",
+      "category": "preview-assets",
+      "bytes": 55019,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0541/dialogue-playing-1280.png",
+      "category": "preview-assets",
+      "bytes": 202790,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0541/dialogue-playing-320.png",
+      "category": "preview-assets",
+      "bytes": 117694,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0541/dialogue-playing-390.png",
+      "category": "preview-assets",
+      "bytes": 133254,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0541/dialogue-ready-1280.png",
+      "category": "preview-assets",
+      "bytes": 203503,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0541/dialogue-ready-320.png",
+      "category": "preview-assets",
+      "bytes": 118128,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0541/dialogue-ready-390.png",
+      "category": "preview-assets",
+      "bytes": 133950,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/dialogue-playing-1280.png",
+      "category": "preview-assets",
+      "bytes": 190609,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/dialogue-playing-320.png",
+      "category": "preview-assets",
+      "bytes": 110966,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/dialogue-playing-390.png",
+      "category": "preview-assets",
+      "bytes": 136925,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/dialogue-ready-1280.png",
+      "category": "preview-assets",
+      "bytes": 190694,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/dialogue-ready-320.png",
+      "category": "preview-assets",
+      "bytes": 111536,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/dialogue-ready-390.png",
+      "category": "preview-assets",
+      "bytes": 137524,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/library-and-quota-1280.png",
+      "category": "preview-assets",
+      "bytes": 240552,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/library-and-quota-320.png",
+      "category": "preview-assets",
+      "bytes": 65306,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/library-and-quota-390.png",
+      "category": "preview-assets",
+      "bytes": 68734,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/settings-connected-1280.png",
+      "category": "preview-assets",
+      "bytes": 231326,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/settings-connected-320.png",
+      "category": "preview-assets",
+      "bytes": 54312,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/settings-connected-390.png",
+      "category": "preview-assets",
+      "bytes": 63660,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/settings-disconnected-1280.png",
+      "category": "preview-assets",
+      "bytes": 221553,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/settings-disconnected-320.png",
+      "category": "preview-assets",
+      "bytes": 52256,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/settings-disconnected-390.png",
+      "category": "preview-assets",
+      "bytes": 55732,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/speech-editor-1280.png",
+      "category": "preview-assets",
+      "bytes": 131792,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/speech-editor-320.png",
+      "category": "preview-assets",
+      "bytes": 61624,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/previews/voice-v0550/speech-editor-390.png",
+      "category": "preview-assets",
+      "bytes": 72202,
+      "referencedBy": []
+    },
+    {
+      "path": "docs/settled-commerce-boards.th.md",
+      "category": "documentation",
+      "bytes": 9151,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/story-systems-workflows.th.md",
+      "category": "documentation",
+      "bytes": 30748,
+      "referencedBy": [
+        "README.md"
+      ]
+    },
+    {
+      "path": "docs/voice-addon.th.md",
+      "category": "documentation",
+      "bytes": 11743,
+      "referencedBy": [
+        "README.md",
+        "docs/previews/voice-v0540/index.html",
+        "docs/voice-commerce-v0550.th.md"
+      ]
+    },
+    {
+      "path": "docs/voice-commerce-v0550.th.md",
+      "category": "documentation",
+      "bytes": 4976,
+      "referencedBy": [
+        "docs/previews/v0550/index.html"
+      ]
+    },
+    {
+      "path": "index.js",
+      "category": "runtime",
+      "bytes": 844561,
+      "referencedBy": [
+        "loader.js",
+        "tests/host-integration.test.mjs",
+        "tests/lore-transfer.browser.mjs",
+        "tests/npc-wand.test.mjs",
+        "tests/npc-workspace.browser.mjs"
+      ]
+    },
+    {
+      "path": "loader.js",
+      "category": "runtime",
+      "bytes": 2579,
+      "referencedBy": [
+        "manifest.json",
+        "tests/media-loader.test.mjs"
+      ]
+    },
+    {
+      "path": "manifest.json",
+      "category": "runtime",
+      "bytes": 383,
+      "referencedBy": [
+        "tests/host-integration.test.mjs",
+        "tests/media-loader.test.mjs"
+      ]
+    },
+    {
+      "path": "npc-ui.css",
+      "category": "runtime",
+      "bytes": 124,
+      "referencedBy": []
+    },
+    {
+      "path": "package.json",
+      "category": "project-metadata",
+      "bytes": 4310,
+      "referencedBy": [
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/ability-learning.js",
+      "category": "runtime",
+      "bytes": 4776,
+      "referencedBy": [
+        "index.js",
+        "src/power-mastery.js",
+        "tests/ability-learning.test.mjs"
+      ]
+    },
+    {
+      "path": "src/api-request-notice.js",
+      "category": "runtime",
+      "bytes": 3307,
+      "referencedBy": [
+        "index.js",
+        "tests/api-request-notice.test.mjs",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/auction-core.js",
+      "category": "runtime",
+      "bytes": 18045,
+      "referencedBy": [
+        "docs/auction-workflows.th.md",
+        "index.js",
+        "src/commerce-opening.js",
+        "tests/auctions.test.mjs",
+        "tests/commerce-opening.test.mjs",
+        "tests/host-integration.test.mjs",
+        "tests/main-chat-output.test.mjs",
+        "tests/main-chat-systems.test.mjs"
+      ]
+    },
+    {
+      "path": "src/auction-ui.js",
+      "category": "needs-review",
+      "bytes": 18914,
+      "referencedBy": [
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/character-archive.js",
+      "category": "runtime",
+      "bytes": 5925,
+      "referencedBy": [
+        "index.js",
+        "tests/character-archive.test.mjs",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-composer.js",
+      "category": "runtime",
+      "bytes": 25639,
+      "referencedBy": [
+        "src/commerce-runtime.js"
+      ]
+    },
+    {
+      "path": "src/commerce-currency.js",
+      "category": "runtime",
+      "bytes": 1532,
+      "referencedBy": [
+        "src/commerce-composer.js",
+        "src/commerce-engine.js",
+        "src/commerce-rights.js",
+        "src/main-chat-systems.js",
+        "tests/commerce-basket-currency.test.mjs",
+        "tests/commerce-mixed-room.test.mjs",
+        "tests/commerce-offer-evidence.test.mjs",
+        "tests/commerce-stock.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-dialogue-facts.js",
+      "category": "runtime",
+      "bytes": 3073,
+      "referencedBy": [
+        "src/commerce-public-offers.js",
+        "src/commerce-room-catalog.js",
+        "src/marketplace-events.js",
+        "tests/commerce-current-reply.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-engine.js",
+      "category": "runtime",
+      "bytes": 52453,
+      "referencedBy": [
+        "index.js",
+        "src/commerce-composer.js",
+        "src/commerce-opening.js",
+        "src/commerce-runtime.js",
+        "src/item-core.js",
+        "tests/commerce-basket-currency.test.mjs",
+        "tests/commerce-engine.test.mjs",
+        "tests/commerce-mixed-room.test.mjs",
+        "tests/commerce-offer-evidence.test.mjs",
+        "tests/commerce-opening.test.mjs",
+        "tests/commerce-rights.test.mjs",
+        "tests/commerce-stock-selection.test.mjs",
+        "tests/commerce-stock.test.mjs",
+        "tests/host-integration.test.mjs",
+        "tests/inn-commerce.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-generation.js",
+      "category": "runtime",
+      "bytes": 2732,
+      "referencedBy": [
+        "src/commerce-runtime.js",
+        "tests/commerce-generation.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-icons.js",
+      "category": "runtime",
+      "bytes": 3265,
+      "referencedBy": [
+        "index.js",
+        "src/commerce-composer.js",
+        "src/commerce-rights-ui.js",
+        "src/item-composer.js",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-intent.js",
+      "category": "runtime",
+      "bytes": 4770,
+      "referencedBy": [
+        "src/commerce-public-offers.js",
+        "src/commerce-room-catalog.js",
+        "src/main-chat-systems.js",
+        "src/marketplace-events.js",
+        "tests/commerce-intent.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-opening.js",
+      "category": "runtime",
+      "bytes": 9582,
+      "referencedBy": [
+        "index.js",
+        "src/commerce-runtime.js",
+        "tests/commerce-opening.test.mjs",
+        "tests/inn-commerce.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-prices.js",
+      "category": "runtime",
+      "bytes": 2804,
+      "referencedBy": [
+        "index.js",
+        "src/auction-core.js",
+        "src/commerce-dialogue-facts.js",
+        "src/commerce-engine.js",
+        "src/commerce-opening.js",
+        "src/commerce-public-offers.js",
+        "src/commerce-rights.js",
+        "src/commerce-room-catalog.js",
+        "src/commerce-stock-selection.js",
+        "src/marketplace-events.js",
+        "tests/commerce-basket-currency.test.mjs",
+        "tests/host-integration.test.mjs",
+        "tests/main-chat-output.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-protocol.js",
+      "category": "runtime",
+      "bytes": 11849,
+      "referencedBy": [
+        "src/commerce-engine.js",
+        "src/commerce-generation.js",
+        "src/commerce-runtime.js",
+        "tests/commerce-protocol.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-public-offers.js",
+      "category": "runtime",
+      "bytes": 6099,
+      "referencedBy": [
+        "src/marketplace-events.js"
+      ]
+    },
+    {
+      "path": "src/commerce-rights-ui.js",
+      "category": "runtime",
+      "bytes": 9333,
+      "referencedBy": [
+        "index.js",
+        "src/commerce-composer.js",
+        "tests/commerce-rights.test.mjs",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-rights.js",
+      "category": "runtime",
+      "bytes": 18047,
+      "referencedBy": [
+        "index.js",
+        "src/commerce-composer.js",
+        "src/commerce-engine.js",
+        "src/commerce-opening.js",
+        "src/commerce-rights-ui.js",
+        "src/commerce-room-catalog.js",
+        "src/item-composer.js",
+        "src/item-core.js",
+        "src/main-chat-systems.js",
+        "src/marketplace-core.js",
+        "src/marketplace-events.js",
+        "tests/commerce-rights.test.mjs",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-room-catalog.js",
+      "category": "runtime",
+      "bytes": 7083,
+      "referencedBy": [
+        "src/marketplace-events.js",
+        "tests/commerce-split-offer.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-runtime.js",
+      "category": "runtime",
+      "bytes": 23083,
+      "referencedBy": [
+        "index.js",
+        "tests/commerce-runtime.test.mjs",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/commerce-stock-selection.js",
+      "category": "runtime",
+      "bytes": 3979,
+      "referencedBy": [
+        "src/commerce-engine.js",
+        "src/commerce-public-offers.js",
+        "src/marketplace-events.js",
+        "tests/commerce-stock-selection.test.mjs"
+      ]
+    },
+    {
+      "path": "src/composer-dock.js",
+      "category": "runtime",
+      "bytes": 6609,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "src/forge-presets.js",
+      "category": "runtime",
+      "bytes": 3223,
+      "referencedBy": [
+        "index.js",
+        "src/forge-workspace.js",
+        "tests/forge-presets.test.mjs",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/forge-workspace.js",
+      "category": "runtime",
+      "bytes": 4527,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "src/group-board-ui.js",
+      "category": "runtime",
+      "bytes": 8119,
+      "referencedBy": [
+        "src/npc-chat.js"
+      ]
+    },
+    {
+      "path": "src/group-board.js",
+      "category": "runtime",
+      "bytes": 5951,
+      "referencedBy": [
+        "index.js",
+        "src/main-chat-systems.js",
+        "tests/group-board.test.mjs",
+        "tests/host-integration.test.mjs",
+        "tests/main-chat-systems.test.mjs"
+      ]
+    },
+    {
+      "path": "src/growth-notifications.js",
+      "category": "runtime",
+      "bytes": 7465,
+      "referencedBy": [
+        "index.js",
+        "tests/growth-notifications.test.mjs",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/h-stats.js",
+      "category": "runtime",
+      "bytes": 6952,
+      "referencedBy": [
+        "docs/previews/h-stats-fixture.js",
+        "index.js",
+        "src/npc-workspace.js",
+        "tests/h-stats.test.mjs",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/host-generation-state.js",
+      "category": "runtime",
+      "bytes": 2708,
+      "referencedBy": [
+        "index.js",
+        "tests/host-generation-state.test.mjs",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/incantation-composer.js",
+      "category": "runtime",
+      "bytes": 16245,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "src/incantation-core.js",
+      "category": "runtime",
+      "bytes": 8464,
+      "referencedBy": [
+        "index.js",
+        "src/ability-learning.js",
+        "src/incantation-composer.js",
+        "tests/host-integration.test.mjs",
+        "tests/incantation.test.mjs"
+      ]
+    },
+    {
+      "path": "src/interaction-evidence.js",
+      "category": "runtime",
+      "bytes": 2586,
+      "referencedBy": [
+        "src/auction-core.js",
+        "src/commerce-opening.js",
+        "src/commerce-rights.js",
+        "src/group-board.js",
+        "src/item-core.js",
+        "src/item-runtime.js",
+        "src/main-chat-systems.js",
+        "src/marketplace-events.js",
+        "src/mission-board.js"
+      ]
+    },
+    {
+      "path": "src/item-composer.js",
+      "category": "runtime",
+      "bytes": 22106,
+      "referencedBy": [
+        "src/item-runtime.js"
+      ]
+    },
+    {
+      "path": "src/item-core.js",
+      "category": "runtime",
+      "bytes": 25985,
+      "referencedBy": [
+        "index.js",
+        "src/item-composer.js",
+        "src/item-runtime.js",
+        "tests/host-integration.test.mjs",
+        "tests/item-core.test.mjs",
+        "tests/item-details.test.mjs"
+      ]
+    },
+    {
+      "path": "src/item-generation.js",
+      "category": "runtime",
+      "bytes": 4923,
+      "referencedBy": [
+        "src/item-runtime.js"
+      ]
+    },
+    {
+      "path": "src/item-runtime.js",
+      "category": "runtime",
+      "bytes": 13425,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "src/location-memory.js",
+      "category": "runtime",
+      "bytes": 12299,
+      "referencedBy": [
+        "index.js",
+        "tests/host-integration.test.mjs",
+        "tests/location-memory.test.mjs"
+      ]
+    },
+    {
+      "path": "src/lore-core.js",
+      "category": "runtime",
+      "bytes": 7451,
+      "referencedBy": [
+        "index.js",
+        "src/lore-transfer.js",
+        "src/lore-workspace.js",
+        "tests/host-integration.test.mjs",
+        "tests/lore-core.test.mjs",
+        "tests/lore-transfer.test.mjs",
+        "tests/lore-workspace.test.mjs"
+      ]
+    },
+    {
+      "path": "src/lore-transfer.js",
+      "category": "runtime",
+      "bytes": 3350,
+      "referencedBy": [
+        "src/lore-workspace.js",
+        "tests/lore-transfer.test.mjs",
+        "tests/lore-workspace.test.mjs"
+      ]
+    },
+    {
+      "path": "src/lore-workspace.js",
+      "category": "runtime",
+      "bytes": 13400,
+      "referencedBy": [
+        "src/npc-workspace.js",
+        "tests/lore-workspace.test.mjs"
+      ]
+    },
+    {
+      "path": "src/main-chat-systems-ui.js",
+      "category": "runtime",
+      "bytes": 1516,
+      "referencedBy": [
+        "src/npc-chat.js"
+      ]
+    },
+    {
+      "path": "src/main-chat-systems.js",
+      "category": "runtime",
+      "bytes": 36199,
+      "referencedBy": [
+        "index.js",
+        "src/commerce-runtime.js",
+        "tests/commerce-intent.test.mjs",
+        "tests/host-integration.test.mjs",
+        "tests/inn-commerce.test.mjs",
+        "tests/main-chat-output.test.mjs",
+        "tests/main-chat-systems.test.mjs"
+      ]
+    },
+    {
+      "path": "src/marketplace-chat-ui.js",
+      "category": "needs-review",
+      "bytes": 18643,
+      "referencedBy": []
+    },
+    {
+      "path": "src/marketplace-core.js",
+      "category": "runtime",
+      "bytes": 21554,
+      "referencedBy": [
+        "index.js",
+        "src/item-core.js",
+        "src/marketplace-ui.js",
+        "tests/commerce-rights.test.mjs",
+        "tests/host-integration.test.mjs",
+        "tests/marketplace.test.mjs"
+      ]
+    },
+    {
+      "path": "src/marketplace-events.js",
+      "category": "runtime",
+      "bytes": 29828,
+      "referencedBy": [
+        "index.js",
+        "src/commerce-opening.js",
+        "src/commerce-runtime.js",
+        "src/main-chat-systems.js",
+        "tests/commerce-basket-currency.test.mjs",
+        "tests/commerce-current-reply.test.mjs",
+        "tests/commerce-engine.test.mjs",
+        "tests/commerce-intent.test.mjs",
+        "tests/commerce-mixed-room.test.mjs",
+        "tests/commerce-offer-evidence.test.mjs",
+        "tests/commerce-rights.test.mjs",
+        "tests/commerce-runtime.test.mjs",
+        "tests/commerce-split-offer.test.mjs",
+        "tests/commerce-stock-selection.test.mjs",
+        "tests/commerce-stock.test.mjs",
+        "tests/host-integration.test.mjs",
+        "tests/inn-commerce.test.mjs",
+        "tests/main-chat-output.test.mjs",
+        "tests/main-chat-systems.test.mjs",
+        "tests/marketplace-events.test.mjs"
+      ]
+    },
+    {
+      "path": "src/marketplace-ui.js",
+      "category": "needs-review",
+      "bytes": 17226,
+      "referencedBy": [
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/mastery-training-ui.js",
+      "category": "needs-review",
+      "bytes": 5422,
+      "referencedBy": []
+    },
+    {
+      "path": "src/mastery-training.js",
+      "category": "needs-review",
+      "bytes": 6895,
+      "referencedBy": [
+        "src/mastery-training-ui.js",
+        "tests/host-integration.test.mjs",
+        "tests/mastery-training.test.mjs"
+      ]
+    },
+    {
+      "path": "src/memory-addons.js",
+      "category": "runtime",
+      "bytes": 3316,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "src/memory-composer-status.js",
+      "category": "runtime",
+      "bytes": 18073,
+      "referencedBy": [
+        "docs/previews/main-chat-gallery.js",
+        "index.js"
+      ]
+    },
+    {
+      "path": "src/memory-insights-ui.js",
+      "category": "runtime",
+      "bytes": 7923,
+      "referencedBy": [
+        "src/memory-summary-ui.js"
+      ]
+    },
+    {
+      "path": "src/memory-insights.js",
+      "category": "runtime",
+      "bytes": 10386,
+      "referencedBy": [
+        "src/memory-insights-ui.js",
+        "src/memory-summaries.js",
+        "tests/memory-insights.test.mjs"
+      ]
+    },
+    {
+      "path": "src/memory-store.js",
+      "category": "runtime",
+      "bytes": 1752,
+      "referencedBy": [
+        "docs/previews/navigation-summary-fixture.js",
+        "src/memory-summary-runtime.js"
+      ]
+    },
+    {
+      "path": "src/memory-summaries.js",
+      "category": "runtime",
+      "bytes": 32427,
+      "referencedBy": [
+        "index.js",
+        "src/memory-composer-status.js",
+        "src/memory-summary-runtime.js",
+        "src/memory-summary-ui.js",
+        "tests/host-integration.test.mjs",
+        "tests/memory-insights.test.mjs",
+        "tests/memory-summaries.test.mjs"
+      ]
+    },
+    {
+      "path": "src/memory-summary-runtime.js",
+      "category": "runtime",
+      "bytes": 69350,
+      "referencedBy": [
+        "index.js",
+        "tests/host-integration.test.mjs",
+        "tests/memory-summaries.test.mjs"
+      ]
+    },
+    {
+      "path": "src/memory-summary-ui.js",
+      "category": "runtime",
+      "bytes": 44686,
+      "referencedBy": [
+        "index.js",
+        "src/memory-addons.js",
+        "tests/memory-insights.test.mjs",
+        "tests/memory-summaries.test.mjs"
+      ]
+    },
+    {
+      "path": "src/mission-board-ui.js",
+      "category": "runtime",
+      "bytes": 5202,
+      "referencedBy": [
+        "src/npc-chat.js"
+      ]
+    },
+    {
+      "path": "src/mission-board.js",
+      "category": "runtime",
+      "bytes": 5340,
+      "referencedBy": [
+        "index.js",
+        "src/main-chat-systems.js",
+        "tests/host-integration.test.mjs",
+        "tests/main-chat-systems.test.mjs",
+        "tests/mission-board.test.mjs"
+      ]
+    },
+    {
+      "path": "src/module-navigation.js",
+      "category": "runtime",
+      "bytes": 16640,
+      "referencedBy": [
+        "index.js",
+        "tests/host-integration.test.mjs"
+      ]
+    },
+    {
+      "path": "src/npc-alternates.js",
+      "category": "runtime",
+      "bytes": 12185,
+      "referencedBy": [
+        "index.js",
+        "src/npc-chat.js",
+        "src/npc-media.js",
+        "src/npc-workspace.js",
+        "tests/host-integration.test.mjs",
+        "tests/media-loader.test.mjs",
+        "tests/npc-alternates.test.mjs"
+      ]
+    },
+    {
+      "path": "src/npc-chat.js",
+      "category": "runtime",
+      "bytes": 28020,
+      "referencedBy": [
+        "docs/previews/main-chat-gallery.js",
+        "src/lore-workspace.js",
+        "src/npc-workspace.js",
+        "tests/npc-dialogue.test.mjs",
+        "tests/npc-medallions.test.mjs",
+        "tests/regex-compat.browser.mjs"
+      ]
+    },
+    {
+      "path": "src/npc-core.js",
+      "category": "runtime",
+      "bytes": 31099,
+      "referencedBy": [
+        "index.js",
+        "src/commerce-dialogue-facts.js",
+        "src/npc-alternates.js",
+        "src/npc-chat.js",
+        "src/npc-portraits.js",
+        "src/npc-scopes.js",
+        "src/npc-workspace.js",
+        "src/social-events.js",
+        "src/voice-addons.js",
+        "tests/host-integration.test.mjs",
+        "tests/media-loader.test.mjs",
+        "tests/npc-core.test.mjs",
+        "tests/npc-dialogue.test.mjs",
+        "tests/npc-generation.test.mjs",
+        "tests/npc-image-draft.test.mjs",
+        "tests/npc-medallions.test.mjs",
+        "tests/npc-names.test.mjs",
+        "tests/npc-routing-vision.test.mjs",
+        "tests/voice.test.mjs"
+      ]
+    },
+    {
+      "path": "src/npc-generation.js",
+      "category": "runtime",
+      "bytes": 3233,
+      "referencedBy": [
+        "src/npc-workspace.js",
+        "tests/npc-image-draft.test.mjs",
+        "tests/npc-names.test.mjs",
+        "tests/npc-routing-vision.test.mjs"
+      ]
+    },
+    {
+      "path": "src/npc-medallions.js",
+      "category": "runtime",
+      "bytes": 71649,
+      "referencedBy": [
+        "src/npc-chat.js",
+        "src/npc-core.js",
+        "src/npc-workspace.js",
+        "tests/npc-medallions.test.mjs"
+      ]
+    },
+    {
+      "path": "src/npc-media.js",
+      "category": "runtime",
+      "bytes": 3266,
+      "referencedBy": [
+        "index.js",
+        "src/npc-workspace.js",
+        "tests/media-loader.test.mjs"
+      ]
+    },
+    {
+      "path": "src/npc-portraits.js",
+      "category": "runtime",
+      "bytes": 7098,
+      "referencedBy": [
+        "src/npc-chat.js",
+        "src/npc-media.js",
+        "src/npc-workspace.js"
+      ]
+    },
+    {
+      "path": "src/npc-scopes.js",
+      "category": "runtime",
+      "bytes": 14831,
+      "referencedBy": [
+        "docs/previews/h-stats-fixture.js",
+        "docs/previews/navigation-summary-fixture.js",
+        "index.js",
+        "tests/host-integration.test.mjs",
+        "tests/npc-routing-vision.test.mjs",
+        "tests/npc-scopes.test.mjs"
+      ]
+    },
+    {
+      "path": "src/npc-workspace.js",
+      "category": "runtime",
+      "bytes": 98679,
+      "referencedBy": [
+        "index.js",
+        "tests/npc-image-draft.test.mjs"
+      ]
+    },
+    {
+      "path": "src/nsfw-enhance.js",
+      "category": "runtime",
+      "bytes": 15637,
+      "referencedBy": [
+        "index.js",
+        "src/nsfw-prompt-ui.js",
+        "src/nsfw-tags-ui.js",
+        "tests/host-integration.test.mjs",
+        "tests/nsfw-enhance.test.mjs",
+        "tests/nsfw-prompt-ui.test.mjs",
+        "tests/nsfw-tags-ui.test.mjs",
+        "tests/ui-language.test.mjs"
+      ]
+    },
+    {
+      "path": "src/nsfw-prompt-ui.js",
+      "category": "runtime",
+      "bytes": 2651,
+      "referencedBy": [
+        "index.js",
+        "tests/nsfw-prompt-ui.test.mjs"
+      ]
+    },
+    {
+      "path": "src/nsfw-tags-ui.js",
+      "category": "runtime",
+      "bytes": 6578,
+      "referencedBy": [
+        "index.js",
+        "tests/nsfw-tags-ui.test.mjs"
+      ]
+    },
+    {
+      "path": "src/power-mastery.js",
+      "category": "runtime",
+      "bytes": 13190,
+      "referencedBy": [
+        "index.js",
+        "src/incantation-composer.js",
+        "tests/ability-learning.test.mjs",
+        "tests/host-integration.test.mjs",
+        "tests/incantation.test.mjs",
+        "tests/power-mastery.test.mjs"
+      ]
+    },
+    {
+      "path": "src/power-presets.js",
+      "category": "runtime",
+      "bytes": 7257,
+      "referencedBy": [
+        "index.js",
+        "src/power-workspace.js",
+        "tests/host-integration.test.mjs",
+        "tests/power-presets.test.mjs"
+      ]
+    },
+    {
+      "path": "src/power-workspace.js",
+      "category": "runtime",
+      "bytes": 8986,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "src/quest-objectives.js",
+      "category": "runtime",
+      "bytes": 5524,
+      "referencedBy": [
+        "index.js",
+        "src/mission-board.js",
+        "src/story-workspace.js",
+        "tests/host-integration.test.mjs",
+        "tests/quest-objectives.test.mjs"
+      ]
+    },
+    {
+      "path": "src/quest-rewards.js",
+      "category": "runtime",
+      "bytes": 7363,
+      "referencedBy": [
+        "index.js",
+        "tests/host-integration.test.mjs",
+        "tests/quest-rewards.test.mjs"
+      ]
+    },
+    {
+      "path": "src/resource-events-ui.js",
+      "category": "runtime",
+      "bytes": 4625,
+      "referencedBy": [
+        "src/npc-chat.js"
+      ]
+    },
+    {
+      "path": "src/runtime-styles.js",
+      "category": "runtime",
+      "bytes": 2990,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "src/scene-tracker.js",
+      "category": "runtime",
+      "bytes": 11191,
+      "referencedBy": [
+        "index.js",
+        "src/npc-chat.js",
+        "tests/host-integration.test.mjs",
+        "tests/scene-tracker.test.mjs"
+      ]
+    },
+    {
+      "path": "src/social-events.js",
+      "category": "runtime",
+      "bytes": 19602,
+      "referencedBy": [
+        "index.js",
+        "tests/host-integration.test.mjs",
+        "tests/social-events.test.mjs"
+      ]
+    },
+    {
+      "path": "src/story-agenda.js",
+      "category": "runtime",
+      "bytes": 9514,
+      "referencedBy": [
+        "index.js",
+        "src/story-workspace.js",
+        "tests/host-integration.test.mjs",
+        "tests/story-agenda.test.mjs"
+      ]
+    },
+    {
+      "path": "src/story-events-ui.js",
+      "category": "runtime",
+      "bytes": 2507,
+      "referencedBy": [
+        "src/npc-chat.js"
+      ]
+    },
+    {
+      "path": "src/story-memory.js",
+      "category": "runtime",
+      "bytes": 11693,
+      "referencedBy": [
+        "index.js",
+        "src/story-workspace.js",
+        "tests/host-integration.test.mjs",
+        "tests/story-memory.test.mjs"
+      ]
+    },
+    {
+      "path": "src/story-workspace.js",
+      "category": "runtime",
+      "bytes": 25990,
+      "referencedBy": [
+        "index.js",
+        "tests/host-integration.test.mjs",
+        "tests/story-workspace.test.mjs"
+      ]
+    },
+    {
+      "path": "src/ui-language.js",
+      "category": "runtime",
+      "bytes": 2365,
+      "referencedBy": [
+        "index.js",
+        "src/forge-workspace.js",
+        "src/lore-transfer.js",
+        "src/lore-workspace.js",
+        "src/npc-chat.js",
+        "src/npc-portraits.js",
+        "src/npc-workspace.js",
+        "src/nsfw-prompt-ui.js",
+        "src/nsfw-tags-ui.js",
+        "src/power-presets.js",
+        "src/power-workspace.js",
+        "tests/host-integration.test.mjs",
+        "tests/lore-workspace.test.mjs",
+        "tests/npc-image-draft.test.mjs",
+        "tests/npc-wand.test.mjs",
+        "tests/npc-workspace.browser.mjs",
+        "tests/ui-language.test.mjs"
+      ]
+    },
+    {
+      "path": "src/ui-strings.js",
+      "category": "runtime",
+      "bytes": 334406,
+      "referencedBy": [
+        "src/ui-language.js",
+        "tests/ui-language.test.mjs"
+      ]
+    },
+    {
+      "path": "src/voice-addons.js",
+      "category": "runtime",
+      "bytes": 32724,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "src/voice-api.js",
+      "category": "runtime",
+      "bytes": 3614,
+      "referencedBy": [
+        "src/voice-addons.js",
+        "tests/voice.test.mjs"
+      ]
+    },
+    {
+      "path": "src/voice-core.js",
+      "category": "runtime",
+      "bytes": 6818,
+      "referencedBy": [
+        "index.js",
+        "src/commerce-generation.js",
+        "src/item-generation.js",
+        "src/npc-chat.js",
+        "src/voice-addons.js",
+        "src/voice-api.js",
+        "src/voice-runtime.js",
+        "tests/host-integration.test.mjs",
+        "tests/voice.test.mjs"
+      ]
+    },
+    {
+      "path": "src/voice-editor.js",
+      "category": "runtime",
+      "bytes": 9088,
+      "referencedBy": [
+        "src/voice-addons.js"
+      ]
+    },
+    {
+      "path": "src/voice-runtime.js",
+      "category": "runtime",
+      "bytes": 12020,
+      "referencedBy": [
+        "src/voice-addons.js",
+        "tests/voice.test.mjs"
+      ]
+    },
+    {
+      "path": "src/voice-storage.js",
+      "category": "runtime",
+      "bytes": 4649,
+      "referencedBy": [
+        "src/voice-addons.js",
+        "tests/voice.test.mjs"
+      ]
+    },
+    {
+      "path": "style.css",
+      "category": "runtime",
+      "bytes": 123,
+      "referencedBy": []
+    },
+    {
+      "path": "styles/auctions.css",
+      "category": "runtime",
+      "bytes": 11496,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/commerce-composer.css",
+      "category": "runtime",
+      "bytes": 8765,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/commerce-rights.css",
+      "category": "runtime",
+      "bytes": 7936,
+      "referencedBy": [
+        "docs/previews/inventory-rights-v0554/prototype.html",
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/extension-settings.css",
+      "category": "runtime",
+      "bytes": 12006,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/group-board.css",
+      "category": "runtime",
+      "bytes": 4779,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/incantation.css",
+      "category": "runtime",
+      "bytes": 8863,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/item-composer.css",
+      "category": "runtime",
+      "bytes": 8958,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/marketplace.css",
+      "category": "runtime",
+      "bytes": 19659,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/memory-composer-status.css",
+      "category": "runtime",
+      "bytes": 3236,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/memory-summaries.css",
+      "category": "runtime",
+      "bytes": 14112,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/mission-board.css",
+      "category": "runtime",
+      "bytes": 1973,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/module-navigation.css",
+      "category": "runtime",
+      "bytes": 8611,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/npc-alternates.css",
+      "category": "runtime",
+      "bytes": 2657,
+      "referencedBy": [
+        "src/npc-workspace.js"
+      ]
+    },
+    {
+      "path": "styles/npc-ui.css",
+      "category": "runtime",
+      "bytes": 33418,
+      "referencedBy": [
+        "npc-ui.css",
+        "src/npc-workspace.js",
+        "tests/scene-tracker.test.mjs"
+      ]
+    },
+    {
+      "path": "styles/optional-systems.css",
+      "category": "runtime",
+      "bytes": 1995,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/power-mastery.css",
+      "category": "runtime",
+      "bytes": 16626,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/powers.css",
+      "category": "runtime",
+      "bytes": 1098,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/story-events.css",
+      "category": "runtime",
+      "bytes": 718,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/story-workspace.css",
+      "category": "runtime",
+      "bytes": 6606,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "styles/style.css",
+      "category": "runtime",
+      "bytes": 117215,
+      "referencedBy": [
+        "docs/previews/preview.html",
+        "src/runtime-styles.js",
+        "style.css",
+        "styles/ui-polish.css"
+      ]
+    },
+    {
+      "path": "styles/ui-polish.css",
+      "category": "runtime",
+      "bytes": 173840,
+      "referencedBy": [
+        "docs/previews/preview.html",
+        "src/runtime-styles.js",
+        "tests/media-loader.test.mjs",
+        "ui-polish.css"
+      ]
+    },
+    {
+      "path": "styles/voice-addons.css",
+      "category": "runtime",
+      "bytes": 10881,
+      "referencedBy": [
+        "src/runtime-styles.js"
+      ]
+    },
+    {
+      "path": "templates/character-creation.html",
+      "category": "runtime",
+      "bytes": 47906,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "templates/settings.html",
+      "category": "runtime",
+      "bytes": 22554,
+      "referencedBy": [
+        "index.js"
+      ]
+    },
+    {
+      "path": "tests/ability-learning.test.mjs",
+      "category": "tests",
+      "bytes": 4895,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/api-request-notice.test.mjs",
+      "category": "tests",
+      "bytes": 1108,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/auctions.browser.mjs",
+      "category": "tests",
+      "bytes": 213,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/auctions.test.mjs",
+      "category": "tests",
+      "bytes": 8441,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/character-archive.test.mjs",
+      "category": "tests",
+      "bytes": 4315,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/chat-system-null.browser.mjs",
+      "category": "tests",
+      "bytes": 4120,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-basket-currency.test.mjs",
+      "category": "tests",
+      "bytes": 13190,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-current-reply.test.mjs",
+      "category": "tests",
+      "bytes": 4461,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-discount.browser.mjs",
+      "category": "tests",
+      "bytes": 15999,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-engine.test.mjs",
+      "category": "tests",
+      "bytes": 22121,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-generation.test.mjs",
+      "category": "tests",
+      "bytes": 2723,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-intent.test.mjs",
+      "category": "tests",
+      "bytes": 9813,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-lifecycle.browser.mjs",
+      "category": "tests",
+      "bytes": 17868,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-mixed-room.test.mjs",
+      "category": "tests",
+      "bytes": 7052,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-offer-evidence.test.mjs",
+      "category": "tests",
+      "bytes": 7769,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-opening.test.mjs",
+      "category": "tests",
+      "bytes": 6109,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-openings.browser.mjs",
+      "category": "tests",
+      "bytes": 31600,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-preview.test.mjs",
+      "category": "tests",
+      "bytes": 1068,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-protocol.test.mjs",
+      "category": "tests",
+      "bytes": 8353,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-rights.browser.mjs",
+      "category": "tests",
+      "bytes": 21834,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-rights.test.mjs",
+      "category": "tests",
+      "bytes": 22147,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-runtime.test.mjs",
+      "category": "tests",
+      "bytes": 15404,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-split-offer.test.mjs",
+      "category": "tests",
+      "bytes": 8056,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-stock-selection.browser.mjs",
+      "category": "tests",
+      "bytes": 13886,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-stock-selection.test.mjs",
+      "category": "tests",
+      "bytes": 6826,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-stock.browser.mjs",
+      "category": "tests",
+      "bytes": 12913,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/commerce-stock.test.mjs",
+      "category": "tests",
+      "bytes": 7503,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/extension-drawer.browser.mjs",
+      "category": "tests",
+      "bytes": 17049,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/fixtures/accepted-room-discount.mjs",
+      "category": "tests",
+      "bytes": 2297,
+      "referencedBy": [
+        "tests/commerce-discount.browser.mjs",
+        "tests/commerce-offer-evidence.test.mjs"
+      ]
+    },
+    {
+      "path": "tests/fixtures/current-room-offer.mjs",
+      "category": "tests",
+      "bytes": 1928,
+      "referencedBy": [
+        "tests/commerce-current-reply.test.mjs",
+        "tests/commerce-openings.browser.mjs"
+      ]
+    },
+    {
+      "path": "tests/fixtures/disclosed-rooms.mjs",
+      "category": "tests",
+      "bytes": 1585,
+      "referencedBy": [
+        "tests/commerce-intent.test.mjs",
+        "tests/commerce-openings.browser.mjs"
+      ]
+    },
+    {
+      "path": "tests/fixtures/inn-offer.mjs",
+      "category": "tests",
+      "bytes": 1762,
+      "referencedBy": [
+        "tests/inn-commerce.browser.mjs",
+        "tests/inn-commerce.test.mjs"
+      ]
+    },
+    {
+      "path": "tests/fixtures/latest-room-offer.mjs",
+      "category": "tests",
+      "bytes": 2424,
+      "referencedBy": [
+        "tests/commerce-openings.browser.mjs",
+        "tests/commerce-split-offer.test.mjs"
+      ]
+    },
+    {
+      "path": "tests/fixtures/mixed-room-offer.mjs",
+      "category": "tests",
+      "bytes": 2795,
+      "referencedBy": [
+        "tests/commerce-discount.browser.mjs",
+        "tests/commerce-lifecycle.browser.mjs",
+        "tests/commerce-mixed-room.test.mjs",
+        "tests/commerce-offer-evidence.test.mjs",
+        "tests/commerce-runtime.test.mjs"
+      ]
+    },
+    {
+      "path": "tests/fixtures/split-room-offer.mjs",
+      "category": "tests",
+      "bytes": 1892,
+      "referencedBy": [
+        "tests/commerce-openings.browser.mjs",
+        "tests/commerce-split-offer.test.mjs"
+      ]
+    },
+    {
+      "path": "tests/forge-presets.test.mjs",
+      "category": "tests",
+      "bytes": 1868,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/group-board.test.mjs",
+      "category": "tests",
+      "bytes": 2184,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/growth-notifications.test.mjs",
+      "category": "tests",
+      "bytes": 4632,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/h-stats.browser.mjs",
+      "category": "tests",
+      "bytes": 15496,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/h-stats.test.mjs",
+      "category": "tests",
+      "bytes": 2196,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/host-generation-state.test.mjs",
+      "category": "tests",
+      "bytes": 5928,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/host-integration.test.mjs",
+      "category": "tests",
+      "bytes": 225292,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/incantation.browser.mjs",
+      "category": "tests",
+      "bytes": 22604,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/incantation.test.mjs",
+      "category": "tests",
+      "bytes": 3478,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/inn-commerce.browser.mjs",
+      "category": "tests",
+      "bytes": 15793,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/inn-commerce.test.mjs",
+      "category": "tests",
+      "bytes": 4374,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/item-core.test.mjs",
+      "category": "tests",
+      "bytes": 14554,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/item-details.test.mjs",
+      "category": "tests",
+      "bytes": 3829,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/items.browser.mjs",
+      "category": "tests",
+      "bytes": 25722,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/location-memory.test.mjs",
+      "category": "tests",
+      "bytes": 3721,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/lore-core.test.mjs",
+      "category": "tests",
+      "bytes": 4439,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/lore-transfer.browser.mjs",
+      "category": "tests",
+      "bytes": 8673,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/lore-transfer.test.mjs",
+      "category": "tests",
+      "bytes": 2712,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/lore-workspace.test.mjs",
+      "category": "tests",
+      "bytes": 6199,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/main-chat-gallery.browser.mjs",
+      "category": "tests",
+      "bytes": 7585,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/main-chat-output.test.mjs",
+      "category": "tests",
+      "bytes": 8527,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/main-chat-systems.browser.mjs",
+      "category": "tests",
+      "bytes": 56886,
+      "referencedBy": [
+        "tests/auctions.browser.mjs"
+      ]
+    },
+    {
+      "path": "tests/main-chat-systems.test.mjs",
+      "category": "tests",
+      "bytes": 13545,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/manual-qa.md",
+      "category": "tests",
+      "bytes": 19763,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/marketplace-events.test.mjs",
+      "category": "tests",
+      "bytes": 2937,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/marketplace.test.mjs",
+      "category": "tests",
+      "bytes": 3764,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/mastery-training.test.mjs",
+      "category": "tests",
+      "bytes": 3096,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/media-loader.test.mjs",
+      "category": "tests",
+      "bytes": 9246,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/memory-addons.browser.mjs",
+      "category": "tests",
+      "bytes": 10163,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/memory-composer-status.browser.mjs",
+      "category": "tests",
+      "bytes": 11640,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/memory-host-lifecycle.browser.mjs",
+      "category": "tests",
+      "bytes": 16990,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/memory-insights.test.mjs",
+      "category": "tests",
+      "bytes": 13975,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/memory-summaries.browser.mjs",
+      "category": "tests",
+      "bytes": 27161,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/memory-summaries.test.mjs",
+      "category": "tests",
+      "bytes": 69545,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/mission-board.browser.mjs",
+      "category": "tests",
+      "bytes": 13848,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/mission-board.test.mjs",
+      "category": "tests",
+      "bytes": 2759,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/module-navigation.browser.mjs",
+      "category": "tests",
+      "bytes": 16796,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/navigation-summary.browser.mjs",
+      "category": "tests",
+      "bytes": 17580,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-alternates.browser.mjs",
+      "category": "tests",
+      "bytes": 16991,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-alternates.test.mjs",
+      "category": "tests",
+      "bytes": 18011,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-core.test.mjs",
+      "category": "tests",
+      "bytes": 12346,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-dialogue.test.mjs",
+      "category": "tests",
+      "bytes": 7875,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-generation.test.mjs",
+      "category": "tests",
+      "bytes": 3184,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-icon-size.browser.mjs",
+      "category": "tests",
+      "bytes": 6780,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-image-draft.test.mjs",
+      "category": "tests",
+      "bytes": 5796,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-medallions.test.mjs",
+      "category": "tests",
+      "bytes": 1986,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-names.test.mjs",
+      "category": "tests",
+      "bytes": 2909,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-routing-vision.test.mjs",
+      "category": "tests",
+      "bytes": 4477,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-scopes.test.mjs",
+      "category": "tests",
+      "bytes": 15893,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-wand.test.mjs",
+      "category": "tests",
+      "bytes": 1910,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/npc-workspace.browser.mjs",
+      "category": "tests",
+      "bytes": 15968,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/nsfw-enhance.test.mjs",
+      "category": "tests",
+      "bytes": 6724,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/nsfw-prompt-ui.test.mjs",
+      "category": "tests",
+      "bytes": 2412,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/nsfw-tags-ui.test.mjs",
+      "category": "tests",
+      "bytes": 3353,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/optional-systems.browser.mjs",
+      "category": "tests",
+      "bytes": 16840,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/power-mastery.test.mjs",
+      "category": "tests",
+      "bytes": 4833,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/power-presets.test.mjs",
+      "category": "tests",
+      "bytes": 3069,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/power-workspace.browser.mjs",
+      "category": "tests",
+      "bytes": 11501,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/presentation-settings.browser.mjs",
+      "category": "tests",
+      "bytes": 10708,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/quest-objectives.test.mjs",
+      "category": "tests",
+      "bytes": 9535,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/quest-rewards.test.mjs",
+      "category": "tests",
+      "bytes": 4502,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/regex-compat.browser.mjs",
+      "category": "tests",
+      "bytes": 40383,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/repository-layout.test.mjs",
+      "category": "tests",
+      "bytes": 1215,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/rewards-location.browser.mjs",
+      "category": "tests",
+      "bytes": 13034,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/scene-tracker.test.mjs",
+      "category": "tests",
+      "bytes": 5521,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/smart-memory-continuity.browser.mjs",
+      "category": "tests",
+      "bytes": 13248,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/social-events.test.mjs",
+      "category": "tests",
+      "bytes": 16357,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/startup.browser.mjs",
+      "category": "tests",
+      "bytes": 7779,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/story-agenda.test.mjs",
+      "category": "tests",
+      "bytes": 13704,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/story-memory.test.mjs",
+      "category": "tests",
+      "bytes": 8255,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/story-systems.browser.mjs",
+      "category": "tests",
+      "bytes": 26756,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/story-workspace.test.mjs",
+      "category": "tests",
+      "bytes": 5753,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/ui-language.browser.mjs",
+      "category": "tests",
+      "bytes": 9460,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/ui-language.test.mjs",
+      "category": "tests",
+      "bytes": 1817,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/voice-addons.browser.mjs",
+      "category": "tests",
+      "bytes": 21678,
+      "referencedBy": []
+    },
+    {
+      "path": "tests/voice.test.mjs",
+      "category": "tests",
+      "bytes": 17312,
+      "referencedBy": []
+    },
+    {
+      "path": "ui-polish.css",
+      "category": "runtime",
+      "bytes": 131,
+      "referencedBy": [
+        "loader.js"
+      ]
+    }
+  ],
+  "auditDate": "2026-10-05",
+  "release": "0.56.2",
+  "scope": "605 tracked files at the recorded pre-documentation commit; no Git object/history deletion audit.",
+  "missingRuntimeReferences": [],
+  "historicalBrokenLinksRepaired": [
+    {
+      "source": "docs/archive/README-v0.42.0.md",
+      "target": "docs/archive/README-v0.40.10.md",
+      "resolved": "docs/archive/docs/archive/README-v0.40.10.md",
+      "kind": "markdown-link"
+    },
+    {
+      "source": "docs/archive/README-v0.42.0.md",
+      "target": "LICENSE",
+      "resolved": "docs/archive/LICENSE",
+      "kind": "markdown-link"
+    }
+  ],
+  "dynamicPreviewReferencesVerified": [
+    {
+      "source": "docs/previews/v0541/index.html",
+      "paths": [
+        "docs/previews/voice-v0541/dialogue-ready-320.png",
+        "docs/previews/voice-v0541/dialogue-ready-390.png",
+        "docs/previews/voice-v0541/dialogue-ready-1280.png"
+      ]
+    },
+    {
+      "source": "docs/previews/v0541/index.html",
+      "paths": [
+        "docs/previews/voice-v0541/dialogue-playing-320.png",
+        "docs/previews/voice-v0541/dialogue-playing-390.png",
+        "docs/previews/voice-v0541/dialogue-playing-1280.png"
+      ]
+    },
+    {
+      "source": "docs/previews/v0541/index.html",
+      "paths": [
+        "docs/previews/commerce-v0541/room-offer-320.png",
+        "docs/previews/commerce-v0541/room-offer-390.png",
+        "docs/previews/commerce-v0541/room-offer-1280.png"
+      ]
+    },
+    {
+      "source": "docs/previews/v0541/index.html",
+      "paths": [
+        "docs/previews/commerce-v0541/sell-selected-320.png",
+        "docs/previews/commerce-v0541/sell-selected-390.png",
+        "docs/previews/commerce-v0541/sell-selected-1280.png"
+      ]
+    },
+    {
+      "source": "docs/previews/v0550/index.html",
+      "paths": [
+        "docs/previews/voice-v0550/dialogue-ready-320.png",
+        "docs/previews/voice-v0550/dialogue-ready-390.png",
+        "docs/previews/voice-v0550/dialogue-ready-1280.png"
+      ]
+    },
+    {
+      "source": "docs/previews/v0550/index.html",
+      "paths": [
+        "docs/previews/voice-v0550/settings-connected-320.png",
+        "docs/previews/voice-v0550/settings-connected-390.png",
+        "docs/previews/voice-v0550/settings-connected-1280.png"
+      ]
+    },
+    {
+      "source": "docs/previews/v0550/index.html",
+      "paths": [
+        "docs/previews/voice-v0550/speech-editor-320.png",
+        "docs/previews/voice-v0550/speech-editor-390.png",
+        "docs/previews/voice-v0550/speech-editor-1280.png"
+      ]
+    },
+    {
+      "source": "docs/previews/v0550/index.html",
+      "paths": [
+        "docs/previews/commerce-v0550/latest-room-320.png",
+        "docs/previews/commerce-v0550/latest-room-390.png",
+        "docs/previews/commerce-v0550/latest-room-1280.png"
+      ]
+    },
+    {
+      "source": "docs/previews/v0550/index.html",
+      "paths": [
+        "docs/previews/commerce-v0550/sell-selected-320.png",
+        "docs/previews/commerce-v0550/sell-selected-390.png",
+        "docs/previews/commerce-v0550/sell-selected-1280.png"
+      ]
+    }
+  ],
+  "testFixtureRelativeStrings": [
+    {
+      "source": "tests/main-chat-gallery.browser.mjs",
+      "target": "../../src/memory-composer-status.js",
+      "resolved": "../src/memory-composer-status.js"
+    },
+    {
+      "source": "tests/memory-host-lifecycle.browser.mjs",
+      "target": "./../../src/memory-store.js",
+      "resolved": "../src/memory-store.js"
+    }
+  ],
+  "duplicateExcessCopies": 9,
+  "potentialDuplicateSavingsBytes": 282108,
+  "staticScanLimitations": [
+    "An unreferenced preview is a review candidate, not evidence of dead code: scripts form width-specific image paths and test fixture paths dynamically.",
+    "The five nonRuntimeCode files are unreachable from current manifest/bootstrap roots, but checks/tests still use legacy files. They were retained.",
+    "The runtime closure includes manifest/loader, index.js, dynamic templates/styles and root CSS compatibility entry points.",
+    "The inventory documents the original 605-file snapshot before adding the public README/archive/audit files."
+  ],
+  "archiveSource": {
+    "path": "README.md",
+    "commit": "859fa6e66a65345328eaadcc2d99550a6d717dfc",
+    "sha256": "eac822f5f63e683dafd3868e7337101fc3bd1c85f5c25bce9092198f9f7fb9d7",
+    "destination": "docs/archive/README-v0.56.2-development.md",
+    "change": "Preserved historical prose and rebased relative links to the archive directory."
+  }
+}

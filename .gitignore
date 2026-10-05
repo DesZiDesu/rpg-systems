@@ -1,0 +1,14 @@
+# Local development dependencies and generated test output.
+node_modules/
+test-results/
+playwright-report/
+coverage/
+*.log
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Local credentials are not release assets.
+.env
+.env.*
+!.env.example
