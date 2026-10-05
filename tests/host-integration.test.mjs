@@ -50,6 +50,7 @@ import * as masteryTraining from '../src/mastery-training.js';
 import * as powerMastery from '../src/power-mastery.js';
 import {normalizeAdultSettings,writingPreferencePrompt} from '../src/nsfw-enhance.js';
 import {allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded} from '../src/social-events.js';
+import {repairedBooks,repairUser,catalogQuote,bundleQuote,bookNames} from './fixtures/commerce-repair-books.mjs';
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enableAuctions:true,enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true,enableMemorySummaries:true,eventNotifications:true}},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
@@ -59,6 +60,35 @@ sandbox.globalThis=sandbox;
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
  vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession};`,sandbox);
 const host=sandbox.testHost;
+
+test('one normal NPC reply and its inline patch open fully defined books at the current bundle total without a second generation',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,raw:context.generateRaw,data:context.generateRawData,extract:context.extractMessageFromData,quiet:context.generateQuietPrompt};
+ try{
+  host.commerceRuntime()?.destroy();context.extensionSettings={tretaresia_rpg:{autoTrack:true,enableMarketplace:true,enableAuctions:false,enableMemorySummaries:false,autoContinuity:false,eventNotifications:false,npcDiaryFrequency:'off'}};
+  const state=host.defaultState();state.location.place='Oakland Bookstore';state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};state.progression.currency.silver=100;context.chatMetadata={tretaresia_rpg_state:state};context.saveMetadata=async()=>{};
+  context.generateRaw=context.generateRawData=context.generateQuietPrompt=async()=>assert.fail('A normal catalog must not start another generation');
+  const raw=repairedBooks(),quote=catalogQuote+'; '+bundleQuote;raw.marketplace.evidence=quote;raw.marketplace.items.forEach(i=>i.evidence=quote);raw.marketplace.selection=raw.selection;raw.marketplace.basketQuote=raw.basketQuote;
+  const patch={sceneTracker:{loc:'Oakland Bookstore'},commerceIntent:{kind:'buy',evidence:repairUser},marketplace:raw.marketplace,ops:[]};
+  const mes=`<tr-dialogue name="Barth">${quote}</tr-dialogue><!--tretaresia_patch:${JSON.stringify(patch)}-->`;
+  context.chat=[{is_user:true,mes:repairUser},{is_user:false,mes,swipe_id:0,swipes:[mes]}];
+  await host.processAssistantPatch(1,'normal');host.initializeCommerce();
+  const view=host.commerceRuntime().view();assert.ok(view.session);assert.equal(view.pending,undefined);assert.equal(view.session.quote,40);assert.deepEqual(Array.from(view.session.items,e=>e.item.name),bookNames);assert.ok(view.session.items.every(e=>e.item.usage.learns.length===1));
+  assert.equal(host.getState().progression.currency.silver,100);assert.equal(host.getState().inventory.length,0);assert.equal(host.getState().skills.length,0);assert.doesNotMatch(host.extractStatePatch(context.chat[1].mes).visible,/tretaresia_patch|"usage"/);
+  host.initializeCommerce();assert.equal(host.commerceRuntime().view().session.quote,40);await host.processAssistantPatch(1,'normal');assert.equal(host.getState().progression.currency.silver,100);
+ }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateRaw=prior.raw;context.generateRawData=prior.data;context.extractMessageFromData=prior.extract;context.generateQuietPrompt=prior.quiet;}
+});
+
+test('a malformed normal shop payload stays pending without quietly requesting item generation again',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,raw:context.generateRaw,data:context.generateRawData,quiet:context.generateQuietPrompt};
+ try{
+  host.commerceRuntime()?.destroy();context.extensionSettings={tretaresia_rpg:{autoTrack:true,enableMarketplace:true,enableMemorySummaries:false,autoContinuity:false,eventNotifications:false,npcDiaryFrequency:'off'}};
+  const state=host.defaultState();state.location.place='Oakland Bookstore';state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};state.progression.currency.silver=100;context.chatMetadata={tretaresia_rpg_state:state};context.saveMetadata=async()=>{};
+  context.generateRaw=context.generateRawData=context.generateQuietPrompt=async()=>assert.fail('Malformed shop JSON must not create another request');
+  const patch={commerceIntent:{kind:'buy',evidence:'ขอซื้อคัมภีร์'},marketplace:{kind:'npcShop',location:'Oakland Bookstore',seller:{name:'Barth'},denomination:'silver',items:[{name:'Invented name',price:13}]},ops:[]};
+  context.chat=[{is_user:true,mes:'ขอซื้อคัมภีร์'},{is_user:false,mes:'<tr-dialogue name="Barth">ข้าเสนอคัมภีร์ศรวายุ ราคา 13 เหรียญเงิน</tr-dialogue><!--tretaresia_patch:'+JSON.stringify(patch)+'-->'}];
+  await host.processAssistantPatch(1,'normal');host.initializeCommerce();assert.equal(host.commerceRuntime().view().pending.status,'invalid-data');assert.equal(host.getState().progression.currency.silver,100);assert.equal(host.getState().inventory.length,0);
+ }finally{host.commerceRuntime()?.destroy();context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateRaw=prior.raw;context.generateRawData=prior.data;context.generateQuietPrompt=prior.quiet;}
+});
 
 test('Memory and Voice default off; enabled choices persist and speech instructions contain no account data',()=>{
  const saved=context.extensionSettings;

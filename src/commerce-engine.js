@@ -1,9 +1,9 @@
-import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.5';
-import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.58.5';
-import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.58.5';
-import {CURRENCY_VALUES,CURRENCY_RULE,walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.58.5';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.5';
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.58.5';
+import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.6';
+import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.58.6';
+import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.58.6';
+import {CURRENCY_VALUES,CURRENCY_RULE,walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.58.6';
+import {readCommercePrices} from './commerce-prices.js?v=0.58.6';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.58.6';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);
@@ -79,6 +79,11 @@ export function createCommerceSession(event, source = {}) {
         if (!session.items.length || session.items.some(entry=>!entry||!normalizePurchaseTerms(entry.terms))) return null;
         session.selectedId=session.items[0].id;session.quote=session.items[0].askPrice;
         if(event.selection?.items){const total=commerceBasketQuote(session,event.selection.items);if(total!==null){session.basket=copy(event.selection.items);session.selectedId=session.basket[0].itemId;session.quote=total;}}
+        if(event.basketQuote){
+            const q=event.basketQuote,lines=session.basket;
+            if(!lines||!Array.isArray(q.items)||q.items.length!==lines.length||!lines.every(l=>q.items.some(i=>i.itemId===l.itemId&&i.quantity===l.quantity)))return null;
+            const total=convertMoney(q.amount,q.denomination,session.denomination);if(!money(total)||!total)return null;session.quote=total;
+        }
     }
     return session;
 }

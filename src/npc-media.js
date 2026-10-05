@@ -1,5 +1,5 @@
-import { preparePortrait } from './npc-portraits.js?v=0.58.5';
-import { enumerateNpcPortraits } from './npc-alternates.js?v=0.58.5';
+import { preparePortrait } from './npc-portraits.js?v=0.58.6';
+import { enumerateNpcPortraits } from './npc-alternates.js?v=0.58.6';
 
 export function portraitPath(value) {
     return typeof value==='string' && /^\/?user\/images\/tretaresia-npc\/[a-zA-Z0-9_-]+\.(webp|jpg|jpeg|png)$/.test(value) ? '/'+value.replace(/^\//,'') : '';
