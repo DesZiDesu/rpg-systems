@@ -1,3 +1,4 @@
+import {completeItemDefinition} from '../src/item-definition.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normalizePurchaseTerms,rightsView,rightStatus,storyMinute,applyRightsEvents,rightsInventoryValid,itemSaleBlocked} from '../src/commerce-rights.js';
@@ -58,7 +59,7 @@ test('legacy room descriptions and nightly permanent-room mistakes cannot sell o
 
 test('permanent property purchase gives an owned named key instead of a building inventory item',()=>{
  const terms={mode:'permanent',scope:'บ้านริมแม่น้ำ',delivery:{name:'กุญแจบ้านริมแม่น้ำ',category:'Key',description:'กุญแจประตูหน้าบ้าน'}};
- assert.deepEqual(normalizePurchaseTerms(terms),terms);
+ assert.deepEqual(normalizePurchaseTerms(terms),{...terms,delivery:completeItemDefinition(terms.delivery)});
  const result=buy(terms);assert.equal(result.ok,true);assert.equal(result.next.inventory.length,1);
  const key=result.next.inventory[0];assert.equal(key.name,'กุญแจบ้านริมแม่น้ำ');assert.equal(key.category,'Key');assert.equal(key.quantity,1);
  assert.match(key.description,/กรรมสิทธิ์ถาวร · บ้านริมแม่น้ำ/);assert.equal(key.commerceRightId,undefined);

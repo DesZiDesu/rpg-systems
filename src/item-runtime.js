@@ -1,7 +1,7 @@
-import {createItemComposer} from './item-composer.js?v=0.56.3';
-import {normalizeItemSystem,currentItemNpcs,prepareItemAction,validateItemResponse,applyItemDecision,missingInventoryDetails,applyItemDetails} from './item-core.js?v=0.56.3';
-import {requestItemDecision,requestItemDetails} from './item-generation.js?v=0.56.3';
-import {evidenceText} from './interaction-evidence.js?v=0.56.3';
+import {createItemComposer} from './item-composer.js?v=0.57.0';
+import {normalizeItemSystem,currentItemNpcs,prepareItemAction,validateItemResponse,applyItemDecision,missingInventoryDetails,applyItemDetails,configureItemUsage} from './item-core.js?v=0.57.0';
+import {requestItemDecision,requestItemDetails} from './item-generation.js?v=0.57.0';
+import {evidenceText} from './interaction-evidence.js?v=0.57.0';
 const fingerprint=s=>JSON.stringify(s,(k,v)=>['updatedAt','createdAt'].includes(k)?undefined:v);
 export function createItemRuntime(api){
  let scope='',pending=null,phase='',receipt=null,error='',retry=null,ticket=0,destroyed=false,inFlight=false,lastPools='',progress=null,saving=false;
@@ -15,10 +15,11 @@ export function createItemRuntime(api){
  function refresh(){if(destroyed)return;const key=api.context().getCurrentChatId?.()?JSON.stringify([api.context().getCurrentChatId(),api.owner?.()]):'';if(scope!==key){cancel(false);scope=key;receipt=null;error='';retry=null;lastPools='';}const next=view();ui.update(next);const ids=next.pools.map(p=>p.id).join('|');if(ids&&ids!==lastPools)ui.openLoot(next.pools[0].id);lastPools=ids;}
  function cancel(show=true){if(saving&&show)return;ticket++;pending=null;phase='';retry=null;error='';progress=null;if(show){receipt=null;refresh();} /* Generation result is ignored, never applied after cancellation. */ }
  async function perform(input){
-  if(destroyed||pending||inFlight)return;
+  if(destroyed||pending||inFlight||saving)return;
   receipt=null;error='';progress=null;const original=input.retry?retry:input;retry=null;if(!original){refresh();return;}
   const context=api.context(),state=api.state(),id=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system),message=context.chat?.[id];
-  if(!context.getCurrentChatId?.()||!message&&original.action!=='enrich'||typeof context.saveMetadata!=='function'||typeof context.generateRaw!=='function'&&typeof context.generateQuietPrompt!=='function'){status('unavailable');refresh();return;}
+  if(!context.getCurrentChatId?.()||!message&&!['enrich','configure'].includes(original.action)||typeof context.saveMetadata!=='function'||original.action!=='configure'&&typeof context.generateRaw!=='function'&&typeof context.generateQuietPrompt!=='function'){status('unavailable');refresh();return;}
+  if(original.action==='configure'){const result=configureItemUsage(state,original.itemId,original.usage);if(!result.ok){status(result.error);refresh();return;}const before=fingerprint(state),metadata=context.chatMetadata,chatId=context.getCurrentChatId(),owner=api.owner?.();const unchanged=()=>api.context().chatMetadata===metadata&&api.context().getCurrentChatId?.()===chatId&&api.owner?.()===owner&&fingerprint(api.state())===before;try{saving=true;await api.commitDetails({context,next:result.next,unchanged});receipt={action:'configure',outcome:'success',reason:t('บันทึกคุณสมบัติและผลต่อสเตตัสแล้ว','Item properties and stat effects saved.')};}catch{status('save');}finally{saving=false;refresh();}return;}
   const prepared=original.action==='enrich'?{ok:true,request:{id:'details-'+Date.now(),action:'enrich',location:state.location?.place}}:prepareItemAction(state,original,{participants:api.participants(id,message),turn:api.turn(),requestId:'item-'+(globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random()),location:state.location?.place});
   if(!prepared.ok){status(prepared.error);refresh();return;}
   const source=sourceAt(context,id);pending={input:structuredClone(original),prepared:prepared.request,source,message,variant:source?.variant,metadata:context.chatMetadata,chatId:context.getCurrentChatId(),owner:api.owner?.()};phase='queued';refresh();ui.showRequest();await resume();

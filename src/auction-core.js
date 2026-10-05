@@ -1,5 +1,6 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.56.3';
-import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.56.3';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.57.0';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.57.0';
+import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.57.0';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
@@ -9,7 +10,7 @@ const copy = value => structuredClone(value);
 const denominations = ['gold','silver','copper'];
 const auctionWords = /auction|ประมูล/iu;
 
-export const AUCTION_INSTRUCTIONS = 'Auction UI: when the player actually arrives at an auction venue in the CURRENT scene, include auction in this same invisible patch. Shape: {"id":"stable-event-id-including-story-day","title":"auction name","location":"exact current place","evidence":"exact quote from this reply confirming player arrival at the auction","denomination":"gold|silver|copper","entryFee":0,"deposit":0,"lots":[{"id":"stable-lot-id","name":"item name","description":"publicly revealed details","category":"Equipment","rarity":"known rarity or empty","quantity":1,"openingBid":5,"minIncrement":1,"bidders":[{"name":"present rival bidder","npcId":"known-id-or-empty","maxBid":12}]}]}. Create 1–8 plausible lots and 0–5 present rivals per lot. Fees/deposit are zero unless established in the story. maxBid is a fixed private ceiling consistent with that bidder; never reveal it in narration. Keep event/lot IDs and catalog stable on revisits; a new event needs a new ID. No auction for future plans, mere mentions or OOC discussion. The player joins and bids through the UI. The local engine owns bids, rival counters, three auctioneer counts, winners, fees, deposits, payment and item delivery. NEVER patch auction state or grant/deduct auction money/items, including on a later reply describing the outcome. Auction summaries in state are already committed facts: narrate them without replaying effects. Do not emit HTML/UI. No time limit or automatic auction progress while the player is away.';
+export const AUCTION_INSTRUCTIONS = ITEM_DEFINITION_INSTRUCTIONS+'\n'+'Auction UI: when the player actually arrives at an auction venue in the CURRENT scene, include auction in this same invisible patch. Shape: {"id":"stable-event-id-including-story-day","title":"auction name","location":"exact current place","evidence":"exact quote from this reply confirming player arrival at the auction","denomination":"gold|silver|copper","entryFee":0,"deposit":0,"lots":[{"id":"stable-lot-id","name":"item name","description":"publicly revealed details","category":"Equipment","rarity":"known rarity or empty","quantity":1,"openingBid":5,"minIncrement":1,"bidders":[{"name":"present rival bidder","npcId":"known-id-or-empty","maxBid":12}]}]}. Create 1–8 plausible lots and 0–5 present rivals per lot. Fees/deposit are zero unless established in the story. maxBid is a fixed private ceiling consistent with that bidder; never reveal it in narration. Keep event/lot IDs and catalog stable on revisits; a new event needs a new ID. No auction for future plans, mere mentions or OOC discussion. The player joins and bids through the UI. The local engine owns bids, rival counters, three auctioneer counts, winners, fees, deposits, payment and item delivery. NEVER patch auction state or grant/deduct auction money/items, including on a later reply describing the outcome. Auction summaries in state are already committed facts: narrate them without replaying effects. Do not emit HTML/UI. No time limit or automatic auction progress while the player is away.';
 
 export function normalizeAuctionOffer(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
@@ -31,8 +32,8 @@ export function normalizeAuctionOffer(raw) {
             names.add(key(name)); bidders.push({id:`bidder-${hash(key(name))}`,name,npcId:clean(bidder.npcId,100),maxBid,...(bidder.budget !== undefined ? {budget:maxBid} : {})});
             if (bidders.length === 5) break;
         }
-        lots.push({id:lotId,name:clean(input.name,100),description:clean(input.description,1200),category:clean(input.category,60) || 'Item',
-            rarity:clean(input.rarity,80),quantity:integer(input.quantity,1,1,9999),openingBid,minIncrement,bidders});
+        lots.push({id:lotId,name:clean(input.name,100),description:completeItemDefinition(input).description,usage:completeItemDefinition(input).usage,properties:completeItemDefinition(input).properties,category:clean(input.category,60) || 'Item',
+            rarity:completeItemDefinition(input).rarity,quantity:integer(input.quantity,1,1,9999),openingBid,minIncrement,bidders});
         if(input.currentBidder||input.currentBid){
             const leader=bidders.find(b=>b.id===input.currentBidder||b.name===input.currentBidder),price=integer(input.currentBid);
             if(!leader||price<openingBid||price>(leader.budget??leader.maxBid))return null;

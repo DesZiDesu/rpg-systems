@@ -1,4 +1,4 @@
-import { marketplaceErrorText } from './marketplace-core.js?v=0.56.3';
+import { marketplaceErrorText } from './marketplace-core.js?v=0.57.0';
 
 const node = (tag, cls, text) => { const el = document.createElement(tag); if (cls) el.className = cls; if (text !== undefined) el.textContent = text; return el; };
 

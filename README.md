@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.56.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.57.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.3-development.md)
 
@@ -35,7 +35,7 @@ Saved replies without RoleForge presentation tags remain ordinary text. Generate
 | Character and scene | Player resources, progression, equipment, scene status, location and story time. |
 | NPCs and world | Profiles, portraits, alternate information, relationships, diary, knowledge, parties, guilds and lore tools. |
 | Powers and abilities | Powers, skills and techniques with persistent mastery, training and optional incantations. |
-| Inventory and Loot | Choose discovered items before collecting them; use, eat, drink, drop or give owned items to a present NPC. Fill missing details through an explicit AI action. |
+| Inventory and Loot | Loot from completed encounters and exploration; collect selected items, use/eat/drink/drop/gift, configure multiple stat effects, and track temporary overflow buffs. |
 | Shops and auctions | Buy/sell and negotiate, select multiple items and quantities, bid in auctions, and keep confirmed receipts. Support property keys, rentals, access rights and prepaid services. |
 | Boards and story tools | Optional mission/recruitment boards, story memory, agendas and quest objectives. |
 | Memory Addon | Optional summaries and searchable archives in a dedicated settings drawer. |
@@ -47,7 +47,7 @@ Stock and purchase quantity are separate. A shop can have **12 healing potions a
 
 **Memory and Voice default to off.** Shops, auctions, incantations, boards and optional story tools also start disabled. Saved opt-in settings survive updates. Enable each system in Extension Settings; expand the Memory or Voice drawer when needed.
 
-Normal role-play uses your existing SillyTavern text connection. Valid inline tracker, shop and item data is processed from that reply. Explicit actions such as trade buttons, training, item-detail generation and memory summarization can make additional text-model requests. RoleForge shows notifications at additional API request boundaries. Browsing and local selections do not make model requests. Some tasks use several batches; a request can fail without a saved result.
+Normal role-play uses your existing SillyTavern text connection. Valid inline tracker, shop and item data is processed from that reply. A completed encounter or exploration with missing/invalid Loot can request one AI repair; an empty result is recorded to avoid repeated checks. Explicit actions such as trade buttons, training, item-detail generation and memory summarization can make additional text-model requests. RoleForge shows notifications at additional API request boundaries. Browsing and local selections do not make model requests. Some tasks use several batches; a request can fail without a saved result.
 
 The **Voice Addon needs its own ElevenLabs API key**. Choose available voices and assign male, female, narrator or individual NPC voices. Model/voice access and credits depend on your account. Voice is manual by default; generating audio consumes provider credits, while replaying cached audio does not request a new clip. Editing a speech draft leaves the AI's original text intact. [Voice setup](docs/voice-addon.th.md) · [Memory setup](docs/memory-addons.th.md)
 
@@ -88,7 +88,7 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.56.3** has **869 passing unit/host tests**, syntax checks and production-loader browser coverage for startup and shop workflows on mobile/desktop. Provider responses are controlled fixtures; this does not certify every live model, preset or ElevenLabs account. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
+Version **0.57.0** has **945 passing unit/host tests**, syntax checks and production-loader browser coverage for multi-stat items, Loot recovery, shops, purchase rights and optional systems on mobile/desktop. The older combined chat browser fixture still fails an assertion also reproduced on the prior baseline; see the release report. Provider responses are controlled fixtures; this does not certify every live model, preset or ElevenLabs account. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
 
 [Repository audit](docs/repository-audit-v0.56.3.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.3.th.md) · [Full audited inventory](docs/repository-audit-v0.56.3.json)
 
@@ -97,3 +97,5 @@ Version **0.56.3** has **869 passing unit/host tests**, syntax checks and produc
 [MIT](LICENSE) · Copyright © 2026 DesZiDesu
 
 Loot and mobile item panel fixes in 0.56.3: [Thai diagnosis and validation report](docs/loot-items-fix-v0.56.3.th.md).
+
+Multi-stat consumables and automatic Loot recovery in 0.57.0: [Thai update and validation report](docs/items-loot-v0.57.0.th.md).
