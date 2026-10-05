@@ -15,6 +15,12 @@ test('native data bypasses story output regexes and honors the configured respon
 test('opening, repair and confirmation use the same native data boundary',async()=>{
  const h=host();await requestCommerceRepair(h,{kind:'buy'});await requestCommerceOpening(h,{kind:'buy',story:'',npcs:[]});await requestCommerceDecision(h,{session:{kind:'buy'}},'confirm');assert.equal(h.calls(),3);
 });
+test('small repair offers have a bounded response budget while large catalogs retain their larger allowance',async()=>{
+ const lengths=[],h={generateRaw:async args=>{lengths.push(args.responseLength);return '{}';}};
+ await requestCommerceRepair(h,{story:'Book ราคา 13 เหรียญเงิน'});
+ await requestCommerceRepair(h,{facts:Array.from({length:13},(_,i)=>`Book ${i}: 10 silver`).join('\n')});
+ assert.deepEqual(lengths,[4096,8192]);
+});
 test('empty content is not replaced with provider reasoning and does not trigger another API',async()=>{
  const h=host('');h.generateRawData=async()=>({choices:[{message:{content:'',reasoning_content:'private reasoning'},finish_reason:'stop'}]});
  await assert.rejects(requestCommerceTask(h,args),e=>e.code==='response-empty'&&e.responseText===''&&e.details.generation==='native-data');

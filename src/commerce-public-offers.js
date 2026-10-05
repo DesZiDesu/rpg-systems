@@ -1,11 +1,35 @@
-import {disclosedShopStock} from './commerce-stock-selection.js?v=0.58.4';
-import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.58.4';
-import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.58.4';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.4';
+import {disclosedShopStock} from './commerce-stock-selection.js?v=0.58.5';
+import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.58.5';
+import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.58.5';
+import {readCommercePrices} from './commerce-prices.js?v=0.58.5';
 
 // A same-reply compiler for explicit NPC prices when a model omits its machine
 // object. No API, payment, assumed stock, inferred item or invented NPC funds.
+export function disclosedBookBundle(story,user,location,{eventId}={}){
+    if(!location||commerceRequestHint(user)!=='buy'||commerceDiscussionOnly(user))return null;
+    const blocks=publicTradeDialogues(story).filter(b=>b.prices.length);
+    if(blocks.length!==1)return null;
+    const block=blocks[0];
+    if(block.quote.length>600||quotedTradeRefused(block.quote)||/(?:พรุ่งนี้|สมมติ|สมมุติ|\btomorrow\b)/iu.test(block.quote))return null;
+    // A present itemized quote follows this explicit price-list marker. Earlier
+    // totals are context only; the final total must equal the actual unit prices.
+    const marker=block.quote.match(/(?:ข้า|เรา)?คิด(?:ราคา)?(?=\s*(?:คัมภีร์|คู่มือ|บันทึก|ตำรา|หนังสือ))/u);
+    if(!marker)return null;
+    const quote=block.quote.slice(marker.index+marker[0].length),facts=optionPriceFacts({quote,prices:readCommercePrices(quote)}),items=[];
+    for(const [index,fact]of facts.entries()){
+        const prefix=fact.preceding.trim().replace(/^[,，\s]+/u,'').replace(/^และ\s*/u,'');
+        if(index===facts.length-1&&/^(?:รวมกัน(?:เป็น)?|รวม(?:ทั้งหมด)?(?:เป็น)?|ทั้งหมด(?:เป็น)?)\s*$/u.test(prefix)){
+            if(items.length<2||items.length>40||!/^(?:(?:ถ้วน|พอดี(?:เป๊ะ)?|เท่านั้น|นะ|ครับ|จ้ะ)|[.!?。\s])*$/u.test(quote.slice(fact.end))||items.some(i=>i.denomination!==fact.denomination)||items.reduce((sum,i)=>sum+i.price,0)!==fact.amount)return null;
+            return{kind:'npcShop',location,evidence:block.quote,seller:{name:block.name},denomination:fact.denomination,...(eventId?{id:eventId}:{}),items};
+        }
+        const name=prefix.replace(/(?:ราคา|เล่มละ|ในราคา)\s*$/u,'').trim();
+        if(!/^(?:คัมภีร์|คู่มือ|บันทึก|ตำรา|หนังสือ)[^.!?。\n;,]{1,115}$/u.test(name)||/(?:รวม|ทั้งหมด|เหลือ|ลดให้|ลดราคา|ไม่มี|ไม่ขาย)/u.test(name)||!fact.amount||items.some(i=>i.itemName===name))return null;
+        items.push({itemName:name,description:block.quote,category:'Book',properties:[],usage:{action:'unknown',consumable:false,effect:'ยังไม่มีรายละเอียดวิธีใช้หรือวิชาที่ได้รับจากหนังสือในข้อเสนอนี้',stats:[],learns:[]},quantity:1,price:fact.amount,denomination:fact.denomination,stockKnown:false,negotiableKnown:false,terms:{mode:'permanent'},evidence:block.quote});
+    }
+    return null;
+}
 export function disclosedGoodsOffer(story,user,location,inventory=[],{eventId}={}){
+    const bundle=disclosedBookBundle(story,user,location,{eventId});if(bundle)return bundle;
     const kind=commerceRequestHint(user);
     if(!location||!kind||commerceDiscussionOnly(user))return null;
     const blocks=publicTradeDialogues(story).filter(block=>block.prices.length);

@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {commerceRepairReference,requestCommerceRepair,validateCommerceRepair} from '../src/commerce-repair.js';
 import {createCommerceRuntime} from '../src/commerce-runtime.js';
 import {repairedBooks,bookChat,bundleStory,bookNames} from './fixtures/commerce-repair-books.mjs';
+import {user as barthUser,story as barthStory,names as barthNames} from './fixtures/barth-thai-offer.mjs';
+import {disclosedBookBundle} from '../src/commerce-public-offers.js';
 const state=()=>({player:{name:'Noah'},npcs:[],skills:[],inventory:[],location:{place:'Oakland Bookstore'},progression:{currency:{gold:0,silver:100,copper:0}}});
 const reference=()=>({...commerceRepairReference({chat:bookChat()},{messageId:3,kind:'buy',state:state()}),eventId:'repair-books'});
 const source={messageId:3,turnKey:'3',variant:bundleStory};
@@ -45,12 +47,33 @@ test('an all-books repair cannot substitute a duplicate product for the missing 
  assert.equal(validateCommerceRepair(raw,reference(),source),null);
  const sameId=repairedBooks();sameId.marketplace.items[1].id='book-0';assert.equal(validateCommerceRepair(sameId,reference(),source),null);
 });
-function fixture(){
+function fixture(record=()=>null){
  let saved=state(),calls=0,commits=0,busy=false;const context={chatMetadata:{},chat:bookChat(),getCurrentChatId:()=> 'books',saveMetadata:async()=>{},generateRaw:async()=>{calls++;return JSON.stringify(repairedBooks());}};
  const settings={enableMarketplace:true,enableAuctions:false,autoTrack:true,language:'th'};
- const runtime=createCommerceRuntime({document:{},context:()=>context,state:()=>structuredClone(saved),settings:()=>settings,turnKey:id=>String(id),variant:m=>m.mes,record:()=>null,visible:v=>v,parse:JSON.parse,isBusy:()=>busy,setBusy:v=>busy=v,recordRequest:()=>{},commitOpening:async({next,unchanged})=>{assert.equal(unchanged(),true);commits++;saved=next;}});
+ const runtime=createCommerceRuntime({document:{},context:()=>context,state:()=>structuredClone(saved),settings:()=>settings,turnKey:id=>String(id),variant:m=>m.mes,record,visible:v=>v,parse:JSON.parse,isBusy:()=>busy,setBusy:v=>busy=v,recordRequest:()=>{},commitOpening:async({next,unchanged})=>{assert.equal(unchanged(),true);commits++;saved=next;}});
  return{runtime,context,settings,state:()=>saved,calls:()=>calls,commits:()=>commits};
 }
+test('reported expanded inline names can be rebuilt from the exact spoken Barth titles without the API that timed out',async()=>{
+ const expanded=['คัมภีร์เวทศรวายุ','คู่มือเวทมนตร์โครงสร้างพื้นฐาน: บาเรียแสง','บันทึกการควบคุมกระแสออร่าเบื้องต้น'];
+ const f=fixture(()=>({commerceIntent:{kind:'buy'},commerceOpening:{status:'invalid-data',source:'inline-patch',details:{reasons:expanded.map(item=>({code:'item-not-public',item}))}}}));
+ f.context.chat=[{is_user:true,mes:barthUser},{is_user:false,mes:barthStory}];
+ f.context.generateRaw=async()=>assert.fail('The explicit list needs no API call');
+ const before=structuredClone(f.state()),view=f.runtime.view();assert.equal(view.pending.localRepair,true);
+ assert.equal((await f.runtime.repairOpening({token:view.token})).ok,true);
+ const session=f.state().commerce.sessions[0];assert.deepEqual(session.items.map(e=>e.item.name),barthNames);assert.equal(session.quote,40);assert.deepEqual(session.basket.map(e=>e.quantity),[1,1,1]);assert.equal(session.agreed,false);
+ assert.deepEqual(f.state().progression,before.progression);assert.deepEqual(f.state().inventory,before.inventory);assert.deepEqual(f.state().skills,before.skills);assert.ok(session.items.every(e=>!e.stockKnown&&e.item.usage.learns.length===0));assert.equal(f.commits(),1);
+ assert.equal((await f.runtime.repairOpening({token:view.token})).error,'stale');assert.equal(f.commits(),1);f.runtime.destroy();
+});
+test('the itemized book compiler requires a complete consistent current list, not aliases, planning or a total-only discount',()=>{
+ assert.ok(disclosedBookBundle(barthStory,barthUser,state().location.place));
+ for(const story of [barthStory.replace('รวมกันเป็นสี่สิบเหรียญเงิน','รวมกันเป็นสี่สิบเอ็ดเหรียญเงิน'),barthStory.replace('เก้าเหรียญเงิน','เก้าเหรียญทอง'),barthStory.replace('บันทึกกระแสออร่า','คู่มือบาเรียแสง'),barthStory.replace('ข้าคิด','พรุ่งนี้ข้าคิด'),barthStory.replace('พอดีเป๊ะ','แต่ข้าพูดล้อเล่น'),'<planning>'+barthStory.replace(/<planning>[\s\S]*?<\/planning>/u,'')+'</planning>',bundleStory])assert.equal(disclosedBookBundle(story,barthUser,state().location.place),null);
+ assert.equal(disclosedBookBundle(barthStory,'ยังไม่ซื้อทั้งสามเล่ม',state().location.place),null);
+});
+test('a host string error 524 becomes a gateway timeout with one failed request and no saved purchase',async()=>{
+ const f=fixture();let calls=0;f.context.generateRaw=async()=>{calls++;throw Error('Got response status 524');};
+ const before=structuredClone(f.state());assert.equal((await f.runtime.repairOpening({token:f.runtime.view().token})).error,'opening-api');
+ const view=f.runtime.view();assert.match(view.error,/524/);assert.equal(JSON.parse(view.diagnostics).details.status,524);assert.equal(calls,1);assert.equal(f.commits(),0);assert.deepEqual(f.state(),before);f.runtime.destroy();
+});
 test('explicit repair saves only an open basket; reload, duplicate clicks and refresh do not purchase or call another API',async()=>{
  const f=fixture(),token=f.runtime.view().token,chat=structuredClone(f.context.chat);assert.equal((await f.runtime.repairOpening({token})).ok,true);assert.equal(f.calls(),1);assert.equal(f.commits(),1);assert.equal(f.state().commerce.sessions[0].quote,40);assert.equal(f.state().progression.currency.silver,100);assert.equal(f.state().inventory.length,0);assert.equal(f.state().skills.length,0);assert.deepEqual(f.context.chat,chat);
  assert.equal((await f.runtime.repairOpening({token})).error,'stale');f.runtime.refresh();f.runtime.refresh();assert.equal(f.calls(),1);assert.equal(f.runtime.view().session.quote,40);f.runtime.destroy();

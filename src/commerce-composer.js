@@ -1,11 +1,11 @@
-import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.4';
-import {completeItemDefinition} from './item-definition.js?v=0.58.4';
-import {itemStatSummary} from './item-effects.js?v=0.58.4';
-import {purchaseDeposit} from './commerce-rights.js?v=0.58.4';
-import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.58.4';
-import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.58.4';
-import {commerceIcon} from './commerce-icons.js?v=0.58.4';
-import {convertMoney} from './commerce-currency.js?v=0.58.4';
+import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.5';
+import {completeItemDefinition} from './item-definition.js?v=0.58.5';
+import {itemStatSummary} from './item-effects.js?v=0.58.5';
+import {purchaseDeposit} from './commerce-rights.js?v=0.58.5';
+import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.58.5';
+import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.58.5';
+import {commerceIcon} from './commerce-icons.js?v=0.58.5';
+import {convertMoney} from './commerce-currency.js?v=0.58.5';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
 export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},repair=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {
@@ -48,8 +48,8 @@ export function createCommerceComposer({document:doc=globalThis.document,perform
             if(pending.repairing)status.textContent=t('AI กำลังอ่านบทโรลและเติมข้อมูลรายการ…','AI is reading the role-play and filling offer details…');
             status.setAttribute('role','status');bar.append(title,status);
             if(['buy','sell'].includes(pending.kind)&&(!pending.waiting||pending.repairing)){
-                const help=node('p','rf-commerce-repair-help',t('กดเมื่อ NPC เสนอสินค้าและราคาแล้ว แต่แผงแจ้งข้อมูลไม่ครบ · AI จะอ่านบทโรลล่าสุดและบทสนทนาก่อนหน้าที่เกี่ยวข้อง · ใช้ API 1 ครั้ง และยังไม่ซื้อหรือขาย','Use when the NPC has offered goods and prices but details are incomplete. AI reads the latest role-play and relevant preceding conversation. One API request; no purchase or sale.'));
-                const button=node('button','rf-commerce-action rf-commerce-repair',pending.repairing?t('กำลังเติมข้อมูล…','Filling details…'):t('ให้ AI เติมข้อมูลรายการ','Let AI fill offer details'));button.type='button';button.dataset.commerceRepair='';button.disabled=Boolean(view.busy);button.setAttribute('aria-describedby','rf-commerce-repair-help');help.id='rf-commerce-repair-help';
+                const help=node('p','rf-commerce-repair-help',pending.localRepair?t('บทพูดนี้ระบุหนังสือ ราคาแต่ละเล่ม และยอดรวมครบ · เติมรายการได้โดยไม่เรียก API · รายละเอียดวิชาที่ยังไม่ระบุจะคงเป็นไม่ทราบ','The reply lists the books, individual prices and total. Fill the offer without an API request. Undisclosed learning details remain unknown.'):t('กดเมื่อ NPC เสนอสินค้าและราคาแล้ว แต่แผงแจ้งข้อมูลไม่ครบ · AI จะอ่านบทโรลล่าสุดและบทสนทนาก่อนหน้าที่เกี่ยวข้อง · ใช้ API 1 ครั้ง และยังไม่ซื้อหรือขาย','Use when the NPC has offered goods and prices but details are incomplete. AI reads the latest role-play and relevant preceding conversation. One API request; no purchase or sale.'));
+                const button=node('button','rf-commerce-action rf-commerce-repair',pending.repairing?t('กำลังเติมข้อมูล…','Filling details…'):pending.localRepair?t('เติมรายการจากบทพูด NPC','Fill offer from NPC dialogue'):t('ให้ AI เติมข้อมูลรายการ','Let AI fill offer details'));button.type='button';button.dataset.commerceRepair='';button.disabled=Boolean(view.busy);button.setAttribute('aria-describedby','rf-commerce-repair-help');help.id='rf-commerce-repair-help';
                 button.addEventListener('click',()=>{void repair({token:view.token});});bar.append(help,button);
                 bar.append(node('p','rf-commerce-repair-help',t('หลังเติมสำเร็จ ตรวจสินค้า ผลไอเทม และราคาก่อนกดยืนยัน · ถ้ายังไม่มีชื่อสินค้าหรือราคา ให้โรลถาม NPC ก่อน','After filling, review goods, effects and prices before confirming. If names or prices have not been offered, ask the NPC first.')));
             }

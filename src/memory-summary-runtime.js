@@ -1,9 +1,9 @@
-import {removeMemoryChat} from './memory-deletion.js?v=0.58.4';
-import {requestDataTask,taskGenerationMode} from './task-generation.js?v=0.58.4';
+import {removeMemoryChat} from './memory-deletion.js?v=0.58.5';
+import {requestDataTask,taskGenerationMode} from './task-generation.js?v=0.58.5';
 import {MEMORY_LINK_KEY,MEMORY_FORMAT,emptyMemoryLibrary,normalizeMemoryLibrary,memoryAncestry,captureMemoryChat,memoryChapterValid,
-    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.58.4';
-import {createMemoryStore} from './memory-store.js?v=0.58.4';
-import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.58.4';
+    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.58.5';
+import {createMemoryStore} from './memory-store.js?v=0.58.5';
+import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.58.5';
 
 const busyPhases = new Set(['loading','archiving','waiting','counting','summarizing','validating','saving']);
 const errors = {

@@ -1,15 +1,16 @@
-import {requestCommerceDecision} from './commerce-generation.js?v=0.58.4';
-import {inspectCommerceResponse} from './commerce-protocol.js?v=0.58.4';
-import {resolveMarketplaceReply} from './marketplace-events.js?v=0.58.4';
-import {requestedCommerceKind} from './main-chat-systems.js?v=0.58.4';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.4';
-import {commerceRepairReference,requestCommerceRepair,validateCommerceRepair} from './commerce-repair.js?v=0.58.4';
-import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.58.4';
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.58.4';
-import {createCommerceComposer} from './commerce-composer.js?v=0.58.4';
-import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.58.4';
-import {commerceGenerationMode} from './commerce-task.js?v=0.58.4';
-import {hasTaskGeneration} from './task-generation.js?v=0.58.4';
+import {requestCommerceDecision} from './commerce-generation.js?v=0.58.5';
+import {inspectCommerceResponse} from './commerce-protocol.js?v=0.58.5';
+import {resolveMarketplaceReply} from './marketplace-events.js?v=0.58.5';
+import {requestedCommerceKind} from './main-chat-systems.js?v=0.58.5';
+import {readCommercePrices} from './commerce-prices.js?v=0.58.5';
+import {commerceRepairReference,requestCommerceRepair,validateCommerceRepair} from './commerce-repair.js?v=0.58.5';
+import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.58.5';
+import {disclosedBookBundle} from './commerce-public-offers.js?v=0.58.5';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.58.5';
+import {createCommerceComposer} from './commerce-composer.js?v=0.58.5';
+import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.58.5';
+import {commerceGenerationMode} from './commerce-task.js?v=0.58.5';
+import {hasTaskGeneration} from './task-generation.js?v=0.58.5';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.
@@ -102,16 +103,17 @@ export function createCommerceRuntime(api) {
             'interaction-or-terms':word('ข้อเสนอหรือเงื่อนไขยังยืนยันจากบทโรลไม่ได้','The interaction or terms cannot be verified')
         }[reason.code]||reason.code)+(reason.item?' · '+reason.item:''):'';
         const priced=!waiting&&readCommercePrices(story).length>0;
-        return{pending:{kind,waiting,repairing:busy&&opening?.message===last&&opening.repairing,status:waiting?'waiting':rejected?'invalid-data':priced?'incomplete-offer':'no-disclosed-offer'},busy:waiting,token:`pending:${context.getCurrentChatId?.()}:${userId}:${lastId}:${last?api.variant(last):''}`,available:false,
+        const localRepair=!waiting&&kind==='buy'&&Boolean(disclosedBookBundle(story,api.visible(context.chat[userId].mes),state.location?.place));
+        return{pending:{kind,waiting,localRepair,repairing:busy&&opening?.message===last&&opening.repairing,status:waiting?'waiting':rejected?'invalid-data':priced?'incomplete-offer':'no-disclosed-offer'},busy:waiting,token:`pending:${context.getCurrentChatId?.()}:${userId}:${lastId}:${last?api.variant(last):''}`,available:false,
             error:opening&&opening.message===last?opening.error:rejected?(reasonText||word('ข้อมูลรายการไม่ตรงกับข้อเสนอ NPC จึงยังยืนยันซื้อขายไม่ได้','Catalog data conflicts with the NPC offer; confirmation is unavailable')):'',
-            diagnostics:opening&&opening.message===last?opening.diagnostics:rejected?JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.4',system:kind,channel:'opening',error:'invalid-data',source:record.commerceOpening.source,details:record.commerceOpening.details||null},null,2):''};
+            diagnostics:opening&&opening.message===last?opening.diagnostics:rejected?JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.5',system:kind,channel:'opening',error:'invalid-data',source:record.commerceOpening.source,details:record.commerceOpening.details||null},null,2):''};
     }
     function view(){const candidate=candidates()[0],context=api.context(),state=api.state();if(!candidate)return pendingView(context,state);
         return{session:candidate,token:`${context.getCurrentChatId?.()}:${candidate.source.turnKey}:${candidate.source.variant}:${candidate.revision}`,
             playerName:state.player.name,busy:busy||api.isBusy(),error:candidate.id===errorId?error:'',diagnostics:candidate.id===errorId?diagnostics:'',available:!api.isBusy()&&!context.chat.at(-1)?.is_user&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
     function refresh(){if(destroyed)return;const value=view(),signature=JSON.stringify([api.settings().language,api.settings().coinStyle,value]);if(signature!==rendered){rendered=signature;ui.update(value);}}
     function failureReport(session,action,code,raw,details,channel='button'){
-        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.4',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:commerceGenerationMode(api.context()),details:details||null,rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
+        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.5',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:commerceGenerationMode(api.context()),details:details||null,rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
     }
     async function repairOpening(input){
         const current=view();
@@ -128,10 +130,18 @@ export function createCommerceRuntime(api) {
         busy=true;opening={message,repairing:true,error:'',diagnostics:''};api.setBusy(true);refresh();let raw;
         try{
             if(!chatId||typeof context.saveMetadata!=='function'||typeof api.commitOpening!=='function')throw Error('unavailable');
-            api.recordRequest('commerce',`${reference.kind} · fill offer details`);
-            raw=await requestCommerceRepair(context,reference);if(!unchanged())return{ok:false,error:'stale'};
-            let parsed;try{parsed=typeof raw==='object'?raw:api.parse(raw);}catch{}
-            const result=validateCommerceRepair(parsed?.patch||parsed,reference,source);if(!result)throw Error('opening-data');
+            // Rebuild a fully itemized book bundle from the public quote. The
+            // rejected inline object's names/properties are never reused.
+            const publicBundle=reference.kind==='buy'&&disclosedBookBundle(reference.story,reference.user,reference.location,{eventId:reference.eventId});
+            const publicEvent=publicBundle&&resolveMarketplaceReply({marketplace:publicBundle,story:reference.story,user:reference.user,location:reference.location}).event;
+            let result=publicEvent&&{event:publicEvent,session:createCommerceSession(publicEvent,source)};
+            if(!result?.session){
+                api.recordRequest('commerce',`${reference.kind} · fill offer details`);
+                raw=await requestCommerceRepair(context,reference);if(!unchanged())return{ok:false,error:'stale'};
+                let parsed;try{parsed=typeof raw==='object'?raw:api.parse(raw);}catch{}
+                result=validateCommerceRepair(parsed?.patch||parsed,reference,source);
+            }
+            if(!result)throw Error('opening-data');
             const next=structuredClone(state);next.commerce=normalizeCommerce(next.commerce,next);
             if(next.commerce.sessions.some(s=>s.eventId===result.session.eventId))throw Error('stale');
             next.commerce.sessions.push(result.session);
@@ -143,6 +153,7 @@ export function createCommerceRuntime(api) {
             opening={message,error:word(code==='opening-data'?'AI ยังเติมรายการได้ไม่ครบหรือไม่ตรงกับบทโรล · ลองใหม่ได้ หรือโรลถาม NPC ให้ระบุสินค้าและราคา':code==='save'?'บันทึกรายการไม่สำเร็จ · ลองใหม่ได้':'เติมรายการไม่สำเร็จ · ตรวจ API แล้วลองใหม่ได้',code==='opening-data'?'AI details are incomplete or conflict with the role-play. Retry or ask the NPC to clarify goods and prices.':code==='save'?'The repaired offer could not be saved. Retry.':'Offer repair failed. Check the API and retry.')+word(' · เงินและของยังไม่เปลี่ยน',' Funds and items are unchanged.'),diagnostics:failureReport({kind:reference.kind},'fill-offer',code,raw,{},'opening')};
             if(code==='opening-empty')opening.error=word('API ไม่มีข้อความคำตอบสำหรับรายการซื้อขาย · ลองใหม่ได้','The API returned no commerce reply. Retry.')+word(' · เงินและของยังไม่เปลี่ยน',' Funds and items are unchanged.');
             if(code==='opening-truncated')opening.error=word('คำตอบรายการซื้อขายถูกตัดเพราะครบขีดจำกัดโทเคน · เพิ่มขีดจำกัดคำตอบแล้วลองใหม่','The commerce reply reached the output token limit. Increase the response limit and retry.')+word(' · เงินและของยังไม่เปลี่ยน',' Funds and items are unchanged.');
+            if(failure.details?.status===524)opening.error=word('API ตอบไม่ทันผ่าน gateway (524) · ลองใหม่ภายหลังหรือเลือกการเชื่อมต่อที่ตอบได้เร็วขึ้น','The API timed out at the gateway (524). Retry later or select a faster connection.')+word(' · เงินและของยังไม่เปลี่ยน',' Funds and items are unchanged.');
             opening.diagnostics=failureReport({kind:reference.kind},'fill-offer',code,raw??failure.responseText,failure.details||{providerError:failure.message},'opening');
             return{ok:false,error:code};
         }finally{busy=false;api.setBusy(false);refresh();}

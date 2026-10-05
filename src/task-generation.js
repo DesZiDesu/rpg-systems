@@ -38,7 +38,7 @@ export async function requestDataTask(context,args,legacy,{task='data',apiErrorC
  }catch(failure){
   const message=taskErrorMessage(failure);
   const error=Object.assign(Error(message),{code:failure?.code||(message==='No message generated'?'response-empty':message==='unavailable'?'unavailable':apiErrorCode),responseText:typeof text==='string'?text:undefined,details:{task,generation:mode,api:context.mainApi||null,responseLength,providerError:message,...(failure?.finishReason?{finishReason:failure.finishReason}:{})}});
-  const status=Number(failure?.status??failure?.statusCode??failure?.response?.status);
+  const status=Number(failure?.status??failure?.statusCode??failure?.response?.status??message.match(/\b(?:response\s+status|HTTP(?:\s+status)?)\s*[:=]?\s*([45]\d{2})\b/iu)?.[1]);
   if(Number.isInteger(status)&&status>=400&&status<=599){error.status=status;error.details.status=status;}
   throw error;
  }
