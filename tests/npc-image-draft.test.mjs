@@ -35,6 +35,13 @@ test('image appearance wins over contradictory generated details and stale draft
  assert.equal(h.result().appearance,h.observed);assert.equal(h.result().background,'A healer');
  assert.equal(h.calls[1].quietImage,undefined);assert.doesNotMatch(h.calls[1].prompt,/data:image/);
 });
+test('NPC draft orchestration bypasses an AI-output regex that would erase its JSON without a retry',async()=>{
+ const h=setup({image:false,enabled:false});const context=h.env.api.context();let calls=0;
+ context.generateRawData=async()=>{calls++;return{choices:[{message:{content:JSON.stringify({name:'Lysa',appearance:'Short black hair.',background:'A healer'})},finish_reason:'stop'}]};};
+ context.extractMessageFromData=data=>data.choices[0].message.content;
+ context.generateRaw=async()=>assert.fail('Story cleanup must not receive the NPC draft');
+ await h.env.run('description');assert.equal(calls,1);assert.equal(h.result().name,'Lysa');assert.equal(h.result().background,'A healer');
+});
 test('JSON retry keeps the reference appearance authoritative',async()=>{
  const h=setup({retry:true});await h.env.run('description');
  assert.equal(h.calls.length,3);assert.equal(h.result().appearance,h.observed);

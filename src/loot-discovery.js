@@ -1,6 +1,7 @@
-import {ingestLoot} from './item-core.js?v=0.58.3';
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.3';
-import {evidenceText} from './interaction-evidence.js?v=0.58.3';
+import {ingestLoot} from './item-core.js?v=0.58.4';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.4';
+import {evidenceText} from './interaction-evidence.js?v=0.58.4';
+import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.58.4';
 export function lootOpportunity(story,user=''){
  const visible=evidenceText(story),input=evidenceText(user);
  if(/^\s*(?:\(?OOC\b|\[OOC\b|\/)/iu.test(input)||!visible)return null;
@@ -30,12 +31,13 @@ export async function resolveReplyLoot({state,raw,story,user,source,location,con
  const opportunity=lootOpportunity(story,user),received=new Set(acquired.filter(Boolean).map(s=>String(s).normalize('NFKC').toLowerCase().trim())),unreceived=pools=>pools.map(p=>({...p,items:p.items.filter(i=>!received.has(String(i?.name||'').normalize('NFKC').toLowerCase().trim()))})).filter(p=>p.items.length),input=unreceived(prepareLootPayload(raw,{story,opportunity}));
  const checked=ingestLoot(state,input,{story,source,location}),key=`${source.turnKey}:${source.variant}`;
  if(!checked.errors.length&&(input.length||!opportunity)||state.itemSystem?.checks?.some(c=>c.id===key))return{payload:input,recovered:false,checked:false};
- if(!opportunity||!context||typeof context.generateRaw!=='function'&&typeof context.generateQuietPrompt!=='function')return{payload:input,recovered:false,checked:false};
+ if(!opportunity||!context||!hasTaskGeneration(context))return{payload:input,recovered:false,checked:false};
  const request={kind:opportunity.kind,guaranteed:opportunity.guaranteed,evidence:opportunity.evidence,location,source};
  const prompt='REQUEST:\n'+JSON.stringify(request)+'\nREFERENCE DATA:\n'+JSON.stringify({language,story,user,canon:String(canon).slice(0,7000),inventory:state.inventory,existingSources:state.itemSystem?.loot||[],alreadyReceived:acquired,rejected:input,errors:checked.errors}).replace(/</gu,'\\u003c');
  record('items','loot-discovery');
  busy(true);try{
-  const response=typeof context.generateRaw==='function'?await context.generateRaw({prompt,systemPrompt:LOOT_DISCOVERY_INSTRUCTIONS,responseLength:6000,trimNames:false}):await context.generateQuietPrompt({quietPrompt:LOOT_DISCOVERY_INSTRUCTIONS+'\n'+prompt,skipWIAN:true,responseLength:6000,removeReasoning:true});
+  const response=await requestDataTask(context,{prompt,systemPrompt:LOOT_DISCOVERY_INSTRUCTIONS,responseLength:6000,trimNames:false},
+   {quietPrompt:LOOT_DISCOVERY_INSTRUCTIONS+'\n'+prompt,skipWIAN:true,removeReasoning:true},{task:'loot discovery'});
   if(!stable())return{payload:input,error:'stale'};
   const data=typeof response==='object'?response:parse(response);
   if(!data||!Array.isArray(data.loot)||data.loot.length>12||!data.loot.length&&!String(data.emptyReason||'').trim())return{payload:input,error:'response'};

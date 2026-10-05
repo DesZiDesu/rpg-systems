@@ -1,14 +1,15 @@
-import {requestCommerceDecision} from './commerce-generation.js?v=0.58.3';
-import {inspectCommerceResponse} from './commerce-protocol.js?v=0.58.3';
-import {resolveMarketplaceReply} from './marketplace-events.js?v=0.58.3';
-import {requestedCommerceKind} from './main-chat-systems.js?v=0.58.3';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.3';
-import {commerceRepairReference,requestCommerceRepair,validateCommerceRepair} from './commerce-repair.js?v=0.58.3';
-import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.58.3';
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.58.3';
-import {createCommerceComposer} from './commerce-composer.js?v=0.58.3';
-import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.58.3';
-import {commerceGenerationMode} from './commerce-task.js?v=0.58.3';
+import {requestCommerceDecision} from './commerce-generation.js?v=0.58.4';
+import {inspectCommerceResponse} from './commerce-protocol.js?v=0.58.4';
+import {resolveMarketplaceReply} from './marketplace-events.js?v=0.58.4';
+import {requestedCommerceKind} from './main-chat-systems.js?v=0.58.4';
+import {readCommercePrices} from './commerce-prices.js?v=0.58.4';
+import {commerceRepairReference,requestCommerceRepair,validateCommerceRepair} from './commerce-repair.js?v=0.58.4';
+import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.58.4';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.58.4';
+import {createCommerceComposer} from './commerce-composer.js?v=0.58.4';
+import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.58.4';
+import {commerceGenerationMode} from './commerce-task.js?v=0.58.4';
+import {hasTaskGeneration} from './task-generation.js?v=0.58.4';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.
@@ -103,14 +104,14 @@ export function createCommerceRuntime(api) {
         const priced=!waiting&&readCommercePrices(story).length>0;
         return{pending:{kind,waiting,repairing:busy&&opening?.message===last&&opening.repairing,status:waiting?'waiting':rejected?'invalid-data':priced?'incomplete-offer':'no-disclosed-offer'},busy:waiting,token:`pending:${context.getCurrentChatId?.()}:${userId}:${lastId}:${last?api.variant(last):''}`,available:false,
             error:opening&&opening.message===last?opening.error:rejected?(reasonText||word('ข้อมูลรายการไม่ตรงกับข้อเสนอ NPC จึงยังยืนยันซื้อขายไม่ได้','Catalog data conflicts with the NPC offer; confirmation is unavailable')):'',
-            diagnostics:opening&&opening.message===last?opening.diagnostics:rejected?JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.3',system:kind,channel:'opening',error:'invalid-data',source:record.commerceOpening.source,details:record.commerceOpening.details||null},null,2):''};
+            diagnostics:opening&&opening.message===last?opening.diagnostics:rejected?JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.4',system:kind,channel:'opening',error:'invalid-data',source:record.commerceOpening.source,details:record.commerceOpening.details||null},null,2):''};
     }
     function view(){const candidate=candidates()[0],context=api.context(),state=api.state();if(!candidate)return pendingView(context,state);
         return{session:candidate,token:`${context.getCurrentChatId?.()}:${candidate.source.turnKey}:${candidate.source.variant}:${candidate.revision}`,
             playerName:state.player.name,busy:busy||api.isBusy(),error:candidate.id===errorId?error:'',diagnostics:candidate.id===errorId?diagnostics:'',available:!api.isBusy()&&!context.chat.at(-1)?.is_user&&candidate.location.normalize('NFKC').toLocaleLowerCase()===state.location.place.normalize('NFKC').toLocaleLowerCase()};}
     function refresh(){if(destroyed)return;const value=view(),signature=JSON.stringify([api.settings().language,api.settings().coinStyle,value]);if(signature!==rendered){rendered=signature;ui.update(value);}}
     function failureReport(session,action,code,raw,details,channel='button'){
-        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.3',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:commerceGenerationMode(api.context()),details:details||null,rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
+        return JSON.stringify({release:globalThis.TretaresiaRelease||'0.58.4',channel,system:session?.kind,action,error:code,sessionId:session?.id,revision:session?.revision,people:details?.people||[],generation:commerceGenerationMode(api.context()),details:details||null,rawResponse:typeof raw==='string'?raw.slice(0,16000):raw??null},null,2);
     }
     async function repairOpening(input){
         const current=view();
@@ -183,7 +184,7 @@ export function createCommerceRuntime(api) {
         const state=api.state(),prepared=prepareCommerceAction(state,current.session,input.action,input);
         if(!prepared.ok){diagnostics='';errorId=input.id;error=errors[prepared.error]?.[api.settings().language==='th'?0:1]||prepared.error;refresh();return prepared;}
         prepared.session.source={...source};
-        if((typeof context.generateRaw!=='function'&&typeof context.generateQuietPrompt!=='function')||typeof context.saveMetadata!=='function'){
+        if(!hasTaskGeneration(context)||typeof context.saveMetadata!=='function'){
             errorId=input.id;error=word(...errors.unavailable);refresh();return{ok:false,error:'unavailable'};
         }
         const ticket=++request,snapshot={text:message.mes,variant:api.variant(message),state:stateFingerprint(state),length:context.chat.length};

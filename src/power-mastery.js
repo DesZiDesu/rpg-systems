@@ -1,4 +1,5 @@
-import {normalizeTrainingDetails,understandingDetailsPrompt} from './ability-learning.js?v=0.58.3';
+import {normalizeTrainingDetails,understandingDetailsPrompt} from './ability-learning.js?v=0.58.4';
+import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.58.4';
 // Power-specific mastery sessions. This state is deliberately separate from
 // customPowers (runtime resources) and from the visible Main Chat stream.
 const clean = (value, max = 500) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -66,11 +67,9 @@ export const POWER_TRAINING_TASK_INSTRUCTIONS = 'Evaluate ONE authorized RoleFor
 
 export async function requestPowerTraining(context, input) {
     const prompt = powerTrainingPrompt(input);
-    if (typeof context.generateRaw === 'function') return context.generateRaw({ systemPrompt: POWER_TRAINING_TASK_INSTRUCTIONS,
-        prompt, responseLength: 2048, trimNames: false });
-    if (typeof context.generateQuietPrompt !== 'function') throw Error('Training API unavailable');
-    return context.generateQuietPrompt({ quietPrompt: POWER_TRAINING_TASK_INSTRUCTIONS + '\n' + prompt,
-        skipWIAN: true, responseLength: 2048, removeReasoning: true });
+    if(!hasTaskGeneration(context))throw Error('Training API unavailable');
+    return requestDataTask(context,{systemPrompt:POWER_TRAINING_TASK_INSTRUCTIONS,prompt,responseLength:2048,trimNames:false},
+        {quietPrompt:POWER_TRAINING_TASK_INSTRUCTIONS+'\n'+prompt,skipWIAN:true,removeReasoning:true},{task:'power training'});
 }
 
 export function normalizePowerMastery(raw) {

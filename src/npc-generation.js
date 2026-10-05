@@ -1,3 +1,9 @@
+import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.58.4';
+export const canGenerateNpcDraft=hasTaskGeneration;
+export function requestNpcDraft(context,prompt,responseLength){
+ return requestDataTask(context,{systemPrompt:'Reply with one concise valid JSON object. No markdown, explanation or hidden reasoning.',prompt,responseLength,trimNames:false},
+  {quietPrompt:prompt,skipWIAN:true,removeReasoning:true},{task:'NPC draft'});
+}
 // Only an explicit Generate action sends the portrait to the user's AI provider.
 // Never persist the data URL in extension settings, prompts or chat metadata.
 export async function portraitForGeneration(blob, context, supportsVision) {

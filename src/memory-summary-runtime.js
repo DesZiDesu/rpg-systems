@@ -1,8 +1,9 @@
-import {removeMemoryChat} from './memory-deletion.js?v=0.58.3';
+import {removeMemoryChat} from './memory-deletion.js?v=0.58.4';
+import {requestDataTask,taskGenerationMode} from './task-generation.js?v=0.58.4';
 import {MEMORY_LINK_KEY,MEMORY_FORMAT,emptyMemoryLibrary,normalizeMemoryLibrary,memoryAncestry,captureMemoryChat,memoryChapterValid,
-    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.58.3';
-import {createMemoryStore} from './memory-store.js?v=0.58.3';
-import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.58.3';
+    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.58.4';
+import {createMemoryStore} from './memory-store.js?v=0.58.4';
+import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.58.4';
 
 const busyPhases = new Set(['loading','archiving','waiting','counting','summarizing','validating','saving']);
 const errors = {
@@ -86,6 +87,7 @@ export function cleanMemorySummaryResponse(value, context = {}) {
     }
 }
 export async function requestMemorySummary(context, prompt, profileId, signal, mode = 'preset', outputBudget = MEMORY_SUMMARY_OUTPUT_TOKENS) {
+    if(signal?.aborted)throw Error('MEMORY_CANCELLED');
     const responseLength = normalizeMemoryOutputTokens(outputBudget);
     if (profileId) {
         const service = context.ConnectionManagerRequestService;
@@ -107,7 +109,7 @@ export async function requestMemorySummary(context, prompt, profileId, signal, m
         try { return await context.generateQuietPrompt({quietPrompt:prompt,skipWIAN:false,responseLength,removeReasoning:false}); }
         finally { signal?.removeEventListener?.('abort',release); release(); }
     }
-    if (typeof context.generateRaw === 'function') return context.generateRaw({prompt,responseLength,trimNames:false,systemPrompt:'Summarize source material faithfully. Return only the requested JSON; never continue the role-play.'});
+    if(taskGenerationMode(context)!=='legacy-quiet')return requestDataTask(context,{prompt,responseLength,trimNames:false,systemPrompt:'Summarize source material faithfully. Return only the requested JSON; never continue the role-play.'},undefined,{task:'memory summary',respectConfiguredLimit:false});
     throw Error('MEMORY_API_UNAVAILABLE');
 }
 // Accept a thunk so a cancelled operation never starts another API/tokenizer call.

@@ -1,4 +1,4 @@
-import {normalizeAbility} from './incantation-core.js?v=0.58.3';
+import {normalizeAbility} from './incantation-core.js?v=0.58.4';
 const text=value=>typeof value==='string'?value.trim():'';
 const missing=value=>!text(value)||/^(?:ไม่มีรายละเอียด|ยังไม่มีรายละเอียด|no description)$/iu.test(text(value));
 const record=value=>value&&typeof value==='object'&&!Array.isArray(value)?value:null;
