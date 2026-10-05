@@ -1,4 +1,12 @@
-# ROLEFORGE — v0.54.1
+# ROLEFORGE — v0.56.0
+
+## v0.56.0 — Loot and item actions
+
+- Show discovered items above the composer before collection. Choose items/quantities locally, collect partially, and preserve the remaining world quantities. Use rich metadata from the same normal reply; browsing and Loot discovery make no extra API call.
+- Select an inventory item to close RoleForge and open a compact Items panel: Use/Eat/Drink, Drop or Give to a current-scene NPC. Respect consumables, reusable tools/keys, story/turn cooldowns, finite charges, trade reservations and existing rental/access rights. Record gifts only when accepted and create recoverable dropped items.
+- Resolve explicit buttons with one notified native AI task, append tagged narrative/dialogue to the existing answer when there is no newer role, or wait for the next completed answer. Share the engine with typed role actions and suppress duplicate inventory ops. Ignore cancelled/stale responses, restore state/text on failed saving, and retry only on explicit request.
+- Add **AI: fill item details** in the Items panel. Scan the inventory, fill only missing metadata in notified batches of six, retain known facts and depleted charges/cooldowns, keep already saved batches on interruption, and leave unresolved properties unknown. Match Training/Abilities surfaces, header controls and spacing.
+- Keep separate Loot/Items/Commerce/Training/Ability windows in the existing dock, with Tabs, flat minimize, close, clear disabled reasons and approved grayscale styling. [Thai workflow and limits](docs/items-update.th.md) · [actual mobile/desktop UI](docs/previews/items-v0560/index.html) · [approved interactive design](docs/previews/items-loot-design/index.html).
 
 ## v0.54.1 — Same-reply trade offers and integrated dialogue audio
 

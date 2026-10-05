@@ -10,6 +10,7 @@ const node = (tag, className = '', value) => {
 };
 
 const ACTIONS = Object.freeze({
+    refused: { icon: 'circle-info', tone: 'lost', th: 'รายการยังไม่สำเร็จ', en: 'ITEM ACTION NOT COMPLETED' },
     received: { icon: 'box-open', tone: 'received', th: 'ได้รับไอเทม', en: 'ITEM RECEIVED' },
     picked: { icon: 'hand', tone: 'picked', th: 'หยิบไอเทม', en: 'ITEM PICKED UP' },
     stored: { icon: 'box', tone: 'stored', th: 'เก็บไอเทม', en: 'ITEM STORED' },

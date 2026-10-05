@@ -1,5 +1,6 @@
 // Called at RoleForge's request boundary, never while rendering or editing UI.
 const labels = {
+    items: ['Loot / item action', 'เก็บ / ใช้ / ทิ้ง / มอบไอเทม'],
     powerMastery: ['Training', 'ฝึกพลัง / วิชา / ทักษะ'],
     manualSync: ['Manual Sync', 'ซิงก์ข้อมูลด้วย AI'],
     hStatsBaseline: ['NPC H-Stats profile', 'สร้างโปรไฟล์ H-Stats ของ NPC'],
@@ -22,6 +23,7 @@ export function apiRequestNotice(kind, reason = '', language = 'en') {
         const system = String(reason).split(' · ')[0];
         label = ({auction:['Auction','ประมูล'],buy:['Buying','ซื้อสินค้า'],sell:['Selling','ขายสินค้า']}[system] || ['Commerce','ซื้อขาย / ประมูล'])[index];
     }
+    if(kind==='items'&&String(reason).startsWith('enrich'))label=(th?'เติมข้อมูลไอเทม · ชุด ':'Fill item details · batch ')+String(reason).split(' · ')[1];
     const sequence = String(reason).match(/(?:Sync|summary) (\d+(?:\/\d+)?)/i)?.[1];
     if (sequence) label += ` · ${sequence}`;
     if (/retry/i.test(reason)) label += th ? ' · ลองใหม่' : ' · retry';

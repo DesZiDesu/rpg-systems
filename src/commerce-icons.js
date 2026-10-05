@@ -1,5 +1,15 @@
 // Static inline SVG, independent of emoji fonts and icon-font loading.
 const paths={
+ flask:'M9 3h6M10 3v6L4 19q-1 2 2 2h12q3 0 2-2L14 9V3M7 15h10',
+ apple:'M12 8c-8-5-12 3-7 11q3 4 7 1 4 3 7-1c5-8 1-16-7-11Zm0 0V3m0 3c5 0 5-4 5-4-4 0-5 4-5 4',
+ sword:'m5 3 15 15-2 2L3 5V3h2Zm9 14 6-6M17 20l3-3m-7-4-3 3',
+ gift:'M3 8h18v4H3V8Zm2 4v9h14v-9M12 8v13M12 8C4 8 5 1 9 3l3 5Zm0 0c8 0 7-7 3-5l-3 5',
+ drop:'M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4',
+ minus:'M5 12h14',close:'m6 6 12 12M18 6 6 18',check:'m5 12 4 4L19 6',right:'m9 5 7 7-7 7',
+ info:'M12 11v6m0-10v1M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',
+ lock:'M5 10h14v11H5V10Zm3 0V7a4 4 0 0 1 8 0v3',user:'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2',
+ clock:'M12 6v6l4 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',search:'M15 15l6 6M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0',
+
  trash:'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
  item:'m12 3 9 5-9 5-9-5 9-5ZM3 8v10l9 5 9-5V8M12 13v10',
  key:'M11 11l9 9m-5-5 3-3m0 6 3-3M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
