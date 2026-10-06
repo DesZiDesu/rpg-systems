@@ -32,7 +32,7 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;
 try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||undefined,args:['--no-sandbox','--disable-dev-shm-usage'],...(process.env.FORGE_VISUAL_FONTS&&process.env.HTTPS_PROXY?{proxy:{server:process.env.HTTPS_PROXY,bypass:'localhost,127.0.0.1'}}:{})});
  for(const width of [320,390,1280]){
-  const page=await browser.newPage({viewport:{width,height:844},reducedMotion:'reduce'}),errors=[];page.setDefaultTimeout(12000);console.log('Start',width);
+  const page=await browser.newPage({viewport:{width,height:844},hasTouch:width<600,reducedMotion:'reduce'}),errors=[];page.setDefaultTimeout(12000);console.log('Start',width);
   page.on('pageerror',e=>errors.push(e.message));if(!process.env.FORGE_VISUAL_FONTS)await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
   await page.goto(`http://127.0.0.1:${server.address().port}/`);await page.locator('#tretaresia-character-forge iframe').waitFor();
   const f=page.frameLocator('#tretaresia-character-forge iframe');await f.locator('#fName').waitFor({state:'attached'});await f.locator('#trSkip').evaluate(n=>n.click());await f.locator('#trapp:not(.loading)').waitFor();
@@ -41,6 +41,30 @@ try{
    assert.ok(inside.scrollWidth<=inside.width+1,JSON.stringify(inside));assert.equal(inside.scrollLeft,0,JSON.stringify(inside));assert.ok(inside.wrapScroll<=inside.wrapWidth+1,JSON.stringify(inside));
   };
   console.log('Loaded frame',width);await checkFit();await page.locator('#send_form').evaluate(n=>n.style.height='180px');await checkFit();await page.setViewportSize({width:Math.max(390,width),height:600});await checkFit();await page.setViewportSize({width,height:844});await page.locator('#send_form').evaluate(n=>n.style.height='96px');await checkFit();
+  if(width<600){
+    // Safari keyboard opening can pan its visual viewport beyond the iframe
+    // before the host has resized. Do not turn that transient state into 1px.
+    await f.locator('#fName').fill('Ari');await f.locator('#fCont').focus();
+    assert.ok(await f.locator('#fCont').evaluate(n=>parseFloat(getComputedStyle(n).fontSize)>=16));
+    await page.evaluate(()=>{window.originalForgeViewport=Object.getOwnPropertyDescriptor(window,'visualViewport');const v=new EventTarget();v.height=360;v.offsetTop=document.querySelector('#chat').getBoundingClientRect().bottom+40;Object.defineProperty(window,'visualViewport',{configurable:true,value:v});window.dispatchEvent(new Event('resize'));});
+    await page.waitForTimeout(100);
+    assert.ok(await page.locator('#tretaresia-character-forge iframe').evaluate(n=>n.clientHeight>=300),'keyboard pan must not collapse the iframe');
+    const visible=await f.locator('#fCont').evaluate(n=>{const root=document.getElementById('trapp'),r=n.getBoundingClientRect(),b=root.getBoundingClientRect();return {focused:document.activeElement===n,top:r.top,bottom:r.bottom,height:b.height};});
+    assert.ok(visible.focused&&visible.top>=0&&visible.bottom<=visible.height,JSON.stringify(visible));
+    await page.evaluate(()=>{window.visualViewport.offsetTop=document.querySelector('#chat').getBoundingClientRect().bottom-4;window.dispatchEvent(new Event('resize'));});
+    await page.waitForTimeout(80);
+    assert.ok(await page.locator('#tretaresia-character-forge iframe').evaluate(n=>n.clientHeight>=300),'a thin viewport intersection must not collapse the form either');
+    // Changing fields while open scrolls the form, not the host to a blank area.
+    await f.locator('#fName').focus();await page.waitForTimeout(80);
+    assert.ok(await f.locator('#fName').evaluate(n=>{const r=n.getBoundingClientRect();return r.top>=0&&r.bottom<=document.getElementById('trapp').clientHeight;}));
+    await page.evaluate(()=>{Object.defineProperty(window,'visualViewport',window.originalForgeViewport);delete window.originalForgeViewport;window.dispatchEvent(new Event('resize'));});
+    await f.locator('#fName').evaluate(n=>n.blur());await checkFit();
+    await page.setViewportSize({width,height:400});await f.locator('#fCont').fill('Arcadia');await page.waitForTimeout(100);
+    assert.ok(await f.locator('#fCont').evaluate(n=>{const r=n.getBoundingClientRect();return document.activeElement===n&&r.top>=0&&r.bottom<=document.getElementById('trapp').clientHeight;}));
+    await page.waitForFunction(()=>Object.values(window.host.chatMetadata).some(v=>v?.draft?.fields?.fCont==='Arcadia'));
+    if(width===390)await page.screenshot({path:artifacts+'/keyboard-sized-viewport-mobile.png'});
+    await page.setViewportSize({width,height:844});await f.locator('#fCont').evaluate(n=>n.blur());await checkFit();
+  }
   assert.equal(await f.locator('.corner').count(),0);
   if(process.env.FORGE_VISUAL_FONTS){const fonts=await f.locator('#trapp').evaluate(async()=>{await document.fonts.ready;return [...document.fonts].filter(face=>face.status==='loaded').map(face=>face.family)});assert.ok(fonts.includes('Orbitron'),JSON.stringify(fonts));console.log('Real Forge fonts loaded',width);}
   // Use real theme controls: palette changes arrive live without replacing the iframe or draft.

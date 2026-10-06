@@ -1,5 +1,5 @@
-import {createMemoryInsightRenderer} from './memory-insights-ui.js?v=0.58.9';
-import {memorySnippet,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_CATEGORIES,MEMORY_CATEGORY_LABELS,normalizeMemoryStrategy,normalizeMemoryOutputTokens} from './memory-summaries.js?v=0.58.9';
+import {createMemoryInsightRenderer} from './memory-insights-ui.js?v=0.58.10';
+import {memorySnippet,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_CATEGORIES,MEMORY_CATEGORY_LABELS,normalizeMemoryStrategy,normalizeMemoryOutputTokens} from './memory-summaries.js?v=0.58.10';
 const escape = value => String(value ?? '').replace(/[&<>"']/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export const memoryBusy = status => ['loading','archiving','waiting','counting','summarizing','validating','saving'].includes(status);
 export function memoryPhaseLabel(status, language = 'en') {

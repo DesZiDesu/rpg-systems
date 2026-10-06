@@ -1,4 +1,4 @@
-import {itemStatPath,normalizeStatEffects,validStatEffects} from './item-definition.js?v=0.58.9';
+import {itemStatPath,normalizeStatEffects,validStatEffects} from './item-definition.js?v=0.58.10';
 const copy=s=>structuredClone(s);
 const minute=clock=>Number.isInteger(clock?.day)&&/^\d\d:\d\d$/u.test(clock?.time||'')?(clock.day-1)*1440+Number(clock.time.slice(0,2))*60+Number(clock.time.slice(3)):null;
 const leaf=(state,path)=>{if(!itemStatPath(path))return null;const keys=path.split('.'),key=keys.pop();let owner=state;for(const k of keys){if(!owner||typeof owner!=='object'||!Object.hasOwn(owner,k))return null;owner=owner[k];}return owner&&Object.hasOwn(owner,key)&&['number','string','boolean'].includes(typeof owner[key])?{owner,key,value:owner[key]}:null;};

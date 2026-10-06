@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.58.9** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.58.10** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.3-development.md)
 
@@ -90,7 +90,7 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.58.9** has **1,058 passing unit/host tests** and syntax checks. Character Forge browser checks at 320/390/1280px cover viewport fit, saved drafts, optional Origin Skill, separate Guild/Party, native preset editing, configured Arsenal, hidden Rank and opening generation. Native drawer and startup checks pass on mobile/desktop, including a narrow drawer and cached legacy loader. Skill Storage checks pass at 320/390/900/901/1280px; Optional Systems and chat-null/presentation checks also pass. The older combined chat fixture still has the same baseline commerce assertion failure on unchanged 0.58.7; see the [0.58.8 report](docs/character-forge-v0.58.8.th.md). Provider responses use controlled fixtures, and these checks do not certify every live model, host theme or Safari on a physical iPhone. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
+Version **0.58.10** has **1,058 passing unit/host tests** and syntax checks. Character Forge browser checks at 320/390/1280px cover viewport fit, saved drafts, optional Origin Skill, separate Guild/Party, native preset editing, configured Arsenal, hidden Rank and opening generation. Native drawer and startup checks pass on mobile/desktop, including a narrow drawer and cached legacy loader. Skill Storage checks pass at 320/390/900/901/1280px; Optional Systems and chat-null/presentation checks also pass. The older combined chat fixture still has the same baseline commerce assertion failure on unchanged 0.58.7; see the [0.58.8 report](docs/character-forge-v0.58.8.th.md). Provider responses use controlled fixtures, and these checks do not certify every live model, host theme or Safari on a physical iPhone. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
 
 [Repository audit](docs/repository-audit-v0.56.3.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.3.th.md) · [Full audited inventory](docs/repository-audit-v0.56.3.json)
 
@@ -119,3 +119,5 @@ Complete shop item definitions and validated bundle totals in the normal reply i
 Skill Storage pagination and automatic categories in 0.58.7: [Thai report](docs/skill-storage-v0.58.7.th.md).
 
 Character Forge horizontal-scroll fix, removed corner ornaments and live theme colors in 0.58.9: [Thai report](docs/character-forge-v0.58.9.th.md).
+
+Character Forge iPhone keyboard focus/viewport fix in 0.58.10: [report](docs/character-forge-v0.58.10.md).

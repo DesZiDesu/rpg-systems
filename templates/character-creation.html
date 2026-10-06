@@ -96,6 +96,8 @@ html,body{height:100%;overflow:hidden;background:transparent;-webkit-tap-highlig
   padding:9px 11px;color:var(--txt);font-family:var(--f-body);font-size:13px;outline:none}
 #trapp .inp::placeholder,#trapp textarea.inp::placeholder{color:var(--faint)}
 #trapp .inp:focus,#trapp textarea.inp:focus,#trapp select.inp:focus{border-color:var(--gold);background:var(--hov)}
+/* iPhone Safari zooms focused controls below 16px and pans the outer page. */
+@media (pointer:coarse){#trapp .inp,#trapp select.inp,#trapp textarea.inp{font-size:16px}}
 #trapp select.inp{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><path d='M2 4 L6 8 L10 4' stroke='%23d6b458' fill='none' stroke-width='1.5'/></svg>");background-repeat:no-repeat;background-position:right 10px center}
 #trapp textarea.inp{min-height:62px;resize:vertical}
 #trapp .chip,#trapp .rk{max-width:100%;overflow-wrap:anywhere}
