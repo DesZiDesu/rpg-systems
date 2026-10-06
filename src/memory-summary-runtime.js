@@ -1,9 +1,9 @@
-import {removeMemoryChat} from './memory-deletion.js?v=0.58.11';
-import {requestDataTask,taskGenerationMode} from './task-generation.js?v=0.58.11';
+import {removeMemoryChat} from './memory-deletion.js?v=0.58.12';
+import {requestDataTask,taskGenerationMode} from './task-generation.js?v=0.58.12';
 import {MEMORY_LINK_KEY,MEMORY_FORMAT,emptyMemoryLibrary,normalizeMemoryLibrary,memoryAncestry,captureMemoryChat,memoryChapterValid,
-    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.58.11';
-import {createMemoryStore} from './memory-store.js?v=0.58.11';
-import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.58.11';
+    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,memorySummaryJsonSchema,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.58.12';
+import {createMemoryStore} from './memory-store.js?v=0.58.12';
+import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.58.12';
 
 const busyPhases = new Set(['loading','archiving','waiting','counting','summarizing','validating','saving']);
 const errors = {
@@ -14,6 +14,7 @@ const errors = {
     MEMORY_STORAGE_BLOCKED:['Another tab blocks the memory database. Close old tabs and retry.','แท็บเก่าขวางการเปิดคลังความจำ ปิดแท็บเก่าแล้วลองใหม่'],
     MEMORY_STORAGE_WRITE_FAILED:['Memory could not be saved. Check free browser storage; export a backup before clearing anything.','บันทึกคลังความจำไม่สำเร็จ ตรวจพื้นที่เบราว์เซอร์ และส่งออกสำรองก่อนล้างข้อมูล'],
     MEMORY_INVALID_SUMMARY:['The AI did not return a complete summary. Retry or choose another connection profile.','AI ส่งสรุปไม่ครบตามรูปแบบ ลองใหม่หรือเลือกโปรไฟล์การเชื่อมต่ออื่น'],
+    MEMORY_RESPONSE_TRUNCATED:['The API stopped at its output token limit before completing the summary. Increase the summary output budget or retry with a smaller batch.','API ตัดคำตอบเมื่อถึงขีดจำกัดโทเคนก่อนสรุปเสร็จ เพิ่มงบ output ของงานสรุป หรือกดทำต่อด้วยชุดที่เล็กลง'],
     MEMORY_UNSUPPORTED_EVIDENCE:['A summary event lacked matching source evidence. The previous summary is retained. Retry or change the model.','เหตุการณ์ในสรุปไม่มีหลักฐานตรงกับข้อความต้นทาง เก็บสรุปเดิมไว้แล้ว ลองใหม่หรือเปลี่ยนโมเดล'],
     MEMORY_API_UNAVAILABLE:['No supported generation API is available. Connect an API in SillyTavern first.','ยังไม่มี API ที่ใช้งานได้ กรุณาเชื่อมต่อ API ใน SillyTavern ก่อน'],
     MEMORY_PRESET_UNAVAILABLE:['This SillyTavern version does not expose native preset generation. Update SillyTavern or select Compact prompt in summary settings.','SillyTavern รุ่นนี้ไม่มีทางเจนผ่าน preset ให้ส่วนเสริมใช้ อัปเดต SillyTavern หรือเลือก Compact prompt ในการตั้งค่าสรุป'],
@@ -37,6 +38,7 @@ export function memoryJobMessage(error, language = 'en') {
     return advice ? `${error.httpStatus ? `HTTP ${error.httpStatus}: ` : ''}${advice[language === 'th' ? 1 : 0]} ${language === 'th' ? 'ชุดที่บันทึกแล้วอยู่ครบ' : 'Completed batches remain saved.'}` : base;
 }
 export function diagnoseMemoryApiFailure(error) {
+    if (error?.code === 'response-truncated') return Object.assign(Error('MEMORY_RESPONSE_TRUNCATED'),{finishReason:error.details?.finishReason || error.finishReason || 'length'});
     const failure = Error('MEMORY_API_REQUEST_FAILED');
     const message = typeof error === 'string' ? error : String(error?.message || '');
     const status = Number(error?.status ?? error?.statusCode ?? error?.response?.status ?? error?.cause?.status ?? message.match(/\b(?:HTTP|status|error)\s*[:=]?\s*(4\d\d|5\d\d)\b/i)?.[1] ?? message.match(/\b(401|403|404|413|429|502|503|504)\b/)?.[1]);
@@ -62,7 +64,7 @@ export function cleanMemorySummaryResponse(value, context = {}) {
     // Strip only complete reasoning blocks before the answer. A tag quoted
     // inside a valid JSON summary or source evidence is ordinary story data.
     for (;;) {
-        const start = response.match(/^<(think|thinking|analysis)>/i);
+        const start = response.match(/^<(think|thinking|analysis|planning)>/i);
         if (!start) return response;
         const open = start[0].toLowerCase(),close = `</${start[1].toLowerCase()}>`;
         let depth = 1,quoted = false,escaped = false,end = 0;
@@ -86,6 +88,39 @@ export function cleanMemorySummaryResponse(value, context = {}) {
         response = response.slice(end).trimStart();
     }
 }
+export function parseMemorySummaryResponse(response, context = {}, parse = JSON.parse) {
+    const cleaned = cleanMemorySummaryResponse(response,context).replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+    const invalid = reason => Object.assign(Error('MEMORY_INVALID_SUMMARY'),{summaryReason:reason});
+    // Never extract an apparent answer from an unfinished reasoning block.
+    if (/^<(think|thinking|analysis|planning)>/i.test(cleaned)) throw invalid('unfinished-reasoning');
+    if (cleaned.startsWith('[')) throw invalid('not-object');
+    let first;
+    for (let start = 0; start < cleaned.length;) {
+        start = cleaned.indexOf('{',start);
+        if (start < 0) break;
+        let depth = 0, quoted = false, escaped = false, end = -1;
+        for (let i = start; i < cleaned.length; i++) {
+            const ch = cleaned[i];
+            if (quoted) { if (escaped) escaped = false; else if (ch === '\\') escaped = true; else if (ch === '"') quoted = false; continue; }
+            if (ch === '"') quoted = true;
+            else if (ch === '{') depth++;
+            else if (ch === '}' && --depth === 0) { end = i + 1; break; }
+        }
+        if (end < 0) throw invalid('incomplete-json');
+        let value;
+        try {
+            // Host parsers may salvage a nested object after invalid outer JSON.
+            // Require a complete valid candidate before delegating to the host.
+            JSON.parse(cleaned.slice(start,end));
+            value = parse(cleaned.slice(start,end));
+        } catch { throw invalid('invalid-json'); }
+        first ??= value;
+        if (typeof value?.summary === 'string' && typeof value?.recap === 'string') return value;
+        start = end;
+    }
+    if (first !== undefined) return first;
+    throw invalid('invalid-json');
+}
 export async function requestMemorySummary(context, prompt, profileId, signal, mode = 'preset', outputBudget = MEMORY_SUMMARY_OUTPUT_TOKENS) {
     if(signal?.aborted)throw Error('MEMORY_CANCELLED');
     const responseLength = normalizeMemoryOutputTokens(outputBudget);
@@ -106,7 +141,11 @@ export async function requestMemorySummary(context, prompt, profileId, signal, m
         let owned = true;
         const release = () => { if (owned) { owned = false; nativeSummaryRequests--; } };
         signal?.addEventListener?.('abort',release,{once:true});
-        try { return await context.generateQuietPrompt({quietPrompt:prompt,skipWIAN:false,responseLength,removeReasoning:false}); }
+        // For chat completion, structured generation bypasses SillyTavern's
+        // story cleanup while retaining the selected preset and WI/AN context.
+        // Text-completion hosts cannot use its JSON extraction path.
+        try { return await context.generateQuietPrompt({quietPrompt:prompt,skipWIAN:false,responseLength,removeReasoning:false,
+            ...(context.mainApi === 'openai' ? {jsonSchema:memorySummaryJsonSchema()} : {})}); }
         finally { signal?.removeEventListener?.('abort',release); release(); }
     }
     if(taskGenerationMode(context)!=='legacy-quiet')return requestDataTask(context,{prompt,responseLength,trimNames:false,systemPrompt:'Summarize source material faithfully. Return only the requested JSON; never continue the role-play.'},undefined,{task:'memory summary',respectConfiguredLimit:false});
@@ -183,6 +222,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
         const previous = storedJob(libraries.get(snapshot.owner),snapshot.chatId);
         const failedAt = new Date().toISOString();
         phase(snapshot,'error',{error:memoryJobMessage(error,config().language),code:error?.message,failedStage:error.stage || previous?.stage || previous?.status || '',
+            summaryReason:error.summaryReason || '',finishReason:error.finishReason || '',
             failedAfterSeconds:Math.round(Math.max(0,new Date(failedAt).getTime() - new Date(previous?.phaseStartedAt || failedAt).getTime()) / 1000),
             requestFinishedAt:previous?.requestStartedAt && !previous.requestFinishedAt ? failedAt : previous?.requestFinishedAt || '',httpStatus:error.httpStatus || 0});
         if (same(snapshot)) notify('error',memoryJobMessage(error,config().language));
@@ -352,7 +392,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     return new TextEncoder().encode(value).length;
                 }
             };
-            phase(snapshot,'waiting',{stage:'waiting',prepare,rpgHandoff:'',error:'',code:'',httpStatus:0,failedStage:'',failedAfterSeconds:0,repairedEvents:0,droppedEvents:0,completed:0,total:initialBatches,processedMessages:0,totalMessages,remainingMessages:initialPending,
+            phase(snapshot,'waiting',{stage:'waiting',prepare,rpgHandoff:'',error:'',code:'',summaryReason:'',finishReason:'',responseChars:0,httpStatus:0,failedStage:'',failedAfterSeconds:0,repairedEvents:0,droppedEvents:0,completed:0,total:initialBatches,processedMessages:0,totalMessages,remainingMessages:initialPending,
                 strategy,apiCalls,apiCallsTotal,plannedCalls:initialBatches * (strategy === 'categories' ? MEMORY_CATEGORIES.length : 1),category:'',categoryCompleted:0,
                 batchMessages:0,batchSegments:0,batchSize,activeBatchSize,activeBatchCharLimit,recommendedBatchSize:adaptive ? activeBatchSize : 0,recommendedBatchCharLimit:adaptive ? activeBatchCharLimit : 0,
                 apiTimeoutSeconds:apiTimeout / 1000,savedChapters:initialSaved,startedAt:new Date().toISOString(),finishedAt:'',requestStartedAt:'',requestFinishedAt:'',inputTokens:0,outputTokens:0,
@@ -483,15 +523,16 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                         } finally { signal.removeEventListener('abort',stopRequest); }
                         if (!same(snapshot) || signal.aborted) throw Error('MEMORY_CANCELLED');
                         if (typeof response !== 'string' || !response.trim()) throw Error('MEMORY_EMPTY_RESPONSE');
-                        phase(snapshot,'validating',{stage:'validating',requestFinishedAt:new Date().toISOString()});
+                        phase(snapshot,'validating',{stage:'validating',requestFinishedAt:new Date().toISOString(),responseChars:response.length,
+                            outputTokens:await count(response)});
+                        requireCurrent(snapshot);
                         for (const source of batch.filter(source => source.chatId === snapshot.chatId)) {
                             const original = snapshot.ctx.chat?.[Number(source.key)];
                             if (!original || memoryFingerprint(JSON.stringify([original.is_user ? 'User' : 'Character',original.name || '',visible(original.mes || '')])) !== source.fingerprint) throw Error('MEMORY_CHANGED');
                         }
-                        let value;try { value = repairMemorySummary(parse(cleanMemorySummaryResponse(response,snapshot.ctx)),batch); }
-                        catch { throw Error('MEMORY_INVALID_SUMMARY'); }
+                        const value = repairMemorySummary(parseMemorySummaryResponse(response,snapshot.ctx,parse),batch);
                         if (category) value.events = value.events.map(event => ({...event,category,id:`${category}-${event.id}`}));
-                        phase(snapshot,'validating',{outputTokens:await count(response)});requireCurrent(snapshot);
+                        requireCurrent(snapshot);
                         return value;
                     };
                     let value, draft;
@@ -521,7 +562,8 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                         // uses the story-focused pass. No extra paid merge call.
                         value = {summary:draft.parts.story.summary,recap:draft.parts.story.recap,
                             events:parts.flatMap(part => part.events),sections:MEMORY_CATEGORIES.map(category => ({category,summary:draft.parts[category].summary})),
-                            evidenceReport:{repairedEvents:parts.reduce((n,part)=>n+(part.evidenceReport?.repairedEvents||0),0),droppedEvents:parts.reduce((n,part)=>n+(part.evidenceReport?.droppedEvents||0),0)}};
+                            evidenceReport:{repairedEvents:parts.reduce((n,part)=>n+(part.evidenceReport?.repairedEvents||0),0),droppedEvents:parts.reduce((n,part)=>n+(part.evidenceReport?.droppedEvents||0),0),
+                                ...(parts.some(part=>part.evidenceReport?.eventIndexMissing) ? {eventIndexMissing:true} : {})}};
                     } else value = await fetchPart('');
                     const baseChapterId=`chapter-${memoryFingerprint(JSON.stringify([targetId,batch.map(source => [source.segmentKey,source.fingerprint])]))}`;
                     let chapterId=baseChapterId;for(let n=1;(library.deletedChapters||[]).includes(chapterId);n++)chapterId=baseChapterId+'-'+n;
@@ -618,7 +660,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     phase(snapshot,'cancelled',{error:'',completed,processedMessages:processed.size,finishedAt:new Date().toISOString(),queued:false,waitingFor:''});
                     if (same(snapshot)) tell('info','Memory job cancelled. Completed batches remain saved.','ยกเลิกงานความจำแล้ว ชุดที่บันทึกสำเร็จยังอยู่');
                 } else {
-                    if (['MEMORY_API_TIMEOUT','MEMORY_INVALID_SUMMARY','MEMORY_EMPTY_RESPONSE'].includes(error.message)) {
+                    if (['MEMORY_API_TIMEOUT','MEMORY_INVALID_SUMMARY','MEMORY_RESPONSE_TRUNCATED','MEMORY_EMPTY_RESPONSE'].includes(error.message)) {
                         const failed = storedJob(library,snapshot.chatId);
                         phase(snapshot,failed.status,{recommendedBatchSize:Math.max(1,Math.floor(failed.batchMessages / 2)),
                             recommendedBatchCharLimit:Math.max(2000,Math.floor(failed.batchSourceChars / 2))});

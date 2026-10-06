@@ -1,11 +1,90 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as memory from '../src/memory-summaries.js';
-import {createMemorySummaries,requestMemorySummary,cleanMemorySummaryResponse,memorySummaryNativeGenerationActive,diagnoseMemoryApiFailure,memoryJobMessage} from '../src/memory-summary-runtime.js';
+import {createMemorySummaries,requestMemorySummary,cleanMemorySummaryResponse,parseMemorySummaryResponse,memorySummaryNativeGenerationActive,diagnoseMemoryApiFailure,memoryJobMessage} from '../src/memory-summary-runtime.js';
 import {renderMemorySummaries} from '../src/memory-summary-ui.js';
 import {removeMemoryChat} from '../src/memory-deletion.js';
 
 const config = () => ({enableMemorySummaries:true,language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryBatchSize:10,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
+test('chat-completion preset summaries bypass story cleanup with a structured task while keeping WI/AN and the selected preset',async()=>{
+ let calls=0,args;const answer={summary:'คอร่าเขียน <planning>ไว้ในหนังสือ</planning>',recap:'พบกันริมแม่น้ำ',events:[]};
+ const context={mainApi:'openai',generateRaw:()=>assert.fail('No extra raw request'),generateQuietPrompt:async options=>{
+  calls++;args=options;
+  // The host structured branch extracts JSON before story regex/cleanup.
+  return options.jsonSchema ? JSON.stringify(answer) : '<tr-narrative>เรื่องใหม่</tr-narrative>';
+ }};
+ const raw=await requestMemorySummary(context,'TASK','',null,'preset',3600);
+ assert.deepEqual(parseMemorySummaryResponse(raw),answer);assert.equal(calls,1);assert.equal(args.skipWIAN,false);assert.equal(args.removeReasoning,false);
+ assert.equal(args.responseLength,3600);assert.deepEqual(args.jsonSchema.value.required,['summary','recap','events']);
+ assert.equal(args.jsonSchema.returnInvalid,true);assert.equal(args.jsonSchema.strict,false);
+ assert.equal(memorySummaryNativeGenerationActive(),false);assert(!Object.hasOwn(args,'quietToLoud'));
+});
+test('text-completion preset requests keep text extraction rather than the chat-only structured JSON branch',async()=>{
+ let args;const context={mainApi:'textgenerationwebui',generateQuietPrompt:async options=>{args=options;return '{"summary":"A","recap":"B","events":[]}';}};
+ assert.equal(parseMemorySummaryResponse(await requestMemorySummary(context,'TASK','',null)).recap,'B');
+ assert(!Object.hasOwn(args,'jsonSchema'));assert.equal(args.skipWIAN,false);
+});
+test('complete leading planning is discarded and literal JSON tags, escaped quotes and braces survive',()=>{
+ const value={summary:'A {note} and "quote" <planning>text</planning>',recap:'The source is retained.',events:[]},raw=JSON.stringify(value);
+ assert.deepEqual(parseMemorySummaryResponse(`<planning>{CoT}{"summary":"wrong"}end {CoT}</planning>\n\`\`\`json\n${raw}\n\`\`\``),value);
+ assert.deepEqual(parseMemorySummaryResponse(`<analysis><planning>{"recap":"wrong"}</planning></analysis>\n${raw}`),value);
+ for(const tag of ['think','analysis','planning'])assert.throws(()=>parseMemorySummaryResponse(`<${tag}>${raw}`),error=>error.summaryReason==='unfinished-reasoning');
+});
+test('summary parsing chooses the complete summary envelope rather than an earlier unrelated JSON object',()=>{
+ const raw='{"scene":"River"}\n{"summary":"A","recap":"B","events":[]}';
+ assert.equal(parseMemorySummaryResponse(raw,{},JSON.parse).recap,'B');
+ assert.throws(()=>parseMemorySummaryResponse('{"outer":{"summary":"A","recap":"B","events":[]}'),error=>error.summaryReason==='incomplete-json');
+ assert.throws(()=>parseMemorySummaryResponse('[{"summary":"A","recap":"B","events":[]}]'),error=>error.summaryReason==='not-object');
+ const forgivingHost=()=>({summary:'Nested object',recap:'Should not be salvaged',events:[]});
+ assert.throws(()=>parseMemorySummaryResponse('{bad outer: {"summary":"A","recap":"B","events":[]}}',{},forgivingHost),error=>error.summaryReason==='invalid-json');
+});
+test('omitted or null optional event indexes preserve complete summaries and mark missing indexing without invented facts',async()=>{
+ for(const events of [undefined,null]){
+  const input={summary:'A conversation was recorded.',recap:'Cora met Nova.',...(events===null ? {events} : {})};
+  const fixed=memory.repairMemorySummary(input,[]);assert.deepEqual(fixed.events,[]);assert.equal(fixed.evidenceReport.eventIndexMissing,true);
+  assert.equal(input.events,events);
+  const f=fixture({respond:()=>JSON.stringify(input)});await f.runtime.open();assert.equal(await f.runtime.run(),true);assert.equal(f.calls.length,1);
+  assert.equal(f.runtime.view().coverage.pendingMessages,0);assert.equal(f.runtime.view().chapters[0].events.length,0);
+  assert.equal(f.data.get('card:cora').chats[0].messages.length,2);f.runtime.search('fishing');assert(f.runtime.view().results.some(hit=>hit.type==='source'));
+  const markup={innerHTML:'',querySelectorAll:()=>[]};renderMemorySummaries(markup,f.runtime.view(),[]);assert.match(markup.innerHTML,/omitted its optional event index/);
+ }
+});
+test('invalid summary envelopes retain the exact cause and received token count before validation fails',async()=>{
+ const cases=[['{"summary":"unfinished','incomplete-json'],['{"summary":"A","events":[]}','recap-missing'],
+  ['{"recap":"B","events":[]}','summary-missing'],['{"summary":"A","recap":"B","events":{}}','events-not-array'],
+  ['<tr-narrative>A story instead of JSON</tr-narrative>','invalid-json']];
+ for(const [raw,reason] of cases){
+  const f=fixture({respond:()=>raw});await f.runtime.open();assert.equal(await f.runtime.run(),false);
+  const job=f.runtime.view().job;assert.equal(job.code,'MEMORY_INVALID_SUMMARY');assert.equal(job.summaryReason,reason);
+  assert.equal(job.responseChars,raw.length);assert.equal(job.outputTokens,Math.ceil(raw.length/3));assert.equal(job.failedStage,'validating');
+  assert.equal(f.calls.length,1);assert.equal(f.runtime.view().coverage.pendingMessages,2);assert.equal(f.runtime.view().chapters.length,0);
+  assert.equal(f.data.get('card:cora').jobs.first.summaryReason,reason);
+  const panel={innerHTML:'',querySelectorAll:()=>[]};renderMemorySummaries(panel,{...f.runtime.view(),settings:{...f.settings,language:'th'}},[]);
+  assert.match(panel.innerHTML,/data-memory-summary-reason/);assert.match(panel.innerHTML,/ความยาวคำตอบที่ได้รับ/);
+ }
+});
+test('invalid required recap cannot be manufactured from a valid summary and original messages remain pending',()=>{
+ for(const recap of [undefined,'',null,{},42])assert.throws(()=>memory.repairMemorySummary({summary:'A',recap},[]),error=>error.summaryReason==='recap-missing');
+ assert.throws(()=>memory.repairMemorySummary({summary:'x'.repeat(5001),recap:'B',events:[]},[]),error=>error.summaryReason==='summary-too-long');
+ assert.throws(()=>memory.repairMemorySummary({summary:'A',recap:'B',events:Array(61).fill(null)},[]),error=>error.summaryReason==='too-many-events');
+});
+test('native-data output limits are diagnosed as truncated summaries and never dispatch a hidden retry',async()=>{
+ let requests=0;const context={mainApi:'openai',generateRawData:async()=>{requests++;return {choices:[{finish_reason:'length',message:{content:'{"summary":"cut'}}]};},extractMessageFromData:data=>data.choices[0].message.content};
+ const f=fixture({respond:prompt=>requestMemorySummary(context,prompt,'',null,'compact')});await f.runtime.open();
+ assert.equal(await f.runtime.run(),false);assert.equal(requests,1);assert.equal(f.calls.length,1);
+ const job=f.runtime.view().job;assert.equal(job.code,'MEMORY_RESPONSE_TRUNCATED');assert.equal(job.finishReason,'length');
+ assert.equal(job.recommendedBatchSize,1);assert.equal(f.runtime.view().coverage.pendingMessages,2);assert.equal(f.runtime.view().chapters.length,0);
+ assert.match(memoryJobMessage(Error(job.code),'th'),/ขีดจำกัดโทเคน/);
+});
+test('retry clears old format diagnostics, saves only remaining sources, and preserves all 101 original messages through reload',async()=>{
+ const f=fixture({settings:{memorySummaryBatchSize:15},respond:()=>'{"summary":"A"}'});setBacklog(f,101);await f.runtime.open();
+ assert.equal(await f.runtime.run(),false);assert.equal(f.calls.length,1);assert.equal(f.runtime.view().coverage.pendingMessages,101);
+ assert.equal(f.runtime.view().job.summaryReason,'recap-missing');f.setResponder(simpleMemoryResponse);
+ assert.equal(await f.runtime.run({retry:true}),true);assert.equal(f.settings.memorySummaryBatchSize,15);
+ assert.equal(f.runtime.view().job.summaryReason,'');assert.equal(f.runtime.view().job.finishReason,'');assert.equal(f.runtime.view().coverage.pendingMessages,0);
+ const resumed=fixture({data:f.data});resumed.context.chat=structuredClone(f.context.chat);await resumed.runtime.open();
+ assert.equal(resumed.runtime.view().coverage.pendingMessages,0);assert.equal(resumed.calls.length,0);assert.equal(f.data.get('card:cora').chats[0].messages.length,101);
+});
 test('detailed extraction targets grow with the selected output budget while retaining a finite response',()=>{
  const compact=memory.memorySummaryPrompt([], '', {}, '', 2400),detailed=memory.memorySummaryPrompt([], '', {}, '', 12000);
  assert.match(compact,/2400-token response limit/);assert.match(compact,/<=10 new events/);

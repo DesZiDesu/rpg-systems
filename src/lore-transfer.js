@@ -1,5 +1,5 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.58.11';
-import {LORE_LIMIT, LORE_CONTENT_LIMIT, loreEntries} from './lore-core.js?v=0.58.11';
+import {uiText,uiMarkup} from './ui-language.js?v=0.58.12';
+import {LORE_LIMIT, LORE_CONTENT_LIMIT, loreEntries} from './lore-core.js?v=0.58.12';
 
 export const LORE_FILE_LIMIT = 12 * 1024 * 1024;
 const format = 'tretaresia-lore';

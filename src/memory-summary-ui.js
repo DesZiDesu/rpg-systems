@@ -1,5 +1,5 @@
-import {createMemoryInsightRenderer} from './memory-insights-ui.js?v=0.58.11';
-import {memorySnippet,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_CATEGORIES,MEMORY_CATEGORY_LABELS,normalizeMemoryStrategy,normalizeMemoryOutputTokens} from './memory-summaries.js?v=0.58.11';
+import {createMemoryInsightRenderer} from './memory-insights-ui.js?v=0.58.12';
+import {memorySnippet,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_CATEGORIES,MEMORY_CATEGORY_LABELS,normalizeMemoryStrategy,normalizeMemoryOutputTokens} from './memory-summaries.js?v=0.58.12';
 const escape = value => String(value ?? '').replace(/[&<>"']/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export const memoryBusy = status => ['loading','archiving','waiting','counting','summarizing','validating','saving'].includes(status);
 export function memoryPhaseLabel(status, language = 'en') {
@@ -7,6 +7,21 @@ export function memoryPhaseLabel(status, language = 'en') {
         waiting:['Summary queued until the story reply finishes','สรุปอยู่ในคิว รอคำตอบเนื้อเรื่องสร้างเสร็จ'],counting:['Checking tokens against the configured budget','กำลังตรวจจำนวนโทเคนตามงบที่ตั้งไว้'],summarizing:['Summarizing with SillyTavern’s API','กำลังใช้ API ของ SillyTavern สรุปความจำ'],validating:['Checking source evidence','กำลังตรวจหลักฐานต้นทาง'],saving:['Saving memory summary','กำลังบันทึกสรุปความจำ'],prompt:['Preparing memory for the story prompt','กำลังเตรียมความจำสำหรับคำตอบเนื้อเรื่อง'],
         ready:['Summary saved successfully','สรุปและบันทึกสำเร็จ'],partial:['Some messages still need summarizing','ยังมีข้อความรอสรุป'],error:['Memory operation failed','งานความจำไม่สำเร็จ'],cancelled:['Memory job cancelled','ยกเลิกงานความจำแล้ว'],interrupted:['Previous job was interrupted','งานก่อนหน้าหยุดกลางทาง']};
     return (labels[status] || labels.idle)[language === 'th' ? 1 : 0];
+}
+export function memorySummaryReasonLabel(reason, language = 'en') {
+    const labels = {
+        'not-object':['The answer is not a JSON object.','คำตอบไม่ใช่ JSON object'],
+        'invalid-json':['The answer does not contain valid JSON.','คำตอบไม่มี JSON ที่ถูกต้อง'],
+        'incomplete-json':['The JSON ended before its closing bracket or string.','JSON จบก่อนปิดวงเล็บหรือข้อความครบ'],
+        'unfinished-reasoning':['The reasoning/planning block was not closed; its contents were not treated as a summary.','ส่วน reasoning/planning ยังไม่ปิด จึงไม่นำเนื้อหาส่วนนั้นมาเป็นสรุป'],
+        'summary-missing':['The summary field is missing, empty or not text.','ช่อง summary หาย ว่าง หรือไม่ใช่ข้อความ'],
+        'recap-missing':['The recap field is missing, empty or not text.','ช่อง recap หาย ว่าง หรือไม่ใช่ข้อความ'],
+        'summary-too-long':['The summary exceeds 5,000 characters.','summary ยาวเกิน 5,000 ตัวอักษร'],
+        'recap-too-long':['The recap exceeds 7,000 characters.','recap ยาวเกิน 7,000 ตัวอักษร'],
+        'events-not-array':['The events field must be an array.','ช่อง events ต้องเป็น array'],
+        'too-many-events':['The response contains more than 60 event records.','คำตอบมีเหตุการณ์เกิน 60 รายการ'],
+    };
+    return (labels[reason] || [reason,reason])[language === 'th' ? 1 : 0];
 }
 const panelState = new WeakMap();
 const formKey = form => `${form.dataset.form}:${form.dataset.memorySettingsGroup || ''}:${form.elements.namedItem('id')?.value || ''}`;
@@ -109,6 +124,9 @@ export function renderMemorySummaries(panel, view, profiles = []) {
     const shorterSegments = view.job.activeBatchCharLimit > 0 && view.job.activeBatchCharLimit < MEMORY_BATCH_CHAR_LIMIT;
     const diagnostics = view.job.error ? `<details class="rf-memory-diagnostics" data-memory-section="diagnostics"><summary>${e(word('Failure details','รายละเอียดปัญหา'))}</summary>
         ${view.job.code ? `<div><span>${e(word('Error code','รหัสปัญหา'))}</span><code data-memory-error-code>${e(view.job.code)}</code></div>` : ''}
+        ${view.job.summaryReason ? `<div><span>${e(word('Response problem','ปัญหาในคำตอบ'))}</span><strong data-memory-summary-reason>${e(memorySummaryReasonLabel(view.job.summaryReason,view.settings.language))}</strong></div>` : ''}
+        ${view.job.responseChars > 0 ? `<div><span>${e(word('Received response length','ความยาวคำตอบที่ได้รับ'))}</span><strong>${e(view.job.responseChars)} ${e(word('characters','ตัวอักษร'))}</strong></div>` : ''}
+        ${view.job.finishReason ? `<div><span>${e(word('API stop reason','สาเหตุที่ API หยุด'))}</span><code>${e(view.job.finishReason)}</code></div>` : ''}
         ${Number.isInteger(view.job.httpStatus) && view.job.httpStatus > 0 ? `<div><span>${e(word('API HTTP status','สถานะ HTTP ของ API'))}</span><strong>${e(view.job.httpStatus)}</strong></div>` : ''}
         ${view.job.failedStage ? `<div><span>${e(word('Failed step','ขั้นตอนที่หยุด'))}</span><strong data-memory-failed-stage>${e(memoryPhaseLabel(view.job.failedStage,view.settings.language))}</strong></div>` : ''}
         ${Number.isFinite(Number(view.job.failedAfterSeconds)) && view.job.failedAfterSeconds != null ? `<div><span>${e(word('Time waiting in that step','เวลาที่รอในขั้นตอนนั้น'))}</span><strong>${e(elapsedLabel(Number(view.job.failedAfterSeconds)*1000))}</strong></div>` : ''}
@@ -117,6 +135,7 @@ export function renderMemorySummaries(panel, view, profiles = []) {
         <p>${e(word('Previously saved chapters are kept. Retry processes only the remaining sources; this failed request did not save an incomplete summary.','บทที่บันทึกแล้วอยู่ครบ กดลองใหม่เพื่อทำเฉพาะต้นทางที่เหลือ คำขอที่ล้มเหลวนี้ไม่ได้บันทึกสรุปที่ยังไม่ครบ'))}</p></details>` : '';
     const chapters = view.chapters.map(chapter => `<details class="rf-memory-chapter" data-memory-section="chapter:${e(chapter.id)}"><summary><strong>${e(chapter.summary.slice(0,160))}</strong><small>${e(chapter.chatId)} · v${chapter.revision} · ${e(chapter.valid ? word('Current','ใช้งานได้') : word('Source changed — rebuild required','ต้นทางเปลี่ยน — ต้องสรุปใหม่'))}</small></summary>
         ${chapter.evidenceReport?.droppedEvents ? `<div class="rf-memory-prompt-warning" data-memory-evidence-warning><strong>${e(word('Event index is incomplete','ดัชนีเหตุการณ์ไม่ครบ'))}</strong><p>${e(word(`${chapter.evidenceReport.droppedEvents} event entries lacked valid source citations and were omitted. The model-written summary and all original messages remain saved and searchable; review the summary if needed.`, `ตัดดัชนีเหตุการณ์ ${chapter.evidenceReport.droppedEvents} รายการที่ตรวจต้นทางไม่ได้ สรุปที่โมเดลเขียนและข้อความต้นฉบับยังบันทึกและค้นได้ ตรวจแก้สรุปได้หากจำเป็น`))}</p></div>` : ''}
+        ${chapter.evidenceReport?.eventIndexMissing ? `<div class="rf-memory-prompt-warning" data-memory-evidence-warning><p>${e(word('The AI omitted its optional event index. The complete summary, recap and original messages are saved and searchable; no event records were invented.','AI ไม่ส่งดัชนีเหตุการณ์มา สรุป recap และข้อความต้นฉบับบันทึกและค้นได้ ระบบไม่ได้สร้างเหตุการณ์ขึ้นเอง'))}</p></div>` : ''}
         <p class="rf-memory-prose">${e(chapter.summary)}</p><details data-memory-section="versions:${e(chapter.id)}"><summary>${e(word('Sources and summary versions','ข้อความต้นทางและรุ่นสรุป'))}</summary>
         <div class="trpg-story-actions">${[...new Map(chapter.sources.map(source => [JSON.stringify([source.chatId || chapter.chatId,source.key]),source])).values()].map(source => action('source',`#${Number(source.key) + 1}`,`data-chat="${e(source.chatId || chapter.chatId)}" data-key="${e(source.key)}" data-fingerprint="${e(source.fingerprint)}"`,'')).join('')}</div>
         ${(chapter.versions || []).slice().reverse().map(version => `<details><summary>v${version.revision}</summary><p class="rf-memory-prose">${e(version.summary)}</p><p class="rf-memory-prose">${e(version.recap)}</p></details>`).join('')}</details>

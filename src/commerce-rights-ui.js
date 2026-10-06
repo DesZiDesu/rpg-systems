@@ -1,5 +1,5 @@
-import {rightsView} from './commerce-rights.js?v=0.58.11';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.58.11';
+import {rightsView} from './commerce-rights.js?v=0.58.12';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.58.12';
 const escape=value=>String(value??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function purchaseTypeLabel(mode,thai=true){return(thai?{permanent:'ซื้อถาวร',rental:'เช่า',access:'สิทธิ์ใช้งาน',service:'งานบริการ'}:{permanent:'Own permanently',rental:'Rental',access:'Access',service:'Service'})[mode]||'';}
 export function storyDateLabel(value,thai=true){return value?`${thai?'วันที่':'Day'} ${value.day} · ${value.time}`:'';}

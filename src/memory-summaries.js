@@ -1,6 +1,6 @@
-import {removeMemoryChat} from './memory-deletion.js?v=0.58.11';
-import {normalizeMemoryDetails,buildMemoryInsights,memoryRecordKey} from './memory-insights.js?v=0.58.11';
-export {memoryRecordKey} from './memory-insights.js?v=0.58.11';
+import {removeMemoryChat} from './memory-deletion.js?v=0.58.12';
+import {normalizeMemoryDetails,buildMemoryInsights,memoryRecordKey} from './memory-insights.js?v=0.58.12';
+export {memoryRecordKey} from './memory-insights.js?v=0.58.12';
 // The archive retains original messages. Only selected, bounded text enters a model prompt.
 export const MEMORY_FORMAT = 'roleforge-memory-library';
 export const MEMORY_LINK_KEY = 'tretaresia_rpg_memory_link';
@@ -160,9 +160,14 @@ export function memoryCoverage(library, chatId) {
         stale:library.chapters.filter(chapter => chapter.sources.some(source => (source.chatId || chapter.chatId) === chatId) && !memoryChapterValid(library,chapter)).length};
 }
 export function validateMemorySummary(value, batch) {
-    if (!object(value) || typeof value.summary !== 'string' || !value.summary.trim() || value.summary.length > 5000
-        || typeof value.recap !== 'string' || !value.recap.trim() || value.recap.length > 7000
-        || !Array.isArray(value.events) || value.events.length > 60) throw Error('MEMORY_INVALID_SUMMARY');
+    const reason = !object(value) ? 'not-object'
+        : typeof value.summary !== 'string' || !value.summary.trim() ? 'summary-missing'
+        : value.summary.length > 5000 ? 'summary-too-long'
+        : typeof value.recap !== 'string' || !value.recap.trim() ? 'recap-missing'
+        : value.recap.length > 7000 ? 'recap-too-long'
+        : !Array.isArray(value.events) ? 'events-not-array'
+        : value.events.length > 60 ? 'too-many-events' : '';
+    if (reason) throw Object.assign(Error('MEMORY_INVALID_SUMMARY'),{summaryReason:reason});
     const allowed = new Map(batch.map(segment => [segment.segmentKey,segment]));
     const events = value.events.map((event,index) => {
         if (!object(event) || typeof event.title !== 'string' || !event.title.trim() || event.title.length > 240
@@ -180,11 +185,13 @@ export function validateMemorySummary(value, batch) {
 // Repair formatting locally, never fabricate a quote. An unusable event index
 // must not throw away a complete recap or the separately archived originals.
 export function repairMemorySummary(value, batch) {
+    const eventIndexMissing = object(value) && value.events == null;
+    if (eventIndexMissing) value = {...value,events:[]};
     if (!object(value) || !Array.isArray(value.events)) return validateMemorySummary(value,batch);
     // Validate the chapter envelope independently of optional event indexing.
     const result = validateMemorySummary({...value,events:[]},batch);
     let repairedEvents = 0, droppedEvents = 0;
-    if (value.events.length > 60) throw Error('MEMORY_INVALID_SUMMARY');
+    if (value.events.length > 60) throw Object.assign(Error('MEMORY_INVALID_SUMMARY'),{summaryReason:'too-many-events'});
     for (const original of value.events) {
         if (!object(original)) { droppedEvents++; continue; }
         const event = {...original};
@@ -221,11 +228,26 @@ export function repairMemorySummary(value, batch) {
             if (JSON.stringify(original) !== JSON.stringify(event)) repairedEvents++;
         } catch { droppedEvents++; }
     }
-    return {...result,evidenceReport:{repairedEvents,droppedEvents,originalEvents:value.events.length,verifiedEvents:result.events.length}};
+    return {...result,evidenceReport:{repairedEvents,droppedEvents,originalEvents:value.events.length,verifiedEvents:result.events.length,...(eventIndexMissing ? {eventIndexMissing:true} : {})}};
+}
+// SillyTavern's structured quiet generation extracts JSON before story regexes
+// and message cleanup. Keep optional fact metadata open for non-strict models.
+export function memorySummaryJsonSchema() {
+    return {name:'roleforge_memory_summary',description:'A complete factual summary of the supplied source segments',strict:false,returnInvalid:true,value:{
+        type:'object',required:['summary','recap','events'],properties:{
+            summary:{type:'string',minLength:1,maxLength:5000},recap:{type:'string',minLength:1,maxLength:7000},
+            events:{type:'array',maxItems:60,items:{type:'object',required:['title','detail','kind','sourceKeys','evidence'],properties:{
+                title:{type:'string',minLength:1,maxLength:240},detail:{type:'string',minLength:1,maxLength:1600},kind:{type:'string',enum:['Event','Claim','Plan']},
+                sourceKeys:{type:'array',minItems:1,items:{type:'string'}},evidence:{type:'string',minLength:1},
+                category:{type:'string',enum:MEMORY_CATEGORIES},people:{type:'array',items:{type:'string'}},places:{type:'array',items:{type:'string'}},
+                keywords:{type:'array',items:{type:'string'}},knownBy:{type:'array',items:{type:'string'}},
+            }}},
+        },
+    }};
 }
 export function memorySummaryPrompt(batch, previousRecap, stateReference, category = '', outputBudget = MEMORY_SUMMARY_OUTPUT_TOKENS, priorFacts = []) {
     const outputTokens = normalizeMemoryOutputTokens(outputBudget), targetTokens = Math.floor(outputTokens * 0.7), maxEvents = Math.min(48,Math.max(4,Math.floor(outputTokens / 240)));
-    return `You are a factual role-play archivist. Return ONLY complete JSON in the story's language:
+    return `You are a factual role-play archivist. This is a data task, not a new role-play turn. Return ONLY one complete JSON object in the story's language, with the top-level keys summary, recap, events. Do not output planning, reasoning, narrative tags, a state patch, or a wrapper object. Both summary and recap must be nonempty strings; events must be an array (use [] when there are no verified events). The task's JSON format applies instead of the story/preset's usual response format:
 {"summary":"chunk events and causes","recap":"updated brief historical continuity","events":[{"category":"story","importance":"Normal","status":"Historical","title":"","detail":"","kind":"Event","people":[],"places":[],"keywords":[],"knownBy":[],"whenText":"","speaker":"","quote":"","sourceKeys":["segmentKey"],"evidence":"exact source quote"}]}.
 Categories: ${MEMORY_CATEGORIES.join(', ')}. ${category ? `This request extracts ONLY category ${category}; events must use that category. Empty events are valid. Keep recap focused on this category.` : 'Cover all applicable categories in ONE response; omit empty categories.'}
 Separate scene participants/time/action, geographical locations, specific places, characters/aliases, relations and their causes, missions, quest progress, chapter turning points, important spoken quotes/speaker, causal story, resources, established world rules (lore), chronology (timeline), and character likes/fears/limits (preferences). Never invent map names, dates or facts. Preserve first meetings, minor encounters, visited places and open promises. A witnessed Event differs from an unverified Claim or future Plan. Active means unresolved; only a Confirmed Event can be Resolved. Importance High marks durable facts, first meetings, secrets and open goals.
