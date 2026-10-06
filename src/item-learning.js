@@ -1,4 +1,4 @@
-import {normalizeAbility,abilityMastery,abilityLevel} from './incantation-core.js?v=0.58.6';
+import {normalizeAbility,abilityMastery,abilityLevel} from './incantation-core.js?v=0.58.7';
 
 const text=(value,max=300)=>typeof value==='string'?value.trim().slice(0,max):'';
 const key=value=>text(value,1000).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu,' ');

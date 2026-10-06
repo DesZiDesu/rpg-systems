@@ -1,0 +1,41 @@
+/* Skill Storage owns its layout: controls must never size a copy column. */
+#tretaresia-rpg-overlay .tretaresia-skill-storage{border:1px solid var(--tretaresia-line);background:rgba(var(--tretaresia-accent-rgb),.018);box-shadow:none}
+#tretaresia-rpg-overlay .tretaresia-skill-storage>.tretaresia-section-label{padding:16px;margin:0;border-bottom:1px solid var(--tretaresia-line-soft);font:600 11px/1.6 var(--tf-disp,system-ui,sans-serif);letter-spacing:.1em;color:var(--tretaresia-accent-alt);text-transform:uppercase}
+#tretaresia-rpg-overlay .tretaresia-skill-storage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px;align-items:start}
+#tretaresia-rpg-overlay .tretaresia-skill-card{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:16px;min-width:0;min-height:0;padding:18px;background:linear-gradient(110deg,rgba(var(--tretaresia-accent-rgb),.05),transparent);border:1px solid var(--tretaresia-line-soft);border-left:2px solid var(--tretaresia-accent);border-radius:0;box-shadow:none;overflow:hidden}
+#tretaresia-rpg-overlay .rf-skill-header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+#tretaresia-rpg-overlay .rf-skill-type{display:inline-flex;align-items:center;gap:7px;min-width:0;padding:0;color:var(--tretaresia-accent);background:transparent;border:0;border-radius:0;font:600 10px/1.5 var(--tf-disp,system-ui,sans-serif);letter-spacing:.12em;overflow-wrap:anywhere;text-transform:uppercase}
+#tretaresia-rpg-overlay .rf-skill-type i{font-size:11px;flex-shrink:0}
+#tretaresia-rpg-overlay .rf-skill-remove{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;min-height:40px;padding:0;color:var(--tretaresia-muted);background:transparent;border:1px solid var(--tretaresia-line-soft);border-radius:0;cursor:pointer;letter-spacing:normal}
+#tretaresia-rpg-overlay .rf-skill-remove:hover{color:var(--tretaresia-danger);border-color:var(--tretaresia-danger)}
+#tretaresia-rpg-overlay .rf-skill-copy{min-width:0}
+#tretaresia-rpg-overlay .rf-skill-copy h4{margin:0 0 9px;color:var(--tretaresia-accent-alt);font:700 22px/1.4 var(--tf-disp,system-ui,sans-serif);letter-spacing:.04em;overflow-wrap:anywhere}
+#tretaresia-rpg-overlay .rf-skill-copy p{margin:0;color:var(--tretaresia-soft);font:400 14px/1.7 var(--tf-body,system-ui,sans-serif);text-transform:none;letter-spacing:.01em;white-space:pre-line;overflow-wrap:anywhere}
+#tretaresia-rpg-overlay .rf-skill-mastery{display:grid;gap:9px;padding-top:2px}
+#tretaresia-rpg-overlay .rf-skill-mastery-label{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:5px 10px;font:500 11px/1.5 var(--tf-body,system-ui,sans-serif)}
+#tretaresia-rpg-overlay .rf-skill-mastery-label>span{color:var(--tretaresia-muted);font:inherit;letter-spacing:normal;text-transform:none}
+#tretaresia-rpg-overlay .rf-skill-mastery-label strong{color:var(--tretaresia-accent-alt);font:600 11px/1.5 var(--tf-body,system-ui,sans-serif);overflow-wrap:anywhere}
+#tretaresia-rpg-overlay .rf-skill-mastery-label strong span{color:var(--tretaresia-soft);font:inherit;letter-spacing:normal;text-transform:none}
+#tretaresia-rpg-overlay .rf-skill-progress{height:4px;overflow:hidden;background:rgba(var(--tretaresia-ink-rgb),.09);border:0;border-radius:0}
+#tretaresia-rpg-overlay .rf-skill-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--tretaresia-accent),var(--tretaresia-accent-alt));border-radius:inherit}
+#tretaresia-rpg-overlay .tretaresia-skill-card>.rf-ability-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;padding-top:16px;border-top:1px solid var(--tretaresia-line-soft)}
+#tretaresia-rpg-overlay .tretaresia-skill-card>.rf-ability-actions button{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:44px;padding:10px 8px;color:var(--tretaresia-ink);background:transparent;border:1px solid var(--tretaresia-line);border-radius:0;font:600 11px/1.5 var(--tf-disp,system-ui,sans-serif);letter-spacing:.07em;text-transform:uppercase;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+#tretaresia-rpg-overlay .tretaresia-skill-card>.rf-ability-actions .rf-skill-train{background:rgba(var(--tretaresia-accent-rgb),.13);color:var(--tretaresia-accent-alt);border-color:rgba(var(--tretaresia-accent-rgb),.4)}
+#tretaresia-rpg-overlay .tretaresia-skill-card>.rf-ability-actions button:hover{background:rgba(var(--tretaresia-accent-rgb),.18);border-color:var(--tretaresia-accent)}
+#tretaresia-rpg-overlay .tretaresia-skill-card button:focus-visible{outline:2px solid var(--tretaresia-accent-alt);outline-offset:3px}
+#tretaresia-rpg-overlay .rf-skill-source{color:var(--tretaresia-muted);font:500 10px/1.4 var(--tf-body,system-ui,sans-serif)}
+#tretaresia-rpg-overlay .tretaresia-skill-card.is-character-life-linked{border-color:#b99cff55}
+#tretaresia-rpg-overlay .tretaresia-skill-storage>.tretaresia-editor{margin:0;border:0;border-top:1px solid var(--tretaresia-line);border-radius:0;background:rgba(var(--tretaresia-accent-rgb),.04);overflow:hidden}
+#tretaresia-rpg-overlay .tretaresia-skill-storage>.tretaresia-editor>summary{min-height:48px;padding:13px 16px;font:600 12px/1.5 var(--tf-disp,system-ui,sans-serif);letter-spacing:.12em}
+#tretaresia-rpg-overlay .tretaresia-skill-card::after{content:"";position:absolute;right:0;bottom:0;width:14px;height:14px;border-right:1px solid var(--tretaresia-accent);border-bottom:1px solid var(--tretaresia-accent);pointer-events:none}
+@media(max-width:900px){#tretaresia-rpg-overlay .tretaresia-skill-storage-grid{grid-template-columns:minmax(0,1fr);padding:10px}#tretaresia-rpg-overlay .tretaresia-skill-card{padding:16px;gap:14px}}
+
+#tretaresia-rpg-overlay .rf-skill-filter{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 14px;align-items:center;padding:14px;border-bottom:1px solid var(--tretaresia-line-soft)}
+#tretaresia-rpg-overlay .rf-skill-filter label{color:var(--tretaresia-accent);font:600 10px/1.5 var(--tf-disp,system-ui,sans-serif);letter-spacing:.1em;text-transform:uppercase}
+#tretaresia-rpg-overlay .rf-skill-filter select{width:100%;min-width:0;min-height:44px;padding:9px 30px 9px 10px;color:var(--tretaresia-ink);background:var(--tf-panel);border:1px solid var(--tretaresia-line);border-radius:0;font:500 13px/1.5 var(--tf-body,system-ui,sans-serif)}
+#tretaresia-rpg-overlay .rf-skill-pagination{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 14px 0}
+#tretaresia-rpg-overlay .rf-skill-pagination button{display:grid;place-items:center;flex:0 0 44px;width:44px;min-height:44px;padding:0;color:var(--tretaresia-accent-alt);background:rgba(var(--tretaresia-accent-rgb),.06);border:1px solid var(--tretaresia-line);border-radius:0;cursor:pointer}
+#tretaresia-rpg-overlay .rf-skill-pagination button:disabled{opacity:.3;cursor:default}
+#tretaresia-rpg-overlay .rf-skill-page-status{margin:0;text-align:center;color:var(--tretaresia-accent-alt);font:500 11px/1.7 var(--tf-body,system-ui,sans-serif);letter-spacing:.04em}
+#tretaresia-rpg-overlay .rf-skill-filter select:focus-visible,#tretaresia-rpg-overlay .rf-skill-pagination button:focus-visible{outline:2px solid var(--tretaresia-accent-alt);outline-offset:2px}
+#tretaresia-rpg-overlay .tretaresia-skill-storage-grid>.tretaresia-empty-state{grid-column:1/-1}

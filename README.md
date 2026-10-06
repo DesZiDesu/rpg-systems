@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.58.6** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.58.7** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.3-development.md)
 
@@ -34,7 +34,7 @@ Saved replies without RoleForge presentation tags remain ordinary text. Generate
 | --- | --- |
 | Character and scene | Player resources, progression, equipment, scene status, location and story time. |
 | NPCs and world | Profiles, portraits, alternate information, relationships, diary, knowledge, parties, guilds and lore tools. |
-| Powers and abilities | Powers, skills and techniques with persistent mastery, training and optional incantations. |
+| Powers and abilities | Powers, skills and techniques with persistent mastery, training and optional incantations. Skill Storage includes automatic categories and responsive pagination. |
 | Inventory and Loot | Loot from completed encounters and exploration; collect selected items, use/eat/drink/drop/gift, configure multiple stat effects, and track temporary overflow buffs. |
 | Shops and auctions | Buy/sell and negotiate, select multiple items and quantities, bid in auctions, and keep confirmed receipts. Support property keys, rentals, access rights and prepaid services. |
 | Boards and story tools | Optional mission/recruitment boards, story memory, agendas and quest objectives. |
@@ -88,7 +88,7 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.58.6** has **1,051 passing unit/host tests** and syntax checks. Browser checks described below are historical results from 0.58.2; Chromium was unavailable for this fix. Production-loader browser regressions at 320/390/1280px cover explicit AI offer repair, missing-commerce guidance, prior named goods and current bundle discounts, malformed output, metadata-save rollback, saved reload, one confirmed payment, pending panels and basket stock/quantity handling. Earlier release reports cover purchase rights, optional systems, item-granted abilities, Memory, Loot and Incantation. The older combined chat fixture has a known baseline assertion failure; see the release reports. Provider responses are controlled fixtures; this does not certify every live model or preset. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
+Version **0.58.7** has **1,055 passing unit/host tests** and syntax checks. Skill Storage browser checks at 320/390/900/901/1280px cover pagination, automatic categories, resizing, preserved add-form drafts and actual skill controls. The commerce browser results below are historical results from 0.58.2. Production-loader browser regressions at 320/390/1280px cover explicit AI offer repair, missing-commerce guidance, prior named goods and current bundle discounts, malformed output, metadata-save rollback, saved reload, one confirmed payment, pending panels and basket stock/quantity handling. Earlier release reports cover purchase rights, optional systems, item-granted abilities, Memory, Loot and Incantation. The older combined chat fixture has a known baseline assertion failure; see the release reports. Provider responses are controlled fixtures; this does not certify every live model or preset. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
 
 [Repository audit](docs/repository-audit-v0.56.3.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.3.th.md) · [Full audited inventory](docs/repository-audit-v0.56.3.json)
 
@@ -113,3 +113,5 @@ Cross-system API and Memory cancellation audit in 0.58.4: [Thai audit and valida
 Itemized Thai book bundles and gateway-timeout guidance in 0.58.5: [Thai report](docs/commerce-timeout-v0.58.5.th.md).
 
 Complete shop item definitions and validated bundle totals in the normal reply in 0.58.6: [Thai report](docs/same-reply-shop-v0.58.6.th.md).
+
+Skill Storage pagination and automatic categories in 0.58.7: [Thai report](docs/skill-storage-v0.58.7.th.md).

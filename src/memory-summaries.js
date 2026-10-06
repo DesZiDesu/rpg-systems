@@ -1,6 +1,6 @@
-import {removeMemoryChat} from './memory-deletion.js?v=0.58.6';
-import {normalizeMemoryDetails,buildMemoryInsights,memoryRecordKey} from './memory-insights.js?v=0.58.6';
-export {memoryRecordKey} from './memory-insights.js?v=0.58.6';
+import {removeMemoryChat} from './memory-deletion.js?v=0.58.7';
+import {normalizeMemoryDetails,buildMemoryInsights,memoryRecordKey} from './memory-insights.js?v=0.58.7';
+export {memoryRecordKey} from './memory-insights.js?v=0.58.7';
 // The archive retains original messages. Only selected, bounded text enters a model prompt.
 export const MEMORY_FORMAT = 'roleforge-memory-library';
 export const MEMORY_LINK_KEY = 'tretaresia_rpg_memory_link';

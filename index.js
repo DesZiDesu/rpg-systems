@@ -1,65 +1,66 @@
-import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.58.6';
-import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.58.6';
-import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.58.6';
-import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.58.6';
-import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.58.6';
-import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.58.6';
-import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.58.6';
-import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.58.6';
-import {createMemoryAddons} from './src/memory-addons.js?v=0.58.6';
-import {createVoiceAddons} from './src/voice-addons.js?v=0.58.6';
-import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.58.6';
-import {showApiRequestNotice} from './src/api-request-notice.js?v=0.58.6';
-import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.58.6';
-import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.58.6';
-import {createItemRuntime} from './src/item-runtime.js?v=0.58.6';
-import {createComposerDock} from './src/composer-dock.js?v=0.58.6';
-import {createIncantationComposer} from './src/incantation-composer.js?v=0.58.6';
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.58.6';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.58.6';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.58.6';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.58.6';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.58.6';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.58.6';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.58.6';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.58.6';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.58.6';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.58.6';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.58.6';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.58.6';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.58.6';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.58.6';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.58.6';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.58.6';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.58.6';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.58.6';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.58.6';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.58.6';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.58.6';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.58.6';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.58.6';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.58.6';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.58.6';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.58.6';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.58.6';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.58.6';
-import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.58.6';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.58.6';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.58.6';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.58.6';
+import {mountSkillBrowser} from './src/skill-browser.js?v=0.58.7';
+import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.58.7';
+import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.58.7';
+import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.58.7';
+import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.58.7';
+import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.58.7';
+import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.58.7';
+import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.58.7';
+import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.58.7';
+import {createMemoryAddons} from './src/memory-addons.js?v=0.58.7';
+import {createVoiceAddons} from './src/voice-addons.js?v=0.58.7';
+import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.58.7';
+import {showApiRequestNotice} from './src/api-request-notice.js?v=0.58.7';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.58.7';
+import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.58.7';
+import {createItemRuntime} from './src/item-runtime.js?v=0.58.7';
+import {createComposerDock} from './src/composer-dock.js?v=0.58.7';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.58.7';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.58.7';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.58.7';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.58.7';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.58.7';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.58.7';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.58.7';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.58.7';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.58.7';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.58.7';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.58.7';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.58.7';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.58.7';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.58.7';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.58.7';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.58.7';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.58.7';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.58.7';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.58.7';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.58.7';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.58.7';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.58.7';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.58.7';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.58.7';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.58.7';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.58.7';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.58.7';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.58.7';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.58.7';
+import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.58.7';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.58.7';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.58.7';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.58.7';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.58.6';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.58.6';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.58.6';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.58.6';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.58.6';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.58.6';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.58.6';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.58.6';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.58.6';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.58.6';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.58.6';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.58.6';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.58.7';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.58.7';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.58.7';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.58.7';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.58.7';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.58.7';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.58.7';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.58.7';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.58.7';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.58.7';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.58.7';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.58.7';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -598,7 +599,7 @@ async function runPowerTrainingChoice(choiceId) {
         if (!stillHere()) return false;
         const fresh = clone(getState());
         if (fresh.powerMastery?.session?.id === session.id) {
-            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.58.6', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
+            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.58.7', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
             await persistState(fresh, 'power-training-retry');
         }
         notify('error', error.message || 'Power training failed.');
@@ -3448,7 +3449,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.58.6`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.58.7`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card);
     }
@@ -5023,6 +5024,7 @@ function installAstraSurfaceCompatibility(overlay) {
         element?.setAttribute('data-astra-scroll-affordance', 'surface');
     }
     const syncViewport = () => {
+        if (overlay.isConnected) overlay.querySelector('[data-panel="skills"]')?.rfSkillBrowser?.resize();
         const height = globalThis.visualViewport?.height || globalThis.innerHeight;
         const width = globalThis.visualViewport?.width || globalThis.innerWidth;
         if (height > 0) overlay.style.setProperty('--tretaresia-viewport-height', `${Math.round(height)}px`);
@@ -5819,19 +5821,39 @@ function renderPowerMasteryWorkspace(state, powers) {
     return `<section class="tretaresia-power-mastery-workspace"><div class="tretaresia-power-mastery-list">${powers.map(power => powerMasteryCard(power, state, power.id === state.powerMastery?.session?.powerId)).join('')}</div><p class="tretaresia-power-training-help">${html(getSettings().language === 'th' ? 'กดฝึกเพื่อกลับไป Main Chat และเปิดหน้าต่างฝึกเหนือช่องพิมพ์' : 'Train returns to Main Chat and opens a separate training window above the input.')}</p></section>`;
 }
 
+function skillStorageCard(entry, linked = false) {
+    const thai = getSettings().language === 'th';
+    const value = Math.min(100, Math.max(0, Number(entry.mastery) || 0));
+    const rank = tr(entry.rank || (linked ? 'Unranked' : abilityLevel(value)));
+    const type = entry.type || entry.category || 'General';
+    const titleId = `rf-skill-name-${linked ? 'linked-' : ''}${encodeURIComponent(text(entry.id || entry.name))}`;
+    const removeLabel = `${tr(uiText('Remove'))} · ${entry.name}`;
+    return `<article class="tretaresia-skill-card${linked ? ' is-character-life-linked' : ''}" aria-labelledby="${html(titleId)}">
+        <header class="rf-skill-header"><span class="rf-skill-type"><i class="fa-solid ${linked ? 'fa-link' : 'fa-layer-group'}" aria-hidden="true"></i>${html(type)}</span>
+            ${linked ? '<span class="rf-skill-source">Character Life</span>' : `<button type="button" class="rf-skill-remove" data-action="delete-skill" data-id="${html(entry.id)}" title="${html(removeLabel)}" aria-label="${html(removeLabel)}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>`}
+        </header>
+        <div class="rf-skill-copy"><h4 id="${html(titleId)}">${html(entry.name)}</h4><p>${html(entry.description || tr(uiText('No description')))}</p></div>
+        <div class="rf-skill-mastery"><div class="rf-skill-mastery-label"><span>${html(thai ? 'ความชำนาญ' : 'Mastery')}</span><strong>${html(rank)}${linked && !Number.isFinite(Number(entry.mastery)) ? '' : ` <span>· ${value}%</span>`}</strong></div>
+            ${linked && !Number.isFinite(Number(entry.mastery)) ? '' : `<div class="rf-skill-progress" role="progressbar" aria-label="${html(entry.name + (thai ? ' · ความชำนาญ' : ' · Mastery'))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${value}"><i style="width:${value}%"></i></div>`}
+        </div>
+        ${linked ? '' : `<div class="rf-ability-actions"><button type="button" class="tretaresia-secondary-button rf-skill-train" data-action="begin-power-training" data-power-id="${html('skill:' + entry.id)}"><i class="fa-solid fa-dumbbell" aria-hidden="true"></i>${html(thai ? 'ฝึกทักษะ' : 'Train skill')}</button><button type="button" class="tretaresia-secondary-button" data-action="view-incantation" data-ability-key="${html('skill:' + entry.id)}"><i class="fa-solid fa-book-open" aria-hidden="true"></i>${html(thai ? 'วิชา / บทร่าย' : 'Ability / chant')}</button></div>`}
+    </article>`;
+}
+
 function renderSkillStorage(panel, state) {
     if (!panel) return;
     const rpgKeys = new Set(state.skills.map(entry => entry.name.toLocaleLowerCase()));
     const linkedSkills = characterLifeSkillsForOwner(currentPersonaName(state))
         .filter(entry => text(entry?.name) && !rpgKeys.has(text(entry.name).toLocaleLowerCase()));
     const total = state.skills.length + linkedSkills.length;
-    const localCards = state.skills.map(entry => (uiMarkup("<article class=\"tretaresia-skill-card\">\n        <div class=\"tretaresia-skill-rank\"><strong>")+(html(tr(entry.rank)))+uiMarkup("</strong><small>")+(html(tr(uiText("Proficiency rank"))))+uiMarkup("</small></div>\n        <div><span>")+(html(entry.type))+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4><p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div>\n        <button type=\"button\" data-action=\"delete-skill\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></article>"))).join('');
-    const linkedCards = linkedSkills.map(entry => (uiMarkup("<article class=\"tretaresia-skill-card is-character-life-linked\">\n        <div class=\"tretaresia-skill-rank\"><strong>")+(html(entry.rank || 'Unranked'))+uiMarkup("</strong><small>Character Life</small></div>\n        <div><span>")+(html(entry.category || 'General'))+uiMarkup("</span><h4>")+(html(entry.name))+uiMarkup("</h4><p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div>\n        <i class=\"fa-solid fa-link\" title=\"Character Life Skill Storage\"></i></article>"))).join('');
-    panel.innerHTML = (uiMarkup("")+(heading(uiText("Skill Storage"), `${total} ${tr(uiText("Skills")).toLowerCase()}`, 'fa-solid fa-layer-group'))+uiMarkup("\n        <section class=\"tretaresia-skill-storage\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-box-archive\"></i><span>")+(html(tr(uiText("All acquired user skills"))))+uiMarkup("</span></div>\n            <div class=\"tretaresia-skill-storage-grid\">")+(total ? localCards + linkedCards : empty(uiText("Skills learned during role-play will appear here.")))+uiMarkup("</div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add skill"))))+uiMarkup("</summary>\n                <form data-form=\"skill\" class=\"tretaresia-form-grid\">")+(input('Skill name', 'name', ''))+uiMarkup("")+(input('Type', 'type', 'General'))+uiMarkup("\n                    ")+((getForgePreset().mode === 'custom' ? input('Proficiency rank', 'rank', activeForgeChoices(getForgePreset()).masteryRanks[0] || '') : select('Proficiency rank', 'rank', MASTERY, 'Dormant')))+uiMarkup("")+(input('Description', 'description', ''))+uiMarkup("\n                    <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add skill"))))+uiMarkup("</button></form></details></section>"));
-    panel.querySelectorAll('.tretaresia-skill-card').forEach((card,index) => {
-        const entry=state.skills[index]; if(!entry)return;
-        const controls=document.createElement('div');controls.className='rf-ability-actions';
-        controls.innerHTML=`<span>${entry.mastery}% · ${html(tr(abilityLevel(entry.mastery)))}</span><button type="button" class="tretaresia-secondary-button" data-action="begin-power-training" data-power-id="${html('skill:'+entry.id)}">${html(getSettings().language==='th'?'ฝึกทักษะ':'Train skill')}</button><button type="button" class="tretaresia-secondary-button" data-action="view-incantation" data-ability-key="${html('skill:'+entry.id)}">${html(getSettings().language==='th'?'ดูวิชา / บทร่าย':'Ability / chant')}</button>`;card.append(controls);
+    const scope = JSON.stringify([SillyTavern.getContext().getCurrentChatId?.(),currentPersonaName(state)]);
+    if (panel.rfSkillScope !== scope) {panel.rfSkillPreferences = {category:'all',page:0};panel.rfSkillScope = scope;}
+    const entries = [...state.skills.map(skill => ({skill,linked:false})),...linkedSkills.map(skill => ({skill,linked:true}))];
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Skill Storage"), `${total} ${getSettings().language === 'th' ? 'ทักษะ' : total === 1 ? 'skill' : 'skills'}`, 'fa-solid fa-layer-group'))+uiMarkup("\n        <section class=\"tretaresia-skill-storage\"><div class=\"tretaresia-section-label\"><i class=\"fa-solid fa-box-archive\"></i><span>")+(html(tr(uiText("All acquired user skills"))))+uiMarkup("</span></div>\n            <div data-skill-browser></div>\n            <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add skill"))))+uiMarkup("</summary>\n                <form data-form=\"skill\" class=\"tretaresia-form-grid\">")+(input('Skill name', 'name', ''))+uiMarkup("")+(input('Type', 'type', 'General'))+uiMarkup("\n                    ")+((getForgePreset().mode === 'custom' ? input('Proficiency rank', 'rank', activeForgeChoices(getForgePreset()).masteryRanks[0] || '') : select('Proficiency rank', 'rank', MASTERY, 'Dormant')))+uiMarkup("")+(input('Description', 'description', ''))+uiMarkup("\n                    <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add skill"))))+uiMarkup("</button></form></details></section>"));
+    panel.rfSkillBrowser = mountSkillBrowser(panel.querySelector('[data-skill-browser]'),{
+        entries,preferences:panel.rfSkillPreferences,language:getSettings().language,escape:html,
+        renderCard:record => skillStorageCard(record.skill,record.linked),
+        emptyMarkup:empty(uiText('Skills learned during role-play will appear here.')),
     });
 }
 
@@ -10483,7 +10505,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.58.6 loaded.');
+        console.info('[RoleForge] Role-play interface v0.58.7 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

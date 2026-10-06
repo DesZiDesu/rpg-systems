@@ -1,4 +1,4 @@
-import {normalizeItemLearning,validItemLearning,ITEM_LEARNING_INSTRUCTIONS} from './item-learning.js?v=0.58.6';
+import {normalizeItemLearning,validItemLearning,ITEM_LEARNING_INSTRUCTIONS} from './item-learning.js?v=0.58.7';
 // Shared item metadata: no commerce/runtime dependencies, so catalogs and inventory use the same definition.
 const clean=(s,n=300)=>typeof s==='string'?s.trim().slice(0,n):'';
 const whole=(n,max=99999)=>Number.isSafeInteger(n)&&n>=0&&n<=max;

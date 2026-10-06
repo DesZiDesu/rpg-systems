@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>RoleForge · Skill Storage preview</title>
+    <style>
+        html,body{margin:0;min-height:100%;background:#080b08;color:#e8f0e2;font-family:system-ui,sans-serif}
+        .preview-host{max-width:660px;margin:12vh auto;padding:24px;line-height:1.6}
+        .preview-host button,.preview-host select{min-height:44px;padding:10px 16px;margin:4px;border:1px solid #537344;background:#161d15;color:#e8f0e2;font:inherit}
+        #extensionsMenu,#extensions_settings2,#chat{display:none}
+        #preview-status{color:#a6b39f}
+        #send_form{position:fixed;bottom:0;left:0;width:100%;padding:10px;background:#111711;box-sizing:border-box}
+        #send_textarea{display:block;width:100%;height:60px;box-sizing:border-box;background:#151d14;color:#e8f0e2;border:1px solid #537344;border-radius:12px;padding:12px;font:inherit}
+    </style>
+    <!-- SillyTavern supplies these icons in production. This isolated host supplies its own. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+<body>
+    <main class="preview-host">
+        <h1>RoleForge · Skill Storage</h1>
+        <p>ทดลองหน้าจอคลังทักษะจากส่วนเสริมจริง ข้อมูลตัวอย่างเก็บในเบราว์เซอร์นี้เท่านั้น</p>
+        <button type="button" id="preview-open">เปิดคลังทักษะ</button>
+        <button type="button" id="preview-reset">เริ่มตัวอย่างใหม่</button>
+        <label>ภาษา <select id="preview-language"><option value="th">ไทย</option><option value="en">English</option></select></label>
+        <p id="preview-status" role="status">กำลังโหลด RoleForge…</p>
+        <p>เลือกฝึกหรือดูวิชาเพื่อทดลองเปิดหน้าต่างเหนือช่องพิมพ์ ตัวอย่างนี้ไม่มีการเชื่อมต่อ AI</p>
+    </main>
+    <button id="extensionsMenuButton" hidden>Extensions</button>
+    <div id="extensionsMenu"></div><div id="extensions_settings2"></div><div id="chat"></div>
+    <form id="send_form" onsubmit="return false"><textarea id="send_textarea" placeholder="Preview · Main Chat"></textarea></form>
+    <script type="module">
+        import {startSkillsPreview} from './skills-fixture.js';
+        await startSkillsPreview();
+    </script>
+</body>
+</html>
