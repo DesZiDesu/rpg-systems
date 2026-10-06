@@ -132,3 +132,11 @@ test('permanent place purchases use named key delivery and temporary stays keep 
   assert.equal(JSON.parse([...contract.matchAll(/<!--tretaresia_patch:([\s\S]*?)-->/gu)].at(-1)[1]).marketplace.items[0].terms.mode,'access',user);
  }
 });
+test('normal reply scene contract requires the same geography fields as the UI completeness check',async()=>{
+ const {SCENE_REQUIRED_FIELDS}=await import('../src/scene-tracker.js');
+ const contract=mainChatOutputContract('I enter the room.',{autoTrack:true});
+ const keys=contract.match(/\(dayName,day,month,year,era,calendar[^)]+\)/)[0].slice(1,-1).split(',');
+ assert.deepEqual([...keys].sort(),[...SCENE_REQUIRED_FIELDS].sort());
+ assert.doesNotMatch(contract,/Region\/continent are optional/);
+ assert.match(contract,/estimated:true/);
+});

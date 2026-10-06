@@ -27,6 +27,8 @@ function connection(value) {
         to,
         direction: text(value.direction, '', 40),
         distance: text(value.distance, '', 120),
+        estimated: value.estimated === true,
+        bidirectional: value.bidirectional === true,
         route: text(value.route, '', 80),
         evidence: text(value.evidence, '', 300),
         updatedAt: iso(value.updatedAt),
@@ -43,6 +45,19 @@ function landmark(value) {
         detail: text(value.detail || value.description, '', 300),
         updatedAt: iso(value.updatedAt),
     };
+}
+
+function mergeConnections(previous,incoming) {
+    const result=previous.map(route=>({...route}));
+    for(const route of incoming){
+        const old=result.find(value=>key(value.toId||value.to)===key(route.toId||route.to)&&key(value.direction)===key(route.direction));
+        if(!old){result.push(route);continue;}
+        const hadDistance=Boolean(old.distance);
+        if(!hadDistance && route.distance){old.distance=route.distance;old.estimated=route.estimated;}
+        for(const field of ['to','toId','route','evidence'])old[field] ||= route[field];
+        if(!hadDistance)old.bidirectional ||= route.bidirectional;
+    }
+    return result.slice(-40);
 }
 
 export function normalizeLocationMemory(source, fallback = []) {
@@ -82,7 +97,7 @@ export function normalizeLocationMemory(source, fallback = []) {
             existing.parentName ||= entry.parentName;
             existing.aliases = [...new Set([...existing.aliases, ...entry.aliases])].slice(0, 12);
             existing.landmarks = [...existing.landmarks, ...entry.landmarks].filter((item, index, all) => all.findIndex(other => key(other.name) === key(item.name)) === index).slice(0, 40);
-            existing.connections = [...existing.connections, ...entry.connections].filter((item, index, all) => all.findIndex(other => key(other.toId || other.to) === key(item.toId || item.to) && key(other.direction) === key(item.direction)) === index).slice(0, 40);
+            existing.connections = mergeConnections(existing.connections,entry.connections);
             existing.evidence = [...new Set([...existing.evidence, ...entry.evidence])].slice(-8);
             existing.visits = Math.max(existing.visits, entry.visits);
             existing.firstVisitedAt ||= entry.firstVisitedAt;
@@ -127,6 +142,21 @@ export function rememberLocation(source, snapshot = {}, { at = new Date().toISOS
         }
     }
     if (!current) entries.push(next);
+    // Recorded enclosing names become real ledger nodes, not an unlinked
+    // display breadcrumb. Ancestors do not count as visits to those places.
+    let ancestor = null;
+    for (const [parentName,kind] of [[next.continent,'Realm'],[next.region,'Region']]) {
+        if (!parentName || key(parentName) === key(next.name)) continue;
+        let parent = entries.find(entry => key(entry.name) === key(parentName));
+        if (!parent) {
+            parent = normalizeLocationMemory([{name:parentName,kind,evidence:next.evidence}])[0];entries.push(parent);
+        }
+        if (ancestor && ancestor.id!==parent.id && !parent.parentId) {parent.parentId=ancestor.id;parent.parentName=ancestor.name;}
+        ancestor = parent;
+    }
+    const explicitParent = text(snapshot.parentName || next.parentName, '', 140);
+    if (explicitParent) ancestor = entries.find(entry => key(entry.name) === key(explicitParent)) || ancestor;
+    if (ancestor && ancestor.id!==next.id && !next.parentId) {next.parentId=ancestor.id;next.parentName=ancestor.name;}
     return normalizeLocationMemory(entries);
 }
 
@@ -152,7 +182,7 @@ export function mergeLocationMemory(source, records = [], { at = new Date().toIS
         if (index < 0) {
             normalized.firstVisitedAt ||= at;
             normalized.lastVisitedAt ||= at;
-            normalized.visits = Math.max(1, normalized.visits);
+            normalized.visits = Math.max(0, normalized.visits);
             entries.push(normalized);
             continue;
         }
@@ -171,7 +201,7 @@ export function mergeLocationMemory(source, records = [], { at = new Date().toIS
             }),
             aliases: [...new Set([...previous.aliases, ...normalized.aliases])].slice(0, 12),
             landmarks: correction && normalized.landmarks.length ? normalized.landmarks : [...previous.landmarks, ...normalized.landmarks].filter((item, idx, all) => all.findIndex(other => key(other.name) === key(item.name)) === idx).slice(-40),
-            connections: correction && normalized.connections.length ? normalized.connections : [...previous.connections, ...normalized.connections].filter((item, idx, all) => all.findIndex(other => key(other.toId || other.to) === key(item.toId || item.to) && key(other.direction) === key(item.direction)) === idx).slice(-40),
+            connections: correction && normalized.connections.length ? normalized.connections : mergeConnections(previous.connections,normalized.connections),
             evidence: [...new Set([...previous.evidence, ...normalized.evidence])].slice(-8),
             visits: Math.max(previous.visits, normalized.visits), firstVisitedAt: previous.firstVisitedAt || normalized.firstVisitedAt || at,
             lastVisitedAt: normalized.lastVisitedAt || previous.lastVisitedAt, lastDay: normalized.lastDay || previous.lastDay,
@@ -186,14 +216,123 @@ export function confirmedLocationMemory(raw, story = '') {
     const narrative = String(story || '');
     return source.map(value => normalizeLocationMemory([value])[0]).filter(entry => entry
         && entry.evidence.length
-        && entry.evidence.some(quote => quote.length >= 8 && narrative.includes(quote)));
+        && entry.evidence.some(quote => quote.length >= 8 && narrative.includes(quote))).map(entry=>({...entry,
+            connections:entry.connections.map(route=>({...route,estimated:route.estimated || Boolean(route.distance && !narrative.includes(route.distance))})),
+        }));
 }
 
 export function locationMemoryForPrompt(source, limit = 48) {
     return normalizeLocationMemory(source).slice(-limit).map(entry => ({
         id: entry.id, name: entry.name, kind: entry.kind, parentId: entry.parentId, parentName: entry.parentName, region: entry.region, continent: entry.continent,
         detail: entry.detail, conditions: entry.conditions, visits: entry.visits,
-        connections: entry.connections.slice(-12).map(({ to, toId, direction, distance, route }) => ({ to, toId, direction, distance, route })),
+        connections: entry.connections.slice(-12).map(({ to, toId, direction, distance, route, estimated, bidirectional }) => ({ to, toId, direction, distance, route, estimated, bidirectional })),
         landmarks: entry.landmarks.slice(-12).map(({ name, detail }) => ({ name, detail })),
     }));
+}
+
+// Exact name/id matching first; an ambiguous alias must not select geography.
+function locate(entries, name) {
+    const wanted = key(name);
+    if (!wanted) return null;
+    const exact = entries.find(entry => key(entry.id) === wanted || key(entry.name) === wanted);
+    if (exact) return exact;
+    const aliases = entries.filter(entry => entry.aliases.some(alias => key(alias) === wanted));
+    return aliases.length === 1 ? aliases[0] : null;
+}
+
+export function findLocation(source,name) {return locate(normalizeLocationMemory(source),name);}
+
+export function locationPath(source, name) {
+    return pathFor(normalizeLocationMemory(source),name);
+}
+function pathFor(entries,name) {
+    const path = [], seen = new Set();
+    let current = locate(entries, name);
+    while (current && path.length < 24 && !seen.has(current.id)) {
+        seen.add(current.id);path.unshift(current.name);
+        const parent = locate(entries, current.parentId || current.parentName);
+        if (!parent && current.parentName && !path.some(n => key(n) === key(current.parentName))) path.unshift(current.parentName);
+        current = parent;
+    }
+    const leaf = locate(entries, name);
+    if (leaf?.region && !path.some(n=>key(n)===key(leaf.region))) {
+        const continentIndex=path.findIndex(n=>key(n)===key(leaf.continent));
+        if(continentIndex>=0)path.splice(continentIndex+1,0,leaf.region);else path.unshift(leaf.region);
+    }
+    if (leaf?.continent && !path.some(n=>key(n)===key(leaf.continent))) path.unshift(leaf.continent);
+    return path.length ? path : text(name) ? [text(name)] : [];
+}
+
+export function recoverLocationGeography(location = {}, source = []) {
+    const result = {...location}, entries = normalizeLocationMemory(source), current = locate(entries, location.place);
+    const absent = value => !text(value) || /^(?:unknown|n\/a|none|ไม่ทราบ|ไม่ระบุ|—|-|\?)$/iu.test(text(value));
+    if (absent(result.region)) result.region = current?.region || '';
+    if (absent(result.continent)) result.continent = current?.continent || '';
+    let parent = current;const seen = new Set();
+    while (parent && !seen.has(parent.id)) {
+        seen.add(parent.id);
+        if (absent(result.region) && parent.kind === 'Region') result.region = parent.name;
+        if (absent(result.continent) && parent.kind === 'Realm') result.continent = parent.name;
+        parent = locate(entries, parent.parentId || parent.parentName);
+    }
+    // A clearly labeled district in the actual place name is existing data.
+    if (absent(result.region)) {
+        const district = text(location.place).match(/[\[(]([^\])]*(?:district|quarter|province|region)[^\])]*)[\])]|[\[(]((?:เขต|ย่าน|ภูมิภาค|จังหวัด)[^\])]+)[\])]/iu);
+        result.region = district?.[1]?.trim() || district?.[2]?.trim() || '';
+    }
+    return result;
+}
+
+// Distance is a route fact, never a consequence of nesting or journey percent.
+export function locationDistance(source, from, to) {
+    return locationGraph(source).distance(from,to);
+}
+function directDistance(origin,destination) {
+    if (origin.id === destination.id) return {current:true, distance:'', estimated:false};
+    const matches = (route, entry) => route.toId ? route.toId === entry.id : key(route.to) === key(entry.name);
+    const direct = origin.connections.find(route => matches(route, destination) && route.distance);
+    if (direct) return {...direct, current:false};
+    const reverse = destination.connections.find(route => route.bidirectional && matches(route, origin) && route.distance);
+    return reverse ? {...reverse, direction:'', current:false} : null;
+}
+
+export function locationGraph(source) {
+    const entries=normalizeLocationMemory(source);
+    const byId=new Map(entries.map(e=>[key(e.id),e])),byName=new Map(),aliases=new Map();
+    for(const entry of entries){
+        if(!byName.has(key(entry.name)))byName.set(key(entry.name),entry);
+        for(const alias of entry.aliases){const name=key(alias);aliases.set(name,aliases.has(name)?null:entry);}
+    }
+    const lookup=name=>byId.get(key(name))||byName.get(key(name))||aliases.get(key(name))||null;
+    const cache=new Map();
+    const metric=value=>{
+        const match=text(value).match(/^(\d+(?:\.\d+)?)\s*(km|m|kilomet(?:er|re)s?|met(?:er|re)s?|กิโลเมตร|เมตร)$/iu);
+        if(!match)return null;
+        const amount=Number(match[1])*(/^(?:km|kilo|กิโล)/iu.test(match[2])?1000:1);
+        return Number.isFinite(amount)&&amount<=1e12?amount:null;
+    };
+    function distances(origin) {
+        if(cache.has(origin.id))return cache.get(origin.id);
+        const edges=new Map(entries.map(e=>[e.id,[]]));
+        for(const entry of entries)for(const route of entry.connections){
+            const target=lookup(route.toId||route.to),meters=metric(route.distance);
+            if(!target||meters===null||/^from origin$/iu.test(route.direction))continue;
+            edges.get(entry.id).push({id:target.id,meters,estimated:route.estimated});
+            if(route.bidirectional)edges.get(target.id).push({id:entry.id,meters,estimated:route.estimated});
+        }
+        const result=new Map([[origin.id,{meters:0,estimated:false,hops:0}]]),done=new Set();
+        while(done.size<entries.length){
+            const next=[...result.entries()].filter(([id])=>!done.has(id)).sort((a,b)=>a[1].meters-b[1].meters)[0];
+            if(!next)break;const [id,info]=next;done.add(id);
+            for(const edge of edges.get(id)||[]){const meters=info.meters+edge.meters;if(done.has(edge.id)||result.has(edge.id)&&result.get(edge.id).meters<=meters)continue;result.set(edge.id,{meters,estimated:info.estimated||edge.estimated,hops:info.hops+1});}
+        }
+        cache.set(origin.id,result);return result;
+    }
+    return {entries,find:lookup,path:name=>pathFor(entries,name),distance:(from,to)=>{
+        const origin=lookup(from),target=lookup(to);if(!origin||!target)return null;
+        const direct=directDistance(origin,target);if(direct)return direct;
+        const route=distances(origin).get(target.id);if(!route||route.hops<2)return null;
+        const distance=route.meters>=1000?`${Number((route.meters/1000).toFixed(3))} km`:`${Number(route.meters.toFixed(2))} m`;
+        return {current:false,distance,estimated:route.estimated,calculated:true,hops:route.hops};
+    }};
 }

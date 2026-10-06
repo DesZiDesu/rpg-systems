@@ -3,6 +3,7 @@ const labels = {
     items: ['Loot / item action', 'เก็บ / ใช้ / ทิ้ง / มอบไอเทม'],
     powerMastery: ['Training', 'ฝึกพลัง / วิชา / ทักษะ'],
     manualSync: ['Manual Sync', 'ซิงก์ข้อมูลด้วย AI'],
+    sceneCompletion: ['Scene / Location List', 'เติมฉาก / รายการสถานที่'],
     hStatsBaseline: ['NPC H-Stats profile', 'สร้างโปรไฟล์ H-Stats ของ NPC'],
     npcPortrait: ['Read NPC reference image', 'อ่านภาพอ้างอิง NPC'],
     npcDraft: ['Generate NPC profile', 'สร้างข้อมูล NPC'],

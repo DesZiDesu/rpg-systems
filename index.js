@@ -1,67 +1,69 @@
-import {fitForgeToChat} from './src/forge-layout.js?v=0.58.10';
-import {mountSkillBrowser} from './src/skill-browser.js?v=0.58.10';
-import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.58.10';
-import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.58.10';
-import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.58.10';
-import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.58.10';
-import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.58.10';
-import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.58.10';
-import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.58.10';
-import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.58.10';
-import {createMemoryAddons} from './src/memory-addons.js?v=0.58.10';
-import {createVoiceAddons} from './src/voice-addons.js?v=0.58.10';
-import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.58.10';
-import {showApiRequestNotice} from './src/api-request-notice.js?v=0.58.10';
-import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.58.10';
-import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.58.10';
-import {createItemRuntime} from './src/item-runtime.js?v=0.58.10';
-import {createComposerDock} from './src/composer-dock.js?v=0.58.10';
-import {createIncantationComposer} from './src/incantation-composer.js?v=0.58.10';
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.58.10';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.58.10';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.58.10';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.58.10';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.58.10';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.58.10';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.58.10';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.58.10';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.58.10';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.58.10';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.58.10';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.58.10';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.58.10';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt } from './src/location-memory.js?v=0.58.10';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.58.10';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.58.10';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.58.10';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.58.10';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.58.10';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.58.10';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.58.10';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.58.10';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.58.10';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.58.10';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.58.10';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.58.10';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.58.10';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.58.10';
-import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.58.10';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.58.10';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.58.10';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.58.10';
+import {fitForgeToChat} from './src/forge-layout.js?v=0.58.11';
+import {mountSkillBrowser} from './src/skill-browser.js?v=0.58.11';
+import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.58.11';
+import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.58.11';
+import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.58.11';
+import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.58.11';
+import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.58.11';
+import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.58.11';
+import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.58.11';
+import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.58.11';
+import {createMemoryAddons} from './src/memory-addons.js?v=0.58.11';
+import {createVoiceAddons} from './src/voice-addons.js?v=0.58.11';
+import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.58.11';
+import {showApiRequestNotice} from './src/api-request-notice.js?v=0.58.11';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.58.11';
+import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.58.11';
+import {createItemRuntime} from './src/item-runtime.js?v=0.58.11';
+import {createComposerDock} from './src/composer-dock.js?v=0.58.11';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.58.11';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.58.11';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.58.11';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.58.11';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.58.11';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.58.11';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.58.11';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.58.11';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.58.11';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.58.11';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.58.11';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.58.11';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.58.11';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.58.11';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.58.11';
+import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.58.11';
+import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.58.11';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.58.11';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.58.11';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.58.11';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.58.11';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.58.11';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.58.11';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.58.11';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.58.11';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.58.11';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.58.11';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.58.11';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.58.11';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.58.11';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.58.11';
+import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.58.11';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.58.11';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.58.11';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.58.11';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.58.10';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.58.10';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.58.10';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.58.10';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.58.10';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.58.10';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.58.10';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.58.10';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.58.10';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.58.10';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.58.10';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.58.10';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.58.11';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.58.11';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.58.11';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.58.11';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.58.11';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives } from './src/character-archive.js?v=0.58.11';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.58.11';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.58.11';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.58.11';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.58.11';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.58.11';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.58.11';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -76,6 +78,7 @@ let itemRuntime = null;
 let itemBusy = false;
 let incantationComposer = null;
 let commerceBusy = false;
+let sceneCompletionBusy = false;
 let moduleNavigation = null;
 let memoryObserveTimer = null;
 let memoryBadgeTimer = null;
@@ -90,7 +93,7 @@ let nativeMemoryGenerationMetadata = null;
 const continuityWrites = new Map();
 const continuityFailures = new Map();
 function mainReplyGenerating(context = SillyTavern.getContext()) {
-    return commerceBusy || itemBusy || powerTrainingBusy || hostReplyGenerating({context,native:nativeGenerationState,document,fallback:liveGeneration});
+    return sceneCompletionBusy || commerceBusy || itemBusy || powerTrainingBusy || hostReplyGenerating({context,native:nativeGenerationState,document,fallback:liveGeneration});
 }
 const livePreviewCache = new WeakMap();
 const EXTENSION_FOLDER = 'third-party/rpg-systems';
@@ -600,7 +603,7 @@ async function runPowerTrainingChoice(choiceId) {
         if (!stillHere()) return false;
         const fresh = clone(getState());
         if (fresh.powerMastery?.session?.id === session.id) {
-            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.58.10', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
+            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.58.11', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
             await persistState(fresh, 'power-training-retry');
         }
         notify('error', error.message || 'Power training failed.');
@@ -1797,6 +1800,7 @@ function normalize(candidate, base = defaultState()) {
         loadoutSeeded: Object.hasOwn(onboarding, 'loadoutSeeded') ? Boolean(onboarding.loadoutSeeded) : Boolean(result.inventory.length || result.skills.length),
         locationSeeded: Boolean(narrative.place || narrative.detail),
     };
+    if (result.onboarding.locationSeeded) result.location = recoverLocationGeography(result.location, result.locationMemory);
     result.customPowers = normalizePowerValues(source.customPowers ?? result.customPowers);
     result.customPowerSelections = normalizePowerSelections(source.customPowerSelections ?? result.customPowerSelections);
     const proficiencies = source.proficiencies && typeof source.proficiencies === 'object' ? source.proficiencies : {};
@@ -2486,8 +2490,9 @@ function sceneForMessage(messageId, message) {
     const key = assistantTurnKey(messageId);
     const snapshot = key && SillyTavern.getContext().chatMetadata?.[SCENE_HISTORY_KEY]?.[key]?.[assistantVariantKey(message)] || liveReplyPreview(messageId,message)?.scene;
     if (!snapshot) return null;
-    const location = normalizeNarrativeLocation({place:snapshot.location,region:snapshot.region,continent:snapshot.continent});
-    return {...snapshot,location:location.place,region:location.region,continent:location.continent};
+    const location = normalizeNarrativeLocation(recoverLocationGeography({place:snapshot.location,region:snapshot.region,continent:snapshot.continent},getState().locationMemory));
+    const resolved = {...snapshot,location:location.place,region:location.region,continent:location.continent};
+    return {...resolved,missing:missingSceneFields(resolved)};
 }
 
 function storyEventsForMessage(messageId, message) {
@@ -3465,7 +3470,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.58.10`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.58.11`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card); fitForgeToChat(card, chat);
     }
@@ -3583,14 +3588,14 @@ function legacyPatchInstructions() {
         'Proficiency rules: increment a used or trained power system or combat discipline by 1-3 when the reply confirms genuine practice or successful use; use 4-8 only for a breakthrough. Do not increase unused proficiencies. When a confirmed power or combat style is not in the preset lists, upsert proficiencies.customMagic or proficiencies.customSword with {id,name,proficiency,description,iconKey}; later upserts may contain only id/name and changed fields.',
         'RoleForge sensing rule: a power can normally be sensed only by someone who wields the same kind. Formless Aura cannot be sensed by anyone. Divine Mana can be perceived only by another Divine Mana wielder. Never let observers identify a hidden power without valid same-kind perception or direct evidence.',
         'Power canon: False Magic is learnable structured human magic that normally needs a staff, wand, or medium. True Magic is a lost stronger art requiring deep mana understanding and no medium. Aura is innate and commonly carries one birth-given Origin skill. Formless Aura is exceptionally rare and wholly undetectable. Blood Aura is vampiric and a turning may preserve, mutate, split, or erase the prior power. Sage Mana is lost transformative training that can refill from natural energy. Divine Mana may switch among power modes. Constructs allow those without usable Aura to wield a forged ability; primordial Divine Constructs choose one owner and cannot be copied, remade, or manufactured.',
-        'Travel rules: follow destinations, routes and elapsed time explicitly established in the story. There is no fixed world map or coordinate-based distance estimate. Update remainingDays only from an actual completed movement roll/action, an explicit elapsed-time result, or a confirmed sceneTracker location change. A conversation, plan, destination mention, or unchanged scene never advances travel. Mark Arrived only when arrival is confirmed and set the actual free-text destination. Never infer an unmentioned continent or region.',
+        'Travel rules: follow destinations, routes and elapsed time explicitly established in the story. There is no fixed world map or coordinate-based distance estimate. Update remainingDays only from an actual completed movement roll/action, an explicit elapsed-time result, or a confirmed sceneTracker location change. A conversation, plan, destination mention, or unchanged scene never advances travel. Mark Arrived only when arrival is confirmed and set the actual free-text destination. Reuse known continent/region names. Establish an unnamed enclosing geography in the scene narrative before saving it; never replace known geography or derive it from travel percentage.',
         'Dungeon and rank rules: dungeonRank must be one of Unranked, E-, E, E+, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+, S-, S, S+, SS. Adventurer ranks are Rookie, Basic, Intermediate, Ember, and Custom Rank; a Custom Rank name is individually invented by an assessor and should be recorded in progression.customRankName.',
         'Currency rules: use the currency established by the current story; do not assume a region or a currency from a built-in world. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
         'NPC update rules: for every named friendly NPC who directly participates, consider relationship, location, lastSeen, abilities, custom meters, diary, and revealed stats. A substantive friendly/helpful exchange may change affection or trust by 1-3; hostility, deception, fear, romance, loyalty, or corruption should adjust only the relevant meters in proportion to what actually occurred. Use ["inc","npcValues",{"npcId":"...","field":"trust","amount":2}] for deltas or ["set","npcValues",{"npcId":"...","field":"stats.level","value":12}] for revealed absolute values. Valid relationship fields are affection, trust, loyalty, fear, corruption, lust. Valid stat fields are stats.level, stats.rank, stats.hp, stats.mp, stats.stamina, stats.strength, stats.agility, stats.intelligence, stats.endurance. Zero numeric NPC core stats mean unknown, not literal zero. Conversation alone does not increase NPC level or combat stats. Hostile, enemy, foe, antagonist, villain, aggressor, or threat NPCs must not be added to the visible NPC Codex, party invitations, guild invitations, or household roster; keep hostile encounters in the story only.',
         `H-Stats fields on the player and each NPC (female, male, futanari): ${hFieldKeys}. Update from confirmed events using ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}], ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}], or the same field/value or field/amount shape with playerHStats and no npcId for the player's own sheet. Counts and liters are nonnegative; infidelityStage is 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Set pregnant true/false and pregnancyFather only from established facts. Keep all unestablished values unknown and never insert a Condition field or add unlock rules. Set NPC met:true only after the player has met them; retain false for entries merely known through lore. Never substitute a title for a character's name.`,
-        'Track the active scene when confirmed: time, phase, day/dayName, place, location detail, scene position, weather, and temperature. Region and continent are optional story facts; omit them when unestablished. Never use atlas coordinates or invent geography, weather or temperature.',
-        'Location Memory: when this completed reply confirms durable geography, include top-level locations:[{id,name,kind:"Realm"|"Region"|"Place"|"Landmark"|"Route",parentId or parentName,region,continent,detail,conditions,landmarks:[{name,detail}],connections:[{toId or to,direction,distance,route,evidence}],evidence:"exact quote from this reply"}]. Reuse stable ids, preserve established detail, and use correction:true only for an explicit correction. Records without an exact evidence quote are ignored; never infer distance or direction from travel percentage.',
+        'Track the complete active scene: time, phase, day/dayName, place, region, continent/realm, location detail, scene position, weather and temperature. Reuse established facts. When enclosing geography is unnamed, establish coherent fictional names in this same narrative and patch consistent with the card/lore. Never use atlas coordinates or overwrite known facts.',
+        'Location Memory: when this completed reply confirms durable geography, include top-level locations:[{id,name,kind:"Realm"|"Region"|"Place"|"Landmark"|"Route",parentId or parentName,region,continent,detail,conditions,landmarks:[{name,detail}],connections:[{toId or to,direction,distance,route,estimated,bidirectional,evidence}],evidence:"exact quote from this reply"}]. Reuse stable ids, preserve established detail, and use correction:true only for an explicit correction. Records without an exact evidence quote are ignored; never infer distance or direction from travel percentage.',
         'Maintain a sparse overhead local map only from confirmed or strongly implied spatial facts. Create a sceneMaps record, then its sceneFloors, sceneRooms, and sceneConnections. Room coordinates use x 0-100, y 0-70, width 8-70, height 7-50. Reveal or add rooms gradually; never invent a complete unseen building. Use canonical mapId/floorId/room ids, set the active ids and playerRoomId as the player moves, and preserve all locked maps, rooms, and connections.',
         'Handle all story genres and mature or NSFW scenes neutrally. Do not censor, rewrite, omit, or classify confirmed state merely because the scene is adult; follow the active SillyTavern, model, and provider settings.',
         'Record only outcomes confirmed by this reply. Never record plans, attempts, questions, hypotheticals, rejected actions, or out-of-character discussion. Keep proficiency changes conservative.',
@@ -3610,15 +3615,15 @@ function patchInstructions() {
         getSettings().enableMarketplace ? MARKETPLACE_EVENT_INSTRUCTIONS : '',
         'RoleForge bookkeeping belongs only inside the marked tretaresia_patch JSON comment. Do not print raw SET/INC command lines or standalone tracker key/value fields in the visible story; use canonical RoleForge ops inside that comment. Do not translate another system\'s protocol into guessed RoleForge paths.',
         'ROLEFORGE PATCH PROTOCOL — complete the story and ALL affected tracker data in the SAME normal reply. Finish with ONE invisible patch containing sceneTracker and every confirmed operation, including NPC diary and party/guild/household offers. Never wait for or request a second AI generation. The patch must be valid JSON with a closed HTML comment; omit it only for a purely OOC reply with no scene.',
-        uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"loc\":\"Market\",\"t\":\"08:00\",\"w\":\"Clear\",\"temp\":24,\"who\":[\"Mira\"]},\"ops\":[[\"inc\",\"progression.experience\",5,{\"reason\":\"Aura practice\",\"category\":\"training\"}],[\"upsert\",\"quests\",{\"id\":\"escort\",\"name\":\"Escort Caravan\",\"status\":\"Active\",\"objective\":\"Reach Eastwatch\",\"progress\":0}]],\"journey\":\"Accepted the Eastwatch escort mission after completing aura practice.\"}--> (Example only; add all required scene fields on the first reply.)"),
+        uiMarkup("<!--tretaresia_patch:{\"sceneTracker\":{\"dn\":\"Day 1\",\"d\":1,\"mo\":\"Harvest\",\"yr\":\"1286\",\"er\":\"Silver Age\",\"cal\":\"Lunar\",\"t\":\"08:00\",\"per\":\"Morning\",\"se\":\"Spring\",\"loc\":\"Market\",\"reg\":\"East Quarter\",\"con\":\"Story Realm\",\"pos\":\"By a stall\",\"w\":\"Clear\",\"temp\":24,\"light\":\"Daylight\",\"who\":[\"Mira\"],\"goal\":\"Buy supplies\",\"safe\":\"Safe\",\"mood\":\"Busy\",\"dt\":\"0m\"},\"ops\":[]}--> (Example only; use facts from this story, not these example place names.)"),
         'Allowed ops: ' + [[getSettings().enableStoryMemory,'storyMemories'],[getSettings().enableStoryAgenda,'storyAgenda'],[getSettings().enableQuestObjectives,'questObjectives']].filter(([enabled]) => enabled).map(([,path]) => 'upsert '+path+'; ').join('') + 'set/inc scalar paths; inc/upsert/delete inventory; upsert/delete skills, proficiencies.customMagic, proficiencies.customSword, proficiencies.techniques, quests, npcs, contacts, letters, party, guilds, household, partyMembers, guildMembers, npcAbilities, npcMeters, npcKnowledge, effects, combatLogs, regionalWeather, sceneMaps, sceneFloors, sceneRooms, sceneConnections; inc npcAbilities for existing skill proficiency; set/inc npcValues, npcHStats, and playerHStats; append npcDiary. Use canonical paths/ids and partial objects. Maximum 75 ops.',
         (getSettings().enableAuctions || getSettings().enableMarketplace) ? COMMERCE_INSTRUCTIONS : '',
         (!getSettings().enableMarketplace && rightsView(getState()).length) ? COMMERCE_RIGHTS_INSTRUCTIONS+' Marketplace offers are OFF: only maintain already-paid rights and their actual lifecycle events; do not open new offers.' : '',
         NPC_FIELD_INSTRUCTIONS,
         'Compact state arrays: inventory=[id,name,quantity,category], skills=[id,name,rank,type], quests=[id,name,type,status,objective,reward,giver,progress], npcIndex=[id,name,relationship,location,faction,title,occupation,aliases], npcWorld=[id,name,location,lifeMode,activity,activityUpdatedDay], abilities=[id,name,category,level,proficiency], contacts=[id,name,title,affiliation,relationship], letters=[id,contactId,from,to,subject,direction,status,createdAt].',
         'H-Stats per-field check: when this scene explicitly establishes an H event or fact, update EVERY distinct applicable npcHStats field for the named NPC in the SAME reply, including relevant body state, last partner, separate encounter counters, and confirmed relationships. An interaction can affect more than one counter. Never estimate liters, pregnancy, favorites, anatomy or private thoughts from implication. Keep unconfirmed fields unknown. No extra Condition field or unlock rule.',
-        'Scene Tracker: Use compact aliases in sceneTracker to reduce tokens: dn=dayName,d=day,mo=month,yr=year,er=era,cal=calendar,t=time,per=period,se=season,loc=location,reg=region,con=continent,pos=position,w=weather,temp=temperature,light=lighting,who=participants,goal=objective,safe=safety,mood=atmosphere,dt=elapsed. Example {"sceneTracker":{"loc":"Market","t":"08:00","who":["Mira"]},"ops":[]}. In the final patch of the FIRST normal reply, provide all required scene fields: dayName,day,month,year,era,calendar,time,period,season,location,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. On later replies include changed fields AND any fields marked missing in PREVIOUS SCENE; the extension inherits the rest. Use strings in story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Establish the actual current place, including rooms and non-atlas places. Describe indoor climate when outdoor weather does not apply. Do not claim a planned destination is current. Omit coordinates. Region and continent are optional; omit them when unestablished. Never invent them to fill a field. Never send empty strings, Unknown, N/A, null or dashes for required fields. Supply participants and elapsed when they change. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Complete the scene before finishing the same reply. Do not show sceneTracker in prose.',
-        'Location Memory: when this completed reply explicitly confirms a durable realm, region, place, landmark or route fact, add a top-level locations array (separate from sceneTracker) with at most 40 records: {id,name,kind:"Realm"|"Region"|"Place"|"Landmark"|"Route",parentId or parentName,region,continent,detail,conditions,landmarks:[{name,detail}],connections:[{toId or to,direction,distance,route,evidence}],evidence:"exact quote from this reply"}. Include only facts in the quote; no plans, rumors, guesses or OOC. Reuse stable ids and preserve existing detail. Set correction:true only when the story explicitly corrects an earlier geography fact. A location record without an exact evidence quote is ignored. Use connections for confirmed relationships such as distance and direction; never infer a distance from travel percentage.',
+        'Scene Tracker: Use compact aliases in sceneTracker to reduce tokens: dn=dayName,d=day,mo=month,yr=year,er=era,cal=calendar,t=time,per=period,se=season,loc=location,reg=region,con=continent,pos=position,w=weather,temp=temperature,light=lighting,who=participants,goal=objective,safe=safety,mood=atmosphere,dt=elapsed. Complete compact example {"sceneTracker":{"dn":"Day 1","d":1,"mo":"Harvest","yr":"1286","er":"Silver Age","cal":"Lunar","t":"08:00","per":"Morning","se":"Spring","loc":"Market","reg":"East Quarter","con":"Story Realm","pos":"By a stall","w":"Clear","temp":24,"light":"Daylight","who":["Mira"],"goal":"Buy supplies","safe":"Safe","mood":"Busy","dt":"0m"},"ops":[]}. In the final patch of the FIRST normal reply, provide all required scene fields: dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. On later replies include changed fields AND any fields marked missing in PREVIOUS SCENE; the extension inherits the rest. Use strings in story language except integer day, numeric Celsius temperature, 24-hour HH:mm time and an array of present character names. Establish the actual current place, including rooms and non-atlas places. Describe indoor climate when outdoor weather does not apply. Do not claim a planned destination is current. Omit coordinates. Region and continent are required. Read the hierarchy already established in the current/earlier story, lore and Location Memory, including districts written in the place name. If unnamed, establish coherent fictional enclosing region and continent/realm in the same narrative and patch, respecting known canon; these fields must not stay blank. Use world/realm names for settings without continents. Position names the precise spot within this place. Include matching locations records for the enclosing geography and actual place so the UI can build its Location List. Do not change known names merely to fill a field. Never send empty strings, Unknown, N/A, null or dashes for required fields. Supply participants and elapsed when they change. Location/region/continent/position/weather/temperature/time/day/dayName/period synchronize canonical state; explicit ops win. Complete the scene before finishing the same reply. Do not show sceneTracker in prose.',
+        'Location Memory: when this completed reply explicitly confirms a durable realm, region, place, landmark or route fact, add a top-level locations array (separate from sceneTracker) with at most 40 records: {id,name,kind:"Realm"|"Region"|"Place"|"Landmark"|"Route",parentId or parentName,region,continent,detail,conditions,landmarks:[{name,detail}],connections:[{toId or to,direction,distance,route,estimated,bidirectional,evidence}],evidence:"exact quote from this reply"}. Include only facts in the quote; no plans, rumors, guesses or OOC. Reuse stable ids and preserve existing detail. Set correction:true only when the story explicitly corrects an earlier geography fact. A location record without an exact evidence quote is ignored. Use connections for routes, physical distances or travel times stated in the story. You may establish a coherent fictional approximate route distance in the narrative with estimated:true; label it as approximate. Never derive distance from nesting, travel percentage or incompatible units. bidirectional:true only for a route usable both ways. Record distances between actual linked places, not a place and its entire containing continent. Reuse existing distances on revisits; leave unsupported routes unknown. Link each actual place with parentName and explicit Realm/Region records to build complete ordered paths in the Location List.',
         'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time only when the completed roll/action or sceneTracker confirms physical movement. A reply that stays in the same place must leave journey progress unchanged. Write the complete story first, then append one patch with sceneTracker and all gameplay, diary and invitation ops. A user asking an NPC to write a diary or invite them is not itself an event: portray the NPC doing it, then include the append/offer op in that same patch. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this main reply; never depend on a second AI request for scene, diary or invitations.',
@@ -3656,7 +3661,7 @@ function statePrompt(state, { includeState = true, track = true, activeCommerce=
     const customPreset=getPowerPreset().mode==='custom';
     const customForge=getForgePreset().mode==='custom';
     const customSetting=customPreset||customForge;
-    lines.push('Current geography comes only from the character card, lore and confirmed story. No built-in world atlas or default capital is authoritative. Use free-text location names. Region and continent are optional: omit them unless established, and never append a display breadcrumb back into a location field.');
+    lines.push('Current geography uses the character card, lore and story, including newly established fictional facts. No built-in world atlas or default capital is authoritative. Use free-text names. Region and continent/realm are required: reuse established names or establish coherent enclosing names in the same scene narrative. Never append an already-composed display breadcrumb back into a location field.');
     if (includeState) {
         lines.push('EPISTEMIC FIREWALL — HIGHEST PRIORITY FOR CHARACTER KNOWLEDGE: sceneContext describes author-level continuity, while privateTrackerReferenceIndex is hidden tool memory. No NPC can see or read either object. A character knows only what they personally witnessed, were explicitly told, can publicly observe now, or could credibly learn through an established role. Presence, friendship, party/guild/household membership, Character Life records, NPC dossiers, and model access to this prompt do not grant knowledge. Never reveal or have an NPC react to exact level, EXP, vitals, stats, power identity, money/balance, inventory, quest/UI status, relationship meters, private diary, coordinates, travel percentage, transaction history, journey log, or companions unless the story independently established that specific fact. When uncertain, the NPC does not know. Never use UI/system terminology in narration or dialogue.');
         lines.push('Canonical role-play continuity follows. Preserve it silently unless the story confirms a change. The tracker may use private reference IDs for bookkeeping, but visible prose and NPC behavior must obey the firewall above.');
@@ -3682,7 +3687,7 @@ function statePrompt(state, { includeState = true, track = true, activeCommerce=
     if (state.npcs.some(npc => npc.alternateProfiles?.length)) lines.push(NPC_ALTERNATE_INSTRUCTIONS);
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' TRACKER DATA:')[0]);
     const speechInstructions=voiceInstructions(getSettings());if(speechInstructions)lines.push(speechInstructions);
-    if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 19 required fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
+    if (track) lines.push('FINAL TRACKER CHECK: In this SAME reply, close the story with one complete tretaresia_patch comment. Include actual sceneTracker values for all 21 required fields on the first scene, or every missing field from PREVIOUS SCENE plus changed fields on later scenes. Include confirmed NPC diary and party/guild invitation operations in that comment, with the NPC dossier when newly introduced. Never defer these to another AI request or leave the scene blank merely because a location and time were supplied.');
     if (track) {
         const session=activeCommerce;
         if(session)lines.push(commerceRoleplayPrompt(session,{npcs:state.npcs.map(effectiveNpc),story:extractStatePatch(SillyTavern.getContext().chat?.[session.source.messageId]?.mes).visible}));
@@ -4309,7 +4314,7 @@ function synchronizeWorldState(state, previous = state) {
     // the visit count and refreshes its last-seen evidence.
     const memoryPlace = text(state.location.place, '', 180);
     if (memoryPlace && !/^en route to\b|^destination$/i.test(memoryPlace)) {
-        const known = (state.locationMemory || []).some(entry => entry.name.toLocaleLowerCase() === memoryPlace.toLocaleLowerCase());
+        const known = (state.locationMemory || []).find(entry => entry.name.toLocaleLowerCase() === memoryPlace.toLocaleLowerCase());
         const route = justArrived && text(previousTravel.origin, '', 180) ? {
             // Store the route on the destination as a relation back to the
             // origin. This keeps “from where did I arrive?” truthful when the
@@ -4326,7 +4331,7 @@ function synchronizeWorldState(state, previous = state) {
             detail: state.location.detail,
             conditions: [state.scene.weather, state.scene.temperature == null ? '' : `${state.scene.temperature}°C`].filter(Boolean).join(' · '),
         }, {
-            visited: !known || memoryPlace.normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ').trim()
+            visited: !known || !known.visits || memoryPlace.normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ').trim()
                 !== text(previous?.location?.place, '', 180).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ').trim(),
             day: state.worldClock.dayName || `Day ${state.worldClock.day}`,
             evidence: playerLocationChanged ? state.location.detail : '',
@@ -5703,7 +5708,7 @@ function renderLocationMemory(state) {
     const all = Array.isArray(state.locationMemory) ? state.locationMemory : [];
     const byId = new Map(all.map(entry => [entry.id, entry]));
     const current = all.find(entry => entry.name?.toLocaleLowerCase() === state.location.place?.toLocaleLowerCase());
-    const parent = current?.parentId ? byId.get(current.parentId) : null;
+    const hierarchy = locationPath(all,current?.name || state.location.place);
     const routes = (current?.connections || []).slice(-8);
     const childPlaces = current ? all.filter(entry => entry.parentId === current.id).slice(0, 8) : [];
     const thai = getSettings().language === 'th';
@@ -5711,7 +5716,7 @@ function renderLocationMemory(state) {
     const routeTarget = route => route.toId ? byId.get(route.toId)?.name : route.to;
     const routeRows = routes.length ? routes.map(route => `<article class="tretaresia-location-route"><i class="fa-solid fa-route"></i><span><strong>${html(routeTarget(route) || 'Unknown route')}</strong><small>${html([route.route, route.distance, route.direction].filter(Boolean).join(' · ') || word('Direction not confirmed', 'ยังไม่ยืนยันระยะทางหรือทิศทาง'))}</small></span><b>${html(route.direction || '—')}</b></article>`).join('') : `<p class="tretaresia-location-empty">${html(word('No confirmed routes from this place yet.', 'ยังไม่มีเส้นทางที่ยืนยันจากสถานที่นี้'))}</p>`;
     const childRows = childPlaces.length ? childPlaces.map(entry => `<article class="tretaresia-location-place"><i class="fa-solid fa-location-dot"></i><span><strong>${html(entry.name)}</strong><small>${html([entry.kind, entry.region, entry.continent].filter(Boolean).join(' · '))}</small></span><b>${entry.visits || 0}×</b></article>`).join('') : `<p class="tretaresia-location-empty">${html(word('Child places become stable after story evidence.', 'สถานที่ย่อยจะถูกบันทึกเมื่อมีหลักฐานจากเนื้อเรื่อง'))}</p>`;
-    return `<section class="tretaresia-location-memory-workspace"><header class="tretaresia-location-memory-hero"><div><span class="tretaresia-section-eyebrow">${html(word('WORLD LEDGER · EVIDENCE BASED', 'WORLD LEDGER · อิงหลักฐาน'))}</span><h3>${html(word('Location Memory', 'ความทรงจำสถานที่'))}</h3><p>${html(word('Stable geography, hierarchy and routes used when the story returns here.', 'เก็บลำดับสถานที่ สภาพ และเส้นทางเดิมเพื่อไม่ให้ฉากบิดเบือนเมื่อกลับมาอีกครั้ง'))}</p></div><strong>${all.length}<small>${html(word('confirmed places', 'สถานที่ยืนยันแล้ว'))}</small></strong></header><nav class="tretaresia-location-breadcrumb" aria-label="${html(word('Current location hierarchy', 'ลำดับสถานที่ปัจจุบัน'))}"><span>${html(parent?.parentId ? byId.get(parent.parentId)?.name || '' : state.location.continent || '—')}</span><span>${html(parent?.name || state.location.region || '—')}</span><span>${html(current?.name || state.location.place || '—')}</span></nav><section class="tretaresia-location-current"><div><span class="tretaresia-section-eyebrow">${html(word('CURRENT PLACE · LAST CONFIRMED', 'จุดปัจจุบัน · ยืนยันล่าสุด'))}</span><h4>${html(current?.name || state.location.place || 'Unknown')}</h4><p>${html(current?.detail || state.location.detail || word('No detail confirmed yet.', 'ยังไม่มีรายละเอียดที่ยืนยัน'))}</p></div><dl><div><dt>${html(word('Condition', 'สภาพ'))}</dt><dd>${html(current?.conditions || state.scene.weather || '—')}</dd></div><div><dt>${html(word('Visits', 'จำนวนครั้ง'))}</dt><dd>${current?.visits || 0}×</dd></div><div><dt>${html(word('Region', 'ภูมิภาค'))}</dt><dd>${html(current?.region || state.location.region || '—')}</dd></div></dl></section><div class="tretaresia-location-columns"><section class="tretaresia-location-card"><header><div><span class="tretaresia-section-eyebrow">${html(word('KNOWN ROUTES', 'เส้นทางที่จำได้'))}</span><h4>${html(word('Routes and direction', 'เส้นทางและทิศทาง'))}</h4></div><b>${routes.length}</b></header><div class="tretaresia-location-route-list">${routeRows}</div></section><section class="tretaresia-location-card"><header><div><span class="tretaresia-section-eyebrow">${html(word('PLACES INSIDE', 'สถานที่ภายใน'))}</span><h4>${html(word('Known child places', 'สถานที่ย่อยที่รู้จัก'))}</h4></div><b>${childPlaces.length}</b></header><div class="tretaresia-location-place-list">${childRows}</div></section></div><footer class="tretaresia-location-evidence"><i class="fa-solid fa-shield-check"></i><span><strong>${html(word('Evidence lock', 'หลักฐานที่ยืนยัน'))}</strong>${html(current?.evidence?.join(' · ') || word('Only confirmed story facts are stored here. Travel progress must follow explicit scene evidence.', 'เก็บเฉพาะข้อเท็จจริงจากโรลที่ยืนยันแล้ว และการเดินทางต้องอิงหลักฐานของฉาก'))}</span></footer></section>`;
+    return `<section class="tretaresia-location-memory-workspace"><header class="tretaresia-location-memory-hero"><div><span class="tretaresia-section-eyebrow">${html(word('WORLD LEDGER · EVIDENCE BASED', 'WORLD LEDGER · อิงหลักฐาน'))}</span><h3>${html(word('Location Memory', 'ความทรงจำสถานที่'))}</h3><p>${html(word('Stable geography, hierarchy and routes used when the story returns here.', 'เก็บลำดับสถานที่ สภาพ และเส้นทางเดิมเพื่อไม่ให้ฉากบิดเบือนเมื่อกลับมาอีกครั้ง'))}</p></div><strong>${all.length}<small>${html(word('confirmed places', 'สถานที่ยืนยันแล้ว'))}</small></strong></header><nav class="tretaresia-location-breadcrumb" aria-label="${html(word('Current location hierarchy', 'ลำดับสถานที่ปัจจุบัน'))}">${hierarchy.map(name=>`<span>${html(name)}</span>`).join('')}</nav><section class="tretaresia-location-current"><div><span class="tretaresia-section-eyebrow">${html(word('CURRENT PLACE · LAST CONFIRMED', 'จุดปัจจุบัน · ยืนยันล่าสุด'))}</span><h4>${html(current?.name || state.location.place || 'Unknown')}</h4><p>${html(current?.detail || state.location.detail || word('No detail confirmed yet.', 'ยังไม่มีรายละเอียดที่ยืนยัน'))}</p></div><dl><div><dt>${html(word('Condition', 'สภาพ'))}</dt><dd>${html(current?.conditions || state.scene.weather || '—')}</dd></div><div><dt>${html(word('Visits', 'จำนวนครั้ง'))}</dt><dd>${current?.visits || 0}×</dd></div><div><dt>${html(word('Region', 'ภูมิภาค'))}</dt><dd>${html(current?.region || state.location.region || '—')}</dd></div></dl></section><div class="tretaresia-location-columns"><section class="tretaresia-location-card"><header><div><span class="tretaresia-section-eyebrow">${html(word('KNOWN ROUTES', 'เส้นทางที่จำได้'))}</span><h4>${html(word('Routes and direction', 'เส้นทางและทิศทาง'))}</h4></div><b>${routes.length}</b></header><div class="tretaresia-location-route-list">${routeRows}</div></section><section class="tretaresia-location-card"><header><div><span class="tretaresia-section-eyebrow">${html(word('PLACES INSIDE', 'สถานที่ภายใน'))}</span><h4>${html(word('Known child places', 'สถานที่ย่อยที่รู้จัก'))}</h4></div><b>${childPlaces.length}</b></header><div class="tretaresia-location-place-list">${childRows}</div></section></div>${locationListMarkup(all,state.location.place,getSettings().language)}<footer class="tretaresia-location-evidence"><i class="fa-solid fa-shield-check"></i><span><strong>${html(word('Evidence lock', 'หลักฐานที่ยืนยัน'))}</strong>${html(current?.evidence?.join(' · ') || word('Only confirmed story facts are stored here. Travel progress must follow explicit scene evidence.', 'เก็บเฉพาะข้อเท็จจริงจากโรลที่ยืนยันแล้ว และการเดินทางต้องอิงหลักฐานของฉาก'))}</span></footer></section>`;
 }
 
 function renderScene(panel, state) {
@@ -5726,11 +5731,20 @@ function renderScene(panel, state) {
     const locationDetail = state.location.detail || state.location.place || state.location.region;
     const exactLocation = locationKnown ? locationDetail : '—';
     const temperature = state.scene.temperature === null ? '—' : `${Number(state.scene.temperature).toLocaleString()}°C`;
-    panel.innerHTML = (uiMarkup("")+(heading(uiText("Scene Tracker"), 'Live environment and position', 'fa-solid fa-cloud-sun'))+uiMarkup("\n        <section class=\"tretaresia-scene-hero\">\n            <div class=\"tretaresia-scene-time\"><span>")+(html(state.worldClock.dayName))+uiMarkup("</span><strong>")+(html(state.worldClock.time))+uiMarkup("</strong><small>")+(html(tr(state.worldClock.phase)))+uiMarkup(" · ")+(html(tr(uiText("Day counter"))))+uiMarkup(" ")+(state.worldClock.day)+uiMarkup("</small></div>\n            <div class=\"tretaresia-scene-weather\"><i class=\"")+(weatherIcon(state.scene.weather))+uiMarkup("\"></i><div><span>")+(html(tr(uiText("Weather"))))+uiMarkup("</span><strong>")+(html(state.scene.weather))+uiMarkup("</strong></div>\n                <output>")+(temperature)+uiMarkup("</output></div>\n        </section>\n        <section class=\"tretaresia-day-cycle tretaresia-scene-cycle\" style=\"--phase:")+(phaseIndex)+uiMarkup("\"><div class=\"tretaresia-cycle-line\"><span></span></div>\n            ")+(DAY_PHASES.map((phase, index) => (uiMarkup("<div class=\"tretaresia-cycle-stop")+(index === phaseIndex ? ' is-current' : '')+uiMarkup("\"><i class=\"")+(['fa-solid fa-sun','fa-regular fa-sun','fa-solid fa-cloud-sun','fa-solid fa-moon'][index])+uiMarkup("\"></i><span>")+(html(tr(phase)))+uiMarkup("</span></div>"))).join(''))+uiMarkup("</section>\n        <section class=\"tretaresia-scene-grid\">\n            <article><i class=\"fa-solid fa-earth-americas\"></i><span>")+(html(tr(uiText("Current region"))))+uiMarkup("</span><strong>")+(html(locationKnown ? state.location.continent : '—'))+uiMarkup("</strong><small>")+(html(snapshot.region || '—'))+uiMarkup("</small></article>\n            <article><i class=\"fa-solid fa-location-dot\"></i><span>")+(html(tr(uiText("Current place"))))+uiMarkup("</span><strong>")+(html(moving ? `En route to ${state.travel.destinationPlace || state.travel.destination}` : snapshot.location || '—'))+uiMarkup("</strong><small>")+(html(exactLocation))+uiMarkup("</small></article>\n            <article><i class=\"fa-solid fa-street-view\"></i><span>")+(html(tr(uiText("Scene position"))))+uiMarkup("</span><strong>")+(html(state.scene.position))+uiMarkup("</strong><small>")+(html(tr(state.location.zoneType)))+uiMarkup("</small></article>\n        </section>\n        ")+(currentScene ? (uiMarkup("<details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-list\"></i> ")+(html(tr(uiText("Scene details"))))+uiMarkup("</summary>\n            <dl class=\"tretaresia-fact-list\">")+([
+    panel.innerHTML = (uiMarkup("")+(heading(uiText("Scene Tracker"), 'Live environment and position', 'fa-solid fa-cloud-sun'))+uiMarkup("\n        <section class=\"tretaresia-scene-hero\">\n            <div class=\"tretaresia-scene-time\"><span>")+(html(state.worldClock.dayName))+uiMarkup("</span><strong>")+(html(state.worldClock.time))+uiMarkup("</strong><small>")+(html(tr(state.worldClock.phase)))+uiMarkup(" · ")+(html(tr(uiText("Day counter"))))+uiMarkup(" ")+(state.worldClock.day)+uiMarkup("</small></div>\n            <div class=\"tretaresia-scene-weather\"><i class=\"")+(weatherIcon(state.scene.weather))+uiMarkup("\"></i><div><span>")+(html(tr(uiText("Weather"))))+uiMarkup("</span><strong>")+(html(state.scene.weather))+uiMarkup("</strong></div>\n                <output>")+(temperature)+uiMarkup("</output></div>\n        </section>\n        <section class=\"tretaresia-day-cycle tretaresia-scene-cycle\" style=\"--phase:")+(phaseIndex)+uiMarkup("\"><div class=\"tretaresia-cycle-line\"><span></span></div>\n            ")+(DAY_PHASES.map((phase, index) => (uiMarkup("<div class=\"tretaresia-cycle-stop")+(index === phaseIndex ? ' is-current' : '')+uiMarkup("\"><i class=\"")+(['fa-solid fa-sun','fa-regular fa-sun','fa-solid fa-cloud-sun','fa-solid fa-moon'][index])+uiMarkup("\"></i><span>")+(html(tr(phase)))+uiMarkup("</span></div>"))).join(''))+uiMarkup("</section>\n        <section class=\"tretaresia-scene-grid\">\n            <article><i class=\"fa-solid fa-earth-americas\"></i><span>")+(html(getSettings().language==='th'?'ทวีป / ภูมิภาค':'Continent / Region'))+uiMarkup("</span><strong>")+(html(locationKnown ? state.location.continent : '—'))+uiMarkup("</strong><small>")+(html(snapshot.region || '—'))+uiMarkup("</small></article>\n            <article><i class=\"fa-solid fa-location-dot\"></i><span>")+(html(tr(uiText("Current place"))))+uiMarkup("</span><strong>")+(html(moving ? `En route to ${state.travel.destinationPlace || state.travel.destination}` : snapshot.location || '—'))+uiMarkup("</strong><small>")+(html(exactLocation))+uiMarkup("</small></article>\n            <article><i class=\"fa-solid fa-street-view\"></i><span>")+(html(tr(uiText("Scene position"))))+uiMarkup("</span><strong>")+(html(state.scene.position))+uiMarkup("</strong><small>")+(html(tr(state.location.zoneType)))+uiMarkup("</small></article>\n        </section>\n        ")+(currentScene ? (uiMarkup("<details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-list\"></i> ")+(html(tr(uiText("Scene details"))))+uiMarkup("</summary>\n            <dl class=\"tretaresia-fact-list\">")+([
                 ['Month',currentScene.month], ['Year',currentScene.year], ['Era',currentScene.era], ['Calendar',currentScene.calendar],
                 ['Season',currentScene.season], ['Lighting',currentScene.lighting], ['Participants',currentScene.participants?.join(', ')],
                 ['Objective',currentScene.objective], ['Safety',currentScene.safety], ['Atmosphere',currentScene.atmosphere], ['Elapsed',currentScene.elapsed],
             ].map(([label, value]) => (uiMarkup("<div><dt>")+(html(tr(label)))+uiMarkup("</dt><dd>")+(html(value || '—'))+uiMarkup("</dd></div>"))).join(''))+uiMarkup("</dl></details>")) : '')+uiMarkup("\n        ")+(state.travel.status !== 'Idle' ? (uiMarkup("<section class=\"tretaresia-card tretaresia-travel-status\" data-status=\"")+(html(state.travel.status.toLowerCase()))+uiMarkup("\">\n            <div class=\"tretaresia-card-title\"><span>")+(html(tr(uiText("Journey"))))+uiMarkup("</span><em><i class=\"fa-solid fa-route\"></i> ")+(html(state.travel.status))+uiMarkup("</em></div>\n            <dl class=\"tretaresia-fact-list\"><div><dt>")+(html(tr(uiText("Origin"))))+uiMarkup("</dt><dd>")+(html(state.travel.origin || 'Unknown'))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Destination"))))+uiMarkup("</dt><dd>")+(html(state.travel.destination || 'Unknown'))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Travel route"))))+uiMarkup("</dt><dd>")+(html(state.travel.route))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Remaining travel"))))+uiMarkup("</dt><dd>")+(formatTravelDays(state.travel.remainingDays))+uiMarkup(" / ")+(formatTravelDays(state.travel.totalDays))+uiMarkup(" ")+(html(tr(uiText("days"))))+uiMarkup("</dd></div>\n            <div><dt>")+(html(tr(uiText("Current"))))+uiMarkup("</dt><dd>")+(Math.round(journeyProgress * 100))+uiMarkup("% · ")+(html(state.location.place))+uiMarkup("</dd></div></dl>\n            <div class=\"tretaresia-travel-progress\" style=\"--journey-progress:")+(Math.round(journeyProgress * 100))+uiMarkup("%\"><span></span><b>")+(Math.round(journeyProgress * 100))+uiMarkup("%</b></div>\n            ")+(state.travel.notes ? (uiMarkup("<p>")+(html(state.travel.notes))+uiMarkup("</p>")) : '')+uiMarkup("</section>")) : '')+uiMarkup("\n        ")+(renderJourneyLogs(state))+uiMarkup("\n        ")+(renderLocationMemory(state))+uiMarkup("\n        ")+(renderLocalStructure(state))+uiMarkup("\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-pen\"></i> ")+(html(tr(uiText("Save scene"))))+uiMarkup("</summary>\n            <form data-form=\"scene\" class=\"tretaresia-form-grid\">\n                ")+(input('Day name', 'dayName', state.worldClock.dayName))+uiMarkup("")+(input('Day counter', 'day', state.worldClock.day, 'number', 'min="1"'))+uiMarkup("\n                ")+(input('World time', 'time', state.worldClock.time, 'time'))+uiMarkup("")+(select('Day phase', 'phase', DAY_PHASES, state.worldClock.phase))+uiMarkup("\n                ")+(input('Continent', 'continent', state.location.continent))+uiMarkup("")+(input('Current region', 'region', state.location.region))+uiMarkup("\n                ")+(input('Current place', 'place', state.location.place))+uiMarkup("")+(input('Current location detail', 'detail', state.location.detail))+uiMarkup("\n                ")+(input('Scene position', 'position', state.scene.position))+uiMarkup("")+(select('Zone type', 'zoneType', ZONE_TYPES, state.location.zoneType))+uiMarkup("\n                ")+(input('Weather', 'weather', state.scene.weather))+uiMarkup("")+(input('Temperature', 'temperature', state.scene.temperature, 'number', 'min="-1000" max="1000" step="0.1"'))+uiMarkup("\n                <button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Save scene"))))+uiMarkup("</button>\n            </form></details>"));
+    mountLocationList(panel,state.locationMemory,state.location.place,getSettings().language);
+    const sceneGrid=panel.querySelector('.tretaresia-scene-grid');
+    if(sceneGrid){
+    const completeButton = document.createElement('section');
+    completeButton.className='rf-scene-completion';
+    const thai=getSettings().language==='th';
+    completeButton.innerHTML=`<button type="button" class="tretaresia-secondary-button" data-action="complete-scene" ${sceneCompletionBusy?'disabled':''}>${thai?'ให้ AI เติมฉากและสถานที่':'Let AI complete scene / locations'}</button><p>${thai?'กดเมื่อบทโรลมีสถานที่แล้ว แต่ข้อมูลฉาก ลำดับสถานที่ หรือระยะทางยังไม่ครบ · อ่านแชทล่าสุด · API เพิ่ม 1 ครั้ง':'Use after a place appears in the story when scene details, hierarchy or distances are missing. Reads recent chat · 1 additional API request.'}</p>`;
+    sceneGrid.after(completeButton);
+    }
     setupSceneMapInteractions(panel, state);
 }
 
@@ -7446,6 +7460,7 @@ async function onPanelChange(event) {
 async function onPanelClick(event) {
     const button = event.target.closest('[data-action]');
     if (!button) return;
+    if (button.dataset.action === 'complete-scene') { await completeSceneLocations(); return; }
     if (button.dataset.action === 'enable-optional-system') { await changeOptionalSystem(button.dataset.system,true,button); return; }
     if ((button.dataset.action.startsWith('story-') || button.dataset.action.startsWith('quest-objective-') || button.dataset.action === 'quest-complete' || button.dataset.action.startsWith('memory-summary-'))
         && !currentStoryControl(button)) return;
@@ -9572,6 +9587,46 @@ async function processAssistantPatch(messageId, generationType = '') {
     } finally { commerceRuntime?.refresh(); itemRuntime?.refresh(); if(!itemBusy)void itemRuntime?.resume(); npcWorkspace?.refresh(); }
 }
 
+async function completeSceneLocations() {
+    const context=SillyTavern.getContext(),id=latestAssistantMessageId(),message=context.chat?.[id];
+    const thai=getSettings().language==='th';
+    if(sceneCompletionBusy || aiSyncInProgress || mainReplyGenerating(context) || pendingCommerceSave) return false;
+    if(!message || !hasUserReply(context) || !hasTaskGeneration(context)) {
+        notify('warning',thai?'ต้องมีบทโรลที่ตอบจบแล้วและเชื่อมต่อ API ก่อน':'A completed role-play reply and an API connection are required.');return false;
+    }
+    const metadata=context.chatMetadata,chatId=context.getCurrentChatId?.(),owner=characterOwner(context)?.key;
+    const messages=JSON.stringify(context.chat),state=getState(),prior=previousScene(context.chat.length)||{};
+    const originalSignature=JSON.stringify(metadata);
+    const transcript=context.chat.slice(-24).filter(m=>m&&!m.is_system).map(m=>`${m.is_user?'User':'Character'}: ${extractStatePatch(m.mes||'').visible.slice(0,6000)}`).join('\n\n');
+    let rollback=null,written=null;
+    sceneCompletionBusy=true;renderAll();updatePrompt();memorySummaries?.notifyGenerationChanged();
+    try {
+        recordExtensionRequest('sceneCompletion','Scene / Location List completion');
+        const response=await requestMetadataTask(context,{quietPrompt:sceneCompletionPrompt({state,previous:prior,transcript,lore:activeLorePrompt(),language:getSettings().language}),skipWIAN:true,responseLength:4096,removeReasoning:true},'scene and locations');
+        const active=SillyTavern.getContext();
+        if(active.chatMetadata!==metadata || active.getCurrentChatId?.()!==chatId || characterOwner(active)?.key!==owner || JSON.stringify(active.chat)!==messages || JSON.stringify(active.chatMetadata)!==originalSignature) {
+            throw Error(thai?'แชทหรือข้อมูลเปลี่ยนระหว่างสร้าง จึงยังไม่บันทึก กรุณากดใหม่':'Chat or state changed during generation; nothing was applied. Retry.');
+        }
+        const result=prepareSceneCompletion(state,prior,parseJson(response),transcript);
+        if(result.error)throw Error(thai?'AI ส่งข้อมูลฉากไม่ครบหรือรูปแบบไม่ถูกต้อง ข้อมูลเดิมยังอยู่':'AI returned incomplete or invalid scene data; existing data is retained.');
+        rollback=Object.fromEntries([METADATA_KEY,SCENE_HISTORY_KEY,TURN_HISTORY_KEY].map(key=>[key,metadata[key]===undefined?undefined:clone(metadata[key])]));
+        if(!await persistState(result.candidate,'scene-completion',{deferMetadataSave:true}))throw Error(thai?'บันทึกข้อมูลฉากไม่สำเร็จ':'Scene data could not be saved.');
+        written=metadata[METADATA_KEY];
+        await rememberScene(id,message,getState(),result.scene);
+        const checkpoint=assistantCheckpoint(id),variant=assistantVariantKey(message);
+        if(checkpoint?.variants?.[variant])checkpoint.variants[variant].state=clone(getState());
+        if(!await saveCurrentChatMetadata(context))throw Error(thai?'แชทเปลี่ยนก่อนบันทึกเสร็จ':'Chat changed before saving completed.');
+        writeContinuitySnapshot(getState());
+        notify('success',thai?'เติมฉากและรายการสถานที่แล้ว ระยะประมาณจะแสดงแยกชัดเจน':'Scene and Location List updated. Estimated distances are labeled.');
+        return true;
+    } catch(error) {
+        if(rollback && written && metadata[METADATA_KEY]===written)for(const [key,value] of Object.entries(rollback)){if(value===undefined)delete metadata[key];else metadata[key]=value;}
+        notify('error',error.message);return false;
+    } finally {
+        sceneCompletionBusy=false;updatePrompt();renderAll();memorySummaries?.notifyGenerationChanged();resumeUnfinishedAssistantPatch();
+    }
+}
+
 function latestAssistantMessageId() {
     const chat = SillyTavern.getContext().chat || [];
     for (let index = chat.length - 1; index >= 0; index -= 1) {
@@ -9762,7 +9817,7 @@ ${transcript}
 
 ${rules}
 ${ATTRIBUTE_INSTRUCTIONS}
-Return ONLY a JSON object {"ops":[],"sceneTracker":{}} with confirmed missing changes and a sceneTracker for this reply. Never return a full state, a patch marker or an HTML comment.`;
+Return ONLY a JSON object {"ops":[],"sceneTracker":{},"locations":[]} with confirmed missing changes and a sceneTracker for this reply. Never return a full state, a patch marker or an HTML comment.`;
 }
 
 function queueAnalyze(options = {}) {
@@ -9830,6 +9885,7 @@ function manualSyncHistoricalOperations(operations, historical, state, trackedTu
 
 async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
     if (!manual) return;
+    if (sceneCompletionBusy) return;
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.()) {
         notify('warning', uiText("Open a chat before synchronizing."));
@@ -10530,7 +10586,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.58.10 loaded.');
+        console.info('[RoleForge] Role-play interface v0.58.11 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

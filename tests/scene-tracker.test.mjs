@@ -41,7 +41,7 @@ test('a complete scene records the same full calendar and environment as Rune wi
     const details={month:'Harvest',year:'1286',era:'Silver Age',calendar:'Lunar',season:'Spring',
         lighting:'Lamps',participants:['Kohaku'],objective:'Find the book',safety:'Safe',atmosphere:'Quiet',elapsed:'0 minutes'};
     const snapshot=sceneSnapshot(state,details);
-    assert.equal(SCENE_REQUIRED_FIELDS.length,19);
+    assert.equal(SCENE_REQUIRED_FIELDS.length,21);
     assert.deepEqual(missingSceneFields(snapshot),[]);
     assert.equal(snapshot.calendar,'Lunar');
     assert.ok(missingSceneFields({...snapshot,weather:'Unknown',participants:[],month:''}).includes('participants'));
@@ -69,5 +69,5 @@ test('legacy atlas names require migration evidence; actual story names remain u
     assert.equal(normalizeNarrativeLocation(old).place,'Central Crown');
     assert.equal(narrativeLocationLabel({place:'Gaia Manor',region:'Gaia Manor · Moon District · Moon District',continent:'Moon District'}),'Moon District');
     assert.equal(normalizeNarrativeLocation({place:'<script>alert(1)</script>'}).place,'<script>alert(1)</script>');
-    assert(!missingSceneFields({}).includes('region'));assert(!missingSceneFields({}).includes('continent'));
+    assert(missingSceneFields({}).includes('region'));assert(missingSceneFields({}).includes('continent'));
 });

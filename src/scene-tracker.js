@@ -1,3 +1,4 @@
+import {recoverLocationGeography} from './location-memory.js?v=0.58.11';
 // Small, per-reply scene records; the host may complete omitted scene details.
 const value = (source, limit = 180) => typeof source === 'string' ? source.trim().slice(0, limit) : '';
 const known = source => source && !/^(?:unknown|none|n\/a|unspecified|not specified|not known|undefined|null|tbd|ไม่ทราบ|ไม่ระบุ|ไม่รู้|—|–|-|\?|…|\.{2,})$/i.test(source) ? source : '';
@@ -40,7 +41,7 @@ export function expandScene(details) {
 }
 
 export const SCENE_REQUIRED_FIELDS = Object.freeze(['dayName','day','month','year','era','calendar','time','period','season',
-    'location','weather','temperature','lighting','participants','position','objective','safety','atmosphere','elapsed']);
+    'location','region','continent','weather','temperature','lighting','participants','position','objective','safety','atmosphere','elapsed']);
 
 export function missingSceneFields(snapshot) {
     return SCENE_REQUIRED_FIELDS.filter(key => key === 'temperature'
@@ -81,12 +82,12 @@ export function sceneSnapshot(state, supplement = {}, speakers = []) {
     const read = (key, fallback, limit) => known(value(extra[key], limit)) || known(value(fallback, limit)) || '';
     const participants = Array.isArray(extra.participants) && extra.participants.length ? extra.participants : speakers;
     const names = [...new Set(participants.filter(name => typeof name === 'string').map(name => value(name, 70)).filter(known))].slice(0, 8);
-    const narrativeLocation = normalizeNarrativeLocation({
+    const narrativeLocation = normalizeNarrativeLocation(recoverLocationGeography({
         place: known(value(extra.location, 6000)) || location.place || location.detail,
         detail: location.detail,
         region: known(value(extra.region, 6000)) || location.region,
         continent: known(value(extra.continent, 6000)) || location.continent,
-    });
+    }, state?.locationMemory));
     return {
         day: Number.isFinite(Number(clock.day)) ? Math.max(1, Math.floor(Number(clock.day))) : null,
         dayName: read('dayName', clock.dayName, 50), time: read('time', clock.time, 20),
@@ -112,6 +113,7 @@ function node(tag, className = '', content = '') {
 
 export function renderSceneTracker(snapshot, language = 'en') {
     const thai = language === 'th';
+    const missing = missingSceneFields(snapshot);
     const word = (en, th) => thai ? th : en;
     const card = node('section', 'trpg-scene-ledger');
     card.setAttribute('aria-label', word('Scene Tracker', 'ข้อมูลฉาก'));
@@ -121,7 +123,7 @@ export function renderSceneTracker(snapshot, language = 'en') {
         node('strong', '', number == null ? '—' : String(number).padStart(2, '0')));
     const body = node('div', 'trpg-scene-body');
     const top = node('div', 'trpg-scene-top');
-    top.append(node('span', '', snapshot.missing?.length ? 'SCENE STATUS / PARTIAL' : 'SCENE STATUS / LIVE'),
+    top.append(node('span', '', missing.length ? 'SCENE STATUS / PARTIAL' : 'SCENE STATUS / LIVE'),
         node('span', '', [snapshot.dayName,snapshot.day == null || snapshot.dayName === `Day ${snapshot.day}` ? '' : `${word('Day', 'วันที่')} ${snapshot.day}`].filter(Boolean).join(' · ') || '—'));
     const hero = node('div', 'trpg-scene-hero'), place = node('div');
     place.append(node('small', '', word('CURRENT LOCATION', 'ตำแหน่งในเนื้อเรื่อง')),
@@ -143,7 +145,8 @@ export function renderSceneTracker(snapshot, language = 'en') {
     if (snapshot.elapsed) summary.append(node('span', '', ` · ${snapshot.elapsed}`));
     const fields = node('dl');
     for (const [label, info] of [
-        [word('Position', 'ตำแหน่ง'), snapshot.position], [word('Season', 'ฤดูกาล'), snapshot.season],
+        [word('Position', 'ตำแหน่ง'), snapshot.position], [word('Region', 'ภูมิภาค'), snapshot.region],
+        [word('Continent / Realm', 'ทวีป / โลก'), snapshot.continent], [word('Season', 'ฤดูกาล'), snapshot.season],
         [word('Month', 'เดือน'), snapshot.month], [word('Year', 'ปี'), snapshot.year],
         [word('Era', 'ศักราช'), snapshot.era], [word('Calendar', 'ปฏิทิน'), snapshot.calendar],
         [word('Lighting', 'แสงสว่าง'), snapshot.lighting], [word('Safety', 'ความปลอดภัย'), snapshot.safety],
