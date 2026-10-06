@@ -1,11 +1,11 @@
-import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.8';
-import {completeItemDefinition} from './item-definition.js?v=0.58.8';
-import {itemStatSummary} from './item-effects.js?v=0.58.8';
-import {purchaseDeposit} from './commerce-rights.js?v=0.58.8';
-import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.58.8';
-import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.58.8';
-import {commerceIcon} from './commerce-icons.js?v=0.58.8';
-import {convertMoney} from './commerce-currency.js?v=0.58.8';
+import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.9';
+import {completeItemDefinition} from './item-definition.js?v=0.58.9';
+import {itemStatSummary} from './item-effects.js?v=0.58.9';
+import {purchaseDeposit} from './commerce-rights.js?v=0.58.9';
+import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.58.9';
+import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.58.9';
+import {commerceIcon} from './commerce-icons.js?v=0.58.9';
+import {convertMoney} from './commerce-currency.js?v=0.58.9';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
 export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},repair=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {

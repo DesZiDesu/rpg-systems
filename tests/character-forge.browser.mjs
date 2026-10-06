@@ -30,16 +30,52 @@ window.SillyTavern={getContext:()=>window.host,libs:{}};window.toastr={error:con
 const server=http.createServer(async(req,res)=>{try{const url=new URL(req.url,'http://localhost');if(url.pathname==='/'){res.setHeader('content-type','text/html');res.end(fixture);return}if(url.pathname.startsWith('/api/')){res.setHeader('content-type','application/json');res.end('[]');return}if(!url.pathname.startsWith(base)||url.pathname.includes('..')){res.writeHead(404).end();return}const path=url.pathname.slice(base.length);res.setHeader('content-type',path.endsWith('.css')?'text/css':path.endsWith('.html')?'text/html':path.endsWith('.json')?'application/json':'text/javascript');res.end(await readFile(new URL(path,root)))}catch{res.writeHead(404).end()}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;
 try{
- browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
+ browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||undefined,args:['--no-sandbox','--disable-dev-shm-usage'],...(process.env.FORGE_VISUAL_FONTS&&process.env.HTTPS_PROXY?{proxy:{server:process.env.HTTPS_PROXY,bypass:'localhost,127.0.0.1'}}:{})});
  for(const width of [320,390,1280]){
   const page=await browser.newPage({viewport:{width,height:844},reducedMotion:'reduce'}),errors=[];page.setDefaultTimeout(12000);console.log('Start',width);
-  page.on('pageerror',e=>errors.push(e.message));await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
+  page.on('pageerror',e=>errors.push(e.message));if(!process.env.FORGE_VISUAL_FONTS)await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
   await page.goto(`http://127.0.0.1:${server.address().port}/`);await page.locator('#tretaresia-character-forge iframe').waitFor();
   const f=page.frameLocator('#tretaresia-character-forge iframe');await f.locator('#fName').waitFor({state:'attached'});await f.locator('#trSkip').evaluate(n=>n.click());await f.locator('#trapp:not(.loading)').waitFor();
-  const checkFit=async()=>{await page.waitForTimeout(80);const fit=await page.evaluate(()=>{const c=document.querySelector('#chat').getBoundingClientRect(),f=document.querySelector('#tretaresia-character-forge iframe').getBoundingClientRect();return{gap:c.bottom-f.bottom,overflow:document.documentElement.scrollWidth-innerWidth}});assert.ok(Math.abs(fit.gap)<=1,JSON.stringify(fit));assert.ok(fit.overflow<=1)};
+  const checkFit=async()=>{await page.waitForTimeout(80);const fit=await page.evaluate(()=>{const c=document.querySelector('#chat').getBoundingClientRect(),f=document.querySelector('#tretaresia-character-forge iframe').getBoundingClientRect();return{gap:c.bottom-f.bottom,overflow:document.documentElement.scrollWidth-innerWidth}});assert.ok(Math.abs(fit.gap)<=1,JSON.stringify(fit));assert.ok(fit.overflow<=1);
+   const inside=await f.locator('#trapp').evaluate(root=>{root.scrollLeft=1000;const wrap=root.querySelector('.wrap');const result={width:root.clientWidth,scrollWidth:root.scrollWidth,scrollLeft:root.scrollLeft,wrapWidth:wrap.clientWidth,wrapScroll:wrap.scrollWidth,documentWidth:document.documentElement.scrollWidth,viewport:innerWidth};root.scrollLeft=0;return result});
+   assert.ok(inside.scrollWidth<=inside.width+1,JSON.stringify(inside));assert.equal(inside.scrollLeft,0,JSON.stringify(inside));assert.ok(inside.wrapScroll<=inside.wrapWidth+1,JSON.stringify(inside));
+  };
   console.log('Loaded frame',width);await checkFit();await page.locator('#send_form').evaluate(n=>n.style.height='180px');await checkFit();await page.setViewportSize({width:Math.max(390,width),height:600});await checkFit();await page.setViewportSize({width,height:844});await page.locator('#send_form').evaluate(n=>n.style.height='96px');await checkFit();
+  assert.equal(await f.locator('.corner').count(),0);
+  if(process.env.FORGE_VISUAL_FONTS){const fonts=await f.locator('#trapp').evaluate(async()=>{await document.fonts.ready;return [...document.fonts].filter(face=>face.status==='loaded').map(face=>face.family)});assert.ok(fonts.includes('Orbitron'),JSON.stringify(fonts));console.log('Real Forge fonts loaded',width);}
+  // Use real theme controls: palette changes arrive live without replacing the iframe or draft.
+  await f.locator('#fName').fill('Ari');
+  await page.locator('#tretaresia-control-trigger').evaluate(n=>n.click());
+  for(const preset of ['abyss','parchment','forge','verdant']){
+    await page.locator('[data-ui-setting=themePreset]').selectOption(preset);
+    const expected=await page.evaluate(()=>{const c=window.host.extensionSettings.tretaresia_rpg;return {accent:c.accentColor,highlight:c.accentAltColor,text:c.inkColor,surface:c.surfaceColor}});
+    await f.locator('#trapp').evaluate((root,c)=>new Promise(resolve=>{const check=()=>{if(root.style.getPropertyValue('--gold')===c.accent)resolve();else requestAnimationFrame(check)};check()}),expected);
+    const colors=await f.locator('#trapp').evaluate(root=>{const css=root.style;return {accent:css.getPropertyValue('--gold'),highlight:css.getPropertyValue('--gold2'),text:css.getPropertyValue('--txt'),surface:css.getPropertyValue('--bg')}});
+    assert.deepEqual(colors,expected);
+    const contrasts=await f.locator('#trapp').evaluate(root=>{
+      function lum(hex){const c=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return c[0]*.2126+c[1]*.7152+c[2]*.0722;}
+      const on=lum(root.style.getPropertyValue('--on-accent'));
+      return ['--gold2','--goldd'].map(key=>{const bg=lum(root.style.getPropertyValue(key));return (Math.max(on,bg)+.05)/(Math.min(on,bg)+.05);});
+    });assert.ok(contrasts.every(value=>value>=4.5),JSON.stringify(contrasts));await checkFit();
+  }
+  await f.locator('#trapp').evaluate(root=>new Promise(resolve=>{const check=()=>{if(root.style.getPropertyValue('--gold')==='#79b463')resolve();else requestAnimationFrame(check)};check()}));
+  assert.equal(await f.locator('#fName').inputValue(),'Ari');
+  assert.equal(await f.locator('#trapp').evaluate(n=>n.style.getPropertyValue('--bg')),'#030704');
+  await page.locator('[data-action=close-control-center]').click();
+  await f.locator('#trapp').evaluate(()=>{window.TR.tab('t1');document.getElementById('trapp').scrollTop=0;});
+  await checkFit();if(width===390)await page.screenshot({path:artifacts+'/character-theme-verdant-mobile.png'});
+  await page.locator('#tretaresia-control-trigger').evaluate(n=>n.click());
+  await page.locator('[data-ui-setting=accentColor]').evaluate(n=>{n.value='#a673db';n.dispatchEvent(new Event('input',{bubbles:true}));n.dispatchEvent(new Event('change',{bubbles:true}));});
+  await f.locator('#trapp').evaluate(root=>new Promise(resolve=>{const check=()=>{if(root.style.getPropertyValue('--gold')==='#a673db')resolve();else requestAnimationFrame(check)};check()}));
+  await page.locator('[data-action=close-control-center]').click();
+  await checkFit();
+  // Local light-mode switch retains the selected accent and a saved draft.
+  await f.locator('#trapp').evaluate(()=>window.TR.th());assert.equal(await f.locator('#trapp').evaluate(n=>n.style.getPropertyValue('--gold')),'#a673db');
+  await checkFit();await f.locator('#trapp').evaluate(()=>window.TR.th());
+  // Longer labels and enlarged text must wrap inside the iframe rather than pan sideways.
+  const title=await f.locator('.h1').textContent();await f.locator('.h1').evaluate(n=>n.textContent='LongUnbrokenCharacterForgeHeading'.repeat(3));await checkFit();await f.locator('.h1').evaluate((n,text)=>n.textContent=text,title);
   await f.locator('#fName').fill('Ari');await f.locator('#tab_t3').click();assert.equal(await f.locator('#originForm').isVisible(),false);await f.locator('#originAdd').click();await f.locator('#fOrigin').fill('Dawn');await f.locator('#originRemove').click();assert.equal(await f.locator('#fOrigin').inputValue(),'');
-  await f.locator('#tab_t4').click();await f.locator('#fAffil').fill('Academy');await f.locator('#fParty').fill('Moonlight');await f.locator('#alignmentChips button').filter({hasText:'Villain'}).click();
+  await f.locator('#tab_t4').click();const vertical=await f.locator('#trapp').evaluate(n=>{n.scrollTop=1000;return n.scrollTop});assert.ok(vertical>0,'vertical scrolling must remain enabled');await checkFit();await f.locator('#fAffil').fill('Academy');await f.locator('#fParty').fill('Moonlight');await f.locator('#alignmentChips button').filter({hasText:'Villain'}).click();
   console.log('Fields entered',width);await page.waitForFunction(()=>Object.values(window.host.chatMetadata).some(v=>v?.draft?.fields?.fParty==='Moonlight' && v?.draft?.alignment==='Villain'));
   const draft=await page.evaluate(()=>Object.values(window.host.chatMetadata).find(v=>v?.draft)?.draft);assert.equal(draft.version,2);assert.equal(draft.originEnabled,false);assert.equal(draft.alignment,'Villain');assert.equal(draft.fields.fGuild,'');
   await page.locator('#tretaresia-character-forge iframe').evaluate(n=>n.contentWindow.location.reload());await f.locator('#trSkip').waitFor();await f.locator('#trSkip').evaluate(n=>n.click());await f.locator('#trapp:not(.loading)').waitFor();assert.equal(await f.locator('#fParty').inputValue(),'Moonlight');assert.equal(await f.locator('#originForm').isVisible(),false);await f.locator('#tab_t4').click();

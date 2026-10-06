@@ -1,12 +1,12 @@
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.8';
-import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.58.8';
-import {publicCommerceStory,publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.58.8';
-import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.58.8';
-import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.58.8';
-import {commerceDiscussionOnly} from './commerce-intent.js?v=0.58.8';
-import {normalizePurchaseTerms} from './commerce-rights.js?v=0.58.8';
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.58.8';
-import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.58.8';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.9';
+import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.58.9';
+import {publicCommerceStory,publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.58.9';
+import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.58.9';
+import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.58.9';
+import {commerceDiscussionOnly} from './commerce-intent.js?v=0.58.9';
+import {normalizePurchaseTerms} from './commerce-rights.js?v=0.58.9';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.58.9';
+import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.58.9';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
