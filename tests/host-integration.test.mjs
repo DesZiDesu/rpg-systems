@@ -2412,3 +2412,26 @@ test('explicit zero food effects are not replaced by heuristic hunger restoratio
  try{context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,eventNotifications:false,enableMemorySummaries:false,npcDiaryFrequency:'off'}};const state=host.defaultState();state.player.survival.hunger=50;state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};state.inventory=[itemDefinition.completeItemDefinition({id:'empty-food',name:'Magic Cake',category:'Food',quantity:2,usage:{action:'eat',consumable:true,stats:[]}})];context.chatMetadata={tretaresia_rpg_state:state};context.saveMetadata=async()=>{};const user='ฉันกิน Magic Cake 1 ชิ้น',story='กิน Magic Cake เรียบร้อย ไม่มีผลเพิ่มความอิ่ม';context.chat=[{is_user:true,mes:user},{is_user:false,mes:`<tr-narrative>${story}</tr-narrative><!--tretaresia_patch:${JSON.stringify({itemEvents:[{id:'eat',action:'use',itemId:'empty-food',quantity:1,outcome:'success',reason:'กินแล้ว',userEvidence:user,evidence:story}]})}-->`}];await host.processAssistantPatch(1,'normal');assert.equal(host.getState().player.survival.hunger,50);assert.equal(host.getState().inventory[0].quantity,1);
  }finally{context.chatMetadata=prior.metadata;context.chat=prior.chat;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;}
 });
+
+test('Forge v2 separates guild/party and preserves intentional no-skill registration through normalization',()=>{
+ const draft=host.forgeDraft({version:2,originEnabled:false,alignment:'Villain',fields:{fName:'Ari',fAffil:'Academy',fGuild:'',fParty:'Moonlight',fOrigin:'Hidden skill'},it:[{n:'Pistol',t:'Firearm',d:'A tool'}]});
+ assert.equal(draft.fields.fOrigin,'');assert.equal(draft.fields.fGuild,'');
+ const state=host.normalize(host.applyForgeProfile(host.defaultState(),draft));
+ assert.equal(state.player.affiliation,'Academy');assert.equal(state.player.guild,'Unaffiliated');assert.equal(state.player.party,'Moonlight');assert.equal(state.player.alignment,'Villain');
+ assert.equal(state.player.originSkill,'None');assert.equal(state.skills.length,0);assert.equal(state.inventory[0].category,'Firearm');
+ assert.equal(state.social.party.leaderId,'unidentified-leader');assert.equal(state.social.party.memberIds.length,0);assert.equal(state.social.party.memberCount,null);assert.equal(state.social.party.completedQuests,null);
+ assert.equal(host.aiState(state).player.alignment,'Villain');
+ const legacy=host.forgeDraft({fields:{fName:'Legacy',fAffil:'Old Guild',fOrigin:'Dawn'}});
+ assert.equal(legacy.fields.fGuild,'Old Guild');assert.equal(legacy.originEnabled,true);
+ const oldState=host.normalize(host.applyForgeProfile(host.defaultState(),legacy));assert.equal(oldState.player.guild,'Old Guild');assert.equal(oldState.skills[0].name,'Dawn');
+ const newState=host.normalize(host.applyForgeProfile(host.defaultState(),{version:2,fields:{fName:'New',fAffil:'School'}}));assert.equal(newState.player.guild,'Unaffiliated');
+});
+
+
+test('changed Forge retry removes only its old skills and inventory without duplicate grants',()=>{
+ const state=host.defaultState();state.skills.push({id:'manual-skill',name:'Manual'});state.inventory.push({id:'manual-item',name:'Manual',quantity:1});
+ host.applyForgeProfile(state,{fields:{fName:'Ari',fOrigin:'Dawn'},it:[{n:'Book',t:'Tool'}]});
+ assert.equal(state.skills.length,2);assert.equal(state.inventory.length,2);
+ host.applyForgeProfile(state,{version:2,originEnabled:false,fields:{fName:'Ari'}});
+ assert.equal(state.skills.length,1);assert.equal(state.skills[0].id,'manual-skill');assert.equal(state.inventory.length,1);assert.equal(state.inventory[0].id,'manual-item');assert.equal(state.onboarding.loadoutSeeded,false);
+});

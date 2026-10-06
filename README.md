@@ -26,6 +26,8 @@ Use a current SillyTavern installation with extension support and a connected te
 - Enable optional systems in Extension Settings. Their windows share the space above the chat input with tabs, expand/collapse, minimize and close controls.
 - Continue through text or use the relevant action buttons. Browsing or selecting goods does not itself spend money or transfer ownership.
 
+For blank character chats without a card greeting, Character Forge provides the starting profile. Configure its choices in **Extensions → RoleForge → Character Forge Preset**. Custom uses individual editable choices for social standing, Arsenal types, skills, ranks and alignment. Rank headings can be renamed or hidden. Origin Skill is optional; Guild and Party are separate fields. The drawer follows your SillyTavern theme while the creation form keeps the Forge theme. Existing presets and chat drafts are retained. See [the 0.58.8 update notes](docs/character-forge-v0.58.8.th.md).
+
 Saved replies without RoleForge presentation tags remain ordinary text. Generate a new reply to apply enabled instructions. Missing or invalid model data may leave a tracker unchanged or show a diagnostic; a transaction described only in narration is not necessarily recorded.
 
 ## Features

@@ -2,11 +2,12 @@
 <html>
 <head>
 <meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>ROLEFORGE — Character Forge</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Chakra+Petch:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{background:transparent;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:transparent;-webkit-tap-highlight-color:transparent}
 #trapp{
   --bg:#040404;--panel:#0a0a0a;--field:rgba(255,255,255,.04);--hov:rgba(214,180,88,.10);
   --line:rgba(214,180,88,.45);--line-soft:rgba(255,255,255,.10);
@@ -14,7 +15,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
   --gold:#d6b458;--gold2:#f4dc93;--goldd:#7c6526;--grid:rgba(214,180,88,.10);
   --f-disp:'Orbitron',sans-serif;--f-body:'Chakra Petch',sans-serif;
   font-family:var(--f-body);color:var(--txt);
-  max-width:484px;margin:0 auto;position:relative;overflow:hidden;
+  width:100%;height:100%;margin:0 auto;position:relative;overflow:auto;overscroll-behavior:contain;
   border:1px solid var(--line);background:radial-gradient(120% 60% at 50% 0,rgba(214,180,88,.05),transparent 60%),var(--bg);
   box-shadow:0 18px 52px rgba(0,0,0,.6)
 }
@@ -25,7 +26,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
   --gold:#9a7d2e;--gold2:#b6923a;--goldd:#7c6526;--grid:rgba(120,95,30,.10);
   background:radial-gradient(120% 90% at 50% 0,#f3f4f6,#dfe2e7)
 }
-#trapp.loading{height:660px;overflow:hidden}
+#trapp.loading{height:100%;overflow:hidden}
 #trapp .gridbg{position:absolute;inset:0;pointer-events:none;z-index:0;
   background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:34px 34px;-webkit-mask-image:linear-gradient(#000,transparent 72%);mask-image:linear-gradient(#000,transparent 72%)}
@@ -102,6 +103,7 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 #trapp .inp:focus,#trapp textarea.inp:focus,#trapp select.inp:focus{border-color:var(--gold);background:var(--hov)}
 #trapp select.inp{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><path d='M2 4 L6 8 L10 4' stroke='%23d6b458' fill='none' stroke-width='1.5'/></svg>");background-repeat:no-repeat;background-position:right 10px center}
 #trapp textarea.inp{min-height:62px;resize:vertical}
+#trapp .chip,#trapp .rk{max-width:100%;overflow-wrap:anywhere}
 #trapp .chips{display:flex;flex-wrap:wrap;gap:6px}
 #trapp .chip{font-size:11px;padding:5px 10px;border:1px solid var(--line-soft);color:var(--dim);cursor:pointer;user-select:none}
 #trapp .chip.on{border-color:var(--gold);color:var(--gold2);background:var(--hov)}
@@ -160,6 +162,9 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 #trapp .sndover .sp{width:54px;height:54px;fill:none;stroke:var(--gold2);stroke-width:2.5;stroke-linecap:round;animation:spin 1s linear infinite}
 #trapp .sndover .tt{font-family:var(--f-disp);letter-spacing:3px;font-size:13px;color:var(--gold2)}
 @media (max-width:440px){#trapp .wrap{padding:20px 14px 28px}#trapp .head{gap:8px}#trapp .head .h1{font-size:19px;letter-spacing:2px}#trapp .head .tag{font-size:9px;letter-spacing:2px}#trapp .controls{width:100%;justify-content:flex-end}#trapp .power{grid-template-columns:1fr 1fr}}
+#trapp [hidden]{display:none!important}
+#trapp .add-btn{width:100%;margin-top:11px;padding:12px;background:transparent;border:1px dashed var(--line);color:var(--gold);font:inherit;cursor:pointer}
+#trapp button.chip{font:inherit;background:var(--field);color:var(--dim)}
 </style>
 </head>
 <body>
@@ -268,12 +273,16 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
       <div class="st"><span class="no">04</span><span class="nm" data-en="POWER SYSTEM" data-th="ระบบพลัง">POWER SYSTEM</span><span class="ln"></span></div>
       <div style="font-size:10px;letter-spacing:1px;color:var(--gold);margin:-3px 0 9px" data-en="Tap to select — multiple power systems allowed" data-th="แตะเพื่อเลือก — เลือกได้หลายระบบพลัง">Tap to select — multiple power systems allowed</div>
       <div class="power" id="powerGrid"></div>
+      <button class="add-btn" type="button" id="originAdd" data-en="+ ADD ORIGIN SKILL (OPTIONAL)" data-th="+ เพิ่มสกิลกำเนิด (ไม่บังคับ)">+ ADD ORIGIN SKILL (OPTIONAL)</button>
+      <div id="originForm" hidden>
       <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill" data-th="พลังกำเนิด">Origin Skill</span><span class="opt" data-en="define freely" data-th="นิยามอิสระ">define freely</span></label><input class="inp" id="fOrigin" placeholder="Name your innate power…" data-placeholder-en="Name your innate power…" data-placeholder-th="ตั้งชื่อพลังติดตัว…"/></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill — Category" data-th="หมวดพลังกำเนิด">Origin Skill — Category</span><span class="opt" data-en="preset" data-th="พรีเซ็ต">preset</span></label>
         <input class="inp" id="fOriginCat" list="skillChoices" placeholder="Category or custom…" data-placeholder-en="Category or custom…" data-placeholder-th="เลือกหมวดหรือพิมพ์เอง…"/><datalist id="skillChoices"></datalist></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Origin Skill — Description" data-th="คำอธิบายพลังกำเนิด">Origin Skill — Description</span></label><textarea class="inp" id="fOriginD" placeholder="How does it work? Its limits?" data-placeholder-en="How does it work? Its limits?" data-placeholder-th="ทำงานอย่างไร มีข้อจำกัดอะไร?"></textarea></div>
       <div class="f full" style="margin-top:11px"><label><span data-en="Mastery" data-th="ความเชี่ยวชาญ">Mastery</span></label>
         <input class="inp" id="fMastery" list="masteryChoices" placeholder="Select or enter mastery…" data-placeholder-en="Select or enter mastery…" data-placeholder-th="เลือกหรือพิมพ์ระดับ…"/><datalist id="masteryChoices"></datalist></div>
+            <button class="add-btn" type="button" id="originRemove" data-en="REMOVE ORIGIN SKILL" data-th="ลบสกิลกำเนิด">REMOVE ORIGIN SKILL</button>
+      </div>
       <!-- abilities list -->
       <div style="margin-top:13px"><label style="font-size:10px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase" data-en="Abilities & Skills" data-th="ความสามารถ & สกิล">Abilities & Skills</label>
         <div style="font-size:9.5px;letter-spacing:.5px;color:var(--gold);margin:3px 0 2px" data-en="Pick a Skill category preset — or choose Custom" data-th="เลือกหมวดสกิลจากพรีเซ็ต — หรือเลือกกำหนดเอง">Pick a Skill category preset — or choose Custom</div>
@@ -312,10 +321,14 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     <div class="sec">
       <div class="st"><span class="no">06</span><span class="nm" data-en="PATH" data-th="เส้นทาง">PATH</span><span class="ln"></span></div>
       <div class="f full"><label><span data-en="Profession" data-th="อาชีพ">Profession</span></label><input class="inp" id="fProf" placeholder="Adventurer / Mage / Merchant…" data-placeholder-en="Adventurer / Mage / Merchant…" data-placeholder-th="นักผจญภัย / จอมเวท / พ่อค้า…"/></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Adventurer Rank" data-th="แรงค์นักผจญภัย">Adventurer Rank</span></label>
+      <div class="f full" id="rankField" style="margin-top:11px"><label><span id="rankLabel" data-en="Adventurer Rank" data-th="แรงค์นักผจญภัย">Adventurer Rank</span></label>
         <div class="rank" id="rankRow"></div>
         <input class="inp" id="fRankCustom" placeholder="Custom rank name…" data-placeholder-en="Custom rank name…" data-placeholder-th="ชื่ออันดับที่กำหนดเอง…" style="margin-top:7px;display:none"/></div>
-      <div class="f full" style="margin-top:11px"><label><span data-en="Affiliation / Guild" data-th="สังกัด / กิลด์">Affiliation / Guild</span></label><input class="inp" id="fAffil" placeholder="Free text…" data-placeholder-en="Free text…" data-placeholder-th="เขียนได้อย่างอิสระ…"/></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Affiliation" data-th="สังกัด">Affiliation</span></label><input class="inp" id="fAffil" placeholder="Free text…" data-placeholder-en="Free text…" data-placeholder-th="เขียนได้อย่างอิสระ…"/></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Guild" data-th="กิลด์">Guild</span><span class="opt" data-en="optional" data-th="ไม่บังคับ">optional</span></label><input class="inp" id="fGuild" maxlength="100"/></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Party" data-th="ปาร์ตี้">Party</span><span class="opt" data-en="optional" data-th="ไม่บังคับ">optional</span></label><input class="inp" id="fParty" maxlength="100"/></div>
+      <div class="f full" style="margin-top:11px"><label><span data-en="Alignment" data-th="แนวทางตัวละคร">Alignment</span><span class="opt" data-en="personality" data-th="บุคลิก">personality</span></label><div class="chips" id="alignmentChips"></div></div>
+
     </div>
 
     </div><!-- /PANEL 4 -->
@@ -359,18 +372,22 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
 <script>
 (function(){
   function g(id){return document.getElementById(id);}
-  var S={th:'dark',ln:'en',stand:'',power:[],rank:'',ab:[],it:[],cf:[]};
+  var S={originEnabled:false,alignment:'',th:'dark',ln:'en',stand:'',power:[],rank:'',ab:[],it:[],cf:[]};
   var parentOrigin=(function(){try{return new URL(document.referrer||location.href).origin;}catch(e){return location.origin;}})();
   function sendToExtension(type,data){if(window.parent!==window)window.parent.postMessage({source:'tretaresia-rpg-forge',type:type,data:data},parentOrigin);}
-  var fieldIds=['fName','fTitle','fGender','fPron','fAge','fRace','fCont','fBirth','fHair','fEyes','fHeight','fBuild','fMarks','fAppear','fOrigin','fOriginCat','fOriginD','fMastery','fProf','fRankCustom','fAffil','fPers','fBack','fGoal','fScene'];
+  var fieldIds=['fName','fTitle','fGender','fPron','fAge','fRace','fCont','fBirth','fHair','fEyes','fHeight','fBuild','fMarks','fAppear','fOrigin','fOriginCat','fOriginD','fMastery','fProf','fRankCustom','fAffil','fGuild','fParty','fPers','fBack','fGoal','fScene'];
   function collect(){
     var data={};fieldIds.forEach(function(id){data[id]=g(id).value;});
-    return {fields:data,stand:S.stand,power:S.power.slice(),rank:S.rank,ab:S.ab.slice(),it:S.it.slice(),cf:S.cf.slice(),theme:S.th,language:S.ln};
+    return {version:2,originEnabled:S.originEnabled,alignment:S.alignment,fields:data,stand:S.stand,power:S.power.slice(),rank:S.rank,ab:S.ab.slice(),it:S.it.slice(),cf:S.cf.slice(),theme:S.th,language:S.ln};
   }
   function emitDraft(){sendToExtension('draft',collect());}
   function restore(data){
     if(!data||typeof data!=='object')return;
     fieldIds.forEach(function(id){if(typeof data.fields?.[id]==='string')g(id).value=data.fields[id];});
+    if(data.version!==2 && data.fields?.fGuild===undefined)g('fGuild').value=data.fields?.fAffil||'';
+    S.originEnabled=data.originEnabled===true || (data.originEnabled===undefined && Boolean(g('fOrigin').value.trim()));
+    originVisibility();
+    S.alignment=typeof data.alignment==='string'?data.alignment:'';buildAlignment();
     S.stand=typeof data.stand==='string'?data.stand:'';
     S.power=Array.isArray(data.power)?data.power.filter(function(id){return POWERS.some(function(p){return p[0]===id;});}).slice(0,64):[];
     S.rank=typeof data.rank==='string'?data.rank:'';
@@ -383,6 +400,18 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     g('fRankCustom').style.display=S.rank==='Custom'?'block':'none';
   }
   var STAND=[['Noble','ชนชั้นสูง'],['Commoner','สามัญชน'],['Merchant','พ่อค้า'],['Outlaw','คนนอกกฎหมาย'],['Slave','ทาส'],['Wanderer','คนพเนจร']];
+  var ALIGNMENTS=['Good','Neutral','Evil','Villain'];
+  var rankTitle='Adventurer Rank';
+  function originVisibility(){g('originForm').hidden=!S.originEnabled;g('originAdd').hidden=S.originEnabled;}
+  function buildAlignment(){
+    var w=g('alignmentChips');w.replaceChildren();
+    [['',S.ln==='th'?'ไม่ระบุ':'Unspecified']].concat(ALIGNMENTS.map(function(v){return[v,S.ln==='th'?({Good:'คนดี',Neutral:'เป็นกลาง',Evil:'คนเลว',Villain:'วายร้าย'}[v]||v):v];})).forEach(function(p){
+      var c=document.createElement('button');c.type='button';c.className='chip';c.textContent=p[1];c.classList.toggle('on',S.alignment===p[0]);c.onclick=function(){S.alignment=p[0];buildAlignment();};w.append(c);
+    });
+    var add=document.createElement('button');add.type='button';add.className='chip add';add.textContent=S.ln==='th'?'+ กำหนดเอง':'+ Custom';
+    add.onclick=function(){var v=prompt(S.ln==='th'?'แนวทางตัวละคร:':'Alignment:');if(v?.trim()){S.alignment=v.trim().slice(0,100);buildAlignment();}};w.append(add);
+    if(S.alignment&&!ALIGNMENTS.includes(S.alignment)){var selected=document.createElement('span');selected.className='chip on';selected.textContent=S.alignment;w.append(selected);}
+  }
   var DEFAULT_STAND=STAND.slice();
   var POWERS=[['False Magic','เวทมนุษย์'],['True Magic','เวทแท้'],['Aura','ออร่า'],['Formless Aura','ไร้รูป'],['Blood Aura','ออร่าเลือด'],['Sage Mana','มานาเซียน'],['Divine Mana','มานาบริสุทธิ์'],['Construct','คอนสตรัค'],['Divine Construct','บรรพกาล']];
   var RANKS=[['Rookie','ROOKIE'],['Basic','BASIC'],['Intermediate','INTERMEDIATE'],['Ember','EMBER'],['Custom','CUSTOM']];
@@ -390,6 +419,13 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     if(!choices||typeof choices!=='object')return;
     function list(id,values){var root=g(id);root.replaceChildren();(Array.isArray(values)?values:[]).forEach(function(value){var option=document.createElement('option');option.value=value;root.append(option);});}
     list('originChoices',choices.origins);list('skillChoices',choices.skillCategories);list('masteryChoices',choices.masteryRanks);
+    var selectedType=g('itT').value;g('itT').replaceChildren();
+    var types=(choices.arsenalTypes||['Weapon','Armor','Construct','Divine Construct','Tool','Relic','Other']).slice();
+    if(!types.includes('Other'))types.push('Other');
+    types.forEach(function(value){var option=document.createElement('option');option.value=value;option.textContent=value;g('itT').append(option);});
+    if(types.includes(selectedType))g('itT').value=selectedType;
+    ALIGNMENTS=choices.alignments||ALIGNMENTS;buildAlignment();
+    rankTitle=choices.rankLabel||'Adventurer Rank';g('rankField').hidden=choices.showRank===false;
     STAND=choices.mode==='tretaresia'?DEFAULT_STAND:(choices.standings||[]).map(function(value){return[value,value];});
     RANKS=(choices.pathRanks||[]).map(function(value){return[value,value.toUpperCase()];});RANKS.push(['Custom','CUSTOM']);
     if(!g('fMastery').value&&choices.mode==='tretaresia')g('fMastery').value='Adept';
@@ -435,14 +471,16 @@ html,body{background:transparent;-webkit-tap-highlight-color:transparent}
     [].forEach.call(document.querySelectorAll('[data-placeholder-en]'),function(e){e.placeholder=e.getAttribute('data-placeholder-'+S.ln);});
     [].forEach.call(document.querySelectorAll('[data-en]'),function(e){var t=(S.ln==='th'?e.getAttribute('data-th'):e.getAttribute('data-en'));if(t!=null)e.textContent=t;});
     [].forEach.call(document.querySelectorAll('#trapp option[data-en]'),function(o){o.textContent=(S.ln==='th'?o.getAttribute('data-th'):o.getAttribute('data-en'));});
-    buildChips();
+    buildChips();buildAlignment();g('rankLabel').textContent=rankTitle==='Adventurer Rank'?(S.ln==='th'?'อันดับนักผจญภัย':rankTitle):rankTitle;
   }
 
   window.TR={
     init:function(){
       g('trapp').classList.add('loading');
-      buildChips();buildPowers();buildRanks();rAb();rIt();rCf();
+      buildChips();buildAlignment();originVisibility();buildPowers();buildRanks();rAb();rIt();rCf();
       g('trSkip').onclick=function(){TR.skip();};
+      g('originAdd').onclick=function(){S.originEnabled=true;originVisibility();g('fOrigin').focus();};
+      g('originRemove').onclick=function(){S.originEnabled=false;['fOrigin','fOriginCat','fOriginD','fMastery'].forEach(function(id){g(id).value='';});originVisibility();};
       g('abAdd').onclick=function(){g('abForm').classList.toggle('open');};
       g('itAdd').onclick=function(){g('itForm').classList.toggle('open');};
       g('cfAdd').onclick=function(){g('cfForm').classList.toggle('open');};

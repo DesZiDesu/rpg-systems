@@ -22,3 +22,18 @@ test('preset JSON round trip and rejects duplicate or oversized choices', () => 
     assert.throws(() => exportForgePreset({ ...config, origins: ['Arcadia', 'arcadia'] }), /Duplicate/);
     assert.throws(() => importForgePreset('{"format":"wrong"}'), /Unsupported/);
 });
+
+test('v1 preset migration retains choices and supplies new fields without changing card settings', () => {
+    const legacy = { mode:'custom', name:'School', origins:['Tokyo'], standings:['Student'], skillCategories:['Talent'], masteryRanks:['I'], pathRanks:['Freshman'] };
+    const settings = {roleforgeForgePresets:{school:structuredClone(legacy)}};
+    const next = readForgePreset(settings, 'school');
+    assert.equal(next.mode,'custom');assert.deepEqual(next.standings,['Student']);assert.deepEqual(next.pathRanks,['Freshman']);
+    assert.deepEqual(next.arsenalTypes,FORGE_DEFAULTS.arsenalTypes);assert.equal(next.showRank,true);
+    assert.deepEqual(settings.roleforgeForgePresets.school,legacy);
+    assert.deepEqual(importForgePreset(JSON.stringify({format:'roleforge-character-forge-preset',version:1,preset:legacy})),next);
+    const custom = {...next,arsenalTypes:['Firearm','Vehicle'],alignments:['Hero','Renegade'],rankLabel:'School year',showRank:false};
+    assert.deepEqual(importForgePreset(exportForgePreset(custom)),custom);
+    assert.deepEqual(activeForgeChoices(custom).arsenalTypes,['Firearm','Vehicle']);assert.equal(activeForgeChoices(custom).showRank,false);
+    assert.throws(()=>exportForgePreset({...custom,arsenalTypes:['x'.repeat(61)]}),/Invalid arsenalTypes/);
+    assert.throws(()=>exportForgePreset({...custom,showRank:'false'}),/visibility/);
+});

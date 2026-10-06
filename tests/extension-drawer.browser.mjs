@@ -100,7 +100,7 @@ try {
         assert.equal(await settings.locator(':scope > .trpg-settings').count(),0,'NPC runtime settings stay inside their dedicated group');
         assert.equal(await page.locator('.trpg-presentation-status').count(),1);
         assert.match(await page.locator('.trpg-presentation-status').innerText(), /RoleForge.*คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบ/);
-        assert.equal(await page.locator('#roleforge-optional-settings [data-optional-setting]').count(),6);
+        assert.equal(await page.locator('#roleforge-optional-settings [data-optional-setting]').count(),9);
         // Compare with a neighbouring native extension, including the closed
         // header: RoleForge must inherit the host typography, colour and chrome.
         const nativeStyle = await page.locator('#native-neighbour .inline-drawer-header').evaluate(node => {
@@ -154,7 +154,7 @@ try {
         // Locale changes refresh translated groups without replacing their
         // runtime controls, saved values, listeners or unsent inputs.
         await page.locator('#tretaresia-rpg-language').selectOption('en');
-        assert.match(await settings.locator('.tretaresia-rpg-settings-copy').innerText(),/persistent RoleForge role-play state/);
+        assert.match(await settings.locator('.tretaresia-rpg-settings-copy').first().innerText(),/persistent RoleForge role-play state/);
         assert.equal(await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').count(),3);
         await page.locator('#tretaresia-rpg-language').selectOption('th');
 
@@ -162,7 +162,7 @@ try {
         for (const fold of await folds.all()) await fold.locator(':scope > summary').click();
         await openFold(page,'#roleforge-power-settings');await openFold(page,'#roleforge-forge-settings');
         await page.locator('#roleforge-power-editor .rf-power-workspace').waitFor();
-        await page.locator('#roleforge-forge-editor .rf-power-workspace').waitFor();
+        await page.locator('#roleforge-forge-editor .rf-forge-workspace').waitFor();
         assert.equal(await page.locator('#roleforge-writing-settings [data-adult-list]').count(),1);
         assert.equal(await page.locator('#roleforge-diagnostics-settings [data-tretaresia-request-usage]').count(),1);
         assert(await page.locator('#roleforge-diagnostics-settings [data-tretaresia-request-usage]').isVisible());

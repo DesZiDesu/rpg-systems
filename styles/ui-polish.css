@@ -1,4 +1,4 @@
-@import url("./style.css?v=0.58.7");
+@import url("./style.css?v=0.58.8");
 /* Use the host/local font stack; external font requests must not block UI startup. */
 
 /* RoleForge UI polish layer.
@@ -4460,10 +4460,24 @@
     .tretaresia-aura-control-grid,.tretaresia-diagnostic-grid,.tretaresia-comparison-grid { grid-template-columns:1fr; }
 }
 /* Keep the original RoleForge Character Forge inside the empty chat. */
-#chat > #tretaresia-character-forge{box-sizing:border-box;display:block;align-self:center;width:min(100%,510px);max-width:100%;margin:1rem auto;padding:0 8px;flex-shrink:0}
+#chat > #tretaresia-character-forge{box-sizing:border-box;display:block;align-self:center;width:min(100%,510px);max-width:100%;height:var(--rf-forge-height,100%);min-height:0;margin:0 auto;padding:0 4px;flex-shrink:0}
 #chat > #tretaresia-character-forge[hidden]{display:none}
-#tretaresia-character-forge iframe{display:block;width:100%;height:min(78dvh,760px);min-height:360px;overflow:auto;background:#040404;border:1px solid rgba(214,180,88,.45);color-scheme:dark}
-@media(max-width:600px){#chat > #tretaresia-character-forge{padding:0 4px;margin:.4rem auto}#tretaresia-character-forge iframe{height:72dvh}}
+#tretaresia-character-forge iframe{display:block;width:100%;height:100%;min-height:0;background:#040404;border:0;color-scheme:dark}
+/* Native SillyTavern controls for the drawer; no Forge colors/fonts here. */
+.rf-forge-workspace{min-width:0;margin:12px 0;color:var(--SmartThemeBodyColor,inherit);font:inherit}
+.rf-forge-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rf-forge-editor{display:grid;gap:12px}
+.rf-forge-editor label{display:grid;gap:4px}
+.rf-forge-choices{min-width:0;padding:10px;border:1px solid var(--SmartThemeBorderColor,#555);border-radius:8px}
+.rf-forge-choice-rows{display:grid;gap:6px}
+.rf-forge-choice-row{display:flex;gap:6px;align-items:center}
+.rf-forge-choice-row input{flex:1;min-width:0;width:100%}
+.rf-forge-choice-row button{flex:0 0 auto}
+.rf-forge-workspace .text_pole{box-sizing:border-box;max-width:100%;font:inherit}
+.rf-forge-choices textarea{width:100%;margin-top:8px}
+.rf-forge-choices details{margin-top:8px}
+.rf-forge-workspace button{cursor:pointer}
+.rf-forge-editor input[type=checkbox]{width:auto;justify-self:start}
 /* Consent in the story message, with the existing Household layout intact. */
 .tretaresia-diary-setting { display: grid; gap: .4rem; margin: .75rem 0; padding: .65rem; border: 1px solid var(--tretaresia-line-soft); background: rgba(var(--tretaresia-accent-rgb), .06); }
 .tretaresia-diary-setting > span { color: var(--tretaresia-accent); font-weight: 600; }
@@ -4575,3 +4589,7 @@ body.tretaresia-rpg-open #extensionsMenu { display: none !important; }
 #tretaresia-rpg-overlay[data-language="th"] .tretaresia-section-heading::before{content:"ข้อมูลปัจจุบัน"}
 #tretaresia-rpg-overlay[data-language="th"] .tretaresia-character-hero::after{content:"ตัวตน / ข้อมูลปัจจุบัน"}
 #tretaresia-rpg-overlay[data-language="th"] .tretaresia-proficiency-card.is-custom::after{content:"กำหนดเอง"}
+
+.rf-forge-editor .rf-forge-rank-visibility{display:flex;align-items:center;gap:8px}
+
+.tretaresia-form-grid .tretaresia-field[hidden]{display:none}
