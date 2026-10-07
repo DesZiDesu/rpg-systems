@@ -1,9 +1,9 @@
-import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.12';
-import {completeItemDefinition} from './item-definition.js?v=0.58.12';
-import {itemStatOptions,itemStatSummary,itemStatLabel} from './item-effects.js?v=0.58.12';
-import {commerceIconMarkup as icon} from './commerce-icons.js?v=0.58.12';
-import {normalizeItemUsage,itemAvailability,itemReserved,itemRecord,missingInventoryDetails} from './item-core.js?v=0.58.12';
-import {itemSaleBlocked} from './commerce-rights.js?v=0.58.12';
+import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.58.13';
+import {completeItemDefinition} from './item-definition.js?v=0.58.13';
+import {itemStatOptions,itemStatSummary,itemStatLabel} from './item-effects.js?v=0.58.13';
+import {commerceIconMarkup as icon} from './commerce-icons.js?v=0.58.13';
+import {normalizeItemUsage,itemAvailability,itemReserved,itemRecord,missingInventoryDetails} from './item-core.js?v=0.58.13';
+import {itemSaleBlocked} from './commerce-rights.js?v=0.58.13';
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function createItemComposer({dock,document:doc=globalThis.document,language=()=> 'en',perform,inspect=()=>{},cancel=()=>{},clearResult=()=>{}}){
  const itemPanel=doc.createElement('section'),lootPanel=doc.createElement('section');itemPanel.className=lootPanel.className='rf-item-panel';

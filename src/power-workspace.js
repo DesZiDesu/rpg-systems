@@ -1,5 +1,5 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.58.12';
-import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.58.12';
+import {uiText,uiMarkup} from './ui-language.js?v=0.58.13';
+import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.58.13';
 const el=(tag,text='')=>{const node=document.createElement(tag);node.textContent=text;return node;};
 const button=(text,action)=>{const b=el('button',text);b.type='button';b.addEventListener('click',action);return b;};
 function download(text){const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=el('a');a.href=url;a.download='roleforge-powers.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}

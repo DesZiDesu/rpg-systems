@@ -1,5 +1,5 @@
-import {sceneSnapshot,missingSceneFields,expandScene,sceneTrackerOperations} from './scene-tracker.js?v=0.58.12';
-import {confirmedLocationMemory,mergeLocationMemory,locationMemoryForPrompt,recoverLocationGeography} from './location-memory.js?v=0.58.12';
+import {sceneSnapshot,missingSceneFields,expandScene,sceneTrackerOperations} from './scene-tracker.js?v=0.58.13';
+import {confirmedLocationMemory,mergeLocationMemory,locationMemoryForPrompt,recoverLocationGeography} from './location-memory.js?v=0.58.13';
 const canonical = new Set(['location','region','continent','position','weather','temperature','day','dayName','time','period']);
 const currentScene = (state,previous) => sceneSnapshot(state,Object.fromEntries(Object.entries(previous||{}).filter(([key])=>!canonical.has(key))));
 

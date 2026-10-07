@@ -1,7 +1,7 @@
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.12';
-import {CURRENCY_VALUES} from './commerce-currency.js?v=0.58.12';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.12';
-import {evidenceText,namedInteraction} from './interaction-evidence.js?v=0.58.12';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.13';
+import {CURRENCY_VALUES} from './commerce-currency.js?v=0.58.13';
+import {readCommercePrices} from './commerce-prices.js?v=0.58.13';
+import {evidenceText,namedInteraction} from './interaction-evidence.js?v=0.58.13';
 
 const clean=(value,max=300)=>typeof value==='string'?value.trim().slice(0,max):'';
 const whole=(value,max=999999999)=>Number.isSafeInteger(value)&&value>=0&&value<=max;

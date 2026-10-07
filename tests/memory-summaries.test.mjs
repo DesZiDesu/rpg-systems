@@ -6,17 +6,92 @@ import {renderMemorySummaries} from '../src/memory-summary-ui.js';
 import {removeMemoryChat} from '../src/memory-deletion.js';
 
 const config = () => ({enableMemorySummaries:true,language:'en',memoryAutoSummary:true,memorySummaryInterval:5,memorySummaryBatchSize:10,memorySummaryProfile:'',memoryInject:true,memorySummaryBudget:1200,memoryRetrievalBudget:1000,memorySummaryInputBudget:12000});
-test('chat-completion preset summaries bypass story cleanup with a structured task while keeping WI/AN and the selected preset',async()=>{
+test('Bad Request and nested native/profile errors preserve HTTP 400, provider details and redacted credentials',()=>{
+ for(const error of [Error('Bad Request'),Error('Got response status 400'),{status:400,message:'unsupported response_format json_schema'},
+  new Error('API request failed',{cause:Object.assign(Error('Bad Request: response_format json_schema unsupported; Authorization=Bearer SECRET sk-examplekey "api_key":"SECRET"'),{status:400})})]){
+  const diagnosed=diagnoseMemoryApiFailure(error);assert.equal(diagnosed.message,'MEMORY_API_BAD_REQUEST');assert.equal(diagnosed.httpStatus,400);
+  assert.match(memoryJobMessage(diagnosed,'th'),/HTTP 400/);assert(diagnosed.apiMessage);assert(!diagnosed.apiMessage.includes('SECRET'));assert(!diagnosed.apiMessage.includes('sk-examplekey'));
+ }
+ const quota=diagnoseMemoryApiFailure(new Error('API request failed',{cause:Object.assign(Error('Rate limit'),{status:429})}));
+ assert.equal(quota.httpStatus,429);assert.equal(quota.message,'MEMORY_API_REQUEST_FAILED');assert.match(memoryJobMessage(quota),/Quota/);
+});
+test('a refused preset request ends after one attempt; user continuation sends only schema-free raw data for 101 pending sources',async()=>{
+ const first=fixture({settings:{memorySummaryMode:'preset',memorySummaryBatchSize:15},respond:()=>{throw Error('Bad Request');}});
+ setBacklog(first,101);await first.runtime.open();assert.equal(await first.runtime.run(),false);assert.equal(first.calls.length,1);
+ assert.equal(first.runtime.view().job.code,'MEMORY_API_BAD_REQUEST');assert.equal(first.runtime.view().job.httpStatus,400);
+ assert.equal(first.runtime.view().coverage.pendingMessages,101);assert.equal(first.data.get('card:cora').chapters.length,0);
+ // A 0.58.12 job can have a generic code and stale recommendations from an
+ // earlier format failure. Neither requires reducing every future HTTP 400.
+ const saved=first.data.get('card:cora');Object.assign(saved.jobs.first,{code:'MEMORY_API_REQUEST_FAILED',httpStatus:0,recommendedBatchSize:3,recommendedBatchCharLimit:2000,apiCallsTotal:8});
+ const resumed=fixture({data:first.data,settings:{memorySummaryMode:'preset',memorySummaryBatchSize:15}});resumed.context.chat=structuredClone(first.context.chat);
+ let rawCalls=0,quietCalls=0;
+ resumed.context.mainApi='openai';resumed.context.generateQuietPrompt=()=>{quietCalls++;throw Error('Preset request should not be dispatched');};
+ resumed.context.generateRawData=async args=>{
+  rawCalls++;assert(!Object.hasOwn(args,'jsonSchema'));assert(!Object.hasOwn(args,'response_format'));assert(!Object.hasOwn(args,'tools'));
+  assert.equal(args.responseLength,2400);assert.equal(args.trimNames,false);
+  return {choices:[{finish_reason:'stop',message:{content:simpleMemoryResponse(args.prompt)}}]};
+ };
+ resumed.context.extractMessageFromData=data=>data.choices[0].message.content;
+ resumed.setResponder((prompt,signal,mode,budget)=>requestMemorySummary(resumed.context,prompt,'',signal,mode,budget));
+ await resumed.runtime.open();const money=structuredClone(resumed.state.progression.currency),chat=structuredClone(resumed.context.chat);
+ assert.equal(await resumed.runtime.run({retry:true}),true);assert.equal(rawCalls,7);assert.equal(quietCalls,0);
+ assert(resumed.calls.every(call=>call.mode==='compact'));assert.equal(resumed.runtime.view().job.activeBatchSize,15);
+ assert.equal(resumed.runtime.view().job.compatibilityRetry,true);assert.equal(resumed.runtime.view().job.apiCallsTotal,15);
+ assert.equal(resumed.settings.memorySummaryMode,'preset');assert.equal(resumed.settings.memorySummaryBatchSize,15);
+ assert.equal(resumed.runtime.view().coverage.pendingMessages,0);assert.equal(resumed.data.get('card:cora').chats[0].messages.length,101);
+ assert.deepEqual(resumed.context.chat,chat);assert.deepEqual(resumed.state.progression.currency,money);
+ const reloaded=fixture({data:first.data});reloaded.context.chat=structuredClone(chat);await reloaded.runtime.open();assert.equal(reloaded.runtime.view().coverage.pendingMessages,0);assert.equal(reloaded.calls.length,0);
+ const panel={innerHTML:'',querySelectorAll:()=>[]};renderMemorySummaries(panel,resumed.runtime.view(),[]);assert.match(panel.innerHTML,/data-memory-compatibility-retry/);
+});
+test('preset JSON format failures can use raw data on explicit retry without a second request being made automatically',async()=>{
+ const f=fixture({settings:{memorySummaryMode:'preset'},respond:()=>'<tr-narrative>Wrong story response</tr-narrative>'});
+ f.context.generateRaw=async({prompt})=>simpleMemoryResponse(prompt);
+ await f.runtime.open();assert.equal(await f.runtime.run(),false);assert.equal(f.calls.length,1);
+ f.setResponder((prompt,signal,mode,budget)=>requestMemorySummary(f.context,prompt,'',signal,mode,budget));
+ assert.equal(await f.runtime.run({retry:true}),true);assert.equal(f.calls.length,3);assert(f.calls.slice(1).every(call=>call.mode==='compact'));
+ assert.equal(f.runtime.view().job.apiMessage,'');assert.equal(f.runtime.view().job.summaryReason,'');
+});
+test('known quota and authorization failures do not change the selected generation method or shrink the batch on continuation',async()=>{
+ for(const status of [401,403,429,503]){
+  const f=fixture({settings:{memorySummaryMode:'preset',memorySummaryBatchSize:15},respond:()=>{throw Object.assign(Error('Request failed'),{status});}});
+  f.context.generateRaw=()=>assert.fail('No automatic raw retry');await f.runtime.open();assert.equal(await f.runtime.run(),false);assert.equal(f.calls.length,1);
+  f.setResponder(simpleMemoryResponse);assert.equal(await f.runtime.run({retry:true}),true);
+  assert.equal(f.calls[1].mode,'preset');assert.equal(f.runtime.view().job.compatibilityRetry,false);assert.equal(f.runtime.view().job.activeBatchSize,15);
+ }
+});
+test('selected connection profiles remain selected on Bad Request continuation and never dispatch to the current API',async()=>{
+ const f=fixture({settings:{memorySummaryMode:'preset',memorySummaryProfile:'summary'},respond:()=>{throw Error('Bad Request');}});
+ f.context.generateRaw=()=>assert.fail('No current-API fallback');await f.runtime.open();assert.equal(await f.runtime.run(),false);
+ f.setResponder(simpleMemoryResponse);assert.equal(await f.runtime.run({retry:true}),true);
+ assert.equal(f.calls[1].profile,'summary');assert.equal(f.calls[1].mode,'preset');assert.equal(f.runtime.view().job.compatibilityRetry,false);
+});
+test('older quiet-only hosts continue with a schema-free preset request without inventing a raw adapter',async()=>{
+ const f=fixture({settings:{memorySummaryMode:'preset'},respond:()=>{throw Error('Bad Request');}});
+ await f.runtime.open();assert.equal(await f.runtime.run(),false);let calls=0;
+ f.context.mainApi='openai';f.context.generateQuietPrompt=async args=>{calls++;assert(!Object.hasOwn(args,'jsonSchema'));return simpleMemoryResponse(args.quietPrompt);};
+ f.setResponder((prompt,signal,mode,budget)=>requestMemorySummary(f.context,prompt,'',signal,mode,budget));
+ assert.equal(await f.runtime.run({retry:true}),true);assert.equal(calls,1);assert.equal(f.runtime.view().job.compatibilityRetry,false);
+});
+test('provider error diagnostics are safely escaped, persist across reload, and clear after a successful continuation',async()=>{
+ const f=fixture({respond:()=>{throw new Error('API request failed',{cause:Object.assign(Error('Bad Request: <img src=x onerror=alert(1)> Bearer SECRET'),{status:400})});}});
+ await f.runtime.open();assert.equal(await f.runtime.run(),false);const job=f.runtime.view().job;
+ assert.equal(job.code,'MEMORY_API_BAD_REQUEST');assert.equal(job.httpStatus,400);assert(!job.apiMessage.includes('SECRET'));
+ assert.equal(f.data.get('card:cora').jobs.first.apiMessage,job.apiMessage);
+ const panel={innerHTML:'',querySelectorAll:()=>[]};renderMemorySummaries(panel,f.runtime.view(),[]);
+ assert.match(panel.innerHTML,/data-memory-api-message/);assert.match(panel.innerHTML,/&lt;img/);assert.doesNotMatch(panel.innerHTML,/<img/);
+ const resumed=fixture({data:f.data,respond:simpleMemoryResponse});await resumed.runtime.open();assert.equal(resumed.runtime.view().job.httpStatus,400);
+ assert.equal(await resumed.runtime.run({retry:true}),true);assert.equal(resumed.runtime.view().job.apiMessage,'');assert.equal(resumed.runtime.view().job.httpStatus,0);
+});
+test('preset summaries work on a provider that rejects schema parameters without changing WI/AN or dispatching another request',async()=>{
  let calls=0,args;const answer={summary:'คอร่าเขียน <planning>ไว้ในหนังสือ</planning>',recap:'พบกันริมแม่น้ำ',events:[]};
  const context={mainApi:'openai',generateRaw:()=>assert.fail('No extra raw request'),generateQuietPrompt:async options=>{
   calls++;args=options;
-  // The host structured branch extracts JSON before story regex/cleanup.
-  return options.jsonSchema ? JSON.stringify(answer) : '<tr-narrative>เรื่องใหม่</tr-narrative>';
+  if (options.jsonSchema) throw Object.assign(Error('Bad Request: response_format json_schema is not supported'),{status:400});
+  return JSON.stringify(answer);
  }};
  const raw=await requestMemorySummary(context,'TASK','',null,'preset',3600);
  assert.deepEqual(parseMemorySummaryResponse(raw),answer);assert.equal(calls,1);assert.equal(args.skipWIAN,false);assert.equal(args.removeReasoning,false);
- assert.equal(args.responseLength,3600);assert.deepEqual(args.jsonSchema.value.required,['summary','recap','events']);
- assert.equal(args.jsonSchema.returnInvalid,true);assert.equal(args.jsonSchema.strict,false);
+ assert.equal(args.responseLength,3600);assert(!Object.hasOwn(args,'jsonSchema'));assert(!Object.hasOwn(args,'response_format'));
  assert.equal(memorySummaryNativeGenerationActive(),false);assert(!Object.hasOwn(args,'quietToLoud'));
 });
 test('text-completion preset requests keep text extraction rather than the chat-only structured JSON branch',async()=>{
@@ -173,7 +248,7 @@ function fixture(options = {}) {
     const runtime = createMemorySummaries({context:()=>context,owner:ctx=>ctx.owner,settings:()=>settings,state:()=>state,visible:value=>value.replace(/<!--[^]*?-->/g,''),scene:()=>({day:7,time:'23:00',location:'River'}),store,
         recordRequest:options.recordRequest || (()=>{}),notify:(type,message)=>notices.push({type,message}),changed:view=>phases.push(view.job.status),parse:JSON.parse,timeout:Object.hasOwn(options,'timeout') ? options.timeout : 100,
         saveMetadata:async()=>options.metadataFail ? false : true,isGenerating:()=>options.generating?.() || false,continuity:options.continuity || (()=>{}),
-        request:async(ctx,prompt,profile,signal)=>{calls.push({prompt,profile,signal});return responder(prompt,signal);}});
+        request:async(ctx,prompt,profile,signal,mode,outputBudget)=>{calls.push({prompt,profile,signal,mode,outputBudget});return responder(prompt,signal,mode,outputBudget);}});
     return {runtime,data,notices,phases,calls,storageCalls,context,state,settings,setResponder:value=>{responder=value;}};
 }
 

@@ -1,9 +1,9 @@
-import {removeMemoryChat} from './memory-deletion.js?v=0.58.12';
-import {requestDataTask,taskGenerationMode} from './task-generation.js?v=0.58.12';
+import {removeMemoryChat} from './memory-deletion.js?v=0.58.13';
+import {requestDataTask,taskGenerationMode,taskErrorMessage} from './task-generation.js?v=0.58.13';
 import {MEMORY_LINK_KEY,MEMORY_FORMAT,emptyMemoryLibrary,normalizeMemoryLibrary,memoryAncestry,captureMemoryChat,memoryChapterValid,
-    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,memorySummaryJsonSchema,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.58.12';
-import {createMemoryStore} from './memory-store.js?v=0.58.12';
-import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.58.12';
+    memoryCoverage,memorySegments,nextMemoryBatch,countMemoryBatches,normalizeMemoryBatchSize,normalizeMemorySummaryTimeoutSeconds,MEMORY_BATCH_CHAR_LIMIT,MEMORY_SUMMARY_OUTPUT_TOKENS,memoryFingerprint,repairMemorySummary,memorySummaryPrompt,latestMemoryRecap,searchMemoryLibrary,memoryPromptSelection,boundedMemoryText} from './memory-summaries.js?v=0.58.13';
+import {createMemoryStore} from './memory-store.js?v=0.58.13';
+import {MEMORY_CATEGORIES,memoryFactIndex,memoryInsightViews,memoryReferenceHints,memoryRecordKey,normalizeMemoryStrategy,normalizeMemoryOutputTokens,validateMemorySummary} from './memory-summaries.js?v=0.58.13';
 
 const busyPhases = new Set(['loading','archiving','waiting','counting','summarizing','validating','saving']);
 const errors = {
@@ -25,6 +25,7 @@ const errors = {
     MEMORY_TOKEN_COUNT_TIMEOUT:['The tokenizer did not respond within its time limit. Completed summaries remain saved. No new summary API request starts during this step.','ตัวนับโทเคนไม่ตอบกลับภายในเวลาที่กำหนด สรุปที่บันทึกแล้วไม่ได้หาย ขั้นตอนนี้ไม่ได้เรียก API สรุปเพิ่ม'],
     MEMORY_GENERATION_WAIT_TIMEOUT:['Memory waited too long for the main chat reply to finish. Stop or finish the main generation, then continue; no summary API request was made while waiting.','รอคำตอบแชตหลักเสร็จนานเกินกำหนด หยุดหรือรอการเจนแชตหลักให้เสร็จแล้วกดทำต่อ ระหว่างรอไม่ได้เรียก API สรุป'],
     MEMORY_API_REQUEST_FAILED:['The summary API rejected the request or its connection failed. Check the connection, model and remaining quota. Completed batches remain saved.','API สรุปปฏิเสธคำขอหรือการเชื่อมต่อล้มเหลว ตรวจการเชื่อมต่อ โมเดล และโควต้าที่เหลือ ชุดที่สำเร็จยังบันทึกอยู่'],
+    MEMORY_API_BAD_REQUEST:['HTTP 400: The API rejected the summary request format or parameters. This is not an incomplete summary. Check the provider error details; Retry can use a plain compact task on the same connection.','HTTP 400: API ปฏิเสธรูปแบบหรือพารามิเตอร์คำขอสรุป ยังไม่ได้รับสรุปที่นำมาตรวจได้ ดูข้อความจาก API ในรายละเอียดปัญหา กดทำต่อเพื่อใช้คำขอสรุปธรรมดาบนการเชื่อมต่อเดิม'],
     MEMORY_CHANGED:['Memory changed or another operation is active. Review the current archive and retry.','ข้อมูล Memory เปลี่ยนหรือมีงานอื่นกำลังทำอยู่ ตรวจคลังปัจจุบันแล้วลองใหม่'],
     MEMORY_INVALID_ARCHIVE:['This backup is invalid or belongs to another character. No existing archive was replaced.','ไฟล์สำรองไม่ถูกต้องหรือเป็นของตัวละครอื่น ระบบไม่ได้เขียนทับคลังเดิม'],
     MEMORY_TOKEN_COUNT_FAILED:['Token counting failed. Memory injection is paused; retry when the tokenizer is available.','นับโทเคนไม่สำเร็จ พักการส่งความจำเข้า prompt ไว้ก่อน แล้วลองใหม่'],
@@ -40,14 +41,32 @@ export function memoryJobMessage(error, language = 'en') {
 export function diagnoseMemoryApiFailure(error) {
     if (error?.code === 'response-truncated') return Object.assign(Error('MEMORY_RESPONSE_TRUNCATED'),{finishReason:error.details?.finishReason || error.finishReason || 'length'});
     const failure = Error('MEMORY_API_REQUEST_FAILED');
-    const message = typeof error === 'string' ? error : String(error?.message || '');
-    const status = Number(error?.status ?? error?.statusCode ?? error?.response?.status ?? error?.cause?.status ?? message.match(/\b(?:HTTP|status|error)\s*[:=]?\s*(4\d\d|5\d\d)\b/i)?.[1] ?? message.match(/\b(401|403|404|413|429|502|503|504)\b/)?.[1]);
+    const messages = [], seen = new Set();let status;
+    for (let current = error, depth = 0; current != null && depth < 5 && !seen.has(current); depth++) {
+        seen.add(current);
+        const candidate = Number(current?.status ?? current?.statusCode ?? current?.response?.status ?? current?.details?.status);
+        if (status == null && Number.isInteger(candidate) && candidate >= 400 && candidate <= 599) status = candidate;
+        for (const value of [typeof current === 'string' ? current : current.message,current?.error?.message,typeof current?.error === 'string' ? current.error : '',current?.details?.providerError]) {
+            if (typeof value === 'string' && value.trim()) messages.push(taskErrorMessage(value)
+                .replace(/((?:api[_-]?key|access[_-]?token|authorization|(?:proxy[_-]?)?password|cookie)["']?\s*[:=]\s*["']?)[^\s"'&,;]+/giu,'$1[redacted]'));
+        }
+        current = current?.cause;
+    }
+    const message = [...new Set(messages)].join(' · ').slice(0,1200);
+    status ??= Number(message.match(/\b(?:HTTP|status|error)\s*[:=]?\s*([45]\d\d)\b/i)?.[1] ?? message.match(/\b(400|401|403|404|413|429|502|503|504|524)\b/)?.[1] ?? (/\bbad request\b/i.test(message) ? 400 : undefined));
+    failure.apiMessage = message;
     if (Number.isInteger(status) && status >= 400 && status <= 599) failure.httpStatus = status;
     if (status === 404 || /model.*not found|unknown model|^not found$/i.test(message.trim()) || /model_not_found|deploymentnotfound/i.test(String(error?.code || ''))) failure.diagnosis = ['Model or endpoint not found. Check the model name and API URL in SillyTavern; retry after a normal chat reply works.','ไม่พบโมเดลหรือ endpoint ตรวจชื่อโมเดลและ URL ของ API ใน SillyTavern แล้วลองหลังจากเจนแชตปกติได้'];
     else if ([401,403].includes(status)) failure.diagnosis = ['The connection lacks authorization. Check the API key and model permissions in SillyTavern.','การเชื่อมต่อไม่มีสิทธิ์ใช้งาน ตรวจ API key และสิทธิ์ใช้โมเดลใน SillyTavern'];
     else if (status === 429) failure.diagnosis = ['Quota or rate limit reached. Check provider quota and wait before retrying; lowering batch size does not fix exhausted quota.','โควต้าหรืออัตราการเรียกถึงขีดจำกัด ตรวจโควต้าผู้ให้บริการและเว้นระยะก่อนลองใหม่ ลดขนาดชุดไม่ได้แก้โควต้าที่หมด'];
     else if (status === 413 || /context.*(?:length|limit)|too many tokens|maximum.*tokens/i.test(message)) failure.diagnosis = ['The request exceeds the model context. Reduce the batch; native preset mode also includes the chat/preset context. Compact mode sends only the summary task.','คำขอเกิน context ของโมเดล ลดขนาดชุด โหมด preset รวม context แชตและ preset ด้วย ส่วน Compact ส่งเฉพาะงานสรุป'];
-    else if ([502,503,504].includes(status)) failure.diagnosis = ['The API service is unavailable. Retry later without reprocessing saved batches.','บริการ API ยังไม่พร้อม ลองภายหลังโดยไม่ต้องสรุปชุดที่บันทึกแล้วซ้ำ'];
+    else if (status === 400) {
+        failure.message = 'MEMORY_API_BAD_REQUEST';
+        failure.diagnosis = /json.?schema|response.?format|structured.?output|tool.?choice/i.test(message)
+            ? ['The API rejected structured-output/schema parameters. Summary tasks no longer force these parameters. Retry on the same connection.','API ปฏิเสธพารามิเตอร์ structured output/schema งานสรุปจะไม่บังคับพารามิเตอร์เหล่านี้แล้ว กดทำต่อบนการเชื่อมต่อเดิม']
+            : ['The API rejected the request format or parameters. Check its exact error below. A smaller batch does not fix unsupported parameters; Retry can send a plain compact task on the same connection.','API ปฏิเสธรูปแบบหรือพารามิเตอร์คำขอ ดูข้อความผิดพลาดด้านล่าง การลดชุดไม่ได้แก้พารามิเตอร์ที่ไม่รองรับ กดทำต่อเพื่อส่งงานสรุปธรรมดาบนการเชื่อมต่อเดิม'];
+    }
+    else if ([502,503,504,524].includes(status)) failure.diagnosis = ['The API service is unavailable or timed out upstream. Retry later without reprocessing saved batches.','บริการ API ยังไม่พร้อมหรือหมดเวลาที่ต้นทาง ลองภายหลังโดยไม่ต้องสรุปชุดที่บันทึกแล้วซ้ำ'];
     else if (/fetch|network|connection|offline/i.test(message)) failure.diagnosis = ['The request could not reach the API. Check the SillyTavern connection and server log.','คำขอไปไม่ถึง API ตรวจการเชื่อมต่อ SillyTavern และ log ของเซิร์ฟเวอร์'];
     return failure;
 }
@@ -141,11 +160,9 @@ export async function requestMemorySummary(context, prompt, profileId, signal, m
         let owned = true;
         const release = () => { if (owned) { owned = false; nativeSummaryRequests--; } };
         signal?.addEventListener?.('abort',release,{once:true});
-        // For chat completion, structured generation bypasses SillyTavern's
-        // story cleanup while retaining the selected preset and WI/AN context.
-        // Text-completion hosts cannot use its JSON extraction path.
-        try { return await context.generateQuietPrompt({quietPrompt:prompt,skipWIAN:false,responseLength,removeReasoning:false,
-            ...(context.mainApi === 'openai' ? {jsonSchema:memorySummaryJsonSchema()} : {})}); }
+        // Native preset requests retain WI/AN but do not force provider schema,
+        // JSON mode or tool calls: "openai" also includes incompatible proxies.
+        try { return await context.generateQuietPrompt({quietPrompt:prompt,skipWIAN:false,responseLength,removeReasoning:false}); }
         finally { signal?.removeEventListener?.('abort',release); release(); }
     }
     if(taskGenerationMode(context)!=='legacy-quiet')return requestDataTask(context,{prompt,responseLength,trimNames:false,systemPrompt:'Summarize source material faithfully. Return only the requested JSON; never continue the role-play.'},undefined,{task:'memory summary',respectConfiguredLimit:false});
@@ -223,6 +240,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
         const failedAt = new Date().toISOString();
         phase(snapshot,'error',{error:memoryJobMessage(error,config().language),code:error?.message,failedStage:error.stage || previous?.stage || previous?.status || '',
             summaryReason:error.summaryReason || '',finishReason:error.finishReason || '',
+            apiMessage:error.apiMessage || '',
             failedAfterSeconds:Math.round(Math.max(0,new Date(failedAt).getTime() - new Date(previous?.phaseStartedAt || failedAt).getTime()) / 1000),
             requestFinishedAt:previous?.requestStartedAt && !previous.requestFinishedAt ? failedAt : previous?.requestFinishedAt || '',httpStatus:error.httpStatus || 0});
         if (same(snapshot)) notify('error',memoryJobMessage(error,config().language));
@@ -360,7 +378,14 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
             const previousJob = storedJob(library,snapshot.chatId);
             // A user-triggered continuation can reduce a failed batch without
             // changing their saved preference or starting an automatic paid retry.
-            const adaptive = !auto && retry && strategy !== 'categories' && previousJob?.recommendedBatchSize;
+            const adaptive = !auto && retry && strategy !== 'categories' && previousJob?.recommendedBatchSize
+                && ['MEMORY_API_TIMEOUT','MEMORY_INVALID_SUMMARY','MEMORY_RESPONSE_TRUNCATED','MEMORY_EMPTY_RESPONSE'].includes(previousJob.code);
+            const configuredMode = config().memorySummaryMode === 'compact' ? 'compact' : 'preset';
+            const compatibilityRetry = Boolean(retry && !config().memorySummaryProfile && configuredMode === 'preset'
+                && taskGenerationMode(snapshot.ctx) !== 'legacy-quiet'
+                && (['MEMORY_API_BAD_REQUEST','MEMORY_INVALID_SUMMARY'].includes(previousJob?.code)
+                    || previousJob?.code === 'MEMORY_API_REQUEST_FAILED' && [0,400].includes(Number(previousJob.httpStatus) || 0)));
+            const generationMode = compatibilityRetry ? 'compact' : configuredMode;
             const activeBatchSize = adaptive ? Math.min(batchSize,normalizeMemoryBatchSize(previousJob.recommendedBatchSize)) : batchSize;
             const activeBatchCharLimit = adaptive ? Math.min(MEMORY_BATCH_CHAR_LIMIT,Math.max(2000,Number(previousJob.recommendedBatchCharLimit) || MEMORY_BATCH_CHAR_LIMIT)) : MEMORY_BATCH_CHAR_LIMIT;
             const apiTimeout = operationTimeout();
@@ -392,7 +417,8 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                     return new TextEncoder().encode(value).length;
                 }
             };
-            phase(snapshot,'waiting',{stage:'waiting',prepare,rpgHandoff:'',error:'',code:'',summaryReason:'',finishReason:'',responseChars:0,httpStatus:0,failedStage:'',failedAfterSeconds:0,repairedEvents:0,droppedEvents:0,completed:0,total:initialBatches,processedMessages:0,totalMessages,remainingMessages:initialPending,
+            phase(snapshot,'waiting',{stage:'waiting',prepare,rpgHandoff:'',error:'',code:'',summaryReason:'',finishReason:'',apiMessage:'',responseChars:0,httpStatus:0,failedStage:'',failedAfterSeconds:0,repairedEvents:0,droppedEvents:0,completed:0,total:initialBatches,processedMessages:0,totalMessages,remainingMessages:initialPending,
+                generationMode,compatibilityRetry,
                 strategy,apiCalls,apiCallsTotal,plannedCalls:initialBatches * (strategy === 'categories' ? MEMORY_CATEGORIES.length : 1),category:'',categoryCompleted:0,
                 batchMessages:0,batchSegments:0,batchSize,activeBatchSize,activeBatchCharLimit,recommendedBatchSize:adaptive ? activeBatchSize : 0,recommendedBatchCharLimit:adaptive ? activeBatchCharLimit : 0,
                 apiTimeoutSeconds:apiTimeout / 1000,savedChapters:initialSaved,startedAt:new Date().toISOString(),finishedAt:'',requestStartedAt:'',requestFinishedAt:'',inputTokens:0,outputTokens:0,
@@ -515,7 +541,7 @@ export function createMemorySummaries({context,owner,settings,state,visible,scen
                         try {
                             response = await abortable(() => {
                                 recordRequest('memorySummary',`Memory summary ${completed + 1}${category ? ` / ${category}` : ''}`);
-                                return request(snapshot.ctx,prompt,config().memorySummaryProfile,requestController.signal,config().memorySummaryMode,config().memorySummaryOutputTokens);
+                                return request(snapshot.ctx,prompt,config().memorySummaryProfile,requestController.signal,generationMode,config().memorySummaryOutputTokens);
                             },signal,apiTimeout,stopRequest,'MEMORY_API_TIMEOUT');
                         } catch (error) {
                             if (error?.message?.startsWith('MEMORY_')) throw error;

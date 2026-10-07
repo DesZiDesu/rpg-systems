@@ -1,6 +1,6 @@
-import {removeMemoryChat} from './memory-deletion.js?v=0.58.12';
-import {normalizeMemoryDetails,buildMemoryInsights,memoryRecordKey} from './memory-insights.js?v=0.58.12';
-export {memoryRecordKey} from './memory-insights.js?v=0.58.12';
+import {removeMemoryChat} from './memory-deletion.js?v=0.58.13';
+import {normalizeMemoryDetails,buildMemoryInsights,memoryRecordKey} from './memory-insights.js?v=0.58.13';
+export {memoryRecordKey} from './memory-insights.js?v=0.58.13';
 // The archive retains original messages. Only selected, bounded text enters a model prompt.
 export const MEMORY_FORMAT = 'roleforge-memory-library';
 export const MEMORY_LINK_KEY = 'tretaresia_rpg_memory_link';
@@ -229,21 +229,6 @@ export function repairMemorySummary(value, batch) {
         } catch { droppedEvents++; }
     }
     return {...result,evidenceReport:{repairedEvents,droppedEvents,originalEvents:value.events.length,verifiedEvents:result.events.length,...(eventIndexMissing ? {eventIndexMissing:true} : {})}};
-}
-// SillyTavern's structured quiet generation extracts JSON before story regexes
-// and message cleanup. Keep optional fact metadata open for non-strict models.
-export function memorySummaryJsonSchema() {
-    return {name:'roleforge_memory_summary',description:'A complete factual summary of the supplied source segments',strict:false,returnInvalid:true,value:{
-        type:'object',required:['summary','recap','events'],properties:{
-            summary:{type:'string',minLength:1,maxLength:5000},recap:{type:'string',minLength:1,maxLength:7000},
-            events:{type:'array',maxItems:60,items:{type:'object',required:['title','detail','kind','sourceKeys','evidence'],properties:{
-                title:{type:'string',minLength:1,maxLength:240},detail:{type:'string',minLength:1,maxLength:1600},kind:{type:'string',enum:['Event','Claim','Plan']},
-                sourceKeys:{type:'array',minItems:1,items:{type:'string'}},evidence:{type:'string',minLength:1},
-                category:{type:'string',enum:MEMORY_CATEGORIES},people:{type:'array',items:{type:'string'}},places:{type:'array',items:{type:'string'}},
-                keywords:{type:'array',items:{type:'string'}},knownBy:{type:'array',items:{type:'string'}},
-            }}},
-        },
-    }};
 }
 export function memorySummaryPrompt(batch, previousRecap, stateReference, category = '', outputBudget = MEMORY_SUMMARY_OUTPUT_TOKENS, priorFacts = []) {
     const outputTokens = normalizeMemoryOutputTokens(outputBudget), targetTokens = Math.floor(outputTokens * 0.7), maxEvents = Math.min(48,Math.max(4,Math.floor(outputTokens / 240)));

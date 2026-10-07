@@ -1,3 +1,3 @@
-import {requestDataTask} from './task-generation.js?v=0.58.12';
-export {taskGenerationMode as commerceGenerationMode,taskErrorMessage as commerceErrorMessage} from './task-generation.js?v=0.58.12';
+import {requestDataTask} from './task-generation.js?v=0.58.13';
+export {taskGenerationMode as commerceGenerationMode,taskErrorMessage as commerceErrorMessage} from './task-generation.js?v=0.58.13';
 export const requestCommerceTask=(context,args,legacy)=>requestDataTask(context,args,legacy,{task:'commerce',apiErrorCode:'opening-api'});

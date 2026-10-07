@@ -86,6 +86,7 @@
 #roleforge-memory-addons .rf-memory-error{font-size:12px;color:#e4a4a4;border-left:2px solid #b77d7d;padding-left:9px;margin:10px 0}
 #roleforge-memory-addons .rf-memory-diagnostics>div{display:grid;gap:3px;margin:9px 0;font-size:11px}
 #roleforge-memory-addons .rf-memory-diagnostics code{white-space:normal;overflow-wrap:anywhere;font-size:11px}
+#roleforge-memory-addons .rf-memory-diagnostics pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;min-width:0;font-size:11px;margin:0}
 #roleforge-memory-addons .rf-memory-progress{display:grid;gap:6px;margin:9px 0;font-size:11px}
 #roleforge-memory-addons .rf-memory-fold-body>span,#roleforge-memory-addons .rf-memory-fold-body>small{display:block;font-size:11px;margin:6px 0;color:#aaa}
 #roleforge-memory-addons .rf-memory-adaptive,#roleforge-memory-addons .rf-memory-token-warning,#roleforge-memory-addons .rf-memory-queued,#roleforge-memory-addons .rf-memory-prompt-warning{padding:8px 9px;margin:9px 0;border-left:2px solid #888;background:#2a2a2a;color:#ccc;font-size:11px;line-height:1.6}
