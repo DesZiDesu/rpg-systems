@@ -1,0 +1,233 @@
+{
+  "release": "0.59.0",
+  "baseCommit": "8c38e636f3a76379804716e92159b419ecee5103",
+  "unitHostTests": {
+    "command": "npm test",
+    "passed": 1155,
+    "failed": 0,
+    "skipped": 0
+  },
+  "syntaxChecks": {
+    "command": "npm run check",
+    "exitCode": 0
+  },
+  "browserSuites": [
+    {
+      "command": "node tests/stats-currency.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS stats/currency production UI at 320px: normal chat, bounds, custom definitions, hidden buttons, exact money, native settings, reduced motion, reload, no overflow",
+        "PASS stats/currency production UI at 390px: normal chat, bounds, custom definitions, hidden buttons, exact money, native settings, reduced motion, reload, no overflow",
+        "PASS stats/currency production UI at 1280px: normal chat, bounds, custom definitions, hidden buttons, exact money, native settings, reduced motion, reload, no overflow"
+      ]
+    },
+    {
+      "command": "node tests/incantation.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "Incantation production integration passed at 320px",
+        "Incantation production integration passed at 390px",
+        "Incantation production integration passed at 1280px",
+        "Conditional window tabs and passive Summary placement passed"
+      ]
+    },
+    {
+      "command": "node tests/commerce-stock.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS 320px: 3+3 bottle basket, 90+150=240, unknown stock, offer without payment, saved session reload, exact once-only payment/receipt, one confirmation API, no overflow",
+        "PASS 390px: 3+3 bottle basket, 90+150=240, unknown stock, offer without payment, saved session reload, exact once-only payment/receipt, one confirmation API, no overflow",
+        "PASS 1280px: 3+3 bottle basket, 90+150=240, unknown stock, offer without payment, saved session reload, exact once-only payment/receipt, one confirmation API, no overflow"
+      ]
+    },
+    {
+      "command": "node tests/commerce-pending.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS 320px: exact three-book request, normal reply contract, visible waiting/incomplete dock above ChatBar, old saved chat recovery, disabled gate, genuine settled follow-up, no API/payment/inventory changes or overflow",
+        "PASS 390px: exact three-book request, normal reply contract, visible waiting/incomplete dock above ChatBar, old saved chat recovery, disabled gate, genuine settled follow-up, no API/payment/inventory changes or overflow",
+        "PASS 1280px: exact three-book request, normal reply contract, visible waiting/incomplete dock above ChatBar, old saved chat recovery, disabled gate, genuine settled follow-up, no API/payment/inventory changes or overflow"
+      ]
+    },
+    {
+      "command": "node tests/commerce-repair.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS 320px: when-to-press guidance, one explicit repair request, malformed response, save rollback and manual retry, disabled double-click, earlier named books, 15/20/10 unit prices and 40 total, complete learning metadata, no payment or teaching during repair, saved reload, one confirmed purchase and receipt, no duplicate payment or overflow",
+        "PASS 390px: when-to-press guidance, one explicit repair request, malformed response, save rollback and manual retry, disabled double-click, earlier named books, 15/20/10 unit prices and 40 total, complete learning metadata, no payment or teaching during repair, saved reload, one confirmed purchase and receipt, no duplicate payment or overflow",
+        "PASS 1280px: when-to-press guidance, one explicit repair request, malformed response, save rollback and manual retry, disabled double-click, earlier named books, 15/20/10 unit prices and 40 total, complete learning metadata, no payment or teaching during repair, saved reload, one confirmed purchase and receipt, no duplicate payment or overflow"
+      ]
+    },
+    {
+      "command": "node tests/commerce-rights.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS 320px: actual loader, all purchase types, inline metadata, deposits, key persistence, story expiry, return/refund, service delivery, duplicate-ops protection, two explicit API buttons only; zero added lifecycle tasks",
+        "PASS 390px: actual loader, all purchase types, inline metadata, deposits, key persistence, story expiry, return/refund, service delivery, duplicate-ops protection, two explicit API buttons only; zero added lifecycle tasks",
+        "PASS 1280px: actual loader, all purchase types, inline metadata, deposits, key persistence, story expiry, return/refund, service delivery, duplicate-ops protection, two explicit API buttons only; zero added lifecycle tasks"
+      ]
+    },
+    {
+      "command": "node tests/items.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS 320px: actual loader, inline Loot without API, partial collection, consumption/meters, refusal and gift custody, recoverable drop, reusable weapon, next-reply queue, explicit retry, save rollback, typed action once, NPC scene filter, tabs/minimize, inventory-wide detail batches with partial failure/retry and preserved facts/quantities, multi-stat cake overheal/expiry, custom stat configuration and Divine Mana, actual combat Loot recovery/collection, skill/technique books via buttons and typed use, save rollback, duplicate learning protection, and responsive UI.",
+        "PASS 390px: actual loader, inline Loot without API, partial collection, consumption/meters, refusal and gift custody, recoverable drop, reusable weapon, next-reply queue, explicit retry, save rollback, typed action once, NPC scene filter, tabs/minimize, inventory-wide detail batches with partial failure/retry and preserved facts/quantities, multi-stat cake overheal/expiry, custom stat configuration and Divine Mana, actual combat Loot recovery/collection, skill/technique books via buttons and typed use, save rollback, duplicate learning protection, and responsive UI.",
+        "PASS 1280px: actual loader, inline Loot without API, partial collection, consumption/meters, refusal and gift custody, recoverable drop, reusable weapon, next-reply queue, explicit retry, save rollback, typed action once, NPC scene filter, tabs/minimize, inventory-wide detail batches with partial failure/retry and preserved facts/quantities, multi-stat cake overheal/expiry, custom stat configuration and Divine Mana, actual combat Loot recovery/collection, skill/technique books via buttons and typed use, save rollback, duplicate learning protection, and responsive UI."
+      ]
+    },
+    {
+      "command": "node tests/character-forge.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "Forge 320px: fit, optional skill, saved fields, native preset, custom Arsenal and opening passed",
+        "Forge 390px: fit, optional skill, saved fields, native preset, custom Arsenal and opening passed",
+        "Forge 1280px: fit, optional skill, saved fields, native preset, custom Arsenal and opening passed"
+      ]
+    },
+    {
+      "command": "node tests/forge-opening.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "Forge proxy 320px: request hook, saved draft, explicit retry, cleanup, no duplicate turns and unchanged model settings passed",
+        "Forge proxy 390px: request hook, saved draft, explicit retry, cleanup, no duplicate turns and unchanged model settings passed",
+        "Forge proxy 1280px: request hook, saved draft, explicit retry, cleanup, no duplicate turns and unchanged model settings passed"
+      ]
+    },
+    {
+      "command": "node tests/user-chat.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "User UI: 320px passed (AI isolation, native restoration, edit, regex, theme, reload, no overflow)",
+        "User UI: 390px passed (AI isolation, native restoration, edit, regex, theme, reload, no overflow)",
+        "User UI: 1280px passed (AI isolation, native restoration, edit, regex, theme, reload, no overflow)"
+      ]
+    },
+    {
+      "command": "node tests/voice-addons.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 320px",
+        "PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 390px",
+        "PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 1280px"
+      ]
+    },
+    {
+      "command": "node tests/optional-systems.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS rebuilt commerce pause/resume with held commitments, optional defaults OFF, live gates, prompt removal, saved records, pending auction recovery, memory storage/API pause and both settings entry points at 320px",
+        "PASS rebuilt commerce pause/resume with held commitments, optional defaults OFF, live gates, prompt removal, saved records, pending auction recovery, memory storage/API pause and both settings entry points at 390px",
+        "PASS rebuilt commerce pause/resume with held commitments, optional defaults OFF, live gates, prompt removal, saved records, pending auction recovery, memory storage/API pause and both settings entry points at 1280px"
+      ]
+    },
+    {
+      "command": "node tests/chat-system-null.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS hidden commerce notices inject no null; board notices and intentional prose retained; refresh stable at 390px, presentation=true",
+        "PASS hidden commerce notices inject no null; board notices and intentional prose retained; refresh stable at 390px, presentation=false",
+        "PASS hidden commerce notices inject no null; board notices and intentional prose retained; refresh stable at 1280px, presentation=true",
+        "PASS hidden commerce notices inject no null; board notices and intentional prose retained; refresh stable at 1280px, presentation=false"
+      ]
+    },
+    {
+      "command": "node tests/commerce-discount.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS 320px: exact missing-amount acceptance saves 190 copper without payment; confirm debits 190 once and persists matching key/right; duplicate protection; review-only themed inventory expands/collapses within its frame",
+        "PASS 390px: exact missing-amount acceptance saves 190 copper without payment; confirm debits 190 once and persists matching key/right; duplicate protection; review-only themed inventory expands/collapses within its frame",
+        "PASS 1280px: exact missing-amount acceptance saves 190 copper without payment; confirm debits 190 once and persists matching key/right; duplicate protection; review-only themed inventory expands/collapses within its frame"
+      ]
+    },
+    {
+      "command": "node tests/commerce-stock-selection.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS 320px: 3+3 bottle basket, 90+150=240, AI-defined 12/8 stock and preselected 3+3, offer without payment, saved session reload, exact once-only payment/receipt, one confirmation API, no overflow",
+        "PASS 390px: 3+3 bottle basket, 90+150=240, AI-defined 12/8 stock and preselected 3+3, offer without payment, saved session reload, exact once-only payment/receipt, one confirmation API, no overflow",
+        "PASS 1280px: 3+3 bottle basket, 90+150=240, AI-defined 12/8 stock and preselected 3+3, offer without payment, saved session reload, exact once-only payment/receipt, one confirmation API, no overflow"
+      ]
+    },
+    {
+      "command": "node tests/main-chat-systems.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS hybrid role-play/buttons, automatic one-call missing opening recovery, standing NPC price retained, non-looping failure diagnostics, latest-bubble continuation, mixed-currency payment, buy/sell baskets, SVG wallet, consent settlement, all story cards and boards at 320px",
+        "PASS hybrid role-play/buttons, automatic one-call missing opening recovery, standing NPC price retained, non-looping failure diagnostics, latest-bubble continuation, mixed-currency payment, buy/sell baskets, SVG wallet, consent settlement, all story cards and boards at 390px",
+        "PASS hybrid role-play/buttons, automatic one-call missing opening recovery, standing NPC price retained, non-looping failure diagnostics, latest-bubble continuation, mixed-currency payment, buy/sell baskets, SVG wallet, consent settlement, all story cards and boards at 1280px"
+      ]
+    },
+    {
+      "command": "node tests/inn-commerce.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS current conditional inn room prices inline with zero extra calls, same-turn ability registration, swipe/regenerate contract, complete access terms, prose-only rental recovery without extra calls and unchanged wallet/inventory at 320px",
+        "PASS current conditional inn room prices inline with zero extra calls, same-turn ability registration, swipe/regenerate contract, complete access terms, prose-only rental recovery without extra calls and unchanged wallet/inventory at 390px",
+        "PASS current conditional inn room prices inline with zero extra calls, same-turn ability registration, swipe/regenerate contract, complete access terms, prose-only rental recovery without extra calls and unchanged wallet/inventory at 1280px"
+      ]
+    },
+    {
+      "command": "node tests/extension-drawer.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 320px / full pane",
+        "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 390px / full pane",
+        "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 1280px / 300 pane",
+        "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 1280px / full pane"
+      ]
+    },
+    {
+      "command": "node tests/startup.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / mobile",
+        "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / mobile",
+        "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / desktop",
+        "PASS full startup, settings, all tabs, NPC Manager: current loader / mobile",
+        "PASS full startup, settings, all tabs, NPC Manager: current loader / mobile",
+        "PASS full startup, settings, all tabs, NPC Manager: current loader / desktop"
+      ]
+    },
+    {
+      "command": "node tests/presentation-settings.browser.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "checks": [
+        "PASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 320px",
+        "PASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 390px",
+        "PASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 1280px"
+      ]
+    }
+  ],
+  "mergeChecks": [
+    "origin/main refreshed before commit; same base commit",
+    "git diff --check passed",
+    "runtime release cache keys match manifest 0.59.0"
+  ],
+  "limitations": [
+    "Provider and Voice responses are controlled fixtures.",
+    "The actual user Proxy model referred to as 3.8 has not been tested.",
+    "Safari on a physical iPhone has not been tested."
+  ],
+  "legacyFixtureUpdates": "Old combined commerce/inn assertions reproduced on unchanged 0.58.15. Fixtures now use explicit purchase intent, capture the real next-user prompt, open minimized panels, preserve unpaid missing-price notices, and verify locally recovered rental offers."
+}

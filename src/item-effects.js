@@ -1,4 +1,4 @@
-import {itemStatPath,normalizeStatEffects,validStatEffects} from './item-definition.js?v=0.58.15';
+import {itemStatPath,normalizeStatEffects,validStatEffects} from './item-definition.js?v=0.59.0';
 const copy=s=>structuredClone(s);
 const minute=clock=>Number.isInteger(clock?.day)&&/^\d\d:\d\d$/u.test(clock?.time||'')?(clock.day-1)*1440+Number(clock.time.slice(0,2))*60+Number(clock.time.slice(3)):null;
 const leaf=(state,path)=>{if(!itemStatPath(path))return null;const keys=path.split('.'),key=keys.pop();let owner=state;for(const k of keys){if(!owner||typeof owner!=='object'||!Object.hasOwn(owner,k))return null;owner=owner[k];}return owner&&Object.hasOwn(owner,key)&&['number','string','boolean'].includes(typeof owner[key])?{owner,key,value:owner[key]}:null;};
@@ -53,6 +53,7 @@ export function applyItemStats(state,raw,{quantity=1,requestId='',itemName='',tu
  return{ok:true,next,events};
 }
 export function itemStatLabel(stat,language='en'){
+ const attributes={'player.attributes.intelligence':'INT','player.attributes.strength':'STR','player.attributes.defense':'DF','player.attributes.agility':'AG'};if(attributes[stat])return attributes[stat];
  const th=language==='th',labels={'player.hp.current':'HP','player.hp.max':th?'HP สูงสุด':'Max HP','player.mp.current':'MP','player.mp.max':th?'MP สูงสุด':'Max MP','player.stamina.current':th?'สตามิน่า':'Stamina','player.stamina.max':th?'สตามิน่าสูงสุด':'Max stamina','player.survival.hunger':th?'ความอิ่ม':'Hunger','player.survival.thirst':th?'น้ำในร่างกาย':'Thirst','player.powerType':th?'ประเภทพลัง':'Power type','player.condition':th?'สภาพร่างกาย':'Condition','progression.experience':'EXP','progression.reputation':th?'ชื่อเสียง':'Reputation'};
  return labels[stat]||stat.replace(/^(player|progression|customPowers)\./u,'').replace(/\./gu,' · ');
 }

@@ -1,13 +1,13 @@
-import {disclosedShopStock} from './commerce-stock-selection.js?v=0.58.15';
-import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.58.15';
-import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.58.15';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.15';
+import {disclosedShopStock} from './commerce-stock-selection.js?v=0.59.0';
+import {publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.59.0';
+import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.59.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.59.0';
 
 // A same-reply compiler for explicit NPC prices when a model omits its machine
 // object. No API, payment, assumed stock, inferred item or invented NPC funds.
-export function disclosedBookBundle(story,user,location,{eventId}={}){
+export function disclosedBookBundle(story,user,location,{eventId,currency}={}){
     if(!location||commerceRequestHint(user)!=='buy'||commerceDiscussionOnly(user))return null;
-    const blocks=publicTradeDialogues(story).filter(b=>b.prices.length);
+    const blocks=publicTradeDialogues(story,currency).filter(b=>b.prices.length);
     if(blocks.length!==1)return null;
     const block=blocks[0];
     if(block.quote.length>600||quotedTradeRefused(block.quote)||/(?:พรุ่งนี้|สมมติ|สมมุติ|\btomorrow\b)/iu.test(block.quote))return null;
@@ -15,7 +15,7 @@ export function disclosedBookBundle(story,user,location,{eventId}={}){
     // totals are context only; the final total must equal the actual unit prices.
     const marker=block.quote.match(/(?:ข้า|เรา)?คิด(?:ราคา)?(?=\s*(?:คัมภีร์|คู่มือ|บันทึก|ตำรา|หนังสือ))/u);
     if(!marker)return null;
-    const quote=block.quote.slice(marker.index+marker[0].length),facts=optionPriceFacts({quote,prices:readCommercePrices(quote)}),items=[];
+    const quote=block.quote.slice(marker.index+marker[0].length),facts=optionPriceFacts({quote,prices:readCommercePrices(quote,currency)}),items=[];
     for(const [index,fact]of facts.entries()){
         const prefix=fact.preceding.trim().replace(/^[,，\s]+/u,'').replace(/^และ\s*/u,'');
         if(index===facts.length-1&&/^(?:รวมกัน(?:เป็น)?|รวม(?:ทั้งหมด)?(?:เป็น)?|ทั้งหมด(?:เป็น)?)\s*$/u.test(prefix)){
@@ -28,23 +28,23 @@ export function disclosedBookBundle(story,user,location,{eventId}={}){
     }
     return null;
 }
-export function disclosedGoodsOffer(story,user,location,inventory=[],{eventId}={}){
+export function disclosedGoodsOffer(story,user,location,inventory=[],{eventId,currency}={}){
     const bundle=disclosedBookBundle(story,user,location,{eventId});if(bundle)return bundle;
     const kind=commerceRequestHint(user);
     if(!location||!kind||commerceDiscussionOnly(user))return null;
-    const blocks=publicTradeDialogues(story).filter(block=>block.prices.length);
+    const blocks=publicTradeDialogues(story,currency).filter(block=>block.prices.length);
     if(!blocks.length||new Set(blocks.map(block=>block.name)).size!==1||blocks.some(block=>block.quote.length>600))return null;
     const items=[];
     for(const block of blocks){
         if(quotedTradeRefused(block.quote)||/(?:จะ(?:ขาย|รับซื้อ)|พรุ่งนี้[^.!?\n]{0,40}(?:ขาย|รับซื้อ)|\btomorrow\b)/iu.test(block.quote))return null;
-        const prices=readCommercePrices(block.quote),before=items.length;
+        const prices=readCommercePrices(block.quote,currency),before=items.length;
         if(kind==='sell'){
             if(!/(?:รับซื้อ|ข้า(?:จะ)?ซื้อ|ให้ราคา|\b(?:I buy|I can buy|buy from you|offer you))/iu.test(block.quote))return null;
             const found=inventory.filter(item=>item?.id&&item.quantity>=1&&block.quote.includes(item.name))
                 .map(item=>({item,start:block.quote.indexOf(item.name)})).sort((a,b)=>a.start-b.start||b.item.name.length-a.item.name.length);
             const entries=found.filter((entry,index)=>!found.slice(0,index).some(previous=>entry.start<previous.start+previous.item.name.length));
             for(const [index,{item,start}]of entries.entries()){
-                const clause=block.quote.slice(start+item.name.length,entries[index+1]?.start),price=readCommercePrices(clause);
+                const clause=block.quote.slice(start+item.name.length,entries[index+1]?.start),price=readCommercePrices(clause,currency);
                 if(price.length!==1||/(?:ทั้งหมด|ทั้งชุด|ยกชุด|เล่มละ|ชิ้นละ)/u.test(block.quote)&&item.quantity>1)return null;
                 const quantity=clause.match(/^\s*(?:จำนวน\s*)?([1-9]\d*)\s*(?:ชิ้น|เล่ม|ขวด|อัน|หน่วย)\s*/u)?.[1];
                 const count=quantity?Number(quantity):1;if(count>item.quantity)return null;

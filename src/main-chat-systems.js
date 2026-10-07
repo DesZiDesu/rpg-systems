@@ -1,11 +1,11 @@
-import {commerceRequestHint,COMMERCE_INTENT_INSTRUCTIONS} from './commerce-intent.js?v=0.58.15';
-export {confirmedCommerceIntent} from './commerce-intent.js?v=0.58.15';
-import {COMMERCE_RIGHTS_INSTRUCTIONS} from './commerce-rights.js?v=0.58.15';
-import {CURRENCY_RULE} from './commerce-currency.js?v=0.58.15';
-import { interactionEvidence } from './interaction-evidence.js?v=0.58.15';
-import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.58.15';
-import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.58.15';
-import {MARKETPLACE_REQUEST_WORDS,SHOP_SAME_REPLY_INSTRUCTIONS,shopItemOutputExample} from './marketplace-events.js?v=0.58.15';
+import {commerceRequestHint,COMMERCE_INTENT_INSTRUCTIONS} from './commerce-intent.js?v=0.59.0';
+export {confirmedCommerceIntent} from './commerce-intent.js?v=0.59.0';
+import {COMMERCE_RIGHTS_INSTRUCTIONS} from './commerce-rights.js?v=0.59.0';
+import {currencyRule,currencyScheme} from './currency-config.js?v=0.59.0';
+import { interactionEvidence } from './interaction-evidence.js?v=0.59.0';
+import {MISSION_BOARD_INSTRUCTIONS, MISSION_BOARD_WORDS, MISSION_BOARD_ACTIONS} from './mission-board.js?v=0.59.0';
+import {GROUP_BOARD_INSTRUCTIONS, GROUP_BOARD_WORDS, GROUP_BOARD_ACTIONS} from './group-board.js?v=0.59.0';
+import {MARKETPLACE_REQUEST_WORDS,SHOP_SAME_REPLY_INSTRUCTIONS,shopItemOutputExample} from './marketplace-events.js?v=0.59.0';
 const systems = [
     {key:'marketplace', setting:'enableMarketplace', words:MARKETPLACE_REQUEST_WORDS},
     {key:'auction', setting:'enableAuctions', words:/auction|ประมูล/iu},
@@ -67,7 +67,7 @@ export function requestedCommerceKind(user,settings) {
 // A dedicated final-output contract is injected separately from the large state
 // reference. This is executable protocol guidance for the normal reply, not
 // instructions to call another model or a request for hidden reasoning.
-export function mainChatOutputContract(user,settings,{activeCommerce,settledCommerce,location='',scene='',roleplay=''}={}){
+export function mainChatOutputContract(user,settings,{activeCommerce,settledCommerce,location='',scene='',roleplay='',currency}={}){
     if(!settings.autoTrack)return '';
     const routes=[
         'HEADER / DIALOGUE / NARRATIVE: when chat presentation is enabled, use <tr-header name="Exact NPC Name"/>, <tr-narrative>scene/actions</tr-narrative> and <tr-dialogue name="Exact NPC Name">spoken words</tr-dialogue> in natural story order. Keep one header per uninterrupted speaker turn. Never nest/mix tags, invent player words/decisions, or put JSON inside a story block. When presentation is off, ordinary prose is allowed and the final machine comment still applies.',
@@ -128,10 +128,11 @@ export function mainChatOutputContract(user,settings,{activeCommerce,settledComm
     }
     if(boards.includes('missionBoard'))patch.missionBoard={title:'current mission board title',location:location||'exact current place',evidence:'exact quote from THIS reply showing the readable mission notices',missions:[{name:'actual posted mission name',objective:'specific task stated on this notice',description:'public notice details',giver:'named issuer if stated',reward:'posted reward or empty when unstated',difficulty:'stated difficulty or empty',deadline:'stated deadline or empty'}]};
     if(boards.includes('groupBoard'))patch.groupBoard={title:'current recruitment board title',location:location||'exact current place',evidence:'exact quote from THIS reply showing the readable recruitment notices',pageSize:4,entries:[{kind:'party',name:'actual posted group name',description:'public recruitment details',leader:'named leader if stated',requirements:['actual stated condition'],notes:'stated roles and benefit-sharing terms'}]};
+    if(currency?.scheme){const unit=currencyScheme(currency).units[0].id;const rewrite=value=>{if(!value||typeof value!=='object')return;for(const [key,child]of Object.entries(value)){if(key==='denomination')value[key]=unit;else rewrite(child);}};rewrite(patch);for(let i=0;i<routes.length;i++)routes[i]=routes[i].replace(/progression\.currency\.(?:gold|silver|copper)/gu,'progression.currency.'+unit);}
     return 'ROLEFORGE NORMAL REPLY OUTPUT CONTRACT — This applies to the FINAL assistant answer in this same normal generation, including swipe and regenerate.\n'
         +'Write the natural story first. Then append exactly ONE literal, closed <!--tretaresia_patch:{...}--> HTML comment OUTSIDE tr-header/tr-narrative/tr-dialogue blocks. The comment is the required machine payload; restrictions on visible prose or UI text do not prohibit this comment. Planning or saying you will emit the patch does not emit it. Never put the payload only in thinking/reasoning. No Markdown fence, extra user message, request button or second generation is needed.\n'
         +'A purely OOC answer with no scene or story event may omit the patch. For story replies, the contract below is required.\n'
-        +CURRENCY_RULE+'\n'
+        +currencyRule(currency)+'\n'
         +'SYSTEM ROUTING GUIDE — Use only enabled systems and only events taking place in this reply:\n'+routes.join('\n')+'\n'
         +(kind==='buy'&&!activeCommerce?'REQUIRED THIS REPLY: marketplace.kind="npcShop" ONLY when the actual current player intent is buy and the present NPC offers or quotes goods, rooms or services. If commerceIntent.kind="none", omit the marketplace; the example is not permission to invent a catalog. Every item needs description, category, properties, price, stockKnown, negotiableKnown and a complete terms OBJECT, plus rarity, denomination, its exact spoken itemName and complete usage including stats and learns. A room stay is temporary access or rental with its exact scope, agreed story duration/checkout conditions, includes, deposit and exact delivery key name; do not use permanent ownership for lodging. Use the agreed story duration, never blindly copy 1440 from the example. Explain these terms and the room/place key delivery in the NPC reply now, then repeat them accurately in the payload. A key label may be derived from the quoted room/place name when the story presents its physical key; the NPC need not literally recite the full UI label. Include EVERY quoted option with its own complete terms. Asking which room/item the player wants is not a reason to omit the list. Do not schedule another AI task to generate that list.\n':'')
         +(boards.length?'REQUIRED THIS REPLY: '+boards.join(', ')+'. If these current boards are accessible, write their public entries and include EVERY corresponding top-level board object in the final comment. Looking/standing at a board is sufficient; the player need not move again or pick an entry first. Present the available missions or named recruiting groups with their details now, not a second request. If access is refused or the board is empty, state that truth explicitly and do not invent entries. Exact evidence may quote the displayed/posted notices, not only a sentence saying the player walked there.\n':'')

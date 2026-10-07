@@ -26,6 +26,10 @@ import {questRewardGuard,normalizeQuestRewardReceipts} from '../src/quest-reward
 import * as uiLanguage from '../src/ui-language.js';
 import * as powers from '../src/power-presets.js';
 import * as forgePresets from '../src/forge-presets.js';
+import * as forgeOpening from '../src/forge-opening.js';
+import * as statTraining from '../src/stat-training.js';
+import {walletValue,debitWallet} from '../src/commerce-currency.js';
+import * as currencyConfig from '../src/currency-config.js';
 import {normalizeModuleNavigationMode} from '../src/module-navigation.js';
 import * as memory from '../src/memory-summaries.js';
 import {memorySummaryNativeGenerationActive,requestMemorySummary} from '../src/memory-summary-runtime.js';
@@ -59,9 +63,61 @@ const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enable
 const sandbox={...taskGeneration,...itemLearning,...itemDefinition,...itemEffects,...lootDiscovery,...commerceRights,renderRightsInventory,commerceIconMarkup,readCommercePrices,...mainChatSystems,normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,...commerceEngine,auctionAvailable:commerceEngine.commerceAvailable,auctionFundsValid:commerceEngine.commerceFundsValid,createCommerceRuntime,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,...locationList,...sceneCompletion,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},showApiRequestNotice:(kind,reason,language)=>showApiRequestNotice(kind,reason,language,sandbox.toastr),...powerMastery,...incantationCore,...itemCore,...voiceCore,SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelector(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
+Object.assign(sandbox,forgeOpening,statTraining,currencyConfig,{walletValue,debitWallet});
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
  vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
+vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig})',sandbox);
 const host=sandbox.testHost;
+
+test('normal main-chat practice commits bounded permanent stats, fatigue and native notifications exactly once',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,toastr:sandbox.toastr,document:sandbox.document};
+ try{
+  sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:prior.document.getElementById(id)};
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,eventNotifications:false,notifyStatGrowth:true,enableMemorySummaries:false,npcDiaryFrequency:'off'}};
+  const state=host.defaultState();state.player.name='Noah';state.player.hp.current=60;state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};
+  context.chatMetadata={tretaresia_rpg_state:state};context.saveMetadata=async()=>{};const notices=[];sandbox.toastr={success:(...args)=>notices.push(args),warning(){},error(){},info(){}};
+  const patch={ops:[['inc','player.hp.max',200,{category:'training'}],['inc','player.attributes.strength',100],['inc','player.stamina.current',-8]]};
+  context.chat=[{is_user:true,mes:'I train HP and STR with controlled lifting.'},{is_user:false,mes:'<tr-narrative>Noah completed successful HP and STR training.</tr-narrative><!--tretaresia_patch:'+JSON.stringify(patch)+'-->'}];
+  await host.processAssistantPatch(1,'normal');const after=host.getState();assert.equal(after.player.hp.max,102);assert.equal(after.player.hp.current,60);assert.equal(after.player.attributes.strength,11);assert.equal(after.player.stamina.current,92);assert.equal(notices.length,1);assert.match(notices[0][0],/HP \+2/);assert.match(notices[0][0],/STR \+1/);assert.equal(notices[0][2].escapeHtml,true);
+  await host.processAssistantPatch(1,'normal');assert.equal(host.getState().player.hp.max,102);assert.equal(notices.length,1);
+ }finally{context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;sandbox.toastr=prior.toastr;sandbox.document=prior.document;}
+});
+
+test('failed host saving never commits a practice reward or emits its success notification',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,toastr:sandbox.toastr,document:sandbox.document};
+ try{
+  sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:prior.document.getElementById(id)};
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,eventNotifications:false,notifyStatGrowth:true,enableMemorySummaries:false,npcDiaryFrequency:'off'}};
+  const state=host.defaultState();state.player.name='Noah';state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};context.chatMetadata={tretaresia_rpg_state:state};let notices=0;sandbox.toastr={success:()=>notices++,warning(){},error(){},info(){}};
+  context.saveMetadata=async()=>{throw Error('Offline practice save');};context.chat=[{is_user:true,mes:'I train INT.'},{is_user:false,mes:'Noah completed successful INT training.<!--tretaresia_patch:{"ops":[["inc","player.attributes.intelligence",1,{"category":"training"}]]}-->'}];
+  await host.processAssistantPatch(1,'normal');assert.equal(host.getState().player.attributes.intelligence,10);assert.equal(notices,0);context.saveMetadata=async()=>{};await host.processAssistantPatch(1,'normal');assert.equal(host.getState().player.attributes.intelligence,11);assert.equal(notices,1);await host.processAssistantPatch(1,'normal');assert.equal(host.getState().player.attributes.intelligence,11);assert.equal(notices,1);
+ }finally{context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;sandbox.toastr=prior.toastr;sandbox.document=prior.document;}
+});
+
+test('configured custom stats and currency survive host normalization, item effects and portable export',()=>{
+ const state=host.defaultState();state.statTraining=statTraining.normalizeStatTraining({definitions:[{id:'focus',name:'Focus',description:'Concentration',methods:['Meditation'],initial:5,min:0,max:50,gain:1}]});state.player.customStats={focus:5};
+ const normalized=host.normalize(state),effect=itemEffects.applyItemStats(normalized,[{stat:'player.customStats.focus',operation:'inc',value:2,overflow:'clamp',duration:{unit:'none',value:0}},{stat:'player.attributes.agility',operation:'inc',value:1,overflow:'clamp',duration:{unit:'none',value:0}}],{requestId:'stats-item'});assert.equal(effect.ok,true);assert.equal(effect.next.player.customStats.focus,7);assert.equal(effect.next.player.attributes.agility,11);
+ const cfg=currencyConfig.defaultCurrencyScheme();cfg.units=cfg.units.slice(-1);cfg.units[0].name='Credit';const money=currencyConfig.reconfigureCurrencyWallet(effect.next,cfg,'Credits'),exported=host.portableState(money);assert.equal(exported.player.customStats.focus,7);assert.equal(exported.statTraining.definitions[0].id,'focus');assert.equal(exported.progression.currency.scheme.units.length,1);assert.equal(exported.progression.currency.scheme.units[0].name,'Credit');
+ const blocked=host.applyStatePatch(exported,{ops:[['inc','progression.currency.gold',10],['inc','player.customStats.unknown',10]]});assert.equal(blocked.next.progression.currency.gold,0);assert.equal(blocked.next.player.customStats.unknown,undefined);
+});
+
+test('native stats/currency configuration saves cannot overlap, restore failures and discard stale rendering after a chat switch',async()=>{
+ const prior={metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,document:sandbox.document};
+ try{
+  sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:prior.document.getElementById(id)};
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false,eventNotifications:false}};const base=host.defaultState();context.chatMetadata={tretaresia_rpg_state:base};let reject;context.saveMetadata=()=>new Promise((_,r)=>reject=r);
+  const edited=structuredClone(base);edited.player.attributes.strength=20;const first=host.persistUserConfig(edited,'user-stats-config');while(!reject)await new Promise(r=>setTimeout(r,0));assert.equal(await host.persistUserConfig(edited,'currency-config'),false);reject(Error('Config disk failure'));await assert.rejects(first,/Config disk failure/);assert.equal(host.getState().player.attributes.strength,10);
+  let resolve;context.saveMetadata=()=>new Promise(r=>resolve=r);const pending=host.persistUserConfig(edited,'user-stats-config');while(!resolve)await new Promise(r=>setTimeout(r,0));const old=context.chatMetadata;context.chatMetadata={tretaresia_rpg_state:host.defaultState()};resolve();assert.equal(await pending,false);assert.equal(host.getState().player.attributes.strength,10);assert.equal(old.tretaresia_rpg_state.player.attributes.strength,20);
+ }finally{context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;sandbox.document=prior.document;}
+});
+
+test('the host rejects an oversized configured wallet before changing or saving metadata',async()=>{
+ const prior={metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,toastr:sandbox.toastr};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false}};const base=host.defaultState(),candidate=structuredClone(base),cfg=currencyConfig.defaultCurrencyScheme();cfg.units=cfg.units.slice(1);cfg.units[0].value=999999999;candidate.progression.currency={name:'Money',gold:0,silver:999999999,copper:0,scheme:currencyConfig.validateCurrencyScheme(cfg)};context.chatMetadata={tretaresia_rpg_state:base};let saves=0,warnings=0;context.saveMetadata=async()=>saves++;sandbox.toastr={warning:()=>warnings++};
+  assert.equal(await host.persistState(candidate),false);assert.equal(saves,0);assert.equal(warnings,1);assert.equal(host.getState().progression.currency.gold,base.progression.currency.gold);assert.equal(host.getState().progression.currency.scheme,undefined);
+ }finally{context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;sandbox.toastr=prior.toastr;}
+});
 
 test('one normal NPC reply and its inline patch open fully defined books at the current bundle total without a second generation',async()=>{
  const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,raw:context.generateRaw,data:context.generateRawData,extract:context.extractMessageFromData,quiet:context.generateQuietPrompt};
@@ -1169,6 +1225,87 @@ test('Character Forge keeps the chat draft after a provider error and retries on
   assert.equal(host.forgeEligible({...context,chat:[],characters:[{first_mes:'A prewritten greeting'}]}),false);
  }finally{Object.assign(context,{chat:saved.chat,chatMetadata:saved.metadata,characters:saved.characters,characterId:saved.characterId,generate:saved.generate,saveMetadata:saved.save});sandbox.document.querySelector=saved.query;sandbox.document.getElementById=saved.element;sandbox.HTMLInputElement=saved.input;}
 });
+async function withForgeOpeningHost(run){
+ const saved={chat:context.chat,metadata:context.chatMetadata,characters:context.characters,characterId:context.characterId,
+  generate:context.generate,save:context.saveMetadata,prompt:context.setExtensionPrompt,query:sandbox.document.querySelector,
+  element:sandbox.document.getElementById,input:sandbox.HTMLInputElement,language:host.getSettings().language};
+ const prompts=new Map();
+ try{
+  context.chat=[{is_user:false,mes:''}];context.chatMetadata={};context.characters=[{first_mes:''}];context.characterId=0;
+  context.saveMetadata=async()=>{};context.setExtensionPrompt=(...args)=>{prompts.set(args[0],args);context.lastPrompt=args;};
+  sandbox.document.querySelector=()=>null;sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  sandbox.HTMLInputElement=class HTMLInputElement {};host.getSettings().language='en';
+  await run(prompts);
+ }finally{
+  Object.assign(context,{chat:saved.chat,chatMetadata:saved.metadata,characters:saved.characters,characterId:saved.characterId,generate:saved.generate,saveMetadata:saved.save,setExtensionPrompt:saved.prompt});
+  sandbox.document.querySelector=saved.query;sandbox.document.getElementById=saved.element;sandbox.HTMLInputElement=saved.input;host.getSettings().language=saved.language;
+ }
+}
+
+test('real Forge opening injects a transient USER instruction and orders it last for a strict proxy',async()=>{
+ await withForgeOpeningHost(async prompts=>{
+  const draft={fields:{fName:'Jino',fScene:'The royal palace at night.'}};
+  let requests=0;const beforeSettings=JSON.stringify(context.extensionSettings);
+  context.generate=async(type,options)=>{
+   requests++;assert.equal(type,'normal');assert.equal(options.automatic_trigger,true);
+   assert.equal(await host.startForgeOpening(draft),false,'double click must not start a second request');
+   const opening=prompts.get(forgeOpening.FORGE_OPENING_PROMPT_KEY);
+   assert.deepEqual(Array.from(opening).slice(1),[forgeOpening.FORGE_OPENING_USER_PROMPT,1,0,false,1]);
+   const payload={type:'normal',model:'strict-proxy-3.8',messages:[{role:'system',content:context.lastPrompt[1]},{role:'assistant',content:''},{role:'user',content:opening[1]},{role:'system',content:'Preset output instructions'}],temperature:.8};
+   host.prepareActiveForgeOpeningRequest(payload);
+   assert.equal(payload.messages.at(-1).role,'user');assert.match(payload.messages.at(-1).content,/first RoleForge/);
+   assert.equal(payload.messages.some(m=>!m.content.trim()),false);
+   assert.match(payload.messages[0].content,/royal palace/);assert.equal(payload.temperature,.8);
+   context.chat.push({is_user:false,mes:'The palace doors open before Jino.'});
+  };
+  assert.equal(await host.startForgeOpening(draft),true);assert.equal(requests,1);
+  assert.equal(context.chat.some(m=>m.is_user),false);assert.equal(host.forgeSession(context).phase,'completed');
+  assert.equal(prompts.get(forgeOpening.FORGE_OPENING_PROMPT_KEY)[1],'');
+  assert.equal(JSON.stringify(context.extensionSettings),beforeSettings);
+ });
+});
+
+test('proxy failure stores safe diagnostics, clears the injection and retries only on the next click without duplicating possessions',async()=>{
+ await withForgeOpeningHost(async prompts=>{
+  const draft={fields:{fName:'Jino',fScene:'The royal palace.'},power:['Divine Mana'],ab:[{n:'Healing',cat:'Common Skill',d:'Restore wounds'}],it:[{n:'Bell',t:'Tool',d:'Prayer bell'}]};
+  let requests=0;
+  context.generate=async()=>{
+   requests++;host.prepareActiveForgeOpeningRequest({type:'normal',model:'proxy-3.8',chat_completion_source:'custom',messages:[{role:'system',content:'SECRET PROFILE'}]});
+   throw Error('Bad Request');
+  };
+  assert.equal(await host.startForgeOpening(draft),false);assert.equal(requests,1);
+  const failed=host.forgeSession(context);assert.equal(failed.phase,'failed');assert.equal(failed.draft.fields.fName,'Jino');
+  assert.match(failed.error,/HTTP 400 · proxy-3\.8/);assert.match(failed.error,/draft is saved/);
+  assert.equal(failed.errorDetails.request.lastRole,'user');assert.equal(JSON.stringify(failed.errorDetails).includes('SECRET PROFILE'),false);
+  assert.equal(prompts.get(forgeOpening.FORGE_OPENING_PROMPT_KEY)[1],'');
+  context.generate=async()=>{requests++;context.chat.push({is_user:false,mes:'Jino arrives at the palace.'});};
+  assert.equal(await host.startForgeOpening(failed.draft),true);assert.equal(requests,2);
+  const state=host.getState();assert.equal(state.inventory.filter(x=>x.name==='Bell').length,1);assert.equal(state.skills.filter(x=>x.name==='Healing').length,1);assert.equal(state.proficiencies.magic.divineMana,1);
+  assert.equal('errorDetails' in host.forgeSession(context),false);assert.equal(context.chat.filter(m=>m.is_user).length,0);
+ });
+});
+
+test('the native request hook never edits background tasks, switched chats or ordinary replies',async()=>{
+ await withForgeOpeningHost(async()=>{
+  // A reload can leave persisted phase=generating without a live request.
+  // The failed/interrupted draft must not inject an opening instruction by itself.
+  context.chatMetadata.tretaresia_rpg_character_creation={phase:'generating',profile:{fields:{fName:'Old draft'}}};
+  assert.equal(host.forgeOpeningPrompt(context),'');
+  delete context.chatMetadata.tretaresia_rpg_character_creation;
+  const ordinary={type:'normal',messages:[{role:'system',content:'Ordinary reply'}]};
+  host.prepareActiveForgeOpeningRequest(ordinary);assert.equal(ordinary.messages.length,1);
+  context.generate=async()=>{
+   for(const type of ['quiet','impersonate','continue']){const request={type,messages:[{role:'system',content:'Background task'}]},before=JSON.stringify(request);host.prepareActiveForgeOpeningRequest(request);assert.equal(JSON.stringify(request),before);}
+   const metadata=context.chatMetadata;context.chatMetadata={};
+   try{host.prepareActiveForgeOpeningRequest(ordinary);assert.equal(ordinary.messages.length,1);}finally{context.chatMetadata=metadata;}
+   context.chat.push({is_user:false,mes:'The opening is complete.'});
+   host.prepareActiveForgeOpeningRequest(ordinary);assert.equal(ordinary.messages.length,1);
+  };
+  assert.equal(await host.startForgeOpening({fields:{fName:'Jino'}}),true);
+  host.prepareActiveForgeOpeningRequest(ordinary);assert.equal(ordinary.messages.length,1);
+ });
+});
+
 test('NPC field history includes old and new relationship, stat, skill and H-Stats values',()=>{
  const before=host.defaultState();before.npcs=[host.npcProfile({id:'a',name:'Aria',trust:10,stats:{hp:100},abilities:[{name:'Aura',proficiency:10}]})];
  const after=structuredClone(before);after.npcs[0].trust=15;after.npcs[0].stats.hp=80;after.npcs[0].abilities[0].proficiency=20;after.npcs[0].hStats.loyaltyHearts=4;

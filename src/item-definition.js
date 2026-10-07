@@ -1,4 +1,4 @@
-import {normalizeItemLearning,validItemLearning,ITEM_LEARNING_INSTRUCTIONS} from './item-learning.js?v=0.58.15';
+import {normalizeItemLearning,validItemLearning,ITEM_LEARNING_INSTRUCTIONS} from './item-learning.js?v=0.59.0';
 // Shared item metadata: no commerce/runtime dependencies, so catalogs and inventory use the same definition.
 const clean=(s,n=300)=>typeof s==='string'?s.trim().slice(0,n):'';
 const whole=(n,max=99999)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
@@ -8,7 +8,7 @@ const actions=['use','eat','drink','unknown','passive'];
 const forbidden=new Set(['__proto__','prototype','constructor']);
 export function itemStatPath(path){
  if(typeof path!=='string'||path.split('.').some(p=>forbidden.has(p)))return false;
- return /^(?:player\.(?:hp|mp|stamina)\.(?:current|max)|player\.survival\.(?:hunger|thirst)|player\.aura\.(?:output|control|efficiency|recovery|color)|player\.fitness\.(?:lungCapacity|aerobicSessions)|player\.(?:condition|powerType|originSkill|race|age|profession|title|gender|standing|affiliation|homeContinent|birthplace|level)|player\.appearance\.(?:hair|eyes|height|build)|player\.hStats\.[a-zA-Z0-9_.-]+|progression\.(?:experience|reputation)|customPowers\.[a-zA-Z0-9_-]+)$/u.test(path);
+ return /^(?:player\.(?:hp|mp|stamina)\.(?:current|max)|player\.survival\.(?:hunger|thirst)|player\.aura\.(?:output|control|efficiency|recovery|color)|player\.fitness\.(?:lungCapacity|aerobicSessions)|player\.(?:condition|powerType|originSkill|race|age|profession|title|gender|standing|affiliation|homeContinent|birthplace|level)|player\.appearance\.(?:hair|eyes|height|build)|player\.attributes\.(?:intelligence|strength|defense|agility)|player\.customStats\.[a-z][a-z0-9_-]{0,47}|player\.hStats\.[a-zA-Z0-9_.-]+|progression\.(?:experience|reputation)|customPowers\.[a-zA-Z0-9_-]+)$/u.test(path);
 }
 export function normalizeStatEffects(raw){
  if(!Array.isArray(raw))return[];const seen=new Set();

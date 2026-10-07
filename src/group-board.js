@@ -1,4 +1,4 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.58.15';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.59.0';
 // Party/Guild Board protocol. A board is emitted only when the story confirms
 // that the player is physically reading the current board in this location.
 const clean = (value, max = 300) => typeof value === 'string' ? value.trim().slice(0, max) : '';

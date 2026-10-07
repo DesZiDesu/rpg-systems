@@ -68,3 +68,19 @@
 
 .rf-inventory-wallet{margin:0 0 16px;padding:14px;border:1px solid rgba(202,174,103,.28);border-radius:12px;background:rgba(202,174,103,.04)}.rf-inventory-wallet header{font-size:12px;color:#b6a788;margin-bottom:8px}.rf-inventory-wallet>div{display:flex;flex-wrap:wrap;gap:12px 22px}.rf-inventory-wallet strong{font-size:19px}.rf-inventory-wallet small{font-size:12px;opacity:.7}
 .rf-coin-set-preview{display:flex!important;align-items:center;gap:18px;padding:8px 0}.rf-coin-set-preview .rf-commerce-icon{width:32px;height:32px}.rf-commerce-icon[data-coin-style=stack]{filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+
+/* All currency presets use integer pixel art and frame animation. */
+
+.rf-pixel-money-icon{display:inline-block;vertical-align:middle;width:24px;height:24px;flex-shrink:0;shape-rendering:crispEdges;image-rendering:pixelated;overflow:visible}
+.rf-pixel-money-icon .px-d{fill:var(--px-dark)}.rf-pixel-money-icon .px-m{fill:var(--px-mid)}.rf-pixel-money-icon .px-b{fill:var(--px-base)}.rf-pixel-money-icon .px-l{fill:var(--px-light)}.rf-pixel-money-icon .px-w{fill:var(--px-white)}.rf-pixel-money-icon .px-k{fill:var(--px-ink)}.rf-pixel-money-icon .px-s{fill:#101312}
+.rf-pixel-money-icon .px-frame{opacity:0;animation:rf-pixel-frame var(--px-duration,2.4s) steps(1,end) infinite}
+.rf-pixel-money-icon .px-frame[data-frame="0"]{opacity:1;animation-delay:0s}
+.rf-pixel-money-icon .px-frame[data-frame="1"]{animation-delay:calc(var(--px-duration,2.4s)*-.75)}
+.rf-pixel-money-icon .px-frame[data-frame="2"]{animation-delay:calc(var(--px-duration,2.4s)*-.5)}
+.rf-pixel-money-icon .px-frame[data-frame="3"]{animation-delay:calc(var(--px-duration,2.4s)*-.25)}
+@keyframes rf-pixel-frame{0%{opacity:1}25%,100%{opacity:0}}
+.rf-pixel-money-icon[data-motion="off"] .px-frame{animation:none;opacity:0}
+.rf-pixel-money-icon[data-motion="off"] .px-frame[data-frame="0"]{opacity:1}
+@media(prefers-reduced-motion:reduce){.rf-pixel-money-icon .px-frame{animation:none!important;opacity:0!important}.rf-pixel-money-icon .px-frame[data-frame="0"]{opacity:1!important}}
+
+svg.rf-commerce-icon.rf-pixel-money-icon{fill:none;stroke:none;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;filter:none;shape-rendering:crispEdges}

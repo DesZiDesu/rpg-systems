@@ -1,3 +1,4 @@
+import {openDockPanel} from './composer-dock-fixture.mjs';
 // Exact reported normal-roleplay discount -> saved quote -> button settlement.
 // Inventory redesign CSS is injected only in this review page, never runtime.
 import assert from 'node:assert/strict';
@@ -40,7 +41,7 @@ try{
    const form=document.createElement('form');form.id='send_form';form.style.cssText='position:fixed;bottom:0;left:0;width:100%;padding:10px;background:#181818;box-sizing:border-box';const input=document.querySelector('#send_textarea');input.style.cssText='display:block;width:100%;min-height:65px;box-sizing:border-box';form.append(input);document.body.append(form);
    window.calls=[];window.responses=[];window.prompts=new Map();window.host.setExtensionPrompt=(key,value)=>window.prompts.set(key,value);window.host.generateRaw=async args=>{window.calls.push(args);const response=window.responses.shift();if(response===undefined)throw Error('Unexpected extra API request');return JSON.stringify(response);};window.host.updateMessageBlock=(id,message)=>document.querySelector(`#chat .mes[mesid="${id}"] .mes_text`).textContent=message.mes;
   });
-  await start(page,mixedRoomUser);await finish(page,mixedRoomStory);const commerce=page.locator('.rf-commerce-composer');await commerce.locator('[data-commerce-action="confirm"]').waitFor();
+  await start(page,mixedRoomUser);await finish(page,mixedRoomStory);await openDockPanel(page);const commerce=page.locator('.rf-commerce-composer');await commerce.locator('[data-commerce-action="confirm"]').waitFor();
   // Save the user's explicit room selection through normal role-play first.
   let session=await page.evaluate(()=>Object.values(window.host.chatMetadata.tretaresia_rpg_social_events).flatMap(Object.values).find(r=>r.marketplace?.event)?.marketplace.event);
   const selected=session.items[1].id;

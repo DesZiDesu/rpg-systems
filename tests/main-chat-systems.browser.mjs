@@ -1,3 +1,4 @@
+import {openDockPanel} from './composer-dock-fixture.mjs';
 // Production loader, ordinary reply events, saved settings and actual Main Chat DOM.
 import assert from 'node:assert/strict';
 import http from 'node:http';
@@ -27,8 +28,9 @@ async function receive(page,user,story,patch){
   await window.host.eventSource.emit(window.host.eventTypes.GENERATION_STARTED,'normal',{},false);
   await window.TretaresiaRpgGenerateInterceptor(structuredClone(window.host.chat),100000,()=>{},'normal');window.lastNormalPrompt=[...window.prompts.values()].join('\n');window.lastGenerationInjections=structuredClone(window.promptInjections);window.normalCalls=(window.normalCalls||0)+1;
  },user);
+ if(typeof patch==='function')patch=await patch();
  if(user.startsWith('หลังจากจบการประมูล'))assert.equal(await page.locator('.rf-commerce-composer').count(),0,'collection must not reopen a composer during generation');
- if(user==='ขอดูสินค้าประมูล'){await page.locator('.rf-commerce-pending-title').waitFor();assert.equal(await page.locator('.rf-commerce-composer').getAttribute('data-kind'),'auction');assert.equal(await page.locator('.rf-commerce-composer button').count(),0);if(page.viewportSize().width===390&&process.env.COMMERCE_ARTIFACT_DIR){await mkdir(process.env.COMMERCE_ARTIFACT_DIR,{recursive:true});await page.locator(".rf-commerce-composer").screenshot({path:`${process.env.COMMERCE_ARTIFACT_DIR}/auction-waiting-390.png`});}}
+ if(user==='ขอดูสินค้าประมูล'){await openDockPanel(page);await page.locator('.rf-commerce-pending-title').waitFor();assert.equal(await page.locator('.rf-commerce-composer').getAttribute('data-kind'),'auction');assert.equal(await page.locator('.rf-commerce-composer button').count(),0);if(page.viewportSize().width===390&&process.env.COMMERCE_ARTIFACT_DIR){await mkdir(process.env.COMMERCE_ARTIFACT_DIR,{recursive:true});await page.locator(".rf-commerce-composer").screenshot({path:`${process.env.COMMERCE_ARTIFACT_DIR}/auction-waiting-390.png`});}}
  const id=await page.evaluate(({story,patch})=>{
   const id=window.host.chat.length,mes=story+(patch?`\n<!--tretaresia_patch:${JSON.stringify(patch)}-->`:'');
   window.host.chat.push({is_user:false,name:'Narrator',mes,swipe_id:0,swipes:[mes]});
@@ -39,7 +41,7 @@ async function receive(page,user,story,patch){
  },{story,patch});
  await page.evaluate(async id=>{await window.host.eventSource.emit(window.host.eventTypes.MESSAGE_RECEIVED,id,'normal');await window.host.eventSource.emit(window.host.eventTypes.GENERATION_ENDED);},id);
  await page.waitForFunction(id=>Object.keys(window.host.chatMetadata.tretaresia_rpg_scene_history||{}).some(key=>key.startsWith(`${id}:`)),id);
- await page.waitForTimeout(200);return page.locator(`#chat .mes[mesid="${id}"]`);
+ await page.waitForTimeout(200);if(await page.locator('.rf-commerce-composer').count())await openDockPanel(page);else if(await page.locator('[data-dock-collapse][aria-expanded="true"]').count())await page.locator('[data-dock-collapse]').click();return page.locator(`#chat .mes[mesid="${id}"]`);
 }
 
 let browser;
@@ -124,17 +126,16 @@ try{
   // Real normal generation events use the user's role-play and one main reply,
   // followed by a button continuation anchored to that latest NPC reply.
   const quietBefore=await page.evaluate(()=>window.calls);
-  const roleCatalog=await receive(page,'ขอดูสินค้าในร้านใหม่','Rally shows goods for sale. Potion: 3 silver.',{marketplace:{kind:'npcShop',id:'role-shop',seller:{name:'Rally'},denomination:'silver',items:[{name:'Potion',price:3}]},ops:[]});
+  const roleCatalog=await receive(page,'ขอซื้อ Potion ในร้านใหม่','<tr-header name="Rally"/><tr-dialogue name="Rally">Potion: 3 silver.</tr-dialogue>',{sceneTracker:{loc:'Guild'},commerceIntent:{kind:'buy',evidence:'ขอซื้อ Potion ในร้านใหม่'},marketplace:{kind:'npcShop',id:'role-shop',seller:{name:'Rally'},evidence:'Potion: 3 silver.',denomination:'silver',items:[{name:'Potion',price:3}]},ops:[]});
   const openingText=await page.evaluate(()=>window.host.chat.at(-1).mes);
-  const role=async(user,story,action,decision,amount)=>{
-   // A catalog is persisted only once the first action occurs. Use the prompt's
-   // interaction reference for an untouched opening session.
-   const contract=await page.evaluate(async()=>{await window.TretaresiaRpgGenerateInterceptor();return [...window.prompts.values()].join('\n');});
+  const role=async(user,story,action,decision,amount)=>receive(page,user,story,async()=>{
+   // Capture the active interaction during the real next-user generation.
+   const contract=await page.evaluate(()=>window.lastNormalPrompt);
    assert.match(contract,/NORMAL CHAT COMMERCE/);
    const reference=JSON.parse(contract.split('REFERENCE DATA:\n').at(-1).split('\n')[0]);
    const current=reference.interaction;
-   return receive(page,user,story,{commerce:{sessionId:current.id,revision:current.revision,evidence:user,action,decision,amount},ops:[]});
-  };
+   return {commerce:{sessionId:current.id,revision:current.revision,evidence:user,action,decision,amount},ops:[]};
+  });
   const roleOffer=await role('ผมเสนอ 2 เหรียญเงิน','<tr-dialogue name="Rally">ตกลง สองเหรียญเงิน แต่ข้ารอเจ้ายืนยันก่อน</tr-dialogue>','offer',{outcome:'accept',amount:2},2);
   assert.equal(await page.evaluate(()=>window.calls),quietBefore);assert.equal(await bar.locator('.rf-commerce-amount').inputValue(),'2');assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),13);
   if(width===390&&process.env.ROLEPLAY_ARTIFACT_DIR){await mkdir(process.env.ROLEPLAY_ARTIFACT_DIR,{recursive:true});await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));await page.screenshot({path:`${process.env.ROLEPLAY_ARTIFACT_DIR}/offer-390.png`});}
@@ -160,8 +161,8 @@ try{
   assert.equal(await rank.locator('.trpg-auction-wallet').count(),0);assert.doesNotMatch(await rank.innerText(),/ใช้แถบเหนือช่องพิมพ์|Continue auctions from| · completed/);
   if(width===390&&process.env.BOARD_ARTIFACT_DIR){await mkdir(process.env.BOARD_ARTIFACT_DIR,{recursive:true});await captureCard(rank,`${process.env.BOARD_ARTIFACT_DIR}/rank-clean-390.png`);}
   await page.evaluate(()=>document.querySelector('#tretaresia-rpg-close').click());
-  await receive(page,'ขอดูร้านสุดท้าย','Rally shows shop goods for sale. Potion: 1 silver.',{marketplace:{kind:'npcShop',id:'race-shop',seller:{name:'Rally'},denomination:'silver',items:[{name:'Potion',price:1}]},ops:[]});
-  const contract=await page.evaluate(async()=>{await window.TretaresiaRpgGenerateInterceptor();return [...window.prompts.values()].join('\n');});const raceSession=JSON.parse(contract.split('REFERENCE DATA:\n').at(-1).split('\n')[0]).interaction;
+  await receive(page,'ขอซื้อ Potion จากร้านสุดท้าย','<tr-header name="Rally"/><tr-dialogue name="Rally">Potion: 1 silver.</tr-dialogue>',{sceneTracker:{loc:'Guild'},commerceIntent:{kind:'buy',evidence:'ขอซื้อ Potion จากร้านสุดท้าย'},marketplace:{kind:'npcShop',id:'race-shop',seller:{name:'Rally'},evidence:'Potion: 1 silver.',denomination:'silver',items:[{name:'Potion',price:1}]},ops:[]});
+  const raceSession={id:await bar.getAttribute('data-session'),revision:0};assert.ok(raceSession.id,'the untouched opening has a stable session id');
   await page.evaluate(()=>{window.deferQuiet=true;window.responses.push({narrative:'Rally receives your silver.',decision:{outcome:'accept',amount:1}});});
   await bar.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>typeof window.releaseQuiet==='function');
   const cancelUser='ไม่ซื้อแล้ว ยกเลิก',cancellation=receive(page,cancelUser,'Rally puts the potion back.',{commerce:{sessionId:raceSession.id,revision:raceSession.revision,evidence:cancelUser,action:'cancel',decision:{outcome:'cancel'}},ops:[]});
@@ -206,8 +207,8 @@ try{
   await page.evaluate(async()=>{await window.host.eventSource.emit(window.host.eventTypes.GENERATION_ENDED);await window.host.eventSource.emit(window.host.eventTypes.MESSAGE_RECEIVED,window.host.chat.length-1,'normal');});await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>window.calls),beforeFailure+1);assert.equal(await bar.count(),1);
   await receive(page,'เข้าร่วมประมูล','<tr-dialogue name="Auctioneer">มาเริ่มกันที่ชิ้นแรกของวันนี้</tr-dialogue>');await bar.locator('.rf-commerce-pending-title').waitFor();assert.equal(await bar.count(),1);assert.equal(await page.evaluate(()=>window.calls),beforeFailure+1);
   await page.evaluate(()=>window.host.isGenerating=true);
-  const missing=await receive(page,'ขอดูสินค้า','Rally แสดงสินค้าที่ขายในร้านให้ดู แต่ยังไม่ระบุราคา',{sceneTracker:{loc:'Guild'},ops:[]});await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));assert.equal(await bar.count(),0,'no buy composer opens without an actual priced NPC offer');assert.doesNotMatch(await missing.innerText(),/(?:^|\n)null(?:\n|$)/u);assert.equal(await page.evaluate(()=>window.calls),beforeFailure+1);await page.evaluate(()=>window.host.isGenerating=false);
-  await page.evaluate(()=>window.TretaresiaRpgGenerateInterceptor());assert.match(await page.evaluate(()=>[...window.prompts.values()].join('\n')),/MAIN CHAT INTERACTION CHECK/);
+  const missing=await receive(page,'ขอดูสินค้า','Rally แสดงสินค้าที่ขายในร้านให้ดู แต่ยังไม่ระบุราคา',{sceneTracker:{loc:'Guild'},ops:[]});await bar.waitFor();assert.equal(await bar.locator('[data-commerce-action]').count(),0,'a missing-price notice cannot authorize a payment or bid');assert.equal(await bar.locator('.rf-commerce-amount').count(),0);assert.doesNotMatch(await missing.innerText(),/(?:^|\n)null(?:\n|$)/u);assert.equal(await page.evaluate(()=>window.calls),beforeFailure+1);await page.evaluate(()=>window.host.isGenerating=false);
+  assert.match(await page.evaluate(()=>window.lastNormalPrompt),/ROLEFORGE NORMAL REPLY OUTPUT CONTRACT/);
   // The provider normalizes a quoted gold offer to silver, joins paragraphs,
   // and uses smart quotes. Validate the reported clause without another task.
   await receive(page,'เข้าร่วมประมูล','<tr-dialogue name="Mira">สิบเหรียญเงิน!</tr-dialogue>',{sceneTracker:{loc:'Guild'},auction:{id:'reported-evidence',location:'Guild',evidence:'สิบเหรียญเงิน!',denomination:'silver',lots:[{id:'evidence-lot',name:'Silver Compass',openingBid:5,minIncrement:1,bidders:[{name:'Mira',budget:18}],currentBid:10,currentBidder:'Mira'}]},ops:[]});

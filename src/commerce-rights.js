@@ -1,7 +1,7 @@
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.15';
-import {CURRENCY_VALUES} from './commerce-currency.js?v=0.58.15';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.15';
-import {evidenceText,namedInteraction} from './interaction-evidence.js?v=0.58.15';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.59.0';
+import {currencyValues,currencyValue} from './currency-config.js?v=0.59.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.59.0';
+import {evidenceText,namedInteraction} from './interaction-evidence.js?v=0.59.0';
 
 const clean=(value,max=300)=>typeof value==='string'?value.trim().slice(0,max):'';
 const whole=(value,max=999999999)=>Number.isSafeInteger(value)&&value>=0&&value<=max;
@@ -96,7 +96,7 @@ export function grantPurchaseRights(state,session,lines,putItem,now){
         let ends=terms.validUntil;
         if(!ends&&terms.durationMinutes){const value=storyMinute(starts)+terms.durationMinutes;ends={day:Math.floor(value/1440)+1,time:`${String(Math.floor(value%1440/60)).padStart(2,'0')}:${String(value%60).padStart(2,'0')}`};}
         const right={id,sessionId:session.id,itemName:line.entry.item.name,terms,location:session.location,provider:clone(session.npc),denomination:session.denomination,
-            paid:share,depositPaid:terms.deposit,depositRefunded:0,status:'active',revision:0,starts,ends,remainingUses:terms.uses,
+            ...(session.currencyScheme?{currencyScheme:clone(session.currencyScheme)}:{}),paid:share,depositPaid:terms.deposit,depositRefunded:0,status:'active',revision:0,starts,ends,remainingUses:terms.uses,
             inventoryItemId:terms.delivery&&terms.mode!=='service'?`right-item-${hash(id)}`:'',createdAt:now,history:[]};
         if(right.inventoryItemId&&!putItem({...terms.delivery,id:right.inventoryItemId,commerceRightId:id},1))return false;
         state.commerce.rights.push(right);
@@ -116,9 +116,9 @@ export function rightsInventoryValid(state){
         return !(r.status==='active'&&r.terms.targetItemId&&!(state.inventory||[]).some(i=>i.id===r.terms.targetItemId&&i.quantity===1));
     });
 }
-const actionWords={return:/(?:รับคืน|คืน|return|received|accepted|hand(?:ed)? back)/iu,use:/(?:ใช้|ขึ้น(?:เรือ|รถ)|ตรวจ(?:ตั๋ว|บัตร)|use|redeem|board|admit)/iu,complete:/(?:เสร็จ|เรียบร้อย|ส่งมอบ|รับคืน|finished|completed|delivered|ready)/iu,refund:/(?:คืน(?:เงิน|มัดจำ)|(?:เงิน)?มัดจำคืน|refund|deposit back)/iu};
+const actionWords={return:/(?:รับคืน|คืน|return|receiv(?:e[ds]?|ing)|accepted|hand(?:ed)? back)/iu,use:/(?:ใช้|ขึ้น(?:เรือ|รถ)|ตรวจ(?:ตั๋ว|บัตร)|use|redeem|board|admit)/iu,complete:/(?:เสร็จ|เรียบร้อย|ส่งมอบ|รับคืน|finished|completed|delivered|ready)/iu,refund:/(?:คืน(?:เงิน|มัดจำ)|(?:เงิน)?มัดจำคืน|refund|deposit back)/iu};
 const denied=/(?:สมมุติ|พรุ่งนี้|ยังไม่|ไม่ได้|ไม่คืน|ไม่ใช้|ไม่มี|ถ้า|หาก|\bif\b|hypothetical|tomorrow|not yet|did not|will (?:return|refund|complete))/iu;
-function quotedAmount(quote,amount,unit){return readCommercePrices(quote).some(p=>p.amount*CURRENCY_VALUES[p.denomination]===amount*CURRENCY_VALUES[unit]);}
+function quotedAmount(quote,amount,unit,configuration){const values=currencyValues(configuration);return readCommercePrices(quote,configuration).some(p=>p.amount*values[p.denomination]===amount*values[unit]);}
 export function applyRightsEvents(state,raw,{story='',user='',now=new Date().toISOString()}={}){
     const next=clone(state);next.commerce ||= {};next.commerce.rights=normalizeCommerceRights(next.commerce.rights);
     const events=[],errors=[],seen=new Set();
@@ -133,7 +133,7 @@ export function applyRightsEvents(state,raw,{story='',user='',now=new Date().toI
         if(action==='return'&&(!['rental','access'].includes(r.terms.mode)||!r.inventoryItemId||!['active','used'].includes(r.status))){fail('closed');continue;}
         if(action==='complete'&&(r.terms.mode!=='service'||r.status!=='active')){fail('closed');continue;}
         const refund=input.refundAmount===undefined?0:input.refundAmount;
-        if(!whole(refund)||refund>r.depositPaid-r.depositRefunded||refund&&(!quotedAmount(quote,refund,r.denomination)||!actionWords.refund.test(quote))
+        if(!whole(refund)||refund>r.depositPaid-r.depositRefunded||refund&&(!quotedAmount(quote,refund,r.denomination,next.progression.currency)||!actionWords.refund.test(quote))
             ||action==='refund'&&(!refund||!['returned','completed'].includes(r.status))||action==='use'&&refund){fail('refund');continue;}
         if(action==='return'){
             const item=next.inventory?.find(i=>i.id===r.inventoryItemId&&i.commerceRightId===r.id&&i.quantity===1);
@@ -150,6 +150,7 @@ export function applyRightsEvents(state,raw,{story='',user='',now=new Date().toI
         if(refund){
             if(!actionWords.refund.test(quote)||!whole((next.progression.currency[r.denomination]||0)+refund)){fail('refund');return{ok:false,next:state,events:[],errors};}
             next.progression.currency[r.denomination]+=refund;r.depositRefunded+=refund;
+            if(!Number.isSafeInteger(currencyValue(next.progression.currency))){fail('refund');return{ok:false,next:state,events:[],errors};}
         }
         r.revision++;r.history.push({action,evidence:quote,refundAmount:refund,at:now});seen.add(r.id);events.push({id:r.id,action,refundAmount:refund,name:r.itemName});
     }

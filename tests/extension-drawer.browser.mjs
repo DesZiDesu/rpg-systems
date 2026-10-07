@@ -96,7 +96,7 @@ try {
         for (const id of ids) assert.equal(await settings.locator(`[id="${id}"]`).count(), id === 'tretaresia-rpg-settings' ? 0 : 1, `original/new hook ${id} retained exactly once`);
         assert.equal(await settings.locator('.rf-settings-fold').count(),5);
         assert.equal(await settings.locator('.rf-settings-fold[open]').count(),0,'advanced groups begin collapsed');
-        assert.equal(await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').count(),3);
+        assert.equal(await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').count(),4);
         assert.equal(await settings.locator(':scope > .trpg-settings').count(),0,'NPC runtime settings stay inside their dedicated group');
         assert.equal(await page.locator('.trpg-presentation-status').count(),1);
         assert.match(await page.locator('.trpg-presentation-status').innerText(), /RoleForge.*คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบ/);
@@ -155,7 +155,7 @@ try {
         // runtime controls, saved values, listeners or unsent inputs.
         await page.locator('#tretaresia-rpg-language').selectOption('en');
         assert.match(await settings.locator('.tretaresia-rpg-settings-copy').first().innerText(),/persistent RoleForge role-play state/);
-        assert.equal(await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').count(),3);
+        assert.equal(await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').count(),4);
         await page.locator('#tretaresia-rpg-language').selectOption('th');
 
         const folds = settings.locator('.rf-settings-fold');

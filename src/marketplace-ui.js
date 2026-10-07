@@ -1,4 +1,5 @@
-import { marketplaceErrorText } from './marketplace-core.js?v=0.58.15';
+import {currencyScheme,currencyUnitLabel} from './currency-config.js?v=0.59.0';
+import { marketplaceErrorText } from './marketplace-core.js?v=0.59.0';
 
 const node = (tag, cls, text) => { const el = document.createElement(tag); if (cls) el.className = cls; if (text !== undefined) el.textContent = text; return el; };
 
@@ -6,7 +7,7 @@ export function renderMarketplacePanel(panel, view, api) {
     if (!panel) return;
     const thai = api.settings().language === 'th';
     const t = (th, en) => thai ? th : en;
-    const price = (value, denomination = view.denomination) => `${Number(value || 0).toLocaleString(thai ? 'th-TH' : 'en-US')} ${t({ gold: 'ทอง', silver: 'เงิน', copper: 'ทองแดง' }[denomination], denomination)}`;
+    const price = (value, denomination = view.denomination) => `${Number(value || 0).toLocaleString(thai ? 'th-TH' : 'en-US')} ${view.currencyScheme?currencyUnitLabel(view,denomination):t({ gold: 'ทอง', silver: 'เงิน', copper: 'ทองแดง' }[denomination], denomination)}`;
     panel.replaceChildren();
     const root = node('section', 'trpg-marketplace');
     const header = node('header', 'trpg-marketplace-header');
@@ -32,7 +33,7 @@ export function renderMarketplacePanel(panel, view, api) {
     const floor = node('input', ''); floor.type = 'number'; floor.name = 'floorPrice'; floor.min = '1'; floor.step = '1'; floor.placeholder = t('ราคาต่ำสุด', 'Lowest acceptable'); floor.required = true; floor.inputMode = 'numeric';
     quantity.max = String(view.availableItems[0]?.available || 1);
     itemSelect.addEventListener('change', () => { quantity.max = itemSelect.selectedOptions[0]?.dataset.max || '1'; });
-    const currency = node('select', ''); currency.name = 'denomination'; for (const [id, label] of [['gold', t('ทอง', 'Gold')], ['silver', t('เงิน', 'Silver')], ['copper', t('ทองแดง', 'Copper')]]) { const option = node('option', '', label); option.value = id; currency.append(option); }
+    const currency = node('select', ''); currency.name = 'denomination'; for (const [id, label] of currencyScheme(view).units.map(d=>[d.id,view.currencyScheme?d.symbol||d.name:t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[d.id],d.name)])) { const option = node('option', '', label); option.value = id; currency.append(option); }
     const buyer = node('select', ''); buyer.name = 'buyerId'; for (const [id, label] of [['collector', t('นักสะสม', 'Collector')], ['merchant', t('พ่อค้า', 'Merchant')], ['adventurer', t('นักผจญภัย', 'Adventurer')]]) { const option = node('option', '', label); option.value = id; buyer.append(option); }
     form.append(field(t('ไอเทม', 'Item'), itemSelect), field(t('จำนวน', 'Quantity'), quantity), field(t('ราคาตั้ง', 'Ask price'), ask), field(t('ราคาต่ำสุด', 'Floor price'), floor), field(t('สกุลเงิน', 'Currency'), currency), field(t('กลุ่มผู้ซื้อ', 'Buyer profile'), buyer));
     const createButton = node('button', 'trpg-marketplace-primary', t('ลงรายการขาย', 'Create listing')); createButton.type = 'submit'; createButton.disabled = !view.availableItems.length; form.append(createButton); editor.append(form); root.append(editor);

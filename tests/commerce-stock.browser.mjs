@@ -41,6 +41,7 @@ try{
         });
         const patch={marketplace:{kind:'npcShop',id:'pharmacy',location:'Oakland Pharmacy',evidence:`${names[0]} ขวดละ 30 เหรียญทองแดง ส่วน${names[1]} ขวดละ 50 เหรียญทองแดงจ้ะ`,seller:{name:'Teresina'},denomination:'copper',items:names.map((name,i)=>({id:i?'antidote':'healing',name,category:'Consumable',description:i?'ยาสีเขียว ใช้ถอนพิษทั่วไป':'น้ำยาสีแดง ใช้ฟื้นฟูบาดแผล',properties:[i?'ลดพิษระดับต่ำ':'รักษาบาดแผล'],price:i?50:30,stockKnown:false,terms:{mode:'permanent'}}))}};
         await reply(page,'ขอซื้อยาฟื้นฟูกับยาแก้พิษอย่างละ 3 ขวดครับ',story,patch);
+        await page.locator('[data-dock-panel=commerce]').click();
         const commerce=page.locator('.rf-commerce-composer');await commerce.locator('[data-commerce-action="confirm"]').waitFor();await commerce.locator('.rf-commerce-summary').click();
         await commerce.locator('[data-basket-item="antidote"]').check();
         for(const id of ['healing','antidote']){const input=commerce.locator(`[data-basket-quantity="${id}"]`);assert.equal(await input.getAttribute('max'),'99999');await input.fill('3');await input.dispatchEvent('change');}
@@ -58,7 +59,7 @@ try{
             document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';const form=document.createElement('form');form.id='send_form';const input=document.querySelector('#send_textarea');input.style.display='block';form.append(input);document.body.append(form);
             window.calls=[];window.host.generateRaw=async args=>{window.calls.push(args);return JSON.stringify({narrative:'<tr-narrative>เทเรซินารับเงิน 240 เหรียญทองแดงและส่งมอบยาฟื้นฟูสามขวดกับยาแก้พิษสามขวด</tr-narrative>',decision:{outcome:'accept',amount:240}});};window.host.updateMessageBlock=()=>{};await window.host.eventSource.emit('CHAT_CHANGED');
         },savedChat);
-        await commerce.locator('[data-commerce-action="confirm"]').waitFor();await commerce.locator('.rf-commerce-summary').click();assert.equal(await commerce.locator('.rf-commerce-amount').inputValue(),'240');assert.equal(await commerce.locator('[data-basket-quantity="healing"]').inputValue(),'3');
+        await page.locator('[data-dock-panel=commerce]').click();await commerce.locator('[data-commerce-action="confirm"]').waitFor();await commerce.locator('.rf-commerce-summary').click();assert.equal(await commerce.locator('.rf-commerce-amount').inputValue(),'240');assert.equal(await commerce.locator('[data-basket-quantity="healing"]').inputValue(),'3');
         await commerce.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>window.host.chatMetadata.tretaresia_rpg_state.commerce?.sessions?.some(s=>s.status==='completed'));
         saved=await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state);assert.deepEqual([saved.progression.currency.gold,saved.progression.currency.silver,saved.progression.currency.copper],[0,7,60]);
         for(const name of names)assert.equal(saved.inventory.find(item=>item.name===name)?.quantity,3);

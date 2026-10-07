@@ -1,6 +1,7 @@
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.15';
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.58.15';
-import {COMMERCE_PRICE_PATTERN} from './commerce-prices.js?v=0.58.15';
+import {currencyValues,currencyScheme} from './currency-config.js?v=0.59.0';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.59.0';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.59.0';
+import {commercePricePattern} from './commerce-prices.js?v=0.59.0';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
@@ -45,18 +46,19 @@ export function normalizeAuctionOffer(raw) {
     return {id,title,location,evidence:clean(raw.evidence,600),denomination:raw.denomination,entryFee:integer(raw.entryFee),deposit:integer(raw.deposit),lots};
 }
 
-export function confirmedAuctionOffer(raw, story, user, location) {
+export function confirmedAuctionOffer(raw, story, user, location, options={}) {
     // An auctioneer can quote a bid without repeating the word "auction".
     // A current explicit auction request supplies that context; the price still
     // needs an exact affirmative quote in this reply, never a future plan.
-    const pricing=COMMERCE_PRICE_PATTERN;
+    const pricing=commercePricePattern(options.currency);
     const contextual=auctionWords.test(String(user||''))&&!/(?:พรุ่งนี้|เมื่อวาน|สมมุติ|ยังไม่|tomorrow|yesterday|hypothetical)/iu.test(String(user||''));
     const subject=contextual?new RegExp(`${auctionWords.source}|${pricing.source}`,'iu'):auctionWords;
     const action=/(?:arriv|enter|reach|stand|sit|walk|approach|join|attend|inspect|browse|display|present|show|มาถึง|เดิน|เข้า|ยืน|นั่ง|ร่วม|ดู|อ่าน|แสดง|เปิด|วาง)/iu;
     const activity=contextual?new RegExp(`${action.source}|${pricing.source}`,'iu'):action;
     const offer = normalizeAuctionOffer(withInteractionEvidence(raw, story, location, subject, activity)), evidence = offer?.evidence;
-    if (!offer || key(offer.location) !== key(location)) return null;
+    if (!offer || !currencyValues(options.currency)[offer.denomination] || key(offer.location) !== key(location)) return null;
     if (!interactionEvidence(evidence, story, user, subject, activity)) return null;
+    if(options.currency?.scheme)offer.currencyScheme=currencyScheme(options.currency);
     return offer;
 }
 

@@ -1,8 +1,8 @@
 # RoleForge
 
-**Public release: 0.58.15** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.59.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
-[คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.3-development.md)
+[คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
@@ -32,6 +32,8 @@ Saved replies without RoleForge presentation tags remain ordinary text. Generate
 
 Enable **User-only Dialogue / Narrative / Inner thought UI** in **Extensions → RoleForge → Chat appearance & NPCs** to format sent player messages: `"speech"` or `“speech”`, `*narrative*`, and `|inner thought|`. Player blocks align right and follow the selected theme. This independent option defaults off, preserves original message text and native rich Markdown/regex widgets, and never interprets assistant shorthand. [Preview and validation notes](docs/user-chat-v0.58.15.th.md).
 
+**New in 0.59.0:** train HP/MP/ST maximums and numeric stats from the main chat, configure custom stats and 1–3 currency units, and use animated 8-bit money icons. Status and Training default to **C / Tactical Strip**, with A and B retained as separate selectable layouts in **Extensions → RoleForge → User stats**. All composer windows start minimized on chat entry. [Update notes and screenshots](docs/stats-currency-v0.59.0.th.md).
+
 ## Features
 
 | System | What it does |
@@ -39,6 +41,7 @@ Enable **User-only Dialogue / Narrative / Inner thought UI** in **Extensions →
 | Character and scene | Player resources, progression, equipment, scene status, location and story time. |
 | NPCs and world | Profiles, portraits, alternate information, relationships, diary, knowledge, parties, guilds and lore tools. |
 | Powers and abilities | Powers, skills and techniques with persistent mastery, training and optional incantations. Skill Storage includes automatic categories and responsive pagination. |
+| User stats and currency | Practice with confirmed permanent gains, configurable custom stats, three composer layouts, exact currency rates and eight animated pixel icon sets. |
 | Inventory and Loot | Loot from completed encounters and exploration; collect selected items, use/eat/drink/drop/gift, configure multiple stat effects, and track temporary overflow buffs. |
 | Shops and auctions | Buy/sell and negotiate, select multiple items and quantities, bid in auctions, and keep confirmed receipts. Support property keys, rentals, access rights and prepaid services. |
 | Boards and story tools | Optional mission/recruitment boards, story memory, agendas and quest objectives. |
@@ -92,9 +95,11 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.58.15** has **1,108 passing unit/host tests** and syntax checks, including User-only formatting, preserved messages/prompts, Memory provider compatibility and Voice MP3 validation. User chat browser checks pass at 320/390/1280px for AI isolation, right alignment/pen, live theme colors, edit/native restoration, display regex, reload and overflow; run **npm run test:user-chat**. Voice/MP3 browser checks also pass at those widths. Native presentation browser results are described in the [0.58.15 report](docs/user-chat-v0.58.15.th.md). Earlier Character Forge browser checks at 320/390/1280px cover viewport fit, saved drafts, optional Origin Skill, separate Guild/Party, native preset editing, configured Arsenal, hidden Rank and opening generation. Earlier native drawer/startup, Skill Storage (320/390/900/901/1280px), Optional Systems and chat-null checks also pass. The older combined chat fixture still has the same baseline commerce assertion failure on unchanged 0.58.7; see the [0.58.8 report](docs/character-forge-v0.58.8.th.md). Provider responses use controlled fixtures, and these checks do not certify every live model, host theme or Safari on a physical iPhone. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
+Version **0.59.0** has **1,155 passing unit/host tests** and syntax checks. Production browser checks at 320/390/1280px cover all three Status/Training layouts, real chat practice, custom stats, exact configured money, deposit transactions, animated pixel frames, Reduce Motion, saved settings, reload, and old pending work finishing after a chat closes. The release also runs focused regression suites for Incantation, items/Loot, shop stock and repair, rentals, Character Forge, user chat, Voice MP3 and native settings. [Validation report](docs/stats-currency-v0.59.0.th.md).
 
-[Repository audit](docs/repository-audit-v0.56.3.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.3.th.md) · [Full audited inventory](docs/repository-audit-v0.56.3.json)
+Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. All 20 release browser suites pass, including combined commerce and inn flows. Legacy fixtures now use explicit trade intent, real next-user generation and minimized panels; their outdated expectations were compared with unchanged 0.58.15. Historical results remain in the [development README](docs/archive/README-v0.56.2-development.md).
+
+[Repository audit](docs/repository-audit-v0.56.2.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.2.th.md) · [Full audited inventory](docs/repository-audit-v0.56.2.json)
 
 ## License
 

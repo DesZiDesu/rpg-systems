@@ -54,12 +54,12 @@ try{
             if(!localStorage.getItem('roleforge-hstats-preview-metadata'))localStorage.setItem('roleforge-hstats-preview-metadata',JSON.stringify({tretaresia_rpg_state:{player:{name:'Noah'},npcs:[],skills:[],inventory:[],location:{place:'Oakland Bookstore',narrativeVersion:1},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true},worldClock:{day:1,time:'20:46'},progression:{currency:{name:'Coins',gold:0,silver:100,copper:0}}}}));
         });
         await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready);await setup(page);
-        const bar=page.locator('.rf-commerce-composer'),tab=page.locator('.rf-dock-navigation').getByText('ซื้อ',{exact:true});
+        const bar=page.locator('.rf-commerce-composer'),tab=page.locator('[data-dock-panel=commerce]');
         const before=await page.evaluate(()=>structuredClone(window.host.chatMetadata.tretaresia_rpg_state));
-        await start(page,user);await bar.locator('.rf-commerce-pending-title').waitFor({state:'visible'});
+        await start(page,user);await page.locator('[data-dock-panel=commerce]').click();await bar.locator('.rf-commerce-pending-title').waitFor({state:'visible'});
         assert.match(await bar.innerText(),/รอ AI ตอบข้อเสนอและราคา/);assert.equal(await tab.isVisible(),true);
         assert.match(await page.evaluate(()=>window.prompts.get('tretaresia_rpg_response_contract')),/CURRENT TRADE OUTPUT: the player is requesting a buy offer/);
-        await finish(page,story);await page.waitForFunction(()=>document.querySelector('.rf-commerce-status')?.textContent.includes('พบข้อเสนอราคา'));
+        await finish(page,story);await page.locator('[data-dock-panel=commerce]').click();await page.waitForFunction(()=>document.querySelector('.rf-commerce-status')?.textContent.includes('พบข้อเสนอราคา'));
         assert.match(await bar.innerText(),/AI ยังส่งข้อมูลรายการไม่ครบ/);assert.equal(await bar.locator('[data-commerce-action]').count(),0);
         const geometry=await bar.evaluate(el=>{const rect=el.getBoundingClientRect(),form=document.querySelector('#send_form').getBoundingClientRect();return{bottom:rect.bottom,formTop:form.top,left:rect.left,right:rect.right,width:el.clientWidth,scroll:el.scrollWidth};});
         assert.ok(geometry.bottom<=geometry.formTop+1,JSON.stringify(geometry));assert.ok(geometry.left>=-1&&geometry.right<=width+1,JSON.stringify(geometry));assert.ok(geometry.scroll<=geometry.width+1,JSON.stringify(geometry));
@@ -69,10 +69,10 @@ try{
         const oldChat=await page.evaluate(async()=>{const chat=structuredClone(window.host.chat);window.host.chatMetadata.tretaresia_rpg_social_events={};await window.host.saveMetadata();return chat;});
         await page.reload();await page.waitForFunction(()=>window.hStatsPreview?.ready);await setup(page);
         await page.evaluate(async chat=>{window.host.chat.splice(0,window.host.chat.length,...chat);await window.host.eventSource.emit('CHAT_CHANGED');},oldChat);
-        await bar.locator('.rf-commerce-pending-title').waitFor({state:'visible'});assert.match(await bar.innerText(),/พบข้อเสนอราคา/);assert.equal(await tab.isVisible(),true);assert.equal(await page.evaluate(()=>window.calls.length),0);
+        await page.locator('.rf-composer-dock.is-minimized').waitFor({state:'visible'});await tab.click();await bar.locator('.rf-commerce-pending-title').waitFor({state:'visible'});assert.match(await bar.innerText(),/พบข้อเสนอราคา/);assert.equal(await tab.isVisible(),true);assert.equal(await page.evaluate(()=>window.calls.length),0);
         after=await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state);assert.deepEqual(after.progression.currency,before.progression.currency);assert.deepEqual(after.inventory,before.inventory);
         await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.enableMarketplace=false;await window.host.eventSource.emit('CHAT_CHANGED');});await bar.waitFor({state:'detached'});
-        await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.enableMarketplace=true;await window.host.eventSource.emit('CHAT_CHANGED');});await bar.locator('.rf-commerce-pending-title').waitFor({state:'visible'});
+        await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.enableMarketplace=true;await window.host.eventSource.emit('CHAT_CHANGED');});await tab.click();await bar.locator('.rf-commerce-pending-title').waitFor({state:'visible'});
         await start(page,'ซื้อหนังสือมาแล้ว ฉันเก็บใส่กระเป๋า');await finish(page,'<tr-narrative>หนังสืออยู่ในกระเป๋าของโนอาห์</tr-narrative>');await bar.waitFor({state:'detached'});
         assert.equal(await page.evaluate(()=>window.calls.length),0);assert.deepEqual(errors,[]);
         console.log(`PASS ${width}px: exact three-book request, normal reply contract, visible waiting/incomplete dock above ChatBar, old saved chat recovery, disabled gate, genuine settled follow-up, no API/payment/inventory changes or overflow`);await page.close();

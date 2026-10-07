@@ -1,5 +1,5 @@
-import {parseStory} from './npc-core.js?v=0.58.15';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.15';
+import {parseStory} from './npc-core.js?v=0.59.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.59.0';
 
 export function publicCommerceStory(story){
     return String(story??'').replace(/<(?:planning|think|thinking|analysis)\b[^>]*>[\s\S]*?<\/(?:planning|think|thinking|analysis)>/giu,'')
@@ -8,9 +8,9 @@ export function publicCommerceStory(story){
 
 // One source for public NPC facts. Price offsets bind options to their speaker;
 // punctuation, narration between quotes and delivery attributes do not matter.
-export function publicTradeDialogues(story){
+export function publicTradeDialogues(story,configuration){
     return (parseStory(publicCommerceStory(story))||[]).filter(block=>block.type==='dialogue'&&block.name&&block.text?.trim())
-        .map(block=>({name:block.name,quote:block.text.trim(),prices:readCommercePrices(block.text)}));
+        .map(block=>({name:block.name,quote:block.text.trim(),prices:readCommercePrices(block.text,configuration)}));
 }
 export function optionPriceFacts(block){
     // Preserve original quote offsets while matching normalized Thai/fullwidth

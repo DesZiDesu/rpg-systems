@@ -68,6 +68,7 @@ try{
         await receive(page,'ฉันขอดูสินค้าและบริการที่ซื้อหรือเช่าได้',npc(quote),{sceneTracker:{loc:'Oakland Inn',d:1,t:'10:20'},marketplace,ops:[]});
         assert.equal((await state()).inventory.length,0);assert.equal(await page.evaluate(()=>window.calls.length),0);
         assert.match(await page.evaluate(()=>window.outgoingContract),/PURCHASE TYPES \/ RIGHTS \/ RENTALS \/ SERVICES/);
+        await page.locator('[data-dock-panel=commerce]').click();
         const bar=page.locator('.rf-commerce-composer[data-kind="buy"]');await bar.locator('.rf-commerce-summary').click();
         assert.equal(await bar.locator('.rf-commerce-basket-row').count(),6);
         await shot('01-catalog');

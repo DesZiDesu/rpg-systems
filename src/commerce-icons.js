@@ -1,4 +1,6 @@
 // Static inline SVG, independent of emoji fonts and icon-font loading.
+import {pixelMoneyMarkup,units as pixelUnits} from './currency-icons.js?v=0.59.0';
+import {MONEY_ICON_SETS,currencyUnit} from './currency-config.js?v=0.59.0';
 const paths={
  flask:'M9 3h6M10 3v6L4 19q-1 2 2 2h12q3 0 2-2L14 9V3M7 15h10',
  apple:'M12 8c-8-5-12 3-7 11q3 4 7 1 4 3 7-1c5-8 1-16-7-11Zm0 0V3m0 3c5 0 5-4 5-4-4 0-5 4-5 4',
@@ -22,12 +24,14 @@ const paths={
  chevron:'m7 10 5 5 5-5',
  };
 
-export const COIN_STYLES=['stack','minted','outline'];
-const coinArt=style=>style==='outline'?`<path d="${paths.coin}"></path>`:style==='minted'?'<circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="6.7" stroke="#fff" stroke-opacity=".4"/><path d="m12 7 1.5 3 3.5.5-2.5 2.4.6 3.4-3.1-1.6-3.1 1.6.6-3.4L7 10.5l3.5-.5z" fill="#241908" fill-opacity=".45" stroke="none"/>':'<path d="M3 12v6c0 4 18 4 18 0v-6" fill="currentColor" stroke="none"/><path d="M3 18c0 4 18 4 18 0M3 15c0 4 18 4 18 0" stroke="#18130d" stroke-opacity=".45" stroke-width="1"/><ellipse cx="12" cy="12" rx="9" ry="4" fill="currentColor" stroke="#fff" stroke-opacity=".35" stroke-width="1"/><ellipse cx="12" cy="12" rx="6" ry="2.3" stroke="#241908" stroke-opacity=".35" stroke-width="1"/><path d="M5 6v3c0 3 14 3 14 0V6" fill="currentColor" stroke="#18130d" stroke-opacity=".35" stroke-width="1"/><ellipse cx="12" cy="6" rx="7" ry="3" fill="currentColor" stroke="#fff" stroke-opacity=".5" stroke-width="1"/><ellipse cx="12" cy="6" rx="4.5" ry="1.5" stroke="#241908" stroke-opacity=".35" stroke-width="1"/>';
-export function commerceIconMarkup(name,unit,style='stack'){
- const theme=COIN_STYLES.includes(style)?style:'stack';
- return `<svg class="rf-commerce-icon" ${['gold','silver','copper'].includes(unit)?`data-currency="${unit}" data-coin-style="${theme}"`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${name==='coin'?coinArt(theme):`<path d="${paths[name]||paths.coin}"></path>`}</svg>`;
+export const COIN_STYLES=MONEY_ICON_SETS;
+export function commerceIconMarkup(name,unit,style='stack',configuration){
+ const configured=configuration?.scheme||configuration?.currencyScheme||configuration?.units;
+ const definition=configuration?.iconSet?configuration:configured?currencyUnit(configuration,unit):null,theme=COIN_STYLES.includes(definition?.iconSet||style)?definition?.iconSet||style:'stack';
+ if(name==='coin')return pixelMoneyMarkup(theme,pixelUnits.find(d=>d.id===unit)||{id:'',color:'#dfbf65'},{color:definition?.color||pixelUnits.find(d=>d.id===unit)?.color,motion:configuration?.animated!==false&&configuration?.scheme?.animated!==false&&configuration?.currencyScheme?.animated!==false,shape:definition?.icon||'default'});
+ const color=/^#[0-9a-f]{6}$/iu.test(definition?.color||'')?` style="color:${definition.color}"`:'';
+ return `<svg class="rf-commerce-icon" ${['gold','silver','copper'].includes(unit)?`data-currency="${unit}" data-coin-style="${theme}" data-motion="${configuration?.animated!==false&&configuration?.scheme?.animated!==false? 'on':'off'}"${color}`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${paths[name]||paths.coin}"></path></svg>`;
 }
-export function commerceIcon(doc,name,unit,style='stack'){
- const host=doc.createElement('span');host.innerHTML=commerceIconMarkup(name,unit,style);return host.firstElementChild;
+export function commerceIcon(doc,name,unit,style='stack',configuration){
+ const host=doc.createElement('span');host.innerHTML=commerceIconMarkup(name,unit,style,configuration);return host.firstElementChild;
 }

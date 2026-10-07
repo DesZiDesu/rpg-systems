@@ -104,7 +104,7 @@ try{
             await new Promise(resolve=>setTimeout(resolve,180));document.querySelector('#chat').remove();
             const chat=document.createElement('div');chat.id='chat';chat.innerHTML='<div class="mes" mesid="0"><div class="mes_text">"Lifecycle speech."</div></div>';document.body.append(chat);
             const callbacks=[],context={chat:[{is_user:true,name:'User',mes:'"Lifecycle speech."'}],getCurrentChatId:()=> 'isolated-lifecycle',eventTypes:{USER_MESSAGE_RENDERED:'player-rendered'},eventSource:{on:(type,fn)=>callbacks.push(fn)}};
-            const {createChatPresentation}=await import('../../src/npc-chat.js?v=0.58.15');
+            const {createChatPresentation}=await import('../../src/npc-chat.js?v=0.59.0');
             window.lifecyclePreview={callbacks,native:chat.querySelector('.mes_text').firstChild,renderer:createChatPresentation({context:()=>context,settings:()=>({userChatPresentation:true,language:'en'}),state:()=>({npcs:[]}),visible:text=>text},()=>{})};
         });await page.locator('#chat .trpg-user-chat').waitFor();
         await page.evaluate(()=>{window.lifecyclePreview.renderer.destroy();window.lifecyclePreview.callbacks.forEach(callback=>callback());window.lifecyclePreview.renderer.refresh();});await page.waitForTimeout(180);

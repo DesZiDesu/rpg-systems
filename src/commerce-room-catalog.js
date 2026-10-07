@@ -1,13 +1,13 @@
-import {publicTradeDialogues,optionPriceFacts,publicInclusions} from './commerce-dialogue-facts.js?v=0.58.15';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.15';
-import {storyMinute} from './commerce-rights.js?v=0.58.15';
-import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.58.15';
+import {publicTradeDialogues,optionPriceFacts,publicInclusions} from './commerce-dialogue-facts.js?v=0.59.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.59.0';
+import {storyMinute} from './commerce-rights.js?v=0.59.0';
+import {commerceRequestHint,commerceDiscussionOnly} from './commerce-intent.js?v=0.59.0';
 
 // Compile only facts already present in a Thai inn's current reply. No model
 // request, invented room number, stock, hidden feature or default stay length.
-export function disclosedRoomCatalog(story,user,location,{clock,eventId}={}){
+export function disclosedRoomCatalog(story,user,location,{clock,eventId,currency}={}){
     if(!location||commerceRequestHint(user)!=='buy'||commerceDiscussionOnly(user)||storyMinute(clock)===null)return null;
-    const source=String(story??''),spoken=publicTradeDialogues(source);
+    const source=String(story??''),spoken=publicTradeDialogues(source,currency);
     // Identify room offers by scoped name + currency facts, rather than a
     // particular connector such as "คืนละ". The stay itself supplies duration.
     const dialogue=spoken.filter(block=>/ห้อง/iu.test(block.quote)&&block.prices.length);
@@ -43,7 +43,7 @@ export function disclosedRoomCatalog(story,user,location,{clock,eventId}={}){
         if(!name||name.length>120||/["“”]/u.test(name))return null;
         return{block,price,name,start:price.start-price.preceding.length+marker};
     }));
-    if(!options.length||options.length>8||options.some(option=>!option)||readCommercePrices(agreement).length!==options.length)return null;
+    if(!options.length||options.length>8||options.some(option=>!option)||readCommercePrices(agreement,currency).length!==options.length)return null;
     const rules=agreement.match(/(?:กฎ|เงื่อนไข)[^?。\n]+/u)?.[0];
     const conditions=(rules||deadline?.[0]||'พัก 1 คืน · ยังไม่ระบุเวลาเช็กเอาต์').replace(/\s*เจ้าจะเลือก[\s\S]*$/u,'').trim();
     const supporting=spoken.filter(block=>block.name===seller&&!block.prices.length).map(block=>block.quote);

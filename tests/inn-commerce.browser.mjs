@@ -1,3 +1,4 @@
+import {openDockPanel} from './composer-dock-fixture.mjs';
 // Real production prompt assembly, reply processing and composer. Model replies
 // are fixtures; assertions separate ordinary replies from additional API calls.
 import assert from 'node:assert/strict';
@@ -31,6 +32,7 @@ async function receive(page,user,story,patch,type='normal'){
     },{story,patch});
     await page.evaluate(async id=>{await window.host.eventSource.emit('MESSAGE_RECEIVED',id,'normal');await window.host.eventSource.emit('GENERATION_ENDED');},id);
     await page.waitForFunction(id=>Object.keys(window.host.chatMetadata.tretaresia_rpg_scene_history||{}).some(key=>key.startsWith(`${id}:`)),id);
+    if (await page.locator('.rf-commerce-composer').count()) await openDockPanel(page);
 }
 const typedInnStory=innStory+'<tr-dialogue name="Garrick">ห้องพักแต่ละแบบใช้ได้หนึ่งคืน รวมอาหารเช้าง่ายๆ กับน้ำอุ่นหนึ่งถัง ห้องพักธรรมดาชั้นสองใช้กุญแจห้องพักธรรมดาชั้นสอง ห้องกว้างหน่อย มีอ่างอาบน้ำส่วนตัวใช้กุญแจห้องอ่างอาบน้ำส่วนตัว ไม่มีมัดจำ</tr-dialogue>';
 function typedInnOffer(id='inline-room-offer'){const offer=innOffer();offer.id=id;offer.items=offer.items.map((e,i)=>({...e,category:'Access',description:i?'ห้องกว้างพร้อมอ่างอาบน้ำส่วนตัว':'ห้องชั้นสอง เตียงเดี่ยวสะอาดสะอ้าน',properties:['สิทธิ์พักหนึ่งคืน','รวมอาหารเช้าและน้ำอุ่น'],terms:{mode:'access',scope:e.name,durationMinutes:1440,deposit:0,includes:['อาหารเช้าง่ายๆ','น้ำอุ่นหนึ่งถัง'],conditions:'สิทธิ์พักหนึ่งคืน',delivery:{name:i?'กุญแจห้องอ่างอาบน้ำส่วนตัว':'กุญแจห้องพักธรรมดาชั้นสอง',category:'Key',description:'กุญแจสำหรับห้องที่เลือกเท่านั้น'}}}));return offer;}
@@ -99,15 +101,16 @@ try{
         await bar.locator('[data-commerce-action="cancel"]').click();await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
         assert.equal(await page.evaluate(()=>window.calls.length),2);
         assert.match(await page.evaluate(()=>window.host.chat.at(-1).mes),/<tr-narrative>Garrick เก็บสมุดบัญชี/);
-        // A provider omitting the catalog must not trigger another API automatically.
-        // Incomplete legacy room options remain blocked, never permanent ownership.
-
+        // Current prose and the established rental terms can recover an offer
+        // locally. Recovery still needs a new confirmation before payment.
         await receive(page,innUser,innStory,{sceneTracker:{loc:'Oakland Inn'},ops:[]});
-        await page.waitForFunction(()=>!document.querySelector('.rf-commerce-composer'));
-        assert.equal(await page.evaluate(()=>window.calls.length),2);
-        assert.equal(await bar.count(),0,'no missing-data commerce window is opened from a purchase keyword');
+        await bar.locator('[data-commerce-action="confirm"]').waitFor();
+        assert.match(await bar.innerText(),/เช่า/);assert.doesNotMatch(await bar.innerText(),/ซื้อถาวร/);
+        assert.equal(await bar.locator('.rf-commerce-amount').inputValue(),'5');
+        assert.equal(await bar.locator('[data-commerce-action="confirm"]').isEnabled(),true);
+        assert.equal(await page.evaluate(()=>window.calls.length),2,'local prose recovery does not call another API');
         assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.progression.currency.silver),95);
         assert.equal(await page.evaluate(()=>window.host.chatMetadata.tretaresia_rpg_state.inventory.length),1);
-        assert.deepEqual(errors,[]);console.log(`PASS current conditional inn room prices inline with zero extra calls, same-turn ability registration, swipe/regenerate contract, complete access terms, missing catalog without extra calls and unchanged wallet/inventory at ${width}px`);await page.close();
+        assert.deepEqual(errors,[]);console.log(`PASS current conditional inn room prices inline with zero extra calls, same-turn ability registration, swipe/regenerate contract, complete access terms, prose-only rental recovery without extra calls and unchanged wallet/inventory at ${width}px`);await page.close();
     }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

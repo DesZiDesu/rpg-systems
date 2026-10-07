@@ -1,12 +1,13 @@
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.15';
-import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.58.15';
-import {publicCommerceStory,publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.58.15';
-import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.58.15';
-import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.58.15';
-import {commerceDiscussionOnly} from './commerce-intent.js?v=0.58.15';
-import {normalizePurchaseTerms} from './commerce-rights.js?v=0.58.15';
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.58.15';
-import {COMMERCE_PRICE_PATTERN,readCommercePrices} from './commerce-prices.js?v=0.58.15';
+import {currencyScheme,currencyValues} from './currency-config.js?v=0.59.0';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.59.0';
+import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.59.0';
+import {publicCommerceStory,publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.59.0';
+import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.59.0';
+import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.59.0';
+import {commerceDiscussionOnly} from './commerce-intent.js?v=0.59.0';
+import {normalizePurchaseTerms} from './commerce-rights.js?v=0.59.0';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.59.0';
+import {commercePricePattern,readCommercePrices} from './commerce-prices.js?v=0.59.0';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -35,11 +36,11 @@ export function shopItemOutputExample({learning=false}={}){
 function shopBasketQuote(raw,event,story){
     const lines=event.selection?.items,entries=event.items;
     if(event.kind!=='npcShop'||!lines||entries.length<2||lines.length!==entries.length||entries.some(e=>e.item.quantity!==1||e.terms.mode!=='permanent'||e.terms.delivery||e.terms.deposit||!lines.some(l=>l.itemId===e.id&&l.quantity===1)))return null;
-    const latest=publicTradeDialogues(story).filter(d=>d.name===event.seller.name&&d.prices.length).at(-1),fact=latest&&optionPriceFacts(latest).at(-1);
+    const latest=publicTradeDialogues(story,event).filter(d=>d.name===event.seller.name&&d.prices.length).at(-1),fact=latest&&optionPriceFacts(latest).at(-1);
     if(!fact||quotedTradeRefused(latest.quote)||/(?:ไม่ลด|ไม่ตกลง|ไม่ยอม|ปฏิเสธ|พรุ่งนี้|\b(?:refuse|tomorrow|hypothetical)\b|won't|not accept)/iu.test(latest.quote))return null;
     if(!/(?:รวมกัน(?:เป็น)?|รวม(?:ทั้งหมด)?(?:เป็น)?|(?:ราคา)?(?:ทั้งหมด|ทั้งชุด)(?:เป็น)?|ลด(?:ราคา)?(?:ให้)?(?:พิเศษ)?(?:เหลือ)|\b(?:total|bundle)\s*(?:is|of|for|:)?|\ball\s+\w+(?:\s+\w+){0,3}\s+(?:for|is))\s*$/iu.test(fact.preceding))return null;
     const quote=raw||{amount:fact.amount,denomination:fact.denomination,evidence:latest.quote};
-    if(!Number.isSafeInteger(quote.amount)||quote.amount<=0||quote.amount!==fact.amount||quote.denomination!==fact.denomination||typeof quote.evidence!=='string'||!quote.evidence.trim()||!latest.quote.includes(quote.evidence)||!readCommercePrices(quote.evidence).some(p=>p.amount===quote.amount&&p.denomination===quote.denomination))return null;
+    if(!Number.isSafeInteger(quote.amount)||quote.amount<=0||quote.amount!==fact.amount||quote.denomination!==fact.denomination||typeof quote.evidence!=='string'||!quote.evidence.trim()||!latest.quote.includes(quote.evidence)||!readCommercePrices(quote.evidence,event).some(p=>p.amount===quote.amount&&p.denomination===quote.denomination))return null;
     return{amount:quote.amount,denomination:quote.denomination,evidence:quote.evidence,items:structuredClone(lines)};
 }
 function pricedEntriesDisclosed(event,story,entries=event.items){
@@ -48,7 +49,7 @@ function pricedEntriesDisclosed(event,story,entries=event.items){
         const ownQuote=entry.evidence||event.evidence,menu=evidenceText(ownQuote),start=menu.indexOf(evidenceText(entry.item.name));
         if(!evidenceText(story).includes(menu)||!namedInteraction((event.seller||event.buyer).name,ownQuote,story)||start<0)return false;
         const end=Math.min(...allEntries.map(other=>other===entry?-1:menu.indexOf(evidenceText(other.item.name))).filter(index=>index>start),menu.length);
-        return readCommercePrices(menu.slice(start+evidenceText(entry.item.name).length,end)).some(price=>price.amount===entry.askPrice&&price.denomination===entry.denomination);
+        return readCommercePrices(menu.slice(start+evidenceText(entry.item.name).length,end),event).some(price=>price.amount===entry.askPrice&&price.denomination===entry.denomination);
     });
 }
 function pricedCatalogEvidence(event,story,user,subject,activity) {
@@ -58,7 +59,7 @@ function pricedCatalogEvidence(event,story,user,subject,activity) {
     if(!evidenceText(story).includes(evidenceText(quote))||!namedInteraction(event.seller.name,quote,story))return false;
     if(!pricedEntriesDisclosed(event,story))return false;
     const strip=value=>String(value).replace(pricingCondition,'');
-    const current=strip(quote).split(/คืนกุญแจ|คืนของเช่า|กำหนดคืน|\bcheckout\b/iu)[0],price=readCommercePrices(current)[0];
+    const current=strip(quote).split(/คืนกุญแจ|คืนของเช่า|กำหนดคืน|\bcheckout\b/iu)[0],price=readCommercePrices(current,event)[0];
     // A present room offer may include tomorrow's breakfast in the same Thai
     // sentence. Test the priced offer, not that future included service.
     const offered=price?current.slice(0,current.indexOf(price.text)+price.text.length):current;
@@ -71,7 +72,7 @@ function typedCatalogEvidence(event,story,user,subject,activity){
     if(event.kind!=='npcShop'||!event.items.some(e=>e.terms.mode!=='permanent')||!catalogRequestWords.test(String(user||''))||nonCurrentRequest.test(String(user||''))||/(?:ถ้า|หาก|\bif\b)/iu.test(String(user||'')))return false;
     if(!namedInteraction(event.seller.name,event.evidence,story))return false;
     const clauses=event.evidence.split(/(?:คืน(?:กุญแจ|ของ|อุปกรณ์)|กำหนด(?:คืน|รับ)|รับ(?:ของ|งาน)(?:ได้|วัน)|\b(?:return (?:the|it)|checkout|collect|ready (?:at|on|tomorrow)))|[.!?。\n]/iu);
-    return clauses.some(clause=>interactionEvidence(clause,story,user,subject,activity)&&readCommercePrices(clause).length);
+    return clauses.some(clause=>interactionEvidence(clause,story,user,subject,activity)&&readCommercePrices(clause,event).length);
 }
 
 function deliveredKeyDisclosed(entry,event,story){
@@ -97,7 +98,7 @@ function typedTermsDisclosed(event,story){
         if(terms.mode==='permanent'&&!namedInteraction(event.seller.name,terms.scope,story))return false;
         if(terms.deposit){
             const quotes=[...String(story).matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)].map(m=>m[1]);
-            if(!quotes.some(quote=>namedInteraction(event.seller.name,quote,story)&&[...quote.matchAll(/(?:มัดจำ|deposit)([^.!?。\n]{0,70})/giu)].some(m=>readCommercePrices(m[1]).some(p=>p.denomination===entry.denomination&&p.amount===terms.deposit))))return false;
+            if(!quotes.some(quote=>namedInteraction(event.seller.name,quote,story)&&[...quote.matchAll(/(?:มัดจำ|deposit)([^.!?。\n]{0,70})/giu)].some(m=>readCommercePrices(m[1],event).some(p=>p.denomination===entry.denomination&&p.amount===terms.deposit))))return false;
         }
     }
     return true;
@@ -178,10 +179,10 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
     const kind = String(raw?.kind || raw?.type || raw?.event || '').toLocaleLowerCase();
     const purchase=/purchase|offer/u.test(kind);
     if(intent&&intent.kind!==(purchase?'sell':'buy'))return null;
-    const quotedPrice=[...String(story||'').matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)].some(match=>readCommercePrices(match[1]).length>0);
+    const quotedPrice=[...String(story||'').matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)].some(match=>readCommercePrices(match[1],options.currency).length>0);
     const contextShop=!purchase&&quotedPrice&&catalogRequestWords.test(String(user||''))&&!nonCurrentRequest.test(String(user||''));
-    const subject=purchase?buyWords:contextShop?new RegExp(`${shopWords.source}|${COMMERCE_PRICE_PATTERN.source}`,'iu'):shopWords;
-    const activity=purchase?new RegExp(`${actionWords.source}|${buyWords.source}`,'iu'):contextShop?new RegExp(`${actionWords.source}|${COMMERCE_PRICE_PATTERN.source}`,'iu'):actionWords;
+    const subject=purchase?buyWords:contextShop?new RegExp(`${shopWords.source}|${commercePricePattern(options.currency).source}`,'iu'):shopWords;
+    const activity=purchase?new RegExp(`${actionWords.source}|${buyWords.source}`,'iu'):contextShop?new RegExp(`${actionWords.source}|${commercePricePattern(options.currency).source}`,'iu'):actionWords;
     let candidate=withInteractionEvidence(raw, story, location, subject, activity);
     // If no evidence was supplied, the NPC's own current price dialogue can
     // provide it. Never replace incorrect evidence supplied by the model.
@@ -189,10 +190,13 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
         for(const match of String(story||'').matchAll(/<tr-dialogue\b[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)){
             const quote=match[1].trim();if(quote.length>600)continue;
             const test=normalizeMarketplaceEvent({...candidate,evidence:quote});
+            if(test&&options.currency?.scheme)test.currencyScheme=currencyScheme(options.currency);
             if(test&&pricedCatalogEvidence(test,story,user,subject,activity)){candidate={...candidate,evidence:quote};break;}
         }
     }
     const event = normalizeMarketplaceEvent(candidate);
+    if(event&&options.currency?.scheme)event.currencyScheme=currencyScheme(options.currency);
+    if(event&&!currencyValues(options.currency)[event.denomination])return null;
     if (!event || key(event.location) !== key(location) || !evidenceText(story).includes(evidenceText(event.evidence))) return null;
     if(event.items?.some(entry=>entry.evidence)&&!pricedEntriesDisclosed(event,story,event.items.filter(entry=>entry.evidence)))return null;
     // An older price-only room object can use the complete terms already
@@ -224,7 +228,7 @@ export function confirmedMarketplaceEvent(raw, story, user, location, inventory 
         }
     } else {
         if (!subject.test(event.evidence) || !namedInteraction(event.seller.name, event.evidence, story)) return null;
-        if (!buyWords.test(event.evidence) && !shopWords.test(String(story)) && !(contextShop&&readCommercePrices(event.evidence).length>0)) return null;
+        if (!buyWords.test(event.evidence) && !shopWords.test(String(story)) && !(contextShop&&readCommercePrices(event.evidence,event).length>0)) return null;
     }
     if(event.kind==='npcShop'){
         const selection=event.selection?validateShopSelection(event.selection,event.items,user)||selectionFromShopRequest(event.items,user):selectionFromShopRequest(event.items,user);delete event.selection;if(selection)event.selection=selection;
@@ -269,7 +273,7 @@ export function resolveMarketplaceReply({marketplace,story,user,location,invento
     if(marketplace){
         let event=confirmedMarketplaceEvent(marketplace,story,user,location,inventory,intent,options);
         if(event&&!pricedEntriesDisclosed(event,story,event.items||[{item:event.item,askPrice:event.askPrice,denomination:event.denomination}]))event=null;
-        return {event,status:event?'ready':'invalid-data',source:'inline-patch',...(!event?{details:marketplaceRejection(marketplace,story,location)}:{})};
+        return {event,status:event?'ready':'invalid-data',source:'inline-patch',...(!event?{details:marketplaceRejection(marketplace,story,location,options.currency)}:{})};
     }
     const event=recoverMarketplaceShop(story,user,location,npcs,{...options,inventory});
     return {event,status:event?'ready':'no-disclosed-offer',source:'public-dialogue'};
@@ -277,8 +281,9 @@ export function resolveMarketplaceReply({marketplace,story,user,location,invento
 
 // Explain the rejected public opening without accepting contradictory data or
 // requesting another model call. Record only offer fields, never host settings.
-function marketplaceRejection(raw,story,location){
+function marketplaceRejection(raw,story,location,configuration){
     const reasons=[],event=normalizeMarketplaceEvent({...raw,location:raw.location||location});
+    if(event&&configuration?.scheme)event.currencyScheme=currencyScheme(configuration);
     if(!event)reasons.push({code:'offer-format'});
     else{
         if(key(event.location)!==key(location))reasons.push({code:'location',expected:location,received:event.location});

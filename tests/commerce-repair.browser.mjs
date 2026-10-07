@@ -42,6 +42,7 @@ try{
    window.host.generateRaw=async args=>{window.calls.push(args);const response=window.responses.shift();if(window.defer){window.defer=false;await new Promise(r=>window.release=r);}if(response===undefined)throw Error('Unexpected API');return JSON.stringify(response);};
    window.host.updateMessageBlock=()=>{};await window.host.eventSource.emit('CHAT_CHANGED');
   },chat);
+  await page.locator('[data-dock-panel=commerce]').click();
   const bar=page.locator('.rf-commerce-composer'),repair=bar.locator('[data-commerce-repair]');await repair.waitFor({state:'visible'});
   assert.match(await bar.innerText(),/กดเมื่อ NPC เสนอสินค้าและราคาแล้ว/);assert.match(await bar.innerText(),/ใช้ API 1 ครั้ง/);assert.match(await bar.innerText(),/หลังเติมสำเร็จ/);
   assert.equal(await page.evaluate(()=>window.calls.length),0);
@@ -69,6 +70,7 @@ try{
   // Metadata-only repair survives reload with no regeneration or payment.
   await page.reload();await page.waitForFunction(()=>window.hStatsPreview?.ready);await setup(page);
   await page.evaluate(async chat=>{window.host.chat.splice(0,window.host.chat.length,...chat);window.host.updateMessageBlock=()=>{};window.host.generateRaw=async args=>{window.calls.push(args);return JSON.stringify({narrative:'<tr-narrative>Barth รับเงินสี่สิบเหรียญเงินและส่งมอบตำราทั้งสามเล่ม</tr-narrative>',decision:{outcome:'accept',amount:40}});};await window.host.eventSource.emit('CHAT_CHANGED');},chat);
+  await page.locator('.rf-composer-dock.is-minimized').waitFor({state:'visible'});await page.locator('[data-dock-panel=commerce]').click();
   await bar.locator('[data-commerce-action="confirm"]').waitFor({state:'visible'});assert.equal(await page.evaluate(()=>window.calls.length),0);
   await bar.locator('.rf-commerce-summary').click();assert.equal(await bar.locator('.rf-commerce-amount').inputValue(),'40');assert.equal(await bar.locator('.rf-commerce-basket-row').count(),3);
   await bar.locator('[data-commerce-action="confirm"]').click();await page.waitForFunction(()=>window.host.chatMetadata.tretaresia_rpg_state.commerce?.receipts?.length===1);

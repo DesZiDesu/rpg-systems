@@ -1,9 +1,10 @@
-import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.15';
-import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.58.15';
-import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.58.15';
-import {CURRENCY_VALUES,CURRENCY_RULE,walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.58.15';
-import {readCommercePrices} from './commerce-prices.js?v=0.58.15';
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.58.15';
+import {currencyValues,currencyRule,currencyScheme} from './currency-config.js?v=0.59.0';
+import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.59.0';
+import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.59.0';
+import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.59.0';
+import {walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.59.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.59.0';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.59.0';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);
@@ -17,30 +18,34 @@ const units = ['gold','silver','copper'];
 const active = session => ['offered','open'].includes(session.status);
 const hash = value => {let n=2166136261;for(const c of value)n=Math.imul(n^c.codePointAt(0),16777619);return(n>>>0).toString(36);};
 
-export function createCommerceSession(event, source = {}) {
-    if (!event || !event.id || !event.location || !units.includes(event.denomination)) return null;
+export function createCommerceSession(event, source = {}, configuration) {
+    configuration ||= event?.currencyScheme?{currencyScheme:event.currencyScheme}:undefined;
+    const values=currencyValues(configuration);
+    if (!event || !event.id || !event.location || !values[event.denomination]) return null;
     const auction = Array.isArray(event.lots), purchase = event.kind === 'npcPurchase';
     if (!auction && !['npcShop','npcPurchase'].includes(event.kind)) return null;
     const session = {id:`commerce-${hash(`${event.id}|${source.turnKey || ''}|${source.variant || ''}`)}`,eventId:event.id,
         kind:auction?'auction':purchase?'sell':'buy',title:clean(event.title || (purchase?event.item?.name:'Shop'),160),location:event.location,
         denomination:event.denomination,status:auction?'offered':'open',revision:0,source:copy(source),history:[],selectedId:'',
+        ...(configuration?.scheme||configuration?.currencyScheme||configuration?.units?{currencyScheme:currencyScheme(configuration)}:{}),
         lots:[],index:0,participants:[],entryFee:auction&&money(event.entryFee)?event.entryFee:0,deposit:auction&&money(event.deposit)?event.deposit:0,
         items:[],npc:copy(purchase?event.buyer:event.seller||{}),quote:purchase?event.askPrice:0,agreed:false};
     if(!auction){
         const entries=purchase?(event.items||[{id:event.item?.id||'sale-item',item:copy(event.item),askPrice:event.askPrice,stock:event.item?.quantity||1}]):(event.items||[]);
         if(entries.some(entry=>!entry||typeof entry!=='object'))return null;
         const priceUnits=entries.map(entry=>entry.denomination||event.denomination);
-        if(!entries.length||priceUnits.some(unit=>!units.includes(unit)))return null;
+        if(!entries.length||priceUnits.some(unit=>!units.includes(unit)||!values[unit]))return null;
         const mixed=new Set(priceUnits).size>1;
         // Canonical accounting uses the smallest quoted unit, preserving exact
         // integer values. Display retains each option's original quoted price.
-        if(mixed)session.denomination=priceUnits.reduce((a,b)=>CURRENCY_VALUES[a]<CURRENCY_VALUES[b]?a:b);
+        if(priceUnits.some(unit=>!values[unit]))return null;
+        if(mixed)session.denomination=priceUnits.reduce((a,b)=>values[a]<values[b]?a:b);
         session.items=entries.map((raw,index)=>{
             const entry=copy(raw),from=priceUnits[index],to=session.denomination;
             entry.item=completeItemDefinition(entry.item);entry.quotedPrice=raw.askPrice;entry.quotedDenomination=from;
-            entry.askPrice=convertMoney(raw.askPrice,from,to);entry.denomination=to;
-            if(raw.floorPrice!==undefined)entry.floorPrice=convertMoney(raw.floorPrice,from,to);
-            if(entry.terms?.deposit)entry.terms.deposit=convertMoney(entry.terms.deposit,from,to);
+            entry.askPrice=convertMoney(raw.askPrice,from,to,configuration);entry.denomination=to;
+            if(raw.floorPrice!==undefined)entry.floorPrice=convertMoney(raw.floorPrice,from,to,configuration);
+            if(entry.terms?.deposit)entry.terms.deposit=convertMoney(entry.terms.deposit,from,to,configuration);
             return entry;
         });
         if(session.items.some(entry=>!entry.item?.name||!entry.askPrice||!money(entry.askPrice)||entry.floorPrice===null||entry.terms?.deposit===null))return null;
@@ -73,7 +78,7 @@ export function createCommerceSession(event, source = {}) {
         session.quote=session.items.reduce((sum,entry)=>sum+entry.askPrice,0);if(!money(session.quote))return null;
         if(session.items.length>1)session.basket=session.items.map(entry=>({itemId:entry.id,quantity:entry.item.quantity||1}));
         session.selectedId=session.items[0].id;
-        session.npcBudget=money(event.buyer?.budget)?convertMoney(event.buyer.budget,event.denomination,session.denomination):null;
+        session.npcBudget=money(event.buyer?.budget)?convertMoney(event.buyer.budget,event.denomination,session.denomination,configuration):null;
         if(money(event.buyer?.budget)&&session.npcBudget===null)return null;
     } else {
         if (!session.items.length || session.items.some(entry=>!entry||!normalizePurchaseTerms(entry.terms))) return null;
@@ -82,7 +87,7 @@ export function createCommerceSession(event, source = {}) {
         if(event.basketQuote){
             const q=event.basketQuote,lines=session.basket;
             if(!lines||!Array.isArray(q.items)||q.items.length!==lines.length||!lines.every(l=>q.items.some(i=>i.itemId===l.itemId&&i.quantity===l.quantity)))return null;
-            const total=convertMoney(q.amount,q.denomination,session.denomination);if(!money(total)||!total)return null;session.quote=total;
+            const total=convertMoney(q.amount,q.denomination,session.denomination,configuration);if(!money(total)||!total)return null;session.quote=total;
         }
     }
     return session;
@@ -100,11 +105,11 @@ export function normalizeCommerce(raw, legacy = {}) {
         session.source ||= {};session.lots ||= [];session.items ||= [];
         if(session.kind!=='auction'&&active(session)&&session.items.some(entry=>entry.denomination&&entry.denomination!==session.denomination&&!Object.hasOwn(entry,'quotedPrice'))){
             const oldUnit=session.denomination,first=session.items[0],repriced=createCommerceSession({id:session.eventId,location:session.location,denomination:oldUnit,
-                kind:session.kind==='buy'?'npcShop':'npcPurchase',seller:session.npc,buyer:{...session.npc,budget:session.npcBudget},item:first?.item,askPrice:first?.askPrice,items:session.items},session.source);
+                kind:session.kind==='buy'?'npcShop':'npcPurchase',seller:session.npc,buyer:{...session.npc,budget:session.npcBudget},item:first?.item,askPrice:first?.askPrice,items:session.items},session.source,session);
             if(!repriced)continue;
             session.items=repriced.items;session.denomination=repriced.denomination;
             const negotiated=session.history.some(entry=>entry.action==='offer'||entry.decision?.outcome==='counter');
-            const quote=negotiated?convertMoney(session.quote,oldUnit,session.denomination):commerceBasketQuote(session,tradeLines(session));
+            const quote=negotiated?convertMoney(session.quote,oldUnit,session.denomination,session):commerceBasketQuote(session,tradeLines(session));
             if(quote===null)continue;
             session.quote=quote;session.npcBudget=repriced.npcBudget;session.agreed=false;session.revision++;session.priceUnitsUpdated=true;
         }
@@ -120,7 +125,7 @@ export function normalizeCommerce(raw, legacy = {}) {
             budgets.set(bidder.id,Math.max(budgets.get(bidder.id)||0,bidder.budget??bidder.maxBid??0));
         }
         for (const lot of event.lots||[]) for (const bidder of lot.bidders||[]) bidder.budget=budgets.get(bidder.id);
-        const session=createCommerceSession(event,{legacy:true});
+        const session=createCommerceSession(event,{legacy:true},legacy.progression?.currency);
         if (!session) continue;
         session.id=`legacy-auction-${old.id}`;session.revision=old.revision||0;session.index=old.index||0;
         session.status=old.status==='Joined'?'open':old.status==='Left'?'cancelled':'completed';
@@ -144,7 +149,7 @@ export function normalizeCommerce(raw, legacy = {}) {
         if(!owned)continue;
         const event={kind:'npcPurchase',id:migrationId,location:listing.location||legacy.location?.place,denomination:listing.denomination,
             buyer:{name:listing.buyer?.name||'Buyer',id:listing.buyer?.id},item:{...owned,quantity:listing.quantity},askPrice:offer?.counterAmount||offer?.amount||listing.askPrice};
-        const session=createCommerceSession(event,{legacy:true});if(session){sessions.push(session);migrated.push(migrationId);}
+        const session=createCommerceSession(event,{legacy:true},legacy.progression?.currency);if(session){sessions.push(session);migrated.push(migrationId);}
     }
     return {version:2,rights:normalizeCommerceRights(source.rights),sessions,receipts:[...new Map(receipts.map(r=>[r.id,r])).values()],migratedLegacy:migrated};
 }
@@ -156,10 +161,10 @@ export function commerceReserved(state) {
     }
     return out;
 }
-export function commerceAvailable(state) {const held=commerceReserved(state),value=Math.max(0,walletValue(state.progression?.currency)-walletValue(held));return Object.fromEntries(units.map(d=>[d,Math.floor(value/CURRENCY_VALUES[d])]));}
+export function commerceAvailable(state) {const currency=state.progression?.currency,values=currencyValues(currency),held=commerceReserved(state),remaining=walletValue(currency)-walletValue(held,currency),value=Number.isSafeInteger(remaining)?Math.max(0,remaining):0;return Object.fromEntries(units.map(d=>[d,values[d]?Number(BigInt(value)/BigInt(values[d])):0]));}
 export function commerceFundsValid(state, previous=state) {
-    const held=commerceReserved(state);return walletValue(state.progression?.currency)>=walletValue(held)
-        &&(!normalizeCommerce(previous.commerce,previous).sessions.some(s=>s.kind==='auction'&&s.status==='open')||state.progression.currency.name===previous.progression.currency.name);
+    const held=commerceReserved(state);return walletValue(state.progression?.currency)>=walletValue(held,state.progression?.currency)
+        &&(!normalizeCommerce(previous.commerce,previous).sessions.some(s=>['offered','open'].includes(s.status))||(state.progression.currency.name===previous.progression.currency.name&&JSON.stringify(currencyValues(state.progression.currency))===JSON.stringify(currencyValues(previous.progression.currency))));
 }
 export function commerceInventoryValid(state) {
     const held=new Map();for(const session of normalizeCommerce(state.commerce,state).sessions)if(session.kind==='sell'&&session.status==='open'){
@@ -183,7 +188,8 @@ export function commerceBasketQuote(session,lines){
 }
 
 export function prepareCommerceAction(state, candidate, action, {amount,itemId,denomination,items}={}) {
-    if(denomination&&denomination!==candidate.denomination){amount=convertMoney(amount,denomination,candidate.denomination);if(amount===null)return{ok:false,error:'amount'};}
+    if(!candidate||!currencyValues(state.progression?.currency)[candidate.denomination]||JSON.stringify(currencyValues(candidate))!==JSON.stringify(currencyValues(state.progression?.currency)))return {ok:false,error:'stale',next:state};
+    if(denomination&&denomination!==candidate.denomination){amount=convertMoney(amount,denomination,candidate.denomination,state.progression?.currency);if(amount===null)return{ok:false,error:'amount'};}
     if(candidate.kind==='auction'&&candidate.status==='offered'&&action==='bid'){
         const entry=prepareCommerceAction(state,candidate,'join');if(!entry.ok)return entry;
         const joined=applyCommerceDecision(state,entry,{narrative:'Entry authorized by the player bid.',decision:{outcome:'joined'}});
@@ -252,7 +258,7 @@ export function applyCommerceDecision(state, prepared, result, now=new Date().to
     if(original&&original.revision!==(prepared.baseRevision??prepared.session.revision))return fail('stale');
     const events=copy(prepared.entryEvents||[]),d=session.denomination;
     const receipt=(lotId,fields)=>{const id=`${session.id}:${lotId}`;if(next.commerce.receipts.some(r=>r.id===id))return false;
-        next.commerce.receipts.push({id,sessionId:session.id,eventId:session.eventId,lotId,denomination:d,savedAt:now,...fields});return true;};
+        next.commerce.receipts.push({id,sessionId:session.id,eventId:session.eventId,lotId,denomination:d,savedAt:now,...(session.currencyScheme?{currencyScheme:copy(session.currencyScheme)}:{}),...fields});return true;};
     const inventory=(item,quantity)=>{
         item=completeItemDefinition(item);const existing=next.inventory.find(entry=>quantity<0?(item.id?entry.id===item.id:key(entry.name)===key(item.name)):itemDefinitionsMergeable(entry,item));
         if(quantity<0){if(!existing||existing.quantity<-quantity)return false;existing.quantity+=quantity;if(!existing.quantity)next.inventory=next.inventory.filter(entry=>entry!==existing);return true;}
@@ -297,7 +303,7 @@ export function applyCommerceDecision(state, prepared, result, now=new Date().to
                 if(responses.some(r=>r.action==='bid'))return fail('outcome'); // A fresh rival bid remains open for the player's response.
                 if(!receipt(lot.id,{winner:lot.leader,amount:lot.price,itemName:lot.name,quantity:lot.quantity}))return fail('settled');
                 if(lot.leader==='player'){
-                    if(walletValue(next.progression.currency)<(lot.price+session.deposit)*CURRENCY_VALUES[d]||!inventory({...lot,id:''},lot.quantity))return fail('funds');
+                    if(walletValue(next.progression.currency)<(lot.price+session.deposit)*currencyValues(next.progression.currency)[d]||!inventory({...lot,id:''},lot.quantity))return fail('funds');
                     if(!debitWallet(next.progression.currency,lot.price,d))return fail('funds');events.push({type:'won',name:lot.name,amount:lot.price,quantity:lot.quantity});
                 }else if(lot.leader){const winner=session.participants.find(p=>p.id===lot.leader);if(!winner||winner.spent+lot.price>winner.budget)return fail('budget');winner.spent+=lot.price;events.push({type:'sold',name:lot.name,amount:lot.price});}
                 lot.status=lot.leader?'sold':'unsold';
@@ -357,15 +363,15 @@ export function commerceDecisionPrompt(prepared,{npcs=[],story='',canon=''}={}) 
         + (lot?`AUCTION: on join use outcome joined, on next use next. Leaving an offered auction before joining uses outcome left without a fee. On bid/wait/leave return a decision for EVERY active participant except the current leader: participants:[{id,action:"bid"|"pass"|"withdraw",amount:integer-for-bid,reason:"brief motive"}]. Bids must exceed the current price by minIncrement (or reach openingBid if no leader), respect budget minus spent, and be evaluated in ascending bid-price order. No new participants/budgets. The player's proposed bid is already in interaction.lots. Choose outcome open to continue, sold to finish to the actual leader, unsold when nobody bid, left for an uncommitted departure. A new NPC bid stays open so the player can respond; do not sell immediately after that new bid. There is no fixed three-click countdown: the auctioneer decides whether bidding has genuinely ended from the participants' considered decisions. Leaving while the player leads must settle their existing winning obligation or be outbid before departure.\n`
         :`TRADE: use outcome accept/counter/reject/cancel. All askPrice, floorPrice, deposit and budget values are already converted into interaction.denomination. quotedPrice/quotedDenomination retain original display units only; do not convert the accounting values a second time. Player offer proposes amount; accepting that price sets agreed terms, awaiting a separate confirm. Player confirm consents ONLY to interaction.quote for the selected item/quantity; accept with exactly that amount to complete. A different price is counter and awaits consent. Player cancel must return cancel and close without a transfer. NPC may counter or reject from their motives; never increase a known npcBudget. Preserve every selected basket line, exact quantity and NPC. stockKnown:false with stock:null means the shop stock is undisclosed, not zero or one; assess availability from the current NPC/story and accept or reject the selected quantities. Known stock remains a hard limit. decision.amount is one TOTAL for the complete basket, never a per-item price. The player may remove lines or reduce quantities before an offer/confirmation; never reinsert excluded goods.\n`)
         + `${commerceDecisionContract(prepared)}\n`
-        + CURRENCY_RULE+'\n'
+        + currencyRule(prepared.session)+'\n'
         + `REFERENCE DATA:\n${JSON.stringify(payload).replace(/</gu,'\\u003c')}`;
 }
 
 
 // Normal chat and buttons share the same validator and receipts. The model
 // identifies intent; explicit player evidence authorizes financial actions.
-function statedPrices(evidence,unit) {
-    const prices=readCommercePrices(evidence);if(prices.length)return prices.map(price=>convertMoney(price.amount,price.denomination,unit)).filter(value=>value!==null);
+function statedPrices(evidence,unit,configuration) {
+    const prices=readCommercePrices(evidence,configuration);if(prices.length)return prices.map(price=>convertMoney(price.amount,price.denomination,unit,configuration)).filter(value=>value!==null);
     const digits=evidence.replace(/[๐-๙]/gu,c=>String('๐๑๒๓๔๕๖๗๘๙'.indexOf(c)));
     const values=[...digits.matchAll(/(?<![\d.])\d+(?:,\d{3})*(?![\d.])/gu)].map(m=>Number(m[0].replaceAll(',','')));
     const words={'ศูนย์':0,'หนึ่ง':1,'เอ็ด':1,'สอง':2,'ยี่':2,'สาม':3,'สี่':4,'ห้า':5,'หก':6,'เจ็ด':7,'แปด':8,'เก้า':9};
@@ -392,13 +398,13 @@ export function applyCommerceRoleplay(state,candidate,raw,{user='',userMessageId
     if(raw&&(!evidence||!userText.includes(evidence)))return fail('evidence');
     const selected=raw?.itemId&&candidate.kind!=='auction'?candidate.items.find(item=>item.id===raw.itemId):null;
     if(!raw?.items&&raw?.itemId&&candidate.kind!=='auction'&&(!selected||selected.id!==candidate.selectedId&&!key(evidence).includes(key(selected.item.name))))return fail('item');
-    let amount=raw?.amount==null?raw?.amount:convertMoney(raw.amount,raw.denomination||candidate.denomination,candidate.denomination);
+    let amount=raw?.amount==null?raw?.amount:convertMoney(raw.amount,raw.denomination||candidate.denomination,candidate.denomination,state.progression?.currency);
     // Some normal replies omit the separate player amount while retaining the
     // NPC decision. Recover consent only from one unambiguous price in the
     // exact, validated player clause; a counteroffer is never player consent.
     if(raw?.amount==null&&['offer','bid'].includes(action)){
-        const quoted=readCommercePrices(evidence);
-        const prices=[...new Set(quoted.length?quoted.map(price=>convertMoney(price.amount,price.denomination,candidate.denomination)):statedPrices(evidence,candidate.denomination))];
+        const quoted=readCommercePrices(evidence,state.progression?.currency);
+        const prices=[...new Set(quoted.length?quoted.map(price=>convertMoney(price.amount,price.denomination,candidate.denomination,state.progression?.currency)):statedPrices(evidence,candidate.denomination,state.progression?.currency))];
         if(prices.length===1&&money(prices[0])&&prices[0]>0)amount=prices[0];
     }
     let consentQuote=selected&&selected.id!==candidate.selectedId?selected.askPrice:candidate.quote;
@@ -426,10 +432,10 @@ export function applyCommerceRoleplay(state,candidate,raw,{user='',userMessageId
         const barePrice=/^[\s"'“”]*(?:[0-9๐-๙,]+|(?:หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|เอ็ด|ยี่|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน)+)\s*(?:เหรียญ(?:เงิน|ทองแดง|ทอง)?|gold|silver|copper|coins?)?[\s!?!."'“”]*$/iu.test(evidence);
         if(signals[action]&&!signals[action].test(evidence)&&!(['offer','bid'].includes(action)&&barePrice))return fail('intent');
         if(action==='confirm'&&!/(?:ตกลง|ยืนยัน|โอเค|รับข้อเสนอ|ซื้อเลย|ขอซื้อ|รับเลย|จ่าย|ขายให้|ขายเลย|เอาเลย|เอาราคานี้|เอาตามราคา|\b(?:confirm|accept|deal|buy|sell|pay|take it)\b)/iu.test(evidence))return fail('intent');
-        if(['offer','bid'].includes(action)&&(/[-−]\s*[0-9๐-๙]/u.test(evidence)||!statedPrices(evidence,candidate.denomination).includes(amount)))return fail('amount');
+        if(['offer','bid'].includes(action)&&(/[-−]\s*[0-9๐-๙]/u.test(evidence)||!statedPrices(evidence,candidate.denomination,state.progression?.currency).includes(amount)))return fail('amount');
         if(action==='confirm'){
             if(raw.amount!=null&&amount!==consentQuote)return fail('consent');
-            const prices=statedPrices(evidence,candidate.denomination);if(prices.length&&!prices.includes(consentQuote))return fail('consent');
+            const prices=statedPrices(evidence,candidate.denomination,state.progression?.currency);if(prices.length&&!prices.includes(consentQuote))return fail('consent');
         }
     }
     if(raw?.amount!=null&&amount===null)return fail('amount');
@@ -451,6 +457,7 @@ export function commerceRoleplayPrompt(session,{npcs=[],story='',canon=''}={}) {
         ? `This is AUCTION ONLY. Allowed actions: join/bid/wait/next/leave/talk. A raised price, including "เสนอราคา", is bid; NEVER use trade actions offer/confirm/cancel or trade outcomes accept/counter. For a role-play bid on an offered auction, entering is implicit: use the established entry fee/deposit and assess rivals against the proposed player bid. Prepare that player bid as leader before evaluating rivals; it is not already applied to the reference snapshot. The former NPC leader needs a fresh choice after being outbid. A question, reaction to an NPC bid, or discussion of future prices is talk and does not itself advance a round.`
         : `This is TRADE ONLY. Allowed actions: offer/confirm/cancel/talk. A price proposal or request to lower the price is offer, never confirm. Use items to select several known items/quantities or remove explicitly declined lines. Removing/inspecting items uses talk/unchanged; it does not pay. Keep existing lines unless the user explicitly selects/excludes them. A changed basket resets the total to the sum of its listed line prices before negotiation. Never invent owned goods, quantities or stock. Explicit agreement to the CURRENT quote is confirm; if a new price is proposed, use offer and await consent. Resolve a named shop item to its existing itemId; clarify ambiguous items/prices with talk. You may select an explicitly named shop item during talk to inspect it, but do not change its established data. Do not use auction actions or outcomes.`;
     return `NORMAL CHAT COMMERCE — The active interaction below supports BOTH free role-play and buttons. Reply naturally AFTER the latest user message; do not append to an older bubble or request another API call. In this reply's invisible tretaresia_patch include commerce:{sessionId,revision,action,amount,itemId,items:[{itemId,quantity}],denomination,evidence,decision}. For offer/bid, commerce.amount is the player's proposed TOTAL normalized to interaction.denomination; decision.amount is the NPC's accepted or counter TOTAL. Emit both separately even when they are equal; a counterprice must never replace the player proposal. Use the exact interaction.id and revision; evidence is an exact quote of the player's action from the LATEST user message, never NPC words, a quoted third party, or old chat. Do not emit another marketplace/auction catalog while this interaction is active.\n`
-      + `Interpret the player's actual intent, including in-character dialogue/action. Quote only the shortest exact clause authorizing the action in evidence; preserve its original words, number and currency, including line breaks and quotation marks when included. For a player directly saying "1 เหรียญทอง" while bidding, evidence:"1 เหรียญทอง" is sufficient even though amount:100 and denomination:"silver" are normalized for the interaction. Both ยกป้าย and ชูป้าย alongside an explicit price are bidding actions. Unrelated narrative negation is not a refusal to trade or bid. ${flow} Prices are TOTAL for the displayed quantity in the interaction denomination; convert explicitly stated gold/silver/copper at the established exchange rate into the interaction denomination, but never change quantity without explicit selection. ${CURRENCY_RULE} Hypotheticals, refusal, discussion, inventory/budget numbers and quotes of someone else's offer never authorize a purchase or bid. Do not invent a price missing from the user's action. For talk (questions, persuasion, threats, unrelated chat or an explicit basket selection/exclusion) use decision:{outcome:"unchanged"}; preserve money, ownership and auction progress. Preserve price unless the user explicitly changes basket lines/quantities, which resets the quote to their listed total as described above.\n`
+      + currencyRule(session)+'\n'
+      + `Interpret the player's actual intent, including in-character dialogue/action. Quote only the shortest exact clause authorizing the action in evidence; preserve its original words, number and currency, including line breaks and quotation marks when included. For a player directly saying "1 เหรียญทอง" while bidding, evidence:"1 เหรียญทอง" is sufficient even though amount:100 and denomination:"silver" are normalized for the interaction. Both ยกป้าย and ชูป้าย alongside an explicit price are bidding actions. Unrelated narrative negation is not a refusal to trade or bid. ${flow} Prices are TOTAL for the displayed quantity in the interaction denomination; convert explicitly stated gold/silver/copper at the established exchange rate into the interaction denomination, but never change quantity without explicit selection. ${currencyRule(session)} Hypotheticals, refusal, discussion, inventory/budget numbers and quotes of someone else's offer never authorize a purchase or bid. Do not invent a price missing from the user's action. For talk (questions, persuasion, threats, unrelated chat or an explicit basket selection/exclusion) use decision:{outcome:"unchanged"}; preserve money, ownership and auction progress. Preserve price unless the user explicitly changes basket lines/quantities, which resets the quote to their listed total as described above.\n`
       + `The remaining rules below govern NPC decisions. The schema describes ONLY commerce.decision for this normal reply, not a standalone response. Put the short NPC reaction in normal visible prose. Do not settle any active commerce money/items via ops; the extension applies and journals the validated decision once. Never infer NPC willingness from player wallet or force a win.\n${reference}`;
 }

@@ -1,19 +1,23 @@
-// Established denomination values. Wallet changes conserve copper value.
-export const CURRENCY_VALUES=Object.freeze({gold:10000,silver:100,copper:1});
-export const CURRENCY_RULE='Established exchange rate: 1 gold = 100 silver; 1 silver = 100 copper. Amounts and NPC budgets in commerce decisions use the interaction denomination. Convert explicit player prices at this rate; never compare bare numbers across denominations. The engine makes exact change, without a conversion fee.';
-export const walletValue=wallet=>Object.entries(CURRENCY_VALUES).reduce((total,[unit,value])=>total+(wallet?.[unit]||0)*value,0);
-export function convertMoney(amount,from,to){
-    if(!Number.isSafeInteger(amount)||amount<0||!CURRENCY_VALUES[from]||!CURRENCY_VALUES[to])return null;
-    const converted=amount*CURRENCY_VALUES[from]/CURRENCY_VALUES[to];
-    return Number.isSafeInteger(converted)&&converted<=999999999?converted:null;
+import {DEFAULT_CURRENCY_VALUES,currencyValues,currencyValue,currencyRule,splitCurrencyValue} from './currency-config.js?v=0.59.0';
+export const CURRENCY_VALUES=DEFAULT_CURRENCY_VALUES;
+export const CURRENCY_RULE=currencyRule();
+export const walletValue=currencyValue;
+export function convertMoney(amount,from,to,configuration){
+    const values=currencyValues(configuration);
+    if(!Number.isSafeInteger(amount)||amount<0||!values[from]||!values[to])return null;
+    const value=BigInt(amount)*BigInt(values[from]),rate=BigInt(values[to]);
+    if(value%rate)return null;
+    const converted=value/rate;
+    return converted<=999999999n?Number(converted):null;
 }
 export function debitWallet(wallet,amount,unit){
-    if(!Number.isSafeInteger(amount)||amount<0||!CURRENCY_VALUES[unit])return false;
-    const remainder=walletValue(wallet)-amount*CURRENCY_VALUES[unit];
+    const values=currencyValues(wallet);
+    if(!Number.isSafeInteger(amount)||amount<0||!values[unit])return false;
+    const balance=walletValue(wallet),cost=amount*values[unit];
+    if(!Number.isSafeInteger(balance)||!Number.isSafeInteger(cost))return false;
+    const remainder=balance-cost;
     if(!Number.isSafeInteger(remainder)||remainder<0)return false;
     if(wallet[unit]>=amount){wallet[unit]-=amount;return true;}
-    let value=remainder;
-    const result={};for(const [coin,factor]of Object.entries(CURRENCY_VALUES)){result[coin]=Math.floor(value/factor);value%=factor;}
-    if(Object.values(result).some(count=>count>999999999))return false;
+    let result;try{result=splitCurrencyValue(remainder,wallet);}catch{return false;}
     Object.assign(wallet,result);return true;
 }

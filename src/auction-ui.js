@@ -1,3 +1,4 @@
+import {currencyUnitLabel} from './currency-config.js?v=0.59.0';
 const scopes = new WeakMap();
 const node = (tag,cls,text) => { const el = document.createElement(tag); el.className = cls; if (text !== undefined) el.textContent = text; return el; };
 export const auctionErrorText = (error,thai) => ({
@@ -25,7 +26,7 @@ export function renderAuctionCard(view, api, messageId = null) {
     const stateKey = `${messageId ?? 'resume'}:${view.token}:${view.id}`;
     let local = records.get(stateKey); if (!local) records.set(stateKey,local = {collapsed:false,details:false,busy:false,error:'',amount:''});
     const thai = api.settings().language === 'th', t = (th,en) => thai ? th : en;
-    const unit = t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[view.denomination],view.denomination);
+    const unit = view.currencyScheme?currencyUnitLabel(view,view.denomination):t({gold:'ทอง',silver:'เงิน',copper:'ทองแดง'}[view.denomination],view.denomination);
     const price = value => `${Number(value).toLocaleString(thai ? 'th-TH' : 'en-US')} ${unit}`;
     const root = node('section','trpg-auction'); root.dataset.auctionId = view.id;
     root.setAttribute('aria-label',t('การประมูล','Auction')); root.dataset.status = view.status;

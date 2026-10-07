@@ -138,6 +138,7 @@ html,body{height:100%;overflow:hidden;background:transparent;-webkit-tap-highlig
 #trapp .btn.ghost:hover{background:var(--hov)}
 #trapp .btn.prime{border:1px solid var(--gold);color:var(--on-accent);background:linear-gradient(180deg,var(--gold2),var(--goldd));box-shadow:0 0 22px rgba(var(--accent-rgb),.22)}
 #trapp .hint{font-size:10px;color:var(--faint);text-align:center;margin-top:10px;letter-spacing:1px}
+#trapp #trStatus{white-space:pre-line;overflow-wrap:anywhere;letter-spacing:.3px}
 /* tabs */
 #trapp .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}
 #trapp .tab{flex:1 1 auto;min-width:74px;font-family:var(--f-disp);font-weight:700;font-size:10.5px;letter-spacing:2px;
@@ -368,6 +369,11 @@ html,body{height:100%;overflow:hidden;background:transparent;-webkit-tap-highlig
 <script>
 (function(){
   function g(id){return document.getElementById(id);}
+  var openingPending=false;
+  function setOpeningPending(value){
+    openingPending=value;g('trSnd').classList.toggle('on',value);
+    document.querySelector('.foot .btn.prime').setAttribute('aria-disabled',String(value));
+  }
   var S={originEnabled:false,alignment:'',th:'dark',ln:'en',stand:'',power:[],rank:'',ab:[],it:[],cf:[]};
   var parentOrigin=(function(){try{return new URL(document.referrer||location.href).origin;}catch(e){return location.origin;}})();
   var palette=null;
@@ -519,7 +525,7 @@ html,body{height:100%;overflow:hidden;background:transparent;-webkit-tap-highlig
         if(event.data.type==='hydrate')restore(event.data.data);
         if(event.data.uiLanguage)TR.ln(event.data.uiLanguage);
         if(event.data.type==='status'){
-          g('trSnd').classList.toggle('on',event.data.working===true);
+          setOpeningPending(event.data.working===true);
           g('trStatus').textContent=String(event.data.message||'').slice(0,500);
           g('trStatus').removeAttribute('data-en');g('trStatus').removeAttribute('data-th');
         }
@@ -561,8 +567,10 @@ html,body{height:100%;overflow:hidden;background:transparent;-webkit-tap-highlig
       if(!S.rank&&RANKS.length>1){S.rank=RANKS[Math.floor(Math.random()*(RANKS.length-1))][0];buildRanks();}
     },
     send:function(){
+      if(openingPending)return;
       var name=g('fName').value.trim();
       if(!name){TR.tab('t1');g('fName').focus();g('fName').style.borderLeftColor='#ff6b6b';return;}
+      setOpeningPending(true);
       sendToExtension('start',collect());
     }
   };
