@@ -1,16 +1,17 @@
-import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.58.13';
-import {resolveNpcSpeaker} from './npc-core.js?v=0.58.13';
-import {createVoiceStorage} from './voice-storage.js?v=0.58.13';
-import {createElevenLabsClient} from './voice-api.js?v=0.58.13';
-import {createSpeechEditor} from './voice-editor.js?v=0.58.13';
-import {createVoiceRuntime} from './voice-runtime.js?v=0.58.13';
+import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.58.14';
+import {resolveNpcSpeaker} from './npc-core.js?v=0.58.14';
+import {createVoiceStorage} from './voice-storage.js?v=0.58.14';
+import {createElevenLabsClient} from './voice-api.js?v=0.58.14';
+import {createSpeechEditor} from './voice-editor.js?v=0.58.14';
+import {createVoiceRuntime} from './voice-runtime.js?v=0.58.14';
+import {defaultTestFilename,downloadMp3} from './voice-download.js?v=0.58.14';
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shapes={play:'<path d="m9 5 11 7-11 7z"/>',pause:'<path d="M8 5v14M16 5v14"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="1"/>',wave:'<path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/>',chevron:'<path d="m9 5 7 7-7 7"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5M18 5a8 8 0 0 0-14 5M6 19a8 8 0 0 0 14-5"/>'};
 const svg=key=>`<svg viewBox="0 0 24 24" aria-hidden="true">${shapes[key]||shapes.play}</svg>`;
 
 export function createVoiceAddons({settings,context,state,visible=value=>value,save=()=>{},prompt=()=>{},notice=()=>{},notify=()=>{},busy=()=>false,close=()=>{},document:doc=globalThis.document}={}) {
-    let editor;
+    let editor,lastTestClip=null,testFilename='';
     const storage=createVoiceStorage(),controls=new Set(),messages=new Map(),subscriptions=[];
     let root,drawer,panel,runtime,enabled=false,locale='',voicesSignature='',npcSignature='',library=[],libraryPage=0,libraryMore=false,autoTimer,pendingAuto=null,libraryTicket=0;
     const autoPlayed=new Set();
@@ -29,7 +30,7 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
         drawer=root.querySelector('details');panel=root.querySelector('[data-voice-panel]');
         container.append(root);drawer.addEventListener('toggle',()=>{if(drawer.open)render();});
         root.addEventListener('click',onClick);root.addEventListener('change',onChange);root.addEventListener('submit',onSubmit);
-        root.addEventListener('input',event=>{if(event.target.name==='key')render();});
+        root.addEventListener('input',event=>{if(event.target.name==='key')render();if(event.target.name==='test-filename')testFilename=event.target.value;});
         return true;
     }
     function build(){
@@ -46,7 +47,7 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
             <details class="rf-voice-fold" data-voice-npcs><summary>${t('NPC voices','เสียงของตัวละคร')}<span data-voice-npc-count></span></summary><input name="npc-search" type="search" placeholder="${t('Find NPC','ค้นหาตัวละคร')}" aria-label="${t('Find NPC','ค้นหาตัวละคร')}"><div class="rf-voice-npc-list" data-voice-npc-list></div></details>
             <details class="rf-voice-fold"><summary>My Voices<button type="button" class="rf-voice-button rf-voice-icon-button" data-voice-action="voices" aria-label="${t('Refresh voices','รีเฟรชรายชื่อเสียง')}">${svg('refresh')}</button></summary><div data-voice-my-list class="rf-voice-list"></div></details>
             <details class="rf-voice-fold" data-voice-library><summary>Voice Library</summary><p class="rf-voice-copy">${t('Search public voices and add them to My Voices. Library API use requires a paid account.','ค้นหาเสียงสาธารณะแล้วเพิ่มใน My Voices · ใช้ Library ผ่าน API ต้องเป็นบัญชีที่มีสิทธิ์แบบเสียเงิน')}</p><form data-voice-library-search class="rf-voice-row"><input name="library-search" type="search" placeholder="${t('Name, style or accent','ชื่อเสียง สไตล์ หรือสำเนียง')}" aria-label="Voice Library"><button type="submit" class="rf-voice-button">${t('Search','ค้นหา')}</button></form><label class="rf-voice-check"><input type="checkbox" name="custom-rates">${t('Include voices with custom rates','รวมเสียงอัตราพิเศษ')}</label><div data-voice-library-results class="rf-voice-list"></div><div class="rf-voice-row"><button type="button" class="rf-voice-button" data-voice-action="library-prev">${t('Previous','ก่อนหน้า')}</button><span data-voice-library-page></span><button type="button" class="rf-voice-button" data-voice-action="library-next">${t('Next','ถัดไป')}</button></div></details>
-            <details class="rf-voice-fold"><summary>${t('Try a dialogue','ทดลองพากย์บทพูด')}</summary><form data-voice-test><textarea name="test-text" rows="2" maxlength="2000" aria-label="${t('Test dialogue','บทพูดทดลอง')}">${t('Your room is ready. Please follow me.','ห้องพักของท่านพร้อมแล้วครับ เชิญตามข้ามา')}</textarea><button type="submit" class="rf-voice-button">${svg('play')}${t('Generate test · uses quota','สร้างเสียงทดลอง · ใช้โควตา')}</button></form></details>
+            <details class="rf-voice-fold" data-voice-test-fold><summary>${t('Try a dialogue','ทดลองพากย์บทพูด')}</summary><form data-voice-test><textarea name="test-text" rows="2" maxlength="2000" aria-label="${t('Test dialogue','บทพูดทดลอง')}">${t('Your room is ready. Please follow me.','ห้องพักของท่านพร้อมแล้วครับ เชิญตามข้ามา')}</textarea><button type="submit" class="rf-voice-button">${svg('play')}${t('Generate test · uses quota','สร้างเสียงทดลอง · ใช้โควตา')}</button></form><div class="rf-voice-test-export" data-voice-test-export hidden><strong>${t('Latest generated test','เสียงทดลองล่าสุดที่สร้างสำเร็จ')}</strong><small data-voice-test-info></small><p data-voice-test-copy></p><label>${t('File name','ชื่อไฟล์')}<input name="test-filename" type="text" maxlength="120" autocomplete="off" value="${escape(testFilename)}" placeholder="RoleForge-voice-test.mp3"></label><div class="rf-voice-row"><button type="button" class="rf-voice-button is-primary" data-voice-action="download-test">${t('Save MP3','บันทึก MP3')}</button><button type="button" class="rf-voice-button" data-voice-action="clear-test">${t('Clear latest test','ล้างเสียงทดลองล่าสุด')}</button></div><small>${t('Downloads the original MP3 at 1× without another API request. The latest test stays here until cleared or this page is closed. Your downloaded files stay on your device.','ดาวน์โหลด MP3 ต้นฉบับที่ 1× โดยไม่เรียก API ซ้ำ เก็บเสียงล่าสุดไว้จนกว่าจะล้างหรือปิดหน้า ไฟล์ที่ดาวน์โหลดแล้วยังอยู่ในเครื่อง')}</small></div></details>
             <div class="rf-voice-footer"><button type="button" class="rf-voice-button" data-voice-action="stop">${svg('stop')}${t('Stop audio','หยุดเสียง')}</button><button type="button" class="rf-voice-button" data-voice-action="clear-cache">${t('Clear audio cache','ล้างแคชเสียง')}</button></div>`;
         panel.querySelector('[name="npc-search"]').addEventListener('input',()=>renderNpcs(true));
         voicesSignature='';npcSignature='';locale=settings().language;
@@ -96,6 +97,14 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
         panel.querySelector('[data-voice-action="library-next"]').disabled=!data.connected||!libraryMore;
         panel.querySelector('[data-voice-library-page]').textContent=library.length?String(libraryPage+1):'';
         panel.querySelector('[data-voice-action="stop"]').disabled=data.phase==='idle';
+        const clip=data.testClip,exporting=panel.querySelector('[data-voice-test-export]');exporting.hidden=!clip;
+        if(clip!==lastTestClip){lastTestClip=clip;testFilename=clip?defaultTestFilename(clip):'';}
+        const filename=panel.querySelector('[name="test-filename"]');if(filename.value!==testFilename)filename.value=testFilename;
+        const testLoading=data.currentId==='voice-test'&&data.phase==='loading';
+        panel.querySelector('[data-voice-test] button[type="submit"]').disabled=!data.connected||testLoading;
+        panel.querySelector('[data-voice-action="download-test"]').disabled=!clip||testLoading;
+        panel.querySelector('[data-voice-action="clear-test"]').disabled=!clip;
+        if(clip){panel.querySelector('[data-voice-test-info]').textContent=`${clip.voiceName} · ${clip.model} · MP3 · ${(clip.blob.size/1024).toFixed(1)} KB`;panel.querySelector('[data-voice-test-copy]').textContent=clip.text;}
     }
     function refreshButtons(){
         for(const control of controls){
@@ -154,11 +163,15 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
         const action=button.dataset.voiceAction;
         if(action==='disconnect'){runtime.disconnect({forget:true});save();return;}
         if(action==='stop'){runtime.stop();return;}
+        if(action==='download-test'){
+            if(runtime.state.testClip){try{downloadMp3(runtime.state.testClip,testFilename,{document:doc});}catch(error){report(error);}}return;
+        }
+        if(action==='clear-test'){runtime.clearTest();return;}
         if(action==='preview')runtime.activate();
         run(async()=>{
             if(action==='quota')await runtime.quota();
             if(action==='voices')await runtime.refreshVoices();
-            if(action==='clear-cache'){runtime.stop();await storage.clearAudio(config().voiceCacheId||config().voiceVaultId);notify('success',t('Audio cache cleared','ล้างแคชเสียงแล้ว'));}
+            if(action==='clear-cache'){runtime.stop();runtime.clearTest();await storage.clearAudio(config().voiceCacheId||config().voiceVaultId);notify('success',t('Audio cache cleared','ล้างแคชเสียงแล้ว'));}
             if(action==='library-prev'||action==='library-next')await searchLibrary(libraryPage+(action==='library-next'?1:-1));
             if(action==='preview'){const voice=(button.dataset.shared==='true'?library:runtime.state.voices).find(v=>v.voice_id===button.dataset.voiceId);if(voice){notice('voicePreview','Voice preview');await runtime.preview(voice);}}
             if(action==='add'){
@@ -181,7 +194,7 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
         event.preventDefault();const form=event.target;
         if(form.matches('[data-voice-connect]'))run(async()=>{const input=form.elements.key,ok=await runtime.connect(input.value,{remember:form.elements.remember.checked});if(ok){input.value='';form.elements.remember.checked=config().voiceRememberKey;save();render();}});
         if(form.matches('[data-voice-library-search]'))run(()=>searchLibrary());
-        if(form.matches('[data-voice-test]')){runtime.activate();run(()=>runtime.listen([{id:'voice-test',speakerKey:'',name:t('Test','ทดลอง'),text:form.elements['test-text'].value.trim()}]));}
+        if(form.matches('[data-voice-test]')){runtime.activate();run(()=>runtime.generateTest(form.elements['test-text'].value));}
     }
     function update(){
         if(!mount())return;const next=config().enableVoiceAddon;root.hidden=!next;

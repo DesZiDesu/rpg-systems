@@ -1,4 +1,5 @@
 import {startNavigationSummaryPreview} from './navigation-summary-fixture.js';
+import {testMp3Base64} from './voice-test-audio.js';
 
 // This demo runs the production loader. ElevenLabs responses are local fixtures;
 // entering a key here never contacts ElevenLabs and cannot spend real quota.
@@ -7,6 +8,7 @@ export async function startVoicePreview(){
     const original=window.fetch.bind(window),calls=[],sounds=[],quota={used:1800,limit:30000},speech='[whispers] ทางเดินข้างหน้ามืดมาก ระวังด้วยนะคะ';
     const NativeAudio=window.Audio;window.Audio=function(...args){const sound=new NativeAudio(...args);sounds.push(sound);return sound;};
     const previewUrl=URL.createObjectURL(new Blob([wav(1)],{type:'audio/wav'}));
+    const mp3=Uint8Array.from(atob(testMp3Base64),character=>character.charCodeAt(0));
     const voices=[{voice_id:'demo-cora',name:'Cora · Soft & Clear',labels:{gender:'female',accent:'neutral'},preview_url:previewUrl},
         {voice_id:'demo-garrick',name:'Garrick · Warm & Steady',labels:{gender:'male',accent:'British'},preview_url:previewUrl}];
     const shared={voice_id:'demo-library',public_owner_id:'demo-owner',name:'Mira · Calm storyteller',language:'English',gender:'female',preview_url:previewUrl};
@@ -28,7 +30,7 @@ export async function startVoicePreview(){
         if(url.pathname.startsWith('/v1/voices/add/')){if(!voices.some(v=>v.voice_id===shared.voice_id))voices.push(shared);return Response.json({voice_id:shared.voice_id});}
         if(url.pathname==='/v1/text-to-dialogue'){
             if(waitSpeech)await new Promise((resolve,reject)=>{waitSpeech.resolve=resolve;const abort=()=>reject(new DOMException('Aborted','AbortError'));options.signal?.addEventListener('abort',abort,{once:true});if(options.signal?.aborted)abort();});
-            const body=JSON.parse(options.body);quota.used+=body.inputs.reduce((sum,turn)=>sum+turn.text.length,0);return new Response(wav(),{headers:{'content-type':'audio/wav'}});
+            const body=JSON.parse(options.body);quota.used+=body.inputs.reduce((sum,turn)=>sum+turn.text.length,0);return new Response(mp3,{headers:{'content-type':'audio/mpeg'}});
         }
         return Response.json({detail:'Unexpected demo endpoint'},{status:404});
     };

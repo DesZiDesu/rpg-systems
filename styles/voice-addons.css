@@ -28,6 +28,11 @@
 .rf-voice-choice{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #303034}.rf-voice-choice>div{flex:1;min-width:0}.rf-voice-choice strong{display:block;font-size:12px;color:#d5d5dd;overflow-wrap:anywhere}.rf-voice-choice .rf-voice-button{font-size:11px;padding:5px 7px}.rf-voice-choice small{font-size:10px}
 [data-voice-library-search]{flex-wrap:nowrap!important}[data-voice-library-search] input{flex:1;width:0!important}[data-voice-library-search] button{flex-shrink:0}
 .rf-voice-footer{display:flex;gap:7px;justify-content:space-between;border-top:1px solid #343438;margin-top:14px;padding-top:11px;flex-wrap:wrap}
+.rf-voice-test-export{margin-top:12px;padding-top:10px;border-top:1px solid #343438;min-width:0}
+.rf-voice-test-export>strong{display:block;font-size:12px;color:#d9d9df}
+.rf-voice-test-export>p{margin:6px 0;font-size:12px;line-height:1.6;color:#bcbcc2;white-space:pre-wrap;overflow-wrap:anywhere;max-height:100px;overflow:auto}
+.rf-voice-test-export>.rf-voice-row{margin:6px 0}
+@media(pointer:coarse){.rf-voice-drawer input[name="test-filename"],.rf-voice-drawer textarea[name="test-text"]{font-size:16px}}
 .trpg-chat .trpg-dialogue:has(.rf-voice-dialogue-controls){padding-bottom:13px}
 .rf-voice-dialogue-controls{display:flex;align-items:center;gap:8px;min-width:0;margin:16px 0 0;padding:8px 0 0;border-top:1px solid #26251f25;white-space:normal;font-family:system-ui,"Noto Sans Thai",sans-serif}
 .trpg-chat .trpg-dialogue .rf-voice-button{min-height:34px;font-size:11px;line-height:1.4;background:transparent;border:0;border-radius:4px;color:inherit;padding:2px 0;box-shadow:none;flex-shrink:0}

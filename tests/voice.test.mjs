@@ -161,3 +161,50 @@ test('speech drafts stay local, scoped to card/chat/message/swipe/block and the 
     for(const other of [speechDraftKey(context,1,1,2,block),speechDraftKey(context,1,0,3,block),speechDraftKey(context,1,0,2,{...block,text:'Changed'}),speechDraftKey(context,1,0,2,{...block,delivery:'sad'}),speechDraftKey({...context,getCurrentChatId:()=> 'other'},1,0,2,block)]){assert.notEqual(other,key);assert.equal(await store.readDraft(other),null);}
     await store.saveDraft(key,null);assert.equal(await store.readDraft(key),null);assert.equal(block.text,'Hello');
 });
+
+import {isMp3Blob,mp3Filename,defaultTestFilename,downloadMp3} from '../src/voice-download.js';
+const mp3=()=>new Blob([new Uint8Array([0xff,0xfb,0x90,0x64,1,2,3,4])],{type:'audio/mpeg'});
+test('MP3 export recognizes MP3 headers and rejects empty, WAV, JSON and reserved MPEG headers',async()=>{
+    assert.equal(await isMp3Blob(mp3()),true);
+    assert.equal(await isMp3Blob(new Blob([new Uint8Array([73,68,51,4,0,0,0,0,0,0])])),true);
+    for(const blob of [new Blob(),new Blob(['RIFF.....WAVE'],{type:'audio/mpeg'}),new Blob(['{"error":"no audio"}']),new Blob([new Uint8Array([0xff,0xfb,0xfc,0])])])assert.equal(await isMp3Blob(blob),false);
+});
+test('MP3 filenames preserve Thai, normalize extensions and remove path/control or reserved filenames',()=>{
+    assert.equal(mp3Filename('บทพากย์.MP3'),'บทพากย์.mp3');assert.equal(mp3Filename(' ../เรื่อง:หนึ่ง? '),'-เรื่อง-หนึ่ง-.mp3');
+    assert.equal(mp3Filename('CON'),'RoleForge-CON.mp3');assert.equal(mp3Filename(' . '),'RoleForge-voice-test.mp3');
+    assert.equal(mp3Filename('','เสียงทดลอง.mp3'),'เสียงทดลอง.mp3');assert(new TextEncoder().encode(mp3Filename('ก'.repeat(200))).length<=204);
+    assert.match(defaultTestFilename({voiceName:'Garrick',createdAt:new Date(2026,9,7,13,2,4).getTime()}),/^Garrick_2026-10-07_130204\.mp3$/);
+});
+test('download uses the retained original blob with a safe MP3 filename and releases its object URL',()=>{
+    const blob=mp3(),clip={blob,voiceName:'A',createdAt:0},events=[];let scheduled;
+    const link={click(){events.push(['click',this.download,this.href]);},remove(){events.push('remove');}};
+    downloadMp3(clip,'เสียงทดลอง',{document:{createElement:()=>link,body:{append:value=>assert.equal(value,link)}},url:{createObjectURL:value=>{assert.equal(value,blob);return 'blob:download';},revokeObjectURL:value=>events.push(['revoke',value])},schedule:(fn,delay)=>{assert.equal(delay,60000);scheduled=fn;}});
+    assert.deepEqual(events,[['click','เสียงทดลอง.mp3','blob:download'],'remove']);scheduled();assert.deepEqual(events.at(-1),['revoke','blob:download']);
+    assert.throws(()=>downloadMp3(null,'test'),/No generated/);
+});
+test('long voice tests produce one complete downloadable MP3, preserve bytes and replay from cache',async()=>{
+    const blob=mp3(),f=fixture({speech:async()=>blob});await f.runtime.connect('test');const text='ก'.repeat(2000);
+    const play=f.runtime.generateTest(text);await waitFor(()=>f.runtime.state.testClip);assert.equal(f.runtime.state.testClip.text,text);assert.equal(f.runtime.state.testClip.voiceName,'A');assert.equal(f.runtime.state.testClip.blob.type,'audio/mpeg');
+    assert.deepEqual(await f.runtime.state.testClip.blob.arrayBuffer(),await blob.arrayBuffer());f.sounds.at(-1).end();await play;
+    const replay=f.runtime.generateTest(text);await waitFor(()=>f.sounds.length===2);f.sounds.at(-1).end();await replay;
+    const requests=f.calls.filter(Array.isArray);assert.equal(requests.length,1);assert.equal(requests[0][1],text);
+    const clip=f.runtime.state.testClip,chat=f.runtime.listen([f.entry]);await waitFor(()=>f.sounds.length===3);f.sounds.at(-1).end();await chat;assert.equal(f.runtime.state.testClip,clip,'chat playback cannot overwrite a test export');
+    f.runtime.disconnect();assert.equal(f.runtime.state.testClip,null);
+});
+test('cancel or clear while a test is pending cannot expose late generated audio',async()=>{
+    for(const cancel of ['stop','clearTest','disconnect']){
+        let done;const f=fixture({speech:()=>new Promise(resolve=>done=resolve)});await f.runtime.connect('test');const play=f.runtime.generateTest('Pending test');await waitFor(()=>done);f.runtime[cancel]();done(mp3());await play;
+        assert.equal(f.runtime.state.testClip,null);assert.equal(f.sounds.length,0);
+    }
+});
+test('test export remains available after playback failure and clearing it does not stop unrelated chat audio',async()=>{
+    const f=fixture({speech:async()=>mp3()});await f.runtime.connect('test');const play=f.runtime.generateTest('Export even if playback fails');await waitFor(()=>f.runtime.state.phase==='playing');f.sounds.at(-1).onerror();await play;assert(f.runtime.state.testClip);
+    const chat=f.runtime.listen([f.entry]);await waitFor(()=>f.runtime.state.phase==='playing');f.runtime.clearTest();assert.equal(f.runtime.state.testClip,null);assert.equal(f.runtime.state.phase,'playing');f.sounds.at(-1).end();await chat;
+});
+test('invalid test responses are not cached, invalid cached audio is repaired, and empty/overlong tests spend no quota',async()=>{
+    let valid=false;const f=fixture({speech:async()=>valid?mp3():new Blob(['RIFF....WAVE'])});await f.runtime.connect('test');
+    await f.runtime.generateTest('');await f.runtime.generateTest('x'.repeat(2001));assert.equal(f.calls.filter(Array.isArray).length,0);
+    await f.runtime.generateTest('Test');assert.equal(f.runtime.state.testClip,null);assert.equal(f.cache.size,0);assert.equal(f.sounds.length,0);
+    const key=JSON.stringify(['rf-voice-1',f.settings.voiceCacheId,'eleven_v4','voice-a','Test']);f.cache.set(key,new Blob(['RIFF....WAVE']));valid=true;
+    const good=f.runtime.generateTest('Test');await waitFor(()=>f.runtime.state.testClip);f.sounds.at(-1).end();await good;assert.equal(f.calls.filter(Array.isArray).length,2);
+});

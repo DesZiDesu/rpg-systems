@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
+import {testMp3Base64} from '../docs/previews/voice-test-audio.js';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?`${process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES}/playwright`:'playwright');
 const root=new URL('../',import.meta.url),base='/scripts/extensions/third-party/rpg-systems/';
@@ -13,12 +14,12 @@ const server=http.createServer(async(req,res)=>{try{
     const path=url.pathname.slice(base.length),body=await readFile(new URL(path,root));res.setHeader('content-type',path.endsWith('.css')?'text/css':path.endsWith('.html')?'text/html':path.endsWith('.json')?'application/json':path.endsWith('.js')?'text/javascript':'image/webp');res.end(body);
 }catch{res.writeHead(404).end();}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const artifacts=new URL('docs/previews/voice-v0550/',root);await mkdir(artifacts,{recursive:true});
+const artifacts=new URL(process.env.VOICE_SCREENSHOT_DIR?process.env.VOICE_SCREENSHOT_DIR.replace(/\/?$/u,'/'):'docs/previews/voice-v0550/',root);await mkdir(artifacts,{recursive:true});
 let browser;
 try{
     browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
     for(const width of [320,390,1280]){
-        const page=await browser.newPage({viewport:{width,height:950},reducedMotion:'reduce'}),errors=[];
+        const page=await browser.newPage({viewport:{width,height:950},hasTouch:width<600,reducedMotion:'reduce'}),errors=[];
         page.on('pageerror',error=>errors.push(error.message));
         await page.route('https://fonts.googleapis.com/**',route=>route.fulfill({contentType:'text/css',body:''}));
         await page.goto(`http://127.0.0.1:${server.address().port}${base}docs/previews/voice-addon.html?lang=th&addon=voice&review=1`);
@@ -134,12 +135,27 @@ try{
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),before+1);
         await page.evaluate(async()=>{window.host.getCurrentChatId=()=> 'another-voice-chat';await window.host.eventSource.emit('CHAT_CHANGED');});
         assert.equal(await page.evaluate(()=>window.voicePreview.sounds.at(-1).paused),true,'chat changes stop the active player');
+        // Export only the generated test, never another chat or library clip.
+        await page.evaluate(()=>window.navigationSummaryPreview.openSettings());await drawer.locator(':scope>summary').evaluate(node=>{node.closest('details').open=true;});await panel.waitFor({state:'visible'});
+        await panel.locator('[data-voice-test-fold]>summary').click();const testForm=panel.locator('[data-voice-test]'),exportPanel=panel.locator('[data-voice-test-export]');assert.equal(await exportPanel.isVisible(),false);
+        const spoken='[warmly] เสียงทดลอง '+ 'ก'.repeat(1850),speechCount=await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length);
+        await testForm.locator('textarea').fill(spoken);await testForm.locator('button[type=submit]').click();await exportPanel.waitFor({state:'visible'});
+        assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),speechCount+1);assert.equal(await exportPanel.locator('[data-voice-test-copy]').innerText(),spoken);
+        assert.match(await exportPanel.locator('[data-voice-test-info]').innerText(),/MP3/);assert.match(await exportPanel.locator('[name="test-filename"]').inputValue(),/\.mp3$/);
+        await page.evaluate(()=>window.voicePreview.finishAudio());await page.waitForFunction(()=>document.querySelector('[data-voice-action="stop"]').disabled);
+        await exportPanel.locator('[name="test-filename"]').fill('บทพากย์ / ทดสอบ:หนึ่ง.MP3');const apiCount=await page.evaluate(()=>window.voicePreview.calls.length);
+        const saving=page.waitForEvent('download');await exportPanel.locator('[data-voice-action="download-test"]').click();const downloaded=await saving;
+        assert.equal(downloaded.suggestedFilename(),'บทพากย์ - ทดสอบ-หนึ่ง.mp3');const saved=new URL(`test-export-${width}.mp3`,artifacts).pathname;await downloaded.saveAs(saved);assert.deepEqual(await readFile(saved),Buffer.from(testMp3Base64,'base64'));
+        assert.equal(await page.evaluate(()=>window.voicePreview.calls.length),apiCount,'download creates no API or quota request');
+        await exportPanel.scrollIntoViewIfNeeded();await page.screenshot({path:new URL(`test-mp3-${width}.png`,artifacts).pathname});
+        const fit=await exportPanel.evaluate(node=>({client:node.clientWidth,scroll:node.scrollWidth}));assert(fit.scroll<=fit.client+1);if(width<600)assert.equal(await exportPanel.locator('[name="test-filename"]').evaluate(node=>getComputedStyle(node).fontSize),'16px');
+        await exportPanel.locator('[data-voice-action="clear-test"]').click();assert.equal(await exportPanel.isVisible(),false);assert.equal(await page.evaluate(()=>window.voicePreview.calls.length),apiCount);
         // Off removes controls and does not erase the voice assignments or saved key.
         await page.evaluate(()=>{window.navigationSummaryPreview.openSettings();document.querySelector('#tretaresia-rpg-settings>.inline-drawer>.inline-drawer-content').style.display='';});await toggle.uncheck();assert.equal(await page.locator('#roleforge-voice-addons').isVisible(),false);await page.waitForFunction(()=>!document.querySelector('.trpg-dialogue .rf-voice-play'));
         const count=await page.evaluate(()=>window.voicePreview.calls.length);await page.waitForTimeout(150);assert.equal(await page.evaluate(()=>window.voicePreview.calls.length),count);
         assert.equal(await memory.isChecked(),false);assert.equal(await page.evaluate(()=>window.host.extensionSettings.tretaresia_rpg.voiceDefaultId),'demo-garrick');
         assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);
-        console.log(`PASS Voice opt-in, Memory default off, independent encrypted key, quota, dialogue directions, playback/pause/cache/reload, gender/NPC defaults, narration queue, local editor and saved drafts, source change protection, cancellation, native header, Library and API notices at ${width}px`);
+        console.log(`PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at ${width}px`);
         await page.close();
     }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
