@@ -1,15 +1,16 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.58.14';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.58.14';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.58.14';
-import {renderSceneTracker} from './scene-tracker.js?v=0.58.14';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.58.14';
-import {renderGroupBoard} from './group-board-ui.js?v=0.58.14';
-import {uiText} from './ui-language.js?v=0.58.14';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.58.14';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.58.14';
-import { croppedPortrait } from './npc-portraits.js?v=0.58.14';
-import { effectiveNpc } from './npc-alternates.js?v=0.58.14';
-import {speechDisplayText} from './voice-core.js?v=0.58.14';
+import {renderStoryEvents} from './story-events-ui.js?v=0.58.15';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.58.15';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.58.15';
+import {renderSceneTracker} from './scene-tracker.js?v=0.58.15';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.58.15';
+import {renderGroupBoard} from './group-board-ui.js?v=0.58.15';
+import {uiText} from './ui-language.js?v=0.58.15';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.58.15';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.58.15';
+import { croppedPortrait } from './npc-portraits.js?v=0.58.15';
+import { effectiveNpc } from './npc-alternates.js?v=0.58.15';
+import {speechDisplayText} from './voice-core.js?v=0.58.15';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.58.15';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -236,7 +237,7 @@ function supportsStoryPresentation(nodes, source, blocks) {
 }
 
 export function createChatPresentation(api, open) {
-    const mounted=new Map(), portraits=new Map();let timer,revision=0,epoch=0,currentChat='';
+    const mounted=new Map(), portraits=new Map();let timer,revision=0,epoch=0,currentChat='',destroyed=false;
     function clearPortraits(){++epoch;for(const record of portraits.values())if(record.url)URL.revokeObjectURL(record.url);portraits.clear();}
     async function imageFor(p){
         const frame=p.portraitView?.[matchMedia('(max-width: 650px)').matches?'mobile':'desktop']||{x:50,y:50,zoom:1};
@@ -278,7 +279,24 @@ export function createChatPresentation(api, open) {
             // SillyTavern replaces .mes_text with #curEditTextarea.edit_textarea
             // while editing. Leave that row to the host until save or cancel;
             // mounting cards here can obscure the editor and its controls.
-            if(!message || message.is_user || message.is_system || mes.querySelector('#curEditTextarea,.edit_textarea,.mes_edit_textarea')){if(old)restore(host,old);continue;}
+            if(!message || message.is_system || mes.querySelector('#curEditTextarea,.edit_textarea,.mes_edit_textarea')){if(old)restore(host,old);continue;}
+            if(message.is_user){
+                const source=String(message.mes||'');
+                // Preserve other formatters' widgets/wrappers for player rows.
+                if(old?.storyRoot&&(!host.contains(old.storyRoot)||old.storyRoot.parentNode!==host||nativeNodes(host,old).length)){restore(host,old,source);old=null;}
+                const original=old?.storyRoot&&host.contains(old.storyRoot)?old.original:nativeNodes(host,old);
+                const parsed=settings.userChatPresentation===true?parseUserMessage(message):null;
+                const blocks=supportsStoryPresentation(original,source,parsed)?parsed:null;
+                if(!blocks){if(old)restore(host,old,source);continue;}
+                const name=message.name||context.name1||api.state().player?.name||'User';
+                const signature=`user:${revision}:${settings.language}:${settings.chatEffects}:${settings.accentColor}:${settings.inkColor}:${name}:${source}`;
+                if(old?.signature===signature&&host.contains(old.storyRoot))continue;
+                if(old)restore(host,old,source);
+                const storyRoot=renderUserBlocks(blocks,{name,language:settings.language,accent:settings.accentColor,ink:settings.inkColor,narrative,appendText:appendStoryText});
+                storyRoot.classList.toggle('trpg-effects',Boolean(settings.chatEffects));host.replaceChildren(storyRoot);
+                mounted.set(host,{roots:[storyRoot],storyRoot,original,source,signature});
+                continue; // No NPC profiles, gameplay cards, Voice or AI inference.
+            }
             const rawSource=String(message.mes||'');
             const source=api.visible(rawSource);
             // Even with RoleForge presentation disabled, never leave provider
@@ -342,7 +360,7 @@ export function createChatPresentation(api, open) {
             mounted.set(host,{roots,storyRoot,original:storyRoot?original:null,source,signature});
         }
     }
-    function schedule(){if(timer==null)timer=setTimeout(render,90);}
+    function schedule(){if(!destroyed&&timer==null)timer=setTimeout(render,90);}
     const observer=new MutationObserver(records=>{
         if(records.some(r=>{
             const target=r.target.nodeType===1?r.target:r.target.parentElement;
@@ -353,10 +371,11 @@ export function createChatPresentation(api, open) {
         }))schedule();
     });
     // Observe only the chat, not the full settings/editor tree. Host events handle chat replacement.
-    function observe(){observer.disconnect();const chat=document.getElementById('chat');if(chat)observer.observe(chat,{childList:true,subtree:true,characterData:true});schedule();}
-    const context=api.context();for(const event of ['CHAT_CHANGED','CHARACTER_MESSAGE_RENDERED','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED','STREAM_TOKEN_RECEIVED','GENERATION_STARTED']){
-        const type=(context.eventTypes||context.event_types)?.[event];if(type)context.eventSource?.on(type,observe);
+    function observe(){if(destroyed)return;observer.disconnect();const chat=document.getElementById('chat');if(chat)observer.observe(chat,{childList:true,subtree:true,characterData:true});schedule();}
+    const subscriptions=[];
+    const context=api.context();for(const event of ['CHAT_CHANGED','CHARACTER_MESSAGE_RENDERED','USER_MESSAGE_RENDERED','MESSAGE_SENT','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED','STREAM_TOKEN_RECEIVED','GENERATION_STARTED']){
+        const type=(context.eventTypes||context.event_types)?.[event];if(type){context.eventSource?.on(type,observe);subscriptions.push(type);}
     }
     observe();
-    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){clearTimeout(timer);observer.disconnect();clearPortraits();document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
+    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){destroyed=true;clearTimeout(timer);observer.disconnect();clearPortraits();for(const type of subscriptions)context.eventSource?.off?.(type,observe);document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
 }

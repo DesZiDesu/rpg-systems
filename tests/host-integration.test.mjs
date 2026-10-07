@@ -246,8 +246,10 @@ test('fresh settings opt out of all all optional systems and popups, with no opt
   context.extensionSettings={};const settings=host.getSettings();
   for(const key of ['enableMissionBoard','enableAuctions','enableStoryMemory','enableStoryAgenda','enableQuestObjectives','enableMemorySummaries','eventNotifications'])assert.equal(settings[key],false,key);
   assert.equal(settings.preserveNativeChat,false);
+  assert.equal(settings.userChatPresentation,false,'user shorthand is an independent opt-in display preference');
   const state=host.defaultState();state.storyMemories=[{id:'secret',title:'Secret',detail:'Unique paused fact marker',status:'Active',kind:'Fact'}];state.storyAgenda=[{id:'visit',title:'Visit',status:'Scheduled',dueDay:1}];
   const prompt=host.statePrompt(state,{includeState:true,track:true});assert.doesNotMatch(prompt,/Mission Board:|When the current scene presents an auction|Story memory: upsert|Appointments and deadlines:|Quest objectives: include|Unique paused fact marker/);
+  settings.userChatPresentation=true;assert.equal(host.statePrompt(state,{includeState:true,track:true}),prompt,'player display never adds AI parsing instructions');settings.userChatPresentation=false;
   assert.equal(host.roleplayState(state).sceneContext.auctions,undefined);assert.equal(host.aiState(state).storyMemories,undefined);
   settings.enableMissionBoard=true;settings.enableAuctions=true;settings.enableStoryMemory=true;
   const enabled=host.statePrompt(state,{includeState:true,track:true});assert.match(enabled,/Mission Board:/);assert.match(enabled,/When the current scene presents an auction/);assert.match(enabled,/Story memory: upsert/);
@@ -268,7 +270,7 @@ test('disabled optional updates cannot create records or overwrite saved checkli
 test('optional switches preserve explicit saved choices and active auction reserves after turning off',async()=>{
  const previous={settings:context.extensionSettings,state:context.chatMetadata};
  try{
-  context.extensionSettings={tretaresia_rpg:{enableMissionBoard:true,enableMemorySummaries:false,eventNotifications:true,preserveNativeChat:true}};const settings=host.getSettings();assert.equal(settings.preserveNativeChat,true);assert.equal(settings.enableMissionBoard,true);assert.equal(settings.eventNotifications,true);assert.equal(settings.enableAuctions,false);
+  context.extensionSettings={tretaresia_rpg:{enableMissionBoard:true,enableMemorySummaries:false,eventNotifications:true,preserveNativeChat:true,userChatPresentation:true}};const settings=host.getSettings();assert.equal(settings.preserveNativeChat,true);assert.equal(settings.userChatPresentation,true);assert.equal(settings.enableMissionBoard,true);assert.equal(settings.eventNotifications,true);assert.equal(settings.enableAuctions,false);
   const offer={id:'held',title:'Hall',location:'Hall',denomination:'gold',deposit:5,lots:[{id:'blade',name:'Blade',openingBid:6,minIncrement:1}]};let state=host.defaultState();state.progression.currency.gold=30;state=auctionCore.applyAuctionAction(state,offer,'join').next;state=auctionCore.applyAuctionAction(state,offer,'bid',{amount:20,revision:1}).next;
   context.chatMetadata={tretaresia_rpg_state:state};const result=host.applyStatePatch(state,{ops:[['inc','progression.currency.gold',-6,{reason:'Purchase'}],['inc','progression.currency.gold',-20,{reason:'Auction payment'}]]});assert.equal(result.accepted,0);assert.equal(result.next.progression.currency.gold,30);
   host.initializeCommerce();assert.equal(host.commerceRuntime().view(),null);host.commerceRuntime().destroy();assert.equal(auctionCore.auctionAvailable(host.getState()).gold,5);

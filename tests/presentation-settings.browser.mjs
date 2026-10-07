@@ -68,10 +68,10 @@ try{
    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({tretaresia_rpg:{language:'en',autoTrack:false,injectState:false,autoContinuity:false,chatPresentation:false,showSceneTracker:false,memoryAutoSummary:false}}));
   });
   await page.goto(url);await ready(page);
-  assert.equal(await page.locator('[data-presentation-setting]').count(),3);
+  assert.equal(await page.locator('[data-presentation-setting]').count(),4);
   assert.equal(await control(page,'preserveNativeChat').isChecked(),false,'missing preference uses original RoleForge priority');
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/original RoleForge format by default/);
-  await status(page,/RoleForge 0\.46\.0.*is off.*No character reply yet/);
+  await status(page,/RoleForge \d+\.\d+\.\d+.*is off.*No character reply yet/);
   await toggle(page,'chatPresentation',true);await status(page,/Original RoleForge formatting.*No character reply yet/);
   const oldId=await reply(page,oldBody);await status(page,/Latest reply has no readable presentation blocks/);
   assert.equal(await page.locator(`[mesid="${oldId}"] .trpg-header,[mesid="${oldId}"] .trpg-narrative`).count(),0,'old untagged replies are never inferred or rewritten');
@@ -107,7 +107,7 @@ try{
   await status(page,/รูปแบบ RoleForge เดิม.*คำตอบล่าสุดมีบล็อกจัดรูปแบบ/);
   assert.match(await control(page,'preserveNativeChat').locator('..').innerText(),/รักษาหน้าตา regex \/ HTML/);
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/ค่าเริ่มต้นใช้รูปแบบ RoleForge เดิม/);
-  assert.equal(await page.locator('[data-presentation-setting]').count(),3,'language refresh does not duplicate presentation controls');
+  assert.equal(await page.locator('[data-presentation-setting]').count(),4,'language refresh does not duplicate presentation controls');
   if(artifacts){await page.locator('.trpg-settings').screenshot({path:`${artifacts}/presentation-settings-${width}.png`});}
   const bounds=await page.locator('.trpg-settings').evaluate(group=>({left:group.getBoundingClientRect().left,right:group.getBoundingClientRect().right,width:innerWidth,scroll:group.scrollWidth,client:group.clientWidth}));
   assert(bounds.left>=-1&&bounds.right<=bounds.width+1&&bounds.scroll<=bounds.client+1,`presentation settings/status fit the viewport: ${JSON.stringify(bounds)}`);

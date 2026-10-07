@@ -1,7 +1,7 @@
-import {ingestLoot} from './item-core.js?v=0.58.14';
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.14';
-import {evidenceText} from './interaction-evidence.js?v=0.58.14';
-import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.58.14';
+import {ingestLoot} from './item-core.js?v=0.58.15';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.58.15';
+import {evidenceText} from './interaction-evidence.js?v=0.58.15';
+import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.58.15';
 export function lootOpportunity(story,user=''){
  const visible=evidenceText(story),input=evidenceText(user);
  if(/^\s*(?:\(?OOC\b|\[OOC\b|\/)/iu.test(input)||!visible)return null;

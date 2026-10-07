@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>RoleForge · User chat UI preview</title>
+    <style>
+        html,body{margin:0;min-height:100%;background:#181818;color:#ddd;font-family:system-ui,sans-serif}
+        *{box-sizing:border-box}.demo-shell{max-width:920px;margin:auto;padding:20px 20px 28px}
+        .demo-header{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid #ffffff16;padding-bottom:16px}
+        .demo-header strong{font-size:18px;letter-spacing:1px}.demo-header small{display:block;color:#9d9d9d;font-size:11px;letter-spacing:2px;margin-top:4px}
+        .demo-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.demo-controls label{font-size:12px;color:#aaa}
+        .demo-controls select{max-width:130px;background:#252525;color:#ddd;border:1px solid #ffffff22;border-radius:6px;padding:6px;font:inherit}
+        .mes{min-width:0;padding:24px 0 18px;border-bottom:1px solid #ffffff12}.mes-title{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-size:13px;color:#aaa}
+        .mes.user .mes-title{flex-direction:row-reverse}.mes.user .mes_text{text-align:right}
+        .mes-title span{display:grid;place-items:center;width:28px;height:28px;border:1px solid #ffffff26;border-radius:50%;font-size:12px;color:#eee}
+        .mes_text{min-width:0;line-height:1.8;font-size:16px}.mes_text>p{margin:8px 0}.mes.ai{color:#aaa}.mes.ai .mes_text{font-size:14px}
+        .demo-hint{font-size:12px;line-height:1.7;color:#aaa;margin:18px 0}.demo-composer{background:#222;border:1px solid #ffffff22;border-radius:18px;display:flex;align-items:center;gap:12px;padding:12px 16px;margin-top:16px}
+        #send_textarea{width:100%;min-width:0;resize:none;background:transparent;border:0;font:inherit;color:#ddd;outline:none}
+        .demo-composer button{background:#ddd;color:#222;border:0;border-radius:50%;width:32px;height:32px;flex:none;font-size:17px}
+        .preview-host,#extensionsMenu,#extensions_settings2,#extensionsMenuButton{display:none}
+        @media(max-width:650px){.demo-shell{padding:14px}.demo-header{align-items:flex-start;flex-direction:column;gap:12px}.mes{padding-top:18px}.mes_text{font-size:15px}}
+    </style>
+</head>
+<body>
+    <div class="preview-host"><button id="preview-open">Open</button><button id="preview-reset">Reset</button><select id="preview-language"><option value="th">Thai</option><option value="en">English</option></select><p id="preview-status"></p></div>
+    <button id="extensionsMenuButton" hidden>Extensions</button><div id="extensionsMenu"></div><div id="extensions_settings2"></div>
+    <main class="demo-shell">
+        <header class="demo-header"><div><strong>ROLEFORGE</strong><small>USER PRESENTATION · PREVIEW</small></div><div class="demo-controls"><label>Theme <select id="demo-theme"><option value="#a9d98c">Forest</option><option value="#d6b458">Gold</option><option value="#849bb5">Slate</option></select></label><label>UI <select id="demo-language"><option value="th">ไทย</option><option value="en">English</option></select></label></div></header>
+        <div id="chat"></div>
+        <p class="demo-hint">User: “บทพูด” · *บรรยาย* · |พูดในใจ|<br>AI ใช้การแสดงผลเดิม · Preview ใช้ renderer จริงของ RoleForge</p>
+        <form id="send_form" class="demo-composer" onsubmit="return false"><textarea id="send_textarea" placeholder="Type a message…" rows="1"></textarea><button type="button" aria-label="Send">➤</button></form>
+    </main>
+    <script type="module" src="./user-chat-fixture.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.58.14** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.58.15** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.3-development.md)
 
@@ -29,6 +29,8 @@ Use a current SillyTavern installation with extension support and a connected te
 For blank character chats without a card greeting, Character Forge provides the starting profile. Configure its choices in **Extensions → RoleForge → Character Forge Preset**. Custom uses individual editable choices for social standing, Arsenal types, skills, ranks and alignment. Rank headings can be renamed or hidden. Origin Skill is optional; Guild and Party are separate fields. The drawer follows your SillyTavern theme while the creation form keeps the Forge theme. Existing presets and chat drafts are retained. See [the 0.58.8 update notes](docs/character-forge-v0.58.8.th.md).
 
 Saved replies without RoleForge presentation tags remain ordinary text. Generate a new reply to apply enabled instructions. Missing or invalid model data may leave a tracker unchanged or show a diagnostic; a transaction described only in narration is not necessarily recorded.
+
+Enable **User-only Dialogue / Narrative / Inner thought UI** in **Extensions → RoleForge → Chat appearance & NPCs** to format sent player messages: `"speech"` or `“speech”`, `*narrative*`, and `|inner thought|`. Player blocks align right and follow the selected theme. This independent option defaults off, preserves original message text and native rich Markdown/regex widgets, and never interprets assistant shorthand. [Preview and validation notes](docs/user-chat-v0.58.15.th.md).
 
 ## Features
 
@@ -90,7 +92,7 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.58.14** has **1,100 passing unit/host tests** and syntax checks, including Memory provider compatibility, HTTP 400/cause diagnostics, schema-free preset requests and explicit Compact continuation for a 101-message archive. The browser results below are from 0.58.11 and earlier. Character Forge browser checks at 320/390/1280px cover viewport fit, saved drafts, optional Origin Skill, separate Guild/Party, native preset editing, configured Arsenal, hidden Rank and opening generation. Native drawer and startup checks pass on mobile/desktop, including a narrow drawer and cached legacy loader. Skill Storage checks pass at 320/390/900/901/1280px; Optional Systems and chat-null/presentation checks also pass. The older combined chat fixture still has the same baseline commerce assertion failure on unchanged 0.58.7; see the [0.58.8 report](docs/character-forge-v0.58.8.th.md). Provider responses use controlled fixtures, and these checks do not certify every live model, host theme or Safari on a physical iPhone. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
+Version **0.58.15** has **1,108 passing unit/host tests** and syntax checks, including User-only formatting, preserved messages/prompts, Memory provider compatibility and Voice MP3 validation. User chat browser checks pass at 320/390/1280px for AI isolation, right alignment/pen, live theme colors, edit/native restoration, display regex, reload and overflow; run **npm run test:user-chat**. Voice/MP3 browser checks also pass at those widths. Native presentation browser results are described in the [0.58.15 report](docs/user-chat-v0.58.15.th.md). Earlier Character Forge browser checks at 320/390/1280px cover viewport fit, saved drafts, optional Origin Skill, separate Guild/Party, native preset editing, configured Arsenal, hidden Rank and opening generation. Earlier native drawer/startup, Skill Storage (320/390/900/901/1280px), Optional Systems and chat-null checks also pass. The older combined chat fixture still has the same baseline commerce assertion failure on unchanged 0.58.7; see the [0.58.8 report](docs/character-forge-v0.58.8.th.md). Provider responses use controlled fixtures, and these checks do not certify every live model, host theme or Safari on a physical iPhone. Historical results remain in the [development README](docs/archive/README-v0.56.3-development.md).
 
 [Repository audit](docs/repository-audit-v0.56.3.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.3.th.md) · [Full audited inventory](docs/repository-audit-v0.56.3.json)
 
@@ -129,3 +131,5 @@ Memory summary JSON transport, local format recovery and failure diagnostics in 
 Memory API compatibility and Bad Request continuation in 0.58.13: [Thai report](docs/memory-api-compatibility-v0.58.13.th.md).
 
 Downloadable, named MP3 test audio in Voice Addon in 0.58.14: [Thai report](docs/voice-mp3-v0.58.14.th.md).
+
+User-only Dialogue/Narrative/Inner thought UI in 0.58.15: [Thai report and preview](docs/user-chat-v0.58.15.th.md).

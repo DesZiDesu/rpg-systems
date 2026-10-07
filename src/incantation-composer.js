@@ -1,5 +1,5 @@
-import {learnedAbilities} from './incantation-core.js?v=0.58.14';
-import {POWER_TRAINING_CHOICES} from './power-mastery.js?v=0.58.14';
+import {learnedAbilities} from './incantation-core.js?v=0.58.15';
+import {POWER_TRAINING_CHOICES} from './power-mastery.js?v=0.58.15';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const glyph=(name)=>{const paths={book:'<path d="M8 4C5 2 3 2 1 3v10c3-1 5-1 7 1 2-2 4-2 7-1V3c-2-1-4-1-7 1Zm0 0v10"/>',copy:'<rect x="6" y="6" width="8" height="8" rx="1"/><path d="M10 3H3v7"/>',lock:'<rect x="3" y="7" width="10" height="7" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/>',check:'<path d="m3 8 3 3 7-7"/>',info:'<circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 4v.3"/>',train:'<path d="m2 13 5-5 4 4M7 8V3m0 0 4 2M7 3 3 5M9 10l4-4"/>'};return `<svg viewBox="0 0 16 16" aria-hidden="true">${paths[name]||paths.book}</svg>`;};
 export function createIncantationComposer({document:doc=globalThis.document,dock,settings=()=>({}),train=()=>{},choose=()=>{},stop=()=>{},again=()=>{},level=v=>v,busy=()=>false,notify=()=>{}}={}){
