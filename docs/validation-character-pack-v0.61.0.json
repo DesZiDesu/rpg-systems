@@ -1,0 +1,69 @@
+{
+  "release": "0.61.0",
+  "baseCommit": "bfc494dcbcfe6fe13740b83b441de71f32723d65",
+  "card": {
+    "name": "Madoka Magica RPG",
+    "sha256": "3af0d777ad0de8b4506a16aba99305c5679bcda1d23bca4e36e0fec51554ae77",
+    "loreRecords": 169,
+    "enabledLore": 100,
+    "npcs": 12,
+    "powers": 12,
+    "loreMode": "relevant",
+    "loreCharacterBudget": 6000
+  },
+  "unit": {
+    "passed": 1178,
+    "failed": 0,
+    "skipped": 0,
+    "includesUploadedCard": true
+  },
+  "syntax": "passed",
+  "diffCheck": "passed",
+  "browser": {
+    "characterPack": [
+      320,
+      390,
+      1280
+    ],
+    "regex": [
+      320,
+      390,
+      1280
+    ],
+    "mvu": [
+      390,
+      1280
+    ],
+    "items": [
+      320,
+      390,
+      1280
+    ],
+    "commerceRepair": [
+      320,
+      390,
+      1280
+    ]
+  },
+  "renderer": {
+    "historyRows": 200,
+    "beforeSceneReads": 200,
+    "afterSceneReads": 1,
+    "afterDomMutations": 2
+  },
+  "scope": {
+    "textApis": "mocked; no paid requests",
+    "cardSaveApi": "mocked; contract checked against pinned SillyTavern source",
+    "tavernHelper": "normal/streaming contract adapter; not a complete live installation",
+    "nativeCardImport": "JSON data import/export/reimport through controlled host; not a live user server"
+  },
+  "commands": [
+    "ROLEFORGE_CHARACTER_CARD=/path/to/card.json npm test",
+    "npm run check",
+    "npm run test:regex",
+    "npm run test:mvu",
+    "ROLEFORGE_CHARACTER_CARD=/path/to/card.json npm run test:character-pack",
+    "npm run test:items",
+    "npm run test:commerce-repair"
+  ]
+}

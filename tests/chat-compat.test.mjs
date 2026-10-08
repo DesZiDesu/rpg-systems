@@ -44,7 +44,8 @@ test('real addHook-only API registers once, passes native user/reasoning unchang
     const settings={chatPresentation:true},api={context:()=>({messageFormatter:formatter}),settings:()=>settings,visible:source=>source.replace('PRIVATE','')};
     const release=installChatFormattingHooks(api);assert.equal(hooks.length,3);
     const input='<tr-dialogue name="Cora">Text</tr-dialogue>';
-    assert.equal(hooks[0].fn('PRIVATEText',{}),'Text');
+    assert.equal(hooks[0].fn('PRIVATEText',{}),'PRIVATEText','Regex sees source before reasoning cleanup');
+    assert.equal(hooks[1].fn('PRIVATEText',{}),'Text','unhandled reasoning is cleaned after Regex');
     assert(hooks[2].fn(input,{}).includes('data-roleforge-story="dialogue"'));
     for(const meta of [{isUser:true},{isSystem:true},{isReasoning:true}])for(const hook of hooks)assert.equal(hook.fn(input,meta),input);
     settings.chatRegexMode='native';assert.equal(hooks[2].fn(input,{}),input);

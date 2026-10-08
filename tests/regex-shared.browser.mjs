@@ -175,8 +175,21 @@ try{
             },frameId);await page.waitForTimeout(240);
             assert.equal(await page.evaluate(()=>window.nativeFrame.contentDocument===window.originalFrameDoc&&window.nativeFrame.contentDocument.querySelector('input').value==='Edited inside widget'),true,'iframe document and edited state survive shared presentation');
             await mode(page,'native');assert.equal(await page.evaluate(()=>window.nativeFrame.contentDocument===window.originalFrameDoc),true,'unwrapping does not reload native iframe');await mode(page,'shared');
+            const lateId=await add(page);
+            await page.evaluate(async id=>{
+                const target=document.querySelector(`[mesid="${id}"] [data-roleforge-story="dialogue"]`),owner=document.createElement('div');owner.className='TH-render';target.append(owner);
+                const frame=document.createElement('iframe');frame.style.cssText='width:100%;max-width:100%;box-sizing:border-box';frame.srcdoc='<input value="Late widget">';const loaded=new Promise(resolve=>frame.onload=resolve);owner.append(frame);await loaded;
+                window.lateFrame=frame;window.lateDocument=frame.contentDocument;window.lateOwner=owner;frame.contentDocument.querySelector('input').value='Preserved late state';
+            },lateId);await page.waitForTimeout(240);
+            for(const presentation of ['native','roleforge','shared']){
+                await mode(page,presentation);
+                assert.equal(await page.evaluate(()=>window.lateFrame.isConnected&&window.lateFrame.parentNode===window.lateOwner&&window.lateFrame.contentDocument===window.lateDocument&&window.lateFrame.contentDocument.querySelector('input').value==='Preserved late state'),true,'late Helper adoption preserves its live iframe even without atomic moves');
+            }
             if(olderBrowser)await page.evaluate(()=>Element.prototype.moveBefore=window.atomicMove);
         }
+        await rules(page,{global:[script('/[\\s\\S]+/','<style>.hidden-card{color:red}</style><!--Hidden by Regex-->')]});
+        const hidden=await add(page);assert.equal(await row(page,hidden).locator('.trpg-chat').count(),0,'style/comment-only Regex output stays hidden: '+await row(page,hidden).innerHTML());
+        await rules(page);
         // Actual native editor lifecycle: in-flight updates do not mount over
         // the editor; a native rerender on save decorates only the new content.
         await page.evaluate(id=>{const body=document.querySelector(`[mesid="${id}"] .mes_text`);body.replaceChildren();const editor=document.createElement('textarea');editor.id='curEditTextarea';editor.className='edit_textarea';editor.value=window.host.chat[id].mes;body.append(editor);window.sharedEditor=editor;},stored);

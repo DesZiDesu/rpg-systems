@@ -3,6 +3,7 @@ import * as taskGeneration from '../src/task-generation.js';
 import * as itemDefinition from '../src/item-definition.js';
 import * as itemEffects from '../src/item-effects.js';
 import * as lootDiscovery from '../src/loot-discovery.js';
+import * as foreignChat from '../src/foreign-chat.js';
 import * as itemCore from '../src/item-core.js';
 import * as commerceRights from '../src/commerce-rights.js';
 import {renderRightsInventory} from '../src/commerce-rights-ui.js';
@@ -63,10 +64,10 @@ const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enable
 const sandbox={...taskGeneration,...itemLearning,...itemDefinition,...itemEffects,...lootDiscovery,...commerceRights,renderRightsInventory,commerceIconMarkup,readCommercePrices,...mainChatSystems,normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,...commerceEngine,auctionAvailable:commerceEngine.commerceAvailable,auctionFundsValid:commerceEngine.commerceFundsValid,createCommerceRuntime,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,...locationList,...sceneCompletion,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},showApiRequestNotice:(kind,reason,language)=>showApiRequestNotice(kind,reason,language,sandbox.toastr),...powerMastery,...incantationCore,...itemCore,...voiceCore,SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelector(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
-Object.assign(sandbox,forgeOpening,statTraining,currencyConfig,{walletValue,debitWallet});
+Object.assign(sandbox,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet});
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
-vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig})',sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantVariantKey,assistantTurnKey,scheduleAssistantPatch,cleanInlinePatchSurfaces,assistantPatchTimers,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
+vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig,shortHash,getForgePreset,activeLoreOptions,saveCharacterPackSetup})',sandbox);
 const host=sandbox.testHost;
 
 test('normal main-chat practice commits bounded permanent stats, fatigue and native notifications exactly once',async()=>{
@@ -2537,10 +2538,106 @@ test('real host normalization and persistence retain overheal without increasing
  try{context.extensionSettings={tretaresia_rpg:{autoTrack:true}};const base=host.defaultState();const boosted=itemEffects.applyItemStats(base,[{stat:'player.hp.current',operation:'inc',value:20,overflow:'temporary',duration:{unit:'turns',value:3}}],{requestId:'overheal',turn:5});assert.equal(boosted.ok,true);const normalized=host.normalize(boosted.next);assert.equal(normalized.player.hp.current,120);assert.equal(normalized.player.hp.max,100);assert.equal(normalized.itemSystem.buffs.length,1);context.chatMetadata={tretaresia_rpg_state:normalized};context.saveMetadata=async()=>{};assert.equal(await host.persistState(normalized,'items'),true);assert.equal(host.getState().player.hp.current,120);assert.equal(host.getState().player.hp.max,100);const expired=itemEffects.expireItemBuffs(host.getState(),{turn:8});assert.equal(await host.persistState(expired.next,'items'),true);assert.equal(host.getState().player.hp.current,100);assert.equal(host.getState().player.hp.max,100);
  }finally{context.chatMetadata=prior.metadata;context.saveMetadata=prior.save;context.extensionSettings=prior.settings;}
 });
-test('real normal combat reply repairs missing Loot once and saves the full recoverable reward definitions',async()=>{
+test('normal combat tracking completes without a hidden Loot request; explicit repair remains available',async()=>{
  const prior={metadata:context.chatMetadata,chat:context.chat,settings:context.extensionSettings,save:context.saveMetadata,raw:context.generateRaw};
- try{context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,eventNotifications:false,enableMemorySummaries:false,npcDiaryFrequency:'off'}};const state=host.defaultState();state.location.place='Forest';state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};context.chatMetadata={tretaresia_rpg_state:state};const story='สังหารก็อบลินลาดตระเวน 4 ตน';context.chat=[{is_user:true,mes:'ฉันจัดการก็อบลินทั้งหมด'},{is_user:false,mes:`<tr-narrative>${story}</tr-narrative><!--tretaresia_patch:${JSON.stringify({ops:[['inc','progression.kills',4]]})}-->`}];context.saveMetadata=async()=>{};let calls=0;context.generateRaw=async()=>{calls++;return JSON.stringify({loot:[{id:'g4',sourceId:'forest-goblins-four',title:'สัมภาระก็อบลิน',evidence:story,items:[{id:'token',name:'เหรียญตราก็อบลิน',category:'Quest',quantity:4}]}]});};await host.processAssistantPatch(1,'normal');assert.equal(calls,1);assert.equal(host.getState().progression.kills,4);assert.equal(host.getState().inventory.length,0);const pool=host.getState().itemSystem.loot[0];assert.equal(pool.entries[0].remaining,4);assert.ok(pool.entries[0].item.usage);assert.ok(Array.isArray(pool.entries[0].item.usage.stats));assert.equal(host.getState().itemSystem.checks.length,1);await host.processAssistantPatch(1,'normal');assert.equal(calls,1);assert.equal(host.getState().itemSystem.loot.length,1);
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,eventNotifications:false,enableMemorySummaries:false,npcDiaryFrequency:'off'}};
+  const state=host.defaultState();state.location.place='Forest';state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};context.chatMetadata={tretaresia_rpg_state:state};
+  const story='สังหารก็อบลินลาดตระเวน 4 ตน';context.chat=[{is_user:true,mes:'ฉันจัดการก็อบลินทั้งหมด'},{is_user:false,mes:`<tr-narrative>${story}</tr-narrative><!--tretaresia_patch:${JSON.stringify({ops:[['inc','progression.kills',4]]})}-->`}];context.saveMetadata=async()=>{};
+  let calls=0;context.generateRaw=async()=>{calls++;return {loot:[{id:'g4',sourceId:'forest-goblins-four',title:'สัมภาระก็อบลิน',evidence:story,items:[{id:'token',name:'เหรียญตราก็อบลิน',category:'Quest',quantity:4}]}]};};
+  await Promise.all([host.processAssistantPatch(1,'normal'),host.processAssistantPatch(1,'normal')]);
+  assert.equal(calls,0);assert.equal(host.getState().progression.kills,4);assert.equal(host.getState().inventory.length,0);assert.equal(host.getState().itemSystem.loot.length,0);
+  const source={messageId:1,turnKey:'combat',variant:'v1'},args={state:host.getState(),source,story,user:context.chat[0].mes,location:'Forest',context,parse:JSON.parse};
+  assert.ok(lootDiscovery.replyLootGap(args));const repair=await lootDiscovery.resolveReplyLoot(args);assert.equal(calls,1);assert.equal(repair.checked,true);
+  const result=itemCore.ingestLoot(args.state,repair.payload,{story,source,location:'Forest'});assert.equal(result.added[0].entries[0].remaining,4);assert.ok(Array.isArray(result.added[0].entries[0].item.usage.stats));assert.equal(result.next.inventory.length,0);
+  await host.processAssistantPatch(1,'normal');assert.equal(host.getState().progression.kills,4);assert.equal(calls,1);
  }finally{context.chatMetadata=prior.metadata;context.chat=prior.chat;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateRaw=prior.raw;}
+});
+
+test('MVU raw messages and variables survive tracking, and MVU bookkeeping cannot replay RoleForge rewards',async()=>{
+ const prior={metadata:context.chatMetadata,chat:context.chat,settings:context.extensionSettings,save:context.saveMetadata,raw:context.generateRaw};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,eventNotifications:false,enableMemorySummaries:false,npcDiaryFrequency:'off'}};
+  const state=host.defaultState();state.player.hp.current=70;state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};
+  const variables={stat_data:{Mainchar:{HP:999}}};context.chatMetadata={tretaresia_rpg_state:state,variables};let saves=0;context.saveMetadata=async()=>{saves++;};context.generateRaw=async()=>assert.fail('Normal tracking cannot start another API request');
+  const story='<gametxt><tr-narrative>Cora heals you.</tr-narrative></gametxt>';
+  const patch='<!--tretaresia_patch:'+JSON.stringify({ops:[['inc','player.hp.current',5]]})+'-->';
+  const mvu='<StatusPlaceHolderImpl/>\n<UpdateVariable><UpdateAnalysis>Killed 900 goblins and gained 700 EXP.</UpdateAnalysis><JSONPatch>[{"op":"replace","path":"/HP","value":999}]</JSONPatch></UpdateVariable>';
+  const raw=story+patch+mvu,message={is_user:false,mes:raw,swipe_id:0,swipes:[raw],extra:{display_text:raw},variables:[variables]};
+  context.chat=[{is_user:true,mes:'I wait.'},message];
+  await Promise.all([host.processAssistantPatch(1,'normal'),host.processAssistantPatch(1,'normal'),host.processAssistantPatch(1,'normal')]);
+  assert.equal(host.getState().player.hp.current,75);assert.equal(host.getState().progression.kills,0);assert.equal(host.getState().progression.experience,0);
+  assert.equal(message.mes,raw);assert.equal(message.swipes[0],raw);assert.equal(message.extra.display_text,raw);assert.deepEqual(context.chatMetadata.variables,variables);assert.deepEqual(message.variables,[variables]);
+  const variant=host.assistantVariantKey(message),savedCount=saves;
+  message.mes=story+patch+mvu.replace('999','998')+'\n<UpdateVariable><JSONPatch>[]</JSONPatch></UpdateVariable>';
+  assert.equal(host.assistantVariantKey(message),variant);
+  await host.processAssistantPatch(1,'normal');assert.equal(host.getState().player.hp.current,75);assert.equal(saves,savedCount);
+  const projected=host.extractStatePatch(message.mes);assert.equal(projected.visible,story);assert.equal(projected.patch.ops.length,1);
+  message.mes=message.mes.replace('current",5','current",6');assert.notEqual(host.assistantVariantKey(message),variant,'a real RoleForge patch change remains a new variant');
+ }finally{context.chatMetadata=prior.metadata;context.chat=prior.chat;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateRaw=prior.raw;}
+});
+
+test('only RoleForge protocol outside code and foreign/private envelopes supplies a state patch',()=>{
+ const patch='<!--tretaresia_patch:'+JSON.stringify({ops:[['inc','player.hp.current',8]],summary:'Use `quoted code` safely.'})+'-->';
+ for(const source of ['<UpdateVariable>'+patch+'</UpdateVariable>','```html\n'+patch+'\n```','<code>'+patch+'</code>','<planning>Private `example`: '+patch+'</planning>']){
+  const result=host.extractStatePatch(source);assert.equal(result.found,false);assert.equal(result.patch,null);
+ }
+ const literal='<pre><code><planning>Example</planning>'+patch+'</code></pre>';
+ assert.equal(host.extractStatePatch(literal).visible,literal);
+ const owned=host.extractStatePatch('Story.\n'+patch);assert.equal(owned.patch.ops[0][2],8);assert.equal(owned.patch.summary,'Use `quoted code` safely.');assert.equal(owned.visible,'Story.');
+ const data={ops:[['set','player.affiliation','Keep <thinking>literal reference</thinking> and `code`.']]};
+ assert.equal(host.extractStatePatch('<!--tretaresia_patch:'+JSON.stringify(data)+'-->').patch.ops[0][2],data.ops[0][2]);
+});
+
+test('a later MVU placeholder on a plain reply does not turn it into another RoleForge variant',()=>{
+ const message={is_user:false,swipe_id:0,mes:'<tr-narrative>The door is open.</tr-narrative>'},key=host.assistantVariantKey(message);
+ message.mes+='\n<StatusPlaceHolderImpl/>\n<UpdateVariable><JSONPatch>[]</JSONPatch></UpdateVariable>';
+ assert.equal(host.assistantVariantKey(message),key);
+});
+
+test('legacy MVU reply references survive the new identity, reload and private updates without replaying saved state',async()=>{
+ const prior={metadata:context.chatMetadata,chat:context.chat,settings:context.extensionSettings,save:context.saveMetadata,raw:context.generateRaw};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,eventNotifications:false,enableMemorySummaries:false,npcDiaryFrequency:'off'}};
+  context.generateRaw=async()=>assert.fail('Reading a legacy checkpoint must not make an API request');
+  for(const ownPatch of [false,true]){
+   const state=host.defaultState();state.player.hp.current=75;state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};
+   const raw='<gametxt><tr-narrative>Cora heals you. You find a Token.</tr-narrative></gametxt>'+(ownPatch?'<!--tretaresia_patch:{"ops":[["inc","player.hp.current",5]]}-->':'')+'<StatusPlaceHolderImpl/><UpdateVariable><JSONPatch>[]</JSONPatch></UpdateVariable>';
+   const message={is_user:false,swipe_id:0,mes:raw};context.chat=[{is_user:true,mes:'I wait.'},message];
+   const turn=host.assistantTurnKey(1),legacy=ownPatch?'0:'+host.shortHash(raw):'0:recorded-before-private-update';
+   const source={messageId:1,turnKey:turn,variant:legacy};
+   const withLoot=itemCore.ingestLoot(state,[{id:'old-pool',sourceId:'old-chest',title:'Chest',evidence:'You find a Token.',items:[{id:'old-token',name:'Token',category:'Quest',quantity:1}]}],{story:'Cora heals you. You find a Token.',source}).next;
+   const variables={stat_data:{HP:999}};context.chatMetadata={tretaresia_rpg_state:withLoot,variables,
+    tretaresia_rpg_turn_history:{version:1,entries:[{key:turn,messageId:1,baseState:structuredClone(state),activeVariant:legacy,applied:true,variants:{[legacy]:{state:structuredClone(withLoot),reconcileVersion:3}}}]},
+    tretaresia_rpg_scene_history:{[turn]:{[legacy]:sceneSnapshot(withLoot)}},
+    tretaresia_rpg_social_events:{[turn]:{[legacy]:{resourceEvents:[{kind:'inventory',text:'Token'}]}}}};
+   let saves=0;context.saveMetadata=async()=>{saves++;};const before=JSON.stringify(host.getState());
+   assert.equal(host.assistantVariantKey(message),legacy);
+   await host.processAssistantPatch(1,'normal');assert.equal(JSON.stringify(host.getState()),before);assert.equal(saves,0);
+   assert.equal(host.getState().itemSystem.loot[0].source.variant,legacy);assert.ok(host.sceneForMessage(1,message));assert.equal(host.socialEventsForMessage(1,message).resourceEvents.length,1);
+   message.mes+='\n<UpdateVariable><JSONPatch>[{"op":"replace","path":"/HP","value":998}]</JSONPatch></UpdateVariable>';
+   assert.equal(host.assistantVariantKey(message),legacy);await host.processAssistantPatch(1,'normal');assert.equal(saves,0);
+   context.chatMetadata=structuredClone(context.chatMetadata);context.chat[1]=structuredClone(message);
+   assert.equal(host.assistantVariantKey(context.chat[1]),legacy);await host.processAssistantPatch(1,'normal');assert.equal(JSON.stringify(host.getState()),before);assert.equal(saves,0);
+   assert.deepEqual(context.chatMetadata.variables,variables);
+   context.chat[1].mes=context.chat[1].mes.replace('Cora heals you.','Cora leaves.');assert.notEqual(host.assistantVariantKey(context.chat[1]),legacy);
+  }
+ }finally{context.chatMetadata=prior.metadata;context.chat=prior.chat;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateRaw=prior.raw;}
+});
+
+test('tracking-off preserves raw MVU data, uses no extra API, and coalesces host event timers',async()=>{
+ const prior={metadata:context.chatMetadata,chat:context.chat,settings:context.extensionSettings,save:context.saveMetadata,raw:context.generateRaw};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoTrack:false,autoContinuity:false,eventNotifications:false,enableMemorySummaries:false}};
+  context.chatMetadata={tretaresia_rpg_state:host.defaultState()};let saves=0;context.saveMetadata=async()=>{saves++;};context.generateRaw=async()=>assert.fail('Tracking-off must not generate anything');
+  const raw='<gametxt><tr-narrative>A goblin is slain.</tr-narrative></gametxt><StatusPlaceHolderImpl/><UpdateVariable><JSONPatch>[]</JSONPatch></UpdateVariable>';
+  context.chat=[{is_user:true,mes:'I wait.'},{is_user:false,mes:raw}];
+  for(const delay of [0,120,0,180,0,240])host.scheduleAssistantPatch(1,'normal',delay);
+  assert.equal(host.assistantPatchTimers.size,1);await new Promise(resolve=>setTimeout(resolve,120));
+  assert.equal(saves,1);assert.equal(context.chat[1].mes,raw);assert.equal(host.getState().progression.kills,0);
+  host.scheduleAssistantPatch(1,'normal',0);context.chatMetadata={tretaresia_rpg_state:host.defaultState()};context.chat=[{is_user:true,mes:'Different chat.'},{is_user:false,mes:'New reply.'}];
+  await new Promise(resolve=>setTimeout(resolve,120));assert.equal(saves,1,'a pending timer cannot process the same index in another chat');
+ }finally{for(const timer of host.assistantPatchTimers.values())clearTimeout(timer);host.assistantPatchTimers.clear();context.chatMetadata=prior.metadata;context.chat=prior.chat;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateRaw=prior.raw;}
 });
 
 test('normal typed potion preserves real damage while preventing duplicate healing and consumption',async()=>{
@@ -2606,4 +2703,86 @@ for(const scenario of ['success','incomplete','stale','save-error'])test('scene-
   if(scenario==='success'){assert.equal(ok,true);assert.equal(writes,1);assert.equal(host.getState().location.region,'East Quarter');assert.equal(host.sceneForMessage(1,context.chat[1]).continent,'Central Continent');}
   else {assert.equal(ok,false);assert.equal(JSON.stringify(context.chatMetadata),original);if(scenario!=='save-error')assert.equal(writes,0);}
  }finally{context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;context.generateRaw=prior.raw;sandbox.document=prior.doc;}
+});
+
+
+test('embedded character pack initializes its own new chats while preserving user overrides and saved progress', () => {
+ const prior={characters:context.characters,characterId:context.characterId,groupId:context.groupId,metadata:context.chatMetadata,settings:context.extensionSettings};
+ try {
+  const seed=host.defaultState();seed.player.name='Card seed';seed.player.hp.current=37;
+  const power={mode:'custom',name:'Card powers',definitions:[{id:'pollution',name:'Pollution',description:'Test resource',type:'number',max:100,initial:0}]};
+  const forge={mode:'custom',name:'Card forge',origins:['Mitakihara'],standings:[],skillCategories:[],masteryRanks:[],pathRanks:[]};
+  const extension={format:'roleforge-character-pack',version:1,powerPreset:power,forgePreset:forge,loreOptions:{mode:'relevant',budget:6000},initialState:seed};
+  context.characters=[{avatar:'pack.png',name:'World',data:{extensions:{roleforge_character_pack:extension}}},{avatar:'plain.png',name:'World',data:{extensions:{}}}];
+  context.characterId=0;context.groupId=null;context.chatMetadata={};context.extensionSettings={tretaresia_rpg:{}};
+  assert.equal(host.getPowerPreset().definitions[0].id,'pollution');
+  assert.equal(host.getForgePreset().origins[0],'Mitakihara');
+  assert.equal(host.activeLoreOptions().mode,'relevant');assert.equal(host.activeLoreOptions().budget,6000);
+  assert.equal(host.getState().player.name,'Card seed');assert.equal(host.getState().player.hp.current,37);
+  assert.equal(context.chatMetadata.tretaresia_rpg_state,undefined);
+  assert.equal(host.getSettings().roleforgePowerPresets?.['card:pack.png'],undefined);
+  const saved=host.getState();saved.player.hp.current=12;saved.player.name='Player progress';context.chatMetadata={tretaresia_rpg_state:saved};
+  assert.equal(host.getState().player.hp.current,12);assert.equal(host.getState().player.name,'Player progress');
+  const settings=host.getSettings();settings.roleforgePowerPresets={'card:pack.png':{mode:'custom',name:'Empty override',definitions:[]}};
+  settings.roleforgeForgePresets={'card:pack.png':{mode:'custom',name:'User forge',origins:['User origin'],standings:[],skillCategories:[],masteryRanks:[],pathRanks:[]}};
+  settings.loreCharacterOptions={'card:pack.png':{mode:'all',budget:1000}};
+  assert.equal(host.getPowerPreset().definitions.length,0);assert.equal(host.getForgePreset().origins[0],'User origin');assert.equal(host.activeLoreOptions().mode,'all');
+  context.characterId=1;context.chatMetadata={};assert.equal(host.getPowerPreset().mode,'tretaresia');assert.notEqual(host.getState().player.name,'Card seed');
+  context.characterId=0;context.groupId='group';assert.equal(host.getPowerPreset().mode,'tretaresia');assert.notEqual(host.getState().player.name,'Card seed');
+ } finally {context.characters=prior.characters;context.characterId=prior.characterId;context.groupId=prior.groupId;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;}
+});
+
+test('embedded pack reader supports JSON cards and rejects unsupported or malformed components without executing extras', () => {
+ const owner='card:pack.png';
+ const raw={format:'roleforge-character-pack',version:1,powerPreset:{mode:'custom',definitions:[{id:'__proto__'}]},forgePreset:{mode:'broken'},initialState:[],loreOptions:{mode:'relevant',budget:6000},scripts:'throw Error()',apiKey:'unused'};
+ const ctx={characters:[{avatar:'pack.png',json_data:JSON.stringify({data:{extensions:{roleforge_character_pack:raw}}})}]};
+ const result=archive.readCharacterPack(ctx,owner);
+ assert.deepEqual(result,{format:'roleforge-character-pack',version:1,loreOptions:{mode:'relevant',budget:6000}});
+ raw.version=999;ctx.characters[0].json_data=JSON.stringify({data:{extensions:{roleforge_character_pack:raw}}});assert.deepEqual(archive.readCharacterPack(ctx,owner),{});
+ assert.deepEqual(archive.readCharacterPack(ctx,'chat:other'),{});
+ raw.version=1;raw.initialState={large:'x'.repeat(1024*1024)};ctx.characters[0].json_data=JSON.stringify({data:{extensions:{roleforge_character_pack:raw}}});assert.equal(archive.readCharacterPack(ctx,owner).initialState,undefined);
+});
+
+test('pack authoring preserves the original seed unless selected, keeps Chat NPCs private and rolls back failed card writes',async()=>{
+ const prior={characters:context.characters,characterId:context.characterId,groupId:context.groupId,metadata:context.chatMetadata,settings:context.extensionSettings,fetch:context.fetch};
+ try{
+  context.characterId=0;context.groupId=null;context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false}};
+  const pack={format:'roleforge-character-pack',version:1,initialState:{player:{name:'Original starting player',hp:{current:37,max:100}}}};
+  const card={avatar:'pack-author.png',name:'World',data:{extensions:{roleforge_character_pack:pack,tretaresia_rpg_npcs:[{id:'cora',name:'Cora'}],tretaresia_rpg_lore:[{id:'lore',title:'Library',content:'World fact',enabled:true}]}}};
+  context.characters=[card];const state=host.defaultState();state.player.name='Current player';state.player.hp.current=12;state.player.portrait='/local/private.png';state.npcs=[host.npcProfile({id:'private',name:'Private Chat NPC',npcScope:'chat'})];
+  context.chatMetadata={tretaresia_rpg_state:state};const originalState=JSON.stringify(context.chatMetadata),requests=[];
+  context.fetch=async(url,options)=>{requests.push(JSON.parse(options.body));return{ok:true,status:200};};
+  await host.saveCharacterPackSetup();assert.equal(requests.length,1);
+  assert.equal(card.data.extensions.roleforge_character_pack.initialState.player.hp.current,37);
+  assert.deepEqual(card.data.extensions.tretaresia_rpg_npcs.map(n=>n.name),['Cora']);assert.equal(JSON.stringify(context.chatMetadata),originalState);
+  await host.saveCharacterPackSetup({includeState:true});const seed=card.data.extensions.roleforge_character_pack.initialState;
+  assert.equal(seed.player.name,'Current player');assert.equal(seed.player.hp.current,12);assert.equal(seed.player.portrait,'');
+  for(const key of ['npcs','npcScopes','contacts','letters','transactions','commerce','itemSystem','powerMastery'])assert.equal(seed[key],undefined);
+  assert.equal(JSON.stringify(context.chatMetadata),originalState);
+  const savedCard=JSON.stringify(card);context.fetch=async()=>({ok:false,status:503});
+  await assert.rejects(host.saveCharacterPackSetup(),/503/);assert.equal(JSON.stringify(card),savedCard);
+  context.groupId='group';await assert.rejects(host.saveCharacterPackSetup(),/individual/);
+ }finally{context.characters=prior.characters;context.characterId=prior.characterId;context.groupId=prior.groupId;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;context.fetch=prior.fetch;}
+});
+
+if(process.env.ROLEFORGE_CHARACTER_CARD)test('the supplied one-card bundle loads every native archive and its real defaults without importing separate files',()=>{
+ const prior={characters:context.characters,characterId:context.characterId,groupId:context.groupId,metadata:context.chatMetadata,settings:context.extensionSettings};
+ try{
+  const card=JSON.parse(readFileSync(process.env.ROLEFORGE_CHARACTER_CARD,'utf8')),data=card.data;
+  context.characters=[{avatar:'actual-import.png',name:data.name,data,json_data:JSON.stringify(card)}];context.characterId=0;context.groupId=null;context.chatMetadata={};context.extensionSettings={tretaresia_rpg:{autoContinuity:false}};
+  const extensions=data.extensions,pack=extensions.roleforge_character_pack;
+  assert.equal(host.activeCharacterLore().length,extensions.tretaresia_rpg_lore.length);
+  assert.equal(host.characterNpcLibrary().length,extensions.tretaresia_rpg_npcs.length);
+  assert.deepEqual(host.characterNpcLibrary().map(n=>n.id),extensions.tretaresia_rpg_npcs.map(n=>n.id));
+  assert.equal(host.getPowerPreset().definitions.length,pack.powerPreset.definitions.length);
+  assert.equal(host.getForgePreset().rankLabel,pack.forgePreset.rankLabel);assert.equal(host.getForgePreset().showRank,false);
+  assert.equal(host.activeLoreOptions().budget,6000);assert.equal(host.activeLoreOptions().mode,'relevant');
+  const initial=host.getState();assert.equal(initial.inventory.length,0);assert.equal(initial.contacts.length,0);assert.equal(host.metFriendlyNpcs(initial).length,0);
+  const ids=host.getState().npcs.map(n=>n.id);assert.deepEqual(host.getState().npcs.map(n=>n.id),ids);
+  const prompt=host.activeLorePrompt('มาโดกะ มิตากิฮาระ');assert.match(prompt,/CHARACTER LORE REFERENCE/);
+  const selection=lore.selectLore(host.activeCharacterLore(),host.activeLoreOptions(),'มาโดกะ มิตากิฮาระ');assert.ok(selection.used<=6000);assert.ok(selection.entries.length>0);
+  const greeting=host.extractStatePatch(data.first_mes);assert.equal(greeting.found,true);assert.ok(greeting.patch?.sceneTracker);
+  assert.equal(context.chatMetadata.tretaresia_rpg_state,undefined);
+  console.log(`PASS supplied card: ${extensions.tretaresia_rpg_lore.length} Lore, ${extensions.tretaresia_rpg_npcs.length} NPCs, ${pack.powerPreset.definitions.length} Powers, Character Forge and starting state`);
+ }finally{context.characters=prior.characters;context.characterId=prior.characterId;context.groupId=prior.groupId;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;}
 });

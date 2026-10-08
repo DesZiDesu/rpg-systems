@@ -1,6 +1,7 @@
 // Compose with the host's already formatted DOM. Never run regex per block or
 // recreate another extension's card with innerHTML/clones.
-import {parseUserMessage} from './user-chat.js?v=0.60.0';
+import {parseUserMessage} from './user-chat.js?v=0.61.0';
+import {cleanChatProse} from './foreign-chat.js?v=0.61.0';
 export function chatPresentationMode(settings = {}) {
     return ['shared','native','roleforge'].includes(settings.chatRegexMode)
         ? settings.chatRegexMode : settings.preserveNativeChat === true ? 'native' : 'shared';
@@ -76,11 +77,31 @@ export function installChatFormattingHooks(api) {
     if (typeof formatter?.addHook !== 'function') return () => {};
     let record = formattingHooks.get(formatter);
     if(record){record.api=api;return ()=>{if(record.api===api)record.api=null;};}
-    record={api,userBlocks:new WeakMap()};formattingHooks.set(formatter,record);
-    const clean = (text, meta) => record.api && !meta.isUser && !meta.isSystem && !meta.isReasoning ? record.api.visible(text) : text;
+    record={api,userBlocks:new WeakMap(),reasoning:new WeakMap()};formattingHooks.set(formatter,record);
+    const assistant = meta => !meta.isUser && !meta.isSystem && !meta.isReasoning;
+    const clean = (text, meta) => {
+        if (!record.api || !assistant(meta)) return text;
+        // Give display Regex the original reasoning tags. Strip only our own
+        // transport here; unhandled reasoning is removed AFTER Regex below.
+        const output = record.api.transport ? record.api.transport(text) : text;
+        const message = record.api.context().chat?.[meta.messageId];
+        if (message) record.reasoning.set(message, {source:output,formatted:false});
+        return output;
+    };
     const userBlocks=(text,meta)=>{
         const message=record.api?.context().chat?.[meta.messageId];
         if(message&&meta.isUser&&!meta.isSystem&&!meta.isReasoning&&parseUserMessage(message))record.userBlocks.set(message,userFormattedBlocks(text));
+        if (record.api && assistant(meta)) {
+            const visible = cleanChatProse(text, record.api.reasoning || record.api.visible);
+            const prior = message && record.reasoning.get(message);
+            if (prior) {
+                // A registered Regex can deliberately render a thinking box.
+                // Such host HTML belongs to Regex; do not scrub its text later.
+                prior.formatted = visible !== prior.source && [...prior.source.matchAll(/<(think|thinking|analysis|reasoning|planning)\b[^>]*>([\s\S]*?)<\/\1\s*>/gi)]
+                    .some(match => match[2].trim() && visible.includes(match[2].trim()));
+            }
+            return visible;
+        }
         return text;
     };
     const annotate = (html, meta) => {
@@ -88,8 +109,7 @@ export function installChatFormattingHooks(api) {
         if(meta.isUser)return record.api.settings().userChatPresentation?annotateUserHtml(html,record.userBlocks.get(record.api.context().chat?.[meta.messageId])):html;
         return record.api.settings().chatPresentation?annotateStoryHtml(html):html;
     };
-    // Private RoleForge transport/reasoning is not presentation data. Read-only
-    // cleanup does not change the stored message or apply display regex twice.
+    // Read-only cleanup never changes the stored message or runs Regex twice.
     formatter.addHook(clean, {stage:formatter.stage?.BEFORE_REGEX || 'beforeRegex',order:formatter.order?.EARLY ?? 10});
     formatter.addHook(userBlocks, {stage:formatter.stage?.AFTER_REGEX || 'afterRegex',order:formatter.order?.LATEST ?? 100});
     formatter.addHook(annotate, {stage:formatter.stage?.AFTER_MARKDOWN || 'afterMarkdown',order:formatter.order?.LATEST ?? 100});
@@ -97,6 +117,62 @@ export function installChatFormattingHooks(api) {
     // singleton and release the API reference on destroy; inactive hooks pass
     // through unchanged and a new workspace reuses the same registrations.
     return () => {if(record.api===api)record.api=null;};
+}
+
+export function formattedReasoning(context, message) {
+    return Boolean(formattingHooks.get(context.messageFormatter)?.reasoning.get(message)?.formatted);
+}
+
+// Frontend documents and their live renderer containers are opaque. Atomic
+// browser moves can preserve an iframe but still violate a Vue/Helper owner's
+// lifecycle, so never wrap or reparent these subtrees in any browser.
+const frontendSelector = 'iframe,.TH-render,[data-roleforge-opaque]';
+export function foreignFrontend(nodes) {
+    return nodes.some(root => root.nodeType === 1 && (
+        root.matches(frontendSelector) || root.querySelector(frontendSelector)
+        || [root,...root.querySelectorAll('pre')].some(node => node.tagName === 'PRE'
+            && /<!doctype\s+html|<html\b|<head\b/i.test(node.textContent))));
+}
+export function nativeDisplayPresent(nodes) {
+    const shown = element => {
+        for(let node=element;node;node=node.parentElement){
+            if(node.matches('style,script,custom-style,template')||node.hidden||node.classList.contains('hidden!')
+                ||node.style.display==='none'||node.style.visibility==='hidden')return false;
+            if(node.id==='chat')break;
+        }
+        return true;
+    };
+    return nodes.some(root => {
+        if(root.nodeType===3)return Boolean(root.textContent.trim())&&shown(root.parentElement);
+        if(root.nodeType!==1||!shown(root))return false;
+        if(root.shadowRoot||[root,...root.querySelectorAll('iframe,img,video,audio,canvas,input,button,hr,svg')]
+            .some(node=>node.matches('iframe,img,video,audio,canvas,input,button,hr,svg')&&shown(node)))return true;
+        const walker=root.ownerDocument.createTreeWalker(root,4);let text;
+        while((text=walker.nextNode()))if(text.textContent.trim()&&shown(text.parentElement))return true;
+        return false;
+    });
+}
+export function relinquishPresentation(root) {
+    // A foreign renderer can adopt an already mounted block later. Do not
+    // unwrap/reparent its live subtree even when changing presentation modes.
+    root.querySelectorAll('[data-roleforge-control]').forEach(node=>{
+        if(!foreignFrontend([node]))node.remove();
+    });
+    delete root.dataset.roleforgeMount;root.dataset.roleforgeOpaque='true';
+}
+
+// Tavern Helper renders an HTML snapshot, which copies markup but not event
+// listeners. Remove cloned RoleForge controls, retaining only the native story
+// content, then mount fresh controls on the visible streaming surface.
+export function releaseClonedPresentation(host) {
+    host.querySelectorAll('[data-roleforge-control]').forEach(node=>{if(!foreignFrontend([node]))node.remove();});
+    for (const root of [...host.querySelectorAll('[data-roleforge-mount]')]) {
+        if (!host.contains(root)) continue;
+        if(foreignFrontend([root])||root.closest('.TH-render')){relinquishPresentation(root);continue;}
+        const contents = [...root.querySelectorAll('[data-roleforge-native-content]')];
+        for (const content of contents) for (const node of [...content.childNodes]) root.before(node);
+        root.remove();
+    }
 }
 
 const compact = text => String(text ?? '').replace(/\s+/g,'');
@@ -107,7 +183,7 @@ function protocolNodes(nodes) {
     for (const root of nodes) {
         if (root.nodeType !== 1) continue;
         for (const node of [root,...root.querySelectorAll('[data-roleforge-story],tr-header,tr-narrative,tr-dialogue')]) {
-            if (markerKind(node) && !node.closest('pre,code,style,script,custom-style')) result.push(node);
+            if (markerKind(node) && !node.closest('pre,code,style,script,custom-style,.TH-render,[data-roleforge-opaque]') && !foreignFrontend([node])) result.push(node);
         }
     }
     return result;
@@ -165,7 +241,7 @@ function paragraphTargets(nodes, blocks, textFor) {
 
 export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,document:doc=globalThis.document}) {
     const roots = [], wrappers = [], targets = Array(blocks.length).fill(null), voiceBlocks = blocks.map(block => ({...block}));
-    const create = (tag,cls,text) => {const node=doc.createElement(tag);node.className=cls;if(text!==undefined)node.textContent=text;return node;};
+    const create = (tag,cls,text) => {const node=doc.createElement(tag);node.className=cls;if(cls.includes('trpg-chat'))node.dataset.roleforgeMount='shared';if(text!==undefined)node.textContent=text;return node;};
     const markers = protocolNodes(nodes);
     const boundaries=markers.map(node=>({node,kind:markerKind(node),name:markerName(node)}));
     const paragraphs = markers.length ? null : paragraphTargets(nodes,blocks,textFor);
@@ -195,11 +271,13 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fal
         if (!target || !['narrative','dialogue','plain','thought'].includes(block.type)) continue;
         if(typeof doc.documentElement.moveBefore!=='function'&&statefulNative(target,doc))continue;
         const shell=user?user.render([{...block,text:''}]):create('div','trpg-chat rf-shared-block');
+        shell.dataset.roleforgeMount='shared';
         shell.classList.add('rf-shared-block');shell.querySelector('.trpg-user-header')?.remove();
         const body=user?shell.querySelector(block.type==='thought'?'.trpg-user-thought':`.trpg-${block.type}`):block.type === 'narrative' ? narrative('') : create('div',block.type === 'dialogue' ? 'trpg-dialogue' : 'trpg-plain');
         if(!body)continue;
         let content=block.type === 'narrative' ? body.querySelector('.trpg-prose-copy') : block.type==='thought'?body.querySelector('p'):body;
         if(block.type === 'narrative'){const copy=create('div','trpg-prose-copy');content.replaceWith(copy);content=copy;}
+        content.dataset.roleforgeNativeContent='';
         const name=nativeName || block.name || currentName || fallbackName;
         if(!user){const rendered=header(name,speaker,true);shell.style.setProperty('--speaker',rendered.color);shell.append(body);}
         const textEdits=user?trimPlayerDelimiters(target,block.type,doc):[];
@@ -214,7 +292,7 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fal
             voiceBlocks[index].name=markerName(target) || block.name;
         }
     }
-    if(user){const root=user.render([]),anchor=nodes.find(node=>node.parentNode===host)||host.firstChild;host.insertBefore(root,anchor);roots.push(root);}
+    if(user){const root=user.render([]),anchor=nodes.find(node=>node.parentNode===host)||host.firstChild;root.dataset.roleforgeMount='user';host.insertBefore(root,anchor);roots.push(root);}
     // A whole-message regex may remove all story boundaries. Keep its exact
     // card in place; expose Voice for the original structured blocks separately
     // without duplicating the story or inferring new gameplay data.
@@ -231,13 +309,14 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fal
         }
         host.append(voiceRoot);roots.push(voiceRoot);
     }
-    return {roots,targets,voiceBlocks,voiceRoot,
-        valid:()=>boundaries.every(({node,kind,name})=>host.contains(node)&&markerKind(node)===kind&&markerName(node)===name)
+    return {roots,targets,voiceBlocks,voiceRoot,native:nodes,
+        valid:()=>nodes.every(node=>host.contains(node))&&boundaries.every(({node,kind,name})=>host.contains(node)&&markerKind(node)===kind&&markerName(node)===name)
             &&wrappers.every(({shell,target,nativeText})=>host.contains(shell)&&shell.contains(target)&&target.textContent===nativeText)&&roots.every(root=>host.contains(root)),
         restore(){
             // Unwrap only our shells. Keep original nodes, bound listeners and
             // any foreign nodes added inside the content after our mount.
             for (const {shell,body,content,ownedBodyChildren,textEdits} of wrappers) if (host.contains(shell)) {
+                if(foreignFrontend([shell])||shell.closest('.TH-render')){relinquishPresentation(shell);continue;}
                 for(const {node,before,after} of textEdits)if(node.data===after)node.data=before;
                 const native=[...content.childNodes];
                 const addedBody=[...body.childNodes].filter(node=>!ownedBodyChildren.has(node)&&node!==content&&!native.includes(node));
@@ -245,7 +324,7 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fal
                 for(const node of [...native,...addedBody,...added])moveNative(shell.parentNode,node,shell);
                 shell.remove();
             }
-            for (const root of roots) root.remove();
+            for (const root of roots) if(root.isConnected){if(foreignFrontend([root])||root.closest('.TH-render'))relinquishPresentation(root);else root.remove();}
         },
     };
 }
@@ -270,7 +349,7 @@ export function scrubNativePrivateText(nodes, raw, visible, doc=globalThis.docum
         const textNodes=[];
         for(const root of nodes){
             if(root.nodeType===3)textNodes.push(root);
-            else if(root.nodeType===1){const walker=doc.createTreeWalker(root,4,{acceptNode:node=>node.parentElement?.closest('style,script,custom-style')?2:1});let node;while((node=walker.nextNode()))textNodes.push(node);}
+            else if(root.nodeType===1){const walker=doc.createTreeWalker(root,4,{acceptNode:node=>node.parentElement?.closest('pre,code,style,script,custom-style,.TH-render')?2:1});let node;while((node=walker.nextNode()))textNodes.push(node);}
         }
         const segments=textNodes.map(node=>({node,text:compact(node.data)})),joined=segments.map(part=>part.text).join('');
         const search=compact(needle),start=joined.indexOf(search),end=start+search.length;

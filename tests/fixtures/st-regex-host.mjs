@@ -42,7 +42,7 @@ export const getPresetManager=()=>host?.getPresetManager?.();
 export function substituteParams(value,options={}){return String(value).replace(/{{char}}/gi,options.name2Override||host?.characters?.[host.characterId]?.name||'Narrator').replace(/{{user}}/gi,host?.name1||'Nova');}
 export function substituteParamsExtended(value,_options={},transform){return substituteParams(value).replace(/{{(?:char|user)}}/g,text=>transform?transform(text):text);}
 export function regexFromString(value){try{const match=String(value).match(/^\\/(.*)\\/([a-z]*)$/s);return match?new RegExp(match[1],match[2]):new RegExp(value);}catch{return null;}}
-const DOMPurify=window.DOMPurify,converter=new window.showdown.Converter({tables:true,simpleLineBreaks:true}),css=window.adobeCssTools;
+const DOMPurify=window.DOMPurify,converter=new window.showdown.Converter({tables:true,simpleLineBreaks:true}),css=window.cssTools;
 const COMMENT_NAME_DEFAULT='Note',systemUserName='System',fixMarkdown=text=>text,canUseNegativeLookbehind=()=>true;
 const escapeRegex=text=>text.replace(/[.*+?^\u0024{}()|[\u005d\\\\]/g,'\\\\\u0024&'),escapeHtml=text=>text.replaceAll('<','&lt;').replaceAll('>','&gt;');
 export const power_user={reasoning:{prefix:'',suffix:''},encode_tags:false,allow_name2_display:true};

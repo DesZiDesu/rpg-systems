@@ -1,8 +1,9 @@
-import {createItemComposer} from './item-composer.js?v=0.60.0';
-import {normalizeItemSystem,currentItemNpcs,prepareItemAction,validateItemResponse,applyItemDecision,missingInventoryDetails,applyItemDetails,configureItemUsage} from './item-core.js?v=0.60.0';
-import {requestItemDecision,requestItemDetails} from './item-generation.js?v=0.60.0';
-import {evidenceText} from './interaction-evidence.js?v=0.60.0';
-import {hasTaskGeneration} from './task-generation.js?v=0.60.0';
+import {createItemComposer} from './item-composer.js?v=0.61.0';
+import {normalizeItemSystem,currentItemNpcs,prepareItemAction,validateItemResponse,applyItemDecision,missingInventoryDetails,applyItemDetails,configureItemUsage,ingestLoot} from './item-core.js?v=0.61.0';
+import {replyLootGap,resolveReplyLoot} from './loot-discovery.js?v=0.61.0';
+import {requestItemDecision,requestItemDetails} from './item-generation.js?v=0.61.0';
+import {evidenceText} from './interaction-evidence.js?v=0.61.0';
+import {hasTaskGeneration} from './task-generation.js?v=0.61.0';
 const fingerprint=s=>JSON.stringify(s,(k,v)=>['updatedAt','createdAt'].includes(k)?undefined:v);
 export function createItemRuntime(api){
  let scope='',pending=null,phase='',receipt=null,error='',retry=null,ticket=0,destroyed=false,inFlight=false,lastPools='',progress=null,saving=false;
@@ -15,7 +16,13 @@ export function createItemRuntime(api){
  function status(code){error=t(...(messages[code]||messages.response));api.notify('warning',error);}
  function sourceAt(context,id){const m=context.chat[id];return m?{messageId:id,turnKey:api.turnKey(id),variant:api.variant(m)}:null;}
  function pools(state,context){return normalizeItemSystem(state.itemSystem).loot.filter(p=>evidenceText(p.location)===evidenceText(state.location?.place)&&p.entries.some(e=>e.remaining)&&(p.origin==='drop'||context.chat?.[p.source.messageId]&&!context.chat[p.source.messageId].is_user&&api.turnKey(p.source.messageId)===p.source.turnKey&&api.variant(context.chat[p.source.messageId])===p.source.variant)).reverse();}
- function view(){const context=api.context(),state=api.state();const latest=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system),participants=api.participants(latest,context.chat?.[latest]);return{scope:context.getCurrentChatId?.()?JSON.stringify([context.getCurrentChatId(),api.owner?.()]):'',state,npcs:currentItemNpcs(state,participants),pools:pools(state,context),phase,receipt,error,progress,saving,retry:Boolean(retry),requestLabel:pending?.prepared.action==='enrich'?t('AI เติมรายละเอียดและวิธีใช้เฉพาะที่ขาด','AI fills missing descriptions and usage'):pending?.prepared.action==='collect'?t('เก็บ Loot ที่เลือก','Collect selected loot'):pending?.prepared.item?.name||'',turn:api.turn(),externalBusy:api.isBusy()};}
+ function discovery(state,context,id){
+  const message=context.chat?.[id];if(!message||!api.ready(id,message))return null;
+  const user=context.chat.slice(0,id).findLast(m=>m?.is_user&&!m.is_system),source=sourceAt(context,id);
+  const gap=replyLootGap({state,source,story:api.visible(message.mes),user:api.visible(user?.mes||'')});
+  return gap?{...gap,source}:null;
+ }
+ function view(){const context=api.context(),state=api.state();const latest=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system),participants=api.participants(latest,context.chat?.[latest]);return{scope:context.getCurrentChatId?.()?JSON.stringify([context.getCurrentChatId(),api.owner?.()]):'',state,npcs:currentItemNpcs(state,participants),pools:pools(state,context),discovery:discovery(state,context,latest),phase,receipt,error,progress,saving,retry:Boolean(retry),requestLabel:pending?.prepared.action==='discover'?t('ตรวจ Loot จากบทล่าสุด','Check loot from the latest reply'):pending?.prepared.action==='enrich'?t('AI เติมรายละเอียดและวิธีใช้เฉพาะที่ขาด','AI fills missing descriptions and usage'):pending?.prepared.action==='collect'?t('เก็บ Loot ที่เลือก','Collect selected loot'):pending?.prepared.item?.name||'',turn:api.turn(),externalBusy:api.isBusy()};}
  function refresh(){if(destroyed)return;const key=api.context().getCurrentChatId?.()?JSON.stringify([api.context().getCurrentChatId(),api.owner?.()]):'';if(scope!==key){cancel(false);scope=key;receipt=null;error='';retry=null;lastPools='';}const next=view();ui.update(next);const ids=next.pools.map(p=>p.id).join('|');if(ids&&ids!==lastPools)ui.openLoot(next.pools[0].id);lastPools=ids;}
  function cancel(show=true){if(saving&&show)return;ticket++;pending=null;phase='';retry=null;error='';progress=null;if(show){receipt=null;refresh();} /* Generation result is ignored, never applied after cancellation. */ }
  async function perform(input){
@@ -24,7 +31,8 @@ export function createItemRuntime(api){
   const context=api.context(),state=api.state(),id=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system),message=context.chat?.[id];
   if(!context.getCurrentChatId?.()||!message&&!['enrich','configure'].includes(original.action)||typeof context.saveMetadata!=='function'||original.action!=='configure'&&!hasTaskGeneration(context)){status('unavailable');refresh();return;}
   if(original.action==='configure'){const result=configureItemUsage(state,original.itemId,original.usage);if(!result.ok){status(result.error);refresh();return;}const before=fingerprint(state),metadata=context.chatMetadata,chatId=context.getCurrentChatId(),owner=api.owner?.();const unchanged=()=>api.context().chatMetadata===metadata&&api.context().getCurrentChatId?.()===chatId&&api.owner?.()===owner&&fingerprint(api.state())===before;try{saving=true;await api.commitDetails({context,next:result.next,unchanged});receipt={action:'configure',outcome:'success',reason:t('บันทึกคุณสมบัติและผลต่อสเตตัสแล้ว','Item properties and stat effects saved.')};}catch{status('save');}finally{saving=false;refresh();}return;}
-  const prepared=original.action==='enrich'?{ok:true,request:{id:'details-'+Date.now(),action:'enrich',location:state.location?.place}}:prepareItemAction(state,original,{participants:api.participants(id,message),turn:api.turn(),requestId:'item-'+(globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random()),location:state.location?.place});
+  if(original.action==='discover'&&!discovery(state,context,id)){status('stale');refresh();return;}
+  const prepared=['enrich','discover'].includes(original.action)?{ok:true,request:{id:'details-'+Date.now(),action:original.action,location:state.location?.place}}:prepareItemAction(state,original,{participants:api.participants(id,message),turn:api.turn(),requestId:'item-'+(globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random()),location:state.location?.place});
   if(!prepared.ok){status(prepared.error);refresh();return;}
   const source=sourceAt(context,id);pending={input:structuredClone(original),prepared:prepared.request,source,message,variant:source?.variant,metadata:context.chatMetadata,chatId:context.getCurrentChatId(),owner:api.owner?.()};phase='queued';refresh();ui.showRequest();await resume();
  }
@@ -35,6 +43,7 @@ export function createItemRuntime(api){
   const userId=(context.chat||[]).findLastIndex(m=>m?.is_user&&!m.is_system),id=(context.chat||[]).findLastIndex(m=>m&&!m.is_user&&!m.is_system);
   if(id<userId||id>=0&&!api.ready(id,context.chat[id]))return;
   if(job.prepared.action==='enrich'){await enrich(job);return;}
+  if(job.prepared.action==='discover'){await discover(job);return;}
   if(evidenceText(state.location?.place)!==evidenceText(job.prepared.location)){pending=null;phase='';status('stale');refresh();return;}
   const prepared=prepareItemAction(state,job.input,{participants:api.participants(id,context.chat[id]),turn:api.turn(),requestId:job.prepared.id,location:state.location.place});
   if(!prepared.ok){pending=null;phase='';status(prepared.error);refresh();return;}
@@ -70,6 +79,28 @@ export function createItemRuntime(api){
    }
    if(token===ticket){receipt={action:'enrich',outcome:'success',reason:t(`อัปเดตข้อมูล ${updated} รายการ · ยังยืนยันข้อมูลไม่ครบ ${unresolved} รายการ`,`Updated ${updated} items · ${unresolved} still have unknown information`)};pending=null;phase='';retry=null;error='';}
   }catch(failure){if(token===ticket){retry={action:'enrich'};pending=null;phase='';status(failure?.code||failure?.message||'response');if(progress?.done)error+=t(' · เก็บข้อมูลจากชุดที่บันทึกแล้วไว้',' · Previously saved batches are retained');api.log?.(failure);}}
+  finally{saving=false;inFlight=false;api.setBusy(false);refresh();}
+ }
+ async function discover(job){
+  const context=api.context(),state=api.state(),source=job.source,message=job.message,token=++ticket;
+  const stateKey=fingerprint(state),count=context.chat.length,variant=api.variant(message);
+  const unchanged=()=>!destroyed&&token===ticket&&api.context().chatMetadata===job.metadata&&api.context().getCurrentChatId?.()===job.chatId
+   &&api.owner?.()===job.owner&&api.context().chat?.[source.messageId]===message&&api.variant(message)===variant&&api.context().chat.length===count&&fingerprint(api.state())===stateKey;
+  const user=context.chat.slice(0,source.messageId).findLast(m=>m?.is_user&&!m.is_system),story=api.visible(message.mes);
+  phase='working';inFlight=true;api.setBusy(true);refresh();
+  try{
+   const result=await resolveReplyLoot({state,source,story,user:api.visible(user?.mes||''),location:state.location.place,context,
+    acquired:api.acquiredForReply?.(source.messageId,message)||[],parse:api.parse,canon:api.canon?.()||'',language:api.settings().language,record:api.recordRequest,stable:unchanged});
+   if(result.error)throw Error(result.error);
+   if(!unchanged())throw Error('stale');
+   if(!result.checked)throw Error('response');
+   const prepared=ingestLoot(state,result.payload,{story,source,location:state.location.place});if(prepared.errors.length)throw Error('response');
+   prepared.next.itemSystem.checks=[...prepared.next.itemSystem.checks.filter(check=>check.id!==result.check.id),result.check].slice(-240);
+   saving=true;refresh();await api.commitDetails({context,next:prepared.next,unchanged});saving=false;
+   if(token!==ticket)return;
+   receipt={action:'discover',outcome:'success',reason:prepared.added.length?t('บันทึก Loot ที่พบแล้ว · ยังไม่เข้าคลังจนกว่าจะเลือกเก็บ','Loot recorded. Collect it to add it to inventory.'):result.check.reason};
+   pending=null;phase='';retry=null;error='';
+  }catch(failure){if(token===ticket){retry={action:'discover'};pending=null;phase='';status(failure?.code||failure?.message||'response');api.log?.(failure);}}
   finally{saving=false;inFlight=false;api.setBusy(false);refresh();}
  }
  return{view,refresh,resume,perform,openItem(id){if(!pending&&!inFlight){receipt=null;error='';progress=null;}refresh();ui.openItem(id);},openLoot(id){refresh();ui.openLoot(id);},cancel,isBusy:()=>inFlight,destroy(){destroyed=true;cancel(false);ui.destroy();}};

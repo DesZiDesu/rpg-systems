@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.60.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.61.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -32,7 +32,11 @@ Saved replies without RoleForge presentation tags remain ordinary text. Generate
 
 Enable **User-only Dialogue / Narrative / Inner thought UI** in **Extensions → RoleForge → Chat appearance & NPCs** to format sent player messages: `"speech"` or `“speech”`, `*narrative*`, and `|inner thought|`. Player blocks align right and follow the selected theme. This independent option defaults off, preserves original message text and native rich Markdown/regex widgets, and never interprets assistant shorthand. [Preview and validation notes](docs/user-chat-v0.58.15.th.md).
 
-**New in 0.60.0:** **RoleForge + Regex · Shared** keeps native Regex HTML and bound controls while adding NPC, Dialogue, Narrative and Voice UI. Whole-message cards retain their own layout with separate NPC/speech controls. Choose the mode in **Extensions → RoleForge → Chat appearance & NPCs**; existing users who explicitly enabled native preservation retain that preference. [Compatibility guide and validation](docs/regex-shared-v0.60.0.th.md).
+**New in 0.61.0:** import a RoleForge character pack through SillyTavern's normal card import to load its NPC/Lore archives, Power and Character Forge presets, Lore retrieval settings and starting world state together. Saved progress and explicit user overrides take priority. Authors can use **Extensions → RoleForge → World rules & presets → RoleForge Character Card Pack** to save setup into the card, then export it normally. [One-card guide](docs/character-pack-v0.61.0.th.md).
+
+This release also preserves MVU/Tavern Helper frontends across presentation modes and streaming, respects thinking/hide Regex, and reduces repeated work after replies. Tracker data stays separate. [MVU compatibility and performance report](docs/mvu-regex-coexistence.th.md).
+
+**Added in 0.60.0:** **RoleForge + Regex · Shared** keeps native Regex HTML and bound controls while adding NPC, Dialogue, Narrative and Voice UI. Whole-message cards retain their own layout with separate NPC/speech controls. Choose the mode in **Extensions → RoleForge → Chat appearance & NPCs**; existing users who explicitly enabled native preservation retain that preference. [Compatibility guide and validation](docs/regex-shared-v0.60.0.th.md).
 
 **Added in 0.59.0:** train HP/MP/ST maximums and numeric stats from the main chat, configure custom stats and 1–3 currency units, and use animated 8-bit money icons. Status and Training default to **C / Tactical Strip**, with A and B retained as separate selectable layouts in **Extensions → RoleForge → User stats**. All composer windows start minimized on chat entry. [Update notes and screenshots](docs/stats-currency-v0.59.0.th.md).
 
@@ -56,7 +60,7 @@ Stock and purchase quantity are separate. A shop can have **12 healing potions a
 
 **Memory and Voice default to off.** Shops, auctions, incantations, boards and optional story tools also start disabled. Saved opt-in settings survive updates. Enable each system in Extension Settings; expand the Memory or Voice drawer when needed.
 
-Normal role-play uses your existing SillyTavern text connection. Valid inline tracker, shop and item data is processed from that reply. A completed encounter or exploration with missing/invalid Loot can request one AI repair; an empty result is recorded to avoid repeated checks. Explicit actions such as trade buttons, training, item-detail generation and memory summarization can make additional text-model requests. RoleForge shows notifications at additional API request boundaries. Browsing and local selections do not make model requests. Some tasks use several batches; a request can fail without a saved result.
+Normal role-play uses your existing SillyTavern text connection. Valid inline tracker, shop and item data is processed from that reply. Missing Loot data offers an explicit **AI: check loot from the latest reply** button after completed combat or exploration; it makes one repair request and records an empty result to avoid repeated checks. Normal tracking does not automatically start a Loot/auction repair request. Explicit actions such as trade buttons, training, item-detail generation and memory summarization can make additional text-model requests. RoleForge shows notifications at additional API request boundaries. Browsing and local selections do not make model requests. Some tasks use several batches; a request can fail without a saved result.
 
 The **Voice Addon needs its own ElevenLabs API key**. Choose available voices and assign male, female, narrator or individual NPC voices. Model/voice access and credits depend on your account. Voice is manual by default; generating audio consumes provider credits, while replaying cached audio does not request a new clip. Editing a speech draft leaves the AI's original text intact. [Voice setup](docs/voice-addon.th.md) · [Memory setup](docs/memory-addons.th.md)
 

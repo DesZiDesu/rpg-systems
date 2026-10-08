@@ -1,5 +1,5 @@
-import {CURRENCY_KEYS,MONEY_ICON_SETS,MONEY_ICON_SHAPES,currencyScheme,currencyValue,validateCurrencyScheme,reconfigureCurrencyWallet} from './currency-config.js?v=0.60.0';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.60.0';
+import {CURRENCY_KEYS,MONEY_ICON_SETS,MONEY_ICON_SHAPES,currencyScheme,currencyValue,validateCurrencyScheme,reconfigureCurrencyWallet} from './currency-config.js?v=0.61.0';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.61.0';
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function mountCurrencyWorkspace({root,state,context,save,language=()=> 'en',notify=()=>{}}){
  let scope='',metadata=null,fingerprint='',draft=null,draftName='',saving=false,dirty=false,unitDrafts=new Map();

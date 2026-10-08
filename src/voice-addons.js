@@ -1,10 +1,10 @@
-import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.60.0';
-import {resolveNpcSpeaker} from './npc-core.js?v=0.60.0';
-import {createVoiceStorage} from './voice-storage.js?v=0.60.0';
-import {createElevenLabsClient} from './voice-api.js?v=0.60.0';
-import {createSpeechEditor} from './voice-editor.js?v=0.60.0';
-import {createVoiceRuntime} from './voice-runtime.js?v=0.60.0';
-import {defaultTestFilename,downloadMp3} from './voice-download.js?v=0.60.0';
+import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.61.0';
+import {resolveNpcSpeaker} from './npc-core.js?v=0.61.0';
+import {createVoiceStorage} from './voice-storage.js?v=0.61.0';
+import {createElevenLabsClient} from './voice-api.js?v=0.61.0';
+import {createSpeechEditor} from './voice-editor.js?v=0.61.0';
+import {createVoiceRuntime} from './voice-runtime.js?v=0.61.0';
+import {defaultTestFilename,downloadMp3} from './voice-download.js?v=0.61.0';
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shapes={play:'<path d="m9 5 11 7-11 7z"/>',pause:'<path d="M8 5v14M16 5v14"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="1"/>',wave:'<path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/>',chevron:'<path d="m9 5 7 7-7 7"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5M18 5a8 8 0 0 0-14 5M6 19a8 8 0 0 0 14-5"/>'};
@@ -143,6 +143,7 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
                 valid:()=>settings().enableVoiceAddon&&storyRoot.isConnected&&node.isConnected&&(context().getCurrentChatId?.()||'')===chat&&context().chat?.[id]===message&&message.extra?.display_text===display&&(message.swipe_id||0)===swipe&&visible(message.mes)===source};
             entries.push(entry);
             const row=doc.createElement('div');row.className=narrative?'rf-voice-dialogue-controls rf-voice-narrative-controls':'rf-voice-dialogue-controls';
+            row.dataset.roleforgeControl='voice';
             row.innerHTML=`<button type="button" class="rf-voice-button rf-voice-play">${svg('play')}${t('Play','ฟัง')}</button><button type="button" class="rf-voice-button rf-voice-stop" aria-label="${t('Stop audio','หยุดเสียง')}" hidden>${svg('stop')}</button><button type="button" class="rf-voice-button rf-voice-setup">${t('✎ Speech draft','✎ บทพากย์')}</button>`;
             const play=row.querySelector('.rf-voice-play'),stop=row.querySelector('.rf-voice-stop'),setup=row.querySelector('.rf-voice-setup');
             row.setAttribute('role','group');row.setAttribute('aria-label',t('Speech for ','บทพากย์ของ ')+entry.name);
@@ -150,7 +151,7 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
             entry.loaded=loaded;
             play.addEventListener('click',()=>{runtime.activate();run(async()=>{await loaded;if(entry.valid())await runtime.toggle(entry);});});stop.addEventListener('click',()=>runtime.stop());setup.addEventListener('click',()=>run(async()=>{await loaded;if(entry.valid())editor.open(entry,setup);}));node.append(row);const control={root:row,play,stop,setup,entry};controls.add(control);mountedControls.push(control);
         });
-        if(entries.length>1){const bar=doc.createElement('div');bar.className='rf-voice-message-controls';bar.innerHTML=`<span>${t('Narration + dialogue','คำบรรยาย + บทพูด')}</span><button type="button" class="rf-voice-button" data-voice-play-all>${svg('play')}${t('Play all','ฟังทั้งหมด')}</button><button type="button" class="rf-voice-button" data-voice-stop-all>${svg('stop')}${t('Stop','หยุด')}</button>`;const play=bar.querySelector('[data-voice-play-all]'),stop=bar.querySelector('[data-voice-stop-all]');play.addEventListener('click',()=>{runtime.activate();run(async()=>{await Promise.all(entries.map(e=>e.loaded));await runtime.listen(entries,{queue:true});});});stop.addEventListener('click',()=>runtime.stop());controlsRoot.append(bar);const control={root:bar,play,stop,all:true,entries};controls.add(control);mountedControls.push(control);}
+        if(entries.length>1){const bar=doc.createElement('div');bar.className='rf-voice-message-controls';bar.dataset.roleforgeControl='voice';bar.innerHTML=`<span>${t('Narration + dialogue','คำบรรยาย + บทพูด')}</span><button type="button" class="rf-voice-button" data-voice-play-all>${svg('play')}${t('Play all','ฟังทั้งหมด')}</button><button type="button" class="rf-voice-button" data-voice-stop-all>${svg('stop')}${t('Stop','หยุด')}</button>`;const play=bar.querySelector('[data-voice-play-all]'),stop=bar.querySelector('[data-voice-stop-all]');play.addEventListener('click',()=>{runtime.activate();run(async()=>{await Promise.all(entries.map(e=>e.loaded));await runtime.listen(entries,{queue:true});});});stop.addEventListener('click',()=>runtime.stop());controlsRoot.append(bar);const control={root:bar,play,stop,all:true,entries};controls.add(control);mountedControls.push(control);}
         const record={root:storyRoot,entries,message};messages.set(id,record);for(const [key,value]of messages)if(!value.root.isConnected&&key!==id)messages.delete(key);refreshButtons();
         return ()=>{for(const control of mountedControls){control.root.remove();controls.delete(control);}if(messages.get(id)===record)messages.delete(id);};
     }
