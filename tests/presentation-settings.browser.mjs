@@ -34,7 +34,8 @@ async function ready(page){
 }
 function control(page,key){return page.locator(`#tretaresia-rpg-settings [data-presentation-setting="${key}"]`);}
 async function toggle(page,key,value){
- if(value)await control(page,key).check();else await control(page,key).uncheck();
+ if(key==='chatRegexMode')await control(page,key).selectOption(value);
+ else if(value)await control(page,key).check();else await control(page,key).uncheck();
  await page.waitForFunction(({key,value})=>window.host.extensionSettings.tretaresia_rpg[key]===value,{key,value});
  await page.waitForTimeout(180);
 }
@@ -69,32 +70,33 @@ try{
   });
   await page.goto(url);await ready(page);
   assert.equal(await page.locator('[data-presentation-setting]').count(),4);
-  assert.equal(await control(page,'preserveNativeChat').isChecked(),false,'missing preference uses original RoleForge priority');
-  assert.match(await page.locator('.trpg-presentation-help').innerText(),/original RoleForge format by default/);
+  assert.equal(await control(page,'chatRegexMode').inputValue(),'shared','missing preference composes with native Regex');
+  assert.match(await page.locator('.trpg-presentation-help').innerText(),/Shared mode keeps Regex UI/);
   await status(page,/RoleForge \d+\.\d+\.\d+.*is off.*No character reply yet/);
-  await toggle(page,'chatPresentation',true);await status(page,/Original RoleForge formatting.*No character reply yet/);
+  await toggle(page,'chatPresentation',true);await status(page,/RoleForge \+ Regex.*Shared.*No character reply yet/);
   const oldId=await reply(page,oldBody);await status(page,/Latest reply has no readable presentation blocks/);
   assert.equal(await page.locator(`[mesid="${oldId}"] .trpg-header,[mesid="${oldId}"] .trpg-narrative`).count(),0,'old untagged replies are never inferred or rewritten');
   assert.equal(await page.locator(`[mesid="${oldId}"] .mes_text`).innerText(),oldBody);
   const id=await reply(page,taggedBody,{rich:true});
   await page.locator(`[mesid="${id}"] .trpg-header`).waitFor();
-  await status(page,/Original RoleForge formatting.*Latest reply has presentation blocks/);
-  assert.match(await page.locator(`[mesid="${id}"] .trpg-narrative`).innerText(),/PRIVATE_NEW_BODY/);
+  await status(page,/RoleForge \+ Regex.*Shared.*Latest reply has presentation blocks/);
+  assert.equal(await page.locator(`[mesid="${id}"] .trpg-narrative`).count(),0,'whole-message Regex remains intact without duplicating the original story');
+  assert.equal(await page.evaluate(()=>document.querySelector('.custom-display-regex')===window.presentationNative),true);
   await windowPromptCheck(page,true);
-  await toggle(page,'preserveNativeChat',true);
+  await toggle(page,'chatRegexMode','native');
   await status(page,/Preserve regex \/ SillyTavern formatting.*Latest reply has presentation blocks/);
   assert.equal(await page.locator(`[mesid="${id}"] .trpg-header`).count(),0,'explicit compatibility keeps conflicting native presentation');
   assert.equal(await page.evaluate(()=>document.querySelector('.custom-display-regex')===window.presentationNative),true,'native DOM reference restored');
   await page.locator('.custom-display-regex button').click();assert.equal(await page.evaluate(()=>window.presentationNativeClicks),1);
-  await toggle(page,'preserveNativeChat',false);await page.locator(`[mesid="${id}"] .trpg-header`).waitFor();
+  await toggle(page,'chatRegexMode','roleforge');await page.locator(`[mesid="${id}"] .trpg-header`).waitFor();
   await toggle(page,'chatPresentation',false);await status(page,/is off.*Latest reply has presentation blocks/);
   assert.equal(await page.locator(`[mesid="${id}"] .trpg-header`).count(),0);await windowPromptCheck(page,false);
   assert.equal(await page.evaluate(()=>document.querySelector('.custom-display-regex')===window.presentationNative),true);
-  await toggle(page,'chatPresentation',true);await toggle(page,'preserveNativeChat',true);await windowPromptCheck(page,true);
+  await toggle(page,'chatPresentation',true);await toggle(page,'chatRegexMode','native');await windowPromptCheck(page,true);
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('roleforge-hstats-preview-settings')).tretaresia_rpg);
   assert.equal(saved.preserveNativeChat,true);assert.equal(saved.chatPresentation,true);
   await page.reload();await ready(page);
-  assert.equal(await control(page,'preserveNativeChat').isChecked(),true,'explicit compatibility preference persists across reload');
+  assert.equal(await control(page,'chatRegexMode').inputValue(),'native','explicit compatibility preference persists across reload');
   // This isolated fixture intentionally forces presentation OFF on startup.
   // Re-enable via the actual checkbox; production persistence above was saved.
   await toggle(page,'chatPresentation',true);await status(page,/Preserve regex \/ SillyTavern formatting.*No character reply yet/);
@@ -102,11 +104,11 @@ try{
   await page.evaluate(async()=>{window.host.chat=[];document.querySelector('#chat').replaceChildren();await window.hStatsPreview.switchChat('presentation-new-chat');});
   await status(page,/No character reply yet/);
   await reply(page,taggedBody);await status(page,/Latest reply has presentation blocks/);
-  await toggle(page,'preserveNativeChat',false);
+  await toggle(page,'chatRegexMode','roleforge');
   await page.locator('#tretaresia-rpg-language').selectOption('th');
   await status(page,/รูปแบบ RoleForge เดิม.*คำตอบล่าสุดมีบล็อกจัดรูปแบบ/);
-  assert.match(await control(page,'preserveNativeChat').locator('..').innerText(),/รักษาหน้าตา regex \/ HTML/);
-  assert.match(await page.locator('.trpg-presentation-help').innerText(),/ค่าเริ่มต้นใช้รูปแบบ RoleForge เดิม/);
+  assert.match(await control(page,'chatRegexMode').locator('..').innerText(),/การแสดงแชทร่วมกับ Regex \/ HTML/);
+  assert.match(await page.locator('.trpg-presentation-help').innerText(),/โหมดแสดงร่วมกันเก็บ UI และปุ่มของ Regex/);
   assert.equal(await page.locator('[data-presentation-setting]').count(),4,'language refresh does not duplicate presentation controls');
   if(artifacts){await page.locator('.trpg-settings').screenshot({path:`${artifacts}/presentation-settings-${width}.png`});}
   const bounds=await page.locator('.trpg-settings').evaluate(group=>({left:group.getBoundingClientRect().left,right:group.getBoundingClientRect().right,width:innerWidth,scroll:group.scrollWidth,client:group.clientWidth}));

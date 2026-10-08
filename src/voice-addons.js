@@ -1,10 +1,10 @@
-import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.59.0';
-import {resolveNpcSpeaker} from './npc-core.js?v=0.59.0';
-import {createVoiceStorage} from './voice-storage.js?v=0.59.0';
-import {createElevenLabsClient} from './voice-api.js?v=0.59.0';
-import {createSpeechEditor} from './voice-editor.js?v=0.59.0';
-import {createVoiceRuntime} from './voice-runtime.js?v=0.59.0';
-import {defaultTestFilename,downloadMp3} from './voice-download.js?v=0.59.0';
+import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.60.0';
+import {resolveNpcSpeaker} from './npc-core.js?v=0.60.0';
+import {createVoiceStorage} from './voice-storage.js?v=0.60.0';
+import {createElevenLabsClient} from './voice-api.js?v=0.60.0';
+import {createSpeechEditor} from './voice-editor.js?v=0.60.0';
+import {createVoiceRuntime} from './voice-runtime.js?v=0.60.0';
+import {defaultTestFilename,downloadMp3} from './voice-download.js?v=0.60.0';
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shapes={play:'<path d="m9 5 11 7-11 7z"/>',pause:'<path d="M8 5v14M16 5v14"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="1"/>',wave:'<path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/>',chevron:'<path d="m9 5 7 7-7 7"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5M18 5a8 8 0 0 0-14 5M6 19a8 8 0 0 0 14-5"/>'};
@@ -130,17 +130,17 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
         if(profileKey){const fold=panel.querySelector('[data-voice-npcs]');fold.open=true;const select=[...fold.querySelectorAll('select')].find(node=>node.dataset.voiceNpc===profileKey);select?.focus({preventScroll:true});}
         requestAnimationFrame(()=>root.scrollIntoView({block:'start',behavior:'smooth'}));return true;
     }
-    function decorateMessage(storyRoot,blocks,{id,message}={}){
+    function decorateMessage(storyRoot,blocks,{id,message,targets,controlsRoot=storyRoot}={}){
         if(!settings().enableVoiceAddon)return;
-        const chat=context().getCurrentChatId?.()||'',source=visible(message.mes),swipe=message.swipe_id||0,profiles=state().npcs||[];
-        const nodes={dialogue:[...storyRoot.querySelectorAll('.trpg-dialogue')],narrative:[...storyRoot.querySelectorAll('.trpg-narrative')]},counts={dialogue:0,narrative:0},entries=[];
+        const chat=context().getCurrentChatId?.()||'',source=visible(message.mes),display=message.extra?.display_text,swipe=message.swipe_id||0,profiles=state().npcs||[];
+        const nodes=targets?{}:{dialogue:[...storyRoot.querySelectorAll('.trpg-dialogue')],narrative:[...storyRoot.querySelectorAll('.trpg-narrative')]},counts={dialogue:0,narrative:0},entries=[],mountedControls=[];
         blocks.forEach((block,blockIndex)=>{
-            if(!nodes[block.type]||!block.text?.trim())return;
-            const node=nodes[block.type][counts[block.type]++];if(!node)return;
+            if(!['dialogue','narrative'].includes(block.type)||!block.text?.trim())return;
+            const node=targets?targets[blockIndex]:nodes[block.type][counts[block.type]++];if(!node)return;
             const narrative=block.type==='narrative',name=narrative?t('Narrator','ผู้บรรยาย'):block.name||message.name||'NPC',profile=narrative?{}:resolveNpcSpeaker(profiles,name)||{name};
             const entry={id:`${chat}:${id}:${message.swipe_id||0}:${blockIndex}`,kind:block.type,name:profile.name||name,gender:profile.gender||'',speakerKey:narrative?'':speakerVoiceKey(profile,name,context()),originalText:speechText(block),draft:null,draftKey:speechDraftKey(context(),id,message.swipe_id,blockIndex,block),
                 get text(){return this.draft?.text??this.originalText;},get voiceOverride(){return this.draft?.voice||'';},
-                valid:()=>settings().enableVoiceAddon&&storyRoot.isConnected&&(context().getCurrentChatId?.()||'')===chat&&context().chat?.[id]===message&&(message.swipe_id||0)===swipe&&visible(message.mes)===source};
+                valid:()=>settings().enableVoiceAddon&&storyRoot.isConnected&&node.isConnected&&(context().getCurrentChatId?.()||'')===chat&&context().chat?.[id]===message&&message.extra?.display_text===display&&(message.swipe_id||0)===swipe&&visible(message.mes)===source};
             entries.push(entry);
             const row=doc.createElement('div');row.className=narrative?'rf-voice-dialogue-controls rf-voice-narrative-controls':'rf-voice-dialogue-controls';
             row.innerHTML=`<button type="button" class="rf-voice-button rf-voice-play">${svg('play')}${t('Play','ฟัง')}</button><button type="button" class="rf-voice-button rf-voice-stop" aria-label="${t('Stop audio','หยุดเสียง')}" hidden>${svg('stop')}</button><button type="button" class="rf-voice-button rf-voice-setup">${t('✎ Speech draft','✎ บทพากย์')}</button>`;
@@ -148,10 +148,11 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
             row.setAttribute('role','group');row.setAttribute('aria-label',t('Speech for ','บทพากย์ของ ')+entry.name);
             const loaded=storage.readDraft(entry.draftKey).then(draft=>{if(entry.valid()){entry.draft=draft;refreshButtons();}});
             entry.loaded=loaded;
-            play.addEventListener('click',()=>{runtime.activate();run(async()=>{await loaded;if(entry.valid())await runtime.toggle(entry);});});stop.addEventListener('click',()=>runtime.stop());setup.addEventListener('click',()=>run(async()=>{await loaded;if(entry.valid())editor.open(entry,setup);}));node.append(row);controls.add({root:row,play,stop,setup,entry});
+            play.addEventListener('click',()=>{runtime.activate();run(async()=>{await loaded;if(entry.valid())await runtime.toggle(entry);});});stop.addEventListener('click',()=>runtime.stop());setup.addEventListener('click',()=>run(async()=>{await loaded;if(entry.valid())editor.open(entry,setup);}));node.append(row);const control={root:row,play,stop,setup,entry};controls.add(control);mountedControls.push(control);
         });
-        if(entries.length>1){const bar=doc.createElement('div');bar.className='rf-voice-message-controls';bar.innerHTML=`<span>${t('Narration + dialogue','คำบรรยาย + บทพูด')}</span><button type="button" class="rf-voice-button" data-voice-play-all>${svg('play')}${t('Play all','ฟังทั้งหมด')}</button><button type="button" class="rf-voice-button" data-voice-stop-all>${svg('stop')}${t('Stop','หยุด')}</button>`;const play=bar.querySelector('[data-voice-play-all]'),stop=bar.querySelector('[data-voice-stop-all]');play.addEventListener('click',()=>{runtime.activate();run(async()=>{await Promise.all(entries.map(e=>e.loaded));await runtime.listen(entries,{queue:true});});});stop.addEventListener('click',()=>runtime.stop());storyRoot.append(bar);controls.add({root:bar,play,stop,all:true,entries});}
-        messages.set(id,{root:storyRoot,entries,message});for(const [key,value]of messages)if(!value.root.isConnected&&key!==id)messages.delete(key);refreshButtons();
+        if(entries.length>1){const bar=doc.createElement('div');bar.className='rf-voice-message-controls';bar.innerHTML=`<span>${t('Narration + dialogue','คำบรรยาย + บทพูด')}</span><button type="button" class="rf-voice-button" data-voice-play-all>${svg('play')}${t('Play all','ฟังทั้งหมด')}</button><button type="button" class="rf-voice-button" data-voice-stop-all>${svg('stop')}${t('Stop','หยุด')}</button>`;const play=bar.querySelector('[data-voice-play-all]'),stop=bar.querySelector('[data-voice-stop-all]');play.addEventListener('click',()=>{runtime.activate();run(async()=>{await Promise.all(entries.map(e=>e.loaded));await runtime.listen(entries,{queue:true});});});stop.addEventListener('click',()=>runtime.stop());controlsRoot.append(bar);const control={root:bar,play,stop,all:true,entries};controls.add(control);mountedControls.push(control);}
+        const record={root:storyRoot,entries,message};messages.set(id,record);for(const [key,value]of messages)if(!value.root.isConnected&&key!==id)messages.delete(key);refreshButtons();
+        return ()=>{for(const control of mountedControls){control.root.remove();controls.delete(control);}if(messages.get(id)===record)messages.delete(id);};
     }
     async function searchLibrary(page=0){
         const ticket=++libraryTicket;libraryPage=page;const button=panel.querySelector('[data-voice-library-search] button');button.disabled=true;

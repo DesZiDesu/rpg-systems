@@ -1,8 +1,8 @@
-import {createItemComposer} from './item-composer.js?v=0.59.0';
-import {normalizeItemSystem,currentItemNpcs,prepareItemAction,validateItemResponse,applyItemDecision,missingInventoryDetails,applyItemDetails,configureItemUsage} from './item-core.js?v=0.59.0';
-import {requestItemDecision,requestItemDetails} from './item-generation.js?v=0.59.0';
-import {evidenceText} from './interaction-evidence.js?v=0.59.0';
-import {hasTaskGeneration} from './task-generation.js?v=0.59.0';
+import {createItemComposer} from './item-composer.js?v=0.60.0';
+import {normalizeItemSystem,currentItemNpcs,prepareItemAction,validateItemResponse,applyItemDecision,missingInventoryDetails,applyItemDetails,configureItemUsage} from './item-core.js?v=0.60.0';
+import {requestItemDecision,requestItemDetails} from './item-generation.js?v=0.60.0';
+import {evidenceText} from './interaction-evidence.js?v=0.60.0';
+import {hasTaskGeneration} from './task-generation.js?v=0.60.0';
 const fingerprint=s=>JSON.stringify(s,(k,v)=>['updatedAt','createdAt'].includes(k)?undefined:v);
 export function createItemRuntime(api){
  let scope='',pending=null,phase='',receipt=null,error='',retry=null,ticket=0,destroyed=false,inFlight=false,lastPools='',progress=null,saving=false;

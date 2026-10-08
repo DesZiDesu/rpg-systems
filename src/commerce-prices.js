@@ -1,6 +1,6 @@
 // Read explicit currency phrases, including prices naturally spoken in Thai.
 // This does not invent a quote, convert currency or decide a transaction.
-import {currencyAliases,currencyScheme} from './currency-config.js?v=0.59.0';
+import {currencyAliases,currencyScheme} from './currency-config.js?v=0.60.0';
 const thaiTokens=/ศูนย์|หนึ่ง|เอ็ด|สอง|ยี่|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ|ร้อย|พัน|หมื่น|แสน/gu;
 const digits={ศูนย์:0,หนึ่ง:1,เอ็ด:1,สอง:2,ยี่:2,สาม:3,สี่:4,ห้า:5,หก:6,เจ็ด:7,แปด:8,เก้า:9};
 const scales={สิบ:10,ร้อย:100,พัน:1000,หมื่น:10000,แสน:100000};

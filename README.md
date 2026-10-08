@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.59.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.60.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -32,7 +32,9 @@ Saved replies without RoleForge presentation tags remain ordinary text. Generate
 
 Enable **User-only Dialogue / Narrative / Inner thought UI** in **Extensions → RoleForge → Chat appearance & NPCs** to format sent player messages: `"speech"` or `“speech”`, `*narrative*`, and `|inner thought|`. Player blocks align right and follow the selected theme. This independent option defaults off, preserves original message text and native rich Markdown/regex widgets, and never interprets assistant shorthand. [Preview and validation notes](docs/user-chat-v0.58.15.th.md).
 
-**New in 0.59.0:** train HP/MP/ST maximums and numeric stats from the main chat, configure custom stats and 1–3 currency units, and use animated 8-bit money icons. Status and Training default to **C / Tactical Strip**, with A and B retained as separate selectable layouts in **Extensions → RoleForge → User stats**. All composer windows start minimized on chat entry. [Update notes and screenshots](docs/stats-currency-v0.59.0.th.md).
+**New in 0.60.0:** **RoleForge + Regex · Shared** keeps native Regex HTML and bound controls while adding NPC, Dialogue, Narrative and Voice UI. Whole-message cards retain their own layout with separate NPC/speech controls. Choose the mode in **Extensions → RoleForge → Chat appearance & NPCs**; existing users who explicitly enabled native preservation retain that preference. [Compatibility guide and validation](docs/regex-shared-v0.60.0.th.md).
+
+**Added in 0.59.0:** train HP/MP/ST maximums and numeric stats from the main chat, configure custom stats and 1–3 currency units, and use animated 8-bit money icons. Status and Training default to **C / Tactical Strip**, with A and B retained as separate selectable layouts in **Extensions → RoleForge → User stats**. All composer windows start minimized on chat entry. [Update notes and screenshots](docs/stats-currency-v0.59.0.th.md).
 
 ## Features
 
@@ -72,6 +74,7 @@ RPG state is stored with chat metadata; NPC records can use chat or character sc
 | A tracker or shop does not update | Check the completed reply and diagnostic. The AI must supply readable data; planning text is not a saved transaction. |
 | A purchase cannot be confirmed | Check selected quantities, stock, terms, funds and the agreed price. Review the error before retrying. |
 | Styling looks outdated | Update, wait for generation to finish and reload. Keep the standard installation folder name. |
+| Regex cards disappear or show plain code | Select **RoleForge + Regex · Shared** under **Chat appearance & NPCs**, then reload. |
 | Voice generation fails | Check the Voice toggle, dedicated ElevenLabs key, selected voice/model and provider quota. |
 
 Check the browser console for loading failures. To temporarily skip RoleForge startup, add **tretaresia-safe=1** to the SillyTavern URL query and reload. This skips the extension without erasing chat data.
@@ -95,7 +98,9 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.59.0** has **1,155 passing unit/host tests** and syntax checks. Production browser checks at 320/390/1280px cover all three Status/Training layouts, real chat practice, custom stats, exact configured money, deposit transactions, animated pixel frames, Reduce Motion, saved settings, reload, and old pending work finishing after a chat closes. The release also runs focused regression suites for Incantation, items/Loot, shop stock and repair, rentals, Character Forge, user chat, Voice MP3 and native settings. [Validation report](docs/stats-currency-v0.59.0.th.md).
+Version **0.60.0** has **1,162 passing unit/host tests** and syntax checks. Shared rendering is tested at 320/390/1280px with the actual pinned SillyTavern Regex engine, MessageFormatter, Markdown and sanitizer pipeline in a controlled host. Browser checks cover native widgets/listeners, tables, links, source/display rules, user-only shorthand, Voice, edit/swipe/reparenting, settings and composer windows. Broader regression checks cover items/Loot, commerce, Character Forge, skill storage, scenes, stats/currency and memory. [Compatibility and validation report](docs/regex-shared-v0.60.0.th.md).
+
+Run `npm run test:regex` for the focused compatibility suites. The shared suite downloads pinned upstream test dependencies with `curl` into a temporary cache; `ST_REGEX_CACHE` can point to a prepared cache. This does not install runtime dependencies or change SillyTavern.
 
 Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. All 20 release browser suites pass, including combined commerce and inn flows. Legacy fixtures now use explicit trade intent, real next-user generation and minimized panels; their outdated expectations were compared with unchanged 0.58.15. Historical results remain in the [development README](docs/archive/README-v0.56.2-development.md).
 

@@ -1,13 +1,14 @@
-import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.59.0';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.59.0';
-import { createLoreWorkspace } from './lore-workspace.js?v=0.59.0';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.59.0';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.59.0';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.59.0';
-import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.59.0';
-import { collectPortraitBackups } from './npc-media.js?v=0.59.0';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.59.0';
-import { H_FIELDS } from './h-stats.js?v=0.59.0';
+import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.60.0';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.60.0';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.60.0';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.60.0';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.60.0';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.60.0';
+import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.60.0';
+import { collectPortraitBackups } from './npc-media.js?v=0.60.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.60.0';
+import { H_FIELDS } from './h-stats.js?v=0.60.0';
+import {chatPresentationMode} from './chat-compat.js?v=0.60.0';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -15,7 +16,7 @@ const uuid=()=>globalThis.crypto?.randomUUID?.()||`npc-${Date.now()}-${Math.rand
 
 export function createNpcWorkspace(api) {
     let dialog,form,roster,status,editor,base={},recordBase={},editAlternateId='',draftId='',chatId='',ownerKey='',scope='chat',view='list',page=0,token=0,busy=false,dirty=false,photoBlob=null,photoDirty=false,photoInherit=false,frameDirty=false,previewUrl=null,previewGeneration=0;
-    let brief='',referenceBlob=null,referenceUrl=null,viewportFrame=0,unobscuredHeight=0,lore,tab='npc',presentationStatus=null,presentationSettingsGroup=null,preserveNativeLabel=null,preserveNativeHelp=null,userPresentationLabel=null,userPresentationHelp=null;
+    let brief='',referenceBlob=null,referenceUrl=null,viewportFrame=0,unobscuredHeight=0,lore,tab='npc',presentationStatus=null,presentationSettingsGroup=null,formattingModeLabel=null,formattingModeHelp=null,userPresentationLabel=null,userPresentationHelp=null;
     const presentationSubscriptions=[];
     function syncViewport(){
         if(!dialog?.open)return;
@@ -48,23 +49,25 @@ export function createNpcWorkspace(api) {
     function updatePresentationStatus(){
         if(!presentationStatus?.isConnected)return;
         const settings=api.settings(),thai=settings.language==='th';
-        if(preserveNativeLabel)preserveNativeLabel.textContent=thai?'รักษาหน้าตา regex / HTML (เลือกเปิดเอง)':'Preserve regex / HTML formatting (optional)';
-        if(preserveNativeHelp)preserveNativeHelp.textContent=thai?'ค่าเริ่มต้นใช้รูปแบบ RoleForge เดิม เปิดตัวเลือก regex เมื่ออยากเก็บหน้าตาที่ regex สร้าง ซึ่งอาจแสดงแทนบล็อก RoleForge ในข้อความนั้น':'Uses the original RoleForge format by default. Enable the regex option to retain its formatting, which can replace RoleForge blocks in that message.';
+        if(formattingModeLabel)formattingModeLabel.textContent=thai?'การแสดงแชทร่วมกับ Regex / HTML':'Chat formatting with Regex / HTML';
+        if(formattingModeHelp)formattingModeHelp.textContent=thai?'โหมดแสดงร่วมกันเก็บ UI และปุ่มของ Regex แล้วเพิ่มกรอบ RoleForge เมื่อแยกเนื้อหาได้ ถ้า Regex ครอบทั้งข้อความจะเก็บการ์ดไว้และแสดงข้อมูล NPC / บทพากย์แยก ข้อมูลเกมยังอ่านจากข้อความต้นฉบับ':'Shared mode keeps Regex UI and its buttons, adding RoleForge frames where story boundaries remain. Whole-message cards retain their layout with separate NPC / speech controls. Gameplay reads the original message.';
+        const select=presentationSettingsGroup?.querySelector('[data-presentation-setting="chatRegexMode"]');
+        if(select){select.options[0].textContent=thai?'RoleForge + Regex · แสดงร่วมกัน':'RoleForge + Regex · Shared';select.options[1].textContent=thai?'SillyTavern / Regex · รักษารูปแบบเดิม':'SillyTavern / Regex · Native';select.options[2].textContent=thai?'RoleForge · รูปแบบเดิม':'RoleForge · Original';select.value=chatPresentationMode(settings);}
         if(userPresentationLabel)userPresentationLabel.textContent=thai?'UI บทพูด / บรรยาย / พูดในใจ เฉพาะ User':'User-only Dialogue / Narrative / Inner thought UI';
         if(userPresentationHelp)userPresentationHelp.textContent=thai?'เปิดเพื่อแสดง "บทพูด" หรือ “บทพูด”, *บรรยาย*, |พูดในใจ| ในข้อความ User ที่ส่งแล้วเท่านั้น เครื่องหมายในข้อความ AI ใช้รูปแบบเดิม ข้อความต้นฉบับไม่เปลี่ยน โค้ด ตาราง ลิงก์ และ UI จาก regex จะแสดงตาม SillyTavern':'Enable for sent User messages: "dialogue" or “dialogue”, *narrative*, |inner thought|. AI shorthand uses its existing display. Original message text stays unchanged; code, tables, links and regex widgets keep SillyTavern formatting.';
         const message=(api.context().chat||[]).findLast(value=>!value.is_user&&!value.is_system);
         const hasBlocks=message&&Boolean(parseStory(api.visible(message.mes||'')));
         const mode=settings.chatPresentation
-            ? settings.preserveNativeChat ? (thai?'รักษาหน้าตา regex / SillyTavern':'Preserve regex / SillyTavern formatting') : (thai?'รูปแบบ RoleForge เดิม':'Original RoleForge formatting')
+            ? chatPresentationMode(settings)==='shared' ? (thai?'RoleForge + Regex · แสดงร่วมกัน':'RoleForge + Regex · Shared') : chatPresentationMode(settings)==='native' ? (thai?'รักษาหน้าตา regex / SillyTavern':'Preserve regex / SillyTavern formatting') : (thai?'รูปแบบ RoleForge เดิม':'Original RoleForge formatting')
             : (thai?'Header / Dialogue / Narrative ปิดอยู่':'Header / Dialogue / Narrative is off');
         const source=!message ? (thai?'ยังไม่มีคำตอบ':'No character reply yet')
             : hasBlocks ? (thai?'คำตอบล่าสุดมีบล็อกจัดรูปแบบ':'Latest reply has presentation blocks')
                 : (thai?'คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบที่อ่านได้ — ลองสร้างคำตอบใหม่':'Latest reply has no readable presentation blocks — try a new reply');
-        presentationStatus.textContent=`RoleForge 0.59.0 · ${mode} · ${source}`;
+        presentationStatus.textContent=`RoleForge 0.60.0 · ${mode} · ${source}`;
     }
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.59.0',import.meta.url).href;document.head.append(sheet);
-    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.59.0',import.meta.url).href;document.head.append(alternateSheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.60.0',import.meta.url).href;document.head.append(sheet);
+    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.60.0',import.meta.url).href;document.head.append(alternateSheet);
     const alternateText=(en,th,values=[])=>uiText(uiLanguage()==='th'?th:en,values);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
@@ -127,7 +130,7 @@ export function createNpcWorkspace(api) {
         if(dialog&&!dialog.open&&dialog.dataset.uiLanguage!==uiLanguage()){dialog.remove();dialog=null;}
         if(dialog)return;
         dialog=element('dialog','trpg-manager');dialog.dataset.uiLanguage=uiLanguage();dialog.setAttribute('aria-labelledby','trpg-manager-title');
-        dialog.innerHTML=(uiMarkup("<header class=\"trpg-manager-top\"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id=\"trpg-manager-title\">NPC MANAGEMENT</h2></div><button type=\"button\" data-close aria-label=\"ปิด\">×</button></header>\n            <nav class=\"trpg-management-tabs\" aria-label=\"Management\"><button type=\"button\" data-management-tab=\"npc\" aria-pressed=\"true\">NPC Management</button><button type=\"button\" data-management-tab=\"lore\" aria-pressed=\"false\">Lore Management</button></nav>\n            <nav class=\"trpg-archive-nav\" aria-label=\"ขอบเขต NPC\"><button type=\"button\" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value=\"chat\">Chat · เฉพาะแชตนี้</option><option value=\"character\">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>\n            <label class=\"trpg-generation-scope\">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value=\"chat\">Chat · แชตนี้</option><option value=\"character\">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>\n            <div class=\"trpg-manager-layout\"><section class=\"trpg-roster trpg-browser\"><div class=\"trpg-browser-tools\"><label>ค้นหาตัวละคร<input type=\"search\" data-search placeholder=\"ค้นหาชื่อ บทบาท หรือสังกัด\"></label>\n            <div class=\"trpg-roster-actions\"><button type=\"button\" data-new data-lock>＋ สร้าง NPC</button><button type=\"button\" data-import data-lock>นำเข้า Character Life</button><input type=\"file\" data-import-file accept=\".json,.zip,application/json,application/zip\" hidden></div></div><div class=\"trpg-list-heading\"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class=\"trpg-pagination\" data-pagination></div></section>\n            <section class=\"trpg-record\" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id=\"trpg-npc-form\" novalidate hidden><fieldset></fieldset></form></section></div>\n            <section class=\"trpg-lore-panel\" data-lore-panel hidden></section>\n            <footer class=\"trpg-manager-footer\"><span role=\"status\" aria-live=\"polite\"></span><span>SCOPED ARCHIVE · v0.59.0</span></footer><div class=\"trpg-actions trpg-editor-actions\" data-editor-actions hidden></div>"));
+        dialog.innerHTML=(uiMarkup("<header class=\"trpg-manager-top\"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id=\"trpg-manager-title\">NPC MANAGEMENT</h2></div><button type=\"button\" data-close aria-label=\"ปิด\">×</button></header>\n            <nav class=\"trpg-management-tabs\" aria-label=\"Management\"><button type=\"button\" data-management-tab=\"npc\" aria-pressed=\"true\">NPC Management</button><button type=\"button\" data-management-tab=\"lore\" aria-pressed=\"false\">Lore Management</button></nav>\n            <nav class=\"trpg-archive-nav\" aria-label=\"ขอบเขต NPC\"><button type=\"button\" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value=\"chat\">Chat · เฉพาะแชตนี้</option><option value=\"character\">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>\n            <label class=\"trpg-generation-scope\">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value=\"chat\">Chat · แชตนี้</option><option value=\"character\">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>\n            <div class=\"trpg-manager-layout\"><section class=\"trpg-roster trpg-browser\"><div class=\"trpg-browser-tools\"><label>ค้นหาตัวละคร<input type=\"search\" data-search placeholder=\"ค้นหาชื่อ บทบาท หรือสังกัด\"></label>\n            <div class=\"trpg-roster-actions\"><button type=\"button\" data-new data-lock>＋ สร้าง NPC</button><button type=\"button\" data-import data-lock>นำเข้า Character Life</button><input type=\"file\" data-import-file accept=\".json,.zip,application/json,application/zip\" hidden></div></div><div class=\"trpg-list-heading\"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class=\"trpg-pagination\" data-pagination></div></section>\n            <section class=\"trpg-record\" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id=\"trpg-npc-form\" novalidate hidden><fieldset></fieldset></form></section></div>\n            <section class=\"trpg-lore-panel\" data-lore-panel hidden></section>\n            <footer class=\"trpg-manager-footer\"><span role=\"status\" aria-live=\"polite\"></span><span>SCOPED ARCHIVE · v0.60.0</span></footer><div class=\"trpg-actions trpg-editor-actions\" data-editor-actions hidden></div>"));
         document.body.append(dialog);form=dialog.querySelector('form');roster=dialog.querySelector('[data-list]');status=dialog.querySelector('[role=status]');
         lore=createLoreWorkspace(dialog.querySelector('[data-lore-panel]'),api,say);
         dialog.querySelectorAll('[data-management-tab]').forEach(button=>button.addEventListener('click',()=>{
@@ -673,13 +676,18 @@ The visibleAppearance value is authoritative: copy it into appearance without ad
     const settings=document.getElementById('tretaresia-presentation-settings')||document.querySelector('#tretaresia-rpg-settings .inline-drawer-content')||document.getElementById('tretaresia-rpg-settings');
     if(settings){const group=element('div','trpg-settings');const button=element('button','menu_button',uiText("NPC Management"));button.dataset.trpgOpen='';button.type='button';group.append(button);
         const thai=api.settings().language==='th';
-        for(const [key,label]of [['chatPresentation','Header / Dialogue / Narrative'],['userChatPresentation',thai?'UI บทพูด / บรรยาย / พูดในใจ เฉพาะ User':'User-only Dialogue / Narrative / Inner thought UI'],['chatEffects',uiText("Gradient และเอฟเฟกต์แชต")],['preserveNativeChat',thai?'รักษาหน้าตา regex / HTML (เลือกเปิดเอง)':'Preserve regex / HTML formatting (optional)']]){
+        for(const [key,label]of [['chatPresentation','Header / Dialogue / Narrative'],['userChatPresentation',thai?'UI บทพูด / บรรยาย / พูดในใจ เฉพาะ User':'User-only Dialogue / Narrative / Inner thought UI'],['chatEffects',uiText("Gradient และเอฟเฟกต์แชต")]]){
             const row=element('label','checkbox_label'),check=element('input');check.type='checkbox';check.dataset.presentationSetting=key;check.checked=Boolean(api.settings()[key]);
-            check.addEventListener('change',()=>{api.settings()[key]=check.checked;api.context().saveSettingsDebounced?.();if(key!=='userChatPresentation')api.updatePrompt();chat.refresh();updatePresentationStatus();});const labelText=document.createTextNode(uiText(label));if(key==='preserveNativeChat')preserveNativeLabel=labelText;if(key==='userChatPresentation')userPresentationLabel=labelText;row.append(check,labelText);group.append(row);
+            check.addEventListener('change',()=>{api.settings()[key]=check.checked;api.context().saveSettingsDebounced?.();if(key!=='userChatPresentation')api.updatePrompt();chat.refresh();updatePresentationStatus();});const labelText=document.createTextNode(uiText(label));if(key==='userChatPresentation')userPresentationLabel=labelText;row.append(check,labelText);group.append(row);
             if(key==='userChatPresentation'){userPresentationHelp=element('small','trpg-user-presentation-help');userPresentationHelp.style.cssText='display:block;line-height:1.5;white-space:normal;overflow-wrap:anywhere;margin:6px 0';group.append(userPresentationHelp);}
         }
-        const help=element('small','trpg-presentation-help',thai?'ค่าเริ่มต้นใช้รูปแบบ RoleForge เดิม เปิดตัวเลือก regex เมื่ออยากเก็บหน้าตาที่ regex สร้าง ซึ่งอาจแสดงแทนบล็อก RoleForge ในข้อความนั้น':'Uses the original RoleForge format by default. Enable the regex option to retain its formatting, which can replace RoleForge blocks in that message.');
-        preserveNativeHelp=help;help.style.cssText='display:block;line-height:1.5;white-space:normal;overflow-wrap:anywhere;margin:6px 0';group.append(help);
+        const modeRow=element('label','trpg-formatting-mode'),modeLabel=element('span'),modeSelect=element('select','text_pole');
+        formattingModeLabel=modeLabel;modeSelect.dataset.presentationSetting='chatRegexMode';
+        for(const value of ['shared','native','roleforge']){const option=element('option');option.value=value;modeSelect.append(option);}
+        modeSelect.value=chatPresentationMode(api.settings());
+        modeSelect.addEventListener('change',()=>{api.settings().chatRegexMode=modeSelect.value;api.settings().preserveNativeChat=modeSelect.value==='native';api.context().saveSettingsDebounced?.();chat.refresh();updatePresentationStatus();});modeRow.append(modeLabel,modeSelect);group.append(modeRow);
+        const help=element('small','trpg-presentation-help');
+        formattingModeHelp=help;help.style.cssText='display:block;line-height:1.5;white-space:normal;overflow-wrap:anywhere;margin:6px 0';group.append(help);
         presentationStatus=element('small','trpg-presentation-status');presentationStatus.setAttribute('role','status');presentationStatus.style.cssText='display:block;line-height:1.5;white-space:normal;overflow-wrap:anywhere;margin:6px 0';group.append(presentationStatus);
         presentationSettingsGroup=group;settings.append(group);bindStaticUi(group);updatePresentationStatus();
     }

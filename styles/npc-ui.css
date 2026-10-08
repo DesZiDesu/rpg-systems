@@ -15,6 +15,12 @@
 @media(max-width:480px){.trpg-scene-ledger{grid-template-columns:42px minmax(0,1fr)}.trpg-scene-top,.trpg-scene-hero{padding-inline:9px}.trpg-scene-hero>div:first-child>strong{font-size:16px}}
 .trpg-chat{--speaker:#d6b458;--prose:#d6d0c1;font-family:'Chakra Petch',sans-serif;text-align:left;max-width:100%;overflow-wrap:anywhere}
 .trpg-chat *,.trpg-manager *{box-sizing:border-box}
+.mes_text [data-roleforge-story]{display:contents}
+.trpg-formatting-mode{display:grid;gap:6px;margin-block:10px;min-width:0}.trpg-formatting-mode select{width:100%;max-width:100%;min-width:0}
+.rf-shared-block .trpg-dialogue>[data-roleforge-story],.rf-shared-block .trpg-prose-copy>[data-roleforge-story]{white-space:normal}
+.rf-native-speech{margin-block:12px;border:1px solid color-mix(in srgb,var(--tretaresia-accent,#d6b458) 35%,transparent);font:inherit;color:var(--tretaresia-ink,inherit)}
+.rf-native-speech>summary{padding:10px 12px;cursor:pointer;color:var(--tretaresia-accent,#d6b458)}
+.rf-native-speech-list{display:grid;gap:10px;padding:0 12px 12px}.rf-native-voice-target{min-width:0}.rf-native-voice-target>small{display:block;opacity:.75}
 .trpg-chat .trpg-speaker{margin:0;padding:0;background:none;border:0}
 .trpg-chat .trpg-header{display:flex;align-items:center;gap:22px;width:100%;min-height:108px;margin:0;padding:20px 2px;border:0;border-radius:0;background:none!important;box-shadow:none!important;text-align:left;color:var(--speaker);cursor:pointer;font:inherit}
 .trpg-chat .trpg-header:focus-visible{outline:2px solid var(--speaker);outline-offset:3px}

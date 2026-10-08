@@ -1,6 +1,6 @@
 // Static inline SVG, independent of emoji fonts and icon-font loading.
-import {pixelMoneyMarkup,units as pixelUnits} from './currency-icons.js?v=0.59.0';
-import {MONEY_ICON_SETS,currencyUnit} from './currency-config.js?v=0.59.0';
+import {pixelMoneyMarkup,units as pixelUnits} from './currency-icons.js?v=0.60.0';
+import {MONEY_ICON_SETS,currencyUnit} from './currency-config.js?v=0.60.0';
 const paths={
  flask:'M9 3h6M10 3v6L4 19q-1 2 2 2h12q3 0 2-2L14 9V3M7 15h10',
  apple:'M12 8c-8-5-12 3-7 11q3 4 7 1 4 3 7-1c5-8 1-16-7-11Zm0 0V3m0 3c5 0 5-4 5-4-4 0-5 4-5 4',

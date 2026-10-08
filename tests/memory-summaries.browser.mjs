@@ -124,6 +124,7 @@ try{
  // The live summary remains visible in the main composer after closing RoleForge.
  await page.evaluate(()=>{window.originalStorySend=document.querySelector('#send_but');window.storySendClicks=0;window.originalStorySend.addEventListener('click',()=>window.storySendClicks++);});
  await page.evaluate(()=>{document.querySelector('#extensions_settings2').style.display='none';document.querySelector('#tretaresia-rpg-close').click();});
+ await page.locator('.rf-composer-dock.is-minimized [data-dock-collapse]').click();
  const composer=page.locator('.rf-memory-composer-status');await composer.waitFor({state:'visible'});assert.equal(await composer.getAttribute('data-status'),'summarizing');
  assert.match(await composer.innerText(),/10\s*\/\s*23/);assert(await page.locator('.rf-memory-composer-stop').isVisible());
  assert.equal(await page.evaluate(()=>document.querySelector('#send_but')===window.originalStorySend),true);

@@ -2,6 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { identity, profileFields, completeDraft, importCharacters, readCharacterFile, parseStory, portraitData, cropGeometry, keyName, ROLE_ICONS, CLASSIC_ROLE_ICONS, retainManualNpcEdits } from '../src/npc-core.js';
 
+test('literal protocol in code, comments, styles and tag attributes never creates NPC or Voice blocks',()=>{
+ for(const value of ['```html\n<tr-dialogue name="Cora">Example</tr-dialogue>\n```','`<tr-header name="Cora"/>`','<pre><tr-dialogue>Example</tr-dialogue></pre>','<!--<tr-header name="Cora"/>-->','<style>.card:after{content:"<tr-dialogue>"}</style>',"<div data-example='<tr-dialogue name=\"Cora\">'>Card</div>"]){assert.equal(parseStory(value),null);}
+ const blocks=parseStory('`<tr-header name="Example"/>`<tr-dialogue name="Cora">Real speech.</tr-dialogue>');
+ assert.deepEqual(blocks.filter(block=>block.type==='dialogue').map(block=>block.name),['Cora']);assert.equal(blocks.some(block=>block.type==='header'),false);
+});
+
 test('identity fields survive partial updates; role/color are allowlisted',()=>{
  const base={appearance:'silver hair',personality:'calm',aliases:['Lys'],identityColor:'#85aacc',roleIcon:'mage',portraitSize:96,portraitSource:'local'};
  assert.deepEqual(identity({goals:'find a book'},base),{...identity(base),goals:'find a book'});

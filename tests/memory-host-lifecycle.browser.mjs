@@ -41,6 +41,9 @@ async function createPage(width) {
 async function start(page) {
     await page.locator('[data-memory-addons-panel] [data-action="memory-summary-run"]').click();
     await page.locator('#preview-settings-close').click();
+    // All composer panels start minimized since 0.59.0. Expand explicitly,
+    // just as a player does, before checking progress/Cancel controls.
+    await page.locator('.rf-composer-dock.is-minimized [data-dock-collapse]').click();
 }
 async function emit(page,type,...args) {
     await page.evaluate(async ({type,args}) => { await window.host.eventSource.emit(window.host.eventTypes[type],...args); },{type,args});

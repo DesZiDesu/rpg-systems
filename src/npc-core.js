@@ -1,4 +1,4 @@
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.59.0';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.60.0';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -118,13 +118,20 @@ export function parseStory(source) {
  // Tokenize boundaries instead of matching nested blocks with one regex.
  // A new opener ends the previous block; a mismatched closer cannot swallow it.
  const tags=/<(\/?)(?:tr-)?(header|narrative|dialogue)\b([^>]*)>/gi;
- const blocks=[];let active={type:'plain'},cursor=0,match;
+ // Code/examples and tag attributes can contain literal protocol strings.
+ // Leave them to the native Markdown/Regex renderer, not the NPC/Voice parser.
+ const protectedPattern=/```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]*`|<(pre|code|script|style|custom-style)\b[^>]*>[\s\S]*?<\/\1\s*>|<!--[\s\S]*?(?:-->|$)|<(?!\/?(?:tr-(?:header|narrative|dialogue)|header|narrative|dialogue)\b)\/?[\w:-]+\b(?:[^"'<>]|"[^"]*"|'[^']*')*>/gi;
+ const protectedRanges=[...text.matchAll(protectedPattern)].map(match=>[match.index,match.index+match[0].length]);
+ const blocks=[];let active={type:'plain'},cursor=0,match,protectedIndex=0,found=false;
  const append=raw=>{
   const body=raw.replace(/<[^>]*>/g,'').replace(/<[^>]*$/,'').trim();
   if(!body)return;
   blocks.push({...active,text:body});
  };
  while((match=tags.exec(text))&&blocks.length<150){
+  while(protectedRanges[protectedIndex]?.[1]<=match.index)protectedIndex++;
+  if(protectedRanges[protectedIndex]&&protectedRanges[protectedIndex][0]<=match.index)continue;
+  found=true;
   append(text.slice(cursor,match.index));cursor=tags.lastIndex;
   if(match[2].toLowerCase()==='header' && match[1]) continue;
   if(match[1]) { active={type:'plain'}; continue; }
@@ -138,7 +145,7 @@ export function parseStory(source) {
   }
  }
  append(text.slice(cursor));
- return blocks.length?blocks:null;
+ return found&&blocks.length?blocks:null;
 }
 export function portraitData(value) {
  const s=typeof value==='string'?value:'';

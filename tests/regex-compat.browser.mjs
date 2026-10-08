@@ -111,7 +111,7 @@ async function exerciseDefaultPresentation(page,width){
   window.host.chat=[];document.querySelector('#chat').replaceChildren();
   await window.hStatsPreview.switchChat('default-presentation-chat',{tretaresia_rpg_state:{npcs:[],location:{narrativeVersion:1,place:'Library'},onboarding:{locationSeeded:true}}});
   const settings=window.host.extensionSettings.tretaresia_rpg;
-  delete settings.preserveNativeChat;settings.chatPresentation=true;settings.showSceneTracker=false;
+  delete settings.preserveNativeChat;settings.chatRegexMode='shared';settings.chatPresentation=true;settings.showSceneTracker=false;
   window.host.extensionSettings.regex=[{findRegex:'traveler',replaceString:'friend',placement:[2],markdownOnly:true}];
   window.host.getPresetManager=()=>({readPresetExtensionField:()=>[]});
   window.host.characters[window.host.characterId].data.extensions.regex_scripts=[];
@@ -129,15 +129,15 @@ async function exerciseDefaultPresentation(page,width){
  assert.equal(await row.locator('.trpg-narrative strong').textContent(),'quietly','Missing compatibility preference restores source presentation');
  assert.equal(await row.locator('.trpg-dialogue').textContent(),'Welcome, traveler.','Attributed native markup does not suppress dialogue');
  assert.equal(await row.locator('.trpg-header').count(),1,'Default presentation has one header');
- // Default mode intentionally prioritizes RoleForge's saved tags even when
- // a display-only regex changed the native visible text.
+ // Shared mode keeps the host's rewritten words and adds the NPC identity.
  await page.evaluate(async()=>{
   const text=document.querySelector('[mesid="0"] .mes_text');
   text.innerHTML='<p>Welcome, friend. Display-only regex replacement.</p>';
   await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);
  });
  await row.locator('.trpg-header').waitFor({timeout:3000});
- assert.equal(await row.locator('.trpg-dialogue').textContent(),'Welcome, traveler.','Default mode keeps the saved RoleForge story');
+ assert.match(await row.locator('.mes_text').innerText(),/Welcome, friend/,'Shared mode retains display-only Regex changes');
+ assert.equal(await row.locator('.trpg-dialogue').count(),0,'Unknown native rewrite is not duplicated as original dialogue');
  if(width===390&&process.env.REGEX_SCREENSHOT_DIR){
   await mkdir(process.env.REGEX_SCREENSHOT_DIR,{recursive:true});
   await row.locator('.mes_text').screenshot({path:`${process.env.REGEX_SCREENSHOT_DIR}/narrative-default-restored-0456.png`});
@@ -145,7 +145,7 @@ async function exerciseDefaultPresentation(page,width){
  // Opt-in preserves a native widget, including identity, its listener and input
  // state. Switching priorities restores the same saved nodes, not clones.
  await page.evaluate(async()=>{
-  window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=true;
+  window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=true;window.host.extensionSettings.tretaresia_rpg.chatRegexMode='native';
   const text=document.querySelector('[mesid="0"] .mes_text');
   text.innerHTML='<section class="default-native-widget" data-formatter="regex"><p>She waits quietly.</p><p>Welcome, friend.</p><button type="button">Native action</button><input type="checkbox"></section>';
   window.defaultNativeWidget=text.firstChild;window.defaultNativeClicks=0;
@@ -158,9 +158,9 @@ async function exerciseDefaultPresentation(page,width){
  assert.equal(await row.locator('.trpg-header').count(),0,'Native opt-in keeps custom display priority');
  await row.locator('.default-native-widget button').click();
  assert.equal(await page.evaluate(()=>window.defaultNativeClicks),1,'Native opt-in preserves bound action');
- await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=false;await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);});
+ await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=false;window.host.extensionSettings.tretaresia_rpg.chatRegexMode='roleforge';await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);});
  await row.locator('.trpg-header').waitFor({timeout:3000});
- await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=true;await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);});
+ await page.evaluate(async()=>{window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=true;window.host.extensionSettings.tretaresia_rpg.chatRegexMode='native';await window.host.eventSource.emit(window.host.eventTypes.CHARACTER_MESSAGE_RENDERED,0);});
  await row.locator('.default-native-widget').waitFor();
  assert.equal(await page.evaluate(()=>document.querySelector('.default-native-widget')===window.defaultNativeWidget&&window.defaultNativeWidget.querySelector('input').checked),true,'Changing priority restores exact widget');
  await row.locator('.default-native-widget button').click();
@@ -168,7 +168,7 @@ async function exerciseDefaultPresentation(page,width){
  // A formatter observing direct message children may wrap our story once.
  // It must settle instead of continuously undoing and repeating both mounts.
  await page.evaluate(async()=>{
-  window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=false;
+  window.host.extensionSettings.tretaresia_rpg.preserveNativeChat=false;window.host.extensionSettings.tretaresia_rpg.chatRegexMode='roleforge';
   const text=document.querySelector('[mesid="0"] .mes_text');
   text.innerHTML='<p dir="auto">Current native body before RoleForge presentation.</p>';
   window.defaultWrappedOriginal=text.firstChild;window.defaultWraps=0;
@@ -198,7 +198,7 @@ async function exerciseDefaultPresentation(page,width){
  // Neither priority mode invents blocks/speakers for an old reply without tags.
  for(const preserveNativeChat of [false,true]){
   await page.evaluate(async preserveNativeChat=>{
-   const settings=window.host.extensionSettings.tretaresia_rpg;settings.preserveNativeChat=preserveNativeChat;
+   const settings=window.host.extensionSettings.tretaresia_rpg;settings.preserveNativeChat=preserveNativeChat;settings.chatRegexMode=preserveNativeChat?'native':'roleforge';
    const message=window.host.chat[0];message.mes='An existing reply without RoleForge tags.';message.swipes[message.swipe_id]=message.mes;
    const text=document.querySelector('[mesid="0"] .mes_text');text.innerHTML='<p dir="auto">An existing reply without RoleForge tags.</p>';window.defaultPlainOriginal=text.firstChild;
    await window.host.eventSource.emit(window.host.eventTypes.MESSAGE_UPDATED,0);
@@ -228,7 +228,7 @@ try{
   },{story,patch});
   await renderNative(page,id);
   await page.evaluate(id=>window.host.eventSource.emit(window.host.eventTypes.MESSAGE_RECEIVED,id,'normal'),id);
-  await page.locator('#chat .trpg-mission-board').waitFor({state:'visible'});await page.locator('.rf-commerce-composer').waitFor({state:'visible'});
+  await page.locator('#chat .trpg-mission-board').waitFor({state:'visible'});await page.locator('[data-dock-panel="commerce"]').click();await page.locator('.rf-commerce-composer').waitFor({state:'visible'});
   await assertNative(page,'scene + board + auction');
   await page.locator('.trpg-board-paper').first().click();assert(await page.locator('.trpg-board-detail').isVisible());await assertNative(page,'board details');
   // Even with character presentation enabled, rich/custom host output is kept.

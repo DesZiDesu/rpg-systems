@@ -1,0 +1,142 @@
+{
+  "release": "0.60.0",
+  "validatedAtUtc": "2026-10-08T11:50:00.941051+00:00",
+  "baseCommit": "862f7707f2fc331f9ad1823705220a125fea1ffa",
+  "syntaxChecks": "passed",
+  "unitTests": {
+    "passed": 1162,
+    "failed": 0
+  },
+  "browserSuites": [
+    {
+      "suite": "presentation-settings",
+      "exit": 0
+    },
+    {
+      "suite": "regex-shared",
+      "exit": 0
+    },
+    {
+      "suite": "regex-compat",
+      "exit": 0
+    },
+    {
+      "suite": "user-chat",
+      "exit": 0
+    },
+    {
+      "suite": "voice-addons",
+      "exit": 0
+    },
+    {
+      "suite": "chat-system-null",
+      "exit": 0
+    },
+    {
+      "suite": "optional-systems",
+      "exit": 0
+    },
+    {
+      "suite": "incantation",
+      "exit": 0
+    },
+    {
+      "suite": "commerce-stock",
+      "exit": 0
+    },
+    {
+      "suite": "commerce-stock-selection",
+      "exit": 0
+    },
+    {
+      "suite": "commerce-pending",
+      "exit": 0
+    },
+    {
+      "suite": "commerce-repair",
+      "exit": 0
+    },
+    {
+      "suite": "main-chat-systems",
+      "exit": 0
+    },
+    {
+      "suite": "commerce-rights",
+      "exit": 0
+    },
+    {
+      "suite": "forge-opening",
+      "exit": 0
+    },
+    {
+      "suite": "character-forge",
+      "exit": 0
+    },
+    {
+      "suite": "items",
+      "exit": 0
+    },
+    {
+      "suite": "rewards-location",
+      "exit": 0
+    },
+    {
+      "suite": "scene-locations",
+      "exit": 0
+    },
+    {
+      "suite": "npc-workspace",
+      "exit": 0
+    },
+    {
+      "suite": "module-navigation",
+      "exit": 0
+    },
+    {
+      "suite": "ui-language",
+      "exit": 0
+    },
+    {
+      "suite": "npc-alternates",
+      "exit": 0
+    },
+    {
+      "suite": "skill-storage",
+      "exit": 0
+    },
+    {
+      "suite": "memory-host-lifecycle",
+      "exit": 0
+    },
+    {
+      "suite": "startup",
+      "exit": 0
+    },
+    {
+      "suite": "memory-summaries",
+      "exit": 0
+    },
+    {
+      "suite": "stats-currency",
+      "exit": 0
+    }
+  ],
+  "sharedRegexWidths": [
+    320,
+    390,
+    1280
+  ],
+  "upstreamSillyTavernCommit": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+  "upstreamLibraries": {
+    "showdown": "2.1.0",
+    "dompurify": "3.4.2",
+    "adobeCssTools": "4.4.4"
+  },
+  "host": "Controlled integration host with production RoleForge loader and pinned upstream formatting pipeline; not a full SillyTavern server.",
+  "paidApiRequests": false,
+  "limits": [
+    "Arbitrary source rules that remove gameplay metadata cannot preserve that removed data.",
+    "Global CSS or scripts that explicitly overwrite another extension can still conflict.",
+    "HTML remains subject to the host sanitizer."
+  ]
+}

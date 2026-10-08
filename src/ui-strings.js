@@ -7143,7 +7143,7 @@ const aliases = {
   "If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.": 1031,
   "If no patch is returned, the activity capsule says “No state changes.” Tracking ran successfully but had nothing confirmed to save.": 1031,
   "หากไม่มีชุดอัปเดต แถบสถานะจะแสดงว่าไม่มีข้อมูลเปลี่ยนแปลง หมายถึงติดตามสำเร็จแต่ไม่มีข้อมูลยืนยันให้บันทึก": 1031,
-  "RoleForge engine 0.59.0 ready": 1032,
+  "RoleForge engine 0.60.0 ready": 1032,
   "RoleForge engine ready": 1032,
   "ระบบ RoleForge พร้อมใช้งาน": 1032,
   "พิมพ์ชื่อแท็ก…": 1033,
@@ -8307,7 +8307,7 @@ const aliases = {
   "after your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.": 1028,
   "the character produces its normal reply once. if a confirmed fact changed, it appends an invisible state patch to that same reply.": 1029,
   "the extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.": 1030,
-  "roleforge engine 0.59.0 ready": 1032,
+  "roleforge engine 0.60.0 ready": 1032,
   "roleforge engine ready": 1032,
   "name of the preferred tag": 1034,
   "character (all chats of this card)": 1048,
@@ -8814,4 +8814,33 @@ for (const pair of [
  ["Quick menu","เมนูเลือกหมวด"],
  ["Module grid","ตารางหมวด"]
 ]) { aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length; messages.push(pair); }
+// Static settings introduced with stats/currency and Incantation. Keep their
+// original bilingual keys as aliases for cached templates; never split or
+// translate saved custom names/descriptions.
+for (const [source,en,th] of [
+ ["User stats · ค่าสถานะและการฝึก","User stats & practice","ค่าสถานะและการฝึก"],
+ ["การฝึกใช้คำตอบในแชทหลัก · HP / MP / ST พัฒนาค่าสูงสุดถาวร","Practice uses main chat replies · HP / MP / ST permanently raise maximums","การฝึกใช้คำตอบในแชทหลัก · HP / MP / ST พัฒนาค่าสูงสุดถาวร"],
+ ["Show status window / แสดงสถานะเหนือช่องพิมพ์","Show status window","แสดงสถานะเหนือช่องพิมพ์"],
+ ["Show stat training / แสดงหน้าต่างฝึกค่าสถานะ","Show stat training","แสดงหน้าต่างฝึกค่าสถานะ"],
+ ["Status layout / รูปแบบสถานะ","Status layout","รูปแบบสถานะ"],
+ ["Training layout / รูปแบบหน้าฝึก","Training layout","รูปแบบหน้าฝึก"],
+ ["Native stat notifications / แจ้งเตือน SillyTavern เมื่อค่าสถานะเพิ่ม","Native stat notifications","แจ้งเตือน SillyTavern เมื่อค่าสถานะเพิ่ม"],
+ ["Configure stats & practice / ตั้งค่าสถิติและวิธีฝึก","Configure stats & practice","ตั้งค่าสถิติและวิธีฝึก"],
+ ["Incantation · วิชาและบทร่าย","Incantation","วิชาและบทร่าย"],
+ ["ข้อมูลพร้อมคำตอบปกติ · ไม่เรียก AI เพิ่มเพื่ออ่านรายละเอียด","Details arrive with normal replies · no extra AI request to view them","ข้อมูลพร้อมคำตอบปกติ · ไม่เรียก AI เพิ่มเพื่ออ่านรายละเอียด"],
+ ["Show incantation window / แสดงหน้าต่างบทร่าย","Show incantation window","แสดงหน้าต่างบทร่าย"],
+ ["ปิดเพื่อซ่อนหน้าต่าง กฎบทร่ายของผู้เล่นยังทำงานตามโลกโรล","Hiding this window keeps player incantation rules active in the story","ปิดเพื่อซ่อนหน้าต่าง กฎบทร่ายของผู้เล่นยังทำงานตามโลกโรล"],
+ ["NPC incantation rules / ให้ NPC ร่ายเวทตามความสามารถ","NPC incantation rules","ให้ NPC ร่ายเวทตามความสามารถ"],
+ ["Chant language / ภาษาบทร่าย","Chant language","ภาษาบทร่าย"],
+ ["ตามภาษาโรล / Follow role-play","Follow role-play","ตามภาษาโรล"],
+ ["Custom / ระบุเอง","Custom","ระบุเอง"],
+ ["Custom chant language / ภาษาที่ระบุเอง","Custom chant language","ภาษาที่ระบุเอง"],
+ ["Currency setup · ค่าเงิน อัตราแลก และไอคอน","Currency setup · rates and icons","ค่าเงิน อัตราแลก และไอคอน"],
+ ["ชุดไอคอนเงิน / Coin icon set","Coin icon set","ชุดไอคอนเงิน"],
+ ["เหรียญซ้อน / Coin stacks","Coin stacks","เหรียญซ้อน"],
+ ["เหรียญตราดาว / Minted coins","Minted coins","เหรียญตราดาว"],
+ ["เหรียญรูน / Rune","Rune coins","เหรียญรูน"],
+ ["Arcade · โทเคนแสงพิกเซล","Arcade · pixel tokens","Arcade · โทเคนแสงพิกเซล"],
+ ["ใช้ร่วมกันใน Inventory และหน้าต่างซื้อขาย/ประมูล","Shared by Inventory, shops and auctions","ใช้ร่วมกันใน Inventory และหน้าต่างซื้อขาย/ประมูล"]
+]) { aliases[source]=messages.length; aliases[en]=messages.length; aliases[th]=messages.length; messages.push([en,th]); }
 export const UI_STRINGS = Object.freeze(Object.fromEntries(Object.entries(aliases).map(([key,index])=>[key,Object.freeze(messages[index])])));
