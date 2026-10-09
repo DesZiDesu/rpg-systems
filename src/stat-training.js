@@ -26,7 +26,12 @@ export function normalizeStatTraining(raw){
  return {version:1,definitions,hidden:[...new Set((Array.isArray(source.hidden)?source.hidden:[]).filter(id=>CORE_USER_STATS.some(s=>s.id===id)))]};
 }
 export function normalizeUserAttributes(raw,fallback={}){return Object.fromEntries(CORE_USER_STATS.filter(s=>s.path.startsWith('player.attributes')).map(s=>[s.id,finite(raw?.[s.id],finite(fallback?.[s.id],s.initial))]));}
-export function normalizeUserCustomStats(raw,config,fallback={}){return Object.fromEntries(normalizeStatTraining(config).definitions.map(d=>[d.id,finite(raw?.[d.id],finite(fallback?.[d.id],d.initial,d.min,d.max),d.min,d.max)]));}
+export function normalizeUserCustomStats(raw,config,fallback={}){
+ // Inactive definitions stay in the chat's value store when presets change.
+ // Only configured definitions are exposed to AI operations and training.
+ const stored=Object.fromEntries(Object.entries({...fallback,...raw}).filter(([id,value])=>validId(id)&&typeof value==='number'&&Number.isFinite(value)).slice(0,1024));
+ return {...stored,...Object.fromEntries(normalizeStatTraining(config).definitions.map(d=>[d.id,finite(raw?.[d.id],finite(fallback?.[d.id],d.initial,d.min,d.max),d.min,d.max)]))};
+}
 export function statTrainingTargets(state){
  const config=normalizeStatTraining(state?.statTraining),read=path=>path.split('.').reduce((v,k)=>v?.[k],state);
  return [...CORE_USER_STATS.map(d=>({...d,min:d.path.endsWith('.max')?1:0,max:999999,showTraining:!config.hidden.includes(d.id),showStatus:true,value:finite(read(d.path),d.initial),unit:''})),...config.definitions.map(d=>({...d,path:`player.customStats.${d.id}`,value:finite(state?.player?.customStats?.[d.id],d.initial,d.min,d.max),aliases:[d.name]}))];

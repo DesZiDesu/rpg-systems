@@ -1,77 +1,80 @@
-import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.61.0';
-import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.61.0';
-import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.61.0';
-import {createStatComposer} from './src/stat-composer.js?v=0.61.0';
-import {mountStatWorkspace} from './src/stat-workspace.js?v=0.61.0';
-import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue} from './src/currency-config.js?v=0.61.0';
-import {fitForgeToChat} from './src/forge-layout.js?v=0.61.0';
-import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.61.0';
-import {mountSkillBrowser} from './src/skill-browser.js?v=0.61.0';
-import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.61.0';
-import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.61.0';
-import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.61.0';
-import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.61.0';
-import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.61.0';
-import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.61.0';
-import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.61.0';
-import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.61.0';
-import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.61.0';
-import {createMemoryAddons} from './src/memory-addons.js?v=0.61.0';
-import {createVoiceAddons} from './src/voice-addons.js?v=0.61.0';
-import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.61.0';
-import {showApiRequestNotice} from './src/api-request-notice.js?v=0.61.0';
-import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.61.0';
-import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.61.0';
-import {createItemRuntime} from './src/item-runtime.js?v=0.61.0';
-import {createComposerDock} from './src/composer-dock.js?v=0.61.0';
-import {createIncantationComposer} from './src/incantation-composer.js?v=0.61.0';
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.61.0';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.61.0';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.61.0';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.61.0';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.61.0';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.61.0';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.61.0';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.61.0';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.61.0';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.61.0';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.61.0';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.61.0';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.61.0';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.61.0';
-import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.61.0';
-import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.61.0';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.61.0';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.61.0';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.61.0';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.61.0';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.61.0';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.61.0';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.61.0';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.61.0';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.61.0';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.61.0';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.61.0';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.61.0';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.61.0';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.61.0';
-import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.61.0';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.61.0';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.61.0';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.61.0';
+import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.62.0';
+import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.62.0';
+import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.62.0';
+import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.62.0';
+import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.62.0';
+import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.62.0';
+import {createStatComposer} from './src/stat-composer.js?v=0.62.0';
+import {mountStatWorkspace} from './src/stat-workspace.js?v=0.62.0';
+import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue} from './src/currency-config.js?v=0.62.0';
+import {fitForgeToChat} from './src/forge-layout.js?v=0.62.0';
+import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.62.0';
+import {mountSkillBrowser} from './src/skill-browser.js?v=0.62.0';
+import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.62.0';
+import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.62.0';
+import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.62.0';
+import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.62.0';
+import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.62.0';
+import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.62.0';
+import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.62.0';
+import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.62.0';
+import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.62.0';
+import {createMemoryAddons} from './src/memory-addons.js?v=0.62.0';
+import {createVoiceAddons} from './src/voice-addons.js?v=0.62.0';
+import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.62.0';
+import {showApiRequestNotice} from './src/api-request-notice.js?v=0.62.0';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.62.0';
+import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.62.0';
+import {createItemRuntime} from './src/item-runtime.js?v=0.62.0';
+import {createComposerDock} from './src/composer-dock.js?v=0.62.0';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.62.0';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.62.0';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.62.0';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.62.0';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.62.0';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.62.0';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.62.0';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.62.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.62.0';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.62.0';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.62.0';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.62.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.62.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.62.0';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.62.0';
+import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.62.0';
+import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.62.0';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.62.0';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.62.0';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.62.0';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.62.0';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.62.0';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.62.0';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.62.0';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.62.0';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.62.0';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.62.0';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.62.0';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.62.0';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.62.0';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.62.0';
+import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.62.0';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.62.0';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.62.0';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.62.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.61.0';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.61.0';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.61.0';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.61.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.61.0';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.61.0';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.61.0';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.61.0';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.61.0';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.61.0';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.61.0';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.61.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.62.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.62.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.62.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.62.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.62.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.62.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.62.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.62.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.62.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.62.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.62.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.62.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -96,7 +99,8 @@ let moduleNavigation = null;
 let memoryObserveTimer = null;
 let memoryBadgeTimer = null;
 let memoryBadgeSignature = '';
-const SAFE_MODE = /(?:^|[?&])tretaresia-safe=(?:1|true)(?:&|$)/i.test(globalThis.location?.search || '');
+const BLOCKED_HOST = isBlockedHost();
+const SAFE_MODE = BLOCKED_HOST || /(?:^|[?&])tretaresia-safe=(?:1|true)(?:&|$)/i.test(globalThis.location?.search || '');
 
 let liveGeneration = false;
 let nativeGenerationState = null;
@@ -629,7 +633,7 @@ async function runPowerTrainingChoice(choiceId) {
         if (!stillHere()) return false;
         const fresh = clone(getState());
         if (fresh.powerMastery?.session?.id === session.id) {
-            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.61.0', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
+            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.62.0', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
             await persistState(fresh, 'power-training-retry');
         }
         notify('error', error.message || 'Power training failed.');
@@ -709,9 +713,11 @@ let continuityRestoreTask = null;
 let processedAssistantMessages = new WeakMap();
 const assistantPatchTimers = new Map();
 const assistantPatchFlights = new WeakMap();
+const assistantScopeFlights = new WeakMap();
 const assistantVariantCache = new WeakMap();
 const assistantIdentityScopes = new WeakSet();
 let assistantRollbackQueue = Promise.resolve();
+const assistantRollbackFailures = new WeakMap();
 
 const uid = () => globalThis.crypto?.randomUUID?.() || `tretaresia-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const clone = value => globalThis.structuredClone ? structuredClone(value) : JSON.parse(JSON.stringify(value));
@@ -799,18 +805,123 @@ function powerPresetOwner(context = SillyTavern.getContext()) {
     return characterOwner(context)?.key || (context.getCurrentChatId?.() ? `chat:${context.getCurrentChatId()}` : '');
 }
 function activeCardSettings(owner=powerPresetOwner()) {
-    return characterDefaultSettings(getSettings(),owner,readCharacterPack(SillyTavern.getContext(),owner));
+    return characterDefaultSettings(getGlobalSettings(),owner,readCharacterPack(SillyTavern.getContext(),owner));
 }
-function getPowerPreset() { const owner=powerPresetOwner();return readPowerConfig(activeCardSettings(owner),owner); }
-function getForgePreset() { const owner=powerPresetOwner();return readForgePreset(activeCardSettings(owner),owner); }
-function activeLoreOptions(owner=characterOwner(SillyTavern.getContext())?.key) {return loreOptions(activeCardSettings(owner),owner);}
+function getPowerPreset() { const owner=powerPresetOwner();return readChatPreset(SillyTavern.getContext().chatMetadata).powerPreset || readPowerConfig(activeCardSettings(owner),owner); }
+function getForgePreset() { const owner=powerPresetOwner();return readChatPreset(SillyTavern.getContext().chatMetadata).forgePreset || readForgePreset(activeCardSettings(owner),owner); }
+function activeLoreOptions(owner=characterOwner(SillyTavern.getContext())?.key) {return readChatPreset(SillyTavern.getContext().chatMetadata).loreOptions || loreOptions(activeCardSettings(owner),owner);}
+
+const settingsViews=new WeakMap();
+function getSettings() {
+    const base=getGlobalSettings();
+    if(!settingsViews.has(base))settingsViews.set(base,new Proxy(base,{
+        get(target,key){
+            if(WORLD_SYSTEM_KEYS.includes(key)){
+                const context=SillyTavern.getContext();
+                if(context.getCurrentChatId?.()){
+                    const saved=readChatPreset(context.chatMetadata).systems;
+                    if(saved&&Object.hasOwn(saved,key))return saved[key];
+                    const pack=readCharacterPack(context,characterOwner(context)?.key);
+                    if(pack.systems&&Object.hasOwn(pack.systems,key))return pack.systems[key];
+                }
+            }
+            return target[key];
+        },
+        set(target,key,value){
+            if(WORLD_SYSTEM_KEYS.includes(key)&&SillyTavern.getContext().getCurrentChatId?.()){
+                throw Error('Use the chat preset save transaction for world settings.');
+            }
+            target[key]=value;return true;
+        },
+    }));
+    return settingsViews.get(base);
+}
+function defaultWorldPreset() {
+    const owner=powerPresetOwner(),base=activeCardSettings(owner),pack=readCharacterPack(SillyTavern.getContext(),owner),state=defaultState();
+    return {powerPreset:pack.powerPreset || readPowerConfig(base,owner),forgePreset:pack.forgePreset || readForgePreset(base,owner),
+        currencyPreset:pack.currencyPreset || currentCurrencyPreset({progression:{currency:pack.initialState?.progression?.currency || state.progression.currency}},base.coinStyle),
+        trainingPreset:pack.trainingPreset || normalizeStatTraining(pack.initialState?.statTraining),loreOptions:pack.loreOptions || loreOptions(base,owner),
+        systems:Object.fromEntries(WORLD_SYSTEM_KEYS.map(key=>[key,pack.systems?.[key]??base[key]]))};
+}
+function currentWorldPreset(state=getState()) {
+    const settings=getSettings();
+    return {powerPreset:getPowerPreset(),forgePreset:getForgePreset(),currencyPreset:currentCurrencyPreset(state,settings.coinStyle),trainingPreset:state.statTraining,
+        loreOptions:activeLoreOptions(),systems:Object.fromEntries(WORLD_SYSTEM_KEYS.map(key=>[key,settings[key]]))};
+}
+async function saveChatPresetComponents(changes,{candidate=null}={}) {
+    const context=SillyTavern.getContext(),metadata=context.chatMetadata,chatId=context.getCurrentChatId?.(),owner=powerPresetOwner();
+    if(!chatId)throw Error('Open a chat before changing its presets. / เปิดแชทก่อนตั้งค่า preset');
+    if(pendingUserConfigSave||pendingCommerceSave||characterPackSaving||mainReplyGenerating()||assistantScopeFlights.get(metadata)||commerceBusy||itemBusy||powerTrainingBusy||statPracticeBusy||memorySummaryNativeGenerationActive())
+        throw Error('Wait for generation and pending saves to finish. / รอการเจนและงานบันทึกให้จบก่อน');
+    const current=currentWorldPreset(),validated=validatePresetConfig(changes),config=validatePresetConfig({...current,...validated});
+    if(getState().powerMastery?.session&&['powerPreset','trainingPreset'].some(key=>validated[key]&&JSON.stringify(validated[key])!==JSON.stringify(current[key])))throw Error('Finish or stop the current training session before changing its preset. / จบหรือหยุดการฝึกที่ค้างก่อนเปลี่ยน preset');
+    const next=normalize(applyPresetState(candidate || getState(),validated));
+    if(!Number.isSafeInteger(walletValue(next.progression.currency)))throw Error('The wallet exceeds the exact currency range.');
+    if(!auctionFundsValid(next,next)||!marketplaceInventoryValid(next)||!commerceInventoryValid(next))throw Error('Finish active trades before loading this preset. / จบรายการซื้อขายที่ค้างก่อน');
+    const oldConfig=metadata[CHAT_PRESET_KEY],oldState=metadata[METADATA_KEY];
+    const stagedConfig={version:1,config:clone(config)},stagedState=storedNpcState(next);
+    let release;pendingUserConfigSave=new Promise(resolve=>{release=resolve;});
+    metadata[CHAT_PRESET_KEY]=stagedConfig;metadata[METADATA_KEY]=stagedState;
+    try{
+        if(!await saveCurrentChatMetadata(context))throw Error('The chat changed before saving. / เปลี่ยนแชทก่อนบันทึกสำเร็จ');
+    }catch(error){
+        if(metadata[CHAT_PRESET_KEY]===stagedConfig){if(oldConfig===undefined)delete metadata[CHAT_PRESET_KEY];else metadata[CHAT_PRESET_KEY]=oldConfig;}
+        if(metadata[METADATA_KEY]===stagedState){if(oldState===undefined)delete metadata[METADATA_KEY];else metadata[METADATA_KEY]=oldState;}
+        throw error;
+    }finally{pendingUserConfigSave=null;release();}
+    assistantRollbackFailures.delete(metadata);
+    if(SillyTavern.getContext().chatMetadata===metadata&&SillyTavern.getContext().getCurrentChatId?.()===chatId&&powerPresetOwner()===owner){
+        updatePrompt();renderAll();refreshOptionalSettings();refreshWorldSettingControls();npcWorkspace?.refresh();
+        if(validated.currencyPreset)currencyWorkspace?.update(true);
+        if(validated.trainingPreset)statWorkspace?.update(true);
+        sendForgeMessage('power-config',{mode:getPowerPreset().mode,choices:powerPresetChoices()});sendForgeMessage('forge-config');
+    }
+    return config;
+}
+async function changeWorldSetting(key,value,control) {
+    if(control)control.disabled=true;
+    try{await saveChatPresetComponents({systems:{...currentWorldPreset().systems,[key]:value}});return true;}
+    catch(error){notify('warning',error.message);refreshWorldSettingControls();return false;}
+    finally{if(control?.isConnected)control.disabled=false;}
+}
+function refreshWorldSettingControls(){
+    const settings=getSettings();
+    for(const [id,key] of [['tretaresia-rpg-incantation','enableIncantation'],['tretaresia-rpg-npc-incantation','npcIncantation'],['tretaresia-rpg-auto-track','autoTrack'],['tretaresia-rpg-inject-state','injectState'],['tretaresia-rpg-show-scene-tracker','showSceneTracker']]){
+        const control=document.getElementById(id);if(control)control.checked=settings[key];
+    }
+    for(const [id,key] of [['tretaresia-rpg-incantation-language','incantationLanguage'],['tretaresia-rpg-incantation-custom-language','incantationCustomLanguage']]){
+        const control=document.getElementById(id);if(control)control.value=settings[key];
+    }
+    for(const button of document.querySelectorAll('[data-diary-frequency]'))button.setAttribute('aria-pressed',String(button.dataset.diaryFrequency===settings.npcDiaryFrequency));
+}
+async function initializeChatPresets(){
+    const context=SillyTavern.getContext();
+    if(!context.getCurrentChatId?.()||Object.keys(readChatPreset(context.chatMetadata)).length)return;
+    const config=currentWorldPreset();
+    // Freeze defaults without rewriting the legacy wallet's icon scheme.
+    await saveChatPresetComponents({powerPreset:config.powerPreset,forgePreset:config.forgePreset,loreOptions:config.loreOptions,systems:config.systems});
+}
+let presetWorkspace=null;
+function refreshPresetWorkspace(){
+    const root=document.getElementById('roleforge-preset-editor');if(!root)return;
+    if(presetWorkspace?.root===root){presetWorkspace.update();return;}
+    const saveLibrary=async next=>{
+        const context=SillyTavern.getContext(),settings=getGlobalSettings(),old=settings[PRESET_LIBRARY_KEY];settings[PRESET_LIBRARY_KEY]=next;
+        try{await context.saveSettingsDebounced?.();}catch(error){settings[PRESET_LIBRARY_KEY]=old;throw error;}
+    };
+    presetWorkspace={root,...mountPresetWorkspace(root,{context:()=>SillyTavern.getContext(),settings:getGlobalSettings,language:()=>getSettings().language,
+        current:currentWorldPreset,apply:saveChatPresetComponents,reset:()=>saveChatPresetComponents(defaultWorldPreset()),
+        save:(raw,id)=>saveLibrary(saveLibraryPreset(presetLibrary(getGlobalSettings()),raw,id)),
+        remove:id=>saveLibrary(presetLibrary(getGlobalSettings()).filter(record=>record.id!==id)),
+    })};
+}
 
 let characterPackSaving=false;
 function refreshCharacterPackDrawer() {
     const panel=document.getElementById('roleforge-character-pack');if(!panel)return;
     const thai=getSettings().language==='th',owner=characterOwner(SillyTavern.getContext());
     panel.querySelector('[data-pack-title]').textContent=thai?'รวมข้อมูล RoleForge ในการ์ด':'RoleForge Character Card Pack';
-    panel.querySelector('[data-pack-help]').textContent=thai?'บันทึก NPC ฝั่ง Character, Lore, Power และ Character preset ในการ์ดนี้ แล้ว Export การ์ดจาก SillyTavern ผู้รับนำเข้าการ์ดครั้งเดียวได้ครบ':'Save Character NPCs, Lore, Powers and Character Forge presets in this card, then export it from SillyTavern. Recipients import only the card.';
+    panel.querySelector('[data-pack-help]').textContent=thai?'บันทึก NPC ฝั่ง Character, Lore และ preset พลัง/สร้างตัวละคร/ค่าเงิน/ฝึก stat/ระบบที่เปิดใช้ แล้ว Export การ์ดจาก SillyTavern ผู้รับนำเข้าการ์ดครั้งเดียวได้ครบ':'Save Character NPCs, Lore and Power, Character Creation, currency, training and world-system presets in this card, then export it from SillyTavern. Recipients import only the card.';
     panel.querySelector('[data-pack-seed-label]').textContent=thai?'ใช้ข้อมูลผู้เล่นและโลกปัจจุบันเป็นค่าเริ่มต้นของแชทใหม่':'Use the current player and world as the starting state for new chats';
     panel.querySelector('[data-pack-seed-help]').textContent=thai?'ปิดไว้จะเก็บค่าเริ่มต้นเดิมของการ์ด ไม่คัดลอกความคืบหน้าในแชท ข้อมูลแชทเดิมของผู้รับจะไม่ถูกทับ':'Unchecked keeps the card\'s existing starting state. Saved chat progress is never replaced.';
     const button=panel.querySelector('[data-pack-save]');button.textContent=thai?'บันทึกชุดข้อมูลลงการ์ด':'Save setup in this card';button.disabled=!owner||characterPackSaving;
@@ -821,11 +932,11 @@ function refreshCharacterPackDrawer() {
 async function saveCharacterPackSetup({includeState=false}={}) {
     const context=SillyTavern.getContext(),owner=characterOwner(context),metadata=context.chatMetadata,thai=getSettings().language==='th';
     if(!owner)throw Error(thai?'เปิดแชทตัวละครเดี่ยวก่อน':'Open an individual character chat first');
-    if(characterPackSaving||characterArchiveBusy(owner.key)||mainReplyGenerating()||pendingUserConfigSave||pendingCommerceSave||commerceBusy||itemBusy)
+    if(characterPackSaving||characterArchiveBusy(owner.key)||mainReplyGenerating()||assistantScopeFlights.get(metadata)||pendingUserConfigSave||pendingCommerceSave||commerceBusy||itemBusy)
         throw Error(thai?'มีงานกำลังบันทึกหรือเจนอยู่ รอให้จบก่อน':'Wait for generation and pending saves to finish');
     const existing=readCharacterPack(context,owner.key);
     const pack={...existing,format:'roleforge-character-pack',version:1,name:existing.name||owner.label,
-        powerPreset:getPowerPreset(),forgePreset:getForgePreset(),loreOptions:activeLoreOptions(owner.key)};
+        ...currentWorldPreset()};
     if(includeState){
         const state=clone(getState());
         // Template facts only: no turn receipts, pending trades, private chat
@@ -852,10 +963,10 @@ function refreshForgeDrawer(force=false) {
     const context=SillyTavern.getContext();
     panel.rfController=mountForgeWorkspace(panel,{
         config:getForgePreset,
+        reset:()=>saveChatPresetComponents({forgePreset:defaultWorldPreset().forgePreset}),
         save:async preset=>{
             if(owner!==powerPresetOwner()||metadata!==SillyTavern.getContext().chatMetadata)throw Error('Character card or chat changed. Reopen presets.');
-            const saved=writeForgePreset(getSettings(),preset,owner,powerPresetOwner());
-            await context.saveSettingsDebounced?.();
+            const saved=(await saveChatPresetComponents({forgePreset:preset})).forgePreset;
             updatePrompt();sendForgeMessage('forge-config');
             return saved;
         },
@@ -886,7 +997,8 @@ function mountPowerSettings(panel,state,valuesOnly=false) {
         valuesOnly,
         config:getPowerPreset,state:()=>getState(),
         builtin:()=>({mode:'custom',name:'Original',definitions:[...MAGIC_DISCIPLINES,...SWORD_STYLES].map(d=>({id:'preset_'+d.id.toLowerCase(),name:d.name,description:'',type:'number',max:100,initial:0,ranks:[],color:d.tone,icon:'bolt',selectable:true}))}),
-        save:async config=>{guard();writePowerConfig(getSettings(),config,owner,powerPresetOwner());await context.saveSettingsDebounced?.();guard();updatePrompt();refreshPowerDrawer(true);renderAll();sendForgeMessage('power-config',{mode:config.mode,choices:powerPresetChoices()});},
+        save:async config=>{guard();await saveChatPresetComponents({powerPreset:config});guard();},
+        reset:()=>saveChatPresetComponents({powerPreset:defaultWorldPreset().powerPreset}),
         value:async(id,value)=>{guard();const next=clone(getState());if(!applyPowerOperation(next,getPowerPreset(),'set',`customPowers.${id}`,value))throw Error(uiText("พลังนี้ถูกลบหรือค่าพลังไม่ถูกต้อง"));if(!await persistState(next,'custom-power-value'))throw Error(uiText("บันทึกไม่สำเร็จ"));},
     });
 }
@@ -959,7 +1071,7 @@ function defaultState() {
     };
 }
 
-function getSettings() {
+function getGlobalSettings() {
     const { extensionSettings } = SillyTavern.getContext();
     extensionSettings[SETTINGS_KEY] ||= clone(DEFAULT_SETTINGS);
     if (!Object.hasOwn(extensionSettings[SETTINGS_KEY],'notifyTraining') && Object.hasOwn(extensionSettings[SETTINGS_KEY],'notifyLearning')) {
@@ -2002,10 +2114,12 @@ function normalize(candidate, base = defaultState()) {
 const characterSeedStates=new WeakMap();
 function initialCharacterState(context) {
     const owner=characterOwner(context)?.key,pack=readCharacterPack(context,owner),metadata=context.chatMetadata;
-    if(!pack.initialState)return defaultState();
+    if(!pack.initialState&&!pack.currencyPreset&&!pack.trainingPreset)return defaultState();
     const cached=characterSeedStates.get(metadata);
     if(cached?.owner===owner&&cached.pack===pack)return clone(cached.state);
-    let state;try{state=normalize(pack.initialState);}catch{state=defaultState();}
+    let state;try{state=normalize(pack.initialState||defaultState());}catch{state=defaultState();}
+    for(const key of ['currencyPreset','trainingPreset'])if(pack[key])try{state=applyPresetState(state,{[key]:pack[key]});}
+    catch(error){console.warn(`[RoleForge] Ignoring incompatible character-pack ${key}; starting state retained.`,error);}
     characterSeedStates.set(metadata,{owner,pack,state});return clone(state);
 }
 
@@ -2040,10 +2154,9 @@ function activeLorePrompt(request = '', overrides = {}) {
         .map(m => extractStatePatch(m.mes || '').visible.slice(-2000)).join('\n');
     return lorePrompt(activeCharacterLore(), {...activeLoreOptions(owner),...overrides}, `${recent}\n${request}`);
 }
-function persistCharacterLoreOptions(options, expectedOwner) {
-    const context = SillyTavern.getContext();
-    writeLoreOptions(getSettings(), options, expectedOwner, characterOwner(context)?.key);
-    context.saveSettingsDebounced(); updatePrompt();
+async function persistCharacterLoreOptions(options, expectedOwner) {
+    if(expectedOwner!==characterOwner(SillyTavern.getContext())?.key)throw Error('Character changed. Reopen Lore Management.');
+    await saveChatPresetComponents({loreOptions:options});
 }
 
 async function persistCharacterLore(entries, expectedOwner) {
@@ -2158,7 +2271,7 @@ function writeContinuitySnapshot(state) {
     const key = continuityStorageKey(activeContinuityKey(context));
     const chatId = context.getCurrentChatId?.();
     if (!key || !chatId) return false;
-    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), npcTransfer: 'all', state: completeNpcContinuity(normalize(state),characterNpcLibrary(),characterOwner(context)?.key),
+    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), npcTransfer: 'all', presets:currentWorldPreset(state), state: completeNpcContinuity(normalize(state),characterNpcLibrary(),characterOwner(context)?.key),
         hStatsRoster:{visible:clone(Array.isArray(context.chatMetadata?.[H_VISIBLE_KEY]) ? context.chatMetadata[H_VISIBLE_KEY]
             : context.chatMetadata?.[H_SELECTION_KEY] ? [context.chatMetadata[H_SELECTION_KEY]] : []),selected:context.chatMetadata?.[H_SELECTION_KEY] || ''},
         memoryLink:getSettings().enableMemorySummaries ? memorySummaries?.continuityLink() : context.chatMetadata?.[MEMORY_LINK_KEY] };
@@ -2259,7 +2372,11 @@ async function restoreContinuityForCurrentChat() {
             context.chatMetadata[H_VISIBLE_KEY] = clone(record.hStatsRoster.visible || []);
             context.chatMetadata[H_SELECTION_KEY] = record.hStatsRoster.selected || '';
         }
-        const saved = await persistState(record.npcTransfer === 'all' ? restoreCompleteNpcContinuity(continued, characterNpcLibrary(), characterOwner(context)?.key) : hydrateScopedNpcs(continued, characterNpcLibrary(), characterOwner(context)?.key), 'continuity');
+        const oldPreset=metadata[CHAT_PRESET_KEY];let restoredPreset;
+        if(record.presets&&!oldPreset)try{restoredPreset={version:1,config:validatePresetConfig(record.presets)};metadata[CHAT_PRESET_KEY]=restoredPreset;}catch(error){console.warn('[RoleForge] Ignored invalid continuity preset.',error);}
+        let saved;
+        try{saved=await persistState(record.npcTransfer === 'all' ? restoreCompleteNpcContinuity(continued, characterNpcLibrary(), characterOwner(context)?.key) : hydrateScopedNpcs(continued, characterNpcLibrary(), characterOwner(context)?.key), 'continuity');}
+        finally{if(!saved&&restoredPreset&&metadata[CHAT_PRESET_KEY]===restoredPreset){if(oldPreset===undefined)delete metadata[CHAT_PRESET_KEY];else metadata[CHAT_PRESET_KEY]=oldPreset;}}
         if (saved) {
             globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:continuity-restored', {
                 detail: {
@@ -2331,7 +2448,7 @@ function exportStatePackage() {
     const payload = {
         format: STATE_PACKAGE_FORMAT, version: 1, exportedAt: new Date().toISOString(),
         character: { key: activeContinuityKey(context), name: state.player.name },
-        localMediaIncluded: false, state: portableState(state),
+        localMediaIncluded: false, state: portableState(state), presets:currentWorldPreset(),
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -2356,7 +2473,8 @@ async function importStatePackage(file) {
     const confirmed = globalThis.confirm?.(getSettings().language === 'th' ? uiText("แทนที่ข้อมูล RPG ของแชตนี้ด้วยไฟล์ที่เลือก?") : uiText("Replace this chat's RPG state with the selected file?"));
     if (confirmed === false) return;
     const imported = portableState(candidate);
-    await persistState(imported, 'import');
+    if(parsed?.presets)await saveChatPresetComponents(validatePresetConfig(parsed.presets),{candidate:imported});
+    else await persistState(imported, 'import');
     notify('success', getSettings().language === 'th' ? uiText("นำเข้าข้อมูลตัวละครแล้ว") : uiText("Character state imported."));
 }
 
@@ -2471,8 +2589,21 @@ function storyAgendaNotice(state) {
 
 async function persistUserConfig(candidate,source){
     if(pendingUserConfigSave)return false;
+    const context=SillyTavern.getContext(),metadata=context.chatMetadata,oldConfig=metadata[CHAT_PRESET_KEY],oldState=metadata[METADATA_KEY];
+    if(assistantScopeFlights.get(metadata)||mainReplyGenerating()||commerceBusy||itemBusy||characterPackSaving)
+        throw Error('Wait for the current reply and transactions to finish before changing configuration. / รอคำตอบและรายการที่กำลังทำให้จบก่อนเปลี่ยนการตั้งค่า');
+    const staged={version:1,config:validatePresetConfig(currentWorldPreset(candidate))};
     let release;pendingUserConfigSave=new Promise(resolve=>{release=resolve;});
-    try{return await persistState(candidate,source);}finally{pendingUserConfigSave=null;release();refreshIncantationComposer();}
+    metadata[CHAT_PRESET_KEY]=staged;
+    try{
+        const saved=await persistState(candidate,source);
+        if(saved)assistantRollbackFailures.delete(metadata);
+        if(!saved&&metadata[METADATA_KEY]===oldState&&metadata[CHAT_PRESET_KEY]===staged){if(oldConfig===undefined)delete metadata[CHAT_PRESET_KEY];else metadata[CHAT_PRESET_KEY]=oldConfig;}
+        return saved;
+    }catch(error){
+        if(metadata[METADATA_KEY]===oldState&&metadata[CHAT_PRESET_KEY]===staged){if(oldConfig===undefined)delete metadata[CHAT_PRESET_KEY];else metadata[CHAT_PRESET_KEY]=oldConfig;}
+        throw error;
+    }finally{pendingUserConfigSave=null;release();refreshIncantationComposer();}
 }
 
 async function persistState(candidate, source = 'manual', { deferMetadataSave = false } = {}) {
@@ -2525,7 +2656,7 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
     if (pendingCommerceSave && !['auction', 'marketplace', 'items'].includes(source)) return false;
     const oldStoredState=metadata[METADATA_KEY],storedState=storedNpcState(state);
     context.chatMetadata[METADATA_KEY] = storedState;
-    const saveConfigFirst=!deferMetadataSave&&['user-stats-config','currency-config'].includes(source);
+    const saveConfigFirst=!deferMetadataSave&&['user-stats-config','currency-config','import','continuity'].includes(source);
     if(saveConfigFirst){
         try{if(!await saveCurrentChatMetadata(context)){if(metadata[METADATA_KEY]===storedState)metadata[METADATA_KEY]=oldStoredState;return false;}}
         catch(error){if(metadata[METADATA_KEY]===storedState)metadata[METADATA_KEY]=oldStoredState;throw error;}
@@ -3084,10 +3215,19 @@ function assistantCheckpoint(messageId, { create = false } = {}) {
     return entry || null;
 }
 
-async function persistExactState(snapshot, source, { deferMetadataSave = false } = {}) {
+function assistantRestoreState(snapshot) {
+    const presets=readChatPreset(SillyTavern.getContext().chatMetadata),config={};
+    for(const key of ['currencyPreset','trainingPreset'])if(presets[key])config[key]=presets[key];
+    // Configuration belongs to the chat, while story progress remains
+    // reversible. Convert historical balances without restoring old rules.
+    const state=normalize(clone(snapshot));
+    return Object.keys(config).length?normalize(applyPresetState(state,config)):state;
+}
+
+async function persistExactState(snapshot, source, { deferMetadataSave = false, preparedState = null } = {}) {
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.() || !snapshot) return false;
-    const state = normalize(clone(snapshot));
+    const state = preparedState || assistantRestoreState(snapshot);
     state.updatedAt = new Date().toISOString();
     state.updateSource = source;
     context.chatMetadata[METADATA_KEY] = storedNpcState(state);
@@ -3103,6 +3243,11 @@ async function persistExactState(snapshot, source, { deferMetadataSave = false }
 }
 
 async function replaceAssistantTurnState(messageId, { reuseVariant = false, reason = 'swipe' } = {}) {
+    if(pendingUserConfigSave){
+        const context=SillyTavern.getContext(),metadata=context.chatMetadata,chatId=context.getCurrentChatId?.();
+        while(pendingUserConfigSave)await pendingUserConfigSave;
+        if(SillyTavern.getContext().chatMetadata!==metadata||SillyTavern.getContext().getCurrentChatId?.()!==chatId)return false;
+    }
     if (pendingCommerceSave) await pendingCommerceSave;
     const context = SillyTavern.getContext();
     const entry = assistantCheckpoint(messageId);
@@ -3110,11 +3255,15 @@ async function replaceAssistantTurnState(messageId, { reuseVariant = false, reas
     const message = context.chat?.[Number(messageId)];
     const variantKey = reuseVariant ? assistantVariantKey(message) : '';
     const storedVariant = variantKey ? entry.variants?.[variantKey] : null;
-    await persistExactState(entry.baseState, `turn-rollback-${reason}`, {deferMetadataSave:true});
+    // Validate both snapshots before changing state or checkpoint flags.
+    // Old active trades and incompatible bounds cannot partially roll back.
+    const baseState=assistantRestoreState(entry.baseState);
+    const variantState=storedVariant?.state?assistantRestoreState(storedVariant.state):null;
+    await persistExactState(entry.baseState, `turn-rollback-${reason}`, {deferMetadataSave:true,preparedState:baseState});
     entry.activeVariant = '';
     entry.applied = false;
     if (storedVariant?.state) {
-        await persistExactState(storedVariant.state, `turn-variant-${reason}`, {deferMetadataSave:true});
+        await persistExactState(storedVariant.state, `turn-variant-${reason}`, {deferMetadataSave:true,preparedState:variantState});
         entry.activeVariant = variantKey;
         entry.applied = true;
     }
@@ -3129,9 +3278,17 @@ async function replaceAssistantTurnState(messageId, { reuseVariant = false, reas
 }
 
 function queueAssistantTurnReplacement(messageId, options) {
+    const context=SillyTavern.getContext(),metadata=context.chatMetadata,chatId=context.getCurrentChatId?.();
     assistantRollbackQueue = assistantRollbackQueue.catch(() => undefined)
-        .then(() => replaceAssistantTurnState(messageId, options))
-        .catch(error => console.warn('[RoleForge] Could not roll back the replaced assistant turn.', error));
+        .then(async() => {
+            if(SillyTavern.getContext().chatMetadata!==metadata||SillyTavern.getContext().getCurrentChatId?.()!==chatId)return;
+            await replaceAssistantTurnState(messageId, options);assistantRollbackFailures.delete(metadata);
+        })
+        .catch(error => {
+            assistantRollbackFailures.set(metadata,error);
+            console.warn('[RoleForge] Could not roll back the replaced assistant turn.', error);
+            if(SillyTavern.getContext().chatMetadata===metadata)notify('warning',`Cannot restore this reply under the current preset. Restore the previous reply or adjust the preset and retry. / ย้อนคำตอบนี้ด้วย preset ปัจจุบันไม่ได้ เลือกคำตอบเดิมหรือแก้ preset แล้วลองใหม่: ${error.message}`);
+        });
     return assistantRollbackQueue;
 }
 
@@ -3625,7 +3782,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.61.0`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.62.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card); fitForgeToChat(card, chat);
     }
@@ -3904,6 +4061,16 @@ function updatePrompt(state = getState(), {generationChat,generationType=''}={})
 
 globalThis.TretaresiaRpgGenerateInterceptor = async function (generationChat,contextSize,abort,generationType='') {
     if (SAFE_MODE) return;
+    if (pendingUserConfigSave) {
+        const context=SillyTavern.getContext(),metadata=context.chatMetadata,chatId=context.getCurrentChatId?.();
+        // Send must see either the accepted configuration or its rollback,
+        // never settings that are still waiting for storage acknowledgement.
+        while(pendingUserConfigSave)await pendingUserConfigSave;
+        const current=SillyTavern.getContext();
+        if(current.chatMetadata!==metadata||current.getCurrentChatId?.()!==chatId){
+            abort?.(true);notify('warning','The chat changed while saving presets. Send again in the current chat. / เปลี่ยนแชทระหว่างบันทึก preset กรุณาส่งใหม่ในแชทปัจจุบัน');return;
+        }
+    }
     if(['quiet','impersonate'].includes(generationType)){
         const context=SillyTavern.getContext();context.setExtensionPrompt(FORGE_OPENING_PROMPT_KEY,'',1,0,false,1);context.setExtensionPrompt(OUTPUT_PROMPT_KEY,'',1,0,false,0);context.setExtensionPrompt(PROMPT_KEY,'',1,1,false,0);return;
     }
@@ -3914,6 +4081,7 @@ globalThis.TretaresiaRpgGenerateInterceptor = async function (generationChat,con
     // protects hosts that replace their extension-prompt collection after
     // MESSAGE_SENT while keeping tracking inside the one normal reply.
     await assistantRollbackQueue.catch(()=>undefined);
+    if(assistantRollbackFailures.has(SillyTavern.getContext().chatMetadata)){abort?.(true);return;}
     updatePrompt(getState(),{generationChat,generationType});
 };
 
@@ -5024,9 +5192,10 @@ async function changeOptionalSystem(key,enabled,control) {
     if (control) control.disabled = true;
     try {
         if (pendingCommerceSave) await pendingCommerceSave;
-        const settings = getSettings(); settings[key] = Boolean(enabled);
+        const settings = getSettings();
+        if(WORLD_SYSTEM_KEYS.includes(key)){if(!await changeWorldSetting(key,Boolean(enabled),control))return;}
+        else {settings[key] = Boolean(enabled);SillyTavern.getContext().saveSettingsDebounced?.();}
         if (['enableAuctions','enableMarketplace'].includes(key) && !enabled) commerceRuntime?.cancel();
-        SillyTavern.getContext().saveSettingsDebounced?.();
         if (key === 'enableMemorySummaries') {
             clearTimeout(memoryObserveTimer);
             if (enabled) void memorySummaries?.open();
@@ -5433,6 +5602,7 @@ function onInterfaceSettingChange(event) {
         return;
     }
     const settings = getSettings();
+    if(WORLD_SYSTEM_KEYS.includes(key)){if(event.type==='change')void changeWorldSetting(key,control.type==='checkbox'?control.checked:control.value,control);return;}
     const next = control.type === 'checkbox' ? control.checked : control.type === 'range' ? Number(control.value) : control.value;
     const changed = settings[key] !== next;
     if (!changed && !pendingInterfaceSettings.has(control)) return;
@@ -5666,7 +5836,7 @@ function refreshIncantationComposer(){const key=SillyTavern.getContext().getCurr
 
 function refreshStatWorkspace(){
     const moneyRoot=document.getElementById('roleforge-currency-editor');
-    if(moneyRoot){if(currencyWorkspace?.root!==moneyRoot)currencyWorkspace={root:moneyRoot,...mountCurrencyWorkspace({root:moneyRoot,state:getState,context:()=>SillyTavern.getContext(),save:persistUserConfig,language:()=>getSettings().language,notify})};else currencyWorkspace.update();}
+    if(moneyRoot){if(currencyWorkspace?.root!==moneyRoot)currencyWorkspace={root:moneyRoot,...mountCurrencyWorkspace({root:moneyRoot,state:getState,context:()=>SillyTavern.getContext(),save:persistUserConfig,language:()=>getSettings().language,coinStyle:()=>getSettings().coinStyle,notify})};else currencyWorkspace.update();}
     const root=document.getElementById('roleforge-stat-editor');if(!root)return;
     if(statWorkspace?.root!==root)statWorkspace={root,...mountStatWorkspace({root,state:getState,context:()=>SillyTavern.getContext(),save:persistUserConfig,language:()=>getSettings().language,notify})};
     else statWorkspace.update();
@@ -5738,6 +5908,8 @@ function renderAll(state = getState()) {
     refreshPowerDrawer();
     refreshForgeDrawer();
     refreshCharacterPackDrawer();
+    refreshPresetWorkspace();
+    refreshWorldSettingControls();
     refreshStatWorkspace();
     composerDock?.scope(SillyTavern.getContext().getCurrentChatId?.()||'');
     statComposer?.update(state,SillyTavern.getContext().getCurrentChatId?.()||'');
@@ -7695,7 +7867,7 @@ async function onPanelClick(event) {
             break;
         }
         case 'view-incantation':
-            getSettings().enableIncantation=true; SillyTavern.getContext().saveSettingsDebounced();
+            if(!await changeWorldSetting('enableIncantation',true,button))break;
             renderAll(); closeInterface(); incantationComposer?.openAbility(button.dataset.abilityKey);
             break;
         case 'begin-power-training':
@@ -9559,7 +9731,11 @@ async function processAssistantPatch(messageId, generationType = '') {
         return processAssistantPatch(messageId,generationType);
     }
     const job={variant,promise:null};
-    job.promise=processAssistantPatchNow(messageId,generationType,{metadata,chatId,message}).finally(()=>{if(assistantPatchFlights.get(message)===job)assistantPatchFlights.delete(message);});
+    assistantScopeFlights.set(metadata,(assistantScopeFlights.get(metadata)||0)+1);
+    job.promise=processAssistantPatchNow(messageId,generationType,{metadata,chatId,message}).finally(()=>{
+        const count=(assistantScopeFlights.get(metadata)||1)-1;if(count)assistantScopeFlights.set(metadata,count);else assistantScopeFlights.delete(metadata);
+        if(assistantPatchFlights.get(message)===job)assistantPatchFlights.delete(message);
+    });
     assistantPatchFlights.set(message,job);
     return job.promise;
 }
@@ -9575,6 +9751,7 @@ async function processAssistantPatchNow(messageId, generationType = '', scope) {
         || (generationType === 'first_message' && !forgeSession()?.profile)) return;
     if ((!hasUserReply(context) && !forgeSession(context)?.profile) || !Number.isInteger(messageId)) return;
     await assistantRollbackQueue.catch(() => undefined);
+    if(assistantRollbackFailures.has(context.chatMetadata))return;
     const active=SillyTavern.getContext();
     if(scope&&(active.chatMetadata!==scope.metadata||active.getCurrentChatId?.()!==scope.chatId||active.chat?.[messageId]!==scope.message))return;
     const message = context.chat[messageId];
@@ -10430,7 +10607,8 @@ function bindCheckbox(id, key, settings, callback) {
     if (!(checkbox instanceof HTMLInputElement)) return;
     checkbox.checked = settings[key];
     checkbox.addEventListener('change', () => {
-        settings[key] = checkbox.checked;
+        if(WORLD_SYSTEM_KEYS.includes(key)){void changeWorldSetting(key,checkbox.checked,checkbox).then(saved=>{if(saved)callback?.();});return;}
+        getSettings()[key] = checkbox.checked;
         SillyTavern.getContext().saveSettingsDebounced();
         callback?.();
     });
@@ -10442,8 +10620,9 @@ function bindSettingControl(id, key, settings, callback) {
     control.value = String(settings[key]);
     const update = () => {
         const next = ['range', 'number'].includes(control.type) ? Number(control.value) : control.value;
-        if (settings[key] === next) return;
-        settings[key] = next;
+        if (getSettings()[key] === next) return;
+        if(WORLD_SYSTEM_KEYS.includes(key)){void changeWorldSetting(key,next,control).then(saved=>{if(saved)callback?.();});return;}
+        getSettings()[key] = next;
         callback?.();
         if (control.type !== 'range' && control.type !== 'color') SillyTavern.getContext().saveSettingsDebounced();
     };
@@ -10470,6 +10649,7 @@ async function addSettingsDrawer() {
     refreshForgeDrawer();
     const settings = getSettings();
     refreshCharacterPackDrawer();
+    refreshPresetWorkspace();
     document.querySelector('#roleforge-character-pack [data-pack-save]')?.addEventListener('click',async()=>{
         const panel=document.getElementById('roleforge-character-pack'),status=panel.querySelector('[data-pack-status]');
         try{await saveCharacterPackSetup({includeState:panel.querySelector('[data-pack-seed]').checked});status.textContent=getSettings().language==='th'?'บันทึกแล้ว · Export การ์ดจาก SillyTavern ได้เลย':'Saved. Export the character card from SillyTavern.';}
@@ -10512,10 +10692,7 @@ async function addSettingsDrawer() {
         button.setAttribute('aria-pressed', String(button.dataset.diaryFrequency === settings.npcDiaryFrequency)));
     syncDiaryRate();
     diaryRateButtons.forEach(button => button.addEventListener('click', () => {
-        settings.npcDiaryFrequency = button.dataset.diaryFrequency;
-        syncDiaryRate();
-        context.saveSettingsDebounced();
-        updatePrompt();
+        void changeWorldSetting('npcDiaryFrequency',button.dataset.diaryFrequency,button).then(saved=>{if(saved)syncDiaryRate();});
     }));
     bindCheckbox('tretaresia-rpg-auto-continuity', 'autoContinuity', settings, () => {
         if (settings.autoContinuity) writeContinuitySnapshot(getState());
@@ -10588,6 +10765,7 @@ function bindChatEvents() {
         openedLetterId = null;
         selectedNpcId = null;
         const restored = await restoreContinuityForCurrentChat();
+        try{await initializeChatPresets();}catch(error){console.warn('[RoleForge] Chat preset defaults could not be saved.',error);}
         if (!restored) {
             updatePrompt();
             renderAll();
@@ -10733,6 +10911,7 @@ function bindChatEvents() {
 }
 
 async function initialize() {
+    if(isBlockedHost()){showHostBlocked();return;}
     if (initialized) return;
     initialized = true;
     try {
@@ -10808,6 +10987,7 @@ async function initialize() {
         void scheduleArchiveMigration();
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
+        try{await initializeChatPresets();}catch(error){console.warn('[RoleForge] Chat preset defaults could not be saved.',error);}
         if (getSettings().enableMemorySummaries) await memorySummaries.open();
         try { await catchUpPlayerIdentity(); }
         catch (error) { console.warn('[RoleForge] Could not import player registration.', error); }
@@ -10828,7 +11008,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.61.0 loaded.');
+        console.info('[RoleForge] Role-play interface v0.62.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
@@ -10836,7 +11016,9 @@ async function initialize() {
     }
 }
 
-if (SAFE_MODE) {
+if(BLOCKED_HOST){
+    showHostBlocked();
+} else if (SAFE_MODE) {
     console.warn('[RoleForge] Safe mode active. Remove ?tretaresia-safe=1 from the URL to start the extension.');
 } else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize, { once: true });

@@ -1,5 +1,5 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.61.0';
-import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.61.0';
+import {uiText,uiMarkup} from './ui-language.js?v=0.62.0';
+import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.62.0';
 const el=(tag,text='')=>{const node=document.createElement(tag);node.textContent=text;return node;};
 const button=(text,action)=>{const b=el('button',text);b.type='button';b.addEventListener('click',action);return b;};
 function download(text){const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=el('a');a.href=url;a.download='roleforge-powers.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
@@ -18,9 +18,10 @@ export function mountPowerWorkspace(host,api){
   for(const [value,label]of [['tretaresia',uiText("Original Preset · พลังชุดเดิม")],['custom',uiText('Custom')]]){const o=el('option',label);o.value=value;select.append(o);}select.value=config.mode;
   select.onchange=()=>act(async()=>{await save({...config,mode:select.value});});
   const file=el('input');file.type='file';file.accept='.json,application/json';file.hidden=true;file.setAttribute('aria-label',uiText("Import Power Preset"));
-  file.onchange=()=>act(async()=>{const f=file.files?.[0];file.value='';if(!f)return;if(f.size>POWER_FILE_LIMIT)throw Error(uiText("ไฟล์ต้องไม่เกิน 1 MB"));const next=importPowerPreset(await f.text());if(!confirm(uiText("นำเข้า “{0}” ({1} พลัง) แทน Preset ของการ์ดนี้? ค่าตัวละครเดิมจะยังถูกเก็บไว้",[next.name,next.definitions.length])))return;await save(next);});
+  file.onchange=()=>act(async()=>{const f=file.files?.[0];file.value='';if(!f)return;if(f.size>POWER_FILE_LIMIT)throw Error(uiText("ไฟล์ต้องไม่เกิน 1 MB"));const next=importPowerPreset(await f.text());if(!confirm(uiText("นำเข้า “{0}” ({1} พลัง) แทน Preset ของแชทนี้? ค่าตัวละครเดิมจะยังถูกเก็บไว้",[next.name,next.definitions.length])))return;await save(next);});
   toolbar.append(select,button(uiText("Import JSON"),()=>file.click()),button(uiText("Export JSON"),()=>act(()=>download(exportPowerPreset(config.mode==='tretaresia'?api.builtin():config)))),file);root.append(toolbar);
-  root.append(el('p',uiText("Preset ใช้ร่วมกันทุกแชทของการ์ดนี้ · ค่าพลังแยกตามแชท · การเปลี่ยน Preset หรือลบพลังไม่ลบค่าที่เก็บไว้")));
+  if(api.reset)toolbar.append(button(uiText('Reset to card defaults'),()=>act(async()=>{if(confirm(uiText('Restore card defaults for this chat? Saved power values are retained.')))await api.reset();})));
+  root.append(el('p',uiText("Preset ใช้เฉพาะแชทนี้ · บันทึกเป็นชุดใช้ซ้ำได้ใน Chat presets · การเปลี่ยน Preset หรือลบพลังไม่ลบค่าที่เก็บไว้")));
   if(config.mode!=='custom'){root.append(el('p',uiText("เลือก Custom เพื่อเริ่มสร้างระบบพลังจากว่าง หรือ Export Preset เดิมแล้ว Import กลับมาเพื่อปรับแต่ง")));return;}
   const name=el('input');name.value=config.name;name.maxLength=80;name.setAttribute('aria-label',uiText("Preset name"));
   root.append(name,button(uiText("บันทึกชื่อ Preset"),()=>act(()=>save({...config,name:name.value}))),button(uiText("＋ สร้างพลัง"),()=>edit()));

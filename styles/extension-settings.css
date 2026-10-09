@@ -121,3 +121,10 @@
     #tretaresia-rpg-settings .trpg-optional-systems > div,
     #tretaresia-rpg-settings .tretaresia-notification-settings { grid-template-columns: 1fr; }
 }
+
+/* Native SillyTavern preset controls, with bounded mobile fields. */
+#roleforge-preset-editor { min-width:0; }
+#roleforge-preset-editor > label { display:flex; flex-direction:column; gap:5px; margin-block:8px; min-width:0; }
+#roleforge-preset-editor input, #roleforge-preset-editor select { box-sizing:border-box; width:100%; max-width:100%; min-width:0; }
+#roleforge-preset-editor > div { display:flex; flex-wrap:wrap; gap:5px; }
+#roleforge-preset-editor p { overflow-wrap:anywhere; }

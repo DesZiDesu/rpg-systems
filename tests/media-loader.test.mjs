@@ -1,3 +1,4 @@
+import {isBlockedHost,showHostBlocked} from '../src/host-policy.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -69,10 +70,10 @@ test('release URLs invalidate the entry point as well as styles; manifest select
 });
 
 test('bootstrap requests a fresh descriptor, loads one runtime, and never starts in safe mode',async()=>{
- const source=readFileSync(new URL('../loader.js',import.meta.url),'utf8').replaceAll('export ','').replaceAll('import.meta.url',JSON.stringify('https://host/scripts/extensions/third-party/rpg-systems/loader.js')).replace('await import(', 'await loadRuntime(');
+ const source=readFileSync(new URL('../loader.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replaceAll('export ','').replaceAll('import.meta.url',JSON.stringify('https://host/scripts/extensions/third-party/rpg-systems/loader.js')).replace('await import(', 'await loadRuntime(');
  for(const safe of [false,true]){
   const calls=[],styles=[],modules=[];
-  const sandbox={URL,console,location:{search:safe?'?tretaresia-safe=1':''},document:{createElement:()=>({}),head:{append:s=>styles.push(s)}},fetch:async(url,options)=>{calls.push({url:String(url),options});return {ok:true,json:async()=>({version:'0.32.0'})};},loadRuntime:async url=>modules.push(url)};
+  const sandbox={isBlockedHost,showHostBlocked:()=>{},URL,console,location:{search:safe?'?tretaresia-safe=1':''},document:{createElement:()=>({}),head:{append:s=>styles.push(s)}},fetch:async(url,options)=>{calls.push({url:String(url),options});return {ok:true,json:async()=>({version:'0.32.0'})};},loadRuntime:async url=>modules.push(url)};
   vm.createContext(sandbox);vm.runInContext(source,sandbox);await new Promise(resolve=>setImmediate(resolve));
   if(safe){assert.equal(calls.length,0);assert.equal(modules.length,0);continue;}
   assert.equal(calls[0].options.cache,'no-store');assert.match(calls[0].url,/manifest.json\?_=/);assert.match(modules[0],/index.js\?v=0.32.0$/);assert.match(styles[0].href,/\/ui-polish.css\?v=0.32.0$/);
@@ -81,9 +82,9 @@ test('bootstrap requests a fresh descriptor, loads one runtime, and never starts
 });
 
 test('update hook offers one explicit reload action and never reloads a draft automatically',async()=>{
- const source=readFileSync(new URL('../loader.js',import.meta.url),'utf8').replaceAll('export ','').replaceAll('import.meta.url',JSON.stringify('https://host/scripts/extensions/third-party/rpg-systems/loader.js'));
+ const source=readFileSync(new URL('../loader.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replaceAll('export ','').replaceAll('import.meta.url',JSON.stringify('https://host/scripts/extensions/third-party/rpg-systems/loader.js'));
  let button,reloads=0,accepted=false;
- const sandbox={URL,console,TretaresiaBootStarted:true,TretaresiaRelease:'0.31.0',location:{search:'',reload(){reloads++;}},confirm:()=>accepted,fetch:async()=>({ok:true,json:async()=>({version:'0.32.0'})}),document:{getElementById:()=>button,createElement:()=>({style:{}}),body:{append:b=>{button=b;}}}};
+ const sandbox={isBlockedHost,showHostBlocked:()=>{},URL,console,TretaresiaBootStarted:true,TretaresiaRelease:'0.31.0',location:{search:'',reload(){reloads++;}},confirm:()=>accepted,fetch:async()=>({ok:true,json:async()=>({version:'0.32.0'})}),document:{getElementById:()=>button,createElement:()=>({style:{}}),body:{append:b=>{button=b;}}}};
  vm.createContext(sandbox);vm.runInContext(source,sandbox);await vm.runInContext('onUpdate()',sandbox);
  assert.match(button.textContent,/0.32.0/);assert.equal(reloads,0);const original=button;
  await vm.runInContext('onUpdate()',sandbox);assert.equal(button,original);

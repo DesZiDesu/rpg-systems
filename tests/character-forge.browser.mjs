@@ -104,7 +104,7 @@ try{
   const draft=await page.evaluate(()=>Object.values(window.host.chatMetadata).find(v=>v?.draft)?.draft);assert.equal(draft.version,2);assert.equal(draft.originEnabled,false);assert.equal(draft.alignment,'Villain');assert.equal(draft.fields.fGuild,'');
   await page.locator('#tretaresia-character-forge iframe').evaluate(n=>n.contentWindow.location.reload());await f.locator('#trSkip').waitFor();await f.locator('#trSkip').evaluate(n=>n.click());await f.locator('#trapp:not(.loading)').waitFor();assert.equal(await f.locator('#fParty').inputValue(),'Moonlight');assert.equal(await f.locator('#originForm').isVisible(),false);await f.locator('#tab_t4').click();
   if(width===390)await page.screenshot({path:artifacts+'/character-path-mobile.png'});
-  // Exercise native preset workspace and save to the actual owner card.
+  // Exercise native preset workspace and save only to the active chat.
   await page.locator('#extensions_settings2').evaluate(n=>n.style.display='block');
   await page.locator('#tretaresia-rpg-settings').evaluate(n=>{n.querySelectorAll('details').forEach(d=>d.open=true);n.querySelectorAll('.inline-drawer-content').forEach(d=>d.style.display='block')});
   const w=page.locator('#roleforge-forge-editor .rf-forge-workspace');await w.waitFor({state:'attached'});
@@ -114,7 +114,7 @@ try{
   const arsenals=groups.filter({hasText:'Arsenal types'});await arsenals.locator('button').filter({hasText:'+ Add choice'}).click();await arsenals.locator('input').fill('Firearm');
   await w.locator('label').filter({hasText:'Rank heading'}).locator('input').fill('School year');await w.locator('input[type=checkbox]').uncheck();
   await w.locator('button[type=submit]').click();await w.locator('input[type=checkbox]').waitFor();
-  await page.waitForFunction(()=>Object.values(window.host.extensionSettings.tretaresia_rpg.roleforgeForgePresets||{}).some(p=>p.rankLabel==='School year'));
+  await page.waitForFunction(()=>window.host.chatMetadata.roleforge_chat_presets?.config.forgePreset.rankLabel==='School year');assert.equal(await page.evaluate(()=>Object.keys(window.host.extensionSettings.tretaresia_rpg.roleforgeForgePresets||{}).length),0,'chat creation presets do not write shared card overrides');
   if(width===390){await w.evaluate(n=>n.scrollIntoView({block:'start'}));await page.screenshot({path:artifacts+'/custom-preset-native-mobile.png'});}
   await page.locator('#extensions_settings2').evaluate(n=>n.style.display='none');await f.locator('#itAdd').click();assert.ok((await f.locator('#itT').locator('option').allTextContents()).includes('Firearm'));assert.equal(await f.locator('#rankField').isVisible(),false);
   // Saved profile uses the main generation API once and no extra user message.

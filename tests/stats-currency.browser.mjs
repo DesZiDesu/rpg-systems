@@ -29,7 +29,10 @@ async function receive(page,user,story,patch){
   const id=window.host.chat.length,mes=story+'<!--tretaresia_patch:'+JSON.stringify(patch)+'-->';window.host.chat.push({is_user:false,mes,swipe_id:0,swipes:[mes]});const row=document.createElement('div');row.className='mes';row.setAttribute('mesid',id);const text=document.createElement('div');text.className='mes_text';text.textContent=story;row.append(text);document.querySelector('#chat').append(row);
   await window.host.eventSource.emit(window.host.eventTypes.MESSAGE_RECEIVED,id,'normal');await window.host.eventSource.emit(window.host.eventTypes.GENERATION_ENDED);document.querySelector('#send_but').disabled=false;
  },{user,story,patch});
- await page.waitForTimeout(120);
+ await page.waitForFunction(()=>{
+  const id=window.host.chat.length-1,entry=window.host.chatMetadata.tretaresia_rpg_turn_history?.entries?.find(e=>e.messageId===id);
+  return entry?.activeVariant&&entry.variants[entry.activeVariant]?.reconcileVersion&&document.querySelector('#tretaresia-rpg-sync-state')?.dataset.mode!=='working';
+ });
 }
 async function openSettings(page){await page.locator('#extensions_settings2').evaluate(root=>{root.classList.add('is-preview-open');root.querySelectorAll('.inline-drawer-content').forEach(el=>el.style.display='block');});}
 async function closeSettings(page){await page.locator('#extensions_settings2').evaluate(root=>root.classList.remove('is-preview-open'));}
@@ -40,7 +43,7 @@ try{
   const page=await browser.newPage({viewport:{width,height:1000}}),errors=[];page.on('pageerror',error=>errors.push(error.message));page.setDefaultTimeout(12000);
   await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
   await page.addInitScript(()=>localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'en',themePreset:'verdant',accentColor:'#79b463',accentAltColor:'#c6f0a8',inkColor:'#e8f0e2',surfaceColor:'#030704',autoTrack:true,autoContinuity:false,eventNotifications:false,notifyStatGrowth:true,enableMemorySummaries:false,showTravelTracker:false,enableMarketplace:true,enableAuctions:true,enableIncantation:true,npcDiaryFrequency:'off',showStatusComposer:true,showStatTrainingComposer:true}})));
-  await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready);await prepare(page);
+  await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready,null,{timeout:30000});await page.waitForSelector('#roleforge-stat-editor',{state:'attached'});await prepare(page);
   assert.equal(await page.locator('.rf-composer-dock').evaluate(el=>el.classList.contains('is-minimized')),true,'fresh chat starts minimized');
   await page.locator('[data-dock-panel=status]').click();assert.equal(await page.locator('.rf-user-status [data-vital]').count(),5);assert.match(await page.locator('.rf-user-status').textContent(),/Noah/);
   const theme=await page.locator('.rf-user-status').evaluate(el=>({radius:getComputedStyle(el).borderRadius,font:getComputedStyle(el).fontFamily,accent:getComputedStyle(el.querySelector('.rf-stat-track i')).backgroundColor}));assert.equal(theme.radius,'10px');assert.match(theme.font,/system-ui/);assert.equal(theme.accent,'rgb(121, 180, 99)');assert.equal(await page.locator('.rf-user-status .rf-ability-heading svg').count(),1);

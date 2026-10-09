@@ -1,15 +1,15 @@
-import {currencyRule} from './currency-config.js?v=0.61.0';
-import {publicCommerceStory,publicTradeDialogues} from './commerce-dialogue-facts.js?v=0.61.0';
-import {confirmedMarketplaceEvent} from './marketplace-events.js?v=0.61.0';
-import {commerceOpeningRefused} from './commerce-opening.js?v=0.61.0';
-import {createCommerceSession,commerceBasketQuote} from './commerce-engine.js?v=0.61.0';
-import {selectionFromShopRequest,validateShopSelection,commerceQuantityFacts,disclosedShopStock} from './commerce-stock-selection.js?v=0.61.0';
-import {readCommercePrices} from './commerce-prices.js?v=0.61.0';
-import {evidenceText} from './interaction-evidence.js?v=0.61.0';
-import {convertMoney} from './commerce-currency.js?v=0.61.0';
-import {validStatEffects,normalizeItemUsage,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.61.0';
-import {validItemLearning} from './item-learning.js?v=0.61.0';
-import {requestCommerceTask} from './commerce-task.js?v=0.61.0';
+import {currencyRule} from './currency-config.js?v=0.62.0';
+import {publicCommerceStory,publicTradeDialogues} from './commerce-dialogue-facts.js?v=0.62.0';
+import {confirmedMarketplaceEvent} from './marketplace-events.js?v=0.62.0';
+import {commerceOpeningRefused} from './commerce-opening.js?v=0.62.0';
+import {createCommerceSession,commerceBasketQuote} from './commerce-engine.js?v=0.62.0';
+import {selectionFromShopRequest,validateShopSelection,commerceQuantityFacts,disclosedShopStock} from './commerce-stock-selection.js?v=0.62.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.62.0';
+import {evidenceText} from './interaction-evidence.js?v=0.62.0';
+import {convertMoney} from './commerce-currency.js?v=0.62.0';
+import {validStatEffects,normalizeItemUsage,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.62.0';
+import {validItemLearning} from './item-learning.js?v=0.62.0';
+import {requestCommerceTask} from './commerce-task.js?v=0.62.0';
 
 const instructions=`Repair ONE incomplete current buy/sell offer after the player presses Fill offer details. Return ONLY JSON: {marketplace:{...},basketQuote?:{amount,denomination,evidence},selection?:{evidence,items:[{itemId,quantity}]}} or {unavailable:true,reason:"what the NPC must clarify"}. This is a data task, not another story turn or payment. Read the latest public NPC reply and the supplied preceding conversation to resolve references such as "all three books". Use only the current named merchant and location. Preserve exact publicly offered item names, prices, currency, disclosed stock and purchase terms. Never invent goods, prices, quantity, a discount, buyer funds, a paid transaction or a player decision. Private reasoning is not evidence. If names/prices are unavailable even in the supplied context, return unavailable instead of guessing. You may design ONLY missing item descriptions/properties/usage/skill effects consistently with established public facts and world canon; preserve known definitions. Include every required item field, even empty arrays or null. Unknown stock stays stockKnown:false; do not invent store counts. Ordinary goods use terms:{mode:"permanent"}; rooms/rentals/services keep publicly agreed scoped duration/return/key terms and deposits. Every line needs evidence containing its exact name and price in this merchant's public dialogue; evidence may come from the supplied preceding same-merchant conversation when the latest reply refers to that offer. Complete buy shape: marketplace:{kind:"npcShop",location,evidence,seller:{name},denomination,items:[{id,name,quantity:1,category,description,rarity,properties:[],usage:{...},price,denomination,stockKnown,negotiableKnown,terms:{...},evidence}]}. Complete sell shape: marketplace:{kind:"npcPurchase",location,evidence,buyer:{name},denomination,items:[{itemId,itemName,quantity,askPrice,denomination,evidence}]}, using only owned inventory. Selection quotes the current user request exactly. For all N distinct products, select every product with quantity:1, never N of every product. If the latest merchant quotes a discounted total, basketQuote is REQUIRED, with that exact current merchant quote and final amount; keep original unit prices separately. Do not divide a total price into invented unit prices. Only explicit quantities or an unambiguous all-products request justify a basket; otherwise omit selection/basketQuote. Do not return narrative, ops, commerce decisions, HTML or markdown.\n`+ITEM_DEFINITION_INSTRUCTIONS+'\nFor this explicit repair task, return JSON metadata only; the composer displays the descriptions and effects. Do not output a normal story reply or prose.';
 

@@ -1,4 +1,5 @@
 // Keep this entry small and stable: every page load resolves the installed release afresh.
+import {isBlockedHost,showHostBlocked} from './src/host-policy.js';
 const root = new URL('./', import.meta.url);
 export function releaseUrl(file, version) {
     if (!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.-]+)?$/i.test(version)) throw Error('Invalid RoleForge release');
@@ -11,6 +12,7 @@ async function installed() {
     const manifest = await response.json(); releaseUrl('index.js', manifest.version); return manifest.version;
 }
 export async function onUpdate() {
+    if(isBlockedHost()){showHostBlocked();return;}
     const version = await installed();
     if (version === globalThis.TretaresiaRelease) return;
     // A full reload removes old listeners. Never discard drafts or interrupt generation silently.
@@ -24,6 +26,7 @@ export async function onUpdate() {
     button.textContent=`RoleForge ${version} ready — Apply update`;
 }
 async function boot() {
+    if(isBlockedHost()){showHostBlocked();return;}
     if (/[?&]tretaresia-safe=(1|true)(?:&|$)/i.test(location.search)) return;
     if (globalThis.TretaresiaBootStarted) return;
     globalThis.TretaresiaBootStarted=true;

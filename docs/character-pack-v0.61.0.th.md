@@ -2,6 +2,8 @@
 
 RoleForge 0.61.0 รองรับ `roleforge_character_pack` v1 และคลัง NPC/Lore ที่ฝังอยู่ในการ์ด การ์ด Madoka One Card ที่แนบมาใช้รูปแบบนี้อยู่แล้ว ไม่ต้อง apply patch ใน zip หรือนำเข้าไฟล์ Power, Forge, NPC, Lore และ State แยก
 
+**อัปเดต 0.62.0:** แพ็ก v1 เพิ่ม Currency, Stat training และ World systems ได้ Configuration ถูกคัดลอกแยกต่อแชทเมื่อเปิดครั้งแรก การแก้ preset ใน drawer ใช้กับแชทปัจจุบัน ต้องกด Save setup in this card เพื่อส่งต่อค่าที่แก้ให้ผู้รับการ์ด ดู [คู่มือ preset แยกแชท](chat-presets-v0.62.0.th.md) เนื้อหาและผลตรวจด้านล่างเป็นรายงานรุ่น 0.61.0
+
 ## สำหรับผู้เล่น
 
 1. อัปเดต RoleForge จาก main แล้ว reload SillyTavern

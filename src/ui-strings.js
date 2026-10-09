@@ -7143,7 +7143,7 @@ const aliases = {
   "If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.": 1031,
   "If no patch is returned, the activity capsule says “No state changes.” Tracking ran successfully but had nothing confirmed to save.": 1031,
   "หากไม่มีชุดอัปเดต แถบสถานะจะแสดงว่าไม่มีข้อมูลเปลี่ยนแปลง หมายถึงติดตามสำเร็จแต่ไม่มีข้อมูลยืนยันให้บันทึก": 1031,
-  "RoleForge engine 0.61.0 ready": 1032,
+  "RoleForge engine 0.62.0 ready": 1032,
   "RoleForge engine ready": 1032,
   "ระบบ RoleForge พร้อมใช้งาน": 1032,
   "พิมพ์ชื่อแท็ก…": 1033,
@@ -8307,7 +8307,7 @@ const aliases = {
   "after your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.": 1028,
   "the character produces its normal reply once. if a confirmed fact changed, it appends an invisible state patch to that same reply.": 1029,
   "the extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.": 1030,
-  "roleforge engine 0.61.0 ready": 1032,
+  "roleforge engine 0.62.0 ready": 1032,
   "roleforge engine ready": 1032,
   "name of the preferred tag": 1034,
   "character (all chats of this card)": 1048,
@@ -8841,6 +8841,14 @@ for (const [source,en,th] of [
  ["เหรียญตราดาว / Minted coins","Minted coins","เหรียญตราดาว"],
  ["เหรียญรูน / Rune","Rune coins","เหรียญรูน"],
  ["Arcade · โทเคนแสงพิกเซล","Arcade · pixel tokens","Arcade · โทเคนแสงพิกเซล"],
- ["ใช้ร่วมกันใน Inventory และหน้าต่างซื้อขาย/ประมูล","Shared by Inventory, shops and auctions","ใช้ร่วมกันใน Inventory และหน้าต่างซื้อขาย/ประมูล"]
+ ["ใช้ร่วมกันใน Inventory และหน้าต่างซื้อขาย/ประมูล","Shared by Inventory, shops and auctions","ใช้ร่วมกันใน Inventory และหน้าต่างซื้อขาย/ประมูล"],
+ ["Chat presets / คลัง preset และการตั้งค่าประจำแชท","Chat presets","คลัง preset และการตั้งค่าประจำแชท"],
+ ["Reset to card defaults","Reset to card defaults","กลับค่าเริ่มต้นจากการ์ด"],
+ ["Restore card defaults for this chat? Saved power values are retained.","Restore card defaults for this chat? Saved power values are retained.","ใช้ค่าเริ่มต้นจากการ์ดกับแชทนี้? ค่าพลังที่บันทึกไว้จะยังอยู่"],
+ ["Restore card defaults for this chat? Existing profiles are retained.","Restore card defaults for this chat? Existing profiles are retained.","ใช้ค่าเริ่มต้นจากการ์ดกับแชทนี้? ข้อมูลตัวละครเดิมจะยังอยู่"],
+ ["Preset applies only to this chat. Save reusable sets in Chat presets. Existing profiles are retained.","Preset applies only to this chat. Save reusable sets in Chat presets. Existing profiles are retained.","Preset ใช้เฉพาะแชทนี้ · บันทึกเป็นชุดใช้ซ้ำได้ในคลัง preset · ข้อมูลตัวละครเดิมยังอยู่"],
+ ["Preset ใช้เฉพาะแชทนี้ · บันทึกเป็นชุดใช้ซ้ำได้ใน Chat presets · การเปลี่ยน Preset หรือลบพลังไม่ลบค่าที่เก็บไว้","Preset applies only to this chat. Save reusable sets in Chat presets. Changing presets or deleting definitions retains saved power values.","Preset ใช้เฉพาะแชทนี้ · บันทึกเป็นชุดใช้ซ้ำได้ในคลัง preset · การเปลี่ยน preset หรือลบพลังไม่ลบค่าที่เก็บไว้"],
+ ["นำเข้า “{0}” ({1} พลัง) แทน Preset ของแชทนี้? ค่าตัวละครเดิมจะยังถูกเก็บไว้","Import “{0}” ({1} powers) to replace this chat’s preset? Saved character values are retained.","นำเข้า “{0}” ({1} พลัง) แทน preset ของแชทนี้? ค่าตัวละครเดิมจะยังอยู่"],
+ ["Replace this chat’s Character Forge preset? Existing profiles remain saved.","Replace this chat’s Character Forge preset? Existing profiles remain saved.","แทน preset สร้างตัวละครของแชทนี้? ข้อมูลตัวละครเดิมจะยังอยู่"]
 ]) { aliases[source]=messages.length; aliases[en]=messages.length; aliases[th]=messages.length; messages.push([en,th]); }
 export const UI_STRINGS = Object.freeze(Object.fromEntries(Object.entries(aliases).map(([key,index])=>[key,Object.freeze(messages[index])])));

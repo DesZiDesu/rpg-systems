@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.61.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.62.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -18,6 +18,12 @@ The extension adds instructions for enabled systems to your existing text-genera
 Keep the installation folder named **third-party/rpg-systems**. No build step, npm installation or ElevenLabs account is required to use the RPG features.
 
 Use a current SillyTavern installation with extension support and a connected text-generation model. The project has not established a minimum SillyTavern version; browser checks exercise the extension APIs with a controlled host. A recent desktop or mobile browser is recommended.
+
+## Chat presets
+
+**Extensions → RoleForge → World rules & presets → Chat presets** stores reusable named configurations for Powers, Character Creation, currency, stat training, Lore options and world-system switches. Load a saved set into one chat, rename/update/export it, or delete its library copy without changing chats that already use it. Defaults are frozen on first open; existing card-wide presets remain the migration fallback. Currency-only JSON import/export is also available in Currency setup. Player balances and progress are retained; finish pending trades/training before loading incompatible settings. See [Thai guide](docs/chat-presets-v0.62.0.th.md).
+
+RoleForge does not run on `chat.rolezy.com` or its child domains. The loader shows an unsupported-public-server notice before loading the runtime, styles or API clients. Installation itself is controlled by SillyTavern's server.
 
 ## Start playing
 
@@ -102,11 +108,13 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.60.0** has **1,162 passing unit/host tests** and syntax checks. Shared rendering is tested at 320/390/1280px with the actual pinned SillyTavern Regex engine, MessageFormatter, Markdown and sanitizer pipeline in a controlled host. Browser checks cover native widgets/listeners, tables, links, source/display rules, user-only shorthand, Voice, edit/swipe/reparenting, settings and composer windows. Broader regression checks cover items/Loot, commerce, Character Forge, skill storage, scenes, stats/currency and memory. [Compatibility and validation report](docs/regex-shared-v0.60.0.th.md).
+Version **0.62.0** has **1,194 passing unit/host tests** and syntax checks. Preset and domain-policy browser checks cover chat isolation, card defaults, library management, JSON import/export, save failures and blocked startup. Affected-system checks cover the actual Madoka card, startup, MVU/Regex, items/Loot, commerce, Incantation, Character Forge and stats/currency at mobile and desktop widths. [Current guide](docs/chat-presets-v0.62.0.th.md) · [Validation record](docs/validation-chat-presets-v0.62.0.json).
+
+Shared rendering is tested at 320/390/1280px with the actual pinned SillyTavern Regex engine, MessageFormatter, Markdown and sanitizer pipeline in a controlled host. Browser checks cover native widgets/listeners, tables, links, source/display rules, user-only shorthand, Voice, edit/swipe/reparenting, settings and composer windows. [Compatibility report](docs/regex-shared-v0.60.0.th.md).
 
 Run `npm run test:regex` for the focused compatibility suites. The shared suite downloads pinned upstream test dependencies with `curl` into a temporary cache; `ST_REGEX_CACHE` can point to a prepared cache. This does not install runtime dependencies or change SillyTavern.
 
-Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. All 20 release browser suites pass, including combined commerce and inn flows. Legacy fixtures now use explicit trade intent, real next-user generation and minimized panels; their outdated expectations were compared with unchanged 0.58.15. Historical results remain in the [development README](docs/archive/README-v0.56.2-development.md).
+Run `npm run test:presets` for the preset library and blocked-host checks. Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. Historical release results remain in the [development README](docs/archive/README-v0.56.2-development.md).
 
 [Repository audit](docs/repository-audit-v0.56.2.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.2.th.md) · [Full audited inventory](docs/repository-audit-v0.56.2.json)
 

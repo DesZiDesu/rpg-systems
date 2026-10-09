@@ -1,6 +1,7 @@
-import {validatePowerConfig} from './power-presets.js?v=0.61.0';
-import {validateForgePreset} from './forge-presets.js?v=0.61.0';
-import {loreOptions} from './lore-core.js?v=0.61.0';
+import {validatePowerConfig} from './power-presets.js?v=0.62.0';
+import {validateForgePreset} from './forge-presets.js?v=0.62.0';
+import {loreOptions} from './lore-core.js?v=0.62.0';
+import {validatePresetConfig} from './world-presets.js?v=0.62.0';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the
@@ -62,6 +63,7 @@ function packDefaults(raw) {
     // are never part of the schema and are never executed or applied.
     try { if (raw.powerPreset) result.powerPreset=validatePowerConfig(raw.powerPreset); } catch {}
     try { if (raw.forgePreset) result.forgePreset=validateForgePreset(raw.forgePreset); } catch {}
+    for(const key of ['currencyPreset','trainingPreset','systems'])if(Object.hasOwn(raw,key))try{Object.assign(result,validatePresetConfig({[key]:raw[key]}));}catch{}
     if(raw.loreOptions&&typeof raw.loreOptions==='object'&&!Array.isArray(raw.loreOptions))
         result.loreOptions=loreOptions({loreCharacterOptions:{card:raw.loreOptions}},'card');
     if(raw.initialState&&typeof raw.initialState==='object'&&!Array.isArray(raw.initialState)) {
@@ -120,7 +122,7 @@ async function saveCardExtensions(context, owner, fields) {
 export function writeCharacterPack(context, settings, owner, raw, {npcs,lore}={}) {
     const pack=packDefaults(raw);
     if(!pack.format)throw Error('Unsupported RoleForge character pack');
-    for(const key of ['powerPreset','forgePreset','loreOptions','initialState'])
+    for(const key of ['powerPreset','forgePreset','currencyPreset','trainingPreset','systems','loreOptions','initialState'])
         if(Object.hasOwn(raw,key)&&!Object.hasOwn(pack,key))throw Error(`Invalid character pack ${key}`);
     const fields={[CHARACTER_PACK_FIELD]:pack};
     for(const [kind,records] of Object.entries({npcs,lore}))if(records!==undefined){

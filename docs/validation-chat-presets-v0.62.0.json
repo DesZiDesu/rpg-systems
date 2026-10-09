@@ -1,0 +1,191 @@
+{
+  "release": "0.62.0",
+  "dateUTC": "2026-10-09",
+  "baseCommit": "e6ecedc2b8d6693dc50ee896ea8ea05d7f69feb3",
+  "unit": {
+    "command": "ROLEFORGE_CHARACTER_CARD=/path/to/Madoka-Magica-RPG-One-Card.json npm test",
+    "passed": 1194,
+    "failed": 0,
+    "skipped": 0,
+    "includesUploadedCard": true
+  },
+  "syntax": {
+    "command": "npm run check",
+    "result": "passed"
+  },
+  "diffCheck": "passed",
+  "browser": {
+    "presets": {
+      "command": "npm run test:presets",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ],
+      "includesBlockedHost": true
+    },
+    "startup": {
+      "command": "node tests/startup.browser.mjs",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "characterPack": {
+      "command": "npm run test:character-pack",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "mvuAndRenderPerformance": {
+      "command": "npm run test:mvu",
+      "result": "passed",
+      "widthsPx": [
+        390,
+        1280
+      ]
+    },
+    "regex": {
+      "command": "npm run test:regex",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "items": {
+      "command": "npm run test:items",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "commerceStock": {
+      "command": "npm run test:commerce-stock",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "optionalSystems": {
+      "command": "node tests/optional-systems.browser.mjs",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "incantation": {
+      "command": "npm run test:incantation",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "commerceRights": {
+      "command": "npm run test:rights",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "characterForge": {
+      "command": "npm run test:forge",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "statsAndCurrency": {
+      "command": "node tests/stats-currency.browser.mjs",
+      "result": "passed",
+      "widthsPx": [
+        320,
+        390,
+        1280
+      ]
+    }
+  },
+  "uploadedCard": {
+    "name": "Madoka Magica RPG",
+    "sha256": "3af0d777ad0de8b4506a16aba99305c5679bcda1d23bca4e36e0fec51554ae77",
+    "loreRecords": 169,
+    "enabledLore": 100,
+    "npcs": 12,
+    "powers": 12,
+    "loreMode": "relevant",
+    "loreCharacterBudget": 6000
+  },
+  "performance": {
+    "historicalRows": 200,
+    "sceneReadsAfterOneUpdatedReply": 1,
+    "observedDomMutations": 2
+  },
+  "coverage": [
+    "two chats of one card and a different card",
+    "first-open migration and frozen defaults",
+    "named library create, load, rename, delete, export and import",
+    "loaded copies survive library deletion",
+    "currency-only JSON imports remain drafts until saved",
+    "explicit preset load refreshes conflicting editor drafts",
+    "player/party/guild ledger values retained across rate changes",
+    "inactive custom-stat values retained",
+    "preset and RPG-state rollback on save failure",
+    "overlap and stale-chat protection",
+    "main generation waits for accepted or rolled-back presets",
+    "assistant reply processing blocks competing user configuration saves",
+    "swipe retains current presets and rejects incompatible history before any partial rollback",
+    "one-card currency/training/world defaults with invalid-component fallback",
+    "blocked loader, direct entry, update hook and generation interceptor do not run features or access host data"
+  ],
+  "limits": {
+    "presetImportBytes": 1048576,
+    "libraryBytes": 2097152,
+    "libraryRecords": 100,
+    "configurationComponents": 6
+  },
+  "scope": {
+    "perChat": [
+      "Powers",
+      "Character Creation",
+      "Currency",
+      "Stats/training",
+      "Lore options",
+      "world-system switches"
+    ],
+    "perCard": [
+      "Character NPC archive",
+      "Lore content"
+    ],
+    "personal": [
+      "UI/device preferences",
+      "Voice/Memory addon connection and provider settings"
+    ],
+    "presetContainsPlayerProgress": false,
+    "presetContainsProviderCredentials": false
+  },
+  "limitations": [
+    "Browser suites use controlled SillyTavern hosts and provider fixtures; no live Proxy model test.",
+    "No physical iPhone/Safari validation.",
+    "Host blocking is client startup policy; it does not prevent server-side extension installation, source edits or a different hostname.",
+    "No cross-system HP/money/item synchronization with MVU."
+  ]
+}

@@ -1,4 +1,4 @@
-import {itemSaleBlocked} from './commerce-rights.js?v=0.61.0';
+import {itemSaleBlocked} from './commerce-rights.js?v=0.62.0';
 // Player-owned marketplace listings and NPC offer negotiation.
 // All item and currency changes are local, explicit UI actions; story patches
 // never get to create or settle a marketplace transaction.

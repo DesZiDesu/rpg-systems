@@ -1,5 +1,5 @@
-import { FORGE_DEFAULTS, FORGE_PRESET_FIELDS, validateForgePreset, exportForgePreset, importForgePreset } from './forge-presets.js?v=0.61.0';
-import { uiText } from './ui-language.js?v=0.61.0';
+import { FORGE_DEFAULTS, FORGE_PRESET_FIELDS, validateForgePreset, exportForgePreset, importForgePreset } from './forge-presets.js?v=0.62.0';
+import { uiText } from './ui-language.js?v=0.62.0';
 
 const labels = { origins: 'Origin locations / ถิ่นกำเนิด', standings: 'Social standings / สถานะทางสังคม', skillCategories: 'Skill categories / หมวดสกิล', masteryRanks: 'Mastery ranks / ขั้นความเชี่ยวชาญ', pathRanks: 'Path ranks / อันดับเส้นทาง', arsenalTypes: 'Arsenal types / ประเภทสิ่งของ', alignments: 'Alignment / แนวทางตัวละคร' };
 const node = (tag, value = '') => { const result = document.createElement(tag); result.textContent = value; return result; };
@@ -22,7 +22,7 @@ export function mountForgeWorkspace(host, api) {
         file.onchange = async () => { const chosen = file.files?.[0]; file.value = ''; if (!chosen) return;
             try { if (chosen.size > 1024 * 1024) throw Error('Preset file must be at most 1 MB');
                 const imported = importForgePreset(await chosen.text());
-                if (confirm(uiText('Replace this card’s Character Forge preset? Existing chat profiles remain saved.'))) await save(imported);
+                if (confirm(uiText('Replace this chat’s Character Forge preset? Existing profiles remain saved.'))) await save(imported);
             } catch (error) { status.textContent = error.message; }
         };
         const action = (label, handler) => { const button = node('button', uiText(label)); button.className = 'menu_button'; button.type = 'button'; button.onclick = handler; toolbar.append(button); };
@@ -31,7 +31,8 @@ export function mountForgeWorkspace(host, api) {
             const url = URL.createObjectURL(new Blob([source], { type: 'application/json' })), link = node('a');
             link.href = url; link.download = 'roleforge-character-forge.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 60000);
         }); toolbar.append(file); root.append(toolbar);
-        root.append(node('p', uiText('Preset shared across chats of this character card. Existing profiles are retained.')));
+        if(api.reset)action('Reset to card defaults',async()=>{try{if(confirm(uiText('Restore card defaults for this chat? Existing profiles are retained.')))await api.reset();}catch(error){status.textContent=error.message;}});
+        root.append(node('p', uiText('Preset applies only to this chat. Save reusable sets in Chat presets. Existing profiles are retained.')));
         if (preset.mode !== 'custom') { root.append(node('p', uiText('Choose Custom to start with empty lists, or export the original preset and import it to edit.'))); return; }
         const form = node('form'); form.className = 'rf-forge-editor';
         const nameLabel = node('label', uiText('Preset name')); const name = node('input'); name.className = 'text_pole'; name.maxLength = 80; name.value = preset.name; nameLabel.append(name); form.append(nameLabel);

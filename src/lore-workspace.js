@@ -1,7 +1,7 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.61.0';
-import { element } from './npc-chat.js?v=0.61.0';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.61.0';
-import { LORE_FILE_LIMIT, exportLore, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.61.0';
+import {uiText,uiMarkup} from './ui-language.js?v=0.62.0';
+import { element } from './npc-chat.js?v=0.62.0';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX } from './lore-core.js?v=0.62.0';
+import { LORE_FILE_LIMIT, exportLore, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.62.0';
 
 export function createLoreWorkspace(panel, api, say) {
     let owner = '', dirty = false, query = '', editing = null, saving = false;
@@ -27,11 +27,12 @@ export function createLoreWorkspace(panel, api, say) {
         const options=api.loreOptions?.()||{budget:LORE_ACTIVE_LIMIT,mode:'all'};
         const active=all.filter(item=>item.enabled),count=active.reduce((n,item)=>n+item.title.length+item.content.length,0);
         panel.append(element('p','trpg-muted',uiText("เปิด {0} / {1} รายการ · คลัง {2} ตัวอักษร · งบส่งครั้งละ {3} ตัวอักษร — {4}",[active.length,all.length,count.toLocaleString(),options.budget.toLocaleString(),options.mode==='all'?uiText("ส่งรายการที่เปิดภายในงบ"):uiText("เลือกจากชื่อ คำค้น และเนื้อหาอัตโนมัติ")])));
+        const preferenceMetadata=api.context?.().chatMetadata;
         const preferences=element('div','trpg-lore-tools'),budgetLabel=element('label','',uiText("งบ Lore (ตัวอักษร ไม่ใช่ tokens)")),budget=element('input'),modeLabel=element('label','',uiText("การส่ง Lore")),mode=element('select');
         budget.type='number';budget.name='loreBudget';budget.min=1000;budget.max=LORE_BUDGET_MAX;budget.step=1000;budget.value=options.budget;budgetLabel.append(budget);
         for(const [value,label] of [['relevant',uiText("อัตโนมัติเฉพาะที่เกี่ยวข้อง · แนะนำ")],['all',uiText("รายการที่เปิดทั้งหมด")]]){const option=element('option','',label);option.value=value;mode.append(option);}mode.value=options.mode;mode.name='loreMode';modeLabel.append(mode);
         preferences.addEventListener('input',()=>dirty=true);preferences.addEventListener('change',()=>dirty=true);
-        preferences.append(budgetLabel,modeLabel,button(uiText("บันทึกงบและโหมด"),()=>attempt(()=>{api.persistLoreOptions({budget:Number(budget.value),mode:mode.value},owner);dirty=false;list();say(uiText("บันทึกงบและโหมด Lore แล้ว"));})));
+        preferences.append(budgetLabel,modeLabel,button(uiText("บันทึกงบและโหมด"),()=>attempt(async()=>{if(api.context?.().chatMetadata!==preferenceMetadata)throw Error("Chat changed. Reopen Lore Management.");await api.persistLoreOptions({budget:Number(budget.value),mode:mode.value},owner);if(api.context?.().chatMetadata!==preferenceMetadata)return;dirty=false;list();say(uiText("บันทึกงบและโหมด Lore แล้ว"));})));
         if(api.persistLoreOptions)panel.append(preferences,element('p','trpg-muted',uiText("Context 2,000,000 tokens ไม่เท่ากับ 2,000,000 ตัวอักษร ควรเผื่อประวัติแชทและคำตอบ โหมดเฉพาะที่เกี่ยวข้องเลือกจากชื่อ คำค้น และคำในเนื้อหา Lore อัตโนมัติจาก 8 ข้อความล่าสุด โดยไม่เรียก AI เพิ่ม; ตรึงรายการที่จำเป็นได้")));
         const tools=element('div','trpg-lore-tools'),label=element('label','',uiText("ค้นหา Lore")),search=element('input');search.type='search';search.value=query;search.placeholder=uiText("ชื่อหรือเนื้อหา");label.append(search);
         const file=element('input');file.type='file';file.accept='.json,application/json';file.hidden=true;file.setAttribute('aria-label',uiText("Import Lore JSON"));

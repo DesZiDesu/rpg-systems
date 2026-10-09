@@ -23,9 +23,9 @@ try{
         const page=await browser.newPage({viewport:{width,height:1100},reducedMotion:'reduce'}),errors=[];
         page.on('pageerror',e=>errors.push(e.message));await page.route('https://**/*',route=>route.abort());
         await page.addInitScript(()=>localStorage.setItem('roleforge-hstats-preview-settings',JSON.stringify({tretaresia_rpg:{language:'en',autoContinuity:false,autoTrack:false,enableMemorySummaries:false}})));
-        await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready);
+        await page.goto(url);await page.waitForFunction(()=>window.hStatsPreview?.ready);await page.waitForSelector('#roleforge-character-pack',{state:'attached'});
         await page.evaluate(async card=>{
-            document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';document.querySelector('#extensions_settings2').style.display='block';
+            document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';document.querySelector('#extensions_settings2').style.display='block';document.querySelector('#tretaresia-rpg-settings .inline-drawer-content').style.display='block';
             window.host.characters=[{avatar:'one-card.png',name:card.data.name,data:structuredClone(card.data),json_data:JSON.stringify(card)}];window.host.characterId=0;window.host.groupId=null;
             window.cardRequests=[];window.host.fetch=async(url,options)=>{window.cardRequests.push(JSON.parse(options.body));return{ok:!window.cardSaveFails,status:window.cardSaveFails?503:200};};
             await window.hStatsPreview.switchChat('one-card-new',{});
