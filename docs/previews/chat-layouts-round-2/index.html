@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RoleForge · Six New Forms · Round 2</title>
+  <link rel="stylesheet" href="./layouts.css">
+</head>
+<body>
+  <main class="atelier">
+    <header class="atelier-header">
+      <a class="wordmark" href="?">ROLEFORGE <span>DESIGN STUDY / 02</span></a>
+      <div class="atelier-title"><div><p class="eyebrow">SIX WORLDS. SIX DIFFERENT FORMS.</p><h1>หกโลก หกหน้าตา</h1></div><span class="draft-label">PREVIEW<br>ยังไม่เข้า MAIN</span></div>
+      <p class="intro">รูปทรงและการจัดวางใหม่ทั้งชุด · ลองปิดแต่ละส่วนเพื่อดูการใช้งานได้</p>
+      <div class="preview-controls">
+        <label>ดูแบบ <select id="theme-filter"><option value="all">ทั้ง 6 แบบ</option></select></label>
+        <label>ขนาด <select id="size-filter"><option value="auto">ตามหน้าจอ</option><option value="phone">จำลองมือถือ</option></select></label>
+        <div class="part-controls">
+          <label><input type="checkbox" data-part="header" checked>Header</label>
+          <label><input type="checkbox" data-part="narrative" checked>Narrative</label>
+          <label><input type="checkbox" data-part="dialogue" checked>Dialogue</label>
+          <label><input type="checkbox" data-part="motion" checked>Animation</label>
+        </div>
+      </div>
+    </header>
+    <div class="design-grid" id="design-gallery"></div>
+    <footer class="atelier-footer">พรีวิวดีไซน์สำหรับตรวจเลือก · ไม่เรียก AI · ไม่แก้ข้อความหรือข้อมูลในแชท · เปิด/ปิดส่วนต่าง ๆ เป็นอิสระ</footer>
+  </main>
+  <dialog id="profile-preview"><form method="dialog"><button aria-label="ปิด">×</button></form><small>CHARACTER RECORD</small><h2></h2><p></p></dialog>
+  <script src="./layouts.js"></script>
+</body>
+</html>
