@@ -69,7 +69,7 @@ try{
    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({tretaresia_rpg:{language:'en',autoTrack:false,injectState:false,autoContinuity:false,chatPresentation:false,showSceneTracker:false,memoryAutoSummary:false}}));
   });
   await page.goto(url);await ready(page);
-  assert.equal(await page.locator('[data-presentation-setting]').count(),8);
+  assert.equal(await page.locator('[data-presentation-setting]').count(),7);
   assert.equal(await control(page,'chatRegexMode').inputValue(),'shared','missing preference composes with native Regex');
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/Shared mode keeps Regex UI/);
   await status(page,/RoleForge \d+\.\d+\.\d+.*is off.*No character reply yet/);
@@ -87,7 +87,9 @@ try{
   await status(page,/Preserve regex \/ SillyTavern formatting.*Latest reply has presentation blocks/);
   assert.equal(await page.locator(`[mesid="${id}"] .trpg-header`).count(),0,'explicit compatibility keeps conflicting native presentation');
   assert.equal(await page.evaluate(()=>document.querySelector('.custom-display-regex')===window.presentationNative),true,'native DOM reference restored');
-  await page.locator('.custom-display-regex button').click();assert.equal(await page.evaluate(()=>window.presentationNativeClicks),1);
+  await page.locator('.custom-display-regex button').click();
+  await page.waitForFunction(()=>window.presentationNativeClicks===1,null,{timeout:5000});
+  assert.equal(await page.evaluate(()=>window.presentationNativeClicks),1);
   await toggle(page,'chatRegexMode','roleforge');await page.locator(`[mesid="${id}"] .trpg-header`).waitFor();
   await toggle(page,'chatPresentation',false);await status(page,/is off.*Latest reply has presentation blocks/);
   assert.equal(await page.locator(`[mesid="${id}"] .trpg-header`).count(),0);await windowPromptCheck(page,false);
@@ -109,7 +111,7 @@ try{
   await status(page,/รูปแบบ RoleForge เดิม.*คำตอบล่าสุดมีบล็อกจัดรูปแบบ/);
   assert.match(await control(page,'chatRegexMode').locator('..').innerText(),/การแสดงแชทร่วมกับ Regex \/ HTML/);
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/โหมดแสดงร่วมกันเก็บ UI และปุ่มของ Regex/);
-  assert.equal(await page.locator('[data-presentation-setting]').count(),8,'language refresh does not duplicate presentation controls');
+  assert.equal(await page.locator('[data-presentation-setting]').count(),7,'language refresh does not duplicate presentation controls');
   if(artifacts){await page.locator('.trpg-settings').screenshot({path:`${artifacts}/presentation-settings-${width}.png`});}
   const bounds=await page.locator('.trpg-settings').evaluate(group=>({left:group.getBoundingClientRect().left,right:group.getBoundingClientRect().right,width:innerWidth,scroll:group.scrollWidth,client:group.clientWidth}));
   assert(bounds.left>=-1&&bounds.right<=bounds.width+1&&bounds.scroll<=bounds.client+1,`presentation settings/status fit the viewport: ${JSON.stringify(bounds)}`);

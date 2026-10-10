@@ -72,11 +72,11 @@ try{
             await mode(page,value);
             assert.equal(await page.evaluate(()=>window.compatFrame.isConnected&&window.compatFrame.parentNode===window.compatParent&&window.compatFrame.contentDocument===window.compatDocument),true,'all modes preserve the live Helper iframe and its DOM owner');
         }
-        for(const theme of ['roleforge','anime','dark','arcane','jade','future']){
-            await page.locator('[data-presentation-setting="chatTheme"]').selectOption(theme);
-            await page.waitForFunction(()=>!document.querySelector('[data-presentation-setting="chatTheme"]').disabled);
+        for(const colorMode of ['light','dark','system']){
+            await page.locator('[data-presentation-setting="chatColorMode"]').selectOption(colorMode);
+            await page.waitForFunction(()=>!document.querySelector('[data-presentation-setting="chatColorMode"]').disabled);
             await page.waitForTimeout(180);
-            assert.equal(await page.evaluate(()=>window.compatFrame.isConnected&&window.compatFrame.parentNode===window.compatParent&&window.compatFrame.contentDocument===window.compatDocument),true,'all six themes preserve the live Helper iframe and its DOM owner');
+            assert.equal(await page.evaluate(()=>window.compatFrame.isConnected&&window.compatFrame.parentNode===window.compatParent&&window.compatFrame.contentDocument===window.compatDocument),true,'all color modes preserve the live Helper iframe and its DOM owner');
         }
         assert.equal(await page.evaluate(({id,text})=>window.host.chat[id].mes===text,{id,text:story+suffix}),true);
         // Bound controls must work on Helper's visible HTML copy, not its hidden source.
@@ -103,7 +103,8 @@ try{
         await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close()));
         assert.equal(await page.evaluate(()=>window.compatStreamFrame.contentDocument===window.compatStreamDocument),true,'prose/control refresh never remounts the frontend');
         if(screenshots)await stream.screenshot({path:`${screenshots}/mvu-roleforge-${width}.png`});
-        await page.evaluate(()=>{window.compatStream.remove();document.querySelectorAll('.mes_text').forEach(node=>node.classList.remove('hidden!'));});await page.waitForTimeout(210);
+        await page.evaluate(()=>{window.compatStream.remove();document.querySelectorAll('.mes_text').forEach(node=>node.classList.remove('hidden!'));});
+        await body.locator('.trpg-header').waitFor({state:'visible',timeout:5000});
         assert.equal(await body.locator('.trpg-header').count(),1);assert.equal(await page.evaluate(()=>window.compatFrame.contentDocument===window.compatDocument),true);
         // Actual exported Hide Far Chat: formatter empty, raw data still saved.
         await page.evaluate(()=>{for(let i=0;i<12;i++)window.host.chat.push({is_user:true,mes:'Later'});});

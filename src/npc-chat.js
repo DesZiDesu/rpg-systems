@@ -1,18 +1,18 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.63.0';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.63.0';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.63.0';
-import {renderSceneTracker} from './scene-tracker.js?v=0.63.0';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.63.0';
-import {renderGroupBoard} from './group-board-ui.js?v=0.63.0';
-import {uiText} from './ui-language.js?v=0.63.0';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.63.0';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.63.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.63.0';
-import { effectiveNpc } from './npc-alternates.js?v=0.63.0';
-import {speechDisplayText} from './voice-core.js?v=0.63.0';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.63.0';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.63.0';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme,themeSigil,createThemeMotion} from './chat-themes.js?v=0.63.0';
+import {renderStoryEvents} from './story-events-ui.js?v=0.64.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.64.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.64.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.64.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.64.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.64.0';
+import {uiText} from './ui-language.js?v=0.64.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.64.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.64.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.64.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.64.0';
+import {speechDisplayText} from './voice-core.js?v=0.64.0';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.64.0';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.64.0';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.64.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -60,7 +60,7 @@ export function speakerHeader(profile, open, theme='roleforge') {
     details.append(role,element('strong','',p.name));
     const meta=element('span','trpg-meta');for(const value of [p.race,p.relationship,p.faction].filter(usable))meta.append(element('span','',value));details.append(meta);
     const action=element('span','trpg-open-record');action.append(icon('address-card'),element('small','',uiText("ข้อมูลตัวละคร")));
-    header.append(themeSigil(theme),details,action);header.addEventListener('click',()=>open(p));return header;
+    header.append(details,action);header.addEventListener('click',()=>open(p));return header;
 }
 
 // Keep every block in story order. A header starts a character's turn; prose
@@ -242,7 +242,6 @@ function supportsStoryPresentation(nodes, source, blocks) {
 
 export function createChatPresentation(api, open) {
     const mounted=new Map(), portraits=new Map(), checked=new WeakMap(),dirty=new WeakSet();let timer,revision=0,epoch=0,currentChat='',destroyed=false;
-    const themeMotion=createThemeMotion();
     const removeFormattingHooks=installChatFormattingHooks(api);
     function clearPortraits(){++epoch;for(const record of portraits.values())if(record.url)URL.revokeObjectURL(record.url);portraits.clear();}
     async function imageFor(p){
@@ -271,7 +270,6 @@ export function createChatPresentation(api, open) {
         }
     }
     function restore(host, entry, source){
-        for(const root of entry.roots)themeMotion.remove(root);
         entry.disposeVoice?.();
         if(entry.shared)entry.shared.restore();
         // Never restore a stale snapshot over a native edit, swipe, streaming
@@ -297,7 +295,7 @@ export function createChatPresentation(api, open) {
         const settings=api.settings(),view=chatAppearance(settings),viewKey=JSON.stringify(view),mode=chatPresentationMode(settings),preserveNativeChat=mode==='native';
         const npcs=(api.state().npcs||[]).map(effectiveNpc), lookup=new Map();
         for(const npc of npcs)for(const name of [npc.name,...(npc.aliases||[])])if(!lookup.has(keyName(name)))lookup.set(keyName(name),npc);
-        for(const [host,entry]of mounted)if(!host.isConnected){entry.disposeVoice?.();for(const root of entry.roots)themeMotion.remove(root);mounted.delete(host);}
+        for(const [host,entry]of mounted)if(!host.isConnected){entry.disposeVoice?.();mounted.delete(host);}
         const hosts=[...document.querySelectorAll('#chat .mes')].map(visibleHost).filter(Boolean),active=new Set(hosts);
         for(const [host,entry]of mounted)if(!active.has(host))restore(host,entry);
         const stamp=JSON.stringify([revision,settings]);
@@ -336,7 +334,7 @@ export function createChatPresentation(api, open) {
                     if(parsed&&mode==='shared'){
                         const shared=mountSharedStory({host,nodes:nativeNodes(host),blocks:parsed,language:settings.language,textFor:block=>appendStoryText(element('span'),block.text).textContent,
                             user:{render:blocks=>renderUserBlocks(blocks,{name:message.name||context.name1||'User',language:settings.language,accent:settings.accentColor,ink:settings.inkColor,narrative,appendText:appendStoryText,appearance:view})}});
-                        for(const root of shared.roots){applyChatTheme(root,view);themeMotion.add(root);}
+                        for(const root of shared.roots){applyChatTheme(root,view);}
                         mounted.set(host,{roots:shared.roots,shared,source,signature});
                     }
                     continue;
@@ -347,7 +345,7 @@ export function createChatPresentation(api, open) {
                 if(old)restore(host,old,source);
                 const storyRoot=renderUserBlocks(blocks,{name,language:settings.language,accent:settings.accentColor,ink:settings.inkColor,narrative,appendText:appendStoryText,appearance:view});
                 cloneContents(storyRoot);
-                themeMotion.add(storyRoot);host.replaceChildren(storyRoot);
+                host.replaceChildren(storyRoot);
                 mounted.set(host,{roots:[storyRoot],storyRoot,original,source,signature});
                 continue; // No NPC profiles, gameplay cards, Voice or AI inference.
             }
@@ -418,7 +416,6 @@ export function createChatPresentation(api, open) {
                 cloneContents(storyRoot);
             }
 
-
             for(const offer of (settings.enableGroupBoard?social?.groupOffers||[]:[]))suffix.append(groupInvitation(offer,id,api));
             for(const offer of social?.offers||[])suffix.append(householdInvitation(offer,id,api));
             const storyCard=renderStoryEvents(storyEvents,settings.language);if(storyCard)suffix.append(storyCard);
@@ -441,10 +438,10 @@ export function createChatPresentation(api, open) {
                     },
                 });
                 roots.push(...sharedMount.roots);
-                for(const root of sharedMount.roots){applyChatTheme(root,view);themeMotion.add(root);}
+                for(const root of sharedMount.roots){applyChatTheme(root,view);}
                 if(settings.enableVoiceAddon)disposeVoice=api.voice?.decorateMessage(host,sharedMount.voiceBlocks,{id,message,targets:sharedMount.targets,controlsRoot:sharedMount.voiceRoot||suffix});
             }
-            if(storyRoot){applyChatTheme(storyRoot,view);themeMotion.add(storyRoot);host.replaceChildren(storyRoot);roots.push(storyRoot);if(blocks)disposeVoice=api.voice?.decorateMessage(storyRoot,blocks,{id,message});}
+            if(storyRoot){applyChatTheme(storyRoot,view);host.replaceChildren(storyRoot);roots.push(storyRoot);if(blocks)disposeVoice=api.voice?.decorateMessage(storyRoot,blocks,{id,message});}
             if(prefix.childNodes.length){host.prepend(prefix);roots.push(prefix);}
             if(suffix.childNodes.length){host.append(suffix);roots.push(suffix);}
             mounted.set(host,{roots,storyRoot,shared:sharedMount,disposeVoice,original:storyRoot?original:null,source,storySource,parsed,presentationEnabled:Boolean(settings.chatPresentation),signature});
@@ -472,5 +469,5 @@ export function createChatPresentation(api, open) {
         const type=(context.eventTypes||context.event_types)?.[event];if(type){context.eventSource?.on(type,observe);subscriptions.push(type);}
     }
     observe();
-    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){destroyed=true;clearTimeout(timer);observer.disconnect();themeMotion.destroy();removeFormattingHooks();clearPortraits();for(const type of subscriptions)context.eventSource?.off?.(type,observe);document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
+    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){destroyed=true;clearTimeout(timer);observer.disconnect();removeFormattingHooks();clearPortraits();for(const type of subscriptions)context.eventSource?.off?.(type,observe);document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
 }

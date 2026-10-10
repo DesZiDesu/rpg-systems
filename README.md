@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.63.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.64.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -8,9 +8,9 @@ RoleForge brings an RPG workspace into your SillyTavern chat. Track your charact
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
 
-## Six chat themes
+## Original chat appearance
 
-**Extensions → RoleForge → Chat appearance & NPCs** switches between Gilded Chronicle (RoleForge), Starlit Reverie (Fantasy Anime), Ashen Covenant (Dark Fantasy), Astral Grimoire (Magical Academy), Jade Lotus (Chinese Fantasy), and Neon Protocol (Advanced Futuristic). Header, Dialogue and Narrative frames can each be disabled while their text stays readable. Theme and motion choices are saved per chat, included in reusable presets and one-card setup. User UI keeps its right alignment. Decorative SVG animation pauses off-screen/in background tabs and respects Reduce Motion. Native SillyTavern settings and Regex/MVU-owned widgets retain their design. [Try all six themes](docs/previews/chat-themes/index.html) · [Thai guide](docs/chat-themes-v0.63.0.th.md).
+**Extensions → RoleForge → Chat appearance & NPCs** now keeps **Original** as the only chat design. Choose **Light Mode**, **Dark Mode**, or **User Setting** (the default, following your device's appearance, including iOS). System changes recolor existing blocks immediately through CSS. Header, Dialogue and Narrative frames each have an independent switch; disabling a frame keeps the text readable and Header becomes a plain speaker name. These choices are saved per chat and included in presets and one-card setup. Older theme presets return to Original while keeping their frame choices. Square portraits, User UI right alignment, native SillyTavern settings and Regex/MVU-owned widgets are preserved. [PC / mobile preview](docs/previews/chat-original/index.html) · [Thai guide](docs/chat-original-v0.64.0.th.md).
 
 ## Install
 
@@ -112,7 +112,7 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.63.0** has **1,196 passing unit/host tests** and syntax checks. Browser checks cover all six themes and all eight independent frame combinations at 320/390/1280px, native settings, per-chat persistence, card defaults, failed saves, preset import/export, motion, startup, User UI, NPC Management, Voice and Regex/MVU iframe identity. [Current guide](docs/chat-themes-v0.63.0.th.md) · [Validation record](docs/validation-chat-themes-v0.63.0.json).
+Version **0.64.0** has **1,197 passing unit/host tests** and syntax checks. Browser checks cover all three color modes, both OS appearances and all eight independent frame combinations at 320/390/1280px, native settings, per-chat persistence, legacy/card defaults, failed saves, preset import/export, User UI and Regex/MVU iframe identity. Preview screenshots also use the production renderer inside an isolated real **SillyTavern 1.19.0** instance at 320/390/1440px. [Current guide](docs/chat-original-v0.64.0.th.md) · [Validation record](docs/validation-chat-original-v0.64.0.json).
 
 The broader 0.62.0 checks, including the original uploaded Madoka card, remain recorded in [the preceding validation report](docs/validation-chat-presets-v0.62.0.json).
 
@@ -120,7 +120,7 @@ Shared rendering is tested at 320/390/1280px with the actual pinned SillyTavern 
 
 Run `npm run test:regex` for the focused compatibility suites. The shared suite downloads pinned upstream test dependencies with `curl` into a temporary cache; `ST_REGEX_CACHE` can point to a prepared cache. This does not install runtime dependencies or change SillyTavern.
 
-Run `npm run test:themes` for theme, frame-toggle and per-chat appearance checks. Run `npm run test:presets` for the preset library and blocked-host checks. Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. Historical release results remain in the [development README](docs/archive/README-v0.56.2-development.md).
+Run `npm run test:themes` for Original color modes, frame-toggle and per-chat appearance checks. Run `npm run test:presets` for the preset library and blocked-host checks. Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. Historical release results remain in the [development README](docs/archive/README-v0.56.2-development.md).
 
 [Repository audit](docs/repository-audit-v0.56.2.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.2.th.md) · [Full audited inventory](docs/repository-audit-v0.56.2.json)
 

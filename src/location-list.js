@@ -1,4 +1,4 @@
-import {normalizeLocationMemory,locationGraph} from './location-memory.js?v=0.63.0';
+import {normalizeLocationMemory,locationGraph} from './location-memory.js?v=0.64.0';
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const words = language => language === 'th'
     ? {title:'รายการสถานที่',search:'ค้นหาสถานที่',current:'อยู่ที่นี่',unknown:'ยังไม่ทราบระยะ',estimate:'ประมาณ',via:'ตามเส้นทางที่บันทึก',distance:'ระยะจากจุดปัจจุบัน',hint:'กดชื่อสถานที่เพื่อดูรายละเอียด · หน้าละ 10 รายการ',empty:'ยังไม่มีสถานที่ตรงกับคำค้น',prev:'ก่อนหน้า',next:'ถัดไป'}

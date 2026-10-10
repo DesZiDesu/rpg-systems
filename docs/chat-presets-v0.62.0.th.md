@@ -1,6 +1,6 @@
 # Preset แยกแชทและข้อจำกัดโดเมน · RoleForge 0.62.0
 
-ตั้งแต่ **0.63.0** เพิ่มส่วน **Chat appearance** สำหรับธีมและสวิตช์ Header / Dialogue / Narrative แยกแชท ดู [คู่มือธีม](chat-themes-v0.63.0.th.md)
+ตั้งแต่ **0.64.0** ส่วน **Chat appearance** ใช้ Original แบบเดียว เลือก Light / Dark / User Setting และสวิตช์ Header / Dialogue / Narrative แยกแชท ดู [คู่มือ Original](chat-original-v0.64.0.th.md)
 เล่น Madoka แล้วสลับไป Mushoku Tensei ได้โดยไม่ต้องลบการตั้งค่าของอีกโลก แชทเก็บสำเนา configuration ของตัวเอง และมีคลัง preset ที่ตั้งชื่อไว้เพื่อนำกลับมาใช้ได้ UI ใน extension drawer ใช้ปุ่มและช่องกรอกของ SillyTavern ตามเดิม
 
 ## ระบบที่บันทึกเป็น preset ได้

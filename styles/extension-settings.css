@@ -133,5 +133,5 @@
 .rf-chat-appearance-settings small{display:block;line-height:1.5;white-space:normal;overflow-wrap:anywhere;opacity:.85}
 .rf-chat-appearance-settings .menu_button{justify-self:start;text-decoration:none;max-width:100%;white-space:normal}
 .rf-chat-theme-preview{min-width:0}.rf-chat-theme-preview>summary{cursor:pointer;padding-block:8px}
-.rf-chat-theme-preview>.trpg-chat{padding:10px;background:#101011;border:1px solid var(--SmartThemeBorderColor,#555);min-width:0}
+.rf-chat-theme-preview>.trpg-chat{padding:10px;border:1px solid var(--SmartThemeBorderColor,#555);min-width:0}
 @media(max-width:390px){.rf-chat-appearance-switches{grid-template-columns:minmax(0,1fr)}}

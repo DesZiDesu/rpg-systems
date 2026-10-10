@@ -1,0 +1,516 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "hostRevision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+  "renderer": "0.64.0 Original production Main Chat renderer and CSS",
+  "provider": "Offline; no AI generation calls",
+  "physicalDevices": false,
+  "captures": [
+    {
+      "file": "light-with-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": true,
+      "view": "top",
+      "colorMode": "light"
+    },
+    {
+      "file": "light-with-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": true,
+      "view": "bottom",
+      "colorMode": "light"
+    },
+    {
+      "file": "light-without-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": false,
+      "view": "top",
+      "colorMode": "light"
+    },
+    {
+      "file": "light-without-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": false,
+      "view": "bottom",
+      "colorMode": "light"
+    },
+    {
+      "file": "dark-with-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": true,
+      "view": "top",
+      "colorMode": "dark"
+    },
+    {
+      "file": "dark-with-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": true,
+      "view": "bottom",
+      "colorMode": "dark"
+    },
+    {
+      "file": "dark-without-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": false,
+      "view": "top",
+      "colorMode": "dark"
+    },
+    {
+      "file": "dark-without-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": false,
+      "view": "bottom",
+      "colorMode": "dark"
+    },
+    {
+      "file": "system-with-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": true,
+      "view": "top",
+      "colorMode": "system"
+    },
+    {
+      "file": "system-with-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": true,
+      "view": "bottom",
+      "colorMode": "system"
+    },
+    {
+      "file": "system-without-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": false,
+      "view": "top",
+      "colorMode": "system"
+    },
+    {
+      "file": "system-without-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "portrait": false,
+      "view": "bottom",
+      "colorMode": "system"
+    },
+    {
+      "file": "light-with-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": true,
+      "view": "top",
+      "colorMode": "light"
+    },
+    {
+      "file": "light-with-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": true,
+      "view": "bottom",
+      "colorMode": "light"
+    },
+    {
+      "file": "light-without-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": false,
+      "view": "top",
+      "colorMode": "light"
+    },
+    {
+      "file": "light-without-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": false,
+      "view": "bottom",
+      "colorMode": "light"
+    },
+    {
+      "file": "dark-with-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": true,
+      "view": "top",
+      "colorMode": "dark"
+    },
+    {
+      "file": "dark-with-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": true,
+      "view": "bottom",
+      "colorMode": "dark"
+    },
+    {
+      "file": "dark-without-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": false,
+      "view": "top",
+      "colorMode": "dark"
+    },
+    {
+      "file": "dark-without-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": false,
+      "view": "bottom",
+      "colorMode": "dark"
+    },
+    {
+      "file": "system-with-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": true,
+      "view": "top",
+      "colorMode": "system"
+    },
+    {
+      "file": "system-with-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": true,
+      "view": "bottom",
+      "colorMode": "system"
+    },
+    {
+      "file": "system-without-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": false,
+      "view": "top",
+      "colorMode": "system"
+    },
+    {
+      "file": "system-without-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "portrait": false,
+      "view": "bottom",
+      "colorMode": "system"
+    }
+  ],
+  "checks": [
+    {
+      "width": 1440,
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "light"
+    },
+    {
+      "width": 1440,
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "light"
+    },
+    {
+      "width": 1440,
+      "independentFrameCombinations": 8,
+      "textPreserved": true,
+      "colorMode": "light"
+    },
+    {
+      "width": 1440,
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "dark"
+    },
+    {
+      "width": 1440,
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "dark"
+    },
+    {
+      "width": 1440,
+      "independentFrameCombinations": 8,
+      "textPreserved": true,
+      "colorMode": "dark"
+    },
+    {
+      "width": 1440,
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "system"
+    },
+    {
+      "width": 1440,
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "system"
+    },
+    {
+      "width": 1440,
+      "independentFrameCombinations": 8,
+      "textPreserved": true,
+      "colorMode": "system"
+    },
+    {
+      "width": 1440,
+      "headerProfileButton": true
+    },
+    {
+      "width": 1440,
+      "nativeDisplayRegex": true,
+      "widgetNodeIdentity": true,
+      "inputState": true,
+      "boundListener": true
+    },
+    {
+      "width": 1440,
+      "iframeDocumentAndStatePreserved": true
+    },
+    {
+      "width": 1440,
+      "liveOsSwitch": true,
+      "originalDomPreserved": true
+    },
+    {
+      "width": 390,
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "light"
+    },
+    {
+      "width": 390,
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "light"
+    },
+    {
+      "width": 390,
+      "independentFrameCombinations": 8,
+      "textPreserved": true,
+      "colorMode": "light"
+    },
+    {
+      "width": 390,
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "dark"
+    },
+    {
+      "width": 390,
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "dark"
+    },
+    {
+      "width": 390,
+      "independentFrameCombinations": 8,
+      "textPreserved": true,
+      "colorMode": "dark"
+    },
+    {
+      "width": 390,
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "system"
+    },
+    {
+      "width": 390,
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0,
+      "colorMode": "system"
+    },
+    {
+      "width": 390,
+      "independentFrameCombinations": 8,
+      "textPreserved": true,
+      "colorMode": "system"
+    },
+    {
+      "width": 390,
+      "headerProfileButton": true
+    },
+    {
+      "width": 390,
+      "nativeDisplayRegex": true,
+      "widgetNodeIdentity": true,
+      "inputState": true,
+      "boundListener": true
+    },
+    {
+      "width": 390,
+      "iframeDocumentAndStatePreserved": true
+    },
+    {
+      "width": 390,
+      "liveOsSwitch": true,
+      "originalDomPreserved": true
+    },
+    {
+      "width": 320,
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9,
+      "colorMode": "light"
+    },
+    {
+      "width": 320,
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9,
+      "colorMode": "light"
+    },
+    {
+      "width": 320,
+      "independentFrameCombinations": 8,
+      "textPreserved": true,
+      "colorMode": "light"
+    },
+    {
+      "width": 320,
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9,
+      "colorMode": "dark"
+    },
+    {
+      "width": 320,
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9,
+      "colorMode": "dark"
+    },
+    {
+      "width": 320,
+      "independentFrameCombinations": 8,
+      "textPreserved": true,
+      "colorMode": "dark"
+    },
+    {
+      "width": 320,
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9,
+      "colorMode": "system"
+    },
+    {
+      "width": 320,
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9,
+      "colorMode": "system"
+    },
+    {
+      "width": 320,
+      "independentFrameCombinations": 8,
+      "textPreserved": true,
+      "colorMode": "system"
+    },
+    {
+      "width": 320,
+      "headerProfileButton": true
+    },
+    {
+      "width": 320,
+      "nativeDisplayRegex": true,
+      "widgetNodeIdentity": true,
+      "inputState": true,
+      "boundListener": true
+    },
+    {
+      "width": 320,
+      "iframeDocumentAndStatePreserved": true
+    },
+    {
+      "width": 320,
+      "liveOsSwitch": true,
+      "originalDomPreserved": true
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,112 @@
+{
+  "version": "0.64.0",
+  "validatedAt": "2026-10-10T13:47:25.114032+00:00",
+  "scope": "Original only; Light/Dark/device appearance; independent Header, Dialogue and Narrative frames",
+  "unitTests": {
+    "command": "npm test",
+    "passed": 1197,
+    "failed": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "passed": true
+  },
+  "appearance": {
+    "commands": [
+      "npm run test:themes",
+      "node tests/chat-themes.browser.mjs (final contrast/offline checks)"
+    ],
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "colorModes": [
+      "light",
+      "dark",
+      "system"
+    ],
+    "osSchemes": [
+      "light",
+      "dark"
+    ],
+    "frameCombinations": 8,
+    "paletteFrameCases": 144,
+    "textContrastMinimum": 4.5,
+    "originalNpcIdentityColor": true,
+    "squarePortraits": true,
+    "noHorizontalOverflow": true,
+    "perChatPersistence": true,
+    "legacyPresetMigration": true,
+    "characterCardDefaults": true,
+    "importExport": true,
+    "failedSaveRollback": true,
+    "noAiCalls": true,
+    "liveOsSwitchRetainsExactDom": true,
+    "userUiRightAlignmentAndThoughts": true,
+    "offlinePreviewControlsAndEmbeddedImageFont": true,
+    "profileCaptionContrast": true
+  },
+  "regex": {
+    "command": "npm run test:regex",
+    "passed": true,
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "hostRevision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+    "nativeWidgetIdentityAndListeners": true,
+    "rawTextUnchanged": true
+  },
+  "mvu": {
+    "command": "npm run test:mvu",
+    "passed": true,
+    "widths": [
+      390,
+      1280
+    ],
+    "gameMakerRevision": "46840f39ca006b22870507f155145fa6324d9aa2",
+    "builderRevision": "0ecf70bb53262091c5c41a40b3a9dff0830de2c2",
+    "iframeAndDocumentIdentityAcrossColorModes": true,
+    "streamingControls": true,
+    "hideRegexAndThinkingBoxes": true,
+    "noMvuVariableWrites": true,
+    "performance": {
+      "rows": 200,
+      "updatedSceneReads": 1,
+      "domMutations": 2
+    }
+  },
+  "realSillyTavernPreview": {
+    "version": "SillyTavern 1.19.0",
+    "revision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+    "widths": [
+      320,
+      390,
+      1440
+    ],
+    "captures": 24,
+    "checkGroups": 39,
+    "errors": [],
+    "report": "previews/chat-original/validation.json",
+    "setup": "Isolated local SillyTavern with fictional chat; production renderer, cropper and composer components mounted by test runner",
+    "noUserServerOrHistoryAccess": true,
+    "noLiveAiOrVoiceRequests": true,
+    "chatOverflow": 0,
+    "nativeHostOverflowAt320px": 9,
+    "additionalOverflow": 0
+  },
+  "limitations": [
+    "Chromium viewport/color-scheme simulation; Safari on a physical iPhone was not tested.",
+    "Regex/MVU checks cover the pinned fixtures and workflows, not every third-party script."
+  ],
+  "sourceSha256": {
+    "src/chat-themes.js": "682b7de8d5847d0031bd10b2564e97a4a79833cd8becd901504eca185cba5736",
+    "src/chat-appearance-ui.js": "f762a23f823102ada52b45ff0c537d7031b68d082c2cca34e4696f9f6aa3628b",
+    "src/npc-chat.js": "7648636c3492ab46a80838b4a68b56cdeee4e6f038e36d31d4101c49b85c3291",
+    "styles/chat-themes.css": "da9b60f68b45f5801bca495f8bd053d0914667eaabf0bbedfc11ff1fdc951a81",
+    "index.js": "e245b6966d6530bff7d91d95e522bc9ca9f04fba42e77cefbda57db87ab07c17",
+    "manifest.json": "f34bfb4cdd7d4a4e1c4e5737ccc55505e54564117dd57097e8a76d2fc162b7f5"
+  }
+}

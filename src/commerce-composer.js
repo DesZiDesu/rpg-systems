@@ -1,12 +1,12 @@
-import {currencyScheme,currencyUnitLabel} from './currency-config.js?v=0.63.0';
-import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.63.0';
-import {completeItemDefinition} from './item-definition.js?v=0.63.0';
-import {itemStatSummary} from './item-effects.js?v=0.63.0';
-import {purchaseDeposit} from './commerce-rights.js?v=0.63.0';
-import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.63.0';
-import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.63.0';
-import {commerceIcon} from './commerce-icons.js?v=0.63.0';
-import {convertMoney} from './commerce-currency.js?v=0.63.0';
+import {currencyScheme,currencyUnitLabel} from './currency-config.js?v=0.64.0';
+import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.64.0';
+import {completeItemDefinition} from './item-definition.js?v=0.64.0';
+import {itemStatSummary} from './item-effects.js?v=0.64.0';
+import {purchaseDeposit} from './commerce-rights.js?v=0.64.0';
+import {purchaseTermLines,purchaseTypeLabel} from './commerce-rights-ui.js?v=0.64.0';
+import {commerceBasketQuote,commerceStockLimit} from './commerce-engine.js?v=0.64.0';
+import {commerceIcon} from './commerce-icons.js?v=0.64.0';
+import {convertMoney} from './commerce-currency.js?v=0.64.0';
 // Compact composer UI. Read-only expansion/selection never calls an API;
 // every game button delegates to the one asynchronous commerce runtime.
 export function createCommerceComposer({document:doc=globalThis.document,perform=()=>{},repair=()=>{},language=()=> 'en',poll=()=>{},appearance=()=>({}),dock=null}={}) {

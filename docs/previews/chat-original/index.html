@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RoleForge · Original · Light / Dark</title>
+  <link rel="stylesheet" href="../../../styles/npc-ui.css?v=0.64.0">
+  <link rel="stylesheet" href="../../../styles/chat-themes.css?v=0.64.0">
+  <link rel="stylesheet" href="gallery.css?v=0.64.0">
+</head>
+<body>
+<header class="preview-top"><small>ROLEFORGE 0.64.0 · MAIN CHAT</small><h1>Original</h1><p>หน้าตาเดิมแบบเดียว · เลือกโหมดสีและเปิด/ปิดแต่ละกรอบได้</p></header>
+<main>
+  <form class="preview-controls" onsubmit="return false">
+    <label>โหมดสี <select id="color-mode"><option value="light">Light Mode</option><option value="dark" selected>Dark Mode</option><option value="system">User Setting</option></select></label>
+    <label>ขนาดตัวอย่าง <select id="device"><option value="desktop">PC</option><option value="mobile">มือถือ</option></select></label>
+    <fieldset><legend>เปิด/ปิดกรอบ</legend><label><input type="checkbox" data-part="header" checked> Header</label><label><input type="checkbox" data-part="dialogue" checked> Dialogue</label><label><input type="checkbox" data-part="narrative" checked> Narrative</label></fieldset>
+    <label><input type="checkbox" id="portrait" checked> ภาพตัวละคร 1:1</label>
+  </form>
+  <p class="preview-note">User Setting ตาม Light / Dark ของเครื่องและเปลี่ยนทันที เมื่อปิดกรอบข้อความยังอยู่ ภาพด้านล่างใช้ renderer และ CSS จริงของส่วนเสริม</p>
+  <article class="story-surface" data-device="desktop"><div class="trpg-chat"></div></article>
+  <details class="screens"><summary>ดูภาพจาก SillyTavern Main Chat บน PC / มือถือ</summary><p>ทดสอบใน SillyTavern 1.19.0 ที่ติดตั้งแยกใน workspace ด้วยบทสนทนาจำลอง ไม่ได้เข้าถึงเครื่องหรือเซิร์ฟเวอร์ของผู้ใช้</p><div class="screen-links"><a href="original-light-dark-mobile.png">เทียบ Light / Dark · มือถือ</a><a href="original-light-dark-desktop.png">เทียบ Light / Dark · PC</a><a href="screenshots/light-with-mobile-top.png">มือถือ · Light</a><a href="screenshots/dark-with-mobile-top.png">มือถือ · Dark</a><a href="screenshots/light-with-desktop-top.png">PC · Light</a><a href="screenshots/dark-with-desktop-top.png">PC · Dark</a><a href="settings-mobile.png">หน้าตั้งค่า</a></div></details>
+  <p class="preview-note"><a href="standalone.html">เปิด Preview แบบไฟล์เดียว</a> · <a href="roleforge-original-preview.zip">ดาวน์โหลดทั้งหมด</a></p>
+</main>
+<dialog id="preview-profile"><h2>Aster Vale</h2><p>นักเดินทาง · มนุษย์ · พันธมิตร · สมาคมนักสำรวจ</p><form method="dialog"><button>ปิด</button></form></dialog>
+<script type="module" src="gallery.js?v=0.64.0"></script>
+</body>
+</html>
