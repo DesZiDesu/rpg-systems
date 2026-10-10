@@ -1,4 +1,4 @@
-import {recoverLocationGeography} from './location-memory.js?v=0.64.1';
+import {recoverLocationGeography} from './location-memory.js?v=0.64.2';
 // Small, per-reply scene records; the host may complete omitted scene details.
 const value = (source, limit = 180) => typeof source === 'string' ? source.trim().slice(0, limit) : '';
 const known = source => source && !/^(?:unknown|none|n\/a|unspecified|not specified|not known|undefined|null|tbd|ไม่ทราบ|ไม่ระบุ|ไม่รู้|—|–|-|\?|…|\.{2,})$/i.test(source) ? source : '';

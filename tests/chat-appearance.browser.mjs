@@ -48,6 +48,7 @@ try{
    assert.equal(await row.locator('.trpg-header').count(),flags&1?1:0);
    assert.equal(await row.locator('.trpg-dialogue.trpg-unframed').count(),flags&2?0:1);
    assert.equal(await row.locator('.trpg-narrative.trpg-unframed').count(),flags&4?0:1);
+   for(const [copy,bit,mark] of [['dialogue',2,'"'],['prose',4,'*']])assert.deepEqual(await row.locator(`.trpg-${copy}-copy`).evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content)),flags&bit?['none','none']:[JSON.stringify(mark),JSON.stringify(mark)]);
    assert.equal(await row.locator('[data-rf-color-mode]').count(),0);
    assert.equal(await page.evaluate(()=>Object.hasOwn(window.host.chatMetadata.roleforge_chat_presets.config.chatAppearance,'colorMode')),false);
    assert.equal(await page.evaluate(id=>window.host.chat[id].mes,id),source);
@@ -84,6 +85,11 @@ try{
    assert.equal(style.thought,style.name,'inner thought label retains the player accent on transparent backgrounds');
   }
   await change(page,'showChatHeader',false);await change(page,'showChatDialogue',false);assert.equal(await page.locator(`[mesid="${user}"] .trpg-user-header`).count(),0);assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue.trpg-unframed`).count(),1);assert.equal(await page.locator(`[mesid="${user}"] .trpg-narrative:not(.trpg-unframed)`).count(),1);assert.equal(await page.locator(`[mesid="${user}"] .trpg-user-thought`).count(),1);
+  assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue-copy`).evaluate(n=>getComputedStyle(n,'::before').content),JSON.stringify('"'));
+  await change(page,'showChatNarrative',false);
+  assert.deepEqual(await page.locator(`[mesid="${user}"] .trpg-prose-copy`).evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content)),[JSON.stringify('*'),JSON.stringify('*')]);
+  assert.equal(await page.evaluate(id=>window.host.chat[id].mes,user),'*I open the door.* "Hello." |Be careful.|');
+  await change(page,'showChatNarrative',true);
   // Failed native saves roll the preset and state back, and show the real error.
   await page.evaluate(()=>{window.themeBefore=JSON.stringify(window.host.chatMetadata);window.themeSave=window.host.saveMetadata;window.host.saveMetadata=async()=>{throw Error('theme-save-failed');};});
   // A rejected save restores the checkbox immediately, so click physically

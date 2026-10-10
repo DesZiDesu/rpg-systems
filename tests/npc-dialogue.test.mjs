@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {renderStoryBlocks,priorDialogueSpeaker} from '../src/npc-chat.js';
 import {parseStory} from '../src/npc-core.js';
 class Node {
- constructor(tag){this.tag=tag;this.className='';this.dataset={};this.classList={toggle:(key,on)=>{this.className=this.className.split(' ').filter(value=>value&&value!==key).concat(on?[key]:[]).join(' ');}};this.children=[];this.style={setProperty(){}};this.isConnected=true;this.listeners={};}
+ constructor(tag){this.tag=tag;this.className='';this.dataset={};this.classList={add:(...keys)=>keys.forEach(key=>this.classList.toggle(key,true)),toggle:(key,on)=>{this.className=this.className.split(' ').filter(value=>value&&value!==key).concat(on?[key]:[]).join(' ');}};this.children=[];this.style={setProperty(){}};this.isConnected=true;this.listeners={};}
+ get textContent(){return this.children.length?this.children.map(node=>node.textContent??'').join(''):this.text??'';}
+ set textContent(value){this.text=String(value);this.children=[];}
  append(...nodes){this.children.push(...nodes)}
  prepend(node){this.children.unshift(node)}
  setAttribute(){}
@@ -72,7 +74,7 @@ test('player/system/unstructured turns reset continuation; changed prior speaker
 });
 test('narrative and dialogue render only safe bold and italic nodes',()=>{
  const {root}=draw('<tr-narrative>*soft* and **urgent** &lt;img src=x onerror=alert(1)&gt;</tr-narrative>'+dialogue('Alice','*whisper* **NOW**'));
- const prose=find(root,'trpg-prose-copy')[0],speech=find(root,'trpg-dialogue')[0];
+ const prose=find(root,'trpg-prose-copy')[0],speech=find(root,'trpg-dialogue-copy')[0];
  assert.deepEqual(prose.children.filter(n=>n.tag).map(n=>[n.tag,n.textContent]),[['em','soft'],['strong','urgent']]);
  assert.deepEqual(speech.children.filter(n=>n.tag).map(n=>[n.tag,n.textContent]),[['em','whisper'],['strong','NOW']]);
  assert.equal(find(root,'img').length,0);

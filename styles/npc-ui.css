@@ -17,7 +17,7 @@
 .trpg-chat *,.trpg-manager *{box-sizing:border-box}
 .mes_text [data-roleforge-story]{display:contents}
 .trpg-formatting-mode{display:grid;gap:6px;margin-block:10px;min-width:0}.trpg-formatting-mode select{width:100%;max-width:100%;min-width:0}
-.rf-shared-block .trpg-dialogue>[data-roleforge-story],.rf-shared-block .trpg-prose-copy>[data-roleforge-story]{white-space:normal}
+.rf-shared-block .trpg-dialogue-copy>[data-roleforge-story],.rf-shared-block .trpg-prose-copy>[data-roleforge-story]{white-space:normal}
 .rf-native-speech{margin-block:12px;border:1px solid color-mix(in srgb,var(--tretaresia-accent,#d6b458) 35%,transparent);font:inherit;color:var(--tretaresia-ink,inherit)}
 .rf-native-speech>summary{padding:10px 12px;cursor:pointer;color:var(--tretaresia-accent,#d6b458)}
 .rf-native-speech-list{display:grid;gap:10px;padding:0 12px 12px}.rf-native-voice-target{min-width:0}.rf-native-voice-target>small{display:block;opacity:.75}

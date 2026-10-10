@@ -1,5 +1,5 @@
-import {CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.64.1';
-import {element,renderStoryBlocks} from './npc-chat.js?v=0.64.1';
+import {CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.64.2';
+import {element,renderStoryBlocks} from './npc-chat.js?v=0.64.2';
 
 // Native SillyTavern controls; the expandable sample uses the real renderer.
 export function mountChatAppearanceControls(parent,api) {
@@ -20,7 +20,7 @@ export function mountChatAppearanceControls(parent,api) {
         const settings=api.settings(),view=chatAppearance(settings);
         description.textContent='Original · RoleForge';
         for(const [key,label] of [['showChatHeader',['Header · character nameplate','Header · ป้ายตัวละคร']],['showChatDialogue',['Dialogue · speech frame','Dialogue · กรอบบทพูด']],['showChatNarrative',['Narrative · narration frame','Narrative · กรอบบรรยาย']]])texts.get(key).textContent=t(...label);
-        help.textContent=t('Enable Header, Dialogue and Narrative independently. Saved for this chat. Disabling a frame keeps its text; Header becomes a plain speaker name. Header and Narrative have no background. Regex/MVU widgets keep their own design.','เปิด/ปิด Header, Dialogue และ Narrative ได้อิสระ จำค่าแยกแชท เมื่อปิดกรอบข้อความยังอยู่ และ Header เหลือชื่อผู้พูดธรรมดา Header กับ Narrative ไม่มีพื้นหลัง UI ของ Regex/MVU ใช้หน้าตาของตัวเอง');
+        help.textContent=t('Enable Header, Dialogue and Narrative independently. Saved for this chat. Without a frame, speech appears as "text" and narration as *text*; Header becomes a plain speaker name. Header and Narrative have no background. Regex/MVU widgets keep their own design.','เปิด/ปิด Header, Dialogue และ Narrative ได้อิสระ จำค่าแยกแชท เมื่อปิดกรอบ บทพูดแสดงเป็น "text" และคำบรรยายเป็น *text* ส่วน Header เหลือชื่อผู้พูดธรรมดา Header กับ Narrative ไม่มีพื้นหลัง UI ของ Regex/MVU ใช้หน้าตาของตัวเอง');
         summary.textContent=t('Preview Original','ดูตัวอย่าง Original');gallery.textContent=t('PC / mobile preview ↗','พรีวิว PC / มือถือ ↗');
         if(!busy)for(const [key,input] of controls)input.checked=view[CHAT_APPEARANCE_KEYS[key]];
         const signature=JSON.stringify([view,settings.language]);

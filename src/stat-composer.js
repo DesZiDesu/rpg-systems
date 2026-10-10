@@ -1,6 +1,6 @@
-import {statTrainingTargets} from './stat-training.js?v=0.64.1';
-import {currencyDisplay} from './currency-config.js?v=0.64.1';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.64.1';
+import {statTrainingTargets} from './stat-training.js?v=0.64.2';
+import {currencyDisplay} from './currency-config.js?v=0.64.2';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.64.2';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const translated=(v,th,target)=>{

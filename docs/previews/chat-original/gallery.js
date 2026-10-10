@@ -1,6 +1,6 @@
-import {renderStoryBlocks} from '../../../src/npc-chat.js?v=0.64.1';
-import {croppedPortrait} from '../../../src/npc-portraits.js?v=0.64.1';
-import {setUiLanguageProvider} from '../../../src/ui-language.js?v=0.64.1';
+import {renderStoryBlocks} from '../../../src/npc-chat.js?v=0.64.2';
+import {croppedPortrait} from '../../../src/npc-portraits.js?v=0.64.2';
+import {setUiLanguageProvider} from '../../../src/ui-language.js?v=0.64.2';
 
 setUiLanguageProvider(()=> 'th');
 const root=document.querySelector('.story-surface>.trpg-chat'),dialog=document.querySelector('#preview-profile');

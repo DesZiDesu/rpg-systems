@@ -1,7 +1,7 @@
 {
   "host": "SillyTavern 1.19.0",
   "hostRevision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
-  "renderer": "0.64.1 Original production Main Chat renderer and CSS",
+  "renderer": "0.64.2 Original production Main Chat renderer and CSS",
   "provider": "Offline; no AI generation calls",
   "physicalDevices": false,
   "captures": [
@@ -139,7 +139,9 @@
       "width": 1440,
       "independentFrameCombinations": 8,
       "textPreserved": true,
-      "transparentContainers": true
+      "transparentContainers": true,
+      "maxInterBlockGapPx": 12,
+      "literalDelimitersWhenUnframed": true
     },
     {
       "width": 1440,
@@ -148,6 +150,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
@@ -160,6 +169,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
@@ -172,6 +188,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
@@ -184,6 +207,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
@@ -214,7 +244,9 @@
       "width": 390,
       "independentFrameCombinations": 8,
       "textPreserved": true,
-      "transparentContainers": true
+      "transparentContainers": true,
+      "maxInterBlockGapPx": 12,
+      "literalDelimitersWhenUnframed": true
     },
     {
       "width": 390,
@@ -223,6 +255,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
@@ -235,6 +274,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
@@ -247,6 +293,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
@@ -259,6 +312,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
@@ -289,7 +349,9 @@
       "width": 320,
       "independentFrameCombinations": 8,
       "textPreserved": true,
-      "transparentContainers": true
+      "transparentContainers": true,
+      "maxInterBlockGapPx": 12,
+      "literalDelimitersWhenUnframed": true
     },
     {
       "width": 320,
@@ -298,6 +360,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 9,
@@ -310,6 +379,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 9,
@@ -322,6 +398,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 9,
@@ -334,6 +417,13 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
+      "literalDelimitersWhenUnframed": true,
+      "interBlockGapsPx": [
+        6,
+        6,
+        6,
+        6
+      ],
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 9,

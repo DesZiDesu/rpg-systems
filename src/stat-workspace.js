@@ -1,4 +1,4 @@
-import {CORE_USER_STATS,normalizeStatTraining,statTrainingTargets,applyUserStatOperation,customStatId} from './stat-training.js?v=0.64.1';
+import {CORE_USER_STATS,normalizeStatTraining,statTrainingTargets,applyUserStatOperation,customStatId} from './stat-training.js?v=0.64.2';
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function mountStatWorkspace({root,state,context,save,language=()=> 'en',notify=()=>{}}){
  let scope='',metadata=null,fingerprint='',saving=false,dirty=false,initialValues=new Map();

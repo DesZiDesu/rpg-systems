@@ -1,4 +1,4 @@
-import {subscriptionQuota} from './voice-core.js?v=0.64.1';
+import {subscriptionQuota} from './voice-core.js?v=0.64.2';
 
 const origin='https://api.elevenlabs.io';
 export function createElevenLabsClient({key,fetch:request=globalThis.fetch,notice=()=>{},language=()=> 'en'}={}) {

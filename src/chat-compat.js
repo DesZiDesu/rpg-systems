@@ -1,7 +1,7 @@
 // Compose with the host's already formatted DOM. Never run regex per block or
 // recreate another extension's card with innerHTML/clones.
-import {parseUserMessage} from './user-chat.js?v=0.64.1';
-import {cleanChatProse} from './foreign-chat.js?v=0.64.1';
+import {parseUserMessage} from './user-chat.js?v=0.64.2';
+import {cleanChatProse} from './foreign-chat.js?v=0.64.2';
 export function chatPresentationMode(settings = {}) {
     return ['shared','native','roleforge'].includes(settings.chatRegexMode)
         ? settings.chatRegexMode : settings.preserveNativeChat === true ? 'native' : 'shared';
@@ -165,6 +165,7 @@ export function relinquishPresentation(root) {
 // listeners. Remove cloned RoleForge controls, retaining only the native story
 // content, then mount fresh controls on the visible streaming surface.
 export function releaseClonedPresentation(host) {
+    host.querySelectorAll('[data-roleforge-gap]').forEach(node=>node.removeAttribute('data-roleforge-gap'));
     host.querySelectorAll('[data-roleforge-control]').forEach(node=>{if(!foreignFrontend([node]))node.remove();});
     for (const root of [...host.querySelectorAll('[data-roleforge-mount]')]) {
         if (!host.contains(root)) continue;
@@ -239,6 +240,30 @@ function paragraphTargets(nodes, blocks, textFor) {
     return targets;
 }
 
+// Markdown adds BRs/empty paragraphs between protocol blocks. Collapse only
+// neutral separators bounded by two of our own shells, keeping every native
+// node in place. Never touch breaks inside story text or a foreign widget.
+function compactSharedSeparators(roots,markers) {
+    const owned=new Set(roots.filter(root=>root.matches('.rf-shared-header,.rf-shared-block')));
+    const headers=new Set(markers.filter(node=>markerKind(node)==='header'));
+    const gaps=new Set();
+    const neutral=node=>node.nodeType===1&&!node.attributes.length
+        &&(node.tagName==='BR'||node.tagName==='P'&&!node.textContent.trim()
+            &&[...node.querySelectorAll('*')].every(child=>child.tagName==='BR'&&!child.attributes.length));
+    for(const root of owned){
+        let next=root.nextSibling;const pending=[];
+        while(next){
+            if(owned.has(next)){for(const gap of pending)gaps.add(gap);break;}
+            if((next.nodeType===3&&!next.textContent.trim())||next.nodeType===8){next=next.nextSibling;continue;}
+            if(headers.has(next)&&!next.textContent.trim()&&!next.childNodes.length){next=next.nextSibling;continue;}
+            if(!neutral(next))break;
+            pending.push(next);next=next.nextSibling;
+        }
+    }
+    for(const gap of gaps)gap.setAttribute('data-roleforge-gap','');
+    return [...gaps];
+}
+
 export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,dialogueEnabled=true,document:doc=globalThis.document}) {
     const roots = [], wrappers = [], targets = Array(blocks.length).fill(null), voiceBlocks = blocks.map(block => ({...block}));
     const create = (tag,cls,text) => {const node=doc.createElement(tag);node.className=cls;if(cls.includes('trpg-chat'))node.dataset.roleforgeMount='shared';if(text!==undefined)node.textContent=text;return node;};
@@ -276,7 +301,8 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fal
         const body=user?shell.querySelector(block.type==='thought'?'.trpg-user-thought':`.trpg-${block.type}`):block.type === 'narrative' ? narrative('') : create('div',block.type === 'dialogue' ? 'trpg-dialogue' : 'trpg-plain');
         if(!body)continue;
         if(block.type==='dialogue'&&!dialogueEnabled)body.classList.add('trpg-unframed');
-        let content=block.type === 'narrative' ? body.querySelector('.trpg-prose-copy') : block.type==='thought'?body.querySelector('p'):body;
+        let content=block.type === 'narrative' ? body.querySelector('.trpg-prose-copy') : block.type==='thought'?body.querySelector('p'):block.type==='dialogue'?body.querySelector('.trpg-dialogue-copy'):body;
+        if(block.type==='dialogue'&&!content){content=create('span','trpg-dialogue-copy');body.append(content);}
         if(block.type === 'narrative'){const copy=create('div','trpg-prose-copy');content.replaceWith(copy);content=copy;}
         content.dataset.roleforgeNativeContent='';
         const name=nativeName || block.name || currentName || fallbackName;
@@ -293,7 +319,8 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fal
             voiceBlocks[index].name=markerName(target) || block.name;
         }
     }
-    if(user){const root=user.render([]),anchor=nodes.find(node=>node.parentNode===host)||host.firstChild;root.dataset.roleforgeMount='user';host.insertBefore(root,anchor);roots.push(root);}
+    if(user){const root=user.render([]),anchor=nodes.find(node=>node.parentNode===host)||host.firstChild;root.classList.add('rf-shared-header');root.dataset.roleforgeMount='user';host.insertBefore(root,anchor);roots.push(root);}
+    const gaps=compactSharedSeparators(roots,markers);
     // A whole-message regex may remove all story boundaries. Keep its exact
     // card in place; expose Voice for the original structured blocks separately
     // without duplicating the story or inferring new gameplay data.
@@ -312,8 +339,10 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fal
     }
     return {roots,targets,voiceBlocks,voiceRoot,native:nodes,
         valid:()=>nodes.every(node=>host.contains(node))&&boundaries.every(({node,kind,name})=>host.contains(node)&&markerKind(node)===kind&&markerName(node)===name)
-            &&wrappers.every(({shell,target,nativeText})=>host.contains(shell)&&shell.contains(target)&&target.textContent===nativeText)&&roots.every(root=>host.contains(root)),
+            &&wrappers.every(({shell,target,nativeText})=>host.contains(shell)&&shell.contains(target)&&target.textContent===nativeText)&&roots.every(root=>host.contains(root))
+            &&gaps.every(node=>host.contains(node)&&node.hasAttribute('data-roleforge-gap')),
         restore(){
+            for(const gap of gaps)gap.removeAttribute('data-roleforge-gap');
             // Unwrap only our shells. Keep original nodes, bound listeners and
             // any foreign nodes added inside the content after our mount.
             for (const {shell,body,content,ownedBodyChildren,textEdits} of wrappers) if (host.contains(shell)) {

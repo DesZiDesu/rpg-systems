@@ -1,18 +1,18 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.64.1';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.64.1';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.64.1';
-import {renderSceneTracker} from './scene-tracker.js?v=0.64.1';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.64.1';
-import {renderGroupBoard} from './group-board-ui.js?v=0.64.1';
-import {uiText} from './ui-language.js?v=0.64.1';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.64.1';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.64.1';
-import { croppedPortrait } from './npc-portraits.js?v=0.64.1';
-import { effectiveNpc } from './npc-alternates.js?v=0.64.1';
-import {speechDisplayText} from './voice-core.js?v=0.64.1';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.64.1';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.64.1';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.64.1';
+import {renderStoryEvents} from './story-events-ui.js?v=0.64.2';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.64.2';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.64.2';
+import {renderSceneTracker} from './scene-tracker.js?v=0.64.2';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.64.2';
+import {renderGroupBoard} from './group-board-ui.js?v=0.64.2';
+import {uiText} from './ui-language.js?v=0.64.2';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.64.2';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.64.2';
+import { croppedPortrait } from './npc-portraits.js?v=0.64.2';
+import { effectiveNpc } from './npc-alternates.js?v=0.64.2';
+import {speechDisplayText} from './voice-core.js?v=0.64.2';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.64.2';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.64.2';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.64.2';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -67,6 +67,7 @@ export function speakerHeader(profile, open, theme='roleforge') {
 // before the first header stays global, and later prose belongs to that turn.
 export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imageFor, previousSpeaker = null, appearance) {
     const view=normalizeChatAppearance(appearance);applyChatTheme(root,view);
+    root.classList.add('trpg-story-flow');
     let section = null;
     const startSpeaker = name => {
         const profile = resolveNpcSpeaker([...new Set(lookup.values())], name);
@@ -95,7 +96,11 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
         if (block.type === 'header') { startSpeaker(block.name || fallbackName || 'NPC'); continue; }
         if (block.type === 'narrative') { (section || root).append(narrative(block.text,view.narrative)); continue; }
         if (block.type === 'plain') { (section || root).append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
-        if (block.type === 'dialogue') startSpeaker(block.name || fallbackName || 'NPC').append(appendStoryText(element('div', `trpg-dialogue${view.dialogue?'':' trpg-unframed'}`),speechDisplayText(block.text)));
+        if (block.type === 'dialogue') {
+            const body=element('div', `trpg-dialogue${view.dialogue?'':' trpg-unframed'}`);
+            body.append(appendStoryText(element('span','trpg-dialogue-copy'),speechDisplayText(block.text)));
+            startSpeaker(block.name || fallbackName || 'NPC').append(body);
+        }
     }
 }
 
@@ -263,7 +268,7 @@ export function createChatPresentation(api, open) {
     function cloneContents(root) {
         root.dataset.roleforgeMount='story';
         for(const body of root.querySelectorAll('.trpg-narrative,.trpg-dialogue,.trpg-plain,.trpg-user-thought')) {
-            const copy=body.querySelector('.trpg-prose-copy')||body.querySelector('.trpg-user-thought > p')||body;
+            const copy=body.querySelector('.trpg-prose-copy,.trpg-dialogue-copy')||body.querySelector('.trpg-user-thought > p')||body;
             const marker=element('span');marker.dataset.roleforgeStory=body.classList.contains('trpg-narrative')?'narrative'
                 :body.classList.contains('trpg-dialogue')?'dialogue':body.classList.contains('trpg-user-thought')?'thought':'plain';
             marker.append(...copy.childNodes);copy.append(marker);copy.dataset.roleforgeNativeContent='';

@@ -1,6 +1,6 @@
-import {CURRENCY_KEYS,MONEY_ICON_SETS,MONEY_ICON_SHAPES,currencyScheme,currencyValue,validateCurrencyScheme,reconfigureCurrencyWallet} from './currency-config.js?v=0.64.1';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.64.1';
-import {validateCurrencyPreset,importWorldPreset,PRESET_FILE_LIMIT,currentCurrencyPreset} from './world-presets.js?v=0.64.1';
+import {CURRENCY_KEYS,MONEY_ICON_SETS,MONEY_ICON_SHAPES,currencyScheme,currencyValue,validateCurrencyScheme,reconfigureCurrencyWallet} from './currency-config.js?v=0.64.2';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.64.2';
+import {validateCurrencyPreset,importWorldPreset,PRESET_FILE_LIMIT,currentCurrencyPreset} from './world-presets.js?v=0.64.2';
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function mountCurrencyWorkspace({root,state,context,save,language=()=> 'en',notify=()=>{},coinStyle=()=> 'stack'}){
  let scope='',metadata=null,fingerprint='',draft=null,draftName='',saving=false,dirty=false,unitDrafts=new Map();

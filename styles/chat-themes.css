@@ -11,14 +11,41 @@
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative {background:none;box-shadow:none}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-copy {text-shadow:none}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-glow {background:none}
-.trpg-speaker-label {margin:12px 0 6px;font:600 14px/1.5 system-ui,sans-serif;color:var(--SmartThemeBodyColor,#ece7da)}
+.trpg-speaker-label {margin:4px 0;font:600 14px/1.5 system-ui,sans-serif;color:var(--SmartThemeBodyColor,#ece7da)}
+
+/* One small gap between owned blocks, without rewriting native host HTML. */
+[data-roleforge-gap] {display:none!important}
+.trpg-chat[data-rf-chat-theme="roleforge"].rf-shared-block {margin-block:6px}
+.trpg-chat[data-rf-chat-theme="roleforge"].rf-shared-header:empty {display:none}
+.trpg-chat[data-rf-chat-theme="roleforge"].trpg-story-flow {display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-speaker {display:grid;gap:6px;min-width:0}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-header {min-height:0;padding:8px 2px}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative {padding-block:12px 16px}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-copy {padding-top:0}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-mark {top:8px}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-top {top:13px}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-end {bottom:6px}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative:before {top:29px;bottom:12px}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative:after {top:34px;bottom:20px}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-dialogue {padding-block:18px}
+.trpg-chat[data-rf-chat-theme="roleforge"].trpg-user-chat:not(.rf-shared-block) {display:grid;gap:6px}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-user-header {margin:0;padding:4px 0 8px}
+.trpg-chat[data-rf-chat-theme="roleforge"].trpg-user-chat>:is(.trpg-plain,.trpg-user-thought,.trpg-dialogue) {margin-block:0}
 
 /* Each switch removes only its frame. Story, Voice and native widget content
    remains in order; disabled Header leaves a plain speaker label. */
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed {padding:4px 0!important;margin:12px 0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--prose)!important;font:inherit!important;line-height:1.8!important;text-shadow:none!important;isolation:auto}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed {padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--prose)!important;font:inherit!important;line-height:1.8!important;text-shadow:none!important;isolation:auto}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed:before,
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed:after,
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed>[class^="trpg-prose-"]:not(.trpg-prose-copy) {display:none!important;animation:none!important}
+/* Literal display marks stay inside the story copy, before Voice controls.
+   Generated content keeps saved messages, Regex input and spoken text intact. */
+.trpg-unframed>.trpg-dialogue-copy:before,
+.trpg-unframed>.trpg-dialogue-copy:after {content:'"'}
+.trpg-unframed>.trpg-prose-copy:before,
+.trpg-unframed>.trpg-prose-copy:after {content:'*'}
+.trpg-unframed>:is(.trpg-dialogue-copy,.trpg-prose-copy):before,
+.trpg-unframed>:is(.trpg-dialogue-copy,.trpg-prose-copy):after {font:inherit;color:inherit;font-style:normal;white-space:normal}
 @container(max-width:450px) {
   .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-header {gap:12px;min-width:0}
   .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-header strong {font-size:22px}

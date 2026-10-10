@@ -1,4 +1,4 @@
-import {currencyUnitLabel} from './currency-config.js?v=0.64.1';
+import {currencyUnitLabel} from './currency-config.js?v=0.64.2';
 const scopes = new WeakMap();
 const node = (tag,cls,text) => { const el = document.createElement(tag); el.className = cls; if (text !== undefined) el.textContent = text; return el; };
 export const auctionErrorText = (error,thai) => ({

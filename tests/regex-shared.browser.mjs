@@ -129,6 +129,25 @@ try{
         // Source-level regex results with rich HTML are kept as host HTML; no
         // reconstruction from parseStory's stripped plain text.
         await rules(page);const stored=await add(page,'<tr-header name="Cora"/><tr-dialogue name="Cora">A stored card <span data-native="stored"><button>Action</button><input type="checkbox"></span></tr-dialogue>');await assertNative(page,stored);
+        // Collapse protocol separators, retaining both their exact nodes and
+        // meaningful line breaks within the narrative. Restore on native mode.
+        await rules(page,{global:[script('/LINE_BREAK/g','<br>')]});
+        const spaced=await add(page,'<tr-header name="Cora"/>\n<tr-narrative>First line.LINE_BREAKSecond line.</tr-narrative>\n<tr-dialogue name="Cora">Hello.</tr-dialogue>');
+        const gapState=await row(page,spaced).evaluate(host=>{
+            window.sharedBreaks=[...host.querySelectorAll('br')];
+            const inner=host.querySelector('[data-roleforge-story="narrative"] br');window.innerStoryBreak=inner;
+            return {collapsed:host.querySelectorAll('[data-roleforge-gap]').length,innerVisible:inner&&getComputedStyle(inner).display!=='none'};
+        });
+        assert(gapState.collapsed>=2,'Markdown separators between owned blocks are collapsed');assert.equal(gapState.innerVisible,true,'story-internal line breaks remain visible');
+        for(const [key,mark,copy] of [['showChatDialogue','"','dialogue'],['showChatNarrative','*','prose']]){
+            await page.locator(`[data-presentation-setting="${key}"]`).uncheck();await page.waitForTimeout(180);
+            assert.deepEqual(await row(page,spaced).locator(`.trpg-${copy}-copy`).evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content)),[JSON.stringify(mark),JSON.stringify(mark)]);
+            assert.equal(await row(page,spaced).locator('.rf-voice-dialogue-controls').count(),2,'delimiters do not duplicate Voice controls');
+            await page.locator(`[data-presentation-setting="${key}"]`).check();await page.waitForTimeout(180);
+        }
+        await mode(page,'native');assert.equal(await row(page,spaced).locator('[data-roleforge-gap]').count(),0);
+        assert.equal(await row(page,spaced).evaluate(host=>[...host.querySelectorAll('br')].every((node,i)=>node===window.sharedBreaks[i])),true,'native break nodes are restored without replacement');
+        assert.equal(await page.evaluate(()=>getComputedStyle(window.innerStoryBreak).display!=='none'),true);await mode(page,'shared');
         await rules(page,{global:[script('/name="Cora"/g','name="Coraline"')]});
         const renamed=await add(page);assert.match(await row(page,renamed).locator('.trpg-header').innerText(),/Coraline/);
         assert.equal(await page.evaluate(id=>window.host.chat[id].mes,renamed),source,'display names never rename stored NPC/story data');
