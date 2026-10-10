@@ -1,3 +1,4 @@
+import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.63.0';
 // This shorthand is a player display convention, never an assistant protocol.
 const escaped=(source,index)=>{let slashes=0;while(index>0&&source[--index]==='\\')slashes++;return slashes%2===1;};
 function richMarkdown(source){
@@ -25,15 +26,16 @@ export function parseUserMessage(message){
     return blocks;
 }
 
-export function renderUserBlocks(blocks,{name='User',language='en',accent='#d6b458',ink='#d6d0c1',narrative,appendText,document:doc=globalThis.document}={}){
+export function renderUserBlocks(blocks,{name='User',language='en',accent='#d6b458',ink='#d6d0c1',narrative,appendText,appearance,document:doc=globalThis.document}={}){
     const node=(tag,cls,text)=>{const result=doc.createElement(tag);result.className=cls;if(text!==undefined)result.textContent=text;return result;};
     const root=node('div','trpg-chat trpg-user-chat');
+    const view=normalizeChatAppearance(appearance);applyChatTheme(root,view);
     if(/^#[0-9a-f]{6}$/iu.test(accent))root.style.setProperty('--speaker',`var(--tretaresia-accent, ${accent})`);
     if(/^#[0-9a-f]{6}$/iu.test(ink))root.style.setProperty('--prose',`var(--tretaresia-ink, ${ink})`);
-    const header=node('header','trpg-user-header');header.append(node('small','',language==='th'?'ผู้เล่น':'PLAYER'),node('strong','',name));root.append(header);
+    if(view.header){const header=node('header','trpg-user-header');header.append(node('small','',language==='th'?'ผู้เล่น':'PLAYER'),node('strong','',name));root.append(header);}
     for(const block of blocks){
         if(block.type==='narrative'){
-            const prose=narrative(block.text),mark=prose.querySelector?.('.trpg-prose-mark');
+            const prose=narrative(block.text,view.narrative),mark=prose.querySelector?.('.trpg-prose-mark');
             // Keep the player pen visible even if the host's icon font is unavailable.
             if(mark){
                 const pen=doc.createElementNS('http://www.w3.org/2000/svg','svg');pen.setAttribute('viewBox','0 0 24 24');pen.setAttribute('aria-hidden','true');pen.setAttribute('fill','none');pen.setAttribute('stroke','currentColor');pen.setAttribute('stroke-width','1.4');pen.setAttribute('stroke-linecap','round');pen.setAttribute('stroke-linejoin','round');
@@ -46,7 +48,7 @@ export function renderUserBlocks(blocks,{name='User',language='en',accent='#d6b4
             thought.append(node('small','',label),appendText(node('p','',undefined),block.text));root.append(thought);continue;
         }
         if(block.type==='plain'&&!block.text.trim())continue;
-        root.append(appendText(node('div',block.type==='dialogue'?'trpg-dialogue':'trpg-plain'),block.text));
+        root.append(appendText(node('div',block.type==='dialogue'?`trpg-dialogue${view.dialogue?'':' trpg-unframed'}`:'trpg-plain'),block.text));
     }
     return root;
 }

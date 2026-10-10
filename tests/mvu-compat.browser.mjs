@@ -72,6 +72,12 @@ try{
             await mode(page,value);
             assert.equal(await page.evaluate(()=>window.compatFrame.isConnected&&window.compatFrame.parentNode===window.compatParent&&window.compatFrame.contentDocument===window.compatDocument),true,'all modes preserve the live Helper iframe and its DOM owner');
         }
+        for(const theme of ['roleforge','anime','dark','arcane','jade','future']){
+            await page.locator('[data-presentation-setting="chatTheme"]').selectOption(theme);
+            await page.waitForFunction(()=>!document.querySelector('[data-presentation-setting="chatTheme"]').disabled);
+            await page.waitForTimeout(180);
+            assert.equal(await page.evaluate(()=>window.compatFrame.isConnected&&window.compatFrame.parentNode===window.compatParent&&window.compatFrame.contentDocument===window.compatDocument),true,'all six themes preserve the live Helper iframe and its DOM owner');
+        }
         assert.equal(await page.evaluate(({id,text})=>window.host.chat[id].mes===text,{id,text:story+suffix}),true);
         // Bound controls must work on Helper's visible HTML copy, not its hidden source.
         await page.evaluate(id=>{

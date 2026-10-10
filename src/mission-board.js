@@ -1,5 +1,5 @@
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.62.0';
-import {normalizeQuestObjectives} from './quest-objectives.js?v=0.62.0';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.63.0';
+import {normalizeQuestObjectives} from './quest-objectives.js?v=0.63.0';
 
 const clean = (value, max = 300) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');

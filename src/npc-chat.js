@@ -1,17 +1,18 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.62.0';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.62.0';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.62.0';
-import {renderSceneTracker} from './scene-tracker.js?v=0.62.0';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.62.0';
-import {renderGroupBoard} from './group-board-ui.js?v=0.62.0';
-import {uiText} from './ui-language.js?v=0.62.0';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.62.0';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.62.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.62.0';
-import { effectiveNpc } from './npc-alternates.js?v=0.62.0';
-import {speechDisplayText} from './voice-core.js?v=0.62.0';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.62.0';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.62.0';
+import {renderStoryEvents} from './story-events-ui.js?v=0.63.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.63.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.63.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.63.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.63.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.63.0';
+import {uiText} from './ui-language.js?v=0.63.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.63.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.63.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.63.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.63.0';
+import {speechDisplayText} from './voice-core.js?v=0.63.0';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.63.0';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.63.0';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme,themeSigil,createThemeMotion} from './chat-themes.js?v=0.63.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -44,12 +45,12 @@ export function appendStoryText(node,value){
     else if(cursor<source.length)node.append(document.createTextNode(source.slice(cursor)));
     return node;
 }
-export function narrative(text) {
-    const node = element('div','trpg-narrative');
+export function narrative(text,enabled=true) {
+    const node = element('div',`trpg-narrative${enabled?'':' trpg-unframed'}`);
     for (const part of ['mark','top','glow','end']) { const deco=element('span',`trpg-prose-${part}`);deco.setAttribute('aria-hidden','true');if(part==='mark')deco.append(icon('feather-pointed'));node.append(deco); }
     node.append(appendStoryText(element('span','trpg-prose-copy'),text)); return node;
 }
-export function speakerHeader(profile, open) {
+export function speakerHeader(profile, open, theme='roleforge') {
     const p={...profile,...identity(profile)}, header=element('button','trpg-header'); header.type='button';
     header.setAttribute('data-roleforge-control','profile');
     header.style.setProperty('--speaker',p.identityColor); header.style.setProperty('--portrait',`${p.portraitSize}px`);
@@ -59,12 +60,13 @@ export function speakerHeader(profile, open) {
     details.append(role,element('strong','',p.name));
     const meta=element('span','trpg-meta');for(const value of [p.race,p.relationship,p.faction].filter(usable))meta.append(element('span','',value));details.append(meta);
     const action=element('span','trpg-open-record');action.append(icon('address-card'),element('small','',uiText("ข้อมูลตัวละคร")));
-    header.append(details,action);header.addEventListener('click',()=>open(p));return header;
+    header.append(themeSigil(theme),details,action);header.addEventListener('click',()=>open(p));return header;
 }
 
 // Keep every block in story order. A header starts a character's turn; prose
 // before the first header stays global, and later prose belongs to that turn.
-export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imageFor, previousSpeaker = null) {
+export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imageFor, previousSpeaker = null, appearance) {
+    const view=normalizeChatAppearance(appearance);applyChatTheme(root,view);
     let section = null;
     const startSpeaker = name => {
         const profile = resolveNpcSpeaker([...new Set(lookup.values())], name);
@@ -75,9 +77,9 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
         section = element('section', 'trpg-speaker');
         section.style.setProperty('--speaker', identity(p).identityColor);
         if (speaker !== previousSpeaker) {
-            const header = speakerHeader(p, open);
+            const header = view.header?speakerHeader(p, open,view.theme):element('div','trpg-speaker-label',p.name);
             section.append(header);
-            if (p.id) void imageFor(p).then(url => {
+            if (view.header&&p.id) void imageFor(p).then(url => {
                 if (!url || !header.isConnected) return;
                 const image = element('img', 'trpg-photo');
                 image.alt = p.name; image.src = url;
@@ -91,9 +93,9 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
     };
     for (const block of blocks) {
         if (block.type === 'header') { startSpeaker(block.name || fallbackName || 'NPC'); continue; }
-        if (block.type === 'narrative') { (section || root).append(narrative(block.text)); continue; }
+        if (block.type === 'narrative') { (section || root).append(narrative(block.text,view.narrative)); continue; }
         if (block.type === 'plain') { (section || root).append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
-        if (block.type === 'dialogue') startSpeaker(block.name || fallbackName || 'NPC').append(appendStoryText(element('div', 'trpg-dialogue'),speechDisplayText(block.text)));
+        if (block.type === 'dialogue') startSpeaker(block.name || fallbackName || 'NPC').append(appendStoryText(element('div', `trpg-dialogue${view.dialogue?'':' trpg-unframed'}`),speechDisplayText(block.text)));
     }
 }
 
@@ -240,6 +242,7 @@ function supportsStoryPresentation(nodes, source, blocks) {
 
 export function createChatPresentation(api, open) {
     const mounted=new Map(), portraits=new Map(), checked=new WeakMap(),dirty=new WeakSet();let timer,revision=0,epoch=0,currentChat='',destroyed=false;
+    const themeMotion=createThemeMotion();
     const removeFormattingHooks=installChatFormattingHooks(api);
     function clearPortraits(){++epoch;for(const record of portraits.values())if(record.url)URL.revokeObjectURL(record.url);portraits.clear();}
     async function imageFor(p){
@@ -268,6 +271,7 @@ export function createChatPresentation(api, open) {
         }
     }
     function restore(host, entry, source){
+        for(const root of entry.roots)themeMotion.remove(root);
         entry.disposeVoice?.();
         if(entry.shared)entry.shared.restore();
         // Never restore a stale snapshot over a native edit, swipe, streaming
@@ -290,10 +294,10 @@ export function createChatPresentation(api, open) {
     function render(){
         timer=null;const context=api.context(),chatId=context.getCurrentChatId?.()||'';
         if(chatId!==currentChat){currentChat=chatId;clearPortraits();document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}
-        const settings=api.settings(),mode=chatPresentationMode(settings),preserveNativeChat=mode==='native';
+        const settings=api.settings(),view=chatAppearance(settings),viewKey=JSON.stringify(view),mode=chatPresentationMode(settings),preserveNativeChat=mode==='native';
         const npcs=(api.state().npcs||[]).map(effectiveNpc), lookup=new Map();
         for(const npc of npcs)for(const name of [npc.name,...(npc.aliases||[])])if(!lookup.has(keyName(name)))lookup.set(keyName(name),npc);
-        for(const [host,entry]of mounted)if(!host.isConnected){entry.disposeVoice?.();mounted.delete(host);}
+        for(const [host,entry]of mounted)if(!host.isConnected){entry.disposeVoice?.();for(const root of entry.roots)themeMotion.remove(root);mounted.delete(host);}
         const hosts=[...document.querySelectorAll('#chat .mes')].map(visibleHost).filter(Boolean),active=new Set(hosts);
         for(const [host,entry]of mounted)if(!active.has(host))restore(host,entry);
         const stamp=JSON.stringify([revision,settings]);
@@ -323,7 +327,7 @@ export function createChatPresentation(api, open) {
                 const parsed=settings.userChatPresentation===true?parseUserMessage(message):null;
                 const blocks=supportsStoryPresentation(original,source,parsed)?parsed:null;
                 if(!blocks){
-                    const signature=`user-native:${revision}:${settings.language}:${settings.accentColor}:${settings.inkColor}:${message.name}:${source}`;
+                    const signature=`user-native:${revision}:${viewKey}:${settings.language}:${settings.accentColor}:${settings.inkColor}:${message.name}:${source}`;
                     if(old?.signature===signature&&(old.shared?old.shared.valid():old.roots.every(root=>host.contains(root))))continue;
                     if(old)restore(host,old,source);
                     // A user display regex may replace the entire shorthand.
@@ -331,19 +335,19 @@ export function createChatPresentation(api, open) {
                     // identity; never apply assistant shorthand or Voice here.
                     if(parsed&&mode==='shared'){
                         const shared=mountSharedStory({host,nodes:nativeNodes(host),blocks:parsed,language:settings.language,textFor:block=>appendStoryText(element('span'),block.text).textContent,
-                            user:{render:blocks=>renderUserBlocks(blocks,{name:message.name||context.name1||'User',language:settings.language,accent:settings.accentColor,ink:settings.inkColor,narrative,appendText:appendStoryText})}});
-                        for(const root of shared.roots)root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
+                            user:{render:blocks=>renderUserBlocks(blocks,{name:message.name||context.name1||'User',language:settings.language,accent:settings.accentColor,ink:settings.inkColor,narrative,appendText:appendStoryText,appearance:view})}});
+                        for(const root of shared.roots){applyChatTheme(root,view);themeMotion.add(root);}
                         mounted.set(host,{roots:shared.roots,shared,source,signature});
                     }
                     continue;
                 }
                 const name=message.name||context.name1||api.state().player?.name||'User';
-                const signature=`user:${revision}:${settings.language}:${settings.chatEffects}:${settings.accentColor}:${settings.inkColor}:${name}:${source}`;
+                const signature=`user:${revision}:${viewKey}:${settings.language}:${settings.accentColor}:${settings.inkColor}:${name}:${source}`;
                 if(old?.signature===signature&&host.contains(old.storyRoot))continue;
                 if(old)restore(host,old,source);
-                const storyRoot=renderUserBlocks(blocks,{name,language:settings.language,accent:settings.accentColor,ink:settings.inkColor,narrative,appendText:appendStoryText});
+                const storyRoot=renderUserBlocks(blocks,{name,language:settings.language,accent:settings.accentColor,ink:settings.inkColor,narrative,appendText:appendStoryText,appearance:view});
                 cloneContents(storyRoot);
-                storyRoot.classList.toggle('trpg-effects',Boolean(settings.chatEffects));host.replaceChildren(storyRoot);
+                themeMotion.add(storyRoot);host.replaceChildren(storyRoot);
                 mounted.set(host,{roots:[storyRoot],storyRoot,original,source,signature});
                 continue; // No NPC profiles, gameplay cards, Voice or AI inference.
             }
@@ -388,7 +392,7 @@ export function createChatPresentation(api, open) {
             const previousSpeaker=priorDialogueSpeaker(context.chat,id,lookup,api.visible);
             const previousKey=typeof previousSpeaker==='object'&&previousSpeaker
                 ? JSON.stringify([previousSpeaker.id,previousSpeaker.name,previousSpeaker.npcScope,previousSpeaker.npcOwner]) : previousSpeaker;
-            const signature=`${revision}:${settings.chatEffects}:${settings.language}:${effectiveMode}:${protectedDisplay}:${settings.enableVoiceAddon}:${Boolean(blocks)}:${reasoningLeak}:${JSON.stringify(scene)}:${JSON.stringify(missionBoard)}:${JSON.stringify(groupBoard)}:${previousKey}:${JSON.stringify(resourceEvents)}:${JSON.stringify(storyEvents)}:${JSON.stringify(invites)}:${JSON.stringify(systemStatus)}:${source}:${storySource}`;
+            const signature=`${revision}:${viewKey}:${settings.language}:${effectiveMode}:${protectedDisplay}:${settings.enableVoiceAddon}:${Boolean(blocks)}:${reasoningLeak}:${JSON.stringify(scene)}:${JSON.stringify(missionBoard)}:${JSON.stringify(groupBoard)}:${previousKey}:${JSON.stringify(resourceEvents)}:${JSON.stringify(storyEvents)}:${JSON.stringify(invites)}:${JSON.stringify(systemStatus)}:${source}:${storySource}`;
             if(old?.signature===signature && (old.shared?old.shared.valid():old.roots.every(root=>preserveNativeChat?root.parentNode===host:host.contains(root))))continue;
             if(old){
                 restore(host,old,source);if(host.matches('.TH-streaming,.mes_streaming'))releaseClonedPresentation(host);original=nativeNodes(host);
@@ -408,7 +412,7 @@ export function createChatPresentation(api, open) {
             if(storyRoot){
                 storyRoot.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
                 if (blocks) {
-                    renderStoryBlocks(storyRoot,blocks,lookup,message.name,open,imageFor,previousSpeaker);
+                    renderStoryBlocks(storyRoot,blocks,lookup,message.name,open,imageFor,previousSpeaker,view);
                 }
                 else if (source) storyRoot.append(appendStoryText(element('div','trpg-plain'),source));
                 cloneContents(storyRoot);
@@ -426,21 +430,21 @@ export function createChatPresentation(api, open) {
             let sharedMount,disposeVoice;
             if(shared){
                 sharedMount=mountSharedStory({host,nodes:nativeNodes(host),blocks,fallbackName:message.name,previousSpeaker,voiceEnabled:Boolean(settings.enableVoiceAddon),language:settings.language,
-                    narrative,textFor:block=>appendStoryText(element('span'),block.text).textContent,
+                    narrative:text=>narrative(text,view.narrative),dialogueEnabled:view.dialogue,textFor:block=>appendStoryText(element('span'),block.text).textContent,
                     header:(name,previous,colorOnly=false)=>{
                         const profile=resolveNpcSpeaker([...new Set(lookup.values())],name),key=profile||keyName(name),p=profile||{name};
                         const color=identity(p).identityColor;
                         if(colorOnly||key===previous)return {key,color,node:null};
-                        const header=speakerHeader(p,open);header.style.setProperty('--speaker',color);
-                        if(p.id)void imageFor(p).then(url=>{if(!url||!header.isConnected)return;const image=element('img','trpg-photo');image.alt=p.name;image.src=url;image.width=image.height=p.portraitSize||72;header.prepend(image);});
+                        const header=view.header?speakerHeader(p,open,view.theme):element('div','trpg-speaker-label',p.name);header.style.setProperty('--speaker',color);
+                        if(view.header&&p.id)void imageFor(p).then(url=>{if(!url||!header.isConnected)return;const image=element('img','trpg-photo');image.alt=p.name;image.src=url;image.width=image.height=p.portraitSize||72;header.prepend(image);});
                         return {key,color,node:header};
                     },
                 });
                 roots.push(...sharedMount.roots);
-                for(const root of sharedMount.roots)root.classList.toggle('trpg-effects',Boolean(settings.chatEffects));
+                for(const root of sharedMount.roots){applyChatTheme(root,view);themeMotion.add(root);}
                 if(settings.enableVoiceAddon)disposeVoice=api.voice?.decorateMessage(host,sharedMount.voiceBlocks,{id,message,targets:sharedMount.targets,controlsRoot:sharedMount.voiceRoot||suffix});
             }
-            if(storyRoot){host.replaceChildren(storyRoot);roots.push(storyRoot);if(blocks)disposeVoice=api.voice?.decorateMessage(storyRoot,blocks,{id,message});}
+            if(storyRoot){applyChatTheme(storyRoot,view);themeMotion.add(storyRoot);host.replaceChildren(storyRoot);roots.push(storyRoot);if(blocks)disposeVoice=api.voice?.decorateMessage(storyRoot,blocks,{id,message});}
             if(prefix.childNodes.length){host.prepend(prefix);roots.push(prefix);}
             if(suffix.childNodes.length){host.append(suffix);roots.push(suffix);}
             mounted.set(host,{roots,storyRoot,shared:sharedMount,disposeVoice,original:storyRoot?original:null,source,storySource,parsed,presentationEnabled:Boolean(settings.chatPresentation),signature});
@@ -468,5 +472,5 @@ export function createChatPresentation(api, open) {
         const type=(context.eventTypes||context.event_types)?.[event];if(type){context.eventSource?.on(type,observe);subscriptions.push(type);}
     }
     observe();
-    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){destroyed=true;clearTimeout(timer);observer.disconnect();removeFormattingHooks();clearPortraits();for(const type of subscriptions)context.eventSource?.off?.(type,observe);document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
+    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){destroyed=true;clearTimeout(timer);observer.disconnect();themeMotion.destroy();removeFormattingHooks();clearPortraits();for(const type of subscriptions)context.eventSource?.off?.(type,observe);document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
 }

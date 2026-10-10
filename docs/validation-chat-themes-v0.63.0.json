@@ -1,0 +1,164 @@
+{
+  "release": "0.63.0",
+  "date": "2026-10-10",
+  "base_commit": "7d449e947e2f549cd0fa80eaf3fcbce6386d07f0",
+  "unit_host_tests": {
+    "command": "npm test",
+    "passed": 1196,
+    "failed": 0,
+    "skipped": 0
+  },
+  "syntax": "npm run check passed",
+  "browser_checks": [
+    {
+      "command": "npm run test:themes",
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "coverage": [
+        "6 themes × 8 frame combinations at each width",
+        "readable text and source preservation",
+        "no horizontal overflow",
+        "Reduce Motion and off-screen pause",
+        "native settings",
+        "save failure rollback",
+        "card defaults",
+        "chat isolation and reload",
+        "user frames and native Regex widget identity",
+        "zero AI calls",
+        "legacy gold/text hover does not override the selected theme"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:regex",
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "coverage": [
+        "pinned ST Regex engine, formatter and sanitizer",
+        "native widgets and listeners",
+        "Voice/User UI",
+        "native/shared/original modes",
+        "message lifecycle",
+        "presentation settings"
+      ],
+      "status": "passed",
+      "upstream": "06bde939fb1e9c4c8d8641d810f0a916b5bce127"
+    },
+    {
+      "command": "npm run test:mvu",
+      "widths": [
+        390,
+        1280
+      ],
+      "coverage": [
+        "all six themes preserve Tavern Helper iframe owner and contentDocument",
+        "native variables not written",
+        "streaming UI",
+        "hidden history",
+        "thinking boxes",
+        "200-row render performance"
+      ],
+      "status": "passed",
+      "game_maker": "46840f39ca006b22870507f155145fa6324d9aa2",
+      "builder": "0ecf70bb53262091c5c41a40b3a9dff0830de2c2"
+    },
+    {
+      "command": "node tests/npc-workspace.browser.mjs",
+      "coverage": [
+        "NPC editing and images",
+        "mobile viewport",
+        "native and Character destinations",
+        "AI repair and stale replies"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "node tests/user-chat.browser.mjs",
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "coverage": [
+        "right alignment and pen placement",
+        "AI isolation",
+        "native restoration",
+        "edit/Regex/theme/language/reload"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:voice",
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "coverage": [
+        "dialogue and narration controls",
+        "cache/reload",
+        "editor and cancellation",
+        "Library and MP3 export"
+      ],
+      "status": "passed",
+      "provider": "mocked"
+    },
+    {
+      "command": "node tests/startup.browser.mjs",
+      "cases": 6,
+      "coverage": [
+        "cached legacy and current loaders",
+        "settings and all panels",
+        "NPC Manager",
+        "mobile and desktop"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:presets",
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "coverage": [
+        "library management",
+        "chat copies",
+        "currency import/export",
+        "rollback",
+        "blocked host loader/direct entry"
+      ],
+      "status": "passed"
+    }
+  ],
+  "render_performance": {
+    "rows": 200,
+    "updated_scene_reads": 1,
+    "dom_mutations": 2
+  },
+  "appearance_scope": "Per-chat copy; card defaults and reusable library. Does not synchronize MVU gameplay state.",
+  "limitations": [
+    "Controlled Chromium host, not a physical iPhone Safari session",
+    "No live voice or Proxy API calls",
+    "The earlier uploaded Madoka archive was not present in this execution workspace; current one-card checks use controlled fixtures and component schema tests. Original-card results remain in the 0.62.0 report."
+  ],
+  "offline_preview": {
+    "self_contained_html": true,
+    "frame_switches": "passed",
+    "theme_filter": "passed",
+    "external_requests": 0,
+    "page_errors": 0,
+    "bundle": {
+      "files": 20,
+      "integrity": "passed",
+      "desktop_themes": 6,
+      "mobile_themes": 6
+    }
+  }
+}

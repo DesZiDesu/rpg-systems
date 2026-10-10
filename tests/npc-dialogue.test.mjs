@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {renderStoryBlocks,priorDialogueSpeaker} from '../src/npc-chat.js';
 import {parseStory} from '../src/npc-core.js';
 class Node {
- constructor(tag){this.tag=tag;this.className='';this.children=[];this.style={setProperty(){}};this.isConnected=true;this.listeners={};}
+ constructor(tag){this.tag=tag;this.className='';this.dataset={};this.classList={toggle:(key,on)=>{this.className=this.className.split(' ').filter(value=>value&&value!==key).concat(on?[key]:[]).join(' ');}};this.children=[];this.style={setProperty(){}};this.isConnected=true;this.listeners={};}
  append(...nodes){this.children.push(...nodes)}
  prepend(node){this.children.unshift(node)}
  setAttribute(){}

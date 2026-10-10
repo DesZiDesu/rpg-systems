@@ -1,13 +1,14 @@
-import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.62.0';
-import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.62.0';
-import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.62.0';
-import {normalizeStatTraining} from './stat-training.js?v=0.62.0';
-import {writeLoreOptions} from './lore-core.js?v=0.62.0';
+import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.63.0';
+import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.63.0';
+import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.63.0';
+import {normalizeStatTraining} from './stat-training.js?v=0.63.0';
+import {writeLoreOptions} from './lore-core.js?v=0.63.0';
+import {validateChatAppearance} from './chat-themes.js?v=0.63.0';
 
 export const CHAT_PRESET_KEY = 'roleforge_chat_presets';
 export const PRESET_LIBRARY_KEY = 'roleforgePresetLibrary';
 export const PRESET_FILE_LIMIT = 1024 * 1024;
-export const PRESET_COMPONENTS = ['powerPreset','forgePreset','currencyPreset','trainingPreset','loreOptions','systems'];
+export const PRESET_COMPONENTS = ['powerPreset','forgePreset','currencyPreset','trainingPreset','loreOptions','systems','chatAppearance'];
 export const WORLD_SYSTEM_KEYS = ['enableIncantation','npcIncantation','incantationLanguage','incantationCustomLanguage','enableMissionBoard','enableGroupBoard','enableAuctions','enableMarketplace','enableStoryMemory','enableStoryAgenda','enableQuestObjectives','showSceneTracker','autoTrack','injectState','npcDiaryFrequency'];
 const languages = ['auto','en','th','ja','zh','la','custom'];
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
@@ -47,6 +48,7 @@ export function validatePresetConfig(raw) {
         if (key === 'trainingPreset') result[key] = validateTrainingPreset(raw[key]);
         if (key === 'loreOptions') {const settings={};writeLoreOptions(settings,raw[key],'preset','preset');result[key]=settings.loreCharacterOptions.preset;}
         if (key === 'systems') result[key] = validateWorldSystems(raw[key]);
+        if (key === 'chatAppearance') result[key] = validateChatAppearance(raw[key]);
     }
     if (!Object.keys(result).length) throw Error('The preset has no supported configuration.');
     return result;

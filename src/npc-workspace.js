@@ -1,14 +1,16 @@
-import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.62.0';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.62.0';
-import { createLoreWorkspace } from './lore-workspace.js?v=0.62.0';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.62.0';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.62.0';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.62.0';
-import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.62.0';
-import { collectPortraitBackups } from './npc-media.js?v=0.62.0';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.62.0';
-import { H_FIELDS } from './h-stats.js?v=0.62.0';
-import {chatPresentationMode} from './chat-compat.js?v=0.62.0';
+import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.63.0';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.63.0';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.63.0';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.63.0';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.63.0';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.63.0';
+import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.63.0';
+import { collectPortraitBackups } from './npc-media.js?v=0.63.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.63.0';
+import { H_FIELDS } from './h-stats.js?v=0.63.0';
+import {chatPresentationMode} from './chat-compat.js?v=0.63.0';
+import {mountChatAppearanceControls} from './chat-appearance-ui.js?v=0.63.0';
+import {chatAppearance,applyChatTheme} from './chat-themes.js?v=0.63.0';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -18,6 +20,7 @@ export function createNpcWorkspace(api) {
     let dialog,form,roster,status,editor,base={},recordBase={},editAlternateId='',draftId='',chatId='',ownerKey='',scope='chat',view='list',page=0,token=0,busy=false,dirty=false,photoBlob=null,photoDirty=false,photoInherit=false,frameDirty=false,previewUrl=null,previewGeneration=0;
     let brief='',referenceBlob=null,referenceUrl=null,viewportFrame=0,unobscuredHeight=0,lore,tab='npc',presentationStatus=null,presentationSettingsGroup=null,formattingModeLabel=null,formattingModeHelp=null,userPresentationLabel=null,userPresentationHelp=null;
     const presentationSubscriptions=[];
+    let appearanceControls=null;
     function syncViewport(){
         if(!dialog?.open)return;
         const viewport=globalThis.visualViewport;
@@ -47,6 +50,7 @@ export function createNpcWorkspace(api) {
     }
     const changed=new Set();
     function updatePresentationStatus(){
+        appearanceControls?.update();
         if(!presentationStatus?.isConnected)return;
         const settings=api.settings(),thai=settings.language==='th';
         if(formattingModeLabel)formattingModeLabel.textContent=thai?'การแสดงแชทร่วมกับ Regex / HTML':'Chat formatting with Regex / HTML';
@@ -63,11 +67,11 @@ export function createNpcWorkspace(api) {
         const source=!message ? (thai?'ยังไม่มีคำตอบ':'No character reply yet')
             : hasBlocks ? (thai?'คำตอบล่าสุดมีบล็อกจัดรูปแบบ':'Latest reply has presentation blocks')
                 : (thai?'คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบที่อ่านได้ — ลองสร้างคำตอบใหม่':'Latest reply has no readable presentation blocks — try a new reply');
-        presentationStatus.textContent=`RoleForge 0.62.0 · ${mode} · ${source}`;
+        presentationStatus.textContent=`RoleForge 0.63.0 · ${mode} · ${source}`;
     }
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.62.0',import.meta.url).href;document.head.append(sheet);
-    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.62.0',import.meta.url).href;document.head.append(alternateSheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.63.0',import.meta.url).href;document.head.append(sheet);
+    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.63.0',import.meta.url).href;document.head.append(alternateSheet);
     const alternateText=(en,th,values=[])=>uiText(uiLanguage()==='th'?th:en,values);
     const say=(message)=>{if(status)status.textContent=message;};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
@@ -130,7 +134,7 @@ export function createNpcWorkspace(api) {
         if(dialog&&!dialog.open&&dialog.dataset.uiLanguage!==uiLanguage()){dialog.remove();dialog=null;}
         if(dialog)return;
         dialog=element('dialog','trpg-manager');dialog.dataset.uiLanguage=uiLanguage();dialog.setAttribute('aria-labelledby','trpg-manager-title');
-        dialog.innerHTML=(uiMarkup("<header class=\"trpg-manager-top\"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id=\"trpg-manager-title\">NPC MANAGEMENT</h2></div><button type=\"button\" data-close aria-label=\"ปิด\">×</button></header>\n            <nav class=\"trpg-management-tabs\" aria-label=\"Management\"><button type=\"button\" data-management-tab=\"npc\" aria-pressed=\"true\">NPC Management</button><button type=\"button\" data-management-tab=\"lore\" aria-pressed=\"false\">Lore Management</button></nav>\n            <nav class=\"trpg-archive-nav\" aria-label=\"ขอบเขต NPC\"><button type=\"button\" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value=\"chat\">Chat · เฉพาะแชตนี้</option><option value=\"character\">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>\n            <label class=\"trpg-generation-scope\">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value=\"chat\">Chat · แชตนี้</option><option value=\"character\">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>\n            <div class=\"trpg-manager-layout\"><section class=\"trpg-roster trpg-browser\"><div class=\"trpg-browser-tools\"><label>ค้นหาตัวละคร<input type=\"search\" data-search placeholder=\"ค้นหาชื่อ บทบาท หรือสังกัด\"></label>\n            <div class=\"trpg-roster-actions\"><button type=\"button\" data-new data-lock>＋ สร้าง NPC</button><button type=\"button\" data-import data-lock>นำเข้า Character Life</button><input type=\"file\" data-import-file accept=\".json,.zip,application/json,application/zip\" hidden></div></div><div class=\"trpg-list-heading\"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class=\"trpg-pagination\" data-pagination></div></section>\n            <section class=\"trpg-record\" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id=\"trpg-npc-form\" novalidate hidden><fieldset></fieldset></form></section></div>\n            <section class=\"trpg-lore-panel\" data-lore-panel hidden></section>\n            <footer class=\"trpg-manager-footer\"><span role=\"status\" aria-live=\"polite\"></span><span>SCOPED ARCHIVE · v0.62.0</span></footer><div class=\"trpg-actions trpg-editor-actions\" data-editor-actions hidden></div>"));
+        dialog.innerHTML=(uiMarkup("<header class=\"trpg-manager-top\"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id=\"trpg-manager-title\">NPC MANAGEMENT</h2></div><button type=\"button\" data-close aria-label=\"ปิด\">×</button></header>\n            <nav class=\"trpg-management-tabs\" aria-label=\"Management\"><button type=\"button\" data-management-tab=\"npc\" aria-pressed=\"true\">NPC Management</button><button type=\"button\" data-management-tab=\"lore\" aria-pressed=\"false\">Lore Management</button></nav>\n            <nav class=\"trpg-archive-nav\" aria-label=\"ขอบเขต NPC\"><button type=\"button\" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value=\"chat\">Chat · เฉพาะแชตนี้</option><option value=\"character\">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>\n            <label class=\"trpg-generation-scope\">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value=\"chat\">Chat · แชตนี้</option><option value=\"character\">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>\n            <div class=\"trpg-manager-layout\"><section class=\"trpg-roster trpg-browser\"><div class=\"trpg-browser-tools\"><label>ค้นหาตัวละคร<input type=\"search\" data-search placeholder=\"ค้นหาชื่อ บทบาท หรือสังกัด\"></label>\n            <div class=\"trpg-roster-actions\"><button type=\"button\" data-new data-lock>＋ สร้าง NPC</button><button type=\"button\" data-import data-lock>นำเข้า Character Life</button><input type=\"file\" data-import-file accept=\".json,.zip,application/json,application/zip\" hidden></div></div><div class=\"trpg-list-heading\"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class=\"trpg-pagination\" data-pagination></div></section>\n            <section class=\"trpg-record\" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id=\"trpg-npc-form\" novalidate hidden><fieldset></fieldset></form></section></div>\n            <section class=\"trpg-lore-panel\" data-lore-panel hidden></section>\n            <footer class=\"trpg-manager-footer\"><span role=\"status\" aria-live=\"polite\"></span><span>SCOPED ARCHIVE · v0.63.0</span></footer><div class=\"trpg-actions trpg-editor-actions\" data-editor-actions hidden></div>"));
         document.body.append(dialog);form=dialog.querySelector('form');roster=dialog.querySelector('[data-list]');status=dialog.querySelector('[role=status]');
         lore=createLoreWorkspace(dialog.querySelector('[data-lore-panel]'),api,say);
         dialog.querySelectorAll('[data-management-tab]').forEach(button=>button.addEventListener('click',()=>{
@@ -458,9 +462,10 @@ export function createNpcWorkspace(api) {
     }
     async function preview(){
         const host=form?.querySelector('[data-preview]');if(!host)return;const ticket=++previewGeneration,p={...base,...values()};
-        const root=element('div','trpg-speaker');root.style.setProperty('--speaker',p.identityColor);const header=speakerHeader({...p,name:p.name||uiText("ชื่อตัวละคร")},()=>form.elements.namedItem('name').focus());
+        const view=chatAppearance(api.settings());applyChatTheme(host,view);
+        const root=element('div','trpg-speaker');root.style.setProperty('--speaker',p.identityColor);const header=speakerHeader({...p,name:p.name||uiText("ชื่อตัวละคร")},()=>form.elements.namedItem('name').focus(),view.theme);
         root.append(header,element('div','trpg-dialogue',uiText("นี่คือตัวอย่างรูปลักษณ์บทพูดของตัวละคร")));
-        host.replaceChildren(root,narrative(uiText("ข้อความบรรยายยังคงใช้สีทองเดิม และไม่เปลี่ยนตามสีประจำตัวละคร")));
+        host.replaceChildren(root,narrative(api.settings().language==='th'?'ตัวอย่างบทบรรยายตามธีมแชทที่เลือก':'Narration preview in the selected chat theme.'));
         if(photoBlob){try{const blob=await croppedPortrait(photoBlob,base.portraitView?.mobile||{});if(ticket!==previewGeneration||!host.isConnected)return;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(blob);const image=element('img','trpg-photo');image.alt=p.name||uiText("ภาพตัวละคร");image.src=previewUrl;header.prepend(image);}catch(e){say(e.message);}}
         else if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
     }
@@ -676,11 +681,12 @@ The visibleAppearance value is authoritative: copy it into appearance without ad
     const settings=document.getElementById('tretaresia-presentation-settings')||document.querySelector('#tretaresia-rpg-settings .inline-drawer-content')||document.getElementById('tretaresia-rpg-settings');
     if(settings){const group=element('div','trpg-settings');const button=element('button','menu_button',uiText("NPC Management"));button.dataset.trpgOpen='';button.type='button';group.append(button);
         const thai=api.settings().language==='th';
-        for(const [key,label]of [['chatPresentation','Header / Dialogue / Narrative'],['userChatPresentation',thai?'UI บทพูด / บรรยาย / พูดในใจ เฉพาะ User':'User-only Dialogue / Narrative / Inner thought UI'],['chatEffects',uiText("Gradient และเอฟเฟกต์แชต")]]){
+        for(const [key,label]of [['chatPresentation','Header / Dialogue / Narrative'],['userChatPresentation',thai?'UI บทพูด / บรรยาย / พูดในใจ เฉพาะ User':'User-only Dialogue / Narrative / Inner thought UI']]){
             const row=element('label','checkbox_label'),check=element('input');check.type='checkbox';check.dataset.presentationSetting=key;check.checked=Boolean(api.settings()[key]);
             check.addEventListener('change',()=>{api.settings()[key]=check.checked;api.context().saveSettingsDebounced?.();if(key!=='userChatPresentation')api.updatePrompt();chat.refresh();updatePresentationStatus();});const labelText=document.createTextNode(uiText(label));if(key==='userChatPresentation')userPresentationLabel=labelText;row.append(check,labelText);group.append(row);
             if(key==='userChatPresentation'){userPresentationHelp=element('small','trpg-user-presentation-help');userPresentationHelp.style.cssText='display:block;line-height:1.5;white-space:normal;overflow-wrap:anywhere;margin:6px 0';group.append(userPresentationHelp);}
         }
+        appearanceControls=mountChatAppearanceControls(group,api);
         const modeRow=element('label','trpg-formatting-mode'),modeLabel=element('span'),modeSelect=element('select','text_pole');
         formattingModeLabel=modeLabel;modeSelect.dataset.presentationSetting='chatRegexMode';
         for(const value of ['shared','native','roleforge']){const option=element('option');option.value=value;modeSelect.append(option);}
@@ -693,5 +699,5 @@ The visibleAppearance value is authoritative: copy it into appearance without ad
     }
     const context=api.context(),events=context.eventTypes||context.event_types;if(events?.CHAT_CHANGED)context.eventSource?.on(events.CHAT_CHANGED,()=>{close(true);chat.reset();updatePresentationStatus();});
     for(const name of ['CHARACTER_MESSAGE_RENDERED','MESSAGE_RECEIVED','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED'])if(events?.[name]&&context.eventSource?.on){context.eventSource.on(events[name],updatePresentationStatus);presentationSubscriptions.push(events[name]);}
-    return {open,refresh(){chat.refresh();updatePresentationStatus();if(dialog?.open){if(tab==='lore')lore.refresh();else list();}},destroy(){close(true);chat.destroy();for(const event of presentationSubscriptions)context.eventSource?.off?.(event,updatePresentationStatus);presentationSettingsGroup?.remove();sheet.remove();alternateSheet.remove();dialog?.remove();}};
+    return {open,refresh(){chat.refresh();updatePresentationStatus();if(dialog?.open){if(tab==='lore')lore.refresh();else list();}},destroy(){close(true);chat.destroy();appearanceControls?.destroy();for(const event of presentationSubscriptions)context.eventSource?.off?.(event,updatePresentationStatus);presentationSettingsGroup?.remove();sheet.remove();alternateSheet.remove();dialog?.remove();}};
 }

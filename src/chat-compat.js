@@ -1,7 +1,7 @@
 // Compose with the host's already formatted DOM. Never run regex per block or
 // recreate another extension's card with innerHTML/clones.
-import {parseUserMessage} from './user-chat.js?v=0.62.0';
-import {cleanChatProse} from './foreign-chat.js?v=0.62.0';
+import {parseUserMessage} from './user-chat.js?v=0.63.0';
+import {cleanChatProse} from './foreign-chat.js?v=0.63.0';
 export function chatPresentationMode(settings = {}) {
     return ['shared','native','roleforge'].includes(settings.chatRegexMode)
         ? settings.chatRegexMode : settings.preserveNativeChat === true ? 'native' : 'shared';
@@ -239,7 +239,7 @@ function paragraphTargets(nodes, blocks, textFor) {
     return targets;
 }
 
-export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,document:doc=globalThis.document}) {
+export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,dialogueEnabled=true,document:doc=globalThis.document}) {
     const roots = [], wrappers = [], targets = Array(blocks.length).fill(null), voiceBlocks = blocks.map(block => ({...block}));
     const create = (tag,cls,text) => {const node=doc.createElement(tag);node.className=cls;if(cls.includes('trpg-chat'))node.dataset.roleforgeMount='shared';if(text!==undefined)node.textContent=text;return node;};
     const markers = protocolNodes(nodes);
@@ -275,6 +275,7 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fal
         shell.classList.add('rf-shared-block');shell.querySelector('.trpg-user-header')?.remove();
         const body=user?shell.querySelector(block.type==='thought'?'.trpg-user-thought':`.trpg-${block.type}`):block.type === 'narrative' ? narrative('') : create('div',block.type === 'dialogue' ? 'trpg-dialogue' : 'trpg-plain');
         if(!body)continue;
+        if(block.type==='dialogue'&&!dialogueEnabled)body.classList.add('trpg-unframed');
         let content=block.type === 'narrative' ? body.querySelector('.trpg-prose-copy') : block.type==='thought'?body.querySelector('p'):body;
         if(block.type === 'narrative'){const copy=create('div','trpg-prose-copy');content.replaceWith(copy);content=copy;}
         content.dataset.roleforgeNativeContent='';

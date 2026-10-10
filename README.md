@@ -1,12 +1,16 @@
 # RoleForge
 
-**Public release: 0.62.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.63.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+## Six chat themes
+
+**Extensions → RoleForge → Chat appearance & NPCs** switches between Gilded Chronicle (RoleForge), Starlit Reverie (Fantasy Anime), Ashen Covenant (Dark Fantasy), Astral Grimoire (Magical Academy), Jade Lotus (Chinese Fantasy), and Neon Protocol (Advanced Futuristic). Header, Dialogue and Narrative frames can each be disabled while their text stays readable. Theme and motion choices are saved per chat, included in reusable presets and one-card setup. User UI keeps its right alignment. Decorative SVG animation pauses off-screen/in background tabs and respects Reduce Motion. Native SillyTavern settings and Regex/MVU-owned widgets retain their design. [Try all six themes](docs/previews/chat-themes/index.html) · [Thai guide](docs/chat-themes-v0.63.0.th.md).
 
 ## Install
 
@@ -21,7 +25,7 @@ Use a current SillyTavern installation with extension support and a connected te
 
 ## Chat presets
 
-**Extensions → RoleForge → World rules & presets → Chat presets** stores reusable named configurations for Powers, Character Creation, currency, stat training, Lore options and world-system switches. Load a saved set into one chat, rename/update/export it, or delete its library copy without changing chats that already use it. Defaults are frozen on first open; existing card-wide presets remain the migration fallback. Currency-only JSON import/export is also available in Currency setup. Player balances and progress are retained; finish pending trades/training before loading incompatible settings. See [Thai guide](docs/chat-presets-v0.62.0.th.md).
+**Extensions → RoleForge → World rules & presets → Chat presets** stores reusable named configurations for Powers, Character Creation, currency, stat training, Lore options, world-system switches and chat appearance. Load a saved set into one chat, rename/update/export it, or delete its library copy without changing chats that already use it. Defaults are frozen on first open; existing card-wide presets remain the migration fallback. Currency-only JSON import/export is also available in Currency setup. Player balances and progress are retained; finish pending trades/training before loading incompatible settings. See [Thai guide](docs/chat-presets-v0.62.0.th.md).
 
 RoleForge does not run on `chat.rolezy.com` or its child domains. The loader shows an unsupported-public-server notice before loading the runtime, styles or API clients. Installation itself is controlled by SillyTavern's server.
 
@@ -108,13 +112,15 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.62.0** has **1,194 passing unit/host tests** and syntax checks. Preset and domain-policy browser checks cover chat isolation, card defaults, library management, JSON import/export, save failures and blocked startup. Affected-system checks cover the actual Madoka card, startup, MVU/Regex, items/Loot, commerce, Incantation, Character Forge and stats/currency at mobile and desktop widths. [Current guide](docs/chat-presets-v0.62.0.th.md) · [Validation record](docs/validation-chat-presets-v0.62.0.json).
+Version **0.63.0** has **1,196 passing unit/host tests** and syntax checks. Browser checks cover all six themes and all eight independent frame combinations at 320/390/1280px, native settings, per-chat persistence, card defaults, failed saves, preset import/export, motion, startup, User UI, NPC Management, Voice and Regex/MVU iframe identity. [Current guide](docs/chat-themes-v0.63.0.th.md) · [Validation record](docs/validation-chat-themes-v0.63.0.json).
+
+The broader 0.62.0 checks, including the original uploaded Madoka card, remain recorded in [the preceding validation report](docs/validation-chat-presets-v0.62.0.json).
 
 Shared rendering is tested at 320/390/1280px with the actual pinned SillyTavern Regex engine, MessageFormatter, Markdown and sanitizer pipeline in a controlled host. Browser checks cover native widgets/listeners, tables, links, source/display rules, user-only shorthand, Voice, edit/swipe/reparenting, settings and composer windows. [Compatibility report](docs/regex-shared-v0.60.0.th.md).
 
 Run `npm run test:regex` for the focused compatibility suites. The shared suite downloads pinned upstream test dependencies with `curl` into a temporary cache; `ST_REGEX_CACHE` can point to a prepared cache. This does not install runtime dependencies or change SillyTavern.
 
-Run `npm run test:presets` for the preset library and blocked-host checks. Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. Historical release results remain in the [development README](docs/archive/README-v0.56.2-development.md).
+Run `npm run test:themes` for theme, frame-toggle and per-chat appearance checks. Run `npm run test:presets` for the preset library and blocked-host checks. Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. Historical release results remain in the [development README](docs/archive/README-v0.56.2-development.md).
 
 [Repository audit](docs/repository-audit-v0.56.2.th.md) · [Completed cleanup](docs/repository-cleanup-v0.56.2.th.md) · [Full audited inventory](docs/repository-audit-v0.56.2.json)
 
