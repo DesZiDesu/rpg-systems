@@ -1,4 +1,4 @@
-import {readCommercePrices} from './commerce-prices.js?v=0.64.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.64.1';
 
 const number='(?:[0-9๐-๙]+(?:,[0-9๐-๙]{3})*|(?:ศูนย์|หนึ่ง|เอ็ด|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|ยี่|สิบ|ร้อย|พัน)+)';
 const unit='(?:ขวด|ชิ้น|อัน|เล่ม|ชุด|กล่อง|ใบ|หน่วย|bottles?|pieces?|items?|units?|packs?)';

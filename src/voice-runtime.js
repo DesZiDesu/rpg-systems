@@ -1,5 +1,5 @@
-import {normalizeVoiceSettings,splitSpeech,voiceCacheKey,assignedVoice} from './voice-core.js?v=0.64.0';
-import {isMp3Blob} from './voice-download.js?v=0.64.0';
+import {normalizeVoiceSettings,splitSpeech,voiceCacheKey,assignedVoice} from './voice-core.js?v=0.64.1';
+import {isMp3Blob} from './voice-download.js?v=0.64.1';
 
 export function createVoiceRuntime({settings,storage,client,changed=()=>{},notify=()=>{},audio:makeAudio=()=>new Audio(),url=globalThis.URL}={}) {
     let credential='',connectionTicket=0,playTicket=0,connectionController,controller,player,releasePlayer,unlockedPlayer;

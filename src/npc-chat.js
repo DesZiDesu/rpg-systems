@@ -1,18 +1,18 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.64.0';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.64.0';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.64.0';
-import {renderSceneTracker} from './scene-tracker.js?v=0.64.0';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.64.0';
-import {renderGroupBoard} from './group-board-ui.js?v=0.64.0';
-import {uiText} from './ui-language.js?v=0.64.0';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.64.0';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.64.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.64.0';
-import { effectiveNpc } from './npc-alternates.js?v=0.64.0';
-import {speechDisplayText} from './voice-core.js?v=0.64.0';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.64.0';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.64.0';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.64.0';
+import {renderStoryEvents} from './story-events-ui.js?v=0.64.1';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.64.1';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.64.1';
+import {renderSceneTracker} from './scene-tracker.js?v=0.64.1';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.64.1';
+import {renderGroupBoard} from './group-board-ui.js?v=0.64.1';
+import {uiText} from './ui-language.js?v=0.64.1';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.64.1';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.64.1';
+import { croppedPortrait } from './npc-portraits.js?v=0.64.1';
+import { effectiveNpc } from './npc-alternates.js?v=0.64.1';
+import {speechDisplayText} from './voice-core.js?v=0.64.1';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.64.1';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.64.1';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.64.1';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;

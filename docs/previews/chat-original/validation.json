@@ -1,287 +1,193 @@
 {
   "host": "SillyTavern 1.19.0",
   "hostRevision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
-  "renderer": "0.64.0 Original production Main Chat renderer and CSS",
+  "renderer": "0.64.1 Original production Main Chat renderer and CSS",
   "provider": "Offline; no AI generation calls",
   "physicalDevices": false,
   "captures": [
     {
-      "file": "light-with-desktop-top.png",
+      "file": "all-with-desktop-top.png",
       "width": 1440,
       "height": 1000,
+      "frameState": "all",
       "portrait": true,
-      "view": "top",
-      "colorMode": "light"
+      "view": "top"
     },
     {
-      "file": "light-with-desktop-bottom.png",
+      "file": "all-with-desktop-bottom.png",
       "width": 1440,
       "height": 1000,
+      "frameState": "all",
       "portrait": true,
-      "view": "bottom",
-      "colorMode": "light"
+      "view": "bottom"
     },
     {
-      "file": "light-without-desktop-top.png",
+      "file": "all-without-desktop-top.png",
       "width": 1440,
       "height": 1000,
+      "frameState": "all",
       "portrait": false,
-      "view": "top",
-      "colorMode": "light"
+      "view": "top"
     },
     {
-      "file": "light-without-desktop-bottom.png",
+      "file": "all-without-desktop-bottom.png",
       "width": 1440,
       "height": 1000,
+      "frameState": "all",
       "portrait": false,
-      "view": "bottom",
-      "colorMode": "light"
+      "view": "bottom"
     },
     {
-      "file": "dark-with-desktop-top.png",
+      "file": "header-only-with-desktop-top.png",
       "width": 1440,
       "height": 1000,
+      "frameState": "header-only",
       "portrait": true,
-      "view": "top",
-      "colorMode": "dark"
+      "view": "top"
     },
     {
-      "file": "dark-with-desktop-bottom.png",
+      "file": "header-only-with-desktop-bottom.png",
       "width": 1440,
       "height": 1000,
+      "frameState": "header-only",
       "portrait": true,
-      "view": "bottom",
-      "colorMode": "dark"
+      "view": "bottom"
     },
     {
-      "file": "dark-without-desktop-top.png",
+      "file": "header-only-without-desktop-top.png",
       "width": 1440,
       "height": 1000,
+      "frameState": "header-only",
       "portrait": false,
-      "view": "top",
-      "colorMode": "dark"
+      "view": "top"
     },
     {
-      "file": "dark-without-desktop-bottom.png",
+      "file": "header-only-without-desktop-bottom.png",
       "width": 1440,
       "height": 1000,
+      "frameState": "header-only",
       "portrait": false,
-      "view": "bottom",
-      "colorMode": "dark"
+      "view": "bottom"
     },
     {
-      "file": "system-with-desktop-top.png",
-      "width": 1440,
+      "file": "all-with-mobile-top.png",
+      "width": 390,
       "height": 1000,
+      "frameState": "all",
       "portrait": true,
-      "view": "top",
-      "colorMode": "system"
+      "view": "top"
     },
     {
-      "file": "system-with-desktop-bottom.png",
-      "width": 1440,
+      "file": "all-with-mobile-bottom.png",
+      "width": 390,
       "height": 1000,
+      "frameState": "all",
       "portrait": true,
-      "view": "bottom",
-      "colorMode": "system"
+      "view": "bottom"
     },
     {
-      "file": "system-without-desktop-top.png",
-      "width": 1440,
-      "height": 1000,
-      "portrait": false,
-      "view": "top",
-      "colorMode": "system"
-    },
-    {
-      "file": "system-without-desktop-bottom.png",
-      "width": 1440,
-      "height": 1000,
-      "portrait": false,
-      "view": "bottom",
-      "colorMode": "system"
-    },
-    {
-      "file": "light-with-mobile-top.png",
+      "file": "all-without-mobile-top.png",
       "width": 390,
       "height": 1000,
+      "frameState": "all",
+      "portrait": false,
+      "view": "top"
+    },
+    {
+      "file": "all-without-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "frameState": "all",
+      "portrait": false,
+      "view": "bottom"
+    },
+    {
+      "file": "header-only-with-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "frameState": "header-only",
       "portrait": true,
-      "view": "top",
-      "colorMode": "light"
+      "view": "top"
     },
     {
-      "file": "light-with-mobile-bottom.png",
+      "file": "header-only-with-mobile-bottom.png",
       "width": 390,
       "height": 1000,
+      "frameState": "header-only",
       "portrait": true,
-      "view": "bottom",
-      "colorMode": "light"
+      "view": "bottom"
     },
     {
-      "file": "light-without-mobile-top.png",
+      "file": "header-only-without-mobile-top.png",
       "width": 390,
       "height": 1000,
+      "frameState": "header-only",
       "portrait": false,
-      "view": "top",
-      "colorMode": "light"
+      "view": "top"
     },
     {
-      "file": "light-without-mobile-bottom.png",
+      "file": "header-only-without-mobile-bottom.png",
       "width": 390,
       "height": 1000,
+      "frameState": "header-only",
       "portrait": false,
-      "view": "bottom",
-      "colorMode": "light"
-    },
-    {
-      "file": "dark-with-mobile-top.png",
-      "width": 390,
-      "height": 1000,
-      "portrait": true,
-      "view": "top",
-      "colorMode": "dark"
-    },
-    {
-      "file": "dark-with-mobile-bottom.png",
-      "width": 390,
-      "height": 1000,
-      "portrait": true,
-      "view": "bottom",
-      "colorMode": "dark"
-    },
-    {
-      "file": "dark-without-mobile-top.png",
-      "width": 390,
-      "height": 1000,
-      "portrait": false,
-      "view": "top",
-      "colorMode": "dark"
-    },
-    {
-      "file": "dark-without-mobile-bottom.png",
-      "width": 390,
-      "height": 1000,
-      "portrait": false,
-      "view": "bottom",
-      "colorMode": "dark"
-    },
-    {
-      "file": "system-with-mobile-top.png",
-      "width": 390,
-      "height": 1000,
-      "portrait": true,
-      "view": "top",
-      "colorMode": "system"
-    },
-    {
-      "file": "system-with-mobile-bottom.png",
-      "width": 390,
-      "height": 1000,
-      "portrait": true,
-      "view": "bottom",
-      "colorMode": "system"
-    },
-    {
-      "file": "system-without-mobile-top.png",
-      "width": 390,
-      "height": 1000,
-      "portrait": false,
-      "view": "top",
-      "colorMode": "system"
-    },
-    {
-      "file": "system-without-mobile-bottom.png",
-      "width": 390,
-      "height": 1000,
-      "portrait": false,
-      "view": "bottom",
-      "colorMode": "system"
+      "view": "bottom"
     }
   ],
   "checks": [
     {
       "width": 1440,
-      "portrait": true,
-      "rawUnchanged": true,
-      "chronology": true,
-      "squarePortrait": true,
-      "chatHorizontalOverflow": 0,
-      "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "light"
-    },
-    {
-      "width": 1440,
-      "portrait": false,
-      "rawUnchanged": true,
-      "chronology": true,
-      "squarePortrait": true,
-      "chatHorizontalOverflow": 0,
-      "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "light"
-    },
-    {
-      "width": 1440,
       "independentFrameCombinations": 8,
       "textPreserved": true,
-      "colorMode": "light"
+      "transparentContainers": true
     },
     {
       "width": 1440,
+      "frameState": "all",
       "portrait": true,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "dark"
+      "nativeDocumentOverflow": 0
     },
     {
       "width": 1440,
+      "frameState": "all",
       "portrait": false,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "dark"
+      "nativeDocumentOverflow": 0
     },
     {
       "width": 1440,
-      "independentFrameCombinations": 8,
-      "textPreserved": true,
-      "colorMode": "dark"
-    },
-    {
-      "width": 1440,
+      "frameState": "header-only",
       "portrait": true,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "system"
+      "nativeDocumentOverflow": 0
     },
     {
       "width": 1440,
+      "frameState": "header-only",
       "portrait": false,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "system"
-    },
-    {
-      "width": 1440,
-      "independentFrameCombinations": 8,
-      "textPreserved": true,
-      "colorMode": "system"
+      "nativeDocumentOverflow": 0
     },
     {
       "width": 1440,
@@ -296,96 +202,67 @@
     },
     {
       "width": 1440,
-      "iframeDocumentAndStatePreserved": true
+      "iframeDocumentAndStatePreserved": true,
+      "frameCombinations": 8
     },
     {
       "width": 1440,
-      "liveOsSwitch": true,
+      "osSwitchLeavesOriginalUnchanged": true,
       "originalDomPreserved": true
     },
     {
       "width": 390,
-      "portrait": true,
-      "rawUnchanged": true,
-      "chronology": true,
-      "squarePortrait": true,
-      "chatHorizontalOverflow": 0,
-      "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "light"
-    },
-    {
-      "width": 390,
-      "portrait": false,
-      "rawUnchanged": true,
-      "chronology": true,
-      "squarePortrait": true,
-      "chatHorizontalOverflow": 0,
-      "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "light"
-    },
-    {
-      "width": 390,
       "independentFrameCombinations": 8,
       "textPreserved": true,
-      "colorMode": "light"
+      "transparentContainers": true
     },
     {
       "width": 390,
+      "frameState": "all",
       "portrait": true,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "dark"
+      "nativeDocumentOverflow": 0
     },
     {
       "width": 390,
+      "frameState": "all",
       "portrait": false,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "dark"
+      "nativeDocumentOverflow": 0
     },
     {
       "width": 390,
-      "independentFrameCombinations": 8,
-      "textPreserved": true,
-      "colorMode": "dark"
-    },
-    {
-      "width": 390,
+      "frameState": "header-only",
       "portrait": true,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "system"
+      "nativeDocumentOverflow": 0
     },
     {
       "width": 390,
+      "frameState": "header-only",
       "portrait": false,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 0,
-      "nativeDocumentOverflow": 0,
-      "colorMode": "system"
-    },
-    {
-      "width": 390,
-      "independentFrameCombinations": 8,
-      "textPreserved": true,
-      "colorMode": "system"
+      "nativeDocumentOverflow": 0
     },
     {
       "width": 390,
@@ -400,96 +277,67 @@
     },
     {
       "width": 390,
-      "iframeDocumentAndStatePreserved": true
+      "iframeDocumentAndStatePreserved": true,
+      "frameCombinations": 8
     },
     {
       "width": 390,
-      "liveOsSwitch": true,
+      "osSwitchLeavesOriginalUnchanged": true,
       "originalDomPreserved": true
     },
     {
       "width": 320,
-      "portrait": true,
-      "rawUnchanged": true,
-      "chronology": true,
-      "squarePortrait": true,
-      "chatHorizontalOverflow": 0,
-      "documentOverflow": 9,
-      "nativeDocumentOverflow": 9,
-      "colorMode": "light"
-    },
-    {
-      "width": 320,
-      "portrait": false,
-      "rawUnchanged": true,
-      "chronology": true,
-      "squarePortrait": true,
-      "chatHorizontalOverflow": 0,
-      "documentOverflow": 9,
-      "nativeDocumentOverflow": 9,
-      "colorMode": "light"
-    },
-    {
-      "width": 320,
       "independentFrameCombinations": 8,
       "textPreserved": true,
-      "colorMode": "light"
+      "transparentContainers": true
     },
     {
       "width": 320,
+      "frameState": "all",
       "portrait": true,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 9,
-      "nativeDocumentOverflow": 9,
-      "colorMode": "dark"
+      "nativeDocumentOverflow": 9
     },
     {
       "width": 320,
+      "frameState": "all",
       "portrait": false,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 9,
-      "nativeDocumentOverflow": 9,
-      "colorMode": "dark"
+      "nativeDocumentOverflow": 9
     },
     {
       "width": 320,
-      "independentFrameCombinations": 8,
-      "textPreserved": true,
-      "colorMode": "dark"
-    },
-    {
-      "width": 320,
+      "frameState": "header-only",
       "portrait": true,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 9,
-      "nativeDocumentOverflow": 9,
-      "colorMode": "system"
+      "nativeDocumentOverflow": 9
     },
     {
       "width": 320,
+      "frameState": "header-only",
       "portrait": false,
+      "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
       "squarePortrait": true,
       "chatHorizontalOverflow": 0,
       "documentOverflow": 9,
-      "nativeDocumentOverflow": 9,
-      "colorMode": "system"
-    },
-    {
-      "width": 320,
-      "independentFrameCombinations": 8,
-      "textPreserved": true,
-      "colorMode": "system"
+      "nativeDocumentOverflow": 9
     },
     {
       "width": 320,
@@ -504,11 +352,12 @@
     },
     {
       "width": 320,
-      "iframeDocumentAndStatePreserved": true
+      "iframeDocumentAndStatePreserved": true,
+      "frameCombinations": 8
     },
     {
       "width": 320,
-      "liveOsSwitch": true,
+      "osSwitchLeavesOriginalUnchanged": true,
       "originalDomPreserved": true
     }
   ],

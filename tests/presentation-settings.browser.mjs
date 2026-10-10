@@ -69,7 +69,7 @@ try{
    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({tretaresia_rpg:{language:'en',autoTrack:false,injectState:false,autoContinuity:false,chatPresentation:false,showSceneTracker:false,memoryAutoSummary:false}}));
   });
   await page.goto(url);await ready(page);
-  assert.equal(await page.locator('[data-presentation-setting]').count(),7);
+  assert.equal(await page.locator('[data-presentation-setting]').count(),6);
   assert.equal(await control(page,'chatRegexMode').inputValue(),'shared','missing preference composes with native Regex');
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/Shared mode keeps Regex UI/);
   await status(page,/RoleForge \d+\.\d+\.\d+.*is off.*No character reply yet/);
@@ -111,7 +111,7 @@ try{
   await status(page,/รูปแบบ RoleForge เดิม.*คำตอบล่าสุดมีบล็อกจัดรูปแบบ/);
   assert.match(await control(page,'chatRegexMode').locator('..').innerText(),/การแสดงแชทร่วมกับ Regex \/ HTML/);
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/โหมดแสดงร่วมกันเก็บ UI และปุ่มของ Regex/);
-  assert.equal(await page.locator('[data-presentation-setting]').count(),7,'language refresh does not duplicate presentation controls');
+  assert.equal(await page.locator('[data-presentation-setting]').count(),6,'language refresh does not duplicate presentation controls');
   if(artifacts){await page.locator('.trpg-settings').screenshot({path:`${artifacts}/presentation-settings-${width}.png`});}
   const bounds=await page.locator('.trpg-settings').evaluate(group=>({left:group.getBoundingClientRect().left,right:group.getBoundingClientRect().right,width:innerWidth,scroll:group.scrollWidth,client:group.clientWidth}));
   assert(bounds.left>=-1&&bounds.right<=bounds.width+1&&bounds.scroll<=bounds.client+1,`presentation settings/status fit the viewport: ${JSON.stringify(bounds)}`);

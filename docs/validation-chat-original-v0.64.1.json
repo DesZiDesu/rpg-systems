@@ -1,0 +1,123 @@
+{
+  "version": "0.64.1",
+  "validatedAt": "2026-10-10T16:10:42.358718+00:00",
+  "scope": "Original only; independent Header/Dialogue/Narrative switches; transparent headers and narration; retired color modes removed",
+  "unitTests": {
+    "command": "npm test",
+    "passed": 1197,
+    "failed": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "passed": true
+  },
+  "appearance": {
+    "commands": [
+      "node --test tests/chat-themes.test.mjs",
+      "node tests/chat-themes.browser.mjs",
+      "node tests/chat-appearance.browser.mjs",
+      "npm run test:user-chat"
+    ],
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "osSchemes": [
+      "light",
+      "dark"
+    ],
+    "frameCombinations": 8,
+    "textContrastMinimum": 4.5,
+    "originalNpcIdentityColor": true,
+    "squarePortraits": true,
+    "noHorizontalOverflow": true,
+    "perChatPersistence": true,
+    "legacyPresetMigration": true,
+    "characterCardDefaults": true,
+    "importExport": true,
+    "failedSaveRollback": true,
+    "noAiCalls": true,
+    "userUiRightAlignmentAndThoughts": true,
+    "offlinePreviewControlsAndEmbeddedImageFont": true,
+    "profileCaptionContrast": true,
+    "hostPalettes": [
+      "light",
+      "dark"
+    ],
+    "hostFrameCases": 96,
+    "noColorModeControlsOrRendererPalette": true,
+    "legacyColorModesOmittedFromPresetExports": true,
+    "transparentHeaderNarrativeAndParents": true,
+    "noNarrativeGlowFill": true,
+    "nativeHostInkForTransparentText": true,
+    "userHeaderNarrativeTransparency": true,
+    "userThoughtLabelRetainsPlayerAccent": true,
+    "osSwitchDoesNotChangeOriginalDialogue": true
+  },
+  "regex": {
+    "command": "npm run test:regex",
+    "passed": true,
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "hostRevision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+    "nativeWidgetIdentityAndListeners": true,
+    "rawTextUnchanged": true
+  },
+  "mvu": {
+    "command": "npm run test:mvu",
+    "passed": true,
+    "widths": [
+      390,
+      1280
+    ],
+    "gameMakerRevision": "46840f39ca006b22870507f155145fa6324d9aa2",
+    "builderRevision": "0ecf70bb53262091c5c41a40b3a9dff0830de2c2",
+    "streamingControls": true,
+    "hideRegexAndThinkingBoxes": true,
+    "noMvuVariableWrites": true,
+    "performance": {
+      "rows": 200,
+      "updatedSceneReads": 1,
+      "domMutations": 2
+    },
+    "iframeAndDocumentIdentityAcrossFrameCombinations": true
+  },
+  "realSillyTavernPreview": {
+    "version": "SillyTavern 1.19.0",
+    "revision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+    "widths": [
+      320,
+      390,
+      1440
+    ],
+    "captures": 16,
+    "checkGroups": 27,
+    "errors": [],
+    "report": "previews/chat-original/validation.json",
+    "setup": "Isolated local SillyTavern with fictional chat; production renderer, cropper and composer components mounted by test runner",
+    "noUserServerOrHistoryAccess": true,
+    "noLiveAiOrVoiceRequests": true,
+    "chatOverflow": 0,
+    "nativeHostOverflowAt320px": 9,
+    "additionalOverflow": 0,
+    "transparentHeaderNarrativeAndSharedRoots": true
+  },
+  "limitations": [
+    "Chromium viewport/color-scheme simulation; Safari on a physical iPhone was not tested.",
+    "Regex/MVU checks cover the pinned fixtures and workflows, not every third-party script."
+  ],
+  "sourceSha256": {
+    "src/chat-themes.js": "888d1200abdca920acaf6816c3cb77eae31f30ea6b546670ee558120de93a6b0",
+    "src/chat-appearance-ui.js": "f632fb44c02f7722ea1ff2a3e98d4a0dc0b30dde640488163fb81ffa4e0980b3",
+    "src/npc-chat.js": "ec91212ab06e6a112dee80b16c847d6ae42152c8ae43a304570cd99468761f0d",
+    "src/user-chat.js": "04e65571fd1e147283d00f9557b98ba5025927cd6a0fdec3b7588d51c4db29a9",
+    "styles/npc-ui.css": "30865d2ae8666ae5d5899c142ed09fd41a8e816ac31d350167f8905192ce3251",
+    "styles/chat-themes.css": "0fb1d571af12c8bb617a425ee72a1aa39603f7c60b3a5e2f095505d2d6b6c1ea",
+    "index.js": "78824c4b418eace1c3198955908a9277421bbcac68678aa636582ef4a3492477",
+    "manifest.json": "9d2a1d9a12931fbf5132186d34ee87f75fc1b11aec7f920939aea732769adc02"
+  }
+}

@@ -1,13 +1,10 @@
-import {CHAT_COLOR_MODES,CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.64.0';
-import {element,renderStoryBlocks} from './npc-chat.js?v=0.64.0';
+import {CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.64.1';
+import {element,renderStoryBlocks} from './npc-chat.js?v=0.64.1';
 
 // Native SillyTavern controls; the expandable sample uses the real renderer.
 export function mountChatAppearanceControls(parent,api) {
     const root=element('div','rf-chat-appearance-settings'),controls=new Map(),texts=new Map();let busy=false,previewKey='',scope=null;
     const description=element('small','rf-chat-theme-description');root.append(description);
-    const row=element('label','trpg-formatting-mode'),title=element('span'),select=element('select','text_pole');
-    select.dataset.presentationSetting='chatColorMode';controls.set('chatColorMode',select);
-    for(const mode of CHAT_COLOR_MODES){const option=element('option','',mode.name);option.value=mode.key;select.append(option);}row.append(title,select);root.append(row);
     const switches=element('div','rf-chat-appearance-switches');
     for(const key of ['showChatHeader','showChatDialogue','showChatNarrative']){
         const label=element('label','checkbox_label'),input=element('input'),text=element('span');input.type='checkbox';input.dataset.presentationSetting=key;
@@ -21,11 +18,11 @@ export function mountChatAppearanceControls(parent,api) {
     function update(){
         const metadata=api.context().chatMetadata;if(metadata!==scope){scope=metadata;status.textContent='';previewKey='';}
         const settings=api.settings(),view=chatAppearance(settings);
-        title.textContent=t('Color mode · this chat','โหมดสี · แชทนี้');description.textContent='Original · RoleForge';
+        description.textContent='Original · RoleForge';
         for(const [key,label] of [['showChatHeader',['Header · character nameplate','Header · ป้ายตัวละคร']],['showChatDialogue',['Dialogue · speech frame','Dialogue · กรอบบทพูด']],['showChatNarrative',['Narrative · narration frame','Narrative · กรอบบรรยาย']]])texts.get(key).textContent=t(...label);
-        help.textContent=t('User Setting follows your device’s Light/Dark appearance, including iOS, and changes immediately. Saved separately for each chat. Disable each frame independently: its text stays readable and Header becomes a plain speaker name. Regex/MVU widgets keep their own design.','User Setting ตามโหมดสว่าง/มืดของเครื่อง รวมถึง iOS และสลับทันที จำค่าแยกแต่ละแชท เปิด/ปิดแต่ละกรอบได้อิสระ ข้อความยังอ่านได้เมื่อปิดกรอบ และ Header เหลือชื่อผู้พูดธรรมดา UI ของ Regex/MVU ใช้หน้าตาของตัวเอง');
+        help.textContent=t('Enable Header, Dialogue and Narrative independently. Saved for this chat. Disabling a frame keeps its text; Header becomes a plain speaker name. Header and Narrative have no background. Regex/MVU widgets keep their own design.','เปิด/ปิด Header, Dialogue และ Narrative ได้อิสระ จำค่าแยกแชท เมื่อปิดกรอบข้อความยังอยู่ และ Header เหลือชื่อผู้พูดธรรมดา Header กับ Narrative ไม่มีพื้นหลัง UI ของ Regex/MVU ใช้หน้าตาของตัวเอง');
         summary.textContent=t('Preview Original','ดูตัวอย่าง Original');gallery.textContent=t('PC / mobile preview ↗','พรีวิว PC / มือถือ ↗');
-        if(!busy)for(const [key,input] of controls){const value=view[CHAT_APPEARANCE_KEYS[key]];if(input.type==='checkbox')input.checked=value;else input.value=value;}
+        if(!busy)for(const [key,input] of controls)input.checked=view[CHAT_APPEARANCE_KEYS[key]];
         const signature=JSON.stringify([view,settings.language]);
         if(details.open&&signature!==previewKey){
             previewKey=signature;sample.replaceChildren();
@@ -37,7 +34,7 @@ export function mountChatAppearanceControls(parent,api) {
     for(const [key,input] of controls)input.addEventListener('change',async()=>{
         if(busy)return;busy=true;const metadata=api.context().chatMetadata;for(const control of controls.values())control.disabled=true;
         status.textContent=t('Saving…','กำลังบันทึก…');
-        try{await api.saveChatAppearanceSetting(key,input.type==='checkbox'?input.checked:input.value);if(api.context().chatMetadata===metadata)status.textContent=t('Saved for this chat.','บันทึกให้แชทนี้แล้ว');}
+        try{await api.saveChatAppearanceSetting(key,input.checked);if(api.context().chatMetadata===metadata)status.textContent=t('Saved for this chat.','บันทึกให้แชทนี้แล้ว');}
         catch(error){if(api.context().chatMetadata===metadata)status.textContent=error.message;}
         finally{busy=false;for(const control of controls.values())control.disabled=false;update();}
     });

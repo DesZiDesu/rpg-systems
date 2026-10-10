@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.64.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.64.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -10,7 +10,7 @@ The extension adds instructions for enabled systems to your existing text-genera
 
 ## Original chat appearance
 
-**Extensions → RoleForge → Chat appearance & NPCs** now keeps **Original** as the only chat design. Choose **Light Mode**, **Dark Mode**, or **User Setting** (the default, following your device's appearance, including iOS). System changes recolor existing blocks immediately through CSS. Header, Dialogue and Narrative frames each have an independent switch; disabling a frame keeps the text readable and Header becomes a plain speaker name. These choices are saved per chat and included in presets and one-card setup. Older theme presets return to Original while keeping their frame choices. Square portraits, User UI right alignment, native SillyTavern settings and Regex/MVU-owned widgets are preserved. [PC / mobile preview](docs/previews/chat-original/index.html) · [Thai guide](docs/chat-original-v0.64.0.th.md).
+**Extensions → RoleForge → Chat appearance & NPCs** keeps **Original** as the only chat design, with three independent switches: **Header**, **Dialogue** and **Narrative**. Enable any combination; disabling a frame keeps its text, and Header becomes a plain speaker name. Header and Narrative stay transparent. Choices are saved per chat and included in presets and one-card setup. Older theme presets keep their frame choices; retired color-mode fields are ignored and omitted from exports. Square portraits, User UI right alignment, native SillyTavern settings and Regex/MVU widgets are preserved. [PC / mobile preview](docs/previews/chat-original/index.html) · [Thai guide](docs/chat-original-v0.64.1.th.md).
 
 ## Install
 
@@ -112,7 +112,7 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.64.0** has **1,197 passing unit/host tests** and syntax checks. Browser checks cover all three color modes, both OS appearances and all eight independent frame combinations at 320/390/1280px, native settings, per-chat persistence, legacy/card defaults, failed saves, preset import/export, User UI and Regex/MVU iframe identity. Preview screenshots also use the production renderer inside an isolated real **SillyTavern 1.19.0** instance at 320/390/1440px. [Current guide](docs/chat-original-v0.64.0.th.md) · [Validation record](docs/validation-chat-original-v0.64.0.json).
+Version **0.64.1** has **1,197 passing unit/host tests** and syntax checks. Browser checks cover transparent containers on light/dark host palettes, all eight independent frame combinations and unchanged Original styling across OS appearances at 320/390/1280px, native settings, per-chat persistence, legacy/card defaults, failed saves, preset import/export, User UI and Regex/MVU iframe identity. Preview screenshots also use the production renderer inside an isolated real **SillyTavern 1.19.0** instance at 320/390/1440px. [Current guide](docs/chat-original-v0.64.1.th.md) · [Validation record](docs/validation-chat-original-v0.64.1.json).
 
 The broader 0.62.0 checks, including the original uploaded Madoka card, remain recorded in [the preceding validation report](docs/validation-chat-presets-v0.62.0.json).
 

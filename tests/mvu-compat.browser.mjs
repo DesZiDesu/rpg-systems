@@ -72,12 +72,14 @@ try{
             await mode(page,value);
             assert.equal(await page.evaluate(()=>window.compatFrame.isConnected&&window.compatFrame.parentNode===window.compatParent&&window.compatFrame.contentDocument===window.compatDocument),true,'all modes preserve the live Helper iframe and its DOM owner');
         }
-        for(const colorMode of ['light','dark','system']){
-            await page.locator('[data-presentation-setting="chatColorMode"]').selectOption(colorMode);
-            await page.waitForFunction(()=>!document.querySelector('[data-presentation-setting="chatColorMode"]').disabled);
-            await page.waitForTimeout(180);
-            assert.equal(await page.evaluate(()=>window.compatFrame.isConnected&&window.compatFrame.parentNode===window.compatParent&&window.compatFrame.contentDocument===window.compatDocument),true,'all color modes preserve the live Helper iframe and its DOM owner');
+        for(let flags=0;flags<8;flags++){
+            for(const [bit,key] of ['showChatHeader','showChatDialogue','showChatNarrative'].entries()){
+                await page.locator(`[data-presentation-setting="${key}"]`).setChecked(Boolean(flags&(1<<bit)));
+                await page.waitForFunction(key=>!document.querySelector(`[data-presentation-setting="${key}"]`).disabled,key);
+            }
+            assert.equal(await page.evaluate(()=>window.compatFrame.isConnected&&window.compatFrame.parentNode===window.compatParent&&window.compatFrame.contentDocument===window.compatDocument),true,'all frame combinations preserve the live Helper iframe and its DOM owner');
         }
+        for(const key of ['showChatHeader','showChatDialogue','showChatNarrative'])await page.locator(`[data-presentation-setting="${key}"]`).check();
         assert.equal(await page.evaluate(({id,text})=>window.host.chat[id].mes===text,{id,text:story+suffix}),true);
         // Bound controls must work on Helper's visible HTML copy, not its hidden source.
         await page.evaluate(id=>{

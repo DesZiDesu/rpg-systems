@@ -1,8 +1,8 @@
 # ธีมรุ่น 0.63.0 · ยกเลิกแล้ว
 
-ตั้งแต่ **RoleForge 0.64.0** เหลือดีไซน์ **Original** แบบเดียว พร้อม **Light Mode / Dark Mode / User Setting** และสวิตช์ Header / Dialogue / Narrative แยกส่วน
+ตั้งแต่ **RoleForge 0.64.1** เหลือดีไซน์ **Original** แบบเดียว พร้อมสวิตช์ Header / Dialogue / Narrative แยกส่วน
 
-ดู [คู่มือปัจจุบัน](chat-original-v0.64.0.th.md) และ [Preview PC / มือถือ](previews/chat-original/index.html)
+ดู [คู่มือปัจจุบัน](chat-original-v0.64.1.th.md) และ [Preview PC / มือถือ](previews/chat-original/index.html)
 
 Preset หรือการ์ดที่บันทึกธีมรุ่นเก่ายังนำเข้าได้ ระบบจะแสดง Original และรักษาตัวเลือกเปิด/ปิดกรอบเดิมไว้
 

@@ -1,108 +1,21 @@
-/* Original geometry lives in npc-ui.css. Only its palette changes here.
-   System appearance is resolved by CSS, so iOS can switch without rerendering
-   any message, portrait, native Regex widget or Helper iframe. */
+/* Original only. Geometry and the speech paper live in npc-ui.css.
+   Header, Narrative and their parent containers stay transparent. */
 .trpg-chat[data-rf-chat-theme="roleforge"] {
-  --rf-chat-surface:#101214;
-  --rf-chat-ink:#e3dfd5;
-  --rf-chat-muted:#b5b1a7;
-  --rf-chat-accent:var(--tretaresia-accent,#d6b458);
-  --rf-chat-name:var(--speaker,var(--rf-chat-accent));
-  --rf-chat-name-strength:100%;
-  --rf-chat-highlight:#fff0c3;
-  --rf-chat-line:#837451;
-  --rf-chat-dialogue:#1c2024;
-  --rf-chat-dialogue-end:#171b1f;
-  --rf-chat-dialogue-ink:#eee7d8;
-  --rf-chat-glow:#ffffff06;
-  --rf-chat-inset:#ffffff0d;
-  --rf-chat-shadow:#00000018;
-  --prose:var(--rf-chat-ink);
+  --prose:var(--SmartThemeBodyColor,#d6d0c1);
   min-width:0;max-width:100%;container-type:inline-size;
-  color:var(--rf-chat-ink);background:var(--rf-chat-surface);color-scheme:dark;
+  color:var(--prose);background:none;color-scheme:inherit;
 }
-.trpg-chat[data-rf-color-mode="light"] {
-  --rf-chat-surface:#faf9f4;
-  --rf-chat-ink:#35342f;
-  --rf-chat-muted:#656156;
-  --rf-chat-accent:color-mix(in srgb,var(--tretaresia-accent,#d6b458) 45%,#403821);
-  --rf-chat-name:color-mix(in srgb,var(--speaker,#d6b458) 45%,#242b31);
-  --rf-chat-name-strength:45%;
-  --rf-chat-highlight:#655d3c;
-  --rf-chat-line:#a2967b;
-  --rf-chat-dialogue:#fffdf5;
-  --rf-chat-dialogue-end:#f0ece0;
-  --rf-chat-dialogue-ink:#302e27;
-  --rf-chat-glow:#ffffff66;
-  --rf-chat-inset:#7c6b321a;
-  --rf-chat-shadow:#55451c08;
-  color-scheme:light;
-}
-@media(prefers-color-scheme:light) {
-  .trpg-chat[data-rf-color-mode="system"] {
-    --rf-chat-surface:#faf9f4;
-    --rf-chat-ink:#35342f;
-    --rf-chat-muted:#656156;
-    --rf-chat-accent:color-mix(in srgb,var(--tretaresia-accent,#d6b458) 45%,#403821);
-    --rf-chat-name:color-mix(in srgb,var(--speaker,#d6b458) 45%,#242b31);
-    --rf-chat-name-strength:45%;
-    --rf-chat-highlight:#655d3c;
-    --rf-chat-line:#a2967b;
-    --rf-chat-dialogue:#fffdf5;
-    --rf-chat-dialogue-end:#f0ece0;
-    --rf-chat-dialogue-ink:#302e27;
-    --rf-chat-glow:#ffffff66;
-    --rf-chat-inset:#7c6b321a;
-    --rf-chat-shadow:#55451c08;
-    color-scheme:light;
-  }
-}
-/* Resolve the NPC color where --speaker is actually set. Shared Regex roots
-   may hold a header without its speaker section; a root-level var alone would
-   incorrectly resolve every name to the global accent. */
-.trpg-chat[data-rf-chat-theme="roleforge"] :is(.trpg-speaker,.trpg-header,.trpg-dialogue,.trpg-user-header) {--rf-chat-name:color-mix(in srgb,var(--speaker,#d6b458) var(--rf-chat-name-strength),#242b31)}
 .trpg-chat[data-rf-chat-theme="roleforge"] :is(.trpg-prose-mark,.trpg-role,.trpg-open-record)>i {color:inherit}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-header {color:var(--rf-chat-name)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-header strong {color:var(--rf-chat-name);background:linear-gradient(105deg,var(--rf-chat-name),var(--rf-chat-highlight) 45%,var(--rf-chat-name) 75%);background-size:220% 100%;background-clip:text;-webkit-background-clip:text;text-shadow:none}
-.trpg-chat[data-rf-chat-theme="roleforge"] :is(.trpg-role,.trpg-open-record) {color:var(--rf-chat-name)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-open-record {opacity:1}
-.trpg-chat[data-rf-chat-theme="roleforge"] :is(.trpg-open-record,.trpg-user-header)>small {color:var(--rf-chat-muted)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-meta {color:var(--rf-chat-muted)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-meta span+span {border-color:var(--rf-chat-line)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-photo {border-color:var(--rf-chat-surface);outline-color:var(--rf-chat-name);box-shadow:0 0 0 5px var(--rf-chat-inset),0 0 0 6px var(--rf-chat-line)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-dialogue {
-  border-color:color-mix(in srgb,var(--rf-chat-name) 65%,var(--rf-chat-line));
-  background:radial-gradient(ellipse at 12% 0,var(--rf-chat-glow),transparent 65%),repeating-linear-gradient(0deg,transparent 0 3px,var(--rf-chat-shadow) 3px 4px),linear-gradient(115deg,color-mix(in srgb,var(--speaker,#d6b458) 5%,var(--rf-chat-dialogue)),var(--rf-chat-dialogue-end));
-  color:var(--rf-chat-dialogue-ink);
-  box-shadow:inset 0 0 0 4px var(--rf-chat-inset),inset 0 0 0 5px var(--rf-chat-line),inset 0 -12px 25px var(--rf-chat-shadow);
-}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-dialogue:before,
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-dialogue:after {color:var(--rf-chat-name);text-shadow:none}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative {color:var(--rf-chat-ink)}
+.trpg-chat[data-rf-chat-theme="roleforge"] :is(.trpg-open-record,.trpg-user-header)>small {color:var(--prose)}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-meta {color:var(--prose)}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative {background:none;box-shadow:none}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-copy {text-shadow:none}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-mark {color:var(--rf-chat-accent);filter:none}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-top {background:linear-gradient(90deg,var(--rf-chat-line),transparent)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative:before {background:linear-gradient(180deg,var(--rf-chat-accent),var(--rf-chat-line),transparent);box-shadow:4px 0 var(--rf-chat-inset)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative:after {background:repeating-linear-gradient(180deg,var(--rf-chat-line) 0 1px,transparent 1px 12px)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-end {background:linear-gradient(var(--rf-chat-line),var(--rf-chat-line)) left top/1px 6px no-repeat,linear-gradient(90deg,var(--rf-chat-line),transparent 75%) left 5px/100% 1px no-repeat}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-end:after {background:var(--rf-chat-accent);box-shadow:9px 0 var(--rf-chat-line),18px 0 var(--rf-chat-inset)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-glow {background:radial-gradient(ellipse at left,var(--rf-chat-inset),transparent 72%)}
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-header:focus-visible {outline-color:var(--rf-chat-name)}
-.trpg-speaker-label {margin:12px 0 6px;font:600 14px/1.5 system-ui,sans-serif;color:var(--rf-chat-ink,var(--SmartThemeBodyColor,#ece7da))}
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-glow {background:none}
+.trpg-speaker-label {margin:12px 0 6px;font:600 14px/1.5 system-ui,sans-serif;color:var(--SmartThemeBodyColor,#ece7da)}
 
-/* The player's original layout and pen stay on the right. */
-.trpg-chat.trpg-user-chat[data-rf-chat-theme="roleforge"] .trpg-user-header {color:var(--rf-chat-name);border-color:var(--rf-chat-line)}
-.trpg-chat.trpg-user-chat[data-rf-chat-theme="roleforge"] .trpg-narrative:before {box-shadow:none}
-.trpg-chat.trpg-user-chat[data-rf-chat-theme="roleforge"] .trpg-prose-top {background:linear-gradient(270deg,var(--rf-chat-line),transparent)}
-.trpg-chat.trpg-user-chat[data-rf-chat-theme="roleforge"] .trpg-prose-end {background:linear-gradient(var(--rf-chat-line),var(--rf-chat-line)) right top/1px 6px no-repeat,linear-gradient(270deg,var(--rf-chat-line),transparent 75%) right 5px/100% 1px no-repeat}
-.trpg-chat.trpg-user-chat[data-rf-chat-theme="roleforge"] .trpg-prose-end:after {background:var(--rf-chat-accent);box-shadow:-9px 0 var(--rf-chat-line),-18px 0 var(--rf-chat-inset)}
-.trpg-chat.trpg-user-chat[data-rf-chat-theme="roleforge"] .trpg-prose-glow {background:radial-gradient(ellipse at right,var(--rf-chat-inset),transparent 72%)}
-.trpg-chat.trpg-user-chat[data-rf-chat-theme="roleforge"] .trpg-user-thought p {color:var(--rf-chat-ink)}
-.trpg-chat.trpg-user-chat[data-rf-chat-theme="roleforge"] .trpg-user-thought small,
-.trpg-chat.trpg-user-chat[data-rf-chat-theme="roleforge"] .trpg-user-thought:after {color:var(--rf-chat-name)}
-
-/* Each switch removes only its frame; all story/Voice/native widget content
-   remains in order and stays readable in either forced color mode. */
-.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed {padding:4px 0!important;margin:12px 0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--rf-chat-ink)!important;font:inherit!important;line-height:1.8!important;text-shadow:none!important;isolation:auto}
+/* Each switch removes only its frame. Story, Voice and native widget content
+   remains in order; disabled Header leaves a plain speaker label. */
+.trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed {padding:4px 0!important;margin:12px 0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--prose)!important;font:inherit!important;line-height:1.8!important;text-shadow:none!important;isolation:auto}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed:before,
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed:after,
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed>[class^="trpg-prose-"]:not(.trpg-prose-copy) {display:none!important;animation:none!important}

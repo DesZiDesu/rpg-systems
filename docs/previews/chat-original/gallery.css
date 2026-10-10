@@ -1,4 +1,4 @@
-:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#202020;color:#e5e5e5;--tretaresia-accent:#d6b458}
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#202020;color:#e5e5e5;--tretaresia-accent:#d6b458;--SmartThemeBodyColor:#e3dfd5}
 *{box-sizing:border-box}[hidden]{display:none!important}body{margin:0}a{color:#dfc785}button,select{font:inherit;color:inherit;background:#292929;border:1px solid #666;border-radius:5px;padding:8px}input{accent-color:#cdb978}button,summary{cursor:pointer}
 /* Preview copy of Font Awesome Free 6.5.2. See assets/FONT-LICENSE.txt. */
 @font-face{font-family:PreviewIcons;src:url(assets/preview-icons.woff2)}.fa-solid{font-family:PreviewIcons;font-style:normal}.fa-book:before{content:"\f02d"}.fa-feather-pointed:before{content:"\f56b"}.fa-address-card:before{content:"\f2bb"}
