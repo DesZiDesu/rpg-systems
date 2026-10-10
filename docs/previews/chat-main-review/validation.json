@@ -1,0 +1,525 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "hostRevision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+  "renderer": "0.63.0 shipped Main Chat renderer + proposed review-only CSS",
+  "provider": "Offline; no AI generation calls",
+  "physicalDevices": false,
+  "captures": [
+    {
+      "file": "grimoire-with-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "grimoire",
+      "portrait": true,
+      "view": "top"
+    },
+    {
+      "file": "grimoire-with-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "grimoire",
+      "portrait": true,
+      "view": "bottom"
+    },
+    {
+      "file": "grimoire-without-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "grimoire",
+      "portrait": false,
+      "view": "top"
+    },
+    {
+      "file": "grimoire-without-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "grimoire",
+      "portrait": false,
+      "view": "bottom"
+    },
+    {
+      "file": "lotus-with-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "lotus",
+      "portrait": true,
+      "view": "top"
+    },
+    {
+      "file": "lotus-with-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "lotus",
+      "portrait": true,
+      "view": "bottom"
+    },
+    {
+      "file": "lotus-without-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "lotus",
+      "portrait": false,
+      "view": "top"
+    },
+    {
+      "file": "lotus-without-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "lotus",
+      "portrait": false,
+      "view": "bottom"
+    },
+    {
+      "file": "novel-with-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "novel",
+      "portrait": true,
+      "view": "top"
+    },
+    {
+      "file": "novel-with-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "novel",
+      "portrait": true,
+      "view": "bottom"
+    },
+    {
+      "file": "novel-without-desktop-top.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "novel",
+      "portrait": false,
+      "view": "top"
+    },
+    {
+      "file": "novel-without-desktop-bottom.png",
+      "width": 1440,
+      "height": 1000,
+      "theme": "novel",
+      "portrait": false,
+      "view": "bottom"
+    },
+    {
+      "file": "grimoire-with-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "grimoire",
+      "portrait": true,
+      "view": "top"
+    },
+    {
+      "file": "grimoire-with-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "grimoire",
+      "portrait": true,
+      "view": "bottom"
+    },
+    {
+      "file": "grimoire-without-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "grimoire",
+      "portrait": false,
+      "view": "top"
+    },
+    {
+      "file": "grimoire-without-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "grimoire",
+      "portrait": false,
+      "view": "bottom"
+    },
+    {
+      "file": "lotus-with-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "lotus",
+      "portrait": true,
+      "view": "top"
+    },
+    {
+      "file": "lotus-with-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "lotus",
+      "portrait": true,
+      "view": "bottom"
+    },
+    {
+      "file": "lotus-without-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "lotus",
+      "portrait": false,
+      "view": "top"
+    },
+    {
+      "file": "lotus-without-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "lotus",
+      "portrait": false,
+      "view": "bottom"
+    },
+    {
+      "file": "novel-with-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "novel",
+      "portrait": true,
+      "view": "top"
+    },
+    {
+      "file": "novel-with-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "novel",
+      "portrait": true,
+      "view": "bottom"
+    },
+    {
+      "file": "novel-without-mobile-top.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "novel",
+      "portrait": false,
+      "view": "top"
+    },
+    {
+      "file": "novel-without-mobile-bottom.png",
+      "width": 390,
+      "height": 1000,
+      "theme": "novel",
+      "portrait": false,
+      "view": "bottom"
+    }
+  ],
+  "checks": [
+    {
+      "width": 1440,
+      "theme": "grimoire",
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 1440,
+      "theme": "grimoire",
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 1440,
+      "theme": "grimoire",
+      "independentFrameCombinations": 8,
+      "textPreserved": true
+    },
+    {
+      "width": 1440,
+      "theme": "lotus",
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 1440,
+      "theme": "lotus",
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 1440,
+      "theme": "lotus",
+      "independentFrameCombinations": 8,
+      "textPreserved": true
+    },
+    {
+      "width": 1440,
+      "theme": "novel",
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 1440,
+      "theme": "novel",
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 1440,
+      "theme": "novel",
+      "independentFrameCombinations": 8,
+      "textPreserved": true
+    },
+    {
+      "width": 1440,
+      "headerProfileButton": true
+    },
+    {
+      "width": 1440,
+      "nativeDisplayRegex": true,
+      "widgetNodeIdentity": true,
+      "inputState": true,
+      "boundListener": true
+    },
+    {
+      "width": 1440,
+      "iframeDocumentAndStatePreserved": true
+    },
+    {
+      "width": 390,
+      "theme": "grimoire",
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 390,
+      "theme": "grimoire",
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 390,
+      "theme": "grimoire",
+      "independentFrameCombinations": 8,
+      "textPreserved": true
+    },
+    {
+      "width": 390,
+      "theme": "lotus",
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 390,
+      "theme": "lotus",
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 390,
+      "theme": "lotus",
+      "independentFrameCombinations": 8,
+      "textPreserved": true
+    },
+    {
+      "width": 390,
+      "theme": "novel",
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 390,
+      "theme": "novel",
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 0,
+      "nativeDocumentOverflow": 0
+    },
+    {
+      "width": 390,
+      "theme": "novel",
+      "independentFrameCombinations": 8,
+      "textPreserved": true
+    },
+    {
+      "width": 390,
+      "headerProfileButton": true
+    },
+    {
+      "width": 390,
+      "nativeDisplayRegex": true,
+      "widgetNodeIdentity": true,
+      "inputState": true,
+      "boundListener": true
+    },
+    {
+      "width": 390,
+      "iframeDocumentAndStatePreserved": true
+    },
+    {
+      "width": 320,
+      "theme": "grimoire",
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9
+    },
+    {
+      "width": 320,
+      "theme": "grimoire",
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9
+    },
+    {
+      "width": 320,
+      "theme": "grimoire",
+      "independentFrameCombinations": 8,
+      "textPreserved": true
+    },
+    {
+      "width": 320,
+      "theme": "lotus",
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9
+    },
+    {
+      "width": 320,
+      "theme": "lotus",
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9
+    },
+    {
+      "width": 320,
+      "theme": "lotus",
+      "independentFrameCombinations": 8,
+      "textPreserved": true
+    },
+    {
+      "width": 320,
+      "theme": "novel",
+      "portrait": true,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9
+    },
+    {
+      "width": 320,
+      "theme": "novel",
+      "portrait": false,
+      "rawUnchanged": true,
+      "chronology": true,
+      "squarePortrait": true,
+      "chatHorizontalOverflow": 0,
+      "documentOverflow": 9,
+      "nativeDocumentOverflow": 9
+    },
+    {
+      "width": 320,
+      "theme": "novel",
+      "independentFrameCombinations": 8,
+      "textPreserved": true
+    },
+    {
+      "width": 320,
+      "headerProfileButton": true
+    },
+    {
+      "width": 320,
+      "nativeDisplayRegex": true,
+      "widgetNodeIdentity": true,
+      "inputState": true,
+      "boundListener": true
+    },
+    {
+      "width": 320,
+      "iframeDocumentAndStatePreserved": true
+    }
+  ],
+  "errors": [],
+  "offlineGallery": {
+    "widths": [
+      390,
+      1440
+    ],
+    "cases": 24,
+    "networkBlockedAfterInitialHtml": true,
+    "browserErrors": []
+  },
+  "baseMainRevision": "8094b33295a1effca0ad8fecb1f5dfd53243f928",
+  "designs": [
+    {
+      "number": 1,
+      "key": "grimoire"
+    },
+    {
+      "number": 2,
+      "key": "lotus"
+    },
+    {
+      "number": 3,
+      "key": "novel"
+    }
+  ]
+}

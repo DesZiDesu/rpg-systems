@@ -1,0 +1,79 @@
+/* Proposed designs 1–3, tested on the real Main Chat renderer.
+ * Loaded only by the review harness; never alters an unmarked chat surface.
+ * Every header / prose / speech block stays in the original story order. */
+.trpg-chat[data-rf-review-theme] { --review-prose: #ddd; min-width: 0; }
+.trpg-chat[data-rf-review-theme] :is(.trpg-header,.trpg-dialogue,.trpg-narrative) { box-sizing: border-box; max-width: 100%; animation: none !important; }
+.trpg-chat[data-rf-review-theme] .rf-chat-sigil { display: none !important; }
+.trpg-chat[data-rf-review-theme] .trpg-header { display: flex; align-items: center; flex-wrap: nowrap; gap: 18px; width: 100%; min-height: 0; margin: 10px 0 0; padding: 17px 20px; border-radius: 0; }
+.trpg-chat[data-rf-review-theme] .trpg-header:before, .trpg-chat[data-rf-review-theme] .trpg-header:after { display: none; content: none; }
+.trpg-chat[data-rf-review-theme] .trpg-photo { flex: 0 0 var(--portrait,72px); width: var(--portrait,72px); height: var(--portrait,72px); aspect-ratio: 1 / 1; object-fit: cover; border-radius: 0; margin: 0; padding: 0; border: 0; outline: none; box-shadow: none; }
+.trpg-chat[data-rf-review-theme] .trpg-identity { flex: 1; min-width: 0; gap: 5px; }
+.trpg-chat[data-rf-review-theme] .trpg-header strong { font: 400 28px/1.3 Georgia,'Noto Serif Thai',serif; letter-spacing: 0; white-space: normal; overflow-wrap: anywhere; background: none; -webkit-text-fill-color: currentColor; text-shadow: none; animation: none !important; }
+.trpg-chat[data-rf-review-theme] .trpg-role { font: 11px/1.6 system-ui,sans-serif; letter-spacing: .1px; }
+.trpg-chat[data-rf-review-theme] .trpg-role i { font-size: 12px; }
+.trpg-chat[data-rf-review-theme] .trpg-meta { flex-wrap: wrap; gap: 4px 8px; font: 11px/1.6 system-ui,sans-serif; }
+.trpg-chat[data-rf-review-theme] .trpg-meta span+span { padding-left: 8px; }
+.trpg-chat[data-rf-review-theme] .trpg-open-record { font-size: 15px; color: inherit; }
+.trpg-chat[data-rf-review-theme] .trpg-open-record small { font: 9px/1.6 system-ui; }
+.trpg-chat[data-rf-review-theme] .trpg-narrative { margin: 0; padding: 22px 24px 22px 44px; color: var(--review-prose); font: 16px/1.95 Georgia,'Noto Serif Thai',serif; box-shadow: none; }
+.trpg-chat[data-rf-review-theme] .trpg-narrative:before, .trpg-chat[data-rf-review-theme] .trpg-narrative:after { display: none; content: none; animation: none !important; }
+.trpg-chat[data-rf-review-theme] .trpg-prose-mark { top: 25px; left: 16px; right: auto; width: 16px; height: 16px; color: inherit; opacity: .45; font-size: 14px; filter: none; }
+.trpg-chat[data-rf-review-theme] :is(.trpg-prose-top,.trpg-prose-glow,.trpg-prose-end) { display: none !important; }
+.trpg-chat[data-rf-review-theme] .trpg-prose-copy { color: inherit; padding: 0; font: inherit; }
+.trpg-chat[data-rf-review-theme] .trpg-dialogue { margin: 0; padding: 24px 30px 24px 44px; font: 17px/1.9 Georgia,'Noto Serif Thai',serif; border-radius: 0; box-shadow: none; white-space: pre-wrap; overflow-wrap: anywhere; }
+.trpg-chat[data-rf-review-theme] .trpg-dialogue:before { display: block; left: 15px; top: 19px; font: 35px/1 Georgia,serif; opacity: .55; text-shadow: none; }
+.trpg-chat[data-rf-review-theme] .trpg-dialogue:after { content: none; display: none; }
+.trpg-chat[data-rf-review-theme] :is(.trpg-dialogue,.trpg-narrative) :is(p,[data-roleforge-story]) { color: inherit; font: inherit; }
+
+/* 1 — Living Grimoire: one bound leaf, never two columns or a spell circle. */
+.trpg-chat[data-rf-review-theme="grimoire"] { --rf-tone: #bb9b62; --review-prose: #64583f; }
+.trpg-chat[data-rf-review-theme="grimoire"] .trpg-header { color: #e4cda4; border: 1px solid #897047; border-left: 5px solid #b19a6e; background: linear-gradient(100deg,#24201a,#181715) !important; box-shadow: none !important; }
+.trpg-chat[data-rf-review-theme="grimoire"] .trpg-header strong { color: #e6d0ac; font-style: italic; }
+.trpg-chat[data-rf-review-theme="grimoire"] .trpg-role { color: #b59c73; }.trpg-chat[data-rf-review-theme="grimoire"] .trpg-meta { color: #aaa08e; }
+.trpg-chat[data-rf-review-theme="grimoire"] .trpg-photo { border: 2px solid #c0aa81; box-shadow: 0 0 0 3px #75623a33; }
+.trpg-chat[data-rf-review-theme="grimoire"] .trpg-narrative { background: linear-gradient(90deg,#d2c29b,#eee3c5 6%,#ebe0c2); border: 0; border-left: 5px solid #ab936a; border-right: 1px solid #c2ab80; }
+.trpg-chat[data-rf-review-theme="grimoire"] .trpg-dialogue { background: linear-gradient(90deg,#d8c7a3,#f3ead3 6%,#eee3c8); color: #443b2a; border: 0; border-left: 5px solid #ab936a; border-right: 1px solid #c2ab80; font-style: italic; }
+.trpg-chat[data-rf-review-theme="grimoire"] .trpg-dialogue:before { color: #91794d; }
+
+/* 2 — Lotus Scroll: horizontal identity, square portrait, one ink-text column. */
+.trpg-chat[data-rf-review-theme="lotus"] { --rf-tone: #9db992; --review-prose: #5b674c; }
+.trpg-chat[data-rf-review-theme="lotus"] .trpg-header { position: relative; background: #294536 !important; border: 0; border-left: 5px solid #748461; border-right: 5px solid #748461; color: #dfe5ce; padding-right: 43px; box-shadow: none !important; }
+.trpg-chat[data-rf-review-theme="lotus"] .trpg-header:after { display: block; content: '印'; position: absolute; right: 14px; top: 21px; padding: 4px; border: 1px solid #bc9985; color: #e4c2a9; background: #99685d; font: 16px/1 serif; transform: rotate(-5deg); }
+.trpg-chat[data-rf-review-theme="lotus"] .trpg-header strong { color: #e6e9d6; }.trpg-chat[data-rf-review-theme="lotus"] .trpg-role { color: #abbba0; }.trpg-chat[data-rf-review-theme="lotus"] .trpg-meta { color: #c4cdb9; }
+.trpg-chat[data-rf-review-theme="lotus"] .trpg-photo { border: 2px solid #ced7b8; box-shadow: 3px 3px 0 #183c2b; }
+.trpg-chat[data-rf-review-theme="lotus"] .trpg-open-record { display: none; }
+.trpg-chat[data-rf-review-theme="lotus"] .trpg-narrative { background: #e9ecd6; border: 0; border-left: 5px solid #9dae84; border-right: 5px solid #9dae84; padding-left: 44px; }
+.trpg-chat[data-rf-review-theme="lotus"] .trpg-dialogue { background: #e9ecd6; color: #36543e; border: 0; border-left: 5px solid #9dae84; border-right: 5px solid #9dae84; padding-block: 27px; }
+.trpg-chat[data-rf-review-theme="lotus"] .trpg-dialogue:before { content: '「'; color: #6d8a57; font-size: 24px; }
+.trpg-chat[data-rf-review-theme="lotus"] .trpg-dialogue:after { content: '」'; display: block; position: absolute; bottom: 12px; right: 14px; color: #6d8a57; opacity: .5; font: 24px/1 serif; }
+
+/* 3 — Monochrome Folio: real story text, no chapter numbers or scene-end symbols. */
+.trpg-chat[data-rf-review-theme="novel"] { --rf-tone: #aaa; --review-prose: #575757; }
+.trpg-chat[data-rf-review-theme="novel"] .trpg-header { background: #fff !important; border: 0; border-bottom: 1px solid #c7c7c7; padding: 22px 28px 18px; color: #222; box-shadow: none !important; }
+.trpg-chat[data-rf-review-theme="novel"] .trpg-header strong { color: #1a1a1a; font-size: 31px; }
+.trpg-chat[data-rf-review-theme="novel"] .trpg-role { color: #767676; }.trpg-chat[data-rf-review-theme="novel"] .trpg-meta { color: #767676; }.trpg-chat[data-rf-review-theme="novel"] .trpg-meta span+span { border-color: #ddd; }
+.trpg-chat[data-rf-review-theme="novel"] .trpg-photo { filter: grayscale(1); border: 1px solid #ddd; box-shadow: none; }
+.trpg-chat[data-rf-review-theme="novel"] .trpg-open-record { color: #929292; }
+.trpg-chat[data-rf-review-theme="novel"] .trpg-narrative { background: #fff; border: 0; padding: 25px 30px 20px; color: #555; font-size: 16px; }
+.trpg-chat[data-rf-review-theme="novel"] .trpg-prose-mark { display: none; }
+.trpg-chat[data-rf-review-theme="novel"] .trpg-dialogue { background: #fff; border: 0; color: #202020; padding: 16px 40px 19px 56px; font: italic 18px/1.95 Georgia,'Noto Serif Thai',serif; }
+.trpg-chat[data-rf-review-theme="novel"] .trpg-dialogue:before { color: #aaa; left: 25px; top: 14px; font-size: 40px; }
+
+/* Disabled frames must stay plain, including inside Shared / native Regex DOM. */
+.trpg-chat[data-rf-review-theme] :is(.trpg-dialogue,.trpg-narrative).trpg-unframed { margin: 14px 0 !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; color: var(--SmartThemeBodyColor,#dedede) !important; font: inherit !important; }
+.trpg-chat[data-rf-review-theme] .trpg-unframed:before, .trpg-chat[data-rf-review-theme] .trpg-unframed:after, .trpg-chat[data-rf-review-theme] .trpg-unframed>span:not(.trpg-prose-copy) { display: none !important; content: none; }
+.trpg-chat[data-rf-review-theme] .trpg-header:focus-visible { outline: 2px solid #aaa; outline-offset: 3px; }
+.trpg-chat[data-rf-review-theme] .trpg-user-header { flex-direction: row-reverse; text-align: right; }
+.trpg-chat[data-rf-review-theme] .rf-voice-controls { max-width: 100%; }
+@container (max-width:460px) {
+  .trpg-chat[data-rf-review-theme] .trpg-header { gap: 13px; padding: 15px 16px; }
+  .trpg-chat[data-rf-review-theme] .trpg-photo { flex-basis: min(var(--portrait,72px),64px); width: min(var(--portrait,72px),64px); height: min(var(--portrait,72px),64px); }
+  .trpg-chat[data-rf-review-theme] .trpg-header strong { font-size: 24px; }
+  .trpg-chat[data-rf-review-theme] .trpg-role { font-size: 10px; }.trpg-chat[data-rf-review-theme] .trpg-meta { font-size: 10px; gap: 4px 6px; }
+  .trpg-chat[data-rf-review-theme] .trpg-open-record { display: none; }
+  .trpg-chat[data-rf-review-theme] .trpg-narrative { padding: 20px 20px 20px 37px; font-size: 15px; }.trpg-chat[data-rf-review-theme] .trpg-prose-mark { left: 13px; top: 24px; font-size: 12px; }
+  .trpg-chat[data-rf-review-theme] .trpg-dialogue { padding: 23px 23px 23px 37px; font-size: 16px; }.trpg-chat[data-rf-review-theme] .trpg-dialogue:before { left: 11px; }
+  .trpg-chat[data-rf-review-theme="lotus"] .trpg-header { padding-right: 38px; }.trpg-chat[data-rf-review-theme="lotus"] .trpg-header:after { right: 10px; top: 18px; }
+  .trpg-chat[data-rf-review-theme="novel"] .trpg-header { padding: 20px; }.trpg-chat[data-rf-review-theme="novel"] .trpg-header strong { font-size: 27px; }
+  .trpg-chat[data-rf-review-theme="novel"] .trpg-narrative { padding: 22px 22px 17px; }.trpg-chat[data-rf-review-theme="novel"] .trpg-dialogue { padding: 18px 25px 19px 44px; font-size: 17px; }.trpg-chat[data-rf-review-theme="novel"] .trpg-dialogue:before { left: 17px; top: 16px; }
+}
