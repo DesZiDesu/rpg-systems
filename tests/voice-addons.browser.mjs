@@ -14,16 +14,21 @@ const server=http.createServer(async(req,res)=>{try{
     const path=url.pathname.slice(base.length),body=await readFile(new URL(path,root));res.setHeader('content-type',path.endsWith('.css')?'text/css':path.endsWith('.html')?'text/html':path.endsWith('.json')?'application/json':path.endsWith('.js')?'text/javascript':'image/webp');res.end(body);
 }catch{res.writeHead(404).end();}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const artifacts=new URL(process.env.VOICE_SCREENSHOT_DIR?process.env.VOICE_SCREENSHOT_DIR.replace(/\/?$/u,'/'):'docs/previews/voice-v0550/',root);await mkdir(artifacts,{recursive:true});
+const artifacts=new URL(process.env.VOICE_SCREENSHOT_DIR?process.env.VOICE_SCREENSHOT_DIR.replace(/\/?$/u,'/'):'/tmp/roleforge-voice-addons/',root);await mkdir(artifacts,{recursive:true});
 let browser;
 try{
     browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
-    for(const width of [320,390,1280]){
+    for(const width of (process.env.VOICE_WIDTHS||'320,390,1280').split(',').map(Number)){
         const page=await browser.newPage({viewport:{width,height:950},hasTouch:width<600,reducedMotion:'reduce'}),errors=[];
         page.on('pageerror',error=>errors.push(error.message));
         await page.route('https://fonts.googleapis.com/**',route=>route.fulfill({contentType:'text/css',body:''}));
         await page.goto(`http://127.0.0.1:${server.address().port}${base}docs/previews/voice-addon.html?lang=th&addon=voice&review=1`);
         await page.waitForFunction(()=>window.voicePreview?.ready&&document.querySelectorAll('.trpg-dialogue').length===2);
+        if(process.env.CHAT_VOICE_THEME){
+            await page.waitForSelector('[data-presentation-setting="chatTheme"]',{state:'attached'});
+            await page.evaluate(value=>{const input=document.querySelector('[data-presentation-setting="chatTheme"]');input.value=value;input.dispatchEvent(new Event('change',{bubbles:true}));},process.env.CHAT_VOICE_THEME);
+            await page.waitForFunction(value=>!document.querySelector('[data-presentation-setting="chatTheme"]').disabled&&document.querySelector('.trpg-dialogue').closest('[data-rf-chat-theme]')?.dataset.rfChatTheme===value,process.env.CHAT_VOICE_THEME);
+        }
         const toggle=page.locator('[data-optional-setting="enableVoiceAddon"]'),memory=page.locator('[data-optional-setting="enableMemorySummaries"]');
         assert.equal(await toggle.isChecked(),false);assert.equal(await memory.isChecked(),false);
         assert.equal(await page.locator('.trpg-dialogue .rf-voice-play').count(),0);assert.equal(await page.locator('#roleforge-voice-addons').isVisible(),false);
@@ -54,7 +59,7 @@ try{
         assert.equal(vault.extractable,false);assert.equal(vault.encrypted,true);assert(!vault.settings.includes('sk_demo'));assert(!vault.metadata.includes('sk_demo'));
         await page.locator('#roleforge-voice-addons').scrollIntoViewIfNeeded();await page.screenshot({path:new URL(`settings-connected-${width}.png`,artifacts).pathname});
         await page.locator('#preview-settings-close').click();
-        assert.equal(await page.locator('.trpg-dialogue .rf-voice-play').first().isDisabled(),false);assert.equal(await page.locator('.trpg-dialogue').first().evaluate(node=>{const copy=node.cloneNode(true);copy.querySelector('.rf-voice-dialogue-controls')?.remove();return copy.textContent;}),'ทางเดินข้างหน้ามืดมาก ระวังด้วยนะคะ');assert.equal(await page.locator('.trpg-dialogue > .rf-voice-dialogue-controls').count(),2);assert(await page.locator('.trpg-dialogue .rf-voice-play').first().evaluate(button=>{const outer=button.closest('.trpg-dialogue').getBoundingClientRect(),inner=button.getBoundingClientRect();return inner.left>=outer.left&&inner.right<=outer.right&&inner.bottom<=outer.bottom;}));
+        assert.equal(await page.locator('.trpg-dialogue .rf-voice-play').first().isDisabled(),false);assert.equal(await page.locator('.trpg-dialogue-copy').first().textContent(),'ทางเดินข้างหน้ามืดมาก ระวังด้วยนะคะ');assert.equal(await page.locator('.trpg-dialogue > .rf-voice-dialogue-controls').count(),2);assert(await page.locator('.trpg-dialogue .rf-voice-play').first().evaluate(button=>{const outer=button.closest('.trpg-dialogue').getBoundingClientRect(),inner=button.getBoundingClientRect();return inner.left>=outer.left&&inner.right<=outer.right&&inner.bottom<=outer.bottom;}));
         await page.screenshot({path:new URL(`dialogue-ready-${width}.png`,artifacts).pathname});
         const play=page.locator('.trpg-dialogue .rf-voice-play').first();await play.click();await page.waitForFunction(()=>document.querySelector('.trpg-dialogue .rf-voice-play')?.textContent==='พักเสียง');
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.filter(c=>c.path==='/v1/text-to-dialogue').length),1);
@@ -78,6 +83,13 @@ try{
         assert.match(await editor.locator('[data-speech-voice]').innerText(),/Cora/);
         await editor.locator('[data-speech-text]').evaluate(node=>node.setSelectionRange(0,0));await editor.locator('[data-speech-tag="sniff"]').click();assert.match(await editor.locator('[data-speech-text]').inputValue(),/^\[sniff\] \[whispers\]/);
         await editor.locator('[data-speech-text]').fill('[laughs] '+ 'ระวังทางข้างหน้านะคะ');
+        // A presentation refresh must preserve an open, unsaved speech draft.
+        const currentTheme=await page.locator('[data-presentation-setting="chatTheme"]').inputValue();
+        for(const value of [currentTheme==='folio'?'roleforge':'folio',currentTheme]){
+            await page.evaluate(value=>{const input=document.querySelector('[data-presentation-setting="chatTheme"]');input.value=value;input.dispatchEvent(new Event('change',{bubbles:true}));},value);
+            await page.waitForFunction(value=>!document.querySelector('[data-presentation-setting="chatTheme"]').disabled&&document.querySelector('.trpg-dialogue').closest('[data-rf-chat-theme]')?.dataset.rfChatTheme===value,value);
+            assert.equal(await editor.count(),1,'theme switching preserves the speech editor');assert.equal(await editor.locator('[data-speech-text]').inputValue(),'[laughs] ระวังทางข้างหน้านะคะ');
+        }
         await editor.locator('[data-speech-action="save"]').click();await page.waitForFunction(()=>document.querySelector('[data-speech-status]')?.textContent.includes('บันทึกบทพากย์'));
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.length),speechBefore);
         assert.equal(await page.evaluate(()=>window.host.chat[1].mes),original);

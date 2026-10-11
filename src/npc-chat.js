@@ -1,18 +1,19 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.64.3';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.64.3';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.64.3';
-import {renderSceneTracker} from './scene-tracker.js?v=0.64.3';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.64.3';
-import {renderGroupBoard} from './group-board-ui.js?v=0.64.3';
-import {uiText} from './ui-language.js?v=0.64.3';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.64.3';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.64.3';
-import { croppedPortrait } from './npc-portraits.js?v=0.64.3';
-import { effectiveNpc } from './npc-alternates.js?v=0.64.3';
-import {speechDisplayText} from './voice-core.js?v=0.64.3';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.64.3';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.64.3';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.64.3';
+import {renderStoryEvents} from './story-events-ui.js?v=0.65.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.65.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.65.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.65.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.65.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.65.0';
+import {uiText} from './ui-language.js?v=0.65.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.65.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.65.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.65.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.65.0';
+import {speechDisplayText} from './voice-core.js?v=0.65.0';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.65.0';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.65.0';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.65.0';
+import {headerBadge,dialogueFrame} from './chat-folio.js?v=0.65.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -50,15 +51,24 @@ export function narrative(text,enabled=true) {
     for (const part of ['mark','top','glow','end']) { const deco=element('span',`trpg-prose-${part}`);deco.setAttribute('aria-hidden','true');if(part==='mark')deco.append(icon('feather-pointed'));node.append(deco); }
     node.append(appendStoryText(element('span','trpg-prose-copy'),text)); return node;
 }
-export function speakerHeader(profile, open, theme='roleforge') {
+export function speakerHeader(profile, open, appearance='roleforge') {
+    const view=normalizeChatAppearance(typeof appearance==='string'?{theme:appearance}:appearance);
     const p={...profile,...identity(profile)}, header=element('button','trpg-header'); header.type='button';
     header.setAttribute('data-roleforge-control','profile');
     header.style.setProperty('--speaker',p.identityColor); header.style.setProperty('--portrait',`${p.portraitSize}px`);
     header.setAttribute('aria-label',uiText("เปิดข้อมูล {0}",[p.name]));
+    const badge=view.theme==='folio'?headerBadge(p,view):null;
     const details=element('span','trpg-identity'), role=element('span','trpg-role'); role.append(roleIcon(p.roleIcon));
-    role.append(document.createTextNode([p.title,p.occupation].filter(usable).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') || 'ROLEFORGE'));
+    role.append(document.createTextNode([p.title,...(badge&&view.badgeMode==='occupation'&&usable(p.title)?[]:[p.occupation])].filter(usable).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') || 'ROLEFORGE'));
     details.append(role,element('strong','',p.name));
     const meta=element('span','trpg-meta');for(const value of [p.race,p.relationship,p.faction].filter(usable))meta.append(element('span','',value));details.append(meta);
+    if(view.theme==='folio'){
+        const monogram=element('span','trpg-folio-monogram',Array.from(p.name)[0]||'');monogram.setAttribute('aria-hidden','true');header.append(monogram);
+        if(badge){
+            const strip=element('span','trpg-header-badge');strip.append(element('span','',badge.label));if(badge.level)strip.append(element('strong','',badge.level));
+            details.insertBefore(strip,meta);
+        }
+    }
     const action=element('span','trpg-open-record');action.append(icon('address-card'),element('small','',uiText("ข้อมูลตัวละคร")));
     header.append(details,action);header.addEventListener('click',()=>open(p));return header;
 }
@@ -76,9 +86,10 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
         if (speaker === previousSpeaker && section) return section;
         const p = profile || { name };
         section = element('section', 'trpg-speaker');
+        section.dataset.rfSpeakerName=p.name;
         section.style.setProperty('--speaker', identity(p).identityColor);
         if (speaker !== previousSpeaker) {
-            const header = view.header?speakerHeader(p, open,view.theme):element('div','trpg-speaker-label',p.name);
+            const header = view.header?speakerHeader(p, open,view):element('div','trpg-speaker-label',p.name);
             section.append(header);
             if (view.header&&p.id) void imageFor(p).then(url => {
                 if (!url || !header.isConnected) return;
@@ -97,9 +108,9 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
         if (block.type === 'narrative') { (section || root).append(narrative(block.text,view.narrative)); continue; }
         if (block.type === 'plain') { (section || root).append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
         if (block.type === 'dialogue') {
-            const body=element('div', `trpg-dialogue${view.dialogue?'':' trpg-unframed'}`);
-            body.append(appendStoryText(element('span','trpg-dialogue-copy'),speechDisplayText(block.text)));
-            startSpeaker(block.name || fallbackName || 'NPC').append(body);
+            const speaker=startSpeaker(block.name || fallbackName || 'NPC');
+            const body=dialogueFrame(speaker.dataset.rfSpeakerName,view);
+            appendStoryText(body.querySelector('.trpg-dialogue-copy'),speechDisplayText(block.text));speaker.append(body);
         }
     }
 }
@@ -432,12 +443,13 @@ export function createChatPresentation(api, open) {
             let sharedMount,disposeVoice;
             if(shared){
                 sharedMount=mountSharedStory({host,nodes:nativeNodes(host),blocks,fallbackName:message.name,previousSpeaker,voiceEnabled:Boolean(settings.enableVoiceAddon),language:settings.language,
-                    narrative:text=>narrative(text,view.narrative),dialogueEnabled:view.dialogue,textFor:block=>appendStoryText(element('span'),block.text).textContent,
+                    narrative:text=>narrative(text,view.narrative),dialogueEnabled:view.dialogue,
+                    dialogue:name=>dialogueFrame(resolveNpcSpeaker([...new Set(lookup.values())],name)?.name||name,view),textFor:block=>appendStoryText(element('span'),block.text).textContent,
                     header:(name,previous,colorOnly=false)=>{
                         const profile=resolveNpcSpeaker([...new Set(lookup.values())],name),key=profile||keyName(name),p=profile||{name};
                         const color=identity(p).identityColor;
                         if(colorOnly||key===previous)return {key,color,node:null};
-                        const header=view.header?speakerHeader(p,open,view.theme):element('div','trpg-speaker-label',p.name);header.style.setProperty('--speaker',color);
+                        const header=view.header?speakerHeader(p,open,view):element('div','trpg-speaker-label',p.name);header.style.setProperty('--speaker',color);
                         if(view.header&&p.id)void imageFor(p).then(url=>{if(!url||!header.isConnected)return;const image=element('img','trpg-photo');image.alt=p.name;image.src=url;image.width=image.height=p.portraitSize||72;header.prepend(image);});
                         return {key,color,node:header};
                     },

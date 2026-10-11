@@ -7,6 +7,7 @@ class Node {
  get textContent(){return this.children.length?this.children.map(node=>node.textContent??'').join(''):this.text??'';}
  set textContent(value){this.text=String(value);this.children=[];}
  append(...nodes){this.children.push(...nodes)}
+ querySelector(selector){for(const child of this.children){if(child.className?.split(' ').includes(selector.slice(1)))return child;const found=child.querySelector?.(selector);if(found)return found;}return null;}
  prepend(node){this.children.unshift(node)}
  setAttribute(){}
  addEventListener(name,fn){this.listeners[name]=fn}

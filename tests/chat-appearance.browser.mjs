@@ -18,6 +18,9 @@ async function change(page,key,value){
  await input.waitFor({state:'visible'});await page.waitForFunction(key=>!document.querySelector(`[data-presentation-setting="${key}"]`).disabled,key);
  await page.waitForTimeout(150);
 }
+async function choose(page,key,value){
+ await control(page,key).selectOption(value);await page.waitForFunction(key=>!document.querySelector(`[data-presentation-setting="${key}"]`).disabled,key);await page.waitForTimeout(160);
+}
 async function ready(page){
  await page.waitForFunction(()=>window.hStatsPreview?.ready);await page.waitForSelector('[data-presentation-setting=showChatHeader]',{state:'attached'});
  await page.evaluate(()=>{document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';document.querySelector('#extensions_settings2').style.display='block';document.querySelector('#tretaresia-rpg-settings .inline-drawer-content').style.display='block';document.querySelector('#chat').style.cssText='display:block;padding:12px;box-sizing:border-box;font:16px/1.6 system-ui';});
@@ -43,7 +46,8 @@ try{
   await control(page,'chatPresentation').check();
   const id=await add(page),row=page.locator(`[mesid="${id}"] .mes_text`);await row.locator('.trpg-header').waitFor();
   const npcColor=await row.locator('.trpg-role').evaluate(n=>getComputedStyle(n).color);
-  assert.equal(await control(page,'chatColorMode').count(),0);assert.equal(await control(page,'chatTheme').count(),0);
+  assert.equal(await control(page,'chatColorMode').count(),0);assert.equal(await control(page,'chatTheme').count(),1);
+  assert.deepEqual(await control(page,'chatTheme').locator('option').allTextContents(),['RoleForge Original','The Mage’s Folio']);
   for(let flags=0;flags<8;flags++){
    for(const [bit,key] of ['showChatHeader','showChatDialogue','showChatNarrative'].entries())await change(page,key,Boolean(flags&(1<<bit)));
    assert.equal(await row.locator('.trpg-header').count(),flags&1?1:0);
@@ -100,18 +104,33 @@ try{
   // rather than setChecked(), which requires the attempted state to stick.
   await control(page,'showChatNarrative').click();await page.waitForFunction(()=>document.querySelector('.rf-chat-appearance-status').textContent.includes('theme-save-failed'));
   assert.equal(await control(page,'showChatNarrative').isChecked(),true);assert.equal(await page.evaluate(()=>JSON.stringify(window.host.chatMetadata)===window.themeBefore),true);await page.evaluate(()=>window.host.saveMetadata=window.themeSave);
+  // Theme/source controls save through the same per-chat transaction. Native
+  // whole-message widgets keep their exact DOM and event handlers.
+  await choose(page,'chatTheme','folio');await change(page,'showChatHeader',true);await change(page,'showChatDialogue',true);
+  assert.equal(await row.locator('.trpg-chat').first().getAttribute('data-rf-chat-theme'),'folio');
+  assert.equal(await row.locator('.trpg-dialogue-label').innerText(),'Cora');
+  assert.equal(await page.evaluate(()=>document.querySelector('.regex-card')===window.nativeCard&&window.nativeCard.querySelector('input').checked),true);await page.locator('.regex-card button').click();assert.equal(await page.evaluate(()=>window.nativeClicks),7);
+  await choose(page,'chatHeaderBadgeMode','ability');await control(page,'chatHeaderBadgeAbility').fill('Water Magic');await control(page,'chatHeaderBadgeAbility').dispatchEvent('change');await page.waitForTimeout(180);
+  assert.equal(await row.locator('.trpg-header-badge').count(),0,'missing NPC ability is hidden');
+  assert.equal(await page.locator(`[mesid="${user}"] .trpg-user-chat`).getAttribute('data-rf-chat-theme'),'folio');
+  await change(page,'showChatHeader',false);await change(page,'showChatDialogue',false);
+  assert.equal(await row.locator('.trpg-dialogue-label').count(),0,'disabled speech has no Folio decoration');
+  assert.equal(await page.evaluate(id=>window.host.chat[id].mes,id),source);
   assert.equal(await page.evaluate(()=>window.themeAiCalls),0,'frame switches never call AI');
   await page.evaluate(()=>window.themeChatA=structuredClone(window.host.chatMetadata));
   await page.evaluate(async()=>{window.host.characterId=1;window.host.chat=[];document.querySelector('#chat').replaceChildren();await window.hStatsPreview.switchChat('B',{});});
   assert.equal(await control(page,'showChatHeader').isChecked(),true);assert.equal(await control(page,'showChatNarrative').isChecked(),false,'new chat adopts card frame defaults');assert.equal(await page.evaluate(()=>window.host.chatMetadata.roleforge_chat_presets.config.chatAppearance.theme),'roleforge');
+  assert.equal(await control(page,'chatTheme').inputValue(),'roleforge');assert.equal(await control(page,'chatHeaderBadgeMode').inputValue(),'occupation');
   assert.equal(await page.evaluate(()=>Object.hasOwn(window.host.chatMetadata.roleforge_chat_presets.config.chatAppearance,'colorMode')),false,'legacy card color modes are removed');
   await change(page,'showChatNarrative',true);await page.evaluate(async()=>{window.host.characterId=0;await window.hStatsPreview.switchChat('A',window.themeChatA);});
   assert.equal(await control(page,'showChatHeader').isChecked(),false);assert.equal(await control(page,'showChatDialogue').isChecked(),false);assert.equal(await control(page,'showChatNarrative').isChecked(),true);assert.equal(await page.evaluate(()=>window.host.extensionSettings.tretaresia_rpg.showChatHeader),true,'chat appearance never overwrites global defaults');
+  assert.equal(await control(page,'chatTheme').inputValue(),'folio');assert.equal(await control(page,'chatHeaderBadgeMode').inputValue(),'ability');assert.equal(await control(page,'chatHeaderBadgeAbility').inputValue(),'Water Magic');assert.equal(await page.evaluate(()=>window.host.extensionSettings.tretaresia_rpg.chatTheme),'roleforge','global theme remains Original');
   // The isolated host has one disk-cache slot; ST loads a separate chat file.
   // Cache the selected A metadata before reloading this fixture.
   await page.evaluate(()=>window.host.saveMetadata());
   await page.reload();await ready(page);assert.equal(await control(page,'showChatHeader').isChecked(),false,'frame choices survive reload');assert.equal(await control(page,'showChatDialogue').isChecked(),false);assert.equal(await control(page,'showChatNarrative').isChecked(),true);assert.equal(await control(page,'chatColorMode').count(),0);
+  assert.equal(await control(page,'chatTheme').inputValue(),'folio','Folio survives reload');
   await page.locator('.rf-chat-theme-preview').evaluate(n=>n.open=true);await page.locator('.rf-chat-theme-preview .trpg-narrative').waitFor();await page.locator('.rf-chat-appearance-settings').screenshot({path:`${artifacts}/settings-${width}.png`});
-  assert.deepEqual(errors,[]);console.log(`PASS Original only, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults and per-chat persistence at ${width}px`);await page.close();
+  assert.deepEqual(errors,[]);console.log(`PASS 2 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, badge source and per-chat persistence at ${width}px`);await page.close();
  }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

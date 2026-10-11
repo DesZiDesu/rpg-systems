@@ -30,9 +30,13 @@ export function createSpeechEditor({document:doc=globalThis.document,t,runtime,s
             if(action==='restore'){dialog.querySelector('textarea').value=entry.originalText;dialog.querySelector('select').value='';status(t('Original restored in this editor. Save to remove the previous draft.','คืนต้นฉบับในกล่องแล้ว · กดบันทึกเพื่อล้างบทพากย์เดิม'));update();return;}
             const target=entry,text=dialog.querySelector('textarea').value.trim(),voice=dialog.querySelector('select').value;
             if(action==='save')run(async()=>{
+                await target.loaded;
+                const sourceValid=()=>target.sourceValid?target.sourceValid():target.valid();if(!sourceValid())return;
                 const draft=text===target.originalText&&!voice?null:{text,voice};
-                await storage.saveDraft(target.draftKey,draft);if(!target.valid())return;
-                target.draft=draft;refresh();if(entry===target)status(t('Speech draft saved on this browser.','บันทึกบทพากย์ในเบราว์เซอร์นี้แล้ว'));
+                await storage.saveDraft(target.draftKey,draft);if(!sourceValid())return;
+                target.draft=draft;
+                const current=entry?.draftKey===target.draftKey&&entry.valid();if(current)entry.draft=draft;
+                refresh();if(current)status(t('Speech draft saved on this browser.','บันทึกบทพากย์ในเบราว์เซอร์นี้แล้ว'));
             });
             if(action==='generate'){
                 runtime.activate();status(t('Using this draft. Save if you want to reuse these edits.','ใช้บทในกล่องครั้งนี้ · กดบันทึกหากต้องการเก็บการแก้ไขนี้'));
@@ -64,5 +68,15 @@ export function createSpeechEditor({document:doc=globalThis.document,t,runtime,s
         const select=dialog.querySelector('select');select.innerHTML=options(target.voiceOverride);select.value=target.voiceOverride||'';
         status('');if(!dialog.open)dialog.showModal();update();
     }
-    return {open,update,close,destroy(){close();dialog?.remove();}};
+    function rebind(candidates){
+        if(!entry||!dialog?.open||entry.valid())return;
+        // A visual refresh may replace cards; an edited/swiped/switched story
+        // must still close the editor rather than attach it to another source.
+        if(!entry.sourceValid?.()){close();return;}
+        const replacement=candidates.find(item=>item.entry.id===entry.id&&item.entry.draftKey===entry.draftKey&&item.entry.valid());
+        if(!replacement)return;
+        replacement.entry.draft=entry.draft;entry=replacement.entry;opener=replacement.opener;
+        dialog.querySelector('[data-speech-speaker]').textContent=entry.name;update();
+    }
+    return {open,update,close,rebind,destroy(){close();dialog?.remove();}};
 }

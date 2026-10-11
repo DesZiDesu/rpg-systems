@@ -1,0 +1,114 @@
+{
+  "version": "0.65.0",
+  "validatedAt": "2026-10-11T11:37:26.039012+00:00",
+  "scope": "RoleForge Original / The Mage’s Folio, per-NPC identity color, real occupation/rank or ability/mastery badge, independent frames and per-chat presets; speech drafts survive presentation refreshes while source edits invalidate them",
+  "unitTests": {
+    "command": "npm test",
+    "passed": 1202,
+    "failed": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "passed": true
+  },
+  "appearance": {
+    "commands": [
+      "npm run test:themes",
+      "node tests/chat-appearance.browser.mjs"
+    ],
+    "widths": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "themes": [
+      "roleforge",
+      "folio"
+    ],
+    "frameCombinations": 8,
+    "folioIdentityColors": [
+      "#abc4b6",
+      "#e65f70",
+      "#76b9e8"
+    ],
+    "speechContrastMinimum": 4.5,
+    "headerAndNarrativeTransparent": true,
+    "squarePortraitsRightInFolio": true,
+    "noHorizontalOverflow": true,
+    "longNamesStayBelowNameTab": true,
+    "badgeReadsExistingNpcFactsOnly": true,
+    "nonmagicOccupationSupported": true,
+    "ambiguousCategoryHidden": true,
+    "perChatPersistence": true,
+    "reload": true,
+    "legacyMigration": true,
+    "cardAndWorldPresetRoundTrip": true,
+    "failedSaveRollback": true,
+    "themeChangesMakeNoAiCalls": true
+  },
+  "voice": {
+    "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium CHAT_VOICE_THEME=folio npm run test:voice",
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "providerResponses": "local fixtures; no paid requests",
+    "livePlaybackAndCache": true,
+    "sourceTextExcludesNameTab": true,
+    "unsavedEditorDraftSurvivesBothThemeSwitches": true,
+    "saveAndRestoreAcrossReload": true,
+    "sourceEditClosesOldEditor": true,
+    "lateSwipedGenerationCancelled": true,
+    "mp3DownloadRenameAndClear": true
+  },
+  "compatibility": {
+    "commands": [
+      "node tests/regex-shared.browser.mjs",
+      "node tests/regex-compat.browser.mjs",
+      "node tests/presentation-settings.browser.mjs",
+      "node tests/mvu-compat.browser.mjs",
+      "node tests/chat-render-performance.browser.mjs",
+      "npm run test:user-chat"
+    ],
+    "nativeNodesAndListenersPreserved": true,
+    "iframeIdentityAndStatePreserved": true,
+    "wholeMessageForeignFrontendKeepsOwnDesign": true,
+    "dataStoresRemainSeparate": true,
+    "userUiRightAligned": true,
+    "performance": {
+      "implementation": "working tree",
+      "rows": 200,
+      "updatedSceneReads": 1,
+      "domMutations": 2,
+      "tail": "Updated tail."
+    }
+  },
+  "preview": {
+    "implementation": "production renderer, CSS and Voice control DOM inside a mock SillyTavern shell with sample NPC facts",
+    "accessToUserServer": false,
+    "offlineNetworkRequestsRequired": false,
+    "portableArchive": "previews/chat-folio/roleforge-folio-preview.zip",
+    "archiveCrcVerified": true,
+    "embeddedSquarePortraitAndLicensedFont": true,
+    "previewVoiceButton": "explains setup without calling an audio API"
+  },
+  "sourceSha256": {
+    "index.js": "e5f48aef63e7dcb22a9d5011eaad315cd4010c46832c2122ff6ad5e32e8b5c13",
+    "manifest.json": "05a41fb125974812eb165555d32627f4d54ce521d33eada6f6da0ec6f1e1e718",
+    "src/chat-themes.js": "c2c49cbd6fdd39d8a127ed356982d23b302b5c37c56bdcfd3fffad90ca628ea1",
+    "src/chat-folio.js": "39a376d0a5b66326decf853aa5f08f69ff93878bee706efc549919eca1c19761",
+    "src/chat-appearance-ui.js": "a74188070b8988dd3325b04a34546190e72ec47ab88061378e12015d5ad142fc",
+    "src/npc-chat.js": "53995df0a77f234dfa8a16f3a6ac22cfce6b081c518f44b68efccb564e1c0dab",
+    "src/user-chat.js": "ff32c9f6c5bccd6146bad7e9e3d60fce64430b83ebd0531eab10427ca8d3bc3a",
+    "src/chat-compat.js": "24cc2f4f7fc7663a27e86de09c3abee7287057887bba945cde53eade3da32b9d",
+    "src/voice-addons.js": "caa6aef4c88d12dc4604fcd87bb2b8b092e6b7dc60a6b1f9659ac603c811813b",
+    "src/voice-editor.js": "a8efb8cd25a0561b7855f6a8db99c30e1eae5ad9045b7bc89c18dc0feb4e6f8e",
+    "styles/chat-themes.css": "8c898f9a5b7548c71fd96673fe2080b82d3b6b1b376298e677863adc8626b872",
+    "styles/extension-settings.css": "3aa97aa48acf3be70cb683e4d54f523c1dc9fd8129b07d4ba91ca52ca37ed972",
+    "docs/previews/chat-folio/index.html": "7a84e350f2e529df9fef4550e6b0852780be6706b218445d759b289dbf538985",
+    "docs/previews/chat-folio/gallery.js": "89f7ae415ee8ab74a5461c64e9ef0c3818ce199f4f92c4cfd91d4ec06776adf9",
+    "docs/previews/chat-folio/gallery.css": "179bcec481090f21d09d355e75a13dadb3c830890766473905afcfaee59c150e"
+  }
+}

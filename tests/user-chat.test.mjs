@@ -39,6 +39,7 @@ test('large messages and excessive fragments are bounded and keep native formatt
 class Node {
     constructor(tag){this.tag=tag;this.dataset={};this.classList={toggle:()=>{}};this.children=[];this.properties={};this.style={setProperty:(key,value)=>this.properties[key]=value};}
     append(...children){this.children.push(...children);}
+    querySelector(selector){for(const child of this.children){if(child.className?.split(' ').includes(selector.slice(1)))return child;const found=child.querySelector?.(selector);if(found)return found;}return null;}
     setAttribute(key,value){this[key]=value;}
 }
 const doc={createElement:tag=>new Node(tag)};

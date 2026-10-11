@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.64.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.65.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -8,9 +8,11 @@ RoleForge brings an RPG workspace into your SillyTavern chat. Track your charact
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
 
-## Original chat appearance
+## Chat designs
 
-**Extensions → RoleForge → Chat appearance & NPCs** keeps **Original** as the only chat design, with three independent switches: **Header**, **Dialogue** and **Narrative**. Enable any combination; disabling Dialogue displays `"text"` in the speaker’s character color, disabling Narrative displays italic text without visible asterisks, and Header becomes a plain speaker name. Owned blocks use compact spacing, including Markdown separators in Shared mode; raw messages and speech remain unchanged. Header and Narrative stay transparent. Choices are saved per chat and included in presets and one-card setup. Older theme presets keep their frame choices; retired color-mode fields are ignored and omitted from exports. Square portraits, User UI right alignment, native SillyTavern settings and Regex/MVU widgets are preserved. [PC / mobile preview](docs/previews/chat-original/index.html) · [Thai guide](docs/chat-original-v0.64.3.th.md).
+**Extensions → RoleForge → Chat appearance & NPCs** offers **RoleForge Original** and **The Mage’s Folio**. Folio has a right-hand square portrait, book-style nameplate, real NPC badge, rounded speech slip and a pen signature. Each speaker’s identity color tints their Header and Dialogue; red characters use red accents and a dark red speech frame with readable light text. The badge can show occupation + overall NPC rank, or a selected skill + its mastery level. Missing facts are hidden, and nonmagic settings work too.
+
+Enable **Header**, **Dialogue** and **Narrative** independently. Disabling Dialogue displays `"text"` in the speaker’s color; disabling Narrative displays italic text; Header becomes a plain speaker name. Header and Narrative stay transparent. Choices are saved per chat and included in presets and one-card setup. Original remains the default, retired themes migrate to Original, and retired color-mode fields are ignored. User UI stays on the right. Shared mode preserves native Regex/MVU widgets and Voice controls; saved story and spoken text stay unchanged. [PC / mobile / color preview](docs/previews/chat-folio/index.html) · [Thai guide](docs/chat-designs-v0.65.0.th.md).
 
 ## Install
 
@@ -112,7 +114,7 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.64.3** has **1,197 passing unit/host tests** and syntax checks. Browser checks cover transparent containers on light/dark host palettes, all eight independent frame combinations and unchanged Original styling across OS appearances at 320/390/1280px, compact block spacing, italic unframed narration, quoted speech in each character’s color (including Header off), unchanged Voice controls, native break-node restoration, native settings, per-chat persistence, legacy/card defaults, failed saves, preset import/export, User UI and Regex/MVU iframe identity. Preview screenshots also use the production renderer inside an isolated real **SillyTavern 1.19.0** instance at 320/390/1440px. [Current guide](docs/chat-original-v0.64.3.th.md) · [Validation record](docs/validation-chat-original-v0.64.3.json).
+Version **0.65.0** passes **1,202 unit/host tests** and syntax checks. Production browser checks cover both chat designs at 320/390/768/1280px, all eight independent frame combinations, square portraits, three Folio character colors, readable speech contrast, long names, live Voice controls, per-chat settings, reload, card/preset defaults and failed-save rollback. Native widgets keep their node identity, bound actions and iframe state through switching/restoration. Speech drafts survive visual theme refreshes while edits/swipes still invalidate their old source. The Original gallery also checks both host palettes and OS appearances. Browser checks use the production renderer and controlled SillyTavern hosts; the new preview’s outer chat shell is a mock. [Current guide](docs/chat-designs-v0.65.0.th.md) · [Validation record](docs/validation-chat-designs-v0.65.0.json).
 
 The broader 0.62.0 checks, including the original uploaded Madoka card, remain recorded in [the preceding validation report](docs/validation-chat-presets-v0.62.0.json).
 

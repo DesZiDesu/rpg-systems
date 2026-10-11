@@ -21,10 +21,12 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const url=`http://127.0.0.1:${server.address().port}${base}docs/previews/preview-h-stats.html?lang=en`;
 const artifacts=process.env.PRESENTATION_SCREENSHOT_DIR;
 if(artifacts)await mkdir(artifacts,{recursive:true});
+const presentationKeys=['chatPresentation','userChatPresentation','chatTheme','showChatHeader','showChatDialogue','showChatNarrative','chatHeaderBadgeMode','chatHeaderBadgeAbility','chatRegexMode'].sort();
 const oldBody='PRIVATE_OLD_BODY: They leave the city through its gate.';
 const taggedBody='<tr-header name="Cora"/><tr-narrative>PRIVATE_NEW_BODY: She waits beside the river.</tr-narrative><tr-dialogue name="Cora">Welcome back.</tr-dialogue>';
 async function ready(page){
  await page.waitForFunction(()=>window.hStatsPreview?.ready&&document.querySelector('#tretaresia-rpg-overlay.is-ready'));
+ await page.waitForSelector('[data-presentation-setting="chatRegexMode"]',{state:'attached'});
  await page.evaluate(()=>{
   document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';
   document.querySelector('#chat').style.cssText='display:block;padding:12px;box-sizing:border-box;font-size:16px;line-height:1.5';
@@ -69,7 +71,7 @@ try{
    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({tretaresia_rpg:{language:'en',autoTrack:false,injectState:false,autoContinuity:false,chatPresentation:false,showSceneTracker:false,memoryAutoSummary:false}}));
   });
   await page.goto(url);await ready(page);
-  assert.equal(await page.locator('[data-presentation-setting]').count(),6);
+  assert.deepEqual(await page.locator('[data-presentation-setting]').evaluateAll(nodes=>nodes.map(n=>n.dataset.presentationSetting).sort()),presentationKeys);
   assert.equal(await control(page,'chatRegexMode').inputValue(),'shared','missing preference composes with native Regex');
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/Shared mode keeps Regex UI/);
   await status(page,/RoleForge \d+\.\d+\.\d+.*is off.*No character reply yet/);
@@ -111,7 +113,7 @@ try{
   await status(page,/รูปแบบ RoleForge เดิม.*คำตอบล่าสุดมีบล็อกจัดรูปแบบ/);
   assert.match(await control(page,'chatRegexMode').locator('..').innerText(),/การแสดงแชทร่วมกับ Regex \/ HTML/);
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/โหมดแสดงร่วมกันเก็บ UI และปุ่มของ Regex/);
-  assert.equal(await page.locator('[data-presentation-setting]').count(),6,'language refresh does not duplicate presentation controls');
+  assert.deepEqual(await page.locator('[data-presentation-setting]').evaluateAll(nodes=>nodes.map(n=>n.dataset.presentationSetting).sort()),presentationKeys,'language refresh does not duplicate presentation controls');
   if(artifacts){await page.locator('.trpg-settings').screenshot({path:`${artifacts}/presentation-settings-${width}.png`});}
   const bounds=await page.locator('.trpg-settings').evaluate(group=>({left:group.getBoundingClientRect().left,right:group.getBoundingClientRect().right,width:innerWidth,scroll:group.scrollWidth,client:group.clientWidth}));
   assert(bounds.left>=-1&&bounds.right<=bounds.width+1&&bounds.scroll<=bounds.client+1,`presentation settings/status fit the viewport: ${JSON.stringify(bounds)}`);

@@ -1,7 +1,7 @@
 // Compose with the host's already formatted DOM. Never run regex per block or
 // recreate another extension's card with innerHTML/clones.
-import {parseUserMessage} from './user-chat.js?v=0.64.3';
-import {cleanChatProse} from './foreign-chat.js?v=0.64.3';
+import {parseUserMessage} from './user-chat.js?v=0.65.0';
+import {cleanChatProse} from './foreign-chat.js?v=0.65.0';
 export function chatPresentationMode(settings = {}) {
     return ['shared','native','roleforge'].includes(settings.chatRegexMode)
         ? settings.chatRegexMode : settings.preserveNativeChat === true ? 'native' : 'shared';
@@ -264,7 +264,7 @@ function compactSharedSeparators(roots,markers) {
     return [...gaps];
 }
 
-export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,dialogueEnabled=true,document:doc=globalThis.document}) {
+export function mountSharedStory({host,nodes,blocks,header,narrative,dialogue,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,dialogueEnabled=true,document:doc=globalThis.document}) {
     const roots = [], wrappers = [], targets = Array(blocks.length).fill(null), voiceBlocks = blocks.map(block => ({...block}));
     const create = (tag,cls,text) => {const node=doc.createElement(tag);node.className=cls;if(cls.includes('trpg-chat'))node.dataset.roleforgeMount='shared';if(text!==undefined)node.textContent=text;return node;};
     const markers = protocolNodes(nodes);
@@ -298,14 +298,14 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,textFor,fal
         const shell=user?user.render([{...block,text:''}]):create('div','trpg-chat rf-shared-block');
         shell.dataset.roleforgeMount='shared';
         shell.classList.add('rf-shared-block');shell.querySelector('.trpg-user-header')?.remove();
-        const body=user?shell.querySelector(block.type==='thought'?'.trpg-user-thought':`.trpg-${block.type}`):block.type === 'narrative' ? narrative('') : create('div',block.type === 'dialogue' ? 'trpg-dialogue' : 'trpg-plain');
+        const name=nativeName || block.name || currentName || fallbackName;
+        const body=user?shell.querySelector(block.type==='thought'?'.trpg-user-thought':`.trpg-${block.type}`):block.type === 'narrative' ? narrative('') : block.type==='dialogue'&&dialogue ? dialogue(name) : create('div',block.type === 'dialogue' ? 'trpg-dialogue' : 'trpg-plain');
         if(!body)continue;
         if(block.type==='dialogue'&&!dialogueEnabled)body.classList.add('trpg-unframed');
         let content=block.type === 'narrative' ? body.querySelector('.trpg-prose-copy') : block.type==='thought'?body.querySelector('p'):block.type==='dialogue'?body.querySelector('.trpg-dialogue-copy'):body;
         if(block.type==='dialogue'&&!content){content=create('span','trpg-dialogue-copy');body.append(content);}
         if(block.type === 'narrative'){const copy=create('div','trpg-prose-copy');content.replaceWith(copy);content=copy;}
         content.dataset.roleforgeNativeContent='';
-        const name=nativeName || block.name || currentName || fallbackName;
         if(!user){const rendered=header(name,speaker,true);shell.style.setProperty('--speaker',rendered.color);shell.append(body);}
         const textEdits=user?trimPlayerDelimiters(target,block.type,doc):[];
         const ownedBodyChildren=new Set(body.childNodes),nativeText=target.textContent;

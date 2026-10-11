@@ -1,4 +1,5 @@
-import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.64.3';
+import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.65.0';
+import {dialogueFrame} from './chat-folio.js?v=0.65.0';
 // This shorthand is a player display convention, never an assistant protocol.
 const escaped=(source,index)=>{let slashes=0;while(index>0&&source[--index]==='\\')slashes++;return slashes%2===1;};
 function richMarkdown(source){
@@ -48,8 +49,8 @@ export function renderUserBlocks(blocks,{name='User',language='en',accent='#d6b4
             thought.append(node('small','',label),appendText(node('p','',undefined),block.text));root.append(thought);continue;
         }
         if(block.type==='plain'&&!block.text.trim())continue;
-        const body=node('div',block.type==='dialogue'?`trpg-dialogue${view.dialogue?'':' trpg-unframed'}`:'trpg-plain');
-        if(block.type==='dialogue')body.append(appendText(node('span','trpg-dialogue-copy'),block.text));
+        const body=block.type==='dialogue'?dialogueFrame(name,view,doc):node('div','trpg-plain');
+        if(block.type==='dialogue')appendText(body.querySelector('.trpg-dialogue-copy'),block.text);
         else appendText(body,block.text);
         root.append(body);
     }
