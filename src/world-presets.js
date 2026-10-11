@@ -1,9 +1,9 @@
-import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.64.2';
-import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.64.2';
-import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.64.2';
-import {normalizeStatTraining} from './stat-training.js?v=0.64.2';
-import {writeLoreOptions} from './lore-core.js?v=0.64.2';
-import {validateChatAppearance} from './chat-themes.js?v=0.64.2';
+import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.64.3';
+import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.64.3';
+import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.64.3';
+import {normalizeStatTraining} from './stat-training.js?v=0.64.3';
+import {writeLoreOptions} from './lore-core.js?v=0.64.3';
+import {validateChatAppearance} from './chat-themes.js?v=0.64.3';
 
 export const CHAT_PRESET_KEY = 'roleforge_chat_presets';
 export const PRESET_LIBRARY_KEY = 'roleforgePresetLibrary';

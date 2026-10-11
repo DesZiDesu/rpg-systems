@@ -50,8 +50,11 @@ try{
      for(const [part,bit] of [['dialogue',1],['narrative',2]]){
       const body=story.locator(`.trpg-${part}`).first(),off=!(flags&(1<<bit));assert.equal(await body.evaluate(n=>n.classList.contains('trpg-unframed')),off);
       if(off)assert.deepEqual(await body.evaluate(n=>{const c=getComputedStyle(n);return{background:c.backgroundImage,border:c.borderTopWidth,padding:c.paddingLeft,before:getComputedStyle(n,'::before').display};}),{background:'none',border:'0px',padding:'0px',before:'none'});
-      const marks=await body.locator(part==='dialogue'?'.trpg-dialogue-copy':'.trpg-prose-copy').evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content));
-      assert.deepEqual(marks,off?[JSON.stringify(part==='dialogue'?'"':'*'),JSON.stringify(part==='dialogue'?'"':'*')]:['none','none'],'literal delimiters appear only when their frame is off');
+      const copy=body.locator(part==='dialogue'?'.trpg-dialogue-copy':'.trpg-prose-copy');
+      const marks=await copy.evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content));
+      assert.deepEqual(marks,off&&part==='dialogue'?[JSON.stringify('"'),JSON.stringify('"')]:['none','none'],'only unframed speech has literal quotation marks');
+      if(part==='narrative')assert.equal(await copy.evaluate(n=>getComputedStyle(n).fontStyle),off?'italic':'normal','unframed narration is italic without visible asterisks');
+      else if(off)assert.equal(await copy.evaluate(n=>getComputedStyle(n).color),'rgb(164, 186, 136)','speech keeps the NPC identity color even with Header off');
      }
      const gaps=await story.evaluate(root=>{const boxes=[...root.querySelectorAll('.trpg-header,.trpg-speaker-label,.trpg-narrative,.trpg-dialogue')].map(n=>n.getBoundingClientRect());return boxes.slice(1).map((box,i)=>box.top-boxes[i].bottom);});
      assert(gaps.every(gap=>gap>=0&&gap<=12),`compact flow at ${width}px, flags ${flags}: ${gaps}`);
@@ -70,13 +73,15 @@ try{
   // Narration may precede the first header, and a reply can change speakers.
   // Keep those boundaries as compact as a single speaker's alternating turn.
   for(const enabled of [true,false]){
-   const gaps=await page.evaluate(async({url,enabled})=>{
+   const result=await page.evaluate(async({url,enabled})=>{
     const {renderStoryBlocks}=await import(url),sample=document.createElement('div');sample.className='trpg-chat';document.body.append(sample);
     const blocks=[{type:'narrative',text:'The river is quiet.'},{type:'narrative',text:'A lantern appears.'},{type:'header',name:'Alice'},{type:'dialogue',name:'Alice',text:'Welcome.'},{type:'header',name:'Bob'},{type:'narrative',text:'He nods.'},{type:'dialogue',name:'Bob',text:'Hello.'}];
-    renderStoryBlocks(sample,blocks,new Map(),'Narrator',()=>{},async()=>null,null,{header:enabled,dialogue:enabled,narrative:enabled});
-    const boxes=[...sample.querySelectorAll('.trpg-header,.trpg-speaker-label,.trpg-narrative,.trpg-dialogue')].map(n=>n.getBoundingClientRect());sample.remove();return boxes.slice(1).map((box,i)=>box.top-boxes[i].bottom);
-   },{url:`${origin}src/npc-chat.js?v=0.64.2`,enabled});
-   assert(gaps.every(gap=>gap>=0&&gap<=12),`compact global narration and speaker changes at ${width}px: ${gaps}`);
+    renderStoryBlocks(sample,blocks,new Map([['alice',{name:'Alice',identityColor:'#ed8494'}],['bob',{name:'Bob',identityColor:'#70c1d4'}]]),'Narrator',()=>{},async()=>null,null,{header:enabled,dialogue:enabled,narrative:enabled});
+    const boxes=[...sample.querySelectorAll('.trpg-header,.trpg-speaker-label,.trpg-narrative,.trpg-dialogue')].map(n=>n.getBoundingClientRect());
+    const result={gaps:boxes.slice(1).map((box,i)=>box.top-boxes[i].bottom),colors:[...sample.querySelectorAll('.trpg-dialogue-copy')].map(n=>getComputedStyle(n).color)};sample.remove();return result;
+   },{url:`${origin}src/npc-chat.js?v=0.64.3`,enabled});
+   assert(result.gaps.every(gap=>gap>=0&&gap<=12),`compact global narration and speaker changes at ${width}px: ${result.gaps}`);
+   if(!enabled)assert.deepEqual(result.colors,['rgb(237, 132, 148)','rgb(112, 193, 212)'],'each speaker retains their own color without Header');
   }
   for(const portrait of [false,true]){
    await page.locator('#portrait').setChecked(portrait);assert.equal(await story.locator('.trpg-photo').count(),portrait?1:0);
@@ -118,7 +123,9 @@ root.querySelector('.trpg-header').onclick=()=>document.getElementById('preview-
    assert.equal(await offline.locator('.trpg-chat').getAttribute('data-rf-color-mode'),null);
    for(const part of ['header','dialogue','narrative'])await offline.locator(`[data-part="${part}"]`).uncheck();
    assert.deepEqual(await offline.locator('.trpg-prose-copy,.trpg-dialogue').allTextContents(),text);assert.equal(await offline.locator('.trpg-header').isVisible(),false);
-   for(const [selector,mark] of [['.trpg-dialogue-copy','"'],['.trpg-prose-copy','*']])assert.equal(await offline.locator(selector).first().evaluate(n=>getComputedStyle(n,'::before').content),JSON.stringify(mark));
+   assert.equal(await offline.locator('.trpg-dialogue-copy').first().evaluate(n=>getComputedStyle(n,'::before').content),JSON.stringify('"'));
+   assert.equal(await offline.locator('.trpg-dialogue-copy').first().evaluate(n=>getComputedStyle(n).color),'rgb(164, 186, 136)');
+   assert.deepEqual(await offline.locator('.trpg-prose-copy').first().evaluate(n=>({style:getComputedStyle(n).fontStyle,marks:['::before','::after'].map(p=>getComputedStyle(n,p).content)})),{style:'italic',marks:['none','none']});
    await offline.locator('[data-part="header"]').check();assert.equal(await offline.locator('.trpg-header').isVisible(),true);await offline.close();
   }
   assert.deepEqual(errors,[]);console.log(`PASS transparent Original, 2 host palettes × 2 OS schemes × 8 frame combinations, square portraits and no overflow at ${width}px`);await page.close();

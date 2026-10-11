@@ -1,13 +1,14 @@
-RoleForge 0.64.2 · Original Chat Preview
+RoleForge 0.64.3 · Original Chat Preview
 
 แตก ZIP แล้วเปิด index.html หรือ standalone.html ด้วย browser
 Preview ทำงานแบบออฟไลน์ ไม่ต้องติดตั้งส่วนเสริมและไม่เรียก AI
 เปิด/ปิด Header, Dialogue และ Narrative ได้อิสระครบทั้ง 8 แบบ
 Header และ Narrative โปร่งใส พื้นหลังมีเฉพาะกรอบ Dialogue
 ระยะห่างกระชับขึ้นประมาณ 6px ระหว่างบล็อก RoleForge
-เมื่อปิด Dialogue แสดง "text" เมื่อปิด Narrative แสดง *text*
+เมื่อปิด Dialogue แสดง "text" ด้วยสีประจำตัวผู้พูด เมื่อปิด Narrative แสดงตัวเอียงโดยไม่มีดอกจัน
 เครื่องหมายใช้แสดงผล ไม่เปลี่ยนข้อความที่ AI / Regex / Voice ใช้
-สีข้อความบนพื้นที่โปร่งใสอิงธีม SillyTavern
+คำบรรยายอิงสีข้อความของธีม SillyTavern บทพูดไม่มีกรอบใช้สีประจำตัวละคร
+บทพูดของผู้เล่นใช้สี accent ที่ตั้งไว้ใน RoleForge
 ภาพตัวละครใช้ crop 1:1 ของ renderer จริง
 
 ภาพใน screenshots เป็น SillyTavern 1.19.0 ที่ติดตั้งแยกใน workspace

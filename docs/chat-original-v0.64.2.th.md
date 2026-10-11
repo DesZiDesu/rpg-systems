@@ -1,3 +1,5 @@
+> คู่มือรุ่น 0.64.2 — รุ่นปัจจุบันเปลี่ยนคำบรรยายที่ปิดกรอบเป็นตัวเอียง และบทพูดใช้สีประจำตัวผู้พูด ดู [คู่มือ 0.64.3](chat-original-v0.64.3.th.md)
+
 # Original · เปิด/ปิดแยกส่วน · RoleForge 0.64.2
 
 ใช้ดีไซน์ **Original** ของ RoleForge แบบเดียว เปิด/ปิด **Header**, **Dialogue** และ **Narrative** ได้อิสระ ไม่มีตัวเลือก Light Mode / Dark Mode / User Setting

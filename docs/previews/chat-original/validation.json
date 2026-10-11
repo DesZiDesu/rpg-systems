@@ -1,7 +1,7 @@
 {
   "host": "SillyTavern 1.19.0",
   "hostRevision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
-  "renderer": "0.64.2 Original production Main Chat renderer and CSS",
+  "renderer": "0.64.3 Original production Main Chat renderer and CSS",
   "provider": "Offline; no AI generation calls",
   "physicalDevices": false,
   "captures": [
@@ -141,7 +141,7 @@
       "textPreserved": true,
       "transparentContainers": true,
       "maxInterBlockGapPx": 12,
-      "literalDelimitersWhenUnframed": true
+      "italicNarrationAndSpeakerColoredQuotes": true
     },
     {
       "width": 1440,
@@ -150,7 +150,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -169,7 +169,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -188,7 +188,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -207,7 +207,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -246,7 +246,7 @@
       "textPreserved": true,
       "transparentContainers": true,
       "maxInterBlockGapPx": 12,
-      "literalDelimitersWhenUnframed": true
+      "italicNarrationAndSpeakerColoredQuotes": true
     },
     {
       "width": 390,
@@ -255,7 +255,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -274,7 +274,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -293,7 +293,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -312,7 +312,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -351,7 +351,7 @@
       "textPreserved": true,
       "transparentContainers": true,
       "maxInterBlockGapPx": 12,
-      "literalDelimitersWhenUnframed": true
+      "italicNarrationAndSpeakerColoredQuotes": true
     },
     {
       "width": 320,
@@ -360,7 +360,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -379,7 +379,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -398,7 +398,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,
@@ -417,7 +417,7 @@
       "transparentContainers": true,
       "rawUnchanged": true,
       "chronology": true,
-      "literalDelimitersWhenUnframed": true,
+      "italicNarrationAndSpeakerColoredQuotes": true,
       "interBlockGapsPx": [
         6,
         6,

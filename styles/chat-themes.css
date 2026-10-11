@@ -38,14 +38,15 @@
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed:before,
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed:after,
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-unframed>[class^="trpg-prose-"]:not(.trpg-prose-copy) {display:none!important;animation:none!important}
-/* Literal display marks stay inside the story copy, before Voice controls.
-   Generated content keeps saved messages, Regex input and spoken text intact. */
+/* Unframed story text keeps its speaker's identity and readable narration.
+   Style only the copy, leaving Voice controls outside it unchanged. Generated
+   quotes keep saved messages, Regex input and spoken text intact. */
+.trpg-unframed>.trpg-dialogue-copy {color:var(--speaker)}
+.trpg-unframed>.trpg-prose-copy {font-style:italic}
 .trpg-unframed>.trpg-dialogue-copy:before,
 .trpg-unframed>.trpg-dialogue-copy:after {content:'"'}
-.trpg-unframed>.trpg-prose-copy:before,
-.trpg-unframed>.trpg-prose-copy:after {content:'*'}
-.trpg-unframed>:is(.trpg-dialogue-copy,.trpg-prose-copy):before,
-.trpg-unframed>:is(.trpg-dialogue-copy,.trpg-prose-copy):after {font:inherit;color:inherit;font-style:normal;white-space:normal}
+.trpg-unframed>.trpg-dialogue-copy:before,
+.trpg-unframed>.trpg-dialogue-copy:after {font:inherit;color:inherit;font-style:normal;white-space:normal}
 @container(max-width:450px) {
   .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-header {gap:12px;min-width:0}
   .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-header strong {font-size:22px}

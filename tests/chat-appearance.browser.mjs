@@ -42,13 +42,16 @@ try{
   await page.evaluate(async()=>{window.host.characters=[{avatar:'A.png',data:{extensions:{}}},{avatar:'B.png',data:{extensions:{roleforge_character_pack:{format:'roleforge-character-pack',version:1,chatAppearance:{theme:'arcane',colorMode:'light',header:true,dialogue:true,narrative:false,effects:false}}}}}];window.host.characterId=0;window.host.chat=[];document.querySelector('#chat').replaceChildren();window.themeAiCalls=0;window.host.generateQuietPrompt=async()=>{window.themeAiCalls++;throw Error('Appearance must not call AI');};await window.hStatsPreview.switchChat('A',{});});
   await control(page,'chatPresentation').check();
   const id=await add(page),row=page.locator(`[mesid="${id}"] .mes_text`);await row.locator('.trpg-header').waitFor();
+  const npcColor=await row.locator('.trpg-role').evaluate(n=>getComputedStyle(n).color);
   assert.equal(await control(page,'chatColorMode').count(),0);assert.equal(await control(page,'chatTheme').count(),0);
   for(let flags=0;flags<8;flags++){
    for(const [bit,key] of ['showChatHeader','showChatDialogue','showChatNarrative'].entries())await change(page,key,Boolean(flags&(1<<bit)));
    assert.equal(await row.locator('.trpg-header').count(),flags&1?1:0);
    assert.equal(await row.locator('.trpg-dialogue.trpg-unframed').count(),flags&2?0:1);
    assert.equal(await row.locator('.trpg-narrative.trpg-unframed').count(),flags&4?0:1);
-   for(const [copy,bit,mark] of [['dialogue',2,'"'],['prose',4,'*']])assert.deepEqual(await row.locator(`.trpg-${copy}-copy`).evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content)),flags&bit?['none','none']:[JSON.stringify(mark),JSON.stringify(mark)]);
+   assert.deepEqual(await row.locator('.trpg-dialogue-copy').evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content)),flags&2?['none','none']:[JSON.stringify('"'),JSON.stringify('"')]);
+   if(!(flags&2))assert.equal(await row.locator('.trpg-dialogue-copy').evaluate(n=>getComputedStyle(n).color),npcColor);
+   assert.deepEqual(await row.locator('.trpg-prose-copy').evaluate(n=>({style:getComputedStyle(n).fontStyle,marks:['::before','::after'].map(p=>getComputedStyle(n,p).content)})),{style:flags&4?'normal':'italic',marks:['none','none']});
    assert.equal(await row.locator('[data-rf-color-mode]').count(),0);
    assert.equal(await page.evaluate(()=>Object.hasOwn(window.host.chatMetadata.roleforge_chat_presets.config.chatAppearance,'colorMode')),false);
    assert.equal(await page.evaluate(id=>window.host.chat[id].mes,id),source);
@@ -86,8 +89,9 @@ try{
   }
   await change(page,'showChatHeader',false);await change(page,'showChatDialogue',false);assert.equal(await page.locator(`[mesid="${user}"] .trpg-user-header`).count(),0);assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue.trpg-unframed`).count(),1);assert.equal(await page.locator(`[mesid="${user}"] .trpg-narrative:not(.trpg-unframed)`).count(),1);assert.equal(await page.locator(`[mesid="${user}"] .trpg-user-thought`).count(),1);
   assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue-copy`).evaluate(n=>getComputedStyle(n,'::before').content),JSON.stringify('"'));
+  assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue-copy`).evaluate(n=>getComputedStyle(n).color),await page.locator(`[mesid="${user}"] .trpg-user-thought small`).evaluate(n=>getComputedStyle(n).color),'unframed player speech uses the player accent with Header off');
   await change(page,'showChatNarrative',false);
-  assert.deepEqual(await page.locator(`[mesid="${user}"] .trpg-prose-copy`).evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content)),[JSON.stringify('*'),JSON.stringify('*')]);
+  assert.deepEqual(await page.locator(`[mesid="${user}"] .trpg-prose-copy`).evaluate(n=>({style:getComputedStyle(n).fontStyle,marks:['::before','::after'].map(p=>getComputedStyle(n,p).content)})),{style:'italic',marks:['none','none']});
   assert.equal(await page.evaluate(id=>window.host.chat[id].mes,user),'*I open the door.* "Hello." |Be careful.|');
   await change(page,'showChatNarrative',true);
   // Failed native saves roll the preset and state back, and show the real error.

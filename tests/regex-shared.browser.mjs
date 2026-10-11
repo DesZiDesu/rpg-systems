@@ -139,10 +139,23 @@ try{
             return {collapsed:host.querySelectorAll('[data-roleforge-gap]').length,innerVisible:inner&&getComputedStyle(inner).display!=='none'};
         });
         assert(gapState.collapsed>=2,'Markdown separators between owned blocks are collapsed');assert.equal(gapState.innerVisible,true,'story-internal line breaks remain visible');
-        for(const [key,mark,copy] of [['showChatDialogue','"','dialogue'],['showChatNarrative','*','prose']]){
+        // Read children together from the stable native message element; an
+        // asynchronous NPC refresh can replace a child between locator calls.
+        const {speakerColor,voiceFonts,narratorVoiceColor}=await row(page,spaced).evaluate(host=>({
+            speakerColor:getComputedStyle(host.querySelector('.trpg-role')).color,
+            voiceFonts:[...host.querySelectorAll('.rf-voice-dialogue-controls')].map(n=>getComputedStyle(n).fontStyle),
+            narratorVoiceColor:getComputedStyle(host.querySelector('.rf-voice-narrative-controls')).color,
+        }));
+        for(const [key,copy] of [['showChatDialogue','dialogue'],['showChatNarrative','prose']]){
             await page.locator(`[data-presentation-setting="${key}"]`).uncheck();await page.waitForTimeout(180);
-            assert.deepEqual(await row(page,spaced).locator(`.trpg-${copy}-copy`).evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content)),[JSON.stringify(mark),JSON.stringify(mark)]);
-            assert.equal(await row(page,spaced).locator('.rf-voice-dialogue-controls').count(),2,'delimiters do not duplicate Voice controls');
+            const content=row(page,spaced).locator(`.trpg-${copy}-copy`);
+            assert.deepEqual(await content.evaluate(n=>['::before','::after'].map(p=>getComputedStyle(n,p).content)),copy==='dialogue'?[JSON.stringify('"'),JSON.stringify('"')]:['none','none']);
+            if(copy==='prose')assert.equal(await content.evaluate(n=>getComputedStyle(n).fontStyle),'italic');
+            else assert.equal(await content.evaluate(n=>getComputedStyle(n).color),speakerColor);
+            assert.equal(await row(page,spaced).locator('.rf-voice-dialogue-controls').count(),2,'unframed styling does not duplicate Voice controls');
+            assert.deepEqual(await row(page,spaced).locator('.rf-voice-dialogue-controls').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).fontStyle)),voiceFonts,'italic narration does not italicize Voice controls');
+            assert.equal(await row(page,spaced).locator('.rf-voice-narrative-controls').evaluate(n=>getComputedStyle(n).color),narratorVoiceColor,'Narrator controls retain their own color');
+            assert.equal(await row(page,spaced).locator('.rf-voice-dialogue-controls:not(.rf-voice-narrative-controls)').evaluate(n=>getComputedStyle(n).color===getComputedStyle(n.parentElement).color),true,'Speech controls retain their frame ink, independently of speaker-colored story text');
             await page.locator(`[data-presentation-setting="${key}"]`).check();await page.waitForTimeout(180);
         }
         await mode(page,'native');assert.equal(await row(page,spaced).locator('[data-roleforge-gap]').count(),0);
