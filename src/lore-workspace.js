@@ -1,8 +1,8 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.66.1';
-import { element } from './npc-chat.js?v=0.66.1';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.66.1';
-import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.66.1';
-import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText} from './archive-browser.js?v=0.66.1';
+import {uiText,uiMarkup} from './ui-language.js?v=0.66.2';
+import { element } from './npc-chat.js?v=0.66.2';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.66.2';
+import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.66.2';
+import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.66.2';
 
 export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
     let owner = '', dirty = false, query = '', editing = null, saving = false, session=0, preferencesOpen=false, undo=[],renderList=null;
@@ -14,7 +14,7 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
     async function save(next) {
         const target=owner,ticket=session;
         if(target !== api.scopeInfo()?.key) throw Error(uiText("การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่"));
-        if(await api.persistLore(next,target)===false)throw Error(uiText('Could not save enabled states.'));
+        if(await api.persistLore(next,target)===false)throw Error(uiText('Could not save Lore changes.'));
         if(ticket!==session||target !== api.scopeInfo()?.key) throw Error(uiText("บันทึกการ์ดเดิมแล้ว แต่ตอนนี้เปิดการ์ดอื่นอยู่ กรุณาเปิด Lore Management ใหม่"));
     }
     async function attempt(action){
@@ -40,6 +40,22 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
             const result=undoArchiveEnabled(entries(),undo,isEnabled);
             if(!result.changes.length){undo=[];list();say(uiText('Nothing to undo. Newer states were kept.'));return;}
             await save(result.entries);undo=[];browser.clear();list();say(uiText('Restored {0} enabled states.',[result.changes.length]));
+        });
+    }
+    function deleteEntries(ids){
+        if(saving)return;
+        const ticket=session,target=owner,info=api.scopeInfo();
+        const current=()=>ticket===session&&target===owner&&target===api.scopeInfo()?.key;
+        if(!info||!current()){say(uiText('Chat/card changed. Reopen this list.'));return;}
+        if(!canLeave()||!current())return;
+        const selected=removeArchiveEntries(entries(),ids).removed;
+        if(!selected.length){say(uiText('No selected entries remain to delete.'));return;}
+        if(!confirm(uiText('Delete {0} Lore entries from {1}?\nThis affects all chats of this card and cannot be undone.',[selected.length,info.label])))return;
+        if(!current()){say(uiText('Chat/card changed. Reopen this list.'));return;}
+        return attempt(async()=>{
+            const result=removeArchiveEntries(entries(),selected.map(item=>item.id));
+            if(!result.removed.length){say(uiText('No selected entries remain to delete.'));return;}
+            await save(result.entries);undo=[];browser.clear();list();say(uiText('Deleted {0} Lore entries.',[result.removed.length]));
         });
     }
     function list() {
@@ -99,7 +115,7 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
         const transferHelp=element('details','trpg-lore-transfer-help');transferHelp.append(element('summary','',uiText('About Lore import / export')),element('p','trpg-muted',uiText("Import/Export ไฟล์ Lore JSON · นำเข้าแบบเพิ่มรวมและข้ามรายการที่เหมือนกันทุกช่อง · เก็บชื่อ เนื้อหา คำค้น เปิด/ปิด และการตรึง · งบและโหมดของการ์ดนี้ไม่เปลี่ยน")));
         optionsPanel.append(exportParts,transferHelp);
         const pager=element('div','trpg-pagination');pager.setAttribute('data-lore-pagination','');
-        const archiveTools=createArchiveTools(browser,{refresh:renderRows,change:setEnabled,undo:restoreEnabled,pager});panel.append(archiveTools.root);
+        const archiveTools=createArchiveTools(browser,{refresh:renderRows,change:setEnabled,undo:restoreEnabled,remove:deleteEntries,pager});panel.append(archiveTools.root);
         const heading=element('div','trpg-list-heading'),total=element('span');heading.append(element('span','',uiText('LORE RECORDS')),total);
         const rows=element('div','trpg-lore-rows'),scroller=element('div','trpg-archive-scroll');scroller.setAttribute('data-lore-scroll','');scroller.append(heading,rows);panel.append(scroller,archiveTools.dock);
         function renderRows({resetScroll=false}={}){rows.replaceChildren();const current=entries(),view=browser.view(current);archiveTools.update(view,{busy:saving,canUndo:undo.length>0});total.textContent=uiText('{0} / {1} entries',[view.filtered.length,current.length]);
@@ -113,7 +129,7 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
                 toggleLabel.append(toggle,element('span','',archiveStateText(item.enabled)));
                 const open=button(item.title,()=>{if(canLeave())edit(item);});open.className='trpg-lore-title';
                 const copy=element('div','trpg-lore-copy');copy.append(open,element('p','trpg-lore-excerpt',item.content.slice(0,180)));if(item.always)copy.append(element('small','trpg-archive-pin',uiText('Pinned for relevant delivery')));
-                row.append(toggleLabel,copy,button(uiText("ลบ"),()=>{if(!canLeave()||!confirm(uiText("ลบ Lore “{0}”?",[item.title])))return;return attempt(async()=>{await save(entries().filter(v=>v.id!==item.id));list();say(uiText("ลบ Lore แล้ว"));});}));
+                row.append(toggleLabel,copy,button(uiText("ลบ"),()=>deleteEntries([item.id])));
                 if(browser.selecting){
                     const label=element('label','trpg-archive-select'),check=element('input');check.type='checkbox';check.checked=browser.has(item.id);check.setAttribute('data-archive-select',item.id);check.setAttribute('aria-label',uiText('Select {0}',[item.title]));
                     check.addEventListener('change',()=>{if(saving)return;browser.select(item.id,check.checked);row.classList.toggle('is-selected',check.checked);archiveTools.update(browser.view(entries()),{canUndo:undo.length>0});});label.append(check);row.append(label);
@@ -136,7 +152,7 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
         const counter=element('small','trpg-muted');const update=()=>counter.textContent=uiText("{0} / {1} ตัวอักษร",[body.value.length.toLocaleString(),LORE_CONTENT_LIMIT.toLocaleString()]);update();
         form.addEventListener('input',()=>{dirty=true;update();});form.addEventListener('change',()=>dirty=true);
         const actions=element('div','trpg-lore-tools'),submit=element('button','trpg-primary',uiText("บันทึก Lore"));submit.type='submit';actions.append(submit,button(uiText("กลับรายการ"),()=>{if(canLeave())list();}));
-        if(item.id){const remove=button(uiText("ลบ"),()=>{if(!canLeave()||!confirm(uiText("ลบ Lore “{0}”?",[item.title])))return;return attempt(async()=>{await save(entries().filter(value=>value.id!==item.id));list();say(uiText("ลบ Lore แล้ว"));});});remove.className='trpg-danger';actions.append(remove);}
+        if(item.id){const remove=button(uiText("ลบ"),()=>deleteEntries([item.id]));remove.className='trpg-danger';actions.append(remove);}
         form.append(element('h3','',item.id?uiText("แก้ไข Lore"):uiText("สร้าง Lore ใหม่")),titleLabel,bodyLabel,counter,enabledLabel,keywordsLabel,alwaysLabel,actions);panel.append(form);
         form.addEventListener('submit',event=>{event.preventDefault();return attempt(async()=>{
             const all=entries();if(item.id&&!all.some(v=>v.id===item.id))throw Error(uiText("Lore นี้ถูกลบแล้ว กรุณากลับรายการ"));

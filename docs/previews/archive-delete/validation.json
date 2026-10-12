@@ -1,0 +1,35 @@
+{
+  "version": "0.66.2",
+  "testedAt": "2026-10-12T06:57:23.801Z",
+  "viewports": [
+    {
+      "width": 320,
+      "pass": true,
+      "languages": [
+        "th",
+        "en"
+      ],
+      "selectionAcrossPages": 21
+    },
+    {
+      "width": 390,
+      "pass": true,
+      "languages": [
+        "th",
+        "en"
+      ],
+      "selectionAcrossPages": 21
+    },
+    {
+      "width": 1280,
+      "pass": true,
+      "languages": [
+        "th",
+        "en"
+      ],
+      "selectionAcrossPages": 21
+    }
+  ],
+  "liveUserServerAccess": false,
+  "aiRequests": 0
+}

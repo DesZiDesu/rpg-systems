@@ -1,6 +1,6 @@
 {
-  "version": "0.66.1",
-  "testedAt": "2026-10-12T04:35:48.159Z",
+  "version": "0.66.2",
+  "testedAt": "2026-10-12T06:57:27.215Z",
   "productionModules": [
     "src/npc-workspace.js",
     "src/lore-workspace.js",

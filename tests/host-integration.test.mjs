@@ -1421,6 +1421,53 @@ test('a rejected Character NPC write leaves the older library and current chat u
   assert.deepEqual(context.chatMetadata,{});
  }finally{context.fetch=previousFetch;context.chatMetadata=previousMetadata;}
 });
+
+test('batch Chat deletion rolls back before storage succeeds and keeps accepted deletions after a refresh failure',async()=>{
+ const prior={metadata:context.chatMetadata,settings:context.extensionSettings,cards:context.characters,card:context.characterId,group:context.groupId,id:context.getCurrentChatId,save:context.saveMetadata,console:sandbox.console};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false,eventNotifications:false}};
+  context.characters=[{avatar:'delete.png',name:'Delete fixture',data:{extensions:{tretaresia_rpg_npcs:[]}}}];context.characterId=0;context.groupId=null;context.getCurrentChatId=()=> 'delete-chat';
+  const state=host.normalize({...host.defaultState(),npcs:['a','b','c'].map(id=>host.npcProfile({id,name:`NPC ${id}`,npcScope:'chat'}))});
+  const history={version:1,entries:[{key:'turn',baseState:JSON.parse(JSON.stringify(state)),variants:{0:{state:JSON.parse(JSON.stringify(state))}}}]};
+  context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state),tretaresia_rpg_turn_history:history};const metadata=context.chatMetadata,before=JSON.stringify(metadata),remaining=host.getState().npcs.filter(p=>p.id==='c');
+  context.saveMetadata=async()=>{throw Error('Delete storage unavailable');};
+  await assert.rejects(host.persistNpcScope('chat',remaining,'npc-management-delete','delete-chat','card:delete.png'),/Delete storage/);
+  assert.equal(JSON.stringify(metadata),before);assert.equal(metadata.tretaresia_rpg_turn_history,history);
+  const warnings=[];sandbox.console={...(prior.console||console),warn:message=>warnings.push(message)};
+  let finish,writes=0;context.saveMetadata=()=>{writes++;return new Promise(resolve=>{finish=resolve;});};
+  const saving=host.persistNpcScope('chat',remaining,'npc-management-delete','delete-chat','card:delete.png');await new Promise(resolve=>setImmediate(resolve));assert.equal(writes,1);assert.equal(history.entries[0].baseState.npcs.length,3);
+  finish();assert.equal(await saving,true);assert.deepEqual(Array.from(host.getState().npcs,p=>p.id),['c']);
+  assert.deepEqual(Array.from(metadata.tretaresia_rpg_turn_history.entries[0].baseState.npcs,p=>p.id),['c']);
+  assert.deepEqual(Array.from(metadata.tretaresia_rpg_turn_history.entries[0].variants[0].state.npcs,p=>p.id),['c']);
+  assert.ok(warnings.some(message=>message.includes('deletion was saved')));
+ }finally{Object.assign(context,{chatMetadata:prior.metadata,extensionSettings:prior.settings,characters:prior.cards,characterId:prior.card,groupId:prior.group,getCurrentChatId:prior.id,saveMetadata:prior.save});sandbox.console=prior.console;}
+});
+
+test('Character batch deletion preserves other archives and reports success after an acknowledged card write',async()=>{
+ const prior={metadata:context.chatMetadata,settings:context.extensionSettings,cards:context.characters,card:context.characterId,group:context.groupId,id:context.getCurrentChatId,save:context.saveMetadata,fetch:context.fetch,console:sandbox.console};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false,eventNotifications:false}};context.characterId=0;context.groupId=null;context.getCurrentChatId=()=> 'delete-card-chat';
+  const shared=['a','b','c'].map(id=>host.npcProfile({id,name:`Shared ${id}`,npcScope:'character',npcOwner:'card:delete-card.png'}));
+  context.characters=[{avatar:'delete-card.png',data:{extensions:{tretaresia_rpg_npcs:shared,tretaresia_rpg_lore:[{id:'lore',title:'Keep',content:'Kept',enabled:false}]}}}];
+  const local=host.npcProfile({id:'local',name:'Local copy',npcScope:'chat'});context.chatMetadata={tretaresia_rpg_state:host.storedNpcState({...host.defaultState(),npcs:[local]})};
+  const before=JSON.stringify(context.characters[0].data.extensions);context.fetch=async()=>({ok:false,status:503});
+  await assert.rejects(host.persistNpcScope('character',[shared[2]],'npc-management-delete','delete-card-chat','card:delete-card.png'),/503/);assert.equal(JSON.stringify(context.characters[0].data.extensions),before);
+  let writes=0;context.fetch=async()=>{writes++;return{ok:true,status:200};};context.saveMetadata=async()=>{throw Error('Follow-up chat unavailable');};sandbox.console={...(prior.console||console),warn(){}};
+  assert.equal(await host.persistNpcScope('character',[shared[2]],'npc-management-delete','delete-card-chat','card:delete-card.png'),true);assert.equal(writes,1);
+  assert.deepEqual(Array.from(host.characterNpcLibrary(),p=>p.id),['c']);assert.ok(host.getState().npcs.some(p=>p.id==='local'));assert.equal(context.characters[0].data.extensions.tretaresia_rpg_lore[0].id,'lore');
+ }finally{Object.assign(context,{chatMetadata:prior.metadata,extensionSettings:prior.settings,characters:prior.cards,characterId:prior.card,groupId:prior.group,getCurrentChatId:prior.id,saveMetadata:prior.save,fetch:prior.fetch});sandbox.console=prior.console;}
+});
+
+test('a stale Chat deletion restores only its original metadata and cannot change the newly opened chat',async()=>{
+ const prior={metadata:context.chatMetadata,settings:context.extensionSettings,cards:context.characters,card:context.characterId,group:context.groupId,id:context.getCurrentChatId,save:context.saveMetadata};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false,eventNotifications:false}};context.characters=[{avatar:'stale-delete.png',data:{extensions:{tretaresia_rpg_npcs:[]}}}];context.characterId=0;context.groupId=null;let chat='before';context.getCurrentChatId=()=>chat;
+  const state={...host.defaultState(),npcs:[host.npcProfile({id:'keep',name:'Original',npcScope:'chat'})]},history={version:1,entries:[{key:'old',baseState:JSON.parse(JSON.stringify(state))}]};
+  const old={tretaresia_rpg_state:host.storedNpcState(state),tretaresia_rpg_turn_history:history};context.chatMetadata=old;const before=JSON.stringify(old);let calls=0;context.saveMetadata=async()=>{calls++;};
+  const deleting=host.persistNpcScope('chat',[],'npc-management-delete','before','card:stale-delete.png');chat='after';const next={marker:'New chat'};context.chatMetadata=next;
+  assert.equal(await deleting,false);assert.equal(calls,0);assert.equal(JSON.stringify(old),before);assert.equal(context.chatMetadata,next);assert.deepEqual(next,{marker:'New chat'});
+ }finally{Object.assign(context,{chatMetadata:prior.metadata,extensionSettings:prior.settings,characters:prior.cards,characterId:prior.card,groupId:prior.group,getCurrentChatId:prior.id,saveMetadata:prior.save});}
+});
 test('preserves upstream v0.30.1: request diagnostics never save global settings',()=>{
  let saves=0;const original=context.saveSettingsDebounced;context.saveSettingsDebounced=()=>{saves++;};
  const before=JSON.stringify(host.getSettings().requestUsage);const total=host.requestUsage().total;

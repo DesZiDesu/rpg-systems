@@ -79,7 +79,7 @@ try{
     renderStoryBlocks(sample,blocks,new Map([['alice',{name:'Alice',identityColor:'#ed8494'}],['bob',{name:'Bob',identityColor:'#70c1d4'}]]),'Narrator',()=>{},async()=>null,null,{header:enabled,dialogue:enabled,narrative:enabled});
     const boxes=[...sample.querySelectorAll('.trpg-header,.trpg-speaker-label,.trpg-narrative,.trpg-dialogue')].map(n=>n.getBoundingClientRect());
     const result={gaps:boxes.slice(1).map((box,i)=>box.top-boxes[i].bottom),colors:[...sample.querySelectorAll('.trpg-dialogue-copy')].map(n=>getComputedStyle(n).color)};sample.remove();return result;
-   },{url:`${origin}src/npc-chat.js?v=0.66.1`,enabled});
+   },{url:`${origin}src/npc-chat.js?v=0.66.2`,enabled});
    assert(result.gaps.every(gap=>gap>=0&&gap<=12),`compact global narration and speaker changes at ${width}px: ${result.gaps}`);
    if(!enabled)assert.deepEqual(result.colors,['rgb(237, 132, 148)','rgb(112, 193, 212)'],'each speaker retains their own color without Header');
   }

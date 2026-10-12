@@ -1,4 +1,4 @@
-import {uiText} from './ui-language.js?v=0.66.1';
+import {uiText} from './ui-language.js?v=0.66.2';
 
 // Character-owned reference data. AI output cannot write to this archive.
 // A zero entry limit means unlimited storage. Context budgets are separate.
@@ -89,10 +89,14 @@ export function writeCharacterLore(settings, entries, expectedOwner, currentOwne
     if (!currentOwner || expectedOwner !== currentOwner) throw Error('การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่');
     if (!Array.isArray(entries)) throw Error('รูปแบบคลัง Lore ไม่ถูกต้อง');
     const options = loreOptions(settings, currentOwner);
-    assertLoreCapacity(entries.length, options, characterLore(settings, currentOwner).length);
+    const previous = characterLore(settings, currentOwner);
+    assertLoreCapacity(entries.length, options, previous.length);
     const normalized = loreEntries(entries);
     if (normalized.length !== entries.length || entries.some(item => typeof item?.id !== 'string' || !item.id || item.id.length > 120 || typeof item?.title !== 'string' || !item.title.trim() || typeof item?.content !== 'string' || !item.content.trim() || item.title.length > 160 || item.content.length > LORE_CONTENT_LIMIT)) throw Error('กรอกชื่อและเนื้อหา Lore ให้ครบ ภายในขนาดที่กำหนด');
-    if (options.mode === 'all' && normalized.filter(item => item.enabled).reduce((n,item) => n + item.title.length + item.content.length, 0) > options.budget) throw Error(`Lore ที่เปิดรวมเกิน ${options.budget.toLocaleString()} ตัวอักษร ปรับงบหรือเลือกโหมดเฉพาะที่เกี่ยวข้องใน Lore Management`);
+    const activeCost = values => values.filter(item => item.enabled).reduce((n,item) => n + item.title.length + item.content.length, 0);
+    // A lowered budget must not prevent reducing an existing large archive.
+    const used = activeCost(normalized);
+    if (options.mode === 'all' && used > options.budget && used > activeCost(previous)) throw Error(`Lore ที่เปิดรวมเกิน ${options.budget.toLocaleString()} ตัวอักษร ปรับงบหรือเลือกโหมดเฉพาะที่เกี่ยวข้องใน Lore Management`);
     settings.loreCharacterLibraries ||= {};
     Object.defineProperty(settings.loreCharacterLibraries, currentOwner, {value:normalized, enumerable:true, configurable:true, writable:true});
     return normalized;

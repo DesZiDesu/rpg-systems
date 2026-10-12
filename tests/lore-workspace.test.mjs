@@ -29,6 +29,29 @@ test('Lore settings expose unlimited/default and custom capacities without disca
  find(panel,n=>n.name==='loreEntryLimit')[0].value='';await click(panel,'Save Lore settings');assert.match(status(),/positive whole number/);assert.equal(loreOptions(settings,'card:a').entryLimit,200);
  find(panel,n=>n.name==='loreCapacity')[0].value='unlimited';await click(panel,'Save Lore settings');assert.equal(loreOptions(settings,'card:a').entryLimit,0);assert.equal(characterLore(settings,'card:a').length,350);
 });
+
+test('Lore batch deletion confirms all filtered results, keeps selection on failure, and clears obsolete Undo',async()=>{
+ const {panel,settings,api,ui,status}=fixture(),originalConfirm=globalThis.confirm;
+ try{
+  const many=Array.from({length:47},(_,i)=>({id:String(i),title:`${i%2?'Keep':'Remove'} ${i}`,content:`Fact ${i}`,enabled:true,keywords:[`key${i}`],always:i===0}));writeCharacterLore(settings,many,'card:a','card:a');ui.open();
+  const search=find(panel,n=>n['data-lore-search']==='')[0];search.value='Remove';await search.fire('input');
+  const action=key=>find(panel,n=>n[`data-archive-${key}`]==='')[0];await action('select-mode').fire('click');await action('select-results').fire('click');await action('disable').fire('click');await action('select-results').fire('click');
+  const before=characterLore(settings,'card:a'),selected=before.filter(item=>item.title.startsWith('Remove'));assert.equal(selected.length,24);assert.equal(action('undo').hidden,false);
+  let message='';globalThis.confirm=value=>{message=value;return false;};await action('delete').fire('click');assert.match(message,/24/);assert.match(message,/card:a/);assert.match(message,/cannot be undone/);assert.deepEqual(characterLore(settings,'card:a'),before);assert.equal(action('delete').disabled,false);
+  globalThis.confirm=()=>true;const persist=api.persistLore;api.persistLore=()=>{throw Error('Delete write failed');};await action('delete').fire('click');assert.match(status(),/Delete write failed/);assert.deepEqual(characterLore(settings,'card:a'),before);assert.equal(action('delete').disabled,false);assert.equal(action('undo').hidden,false);
+  let writes=0;api.persistLore=(...args)=>{writes++;return persist(...args);};await action('delete').fire('click');assert.equal(writes,1);assert.deepEqual(characterLore(settings,'card:a'),before.filter(item=>item.title.startsWith('Keep')));assert.equal(action('undo').hidden,true);assert.equal(action('delete').disabled,true);
+ }finally{globalThis.confirm=originalConfirm;}
+});
+
+test('a card switch during Lore deletion confirmation cannot write the old selection into either card',async()=>{
+ const {panel,settings,api,ui,setOwner}=fixture(),originalConfirm=globalThis.confirm;
+ try{
+  writeCharacterLore(settings,[{id:'a',title:'Fact',content:'Saved',enabled:false}],'card:a','card:a');ui.open();
+  const action=key=>find(panel,n=>n[`data-archive-${key}`]==='')[0];await action('select-mode').fire('click');await action('select-results').fire('click');
+  let writes=0;api.persistLore=()=>{writes++;};globalThis.confirm=()=>{setOwner('card:b');return true;};await action('delete').fire('click');
+  assert.equal(writes,0);assert.equal(characterLore(settings,'card:a').length,1);assert.deepEqual(characterLore(settings,'card:b'),[]);
+ }finally{globalThis.confirm=originalConfirm;}
+});
 test('Lore UI creates, edits, toggles, searches and deletes saved records',async()=>{
  const {panel,settings,ui}=fixture();click(panel,'＋ สร้าง Lore ใหม่');
  find(panel,n=>n.name==='loreTitle')[0].value='Moon';find(panel,n=>n.name==='loreContent')[0].value='Blue crystal';await find(panel,n=>n.tag==='form')[0].fire('submit');

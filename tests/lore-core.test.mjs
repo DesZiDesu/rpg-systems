@@ -87,3 +87,10 @@ test('large-library relevance prechecks retain Unicode and Thai matches without 
  assert.deepEqual(selectLore(records,{mode:'relevant',budget:1000},'forest').entries.map(item=>item.id),['C']);
  assert.deepEqual(selectLore(records,{mode:'relevant',budget:1000},'ถ้ำ แม่น้ำ').entries.map(item=>item.id),['D']);
 });
+
+test('deletion can reduce an archive above a lowered context budget without increasing AI delivery',()=>{
+ const settings={},records=Array.from({length:30},(_,i)=>({...entry(String(i)),content:'x'.repeat(600)}));
+ writeLoreOptions(settings,{mode:'all',budget:20000},'a','a');writeCharacterLore(settings,records,'a','a');writeLoreOptions(settings,{mode:'all',budget:1000,entryLimit:20},'a','a');
+ writeCharacterLore(settings,characterLore(settings,'a').slice(0,10),'a','a');assert.equal(characterLore(settings,'a').length,10);assert.ok(selectLore(characterLore(settings,'a'),loreOptions(settings,'a')).used<=1000);
+ const before=JSON.stringify(settings);assert.throws(()=>writeCharacterLore(settings,[...characterLore(settings,'a'),entry('More')],'a','a'),/เกิน/);assert.equal(JSON.stringify(settings),before);
+});

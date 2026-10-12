@@ -366,6 +366,7 @@
 .trpg-archive-selection-menu>summary::-webkit-details-marker{display:none}
 .trpg-manager .trpg-archive-selection-menu .trpg-archive-selection-tools{position:absolute;left:0;right:0;bottom:calc(100% + 6px);z-index:5;display:grid;gap:0;padding:8px 12px;border:1px solid #917640;background:#161711;box-shadow:0 -10px 28px #0009;max-height:45vh;overflow:auto}
 .trpg-manager .trpg-archive-selection-tools button{width:100%;min-height:44px;text-align:left;font-size:12px;padding:10px 0;border:0;border-bottom:1px solid #51432c;background:none}
+.trpg-manager .trpg-archive-selection-tools [data-archive-delete]{color:#ffb6aa;border-color:#ad645c}
 .trpg-manager .trpg-archive-selection-hint{padding-block:8px;font-size:11px;line-height:1.6}
 .trpg-manager .trpg-archive-options{position:absolute;inset:0;z-index:20;display:flex;justify-content:flex-end;align-items:stretch;background:#0009;backdrop-filter:blur(3px)}
 .trpg-manager .trpg-archive-options-sheet{display:flex;flex-direction:column;width:min(460px,100%);min-height:0;border-left:1px solid #8d713e;background:#11120e;box-shadow:-12px 0 40px #0007}

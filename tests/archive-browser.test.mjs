@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createArchiveBrowser,changeArchiveEnabled,undoArchiveEnabled} from '../src/archive-browser.js';
+import {createArchiveBrowser,changeArchiveEnabled,undoArchiveEnabled,removeArchiveEntries} from '../src/archive-browser.js';
 import {writeCharacterLore,characterLore,lorePrompt} from '../src/lore-core.js';
 
 const npcs=Array.from({length:47},(_,i)=>({id:`npc-${i}`,name:`NPC ${String(i).padStart(2,'0')}`,enabled:i%3!==0,notes:'Original',alternateProfiles:[{id:'older',fields:{age:'40'}}],portraitPath:'keep.webp'}));
@@ -57,4 +57,18 @@ test('bulk Lore activation respects the existing budget atomically, preserves pi
     const enabled=changeArchiveEnabled(entries,['one'],true,item=>item.enabled===true);writeCharacterLore(settings,enabled.entries,'card','card');
     assert.match(lorePrompt(characterLore(settings,'card')),/One/);assert.doesNotMatch(lorePrompt(characterLore(settings,'card')),/Two/);
     assert.deepEqual(characterLore(settings,'card')[0].keywords,['lake']);assert.equal(characterLore(settings,'card')[0].always,true);
+});
+
+test('batch deletion targets unique selected IDs and keeps unselected profile objects intact',()=>{
+ const before=structuredClone(npcs),result=removeArchiveEntries(npcs,['npc-0','npc-20','npc-46','npc-20','missing']);
+ assert.deepEqual(result.removed.map(item=>item.id),['npc-0','npc-20','npc-46']);assert.equal(result.entries.length,44);
+ assert.equal(result.entries[0],npcs[1]);assert.deepEqual(npcs,before);
+ assert.deepEqual(removeArchiveEntries(npcs,[]).entries,npcs);assert.deepEqual(removeArchiveEntries([],['npc-0']),{entries:[],removed:[]});
+});
+
+test('all filtered selections delete across pages without deleting other states or matching by names',()=>{
+ const browser=createArchiveBrowser();browser.setFilter('disabled');browser.setSelecting(true);browser.selectMany(browser.view(npcs).filtered);
+ const result=removeArchiveEntries(npcs,browser.view(npcs).selected);assert.equal(result.removed.length,16);assert.ok(result.entries.every(item=>item.enabled));
+ assert.equal(removeArchiveEntries([{id:'keep',name:'Same'},{id:'remove',name:'Same'}],['remove']).entries[0].id,'keep');
+ browser.clear();const view=browser.view(result.entries);assert.deepEqual(view.selected,[]);assert.equal(view.items.length,0);assert.equal(view.page,0);
 });

@@ -1,0 +1,139 @@
+{
+  "version": "0.66.2",
+  "testedAt": "2026-10-12T07:06:12.993267+00:00",
+  "baseCommit": "dfea0c379a6a08e9bab12b852c35f61ba601bec6",
+  "syntax": {
+    "command": "npm run check",
+    "pass": true
+  },
+  "unit": {
+    "command": "npm test",
+    "tests": 1225,
+    "pass": 1225,
+    "fail": 0,
+    "skipped": 0
+  },
+  "focused": {
+    "command": "npm run test:archive-delete",
+    "pass": true,
+    "unitTests": 17,
+    "hostTests": 3,
+    "coverage": [
+      "unique selected IDs and untouched records",
+      "filtered/all-page selection",
+      "confirmation cancellation",
+      "failed storage keeps selection",
+      "cleared enabled-state Undo",
+      "stale confirmations",
+      "Chat metadata and turn snapshot rollback",
+      "acknowledged Character writes remain committed after follow-up refresh failure",
+      "stale context leaves new chat untouched"
+    ]
+  },
+  "browser": {
+    "version": "0.66.2",
+    "testedAt": "2026-10-12T06:57:23.801Z",
+    "viewports": [
+      {
+        "width": 320,
+        "pass": true,
+        "languages": [
+          "th",
+          "en"
+        ],
+        "selectionAcrossPages": 21
+      },
+      {
+        "width": 390,
+        "pass": true,
+        "languages": [
+          "th",
+          "en"
+        ],
+        "selectionAcrossPages": 21
+      },
+      {
+        "width": 1280,
+        "pass": true,
+        "languages": [
+          "th",
+          "en"
+        ],
+        "selectionAcrossPages": 21
+      }
+    ],
+    "liveUserServerAccess": false,
+    "aiRequests": 0
+  },
+  "regressions": [
+    {
+      "command": "npm run test:archive",
+      "pass": true,
+      "viewports": [
+        320,
+        390,
+        1280
+      ],
+      "languages": [
+        "th",
+        "en"
+      ],
+      "coverage": [
+        "quick toggles",
+        "batch switches",
+        "Undo",
+        "touch scrolling",
+        "keyboard resizing",
+        "save and scope guards"
+      ]
+    },
+    {
+      "command": "node tests/startup.browser.mjs",
+      "pass": true,
+      "viewports": [
+        320,
+        390,
+        1280
+      ],
+      "loaders": [
+        "current",
+        "cached legacy"
+      ]
+    }
+  ],
+  "preview": {
+    "command": "node tests/build-archive-qol-preview.mjs",
+    "pass": true,
+    "offlineNpcAndLoreDeletion": true,
+    "offlineBulkAndUndo": true,
+    "zipCrcAndPaths": "pass",
+    "aiRequests": 0,
+    "liveUserServerAccess": false
+  },
+  "rules": {
+    "confirmation": "count and target scope/card before deletion",
+    "npcScope": "selected Chat/Character only",
+    "loreScope": "current character card",
+    "chatMessagesAndPortraitFiles": "kept",
+    "undoDeletion": false,
+    "overBudgetLore": "decreasing active content is allowed; prompt output remains within its configured budget"
+  },
+  "limits": [
+    "Tests use isolated sample archives and controlled SillyTavern hosts; no user server or live model is contacted.",
+    "Chromium viewport/touch emulation covers layout; Safari on a physical iPhone is not tested.",
+    "An acknowledged Character card deletion remains committed even if follow-up chat cleanup or UI refresh fails."
+  ],
+  "sha256": {
+    "index.js": "58b9e5e5953209eab0f83c7440ec2008862553e481f34851483cec71ac60bfd2",
+    "manifest.json": "24cf1d3d31d5bd7d29b8de6a36bff97b9ae7b0c17c72ba30876e8e11c1a539bf",
+    "package.json": "1d1211d8cc5fa58f43dc5528a1279c77c03ce08c4db5ee70028a6fc5c5485966",
+    "src/archive-browser.js": "3f556e7779d6dc7231407e2a7ed9a1a8a0a7e3230464b17bb0ec6d683e1c8e2d",
+    "src/npc-workspace.js": "e1b11ef4990430147c3d87d3de1bdbec7d4ce6fbf42f597a691be0b84b8923e9",
+    "src/lore-workspace.js": "6605e42c39678d5412893313775ef638be809677330dfabf58c7e377d785f83c",
+    "src/lore-core.js": "831070a5d160b8515472f7b49b9b16c8ce2f9f42d754d76c33474b457de2047c",
+    "src/ui-strings.js": "671ae2e8c2cd60f9bc00999728897bf1f521f6eaf4d638a1653424c7a5cd8411",
+    "styles/npc-ui.css": "f49f31ce72d1469624ccc52aa11b28c020274dd30ed3bb51b4904190760ef231",
+    "tests/archive-delete.browser.mjs": "3eda4400669b2ec1a4b76ad8dc54ec4bbdc7bcb4020cb0e3d7fdae0f77895c46",
+    "docs/previews/archive-qol/standalone.html": "c55e8147eafce026dcce3100e39f1b435effad1291c562a0d9af1a5a76d05fe2"
+  }
+}

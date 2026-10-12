@@ -1,5 +1,5 @@
-import {uiText} from './ui-language.js?v=0.66.1';
-import {element} from './npc-chat.js?v=0.66.1';
+import {uiText} from './ui-language.js?v=0.66.2';
+import {element} from './npc-chat.js?v=0.66.2';
 
 const enabledByDefault = item => item.enabled !== false;
 const normalize = value => String(value || '').normalize('NFKC').toLocaleLowerCase().trim();
@@ -61,11 +61,17 @@ export function undoArchiveEnabled(all,receipt,isEnabled=enabledByDefault) {
 
 export function archiveStateText(enabled){return uiText(enabled?'Enabled entries':'Disabled entries');}
 
-export function createArchiveTools(browser,{refresh,change,undo,pager=element('div','trpg-pagination')}={}) {
+export function removeArchiveEntries(all,ids) {
+    const targets=new Set(ids),entries=[],removed=[];
+    for(const item of all)(targets.has(item.id)?removed:entries).push(item);
+    return {entries,removed};
+}
+
+export function createArchiveTools(browser,{refresh,change,undo,remove,pager=element('div','trpg-pagination')}={}) {
     const root=element('div','trpg-archive-tools');
     const filters=element('div','trpg-archive-filters');filters.setAttribute('role','group');filters.setAttribute('aria-label',uiText('Filter by enabled state'));
     let current=null,blocked=false,undoInMenu=false;
-    function button(label,key,action){const node=element('button','',uiText(label));node.type='button';node.setAttribute(`data-archive-${key}`,'');node.addEventListener('click',()=>{if(!blocked)action();});return node;}
+    function button(label,key,action){const node=element('button','',uiText(label));node.type='button';node.setAttribute(`data-archive-${key}`,'');node.addEventListener('click',()=>{if(!blocked)return action();});return node;}
     const filterButtons=new Map();
     for(const [value,label]of [['all','All entries'],['enabled','Enabled entries'],['disabled','Disabled entries']]){
         const node=button(label,'filter',()=>{browser.setFilter(value);refresh({resetScroll:true});});node.setAttribute('data-archive-filter',value);filterButtons.set(value,node);filters.append(node);
@@ -83,6 +89,7 @@ export function createArchiveTools(browser,{refresh,change,undo,pager=element('d
     const selectPage=button('Select this page','select-page',()=>{browser.selectMany(current.items);finishChoice();});
     const selectResults=button('Select all results','select-results',()=>{browser.selectMany(current.filtered);finishChoice();});
     const clear=button('Clear selection','clear',()=>{browser.clear();finishChoice();});choices.append(selectPage,selectResults,clear);
+    const deleteButton=button('Archive delete action','delete',()=>remove?.([...current.selected]));deleteButton.className='trpg-danger';deleteButton.hidden=typeof remove!=='function';choices.append(deleteButton);
     menu.addEventListener('keydown',event=>{if(event.key==='Escape'&&menu.open){event.preventDefault();event.stopPropagation();menu.open=false;summary.focus();}});
     dock.addEventListener('focusout',event=>{if(!menu.contains?.(event.relatedTarget))menu.open=false;});
     const actions=element('div','trpg-archive-batch-actions');
@@ -100,7 +107,7 @@ export function createArchiveTools(browser,{refresh,change,undo,pager=element('d
         count.textContent=uiText('{0} selected',[view.selected.length]);
         selectPage.textContent=uiText('Select this page · {0}',[view.items.length]);selectPage.disabled=busy||!view.items.length;
         selectResults.textContent=uiText('Select all {0} results (all pages)',[view.filtered.length]);selectResults.disabled=busy||!view.filtered.length;
-        clear.disabled=busy||!view.selected.length;enable.disabled=disable.disabled=busy||!view.selected.length;
+        clear.disabled=busy||!view.selected.length;enable.disabled=disable.disabled=deleteButton.disabled=busy||!view.selected.length;
         undoButton.hidden=!canUndo;undoButton.disabled=busy;
     }
     return {root,dock,update};

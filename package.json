@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.66.1",
+  "version": "0.66.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -28,6 +28,7 @@
     "test:presets": "node --test tests/world-presets.test.mjs && node tests/presets.browser.mjs && node tests/host-policy.browser.mjs",
     "test:themes": "node --test tests/chat-themes.test.mjs tests/chat-folio.test.mjs && node tests/chat-themes.browser.mjs && node tests/chat-folio.browser.mjs && node tests/chat-appearance.browser.mjs",
     "test:archive": "node --test tests/archive-browser.test.mjs tests/lore-workspace.test.mjs && node tests/archive-qol.browser.mjs",
-    "test:lore-capacity": "node --test tests/lore-core.test.mjs tests/lore-transfer.test.mjs tests/lore-workspace.test.mjs tests/character-archive.test.mjs tests/world-presets.test.mjs && node tests/lore-capacity.browser.mjs"
+    "test:lore-capacity": "node --test tests/lore-core.test.mjs tests/lore-transfer.test.mjs tests/lore-workspace.test.mjs tests/character-archive.test.mjs tests/world-presets.test.mjs && node tests/lore-capacity.browser.mjs",
+    "test:archive-delete": "node --test tests/archive-browser.test.mjs tests/lore-workspace.test.mjs && node --test --test-name-pattern=\"batch Chat deletion|Character batch deletion|stale Chat deletion\" tests/host-integration.test.mjs && node tests/archive-delete.browser.mjs"
   }
 }

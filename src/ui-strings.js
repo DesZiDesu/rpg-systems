@@ -7143,7 +7143,7 @@ const aliases = {
   "If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.": 1031,
   "If no patch is returned, the activity capsule says “No state changes.” Tracking ran successfully but had nothing confirmed to save.": 1031,
   "หากไม่มีชุดอัปเดต แถบสถานะจะแสดงว่าไม่มีข้อมูลเปลี่ยนแปลง หมายถึงติดตามสำเร็จแต่ไม่มีข้อมูลยืนยันให้บันทึก": 1031,
-  "RoleForge engine 0.66.1 ready": 1032,
+  "RoleForge engine 0.66.2 ready": 1032,
   "RoleForge engine ready": 1032,
   "ระบบ RoleForge พร้อมใช้งาน": 1032,
   "พิมพ์ชื่อแท็ก…": 1033,
@@ -8307,7 +8307,7 @@ const aliases = {
   "after your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.": 1028,
   "the character produces its normal reply once. if a confirmed fact changed, it appends an invisible state patch to that same reply.": 1029,
   "the extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.": 1030,
-  "roleforge engine 0.66.1 ready": 1032,
+  "roleforge engine 0.66.2 ready": 1032,
   "roleforge engine ready": 1032,
   "name of the preferred tag": 1034,
   "character (all chats of this card)": 1048,
@@ -8917,10 +8917,18 @@ for (const pair of [
  ["A Lore entry exceeds the export file size.","Lore หนึ่งรายการมีขนาดเกินไฟล์ส่งออก"],
  ["Large archive: download all {0} parts, then import each file into the same card. Each file is within 12 MB.","คลังขนาดใหญ่: ดาวน์โหลดให้ครบ {0} ส่วน แล้วนำเข้าแต่ละไฟล์ในการ์ดเดียวกัน แต่ละไฟล์ไม่เกิน 12 MB"],
  ["Download Lore part {0} / {1}","ดาวน์โหลด Lore ส่วนที่ {0} / {1}"],
- ["Prepared {0} Lore export files. No entries were removed.","เตรียมไฟล์ส่งออก Lore แล้ว {0} ส่วน · เก็บข้อมูลครบทุกส่วน"]
+ ["Prepared {0} Lore export files. No entries were removed.","เตรียมไฟล์ส่งออก Lore แล้ว {0} ส่วน · เก็บข้อมูลครบทุกส่วน"],
+ ["Archive delete action","ลบที่เลือก"],
+ ["Delete {0} NPC records from {1}?\nThis cannot be undone. Other scopes and chat messages are kept.","ลบตัวละคร {0} รายการจาก {1} หรือไม่?\nกู้คืนด้วย Undo ไม่ได้ · สำเนาในอีกคลังและข้อความแชทยังอยู่"],
+ ["Delete {0} Lore entries from {1}?\nThis affects all chats of this card and cannot be undone.","ลบ Lore {0} รายการจาก {1} หรือไม่?\nมีผลกับทุกแชทของการ์ดนี้ · กู้คืนด้วย Undo ไม่ได้"],
+ ["Deleted {0} NPC records.","ลบตัวละครแล้ว {0} รายการ"],
+ ["Deleted {0} Lore entries.","ลบ Lore แล้ว {0} รายการ"],
+ ["No selected entries remain to delete.","ไม่มีรายการที่เลือกเหลือให้ลบ"],
+ ["Could not delete the selected entries. Data was kept.","ลบรายการที่เลือกไม่สำเร็จ · ข้อมูลเดิมยังอยู่"],
+ ["Could not save Lore changes.","บันทึกการเปลี่ยนแปลง Lore ไม่สำเร็จ"]
 ]) {
     aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length;
-    const label={"All entries":"All","Enabled entries":"Enabled","Disabled entries":"Disabled","Archive select action":"Select","Archive done action":"Done","Archive undo action":"Undo","Character archive source":"Card","Chat archive source":"Chat"}[pair[0]];
+    const label={"All entries":"All","Enabled entries":"Enabled","Disabled entries":"Disabled","Archive select action":"Select","Archive done action":"Done","Archive undo action":"Undo","Archive delete action":"Delete selected","Character archive source":"Card","Chat archive source":"Chat"}[pair[0]];
     messages.push(label?[label,pair[1]]:pair);
 }
 export const UI_STRINGS = Object.freeze(Object.fromEntries(Object.entries(aliases).map(([key,index])=>[key,Object.freeze(messages[index])])));
