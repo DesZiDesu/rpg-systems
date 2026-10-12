@@ -1,0 +1,191 @@
+{
+  "version": "0.66.0",
+  "testedAt": "2026-10-12T03:00:40.367503+00:00",
+  "baseCommit": "3bc5b5de8cb38d5ffc0a622c331afe9e9b71a382",
+  "runtime": {
+    "node": "v24.19.0",
+    "browser": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)"
+  },
+  "syntax": {
+    "command": "npm run check",
+    "pass": true,
+    "includesNewArchiveModule": true
+  },
+  "unit": {
+    "command": "npm test",
+    "tests": 1208,
+    "pass": 1208,
+    "fail": 0,
+    "skipped": 0
+  },
+  "browser": [
+    {
+      "command": "npm run test:archive",
+      "pass": true,
+      "version": "0.66.0",
+      "testedAt": "2026-10-12T02:57:29.117Z",
+      "productionModules": [
+        "src/npc-workspace.js",
+        "src/lore-workspace.js",
+        "src/archive-browser.js",
+        "styles/npc-ui.css"
+      ],
+      "viewports": [
+        {
+          "width": 320,
+          "pass": true,
+          "languages": [
+            "th",
+            "en"
+          ],
+          "maximumNpcRecords": 200,
+          "listTop": 222,
+          "visibleNpcRows": 4,
+          "listViewportHeight": 422
+        },
+        {
+          "width": 390,
+          "pass": true,
+          "languages": [
+            "th",
+            "en"
+          ],
+          "maximumNpcRecords": 200,
+          "listTop": 222,
+          "visibleNpcRows": 6,
+          "listViewportHeight": 566
+        },
+        {
+          "width": 1280,
+          "pass": true,
+          "languages": [
+            "th",
+            "en"
+          ],
+          "maximumNpcRecords": 200,
+          "listTop": 335.78125,
+          "visibleNpcRows": 5,
+          "listViewportHeight": 530
+        }
+      ],
+      "liveUserServerAccess": false,
+      "aiRequests": 0,
+      "coverage": [
+        "counted filters",
+        "row switches",
+        "20-record pages",
+        "cross-page and all-filtered selection",
+        "one-write bulk updates",
+        "Undo preserves newer fields and skips removed records",
+        "storage context guards",
+        "failed-save rollback and retry",
+        "Lore budget and unsaved preferences",
+        "touch scrolling and keyboard resize",
+        "focus restoration and menus",
+        "no horizontal overflow"
+      ]
+    },
+    {
+      "command": "node tests/startup.browser.mjs",
+      "pass": true,
+      "viewports": [
+        320,
+        390,
+        1280
+      ],
+      "loaders": [
+        "current",
+        "cached legacy"
+      ],
+      "coverage": [
+        "production startup",
+        "settings",
+        "all tabs",
+        "NPC manager"
+      ]
+    },
+    {
+      "command": "node tests/npc-workspace.browser.mjs",
+      "pass": true,
+      "coverage": [
+        "generation and stale-response guards",
+        "draft/save",
+        "portrait and vision",
+        "Character/Chat destinations",
+        "attribute repair",
+        "unsaved-header recovery"
+      ]
+    },
+    {
+      "command": "node tests/npc-alternates.browser.mjs",
+      "pass": true,
+      "viewports": [
+        320,
+        390,
+        1280
+      ],
+      "coverage": [
+        "add/edit/image/save",
+        "base identity and prompt isolation",
+        "switch/reload/cancel",
+        "scope portraits",
+        "deletion"
+      ]
+    },
+    {
+      "command": "node tests/lore-transfer.browser.mjs",
+      "pass": true,
+      "viewports": [
+        390
+      ],
+      "coverage": [
+        "export and download",
+        "duplicate/Unicode import",
+        "enabled/pinned flags and keywords",
+        "invalid-file protection"
+      ]
+    },
+    {
+      "command": "node tests/character-pack.browser.mjs",
+      "pass": true,
+      "viewports": [
+        320,
+        390,
+        1280
+      ],
+      "coverage": [
+        "one-card Powers/Forge/archives",
+        "native setup drawer",
+        "atomic save and failure protection",
+        "exported-card reimport",
+        "group exclusion"
+      ]
+    }
+  ],
+  "preview": {
+    "command": "node tests/build-archive-qol-preview.mjs",
+    "pass": true,
+    "bundledProductionWorkspace": true,
+    "offlineBulkAndUndo": true,
+    "externalRequests": 0,
+    "aiRequests": 0,
+    "zipCrcAndPaths": "pass"
+  },
+  "liveUserServerAccess": false,
+  "limits": [
+    "Browser checks use Chromium with emulated viewport/touch and controlled SillyTavern hosts; Safari on a physical iPhone was not tested.",
+    "Undo is limited to the latest enabled-state action in the current workspace session."
+  ],
+  "sha256": {
+    "index.js": "b9324b94e44aad759914e51a42b5458f9e4adef0579ea6ba102aab3d34333988",
+    "manifest.json": "e999dfdeada1fac3805f993066f513d620c597183b6e4215b97fb13693cca956",
+    "package.json": "bae37f024c52d6136a2bbdb2b37ffe13df99d3ce8bf557ac42fbf8542d673c7b",
+    "src/archive-browser.js": "fccb1226534678cc8885baabf2dcc57a5e041cfb8e31b819e81ef47edc6ffa49",
+    "src/npc-workspace.js": "32f0c600617d8ae14fec2d5684a78991c450dd98b022e14e6985ac367037bed4",
+    "src/lore-workspace.js": "90ddfe85d9d9e1e421e9c9f4ced42d8b454b89540fb5a05911fb2bf944360876",
+    "src/ui-strings.js": "04a72e677dc8c8611319540703c00708f751e066ff8c68df72aedb13fa6ef131",
+    "styles/npc-ui.css": "aa00fd9e535dd8bb4c0f7355da9c45aa427764bd5007025dfa9a55f61263df23",
+    "docs/previews/archive-qol/standalone.html": "7f5841c2e7f997d68452f6801b40c69f25734a56187a1586b41ef20ff00c65e8",
+    "docs/previews/archive-qol/roleforge-archive-qol-preview.zip": "826119163160693d7630d095e4265c44408c4f579f394f9f38c185adfb4fe1f2"
+  }
+}

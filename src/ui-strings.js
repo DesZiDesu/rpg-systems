@@ -7143,7 +7143,7 @@ const aliases = {
   "If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.": 1031,
   "If no patch is returned, the activity capsule says “No state changes.” Tracking ran successfully but had nothing confirmed to save.": 1031,
   "หากไม่มีชุดอัปเดต แถบสถานะจะแสดงว่าไม่มีข้อมูลเปลี่ยนแปลง หมายถึงติดตามสำเร็จแต่ไม่มีข้อมูลยืนยันให้บันทึก": 1031,
-  "RoleForge engine 0.65.0 ready": 1032,
+  "RoleForge engine 0.66.0 ready": 1032,
   "RoleForge engine ready": 1032,
   "ระบบ RoleForge พร้อมใช้งาน": 1032,
   "พิมพ์ชื่อแท็ก…": 1033,
@@ -8307,7 +8307,7 @@ const aliases = {
   "after your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.": 1028,
   "the character produces its normal reply once. if a confirmed fact changed, it appends an invisible state patch to that same reply.": 1029,
   "the extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.": 1030,
-  "roleforge engine 0.65.0 ready": 1032,
+  "roleforge engine 0.66.0 ready": 1032,
   "roleforge engine ready": 1032,
   "name of the preferred tag": 1034,
   "character (all chats of this card)": 1048,
@@ -8851,4 +8851,58 @@ for (const [source,en,th] of [
  ["นำเข้า “{0}” ({1} พลัง) แทน Preset ของแชทนี้? ค่าตัวละครเดิมจะยังถูกเก็บไว้","Import “{0}” ({1} powers) to replace this chat’s preset? Saved character values are retained.","นำเข้า “{0}” ({1} พลัง) แทน preset ของแชทนี้? ค่าตัวละครเดิมจะยังอยู่"],
  ["Replace this chat’s Character Forge preset? Existing profiles remain saved.","Replace this chat’s Character Forge preset? Existing profiles remain saved.","แทน preset สร้างตัวละครของแชทนี้? ข้อมูลตัวละครเดิมจะยังอยู่"]
 ]) { aliases[source]=messages.length; aliases[en]=messages.length; aliases[th]=messages.length; messages.push([en,th]); }
+// Archive management QoL. These labels describe saved activation state, not
+// whether relevant-mode Lore was included in a particular model request.
+for (const pair of [
+ ["All entries","ทั้งหมด"],
+ ["Enabled entries","เปิดอยู่"],
+ ["Disabled entries","ปิดอยู่"],
+ ["Filter by enabled state","กรองสถานะเปิด–ปิด"],
+ ["Select multiple","เลือกหลายรายการ"],
+ ["Done selecting","เสร็จสิ้นการเลือก"],
+ ["Select {0}","เลือก {0}"],
+ ["Select this page","เลือกหน้านี้"],
+ ["Select all results","เลือกผลค้นหาทั้งหมด"],
+ ["Select this page · {0}","เลือกหน้านี้ · {0}"],
+ ["Select all {0} results (all pages)","เลือกผลค้นหาทั้ง {0} รายการ (ทุกหน้า)"],
+ ["Clear selection","ล้างการเลือก"],
+ ["Enable selected","เปิดรายการที่เลือก"],
+ ["Disable selected","ปิดรายการที่เลือก"],
+ ["Undo last change","ย้อนการเปลี่ยนล่าสุด"],
+ ["{0} selected","เลือกแล้ว {0} รายการ"],
+ ["{0} / {1} entries","{0} / {1} รายการ"],
+ ["Selection stays across pages. Changing search or filter clears it.","การเลือกคงอยู่เมื่อเปลี่ยนหน้า · เปลี่ยนคำค้นหรือตัวกรองจะล้างการเลือก"],
+ ["Enable character {0}","เปิดใช้งานตัวละคร {0}"],
+ ["Disable {0} (keep data)","ปิดใช้งาน {0} · ข้อมูลยังอยู่"],
+ ["Enable {0}","เปิดใช้งาน {0}"],
+ ["No entries match this search or filter","ไม่มีรายการที่ตรงกับคำค้นหรือตัวกรอง"],
+ ["Try All or change your search.","เลือกทั้งหมด หรือเปลี่ยนคำค้นหา"],
+ ["Chat/card changed. Reopen this list.","แชทหรือการ์ดเปลี่ยนแล้ว กรุณาเปิดรายการใหม่"],
+ ["No enabled states changed.","ไม่มีสถานะเปิด–ปิดที่เปลี่ยน"],
+ ["Nothing to undo. Newer states were kept.","ไม่มีสถานะที่ย้อนกลับได้ · เก็บสถานะที่เปลี่ยนภายหลังไว้"],
+ ["Could not save enabled states.","บันทึกสถานะเปิด–ปิดไม่สำเร็จ"],
+ ["Enabled {0} entries.","เปิดใช้งานแล้ว {0} รายการ"],
+ ["Disabled {0} entries. Data is kept.","ปิดใช้งานแล้ว {0} รายการ · ข้อมูลยังอยู่"],
+ ["Restored {0} enabled states.","ย้อนสถานะเปิด–ปิดแล้ว {0} รายการ"],
+ ["Lore budget & delivery","งบและการส่ง Lore"],
+ ["Title, keywords or content","ชื่อ คำค้นเสริม หรือเนื้อหา"],
+ ["About Lore import / export","เกี่ยวกับการนำเข้า / ส่งออก Lore"],
+ ["LORE RECORDS","คลัง LORE"],
+ ["Pinned for relevant delivery","ตรึงในโหมดเฉพาะที่เกี่ยวข้อง"],
+ ["Back up portraits","สำรองภาพเก่า"],
+ ["New story NPCs","NPC ใหม่จากเรื่อง"],
+ ["Archive select action","เลือก"],
+ ["Archive done action","เสร็จ"],
+ ["Archive undo action","ย้อน"],
+ ["Selection options","ตัวเลือกการเลือก"],
+ ["Archive options","ตัวเลือกคลังข้อมูล"],
+ ["Archive management tools","เครื่องมือจัดการ"],
+ ["Close management tools","ปิดเครื่องมือจัดการ"],
+ ["Character archive source","การ์ด"],
+ ["Chat archive source","แชท"]
+]) {
+    aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length;
+    const label={"All entries":"All","Enabled entries":"Enabled","Disabled entries":"Disabled","Archive select action":"Select","Archive done action":"Done","Archive undo action":"Undo","Character archive source":"Card","Chat archive source":"Chat"}[pair[0]];
+    messages.push(label?[label,pair[1]]:pair);
+}
 export const UI_STRINGS = Object.freeze(Object.fromEntries(Object.entries(aliases).map(([key,index])=>[key,Object.freeze(messages[index])])));

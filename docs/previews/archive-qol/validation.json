@@ -1,0 +1,50 @@
+{
+  "version": "0.66.0",
+  "testedAt": "2026-10-12T02:57:29.117Z",
+  "productionModules": [
+    "src/npc-workspace.js",
+    "src/lore-workspace.js",
+    "src/archive-browser.js",
+    "styles/npc-ui.css"
+  ],
+  "viewports": [
+    {
+      "width": 320,
+      "pass": true,
+      "languages": [
+        "th",
+        "en"
+      ],
+      "maximumNpcRecords": 200,
+      "listTop": 222,
+      "visibleNpcRows": 4,
+      "listViewportHeight": 422
+    },
+    {
+      "width": 390,
+      "pass": true,
+      "languages": [
+        "th",
+        "en"
+      ],
+      "maximumNpcRecords": 200,
+      "listTop": 222,
+      "visibleNpcRows": 6,
+      "listViewportHeight": 566
+    },
+    {
+      "width": 1280,
+      "pass": true,
+      "languages": [
+        "th",
+        "en"
+      ],
+      "maximumNpcRecords": 200,
+      "listTop": 335.78125,
+      "visibleNpcRows": 5,
+      "listViewportHeight": 530
+    }
+  ],
+  "liveUserServerAccess": false,
+  "aiRequests": 0
+}

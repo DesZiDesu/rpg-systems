@@ -43,6 +43,8 @@ try{
  await page.evaluate(()=>toggle(false));assert.equal(await page.locator('#tretaresia-npc-wand-launcher').isVisible(),false);
  await page.evaluate(()=>toggle(true));await page.locator('#tretaresia-npc-wand-launcher').press('Enter');
  await page.locator('[data-management-tab=lore]').click();
+ await page.locator('[data-archive-options-toggle]').click();
+ await page.locator('[data-lore-preferences] summary').click();
  await page.locator('[name=loreBudget]').fill('2000000');await page.getByRole('button',{name:uiText('บันทึกงบและโหมด',[],'th'),exact:true}).click();assert.equal(await page.locator('[name=loreBudget]').inputValue(),'2000000');
  await page.getByRole('button',{name:uiText('＋ สร้าง Lore ใหม่',[],'th'),exact:true}).click();
  await page.locator('[name=loreTitle]').fill('Moon law');await page.locator('[name=loreContent]').fill('The moon is a blue crystal.');
@@ -53,7 +55,7 @@ try{
  assert.equal(await page.getByRole('checkbox',{name:uiText('เปิด Lore {0}',['Moon law'],'th'),exact:true}).isChecked(),false);
  await page.getByRole('checkbox',{name:uiText('เปิด Lore {0}',['Moon law'],'th'),exact:true}).check();
  await page.locator('[data-management-tab=npc]').click();
- await page.locator('[data-new]').click();await page.locator('[data-npc-brief]').fill('A 120 year old elven healer named Lysa with a forest clinic.');
+ await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-new]').click();await page.locator('[data-npc-brief]').fill('A 120 year old elven healer named Lysa with a forest clinic.');
  await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>document.querySelector('[name=name]').value==='Lysa');
  assert.equal(await page.locator('[name=age]').inputValue(),'120');assert.equal(await page.locator('[name="stats.level"]').inputValue(),'10');
  assert.equal(await page.locator('[name=roleIcon]').inputValue(),'book','Generation preserves the current draft role icon');assert.equal(await page.locator('[data-ability=name]').inputValue(),'Heal');
@@ -68,15 +70,15 @@ try{
  assert.ok(recordBox.height>330);assert.ok(nameBox.y>=recordBox.y&&nameBox.y+nameBox.height<=recordBox.y+recordBox.height);
  await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>!document.querySelector('dialog').classList.contains('trpg-keyboard-open'));await assertFooter();
  await page.locator('[data-npc-save]').click();await page.waitForFunction(()=>window.counts().saves===1);assert.equal((await page.evaluate(()=>counts())).stored[0].name,'Lysa');
- await page.locator('[data-back]').click();await page.locator('[data-new]').click();await page.locator('[name=name]').fill('Keep me');await page.locator('[data-npc-brief]').fill('Another healer');
+ await page.locator('[data-back]').click();await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-new]').click();await page.locator('[name=name]').fill('Keep me');await page.locator('[data-npc-brief]').fill('Another healer');
  const noticesBeforeRetry=await page.evaluate(()=>window.apiNotices.length);await page.evaluate(()=>window.badAI=true);await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>document.querySelector('[role=status]').textContent.includes('JSON'));
  assert.equal(await page.locator('[name=name]').inputValue(),'Keep me');assert.equal(await page.evaluate(()=>window.apiNotices.length),noticesBeforeRetry+2);assert.match(await page.evaluate(()=>window.apiNotices.at(-1).message),/ลองใหม่/);
  await page.evaluate(()=>{window.badAI=false;window.waitForAI=true});await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>typeof window.resolveAI==='function');
  await page.locator('[data-close]').click();await page.evaluate(()=>{window.resolveAI();window.waitForAI=false});await page.waitForTimeout(100);
  assert.match(await page.evaluate(()=>window.lastPrompt),/blue crystal/);assert.equal((await page.evaluate(()=>counts())).saves,1);assert.equal(await page.locator('dialog').isVisible(),false);
  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>workspace.open());
- await page.locator('[data-generation-scope]').selectOption('character');assert.equal(await page.locator('[data-scope-select]').inputValue(),'character');
- await page.locator('[data-new]').click();assert.equal(await page.locator('[data-draft-scope]').inputValue(),'character');
+ await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-generation-summary]').click();await page.locator('[data-generation-scope]').selectOption('character');assert.equal(await page.locator('[data-scope-select]').inputValue(),'character');
+ await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-new]').click();assert.equal(await page.locator('[data-draft-scope]').inputValue(),'character');
  // Real canvas-generated image exercises upload preparation and request attachment.
  const image=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=8;const g=c.getContext('2d');g.fillStyle='red';g.fillRect(0,0,8,8);return c.toDataURL('image/png').split(',')[1];});
  await page.locator('form .trpg-section input[type=file]').setInputFiles({name:'portrait.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')});
@@ -109,7 +111,7 @@ try{
  assert.equal(await page.locator('[data-draft-scope]').inputValue(),'character');
  await page.locator('[data-back]').click();await page.locator('.trpg-person').click();
  await page.getByRole('button',{name:uiText('ลบตัวละคร',[],'th'),exact:true}).click();await page.waitForFunction(()=>window.counts().shared.length===0);assert.equal((await page.evaluate(()=>counts())).stored.length,1);
- await page.locator('[data-scope-select]').selectOption('chat');await page.locator('.trpg-person').click();await page.getByRole('button',{name:uiText('ลบตัวละคร',[],'th'),exact:true}).click();await page.waitForFunction(()=>window.counts().stored.length===0);
+ await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-scope-select]').selectOption('chat');await page.locator('.trpg-person').click();await page.getByRole('button',{name:uiText('ลบตัวละคร',[],'th'),exact:true}).click();await page.waitForFunction(()=>window.counts().stored.length===0);
  assert.equal(await page.locator('[data-editor-actions]').isVisible(),false);
  assert.deepEqual(errors,[]);
  console.log('PASS: wand, draft/save/stale responses, viewport, image-only vision, unsupported vision preservation, Character destination/list, attribute repair, unsaved header recovery.');

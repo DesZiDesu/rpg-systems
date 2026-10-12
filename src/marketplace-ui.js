@@ -1,5 +1,5 @@
-import {currencyScheme,currencyUnitLabel} from './currency-config.js?v=0.65.0';
-import { marketplaceErrorText } from './marketplace-core.js?v=0.65.0';
+import {currencyScheme,currencyUnitLabel} from './currency-config.js?v=0.66.0';
+import { marketplaceErrorText } from './marketplace-core.js?v=0.66.0';
 
 const node = (tag, cls, text) => { const el = document.createElement(tag); if (cls) el.className = cls; if (text !== undefined) el.textContent = text; return el; };
 

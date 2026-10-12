@@ -56,7 +56,7 @@ async function ready(page){
 async function openNpc(page,scope='chat'){
  await page.locator('#tretaresia-rpg-settings [data-trpg-open]').evaluate(button=>{for(let node=button.parentElement;node;node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;});
  await page.locator('#tretaresia-rpg-settings [data-trpg-open]').click();await page.locator('dialog.trpg-manager[open]').waitFor();
- if(await page.locator('[data-scope-select]').inputValue()!==scope)await page.locator('[data-scope-select]').selectOption(scope);
+ if(await page.locator('[data-scope-select]').inputValue()!==scope){await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-scope-select]').selectOption(scope);}
  await page.locator('.trpg-person').click();await page.locator('[data-alternate-select]').waitFor();
 }
 const rootRecord=page=>page.evaluate(()=>structuredClone(window.host.chatMetadata.tretaresia_rpg_state.npcs[0]));
@@ -134,7 +134,7 @@ try{
   assert.equal(card[0].alternateProfiles[0].portraitPath,alternate.portraitPath);assert.equal(card[0].portraitSource,'server');assert.notEqual(card[0].portraitPath,alternate.portraitPath,'copied base portrait is not replaced by the active version’s portrait');
   const cardSnapshot=structuredClone(card[0]);
   // Delete selected alternate from Chat only; revert original, preserve copied archive.
-  await page.locator('[data-back]').click();await page.locator('[data-scope-select]').selectOption('chat');await page.locator('.trpg-person').click();await page.locator('[data-alternate-delete]').click();
+  await page.locator('[data-back]').click();await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-scope-select]').selectOption('chat');await page.locator('.trpg-person').click();await page.locator('[data-alternate-delete]').click();
   await page.waitForFunction(()=>window.host.chatMetadata.tretaresia_rpg_state.npcs[0].alternateProfiles.length===0);
   const deleted=await rootRecord(page);assert.equal(deleted.id,'cora');assert.equal(deleted.activeAlternateId,'');assert.equal(deleted.age,'28');assert.equal(deleted.background,before.background);assert.equal(deleted.portraitSource,'local');
   assert.deepEqual(await page.evaluate(()=>window.host.characters[0].data.extensions.tretaresia_rpg_npcs[0]),cardSnapshot);

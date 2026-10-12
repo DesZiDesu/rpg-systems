@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoleForge · Character / Lore QoL preview</title>
+<style>
+html{color-scheme:dark;background:#1d1d1f;color:#d9d5ce;font:15px/1.6 system-ui,sans-serif}body{margin:0}*{box-sizing:border-box}
+@font-face{font-family:PreviewIcons;src:url('../chat-original/assets/preview-icons.woff2')} .fa-solid{font-family:PreviewIcons;font-style:normal}.fa-book:before{content:'\f02d'}.fa-address-book:before{content:'\f2b9'}
+.preview-host{max-width:1180px;margin:auto;padding:24px}.preview-host small{color:#b7a878}.preview-host h1{color:#e7d197;font-size:26px}.preview-host p{max-width:750px}
+.preview-host button{padding:12px 16px;border:1px solid #66532d;background:#181713;color:#e7d197;font:inherit;cursor:pointer;margin:4px 8px 4px 0}
+.preview-note{border-left:2px solid #806c3e;padding-left:14px;color:#c7c0b0}.preview-footer{font-size:12px;color:#a6a29a}
+</style>
+</head>
+<body>
+<main class="preview-host">
+ <small>ROLEFORGE · REVIEW PREVIEW · NOT COMMITTED</small>
+ <h1>Character / Lore · จัดการเปิด–ปิด</h1>
+ <p class="preview-note">ใช้หน้าจอและโค้ดส่วนเสริมจริงกับข้อมูลตัวอย่างในหน้านี้เท่านั้น ไม่มีการเชื่อมต่อบัญชี SillyTavern และไม่เรียก AI</p>
+ <p>ลองกรอง “ปิดอยู่” → กด “เลือก” ที่มุมขวาล่าง → ติ๊กชื่อ หรือกด ⋯ ด้านล่างเพื่อเลือกหน้านี้ / ผลค้นหาทุกหน้า → เปิดรายการที่เลือก</p>
+ <p>ปุ่ม ⋯ ข้างชื่อหน้าต่างรวมการเลือกคลัง สร้าง นำเข้า และตั้งค่า Lore ไว้ให้ โดยรายชื่อใช้พื้นที่เลื่อนหลักของหน้าจอ</p>
+ <button type="button" data-preview-npc>เปิด Character / NPC</button><button type="button" data-preview-lore>เปิด Lore</button><button type="button" data-preview-reset>คืนข้อมูลตัวอย่าง</button>
+ <p class="preview-footer">20 รายการต่อหน้า · การเลือกคงอยู่ข้ามหน้า · เปลี่ยนคำค้น ตัวกรอง หรือแหล่งข้อมูลจะล้างการเลือก · ปิดแล้วข้อมูลยังอยู่</p>
+</main>
+<div id="chat"></div>
+<script type="module" src="./preview.js"></script>
+</body>
+</html>

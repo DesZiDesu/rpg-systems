@@ -1,12 +1,18 @@
 # RoleForge
 
-**Public release: 0.65.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.66.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+## Character and Lore management
+
+**New in 0.66.0:** find disabled NPCs or Lore with counted **All / Enabled / Disabled** filters, then toggle them directly from each row. Disabled records have a dashed border, muted styling and an explicit label. Select several records, the current page or all filtered results across pages; enable/disable them together and undo the latest status change. Each page contains 20 records, and changing pages keeps your selection.
+
+The list fills the mobile window with one scrolling area. Page controls and batch actions stay below it; secondary tools, imports and scope settings live in the top **⋯** menu. NPC Chat/Character scope and character-card Lore storage stay the same. Bulk changes preserve profile data and use the existing Lore budget checks. Browsing and toggling do not call AI. [Mobile / PC preview](docs/previews/archive-qol/index.html) · [Offline preview](docs/previews/archive-qol/standalone.html) · [Thai guide](docs/archive-qol-v0.66.0.th.md).
 
 ## Chat designs
 
@@ -114,13 +120,17 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.65.0** passes **1,202 unit/host tests** and syntax checks. Production browser checks cover both chat designs at 320/390/768/1280px, all eight independent frame combinations, square portraits, three Folio character colors, readable speech contrast, long names, live Voice controls, per-chat settings, reload, card/preset defaults and failed-save rollback. Native widgets keep their node identity, bound actions and iframe state through switching/restoration. Speech drafts survive visual theme refreshes while edits/swipes still invalidate their old source. The Original gallery also checks both host palettes and OS appearances. Browser checks use the production renderer and controlled SillyTavern hosts; the new preview’s outer chat shell is a mock. [Current guide](docs/chat-designs-v0.65.0.th.md) · [Validation record](docs/validation-chat-designs-v0.65.0.json).
+Version **0.66.0** passes **1,208 unit/host tests** and syntax checks. Archive browser checks exercise the production NPC/Lore workspaces at 320/390/1280px in Thai and English, including 200 NPCs, touch scrolling, keyboard resizing, cross-page selection, Undo, storage scopes, failed saves and Lore budget limits. NPC generation, portraits, alternate profiles, Lore import/export and one-card setup also retain their browser regression coverage. [QoL guide](docs/archive-qol-v0.66.0.th.md) · [Validation record](docs/validation-archive-qol-v0.66.0.json).
+
+The preceding **0.65.0** browser checks cover both chat designs at 320/390/768/1280px, all eight independent frame combinations, square portraits, three Folio character colors, readable speech contrast, long names, live Voice controls, per-chat settings, reload, card/preset defaults and failed-save rollback. Native widgets keep their node identity, bound actions and iframe state through switching/restoration. Speech drafts survive visual theme refreshes while edits/swipes still invalidate their old source. The Original gallery also checks both host palettes and OS appearances. Browser checks use the production renderer and controlled SillyTavern hosts; the preview’s outer chat shell is a mock. [Chat design guide](docs/chat-designs-v0.65.0.th.md) · [Validation record](docs/validation-chat-designs-v0.65.0.json).
 
 The broader 0.62.0 checks, including the original uploaded Madoka card, remain recorded in [the preceding validation report](docs/validation-chat-presets-v0.62.0.json).
 
 Shared rendering is tested at 320/390/1280px with the actual pinned SillyTavern Regex engine, MessageFormatter, Markdown and sanitizer pipeline in a controlled host. Browser checks cover native widgets/listeners, tables, links, source/display rules, user-only shorthand, Voice, edit/swipe/reparenting, settings and composer windows. [Compatibility report](docs/regex-shared-v0.60.0.th.md).
 
 Run `npm run test:regex` for the focused compatibility suites. The shared suite downloads pinned upstream test dependencies with `curl` into a temporary cache; `ST_REGEX_CACHE` can point to a prepared cache. This does not install runtime dependencies or change SillyTavern.
+
+Run `npm run test:archive` for the Character/Lore filters, bulk controls, persistence and mobile layout checks.
 
 Run `npm run test:themes` for Original color modes, frame-toggle and per-chat appearance checks. Run `npm run test:presets` for the preset library and blocked-host checks. Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. Historical release results remain in the [development README](docs/archive/README-v0.56.2-development.md).
 
