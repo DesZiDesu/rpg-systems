@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.66.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.66.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -13,6 +13,8 @@ The extension adds instructions for enabled systems to your existing text-genera
 **New in 0.66.0:** find disabled NPCs or Lore with counted **All / Enabled / Disabled** filters, then toggle them directly from each row. Disabled records have a dashed border, muted styling and an explicit label. Select several records, the current page or all filtered results across pages; enable/disable them together and undo the latest status change. Each page contains 20 records, and changing pages keeps your selection.
 
 The list fills the mobile window with one scrolling area. Page controls and batch actions stay below it; secondary tools, imports and scope settings live in the top **⋯** menu. NPC Chat/Character scope and character-card Lore storage stay the same. Bulk changes preserve profile data and use the existing Lore budget checks. Browsing and toggling do not call AI. [Mobile / PC preview](docs/previews/archive-qol/index.html) · [Offline preview](docs/previews/archive-qol/standalone.html) · [Thai guide](docs/archive-qol-v0.66.0.th.md).
+
+**Added in 0.66.1:** Lore storage defaults to **Unlimited entries**. Set an optional maximum in **Lore Management → ⋯ → Lore storage & delivery**. Lowering it keeps existing records readable/editable and only blocks further growth. This setting follows chat/world presets and one-card setup; Import/Export and card reload keep entries beyond the former 200-record ceiling. Large exports offer numbered files within the existing 12 MB import limit. AI delivery still uses its separate mode and context budget; choose Relevant for large worlds. [Lore capacity guide](docs/lore-capacity-v0.66.1.th.md) · [Mobile settings preview](docs/previews/lore-capacity/settings-390.png).
 
 ## Chat designs
 
@@ -120,7 +122,9 @@ Browser tests also need Playwright and Chromium:
 
 For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your browser's absolute path. **npm run test:commerce-stock** covers both historical unknown-stock purchases and current AI-stock selection.
 
-Version **0.66.0** passes **1,208 unit/host tests** and syntax checks. Archive browser checks exercise the production NPC/Lore workspaces at 320/390/1280px in Thai and English, including 200 NPCs, touch scrolling, keyboard resizing, cross-page selection, Undo, storage scopes, failed saves and Lore budget limits. NPC generation, portraits, alternate profiles, Lore import/export and one-card setup also retain their browser regression coverage. [QoL guide](docs/archive-qol-v0.66.0.th.md) · [Validation record](docs/validation-archive-qol-v0.66.0.json).
+Version **0.66.1** passes **1,217 unit/host tests** and syntax checks. Lore checks retain 5,000 records, validate configurable/unlimited capacities, preserve archives when lowering limits and round-trip large Unicode exports in byte-bounded parts. Production browser checks at 320/390/1280px cover 2,500-record editing/creation, chat settings, one-card export/reimport and numbered-file downloads. Relevance checks skip word segmentation for impossible content matches while preserving Thai, Unicode normalization and word boundaries. [Lore capacity guide](docs/lore-capacity-v0.66.1.th.md) · [Validation record](docs/validation-lore-capacity-v0.66.1.json).
+
+Archive browser checks exercise the production NPC/Lore workspaces at 320/390/1280px in Thai and English, including 200 NPCs, touch scrolling, keyboard resizing, cross-page selection, Undo, storage scopes, failed saves and Lore budget limits. NPC generation, portraits, alternate profiles, Lore import/export and one-card setup also retain their browser regression coverage. [QoL guide](docs/archive-qol-v0.66.0.th.md) · [0.66.0 validation record](docs/validation-archive-qol-v0.66.0.json).
 
 The preceding **0.65.0** browser checks cover both chat designs at 320/390/768/1280px, all eight independent frame combinations, square portraits, three Folio character colors, readable speech contrast, long names, live Voice controls, per-chat settings, reload, card/preset defaults and failed-save rollback. Native widgets keep their node identity, bound actions and iframe state through switching/restoration. Speech drafts survive visual theme refreshes while edits/swipes still invalidate their old source. The Original gallery also checks both host palettes and OS appearances. Browser checks use the production renderer and controlled SillyTavern hosts; the preview’s outer chat shell is a mock. [Chat design guide](docs/chat-designs-v0.65.0.th.md) · [Validation record](docs/validation-chat-designs-v0.65.0.json).
 
@@ -131,6 +135,8 @@ Shared rendering is tested at 320/390/1280px with the actual pinned SillyTavern 
 Run `npm run test:regex` for the focused compatibility suites. The shared suite downloads pinned upstream test dependencies with `curl` into a temporary cache; `ST_REGEX_CACHE` can point to a prepared cache. This does not install runtime dependencies or change SillyTavern.
 
 Run `npm run test:archive` for the Character/Lore filters, bulk controls, persistence and mobile layout checks.
+
+Run `npm run test:lore-capacity` for large Lore libraries, capacity settings, chunked exports and one-card round trips.
 
 Run `npm run test:themes` for Original color modes, frame-toggle and per-chat appearance checks. Run `npm run test:presets` for the preset library and blocked-host checks. Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. Historical release results remain in the [development README](docs/archive/README-v0.56.2-development.md).
 

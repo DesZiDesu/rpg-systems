@@ -1,7 +1,7 @@
-import {validatePowerConfig} from './power-presets.js?v=0.66.0';
-import {validateForgePreset} from './forge-presets.js?v=0.66.0';
-import {loreOptions} from './lore-core.js?v=0.66.0';
-import {validatePresetConfig} from './world-presets.js?v=0.66.0';
+import {validatePowerConfig} from './power-presets.js?v=0.66.1';
+import {validateForgePreset} from './forge-presets.js?v=0.66.1';
+import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.66.1';
+import {validatePresetConfig} from './world-presets.js?v=0.66.1';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the
@@ -125,8 +125,10 @@ export function writeCharacterPack(context, settings, owner, raw, {npcs,lore}={}
     for(const key of ['powerPreset','forgePreset','currencyPreset','trainingPreset','systems','loreOptions','chatAppearance','initialState'])
         if(Object.hasOwn(raw,key)&&!Object.hasOwn(pack,key))throw Error(`Invalid character pack ${key}`);
     const fields={[CHARACTER_PACK_FIELD]:pack};
+    if(raw.loreOptions)writeLoreOptions({}, {...pack.loreOptions,...raw.loreOptions},'pack','pack');
     for(const [kind,records] of Object.entries({npcs,lore}))if(records!==undefined){
-        if(!Array.isArray(records)||records.length>200)throw Error(`Invalid character pack ${kind}`);
+        if(!Array.isArray(records)||kind==='npcs'&&records.length>200)throw Error(`Invalid character pack ${kind}`);
+        if(kind==='lore')assertLoreCapacity(records.length,pack.loreOptions,readCharacterArchive(context,settings,owner,kind).length);
         fields[ARCHIVE_FIELDS[kind]]=records;
     }
     // Snapshot inputs now: a pending write must not publish later in-memory edits.

@@ -1,19 +1,29 @@
+import {uiText} from './ui-language.js?v=0.66.1';
+
 // Character-owned reference data. AI output cannot write to this archive.
-export const LORE_LIMIT = 200;
+// A zero entry limit means unlimited storage. Context budgets are separate.
+export const LORE_LIMIT = 0;
 export const LORE_CONTENT_LIMIT = 12000;
 export const LORE_ACTIVE_LIMIT = 60000; // Backward-compatible default, in characters (not tokens).
 export const LORE_BUDGET_MAX = 8000000;
+export const loreEntryLimit = (options = {}) => Number.isSafeInteger(options?.entryLimit) && options.entryLimit >= 0 ? options.entryLimit : LORE_LIMIT;
+export function assertLoreCapacity(count, options = {}, previousCount = 0) {
+    const limit = loreEntryLimit(options);
+    // Lowering a limit never makes existing records unreadable or uneditable.
+    if (limit && count > limit && count > previousCount) throw Error(uiText('Lore is limited to {0} entries. Change the limit in Lore Management.',[limit.toLocaleString()]));
+}
 export function loreOptions(settings, owner) {
     const raw = settings.loreCharacterOptions?.[owner] || {};
     const budget = Number(raw.budget);
     return {budget: Number.isSafeInteger(budget) && budget >= 1000 && budget <= LORE_BUDGET_MAX ? budget : LORE_ACTIVE_LIMIT,
-        mode: raw.mode === 'relevant' ? 'relevant' : 'all'};
+        mode: raw.mode === 'relevant' ? 'relevant' : 'all', entryLimit: loreEntryLimit(raw)};
 }
 export function writeLoreOptions(settings, options, expectedOwner, currentOwner) {
     if (!currentOwner || expectedOwner !== currentOwner) throw Error('การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่');
     if (!Number.isSafeInteger(options.budget) || options.budget < 1000 || options.budget > LORE_BUDGET_MAX || !['all','relevant'].includes(options.mode)) throw Error('ระบุงบ Lore 1,000–8,000,000 ตัวอักษร และโหมดที่ถูกต้อง');
+    if (options.entryLimit !== undefined && (!Number.isSafeInteger(options.entryLimit) || options.entryLimit < 0)) throw Error(uiText('Lore entry limit must be a whole number from 0 upwards. 0 means unlimited.'));
     settings.loreCharacterOptions ||= {};
-    Object.defineProperty(settings.loreCharacterOptions, currentOwner, {value:{budget:options.budget,mode:options.mode},enumerable:true,configurable:true,writable:true});
+    Object.defineProperty(settings.loreCharacterOptions, currentOwner, {value:{budget:options.budget,mode:options.mode,entryLimit:loreEntryLimit(options)},enumerable:true,configurable:true,writable:true});
 }
 const STOP = new Set(['about','after','before','with','from','into','their','there','this','that','have','been','would','could','where','while','the','and','for','are','you','your','was','were','คือ','และ','ของ','เป็น','ใน','ที่','จาก','ให้','แล้ว','ด้วย','เมื่อ','หรือ','ได้','เขา','เธอ','มัน','ฉัน','นี้','นั้น']);
 const SEGMENTER = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter(undefined, {granularity:'word'}) : null;
@@ -27,12 +37,16 @@ export function selectLore(entries, options = {}, query = '') {
     const budget = options.budget ?? LORE_ACTIVE_LIMIT, mode = options.mode || 'all';
     const search = String(query).normalize('NFKC').toLocaleLowerCase();
     const queryTerms = mode === 'relevant' ? new Set(terms(search)) : new Set();
+    const contentQueries = [...queryTerms].filter(term => term.length >= 4 || /\p{Script=Thai}/u.test(term));
     const candidates = loreEntries(entries).filter(item => item.enabled && item.content.trim()).map(item => {
         if (mode !== 'relevant' || item.always || !queryTerms.size) return {item,score:0};
         const keys = [item.title,...item.keywords];
         const explicit = keys.filter(key => key.length >= 2 && search.includes(key.normalize('NFKC').toLocaleLowerCase())).length;
         const headline = terms(item.title).filter(term => queryTerms.has(term) && term.length >= 3).length;
-        const contentTerms = terms(item.content.slice(0, 4000));
+        const content = item.content.slice(0, 4000).normalize('NFKC').toLocaleLowerCase();
+        // A substring precheck only skips impossible matches. Positive cases
+        // still use word boundaries, so "wind" cannot match "window".
+        const contentTerms = contentQueries.some(term => content.includes(term)) ? terms(content) : [];
         const overlap = contentTerms.filter(term => queryTerms.has(term) && (term.length >= 4 || /\p{Script=Thai}/u.test(term))).length;
         // A single long distinctive term or two shorter terms can identify a record.
         const evidence = overlap >= 2 || contentTerms.some(term => term.length >= 5 && queryTerms.has(term)) ? overlap : 0;
@@ -53,7 +67,7 @@ export function loreEntries(value) {
     if (!Array.isArray(value)) return [];
     const seen = new Set();
     return value.filter(item => item && typeof item.id === 'string' && !seen.has(item.id) && seen.add(item.id))
-        .slice(0, LORE_LIMIT).map(item => ({
+        .map(item => ({
             id: item.id.slice(0, 120),
             title: typeof item.title === 'string' ? item.title.slice(0, 160) : '',
             content: typeof item.content === 'string' ? item.content.slice(0, LORE_CONTENT_LIMIT) : '',
@@ -73,10 +87,11 @@ export function lorePrompt(entries, options, query) {
 }
 export function writeCharacterLore(settings, entries, expectedOwner, currentOwner) {
     if (!currentOwner || expectedOwner !== currentOwner) throw Error('การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่');
-    if (!Array.isArray(entries) || entries.length > LORE_LIMIT) throw Error(`เก็บ Lore ได้สูงสุด ${LORE_LIMIT} รายการต่อการ์ด`);
+    if (!Array.isArray(entries)) throw Error('รูปแบบคลัง Lore ไม่ถูกต้อง');
+    const options = loreOptions(settings, currentOwner);
+    assertLoreCapacity(entries.length, options, characterLore(settings, currentOwner).length);
     const normalized = loreEntries(entries);
     if (normalized.length !== entries.length || entries.some(item => typeof item?.id !== 'string' || !item.id || item.id.length > 120 || typeof item?.title !== 'string' || !item.title.trim() || typeof item?.content !== 'string' || !item.content.trim() || item.title.length > 160 || item.content.length > LORE_CONTENT_LIMIT)) throw Error('กรอกชื่อและเนื้อหา Lore ให้ครบ ภายในขนาดที่กำหนด');
-    const options = loreOptions(settings, currentOwner);
     if (options.mode === 'all' && normalized.filter(item => item.enabled).reduce((n,item) => n + item.title.length + item.content.length, 0) > options.budget) throw Error(`Lore ที่เปิดรวมเกิน ${options.budget.toLocaleString()} ตัวอักษร ปรับงบหรือเลือกโหมดเฉพาะที่เกี่ยวข้องใน Lore Management`);
     settings.loreCharacterLibraries ||= {};
     Object.defineProperty(settings.loreCharacterLibraries, currentOwner, {value:normalized, enumerable:true, configurable:true, writable:true});

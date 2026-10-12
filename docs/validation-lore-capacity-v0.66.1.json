@@ -1,0 +1,149 @@
+{
+  "version": "0.66.1",
+  "testedAt": "2026-10-12T04:47:02.894974+00:00",
+  "baseCommit": "729b0606583dbd2eb8792779f537524e90e0befd",
+  "syntax": {
+    "command": "npm run check",
+    "pass": true
+  },
+  "unit": {
+    "command": "npm test",
+    "tests": 1217,
+    "pass": 1217,
+    "fail": 0,
+    "skipped": 0
+  },
+  "focused": {
+    "command": "npm run test:lore-capacity",
+    "tests": 41,
+    "pass": true,
+    "coverage": [
+      "5,000-record storage/import/export",
+      "zero/unlimited and finite limits",
+      "lower limits retain records and allow edits/deletions",
+      "atomic capacity validation and blocked growth",
+      "legacy configuration defaults",
+      "World/chat preset round trips",
+      "2,500-record one-card storage and independent NPC limit",
+      "byte-bounded Unicode export parts",
+      "relevance word boundaries and Unicode/Thai matches"
+    ]
+  },
+  "browser": {
+    "version": "0.66.1",
+    "testedAt": "2026-10-12T04:43:01.364Z",
+    "viewports": [
+      {
+        "width": 320,
+        "records": 2501,
+        "pass": true
+      },
+      {
+        "width": 390,
+        "records": 2501,
+        "pass": true
+      },
+      {
+        "width": 1280,
+        "records": 2501,
+        "pass": true
+      }
+    ],
+    "liveUserServerAccess": false,
+    "aiRequests": 0
+  },
+  "regressions": [
+    {
+      "command": "npm run test:archive",
+      "pass": true,
+      "viewports": [
+        320,
+        390,
+        1280
+      ],
+      "languages": [
+        "th",
+        "en"
+      ],
+      "coverage": [
+        "bulk switches and Undo",
+        "scope guards",
+        "save failures",
+        "Lore budget",
+        "touch/keyboard layout"
+      ]
+    },
+    {
+      "command": "node tests/startup.browser.mjs",
+      "pass": true,
+      "viewports": [
+        320,
+        390,
+        1280
+      ],
+      "loaders": [
+        "cached legacy",
+        "current"
+      ]
+    },
+    {
+      "command": "node tests/lore-transfer.browser.mjs",
+      "pass": true,
+      "coverage": [
+        "download/export",
+        "duplicate and Unicode import",
+        "flags and keywords",
+        "invalid-file protection"
+      ]
+    }
+  ],
+  "preview": {
+    "command": "node tests/build-archive-qol-preview.mjs",
+    "pass": true,
+    "offlineWorkspaceAndUndo": true,
+    "zipCrcAndPaths": "pass",
+    "aiRequests": 0,
+    "liveUserServerAccess": false
+  },
+  "retrievalBenchmark": {
+    "before": {
+      "records": 2000,
+      "contentCharacters": 3900,
+      "query": "rare distinctive word",
+      "durationMs": 671,
+      "selected": [
+        "1999"
+      ],
+      "used": 3936
+    },
+    "after": {
+      "records": 2000,
+      "contentCharacters": 3900,
+      "query": "rare distinctive word",
+      "durationMs": 36,
+      "selected": [
+        "1999"
+      ],
+      "used": 3936
+    },
+    "scope": "Synthetic 2,000-record rare-word query in Node on this executor. Same selected IDs and context cost; timings are illustrative, not device or provider guarantees."
+  },
+  "limits": [
+    "No built-in Lore record-count ceiling when entryLimit is zero; browser/server capacity still applies.",
+    "Per-entry text limits and AI context budgets remain unchanged.",
+    "Imports remain byte-limited to 12 MiB per file; the UI offers independently importable numbered parts for larger exports.",
+    "Browser checks use controlled SillyTavern hosts and Chromium viewport emulation; Safari on a physical iPhone was not tested."
+  ],
+  "sha256": {
+    "index.js": "97d98aa79c2621170f50d6c9b06bf533e0e380c76cb4ae534c65dd1f356272a5",
+    "manifest.json": "953d4ade48fa4ba4e97ce595ad09ad860c797efd9aeaa028b464830f533c1268",
+    "package.json": "00423e440c243687c80fc2085cf3a4954161e23c96f5ab99f42af379d891d683",
+    "src/lore-core.js": "a4d09c5a2655db69fabe9420a5e5d9bcb29a991aac3ab9bef03431cde3035978",
+    "src/lore-transfer.js": "7846dbd060e37cb6dd1a8f66630b074581c074679402b90a1931955e32891d4c",
+    "src/lore-workspace.js": "8d06872f47218b18d0b3412b521bee9aa21f776ae1e8278289a1a8033c1ded08",
+    "src/character-archive.js": "5400c0c8a5a7929c2b9d096d8efe64ed6835746ad80802cab0fa1929945a18b3",
+    "src/ui-strings.js": "4530fa278416f5aca7150fdcee74ec8a5d093f41a513945d330685f263e4705e",
+    "tests/lore-capacity.browser.mjs": "4805cb248e51de58eefe4f0486c0de117fa78d2eb034efab51140b1d896942e6",
+    "docs/previews/archive-qol/standalone.html": "8cf649226478ce11657b0786c9ff4f66da0b1765b46f7dba1405b357784a609e"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "version": "0.66.1",
+  "testedAt": "2026-10-12T04:43:01.364Z",
+  "viewports": [
+    {
+      "width": 320,
+      "records": 2501,
+      "pass": true
+    },
+    {
+      "width": 390,
+      "records": 2501,
+      "pass": true
+    },
+    {
+      "width": 1280,
+      "records": 2501,
+      "pass": true
+    }
+  ],
+  "liveUserServerAccess": false,
+  "aiRequests": 0
+}

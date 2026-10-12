@@ -43,7 +43,7 @@ try{
  await page.locator('[data-management-tab=lore]').click();
  await page.locator('[data-archive-options-toggle]').click();
  await page.locator('[data-lore-preferences] summary').click();
- await page.locator('[name=loreBudget]').fill('2000000');await page.getByRole('button',{name:'บันทึกงบและโหมด',exact:true}).click();assert.equal(await page.locator('[name=loreBudget]').inputValue(),'2000000');
+ await page.locator('[name=loreBudget]').fill('2000000');await page.getByRole('button',{name:'บันทึกการตั้งค่า Lore',exact:true}).click();assert.equal(await page.locator('[name=loreBudget]').inputValue(),'2000000');
  await page.getByRole('button',{name:uiText('＋ สร้าง Lore ใหม่',[],'th'),exact:true}).click();
  await page.locator('[name=loreTitle]').fill('Moon law');await page.locator('[name=loreContent]').fill('The moon is a blue crystal.');
  await page.getByRole('button',{name:uiText('บันทึก Lore',[],'th'),exact:true}).click();

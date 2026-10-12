@@ -2750,7 +2750,7 @@ test('embedded pack reader supports JSON cards and rejects unsupported or malfor
  const raw={format:'roleforge-character-pack',version:1,powerPreset:{mode:'custom',definitions:[{id:'__proto__'}]},forgePreset:{mode:'broken'},initialState:[],loreOptions:{mode:'relevant',budget:6000},scripts:'throw Error()',apiKey:'unused'};
  const ctx={characters:[{avatar:'pack.png',json_data:JSON.stringify({data:{extensions:{roleforge_character_pack:raw}}})}]};
  const result=archive.readCharacterPack(ctx,owner);
- assert.deepEqual(result,{format:'roleforge-character-pack',version:1,loreOptions:{mode:'relevant',budget:6000}});
+ assert.deepEqual(result,{format:'roleforge-character-pack',version:1,loreOptions:{mode:'relevant',budget:6000,entryLimit:0}});
  raw.version=999;ctx.characters[0].json_data=JSON.stringify({data:{extensions:{roleforge_character_pack:raw}}});assert.deepEqual(archive.readCharacterPack(ctx,owner),{});
  assert.deepEqual(archive.readCharacterPack(ctx,'chat:other'),{});
  raw.version=1;raw.initialState={large:'x'.repeat(1024*1024)};ctx.characters[0].json_data=JSON.stringify({data:{extensions:{roleforge_character_pack:raw}}});assert.equal(archive.readCharacterPack(ctx,owner).initialState,undefined);

@@ -47,3 +47,14 @@ test('currency snapshots retain legacy icon choices while explicit per-unit art 
  s.progression.currency.scheme=defaultCurrencyScheme();s.progression.currency.scheme.units[0].iconSet='neon';
  assert.equal(p.currentCurrencyPreset(s,'gem').scheme.units[0].iconSet,'neon');
 });
+
+test('Lore custom and unlimited capacities round-trip with world/chat presets and reject invalid settings',()=>{
+ for(const entryLimit of [0,1200]){
+  const file=p.exportWorldPreset({loreOptions:{mode:'relevant',budget:6000,entryLimit}},'Lore world');
+  const imported=p.importWorldPreset(file),records=p.saveLibraryPreset([],{name:imported.name,config:imported.config});
+  const metadata={[p.CHAT_PRESET_KEY]:{version:1,config:structuredClone(records[0].config)}};
+  assert.equal(p.readChatPreset(metadata).loreOptions.entryLimit,entryLimit);
+ }
+ assert.equal(p.validatePresetConfig({loreOptions:{mode:'all',budget:1000}}).loreOptions.entryLimit,0);
+ assert.throws(()=>p.validatePresetConfig({loreOptions:{mode:'all',budget:1000,entryLimit:-1}}));
+});

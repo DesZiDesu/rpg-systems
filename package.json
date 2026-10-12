@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.66.0",
+  "version": "0.66.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -27,6 +27,7 @@
     "test:character-pack": "node tests/character-pack.browser.mjs",
     "test:presets": "node --test tests/world-presets.test.mjs && node tests/presets.browser.mjs && node tests/host-policy.browser.mjs",
     "test:themes": "node --test tests/chat-themes.test.mjs tests/chat-folio.test.mjs && node tests/chat-themes.browser.mjs && node tests/chat-folio.browser.mjs && node tests/chat-appearance.browser.mjs",
-    "test:archive": "node --test tests/archive-browser.test.mjs tests/lore-workspace.test.mjs && node tests/archive-qol.browser.mjs"
+    "test:archive": "node --test tests/archive-browser.test.mjs tests/lore-workspace.test.mjs && node tests/archive-qol.browser.mjs",
+    "test:lore-capacity": "node --test tests/lore-core.test.mjs tests/lore-transfer.test.mjs tests/lore-workspace.test.mjs tests/character-archive.test.mjs tests/world-presets.test.mjs && node tests/lore-capacity.browser.mjs"
   }
 }

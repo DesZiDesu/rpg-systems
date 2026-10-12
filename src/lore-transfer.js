@@ -1,10 +1,10 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.66.0';
-import {LORE_LIMIT, LORE_CONTENT_LIMIT, loreEntries} from './lore-core.js?v=0.66.0';
+import {uiText,uiMarkup} from './ui-language.js?v=0.66.1';
+import {LORE_CONTENT_LIMIT, loreEntries, assertLoreCapacity} from './lore-core.js?v=0.66.1';
 
 export const LORE_FILE_LIMIT = 12 * 1024 * 1024;
 const format = 'tretaresia-lore';
 function validate(entries) {
-    if (!Array.isArray(entries) || entries.length > LORE_LIMIT) throw Error(uiText("ไฟล์ Lore ต้องมีไม่เกิน {0} รายการ",[LORE_LIMIT]));
+    if (!Array.isArray(entries)) throw Error(uiText('Invalid Lore archive.'));
     return entries.map((item, index) => {
         if (!item || typeof item !== 'object' || Array.isArray(item) ||
             typeof item.title !== 'string' || !item.title.trim() || item.title.length > 160 ||
@@ -20,6 +20,21 @@ function validate(entries) {
 export function exportLore(entries) {
     return JSON.stringify({format, version:1, entries:validate(loreEntries(entries))}, null, 2);
 }
+// Each part is an ordinary v1 Lore file, so a large archive remains importable
+// under the existing byte limit without truncation or a new file format.
+export function exportLoreFiles(entries, maxBytes = LORE_FILE_LIMIT) {
+    const encoder=new TextEncoder(),start=JSON.stringify({format,version:1}).slice(0,-1)+',"entries":[',end=']}',base=encoder.encode(start+end).length;
+    if(!Number.isSafeInteger(maxBytes)||maxBytes<base)throw Error(uiText('Invalid Lore export file size.'));
+    const files=[];let rows=[],size=base;
+    function finish(){files.push(start+rows.join(',')+end);rows=[];size=base;}
+    for(const item of validate(loreEntries(entries))){
+        const row=JSON.stringify(item),bytes=encoder.encode(row).length;
+        if(base+bytes>maxBytes)throw Error(uiText('A Lore entry exceeds the export file size.'));
+        if(rows.length&&size+1+bytes>maxBytes)finish();
+        size+=bytes+(rows.length?1:0);rows.push(row);
+    }
+    if(rows.length||!files.length)finish();return files;
+}
 export function parseLoreFile(text) {
     if (typeof text !== 'string' || new TextEncoder().encode(text).length > LORE_FILE_LIMIT) throw Error(uiText("ไฟล์ Lore ต้องไม่เกิน 12 MB"));
     let data;
@@ -28,16 +43,16 @@ export function parseLoreFile(text) {
     return validate(Array.isArray(data) ? data : data.entries);
 }
 const signature = item => JSON.stringify([item.title,item.content,item.enabled,item.keywords || [],item.always === true]);
-export function mergeLore(existing, imported) {
-    const next=loreEntries(existing), known=new Set(next.map(signature));
+export function mergeLore(existing, imported, options = {}) {
+    const next=loreEntries(existing), previousCount=next.length, known=new Set(next.map(signature)), ids=new Set(next.map(item=>item.id));
     let added=0, skipped=0;
     for (const item of validate(imported)) {
         const key=signature(item);
         if (known.has(key)) { skipped++; continue; }
-        if (next.length >= LORE_LIMIT) throw Error(uiText("รวมแล้วเกิน {0} รายการ — ยังไม่ได้บันทึกข้อมูล",[LORE_LIMIT]));
+        assertLoreCapacity(next.length+1,options,previousCount);
         // Imported IDs never overwrite existing records, including across cards.
-        let id;do { id=globalThis.crypto?.randomUUID?.() || `lore-${Date.now()}-${Math.random().toString(36).slice(2)}`; } while (next.some(entry=>entry.id===id));
-        next.push({id,...item});known.add(key);added++;
+        let id;do { id=globalThis.crypto?.randomUUID?.() || `lore-${Date.now()}-${Math.random().toString(36).slice(2)}`; } while (ids.has(id));
+        next.push({id,...item});known.add(key);ids.add(id);added++;
     }
     return {entries:next,added,skipped};
 }

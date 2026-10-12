@@ -18,6 +18,17 @@ globalThis.confirm=()=>true;
 function find(root,predicate){return [root,...root.children.flatMap(n=>n.children?find(n,predicate):[])].filter(predicate);}
 const click=(root,label)=>find(root,n=>n.tag==='button'&&n.textContent===uiText(label))[0].fire('click');
 function fixture(){const panel=new Node('section'),settings={};let owner='card:a',status='';const api={loreOptions:()=>loreOptions(settings,owner),persistLoreOptions:(options,expected)=>writeLoreOptions(settings,options,expected,owner),scopeInfo:()=>({key:owner,label:owner}),listLore:()=>characterLore(settings,owner),persistLore:(entries,expected)=>writeCharacterLore(settings,entries,expected,owner)};const ui=createLoreWorkspace(panel,api,value=>status=value);ui.open();return {panel,settings,api,ui,setOwner:value=>owner=value,status:()=>status};}
+
+test('Lore settings expose unlimited/default and custom capacities without discarding existing records',async()=>{
+ const {panel,settings,ui,status}=fixture();
+ assert.equal(find(panel,n=>n.name==='loreCapacity')[0].value,'unlimited');assert.equal(find(panel,n=>n.name==='loreEntryLimit')[0].disabled,true);
+ const many=Array.from({length:350},(_,i)=>({id:String(i),title:`World ${i}`,content:'Saved fact',enabled:false}));writeCharacterLore(settings,many,'card:a','card:a');ui.open();
+ const capacity=find(panel,n=>n.name==='loreCapacity')[0],limit=find(panel,n=>n.name==='loreEntryLimit')[0];capacity.value='limited';await capacity.fire('change');assert.equal(limit.disabled,false);
+ limit.value='200';await click(panel,'Save Lore settings');assert.equal(loreOptions(settings,'card:a').entryLimit,200);assert.equal(characterLore(settings,'card:a').length,350);
+ ui.open();assert.equal(find(panel,n=>n.name==='loreCapacity')[0].value,'limited');assert.equal(find(panel,n=>n.name==='loreEntryLimit')[0].value,200);
+ find(panel,n=>n.name==='loreEntryLimit')[0].value='';await click(panel,'Save Lore settings');assert.match(status(),/positive whole number/);assert.equal(loreOptions(settings,'card:a').entryLimit,200);
+ find(panel,n=>n.name==='loreCapacity')[0].value='unlimited';await click(panel,'Save Lore settings');assert.equal(loreOptions(settings,'card:a').entryLimit,0);assert.equal(characterLore(settings,'card:a').length,350);
+});
 test('Lore UI creates, edits, toggles, searches and deletes saved records',async()=>{
  const {panel,settings,ui}=fixture();click(panel,'＋ สร้าง Lore ใหม่');
  find(panel,n=>n.name==='loreTitle')[0].value='Moon';find(panel,n=>n.name==='loreContent')[0].value='Blue crystal';await find(panel,n=>n.tag==='form')[0].fire('submit');
@@ -38,9 +49,9 @@ test('Lore UI protects unsaved work and rejects saves after switching cards',asy
 
 test('Lore UI persists a two-million-character budget and rejects stale preference writes',async()=>{
  const {panel,settings,ui,setOwner,status}=fixture();
- find(panel,n=>n.name==='loreBudget')[0].value='2000000';find(panel,n=>n.name==='loreMode')[0].value='relevant';await click(panel,'บันทึกงบและโหมด');
- assert.deepEqual(loreOptions(settings,'card:a'),{budget:2000000,mode:'relevant'});ui.open();assert.equal(find(panel,n=>n.name==='loreBudget')[0].value,2000000);
- setOwner('card:b');await click(panel,'บันทึกงบและโหมด');assert.match(status(),/card changed/);assert.equal(loreOptions(settings,'card:b').budget,60000);
+ find(panel,n=>n.name==='loreBudget')[0].value='2000000';find(panel,n=>n.name==='loreMode')[0].value='relevant';await click(panel,'บันทึกการตั้งค่า Lore');
+ assert.deepEqual(loreOptions(settings,'card:a'),{budget:2000000,mode:'relevant',entryLimit:0});ui.open();assert.equal(find(panel,n=>n.name==='loreBudget')[0].value,2000000);
+ setOwner('card:b');await click(panel,'บันทึกการตั้งค่า Lore');assert.match(status(),/card changed/);assert.equal(loreOptions(settings,'card:b').budget,60000);
 });
 
 test('failed Lore saves keep the draft open and do not report success',async()=>{

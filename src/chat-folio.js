@@ -1,4 +1,4 @@
-import {usable,keyName} from './npc-core.js?v=0.66.0';
+import {usable,keyName} from './npc-core.js?v=0.66.1';
 const fact=value=>typeof value==='string'&&usable(value);
 
 // Read existing NPC facts only. Overall rank is not a skill's mastery level.

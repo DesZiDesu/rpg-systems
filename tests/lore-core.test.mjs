@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {characterLore,lorePrompt,writeCharacterLore} from '../src/lore-core.js';
+import {characterLore,lorePrompt,writeCharacterLore,loreOptions,writeLoreOptions,selectLore} from '../src/lore-core.js';
 const entry=(id,enabled=true)=>({id,title:id,content:`Facts about ${id}`,enabled});
 test('lore persists per card across chats, toggles and deletes without leaking',()=>{
  const settings={};writeCharacterLore(settings,[entry('Moon')],'card:a','card:a');
@@ -46,4 +46,44 @@ test('relevant lore finds distinctive words in content without manually entered 
   {...entry('Other'),content:'A different hall with different rules.',keywords:[]}];
  assert.deepEqual(selectLore(records,{mode:'relevant',budget:3000},'Where is Kohaku?').entries.map(item=>item.id),['Archive']);
  assert.deepEqual(selectLore(records,{mode:'relevant',budget:3000},'Where?').entries.map(item=>item.id),[]);
+});
+
+test('unlimited and legacy archives retain 5,000 records while prompt delivery stays bounded',()=>{
+ const many=Array.from({length:5000},(_,i)=>({...entry(`Archive ${i}`),enabled:i===4999,keywords:[`anchor${i}`]}));
+ const settings={};writeCharacterLore(settings,many,'a','a');
+ const reload=JSON.parse(JSON.stringify(settings));
+ assert.equal(loreOptions(reload,'a').entryLimit,0);assert.equal(characterLore(reload,'a').length,5000);
+ assert.equal(characterLore(reload,'a').at(-1).id,'Archive 4999');assert.equal(characterLore(reload,'b').length,0);
+ const sent=selectLore(characterLore(reload,'a'),{mode:'relevant',budget:100},'anchor4999');
+ assert.deepEqual(sent.entries.map(item=>item.id),['Archive 4999']);assert.ok(sent.used<=100);
+ assert.equal(selectLore(many,{mode:'all',budget:1}).used,0);
+});
+
+test('a lower custom limit preserves large archives and permits edits/deletions but prevents growth',()=>{
+ const settings={},many=Array.from({length:350},(_,i)=>entry(String(i),false));
+ writeCharacterLore(settings,many,'a','a');writeLoreOptions(settings,{mode:'relevant',budget:1000,entryLimit:200},'a','a');
+ assert.equal(characterLore(settings,'a').length,350);
+ writeCharacterLore(settings,many.map(item=>item.id==='349'?{...item,content:'Edited latest fact',enabled:true}:item),'a','a');
+ const before=JSON.stringify(settings);assert.throws(()=>writeCharacterLore(settings,[...characterLore(settings,'a'),entry('new',false)],'a','a'),/200/);assert.equal(JSON.stringify(settings),before);
+ writeCharacterLore(settings,characterLore(settings,'a').slice(0,199),'a','a');writeCharacterLore(settings,[...characterLore(settings,'a'),entry('new',false)],'a','a');
+ assert.equal(characterLore(settings,'a').length,200);
+ writeLoreOptions(settings,{mode:'relevant',budget:1000,entryLimit:0},'a','a');writeCharacterLore(settings,[...characterLore(settings,'a'),entry('again',false)],'a','a');
+ assert.equal(characterLore(settings,'a').length,201);
+});
+
+test('custom capacity settings validate atomically and missing legacy limits become unlimited',()=>{
+ const settings={};writeLoreOptions(settings,{mode:'relevant',budget:1000,entryLimit:1500},'a','a');const before=JSON.stringify(settings);
+ for(const entryLimit of [-1,1.5,NaN,Infinity,'200',null,Number.MAX_SAFE_INTEGER+1]){
+  assert.throws(()=>writeLoreOptions(settings,{mode:'relevant',budget:1000,entryLimit},'a','a'));assert.equal(JSON.stringify(settings),before);
+ }
+ assert.equal(loreOptions(JSON.parse(before),'a').entryLimit,1500);
+ writeLoreOptions(settings,{mode:'all',budget:1000},'b','b');assert.equal(loreOptions(settings,'b').entryLimit,0);
+});
+
+test('large-library relevance prechecks retain Unicode and Thai matches without matching word fragments',()=>{
+ const records=[{...entry('A'),content:'A quiet window overlooks the city.'},{...entry('B'),content:'The wind is calm.'},{...entry('C'),content:'The ＦＯＲＥＳＴ is near the castle.'},{...entry('D'),content:'ถ้ำเก่าอยู่ใกล้แม่น้ำใหญ่'}];
+ assert.deepEqual(selectLore(records,{mode:'relevant',budget:1000},'wind calm').entries.map(item=>item.id),['B']);
+ assert.deepEqual(selectLore(records,{mode:'relevant',budget:1000},'window').entries.map(item=>item.id),['A']);
+ assert.deepEqual(selectLore(records,{mode:'relevant',budget:1000},'forest').entries.map(item=>item.id),['C']);
+ assert.deepEqual(selectLore(records,{mode:'relevant',budget:1000},'ถ้ำ แม่น้ำ').entries.map(item=>item.id),['D']);
 });

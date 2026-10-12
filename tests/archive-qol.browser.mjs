@@ -99,10 +99,10 @@ try{
         await lore.locator('[data-lore-pagination] button').last().click();assert.match(await lore.locator('.trpg-archive-selected-count').innerText(),/20/);
         await choice(lore,'select-results');assert.match(await lore.locator('.trpg-archive-selected-count').innerText(),/43/);
         await preferences();await menu.locator('[name=loreBudget]').fill('1000');await menu.locator('[name=loreMode]').selectOption('all');
-        await menu.getByRole('button',{name:'บันทึกงบและโหมด',exact:true}).click();await waitSaved();
+        await menu.getByRole('button',{name:'บันทึกการตั้งค่า Lore',exact:true}).click();await waitSaved();
         await closeTools();await lore.locator('[data-archive-enable]').click();await waitSaved();
         assert.match(await page.locator('dialog [role=status]').innerText(),/1,000/);assert.deepEqual((await state()).lore,loreInitial.lore);assert.match(await lore.locator('.trpg-archive-selected-count').innerText(),/43/);
-        await preferences();await menu.locator('[name=loreBudget]').fill('60000');await menu.locator('[name=loreMode]').selectOption('relevant');await menu.getByRole('button',{name:'บันทึกงบและโหมด',exact:true}).click();await waitSaved();
+        await preferences();await menu.locator('[name=loreBudget]').fill('60000');await menu.locator('[name=loreMode]').selectOption('relevant');await menu.getByRole('button',{name:'บันทึกการตั้งค่า Lore',exact:true}).click();await waitSaved();
         await closeTools();const beforeLoreSave=(await state()).persistCount;await lore.locator('[data-archive-enable]').click();await waitSaved();
         const activated=await state();assert.equal(activated.persistCount,beforeLoreSave+1);assert.ok(activated.lore.every(n=>n.enabled));
         for(const old of loreInitial.lore){const current=activated.lore.find(n=>n.id===old.id);assert.equal(current.content,old.content);assert.deepEqual(current.keywords,old.keywords);assert.equal(current.always,old.always);}
