@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.68.2",
+  "version": "0.68.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -34,6 +34,7 @@
     "test:settings": "node tests/settings-navigation.browser.mjs",
     "test:settings-theme:real": "node tests/settings-theme.real.browser.mjs",
     "test:chat-fixes": "node --test tests/player-consequences.test.mjs && node tests/chat-portrait-user-regressions.browser.mjs",
-    "test:currency:real": "node tests/currency-multi-unit.real.browser.mjs"
+    "test:currency:real": "node tests/currency-multi-unit.real.browser.mjs",
+    "test:tracking:real": "node tests/tracking-global.real.browser.mjs"
   }
 }

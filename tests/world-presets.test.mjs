@@ -11,6 +11,15 @@ const forge={mode:'custom',name:'Madoka',...FORGE_DEFAULTS};
 const training=normalizeStatTraining({definitions:[{id:'focus',name:'Focus',description:'Concentration',methods:['Meditation'],initial:5,min:0,max:100,gain:1}],hidden:[]});
 const currency=()=>({name:'Credits',scheme:{...defaultCurrencyScheme(),units:[{...defaultCurrencyScheme().units[2],name:'Credit',symbol:'CR',value:1,aliases:[]}]}});
 const state=()=>({player:{hp:{current:80,max:120},customStats:{focus:33},attributes:{strength:25}},progression:{currency:{name:'Coins',gold:1,silver:23,copper:45}},statTraining:training,inventory:[{id:'book',quantity:3}],customPowers:{soul_gem:42},social:{party:{sharedFunds:{gold:0,silver:3,copper:1}},guilds:[]}});
+test('legacy world presets cannot import, export or restore the global tracking preference',()=>{
+ for(const autoTrack of [true,false]){
+  const systems={autoTrack,enableMarketplace:true,injectState:false};
+  const legacy=JSON.stringify({format:'roleforge-world-preset',version:1,name:'Legacy world',config:{systems}});
+  assert.deepEqual(p.importWorldPreset(legacy).config.systems,{enableMarketplace:true,injectState:false});
+  assert.doesNotMatch(p.exportWorldPreset({systems},'World'),/autoTrack/);
+  assert.deepEqual(p.readChatPreset({[p.CHAT_PRESET_KEY]:{version:1,config:{systems}}}).systems,{enableMarketplace:true,injectState:false});
+ }
+});
 test('world presets round-trip configurations without user data, device settings or secrets',()=>{
  const source=p.exportWorldPreset({powerPreset:power,forgePreset:forge,currencyPreset:currency(),trainingPreset:training,loreOptions:{budget:6000,mode:'relevant'},systems:{enableMarketplace:true,apiKey:'secret',enableVoiceAddon:true},player:{name:'Private'},apiKey:'secret'},'Madoka');
  assert.doesNotMatch(source,/secret|Private|enableVoiceAddon/);const imported=p.importWorldPreset(source);assert.equal(imported.name,'Madoka');assert.equal(imported.config.powerPreset.definitions[0].id,'soul_gem');assert.equal(imported.config.currencyPreset.scheme.units.length,1);assert.deepEqual(imported.config.systems,{enableMarketplace:true});

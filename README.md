@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.68.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.68.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -9,6 +9,8 @@ RoleForge brings an RPG workspace into your SillyTavern chat. Track your charact
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
 
 ## Extension settings
+
+**Fixed in 0.68.3:** normal AI reply tracking is enabled by default and saved once for all chats and character cards. Switching cards, resetting world presets or importing an older card cannot change this preference. You can turn tracking off globally in **Tracking & notifications**; existing global off choices are preserved. Tracking still reads the normal AI reply without an extra AI request.
 
 **New in 0.68.0:** the native SillyTavern drawer starts with six groups: **General play**, **Windows & appearance**, **World & rules**, **Presets & character cards**, **Tracking & notifications**, and **Advanced & diagnostics**. Search in English or Thai for a system or setting, such as Header, currency, HP or Regex. Editors open across the drawer's full width with a sticky Back button; switching pages preserves unsaved fields and returns to the previous search or menu. Navigation does not write settings or call AI.
 
@@ -126,6 +128,8 @@ Check the browser console for loading failures. To temporarily skip RoleForge st
 Report issues with your RoleForge version, SillyTavern version, browser, reproduction steps and panel diagnostic if available. Remove API keys and private chat details before posting to [GitHub Issues](https://github.com/DesZiDesu/rpg-systems/issues).
 
 ## Development and validation
+
+Version **0.68.3** passed **1,253 unit/host tests**, syntax checks, preset regressions and the settings navigation suite. Real **SillyTavern 1.19.0** checks at 390/1440px verify default-on tracking with legacy off presets, global on/off persistence across cards and actual server reloads, unchanged RPG progress and separate world settings. These preference checks make no AI calls. [Validation record](docs/validation-tracking-global-v0.68.3.json).
 
 Version **0.68.1** passes **1,235 unit/host tests** and syntax checks. Real SillyTavern checks import the full user-supplied theme through the native theme UI, retain its exact CSS, exercise all 20 settings pages at 320/390/768/1440px, resize text and save/reload a dummy character's stats through the real server. Native Dark Lite and the original settings navigation suite also pass. [Validation record](docs/validation-settings-theme-v0.68.1.json).
 

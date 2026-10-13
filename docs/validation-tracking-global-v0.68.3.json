@@ -1,0 +1,72 @@
+{
+  "release": "0.68.3",
+  "host": "Real SillyTavern frontend/server with isolated test data",
+  "browser": "Chromium mobile viewport and desktop",
+  "cases": [
+    {
+      "width": 390,
+      "defaultOn": true,
+      "legacyOffIgnored": true,
+      "globalOffAcrossCardsAndReload": true,
+      "globalOnAcrossCardsAndReload": true,
+      "chatProgressPreserved": true,
+      "worldSettingsRemainPerChat": true,
+      "fit": {
+        "left": 9.046875,
+        "right": 364.953125,
+        "viewport": 390,
+        "overflow": 0
+      }
+    },
+    {
+      "width": 1440,
+      "defaultOn": true,
+      "legacyOffIgnored": true,
+      "globalOffAcrossCardsAndReload": true,
+      "globalOnAcrossCardsAndReload": true,
+      "chatProgressPreserved": true,
+      "worldSettingsRemainPerChat": true,
+      "fit": {
+        "left": 723.984375,
+        "right": 1049.34375,
+        "viewport": 1440,
+        "overflow": 0
+      }
+    }
+  ],
+  "errors": [],
+  "generation": [],
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "success": true,
+  "unitHostTests": {
+    "passed": 1253,
+    "failed": 0
+  },
+  "checks": [
+    "npm run check",
+    "npm test",
+    "npm run test:presets",
+    "npm run test:settings",
+    "ST_REAL_URL=http://127.0.0.1:18174/ npm run test:tracking:real"
+  ],
+  "policy": {
+    "scope": "global user preference",
+    "default": true,
+    "existingGlobalOffPreserved": true,
+    "legacyChatAndCardFlagsIgnored": true,
+    "stateAndWorldPresetsRemainPerChat": true
+  },
+  "runtimeHashes": {
+    "index.js": "9faac918977f16541565331396d663e8e4aca96242d0c4ed827d8d4a589da29c",
+    "src/world-presets.js": "08258b319982d9d4f71bc74128bff2dc67c3aff594d557752d991bddd1dd9125",
+    "templates/settings.html": "4e1fcd3aa1c44b57750dd3ee31cc4d6f8fcc2be5f6eb95654d8d7a88010c5295",
+    "src/ui-strings.js": "d67da70e4006ce7c810e28af4aad1197a0bc9d14076ba3323773278cdb00c7f5"
+  }
+}

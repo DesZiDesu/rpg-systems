@@ -7143,7 +7143,7 @@ const aliases = {
   "If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.": 1031,
   "If no patch is returned, the activity capsule says “No state changes.” Tracking ran successfully but had nothing confirmed to save.": 1031,
   "หากไม่มีชุดอัปเดต แถบสถานะจะแสดงว่าไม่มีข้อมูลเปลี่ยนแปลง หมายถึงติดตามสำเร็จแต่ไม่มีข้อมูลยืนยันให้บันทึก": 1031,
-  "RoleForge engine 0.68.2 ready": 1032,
+  "RoleForge engine 0.68.3 ready": 1032,
   "RoleForge engine ready": 1032,
   "ระบบ RoleForge พร้อมใช้งาน": 1032,
   "พิมพ์ชื่อแท็ก…": 1033,
@@ -8307,7 +8307,7 @@ const aliases = {
   "after your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.": 1028,
   "the character produces its normal reply once. if a confirmed fact changed, it appends an invisible state patch to that same reply.": 1029,
   "the extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.": 1030,
-  "roleforge engine 0.68.2 ready": 1032,
+  "roleforge engine 0.68.3 ready": 1032,
   "roleforge engine ready": 1032,
   "name of the preferred tag": 1034,
   "character (all chats of this card)": 1048,
@@ -8925,7 +8925,8 @@ for (const pair of [
  ["Deleted {0} Lore entries.","ลบ Lore แล้ว {0} รายการ"],
  ["No selected entries remain to delete.","ไม่มีรายการที่เลือกเหลือให้ลบ"],
  ["Could not delete the selected entries. Data was kept.","ลบรายการที่เลือกไม่สำเร็จ · ข้อมูลเดิมยังอยู่"],
- ["Could not save Lore changes.","บันทึกการเปลี่ยนแปลง Lore ไม่สำเร็จ"]
+ ["Could not save Lore changes.","บันทึกการเปลี่ยนแปลง Lore ไม่สำเร็จ"],
+ ["Enabled by default. Your choice applies to all chats and character cards.","เปิดเป็นค่าเริ่มต้น · ตั้งครั้งเดียว ใช้กับทุกแชทและทุกการ์ดตัวละคร"]
 ]) {
     aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length;
     const label={"All entries":"All","Enabled entries":"Enabled","Disabled entries":"Disabled","Archive select action":"Select","Archive done action":"Done","Archive undo action":"Undo","Archive delete action":"Delete selected","Character archive source":"Card","Chat archive source":"Chat"}[pair[0]];

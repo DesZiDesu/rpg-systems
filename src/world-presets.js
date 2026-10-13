@@ -1,15 +1,17 @@
-import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.68.2';
-import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.68.2';
-import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.68.2';
-import {normalizeStatTraining} from './stat-training.js?v=0.68.2';
-import {writeLoreOptions} from './lore-core.js?v=0.68.2';
-import {validateChatAppearance} from './chat-themes.js?v=0.68.2';
+import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.68.3';
+import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.68.3';
+import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.68.3';
+import {normalizeStatTraining} from './stat-training.js?v=0.68.3';
+import {writeLoreOptions} from './lore-core.js?v=0.68.3';
+import {validateChatAppearance} from './chat-themes.js?v=0.68.3';
 
 export const CHAT_PRESET_KEY = 'roleforge_chat_presets';
 export const PRESET_LIBRARY_KEY = 'roleforgePresetLibrary';
 export const PRESET_FILE_LIMIT = 1024 * 1024;
 export const PRESET_COMPONENTS = ['powerPreset','forgePreset','currencyPreset','trainingPreset','loreOptions','systems','chatAppearance'];
-export const WORLD_SYSTEM_KEYS = ['enableIncantation','npcIncantation','incantationLanguage','incantationCustomLanguage','enableMissionBoard','enableGroupBoard','enableAuctions','enableMarketplace','enableStoryMemory','enableStoryAgenda','enableQuestObjectives','showSceneTracker','autoTrack','injectState','npcDiaryFrequency'];
+// Main-reply tracking is a global user preference (default on), not a world
+// rule. Legacy chat/card presets must not override it when switching bots.
+export const WORLD_SYSTEM_KEYS = ['enableIncantation','npcIncantation','incantationLanguage','incantationCustomLanguage','enableMissionBoard','enableGroupBoard','enableAuctions','enableMarketplace','enableStoryMemory','enableStoryAgenda','enableQuestObjectives','showSceneTracker','injectState','npcDiaryFrequency'];
 const languages = ['auto','en','th','ja','zh','la','custom'];
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
 const name = value => typeof value === 'string' && value.trim() && value.length <= 120 ? value.trim() : '';

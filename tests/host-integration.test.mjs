@@ -71,7 +71,7 @@ sandbox.globalThis=sandbox;
 Object.assign(sandbox,hostPolicy,worldPresets,chatThemes,playerConsequences,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet});
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
  vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantVariantKey,assistantTurnKey,scheduleAssistantPatch,cleanInlinePatchSurfaces,assistantPatchTimers,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
-vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig,shortHash,getForgePreset,activeLoreOptions,saveCharacterPackSetup,saveChatPresetComponents,currentWorldPreset,defaultWorldPreset,getGlobalSettings,changeWorldSetting,initializeChatPresets,queueAssistantTurnReplacement})',sandbox);
+vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig,shortHash,getForgePreset,activeLoreOptions,saveCharacterPackSetup,saveChatPresetComponents,currentWorldPreset,defaultWorldPreset,getGlobalSettings,changeWorldSetting,initializeChatPresets,queueAssistantTurnReplacement,bindCheckbox})',sandbox);
 const host=sandbox.testHost;
 vm.runInContext('Object.assign(globalThis.testHost,{reconcileCompletedTurn,advanceTurnResourcesFromUserMessage,processUserTravelIntent,statusEffect,combatLogEntry})',sandbox);
 
@@ -2901,6 +2901,43 @@ if(process.env.ROLEFORGE_CHARACTER_CARD)test('the supplied one-card bundle loads
  }finally{context.characters=prior.characters;context.characterId=prior.characterId;context.groupId=prior.groupId;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;}
 });
 
+test('main-reply tracking defaults on across legacy cards, chats and preset resets without changing RPG progress',async()=>{
+ const prior={settings:context.extensionSettings,metadata:context.chatMetadata,id:context.getCurrentChatId,cards:context.characters,card:context.characterId,group:context.groupId,save:context.saveMetadata,document:sandbox.document};
+ try{
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false}};context.getCurrentChatId=()=> 'tracking-default';context.characterId=0;context.groupId=null;
+  context.characters=[{avatar:'legacy-tracking.png',data:{extensions:{roleforge_character_pack:{format:'roleforge-character-pack',version:1,systems:{autoTrack:false,enableMarketplace:true}}}}},{avatar:'new-tracking.png'}];
+  const cardBefore=JSON.stringify(context.characters),state=host.defaultState();state.player.hp.current=61;state.progression.currency.gold=7;
+  context.chatMetadata={tretaresia_rpg_state:state,roleforge_chat_presets:{version:1,config:{systems:{autoTrack:false,enableMarketplace:true}}}};
+  context.saveMetadata=async()=>{};sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:null};
+  assert.equal(host.getGlobalSettings().autoTrack,true);assert.equal(host.getSettings().autoTrack,true);assert.equal(host.getSettings().enableMarketplace,true);
+  assert.equal(Object.hasOwn(host.currentWorldPreset().systems,'autoTrack'),false);assert.equal(Object.hasOwn(host.defaultWorldPreset().systems,'autoTrack'),false);
+  await host.saveChatPresetComponents({systems:{autoTrack:false,enableMarketplace:false}});assert.equal(host.getSettings().autoTrack,true);assert.equal(host.getSettings().enableMarketplace,false);
+  await host.saveChatPresetComponents(host.defaultWorldPreset());assert.equal(host.getSettings().autoTrack,true);assert.equal(host.getSettings().enableMarketplace,true);
+  assert.equal(host.getState().player.hp.current,61);assert.equal(host.getState().progression.currency.gold,7);assert.equal(JSON.stringify(context.characters),cardBefore);
+  context.chatMetadata={};context.characterId=1;await host.initializeChatPresets();assert.equal(host.getSettings().autoTrack,true);assert.equal(host.getSettings().enableMarketplace,false);
+  assert.equal(Object.hasOwn(context.chatMetadata.roleforge_chat_presets.config.systems,'autoTrack'),false);
+ }finally{Object.assign(context,{extensionSettings:prior.settings,chatMetadata:prior.metadata,getCurrentChatId:prior.id,characters:prior.cards,characterId:prior.card,groupId:prior.group,saveMetadata:prior.save});sandbox.document=prior.document;}
+});
+
+test('the tracking checkbox saves once globally, remembers off across cards and reload, and works with no open chat',()=>{
+ const prior={settings:context.extensionSettings,metadata:context.chatMetadata,id:context.getCurrentChatId,cards:context.characters,card:context.characterId,group:context.groupId,save:context.saveMetadata,saveSettings:context.saveSettingsDebounced,document:sandbox.document,input:sandbox.HTMLInputElement};
+ try{
+  let chatId='tracking-A',saves=0,callbacks=0;context.getCurrentChatId=()=>chatId;context.extensionSettings={tretaresia_rpg:{autoTrack:true}};context.characterId=0;context.groupId=null;
+  context.characters=[{avatar:'tracking-a.png'},{avatar:'tracking-b.png',data:{extensions:{roleforge_character_pack:{format:'roleforge-character-pack',version:1,systems:{autoTrack:true}}}}}];
+  context.chatMetadata={roleforge_chat_presets:{version:1,config:{systems:{autoTrack:false,injectState:false}}}};const firstMetadata=JSON.stringify(context.chatMetadata);
+  context.saveMetadata=async()=>assert.fail('The global checkbox must not save chat metadata.');context.saveSettingsDebounced=()=>{saves++;};
+  class Input {addEventListener(type,listener){this[type]=listener;}}
+  sandbox.HTMLInputElement=Input;const checkbox=new Input();sandbox.document={...prior.document,getElementById:()=>checkbox};
+  host.bindCheckbox('tretaresia-rpg-auto-track','autoTrack',host.getSettings(),()=>callbacks++);assert.equal(checkbox.checked,true);
+  checkbox.checked=false;checkbox.change();assert.equal(host.getSettings().autoTrack,false);assert.equal(host.getGlobalSettings().autoTrack,false);assert.equal(saves,1);assert.equal(callbacks,1);assert.equal(JSON.stringify(context.chatMetadata),firstMetadata);
+  context.characterId=1;chatId='tracking-B';context.chatMetadata={roleforge_chat_presets:{version:1,config:{systems:{autoTrack:true,injectState:true}}}};
+  assert.equal(host.getSettings().autoTrack,false);assert.equal(host.getSettings().injectState,true);
+  context.extensionSettings=JSON.parse(JSON.stringify(context.extensionSettings));assert.equal(host.getSettings().autoTrack,false,'a saved global off choice survives reload');
+  chatId=null;checkbox.checked=true;checkbox.change();assert.equal(host.getSettings().autoTrack,true);assert.equal(saves,2);
+  chatId='tracking-A';context.characterId=0;context.chatMetadata=JSON.parse(firstMetadata);assert.equal(host.getSettings().autoTrack,true);assert.equal(host.getSettings().injectState,false);assert.equal(callbacks,2);
+ }finally{Object.assign(context,{extensionSettings:prior.settings,chatMetadata:prior.metadata,getCurrentChatId:prior.id,characters:prior.cards,characterId:prior.card,groupId:prior.group,saveMetadata:prior.save,saveSettingsDebounced:prior.saveSettings});sandbox.document=prior.document;sandbox.HTMLInputElement=prior.input;}
+});
+
 test('chat presets isolate two chats of one card and another bot, preserve progress and card defaults',async()=>{
  const prior={settings:context.extensionSettings,metadata:context.chatMetadata,id:context.getCurrentChatId,cards:context.characters,card:context.characterId,group:context.groupId,save:context.saveMetadata,document:sandbox.document};
  try{
@@ -2919,8 +2956,8 @@ test('failed, overlapping or stale preset transactions restore both configuratio
  try{
   context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false}};context.getCurrentChatId=()=> 'presets';context.chatMetadata={tretaresia_rpg_state:host.defaultState()};const metadata=context.chatMetadata,before=JSON.stringify(metadata);context.saveMetadata=async()=>{throw Error('Offline preset save');};
   await assert.rejects(host.saveChatPresetComponents({powerPreset:{mode:'custom',name:'Failed',definitions:[]}}),/Offline/);assert.equal(JSON.stringify(metadata),before);
-  let finish;context.saveMetadata=()=>new Promise(resolve=>{finish=resolve;});const first=host.saveChatPresetComponents({systems:{autoTrack:false}});await new Promise(resolve=>setImmediate(resolve));await assert.rejects(host.saveChatPresetComponents({systems:{autoTrack:true}}),/pending/);
-  context.chatMetadata={};finish();await first;assert.equal(context.chatMetadata.roleforge_chat_presets,undefined,'a late save cannot apply to the new chat');assert.equal(metadata.roleforge_chat_presets.config.systems.autoTrack,false,'the saved old chat keeps its accepted copy');
+  let finish;context.saveMetadata=()=>new Promise(resolve=>{finish=resolve;});const first=host.saveChatPresetComponents({systems:{injectState:false}});await new Promise(resolve=>setImmediate(resolve));await assert.rejects(host.saveChatPresetComponents({systems:{injectState:true}}),/pending/);
+  context.chatMetadata={};finish();await first;assert.equal(context.chatMetadata.roleforge_chat_presets,undefined,'a late save cannot apply to the new chat');assert.equal(metadata.roleforge_chat_presets.config.systems.injectState,false,'the saved old chat keeps its accepted copy');
  }finally{context.extensionSettings=prior.settings;context.chatMetadata=prior.metadata;context.getCurrentChatId=prior.id;context.saveMetadata=prior.save;sandbox.document=prior.document;}
 });
 
@@ -2946,18 +2983,18 @@ test('first-open preset migration freezes defaults without altering legacy icons
 test('generation waits for accepted or rolled-back presets and aborts a chat switch during saving',async()=>{
  const prior={settings:context.extensionSettings,metadata:context.chatMetadata,chat:context.chat,id:context.getCurrentChatId,save:context.saveMetadata,prompt:context.setExtensionPrompt,document:sandbox.document};
  try{
-  context.extensionSettings={tretaresia_rpg:{autoTrack:false,injectState:false,chatPresentation:false,enableMemorySummaries:false,autoContinuity:false}};
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,enableMarketplace:false,injectState:false,chatPresentation:false,enableMemorySummaries:false,autoContinuity:false}};
   context.getCurrentChatId=()=> 'generation-presets';context.chatMetadata={tretaresia_rpg_state:host.defaultState()};context.chat=[{is_user:true,mes:'I enter the square.'}];
   sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:null};
   const prompts=new Map();context.setExtensionPrompt=(key,value)=>prompts.set(key,value);
-  let resolve;context.saveMetadata=()=>new Promise(r=>{resolve=r;});const save=host.saveChatPresetComponents({systems:{autoTrack:true}});
+  let resolve;context.saveMetadata=()=>new Promise(r=>{resolve=r;});const save=host.saveChatPresetComponents({systems:{enableMarketplace:true}});
   const generate=sandbox.TretaresiaRpgGenerateInterceptor(context.chat,100000,()=>assert.fail('same-chat save must not abort'),'normal');
   await new Promise(r=>setImmediate(r));assert.equal(prompts.size,0,'unacknowledged presets cannot reach a model request');resolve();await save;await generate;
-  assert.ok(prompts.get('tretaresia_rpg_response_contract'));
-  prompts.clear();let reject;context.saveMetadata=()=>new Promise((_,r)=>{reject=r;});const failed=host.saveChatPresetComponents({systems:{autoTrack:false}});const rejected=assert.rejects(failed,/Offline/);
+  assert.match(prompts.get('tretaresia_rpg_response_contract'),/BUY \/ SHOP:/);
+  prompts.clear();let reject;context.saveMetadata=()=>new Promise((_,r)=>{reject=r;});const failed=host.saveChatPresetComponents({systems:{enableMarketplace:false}});const rejected=assert.rejects(failed,/Offline/);
   const retry=sandbox.TretaresiaRpgGenerateInterceptor(context.chat,100000,()=>assert.fail('rollback in the same chat must not abort'),'normal');await new Promise(r=>setImmediate(r));assert.equal(prompts.size,0);reject(Error('Offline preset save'));await rejected;await retry;
-  assert.equal(host.getSettings().autoTrack,true);assert.ok(prompts.get('tretaresia_rpg_response_contract'),'generation uses the restored configuration');
-  prompts.clear();context.saveMetadata=()=>new Promise(r=>{resolve=r;});const staleSave=host.saveChatPresetComponents({systems:{autoTrack:false}});let aborted=0;
+  assert.equal(host.getSettings().enableMarketplace,true);assert.match(prompts.get('tretaresia_rpg_response_contract'),/BUY \/ SHOP:/,'generation uses the restored configuration');
+  prompts.clear();context.saveMetadata=()=>new Promise(r=>{resolve=r;});const staleSave=host.saveChatPresetComponents({systems:{enableMarketplace:false}});let aborted=0;
   const staleGenerate=sandbox.TretaresiaRpgGenerateInterceptor(context.chat,100000,force=>{assert.equal(force,true);aborted++;},'normal');await new Promise(r=>setImmediate(r));context.chatMetadata={};resolve();await staleSave;await staleGenerate;
   assert.equal(aborted,1);assert.equal(prompts.size,0,'a pending send cannot attach the previous chat presets to the new chat');
  }finally{context.extensionSettings=prior.settings;context.chatMetadata=prior.metadata;context.chat=prior.chat;context.getCurrentChatId=prior.id;context.saveMetadata=prior.save;context.setExtensionPrompt=prior.prompt;sandbox.document=prior.document;}

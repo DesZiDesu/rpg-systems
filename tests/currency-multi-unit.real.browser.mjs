@@ -5,6 +5,7 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?`${process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES}/playwright`:'playwright');
 const base=process.env.ST_REAL_URL||'http://127.0.0.1:18174/',folder=process.env.ST_CURRENCY_ARTIFACTS||'/workspace/artifacts/currency-multi-unit';
+const release=JSON.parse(await readFile(new URL('../manifest.json',import.meta.url),'utf8')).version;
 assert.ok(['127.0.0.1','localhost'].includes(new URL(base).hostname),'Use an isolated local ST dataRoot.');await mkdir(folder,{recursive:true});
 const report={host:'Real SillyTavern frontend/server; isolated local test profile; native UI, real saves and file import/export',browser:'Chromium (mobile viewports and desktop, not physical iOS Safari)',cases:[],errors:[],generation:[]};
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -38,7 +39,7 @@ try{
   page.on('pageerror',e=>report.errors.push(e.message));page.on('request',r=>{if(/\/api\/.*\/generate(?:\?|$)/.test(r.url()))report.generation.push(r.url());});
   await page.route('**/api/horde/text-models',r=>r.fulfill({json:[]}));await page.route('**/api/horde/status',r=>r.fulfill({json:{ok:false}}));await page.goto(base);await ready(page);
   if(!report.sillyTavern)report.sillyTavern=await (await page.request.get(new URL('/version',base).href)).json();
-  assert.equal(await page.evaluate(()=>TretaresiaRelease),'0.68.2');await page.locator('#user-settings-button').click();await page.locator('#themes').selectOption(themeName);await selectCharacter(page,title);
+  assert.equal(await page.evaluate(()=>TretaresiaRelease),release);await page.locator('#user-settings-button').click();await page.locator('#themes').selectOption(themeName);await selectCharacter(page,title);
   // Seed an actual native wallet through the real progression editor, not a mock.
   await currency(page);await page.locator('[data-currency-preset]').selectOption('fantasy');await saveCurrency(page,3);
   const rank=await panel(page,'rank');await rank.locator('[data-form=rank]').evaluate(n=>n.closest('details').open=true);
@@ -70,5 +71,5 @@ try{
   // Switching cards must not bring the previous chat's currency configuration.
   await selectCharacter(page,'RoleForge Currency Isolation '+width);assert.equal((await wallet(page)).scheme,undefined);await selectCharacter(page,title);assert.deepEqual(await wallet(page),manyWallet);report.cases.push({width,theme:themeName,addSix:true,customArt:true,preservedValue:true,exportImport:true,draftImport:true,manualCustomBalances:true,customTransactionHistory:true,realSaveReload:true,thirtySevenUnits:true,pagination:true,offPageDrafts:true,search:true,deleteDraft:true,chatIsolation:true,aiCalls:0});console.log('PASS real SillyTavern '+width+'px: native add/edit/save, six units, import/export, balance/history, 37-unit pagination/edit/remove, reload and chat isolation');await page.close();
  }
- assert.deepEqual(report.errors,[]);assert.deepEqual(report.generation,[]);report.release='0.68.2';report.success=true;await writeFile(folder+'/validation.json',JSON.stringify(report,null,2)+'\n');
+ assert.deepEqual(report.errors,[]);assert.deepEqual(report.generation,[]);report.release=release;report.success=true;await writeFile(folder+'/validation.json',JSON.stringify(report,null,2)+'\n');
 }catch(error){report.failure=String(error);await writeFile(folder+'/validation.json',JSON.stringify(report,null,2)+'\n');throw error;}finally{await browser.close();}

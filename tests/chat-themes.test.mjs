@@ -29,19 +29,19 @@ test('all independent flags round-trip through chat and library presets without 
   assert.deepEqual(importWorldPreset(file).config.chatAppearance,normalizeChatAppearance(view));
   assert.deepEqual(readChatPreset({[CHAT_PRESET_KEY]:{version:1,config:{chatAppearance:view}}}).chatAppearance,normalizeChatAppearance(view));
  }
- const corrupt=readChatPreset({[CHAT_PRESET_KEY]:{version:1,config:{chatAppearance:{theme:'invalid'},systems:{autoTrack:false}}}});assert.deepEqual(corrupt,{systems:{autoTrack:false}});
+ const corrupt=readChatPreset({[CHAT_PRESET_KEY]:{version:1,config:{chatAppearance:{theme:'invalid'},systems:{injectState:false}}}});assert.deepEqual(corrupt,{systems:{injectState:false}});
 });
 test('a one-card pack carries appearance independently and invalid themes cannot affect other components',async()=>{
  const appearance={theme:'roleforge',header:false,dialogue:true,narrative:false,effects:false};
- const card={avatar:'academy.png',data:{extensions:{[CHARACTER_PACK_FIELD]:{format:'roleforge-character-pack',version:1,chatAppearance:appearance,systems:{autoTrack:false}}}}};
+ const card={avatar:'academy.png',data:{extensions:{[CHARACTER_PACK_FIELD]:{format:'roleforge-character-pack',version:1,chatAppearance:appearance,systems:{injectState:false}}}}};
  const context={characters:[card],fetch:async()=>({ok:true,status:200}),getRequestHeaders:()=>({}),saveSettingsDebounced(){}};
  assert.deepEqual(readCharacterPack(context,'card:academy.png').chatAppearance,normalizeChatAppearance(appearance));
  await writeCharacterPack(context,{},'card:academy.png',{format:'roleforge-character-pack',version:1,chatAppearance:appearance});
  assert.deepEqual(card.data.extensions[CHARACTER_PACK_FIELD].chatAppearance,normalizeChatAppearance(appearance));
  await assert.rejects(async()=>writeCharacterPack(context,{},'card:academy.png',{format:'roleforge-character-pack',version:1,chatAppearance:{theme:'invalid'}}),/Invalid character pack chatAppearance/);
  assert.deepEqual(card.data.extensions[CHARACTER_PACK_FIELD].chatAppearance,normalizeChatAppearance(appearance));
- card.data.extensions[CHARACTER_PACK_FIELD]={format:'roleforge-character-pack',version:1,chatAppearance:{theme:'invalid'},systems:{autoTrack:false}};
- assert.equal(readCharacterPack(context,'card:academy.png').chatAppearance,undefined);assert.equal(readCharacterPack(context,'card:academy.png').systems.autoTrack,false);
+ card.data.extensions[CHARACTER_PACK_FIELD]={format:'roleforge-character-pack',version:1,chatAppearance:{theme:'invalid'},systems:{injectState:false}};
+ assert.equal(readCharacterPack(context,'card:academy.png').chatAppearance,undefined);assert.equal(readCharacterPack(context,'card:academy.png').systems.injectState,false);
 });
 test('Folio and its real-data badge source round-trip in presets and one-card packs',async()=>{
  const view={theme:'folio',header:true,dialogue:false,narrative:true,effects:true,npcVitals:true,badgeMode:'ability',badgeAbility:'Water Magic'};
