@@ -1,20 +1,19 @@
-import {currencyScheme,currencyValues} from './currency-config.js?v=0.68.1';
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.68.1';
-import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.68.1';
-import {publicCommerceStory,publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.68.1';
-import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.68.1';
-import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.68.1';
-import {commerceDiscussionOnly} from './commerce-intent.js?v=0.68.1';
-import {normalizePurchaseTerms} from './commerce-rights.js?v=0.68.1';
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.68.1';
-import {commercePricePattern,readCommercePrices} from './commerce-prices.js?v=0.68.1';
+import {currencyScheme,currencyValues,isCurrencyId} from './currency-config.js?v=0.68.2';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.68.2';
+import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.68.2';
+import {publicCommerceStory,publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.68.2';
+import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.68.2';
+import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.68.2';
+import {commerceDiscussionOnly} from './commerce-intent.js?v=0.68.2';
+import {normalizePurchaseTerms} from './commerce-rights.js?v=0.68.2';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.68.2';
+import {commercePricePattern,readCommercePrices} from './commerce-prices.js?v=0.68.2';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const key = value => clean(value, 600).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
 const integer = (value, fallback = 0, min = 0, max = 999999999) => Number.isSafeInteger(Number(value)) && Number(value) >= min && Number(value) <= max ? Number(value) : fallback;
 const hash = value => { let n = 2166136261; for (const ch of String(value)) n = Math.imul(n ^ ch.codePointAt(0), 16777619); return (n >>> 0).toString(36); };
-const denominations = new Set(['gold', 'silver', 'copper']);
 const buyWords = /(?:buy|purchase|offer|pay|sell\s+you|ซื้อ|ขอซื้อ|รับซื้อ|เสนอราคา|จ่าย)/iu;
 const shopWords = /(?:shop|store|stall|vendor|merchant|sell(?:s|ing)?|goods|price|discount|haggl|counteroffer|ราคา|ลดให้|ลดราคา|ต่อรอง|ขาย|ร้าน|แผง|สินค้า|ของให้เลือก)/iu;
 const actionWords = /(?:say|tell|ask|offer|hand|show|bring|walk|enter|approach|visit|stand|open|inspect|browse|display|list|พูด|บอก|ถาม|ขอ|ยื่น|นำ|เดิน|เข้า|เปิด|ไปหา|มาถึง|ดู|แสดง|หยิบ|วาง|ลดราคา|ลดให้)/iu;
@@ -125,7 +124,7 @@ function priceRecord(raw, fallback = {}) {
     const source = raw && typeof raw === 'object' ? raw : {};
     const askPrice = integer(source.askPrice ?? source.price, integer(fallback.askPrice, 0, 1), 1);
     const floorPrice = integer(source.floorPrice, askPrice, 1);
-    if (!askPrice || floorPrice > askPrice || !denominations.has(source.denomination || fallback.denomination || '')) return null;
+    if (!askPrice || floorPrice > askPrice || !isCurrencyId(source.denomination || fallback.denomination || '')) return null;
     return { askPrice, floorPrice, denomination: source.denomination || fallback.denomination };
 }
 
@@ -163,7 +162,7 @@ export function normalizeMarketplaceEvent(raw) {
         const sellerRaw = raw.seller || raw.npc || {};
         const seller = { id: clean(sellerRaw.id || sellerRaw.npcId, 100), name: clean(sellerRaw.name || sellerRaw.npcName, 120), role: clean(sellerRaw.role, 100) || 'Merchant' };
         const denomination = clean(raw.denomination||raw.items?.[0]?.denomination||raw.catalog?.[0]?.denomination, 20);
-        if (!seller.name || !denominations.has(denomination)) return null;
+        if (!seller.name || !isCurrencyId(denomination)) return null;
         const entries = (Array.isArray(raw.items) ? raw.items : Array.isArray(raw.catalog) ? raw.catalog : [])
             .map((entry, index) => catalogEntry(entry, index, denomination, evidence)).slice(0, 40);
         if (!entries.length || entries.some(entry=>!entry)) return null;

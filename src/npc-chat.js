@@ -1,20 +1,20 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.68.1';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.68.1';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.68.1';
-import {renderSceneTracker} from './scene-tracker.js?v=0.68.1';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.68.1';
-import {renderGroupBoard} from './group-board-ui.js?v=0.68.1';
-import {uiText} from './ui-language.js?v=0.68.1';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.68.1';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.68.1';
-import { croppedPortrait } from './npc-portraits.js?v=0.68.1';
-import { effectiveNpc } from './npc-alternates.js?v=0.68.1';
-import {speechDisplayText} from './voice-core.js?v=0.68.1';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.68.1';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.68.1';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.68.1';
-import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.68.1';
-import {hostReplyGenerating} from './host-generation-state.js?v=0.68.1';
+import {renderStoryEvents} from './story-events-ui.js?v=0.68.2';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.68.2';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.68.2';
+import {renderSceneTracker} from './scene-tracker.js?v=0.68.2';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.68.2';
+import {renderGroupBoard} from './group-board-ui.js?v=0.68.2';
+import {uiText} from './ui-language.js?v=0.68.2';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.68.2';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.68.2';
+import { croppedPortrait } from './npc-portraits.js?v=0.68.2';
+import { effectiveNpc } from './npc-alternates.js?v=0.68.2';
+import {speechDisplayText} from './voice-core.js?v=0.68.2';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.68.2';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.68.2';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.68.2';
+import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.68.2';
+import {hostReplyGenerating} from './host-generation-state.js?v=0.68.2';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;

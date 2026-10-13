@@ -2988,3 +2988,18 @@ test('swipe restores story progress under the current currency/training preset a
   await host.saveChatPresetComponents({trainingPreset:statTraining.normalizeStatTraining({definitions:[{...trainingPreset.definitions[0],max:100}]})});await host.queueAssistantTurnReplacement(1,{reuseVariant:true});await sandbox.TretaresiaRpgGenerateInterceptor(context.chat,100000,()=>assert.fail('corrected bounds must recover generation'),'normal');assert.equal(host.getState().player.customStats.focus,90);
  }finally{context.extensionSettings=prior.settings;context.chatMetadata=prior.metadata;context.chat=prior.chat;context.saveMetadata=prior.save;sandbox.document=prior.document;sandbox.dispatchEvent=prior.dispatch;sandbox.CustomEvent=prior.Event;}
 });
+
+test('multi-unit currency patches, transactions, group funds and manual balances survive normalization and replay',async()=>{
+ context.extensionSettings={tretaresia_rpg:{autoTrack:false,autoContinuity:false,enableMemorySummaries:false,enableMarketplace:false,enableAuctions:false}};
+ const base=host.defaultState(),cfg=currencyConfig.defaultCurrencyScheme();cfg.units.unshift({id:'platinum',name:'Platinum',symbol:'P',aliases:[],value:100000,iconSet:'gem',icon:'gem',color:'#765432'},{id:'crystal',name:'Crystal',symbol:'C',aliases:[],value:1000000,iconSet:'neon',icon:'token',color:'#123456'});
+ let s=currencyConfig.reconfigureCurrencyWallet(base,cfg,'Five units');s.progression.currency.crystal=3;s.progression.currency.platinum=2;s.social.party={id:'p',name:'Team',sharedFunds:{platinum:8},memberIds:[]};s.social.guilds=[{id:'g',name:'Guild',treasury:{crystal:4},memberIds:[]}];
+ context.chatMetadata={tretaresia_rpg_state:s};context.saveMetadata=async()=>{};s=host.getState();assert.equal(s.progression.currency.crystal,3);assert.equal(s.social.party.sharedFunds.platinum,8);assert.equal(s.social.guilds[0].treasury.crystal,4);
+ const result=host.applyStatePatch(s,{ops:[['inc','progression.currency.platinum',-1,{reason:'Paid for a book',category:'currency'}],['inc','progression.currency.crystal',2,{reason:'Gift',category:'currency'}]]});
+ assert.equal(result.accepted,2);assert.equal(result.next.progression.currency.platinum,1);assert.equal(result.next.progression.currency.crystal,5);assert.equal(result.next.transactions.at(-2).amounts.platinum,-1);assert.equal(result.next.transactions.at(-1).amounts.crystal,2);assert.equal(host.normalize(result.next).transactions.at(-1).balance.crystal,5);
+ assert.equal(host.applyStatePatch(result.next,{ops:[['inc','progression.currency.unknown',50],['set','progression.currency.constructor',10]]}).accepted,0);
+ context.chatMetadata={tretaresia_rpg_state:result.next};
+ const values={currencyName:'Five units','currency-platinum':'7','currency-crystal':'6',adventurerRank:'Rookie',customRankName:'',magicRank:'Beginner',swordRank:'Beginner',experience:0,experienceMax:100,reputation:0,kills:0};
+ sandbox.FormData=class{constructor(){this.data=Object.entries(values);}entries(){return this.data[Symbol.iterator]();}};
+ await host.onSubmit({preventDefault(){},target:{closest:()=>({dataset:{form:'rank'},querySelector(){return null;},checkValidity:()=>true,reportValidity(){}})}});
+ assert.equal(host.getState().progression.currency.platinum,7);assert.equal(host.getState().progression.currency.crystal,6);assert.equal(host.getState().transactions.at(-1).amounts.platinum,6);assert.equal(host.getState().transactions.at(-1).amounts.crystal,1);
+});

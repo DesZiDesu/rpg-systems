@@ -1,0 +1,56 @@
+{
+  "host": "Real SillyTavern frontend/server; isolated local test profile; native UI, real saves and file import/export",
+  "browser": "Chromium (mobile viewports and desktop, not physical iOS Safari)",
+  "cases": [
+    {
+      "width": 390,
+      "theme": "Dark Lite",
+      "addSix": true,
+      "customArt": true,
+      "preservedValue": true,
+      "exportImport": true,
+      "draftImport": true,
+      "manualCustomBalances": true,
+      "customTransactionHistory": true,
+      "realSaveReload": true,
+      "thirtySevenUnits": true,
+      "pagination": true,
+      "offPageDrafts": true,
+      "search": true,
+      "deleteDraft": true,
+      "chatIsolation": true,
+      "aiCalls": 0
+    },
+    {
+      "width": 1440,
+      "theme": "Dark Lite",
+      "addSix": true,
+      "customArt": true,
+      "preservedValue": true,
+      "exportImport": true,
+      "draftImport": true,
+      "manualCustomBalances": true,
+      "customTransactionHistory": true,
+      "realSaveReload": true,
+      "thirtySevenUnits": true,
+      "pagination": true,
+      "offPageDrafts": true,
+      "search": true,
+      "deleteDraft": true,
+      "chatIsolation": true,
+      "aiCalls": 0
+    }
+  ],
+  "errors": [],
+  "generation": [],
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "release": "0.68.2",
+  "success": true
+}

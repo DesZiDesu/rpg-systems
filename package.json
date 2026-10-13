@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.68.1",
+  "version": "0.68.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -22,7 +22,7 @@
     "test:locations": "node tests/scene-locations.browser.mjs && node tests/rewards-location.browser.mjs",
     "test:user-chat": "node tests/user-chat.browser.mjs",
     "test:stats": "node --test tests/stat-training.test.mjs && node tests/stats-currency.browser.mjs",
-    "test:currency": "node --test tests/currency-config.test.mjs tests/commerce-basket-currency.test.mjs",
+    "test:currency": "node --test tests/currency-config.test.mjs tests/currency-multi-unit.test.mjs tests/commerce-basket-currency.test.mjs",
     "test:regex": "node tests/regex-shared.browser.mjs && node tests/regex-compat.browser.mjs && node tests/presentation-settings.browser.mjs",
     "test:mvu": "node tests/mvu-compat.browser.mjs && node tests/chat-render-performance.browser.mjs",
     "test:character-pack": "node tests/character-pack.browser.mjs",
@@ -33,6 +33,7 @@
     "test:archive-delete": "node --test tests/archive-browser.test.mjs tests/lore-workspace.test.mjs && node --test --test-name-pattern=\"batch Chat deletion|Character batch deletion|stale Chat deletion\" tests/host-integration.test.mjs && node tests/archive-delete.browser.mjs",
     "test:settings": "node tests/settings-navigation.browser.mjs",
     "test:settings-theme:real": "node tests/settings-theme.real.browser.mjs",
-    "test:chat-fixes": "node --test tests/player-consequences.test.mjs && node tests/chat-portrait-user-regressions.browser.mjs"
+    "test:chat-fixes": "node --test tests/player-consequences.test.mjs && node tests/chat-portrait-user-regressions.browser.mjs",
+    "test:currency:real": "node tests/currency-multi-unit.real.browser.mjs"
   }
 }

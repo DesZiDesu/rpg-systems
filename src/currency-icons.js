@@ -1,3 +1,4 @@
+import {isCurrencyId} from './currency-config.js?v=0.68.2';
 // Pixel currency icons. Existing preset IDs remain stable.
 // All artwork uses integer pixels; animation swaps whole pixel frames.
 export const sets=[
@@ -170,5 +171,5 @@ export function pixelMoneyMarkup(set='stack',unit=units[0],{color=unit.color,mot
  const definition=sets.find(s=>s.id===set)||sets[0];const palette=pixelPalette(color);
  const style=Object.entries(palette).map(([k,v])=>`--px-${k}:${v}`).join(';')+`;--px-duration:${definition.duration}s`;
  const selected=['default','coin','note','gem','token'].includes(shape)?shape:'default',artSet=selected==='default'?definition.id:selected==='note'?'banknote':selected==='gem'?'gem':selected==='token'?(definition.id==='neon'?'neon':'crest'):selected==='coin'?(['stack','minted','outline','pixel','neon'].includes(definition.id)?definition.id:'pixel'):definition.id;
- return `<svg xmlns="http://www.w3.org/2000/svg" class="rf-commerce-icon rf-pixel-money-icon" viewBox="0 0 32 32" shape-rendering="crispEdges" data-coin-style="${definition.id}" data-icon-shape="${selected}" ${['gold','silver','copper'].includes(unit.id)?`data-currency="${unit.id}"`: ''} data-motion="${motion?'on':'off'}" style="stroke:none;stroke-width:0;color:${palette.base};${style}" aria-hidden="true" focusable="false">${standalone?`<style>${pixelCss}</style>`:''}${packedArt(artSet)}</svg>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" class="rf-commerce-icon rf-pixel-money-icon" viewBox="0 0 32 32" shape-rendering="crispEdges" data-coin-style="${definition.id}" data-icon-shape="${selected}" ${isCurrencyId(unit.id)?`data-currency="${unit.id}"`: ''} data-motion="${motion?'on':'off'}" style="stroke:none;stroke-width:0;color:${palette.base};${style}" aria-hidden="true" focusable="false">${standalone?`<style>${pixelCss}</style>`:''}${packedArt(artSet)}</svg>`;
 }

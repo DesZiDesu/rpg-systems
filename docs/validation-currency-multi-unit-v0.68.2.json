@@ -1,0 +1,96 @@
+{
+  "host": "Real SillyTavern frontend/server; isolated local test profile; native UI, real saves and file import/export",
+  "browser": "Chromium (mobile viewports and desktop, not physical iOS Safari)",
+  "cases": [
+    {
+      "width": 390,
+      "theme": "Dark Lite",
+      "addSix": true,
+      "customArt": true,
+      "preservedValue": true,
+      "exportImport": true,
+      "draftImport": true,
+      "manualCustomBalances": true,
+      "customTransactionHistory": true,
+      "realSaveReload": true,
+      "thirtySevenUnits": true,
+      "pagination": true,
+      "offPageDrafts": true,
+      "search": true,
+      "deleteDraft": true,
+      "chatIsolation": true,
+      "aiCalls": 0
+    },
+    {
+      "width": 1440,
+      "theme": "Dark Lite",
+      "addSix": true,
+      "customArt": true,
+      "preservedValue": true,
+      "exportImport": true,
+      "draftImport": true,
+      "manualCustomBalances": true,
+      "customTransactionHistory": true,
+      "realSaveReload": true,
+      "thirtySevenUnits": true,
+      "pagination": true,
+      "offPageDrafts": true,
+      "search": true,
+      "deleteDraft": true,
+      "chatIsolation": true,
+      "aiCalls": 0
+    }
+  ],
+  "errors": [],
+  "generation": [],
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "release": "0.68.2",
+  "success": true,
+  "unitTests": {
+    "passed": 1250,
+    "failed": 0
+  },
+  "syntaxCheck": true,
+  "productionBrowserRegression": {
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "statsAndCurrency": true,
+    "reducedMotion": true,
+    "reload": true,
+    "allPassed": true
+  },
+  "currencyLogicCoverage": {
+    "maxUnitsTested": 1000,
+    "exactChange": true,
+    "legacyPresetCompatibility": true,
+    "sameRateUnits": true,
+    "partyGuildValuePreservation": true,
+    "perUnitOverflowRollback": true,
+    "malformedGroupUpdateRetention": true,
+    "renamePreservesSeparateBalances": true
+  },
+  "runtimeHashes": {
+    "src/currency-config.js": "0e44a921c2f387a7b6dab95fd0544861b78f1b2cd3c4c1d1c933dc4026e55704",
+    "src/currency-workspace.js": "3ce57d9b1f6367fd29fa6ce84be71a345194735c49d94a47d6c613230cc9321f",
+    "src/commerce-engine.js": "f03433f8d5233bd6f8e25056ebb84d1b40052c04e098c2cfb1fc7f07f1ce5379",
+    "index.js": "823ffcd50c04c96697a41ed98ab8a747da019ad8f283858017a8c72b02eeb887",
+    "styles/stat-composer.css": "f331760bd1b4059b087a238214e899ffdadb5f47d721eb590536d53a32e67e98"
+  },
+  "realRenameValidation": {
+    "success": true,
+    "realSillyTavern": true,
+    "units": 36,
+    "renamePreservesEveryBalance": true,
+    "customBalance": 7
+  }
+}

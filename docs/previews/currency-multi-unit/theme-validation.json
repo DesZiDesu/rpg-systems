@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "realSillyTavern": true,
+  "cases": [
+    {
+      "theme": "Dark Lite",
+      "width": 320,
+      "currencyUnits": 36,
+      "visibleRows": 10,
+      "fieldsFit": true,
+      "searchCaretPreserved": true,
+      "pagination": true
+    },
+    {
+      "theme": "Dark Lite",
+      "width": 390,
+      "currencyUnits": 36,
+      "visibleRows": 10,
+      "fieldsFit": true,
+      "searchCaretPreserved": true,
+      "pagination": true
+    },
+    {
+      "theme": "Dark Lite",
+      "width": 1440,
+      "currencyUnits": 36,
+      "visibleRows": 10,
+      "fieldsFit": true,
+      "searchCaretPreserved": true,
+      "pagination": true
+    },
+    {
+      "theme": "Minimalism Tone - Aligned Chatbar",
+      "width": 320,
+      "currencyUnits": 36,
+      "visibleRows": 10,
+      "fieldsFit": true,
+      "searchCaretPreserved": true,
+      "pagination": true
+    },
+    {
+      "theme": "Minimalism Tone - Aligned Chatbar",
+      "width": 390,
+      "currencyUnits": 36,
+      "visibleRows": 10,
+      "fieldsFit": true,
+      "searchCaretPreserved": true,
+      "pagination": true
+    },
+    {
+      "theme": "Minimalism Tone - Aligned Chatbar",
+      "width": 1440,
+      "currencyUnits": 36,
+      "visibleRows": 10,
+      "fieldsFit": true,
+      "searchCaretPreserved": true,
+      "pagination": true
+    }
+  ],
+  "errors": []
+}

@@ -1,22 +1,21 @@
-import {currencyValues,currencyScheme} from './currency-config.js?v=0.68.1';
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.68.1';
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.68.1';
-import {commercePricePattern} from './commerce-prices.js?v=0.68.1';
+import {currencyValues,currencyScheme,currencyAmounts,isCurrencyId} from './currency-config.js?v=0.68.2';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.68.2';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.68.2';
+import {commercePricePattern} from './commerce-prices.js?v=0.68.2';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
 const integer = (value, fallback = 0, min = 0, max = 999999999) => Number.isSafeInteger(Number(value)) && Number(value) >= min && Number(value) <= max ? Number(value) : fallback;
 const hash = value => { let n = 2166136261; for (const ch of value) n = Math.imul(n ^ ch.codePointAt(0), 16777619); return (n >>> 0).toString(36); };
 const copy = value => structuredClone(value);
-const denominations = ['gold','silver','copper'];
 const auctionWords = /auction|ประมูล/iu;
 
-export const AUCTION_INSTRUCTIONS = ITEM_DEFINITION_INSTRUCTIONS+'\n'+'Auction UI: when the player actually arrives at an auction venue in the CURRENT scene, include auction in this same invisible patch. Shape: {"id":"stable-event-id-including-story-day","title":"auction name","location":"exact current place","evidence":"exact quote from this reply confirming player arrival at the auction","denomination":"gold|silver|copper","entryFee":0,"deposit":0,"lots":[{"id":"stable-lot-id","name":"item name","description":"publicly revealed details","category":"Equipment","rarity":"known rarity or empty","quantity":1,"openingBid":5,"minIncrement":1,"bidders":[{"name":"present rival bidder","npcId":"known-id-or-empty","maxBid":12}]}]}. Create 1–8 plausible lots and 0–5 present rivals per lot. Fees/deposit are zero unless established in the story. maxBid is a fixed private ceiling consistent with that bidder; never reveal it in narration. Keep event/lot IDs and catalog stable on revisits; a new event needs a new ID. No auction for future plans, mere mentions or OOC discussion. The player joins and bids through the UI. The local engine owns bids, rival counters, three auctioneer counts, winners, fees, deposits, payment and item delivery. NEVER patch auction state or grant/deduct auction money/items, including on a later reply describing the outcome. Auction summaries in state are already committed facts: narrate them without replaying effects. Do not emit HTML/UI. No time limit or automatic auction progress while the player is away.';
+export const AUCTION_INSTRUCTIONS = ITEM_DEFINITION_INSTRUCTIONS+'\n'+'Auction UI: when the player actually arrives at an auction venue in the CURRENT scene, include auction in this same invisible patch. Shape: {"id":"stable-event-id-including-story-day","title":"auction name","location":"exact current place","evidence":"exact quote from this reply confirming player arrival at the auction","denomination":"configured protocolId","entryFee":0,"deposit":0,"lots":[{"id":"stable-lot-id","name":"item name","description":"publicly revealed details","category":"Equipment","rarity":"known rarity or empty","quantity":1,"openingBid":5,"minIncrement":1,"bidders":[{"name":"present rival bidder","npcId":"known-id-or-empty","maxBid":12}]}]}. Create 1–8 plausible lots and 0–5 present rivals per lot. Fees/deposit are zero unless established in the story. maxBid is a fixed private ceiling consistent with that bidder; never reveal it in narration. Keep event/lot IDs and catalog stable on revisits; a new event needs a new ID. No auction for future plans, mere mentions or OOC discussion. The player joins and bids through the UI. The local engine owns bids, rival counters, three auctioneer counts, winners, fees, deposits, payment and item delivery. NEVER patch auction state or grant/deduct auction money/items, including on a later reply describing the outcome. Auction summaries in state are already committed facts: narrate them without replaying effects. Do not emit HTML/UI. No time limit or automatic auction progress while the player is away.';
 
 export function normalizeAuctionOffer(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const location = clean(raw.location), title = clean(raw.title) || 'Auction House';
-    if (!location || !denominations.includes(raw.denomination)) return null;
+    if (!location || !isCurrencyId(raw.denomination)) return null;
     const id = clean(raw.id,100) || `auction-${hash(`${key(location)}|${key(title)}|${key(raw.evidence)}`)}`;
     const lots = [], ids = new Set();
     for (const input of Array.isArray(raw.lots) ? raw.lots : []) {
@@ -88,27 +87,27 @@ export function normalizeAuctionReceipts(values) {
         if (!raw || typeof raw !== 'object' || !clean(raw.auctionId,100) || !clean(raw.lotId,100)) continue;
         const id = `${clean(raw.auctionId,100)}:${clean(raw.lotId,100)}`;
         receipts.set(id,{id,auctionId:clean(raw.auctionId,100),lotId:clean(raw.lotId,100),winner:clean(raw.winner,100),amount:integer(raw.amount),
-            denomination:denominations.includes(raw.denomination) ? raw.denomination : 'gold',itemName:clean(raw.itemName,100),quantity:integer(raw.quantity),savedAt:clean(raw.savedAt,60)});
+            denomination:isCurrencyId(raw.denomination) ? raw.denomination : 'gold',itemName:clean(raw.itemName,100),quantity:integer(raw.quantity),savedAt:clean(raw.savedAt,60)});
     }
     // Settlement receipts are never pruned: retiring a catalog must not enable payment again.
     return [...receipts.values()];
 }
 
 export function auctionReserved(state) {
-    const reserved = {gold:0,silver:0,copper:0};
+    const reserved = currencyAmounts(null,state.progression?.currency);
     for (const session of state.auctions || []) if (session.status === 'Joined') {
         const lot = session.lots[session.index];
-        reserved[session.denomination] += session.deposit + (lot?.status === 'Open' && lot.highestBidder === 'player' ? lot.price : 0);
+        reserved[session.denomination] = (reserved[session.denomination]||0) + session.deposit + (lot?.status === 'Open' && lot.highestBidder === 'player' ? lot.price : 0);
     }
     return reserved;
 }
 export function auctionAvailable(state) {
     const reserved = auctionReserved(state);
-    return Object.fromEntries(denominations.map(d => [d,Math.max(0,(state.progression?.currency?.[d] || 0)-reserved[d])]));
+    return Object.fromEntries(Object.keys(reserved).map(d => [d,Math.max(0,(state.progression?.currency?.[d] || 0)-reserved[d])]));
 }
 export function auctionFundsValid(state, previous = state) {
     const reserved = auctionReserved(state);
-    return denominations.every(d => (state.progression?.currency?.[d] || 0) >= reserved[d])
+    return Object.keys(reserved).every(d => (state.progression?.currency?.[d] || 0) >= reserved[d])
         && (!(previous.auctions || []).some(s => s.status === 'Joined') || state.progression.currency.name === previous.progression.currency.name);
 }
 export function auctionPublicSummary(state) {

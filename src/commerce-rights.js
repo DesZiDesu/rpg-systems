@@ -1,12 +1,11 @@
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.68.1';
-import {currencyValues,currencyValue} from './currency-config.js?v=0.68.1';
-import {readCommercePrices} from './commerce-prices.js?v=0.68.1';
-import {evidenceText,namedInteraction} from './interaction-evidence.js?v=0.68.1';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.68.2';
+import {currencyValues,currencyValue,isCurrencyId} from './currency-config.js?v=0.68.2';
+import {readCommercePrices} from './commerce-prices.js?v=0.68.2';
+import {evidenceText,namedInteraction} from './interaction-evidence.js?v=0.68.2';
 
 const clean=(value,max=300)=>typeof value==='string'?value.trim().slice(0,max):'';
 const whole=(value,max=999999999)=>Number.isSafeInteger(value)&&value>=0&&value<=max;
 const clone=value=>structuredClone(value);
-const units=['gold','silver','copper'];
 const modes=['permanent','rental','access','service'];
 const hash=value=>{let n=2166136261;for(const c of String(value))n=Math.imul(n^c.codePointAt(0),16777619);return(n>>>0).toString(36);};
 export function storyMinute(clock){
@@ -45,7 +44,7 @@ export function normalizePurchaseTerms(raw){
 export function normalizeCommerceRights(raw){
     const ids=new Set(),out=[];
     for(const value of Array.isArray(raw)?raw:[]){
-        if(!value?.id||ids.has(value.id)||!['active','returned','completed','used','cancelled'].includes(value.status)||!units.includes(value.denomination))continue;
+        if(!value?.id||ids.has(value.id)||!['active','returned','completed','used','cancelled'].includes(value.status)||!isCurrencyId(value.denomination))continue;
         const terms=normalizePurchaseTerms(value.terms);if(!terms||terms.mode==='permanent')continue;
         if(!whole(value.revision)||!whole(value.paid)||!whole(value.depositPaid)||!whole(value.depositRefunded)||value.depositRefunded>value.depositPaid||!whole(value.remainingUses,99999))continue;
         out.push({...clone(value),id:clean(value.id,180),terms,history:(value.history||[]).slice(-30)});ids.add(value.id);
@@ -149,7 +148,7 @@ export function applyRightsEvents(state,raw,{story='',user='',now=new Date().toI
         }
         if(refund){
             if(!actionWords.refund.test(quote)||!whole((next.progression.currency[r.denomination]||0)+refund)){fail('refund');return{ok:false,next:state,events:[],errors};}
-            next.progression.currency[r.denomination]+=refund;r.depositRefunded+=refund;
+            next.progression.currency[r.denomination]=(next.progression.currency[r.denomination]||0)+refund;r.depositRefunded+=refund;
             if(!Number.isSafeInteger(currencyValue(next.progression.currency))){fail('refund');return{ok:false,next:state,events:[],errors};}
         }
         r.revision++;r.history.push({action,evidence:quote,refundAmount:refund,at:now});seen.add(r.id);events.push({id:r.id,action,refundAmount:refund,name:r.itemName});

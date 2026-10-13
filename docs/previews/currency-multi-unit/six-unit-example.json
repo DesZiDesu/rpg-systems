@@ -1,0 +1,82 @@
+{
+  "format": "roleforge-currency-preset",
+  "version": 1,
+  "preset": {
+    "name": "37-unit test",
+    "scheme": {
+      "version": 1,
+      "animated": true,
+      "units": [
+        {
+          "id": "unit_797eb13bc859497795d19fc770999c22",
+          "name": "Crystal",
+          "symbol": "CR",
+          "aliases": [],
+          "value": 10000000,
+          "iconSet": "gem",
+          "icon": "default",
+          "color": "#c47edd"
+        },
+        {
+          "id": "unit_43a925d7cbf84546aa27045d7194a187",
+          "name": "Titanium",
+          "symbol": "TI",
+          "aliases": [],
+          "value": 1000000,
+          "iconSet": "neon",
+          "icon": "default",
+          "color": "#5abcd0"
+        },
+        {
+          "id": "unit_e791f0bdcf984068b7fc91a237ff8cac",
+          "name": "Platinum",
+          "symbol": "PL",
+          "aliases": [],
+          "value": 100000,
+          "iconSet": "minted",
+          "icon": "default",
+          "color": "#c7cfee"
+        },
+        {
+          "id": "gold",
+          "name": "Gold",
+          "symbol": "",
+          "aliases": [
+            "ทอง",
+            "เหรียญทอง"
+          ],
+          "value": 10000,
+          "iconSet": "stack",
+          "icon": "default",
+          "color": "#dfbf65"
+        },
+        {
+          "id": "silver",
+          "name": "Silver",
+          "symbol": "",
+          "aliases": [
+            "เงิน",
+            "เหรียญเงิน"
+          ],
+          "value": 100,
+          "iconSet": "stack",
+          "icon": "default",
+          "color": "#c0c8d2"
+        },
+        {
+          "id": "copper",
+          "name": "Copper",
+          "symbol": "",
+          "aliases": [
+            "ทองแดง",
+            "เหรียญทองแดง"
+          ],
+          "value": 1,
+          "iconSet": "stack",
+          "icon": "default",
+          "color": "#c58c65"
+        }
+      ]
+    }
+  }
+}

@@ -1,10 +1,10 @@
-import {currencyValues,currencyRule,currencyScheme} from './currency-config.js?v=0.68.1';
-import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.68.1';
-import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.68.1';
-import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.68.1';
-import {walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.68.1';
-import {readCommercePrices} from './commerce-prices.js?v=0.68.1';
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.68.1';
+import {currencyValues,currencyRule,currencyScheme,currencyAmounts,isCurrencyId} from './currency-config.js?v=0.68.2';
+import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.68.2';
+import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.68.2';
+import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.68.2';
+import {walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.68.2';
+import {readCommercePrices} from './commerce-prices.js?v=0.68.2';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.68.2';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);
@@ -14,7 +14,6 @@ const clean = (value,max=240) => typeof value === 'string' ? value.trim().slice(
 const roleplayEvidenceText = value => value.normalize('NFKC').replace(/[“”„‟]/gu,'"').replace(/[‘’‚‛]/gu,"'").replace(/\s+/gu,' ').trim();
 const key = value => clean(value,1000).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu,' ');
 const money = value => Number.isSafeInteger(value) && value >= 0 && value <= 999999999;
-const units = ['gold','silver','copper'];
 const active = session => ['offered','open'].includes(session.status);
 const hash = value => {let n=2166136261;for(const c of value)n=Math.imul(n^c.codePointAt(0),16777619);return(n>>>0).toString(36);};
 
@@ -34,7 +33,7 @@ export function createCommerceSession(event, source = {}, configuration) {
         const entries=purchase?(event.items||[{id:event.item?.id||'sale-item',item:copy(event.item),askPrice:event.askPrice,stock:event.item?.quantity||1}]):(event.items||[]);
         if(entries.some(entry=>!entry||typeof entry!=='object'))return null;
         const priceUnits=entries.map(entry=>entry.denomination||event.denomination);
-        if(!entries.length||priceUnits.some(unit=>!units.includes(unit)||!values[unit]))return null;
+        if(!entries.length||priceUnits.some(unit=>!isCurrencyId(unit)||!values[unit]))return null;
         const mixed=new Set(priceUnits).size>1;
         // Canonical accounting uses the smallest quoted unit, preserving exact
         // integer values. Display retains each option's original quoted price.
@@ -97,7 +96,7 @@ export function normalizeCommerce(raw, legacy = {}) {
     const source = raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{};
     const sessions=[],ids=new Set();
     for (const record of Array.isArray(source.sessions)?source.sessions:[]) {
-        if (!record?.id || ids.has(record.id) || !['auction','buy','sell'].includes(record.kind) || !units.includes(record.denomination)
+        if (!record?.id || ids.has(record.id) || !['auction','buy','sell'].includes(record.kind) || !isCurrencyId(record.denomination)
             || !['offered','open','completed','cancelled','rejected'].includes(record.status)) continue;
         const session=copy(record);
         session.revision=money(session.revision)?session.revision:0;session.history=(session.history||[]).slice(-40);
@@ -155,13 +154,13 @@ export function normalizeCommerce(raw, legacy = {}) {
 }
 
 export function commerceReserved(state) {
-    const out={gold:0,silver:0,copper:0},commerce=normalizeCommerce(state.commerce,state);
+    const out=currencyAmounts(null,state.progression?.currency),commerce=normalizeCommerce(state.commerce,state);
     for(const session of commerce.sessions)if(session.kind==='auction'&&session.status==='open'){
-        const lot=session.lots[session.index];out[session.denomination]+=session.deposit+(lot?.status==='open'&&lot.leader==='player'?lot.price:0);
+        const lot=session.lots[session.index];out[session.denomination]=(out[session.denomination]||0)+session.deposit+(lot?.status==='open'&&lot.leader==='player'?lot.price:0);
     }
     return out;
 }
-export function commerceAvailable(state) {const currency=state.progression?.currency,values=currencyValues(currency),held=commerceReserved(state),remaining=walletValue(currency)-walletValue(held,currency),value=Number.isSafeInteger(remaining)?Math.max(0,remaining):0;return Object.fromEntries(units.map(d=>[d,values[d]?Number(BigInt(value)/BigInt(values[d])):0]));}
+export function commerceAvailable(state) {const currency=state.progression?.currency,values=currencyValues(currency),held=commerceReserved(state),remaining=walletValue(currency)-walletValue(held,currency),value=Number.isSafeInteger(remaining)?Math.max(0,remaining):0;return Object.fromEntries(Object.keys(currencyAmounts(null,currency)).map(d=>[d,values[d]?Number(BigInt(value)/BigInt(values[d])):0]));}
 export function commerceFundsValid(state, previous=state) {
     const held=commerceReserved(state);return walletValue(state.progression?.currency)>=walletValue(held,state.progression?.currency)
         &&(!normalizeCommerce(previous.commerce,previous).sessions.some(s=>['offered','open'].includes(s.status))||(state.progression.currency.name===previous.progression.currency.name&&JSON.stringify(currencyValues(state.progression.currency))===JSON.stringify(currencyValues(previous.progression.currency))));
@@ -334,7 +333,7 @@ export function applyCommerceDecision(state, prepared, result, now=new Date().to
                         if(deposit)events.push({type:'deposit',amount:deposit});
                     }else{
                         for(const line of lines){if(!inventory(line.entry.item,-line.quantity))return fail('inventory');events.push({type:'sale',name:line.entry.item.name,quantity:line.quantity});}
-                        next.progression.currency[d]+=price;
+                        next.progression.currency[d]=(next.progression.currency[d]||0)+price;
                     }
                     // One payment for the complete basket; item events carry no duplicate payment.
                     events.push({type:session.kind==='buy'?'payment':'income',amount:price,name,quantity});
@@ -344,11 +343,11 @@ export function applyCommerceDecision(state, prepared, result, now=new Date().to
         }
     }
     session.revision++;session.history.push({action:prepared.action,amount:prepared.amount??null,outcome:decision.outcome,decision:copy(decision),narrative:clean(result.narrative,6000),at:now});session.history=session.history.slice(-40);
-    if(!units.every(unit=>money(next.progression.currency[unit]))||!commerceFundsValid(next,state)||!commerceInventoryValid(next))return fail('funds');
+    if(!Object.keys(currencyAmounts(null,next.progression.currency)).every(unit=>money(next.progression.currency[unit]??0))||!commerceFundsValid(next,state)||!commerceInventoryValid(next))return fail('funds');
     return{ok:true,next,session,events,narrative:result.narrative.trim()};
 }
 
-export const COMMERCE_AUCTION_OPENING = ITEM_DEFINITION_INSTRUCTIONS+'\n'+'When the current scene presents an auction, include top-level auction in the invisible tretaresia_patch: {id,title,location,evidence:"exact affirmative quote from this reply",denomination:"gold|silver|copper",entryFee:0,deposit:0,lots:[{id,name,description,category,rarity,quantity:1,openingBid:5,minIncrement:1,bidders:[{name,npcId,budget:12}]}]}. Use 1–8 lots and 0–5 actual present rivals per lot. Each rival has fixed actual total funds budget shared across all lots, never a willingness ceiling or a target matching player wealth. Public casual auctions may be free. For a formal managed venue or valuable lots, establish and announce reasonable entry terms in THIS opening narrative: entryFee is a once-only nonrefundable service charge (typically about 1–2% of the representative opening price, rounded down); deposit is a refundable commitment hold (typically 5–10%, rounded to a whole denomination). Show the exact terms before joining. Use zero where no charge makes sense; do not charge just to fill fields, target the player wallet, add fees after opening, or invent forfeiture. Deposit stays in the wallet but is unavailable while joined, then unlocks at completion/departure; winning prices are paid separately. Show known public item facts only. Preserve IDs while the interaction is active; a genuinely new auction has a new ID. The composer opens only for an actual present interaction; no future/rumored/OOC event. Do not settle auction money/items in normal patch ops. NPC decisions and auction closure come from the normal role-play reply or each composer API action, with no deterministic counterbid or countdown.';
+export const COMMERCE_AUCTION_OPENING = ITEM_DEFINITION_INSTRUCTIONS+'\n'+'When the current scene presents an auction, include top-level auction in the invisible tretaresia_patch: {id,title,location,evidence:"exact affirmative quote from this reply",denomination:"configured protocolId",entryFee:0,deposit:0,lots:[{id,name,description,category,rarity,quantity:1,openingBid:5,minIncrement:1,bidders:[{name,npcId,budget:12}]}]}. Use 1–8 lots and 0–5 actual present rivals per lot. Each rival has fixed actual total funds budget shared across all lots, never a willingness ceiling or a target matching player wealth. Public casual auctions may be free. For a formal managed venue or valuable lots, establish and announce reasonable entry terms in THIS opening narrative: entryFee is a once-only nonrefundable service charge (typically about 1–2% of the representative opening price, rounded down); deposit is a refundable commitment hold (typically 5–10%, rounded to a whole denomination). Show the exact terms before joining. Use zero where no charge makes sense; do not charge just to fill fields, target the player wallet, add fees after opening, or invent forfeiture. Deposit stays in the wallet but is unavailable while joined, then unlocks at completion/departure; winning prices are paid separately. Show known public item facts only. Preserve IDs while the interaction is active; a genuinely new auction has a new ID. The composer opens only for an actual present interaction; no future/rumored/OOC event. Do not settle auction money/items in normal patch ops. NPC decisions and auction closure come from the normal role-play reply or each composer API action, with no deterministic counterbid or countdown.';
 
 export const COMMERCE_INSTRUCTIONS = ITEM_DEFINITION_INSTRUCTIONS+'\n'+'RoleForge composer commerce: current NPC goods/offers and auction catalogs use the existing top-level marketplace/auction shapes in the normal tretaresia_patch. These open the composer interaction bar. Auctions: give each NPC bidder a fixed total available budget via budget (maxBid is accepted only for old data). The same bidder must have the same budget across all lots. Choose realistic funds from the established character/story, never from player wealth or an intended winning price. There is NO fixed willingness ceiling: a bidder may spend all available money if AI judges it consistent with their motives. Buttons call the current API to continue this same assistant message with brief NPC reactions and a validated commerce decision. Do not settle active composer transactions via normal story currency/inventory ops, do not invent another auction/trade to replace one in progress, and do not print controls in prose. Completed commerce receipts are already paid/delivered facts, never pay them again. The public catalog stock counts record the remaining goods after validated purchases. Preserve those counts for the same merchant/product on revisits unless actual restocking or another sale is established; do not reset stock each reply.';
 
@@ -429,7 +428,9 @@ export function applyCommerceRoleplay(state,candidate,raw,{user='',userMessageId
         if(['bid','offer','confirm','join'].includes(action)&&refusal.test(evidence))return fail('intent');
         if(['bid','confirm','join','leave','cancel','next','wait'].includes(action)&&/(?:ถ้า|หาก|อาจจะ|คงจะ|น่าจะ|\b(?:if|might|maybe|would|could)\b)/iu.test(evidence))return fail('intent');
         const signals={offer:/(?:เสนอ|ต่อรอง|ลด|ให้|ขาย|ซื้อ|ขอ|ได้ไหม|ได้มั้ย|\b(?:offer|price|sell|buy|take|how about)\b)/iu,bid:/(?:บิด|ประมูล|เสนอ|(?:ยก|ชู)\s*ป้าย|ให้|\bbid\b)/iu,join:/(?:เข้าร่วม|ลงทะเบียน|\bjoin\b)/iu,leave:/(?:ออก|ถอนตัว|เลิก|\b(?:leave|withdraw|quit)\b)/iu,cancel:/(?:ยกเลิก|ไม่เอา|ไม่ซื้อ|ไม่ขาย|เลิก|\b(?:cancel|never mind|forget it)\b)/iu,next:/(?:ถัดไป|ต่อไป|\bnext\b)/iu,wait:/(?:รอ|ตัดสิน|เคาะ|ปิดประมูล|\b(?:wait|await|going|close|finish)\b)/iu};
-        const barePrice=/^[\s"'“”]*(?:[0-9๐-๙,]+|(?:หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|เอ็ด|ยี่|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน)+)\s*(?:เหรียญ(?:เงิน|ทองแดง|ทอง)?|gold|silver|copper|coins?)?[\s!?!."'“”]*$/iu.test(evidence);
+        const quotedPrices=readCommercePrices(evidence,state.progression?.currency);
+        const barePrice=quotedPrices.length===1&&/^[\s"'“”!?!.]*$/u.test(evidence.normalize('NFKC').replace(quotedPrices[0].text,''))
+            ||/^[\s"'“”]*(?:[0-9๐-๙,]+|(?:หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|เอ็ด|ยี่|สิบ|ร้อย|พัน|หมื่น|แสน|ล้าน)+)\s*(?:เหรียญ(?:เงิน|ทองแดง|ทอง)?|coins?)?[\s!?!."'“”]*$/iu.test(evidence);
         if(signals[action]&&!signals[action].test(evidence)&&!(['offer','bid'].includes(action)&&barePrice))return fail('intent');
         if(action==='confirm'&&!/(?:ตกลง|ยืนยัน|โอเค|รับข้อเสนอ|ซื้อเลย|ขอซื้อ|รับเลย|จ่าย|ขายให้|ขายเลย|เอาเลย|เอาราคานี้|เอาตามราคา|\b(?:confirm|accept|deal|buy|sell|pay|take it)\b)/iu.test(evidence))return fail('intent');
         if(['offer','bid'].includes(action)&&(/[-−]\s*[0-9๐-๙]/u.test(evidence)||!statedPrices(evidence,candidate.denomination,state.progression?.currency).includes(amount)))return fail('amount');

@@ -1,83 +1,83 @@
-import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.68.1';
-import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.68.1';
-import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.68.1';
-import {mountSettingsNavigation} from './src/settings-navigation.js?v=0.68.1';
-import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.68.1';
-import {playerResourceNarrative,isLegacyGuessedEffect,effectTargetsPlayer} from './src/player-consequences.js?v=0.68.1';
-import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.68.1';
-import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.68.1';
-import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.68.1';
-import {createStatComposer} from './src/stat-composer.js?v=0.68.1';
-import {mountStatWorkspace} from './src/stat-workspace.js?v=0.68.1';
-import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue} from './src/currency-config.js?v=0.68.1';
-import {fitForgeToChat} from './src/forge-layout.js?v=0.68.1';
-import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.68.1';
-import {mountSkillBrowser} from './src/skill-browser.js?v=0.68.1';
-import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.68.1';
-import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.68.1';
-import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.68.1';
-import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.68.1';
-import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.68.1';
-import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.68.1';
-import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.68.1';
-import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.68.1';
-import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.68.1';
-import {createMemoryAddons} from './src/memory-addons.js?v=0.68.1';
-import {createVoiceAddons} from './src/voice-addons.js?v=0.68.1';
-import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.68.1';
-import {showApiRequestNotice} from './src/api-request-notice.js?v=0.68.1';
-import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.68.1';
-import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.68.1';
-import {createItemRuntime} from './src/item-runtime.js?v=0.68.1';
-import {createComposerDock} from './src/composer-dock.js?v=0.68.1';
-import {createIncantationComposer} from './src/incantation-composer.js?v=0.68.1';
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.68.1';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.68.1';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.68.1';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.68.1';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.68.1';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.68.1';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.68.1';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.68.1';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.68.1';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.68.1';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.68.1';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.68.1';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.68.1';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.68.1';
-import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.68.1';
-import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.68.1';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.68.1';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.68.1';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.68.1';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.68.1';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.68.1';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.68.1';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.68.1';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.68.1';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.68.1';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.68.1';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.68.1';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.68.1';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.68.1';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.68.1';
-import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.68.1';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.68.1';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.68.1';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.68.1';
+import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.68.2';
+import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.68.2';
+import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.68.2';
+import {mountSettingsNavigation} from './src/settings-navigation.js?v=0.68.2';
+import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.68.2';
+import {playerResourceNarrative,isLegacyGuessedEffect,effectTargetsPlayer} from './src/player-consequences.js?v=0.68.2';
+import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.68.2';
+import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.68.2';
+import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.68.2';
+import {createStatComposer} from './src/stat-composer.js?v=0.68.2';
+import {mountStatWorkspace} from './src/stat-workspace.js?v=0.68.2';
+import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue,currencyKeys,currencyAmounts,isCurrencyId} from './src/currency-config.js?v=0.68.2';
+import {fitForgeToChat} from './src/forge-layout.js?v=0.68.2';
+import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.68.2';
+import {mountSkillBrowser} from './src/skill-browser.js?v=0.68.2';
+import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.68.2';
+import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.68.2';
+import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.68.2';
+import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.68.2';
+import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.68.2';
+import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.68.2';
+import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.68.2';
+import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.68.2';
+import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.68.2';
+import {createMemoryAddons} from './src/memory-addons.js?v=0.68.2';
+import {createVoiceAddons} from './src/voice-addons.js?v=0.68.2';
+import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.68.2';
+import {showApiRequestNotice} from './src/api-request-notice.js?v=0.68.2';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.68.2';
+import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.68.2';
+import {createItemRuntime} from './src/item-runtime.js?v=0.68.2';
+import {createComposerDock} from './src/composer-dock.js?v=0.68.2';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.68.2';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.68.2';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.68.2';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.68.2';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.68.2';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.68.2';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.68.2';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.68.2';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.68.2';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.68.2';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.68.2';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.68.2';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.68.2';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.68.2';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.68.2';
+import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.68.2';
+import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.68.2';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.68.2';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.68.2';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.68.2';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.68.2';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.68.2';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.68.2';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.68.2';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.68.2';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.68.2';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.68.2';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.68.2';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.68.2';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.68.2';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.68.2';
+import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.68.2';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.68.2';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.68.2';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.68.2';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.68.1';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.68.1';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.68.1';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.68.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.68.1';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.68.1';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.68.1';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.68.1';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.68.1';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.68.1';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.68.1';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.68.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.68.2';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.68.2';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.68.2';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.68.2';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.68.2';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.68.2';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.68.2';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.68.2';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.68.2';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.68.2';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.68.2';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.68.2';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -643,7 +643,7 @@ async function runPowerTrainingChoice(choiceId) {
         if (!stillHere()) return false;
         const fresh = clone(getState());
         if (fresh.powerMastery?.session?.id === session.id) {
-            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.68.1', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
+            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.68.2', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
             await persistState(fresh, 'power-training-retry');
         }
         notify('error', error.message || 'Power training failed.');
@@ -1243,23 +1243,15 @@ function item(value, fallbackCategory = 'Other') {
 
 function currencyTransaction(value) {
     if (!value || typeof value !== 'object') return null;
-    const amounts = {
-        gold: number(value.amounts?.gold, 0, -999999999, 999999999),
-        silver: number(value.amounts?.silver, 0, -999999999, 999999999),
-        copper: number(value.amounts?.copper, 0, -999999999, 999999999),
-    };
-    if (!amounts.gold && !amounts.silver && !amounts.copper) return null;
+    const amounts = currencyAmounts(value.amounts,value.currencyScheme,{signed:true});
+    if (!Object.values(amounts).some(Boolean)) return null;
     return {
         id: text(value.id, uid(), 100),
         at: text(value.at, new Date().toISOString(), 60),
         currencyName: text(value.currencyName, 'Unknown currency', 120),
         ...(normalizeCurrencyScheme(value.currencyScheme)?{currencyScheme:normalizeCurrencyScheme(value.currencyScheme)}:{}),
         amounts,
-        balance: {
-            gold: number(value.balance?.gold, 0, 0, 999999999),
-            silver: number(value.balance?.silver, 0, 0, 999999999),
-            copper: number(value.balance?.copper, 0, 0, 999999999),
-        },
+        balance: currencyAmounts(value.balance,value.currencyScheme),
         reason: text(value.reason, 'Unspecified transaction', 300),
         source: text(value.source, 'roleplay', 60),
         questId: text(value.questId, '', 100),
@@ -1329,11 +1321,8 @@ function recordInventoryDiff(state, previous, source = 'roleplay') {
 }
 
 function currencyDelta(before, after) {
-    return {
-        gold: number(after?.gold, 0, -999999999, 999999999) - number(before?.gold, 0, -999999999, 999999999),
-        silver: number(after?.silver, 0, -999999999, 999999999) - number(before?.silver, 0, -999999999, 999999999),
-        copper: number(after?.copper, 0, -999999999, 999999999) - number(before?.copper, 0, -999999999, 999999999),
-    };
+    const old=currencyAmounts(before),next=currencyAmounts(after);
+    return Object.fromEntries([...new Set([...Object.keys(old),...Object.keys(next)])].map(id=>[id,(next[id]||0)-(old[id]||0)]));
 }
 
 function skill(value) {
@@ -1563,11 +1552,7 @@ function partyProfile(value, fallback = null) {
             const requested = text(value.roles?.[id], text(fallback?.roles?.[id], 'Companion', 40), 40);
             return [id, requested];
         })),
-        sharedFunds: {
-            gold: number(value.sharedFunds?.gold, number(fallback?.sharedFunds?.gold, 0, 0, 999999999), 0, 999999999),
-            silver: number(value.sharedFunds?.silver, number(fallback?.sharedFunds?.silver, 0, 0, 999999999), 0, 999999999),
-            copper: number(value.sharedFunds?.copper, number(fallback?.sharedFunds?.copper, 0, 0, 999999999), 0, 999999999),
-        },
+        sharedFunds: currencyAmounts(value.sharedFunds,undefined,{fallback:fallback?.sharedFunds}),
         createdAt: text(value.createdAt, text(fallback?.createdAt, new Date().toISOString(), 60), 60),
     };
 }
@@ -1596,11 +1581,7 @@ function guildProfile(value, fallback = {}) {
         knownMembers: (Array.isArray(value.knownMembers) ? value.knownMembers : fallback.knownMembers || []).map(entry => ({name:text(entry?.name,'',140),role:text(entry?.role,'',80)})).filter(entry => entry.name).slice(0,30),
         joinedByInvitation: value.joinedByInvitation === true || fallback.joinedByInvitation === true,
         memberIds,
-        treasury: {
-            gold: number(treasury.gold, number(fallback.treasury?.gold, 0), 0, 999999999),
-            silver: number(treasury.silver, number(fallback.treasury?.silver, 0), 0, 999999999),
-            copper: number(treasury.copper, number(fallback.treasury?.copper, 0), 0, 999999999),
-        },
+        treasury: currencyAmounts(treasury,undefined,{fallback:fallback.treasury}),
         createdAt: text(value.createdAt, text(fallback.createdAt, new Date().toISOString(), 60), 60),
     };
 }
@@ -1948,9 +1929,7 @@ function normalize(candidate, base = defaultState()) {
         kills: number(progress.kills, result.progression.kills, 0, 999999999),
         currency: {
             name: text(currency.name, result.progression.currency.name, 120),
-            gold: number(currency.gold, result.progression.currency.gold),
-            silver: number(currency.silver, result.progression.currency.silver),
-            copper: number(currency.copper, result.progression.currency.copper),
+            ...currencyAmounts(currency,{scheme:normalizeCurrencyScheme(currency.scheme,result.progression.currency.scheme)}),
             ...(normalizeCurrencyScheme(currency.scheme,result.progression.currency.scheme)?{scheme:normalizeCurrencyScheme(currency.scheme,result.progression.currency.scheme)}:{}),
         },
     };
@@ -3831,7 +3810,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.68.1`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.68.2`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card); fitForgeToChat(card, chat);
     }
@@ -3953,7 +3932,7 @@ function legacyPatchInstructions() {
         'Power canon: False Magic is learnable structured human magic that normally needs a staff, wand, or medium. True Magic is a lost stronger art requiring deep mana understanding and no medium. Aura is innate and commonly carries one birth-given Origin skill. Formless Aura is exceptionally rare and wholly undetectable. Blood Aura is vampiric and a turning may preserve, mutate, split, or erase the prior power. Sage Mana is lost transformative training that can refill from natural energy. Divine Mana may switch among power modes. Constructs allow those without usable Aura to wield a forged ability; primordial Divine Constructs choose one owner and cannot be copied, remade, or manufactured.',
         'Travel rules: follow destinations, routes and elapsed time explicitly established in the story. There is no fixed world map or coordinate-based distance estimate. Update remainingDays only from an actual completed movement roll/action, an explicit elapsed-time result, or a confirmed sceneTracker location change. A conversation, plan, destination mention, or unchanged scene never advances travel. Mark Arrived only when arrival is confirmed and set the actual free-text destination. Reuse known continent/region names. Establish an unnamed enclosing geography in the scene narrative before saving it; never replace known geography or derive it from travel percentage.',
         'Dungeon and rank rules: dungeonRank must be one of Unranked, E-, E, E+, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+, S-, S, S+, SS. Adventurer ranks are Rookie, Basic, Intermediate, Ember, and Custom Rank; a Custom Rank name is individually invented by an assessor and should be recorded in progression.customRankName.',
-        'Currency rules: use the currency established by the current story; do not assume a region or a currency from a built-in world. Record every confirmed gain or decrease immediately. Every gold/silver/copper set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
+        'Currency rules: use the currency established by the current story; do not assume a region or a currency from a built-in world. Record every confirmed gain or decrease immediately. Every configured currency-unit set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
         'NPC update rules: for every named friendly NPC who directly participates, consider relationship, location, lastSeen, abilities, custom meters, diary, and revealed stats. A substantive friendly/helpful exchange may change affection or trust by 1-3; hostility, deception, fear, romance, loyalty, or corruption should adjust only the relevant meters in proportion to what actually occurred. Use ["inc","npcValues",{"npcId":"...","field":"trust","amount":2}] for deltas or ["set","npcValues",{"npcId":"...","field":"stats.level","value":12}] for revealed absolute values. Valid relationship fields are affection, trust, loyalty, fear, corruption, lust. Valid stat fields are stats.level, stats.rank, stats.hp, stats.mp, stats.stamina, stats.strength, stats.agility, stats.intelligence, stats.endurance. Zero numeric NPC core stats mean unknown, not literal zero. Conversation alone does not increase NPC level or combat stats. Hostile, enemy, foe, antagonist, villain, aggressor, or threat NPCs must not be added to the visible NPC Codex, party invitations, guild invitations, or household roster; keep hostile encounters in the story only.',
         `H-Stats fields on the player and each NPC (female, male, futanari): ${hFieldKeys}. Update from confirmed events using ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}], ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}], or the same field/value or field/amount shape with playerHStats and no npcId for the player's own sheet. Counts and liters are nonnegative; infidelityStage is 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Set pregnant true/false and pregnancyFather only from established facts. Keep all unestablished values unknown and never insert a Condition field or add unlock rules. Set NPC met:true only after the player has met them; retain false for entries merely known through lore. Never substitute a title for a character's name.`,
@@ -3997,7 +3976,7 @@ function patchInstructions() {
         'Journey Logs: when a major story event meaningfully changes the player journey, add top-level "journey":"a concise milestone of at most 500 characters". Use it for arrivals/departures, quest acceptance/completion/failure, decisive battles, important discoveries, major bonds, faction/party/guild/household changes, identity or power breakthroughs. Do not add one for routine dialogue or bookkeeping.',
         'Event metadata: attach {reason:"specific confirmed cause",category:"training|purchase|sale|gift|loot|use",label:"readable skill or item name"} as the fourth element for inventory, currency and proficiency ops. A purchase must record both payment and received inventory in the same reply; a sale records removal and payment. Use only committed outcomes. Repeated unchanged skill upserts are not new learning. Preserve existing skill IDs when updating rank or proficiency.',
         'EXP: inc progression.experience for confirmed study, learning, training, crafting practice, combat, kill, discovery, or quest progress. Require {"reason":"specific cause","category":"study|learning|training|combat|kill|discovery|quest"}. Typical 1-3 routine, 4-8 meaningful, 9-20 major, 21-40 exceptional. A personal confirmed kill also inc progression.kills with kill metadata; exclude knockouts, uncertain deaths, and assists.',
-        'Money: record every confirmed gain or expense immediately on progression.currency.gold/silver/copper with {"reason":"what the money came from or was spent on","category":"currency"}. Every currency op needs a specific reason so Transaction History can explain it. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
+        'Money: record every confirmed gain or expense immediately on progression.currency.<configured protocolId> with {"reason":"what the money came from or was spent on","category":"currency"}. Every currency op needs a specific reason so Transaction History can explain it. Never invent exchange rates or silently convert regional currency; set progression.currency.name when the active currency changes.',
         'Inventory lifecycle: pick up, receive, buy, craft, or loot an item with ["inc","inventory",{"id":"stable-id","name":"Item","quantity":positive,"category":"...","description":"..."}]. Drink, eat, consume, use up, drop, give away, or sell it with the same operation and a negative quantity. If acquired and consumed in the same turn, emit the positive op followed by the negative op so the final count is correct. Do not decrement reusable tools, weapons, armor, keys, or equipment merely because they were used. Use upsert only to correct item metadata or set an exact known quantity; delete only when explicitly removed wholesale.',
         'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questRewardReceipts and questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
         'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Mana is not easily detected: non-sensing characters perceive nothing and even sensing specialists normally notice only a faint presence, while explicitly godlike beings with major lore may be exceptional. Formless Aura is wholly undetectable. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
@@ -6367,7 +6346,9 @@ function renderRank(panel, state) {
         panel.querySelector('[name=customRankName]')?.closest('label')?.setAttribute('hidden', '');
     }
     const units=currencyScheme(p.currency).units;
-    for(const id of ['gold','silver','copper']){const field=panel.querySelector(`input[name="${id}"]`),unit=units.find(d=>d.id===id);if(field){field.disabled=!unit;field.closest('label').hidden=!unit;if(unit&&p.currency.scheme){const label=field.closest('label').querySelector('span');if(label)label.textContent=unit.symbol||unit.name;}}}
+    panel.querySelector('.tretaresia-wallet').innerHTML=currencyDisplay(p.currency).map(d=>`<div>${commerceIconMarkup('coin',d.id,getSettings().coinStyle,p.currency)}<span>${html(p.currency.scheme?d.symbol||d.name:tr(uiText(d.name)))}</span><strong>${d.amount}</strong></div>`).join('');
+    for(const id of ['gold','silver','copper'])panel.querySelector(`input[name="${id}"]`)?.closest('label')?.remove();
+    panel.querySelector('[name=currencyName]').closest('label').insertAdjacentHTML('afterend',units.map(d=>input(d.symbol||d.name,'currency-'+d.id,p.currency[d.id]||0,'number','min="0" max="999999999" step="1"')).join(''));
 
 }
 
@@ -6486,10 +6467,11 @@ function renderGroups(panel, state) {
     if (!panel) return;
     const party = state.social.party;
     const guilds = state.social.guilds;
-    const partyMarkup = party ? (uiMarkup("<article class=\"tretaresia-social-card tretaresia-party-card\">\n        <header><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Party management"))))+uiMarkup("</span><h4>")+(html(party.name))+uiMarkup("</h4></div><button type=\"button\" class=\"tretaresia-danger-button\" data-action=\"dissolve-party\"><i class=\"fa-solid fa-xmark\"></i>")+(html(party.joinedByInvitation ? (getSettings().language === 'th' ? 'ออกจากปาร์ตี้' : 'Leave party') : tr(uiText("Dissolve party"))))+uiMarkup("</button></header>\n        ")+(socialGroupSummary(party,state))+uiMarkup("\n        <p class=\"tretaresia-social-description\">")+(html(getSettings().language === 'th' ? 'ปาร์ตี้ไม่มีค่าก่อตั้ง สมาชิกทำงานร่วมกันในแชตปัจจุบัน' : 'Party membership is free and follows the current role-play chat.'))+uiMarkup("</p>\n        <div class=\"tretaresia-party-strategy\"><span><i class=\"fa-solid fa-people-arrows-left-right\"></i>Formation</span><strong>")+(html(party.formation))+uiMarkup("</strong><em>Shared funds: ")+(html(currencyLabel(party.sharedFunds)))+uiMarkup("</em></div>\n        <div class=\"tretaresia-social-member-list\">")+(socialMemberCards(state, party.memberIds, party.joinedByInvitation ? '' : 'remove-party-member', '', party.leaderId, {...party.roles,player:party.playerRole}))+uiMarkup("</div>\n        ")+(party.joinedByInvitation ? '' : (uiMarkup("<details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-chess-board\"></i> Party formation & roles</summary><form data-form=\"party-strategy\" class=\"tretaresia-form-grid\">")+(input('Party name', 'name', party.name))+uiMarkup("")+(input('Party rank', 'rank', party.rank))+uiMarkup("")+(input('Completed quests', 'completedQuests', party.completedQuests, 'number', 'min="0" max="999999"'))+uiMarkup("")+(input('Reputation', 'reputation', party.reputation, 'number', 'min="0" max="999999"'))+uiMarkup("")+(input('Formation', 'formation', party.formation))+uiMarkup("")+(party.memberIds.map(id => input(socialMemberName(state, id), `role-${id}`, party.roles[id] || 'Companion', 'text', 'maxlength="40" list="tretaresia-party-roles"')).join(''))+uiMarkup("<datalist id=\"tretaresia-party-roles\">")+(PARTY_ROLES.map(role => (uiMarkup("<option value=\"")+(html(role))+uiMarkup("\">"))).join(''))+uiMarkup("</datalist>")+(input('Shared gold', 'sharedGold', party.sharedFunds.gold, 'number', 'min="0"'))+uiMarkup("")+(input('Shared silver', 'sharedSilver', party.sharedFunds.silver, 'number', 'min="0"'))+uiMarkup("")+(input('Shared copper', 'sharedCopper', party.sharedFunds.copper, 'number', 'min="0"'))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">Save formation</button></form></details>\n        <form data-form=\"party-invite\" class=\"tretaresia-social-invite\"><input type=\"hidden\" name=\"partyId\" value=\"")+(html(party.id))+uiMarkup("\"><label class=\"tretaresia-field\"><span>")+(html(tr(uiText("Friendly NPCs"))))+uiMarkup("</span><select name=\"npcId\" required>")+(socialNpcOptions(state))+uiMarkup("</select></label><button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-user-plus\"></i>")+(html(tr(uiText("Invite to party"))))+uiMarkup("</button></form>")))+uiMarkup("\n    </article>")) : (uiMarkup("<article class=\"tretaresia-social-card\"><header><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Party management"))))+uiMarkup("</span><h4>")+(html(tr(uiText("No active party"))))+uiMarkup("</h4></div><i class=\"fa-solid fa-people-group tretaresia-social-card-icon\"></i></header>\n        <p class=\"tretaresia-social-description\">")+(html(getSettings().language === 'th' ? 'สร้างปาร์ตี้เพื่อรวม NPC ฝ่ายมิตรไว้ร่วมเดินทางหรือทำภารกิจ' : 'Create a party to organize friendly NPCs for travel and missions.'))+uiMarkup("</p>\n        <form data-form=\"party-create\" class=\"tretaresia-social-form\">")+(input('Party name', 'name', ''))+uiMarkup("<button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-plus\"></i>")+(html(tr(uiText("Create party"))))+uiMarkup("</button></form>\n    </article>"));
+    const partyMarkup = party ? (uiMarkup("<article class=\"tretaresia-social-card tretaresia-party-card\">\n        <header><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Party management"))))+uiMarkup("</span><h4>")+(html(party.name))+uiMarkup("</h4></div><button type=\"button\" class=\"tretaresia-danger-button\" data-action=\"dissolve-party\"><i class=\"fa-solid fa-xmark\"></i>")+(html(party.joinedByInvitation ? (getSettings().language === 'th' ? 'ออกจากปาร์ตี้' : 'Leave party') : tr(uiText("Dissolve party"))))+uiMarkup("</button></header>\n        ")+(socialGroupSummary(party,state))+uiMarkup("\n        <p class=\"tretaresia-social-description\">")+(html(getSettings().language === 'th' ? 'ปาร์ตี้ไม่มีค่าก่อตั้ง สมาชิกทำงานร่วมกันในแชตปัจจุบัน' : 'Party membership is free and follows the current role-play chat.'))+uiMarkup("</p>\n        <div class=\"tretaresia-party-strategy\"><span><i class=\"fa-solid fa-people-arrows-left-right\"></i>Formation</span><strong>")+(html(party.formation))+uiMarkup("</strong><em>Shared funds: ")+(html(currencyLabel(party.sharedFunds)))+uiMarkup("</em></div>\n        <div class=\"tretaresia-social-member-list\">")+(socialMemberCards(state, party.memberIds, party.joinedByInvitation ? '' : 'remove-party-member', '', party.leaderId, {...party.roles,player:party.playerRole}))+uiMarkup("</div>\n        ")+(party.joinedByInvitation ? '' : (uiMarkup("<details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-chess-board\"></i> Party formation & roles</summary><form data-form=\"party-strategy\" class=\"tretaresia-form-grid\">")+(input('Party name', 'name', party.name))+uiMarkup("")+(input('Party rank', 'rank', party.rank))+uiMarkup("")+(input('Completed quests', 'completedQuests', party.completedQuests, 'number', 'min="0" max="999999"'))+uiMarkup("")+(input('Reputation', 'reputation', party.reputation, 'number', 'min="0" max="999999"'))+uiMarkup("")+(input('Formation', 'formation', party.formation))+uiMarkup("")+(party.memberIds.map(id => input(socialMemberName(state, id), `role-${id}`, party.roles[id] || 'Companion', 'text', 'maxlength="40" list="tretaresia-party-roles"')).join(''))+uiMarkup("<datalist id=\"tretaresia-party-roles\">")+(PARTY_ROLES.map(role => (uiMarkup("<option value=\"")+(html(role))+uiMarkup("\">"))).join(''))+uiMarkup("</datalist>")+(currencyKeys(state.progression.currency).map(id=>input(currencyUnitLabel(state.progression.currency,id),'shared-'+id,party.sharedFunds[id]||0,'number','min="0" max="999999999" step="1"')).join(''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">Save formation</button></form></details>\n        <form data-form=\"party-invite\" class=\"tretaresia-social-invite\"><input type=\"hidden\" name=\"partyId\" value=\"")+(html(party.id))+uiMarkup("\"><label class=\"tretaresia-field\"><span>")+(html(tr(uiText("Friendly NPCs"))))+uiMarkup("</span><select name=\"npcId\" required>")+(socialNpcOptions(state))+uiMarkup("</select></label><button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-user-plus\"></i>")+(html(tr(uiText("Invite to party"))))+uiMarkup("</button></form>")))+uiMarkup("\n    </article>")) : (uiMarkup("<article class=\"tretaresia-social-card\"><header><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Party management"))))+uiMarkup("</span><h4>")+(html(tr(uiText("No active party"))))+uiMarkup("</h4></div><i class=\"fa-solid fa-people-group tretaresia-social-card-icon\"></i></header>\n        <p class=\"tretaresia-social-description\">")+(html(getSettings().language === 'th' ? 'สร้างปาร์ตี้เพื่อรวม NPC ฝ่ายมิตรไว้ร่วมเดินทางหรือทำภารกิจ' : 'Create a party to organize friendly NPCs for travel and missions.'))+uiMarkup("</p>\n        <form data-form=\"party-create\" class=\"tretaresia-social-form\">")+(input('Party name', 'name', ''))+uiMarkup("<button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-plus\"></i>")+(html(tr(uiText("Create party"))))+uiMarkup("</button></form>\n    </article>"));
     const guildCards = guilds.length ? guilds.map(guild => (uiMarkup("<article class=\"tretaresia-social-card tretaresia-guild-card\">\n        <header><div><span class=\"tretaresia-eyebrow\">")+(html(tr(uiText("Guild management"))))+uiMarkup("</span><h4>")+(html(guild.name))+uiMarkup("</h4><small>")+(html(guild.rank))+uiMarkup(" · Lv.")+(guild.level)+uiMarkup(" · ")+(html(guild.joinedByInvitation ? (guild.memberCount === null ? (getSettings().language === 'th' ? 'ไม่ทราบจำนวนสมาชิก' : 'Member count unknown') : `${guild.memberCount} ${tr(uiText("Members")).toLowerCase()}`) : `${guild.memberIds.length + 1} ${tr(uiText("Members")).toLowerCase()}`))+uiMarkup("</small></div><button type=\"button\" class=\"tretaresia-danger-button\" data-action=\"dissolve-guild\" data-id=\"")+(html(guild.id))+uiMarkup("\"><i class=\"fa-solid fa-xmark\"></i>")+(html(guild.joinedByInvitation ? (getSettings().language === 'th' ? 'ออกจากกิลด์' : 'Leave guild') : tr(uiText("Dissolve guild"))))+uiMarkup("</button></header>\n        ")+(socialGroupSummary(guild,state))+uiMarkup("\n        ")+(guild.description ? (uiMarkup("<p class=\"tretaresia-social-description\">")+(html(guild.description))+uiMarkup("</p>")) : '')+uiMarkup("<div class=\"tretaresia-guild-progress\"><article><span>Reputation</span><strong>")+(guild.reputation === null ? html(getSettings().language === 'th' ? 'ยังไม่ทราบ' : 'Unknown') : guild.reputation)+uiMarkup("</strong></article><article><span>Headquarters</span><strong>")+(html(guild.headquarters))+uiMarkup("</strong></article><article><span>Alliances</span><strong>")+(guild.alliances.length)+uiMarkup("</strong></article><article><span>Enemies</span><strong>")+(guild.enemies.length)+uiMarkup("</strong></article><article><span>Guild quests</span><strong>")+(guild.quests.length)+uiMarkup("</strong></article></div><div class=\"tretaresia-social-treasury\"><span><i class=\"fa-solid fa-coins\"></i>")+(html(tr(uiText("Guild treasury"))))+uiMarkup("</span><strong>")+(html(currencyLabel(guild.treasury)))+uiMarkup("</strong></div>\n        <div class=\"tretaresia-social-member-list\">")+(socialMemberCards(state, guild.memberIds, guild.joinedByInvitation ? '' : 'remove-guild-member', guild.id, guild.leaderId, {player:guild.playerRole}))+uiMarkup("</div>\n        ")+(guild.joinedByInvitation ? '' : (uiMarkup("<form data-form=\"guild-invite\" class=\"tretaresia-social-invite\"><input type=\"hidden\" name=\"guildId\" value=\"")+(html(guild.id))+uiMarkup("\"><label class=\"tretaresia-field\"><span>")+(html(tr(uiText("Friendly NPCs"))))+uiMarkup("</span><select name=\"npcId\" required>")+(socialNpcOptions(state))+uiMarkup("</select></label><button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-user-plus\"></i>")+(html(tr(uiText("Invite to guild"))))+uiMarkup("</button></form>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-landmark\"></i> Guild progression</summary><form data-form=\"guild-progression\" class=\"tretaresia-form-grid\"><input type=\"hidden\" name=\"guildId\" value=\"")+(html(guild.id))+uiMarkup("\">")+(input('Guild name', 'name', guild.name))+uiMarkup("")+(input('Guild rank', 'rank', guild.rank))+uiMarkup("")+(input('Completed quests', 'completedQuests', guild.completedQuests, 'number', 'min="0" max="999999"'))+uiMarkup("")+(input('Level', 'level', guild.level, 'number', 'min="1"'))+uiMarkup("")+(input('Reputation', 'reputation', guild.reputation, 'number'))+uiMarkup("")+(input('Headquarters', 'headquarters', guild.headquarters))+uiMarkup("")+(input('Alliances', 'alliances', guild.alliances.join(', ')))+uiMarkup("")+(input('Enemies', 'enemies', guild.enemies.join(', ')))+uiMarkup("")+(input('Guild quests', 'quests', guild.quests.join(', ')))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">Save guild progression</button></form></details>")))+uiMarkup("\n    </article>"))).join('') : (uiMarkup("<article class=\"tretaresia-social-card tretaresia-social-empty-card\"><i class=\"fa-solid fa-landmark-dome\"></i><strong>")+(html(tr(uiText("No guilds yet"))))+uiMarkup("</strong><p>")+(html(getSettings().language === 'th' ? 'กิลด์ต้องเสียค่าก่อตั้งเป็นเงิน 10 เหรียญทอง' : 'A guild costs 10 gold to establish.'))+uiMarkup("</p></article>"));
     panel.innerHTML = (uiMarkup("")+(heading(uiText("Party & Guild"), `${party ? 1 : 0} ${tr(uiText("party"))} · ${guilds.length} ${tr(uiText("guilds"))}`, 'fa-solid fa-people-group'))+uiMarkup("\n        <p class=\"tretaresia-social-note\"><i class=\"fa-solid fa-circle-info\"></i>")+(html(tr(uiText("Friendly NPCs only"))))+uiMarkup(" · ")+(html(tr(uiText("Hostile NPCs are excluded from the list."))))+uiMarkup("</p>\n        <div class=\"tretaresia-social-grid\">")+(partyMarkup)+uiMarkup("<section class=\"tretaresia-social-stack\"><div class=\"tretaresia-social-subheading\"><span><i class=\"fa-solid fa-landmark\"></i>")+(html(tr(uiText("Guild management"))))+uiMarkup("</span><small>")+(html(tr(uiText("Current balance"))))+uiMarkup(": ")+(html(currencyLabel(state.progression.currency)))+uiMarkup("</small></div>\n        <article class=\"tretaresia-social-card tretaresia-guild-create\"><form data-form=\"guild-create\" class=\"tretaresia-social-form\">")+(input('Guild name', 'name', ''))+uiMarkup("")+(input('Guild description', 'description', ''))+uiMarkup("<div class=\"tretaresia-fee-line\"><span>")+(html(tr(uiText("Guild creation fee"))))+uiMarkup("</span><strong>")+(html(currencyLabel(guildCreationCost(state),state.progression.currency)))+uiMarkup("</strong></div><button class=\"tretaresia-primary-button\" type=\"submit\"><i class=\"fa-solid fa-plus\"></i>")+(html(tr(uiText("Create guild"))))+uiMarkup("</button></form></article>")+(guildCards)+uiMarkup("</section></div>"));
     panel.insertAdjacentHTML?.('beforeend', workspaceInvitations('group'));
+
 }
 
 function renderHousehold(panel, state) {
@@ -7553,11 +7535,7 @@ async function onSubmit(event) {
                 const requested = text(values[`role-${id}`], party.roles?.[id] || 'Companion', 40);
                 return [id, requested];
             }));
-            party.sharedFunds = {
-                gold: number(values.sharedGold, party.sharedFunds.gold, 0, 999999999),
-                silver: number(values.sharedSilver, party.sharedFunds.silver, 0, 999999999),
-                copper: number(values.sharedCopper, party.sharedFunds.copper, 0, 999999999),
-            };
+            party.sharedFunds = currencyAmounts({...party.sharedFunds,...Object.fromEntries(currencyKeys(state.progression.currency).map(id=>[id,number(values['shared-'+id]??values['shared'+id[0].toUpperCase()+id.slice(1)],party.sharedFunds[id]||0)]))},state.progression.currency);
             await persistState(state, 'party-strategy');
             notify('success', uiText("Party formation and roles saved."));
             break;
@@ -7728,11 +7706,11 @@ async function onSubmit(event) {
                 ...state.progression, adventurerRank: activeForgeChoices(getForgePreset()).showRank === false ? state.progression.adventurerRank : getForgePreset().mode === 'custom' && values.adventurerRank !== 'Custom Rank' ? 'Custom Rank' : values.adventurerRank,
                 customRankName: activeForgeChoices(getForgePreset()).showRank === false ? state.progression.customRankName : getForgePreset().mode === 'custom' && values.adventurerRank !== 'Custom Rank' ? values.adventurerRank : values.customRankName, magicRank: values.magicRank,
                 swordRank: values.swordRank, experience: values.experience, experienceMax: values.experienceMax, reputation: values.reputation, kills: values.kills,
-                currency: { ...previousCurrency, name: values.currencyName, ...Object.fromEntries(currencyScheme(previousCurrency).units.map(d=>[d.id,values[d.id]??previousCurrency[d.id]])) },
+                currency: { ...previousCurrency, name: values.currencyName, ...Object.fromEntries(currencyScheme(previousCurrency).units.map(d=>[d.id,values['currency-'+d.id]??values[d.id]??previousCurrency[d.id]])) },
             };
             state.progression.currency = normalize(state).progression.currency;
             const balanceChange = currencyDelta(previousCurrency, state.progression.currency);
-            if (balanceChange.gold || balanceChange.silver || balanceChange.copper) appendCurrencyTransaction(state, balanceChange, 'Manual balance adjustment', 'manual');
+            if (Object.values(balanceChange).some(Boolean)) appendCurrencyTransaction(state, balanceChange, 'Manual balance adjustment', 'manual');
             if(await persistState(state))notify('success', uiText("Progression saved."));
             break;
         }
@@ -8488,6 +8466,7 @@ async function sendChatAction(message, modeOverride = '') {
     if (hadDraft) setTimeout(() => { if (pendingComposerDraft) restoreComposerDraft(); }, 1200);
 }
 
+const isCurrencyPath=path=>isCurrencyId(String(path).match(/^progression\.currency\.([^.]+)$/u)?.[1]);
 const SCALAR_PATCH_PATHS = new Set([
     'player.alignment', 'player.name', 'player.race', 'player.age', 'player.title', 'player.profession', 'player.guild', 'player.party', 'player.condition', 'player.level', 'player.powerType', 'player.originSkill',
     'player.gender', 'player.homeContinent', 'player.birthplace', 'player.standing', 'player.affiliation',
@@ -8872,8 +8851,8 @@ function applyPatchOperation(state, operation, storySource = {}) {
         return true;
     }
     if(/^player\.(?:attributes|customStats)\./u.test(path))return applyUserStatOperation(state,verb,path,value);
-    if(/^progression\.currency\.(gold|silver|copper)$/u.test(path)&&!currencyValues(state.progression.currency)[path.split('.').at(-1)])return false;
-    if ((verb === 'set' || verb === 'inc') && SCALAR_PATCH_PATHS.has(path)) {
+    if(isCurrencyPath(path)&&!currencyValues(state.progression.currency)[path.split('.').at(-1)])return false;
+    if ((verb === 'set' || verb === 'inc') && (SCALAR_PATCH_PATHS.has(path)||isCurrencyPath(path))) {
         const parts = path.split('.');
         const key = parts.pop();
         let target = state;
@@ -9161,8 +9140,8 @@ function derivePatchNotifications(current, next, operations, levelUps) {
             events.push({ kind: 'quest', eyebrow: complete ? 'MISSION COMPLETE' : 'QUEST UPDATED', title: after.name, detail: after.objective || `Status changed from ${before.status} to ${after.status}.`, value: after.status.toUpperCase() });
         }
     }
-    for (const denomination of ['gold', 'silver', 'copper']) {
-        const delta = next.progression.currency[denomination] - current.progression.currency[denomination];
+    for (const denomination of currencyKeys(next.progression.currency)) {
+        const delta = (next.progression.currency[denomination]||0) - (current.progression.currency[denomination]||0);
         if (!delta) continue;
         const meta = operationMeta(findOp(`progression.currency.${denomination}`));
         events.push({
@@ -9178,16 +9157,12 @@ function derivePatchNotifications(current, next, operations, levelUps) {
 }
 
 function recordPatchTransactions(next, current, operations, summary) {
-    const running = {
-        gold: current.progression.currency.gold,
-        silver: current.progression.currency.silver,
-        copper: current.progression.currency.copper,
-    };
+    const running = currencyAmounts(current.progression.currency);
     for (const operation of operations) {
         const [verb, path, value] = operation;
-        const denomination = String(path || '').match(/^progression\.currency\.(gold|silver|copper)$/)?.[1];
+        const denomination = isCurrencyPath(path)?String(path).split('.').at(-1):null;
         if (!denomination || !['set', 'inc'].includes(verb)) continue;
-        const before = running[denomination];
+        const before = running[denomination]||0;
         const after = verb === 'inc'
             ? Math.max(0, before + number(value, 0, -999999999, 999999999))
             : Math.max(0, number(value, before, 0, 999999999));
@@ -9198,7 +9173,7 @@ function recordPatchTransactions(next, current, operations, summary) {
         appendCurrencyTransaction(next, { [denomination]: delta }, meta.reason || summary || 'Role-play transaction', meta.category || 'roleplay', running, meta.questId);
     }
     const residual = currencyDelta(running, next.progression.currency);
-    if (residual.gold || residual.silver || residual.copper) {
+    if (Object.values(residual).some(Boolean)) {
         const guildCreated = operations.some(operation => operation[0] === 'upsert' && operation[1] === 'guilds');
         appendCurrencyTransaction(next, residual, guildCreated ? 'Guild creation fee' : summary || 'Role-play balance change', 'roleplay');
     }
@@ -9420,7 +9395,7 @@ function coerceStatePatch(raw) {
                                 ...(typeof member === 'object' ? member : { npcId: member }), guildId: profile.id, guildName: profile.name,
                             }]));
                     });
-                } else if (SCALAR_PATCH_PATHS.has(path) && (child === null || typeof child !== 'object')) operations.push(['set', path, child]);
+                } else if ((SCALAR_PATCH_PATHS.has(path)||isCurrencyPath(path)) && (child === null || typeof child !== 'object')) operations.push(['set', path, child]);
                 else if (PATCH_COLLECTIONS.has(path) && Array.isArray(child)) child.forEach(item => operations.push(['upsert', path, item]));
                 else walk(child, path, depth + 1);
             }
@@ -11025,7 +11000,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.68.1 loaded.');
+        console.info('[RoleForge] Role-play interface v0.68.2 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

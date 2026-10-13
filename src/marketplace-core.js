@@ -1,4 +1,5 @@
-import {itemSaleBlocked} from './commerce-rights.js?v=0.68.1';
+import {isCurrencyId,currencyKeys,currencyValues,currencyScheme} from './currency-config.js?v=0.68.2';
+import {itemSaleBlocked} from './commerce-rights.js?v=0.68.2';
 // Player-owned marketplace listings and NPC offer negotiation.
 // All item and currency changes are local, explicit UI actions; story patches
 // never get to create or settle a marketplace transaction.
@@ -7,7 +8,7 @@ const key = value => clean(value, 500).normalize('NFKC').toLocaleLowerCase().rep
 const integer = (value, fallback = 0, min = 0, max = 999999999) => Number.isSafeInteger(Number(value)) && Number(value) >= min && Number(value) <= max ? Number(value) : fallback;
 const hash = value => { let n = 2166136261; for (const ch of String(value)) n = Math.imul(n ^ ch.codePointAt(0), 16777619); return (n >>> 0).toString(36); };
 const copy = value => structuredClone(value);
-const denominations = ['gold', 'silver', 'copper'];
+
 const activeStatuses = new Set(['Active', 'Negotiating']);
 
 const buyerProfiles = [
@@ -60,7 +61,7 @@ export function normalizeMarketplaceListing(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const itemName = clean(raw.itemName || raw.name, 120), itemId = clean(raw.itemId, 100);
     const quantity = integer(raw.quantity, 0, 1, 99999), askPrice = integer(raw.askPrice, 0, 1), floorPrice = integer(raw.floorPrice, askPrice, 1);
-    if (!itemName || !quantity || !askPrice || !floorPrice || floorPrice > askPrice || !denominations.includes(raw.denomination)) return null;
+    if (!itemName || !quantity || !askPrice || !floorPrice || floorPrice > askPrice || !isCurrencyId(raw.denomination)) return null;
     const status = ['Active', 'Negotiating', 'Sold', 'Cancelled', 'Expired'].includes(raw.status) ? raw.status : 'Active';
     const buyer = buyerFor(raw.buyer, `${itemId}|${itemName}`);
     const offers = (Array.isArray(raw.offers) ? raw.offers : []).map(entry => offerRecord(entry, {
@@ -101,7 +102,7 @@ export function normalizeMarketplace(raw) {
     for (const value of Array.isArray(source.receipts) ? source.receipts : []) {
         const id = clean(value?.id, 120), listingId = clean(value?.listingId, 100);
         if (!id || !listingId || receiptIds.has(id)) continue;
-        receiptIds.add(id); receipts.push({ id, listingId, itemName: clean(value.itemName, 120), quantity: integer(value.quantity, 1, 1), amount: integer(value.amount, 1, 1), denomination: denominations.includes(value.denomination) ? value.denomination : 'gold', buyerName: clean(value.buyerName, 100), at: clean(value.at, 60) });
+        receiptIds.add(id); receipts.push({ id, listingId, itemName: clean(value.itemName, 120), quantity: integer(value.quantity, 1, 1), amount: integer(value.amount, 1, 1), denomination: isCurrencyId(value.denomination) ? value.denomination : 'gold', buyerName: clean(value.buyerName, 100), at: clean(value.at, 60) });
     }
     for (const listing of listings) {
         const receipt = receipts.find(entry => entry.listingId === listing.id);
@@ -145,14 +146,15 @@ export function marketplaceView(state) {
     const listings = marketplace.listings.map(marketplacePublicListing);
     const active = listings.filter(listing => activeStatuses.has(listing.status));
     const sold = listings.filter(listing => listing.status === 'Sold');
-    const earnings = Object.fromEntries(denominations.map(denomination => [denomination, marketplace.receipts.filter(receipt => receipt.denomination === denomination).reduce((sum, receipt) => sum + receipt.amount, 0)]));
+    const earnings = Object.fromEntries([...new Set([...currencyKeys(state.progression?.currency),...marketplace.receipts.map(r=>r.denomination)])].map(denomination => [denomination, marketplace.receipts.filter(receipt => receipt.denomination === denomination).reduce((sum, receipt) => sum + receipt.amount, 0)]));
     return {
         listings,
         active,
         sold,
         earnings,
         currencyName: state.progression?.currency?.name || 'Coins',
-        denomination: 'gold',
+        denomination: currencyKeys(state.progression?.currency)[0],
+        ...(state.progression?.currency?.scheme?{currencyScheme:currencyScheme(state.progression.currency)}:{}),
         availableItems: (state.inventory || []).map(item => ({ ...item, available: marketplaceAvailableQuantity(state, item) })).filter(item => item.available > 0),
     };
 }
@@ -190,7 +192,7 @@ export function createMarketplaceListing(state, input, now = new Date().toISOStr
     const buyer = buyerFor(input?.buyer, `${id}|${source.name}`);
     const listing = normalizeMarketplaceListing({
         id, itemId: source.id, itemName: source.name, category: source.category, description: source.description,
-        quantity, askPrice, floorPrice, denomination: denominations.includes(input?.denomination) ? input.denomination : 'gold',
+        quantity, askPrice, floorPrice, denomination: currencyValues(state.progression.currency)[input?.denomination] ? input.denomination : currencyKeys(state.progression.currency)[0],
         status: 'Active', buyer, createdAt: now, updatedAt: now, offers: [], currencyName: state.progression.currency.name,
     });
     marketplace.listings.push(listing); next.marketplace = marketplace;

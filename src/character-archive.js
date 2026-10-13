@@ -1,7 +1,7 @@
-import {validatePowerConfig} from './power-presets.js?v=0.68.1';
-import {validateForgePreset} from './forge-presets.js?v=0.68.1';
-import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.68.1';
-import {validatePresetConfig} from './world-presets.js?v=0.68.1';
+import {validatePowerConfig} from './power-presets.js?v=0.68.2';
+import {validateForgePreset} from './forge-presets.js?v=0.68.2';
+import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.68.2';
+import {validatePresetConfig} from './world-presets.js?v=0.68.2';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the

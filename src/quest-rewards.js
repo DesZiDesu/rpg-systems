@@ -1,3 +1,4 @@
+import {isCurrencyId} from './currency-config.js?v=0.68.2';
 // Persist payment identity independently of prose, amount and the visible quest archive.
 const clean = (value, limit = 180) => typeof value === 'string' ? value.trim().slice(0, limit) : '';
 const key = value => clean(value).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
@@ -36,7 +37,7 @@ export function normalizeQuestRewardReceipts(values, quests = []) {
 function positiveReward(state, operation) {
     const [verb, path, value] = operation;
     if (!['inc', 'set', 'upsert'].includes(verb)) return false;
-    if (/^progression\.currency\.(?:gold|silver|copper)$/u.test(path)
+    if (isCurrencyId(String(path).match(/^progression\.currency\.([^.]+)$/u)?.[1])
         || ['progression.experience', 'progression.reputation', 'player.level'].includes(path)) {
         if (!Number.isFinite(Number(value))) return false;
         const before = path.split('.').reduce((object, field) => object?.[field], state) || 0;

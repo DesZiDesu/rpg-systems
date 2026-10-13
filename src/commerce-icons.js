@@ -1,6 +1,6 @@
 // Static inline SVG, independent of emoji fonts and icon-font loading.
-import {pixelMoneyMarkup,units as pixelUnits} from './currency-icons.js?v=0.68.1';
-import {MONEY_ICON_SETS,currencyUnit} from './currency-config.js?v=0.68.1';
+import {pixelMoneyMarkup,units as pixelUnits} from './currency-icons.js?v=0.68.2';
+import {MONEY_ICON_SETS,currencyUnit,isCurrencyId} from './currency-config.js?v=0.68.2';
 const paths={
  flask:'M9 3h6M10 3v6L4 19q-1 2 2 2h12q3 0 2-2L14 9V3M7 15h10',
  apple:'M12 8c-8-5-12 3-7 11q3 4 7 1 4 3 7-1c5-8 1-16-7-11Zm0 0V3m0 3c5 0 5-4 5-4-4 0-5 4-5 4',
@@ -28,9 +28,9 @@ export const COIN_STYLES=MONEY_ICON_SETS;
 export function commerceIconMarkup(name,unit,style='stack',configuration){
  const configured=configuration?.scheme||configuration?.currencyScheme||configuration?.units;
  const definition=configuration?.iconSet?configuration:configured?currencyUnit(configuration,unit):null,theme=COIN_STYLES.includes(definition?.iconSet||style)?definition?.iconSet||style:'stack';
- if(name==='coin')return pixelMoneyMarkup(theme,pixelUnits.find(d=>d.id===unit)||{id:'',color:'#dfbf65'},{color:definition?.color||pixelUnits.find(d=>d.id===unit)?.color,motion:configuration?.animated!==false&&configuration?.scheme?.animated!==false&&configuration?.currencyScheme?.animated!==false,shape:definition?.icon||'default'});
+ if(name==='coin')return pixelMoneyMarkup(theme,pixelUnits.find(d=>d.id===unit)||{id:isCurrencyId(unit)?unit:'',color:'#dfbf65'},{color:definition?.color||pixelUnits.find(d=>d.id===unit)?.color,motion:configuration?.animated!==false&&configuration?.scheme?.animated!==false&&configuration?.currencyScheme?.animated!==false,shape:definition?.icon||'default'});
  const color=/^#[0-9a-f]{6}$/iu.test(definition?.color||'')?` style="color:${definition.color}"`:'';
- return `<svg class="rf-commerce-icon" ${['gold','silver','copper'].includes(unit)?`data-currency="${unit}" data-coin-style="${theme}" data-motion="${configuration?.animated!==false&&configuration?.scheme?.animated!==false? 'on':'off'}"${color}`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${paths[name]||paths.coin}"></path></svg>`;
+ return `<svg class="rf-commerce-icon" ${isCurrencyId(unit)?`data-currency="${unit}" data-coin-style="${theme}" data-motion="${configuration?.animated!==false&&configuration?.scheme?.animated!==false? 'on':'off'}"${color}`:''} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${paths[name]||paths.coin}"></path></svg>`;
 }
 export function commerceIcon(doc,name,unit,style='stack',configuration){
  const host=doc.createElement('span');host.innerHTML=commerceIconMarkup(name,unit,style,configuration);return host.firstElementChild;

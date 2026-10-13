@@ -13,8 +13,8 @@ test('offers require confirmed arrival at the actual venue; mentions, plans and 
  for(const evidence of ['Tomorrow you will enter the auction.','You hear about an auction.','You have not yet entered the auction.','พรุ่งนี้ฉันเดินไปเข้าประมูล'])assert.equal(confirmedAuctionOffer({...o,evidence},evidence,'I consider it.',o.location),null);
  assert.equal(confirmedAuctionOffer(o,'Different text','I enter.',o.location),null);
 });
-test('normalization limits catalog and rivals, rejects fractions and does not invent denominations',()=>{
- assert.equal(normalizeAuctionOffer(offer({denomination:'coins'})),null);
+test('normalization limits catalog and rivals, rejects fractions and rejects unsafe denomination IDs',()=>{
+ assert.equal(normalizeAuctionOffer(offer({denomination:'coins.invalid'})),null);
  const o=offer();o.lots[0].openingBid=1.5;assert.equal(normalizeAuctionOffer(o),null);
  const many=offer({lots:Array.from({length:12},(_,i)=>({id:String(i),name:`Lot ${i}`,openingBid:1,minIncrement:1,bidders:Array.from({length:8},(_,i)=>({name:`Rival ${i}`,maxBid:8}))}))});
  assert.equal(normalizeAuctionOffer(many).lots.length,8);assert.equal(normalizeAuctionOffer(many).lots[0].bidders.length,5);

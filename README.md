@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.68.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.68.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -15,6 +15,10 @@ The extension adds instructions for enabled systems to your existing text-genera
 Stats, currency, Power, Character Creation and presets have their own management pages. Existing settings and chat data keep the same storage and save handlers. To configure chat frames, use **Windows & appearance → Chat cards & NPCs**. Voice and Memory remain separate native addon drawers. [Mobile / PC review](docs/previews/settings-drawer-review/index.html) · [Screenshots](docs/previews/settings-drawer-review/mobile-organization.png) · [Thai guide](docs/settings-drawer-v0.68.0.th.md).
 
 **Fixed in 0.68.1:** settings routes keep padding and spacing when a custom theme gives native buttons opaque backgrounds and removes separators. The search input and Clear button stay aligned when the theme forces input margins. Theme colors, rounded buttons and native extension headers are preserved. Verified on a real **SillyTavern 1.19.0** installation using the supplied **Minimalism Tone** theme, all 20 pages at 320/390/768/1440px, large text, draft retention and real server saves across reload. Native Dark Lite also passes. [Real application screenshots](docs/previews/settings-theme-fix/index.html) · [Thai guide](docs/settings-theme-fix-v0.68.1.th.md).
+
+## Currency units
+
+**New in 0.68.2:** add any number of currency units per chat, with independent names, symbols, rates, colors and animated icon sets. Expand a unit to edit or remove it; search and 10-unit pages keep large schemes manageable. Wallets, group funds, transactions, quests, shops, auctions and refundable deposits use configured protocol IDs. Existing value and legacy 1–3-unit presets remain compatible; currency Import/Export and one-card setup retain every unit. [Thai tutorial](docs/currency-multi-unit-v0.68.2.th.md) · [Real SillyTavern mobile/desktop GIFs](docs/previews/currency-multi-unit/index.html).
 
 ## Character and Lore management
 
@@ -74,7 +78,7 @@ This release also preserves MVU/Tavern Helper frontends across presentation mode
 
 **Added in 0.60.0:** **RoleForge + Regex · Shared** keeps native Regex HTML and bound controls while adding NPC, Dialogue, Narrative and Voice UI. Whole-message cards retain their own layout with separate NPC/speech controls. Choose the mode in **Extensions → RoleForge → Chat appearance & NPCs**; existing users who explicitly enabled native preservation retain that preference. [Compatibility guide and validation](docs/regex-shared-v0.60.0.th.md).
 
-**Added in 0.59.0:** train HP/MP/ST maximums and numeric stats from the main chat, configure custom stats and 1–3 currency units, and use animated 8-bit money icons. Status and Training default to **C / Tactical Strip**, with A and B retained as separate selectable layouts in **Extensions → RoleForge → User stats**. All composer windows start minimized on chat entry. [Update notes and screenshots](docs/stats-currency-v0.59.0.th.md).
+**Added in 0.59.0:** train HP/MP/ST maximums and numeric stats from the main chat, configure custom stats and configurable currency units, and use animated 8-bit money icons. Status and Training default to **C / Tactical Strip**, with A and B retained as separate selectable layouts in **Extensions → RoleForge → User stats**. All composer windows start minimized on chat entry. [Update notes and screenshots](docs/stats-currency-v0.59.0.th.md).
 
 ## Features
 
@@ -124,6 +128,8 @@ Report issues with your RoleForge version, SillyTavern version, browser, reprodu
 ## Development and validation
 
 Version **0.68.1** passes **1,235 unit/host tests** and syntax checks. Real SillyTavern checks import the full user-supplied theme through the native theme UI, retain its exact CSS, exercise all 20 settings pages at 320/390/768/1440px, resize text and save/reload a dummy character's stats through the real server. Native Dark Lite and the original settings navigation suite also pass. [Validation record](docs/validation-settings-theme-v0.68.1.json).
+
+Version **0.68.2** passed **1,250 unit/host tests**, syntax checks and Stats/Currency browser regression at 320/390/1280px. Real **SillyTavern 1.19.0** checks at 390/1440px exercised adding six units, editing custom balances and transaction history, native Import/Export, actual server saves/reloads, 37-unit pagination/search/draft deletion and chat isolation. Currency settings also fit the default and Minimalism themes at 320/390/1440px. These configuration checks make no AI calls. [Validation report](docs/validation-currency-multi-unit-v0.68.2.json).
 
 Version **0.68.0** passed **1,235 unit/host tests** and syntax checks. Settings browser checks at 320/390/768/1440px exercised all 20 pages, bilingual search, Back, scrolling, retained drafts, actual saves and zero AI calls. Startup, presentation/Regex, Stats/Currency, preset import/export and language regressions passed. [Validation record](docs/validation-settings-drawer-v0.68.0.json).
 
