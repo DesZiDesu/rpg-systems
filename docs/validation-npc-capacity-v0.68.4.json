@@ -1,0 +1,121 @@
+{
+  "release": "0.68.4",
+  "host": "Real SillyTavern frontend/server with an isolated profile",
+  "browser": "Chromium mobile viewports and desktop",
+  "cases": [
+    {
+      "width": 390,
+      "defaultUnlimited": true,
+      "custom500Limit": true,
+      "native500Import": true,
+      "enabled20": true,
+      "rowsPerPage": 20,
+      "searchAndDisabledFilter": true,
+      "overflowCreationBlocked": true,
+      "lowerLimitRetains500": true,
+      "existingOverLimitEdit": true,
+      "realSaveReload": true,
+      "unlimited": true,
+      "chatLibraryIndependent": true,
+      "cardExportRetains500AndCapacity": true,
+      "chatIsolation": true,
+      "mentionedDisabledReferenceRetained": true,
+      "disabledSwitchUnchanged": true,
+      "reference": {
+        "retrieved": true,
+        "chars": 112412
+      },
+      "importMs": 4459,
+      "fit": {
+        "width": 390,
+        "scrollWidth": 390,
+        "overflow": []
+      }
+    },
+    {
+      "width": 1440,
+      "defaultUnlimited": true,
+      "custom500Limit": true,
+      "native500Import": true,
+      "enabled20": true,
+      "rowsPerPage": 20,
+      "searchAndDisabledFilter": true,
+      "overflowCreationBlocked": true,
+      "lowerLimitRetains500": true,
+      "existingOverLimitEdit": true,
+      "realSaveReload": true,
+      "unlimited": true,
+      "chatLibraryIndependent": true,
+      "cardExportRetains500AndCapacity": true,
+      "chatIsolation": true,
+      "mentionedDisabledReferenceRetained": true,
+      "disabledSwitchUnchanged": true,
+      "reference": {
+        "retrieved": true,
+        "chars": 112412
+      },
+      "importMs": 2771,
+      "fit": {
+        "width": 1178,
+        "scrollWidth": 1178,
+        "overflow": []
+      }
+    }
+  ],
+  "errors": [],
+  "generation": [],
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "success": true,
+  "checkedAt": "2026-10-13T20:16:39.481472+00:00",
+  "syntaxChecks": "npm run check: passed",
+  "unitHostTests": {
+    "command": "npm test",
+    "passed": 1263,
+    "failed": 0,
+    "skipped": 0
+  },
+  "controlledBrowserRegressions": {
+    "archiveQol": "passed at 320/390/1280px (Thai and English)",
+    "presets": "passed at 320/390/1280px",
+    "blockedHost": "loader, direct entry and update hooks passed"
+  },
+  "additionalChecks": {
+    "smallMobileCapacityFits": 320,
+    "sharedScopeRoundTripPreserved": 750,
+    "combinedSharedAndLocalPreserved": 1020,
+    "finiteGrowthAndDisabledPatchGuards": "passed",
+    "worldChatAndCardCapacityRoundTrip": "passed",
+    "failedSaveRollback": "passed"
+  },
+  "limits": [
+    "No physical Safari/iPhone check",
+    "No live model generation; tested production generation interceptor with dummy chat",
+    "Stored archives and the complete name index retain memory/storage/context costs; disabled characters do not receive detailed tracking updates"
+  ],
+  "runtimeSha256": {
+    "index.js": "597cac4b28568ab6e6920fbf1ec110a7cb02ef8a195df2cbad9c8b517e3539ce",
+    "manifest.json": "7698182668a2d8dea9c0c6f254cb496a457c9a533fbb0169297eeb5d106c04de",
+    "src/npc-capacity.js": "346adffcce7ac31f3fc36b9812c2c2076805ace34d61cb3b8562d41cebed7771",
+    "src/npc-capacity-ui.js": "5272d5d8ca4698a79a8337de7d36466cc5ef2d4c1f07bf09566b496728facd5d",
+    "src/npc-core.js": "bc19485dfa25ba6df35c5055c920bc0230d595bcec587ae05828282ad6fb117c",
+    "src/npc-scopes.js": "a41c5132cf73e8470775c8dc46a86d5d3915231cf6835af6daeb1e0053479207",
+    "src/npc-workspace.js": "4616b0edf074ecb9a9d12210adaa69cca4ccfe069c6e20076d9396e973082d1d",
+    "src/world-presets.js": "3f7a85d4220afb9e6346883933a0cb648ed4d1fd7856d61c34ba038493ef0109",
+    "src/character-archive.js": "8504971e827a86a871817b69003df1dacad2f4cda0ff6bbb273b3b132fd86b0c",
+    "styles/npc-ui.css": "596764827e5737bb9ea9ed454a7a498acc9de1511bb3b67f617fc94c0878b043"
+  },
+  "screenshots": [
+    "docs/previews/npc-capacity/mobile-500-list.png",
+    "docs/previews/npc-capacity/mobile-capacity.png",
+    "docs/previews/npc-capacity/small-mobile-capacity.png",
+    "docs/previews/npc-capacity/pc-500-list.png",
+    "docs/previews/npc-capacity/pc-capacity.png"
+  ]
+}

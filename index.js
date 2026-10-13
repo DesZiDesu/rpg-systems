@@ -1,83 +1,85 @@
-import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.68.3';
-import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.68.3';
-import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.68.3';
-import {mountSettingsNavigation} from './src/settings-navigation.js?v=0.68.3';
-import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.68.3';
-import {playerResourceNarrative,isLegacyGuessedEffect,effectTargetsPlayer} from './src/player-consequences.js?v=0.68.3';
-import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.68.3';
-import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.68.3';
-import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.68.3';
-import {createStatComposer} from './src/stat-composer.js?v=0.68.3';
-import {mountStatWorkspace} from './src/stat-workspace.js?v=0.68.3';
-import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue,currencyKeys,currencyAmounts,isCurrencyId} from './src/currency-config.js?v=0.68.3';
-import {fitForgeToChat} from './src/forge-layout.js?v=0.68.3';
-import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.68.3';
-import {mountSkillBrowser} from './src/skill-browser.js?v=0.68.3';
-import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.68.3';
-import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.68.3';
-import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.68.3';
-import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.68.3';
-import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.68.3';
-import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.68.3';
-import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.68.3';
-import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.68.3';
-import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.68.3';
-import {createMemoryAddons} from './src/memory-addons.js?v=0.68.3';
-import {createVoiceAddons} from './src/voice-addons.js?v=0.68.3';
-import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.68.3';
-import {showApiRequestNotice} from './src/api-request-notice.js?v=0.68.3';
-import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.68.3';
-import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.68.3';
-import {createItemRuntime} from './src/item-runtime.js?v=0.68.3';
-import {createComposerDock} from './src/composer-dock.js?v=0.68.3';
-import {createIncantationComposer} from './src/incantation-composer.js?v=0.68.3';
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.68.3';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.68.3';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.68.3';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.68.3';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.68.3';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.68.3';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.68.3';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.68.3';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.68.3';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.68.3';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.68.3';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.68.3';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.68.3';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.68.3';
-import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.68.3';
-import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.68.3';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.68.3';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.68.3';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.68.3';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.68.3';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.68.3';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.68.3';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.68.3';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.68.3';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.68.3';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.68.3';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.68.3';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.68.3';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.68.3';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.68.3';
-import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.68.3';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.68.3';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.68.3';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.68.3';
+import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.68.4';
+import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.68.4';
+import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.68.4';
+import {npcReferenceProfiles} from './src/npc-core.js?v=0.68.4';
+import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.68.4';
+import {mountSettingsNavigation} from './src/settings-navigation.js?v=0.68.4';
+import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.68.4';
+import {playerResourceNarrative,isLegacyGuessedEffect,effectTargetsPlayer} from './src/player-consequences.js?v=0.68.4';
+import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.68.4';
+import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.68.4';
+import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.68.4';
+import {createStatComposer} from './src/stat-composer.js?v=0.68.4';
+import {mountStatWorkspace} from './src/stat-workspace.js?v=0.68.4';
+import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue,currencyKeys,currencyAmounts,isCurrencyId} from './src/currency-config.js?v=0.68.4';
+import {fitForgeToChat} from './src/forge-layout.js?v=0.68.4';
+import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.68.4';
+import {mountSkillBrowser} from './src/skill-browser.js?v=0.68.4';
+import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.68.4';
+import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.68.4';
+import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.68.4';
+import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.68.4';
+import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.68.4';
+import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.68.4';
+import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.68.4';
+import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.68.4';
+import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.68.4';
+import {createMemoryAddons} from './src/memory-addons.js?v=0.68.4';
+import {createVoiceAddons} from './src/voice-addons.js?v=0.68.4';
+import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.68.4';
+import {showApiRequestNotice} from './src/api-request-notice.js?v=0.68.4';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.68.4';
+import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.68.4';
+import {createItemRuntime} from './src/item-runtime.js?v=0.68.4';
+import {createComposerDock} from './src/composer-dock.js?v=0.68.4';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.68.4';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.68.4';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.68.4';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.68.4';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.68.4';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.68.4';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.68.4';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.68.4';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.68.4';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.68.4';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.68.4';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.68.4';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.68.4';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.68.4';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.68.4';
+import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.68.4';
+import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.68.4';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.68.4';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.68.4';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.68.4';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.68.4';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.68.4';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.68.4';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.68.4';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.68.4';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.68.4';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.68.4';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.68.4';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.68.4';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.68.4';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.68.4';
+import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.68.4';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.68.4';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.68.4';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.68.4';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.68.3';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.68.3';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.68.3';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.68.3';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.68.3';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.68.3';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.68.3';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.68.3';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.68.3';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.68.3';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.68.3';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.68.3';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.68.4';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.68.4';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.68.4';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.68.4';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.68.4';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.68.4';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.68.4';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.68.4';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.68.4';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.68.4';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.68.4';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.68.4';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -643,7 +645,7 @@ async function runPowerTrainingChoice(choiceId) {
         if (!stillHere()) return false;
         const fresh = clone(getState());
         if (fresh.powerMastery?.session?.id === session.id) {
-            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.68.3', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
+            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.68.4', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
             await persistState(fresh, 'power-training-retry');
         }
         notify('error', error.message || 'Power training failed.');
@@ -820,6 +822,14 @@ function activeCardSettings(owner=powerPresetOwner()) {
 function getPowerPreset() { const owner=powerPresetOwner();return readChatPreset(SillyTavern.getContext().chatMetadata).powerPreset || readPowerConfig(activeCardSettings(owner),owner); }
 function getForgePreset() { const owner=powerPresetOwner();return readChatPreset(SillyTavern.getContext().chatMetadata).forgePreset || readForgePreset(activeCardSettings(owner),owner); }
 function activeLoreOptions(owner=characterOwner(SillyTavern.getContext())?.key) {return readChatPreset(SillyTavern.getContext().chatMetadata).loreOptions || loreOptions(activeCardSettings(owner),owner);}
+function activeNpcOptions(owner=characterOwner(SillyTavern.getContext())?.key) {
+    const context=SillyTavern.getContext();
+    return readChatPreset(context.chatMetadata).npcOptions || readCharacterPack(context,owner).npcOptions || validateNpcOptions({});
+}
+async function persistNpcOptions(options,expectedOwner) {
+    if(expectedOwner!==(characterOwner(SillyTavern.getContext())?.key||''))throw Error(uiText('Chat changed. Reopen Character Management.'));
+    await saveChatPresetComponents({npcOptions:options});
+}
 
 const settingsViews=new WeakMap();
 function getSettings() {
@@ -857,13 +867,13 @@ function defaultWorldPreset() {
     const owner=powerPresetOwner(),base=activeCardSettings(owner),pack=readCharacterPack(SillyTavern.getContext(),owner),state=defaultState();
     return {powerPreset:pack.powerPreset || readPowerConfig(base,owner),forgePreset:pack.forgePreset || readForgePreset(base,owner),
         currencyPreset:pack.currencyPreset || currentCurrencyPreset({progression:{currency:pack.initialState?.progression?.currency || state.progression.currency}},base.coinStyle),
-        trainingPreset:pack.trainingPreset || normalizeStatTraining(pack.initialState?.statTraining),loreOptions:pack.loreOptions || loreOptions(base,owner),
+        trainingPreset:pack.trainingPreset || normalizeStatTraining(pack.initialState?.statTraining),loreOptions:pack.loreOptions || loreOptions(base,owner),npcOptions:pack.npcOptions || validateNpcOptions({}),
         systems:Object.fromEntries(WORLD_SYSTEM_KEYS.map(key=>[key,pack.systems?.[key]??base[key]])),chatAppearance:pack.chatAppearance || chatAppearance(base)};
 }
 function currentWorldPreset(state=getState()) {
     const settings=getSettings();
     return {powerPreset:getPowerPreset(),forgePreset:getForgePreset(),currencyPreset:currentCurrencyPreset(state,settings.coinStyle),trainingPreset:state.statTraining,
-        loreOptions:activeLoreOptions(),systems:Object.fromEntries(WORLD_SYSTEM_KEYS.map(key=>[key,settings[key]])),chatAppearance:chatAppearance(settings)};
+        loreOptions:activeLoreOptions(),npcOptions:activeNpcOptions(),systems:Object.fromEntries(WORLD_SYSTEM_KEYS.map(key=>[key,settings[key]])),chatAppearance:chatAppearance(settings)};
 }
 async function saveChatPresetComponents(changes,{candidate=null}={}) {
     const context=SillyTavern.getContext(),metadata=context.chatMetadata,chatId=context.getCurrentChatId?.(),owner=powerPresetOwner();
@@ -923,11 +933,11 @@ async function initializeChatPresets(){
     const context=SillyTavern.getContext();
     if(!context.getCurrentChatId?.())return;
     const existing=readChatPreset(context.chatMetadata);
-    if(existing.chatAppearance)return;
+    if(existing.chatAppearance&&existing.npcOptions)return;
     const config=currentWorldPreset();
-    if(Object.keys(existing).length){await saveChatPresetComponents({chatAppearance:config.chatAppearance});return;}
+    if(Object.keys(existing).length){const changes={};if(!existing.chatAppearance)changes.chatAppearance=config.chatAppearance;if(!existing.npcOptions)changes.npcOptions=config.npcOptions;await saveChatPresetComponents(changes);return;}
     // Freeze defaults without rewriting the legacy wallet's icon scheme.
-    await saveChatPresetComponents({powerPreset:config.powerPreset,forgePreset:config.forgePreset,loreOptions:config.loreOptions,systems:config.systems});
+    await saveChatPresetComponents({powerPreset:config.powerPreset,forgePreset:config.forgePreset,loreOptions:config.loreOptions,npcOptions:config.npcOptions,systems:config.systems});
 }
 let presetWorkspace=null;
 function refreshPresetWorkspace(){
@@ -1610,7 +1620,7 @@ function isFriendlyNpc(entry) {
 }
 
 function friendlyNpcs(state) {
-    return (Array.isArray(state?.npcs) ? state.npcs : []).filter(entry => isFriendlyNpc(effectiveNpc(entry)));
+    return (Array.isArray(state?.npcs) ? state.npcs : []).filter(entry => entry.enabled!==false&&isFriendlyNpc(effectiveNpc(entry)));
 }
 
 function metFriendlyNpcs(state) {
@@ -1629,6 +1639,7 @@ function resolveOrCreateFriendlyNpc(state, value) {
     if (resolveNpc(state.npcs, value)?.enabled === false) return null;
     const name = text(value?.npcName, text(value?.name, '', 140), 140);
     if (!name || !value || typeof value !== 'object') return null;
+    if(!hasStoryNpcCapacity(state,{scope:'chat',owner:characterOwner(SillyTavern.getContext())?.key||''}))return null;
     const candidate = npcProfile({
         id: text(value.npcId, text(value.id, uid(), 100), 100),
         name,
@@ -2036,7 +2047,7 @@ function normalize(candidate, base = defaultState()) {
             const key = entry.name.toLocaleLowerCase();
             byName.set(key, byName.has(key) ? npcProfile(entry, byName.get(key)) : entry);
         });
-        result.npcs = [...byName.values()].slice(0, 400);
+        result.npcs = [...byName.values()];
     }
     if (Array.isArray(source.contacts)) {
         const byName = new Map();
@@ -2069,7 +2080,6 @@ function normalize(candidate, base = defaultState()) {
         if (linked) linked.npcId = entry.id;
         else if (entry.contactId) entry.contactId = '';
     });
-    result.npcs = result.npcs.slice(0, 400);
     const socialSource = source.social && typeof source.social === 'object' ? source.social : {};
     const legacyParty = !socialSource.party && text(player.party, '', 140) && !['Solo', 'None'].includes(text(player.party, '', 140))
         ? { name: player.party } : null;
@@ -2181,7 +2191,7 @@ async function persistCharacterLore(entries, expectedOwner) {
 function characterNpcLibrary(owner = characterOwner(SillyTavern.getContext())?.key) {
     if (!owner) return [];
     const saved = readCharacterArchive(SillyTavern.getContext(), getSettings(), owner, 'npcs');
-    return (Array.isArray(saved) ? saved : []).slice(0, 200)
+    return (Array.isArray(saved) ? saved : [])
         .map(npc => npcProfile({ ...npc, npcScope: 'character', npcOwner: owner })).filter(Boolean);
 }
 
@@ -2202,9 +2212,11 @@ function storedNpcState(state) {
 
 async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner) {
     const context = SillyTavern.getContext(), owner = characterOwner(context)?.key || '';
+    if(pendingUserConfigSave||characterPackSaving)throw Error(uiText('Wait for configuration saving to finish before editing characters.'));
     const deleting=source==='npc-management-delete';
     if (context.getCurrentChatId?.() !== expectedChat || owner !== expectedOwner) throw new Error(uiText("แชตหรือการ์ดเปลี่ยนแล้ว กรุณาเปิดรายการใหม่"));
-    if (npcs.length > 200) throw new Error(uiText("แต่ละ Scope รองรับ NPC สูงสุด 200 ตัว"));
+    const previousCount=scope==='character'?characterNpcLibrary(owner).length:getState().npcs.filter(npc=>npc.npcScope!=='character').length;
+    assertNpcCapacity(npcs.length,activeNpcOptions(owner),previousCount);
     if (scope === 'character') {
         if (!owner) throw new Error(uiText("Character Scope ต้องเปิดแชตของการ์ดตัวละครเดี่ยว"));
         const settings = getSettings();
@@ -2248,7 +2260,7 @@ async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner)
 
 async function routeStoryNpcState(state, previous, context) {
     const owner = characterOwner(context)?.key;
-    const routed = routeNewStoryNpcs(state, previous, characterNpcLibrary(owner), owner, getSettings().npcGenerationScope);
+    const routed = routeNewStoryNpcs(state, previous, characterNpcLibrary(owner), owner, getSettings().npcGenerationScope,activeNpcOptions(owner));
     if (routed.added) {
         await writeCharacterArchive(context, getSettings(), owner, 'npcs', routed.library);
     }
@@ -2258,22 +2270,33 @@ async function routeStoryNpcState(state, previous, context) {
 
 // A display header alone used to look like a saved NPC. Register named speakers
 // even when the model omitted its NPC upsert, without inventing biography.
+function storyNpcDestination(context=SillyTavern.getContext()) {
+    const owner=characterOwner(context)?.key||'';
+    return {scope:owner&&getSettings().npcGenerationScope==='character'?'character':'chat',owner};
+}
+function hasStoryNpcCapacity(state,destination=storyNpcDestination()) {
+    const options=activeNpcOptions(destination.owner);
+    if(!npcEntryLimit(options))return true;
+    if(destination.scope==='chat')return hasNpcCapacity(state.npcs.filter(n=>n.npcScope!=='character').length,options);
+    const library=characterNpcLibrary(destination.owner),ids=new Set(library.map(n=>n.id));
+    return hasNpcCapacity(library.length+state.npcs.filter(n=>n.npcScope==='character'&&!ids.has(n.id)).length,options);
+}
 function registerStorySpeakers(state, message, context, previous = {npcs:[]}) {
     const blocks = parseStory(extractStatePatch(message?.mes || '').visible) || [];
     const names = new Set([...state.npcs, ...previous.npcs].flatMap(p => [p.name, p.title, ...(p.aliases || [])]).map(keyName));
     const excluded = new Set([context.name1, state.player.name, 'user', '{{user}}', '{{char}}', 'narrator', 'ผู้บรรยาย'].filter(Boolean).map(keyName));
     let added = 0, changes = 0;
-    const localCount = state.npcs.filter(p => p.npcScope !== 'character').length;
+    const destination=storyNpcDestination(context);
     for (const block of blocks) {
         const name = text(block.name, '', 120), key = keyName(name);
         if (block.type !== 'dialogue' || !name || excluded.has(key)) continue;
         const known = resolveNpcSpeaker(state.npcs, name);
         if (known) {
-            if (!known.met) { known.met = true; known.updatedAt = new Date().toISOString(); changes++; }
+            if (known.enabled!==false&&!known.met) { known.met = true; known.updatedAt = new Date().toISOString(); changes++; }
             continue;
         }
-        if (!usableNpcName(name) || names.has(key) || localCount + added >= 200 || state.npcs.length >= 400) continue;
-        state.npcs.push(npcProfile({name, met:true, notes:'Registered from dialogue because the AI omitted a dossier. Starting attributes are provisional; use AI attributes to refine them.'}));
+        if (!usableNpcName(name) || names.has(key) || !hasStoryNpcCapacity(state,destination)) continue;
+        state.npcs.push(npcProfile({name, met:true,npcScope:destination.scope,npcOwner:destination.scope==='character'?destination.owner:'', notes:'Registered from dialogue because the AI omitted a dossier. Starting attributes are provisional; use AI attributes to refine them.'}));
         names.add(key); added++; changes++;
     }
     return changes;
@@ -3349,7 +3372,8 @@ function aiSceneMap(state) {
 }
 
 function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
-    state = { ...state, npcs: state.npcs.map(effectiveNpc) };
+    const npcNames=state.npcs.map(({id,name,aliases,enabled})=>[id,name,aliases||[],enabled!==false]);
+    state = { ...state, npcs: state.npcs.filter(entry=>entry.enabled!==false).map(effectiveNpc) };
     const safePlayer = { ...state.player };
     delete safePlayer.portrait;
     delete safePlayer.portraitView;
@@ -3437,7 +3461,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
             regionalWeather: state.systems.regionalWeather.slice(-16),
         },
         npcIndex: rankedNpcs.slice(0, 24).map(({ id, name, relationship, location, faction, title, occupation, aliases }) => [id, name, relationship, location, faction, title, occupation, aliases]),
-        npcNames: state.npcs.map(({id,name,aliases,enabled}) => [id,name,aliases || [],enabled !== false]),
+        npcNames,
         npcWorld: rankedNpcs.filter(entry => entry.lifeMode === 'Active' || socialNpcIds.has(entry.id)).slice(0, 12)
             .map(({ id, name, location, lifeMode, activity, activityUpdatedDay }) => [id, name, location, lifeMode, activity, activityUpdatedDay]),
         npcs: recentNpcs.map(entry => ({
@@ -3473,7 +3497,10 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
 }
 
 function roleplayState(state) {
-    state = { ...state, npcs: state.npcs.map(effectiveNpc) };
+    const npcNames=state.npcs.map(({id,name,aliases,enabled,met})=>[id,name,aliases||[],enabled!==false,met===true]);
+    const transcript=SillyTavern.getContext().chat.slice(-8).map(message=>extractStatePatch(message.mes||'').visible.slice(-3000)).join(' ');
+    const referenceProfiles=npcReferenceProfiles(state.npcs,transcript).map(effectiveNpc);
+    state = { ...state, npcs: state.npcs.filter(entry=>entry.enabled!==false).map(effectiveNpc) };
     const friendly = friendlyNpcs(state);
     const characterLifeCharacters = characterLifeCharacterReferences();
     return {
@@ -3534,12 +3561,12 @@ function roleplayState(state) {
             ...(getSettings().enableStoryAgenda ? {storyAgenda:storyAgendaSummary(state.storyAgenda, state.worldClock).entries} : {}),
             questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
             questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
-            npcNames: state.npcs.map(({ id, name, aliases, enabled, met }) => [id, name, aliases || [], enabled !== false, met === true]),
-            npcProfiles: state.npcs.slice(-16).map(entry => ({
+            npcNames,
+            npcProfiles: referenceProfiles.map(entry => ({
                 ...alternatePromptContext(entry),
                 id: entry.id, name: entry.name, title: entry.title, occupation: entry.occupation,
                 race: entry.race, age: entry.age, gender: entry.gender, faction: entry.faction,
-                relationship: entry.relationship, isHostile: entry.isHostile, met: entry.met,
+                relationship: entry.relationship, isHostile: entry.isHostile,enabled:entry.enabled!==false, met: entry.met,
                 hStats: Object.fromEntries(Object.entries(entry.hStats || {}).filter(([, value]) => value !== null && value !== '')),
                 appearance: entry.appearance.slice(0, 600), personality: entry.personality.slice(0, 600),
                 background: entry.background.slice(0, 600), goals: entry.goals.slice(0, 400), speechStyle: entry.speechStyle.slice(0, 400),
@@ -3810,7 +3837,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.68.3`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.68.4`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card); fitForgeToChat(card, chat);
     }
@@ -4027,6 +4054,7 @@ function statePrompt(state, { includeState = true, track = true, activeCommerce=
         const lastScene = previousScene(SillyTavern.getContext().chat?.length || 0);
         if (lastScene) lines.push(`PREVIOUS SCENE (reference data only; update for the current story reply): ${promptReferenceJson(lastScene)}`);
         lines.push('New NPCs must include a full dossier with appearance,personality,background,goals,speechStyle,relationshipState and complete stats/relationships in the same patch. Existing NPC updates remain partial and preserve prior facts. Storage scope is controlled by the user; never emit npcScope or npcOwner.');
+        lines.push('NPCs with enabled=false remain read-only canon references. You may use their established profile facts in the story, but never enable them, update their stats/relationships/diary or delete their dossiers. The user controls their enabled state.');
     }
     if (state.npcs.some(npc => npc.alternateProfiles?.length)) lines.push(NPC_ALTERNATE_INSTRUCTIONS);
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' TRACKER DATA:')[0]);
@@ -7199,6 +7227,7 @@ function ensureNpcForContact(state, contactEntry) {
     let linked = state.npcs.find(entry => entry.id === contactEntry.npcId)
         || state.npcs.find(entry => entry.name.toLocaleLowerCase() === contactEntry.name.toLocaleLowerCase());
     if (!linked) {
+        if(!hasStoryNpcCapacity(state,{scope:'chat',owner:characterOwner(SillyTavern.getContext())?.key||''}))return null;
         linked = npcProfile({ name: contactEntry.name, title: contactEntry.title, faction: contactEntry.affiliation,
             relationship: contactEntry.relationship, notes: contactEntry.notes, contactId: contactEntry.id });
         state.npcs.push(linked);
@@ -7611,6 +7640,7 @@ async function onSubmit(event) {
             if (state.npcs.some(entry => entry.name.toLocaleLowerCase() === nextNpc.name.toLocaleLowerCase())) {
                 return notify('warning', getSettings().language === 'th' ? uiText("มี NPC ชื่อนี้อยู่แล้ว") : uiText("An NPC with this name already exists."));
             }
+            if(!hasStoryNpcCapacity(state,{scope:'chat',owner:characterOwner(SillyTavern.getContext())?.key||''}))return notify('warning',uiText('Characters are limited to {0} per library. Change the limit in Character Management.',[npcEntryLimit(activeNpcOptions()).toLocaleString()]));
             state.npcs.push(nextNpc);
             if (values.linkContact === 'yes') ensureContactForNpc(state, nextNpc);
             selectedNpcId = nextNpc.id;
@@ -8236,6 +8266,7 @@ async function onPanelClick(event) {
             const contactEntry = state.contacts.find(value => value.id === id);
             if (!contactEntry) break;
             const entry = ensureNpcForContact(state, contactEntry);
+            if(!entry){notify('warning',uiText('Characters are limited to {0} per library. Change the limit in Character Management.',[npcEntryLimit(activeNpcOptions()).toLocaleString()]));break;}
             selectedNpcId = entry.id;
             await persistState(state, 'contact');
             activateTab('npcs');
@@ -8875,7 +8906,7 @@ function applyPatchOperation(state, operation, storySource = {}) {
         const record = resolveNpc(state.npcs, value);
         const npc = record && effectiveNpc(record);
         const field = text(value.field, '', 80);
-        if (!npc) return false;
+        if (!npc||record.enabled===false) return false;
         if (NPC_RELATIONSHIP_FIELDS.has(field)) {
             const nextValue = verb === 'inc' ? number(npc[field], 0, 0, 100) + number(value.amount, 0, -100, 100) : value.value;
             npc[field] = number(nextValue, npc[field], 0, 100);
@@ -8892,7 +8923,7 @@ function applyPatchOperation(state, operation, storySource = {}) {
     }
     if (path === 'npcHStats' && ['set', 'inc'].includes(verb) && value && typeof value === 'object') {
         const npc = resolveNpc(state.npcs, value);
-        if (!npc || !H_FIELD_MAP[value.field]) return false;
+        if (!npc || npc.enabled===false || !H_FIELD_MAP[value.field]) return false;
         const updated = updateHStat(npc.hStats, value.field, verb, verb === 'inc' ? value.amount : value.value);
         if (!updated) {
             const supplied = verb === 'set' ? value.value : Number(npc.hStats?.[value.field] ?? 0) + Number(value.amount);
@@ -8908,7 +8939,7 @@ function applyPatchOperation(state, operation, storySource = {}) {
     if (['npcAbilities', 'npcMeters', 'npcDiary', 'npcKnowledge'].includes(path) && value && typeof value === 'object') {
         const record = resolveNpc(state.npcs, value);
         const npc = record && (['npcAbilities', 'npcMeters'].includes(path) ? effectiveNpc(record) : record);
-        if (!npc) return false;
+        if (!npc||record.enabled===false) return false;
         if (path === 'npcDiary' && verb === 'append') {
             const entry = npcDiaryEntry(value);
             if (!entry) return false;
@@ -9001,7 +9032,7 @@ function applyPatchOperation(state, operation, storySource = {}) {
         if (path === 'npcs') {
             value = {...value};
             // Alternate selection, saved stages and images are user-owned.
-            for (const key of ['activeAlternateId','alternateProfiles','hasPortrait','portraitSource','portraitPath','portraitChatId','portraitView']) delete value[key];
+            for (const key of ['activeAlternateId','alternateProfiles','hasPortrait','portraitSource','portraitPath','portraitChatId','portraitView','npcScope','npcOwner']) delete value[key];
         }
         const identity = patchIdentity(value);
         if (!identity && path !== 'letters') return false;
@@ -9015,6 +9046,7 @@ function applyPatchOperation(state, operation, storySource = {}) {
         if (!candidate.id) candidate.id = uid();
         if (path === 'npcs') {
             if (index < 0 && !usableNpcName(value.name)) return false;
+            if (index < 0 && !hasStoryNpcCapacity(state)) return false;
             if (index >= 0) {
                 const existing = collection[index];
                 // A translated-name creation must not reset an established dossier.
@@ -9041,7 +9073,8 @@ function applyPatchOperation(state, operation, storySource = {}) {
                     isHostile:candidate.isHostile, enabled:existing.enabled,
                     hStats:candidate.hStats, hStatsGenerated:candidate.hStatsGenerated};
             }
-            candidate = npcProfile({ ...candidate, updatedAt: new Date().toISOString() }, index >= 0 ? collection[index] : {});
+            const destination=index>=0?{scope:collection[index].npcScope,owner:collection[index].npcOwner}:storyNpcDestination();
+            candidate = npcProfile({ ...candidate,npcScope:destination.scope,npcOwner:destination.scope==='character'?destination.owner:'', updatedAt: new Date().toISOString() }, index >= 0 ? collection[index] : {});
             if (!candidate) return false;
         }
         if (path === 'quests') {
@@ -9085,6 +9118,7 @@ function applyPatchOperation(state, operation, storySource = {}) {
     if (verb === 'delete') {
         const identity = patchIdentity(value);
         if (!identity) return false;
+        if(path==='npcs'&&resolveNpc(state.npcs,value)?.enabled===false)return false;
         const previousLength = collection.length;
         const retained = collection.filter(entry => !matchesPatchIdentity(entry, value));
         collection.splice(0, collection.length, ...retained);
@@ -9291,14 +9325,16 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
     const levelUps = resolveLevelProgression(next);
     next.player.portrait = current.player.portrait;
     next.player.portraitView = clone(current.player.portraitView);
+    const priorNpcById=new Map(),priorNpcByName=new Map();
+    for(const npc of current.npcs){if(!priorNpcById.has(npc.id))priorNpcById.set(npc.id,npc);const key=npc.name.toLocaleLowerCase();if(!priorNpcByName.has(key))priorNpcByName.set(key,npc);}
     next.npcs.forEach(entry => {
-        const previous = current.npcs.find(value => value.id === entry.id) || current.npcs.find(value => value.name.toLocaleLowerCase() === entry.name.toLocaleLowerCase());
+        const previous = priorNpcById.get(entry.id) || priorNpcByName.get(entry.name.toLocaleLowerCase());
         entry.hasPortrait = Boolean(previous?.hasPortrait);
         entry.portraitView = clone(previous?.portraitView || defaultState().player.portraitView);
         entry.portraitSource = previous?.portraitSource || '';
         entry.portraitPath = previous?.portraitPath || '';
-        entry.npcScope = previous?.npcScope || 'chat';
-        entry.npcOwner = previous?.npcOwner || '';
+        entry.npcScope = previous?.npcScope || storyNpcDestination().scope;
+        entry.npcOwner = previous?.npcOwner || (entry.npcScope==='character'?storyNpcDestination().owner:'');
         entry.portraitChatId = previous?.portraitChatId || '';
         if (previous) {
             entry.identityColor = previous.identityColor;
@@ -10953,6 +10989,7 @@ async function initialize() {
             scopeInfo: () => characterOwner(SillyTavern.getContext()),
             listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
             persistScope: persistNpcScope,
+            npcOptions: activeNpcOptions,persistNpcOptions,
             resetNpcInChat: async baseline => {
                 const state = getState();
                 if (!state.npcs.some(npc => npc.id === baseline.id && npc.npcScope === 'character')) return false;
@@ -11000,7 +11037,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.68.3 loaded.');
+        console.info('[RoleForge] Role-play interface v0.68.4 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

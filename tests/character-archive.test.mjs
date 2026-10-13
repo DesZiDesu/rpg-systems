@@ -90,7 +90,7 @@ test('one-card packs retain 2,500 Lore entries, honor custom growth limits, and 
     await writeCharacterPack(context,settings,'card:one.png',{...raw,loreOptions:{...raw.loreOptions,entryLimit:200}},{lore});
     assert.equal(readCharacterPack(context,'card:one.png').loreOptions.entryLimit,200);assert.equal(requests.length,2);
     assert.throws(()=>writeCharacterPack(context,settings,'card:one.png',{...raw,loreOptions:{...raw.loreOptions,entryLimit:200}},{lore:[...lore,{...lore[0],id:'new'}]}),/200/);
-    assert.throws(()=>writeCharacterPack(context,settings,'card:one.png',raw,{npcs:Array.from({length:201},(_,i)=>({id:String(i)}))}),/npcs/);
+    assert.throws(()=>writeCharacterPack(context,settings,'card:one.png',{...raw,npcOptions:{entryLimit:200}},{npcs:Array.from({length:201},(_,i)=>({id:String(i)}))}),/200/);
     assert.throws(()=>writeCharacterPack(context,settings,'card:one.png',{...raw,loreOptions:{...raw.loreOptions,entryLimit:1.5}},{lore}));
     assert.equal(requests.length,2);assert.equal(readCharacterArchive(context,settings,'card:one.png','lore').length,2500);
 });

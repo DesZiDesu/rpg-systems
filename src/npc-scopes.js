@@ -1,4 +1,5 @@
-import { keyName, resolveNpc } from './npc-core.js?v=0.68.3';
+import { keyName, resolveNpc } from './npc-core.js?v=0.68.4';
+import {hasNpcCapacity} from './npc-capacity.js?v=0.68.4';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -78,30 +79,33 @@ export function scopeEnvelope(value) {
     const record = { owner: value.owner.slice(0, 500), overrides: {}, bases: {}, hidden: [] };
     for (const field of ['overrides', 'bases']) {
         if (!value[field] || typeof value[field] !== 'object') continue;
-        for (const [id, data] of Object.entries(value[field]).slice(0, 200)) {
+        for (const [id, data] of Object.entries(value[field])) {
             if (RESERVED.has(id) || !data || typeof data !== 'object' || Array.isArray(data)) continue;
             const sanitized = safeFields(data);
             if (Array.isArray(data.alternateProfiles)) sanitized.alternateProfiles = alternateDeltas(data.alternateProfiles);
             Object.defineProperty(record[field], id, { value: sanitized, enumerable: true, writable: true });
         }
     }
-    record.hidden = (Array.isArray(value.hidden) ? value.hidden : []).filter(id => typeof id === 'string' && !RESERVED.has(id)).slice(0, 200);
-    record.sharedIds = (Array.isArray(value.sharedIds) ? value.sharedIds : Object.keys(record.bases)).filter(id => typeof id === 'string' && !RESERVED.has(id)).slice(0, 200);
+    record.hidden = (Array.isArray(value.hidden) ? value.hidden : []).filter(id => typeof id === 'string' && !RESERVED.has(id));
+    record.sharedIds = (Array.isArray(value.sharedIds) ? value.sharedIds : Object.keys(record.bases)).filter(id => typeof id === 'string' && !RESERVED.has(id));
     return record;
 }
 
 export function hydrateScopedNpcs(state, library, owner) {
     const scope = scopeEnvelope(state.npcScopes);
-    const retired = scope.owner === owner ? (scope.sharedIds || []).filter(id => !library.some(p => p.id === id)) : [];
+    const libraryIds=new Set(library.map(p=>p.id));
+    const retired = scope.owner === owner ? (scope.sharedIds || []).filter(id => !libraryIds.has(id)) : [];
     const result = pruneNpcReferences(state, retired);
     const local = (state.npcs || []).filter(p => p.npcScope !== 'character').map(p => ({ ...clone(p), npcScope: 'chat', npcOwner: '' }));
-    const names = new Set(local.map(p => keyName(p.name))), ids = new Set(local.map(p => p.id));
+    const localNames=new Set(local.map(p=>keyName(p.name)));
+    const names = new Set(localNames), ids = new Set(local.map(p => p.id));
     const active = owner && scope.owner === owner ? scope : { overrides: {}, hidden: [] };
+    const hidden=new Set(active.hidden);
     const bases = {};
     const shared = [];
     for (const p of library) {
         bases[p.id] = clone(p);
-        if (!owner || active.hidden.includes(p.id) || names.has(keyName(p.name)) || ids.has(p.id)) continue;
+        if (!owner || hidden.has(p.id) || names.has(keyName(p.name)) || ids.has(p.id)) continue;
         const delta = active.overrides[p.id] || {};
         const next = { ...clone(p), ...clone(delta), id: p.id, npcScope: 'character', npcOwner: owner };
         if (delta.stats) next.stats = { ...p.stats, ...delta.stats };
@@ -114,7 +118,7 @@ export function hydrateScopedNpcs(state, library, owner) {
     result.npcs = [...local, ...shared];
     const previouslyShared = new Set([...(scope.sharedIds || []), ...library.map(p => p.id)]);
     const visibleIds = new Set(result.npcs.map(p => p.id));
-    if (Array.isArray(result.contacts)) result.contacts = result.contacts.filter(p => !previouslyShared.has(p.npcId) || visibleIds.has(p.npcId) || local.some(n => keyName(n.name) === keyName(p.name)));
+    if (Array.isArray(result.contacts)) result.contacts = result.contacts.filter(p => !previouslyShared.has(p.npcId) || visibleIds.has(p.npcId) || localNames.has(keyName(p.name)));
     result.npcScopes = { owner: owner || '', overrides: active.overrides, hidden: active.hidden, bases };
     return result;
 }
@@ -123,18 +127,21 @@ export function hydrateScopedNpcs(state, library, owner) {
 // Bases travel with in-memory turn checkpoints to avoid rolling back a later
 // explicit Character edit when a user swipes an older AI reply.
 export function packScopedNpcs(state, library, owner) {
-    const result = clone(state), envelope = scopeEnvelope(state.npcScopes);
+    const {npcs,npcScopes,...rest}=state;
+    const result = clone(rest), envelope = scopeEnvelope(npcScopes);
     result.npcs = (state.npcs || []).filter(p => p.npcScope !== 'character').map(p => ({ ...clone(p), npcScope: 'chat', npcOwner: '' }));
     const localNames = new Set(result.npcs.map(p => keyName(p.name)));
     const scoped = envelope.owner === owner ? envelope : { overrides: {}, bases: {}, hidden: [] };
     const overrides = {}, hidden = [];
+    const sharedById=new Map((npcs||[]).filter(p=>p.npcScope==='character'&&p.npcOwner===owner).map(p=>[p.id,p]));
+    const scopedHidden=new Set(scoped.hidden);
     for (const original of library) {
-        const p = state.npcs.find(n => n.id === original.id && n.npcScope === 'character' && n.npcOwner === owner);
+        const p = sharedById.get(original.id);
         if (!p) {
             if (localNames.has(keyName(original.name)) || localNames.has(keyName(scoped.bases[original.id]?.name))) {
                 if (scoped.overrides[original.id]) overrides[original.id] = clone(scoped.overrides[original.id]);
-                if (scoped.hidden.includes(original.id)) hidden.push(original.id);
-            } else if (Object.hasOwn(scoped.bases, original.id) || scoped.hidden.includes(original.id)) hidden.push(original.id);
+                if (scopedHidden.has(original.id)) hidden.push(original.id);
+            } else if (Object.hasOwn(scoped.bases, original.id) || scopedHidden.has(original.id)) hidden.push(original.id);
             continue;
         }
         const baseline = scoped.bases[original.id] || original, delta = {};
@@ -204,14 +211,14 @@ export function scopedPortraitKey(profile, chatId, owner = '') {
 
 // The user, never an AI patch, chooses where NEW story NPCs are archived.
 // Existing shared records keep per-chat deltas instead of rewriting their base.
-export function routeNewStoryNpcs(state, previous, library, owner, destination) {
+export function routeNewStoryNpcs(state, previous, library, owner, destination,options={}) {
  const next=clone(state),archive=clone(library);let added=0,overflow=0;
  if(destination!=='character'||!owner)return {state:next,library:archive,added,overflow};
  const ids=new Set(previous.npcs.map(p=>p.id)),names=new Set(previous.npcs.flatMap(p=>[p.name,...(p.aliases||[])]).map(keyName));
  for(const p of next.npcs){
-  if(ids.has(p.id)||names.has(keyName(p.name))||resolveNpc(previous.npcs,p)||p.npcScope==='character')continue;
+  if(ids.has(p.id)||names.has(keyName(p.name))||resolveNpc(previous.npcs,p))continue;
   if(resolveNpc(archive,p))continue;
-  if(archive.length>=200){overflow++;continue;}
+  if(!hasNpcCapacity(archive.length,options)){p.npcScope='chat';p.npcOwner='';overflow++;continue;}
   p.npcScope='character';p.npcOwner=owner;archive.push(clone(p));added++;
  }
  return {state:next,library:archive,added,overflow};

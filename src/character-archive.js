@@ -1,7 +1,8 @@
-import {validatePowerConfig} from './power-presets.js?v=0.68.3';
-import {validateForgePreset} from './forge-presets.js?v=0.68.3';
-import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.68.3';
-import {validatePresetConfig} from './world-presets.js?v=0.68.3';
+import {validatePowerConfig} from './power-presets.js?v=0.68.4';
+import {validateForgePreset} from './forge-presets.js?v=0.68.4';
+import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.68.4';
+import {validatePresetConfig} from './world-presets.js?v=0.68.4';
+import {assertNpcCapacity} from './npc-capacity.js?v=0.68.4';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the
@@ -63,7 +64,7 @@ function packDefaults(raw) {
     // are never part of the schema and are never executed or applied.
     try { if (raw.powerPreset) result.powerPreset=validatePowerConfig(raw.powerPreset); } catch {}
     try { if (raw.forgePreset) result.forgePreset=validateForgePreset(raw.forgePreset); } catch {}
-    for(const key of ['currencyPreset','trainingPreset','systems','chatAppearance'])if(Object.hasOwn(raw,key))try{Object.assign(result,validatePresetConfig({[key]:raw[key]}));}catch{}
+    for(const key of ['currencyPreset','trainingPreset','npcOptions','systems','chatAppearance'])if(Object.hasOwn(raw,key))try{Object.assign(result,validatePresetConfig({[key]:raw[key]}));}catch{}
     if(raw.loreOptions&&typeof raw.loreOptions==='object'&&!Array.isArray(raw.loreOptions))
         result.loreOptions=loreOptions({loreCharacterOptions:{card:raw.loreOptions}},'card');
     if(raw.initialState&&typeof raw.initialState==='object'&&!Array.isArray(raw.initialState)) {
@@ -122,12 +123,13 @@ async function saveCardExtensions(context, owner, fields) {
 export function writeCharacterPack(context, settings, owner, raw, {npcs,lore}={}) {
     const pack=packDefaults(raw);
     if(!pack.format)throw Error('Unsupported RoleForge character pack');
-    for(const key of ['powerPreset','forgePreset','currencyPreset','trainingPreset','systems','loreOptions','chatAppearance','initialState'])
+    for(const key of ['powerPreset','forgePreset','currencyPreset','trainingPreset','systems','loreOptions','npcOptions','chatAppearance','initialState'])
         if(Object.hasOwn(raw,key)&&!Object.hasOwn(pack,key))throw Error(`Invalid character pack ${key}`);
     const fields={[CHARACTER_PACK_FIELD]:pack};
     if(raw.loreOptions)writeLoreOptions({}, {...pack.loreOptions,...raw.loreOptions},'pack','pack');
     for(const [kind,records] of Object.entries({npcs,lore}))if(records!==undefined){
-        if(!Array.isArray(records)||kind==='npcs'&&records.length>200)throw Error(`Invalid character pack ${kind}`);
+        if(!Array.isArray(records))throw Error(`Invalid character pack ${kind}`);
+        if(kind==='npcs')assertNpcCapacity(records.length,pack.npcOptions,readCharacterArchive(context,settings,owner,kind).length);
         if(kind==='lore')assertLoreCapacity(records.length,pack.loreOptions,readCharacterArchive(context,settings,owner,kind).length);
         fields[ARCHIVE_FIELDS[kind]]=records;
     }

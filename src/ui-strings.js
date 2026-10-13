@@ -7143,7 +7143,7 @@ const aliases = {
   "If no patch is returned, the activity capsule says “No state changes.” This means tracking ran successfully but had nothing confirmed to save.": 1031,
   "If no patch is returned, the activity capsule says “No state changes.” Tracking ran successfully but had nothing confirmed to save.": 1031,
   "หากไม่มีชุดอัปเดต แถบสถานะจะแสดงว่าไม่มีข้อมูลเปลี่ยนแปลง หมายถึงติดตามสำเร็จแต่ไม่มีข้อมูลยืนยันให้บันทึก": 1031,
-  "RoleForge engine 0.68.3 ready": 1032,
+  "RoleForge engine 0.68.4 ready": 1032,
   "RoleForge engine ready": 1032,
   "ระบบ RoleForge พร้อมใช้งาน": 1032,
   "พิมพ์ชื่อแท็ก…": 1033,
@@ -8307,7 +8307,7 @@ const aliases = {
   "after your first reply, the extension adds the current structured state and short patch rules to the normal role-play prompt.": 1028,
   "the character produces its normal reply once. if a confirmed fact changed, it appends an invisible state patch to that same reply.": 1029,
   "the extension removes the patch from view, validates every operation against a strict allowlist, saves it to this chat, and redraws the relevant tabs.": 1030,
-  "roleforge engine 0.68.3 ready": 1032,
+  "roleforge engine 0.68.4 ready": 1032,
   "roleforge engine ready": 1032,
   "name of the preferred tag": 1034,
   "character (all chats of this card)": 1048,
@@ -8926,7 +8926,19 @@ for (const pair of [
  ["No selected entries remain to delete.","ไม่มีรายการที่เลือกเหลือให้ลบ"],
  ["Could not delete the selected entries. Data was kept.","ลบรายการที่เลือกไม่สำเร็จ · ข้อมูลเดิมยังอยู่"],
  ["Could not save Lore changes.","บันทึกการเปลี่ยนแปลง Lore ไม่สำเร็จ"],
- ["Enabled by default. Your choice applies to all chats and character cards.","เปิดเป็นค่าเริ่มต้น · ตั้งครั้งเดียว ใช้กับทุกแชทและทุกการ์ดตัวละคร"]
+ ["Enabled by default. Your choice applies to all chats and character cards.","เปิดเป็นค่าเริ่มต้น · ตั้งครั้งเดียว ใช้กับทุกแชทและทุกการ์ดตัวละคร"],
+ ["Character capacity","จำนวนตัวละคร"],
+ ["Character entry capacity","จำนวนรายการตัวละคร"],
+ ["Maximum characters per library","จำนวนตัวละครสูงสุดต่อคลัง"],
+ ["Save character settings","บันทึกการตั้งค่าตัวละคร"],
+ ["Character settings saved.","บันทึกการตั้งค่าตัวละครแล้ว"],
+ ["Enter a positive whole number for the character limit.","ระบุจำนวนตัวละครสูงสุดเป็นจำนวนเต็มตั้งแต่ 1 ขึ้นไป"],
+ ["Character limit must be a whole number from 0 upwards. 0 means unlimited.","จำนวนตัวละครต้องเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป · 0 คือไม่จำกัด"],
+ ["Characters are limited to {0} per library. Change the limit in Character Management.","กำหนดไว้สูงสุด {0} ตัวต่อคลัง · ปรับจำนวนใน Character Management ได้"],
+ ["Stored: {0} characters · Enabled: {1} · Capacity: {2}","เก็บแล้ว {0} ตัว · เปิดใช้งาน {1} ตัว · จำนวนสูงสุด: {2}"],
+ ["The limit counts enabled and disabled characters separately in each Character or Chat library. Lowering it keeps existing records.","นับตัวละครทั้งที่เปิดและปิด โดยแยกเพดานของคลัง Character และ Chat ลดเพดานแล้วข้อมูลเดิมยังอยู่ครบ"],
+ ["Chat changed. Reopen Character Management.","เปลี่ยนแชทแล้ว กรุณาเปิด Character Management ใหม่"],
+ ["Wait for configuration saving to finish before editing characters.","รอให้บันทึกการตั้งค่าเสร็จก่อนแก้ไขตัวละคร"]
 ]) {
     aliases[pair[0]]=messages.length; aliases[pair[1]]=messages.length;
     const label={"All entries":"All","Enabled entries":"Enabled","Disabled entries":"Disabled","Archive select action":"Select","Archive done action":"Done","Archive undo action":"Undo","Archive delete action":"Delete selected","Character archive source":"Card","Chat archive source":"Chat"}[pair[0]];

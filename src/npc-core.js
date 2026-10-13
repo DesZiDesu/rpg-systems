@@ -1,4 +1,4 @@
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.68.3';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.68.4';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -10,6 +10,15 @@ export const RELATIONS = ['affection','trust','loyalty','fear','corruption','lus
 export const STATS = ['level','hp','mp','stamina','strength','agility','intelligence','endurance'];
 export const NPC_STARTING_STATS = Object.freeze({level:1,rank:'Unranked',hp:100,mp:30,stamina:100,strength:10,agility:10,intelligence:10,endurance:10});
 export const NPC_STARTING_RELATIONS = Object.freeze({affection:0,trust:10,loyalty:0,fear:0,corruption:0,lust:0});
+// Keep the lightweight identity index, but retrieve a bounded set of dossiers
+// from names/aliases mentioned in the scene. Disabled records are readable
+// references; this never enables them or changes their tracking state.
+export function npcReferenceProfiles(npcs,transcript='',limit=16) {
+ const normalize=value=>String(value||'').normalize('NFKC').toLocaleLowerCase();
+ const text=normalize(transcript);
+ return npcs.map((npc,index)=>({npc,index,position:Math.max(-1,...[npc.name,...(npc.aliases||[])].map(normalize).filter(value=>value.length>=2).map(value=>text.lastIndexOf(value)))}))
+  .sort((a,b)=>b.position-a.position||Number(b.npc.enabled!==false)-Number(a.npc.enabled!==false)||b.index-a.index).slice(0,limit).map(entry=>entry.npc);
+}
 export const ATTRIBUTE_INSTRUCTIONS = `Every new NPC needs complete stats {level,rank,hp,mp,stamina,strength,agility,intelligence,endurance} and affection,trust,loyalty,fear,corruption,lust (numbers 0-100). Choose fictional starting values consistent with role, power and relationships, not all-zero placeholders. Level and core attributes should normally be positive; HP/stamina are positive for healthy active NPCs. Zero HP for death, zero MP for no magic and zero relationship meters where appropriate are valid. Never increase existing combat stats just for conversation. These are private bookkeeping values, not knowledge visible to characters.`;
 // Missing numbers are not the same as intentional zero (death/no magic/no trust).
 export function npcAttributeDefaults(raw={}, base={}) {
@@ -162,11 +171,11 @@ export function importCharacters(data) {
  else if(data.character && typeof data.character==='object')records=[data.character];
  else if(clean(data.name))records=[data];
  else throw Error('ไม่พบ NPC ใน JSON นี้ (ไม่รองรับไฟล์ธีมหรือไฟล์ตั้งค่า)');
- if(records.length>200)throw Error('นำเข้าได้ครั้งละไม่เกิน 200 ตัวละคร');
  const seen=new Map();
  for(const v of records){
   if(!v||typeof v!=='object'||!clean(v.name))continue;
   const n=profileFields(v);
+  n.enabled=v.enabled!==false;
   const mapping={role:'occupation',species:'race',affiliation:'faction',relationshipToUser:'relationship',currentState:'activity'};
   for(const [from,to]of Object.entries(mapping))if(clean(v[from]))n[to]=clean(v[from],to==='activity'?240:160);
   if(clean(v.role)&&!n.title)n.title=clean(v.role,120);
@@ -218,14 +227,16 @@ export function cropGeometry(width,height,frame,size=512) {
 export function retainManualNpcEdits(history, before, after) {
  if(!history?.entries)return;
  const copy=value=>JSON.parse(JSON.stringify(value));
+ const beforeById=new Map((before.npcs||[]).map(npc=>[npc.id,npc]));
+ const snapshots=history.entries.flatMap(entry=>[entry.baseState,...Object.values(entry.variants||{}).map(v=>v.state)])
+  .filter(snapshot=>snapshot&&Array.isArray(snapshot.npcs)).map(snapshot=>({snapshot,byId:new Map(snapshot.npcs.map(npc=>[npc.id,npc]))}));
  for(const npc of after.npcs||[]){
-  const old=(before.npcs||[]).find(v=>v.id===npc.id);
+  const old=beforeById.get(npc.id);
   const keys=Object.keys(npc).filter(k=>JSON.stringify(npc[k])!==JSON.stringify(old?.[k]));
   if(!keys.length)continue;
-  for(const entry of history.entries)for(const snapshot of [entry.baseState,...Object.values(entry.variants||{}).map(v=>v.state)]){
-   if(!snapshot||!Array.isArray(snapshot.npcs))continue;
-   const target=snapshot.npcs.find(v=>v.id===npc.id);
-   if(!target){if(snapshot.npcs.length<200)snapshot.npcs.push(copy(npc));continue;}
+  for(const {snapshot,byId}of snapshots){
+   const target=byId.get(npc.id);
+   if(!target){const added=copy(npc);snapshot.npcs.push(added);byId.set(npc.id,added);continue;}
    for(const key of keys){
     if(key==='stats'&&old){target.stats||={};for(const stat of Object.keys(npc.stats))if(npc.stats[stat]!==old.stats?.[stat])target.stats[stat]=npc.stats[stat];}
     else if(key==='alternateProfiles'&&old){

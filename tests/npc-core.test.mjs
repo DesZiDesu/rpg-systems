@@ -46,9 +46,9 @@ test('missing images are detectable; remote URLs and SVG are never imported',()=
  const [r]=importCharacters({name:'No image',forms:[{id:'a',portraitId:'reference-only'}],image:'https://untrusted.example/image.svg'});
  assert.equal(r.hasImageReference,true);assert.equal(r.image,'');assert.equal(portraitData('data:image/svg+xml;base64,AAAA'),'');assert.equal(portraitData('javascript:alert(1)'), '');
 });
-test('import accepts supported containers and rejects config-only/oversized rosters',()=>{
+test('import accepts supported containers and large rosters while rejecting config-only files',()=>{
  for(const value of [[{name:'A'}],{npcs:[{name:'A'}]},{npc:{name:'A'}},{character:{name:'A'}}])assert.equal(importCharacters(value)[0].profile.name,'A');
- assert.throws(()=>importCharacters({config:{}}));assert.throws(()=>importCharacters(Array.from({length:201},(_,i)=>({name:String(i)}))));
+ assert.throws(()=>importCharacters({config:{}}));assert.equal(importCharacters(Array.from({length:501},(_,i)=>({name:`Character ${i}`}))).length,501);
 });
 function zip(entries,method=0){return new Blob(entries.flatMap(([name,data])=>{const bytes=new TextEncoder().encode(name),body=typeof data==='string'?new TextEncoder().encode(data):data,h=new Uint8Array(30),v=new DataView(h.buffer);v.setUint32(0,0x04034b50,true);v.setUint16(8,method,true);v.setUint32(18,body.length,true);v.setUint32(22,body.length,true);v.setUint16(26,bytes.length,true);return[h,bytes,body];}));}
 test('JSON reader handles single character',async()=>{const result=await readCharacterFile(new Blob(['{"name":"Lysa"}']));assert.equal(result.data.name,'Lysa');assert.equal(result.images.size,0);});

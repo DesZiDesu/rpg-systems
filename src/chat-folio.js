@@ -1,4 +1,4 @@
-import {usable,keyName} from './npc-core.js?v=0.68.3';
+import {usable,keyName} from './npc-core.js?v=0.68.4';
 const fact=value=>typeof value==='string'&&usable(value);
 export const illustratedChatTheme=theme=>['chapter','codex','aincrad'].includes(theme);
 

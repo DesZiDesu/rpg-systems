@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.68.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.68.4** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -23,6 +23,10 @@ Stats, currency, Power, Character Creation and presets have their own management
 **New in 0.68.2:** add any number of currency units per chat, with independent names, symbols, rates, colors and animated icon sets. Expand a unit to edit or remove it; search and 10-unit pages keep large schemes manageable. Wallets, group funds, transactions, quests, shops, auctions and refundable deposits use configured protocol IDs. Existing value and legacy 1–3-unit presets remain compatible; currency Import/Export and one-card setup retain every unit. [Thai tutorial](docs/currency-multi-unit-v0.68.2.th.md) · [Real SillyTavern mobile/desktop GIFs](docs/previews/currency-multi-unit/index.html).
 
 ## Character and Lore management
+
+**New in 0.68.4:** Character storage defaults to **Unlimited entries**. In **NPC Management → ⋯ → Character capacity**, set an optional maximum for each Chat/Character library. The setting follows the current chat, reusable presets and one-card setup. Enabled and disabled records both count toward storage capacity. Lowering the limit keeps existing records readable/editable and blocks further growth; imports preserve disabled switches and archives beyond the former 200-record ceiling.
+
+Disabled characters remain available as canon references: RoleForge keeps their name/alias index and retrieves up to 16 dossiers, prioritizing names mentioned in the recent chat. Reading a dossier does not enable its tracking or permit AI changes to its Stats. Detailed tracking only includes enabled characters. Keeping 500 characters with 20 enabled reduces tracking work, but stored archives, saving and the reference index still use memory and context. [Thai guide](docs/npc-capacity-v0.68.4.th.md) · [Real SillyTavern screenshots](docs/previews/npc-capacity/index.html).
 
 **New in 0.66.0:** find disabled NPCs or Lore with counted **All / Enabled / Disabled** filters, then toggle them directly from each row. Disabled records have a dashed border, muted styling and an explicit label. Select several records, the current page or all filtered results across pages; enable/disable them together and undo the latest status change. Each page contains 20 records, and changing pages keeps your selection.
 
@@ -129,6 +133,8 @@ Report issues with your RoleForge version, SillyTavern version, browser, reprodu
 
 ## Development and validation
 
+Version **0.68.4** passed **1,263 unit/host tests**, syntax checks and preset regressions. Real **SillyTavern 1.19.0** checks at 390/1440px import 500 NPCs with 20 enabled, test finite/unlimited capacities, preserve records when lowering limits, edit over-limit archives, reload real server saves, isolate chats and export one-card setup. A 320px viewport checks settings fit. The real generation interceptor retrieves a mentioned disabled dossier without enabling it; these checks make no provider generation requests. [Validation record](docs/validation-npc-capacity-v0.68.4.json).
+
 Version **0.68.3** passed **1,253 unit/host tests**, syntax checks, preset regressions and the settings navigation suite. Real **SillyTavern 1.19.0** checks at 390/1440px verify default-on tracking with legacy off presets, global on/off persistence across cards and actual server reloads, unchanged RPG progress and separate world settings. These preference checks make no AI calls. [Validation record](docs/validation-tracking-global-v0.68.3.json).
 
 Version **0.68.1** passes **1,235 unit/host tests** and syntax checks. Real SillyTavern checks import the full user-supplied theme through the native theme UI, retain its exact CSS, exercise all 20 settings pages at 320/390/768/1440px, resize text and save/reload a dummy character's stats through the real server. Native Dark Lite and the original settings navigation suite also pass. [Validation record](docs/validation-settings-theme-v0.68.1.json).
@@ -177,6 +183,8 @@ Run `npm run test:settings` for native drawer navigation, English/Thai search, a
 Run `ST_REAL_URL=http://127.0.0.1:18174 ST_THEME_FILE=/path/to/theme.json npm run test:settings-theme:real` against a real SillyTavern server with RoleForge installed and a separate test data directory. This creates a dummy character and saves test preferences. [Real application test setup](docs/settings-theme-fix-v0.68.1.th.md).
 
 Run `npm run test:lore-capacity` for large Lore libraries, capacity settings, chunked exports and one-card round trips.
+
+Run `ST_REAL_URL=http://127.0.0.1:18174/ npm run test:npc-capacity:real` against a real, isolated SillyTavern test profile. It creates dummy cards and imports 500 test dossiers; it does not contact a text provider.
 
 Run `npm run test:archive-delete` for NPC/Lore batch deletion, cancellation, failed saves and storage/context guards.
 

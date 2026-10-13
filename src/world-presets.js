@@ -1,14 +1,15 @@
-import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.68.3';
-import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.68.3';
-import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.68.3';
-import {normalizeStatTraining} from './stat-training.js?v=0.68.3';
-import {writeLoreOptions} from './lore-core.js?v=0.68.3';
-import {validateChatAppearance} from './chat-themes.js?v=0.68.3';
+import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.68.4';
+import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.68.4';
+import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.68.4';
+import {normalizeStatTraining} from './stat-training.js?v=0.68.4';
+import {writeLoreOptions} from './lore-core.js?v=0.68.4';
+import {validateChatAppearance} from './chat-themes.js?v=0.68.4';
+import {validateNpcOptions} from './npc-capacity.js?v=0.68.4';
 
 export const CHAT_PRESET_KEY = 'roleforge_chat_presets';
 export const PRESET_LIBRARY_KEY = 'roleforgePresetLibrary';
 export const PRESET_FILE_LIMIT = 1024 * 1024;
-export const PRESET_COMPONENTS = ['powerPreset','forgePreset','currencyPreset','trainingPreset','loreOptions','systems','chatAppearance'];
+export const PRESET_COMPONENTS = ['powerPreset','forgePreset','currencyPreset','trainingPreset','loreOptions','npcOptions','systems','chatAppearance'];
 // Main-reply tracking is a global user preference (default on), not a world
 // rule. Legacy chat/card presets must not override it when switching bots.
 export const WORLD_SYSTEM_KEYS = ['enableIncantation','npcIncantation','incantationLanguage','incantationCustomLanguage','enableMissionBoard','enableGroupBoard','enableAuctions','enableMarketplace','enableStoryMemory','enableStoryAgenda','enableQuestObjectives','showSceneTracker','injectState','npcDiaryFrequency'];
@@ -50,6 +51,7 @@ export function validatePresetConfig(raw) {
         if (key === 'trainingPreset') result[key] = validateTrainingPreset(raw[key]);
         if (key === 'loreOptions') {const settings={};writeLoreOptions(settings,raw[key],'preset','preset');result[key]=settings.loreCharacterOptions.preset;}
         if (key === 'systems') result[key] = validateWorldSystems(raw[key]);
+        if (key === 'npcOptions') result[key] = validateNpcOptions(raw[key]);
         if (key === 'chatAppearance') result[key] = validateChatAppearance(raw[key]);
     }
     if (!Object.keys(result).length) throw Error('The preset has no supported configuration.');

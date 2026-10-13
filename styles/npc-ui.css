@@ -378,6 +378,10 @@
 .trpg-manager .trpg-archive-options-body .trpg-archive-nav label{min-width:0}
 .trpg-manager .trpg-archive-options-body .trpg-archive-nav p{margin-top:10px;font-size:12px;letter-spacing:0}
 .trpg-manager .trpg-archive-options-body .trpg-generation-options{padding:0;background:none;margin-bottom:16px}
+.trpg-manager .trpg-capacity-options .trpg-lore-preferences{display:grid;gap:10px;padding:12px;margin:0 0 12px;min-width:0}
+.trpg-manager .trpg-capacity-options label{display:grid;gap:6px;min-width:0}
+.trpg-manager .trpg-capacity-options :is(input,select,button){box-sizing:border-box;width:100%;min-width:0;min-height:44px}
+.trpg-manager .trpg-capacity-options p{margin:0;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
 .trpg-manager .trpg-archive-options-body .trpg-roster-actions,.trpg-manager .trpg-lore-option-actions{display:grid;gap:8px;margin:16px 0}
 .trpg-manager .trpg-archive-options-body .trpg-roster-actions>button,.trpg-manager .trpg-lore-option-actions>button{width:100%;min-height:44px;font-size:13px}
 .trpg-manager .trpg-archive-options-status{flex:none;margin:0;padding:0 16px 12px;color:#e9d097;font-size:12px;line-height:1.6;overflow-wrap:anywhere}

@@ -1,17 +1,19 @@
-import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.68.3';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.68.3';
-import { createLoreWorkspace } from './lore-workspace.js?v=0.68.3';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.68.3';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.68.3';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.68.3';
-import { element, icon, roleIcon, speakerHeader, renderStoryBlocks, createChatPresentation } from './npc-chat.js?v=0.68.3';
-import { collectPortraitBackups } from './npc-media.js?v=0.68.3';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.68.3';
-import { H_FIELDS } from './h-stats.js?v=0.68.3';
-import {chatPresentationMode} from './chat-compat.js?v=0.68.3';
-import {mountChatAppearanceControls} from './chat-appearance-ui.js?v=0.68.3';
-import {chatAppearance} from './chat-themes.js?v=0.68.3';
-import {createArchiveBrowser,createArchiveTools,createArchiveOptions,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.68.3';
+import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.68.4';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.68.4';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.68.4';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.68.4';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.68.4';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.68.4';
+import { element, icon, roleIcon, speakerHeader, renderStoryBlocks, createChatPresentation } from './npc-chat.js?v=0.68.4';
+import { collectPortraitBackups } from './npc-media.js?v=0.68.4';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.68.4';
+import { H_FIELDS } from './h-stats.js?v=0.68.4';
+import {chatPresentationMode} from './chat-compat.js?v=0.68.4';
+import {mountChatAppearanceControls} from './chat-appearance-ui.js?v=0.68.4';
+import {chatAppearance} from './chat-themes.js?v=0.68.4';
+import {createArchiveBrowser,createArchiveTools,createArchiveOptions,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.68.4';
+import {assertNpcCapacity} from './npc-capacity.js?v=0.68.4';
+import {mountNpcCapacityControls} from './npc-capacity-ui.js?v=0.68.4';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -23,7 +25,7 @@ export function createNpcWorkspace(api) {
     const presentationSubscriptions=[];
     let appearanceControls=null;
     const archiveBrowser=createArchiveBrowser({searchText:n=>`${n.name} ${n.occupation} ${n.faction} ${(n.aliases||[]).join(' ')}`,normalizeQuery:keyName});
-    let archiveTools=null,archiveUndo=[],archiveOptions=null;
+    let archiveTools=null,archiveUndo=[],archiveOptions=null,capacityControls=null;
     const archiveRecords=(all=records())=>all.map(effectiveNpc).sort((a,b)=>a.name.localeCompare(b.name));
     function resetArchive(){archiveBrowser.reset();archiveUndo=[];if(dialog){dialog.querySelector('[data-search]').value='';const scroller=dialog.querySelector('.trpg-browser .trpg-archive-scroll');if(scroller)scroller.scrollTop=0;}}
     function syncViewport(){
@@ -72,11 +74,11 @@ export function createNpcWorkspace(api) {
         const source=!message ? (thai?'ยังไม่มีคำตอบ':'No character reply yet')
             : hasBlocks ? (thai?'คำตอบล่าสุดมีบล็อกจัดรูปแบบ':'Latest reply has presentation blocks')
                 : (thai?'คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบที่อ่านได้ — ลองสร้างคำตอบใหม่':'Latest reply has no readable presentation blocks — try a new reply');
-        presentationStatus.textContent=`RoleForge 0.68.3 · ${mode} · ${source}`;
+        presentationStatus.textContent=`RoleForge 0.68.4 · ${mode} · ${source}`;
     }
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.68.3',import.meta.url).href;document.head.append(sheet);
-    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.68.3',import.meta.url).href;document.head.append(alternateSheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.68.4',import.meta.url).href;document.head.append(sheet);
+    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.68.4',import.meta.url).href;document.head.append(alternateSheet);
     const alternateText=(en,th,values=[])=>uiText(uiLanguage()==='th'?th:en,values);
     const say=(message)=>{if(status)status.textContent=message;archiveOptions?.say(message);};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
@@ -140,7 +142,7 @@ export function createNpcWorkspace(api) {
         if(dialog&&!dialog.open&&dialog.dataset.uiLanguage!==uiLanguage()){dialog.remove();dialog=null;}
         if(dialog)return;
         dialog=element('dialog','trpg-manager');dialog.dataset.uiLanguage=uiLanguage();dialog.setAttribute('aria-labelledby','trpg-manager-title');
-        dialog.innerHTML=(uiMarkup("<header class=\"trpg-manager-top\"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id=\"trpg-manager-title\">NPC MANAGEMENT</h2></div><button type=\"button\" data-close aria-label=\"ปิด\">×</button></header>\n            <nav class=\"trpg-management-tabs\" aria-label=\"Management\"><button type=\"button\" data-management-tab=\"npc\" aria-pressed=\"true\">NPC Management</button><button type=\"button\" data-management-tab=\"lore\" aria-pressed=\"false\">Lore Management</button></nav>\n            <nav class=\"trpg-archive-nav\" aria-label=\"ขอบเขต NPC\"><button type=\"button\" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value=\"chat\">Chat · เฉพาะแชตนี้</option><option value=\"character\">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>\n            <label class=\"trpg-generation-scope\">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value=\"chat\">Chat · แชตนี้</option><option value=\"character\">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>\n            <div class=\"trpg-manager-layout\"><section class=\"trpg-roster trpg-browser\"><div class=\"trpg-browser-tools\"><label>ค้นหาตัวละคร<input type=\"search\" data-search placeholder=\"ค้นหาชื่อ บทบาท หรือสังกัด\"></label>\n            <div class=\"trpg-roster-actions\"><button type=\"button\" data-new data-lock>＋ สร้าง NPC</button><button type=\"button\" data-import data-lock>นำเข้า Character Life</button><input type=\"file\" data-import-file accept=\".json,.zip,application/json,application/zip\" hidden></div></div><div class=\"trpg-list-heading\"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class=\"trpg-pagination\" data-pagination></div></section>\n            <section class=\"trpg-record\" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id=\"trpg-npc-form\" novalidate hidden><fieldset></fieldset></form></section></div>\n            <section class=\"trpg-lore-panel\" data-lore-panel hidden></section>\n            <footer class=\"trpg-manager-footer\"><span role=\"status\" aria-live=\"polite\"></span><span>SCOPED ARCHIVE · v0.68.3</span></footer><div class=\"trpg-actions trpg-editor-actions\" data-editor-actions hidden></div>"));
+        dialog.innerHTML=(uiMarkup("<header class=\"trpg-manager-top\"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id=\"trpg-manager-title\">NPC MANAGEMENT</h2></div><button type=\"button\" data-close aria-label=\"ปิด\">×</button></header>\n            <nav class=\"trpg-management-tabs\" aria-label=\"Management\"><button type=\"button\" data-management-tab=\"npc\" aria-pressed=\"true\">NPC Management</button><button type=\"button\" data-management-tab=\"lore\" aria-pressed=\"false\">Lore Management</button></nav>\n            <nav class=\"trpg-archive-nav\" aria-label=\"ขอบเขต NPC\"><button type=\"button\" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value=\"chat\">Chat · เฉพาะแชตนี้</option><option value=\"character\">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>\n            <label class=\"trpg-generation-scope\">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value=\"chat\">Chat · แชตนี้</option><option value=\"character\">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>\n            <div class=\"trpg-manager-layout\"><section class=\"trpg-roster trpg-browser\"><div class=\"trpg-browser-tools\"><label>ค้นหาตัวละคร<input type=\"search\" data-search placeholder=\"ค้นหาชื่อ บทบาท หรือสังกัด\"></label>\n            <div class=\"trpg-roster-actions\"><button type=\"button\" data-new data-lock>＋ สร้าง NPC</button><button type=\"button\" data-import data-lock>นำเข้า Character Life</button><input type=\"file\" data-import-file accept=\".json,.zip,application/json,application/zip\" hidden></div></div><div class=\"trpg-list-heading\"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class=\"trpg-pagination\" data-pagination></div></section>\n            <section class=\"trpg-record\" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id=\"trpg-npc-form\" novalidate hidden><fieldset></fieldset></form></section></div>\n            <section class=\"trpg-lore-panel\" data-lore-panel hidden></section>\n            <footer class=\"trpg-manager-footer\"><span role=\"status\" aria-live=\"polite\"></span><span>SCOPED ARCHIVE · v0.68.4</span></footer><div class=\"trpg-actions trpg-editor-actions\" data-editor-actions hidden></div>"));
         const generationOptions=element('details','trpg-generation-options'),generationSummary=element('summary');generationSummary.dataset.generationSummary='';
         const generationScope=dialog.querySelector('.trpg-generation-scope');generationScope.before(generationOptions);generationOptions.append(generationSummary,generationScope);
         const header=dialog.querySelector('.trpg-manager-top'),back=dialog.querySelector('[data-back]'),more=element('button','trpg-archive-options-toggle','⋯');
@@ -148,6 +150,8 @@ export function createNpcWorkspace(api) {
         header.querySelector('small').dataset.archiveContext='';
         archiveOptions=createArchiveOptions(dialog,more);
         archiveOptions.npc.append(dialog.querySelector('.trpg-archive-nav'),generationOptions,dialog.querySelector('.trpg-roster-actions'));
+        capacityControls=mountNpcCapacityControls(archiveOptions.npc,{context:api.context,scopeInfo:api.scopeInfo,options:()=>api.npcOptions?.()||{},records,session:()=>token,
+            save:api.persistNpcOptions,lock,refresh:()=>list(),say:message=>{say(message);archiveOptions.say(message);}});
         const scroller=element('div','trpg-archive-scroll');scroller.dataset.npcScroll='';
         const listHeading=dialog.querySelector('.trpg-list-heading');listHeading.before(scroller);scroller.append(listHeading,dialog.querySelector('[data-list]'));
         document.body.append(dialog);form=dialog.querySelector('form');roster=dialog.querySelector('[data-list]');status=dialog.querySelector('[role=status]');
@@ -195,6 +199,7 @@ export function createNpcWorkspace(api) {
         say('');if(next==='lore')lore.open();else lore.reset();
     }
     function list({resetScroll=false}={}){
+        capacityControls?.update();
         if(!roster)return;roster.replaceChildren();const info=api.scopeInfo();
         dialog.querySelector('[data-scope-select]').value=scope;dialog.querySelector('option[value="character"]').disabled=!info;
         const destination=dialog.querySelector('[data-generation-scope]');destination.value=api.settings().npcGenerationScope==='character'?'character':'chat';
@@ -388,7 +393,7 @@ export function createNpcWorkspace(api) {
                 }
                 copy=updateNpcAlternate(copy,portrait.npcAlternateId||'',reference);
             }
-            if(!valid(ticket))return;const destination=api.listScope(target);if(destination.length>=200)throw Error(uiText("Scope ปลายทางมี NPC ครบ 200 ตัว"));if(destination.some(n=>keyName(n.name)===keyName(copy.name)))throw Error(uiText("มีชื่อนี้ใน Scope ปลายทางแล้ว ไม่ได้เขียนทับ"));
+            if(!valid(ticket))return;const destination=api.listScope(target);assertNpcCapacity(destination.length+1,api.npcOptions?.(),destination.length);if(destination.some(n=>keyName(n.name)===keyName(copy.name)))throw Error(uiText("มีชื่อนี้ใน Scope ปลายทางแล้ว ไม่ได้เขียนทับ"));
             if(!await api.persistScope(target,[...destination,copy],'npc-management',chatId,ownerKey))throw Error(uiText("บันทึกสำเนาไม่สำเร็จ"));
             if(!valid(ticket))return;scope=target;resetArchive();showList();say(uiText("สร้างสำเนาแล้ว · หากชื่อซ้ำกันในสอง Scope แชตนี้จะใช้ข้อมูลจาก Chat ก่อน"));
         }catch(e){if(valid(ticket))say(e.message);}finally{if(valid(ticket))lock(false);}
@@ -574,7 +579,7 @@ export function createNpcWorkspace(api) {
         try{
             let state=scopeState();if(!valid(ticket))return;
             if(resolveNpc(state.npcs.filter(n=>n.id!==draftId),v))throw Error(uiText("มีชื่อนี้อยู่แล้ว กรุณาเลือกตัวเดิมจากรายการหรือเปลี่ยนชื่อ"));
-            if(!draftId&&state.npcs.length>=200)throw Error(uiText("แชตนี้มี NPC ครบ 200 ตัวแล้ว"));
+            if(!draftId)assertNpcCapacity(state.npcs.length+1,api.npcOptions?.(),state.npcs.length);
             let existing=state.npcs.find(n=>n.id===draftId);if(draftId&&!existing)throw Error(uiText("ตัวละครนี้ถูกลบระหว่างแก้ไข กรุณาเปิดรายการใหม่"));
             if(editAlternateId&&!existing?.alternateProfiles?.some(profile=>profile.id===editAlternateId))throw Error(alternateText('This version was removed while editing. Reopen the NPC.','เวอร์ชันนี้ถูกลบระหว่างแก้ไข กรุณาเปิด NPC ใหม่'));
             const id=draftId||uuid();
@@ -720,7 +725,8 @@ The visibleAppearance value is authoritative: copy it into appearance without ad
             const bundle=await readCharacterFile(file),records=importCharacters(bundle.data);if(!valid(ticket))return;
             const panel=dialog.querySelector('[data-import-preview]');panel.replaceChildren();setView('import');
             panel.append(element('h3','',uiText("นำเข้าใน {0}",[scope==='character'?uiText("Character · คลังการ์ด"):uiText("Chat · แชตนี้")])),element('p','trpg-muted',uiText("นำเข้าเฉพาะข้อมูลที่ ROLEFORGE รองรับ ชื่อที่ซ้ำใน Scope นี้จะถูกข้าม ไม่เขียนทับตัวละครเดิม")));
-            const checks=[];for(const record of records){const label=element('label','trpg-import-row'),check=element('input');check.type='checkbox';const duplicate=api.listScope(scope).some(n=>keyName(n.name)===keyName(record.profile.name));check.checked=!duplicate;check.disabled=duplicate;label.append(check,document.createTextNode(`${record.profile.name}${duplicate?uiText(" · มีอยู่แล้ว (ข้าม)"):record.image||bundle.images.has(record.portraitPath)?uiText(" · มีภาพ"):record.hasImageReference?uiText(" · จะลองค้นหาภาพจาก Character Life ที่ติดตั้ง"):uiText(" · ไม่มีภาพในไฟล์")}`));panel.append(label);checks.push({record,check});}
+            const existingNames=new Set(api.listScope(scope).map(n=>keyName(n.name)));
+            const checks=[];for(const record of records){const label=element('label','trpg-import-row'),check=element('input');check.type='checkbox';const duplicate=existingNames.has(keyName(record.profile.name));check.checked=!duplicate;check.disabled=duplicate;label.append(check,document.createTextNode(`${record.profile.name}${duplicate?uiText(" · มีอยู่แล้ว (ข้าม)"):record.image||bundle.images.has(record.portraitPath)?uiText(" · มีภาพ"):record.hasImageReference?uiText(" · จะลองค้นหาภาพจาก Character Life ที่ติดตั้ง"):uiText(" · ไม่มีภาพในไฟล์")}`));panel.append(label);checks.push({record,check});}
             const button=element('button','trpg-primary',uiText("นำเข้ารายการที่เลือก")),cancel=element('button','',uiText("กลับไปแก้ไข"));button.type=cancel.type='button';panel.append(button,cancel);
             cancel.addEventListener('click',()=>{if(!busy)showList();});
             button.addEventListener('click',async()=>{
@@ -734,13 +740,15 @@ The visibleAppearance value is authoritative: copy it into appearance without ad
                         let ready=null;if(blob){try{ready=await preparePortrait(blob);}catch{missingImages++;}}else if(record.hasImageReference)missingImages++;
                         prepared.push({profile:api.profile({...record.profile,id:uuid(),npcScope:scope,npcOwner:scope==='character'?ownerKey:'',hasPortrait:Boolean(ready),portraitSource:ready?'local':'none',updatedAt:new Date().toISOString()}),blob:ready});
                     }
-                    if(!valid(ticket))return;const count=api.listScope(scope).length;if(count+prepared.length>200)throw Error(uiText("จำนวน NPC รวมจะเกิน 200 ตัว กรุณาเลือกให้น้อยลง"));
+                    if(!valid(ticket))return;const currentRecords=api.listScope(scope),currentNames=new Set(currentRecords.map(n=>keyName(n.name))),count=currentRecords.length;
+                    assertNpcCapacity(count+prepared.filter(item=>!currentNames.has(keyName(item.profile.name))).length,api.npcOptions?.(),count);
                     for(const item of prepared){if(!valid(ticket))return;if(item.blob)Object.assign(item.profile,await api.savePortrait(item.blob));}
                     if(!valid(ticket))return;const state=scopeState(),names=new Set(state.npcs.map(n=>keyName(n.name)));let added=0;
-                    for(const item of prepared){const name=keyName(item.profile.name);if(names.has(name))continue;if(state.npcs.length>=200)throw Error(uiText("มี NPC เพิ่มระหว่างนำเข้า กรุณาลองใหม่"));names.add(name);state.npcs.push(item.profile);added++;}
+                    const previousCount=state.npcs.length;
+                    for(const item of prepared){const name=keyName(item.profile.name);if(names.has(name))continue;assertNpcCapacity(state.npcs.length+1,api.npcOptions?.(),previousCount);names.add(name);state.npcs.push(item.profile);added++;}
                     if(added&&!await persistRecords(state.npcs,'character-life-import'))throw Error(uiText("บันทึกข้อมูลนำเข้าไม่สำเร็จ"));
                     if(!valid(ticket))return;showList();say(uiText("นำเข้า {0} ตัวละคร · ข้ามชื่อซ้ำ {1}{2}",[added,selected.length-added,missingImages?uiText(" · มี {0} ภาพที่ไม่มีไฟล์หรืออ่านไม่ได้ กรุณาเพิ่มภาพเอง",[missingImages]):'']));
-                }catch(e){if(valid(ticket)){say(uiText("นำเข้าไม่ได้: {0}",[e.message]));button.disabled=cancel.disabled=false;checks.forEach(v=>v.check.disabled=api.listScope(scope).some(n=>keyName(n.name)===keyName(v.record.profile.name)));}}
+                }catch(e){if(valid(ticket)){say(uiText("นำเข้าไม่ได้: {0}",[e.message]));button.disabled=cancel.disabled=false;const names=new Set(api.listScope(scope).map(n=>keyName(n.name)));checks.forEach(v=>v.check.disabled=names.has(keyName(v.record.profile.name)));}}
                 finally{if(valid(ticket))lock(false);}
             });
             say(uiText("พบ {0} ตัวละคร — ตรวจรายการก่อนนำเข้า",[records.length]));

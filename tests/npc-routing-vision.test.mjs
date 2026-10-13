@@ -47,6 +47,6 @@ test('Character routing archives only new NPCs; existing scene changes stay chat
 });
 test('full Character archives retain new NPCs in Chat rather than dropping them',()=>{
  const library=Array.from({length:200},(_,i)=>({id:`${i}`,name:`NPC ${i}`}));
- const r=routeNewStoryNpcs({npcs:[{id:'new',name:'New',npcScope:'chat'}]},{npcs:[]},library,'card:a','character');
+ const r=routeNewStoryNpcs({npcs:[{id:'new',name:'New',npcScope:'chat'}]},{npcs:[]},library,'card:a','character',{entryLimit:200});
  assert.equal(r.overflow,1);assert.equal(r.library.length,200);assert.equal(r.state.npcs[0].npcScope,'chat');
 });
