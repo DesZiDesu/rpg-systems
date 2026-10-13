@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RoleForge 0.68.1 · Minimalism Tone บน SillyTavern จริง</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;padding:24px;background:#18181a;color:#eee;font:16px/1.6 system-ui,sans-serif}main{max-width:1120px;margin:auto}h1{font-size:23px;margin:0 0 8px}p{color:#bbb;margin:8px 0 18px}nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}button,a{font:inherit;color:inherit}button{padding:8px 16px;border:1px solid #555;border-radius:8px;background:#2c2c2e;cursor:pointer}button[aria-pressed=true]{background:#49494c;border-color:#999}section{display:grid;gap:22px;grid-template-columns:repeat(2,minmax(0,1fr))}section[hidden]{display:none}figure{margin:0;min-width:0}figcaption{margin:0 0 8px;color:#bbb}img{display:block;max-width:100%;height:auto;border:1px solid #414145;border-radius:8px}.mobile img{width:390px}.pc{grid-template-columns:1fr}.before{margin-top:28px}details{margin-top:28px}summary{cursor:pointer;color:#bbb}@media(max-width:700px){body{padding:16px}section{grid-template-columns:1fr}h1{font-size:20px}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>RoleForge 0.68.1 · Minimalism Tone</h1>
+  <p>ภาพจาก SillyTavern 1.19.0 ตัวจริง ใช้ธีมที่แนบมาผ่านระบบ Import ธีมของ SillyTavern<br>เพิ่มระยะของเมนูและจัดช่องค้นหา โดยยังใช้สีและมุมปุ่มของธีม</p>
+  <nav aria-label="ขนาดหน้าจอ">
+    <button type="button" data-view="mobile" aria-pressed="true">มือถือ</button>
+    <button type="button" data-view="pc" aria-pressed="false">PC</button>
+  </nav>
+  <section class="mobile" data-gallery="mobile">
+    <figure><figcaption>หน้าแรก</figcaption><a href="mobile-home.png"><img src="mobile-home.png" alt="เมนูหลักที่เว้นระยะและมีพื้นที่ด้านข้าง"></a></figure>
+    <figure><figcaption>เมนูย่อย</figcaption><a href="mobile-world.png"><img src="mobile-world.png" alt="หมวดโลกและกติกา"></a></figure>
+    <figure><figcaption>หน้าต่างและรูปลักษณ์</figcaption><a href="mobile-windows.png"><img src="mobile-windows.png" alt="ตัวควบคุมหน้าต่างในธีม Minimalism Tone"></a></figure>
+    <figure><figcaption>Stats</figcaption><a href="mobile-stats.png"><img src="mobile-stats.png" alt="ฟอร์ม Stats บนมือถือ"></a></figure>
+    <figure><figcaption>ค่าเงิน</figcaption><a href="mobile-currency.png"><img src="mobile-currency.png" alt="ฟอร์มค่าเงินบนมือถือ"></a></figure>
+  </section>
+  <section class="pc" data-gallery="pc" hidden>
+    <figure><figcaption>หน้าแรก</figcaption><a href="pc-home.png"><img src="pc-home.png" alt="หน้าแรกของ RoleForge ใน SillyTavern บน PC"></a></figure>
+    <figure><figcaption>เมนูย่อย</figcaption><a href="pc-world.png"><img src="pc-world.png" alt="เมนูย่อยใน SillyTavern บน PC"></a></figure>
+    <figure><figcaption>หน้าต่างและรูปลักษณ์</figcaption><a href="pc-windows.png"><img src="pc-windows.png" alt="ฟอร์มรูปลักษณ์บน PC"></a></figure>
+    <figure><figcaption>Stats</figcaption><a href="pc-stats.png"><img src="pc-stats.png" alt="ฟอร์ม Stats บน PC"></a></figure>
+    <figure><figcaption>ค่าเงิน</figcaption><a href="pc-currency.png"><img src="pc-currency.png" alt="ฟอร์มค่าเงินบน PC"></a></figure>
+  </section>
+  <details><summary>ภาพก่อนแก้ · ทำซ้ำบนตัวจริงด้วย 0.68.0</summary><figure class="before mobile"><a href="before-mobile.png"><img src="before-mobile.png" alt="ก่อนแก้ เมนูชิดกัน ไอคอนและลูกศรชิดขอบ ปุ่มล้างสูงกว่าช่องค้นหา"></a></figure></details>
+  <p>ตรวจ 20 หน้า ที่ 320/390/768/1440px, ตัวอักษรขนาดใหญ่, ร่างในฟอร์ม และการบันทึกค่าผ่านเซิร์ฟเวอร์จริงแล้ว Reload<br><a href="validation.json">ผลการทดสอบ</a> · <a href="../../settings-theme-fix-v0.68.1.th.md">รายละเอียดการแก้ไข</a></p>
+</main>
+<script>
+  document.querySelector('nav').addEventListener('click',event=>{
+    const button=event.target.closest('[data-view]');if(!button)return;
+    document.querySelectorAll('[data-gallery]').forEach(section=>{section.hidden=section.dataset.gallery!==button.dataset.view;});
+    document.querySelectorAll('[data-view]').forEach(control=>control.setAttribute('aria-pressed',String(control===button)));
+  });
+</script>
+</body>
+</html>

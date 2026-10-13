@@ -1,0 +1,96 @@
+{
+  "host": "Real SillyTavern frontend/server; native theme import, real settings and chat persistence",
+  "theme": "Minimalism Tone",
+  "themeCssSha256": "8b62e5aaa79521eac910942eeea74b90c2502e72d3c6deb730c36e8e40b9aef0",
+  "cases": [
+    {
+      "width": 320,
+      "pages": 20,
+      "nativeThemeImport": true,
+      "themeCssUnchanged": true,
+      "layout": true,
+      "largeText": true,
+      "search": true,
+      "drafts": true,
+      "realSaveReload": true,
+      "aiCalls": 0
+    },
+    {
+      "width": 390,
+      "pages": 20,
+      "nativeThemeImport": true,
+      "themeCssUnchanged": true,
+      "layout": true,
+      "largeText": true,
+      "search": true,
+      "drafts": true,
+      "realSaveReload": true,
+      "aiCalls": 0
+    },
+    {
+      "width": 768,
+      "pages": 20,
+      "nativeThemeImport": true,
+      "themeCssUnchanged": true,
+      "layout": true,
+      "largeText": true,
+      "search": true,
+      "drafts": true,
+      "realSaveReload": true,
+      "aiCalls": 0
+    },
+    {
+      "width": 1440,
+      "pages": 20,
+      "nativeThemeImport": true,
+      "themeCssUnchanged": true,
+      "layout": true,
+      "largeText": true,
+      "search": true,
+      "drafts": true,
+      "realSaveReload": true,
+      "aiCalls": 0
+    }
+  ],
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "originalTheme": true,
+  "release": "0.68.1",
+  "syntax": "passed",
+  "unitTests": {
+    "passed": 1235,
+    "failed": 0
+  },
+  "defaultNavigation": [
+    "PASS settings 320px: 6 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls",
+    "PASS settings 390px: 6 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls",
+    "PASS settings 768px: 6 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls",
+    "PASS settings 1440px: 6 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls"
+  ],
+  "browser": "Chromium, mobile/desktop viewports; no physical iPhone test",
+  "reproduction": {
+    "beforeRelease": "0.68.0",
+    "before": {
+      "leftInset": 0.0,
+      "betweenButtons": 0.0,
+      "searchHeights": [
+        44,
+        52
+      ]
+    },
+    "after": {
+      "leftInset": 12.0,
+      "betweenButtons": 8.0,
+      "searchHeights": [
+        44,
+        44
+      ]
+    }
+  }
+}

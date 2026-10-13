@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.68.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.68.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -13,6 +13,8 @@ The extension adds instructions for enabled systems to your existing text-genera
 **New in 0.68.0:** the native SillyTavern drawer starts with six groups: **General play**, **Windows & appearance**, **World & rules**, **Presets & character cards**, **Tracking & notifications**, and **Advanced & diagnostics**. Search in English or Thai for a system or setting, such as Header, currency, HP or Regex. Editors open across the drawer's full width with a sticky Back button; switching pages preserves unsaved fields and returns to the previous search or menu. Navigation does not write settings or call AI.
 
 Stats, currency, Power, Character Creation and presets have their own management pages. Existing settings and chat data keep the same storage and save handlers. To configure chat frames, use **Windows & appearance → Chat cards & NPCs**. Voice and Memory remain separate native addon drawers. [Mobile / PC review](docs/previews/settings-drawer-review/index.html) · [Screenshots](docs/previews/settings-drawer-review/mobile-organization.png) · [Thai guide](docs/settings-drawer-v0.68.0.th.md).
+
+**Fixed in 0.68.1:** settings routes keep padding and spacing when a custom theme gives native buttons opaque backgrounds and removes separators. The search input and Clear button stay aligned when the theme forces input margins. Theme colors, rounded buttons and native extension headers are preserved. Verified on a real **SillyTavern 1.19.0** installation using the supplied **Minimalism Tone** theme, all 20 pages at 320/390/768/1440px, large text, draft retention and real server saves across reload. Native Dark Lite also passes. [Real application screenshots](docs/previews/settings-theme-fix/index.html) · [Thai guide](docs/settings-theme-fix-v0.68.1.th.md).
 
 ## Character and Lore management
 
@@ -121,7 +123,9 @@ Report issues with your RoleForge version, SillyTavern version, browser, reprodu
 
 ## Development and validation
 
-Version **0.68.0** passes **1,235 unit/host tests** and syntax checks. Settings browser checks at 320/390/768/1440px exercise all 20 pages, bilingual search, Back, scrolling, retained drafts, actual saves and zero AI calls. Startup, presentation/Regex, Stats/Currency, preset import/export and language regressions pass. [Validation record](docs/validation-settings-drawer-v0.68.0.json).
+Version **0.68.1** passes **1,235 unit/host tests** and syntax checks. Real SillyTavern checks import the full user-supplied theme through the native theme UI, retain its exact CSS, exercise all 20 settings pages at 320/390/768/1440px, resize text and save/reload a dummy character's stats through the real server. Native Dark Lite and the original settings navigation suite also pass. [Validation record](docs/validation-settings-theme-v0.68.1.json).
+
+Version **0.68.0** passed **1,235 unit/host tests** and syntax checks. Settings browser checks at 320/390/768/1440px exercised all 20 pages, bilingual search, Back, scrolling, retained drafts, actual saves and zero AI calls. Startup, presentation/Regex, Stats/Currency, preset import/export and language regressions passed. [Validation record](docs/validation-settings-drawer-v0.68.0.json).
 
 Version **0.67.1** passed **1,235 unit/host tests** and syntax checks. Browser checks verified five portrait designs at 48/72/144px on 320/390/768/1280px screens, the production NPC editor, late-loaded legacy CSS, player Markdown and native widget preservation. Full theme, Regex/MVU, player lifecycle and current/legacy startup checks passed. [Validation record](docs/validation-chat-fixes-v0.67.1.json).
 
@@ -159,6 +163,8 @@ Run `npm run test:regex` for the focused compatibility suites. The shared suite 
 Run `npm run test:archive` for the Character/Lore filters, bulk controls, persistence and mobile layout checks.
 
 Run `npm run test:settings` for native drawer navigation, English/Thai search, all settings pages, draft retention, scrolling and real save handlers.
+
+Run `ST_REAL_URL=http://127.0.0.1:18174 ST_THEME_FILE=/path/to/theme.json npm run test:settings-theme:real` against a real SillyTavern server with RoleForge installed and a separate test data directory. This creates a dummy character and saves test preferences. [Real application test setup](docs/settings-theme-fix-v0.68.1.th.md).
 
 Run `npm run test:lore-capacity` for large Lore libraries, capacity settings, chunked exports and one-card round trips.
 

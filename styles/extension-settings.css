@@ -144,9 +144,13 @@
 #tretaresia-rpg-settings .rf-settings-search { margin:0 0 12px; }
 #tretaresia-rpg-settings .rf-settings-search > label { display:block; margin:0 0 5px; color:inherit; font-size:.85em; opacity:.8; }
 #tretaresia-rpg-settings .rf-settings-search > div { display:flex; gap:6px; min-width:0; }
-#tretaresia-rpg-settings .rf-settings-search input { width:100%; flex:1; min-width:0; min-height:44px; margin:0; }
+#tretaresia-rpg-settings .rf-settings-search input { width:100%; flex:1; min-width:0; min-height:44px; margin:0!important; }
 #tretaresia-rpg-settings .rf-settings-search button { min-width:44px; min-height:44px; flex:none; }
-#tretaresia-rpg-settings .rf-settings-route.menu_button { display:flex; align-items:center; gap:10px; width:100%; min-height:68px; padding:12px 0; border:0; border-top:1px solid var(--rf-settings-line); border-radius:0; background:transparent; color:inherit; font:inherit; text-align:left; }
+/* Themes may give native buttons an opaque fill and rounded corners. Keep
+   room between routes and inside each route when their separators disappear. */
+#tretaresia-rpg-settings :is(.rf-settings-groups,.rf-settings-results) { display:grid; gap:8px; }
+#tretaresia-rpg-settings .rf-settings-page > .rf-settings-route + .rf-settings-route { margin-top:8px; }
+#tretaresia-rpg-settings .rf-settings-route.menu_button { display:flex; align-items:center; gap:10px; width:100%; min-height:68px; padding:12px; border:0; border-top:1px solid var(--rf-settings-line); border-radius:0; background:transparent; color:inherit; font:inherit; text-align:left; }
 #tretaresia-rpg-settings .rf-settings-route.menu_button:hover { background:var(--rf-settings-control); }
 #tretaresia-rpg-settings .rf-settings-route > i:first-child { width:20px; flex:0 0 20px; text-align:center; color:inherit; opacity:.65; }
 #tretaresia-rpg-settings .rf-settings-route > i:last-child { margin-left:auto; font-size:.75em; opacity:.5; }
