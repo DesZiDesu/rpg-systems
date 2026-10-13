@@ -1,6 +1,7 @@
 // Full production startup in a minimal SillyTavern host, not extracted functions.
 // Optional: CHROMIUM_EXECUTABLE=/path/to/chromium node tests/startup.browser.mjs
 import assert from 'node:assert/strict';
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -54,26 +55,26 @@ try{
  const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
- await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>Boolean(window.TretaresiaRelease));await page.waitForSelector('#tretaresia-presentation-settings .trpg-settings');
+ await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>Boolean(window.TretaresiaRelease));await page.waitForSelector('#tretaresia-presentation-settings .trpg-settings',{state:'attached'});
  const settings=page.locator('#tretaresia-rpg-settings'),power=page.locator('#roleforge-power-editor');
  await settings.locator('details').evaluateAll(nodes=>nodes.forEach(n=>n.open=true));
  assert(!/[ก-๛]/.test(await settings.innerText()),'English settings must not contain Thai labels: '+JSON.stringify((await settings.innerText()).split('\n').filter(line=>/[ก-๛]/.test(line))));
- await page.locator('#tretaresia-rpg-roleplay-language').selectOption('th');
+ await revealSetting(page,'#tretaresia-rpg-roleplay-language');await page.locator('#tretaresia-rpg-roleplay-language').selectOption('th');
  await page.locator('#roleforge-power-settings').evaluate(n=>n.open=true);
- await power.getByLabel('Power preset',{exact:true}).selectOption('custom');
+ await revealSetting(page,'#roleforge-power-editor');await power.getByLabel('Power preset',{exact:true}).selectOption('custom');
  await power.getByRole('button',{name:'＋ Create power',exact:true}).click();
  const name=power.locator('[name=name]'),description=power.locator('[name=description]');
  await name.fill('พลังผู้ใช้');await description.fill('User prose ภาษาไทย');
- await page.locator('#tretaresia-rpg-language').selectOption('th');
+ await revealSetting(page,'#tretaresia-rpg-language');await page.locator('#tretaresia-rpg-language').selectOption('th');
  assert.equal(await name.inputValue(),'พลังผู้ใช้');assert.equal(await description.inputValue(),'User prose ภาษาไทย');
- await power.getByRole('button',{name:'บันทึกพลัง',exact:true}).waitFor();
+ await revealSetting(page,'#roleforge-power-editor');await power.getByRole('button',{name:'บันทึกพลัง',exact:true}).waitFor();
  assert.equal(await page.locator('#tretaresia-rpg-roleplay-language').inputValue(),'th');
  const frame=page.frameLocator('#tretaresia-character-forge iframe');await frame.locator('#trapp').evaluate(()=>window.TR.skip());
  await frame.locator('#tab_t3').click();assert.equal(await frame.locator('#tab_t3').innerText(),'พลัง');
  assert(!/[a-z]/i.test((await frame.locator('#powerGrid').innerText()).replaceAll('RoleForge','')),'Thai empty-state text');
  await frame.locator('#tab_t1').click();await frame.locator('#fName').fill('Name ชื่อผู้เล่น');
- await page.locator('#tretaresia-rpg-language').selectOption('en');
- await power.getByRole('button',{name:'Save power',exact:true}).click();
+ await revealSetting(page,'#tretaresia-rpg-language');await page.locator('#tretaresia-rpg-language').selectOption('en');
+ await revealSetting(page,'#roleforge-power-editor');await power.getByRole('button',{name:'Save power',exact:true}).click();
  assert.equal(await power.locator('h4').innerText(),'พลังผู้ใช้');
  assert.equal(await frame.locator('#fName').inputValue(),'Name ชื่อผู้เล่น');
  assert.equal(await page.locator('#tretaresia-rpg-roleplay-language').inputValue(),'th');
@@ -84,16 +85,16 @@ try{
   await page.locator('[data-action=tab-next]').click();
  }
  await page.locator('#tretaresia-rpg-close').click();
- await page.locator('[data-trpg-open]').first().click();await page.locator('[data-new]').click();
+ await revealSetting(page,'[data-trpg-open]');await page.locator('[data-trpg-open]').first().click();await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-new]').click();
  assert(!/[ก-๛]/.test(await page.locator('.trpg-manager').innerText()),'English NPC editor');
  await page.locator('.trpg-manager [data-close]').click();
- await page.locator('#tretaresia-rpg-language').selectOption('th');
- await page.locator('[data-trpg-open]').first().click();await page.locator('[data-new]').click();
+ await revealSetting(page,'#tretaresia-rpg-language');await page.locator('#tretaresia-rpg-language').selectOption('th');
+ await revealSetting(page,'[data-trpg-open]');await page.locator('[data-trpg-open]').first().click();await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-new]').click();
  await page.locator('.trpg-manager').getByRole('button',{name:'บันทึกตัวละคร',exact:true}).waitFor();
  const labels=await page.locator('.trpg-manager label,.trpg-manager summary').allTextContents();
  assert(!labels.some(x=>/NPC Management|ATTRIBUTES|CHAT APPEARANCE|Chronicler|Classic|Medallion|Emblem/.test(x)),'Thai NPC editor');
  await page.locator('.trpg-manager [data-close]').click();
- await page.reload();await page.waitForFunction(()=>Boolean(window.TretaresiaRelease));await page.waitForSelector('#tretaresia-presentation-settings .trpg-settings');
+ await page.reload();await page.waitForFunction(()=>Boolean(window.TretaresiaRelease));await page.waitForSelector('#tretaresia-presentation-settings .trpg-settings',{state:'attached'});
  assert.equal(await page.locator('#tretaresia-rpg-language').inputValue(),'th');
  assert.equal(await page.locator('#tretaresia-rpg-roleplay-language').inputValue(),'th');
  assert.deepEqual(errors,[]);console.log('PASS interface isolation, both languages, unsaved values, story language, Forge, all tabs, NPC editor and reload at '+width+'px');

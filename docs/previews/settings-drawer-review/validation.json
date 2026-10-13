@@ -1,0 +1,129 @@
+{
+  "scope": "Production settings navigation and save handlers in an isolated SillyTavern host",
+  "widths": [
+    {
+      "width": 320,
+      "groups": 6,
+      "pages": 20,
+      "controls": 39,
+      "search": true,
+      "back": true,
+      "drafts": true,
+      "realSave": true,
+      "languageSwitch": true,
+      "overflow": false,
+      "aiCalls": 0
+    },
+    {
+      "width": 390,
+      "groups": 6,
+      "pages": 20,
+      "controls": 39,
+      "search": true,
+      "back": true,
+      "drafts": true,
+      "realSave": true,
+      "languageSwitch": true,
+      "overflow": false,
+      "aiCalls": 0
+    },
+    {
+      "width": 768,
+      "groups": 6,
+      "pages": 20,
+      "controls": 39,
+      "search": true,
+      "back": true,
+      "drafts": true,
+      "realSave": true,
+      "languageSwitch": true,
+      "overflow": false,
+      "aiCalls": 0
+    },
+    {
+      "width": 1440,
+      "groups": 6,
+      "pages": 20,
+      "controls": 39,
+      "search": true,
+      "back": true,
+      "drafts": true,
+      "realSave": true,
+      "languageSwitch": true,
+      "overflow": false,
+      "aiCalls": 0
+    }
+  ],
+  "errors": [],
+  "version": "0.68.0",
+  "syntax": "passed",
+  "originalStaticControlsRetained": 46,
+  "unitTests": {
+    "passed": 1235,
+    "failed": 0
+  },
+  "regressions": {
+    "startup": [
+      "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / mobile",
+      "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / mobile",
+      "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / desktop",
+      "PASS full startup, settings, all tabs, NPC Manager: current loader / mobile",
+      "PASS full startup, settings, all tabs, NPC Manager: current loader / mobile",
+      "PASS full startup, settings, all tabs, NPC Manager: current loader / desktop"
+    ],
+    "presentationRegex": [
+      "PASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 320px",
+      "PASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 390px",
+      "PASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 1280px"
+    ],
+    "statsCurrency": [
+      "PASS stats/currency production UI at 320px: normal chat, bounds, custom definitions, hidden buttons, exact money, native settings, reduced motion, reload, no overflow",
+      "PASS stats/currency production UI at 390px: normal chat, bounds, custom definitions, hidden buttons, exact money, native settings, reduced motion, reload, no overflow",
+      "PASS stats/currency production UI at 1280px: normal chat, bounds, custom definitions, hidden buttons, exact money, native settings, reduced motion, reload, no overflow"
+    ],
+    "presets": [
+      "PASS 320px: chat isolation, card fallback, library create/rename/delete, JSON export/import, failure rollback and currency-only drafts",
+      "PASS 390px: chat isolation, card fallback, library create/rename/delete, JSON export/import, failure rollback and currency-only drafts",
+      "PASS 1280px: chat isolation, card fallback, library create/rename/delete, JSON export/import, failure rollback and currency-only drafts"
+    ],
+    "language": [
+      "PASS interface isolation, both languages, unsaved values, story language, Forge, all tabs, NPC editor and reload at 390px",
+      "PASS interface isolation, both languages, unsaved values, story language, Forge, all tabs, NPC editor and reload at 1280px"
+    ],
+    "nativeDrawer": [
+      "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 320px / full pane",
+      "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 390px / full pane",
+      "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 1280px / 300 pane",
+      "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 1280px / full pane"
+    ],
+    "chatAppearance": [
+      "PASS 5 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, NPC HUD and per-chat persistence at 320px",
+      "PASS 5 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, NPC HUD and per-chat persistence at 390px",
+      "PASS 5 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, NPC HUD and per-chat persistence at 1280px"
+    ],
+    "power": [
+      "PASS RoleForge custom creation/edit/delete/import/export, Forge hydration, values, reload, card isolation at 390px",
+      "PASS RoleForge custom creation/edit/delete/import/export, Forge hydration, values, reload, card isolation at 1280px"
+    ],
+    "characterForge": [
+      "Forge 320px: fit, optional skill, saved fields, native preset, custom Arsenal and opening passed",
+      "Forge 390px: fit, optional skill, saved fields, native preset, custom Arsenal and opening passed",
+      "Forge 1280px: fit, optional skill, saved fields, native preset, custom Arsenal and opening passed"
+    ],
+    "sharedRegex": [
+      "PASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 320px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)",
+      "PASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 390px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)",
+      "PASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 1280px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)"
+    ],
+    "mvu": [
+      "PASS MVU Regex, all modes, iframe identity, visible streaming controls, hidden history and thinking boxes at 390px (Game Maker 46840f39ca006b22870507f155145fa6324d9aa2, Builder 0ecf70bb53262091c5c41a40b3a9dff0830de2c2)",
+      "PASS MVU Regex, all modes, iframe identity, visible streaming controls, hidden history and thinking boxes at 1280px (Game Maker 46840f39ca006b22870507f155145fa6324d9aa2, Builder 0ecf70bb53262091c5c41a40b3a9dff0830de2c2)"
+    ],
+    "offlinePreview": [
+      "PASS offline review 320px: menu, search, Back, drafts, all pages fit, no external requests",
+      "PASS offline review 390px: menu, search, Back, drafts, all pages fit, no external requests",
+      "PASS offline review 768px: menu, search, Back, drafts, all pages fit, no external requests",
+      "PASS offline review 1440px: menu, search, Back, drafts, all pages fit, no external requests"
+    ]
+  }
+}

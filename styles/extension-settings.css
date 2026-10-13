@@ -137,3 +137,39 @@
 .rf-chat-theme-preview{min-width:0}.rf-chat-theme-preview>summary{cursor:pointer;padding-block:8px}
 .rf-chat-theme-preview>.trpg-chat{padding:10px;border:1px solid var(--SmartThemeBorderColor,#555);min-width:0}
 @media(max-width:390px){.rf-chat-appearance-switches{grid-template-columns:minmax(0,1fr)}}
+
+/* Task-based navigation keeps the native drawer colors and controls. */
+#tretaresia-rpg-settings .rf-settings-navigation { min-width:0; }
+#tretaresia-rpg-settings :is(.rf-settings-home,.rf-settings-page,.rf-settings-page-header,.rf-settings-results,.rf-settings-groups)[hidden] { display:none!important; }
+#tretaresia-rpg-settings .rf-settings-search { margin:0 0 12px; }
+#tretaresia-rpg-settings .rf-settings-search > label { display:block; margin:0 0 5px; color:inherit; font-size:.85em; opacity:.8; }
+#tretaresia-rpg-settings .rf-settings-search > div { display:flex; gap:6px; min-width:0; }
+#tretaresia-rpg-settings .rf-settings-search input { width:100%; flex:1; min-width:0; min-height:44px; margin:0; }
+#tretaresia-rpg-settings .rf-settings-search button { min-width:44px; min-height:44px; flex:none; }
+#tretaresia-rpg-settings .rf-settings-route.menu_button { display:flex; align-items:center; gap:10px; width:100%; min-height:68px; padding:12px 0; border:0; border-top:1px solid var(--rf-settings-line); border-radius:0; background:transparent; color:inherit; font:inherit; text-align:left; }
+#tretaresia-rpg-settings .rf-settings-route.menu_button:hover { background:var(--rf-settings-control); }
+#tretaresia-rpg-settings .rf-settings-route > i:first-child { width:20px; flex:0 0 20px; text-align:center; color:inherit; opacity:.65; }
+#tretaresia-rpg-settings .rf-settings-route > i:last-child { margin-left:auto; font-size:.75em; opacity:.5; }
+#tretaresia-rpg-settings .rf-settings-route > span { display:grid; gap:4px; min-width:0; flex:1; }
+#tretaresia-rpg-settings .rf-settings-route strong { font-size:.95em; font-weight:600; line-height:1.4; overflow-wrap:anywhere; }
+#tretaresia-rpg-settings .rf-settings-route small { font-size:.8em; font-weight:400; line-height:1.5; color:inherit; opacity:.65; overflow-wrap:anywhere; }
+#tretaresia-rpg-settings .rf-settings-empty { font-size:.85em; line-height:1.6; opacity:.75; padding:12px 0; }
+#tretaresia-rpg-settings .rf-settings-page-header { position:sticky; top:0; z-index:3; display:flex; align-items:center; gap:12px; min-width:0; padding:8px 0 12px; margin-bottom:8px; border-bottom:1px solid var(--rf-settings-line); background:var(--SmartThemeChatTintColor,var(--SmartThemeBlurTintColor,#202020)); backdrop-filter:blur(12px); }
+#tretaresia-rpg-settings .rf-settings-page-header button { min-height:44px; flex:none; padding:6px 10px; }
+#tretaresia-rpg-settings .rf-settings-page-header > div { flex:1; min-width:0; }
+#tretaresia-rpg-settings .rf-settings-page-header h3 { font-family:inherit; font-size:1em; font-weight:600; line-height:1.45; margin:2px 0 0; overflow-wrap:anywhere; }
+#tretaresia-rpg-settings .rf-settings-page-header small { font-size:.75em; opacity:.65; }
+#tretaresia-rpg-settings .rf-settings-page { min-width:0; min-height:calc(100vh - 130px); min-height:calc(100dvh - 130px); padding-bottom:4px; }
+#tretaresia-rpg-settings .rf-settings-page > .rf-settings-section:first-child { border-top:0; }
+#tretaresia-rpg-settings .rf-settings-page .rf-settings-section-body { display:grid; gap:8px; min-width:0; }
+#tretaresia-rpg-settings .rf-settings-managed { display:block; margin:0; padding:0; border:0; border-radius:0; background:transparent; }
+#tretaresia-rpg-settings .rf-settings-managed > summary { display:none; }
+#tretaresia-rpg-settings .rf-settings-managed > .rf-settings-fold-body { padding-top:0; }
+#tretaresia-rpg-settings .rf-settings-page .trpg-optional-systems { padding-top:0; }
+#tretaresia-rpg-settings .rf-settings-page :is(input:not([type=checkbox]):not([type=range]):not([type=file]),select) { min-height:44px; }
+#tretaresia-rpg-settings .rf-settings-page .tretaresia-settings-grid { margin:0; }
+@container roleforge-settings (max-width:480px) {
+    #tretaresia-rpg-settings .rf-settings-navigation :is(input:not([type=checkbox]):not([type=range]),select,textarea) { font-size:16px; }
+    #tretaresia-rpg-settings .rf-settings-route.menu_button { min-height:70px; }
+    #tretaresia-rpg-settings .rf-settings-page .menu_button { min-height:44px; }
+}

@@ -1,5 +1,6 @@
 // Production loader + iframe + drawer, with saved drafts and a controlled host.
 import assert from 'node:assert/strict';
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -107,7 +108,7 @@ try{
   // Exercise native preset workspace and save only to the active chat.
   await page.locator('#extensions_settings2').evaluate(n=>n.style.display='block');
   await page.locator('#tretaresia-rpg-settings').evaluate(n=>{n.querySelectorAll('details').forEach(d=>d.open=true);n.querySelectorAll('.inline-drawer-content').forEach(d=>d.style.display='block')});
-  const w=page.locator('#roleforge-forge-editor .rf-forge-workspace');await w.waitFor({state:'attached'});
+  await revealSetting(page,'#roleforge-forge-editor');const w=page.locator('#roleforge-forge-editor .rf-forge-workspace');await w.waitFor({state:'attached'});
   await w.locator('select').selectOption('custom');await w.locator('.rf-forge-editor').waitFor();
   const groups=w.locator('fieldset');
   for (const [label,values] of [['Origin locations',['Arcadia']],['Social standings',['Citizen','Merchant']]]) {const group=groups.filter({hasText:label});for(const value of values){await group.locator('button').filter({hasText:'+ Add choice'}).click();await group.locator('input').last().fill(value);}}

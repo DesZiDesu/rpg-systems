@@ -2,6 +2,7 @@
 // preserved actions, actual saved preferences and runtime settings workspaces.
 // Run: CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/extension-drawer.browser.mjs
 import assert from 'node:assert/strict';
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 import http from 'node:http';
 import {mkdir, readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -35,12 +36,12 @@ body{margin:0;background:#090909;color:var(--SmartThemeBodyColor);font:var(--mai
 const callbacks=new Map(),eventTypes=Object.fromEntries(['CHAT_CHANGED','MESSAGE_SENT','GENERATION_STARTED','GENERATION_AFTER_COMMANDS','MESSAGE_RECEIVED','MESSAGE_SWIPED','MESSAGE_DELETED','MESSAGE_EDITED','MESSAGE_UPDATED','CHARACTER_MESSAGE_RENDERED','GENERATION_ENDED','GENERATION_STOPPED','STREAM_TOKEN_RECEIVED'].map(type=>[type,type]));
 const initial={tretaresia_rpg:{language:'th',autoTrack:false,injectState:false,autoContinuity:false,chatPresentation:false,showSceneTracker:false,memoryAutoSummary:false}};
 window.aiRequests=0;window.notices=[];
-window.host={extensionSettings:JSON.parse(localStorage.getItem('rf-drawer-settings')||'null')||initial,chatMetadata:{},
+window.host={extensionSettings:JSON.parse(localStorage.getItem('rf-drawer-settings')||'null')||initial,chatMetadata:JSON.parse(localStorage.getItem('rf-drawer-metadata')||'{}'),
  chat:[{is_user:true,name:'ผู้เล่น',mes:'ฉันเดินไปที่แม่น้ำ'},{is_user:false,name:'ผู้บรรยาย',mes:'คอร่ายืนอยู่ข้างแม่น้ำและโบกมือทักทาย'}],
  characters:[{name:'Drawer test',avatar:'drawer-test.png',first_mes:'',data:{extensions:{}}}],characterId:0,eventTypes,
  eventSource:{on(type,fn){const list=callbacks.get(type)||[];list.push(fn);callbacks.set(type,list);},off(type,fn){callbacks.set(type,(callbacks.get(type)||[]).filter(next=>next!==fn));},async emit(type,...args){await Promise.all((callbacks.get(type)||[]).map(fn=>fn(...args)));}},
  getCurrentChatId:()=> 'drawer-test',getRequestHeaders:()=>({'Content-Type':'application/json'}),
- saveSettingsDebounced(){localStorage.setItem('rf-drawer-settings',JSON.stringify(this.extensionSettings));},saveMetadata:async()=>{},setExtensionPrompt(){},
+ saveSettingsDebounced(){localStorage.setItem('rf-drawer-settings',JSON.stringify(this.extensionSettings));},saveMetadata:async()=>{localStorage.setItem('rf-drawer-metadata',JSON.stringify(window.host.chatMetadata));},setExtensionPrompt(){},
  generateRaw:async()=>{window.aiRequests++;return '{}';},
  renderExtensionTemplateAsync:async(folder,name)=>{const response=await fetch('/scripts/extensions/'+folder+'/'+name+'.html');if(!response.ok)throw Error('Template '+response.status);return response.text();}};
 window.SillyTavern={getContext:()=>window.host,libs:{}};
@@ -65,6 +66,7 @@ async function ready(page) {
     await page.locator('#tretaresia-rpg-open-from-settings').waitFor({state:'visible'});
 }
 async function openFold(page, selector) {
+    await revealSetting(page, selector);
     const fold = page.locator(selector);
     if (!await fold.evaluate(node => node.open)) await fold.locator(':scope > summary').click();
     assert(await fold.evaluate(node => node.open));
@@ -76,7 +78,8 @@ async function fit(page, name) {
             const rect = child.getBoundingClientRect();
             return rect.width && rect.height && (rect.left < outer.left - 1 || rect.right > outer.right + 1);
         }).slice(0, 8).map(child => ({id:child.id,class:child.className,left:child.getBoundingClientRect().left,right:child.getBoundingClientRect().right}));
-        const sections = [...node.querySelector('.rf-settings-sections').children].map(child => child.getBoundingClientRect());
+        const section=node.querySelector('[data-rf-settings-page]:not([hidden])')||node.querySelector('[data-rf-settings-home]');
+        const sections=[...section.children].filter(child=>!child.hidden).map(child=>child.getBoundingClientRect());
         return {width:innerWidth,left:outer.left,right:outer.right,client:node.clientWidth,scroll:node.scrollWidth,wide,overlap:sections.some((rect,index) => index && sections[index-1].bottom > rect.top + 1),document:document.documentElement.scrollWidth};
     });
     assert(metrics.left >= -1 && metrics.right <= metrics.width + 1 && metrics.scroll <= metrics.client + 1 && metrics.document <= metrics.width + 1 && !metrics.overlap && !metrics.wide.length, `${name}: ${JSON.stringify(metrics)}`);
@@ -94,12 +97,14 @@ try {
         await page.goto(`http://127.0.0.1:${server.address().port}/?pane=${pane}`);await ready(page);
         const settings = page.locator('#tretaresia-rpg-settings'), name = `${width}-${pane}`;
         for (const id of ids) assert.equal(await settings.locator(`[id="${id}"]`).count(), id === 'tretaresia-rpg-settings' ? 0 : 1, `original/new hook ${id} retained exactly once`);
-        assert.equal(await settings.locator('.rf-settings-fold').count(),5);
-        assert.equal(await settings.locator('.rf-settings-fold[open]').count(),0,'advanced groups begin collapsed');
-        assert.equal(await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').count(),4);
+        assert.equal(await settings.locator('[data-rf-settings-groups]>button').count(),6);
+        assert.equal(await settings.locator('[data-rf-settings-page]').count(),20);
+        assert.equal(await settings.locator('[data-rf-settings-page]:not([hidden])').count(),0,'editors begin hidden behind the home menu');
+        const presentationKeys=await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').evaluateAll(nodes=>nodes.map(node=>node.dataset.presentationSetting).sort());
+        assert(presentationKeys.includes('chatRegexMode')&&presentationKeys.includes('showChatHeader')&&presentationKeys.includes('showChatDialogue')&&presentationKeys.includes('showChatNarrative'));
         assert.equal(await settings.locator(':scope > .trpg-settings').count(),0,'NPC runtime settings stay inside their dedicated group');
         assert.equal(await page.locator('.trpg-presentation-status').count(),1);
-        assert.match(await page.locator('.trpg-presentation-status').innerText(), /RoleForge.*คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบ/);
+        assert.match(await page.locator('.trpg-presentation-status').textContent(), /คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบ/);
         assert.equal(await page.locator('#roleforge-optional-settings [data-optional-setting]').count(),9);
         // Compare with a neighbouring native extension, including the closed
         // header: RoleForge must inherit the host typography, colour and chrome.
@@ -135,43 +140,44 @@ try {
         await page.locator('#tretaresia-manual-sync [data-form="manual-sync"]').waitFor({state:'visible'});
         await page.locator('#tretaresia-manual-sync header [data-action="close-manual-sync"]').click();
         await page.locator('#tretaresia-rpg-close').click();
-        await page.locator('#tretaresia-presentation-settings [data-trpg-open]').click();
+        await revealSetting(page,'#tretaresia-presentation-settings');await page.locator('#tretaresia-presentation-settings [data-trpg-open]').click();
         await page.locator('.trpg-manager[open]').waitFor({state:'visible'});
         await page.locator('.trpg-manager [data-close]').click();
 
-        await page.locator('#tretaresia-rpg-roleplay-language').selectOption('th');
-        await page.locator('#tretaresia-rpg-activity-indicator').selectOption('compact');
+        await revealSetting(page,'#tretaresia-rpg-roleplay-language');await page.locator('#tretaresia-rpg-roleplay-language').selectOption('th');
+        await revealSetting(page,'#tretaresia-rpg-activity-indicator');await page.locator('#tretaresia-rpg-activity-indicator').selectOption('compact');
         await page.locator('#tretaresia-rpg-show-scene-tracker').check();
-        await page.locator('#tretaresia-presentation-settings [data-presentation-setting="preserveNativeChat"]').check();
+        await revealSetting(page,'#tretaresia-presentation-settings');await page.locator('#tretaresia-presentation-settings [data-presentation-setting="chatRegexMode"]').selectOption('native');
         const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('rf-drawer-settings')).tretaresia_rpg);
-        assert.equal(saved.roleplayLanguage,'th');assert.equal(saved.activityIndicator,'compact');assert.equal(saved.showSceneTracker,true);assert.equal(saved.preserveNativeChat,true);
+        assert.equal(saved.roleplayLanguage,'th');assert.equal(saved.activityIndicator,'compact');assert.equal(saved.showSceneTracker,false,'chat display does not overwrite the global default');assert.equal(saved.chatRegexMode,'native');
+        await page.waitForFunction(()=>JSON.parse(localStorage.getItem('rf-drawer-metadata')||'{}').roleforge_chat_presets?.config.systems.showSceneTracker===true);
         await page.reload();await ready(page);
         assert.equal(await page.locator('#tretaresia-rpg-roleplay-language').inputValue(),'th');
         assert.equal(await page.locator('#tretaresia-rpg-activity-indicator').inputValue(),'compact');
         assert(await page.locator('#tretaresia-rpg-show-scene-tracker').isChecked());
-        assert(await page.locator('[data-presentation-setting="preserveNativeChat"]').isChecked());
+        assert.equal(await page.locator('[data-presentation-setting="chatRegexMode"]').inputValue(),'native');
 
         // Locale changes refresh translated groups without replacing their
         // runtime controls, saved values, listeners or unsent inputs.
-        await page.locator('#tretaresia-rpg-language').selectOption('en');
+        await revealSetting(page,'#tretaresia-rpg-language');await page.locator('#tretaresia-rpg-language').selectOption('en');
         assert.match(await settings.locator('.tretaresia-rpg-settings-copy').first().innerText(),/persistent RoleForge role-play state/);
-        assert.equal(await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').count(),4);
+        assert.deepEqual(await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').evaluateAll(nodes=>nodes.map(node=>node.dataset.presentationSetting).sort()),presentationKeys);
         await page.locator('#tretaresia-rpg-language').selectOption('th');
 
-        const folds = settings.locator('.rf-settings-fold');
-        for (const fold of await folds.all()) await fold.locator(':scope > summary').click();
         await openFold(page,'#roleforge-power-settings');await openFold(page,'#roleforge-forge-settings');
-        await page.locator('#roleforge-power-editor .rf-power-workspace').waitFor();
+        await page.locator('#roleforge-power-editor .rf-power-workspace').waitFor({state:'attached'});
         await page.locator('#roleforge-forge-editor .rf-forge-workspace').waitFor();
         assert.equal(await page.locator('#roleforge-writing-settings [data-adult-list]').count(),1);
         assert.equal(await page.locator('#roleforge-diagnostics-settings [data-tretaresia-request-usage]').count(),1);
-        assert(await page.locator('#roleforge-diagnostics-settings [data-tretaresia-request-usage]').isVisible());
-        await page.locator('#tretaresia-rpg-density').selectOption('compact');
+        await revealSetting(page,'#roleforge-diagnostics-settings');assert(await page.locator('#roleforge-diagnostics-settings [data-tretaresia-request-usage]').isVisible());
+        await revealSetting(page,'#tretaresia-rpg-density');await page.locator('#tretaresia-rpg-density').selectOption('compact');
         await page.locator('#tretaresia-rpg-glow').evaluate(node => {node.value='24';node.dispatchEvent(new Event('input',{bubbles:true}));node.dispatchEvent(new Event('change',{bubbles:true}));});
         const advanced = await page.evaluate(() => JSON.parse(localStorage.getItem('rf-drawer-settings')).tretaresia_rpg);
         assert.equal(advanced.density,'compact');assert.equal(Number(advanced.glowStrength),24);
-        for (const details of await settings.locator('details').all()) if (!await details.evaluate(node => node.open)) await details.locator(':scope > summary').click();
-        await fit(page, `${name} all advanced groups`);
+        for(const id of ['general','interface','world','presets','tracking','advanced','powers','forge','diagnostics','interface-colors']){
+            await page.evaluate(id=>document.getElementById('tretaresia-rpg-settings').rfSettingsNavigation.open(id,{direct:true}),id);
+            await page.waitForTimeout(40);await fit(page,`${name} ${id}`);
+        }
         assert.equal(await page.evaluate(() => window.aiRequests),0,'opening settings/managers and changing local preferences makes no model calls');
         assert.deepEqual(errors,[]);
         console.log(`PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at ${width}px / ${pane} pane`);

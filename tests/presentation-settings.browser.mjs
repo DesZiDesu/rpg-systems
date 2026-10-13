@@ -1,6 +1,7 @@
 // Actual loader/settings/renderer: presentation priority, persistence and safe status.
 // Run: CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/presentation-settings.browser.mjs
 import assert from 'node:assert/strict';
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 import http from 'node:http';
 import {mkdir,readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -33,6 +34,7 @@ async function ready(page){
   document.querySelector('#extensions_settings2').style.display='block';
   window.presentationPrompts=new Map();window.host.setExtensionPrompt=(key,value)=>window.presentationPrompts.set(key,value);
  });
+ await revealSetting(page,'#tretaresia-presentation-settings');
 }
 function control(page,key){return page.locator(`#tretaresia-rpg-settings [data-presentation-setting="${key}"]`);}
 async function toggle(page,key,value){
@@ -109,7 +111,7 @@ try{
   await status(page,/No character reply yet/);
   await reply(page,taggedBody);await status(page,/Latest reply has presentation blocks/);
   await toggle(page,'chatRegexMode','roleforge');
-  await page.locator('#tretaresia-rpg-language').selectOption('th');
+  await revealSetting(page,'#tretaresia-rpg-language');await page.locator('#tretaresia-rpg-language').selectOption('th');await revealSetting(page,'#tretaresia-presentation-settings');
   await status(page,/รูปแบบ RoleForge เดิม.*คำตอบล่าสุดมีบล็อกจัดรูปแบบ/);
   assert.match(await control(page,'chatRegexMode').locator('..').innerText(),/การแสดงแชทร่วมกับ Regex \/ HTML/);
   assert.match(await page.locator('.trpg-presentation-help').innerText(),/โหมดแสดงร่วมกันเก็บ UI และปุ่มของ Regex/);

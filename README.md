@@ -1,12 +1,18 @@
 # RoleForge
 
-**Public release: 0.67.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.68.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+## Extension settings
+
+**New in 0.68.0:** the native SillyTavern drawer starts with six groups: **General play**, **Windows & appearance**, **World & rules**, **Presets & character cards**, **Tracking & notifications**, and **Advanced & diagnostics**. Search in English or Thai for a system or setting, such as Header, currency, HP or Regex. Editors open across the drawer's full width with a sticky Back button; switching pages preserves unsaved fields and returns to the previous search or menu. Navigation does not write settings or call AI.
+
+Stats, currency, Power, Character Creation and presets have their own management pages. Existing settings and chat data keep the same storage and save handlers. To configure chat frames, use **Windows & appearance → Chat cards & NPCs**. Voice and Memory remain separate native addon drawers. [Mobile / PC review](docs/previews/settings-drawer-review/index.html) · [Screenshots](docs/previews/settings-drawer-review/mobile-organization.png) · [Thai guide](docs/settings-drawer-v0.68.0.th.md).
 
 ## Character and Lore management
 
@@ -20,7 +26,7 @@ The list fills the mobile window with one scrolling area. Page controls and batc
 
 ## Chat designs
 
-**Extensions → RoleForge → Chat appearance & NPCs** offers **RoleForge Original** and **The Mage’s Folio**. Folio has a right-hand square portrait, book-style nameplate, real NPC badge, rounded speech slip and a pen signature. Each speaker’s identity color tints their Header and Dialogue; red characters use red accents and a dark red speech frame with readable light text. The badge can show occupation + overall NPC rank, or a selected skill + its mastery level. Missing facts are hidden, and nonmagic settings work too.
+**Extensions → RoleForge → Windows & appearance → Chat cards & NPCs** offers **RoleForge Original** and **The Mage’s Folio**. Folio has a right-hand square portrait, book-style nameplate, real NPC badge, rounded speech slip and a pen signature. Each speaker’s identity color tints their Header and Dialogue; red characters use red accents and a dark red speech frame with readable light text. The badge can show occupation + overall NPC rank, or a selected skill + its mastery level. Missing facts are hidden, and nonmagic settings work too.
 
 **Added in 0.67.0:** **The Gilded Chapter** brings a left square portrait and chamfered walnut speech frame; **The Royal Codex** has a right square portrait, double gold bookplate and right pen rail; **Aincrad Interface** uses silver speech panels, orange selections and green NPC HP/Lv accents. All three use existing NPC facts, character colors and live Voice controls. Their Header and Narrative remain transparent, and each frame can be disabled independently. Original remains the default and Folio stays available. [Mobile / PC preview](docs/previews/chat-designs/index.html) · [Offline preview](docs/previews/chat-designs/standalone.html) · [Download previews](docs/previews/chat-designs/roleforge-chat-designs-preview.zip) · [Thai guide](docs/chat-designs-v0.67.0.th.md).
 
@@ -115,7 +121,9 @@ Report issues with your RoleForge version, SillyTavern version, browser, reprodu
 
 ## Development and validation
 
-Version **0.67.1** passes **1,235 unit/host tests** and syntax checks. Browser checks verify five portrait designs at 48/72/144px on 320/390/768/1280px screens, the production NPC editor, late-loaded legacy CSS, player Markdown and native widget preservation. Full theme, Regex/MVU, player lifecycle and current/legacy startup checks pass. [Validation record](docs/validation-chat-fixes-v0.67.1.json).
+Version **0.68.0** passes **1,235 unit/host tests** and syntax checks. Settings browser checks at 320/390/768/1440px exercise all 20 pages, bilingual search, Back, scrolling, retained drafts, actual saves and zero AI calls. Startup, presentation/Regex, Stats/Currency, preset import/export and language regressions pass. [Validation record](docs/validation-settings-drawer-v0.68.0.json).
+
+Version **0.67.1** passed **1,235 unit/host tests** and syntax checks. Browser checks verified five portrait designs at 48/72/144px on 320/390/768/1280px screens, the production NPC editor, late-loaded legacy CSS, player Markdown and native widget preservation. Full theme, Regex/MVU, player lifecycle and current/legacy startup checks passed. [Validation record](docs/validation-chat-fixes-v0.67.1.json).
 
 The extension runs directly from **manifest.json** and **loader.js**. Runtime modules are in **src/**, styles in **styles/**, and settings/Character Forge templates in **templates/**. Small CSS files at the repository root support cached older loaders and must remain.
 
@@ -149,6 +157,8 @@ Shared rendering is tested at 320/390/1280px with the actual pinned SillyTavern 
 Run `npm run test:regex` for the focused compatibility suites. The shared suite downloads pinned upstream test dependencies with `curl` into a temporary cache; `ST_REGEX_CACHE` can point to a prepared cache. This does not install runtime dependencies or change SillyTavern.
 
 Run `npm run test:archive` for the Character/Lore filters, bulk controls, persistence and mobile layout checks.
+
+Run `npm run test:settings` for native drawer navigation, English/Thai search, all settings pages, draft retention, scrolling and real save handlers.
 
 Run `npm run test:lore-capacity` for large Lore libraries, capacity settings, chunked exports and one-card round trips.
 

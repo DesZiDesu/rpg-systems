@@ -1,6 +1,7 @@
 // Full production startup in a minimal SillyTavern host, not extracted functions.
 // Optional: CHROMIUM_EXECUTABLE=/path/to/chromium node tests/startup.browser.mjs
 import assert from 'node:assert/strict';
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -56,11 +57,12 @@ try{
   await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
   await page.goto('http://127.0.0.1:'+server.address().port);
   await page.waitForFunction(()=>Boolean(window.TretaresiaRelease));
-  const frame=page.frameLocator('#tretaresia-character-forge iframe');await frame.locator('#trapp').waitFor();
+  const frame=page.frameLocator('#tretaresia-character-forge iframe');await frame.locator('#trapp').waitFor({state:'attached'});
   await frame.locator('#trapp').evaluate(()=>window.TR.skip());
+  await frame.locator('#trapp:not(.loading)').waitFor();
   assert.equal(await page.locator('#tretaresia-rpg-wand-launcher').innerText(),'RoleForge');
   await frame.locator('#tab_t3').click();assert.equal(await frame.locator('#managePowers').count(),0);
-  await page.locator('#tretaresia-rpg-settings .rf-settings-fold').filter({has:page.locator('#roleforge-power-settings')}).evaluate(n=>n.open=true);await page.locator('#roleforge-power-settings summary').click();
+  await revealSetting(page,'#roleforge-power-editor');
   const panel=page.locator('#roleforge-power-editor'),values=page.locator('[data-panel=techniques]');await panel.locator('.rf-power-workspace').waitFor();
   assert.equal(await panel.getByLabel('Power preset',{exact:true}).inputValue(),'tretaresia');
   await panel.getByLabel('Power preset',{exact:true}).selectOption('custom');
@@ -96,7 +98,7 @@ try{
   await page.reload();await page.waitForFunction(()=>Boolean(window.TretaresiaRelease));
   await page.locator('#tretaresia-rpg-wand-launcher').click();for(let i=0;i<4;i++)await page.getByRole('button',{name:'Next module',exact:true}).click();
   assert.equal(await values.getByLabel('Chakra value',{exact:true}).inputValue(),'80');
-  await page.locator('#tretaresia-rpg-close').click();await page.locator('#tretaresia-rpg-settings .rf-settings-fold').filter({has:page.locator('#roleforge-power-settings')}).evaluate(n=>n.open=true);await page.locator('#roleforge-power-settings summary').click();
+  await page.locator('#tretaresia-rpg-close').click();await revealSetting(page,'#roleforge-power-editor');
   await page.evaluate(()=>{window.host.characterId=1;window.host.chatMetadata={};window.host.eventSource.emit('CHAT_CHANGED');});
   await page.waitForFunction(()=>document.querySelector('[aria-label="Power preset"]')?.value==='tretaresia');
   await panel.getByLabel('Power preset',{exact:true}).selectOption('custom');await panel.getByText('Custom is empty',{exact:false}).waitFor();

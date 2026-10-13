@@ -1,5 +1,6 @@
 // Actual loader, native settings and renderer: independent per-chat frames.
 import assert from 'node:assert/strict';
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -24,6 +25,7 @@ async function choose(page,key,value){
 async function ready(page){
  await page.waitForFunction(()=>window.hStatsPreview?.ready);await page.waitForSelector('[data-presentation-setting=showChatHeader]',{state:'attached'});
  await page.evaluate(()=>{document.querySelector('#tretaresia-rpg-close').click();document.querySelector('.preview-host').style.display='none';document.querySelector('#extensions_settings2').style.display='block';document.querySelector('#tretaresia-rpg-settings .inline-drawer-content').style.display='block';document.querySelector('#chat').style.cssText='display:block;padding:12px;box-sizing:border-box;font:16px/1.6 system-ui';});
+ await revealSetting(page,'#tretaresia-presentation-settings');
 }
 async function add(page,text=source,{rich=false,user=false}={}){
  const id=await page.evaluate(({text,rich,user})=>{

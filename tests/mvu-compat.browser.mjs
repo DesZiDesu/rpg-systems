@@ -1,6 +1,7 @@
 // Actual RoleForge + pinned ST Regex/Markdown/sanitizer + actual MVU rules and
 // frontend. Helper normal/streaming DOM contracts are adapted; APIs are mocked.
 import assert from 'node:assert/strict';
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -52,7 +53,7 @@ try{
             const style=document.createElement('style');style.textContent='.mes_text pre code{display:block;white-space:pre-wrap;overflow-x:auto}.hidden\\!{display:none!important}';document.head.append(style);
         });
         await page.evaluate(()=>window.hStatsPreview.switchChat('mvu-compat',{tretaresia_rpg_state:{player:{name:'Nova'},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true},location:{place:'Library',narrativeVersion:1}}}));
-        await page.locator('[data-presentation-setting="chatPresentation"]').check();
+        await revealSetting(page,'#tretaresia-presentation-settings');await page.locator('[data-presentation-setting="chatPresentation"]').check();
         await page.evaluate(rules=>{window.host.characters[0].data.extensions.regex_scripts=rules;window.host.extensionSettings.character_allowed_regex=[window.host.characters[0].avatar];},mvu.rules);
         const id=await add(page,story+suffix),body=page.locator(`[mesid="${id}"] .mes_text`);
         assert.equal(await body.locator('pre code').count(),1);assert.equal(await body.locator('.trpg-header').count(),1);

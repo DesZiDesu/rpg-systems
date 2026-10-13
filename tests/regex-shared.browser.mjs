@@ -1,6 +1,7 @@
 // Real pinned ST Regex + MessageFormatter + Showdown + DOMPurify/sanitizer hooks;
 // actual RoleForge loader, settings, renderer, Voice and composer UI.
 import assert from 'node:assert/strict';
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -77,7 +78,7 @@ try{
             const input=document.querySelector('#send_textarea');input.style.cssText='display:block;width:100%;height:50px';form.append(input);
         });
         await page.evaluate(()=>window.hStatsPreview.switchChat('regex-shared-ui',{tretaresia_rpg_state:{player:{name:'Nova'},onboarding:{identitySeeded:true,locationSeeded:true,loadoutSeeded:true},location:{place:'Library',narrativeVersion:1}}}));
-        await page.locator('[data-presentation-setting="chatPresentation"]').check();
+        await revealSetting(page,'#tretaresia-presentation-settings');await page.locator('[data-presentation-setting="chatPresentation"]').check();
         // The engine applies global → preset → character scripts once, to the
         // complete message. Regex-generated HTML remains inside NPC blocks.
         await rules(page,{
