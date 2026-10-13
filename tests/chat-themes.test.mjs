@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {CHAT_THEMES,chatAppearance,normalizeChatAppearance,validateChatAppearance} from '../src/chat-themes.js';
 import {exportWorldPreset,importWorldPreset,readChatPreset,CHAT_PRESET_KEY} from '../src/world-presets.js';
 import {readCharacterPack,writeCharacterPack,CHARACTER_PACK_FIELD} from '../src/character-archive.js';
-test('Original and Folio have independent frames and no color-mode setting',()=>{
- assert.deepEqual(CHAT_THEMES.map(t=>t.key),['roleforge','folio']);
- assert.deepEqual(chatAppearance({}),{theme:'roleforge',header:true,dialogue:true,narrative:true,effects:true,badgeMode:'occupation',badgeAbility:''});
+test('released designs have independent frames and no color-mode setting',()=>{
+ assert.deepEqual(CHAT_THEMES.map(t=>t.key),['roleforge','folio','chapter','codex','aincrad']);
+ assert.deepEqual(chatAppearance({}),{theme:'roleforge',header:true,dialogue:true,narrative:true,effects:true,npcVitals:true,badgeMode:'occupation',badgeAbility:''});
  assert.equal(chatAppearance({chatEffects:false}).effects,false);
  assert.deepEqual(chatAppearance({chatColorMode:'light'}),chatAppearance({}));
  assert.equal(normalizeChatAppearance({theme:'<script>',header:null}).theme,'roleforge');
@@ -44,7 +44,7 @@ test('a one-card pack carries appearance independently and invalid themes cannot
  assert.equal(readCharacterPack(context,'card:academy.png').chatAppearance,undefined);assert.equal(readCharacterPack(context,'card:academy.png').systems.autoTrack,false);
 });
 test('Folio and its real-data badge source round-trip in presets and one-card packs',async()=>{
- const view={theme:'folio',header:true,dialogue:false,narrative:true,effects:true,badgeMode:'ability',badgeAbility:'Water Magic'};
+ const view={theme:'folio',header:true,dialogue:false,narrative:true,effects:true,npcVitals:true,badgeMode:'ability',badgeAbility:'Water Magic'};
  assert.equal(CHAT_THEMES[0].name,'RoleForge Original');assert.equal(CHAT_THEMES[1].name,'The Mage’s Folio');
  assert.deepEqual(chatAppearance({chatTheme:'folio',showChatDialogue:false,chatHeaderBadgeMode:'ability',chatHeaderBadgeAbility:'Water Magic'}),view);
  assert.deepEqual(importWorldPreset(exportWorldPreset({chatAppearance:view},'Folio')).config.chatAppearance,view);
@@ -52,4 +52,17 @@ test('Folio and its real-data badge source round-trip in presets and one-card pa
  await writeCharacterPack(context,{},'card:folio.png',{format:'roleforge-character-pack',version:1,chatAppearance:view});
  assert.deepEqual(readCharacterPack(context,'card:folio.png').chatAppearance,view);
  for(const bad of [{badgeMode:'magic'},{badgeAbility:42},{badgeAbility:'x'.repeat(121)}])assert.throws(()=>validateChatAppearance({...view,...bad}));
+});
+test('approved designs, NPC HUD choices and independent frames survive chat/library/card round trips',async()=>{
+ for(const theme of ['chapter','codex','aincrad'])for(let flags=0;flags<8;flags++){
+  const view=normalizeChatAppearance({theme,header:Boolean(flags&1),dialogue:Boolean(flags&2),narrative:Boolean(flags&4),effects:false,npcVitals:false,badgeMode:'ability',badgeAbility:'Deduction'});
+  assert.deepEqual(chatAppearance({chatTheme:theme,showChatHeader:view.header,showChatDialogue:view.dialogue,showChatNarrative:view.narrative,chatEffects:false,chatNpcVitals:false,chatHeaderBadgeMode:'ability',chatHeaderBadgeAbility:'Deduction'}),view);
+  assert.deepEqual(importWorldPreset(exportWorldPreset({chatAppearance:view},theme)).config.chatAppearance,view);
+  assert.deepEqual(readChatPreset({[CHAT_PRESET_KEY]:{version:1,config:{chatAppearance:view}}}).chatAppearance,view);
+  const card={avatar:'design.png',data:{extensions:{}}},context={characters:[card],fetch:async()=>({ok:true}),getRequestHeaders:()=>({})};
+  await writeCharacterPack(context,{},'card:design.png',{format:'roleforge-character-pack',version:1,chatAppearance:view});
+  assert.deepEqual(readCharacterPack(context,'card:design.png').chatAppearance,view);
+ }
+ assert.throws(()=>validateChatAppearance({theme:'atelier'}),/Unknown chat theme/);
+ for(const npcVitals of [null,0,'false',{},[]])assert.throws(()=>validateChatAppearance({theme:'aincrad',npcVitals}),/npcVitals/);
 });

@@ -1,5 +1,5 @@
-import {CHAT_THEMES,CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.66.2';
-import {element,renderStoryBlocks} from './npc-chat.js?v=0.66.2';
+import {CHAT_THEMES,CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.67.0';
+import {element,renderStoryBlocks} from './npc-chat.js?v=0.67.0';
 
 // Native SillyTavern controls; the expandable sample uses the real renderer.
 export function mountChatAppearanceControls(parent,api) {
@@ -13,23 +13,29 @@ export function mountChatAppearanceControls(parent,api) {
         controls.set(key,input);texts.set(key,text);label.append(input,text);switches.append(label);
     }
     root.append(switches);
+    const effects=element('input');effects.type='checkbox';const effectsRow=field('chatEffects',effects);
+    const vitals=element('input');vitals.type='checkbox';const vitalsRow=field('chatNpcVitals',vitals),vitalsHelp=element('small','rf-chat-appearance-help');root.append(vitalsHelp);
+    for(const [row,input] of [[effectsRow,effects],[vitalsRow,vitals]]){row.classList.add('checkbox_label','rf-chat-appearance-check');input.classList.remove('text_pole');row.prepend(input);}
     const badge=element('select'),badgeOptions=new Map();for(const value of ['occupation','ability','off']){const option=element('option');option.value=value;badge.append(option);badgeOptions.set(value,option);}
     const badgeRow=field('chatHeaderBadgeMode',badge),ability=element('input');ability.type='text';ability.maxLength=120;
     const abilityRow=field('chatHeaderBadgeAbility',ability),suggestions=element('datalist');suggestions.id='rf-chat-badge-abilities';ability.setAttribute('list',suggestions.id);abilityRow.append(suggestions);
     const badgeHelp=element('small','rf-chat-appearance-help');root.append(badgeHelp);
     const help=element('small','rf-chat-appearance-help'),status=element('small','rf-chat-appearance-status');status.setAttribute('role','status');root.append(help,status);
     const details=element('details','rf-chat-theme-preview'),summary=element('summary'),sample=element('div','trpg-chat');details.append(summary,sample);root.append(details);
-    const gallery=element('a','menu_button');gallery.href=new URL('../docs/previews/chat-folio/index.html',import.meta.url).href;gallery.target='_blank';gallery.rel='noopener';root.append(gallery);parent.append(root);
+    const gallery=element('a','menu_button');gallery.href=new URL('../docs/previews/chat-designs/index.html',import.meta.url).href;gallery.target='_blank';gallery.rel='noopener';root.append(gallery);parent.append(root);
     const t=(en,th)=>api.settings().language==='th'?th:en;
     function update(){
         const metadata=api.context().chatMetadata;if(metadata!==scope){scope=metadata;status.textContent='';previewKey='';}
         const settings=api.settings(),view=chatAppearance(settings);
         const selected=CHAT_THEMES.find(item=>item.key===view.theme);
         texts.get('chatTheme').textContent=t('Chat design','ดีไซน์ในแชท');description.textContent=t(selected.description,selected.descriptionTh);
-        texts.get('chatHeaderBadgeMode').textContent=t('Folio · Header badge','Folio · ป้ายข้อมูล Header');
+        texts.get('chatHeaderBadgeMode').textContent=t('Header badge','ป้ายข้อมูล Header');
+        texts.get('chatEffects').textContent=t('Design motion effects','ลูกเล่นการเคลื่อนไหวของดีไซน์');effectsRow.hidden=view.theme!=='aincrad';
+        texts.get('chatNpcVitals').textContent=t('Aincrad · NPC HP / Lv','Aincrad · HP / Lv ของ NPC');vitalsRow.hidden=vitalsHelp.hidden=view.theme!=='aincrad';
+        vitalsHelp.textContent=t('Reads NPC stats.hp and stats.level. Missing values are hidden; HP 0 is shown. The underline is decorative, not a health percentage. Entrance motion is brief, skips streaming updates and respects Reduce Motion.','อ่าน stats.hp และ stats.level ของ NPC ซ่อนค่าที่ไม่มีข้อมูลและแสดง HP 0 เส้นใต้เป็นของตกแต่ง ไม่ใช่เปอร์เซ็นต์เลือด ลูกเล่นเข้าแชทเป็นภาพเคลื่อนไหวสั้น ไม่เล่นซ้ำระหว่างสตรีม และรองรับ Reduce Motion');
         for(const [value,labels]of [['occupation',['Occupation + NPC rank','อาชีพ + ระดับ NPC']],['ability',['Selected skill + mastery','สกิลที่เลือก + ขั้นความเชี่ยวชาญ']],['off',['Hide badge','ซ่อนป้ายข้อมูล']]])badgeOptions.get(value).textContent=t(...labels);
         texts.get('chatHeaderBadgeAbility').textContent=t('Skill name or category from NPC abilities','ชื่อสกิลหรือหมวดหมู่จากข้อมูลสกิล NPC');ability.placeholder=t('For example: Water Magic or Marksmanship','เช่น เวทน้ำ หรือการยิงปืน');
-        badgeRow.hidden=badgeHelp.hidden=view.theme!=='folio';abilityRow.hidden=view.theme!=='folio'||view.badgeMode!=='ability';
+        badgeRow.hidden=badgeHelp.hidden=view.theme==='roleforge';abilityRow.hidden=view.theme==='roleforge'||view.badgeMode!=='ability';
         badgeHelp.textContent=t('Occupation uses the NPC’s overall rank, not magic mastery. Skill mode uses that skill’s level. Select a specific name if a category contains several skills. Missing facts are hidden; any genre works. Saved for this chat.','โหมดอาชีพใช้ระดับโดยรวมของ NPC ไม่ใช่ขั้นเวทมนตร์ โหมดสกิลใช้ขั้นของสกิลนั้น ถ้าหมวดมีหลายสกิลให้เลือกชื่อสกิลโดยตรง ข้อมูลที่ยังไม่มีจะถูกซ่อน ใช้ได้ทุกแนวเรื่อง บันทึกแยกแชท');
         const choices=[...new Set((api.state?.().npcs||[]).flatMap(npc=>(npc.abilities||[]).flatMap(skill=>[skill.name,skill.category])).filter(value=>typeof value==='string'&&value.trim()))].sort();
         if(JSON.stringify(choices)!==suggestions.dataset.choices){suggestions.dataset.choices=JSON.stringify(choices);suggestions.replaceChildren(...choices.map(value=>{const option=element('option');option.value=value;return option;}));}
@@ -40,7 +46,7 @@ export function mountChatAppearanceControls(parent,api) {
         const signature=JSON.stringify([view,settings.language]);
         if(details.open&&signature!==previewKey){
             previewKey=signature;sample.replaceChildren();
-            const name='Liora',profile={name,title:t('Keeper of stories','ผู้ดูแลเรื่องราว'),occupation:t('Librarian','บรรณารักษ์'),stats:{rank:t('Senior','อาวุโส')},race:t('Human','มนุษย์'),relationship:t('Ally','พันธมิตร'),identityColor:'#b9a077',roleIcon:'book'};
+            const name='Liora',profile={name,title:t('Keeper of stories','ผู้ดูแลเรื่องราว'),occupation:t('Librarian','บรรณารักษ์'),stats:{rank:t('Senior','อาวุโส'),hp:100,level:7},race:t('Human','มนุษย์'),relationship:t('Ally','พันธมิตร'),identityColor:'#b9a077',roleIcon:'book'};
             renderStoryBlocks(sample,[{type:'header',name},{type:'narrative',text:t('A quiet light rests between the pages. She looks up as you enter.','แสงนุ่มนวลทาบอยู่ระหว่างหน้าหนังสือ เธอเงยหน้าขึ้นเมื่อคุณก้าวเข้ามา')},{type:'dialogue',name,text:t('Every journey deserves a beginning. Shall we write yours?','ทุกการเดินทางควรมีจุดเริ่มต้น เรามาเขียนเรื่องราวของคุณกันไหม?')}],new Map([[name.toLowerCase(),profile]]),name,()=>{},async()=>null,null,view);
         }
     }

@@ -1,5 +1,5 @@
-import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.66.2';
-import {dialogueFrame} from './chat-folio.js?v=0.66.2';
+import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.67.0';
+import {dialogueFrame} from './chat-folio.js?v=0.67.0';
 // This shorthand is a player display convention, never an assistant protocol.
 const escaped=(source,index)=>{let slashes=0;while(index>0&&source[--index]==='\\')slashes++;return slashes%2===1;};
 function richMarkdown(source){
@@ -36,11 +36,11 @@ export function renderUserBlocks(blocks,{name='User',language='en',accent='#d6b4
     if(view.header){const header=node('header','trpg-user-header');header.append(node('small','',language==='th'?'ผู้เล่น':'PLAYER'),node('strong','',name));root.append(header);}
     for(const block of blocks){
         if(block.type==='narrative'){
-            const prose=narrative(block.text,view.narrative),mark=prose.querySelector?.('.trpg-prose-mark');
+            const prose=narrative(block.text,view.narrative,view),mark=prose.querySelector?.('.trpg-prose-mark');
             // Keep the player pen visible even if the host's icon font is unavailable.
             if(mark){
                 const pen=doc.createElementNS('http://www.w3.org/2000/svg','svg');pen.setAttribute('viewBox','0 0 24 24');pen.setAttribute('aria-hidden','true');pen.setAttribute('fill','none');pen.setAttribute('stroke','currentColor');pen.setAttribute('stroke-width','1.4');pen.setAttribute('stroke-linecap','round');pen.setAttribute('stroke-linejoin','round');
-                const path=doc.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d','M20 3c-8-1-13 3-14 11l4 1c6-2 9-6 10-12ZM3 21 17 7M7 14l-1 4 4-1');pen.append(path);mark.replaceChildren(pen);
+                const path=doc.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d','M20 3c-8-1-13 3-14 11l4 1c6-2 9-6 10-12ZM3 21 17 7M7 14l-1 4 4-1');pen.append(path);mark.replaceChildren(pen,...mark.querySelectorAll('.trpg-narrative-type'));
             }
             root.append(prose);continue;
         }

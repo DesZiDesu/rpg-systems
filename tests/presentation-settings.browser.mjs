@@ -21,7 +21,7 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const url=`http://127.0.0.1:${server.address().port}${base}docs/previews/preview-h-stats.html?lang=en`;
 const artifacts=process.env.PRESENTATION_SCREENSHOT_DIR;
 if(artifacts)await mkdir(artifacts,{recursive:true});
-const presentationKeys=['chatPresentation','userChatPresentation','chatTheme','showChatHeader','showChatDialogue','showChatNarrative','chatHeaderBadgeMode','chatHeaderBadgeAbility','chatRegexMode'].sort();
+const presentationKeys=['chatPresentation','userChatPresentation','chatTheme','showChatHeader','showChatDialogue','showChatNarrative','chatHeaderBadgeMode','chatHeaderBadgeAbility','chatEffects','chatNpcVitals','chatRegexMode'].sort();
 const oldBody='PRIVATE_OLD_BODY: They leave the city through its gate.';
 const taggedBody='<tr-header name="Cora"/><tr-narrative>PRIVATE_NEW_BODY: She waits beside the river.</tr-narrative><tr-dialogue name="Cora">Welcome back.</tr-dialogue>';
 async function ready(page){

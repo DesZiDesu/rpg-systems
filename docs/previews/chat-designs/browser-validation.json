@@ -1,0 +1,62 @@
+{
+  "results": [
+    {
+      "width": 320,
+      "themes": 3,
+      "frameCombinations": 8,
+      "characterColors": 3,
+      "portraits": [
+        "with",
+        "without"
+      ],
+      "overflow": false,
+      "runtimeErrors": []
+    },
+    {
+      "width": 390,
+      "themes": 3,
+      "frameCombinations": 8,
+      "characterColors": 3,
+      "portraits": [
+        "with",
+        "without"
+      ],
+      "overflow": false,
+      "runtimeErrors": []
+    },
+    {
+      "width": 768,
+      "themes": 3,
+      "frameCombinations": 8,
+      "characterColors": 3,
+      "portraits": [
+        "with",
+        "without"
+      ],
+      "overflow": false,
+      "runtimeErrors": []
+    },
+    {
+      "width": 1440,
+      "themes": 3,
+      "frameCombinations": 8,
+      "characterColors": 3,
+      "portraits": [
+        "with",
+        "without"
+      ],
+      "overflow": false,
+      "runtimeErrors": []
+    }
+  ],
+  "nativeAndMotion": {
+    "inputChecked": true,
+    "clicks": 4,
+    "loads": 1,
+    "sameWindow": true,
+    "initialEntrance": true,
+    "refreshEntrance": false,
+    "streamingEntrance": false,
+    "streamedText": "Streaming revision."
+  }
+}

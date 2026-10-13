@@ -17,11 +17,12 @@ try{
     browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']});
     const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',error=>errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}/`);
+    await page.evaluate(theme=>window.performanceChatTheme=theme,process.env.CHAT_RENDER_THEME||'roleforge');
     await page.evaluate(async()=>{
         const {createChatPresentation}=await import('/src/npc-chat.js');
         const events=new Map(),chat=[],count=200;window.perfReads=0;window.perfChanges=0;
         const context={chat,getCurrentChatId:()=> 'render-performance',eventTypes:{STREAM_TOKEN_RECEIVED:'stream'},eventSource:{on:(type,fn)=>events.set(type,fn),off:type=>events.delete(type)}};
-        const settings={language:'en',chatRegexMode:'shared',chatPresentation:true,showSceneTracker:true,enableVoiceAddon:false};
+        const settings={language:'en',chatRegexMode:'shared',chatPresentation:true,showSceneTracker:true,enableVoiceAddon:false,chatTheme:window.performanceChatTheme};
         for(let i=0;i<count;i++){
             chat.push({is_user:true,mes:'Continue.'});const id=chat.length,source=`<tr-dialogue name="Cora">Reply ${i}.</tr-dialogue>`;chat.push({is_user:false,mes:source});
             const row=document.createElement('div');row.className='mes';row.setAttribute('mesid',id);const body=document.createElement('div');body.className='mes_text';body.textContent=source;row.append(body);document.getElementById('chat').append(row);
@@ -33,9 +34,11 @@ try{
     });
     await page.waitForFunction(()=>document.querySelectorAll('.trpg-dialogue').length===200);
     assert.equal(await page.evaluate(()=>window.perfReads),200);
+    if(process.env.CHAT_RENDER_THEME==='aincrad')assert.equal(await page.locator('.trpg-entrance').count(),1,'opening a long history animates only the latest reply');
     await page.evaluate(()=>window.updatePerfTail());await page.waitForTimeout(180);
-    const metrics=await page.evaluate(()=>({rows:200,updatedSceneReads:window.perfReads,domMutations:window.perfChanges,tail:document.querySelector('.mes:last-child .trpg-dialogue').textContent}));
+    const metrics=await page.evaluate(()=>({rows:200,updatedSceneReads:window.perfReads,domMutations:window.perfChanges,tail:document.querySelector('.mes:last-child .trpg-dialogue-copy').textContent}));
+    if(process.env.CHAT_RENDER_THEME==='aincrad')assert.equal(await page.locator('.trpg-entrance').count(),0,'streaming revision does not replay the entrance');
     assert.equal(metrics.updatedSceneReads,baseline?200:1,'streaming tail must not reread scene data for the entire history');assert.equal(metrics.tail,'Updated tail.');
     await page.waitForTimeout(220);assert.equal(await page.evaluate(()=>window.perfReads),baseline?200:1,'no formatter/observer feedback loop');assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({implementation:baseline?'HEAD baseline':'working tree',...metrics}));await page.evaluate(()=>window.perfPresentation.destroy());
+    console.log(JSON.stringify({implementation:baseline?'HEAD baseline':'working tree',theme:process.env.CHAT_RENDER_THEME||'roleforge',...metrics}));await page.evaluate(()=>window.perfPresentation.destroy());
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

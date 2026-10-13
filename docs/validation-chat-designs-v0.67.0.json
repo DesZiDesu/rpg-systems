@@ -1,0 +1,231 @@
+{
+  "release": "0.67.0",
+  "checkedAt": "2026-10-13T00:57:03.021910+00:00",
+  "environment": "Chromium with production modules/CSS in controlled SillyTavern hosts; provider replies/audio are local fixtures. No access to the user’s SillyTavern.",
+  "unitTests": {
+    "command": "npm test",
+    "passed": 1227,
+    "failed": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "passed": true
+  },
+  "approvedDesigns": [
+    "chapter",
+    "codex",
+    "aincrad"
+  ],
+  "preservedDesigns": [
+    "roleforge",
+    "folio"
+  ],
+  "browserChecks": [
+    {
+      "command": "node tests/chat-designs.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS 320px: all approved designs, frames, colors, portraits, Voice, long text and NPC HUD",
+        "PASS 390px: all approved designs, frames, colors, portraits, Voice, long text and NPC HUD",
+        "PASS 768px: all approved designs, frames, colors, portraits, Voice, long text and NPC HUD",
+        "PASS 1440px: all approved designs, frames, colors, portraits, Voice, long text and NPC HUD",
+        "PASS finite/reduced entrance, no streaming replay, native actions/input and a single mounted MVU iframe across designs"
+      ]
+    },
+    {
+      "command": "node tests/chat-appearance.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS 2 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, badge source and per-chat persistence at 320px",
+        "PASS 2 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, badge source and per-chat persistence at 390px",
+        "PASS 2 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, badge source and per-chat persistence at 1280px"
+      ]
+    },
+    {
+      "command": "node tests/chat-themes.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS transparent Original, 2 host palettes × 2 OS schemes × 8 frame combinations, square portraits and no overflow at 320px",
+        "PASS transparent Original, 2 host palettes × 2 OS schemes × 8 frame combinations, square portraits and no overflow at 390px",
+        "PASS transparent Original, 2 host palettes × 2 OS schemes × 8 frame combinations, square portraits and no overflow at 1280px",
+        "PASS single-file offline preview without network"
+      ]
+    },
+    {
+      "command": "node tests/chat-folio.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS 320px: 2 themes, 8 frame combinations, 3 Folio colors, contrast, square portraits, long text and live Voice controls",
+        "PASS 390px: 2 themes, 8 frame combinations, 3 Folio colors, contrast, square portraits, long text and live Voice controls",
+        "PASS 768px: 2 themes, 8 frame combinations, 3 Folio colors, contrast, square portraits, long text and live Voice controls",
+        "PASS 1280px: 2 themes, 8 frame combinations, 3 Folio colors, contrast, square portraits, long text and live Voice controls",
+        "PASS native stateful widgets, individual speaker colors and single-file offline preview"
+      ]
+    },
+    {
+      "command": "node tests/presentation-settings.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 320px",
+        "PASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 390px",
+        "PASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 1280px"
+      ]
+    },
+    {
+      "command": "npm run test:mvu",
+      "passed": true,
+      "evidence": [
+        "PASS MVU Regex, all modes, iframe identity, visible streaming controls, hidden history and thinking boxes at 390px (Game Maker 46840f39ca006b22870507f155145fa6324d9aa2, Builder 0ecf70bb53262091c5c41a40b3a9dff0830de2c2)",
+        "PASS MVU Regex, all modes, iframe identity, visible streaming controls, hidden history and thinking boxes at 1280px (Game Maker 46840f39ca006b22870507f155145fa6324d9aa2, Builder 0ecf70bb53262091c5c41a40b3a9dff0830de2c2)",
+        "{\"implementation\":\"working tree\",\"theme\":\"roleforge\",\"rows\":200,\"updatedSceneReads\":1,\"domMutations\":2,\"tail\":\"Updated tail.\"}"
+      ]
+    },
+    {
+      "command": "CHAT_RENDER_THEME=aincrad node tests/chat-render-performance.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "{\"implementation\":\"working tree\",\"theme\":\"aincrad\",\"rows\":200,\"updatedSceneReads\":1,\"domMutations\":2,\"tail\":\"Updated tail.\"}"
+      ]
+    },
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/startup.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / mobile",
+        "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / mobile",
+        "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / desktop",
+        "PASS full startup, settings, all tabs, NPC Manager: current loader / mobile",
+        "PASS full startup, settings, all tabs, NPC Manager: current loader / mobile",
+        "PASS full startup, settings, all tabs, NPC Manager: current loader / desktop"
+      ]
+    },
+    {
+      "command": "CHAT_VOICE_THEME=chapter VOICE_WIDTHS=390 node tests/voice-addons.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 390px"
+      ]
+    },
+    {
+      "command": "CHAT_VOICE_THEME=codex VOICE_WIDTHS=390,1280 node tests/voice-addons.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 390px",
+        "PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 1280px"
+      ]
+    },
+    {
+      "command": "CHAT_VOICE_THEME=aincrad VOICE_WIDTHS=390,1280 node tests/voice-addons.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 390px",
+        "PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 1280px"
+      ]
+    },
+    {
+      "command": "node tests/chat-designs-offline.browser.mjs",
+      "passed": true,
+      "evidence": [
+        "PASS 390px offline: all three designs, portraits, frame/color controls and dialogs with zero requests",
+        "PASS 1440px offline: all three designs, portraits, frame/color controls and dialogs with zero requests"
+      ]
+    },
+    {
+      "commands": [
+        "node tests/regex-shared.browser.mjs",
+        "node tests/regex-compat.browser.mjs"
+      ],
+      "passed": true,
+      "evidence": [
+        "PASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 320px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)",
+        "PASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 390px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)",
+        "PASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 1280px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)"
+      ]
+    }
+  ],
+  "designMatrix": {
+    "results": [
+      {
+        "width": 320,
+        "themes": 3,
+        "frameCombinations": 8,
+        "characterColors": 3,
+        "portraits": [
+          "with",
+          "without"
+        ],
+        "overflow": false,
+        "runtimeErrors": []
+      },
+      {
+        "width": 390,
+        "themes": 3,
+        "frameCombinations": 8,
+        "characterColors": 3,
+        "portraits": [
+          "with",
+          "without"
+        ],
+        "overflow": false,
+        "runtimeErrors": []
+      },
+      {
+        "width": 768,
+        "themes": 3,
+        "frameCombinations": 8,
+        "characterColors": 3,
+        "portraits": [
+          "with",
+          "without"
+        ],
+        "overflow": false,
+        "runtimeErrors": []
+      },
+      {
+        "width": 1440,
+        "themes": 3,
+        "frameCombinations": 8,
+        "characterColors": 3,
+        "portraits": [
+          "with",
+          "without"
+        ],
+        "overflow": false,
+        "runtimeErrors": []
+      }
+    ],
+    "nativeAndMotion": {
+      "inputChecked": true,
+      "clicks": 4,
+      "loads": 1,
+      "sameWindow": true,
+      "initialEntrance": true,
+      "refreshEntrance": false,
+      "streamingEntrance": false,
+      "streamedText": "Streaming revision."
+    }
+  },
+  "aincradPerformance": {
+    "implementation": "working tree",
+    "theme": "aincrad",
+    "rows": 200,
+    "updatedSceneReads": 1,
+    "domMutations": 2,
+    "tail": "Updated tail."
+  },
+  "fonts": {
+    "location": "assets/chat-fonts/",
+    "license": "SIL Open Font License 1.1",
+    "bytes": 401640,
+    "loading": "Local assets loaded when the font is used; no new remote font dependency."
+  },
+  "runtimeBehavior": [
+    "Independent Header/Dialogue/Narrative controls",
+    "Per-chat and world/card preset round trips",
+    "Header/Narrative stay transparent",
+    "Missing NPC HP/Lv hidden; HP zero retained; no invented maximum",
+    "Finite entrance and Reduce Motion; latest reply only; no stream/state/Voice replay",
+    "Native Regex/MVU nodes and running iframe preserved",
+    "Offline preview has zero network requests"
+  ]
+}

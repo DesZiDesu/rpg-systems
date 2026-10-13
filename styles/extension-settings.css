@@ -130,6 +130,7 @@
 #roleforge-preset-editor p { overflow-wrap:anywhere; }
 .rf-chat-appearance-settings{display:grid;gap:8px;margin-block:12px;min-width:0}
 .rf-chat-appearance-field{display:grid;gap:4px;min-width:0}.rf-chat-appearance-field[hidden]{display:none}.rf-chat-appearance-field .text_pole{width:100%;min-width:0;margin:0}
+.rf-chat-appearance-check{display:flex;align-items:center;gap:8px}.rf-chat-appearance-check input{width:auto;flex:none}
 .rf-chat-appearance-switches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px}
 .rf-chat-appearance-settings small{display:block;line-height:1.5;white-space:normal;overflow-wrap:anywhere;opacity:.85}
 .rf-chat-appearance-settings .menu_button{justify-self:start;text-decoration:none;max-width:100%;white-space:normal}

@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.66.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.67.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -21,6 +21,10 @@ The list fills the mobile window with one scrolling area. Page controls and batc
 ## Chat designs
 
 **Extensions → RoleForge → Chat appearance & NPCs** offers **RoleForge Original** and **The Mage’s Folio**. Folio has a right-hand square portrait, book-style nameplate, real NPC badge, rounded speech slip and a pen signature. Each speaker’s identity color tints their Header and Dialogue; red characters use red accents and a dark red speech frame with readable light text. The badge can show occupation + overall NPC rank, or a selected skill + its mastery level. Missing facts are hidden, and nonmagic settings work too.
+
+**Added in 0.67.0:** **The Gilded Chapter** brings a left square portrait and chamfered walnut speech frame; **The Royal Codex** has a right square portrait, double gold bookplate and right pen rail; **Aincrad Interface** uses silver speech panels, orange selections and green NPC HP/Lv accents. All three use existing NPC facts, character colors and live Voice controls. Their Header and Narrative remain transparent, and each frame can be disabled independently. Original remains the default and Folio stays available. [Mobile / PC preview](docs/previews/chat-designs/index.html) · [Offline preview](docs/previews/chat-designs/standalone.html) · [Download previews](docs/previews/chat-designs/roleforge-chat-designs-preview.zip) · [Thai guide](docs/chat-designs-v0.67.0.th.md).
+
+Aincrad’s optional HP/Lv display reads `NPC.stats.hp` and `NPC.stats.level`; unknown values are hidden and HP 0 remains visible. Its HP underline is decorative, without an invented maximum or percentage. Entrance motion finishes in 330ms, respects Reduce Motion, and only plays for the latest fresh reply or a design switch; streaming and state/Voice refreshes do not replay it. New font assets are local to the extension and only load when used. Appearance, badge, motion and HUD choices follow chat/world presets and one-card setup.
 
 Enable **Header**, **Dialogue** and **Narrative** independently. Disabling Dialogue displays `"text"` in the speaker’s color; disabling Narrative displays italic text; Header becomes a plain speaker name. Header and Narrative stay transparent. Choices are saved per chat and included in presets and one-card setup. Original remains the default, retired themes migrate to Original, and retired color-mode fields are ignored. User UI stays on the right. Shared mode preserves native Regex/MVU widgets and Voice controls; saved story and spoken text stay unchanged. [PC / mobile / color preview](docs/previews/chat-folio/index.html) · [Thai guide](docs/chat-designs-v0.65.0.th.md).
 
@@ -126,6 +130,8 @@ For suites that expect system Chromium, set **CHROMIUM_EXECUTABLE** to your brow
 
 Version **0.66.2** passes **1,225 unit/host tests** and syntax checks. Bulk deletion browser checks at 320/390/1280px cover cross-page selection, filtered targets, confirmation cancellation, failed-save retry, scope isolation, empty-page clamping, cleared Undo and context changes. Host checks cover acknowledged NPC storage, failed Chat metadata rollback, turn snapshots and accepted Character writes. [Bulk deletion guide](docs/archive-delete-v0.66.2.th.md) · [Validation record](docs/validation-archive-delete-v0.66.2.json).
 
+Version **0.67.0** passes **1,227 unit/host tests** and syntax checks. New design browser checks cover 320/390/768/1440px, all eight frame combinations, three character colors, square portraits, missing/zero NPC values, long text, actual Voice controls and finite/reduced motion. Native settings checks cover all five designs, per-chat persistence, card defaults and failed-save rollback. Regex/MVU suites retain native node/iframe state; a 200-reply Aincrad history only rereads the updated tail and does not animate the backlog. The portable production preview makes zero network requests. [Validation record](docs/validation-chat-designs-v0.67.0.json).
+
 Lore checks retain 5,000 records, validate configurable/unlimited capacities, preserve archives when lowering limits and round-trip large Unicode exports in byte-bounded parts. Production browser checks at 320/390/1280px cover 2,500-record editing/creation, chat settings, one-card export/reimport and numbered-file downloads. Relevance checks skip word segmentation for impossible content matches while preserving Thai, Unicode normalization and word boundaries. [Lore capacity guide](docs/lore-capacity-v0.66.1.th.md) · [0.66.1 validation record](docs/validation-lore-capacity-v0.66.1.json).
 
 Archive browser checks exercise the production NPC/Lore workspaces at 320/390/1280px in Thai and English, including 200 NPCs, touch scrolling, keyboard resizing, cross-page selection, Undo, storage scopes, failed saves and Lore budget limits. NPC generation, portraits, alternate profiles, Lore import/export and one-card setup also retain their browser regression coverage. [QoL guide](docs/archive-qol-v0.66.0.th.md) · [0.66.0 validation record](docs/validation-archive-qol-v0.66.0.json).
@@ -143,6 +149,8 @@ Run `npm run test:archive` for the Character/Lore filters, bulk controls, persis
 Run `npm run test:lore-capacity` for large Lore libraries, capacity settings, chunked exports and one-card round trips.
 
 Run `npm run test:archive-delete` for NPC/Lore batch deletion, cancellation, failed saves and storage/context guards.
+
+Run `npm run test:themes` for chat designs and native settings. `npm run preview:chat-designs` rebuilds the production gallery, portable HTML and screenshots; this also needs `esbuild` alongside Playwright (`npm install --no-save --package-lock=false esbuild playwright`).
 
 Run `npm run test:themes` for Original color modes, frame-toggle and per-chat appearance checks. Run `npm run test:presets` for the preset library and blocked-host checks. Provider responses use controlled fixtures; live Proxy model compatibility and Safari on a physical iPhone remain unverified. Historical release results remain in the [development README](docs/archive/README-v0.56.2-development.md).
 

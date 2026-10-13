@@ -1,6 +1,6 @@
 /* Original geometry and speech paper live in npc-ui.css; Folio is isolated below.
    Header, Narrative and their parent containers stay transparent. */
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]) {
+.trpg-chat[data-rf-chat-theme] {
   --prose:var(--SmartThemeBodyColor,#d6d0c1);
   min-width:0;max-width:100%;container-type:inline-size;
   color:var(--prose);background:none;color-scheme:inherit;
@@ -15,10 +15,10 @@
 
 /* One small gap between owned blocks, without rewriting native host HTML. */
 [data-roleforge-gap] {display:none!important}
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]).rf-shared-block {margin-block:6px}
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]).rf-shared-header:empty {display:none}
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]).trpg-story-flow {display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]) .trpg-speaker {display:grid;gap:6px;min-width:0}
+.trpg-chat[data-rf-chat-theme].rf-shared-block {margin-block:6px}
+.trpg-chat[data-rf-chat-theme].rf-shared-header:empty {display:none}
+.trpg-chat[data-rf-chat-theme].trpg-story-flow {display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.trpg-chat[data-rf-chat-theme] .trpg-speaker {display:grid;gap:6px;min-width:0}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-header {min-height:0;padding:8px 2px}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative {padding-block:12px 16px}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-prose-copy {padding-top:0}
@@ -28,16 +28,16 @@
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative:before {top:29px;bottom:12px}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-narrative:after {top:34px;bottom:20px}
 .trpg-chat[data-rf-chat-theme="roleforge"] .trpg-dialogue {padding-block:18px}
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]).trpg-user-chat:not(.rf-shared-block) {display:grid;gap:6px}
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]) .trpg-user-header {margin:0;padding:4px 0 8px}
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]).trpg-user-chat>:is(.trpg-plain,.trpg-user-thought,.trpg-dialogue) {margin-block:0}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat:not(.rf-shared-block) {display:grid;gap:6px}
+.trpg-chat[data-rf-chat-theme] .trpg-user-header {margin:0;padding:4px 0 8px}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat>:is(.trpg-plain,.trpg-user-thought,.trpg-dialogue) {margin-block:0}
 
 /* Each switch removes only its frame. Story, Voice and native widget content
    remains in order; disabled Header leaves a plain speaker label. */
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]) .trpg-unframed {padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--prose)!important;font:inherit!important;line-height:1.8!important;text-shadow:none!important;isolation:auto}
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]) .trpg-unframed:before,
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]) .trpg-unframed:after,
-.trpg-chat:is([data-rf-chat-theme="roleforge"],[data-rf-chat-theme="folio"]) .trpg-unframed>[class^="trpg-prose-"]:not(.trpg-prose-copy) {display:none!important;animation:none!important}
+.trpg-chat[data-rf-chat-theme] .trpg-unframed {padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--prose)!important;font:inherit!important;line-height:1.8!important;text-shadow:none!important;isolation:auto}
+.trpg-chat[data-rf-chat-theme] .trpg-unframed:before,
+.trpg-chat[data-rf-chat-theme] .trpg-unframed:after,
+.trpg-chat[data-rf-chat-theme] .trpg-unframed>[class^="trpg-prose-"]:not(.trpg-prose-copy) {display:none!important;animation:none!important}
 /* Unframed story text keeps its speaker's identity and readable narration.
    Style only the copy, leaving Voice controls outside it unchanged. Generated
    quotes keep saved messages, Regex input and spoken text intact. */
