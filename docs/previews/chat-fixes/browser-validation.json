@@ -1,0 +1,80 @@
+{
+  "results": [
+    {
+      "width": 320,
+      "themes": [
+        "roleforge",
+        "folio",
+        "chapter",
+        "codex",
+        "aincrad"
+      ],
+      "portraitSizes": [
+        48,
+        72,
+        144
+      ],
+      "managementPreview": true,
+      "nativePlayerMarkdown": true,
+      "lateLegacySheet": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "themes": [
+        "roleforge",
+        "folio",
+        "chapter",
+        "codex",
+        "aincrad"
+      ],
+      "portraitSizes": [
+        48,
+        72,
+        144
+      ],
+      "managementPreview": true,
+      "nativePlayerMarkdown": true,
+      "lateLegacySheet": true,
+      "errors": []
+    },
+    {
+      "width": 768,
+      "themes": [
+        "roleforge",
+        "folio",
+        "chapter",
+        "codex",
+        "aincrad"
+      ],
+      "portraitSizes": [
+        48,
+        72,
+        144
+      ],
+      "managementPreview": true,
+      "nativePlayerMarkdown": true,
+      "lateLegacySheet": true,
+      "errors": []
+    },
+    {
+      "width": 1280,
+      "themes": [
+        "roleforge",
+        "folio",
+        "chapter",
+        "codex",
+        "aincrad"
+      ],
+      "portraitSizes": [
+        48,
+        72,
+        144
+      ],
+      "managementPreview": true,
+      "nativePlayerMarkdown": true,
+      "lateLegacySheet": true,
+      "errors": []
+    }
+  ]
+}

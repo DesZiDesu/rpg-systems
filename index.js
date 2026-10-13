@@ -1,81 +1,82 @@
-import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.67.0';
-import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.67.0';
-import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.67.0';
-import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.67.0';
-import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.67.0';
-import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.67.0';
-import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.67.0';
-import {createStatComposer} from './src/stat-composer.js?v=0.67.0';
-import {mountStatWorkspace} from './src/stat-workspace.js?v=0.67.0';
-import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue} from './src/currency-config.js?v=0.67.0';
-import {fitForgeToChat} from './src/forge-layout.js?v=0.67.0';
-import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.67.0';
-import {mountSkillBrowser} from './src/skill-browser.js?v=0.67.0';
-import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.67.0';
-import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.67.0';
-import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.67.0';
-import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.67.0';
-import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.67.0';
-import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.67.0';
-import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.67.0';
-import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.67.0';
-import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.67.0';
-import {createMemoryAddons} from './src/memory-addons.js?v=0.67.0';
-import {createVoiceAddons} from './src/voice-addons.js?v=0.67.0';
-import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.67.0';
-import {showApiRequestNotice} from './src/api-request-notice.js?v=0.67.0';
-import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.67.0';
-import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.67.0';
-import {createItemRuntime} from './src/item-runtime.js?v=0.67.0';
-import {createComposerDock} from './src/composer-dock.js?v=0.67.0';
-import {createIncantationComposer} from './src/incantation-composer.js?v=0.67.0';
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.67.0';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.67.0';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.67.0';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.67.0';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.67.0';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.67.0';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.67.0';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.67.0';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.67.0';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.67.0';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.67.0';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.67.0';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.67.0';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.67.0';
-import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.67.0';
-import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.67.0';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.67.0';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.67.0';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.67.0';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.67.0';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.67.0';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.67.0';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.67.0';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.67.0';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.67.0';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.67.0';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.67.0';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.67.0';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.67.0';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.67.0';
-import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.67.0';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.67.0';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.67.0';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.67.0';
+import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.67.1';
+import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.67.1';
+import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.67.1';
+import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.67.1';
+import {playerResourceNarrative,isLegacyGuessedEffect,effectTargetsPlayer} from './src/player-consequences.js?v=0.67.1';
+import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.67.1';
+import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.67.1';
+import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.67.1';
+import {createStatComposer} from './src/stat-composer.js?v=0.67.1';
+import {mountStatWorkspace} from './src/stat-workspace.js?v=0.67.1';
+import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue} from './src/currency-config.js?v=0.67.1';
+import {fitForgeToChat} from './src/forge-layout.js?v=0.67.1';
+import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.67.1';
+import {mountSkillBrowser} from './src/skill-browser.js?v=0.67.1';
+import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.67.1';
+import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.67.1';
+import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.67.1';
+import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.67.1';
+import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.67.1';
+import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.67.1';
+import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.67.1';
+import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.67.1';
+import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.67.1';
+import {createMemoryAddons} from './src/memory-addons.js?v=0.67.1';
+import {createVoiceAddons} from './src/voice-addons.js?v=0.67.1';
+import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.67.1';
+import {showApiRequestNotice} from './src/api-request-notice.js?v=0.67.1';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.67.1';
+import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.67.1';
+import {createItemRuntime} from './src/item-runtime.js?v=0.67.1';
+import {createComposerDock} from './src/composer-dock.js?v=0.67.1';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.67.1';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.67.1';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.67.1';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.67.1';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.67.1';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.67.1';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.67.1';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.67.1';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.67.1';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.67.1';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.67.1';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.67.1';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.67.1';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.67.1';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.67.1';
+import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.67.1';
+import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.67.1';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.67.1';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.67.1';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.67.1';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.67.1';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.67.1';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.67.1';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.67.1';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.67.1';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.67.1';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.67.1';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.67.1';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.67.1';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.67.1';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.67.1';
+import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.67.1';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.67.1';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.67.1';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.67.1';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.67.0';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.67.0';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.67.0';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.67.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.67.0';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.67.0';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.67.0';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.67.0';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.67.0';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.67.0';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.67.0';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.67.0';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.67.1';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.67.1';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.67.1';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.67.1';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.67.1';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.67.1';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.67.1';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.67.1';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.67.1';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.67.1';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.67.1';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.67.1';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -641,7 +642,7 @@ async function runPowerTrainingChoice(choiceId) {
         if (!stillHere()) return false;
         const fresh = clone(getState());
         if (fresh.powerMastery?.session?.id === session.id) {
-            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.67.0', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
+            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.67.1', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
             await persistState(fresh, 'power-training-retry');
         }
         notify('error', error.message || 'Power training failed.');
@@ -1452,6 +1453,7 @@ function statusEffect(value, fallback = {}) {
         source: text(value.source, text(fallback.source, '', 240), 240),
         treatment: text(value.treatment, text(fallback.treatment, '', 300), 300),
         appliedAt: text(value.appliedAt, text(fallback.appliedAt, new Date().toISOString(), 60), 60),
+        origin: value.origin==='declared'||fallback.origin==='declared'?'declared':'',
     };
 }
 
@@ -2005,7 +2007,7 @@ function normalize(candidate, base = defaultState()) {
     const systems = source.systems && typeof source.systems === 'object' ? source.systems : {};
     const baseSystems = result.systems && typeof result.systems === 'object' ? result.systems : defaultSystemsState();
     result.systems = {
-        effects: (Array.isArray(systems.effects) ? systems.effects : baseSystems.effects || []).map(entry => statusEffect(entry)).filter(Boolean).slice(-60),
+        effects: (Array.isArray(systems.effects) ? systems.effects : baseSystems.effects || []).map(entry => statusEffect(entry)).filter(entry=>entry&&!isLegacyGuessedEffect(entry,systems.combatLogs||baseSystems.combatLogs||[],shortHash)).slice(-60),
         combatLogs: (Array.isArray(systems.combatLogs) ? systems.combatLogs : baseSystems.combatLogs || []).map(combatLogEntry).filter(Boolean).slice(-120),
         audit: (Array.isArray(systems.audit) ? systems.audit : baseSystems.audit || []).map(auditEntry).filter(Boolean).slice(-80),
         regionalWeather: (Array.isArray(systems.regionalWeather) ? systems.regionalWeather : baseSystems.regionalWeather || [])
@@ -3828,7 +3830,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.67.0`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.67.1`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card); fitForgeToChat(card, chat);
     }
@@ -3987,7 +3989,7 @@ function patchInstructions() {
         'Update gameplay ops only for confirmed changes—not plans, attempts, questions, hypotheticals, rejected actions, OOC text, or unsupported guesses. A direct user role-play action to depart for a named destination is evidence that a journey has begun; record its route and endpoints, then let later replies advance time only when the completed roll/action or sceneTracker confirms physical movement. A reply that stays in the same place must leave journey progress unchanged. Write the complete story first, then append one patch with sceneTracker and all gameplay, diary and invitation ops. A user asking an NPC to write a diary or invite them is not itself an event: portray the NPC doing it, then include the append/offer op in that same patch. Never expose the patch, full state, Markdown, explanation, private tracker ledger, UI fields, or system vocabulary.',
         'EPISTEMIC FIREWALL: privateTrackerReferenceIndex is author/tool memory only. It is never automatically known by the narrator-as-character or by any NPC. An NPC may use only facts personally witnessed, explicitly told to them, publicly observable in the current scene, or credibly supplied by their established role. Friendship, proximity, party/guild/household membership, Character Life records, NPC dossiers, or inclusion in this JSON grants no knowledge. Never let an NPC mention, react to, or infer exact player level, EXP, HP/MP/stamina, stats, power identity, currency/balance, inventory, quests, relationship meters, private diary, map coordinates, travel percentage, transaction/journey history, or who accompanied the user unless the story independently establishes that knowledge. If uncertain, the NPC does not know. The tracker may update hidden state without revealing it in prose.',
         'Check affected systems on every reply: player condition/resources/identity including hunger, thirst and Aura mechanics; EXP/rank/reputation/kills/currency; inventory/skills/proficiencies; quests/dungeons; clock/location/travel/weather; participating friendly NPC dossiers/relationships/abilities/diary/stats; contacts/physical letters; Party/Guild/Household. Emit every affected value in this main reply; never depend on a second AI request for scene, diary or invitations.',
-        'Resource, injury, and damage rules: update current HP, Aura/Mana, and stamina from every confirmed consequence. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
+        'Resource, injury, and damage rules: update only the player’s own current HP, Aura/Mana, and stamina from confirmed consequences. NPC injuries, corpses, scars, fireplaces, dreams, memories, negated events and dialogue are not player damage. Do not invent damage solely because an injury word appears. Effects require a confirmed player condition; include its actual cause in source and use damagePerTurn/staminaPerTurn only for an established rule. Local ongoing-condition ticks have already been applied for the user turn; do not charge them again. Keep NPC values in their NPC records. Damage/injury lowers player.hp.current; healing/treatment/rest may restore it. Running, exercise, climbing, swimming, sustained combat, and other exertion lower stamina; rest restores it. Power use lowers MP unless infinite; canon recovery restores it. For every confirmed hit, upsert combatLogs with attacker,target,damageType,bodyPart,baseDamage,armor,auraGuard,resistance,critical,finalDamage,source so the UI can show the full calculation; finalDamage must match the HP delta and must not be negative. For a lasting wound, poison, burn, bleeding, curse, fatigue, buff, or debuff, upsert effects with stable id/name/type/severity/remainingTurns/damagePerTurn/staminaPerTurn/source/treatment; delete it when cured. Do not create an effect for purely cosmetic prose. Never spend/restore from a planned action. Capacity gains are gradual and require repeated training or a breakthrough: aerobic training may raise lungCapacity/stamina.max; vitality conditioning hp.max; aura training mp.max. Do not duplicate costs already applied by the local tracker.',
         'Survival rules: player.survival.hunger and player.survival.thirst are fullness/hydration percentages capped at 100. Confirmed elapsed time and exertion may lower them; eating restores hunger and drinking restores thirst according to the amount actually consumed. Never exceed 100 and do not change them for OOC discussion. At very low values, update condition and apply only story-supported consequences.',
         'Aura mechanics: set player.aura.color to #RRGGBB only when established; preserve it otherwise. Track player.aura.output (maximum safe burst), control (precision), efficiency (cost reduction), and recovery (regeneration), each 0-100, increasing conservatively only from relevant practice/breakthroughs. Divine Aura/Mana uses a pure-white base with a flowing rainbow spectrum in UI. player.aura.infiniteMode is user-owned: Auto permits story tracking, Finite forces finite Mana, and Infinite forces inexhaustible Mana; never alter infiniteMode from AI output. In Auto mode, treat Limitless, Boundless, Unlimited, and Infinite Aura/Mana as aliases for the same infinite state. Set infinite=true only when the completed assistant story or resolved roll explicitly confirms genuinely inexhaustible power—never from level, an OOC request, a user claim alone, or an unresolved attempt. While true, do not decrease MP; in Auto mode set false only after explicit loss/seal/limitation.',
         'If a Character Forge registration profile is present, respect its explicit choice to begin without skills; never infer starting skills beyond its selected Origin Skill and abilities. Inventory bootstrap may still supply modest possessions if not configured. First-reply bootstrap: when onboarding.identitySeeded is false, copy every explicit registration/persona fact into canonical player identity fields (race, gender, age, homeContinent, standing, affiliation, appearance hair/eyes/height/build, powerType) and then set onboarding.identitySeeded=true. When onboarding.loadoutSeeded is false, the first completed normal reply after a real user message OR the saved Character Forge opening must infer a modest, coherent starting inventory and skill loadout from the user persona/card and established story facts, upsert those items and skills, then set onboarding.loadoutSeeded=true in the same patch. Do not duplicate Character Forge starting possessions or skills. Never add Traveler\'s Clothes and never invent unsupported rare, divine, infinite, or overpowered gear. Also establish the player\'s actual opening continent/region/place/detail/position/weather from the registration opening_scene and completed reply; use the exact established text name for a destination. Do not generate world-map actor markers or coordinates from story text.',
@@ -4965,7 +4967,7 @@ function advanceTurnResourcesFromUserMessage(message, current, elapsedMinutes = 
     next.systems ||= defaultSystemsState();
     let periodicDamage = 0;
     let periodicStamina = 0;
-    next.systems.effects = (next.systems.effects || []).map(effect => {
+    next.systems.effects = (next.systems.effects || []).filter(effect=>(effect.remainingTurns===null||effect.remainingTurns>0)&&!isLegacyGuessedEffect(effect,next.systems.combatLogs||[],shortHash)).map(effect => {
         periodicDamage += effect.damagePerTurn;
         periodicStamina += effect.staminaPerTurn;
         return effect.remainingTurns === null ? effect : { ...effect, remainingTurns: Math.max(0, effect.remainingTurns - 1) };
@@ -5015,7 +5017,8 @@ function explicitResourceValue(source, aliases) {
 function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage, itemUse=false) {
     const next = clone(candidate);
     const user = normalizedTravelText(userMessage?.mes || userMessage || '');
-    const assistant = normalizedTravelText(assistantMessage?.mes || assistantMessage || '');
+    const assistant = normalizedTravelText(extractStatePatch(assistantMessage?.mes || assistantMessage || '').visible);
+    const playerResources=playerResourceNarrative(assistant,{names:[base.player.name,SillyTavern.getContext().name1]});
     const combined = `${user}\n${assistant}`;
     let changes = 0;
     const unchanged = selector => JSON.stringify(selector(base)) === JSON.stringify(selector(candidate));
@@ -5068,61 +5071,21 @@ function reconcileCompletedTurn(base, candidate, userMessage, assistantMessage, 
     const resourceSpecs = [
         ['hp', ['HP', 'health', 'พลังชีวิต']],
         ['mp', ['MP', 'mana', 'aura', 'มานา', 'ออร่า']],
-        ['stamina', ['stamina', 'เรี่ยวแรง', 'ความอึด']],
+        ['stamina', ['stamina', 'ST', 'เรี่ยวแรง', 'ความอึด']],
     ];
     for (const [key, aliases] of resourceSpecs) {
         if (!unchanged(state => state.player[key])) continue;
-        const explicit = explicitResourceValue(assistant, aliases);
+        const explicit = explicitResourceValue(playerResources, aliases);
         if (!explicit) continue;
         if (explicit.max !== null) setIfChanged(next.player[key], 'max', Math.max(1, explicit.max));
         const current = explicit.set === undefined ? next.player[key].current + explicit.delta : explicit.set;
         setIfChanged(next.player[key], 'current', Math.max(0, Math.min(itemResourceCap(next,key), current)));
     }
 
-    if (unchanged(state => state.player.hp) && !explicitResourceValue(assistant, ['HP', 'health', 'พลังชีวิต'])) {
-        const injury = /\b(?:wounded|injured|bleeding|struck|hit|slashed|stabbed|burned|fractured)\b|(?:บาดเจ็บ|เลือดออก|ถูกฟัน|ถูกแทง|ถูกโจมตี|กระดูกหัก|ไหม้)/i.test(assistant);
-        const healing = /\b(?:healed|treated|bandaged|recovered health|wound(?:s)? closed)\b|(?:รักษา|สมานแผล|ทำแผล|ฟื้นพลังชีวิต)/i.test(assistant);
-        if (injury && !/\b(?:dodg|miss|blocked|unharmed|no damage)\b|(?:หลบได้|พลาด|ป้องกันได้|ไม่บาดเจ็บ)/i.test(assistant)) {
-            const damage = /\b(?:critical|severe|deep|grave)\b|(?:สาหัส|รุนแรง|แผลลึก)/i.test(assistant) ? 15 : 7;
-            setIfChanged(next.player.hp, 'current', Math.max(0, next.player.hp.current - damage));
-            const conditionSpec = [
-                [/\b(?:bleeding|blood loss)\b|(?:เลือดออก|เสียเลือด)/i, { name: 'Bleeding', type: 'Injury', damagePerTurn: 2, treatment: 'Bandage or healing' }],
-                [/\b(?:poisoned|venom|toxin)\b|(?:ติดพิษ|ยาพิษ|พิษ)/i, { name: 'Poisoned', type: 'Ailment', damagePerTurn: 2, treatment: 'Antidote or detoxification' }],
-                [/\b(?:burned|burning|scorched)\b|(?:ไหม้|ไฟลวก|ถูกเผา)/i, { name: 'Burned', type: 'Injury', damagePerTurn: 1, treatment: 'Cool and treat the burn' }],
-                [/\b(?:fractured|broken (?:arm|leg|bone))\b|(?:กระดูกหัก|แขนหัก|ขาหัก)/i, { name: 'Fracture', type: 'Injury', staminaPerTurn: 2, treatment: 'Immobilize and receive medical care' }],
-            ].find(([pattern]) => pattern.test(assistant))?.[1];
-            if (conditionSpec && unchanged(state => state.systems.effects)) {
-                const effect = statusEffect({ ...conditionSpec, severity: damage >= 15 ? 'Severe' : 'Moderate', remainingTurns: 4, source: assistant.slice(0, 220) });
-                if (effect && !next.systems.effects.some(entry => entry.name === effect.name)) {
-                    next.systems.effects.push(effect);
-                    changes += 1;
-                }
-            }
-            if (unchanged(state => state.systems.combatLogs)) {
-                const log = combatLogEntry({
-                    summary: `Confirmed injury dealt ${damage} HP damage`, attacker: 'Role-play event', target: next.player.name,
-                    damageType: /burn|ไหม้|เผา/i.test(assistant) ? 'Fire' : /poison|พิษ/i.test(assistant) ? 'Poison' : 'Physical',
-                    bodyPart: /\b(?:arm|แขน)\b/i.test(assistant) ? 'Arm' : /\b(?:leg|ขา)\b/i.test(assistant) ? 'Leg' : '',
-                    baseDamage: damage, finalDamage: damage, critical: damage >= 15, source: 'turn-reconcile',
-                });
-                if (log) next.systems.combatLogs.push(log);
-                changes += 1;
-            }
-        } else if (healing) setIfChanged(next.player.hp, 'current', Math.min(itemResourceCap(next,'hp'), next.player.hp.current + 8));
-    }
-
-    if (/\b(?:bandaged|stopped the bleeding|antidote|detoxified|treated the burn|set the bone)\b|(?:ห้ามเลือด|พันแผล|ถอนพิษ|รักษาแผลไหม้|ดามกระดูก)/i.test(assistant)
-        && unchanged(state => state.systems.effects)) {
-        const before = next.systems.effects.length;
-        next.systems.effects = next.systems.effects.filter(effect => {
-            if (/\b(?:bandaged|stopped the bleeding)\b|(?:ห้ามเลือด|พันแผล)/i.test(assistant) && effect.name === 'Bleeding') return false;
-            if (/\b(?:antidote|detoxified)\b|(?:ถอนพิษ|ยาแก้พิษ)/i.test(assistant) && effect.name === 'Poisoned') return false;
-            if (/\b(?:treated the burn)\b|(?:รักษาแผลไหม้)/i.test(assistant) && effect.name === 'Burned') return false;
-            if (/\b(?:set the bone)\b|(?:ดามกระดูก)/i.test(assistant) && effect.name === 'Fracture') return false;
-            return true;
-        });
-        changes += before - next.systems.effects.length;
-    }
+    // Injury names, fire, corpses and treatment can belong to an NPC. Never
+    // invent player damage (the previous 7/15 HP), DoT amounts, durations,
+    // healing or condition removal by scanning the entire response. Confirmed
+    // consequences arrive through explicit player bookkeeping instead.
 
     const ate = /\b(?:ate|eaten|finished (?:the )?(?:meal|food)|had (?:a )?meal)\b|(?:กิน|รับประทาน|ทานอาหาร|กินเสร็จ)/i.test(assistant);
     const drank = /\b(?:drank|drunk|finished (?:the )?(?:water|drink))\b|(?:ดื่ม|กินน้ำ)/i.test(assistant);
@@ -8871,6 +8834,10 @@ function mergeTrackedQuestObjectives(previous, incoming, storySource = {}) {
 function applyPatchOperation(state, operation, storySource = {}) {
     if (!Array.isArray(operation) || operation.length < 3) return false;
     const [verb, path, incomingValue] = operation;
+    const recipientNames=[state.player?.name,SillyTavern.getContext().name1];
+    if(path==='effects'&&!effectTargetsPlayer(incomingValue,{names:recipientNames}))return false;
+    if(/^player\.(?:hp|mp|stamina)\./u.test(String(path))&&operation[3]
+        &&!effectTargetsPlayer({target:operation[3].target,targetName:operation[3].targetName},{names:recipientNames}))return false;
     if(path==='inventory'&&incomingValue?.commerceRightId)return false;
     let value = incomingValue;
     const systemKey = {storyMemories:'enableStoryMemory',storyAgenda:'enableStoryAgenda',questObjectives:'enableQuestObjectives'}[path];
@@ -9119,6 +9086,7 @@ function applyPatchOperation(state, operation, storySource = {}) {
             if (!candidate) return false;
         }
         if (path === 'effects') {
+            candidate.origin='declared';
             candidate = statusEffect(candidate, index >= 0 ? collection[index] : {});
             if (!candidate) return false;
         }
@@ -11055,7 +11023,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.67.0 loaded.');
+        console.info('[RoleForge] Role-play interface v0.67.1 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

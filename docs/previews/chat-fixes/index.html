@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="th">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RoleForge 0.67.1 · Chat fixes preview</title>
+<style>
+*{box-sizing:border-box}html{color-scheme:dark;background:#181818;color:#dfdbd3;font:15px/1.7 system-ui,sans-serif}body{max-width:1180px;margin:auto;padding:24px}a{color:#d5bc7d}h1{font-size:26px}h2{font-size:20px;margin-top:36px}p{color:#bcb7ac;max-width:900px}.grid{display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:24px;align-items:start}figure{margin:0;border:1px solid #3b3932;background:#1b1b1b}img{display:block;width:100%;height:auto}figcaption{padding:12px;color:#c9b078;font-size:13px}.note{font-size:13px}small{letter-spacing:2px;color:#b89a62}@media(max-width:750px){body{padding:16px}.grid{grid-template-columns:1fr}figure{max-width:100%}}
+</style>
+<small>ROLEFORGE · 0.67.1</small>
+<h1>บรรยายผู้เล่นและภาพ Header</h1>
+<p>ภาพจาก renderer และ CSS จริงบน host จำลอง ใช้ข้อมูลตัวอย่าง ไม่มีการเชื่อมต่อแชทของผู้ใช้</p>
+<p><a href="../../chat-fixes-v0.67.1.th.md">รายละเอียดการแก้ไข</a> · <a href="../chat-designs/standalone.html">ทดลองขนาดกรอบภาพ 48–144 px</a></p>
+<h2>บรรยายผู้เล่น · Aincrad Interface</h2>
+<p>บล็อกอยู่ทางขวา เนื้อความชิดซ้าย ปากกาและเส้นอยู่ทางขวา ลดช่องว่างที่เกิดจาก padding เดิม</p>
+<div class="grid">
+<figure><a href="user-narrative-mobile.png"><img src="user-narrative-mobile.png" alt="บรรยายผู้เล่นบนมือถือ 390 px"></a><figcaption>มือถือ · 390 px</figcaption></figure>
+<figure><a href="user-narrative-desktop.png"><img src="user-narrative-desktop.png" alt="บรรยายผู้เล่นบนคอม 1280 px"></a><figcaption>PC · 1280 px</figcaption></figure>
+</div>
+<h2>พรีวิวใน NPC Management · ตั้งกรอบภาพ 144 px</h2>
+<p>ใช้กรอบ Header, Dialogue และ Narrative ของแชทจริง พร้อมตำแหน่งภาพตามธีม</p>
+<div class="grid">
+<figure><a href="npc-preview-mobile.png"><img src="npc-preview-mobile.png" alt="พรีวิว NPC บนมือถือ กรอบภาพ 144 px"></a><figcaption>มือถือ · Aincrad Interface</figcaption></figure>
+<figure><a href="npc-preview-desktop.png"><img src="npc-preview-desktop.png" alt="พรีวิว NPC บน PC กรอบภาพ 144 px"></a><figcaption>PC · Aincrad Interface</figcaption></figure>
+</div>
+<p class="note">ตรวจ Original / Folio / Chapter / Codex / Aincrad ที่ 320, 390, 768 และ 1280 px ด้วยกรอบภาพ 48, 72 และ 144 px รวมการโหลด CSS ของ NPC Management ตามหลัง และข้อความผู้เล่นที่อยู่ร่วมกับ UI ของ Regex</p>
+</html>

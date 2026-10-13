@@ -1,0 +1,218 @@
+{
+  "version": "0.67.1",
+  "tested_at_utc": "2026-10-13T05:32:07.588485+00:00",
+  "base_commit": "0d1795b5cdc738118833d7b3e1791ac4f60d638e",
+  "host": "Local simulated SillyTavern hosts, production RoleForge renderer/modules/styles; no access to the user's server or chat.",
+  "unit_host": {
+    "tests": 1235,
+    "pass": 1235,
+    "fail": 0
+  },
+  "portrait_and_player_browser": {
+    "results": [
+      {
+        "width": 320,
+        "themes": [
+          "roleforge",
+          "folio",
+          "chapter",
+          "codex",
+          "aincrad"
+        ],
+        "portraitSizes": [
+          48,
+          72,
+          144
+        ],
+        "managementPreview": true,
+        "nativePlayerMarkdown": true,
+        "lateLegacySheet": true,
+        "errors": []
+      },
+      {
+        "width": 390,
+        "themes": [
+          "roleforge",
+          "folio",
+          "chapter",
+          "codex",
+          "aincrad"
+        ],
+        "portraitSizes": [
+          48,
+          72,
+          144
+        ],
+        "managementPreview": true,
+        "nativePlayerMarkdown": true,
+        "lateLegacySheet": true,
+        "errors": []
+      },
+      {
+        "width": 768,
+        "themes": [
+          "roleforge",
+          "folio",
+          "chapter",
+          "codex",
+          "aincrad"
+        ],
+        "portraitSizes": [
+          48,
+          72,
+          144
+        ],
+        "managementPreview": true,
+        "nativePlayerMarkdown": true,
+        "lateLegacySheet": true,
+        "errors": []
+      },
+      {
+        "width": 1280,
+        "themes": [
+          "roleforge",
+          "folio",
+          "chapter",
+          "codex",
+          "aincrad"
+        ],
+        "portraitSizes": [
+          48,
+          72,
+          144
+        ],
+        "managementPreview": true,
+        "nativePlayerMarkdown": true,
+        "lateLegacySheet": true,
+        "errors": []
+      }
+    ]
+  },
+  "new_designs_browser": {
+    "results": [
+      {
+        "width": 320,
+        "themes": 3,
+        "frameCombinations": 8,
+        "characterColors": 3,
+        "portraits": [
+          "with",
+          "without"
+        ],
+        "overflow": false,
+        "runtimeErrors": []
+      },
+      {
+        "width": 390,
+        "themes": 3,
+        "frameCombinations": 8,
+        "characterColors": 3,
+        "portraits": [
+          "with",
+          "without"
+        ],
+        "overflow": false,
+        "runtimeErrors": []
+      },
+      {
+        "width": 768,
+        "themes": 3,
+        "frameCombinations": 8,
+        "characterColors": 3,
+        "portraits": [
+          "with",
+          "without"
+        ],
+        "overflow": false,
+        "runtimeErrors": []
+      },
+      {
+        "width": 1440,
+        "themes": 3,
+        "frameCombinations": 8,
+        "characterColors": 3,
+        "portraits": [
+          "with",
+          "without"
+        ],
+        "overflow": false,
+        "runtimeErrors": []
+      }
+    ],
+    "nativeAndMotion": {
+      "inputChecked": true,
+      "clicks": 4,
+      "loads": 1,
+      "sameWindow": true,
+      "initialEntrance": true,
+      "refreshEntrance": false,
+      "streamingEntrance": false,
+      "streamedText": "Streaming revision."
+    }
+  },
+  "condition_checks": [
+    "NPC burns, corpses, old scars, quoted speech and model reasoning do not invent player HP damage/effects",
+    "No unquantified 7/15 HP damage or 8 HP healing fallback",
+    "A directly owned numeric stat in a conditional, forecast or future plan is not applied",
+    "Only directly owned confirmed resource numbers are read; HP/MP/ST supported",
+    "Explicit NPC recipients cannot alter player resources/effects",
+    "Legacy cleanup requires the complete old fingerprint and a matching synthetic creation log",
+    "Declared player effects tick once per user turn and expire without a final extra tick",
+    "No historical HP refund, no chat message or MVU variable mutation"
+  ],
+  "history_performance": {
+    "implementation": "working tree",
+    "theme": "aincrad",
+    "rows": 200,
+    "updatedSceneReads": 1,
+    "domMutations": 2,
+    "tail": "Updated tail."
+  },
+  "verification": {
+    "syntax": {
+      "result": "passed",
+      "output": "npm run check passed"
+    },
+    "unit_and_host": {
+      "result": "passed",
+      "output": "1,235 passed / 0 failed"
+    },
+    "themes_and_portrait_user_regressions": {
+      "result": "passed",
+      "output": "\n> tretaresia-rpg@0.67.1 test:themes\n> node --test tests/chat-themes.test.mjs tests/chat-folio.test.mjs && node tests/chat-themes.browser.mjs && node tests/chat-folio.browser.mjs && node tests/chat-designs.browser.mjs && node tests/chat-appearance.browser.mjs && node tests/chat-portrait-user-regressions.browser.mjs\n\n✔ occupation badge uses overall NPC rank and works outside magic settings (3.129538ms)\n✔ Aincrad reads finite NPC HP and level, distinguishes zero from missing and never invents a maximum (0.927297ms)\n✔ a selected ability uses its own mastery, never the overall rank (0.632813ms)\n✔ ambiguous categories do not pick an arbitrary skill, while exact names still work (0.27243ms)\n✔ unknown facts and placeholder ranks are hidden without inventing replacements (0.874915ms)\n✔ released designs have independent frames and no color-mode setting (4.164731ms)\n✔ retired themes in old chat/card presets migrate without losing frame choices (1.996283ms)\n✔ all independent flags round-trip through chat and library presets without script fields (1.809918ms)\n✔ a one-card pack carries appearance independently and invalid themes cannot affect other components (2.791984ms)\n✔ Folio and its real-data badge source round-trip in presets and one-card packs (2.052483ms)\n✔ approved designs, NPC HUD choices and independent frames survive chat/library/card round trips (14.408643ms)\nℹ tests 11\nℹ suites 0\nℹ pass 11\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 493.08372\nPASS transparent Original, 2 host palettes × 2 OS schemes × 8 frame combinations, square portraits and no overflow at 320px\nPASS transparent Original, 2 host palettes × 2 OS schemes × 8 frame combinations, square portraits and no overflow at 390px\nPASS transparent Original, 2 host palettes × 2 OS schemes × 8 frame combinations, square portraits and no overflow at 1280px\nPASS single-file offline preview without network\nPASS 320px: 2 themes, 8 frame combinations, 3 Folio colors, contrast, square portraits, long text and live Voice controls\nPASS 390px: 2 themes, 8 frame combinations, 3 Folio colors, contrast, square portraits, long text and live Voice controls\nPASS 768px: 2 themes, 8 frame combinations, 3 Folio colors, contrast, square portraits, long text and live Voice controls\nPASS 1280px: 2 themes, 8 frame combinations, 3 Folio colors, contrast, square portraits, long text and live Voice controls\nPASS native stateful widgets, individual speaker colors and single-file offline preview\nPASS 320px: all approved designs, frames, colors, portraits, Voice, long text and NPC HUD\nPASS 390px: all approved designs, frames, colors, portraits, Voice, long text and NPC HUD\nPASS 768px: all approved designs, frames, colors, portraits, Voice, long text and NPC HUD\nPASS 1440px: all approved designs, frames, colors, portraits, Voice, long text and NPC HUD\nPASS finite/reduced entrance, no streaming replay, native actions/input and a single mounted MVU iframe across designs\nPASS 5 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, NPC HUD and per-chat persistence at 320px\nPASS 5 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, NPC HUD and per-chat persistence at 390px\nPASS 5 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, NPC HUD and per-chat persistence at 1280px\nPASS 320px: five themes, exact picture sizes, real management preview and player narration\nPASS 390px: five themes, exact picture sizes, real management preview and player narration\nPASS 768px: five themes, exact picture sizes, real management preview and player narration\nPASS 1280px: five themes, exact picture sizes, real management preview and player narration\n"
+    },
+    "regex": {
+      "result": "passed",
+      "output": "\n> tretaresia-rpg@0.67.0 test:regex\n> node tests/regex-shared.browser.mjs && node tests/regex-compat.browser.mjs && node tests/presentation-settings.browser.mjs\n\nPASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 320px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)\nPASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 390px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)\nPASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 1280px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)\nRegex/native HTML compatibility passed at 320px\nRegex/native HTML compatibility passed at 390px\nRegex/native HTML compatibility passed at 1280px\nPASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 320px\nPASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 390px\nPASS presentation default priority, live settings, persistence, safe status, tagless/tagged replies and chat switch at 1280px\n"
+    },
+    "mvu": {
+      "result": "passed",
+      "output": "\n> tretaresia-rpg@0.67.0 test:mvu\n> node tests/mvu-compat.browser.mjs && node tests/chat-render-performance.browser.mjs\n\nPASS MVU Regex, all modes, iframe identity, visible streaming controls, hidden history and thinking boxes at 390px (Game Maker 46840f39ca006b22870507f155145fa6324d9aa2, Builder 0ecf70bb53262091c5c41a40b3a9dff0830de2c2)\nPASS MVU Regex, all modes, iframe identity, visible streaming controls, hidden history and thinking boxes at 1280px (Game Maker 46840f39ca006b22870507f155145fa6324d9aa2, Builder 0ecf70bb53262091c5c41a40b3a9dff0830de2c2)\n{\"implementation\":\"working tree\",\"theme\":\"roleforge\",\"rows\":200,\"updatedSceneReads\":1,\"domMutations\":2,\"tail\":\"Updated tail.\"}\n"
+    },
+    "player_lifecycle": {
+      "result": "passed",
+      "output": "User UI: 320px passed (AI isolation, native restoration, edit, regex, theme, reload, no overflow)\nUser UI: 390px passed (AI isolation, native restoration, edit, regex, theme, reload, no overflow)\nUser UI: 1280px passed (AI isolation, native restoration, edit, regex, theme, reload, no overflow)\n"
+    },
+    "current_and_legacy_startup": {
+      "result": "passed",
+      "output": "PASS full startup, settings, all tabs, NPC Manager: cached legacy loader / mobile\nPASS full startup, settings, all tabs, NPC Manager: cached legacy loader / mobile\nPASS full startup, settings, all tabs, NPC Manager: cached legacy loader / desktop\nPASS full startup, settings, all tabs, NPC Manager: current loader / mobile\nPASS full startup, settings, all tabs, NPC Manager: current loader / mobile\nPASS full startup, settings, all tabs, NPC Manager: current loader / desktop\n"
+    },
+    "aincrad_history_performance": {
+      "result": "passed",
+      "output": "{\"implementation\":\"working tree\",\"theme\":\"aincrad\",\"rows\":200,\"updatedSceneReads\":1,\"domMutations\":2,\"tail\":\"Updated tail.\"}\n"
+    },
+    "offline_preview": {
+      "result": "passed",
+      "output": "PASS 390px offline: all three designs, portraits, frame/color controls and dialogs with zero requests\nPASS 1440px offline: all three designs, portraits, frame/color controls and dialogs with zero requests\n"
+    },
+    "preview_archive": {
+      "result": "passed",
+      "output": "PASS portable preview archive: 16 files\nBuilt offline production preview: 1964671 bytes\n"
+    }
+  },
+  "limitations": [
+    "The user could not supply the original AI message. Regression cases reproduce the old keyword implementation and the reported corpse/burn scenario.",
+    "Existing HP is preserved; a known correct value can be set in RoleForge Status → Edit status → HP.",
+    "Only recognizable legacy automatic effects are removed; unrelated or declared effects are preserved."
+  ]
+}

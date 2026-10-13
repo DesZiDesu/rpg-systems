@@ -1,4 +1,4 @@
-RoleForge 0.67.0 · Production chat designs
+RoleForge 0.67.1 · Production chat designs
 
 เปิด standalone.html ในเบราว์เซอร์เพื่อดูทั้งสามดีไซน์ ใช้งานออฟไลน์ได้ พร้อมตัวเลือกมือถือ/PC ภาพ 1:1 สีตัวละคร และสวิตช์แยก Header/Dialogue/Narrative
 

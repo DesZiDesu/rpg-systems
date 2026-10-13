@@ -1,17 +1,17 @@
-import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.67.0';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.67.0';
-import { createLoreWorkspace } from './lore-workspace.js?v=0.67.0';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.67.0';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.67.0';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.67.0';
-import { element, icon, roleIcon, speakerHeader, narrative, createChatPresentation } from './npc-chat.js?v=0.67.0';
-import { collectPortraitBackups } from './npc-media.js?v=0.67.0';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.67.0';
-import { H_FIELDS } from './h-stats.js?v=0.67.0';
-import {chatPresentationMode} from './chat-compat.js?v=0.67.0';
-import {mountChatAppearanceControls} from './chat-appearance-ui.js?v=0.67.0';
-import {chatAppearance,applyChatTheme} from './chat-themes.js?v=0.67.0';
-import {createArchiveBrowser,createArchiveTools,createArchiveOptions,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.67.0';
+import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.67.1';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.67.1';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.67.1';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.67.1';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.67.1';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.67.1';
+import { element, icon, roleIcon, speakerHeader, renderStoryBlocks, createChatPresentation } from './npc-chat.js?v=0.67.1';
+import { collectPortraitBackups } from './npc-media.js?v=0.67.1';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.67.1';
+import { H_FIELDS } from './h-stats.js?v=0.67.1';
+import {chatPresentationMode} from './chat-compat.js?v=0.67.1';
+import {mountChatAppearanceControls} from './chat-appearance-ui.js?v=0.67.1';
+import {chatAppearance} from './chat-themes.js?v=0.67.1';
+import {createArchiveBrowser,createArchiveTools,createArchiveOptions,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.67.1';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -72,11 +72,11 @@ export function createNpcWorkspace(api) {
         const source=!message ? (thai?'ยังไม่มีคำตอบ':'No character reply yet')
             : hasBlocks ? (thai?'คำตอบล่าสุดมีบล็อกจัดรูปแบบ':'Latest reply has presentation blocks')
                 : (thai?'คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบที่อ่านได้ — ลองสร้างคำตอบใหม่':'Latest reply has no readable presentation blocks — try a new reply');
-        presentationStatus.textContent=`RoleForge 0.67.0 · ${mode} · ${source}`;
+        presentationStatus.textContent=`RoleForge 0.67.1 · ${mode} · ${source}`;
     }
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.67.0',import.meta.url).href;document.head.append(sheet);
-    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.67.0',import.meta.url).href;document.head.append(alternateSheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.67.1',import.meta.url).href;document.head.append(sheet);
+    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.67.1',import.meta.url).href;document.head.append(alternateSheet);
     const alternateText=(en,th,values=[])=>uiText(uiLanguage()==='th'?th:en,values);
     const say=(message)=>{if(status)status.textContent=message;archiveOptions?.say(message);};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
@@ -140,7 +140,7 @@ export function createNpcWorkspace(api) {
         if(dialog&&!dialog.open&&dialog.dataset.uiLanguage!==uiLanguage()){dialog.remove();dialog=null;}
         if(dialog)return;
         dialog=element('dialog','trpg-manager');dialog.dataset.uiLanguage=uiLanguage();dialog.setAttribute('aria-labelledby','trpg-manager-title');
-        dialog.innerHTML=(uiMarkup("<header class=\"trpg-manager-top\"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id=\"trpg-manager-title\">NPC MANAGEMENT</h2></div><button type=\"button\" data-close aria-label=\"ปิด\">×</button></header>\n            <nav class=\"trpg-management-tabs\" aria-label=\"Management\"><button type=\"button\" data-management-tab=\"npc\" aria-pressed=\"true\">NPC Management</button><button type=\"button\" data-management-tab=\"lore\" aria-pressed=\"false\">Lore Management</button></nav>\n            <nav class=\"trpg-archive-nav\" aria-label=\"ขอบเขต NPC\"><button type=\"button\" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value=\"chat\">Chat · เฉพาะแชตนี้</option><option value=\"character\">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>\n            <label class=\"trpg-generation-scope\">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value=\"chat\">Chat · แชตนี้</option><option value=\"character\">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>\n            <div class=\"trpg-manager-layout\"><section class=\"trpg-roster trpg-browser\"><div class=\"trpg-browser-tools\"><label>ค้นหาตัวละคร<input type=\"search\" data-search placeholder=\"ค้นหาชื่อ บทบาท หรือสังกัด\"></label>\n            <div class=\"trpg-roster-actions\"><button type=\"button\" data-new data-lock>＋ สร้าง NPC</button><button type=\"button\" data-import data-lock>นำเข้า Character Life</button><input type=\"file\" data-import-file accept=\".json,.zip,application/json,application/zip\" hidden></div></div><div class=\"trpg-list-heading\"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class=\"trpg-pagination\" data-pagination></div></section>\n            <section class=\"trpg-record\" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id=\"trpg-npc-form\" novalidate hidden><fieldset></fieldset></form></section></div>\n            <section class=\"trpg-lore-panel\" data-lore-panel hidden></section>\n            <footer class=\"trpg-manager-footer\"><span role=\"status\" aria-live=\"polite\"></span><span>SCOPED ARCHIVE · v0.67.0</span></footer><div class=\"trpg-actions trpg-editor-actions\" data-editor-actions hidden></div>"));
+        dialog.innerHTML=(uiMarkup("<header class=\"trpg-manager-top\"><div><small>CHARACTER ARCHIVE / ROLEFORGE</small><h2 id=\"trpg-manager-title\">NPC MANAGEMENT</h2></div><button type=\"button\" data-close aria-label=\"ปิด\">×</button></header>\n            <nav class=\"trpg-management-tabs\" aria-label=\"Management\"><button type=\"button\" data-management-tab=\"npc\" aria-pressed=\"true\">NPC Management</button><button type=\"button\" data-management-tab=\"lore\" aria-pressed=\"false\">Lore Management</button></nav>\n            <nav class=\"trpg-archive-nav\" aria-label=\"ขอบเขต NPC\"><button type=\"button\" data-back hidden>← กลับรายการ</button><label>แหล่งข้อมูล<select data-scope-select><option value=\"chat\">Chat · เฉพาะแชตนี้</option><option value=\"character\">Character · ผูกกับการ์ด</option></select></label><p data-scope-note></p></nav>\n            <label class=\"trpg-generation-scope\">เก็บ NPC ใหม่จากเนื้อเรื่องใน<select data-generation-scope data-lock><option value=\"chat\">Chat · แชตนี้</option><option value=\"character\">Characters · ทุกแชตของการ์ดนี้</option></select><small>มีผลกับ NPC ใหม่เท่านั้น · แชตกลุ่มใช้ Chat · Characters ไม่ใช่การสร้างการ์ดแชตใหม่</small></label>\n            <div class=\"trpg-manager-layout\"><section class=\"trpg-roster trpg-browser\"><div class=\"trpg-browser-tools\"><label>ค้นหาตัวละคร<input type=\"search\" data-search placeholder=\"ค้นหาชื่อ บทบาท หรือสังกัด\"></label>\n            <div class=\"trpg-roster-actions\"><button type=\"button\" data-new data-lock>＋ สร้าง NPC</button><button type=\"button\" data-import data-lock>นำเข้า Character Life</button><input type=\"file\" data-import-file accept=\".json,.zip,application/json,application/zip\" hidden></div></div><div class=\"trpg-list-heading\"><span>CHARACTER RECORDS</span><span data-count></span></div><div data-list></div><div class=\"trpg-pagination\" data-pagination></div></section>\n            <section class=\"trpg-record\" hidden><article data-detail hidden></article><div data-import-preview hidden></div><form id=\"trpg-npc-form\" novalidate hidden><fieldset></fieldset></form></section></div>\n            <section class=\"trpg-lore-panel\" data-lore-panel hidden></section>\n            <footer class=\"trpg-manager-footer\"><span role=\"status\" aria-live=\"polite\"></span><span>SCOPED ARCHIVE · v0.67.1</span></footer><div class=\"trpg-actions trpg-editor-actions\" data-editor-actions hidden></div>"));
         const generationOptions=element('details','trpg-generation-options'),generationSummary=element('summary');generationSummary.dataset.generationSummary='';
         const generationScope=dialog.querySelector('.trpg-generation-scope');generationScope.before(generationOptions);generationOptions.append(generationSummary,generationScope);
         const header=dialog.querySelector('.trpg-manager-top'),back=dialog.querySelector('[data-back]'),more=element('button','trpg-archive-options-toggle','⋯');
@@ -525,12 +525,18 @@ export function createNpcWorkspace(api) {
     }
     async function preview(){
         const host=form?.querySelector('[data-preview]');if(!host)return;const ticket=++previewGeneration,p={...base,...values()};
-        const view=chatAppearance(api.settings());applyChatTheme(host,view);
-        const root=element('div','trpg-speaker');root.style.setProperty('--speaker',p.identityColor);const header=speakerHeader({...p,name:p.name||uiText("ชื่อตัวละคร")},()=>form.elements.namedItem('name').focus(),view.theme);
-        root.append(header,element('div','trpg-dialogue',uiText("นี่คือตัวอย่างรูปลักษณ์บทพูดของตัวละคร")));
-        host.replaceChildren(root,narrative(api.settings().language==='th'?'ตัวอย่างบทบรรยายตามธีมแชทที่เลือก':'Narration preview in the selected chat theme.'));
-        if(photoBlob){try{const blob=await croppedPortrait(photoBlob,base.portraitView?.mobile||{});if(ticket!==previewGeneration||!host.isConnected)return;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(blob);const image=element('img','trpg-photo');image.alt=p.name||uiText("ภาพตัวละคร");image.src=previewUrl;header.prepend(image);}catch(e){say(e.message);}}
-        else if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
+        const view=chatAppearance(api.settings()),profile={...p,id:p.id||'npc-style-preview',name:p.name||uiText('ชื่อตัวละคร')};
+        host.replaceChildren();if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
+        // Use the same frames, badge, switches and portrait placement as chat.
+        const blocks=[{type:'header',name:profile.name},{type:'dialogue',name:profile.name,text:uiText('นี่คือตัวอย่างรูปลักษณ์บทพูดของตัวละคร')},{type:'narrative',text:api.settings().language==='th'?'ตัวอย่างบทบรรยายตามธีมแชทที่เลือก':'Narration preview in the selected chat theme.'}];
+        renderStoryBlocks(host,blocks,new Map([[keyName(profile.name),profile]]),profile.name,()=>form.elements.namedItem('name').focus(),async()=>{
+            if(!photoBlob)return null;
+            try{
+                const frame=p.portraitView?.[matchMedia('(max-width: 650px)').matches?'mobile':'desktop']||{};
+                const blob=await croppedPortrait(photoBlob,frame);if(ticket!==previewGeneration||!host.isConnected)return null;
+                previewUrl=URL.createObjectURL(blob);return previewUrl;
+            }catch(e){if(ticket===previewGeneration)say(e.message);return null;}
+        },null,view);
     }
     async function inheritPortrait(){
         if(busy||!editAlternateId)return;const ticket=token;lock(true);

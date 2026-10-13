@@ -1,5 +1,6 @@
 import * as worldPresets from '../src/world-presets.js';
 import * as chatThemes from '../src/chat-themes.js';
+import * as playerConsequences from '../src/player-consequences.js';
 import * as hostPolicy from '../src/host-policy.js';
 import * as itemLearning from '../src/item-learning.js';
 import * as taskGeneration from '../src/task-generation.js';
@@ -67,11 +68,64 @@ const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enable
 const sandbox={...taskGeneration,...itemLearning,...itemDefinition,...itemEffects,...lootDiscovery,...commerceRights,renderRightsInventory,commerceIconMarkup,readCommercePrices,...mainChatSystems,normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,...commerceEngine,auctionAvailable:commerceEngine.commerceAvailable,auctionFundsValid:commerceEngine.commerceFundsValid,createCommerceRuntime,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,...locationList,...sceneCompletion,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},showApiRequestNotice:(kind,reason,language)=>showApiRequestNotice(kind,reason,language,sandbox.toastr),...powerMastery,...incantationCore,...itemCore,...voiceCore,SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelector(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
-Object.assign(sandbox,hostPolicy,worldPresets,chatThemes,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet});
+Object.assign(sandbox,hostPolicy,worldPresets,chatThemes,playerConsequences,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet});
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
  vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantVariantKey,assistantTurnKey,scheduleAssistantPatch,cleanInlinePatchSurfaces,assistantPatchTimers,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig,shortHash,getForgePreset,activeLoreOptions,saveCharacterPackSetup,saveChatPresetComponents,currentWorldPreset,defaultWorldPreset,getGlobalSettings,changeWorldSetting,initializeChatPresets,queueAssistantTurnReplacement})',sandbox);
 const host=sandbox.testHost;
+vm.runInContext('Object.assign(globalThis.testHost,{reconcileCompletedTurn,advanceTurnResourcesFromUserMessage,processUserTravelIntent,statusEffect,combatLogEntry})',sandbox);
+
+test('NPC burns, corpses, old scars, speech and reasoning never invent player HP damage or a condition',()=>{
+ const base=host.defaultState();base.player.name='Noah';base.player.hp.current=75;
+ for(const story of [
+  '<tr-narrative>On the chair by the extinguished fireplace, the old man has a badly burned face and deep wounds. His HP is 0.</tr-narrative>',
+  '<tr-narrative>บนเก้าอี้ข้างเตาผิงที่มอดดับ ชายชรามีแผลไฟไหม้รุนแรง เลือดแห้งกรัง และกระดูกหัก</tr-narrative>',
+  '<tr-narrative>Noah looks at Cora bleeding. Cora HP 20/100.</tr-narrative>',
+  '<tr-dialogue name="Cora">Noah was severely burned and his HP is 0, says the old legend.</tr-dialogue>',
+  '<planning>Noah HP 0. Burned.</planning><tr-narrative>Noah reads a book calmly.</tr-narrative>',
+  '<tr-narrative>Noah was not burned. The fire missed him.</tr-narrative>',
+ ]){
+  const result=host.reconcileCompletedTurn(base,base,'I watch.',{mes:story});
+  assert.equal(result.next.player.hp.current,75,story);assert.equal(result.next.systems.effects.length,0,story);assert.equal(result.next.systems.combatLogs.length,0,story);
+ }
+});
+test('unquantified injury or NPC treatment does not invent damage/healing; directly owned numerical changes work',()=>{
+ const base=host.defaultState();base.player.name='Noah';base.player.hp.current=60;
+ base.systems.effects=[host.statusEffect({id:'real-bleed',name:'Bleeding',damagePerTurn:2,remainingTurns:3,origin:'declared'})];
+ const npc=host.reconcileCompletedTurn(base,base,'I wait.','Cora bandaged the old man, treated the burn and healed his wounds.');
+ assert.equal(npc.next.player.hp.current,60);assert.equal(npc.next.systems.effects.length,1);
+ assert.equal(host.reconcileCompletedTurn(base,base,'I wait.','Noah was hit.').next.player.hp.current,60);
+ assert.equal(host.reconcileCompletedTurn(base,base,'I wait.','Noah HP 55/100. Cora HP 0.').next.player.hp.current,55);
+ assert.equal(host.reconcileCompletedTurn(base,base,'I wait.','Noah ST 60/100. Cora stamina 0.').next.player.stamina.current,60);
+ assert.equal(host.reconcileCompletedTurn(base,base,'I wait.','คุณเสีย HP 5').next.player.hp.current,55);
+});
+test('known legacy keyword conditions are removed before ticking without guessing a historical HP refund',()=>{
+ const prior=context.chatMetadata;try{
+  const state=host.defaultState();state.player.name='Noah';state.player.hp.current=55;
+  const time='2026-10-13T10:00:00.000Z';
+  state.systems.effects=[host.statusEffect({name:'Burned',type:'Injury',severity:'Severe',remainingTurns:3,damagePerTurn:1,staminaPerTurn:0,treatment:'Cool and treat the burn',source:'<tr-narrative>The old man has a badly burned face.</tr-narrative>',appliedAt:time})];
+  state.systems.combatLogs=[host.combatLogEntry({summary:'Confirmed injury dealt 15 HP damage',attacker:'Role-play event',target:'Noah',baseDamage:15,finalDamage:15,source:'turn-reconcile',at:time})];
+  context.chatMetadata={tretaresia_rpg_state:state,variables:{stat_data:{HP:0}}};
+  const normalized=host.getState();assert.equal(normalized.systems.effects.length,0);assert.equal(normalized.player.hp.current,55);
+  const tick=host.advanceTurnResourcesFromUserMessage({mes:'I wait.'},state,1);assert.equal(tick.player.hp.current,55);assert.equal(tick.systems.effects.length,0);
+  assert.equal(context.chatMetadata.variables.stat_data.HP,0);assert.equal(context.chatMetadata.tretaresia_rpg_state.player.hp.current,55);
+ }finally{context.chatMetadata=prior;}
+});
+test('declared player effects tick once per user turn, expire correctly, and reject an explicit NPC recipient',async()=>{
+ const prior={metadata:context.chatMetadata,chat:context.chat,settings:context.extensionSettings,save:context.saveMetadata,document:sandbox.document};try{
+  sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:prior.document.getElementById(id)};
+  context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,eventNotifications:false,enableMemorySummaries:false,npcDiaryFrequency:'off'}};
+  const state=host.defaultState();state.player.name='Noah';state.onboarding={identitySeeded:true,locationSeeded:true,loadoutSeeded:true};
+  const spec={id:'real-burn',name:'Burned',type:'Injury',severity:'Moderate',remainingTurns:2,damagePerTurn:3,source:'Fire struck Noah; an established burn rule deals 3 HP per turn.',target:'player'};
+  const accepted=host.applyStatePatch(state,{ops:[['upsert','effects',spec]]});assert.equal(accepted.next.systems.effects[0].origin,'declared');
+  const wrong=host.applyStatePatch(state,{ops:[['upsert','effects',{...spec,target:'Cora'}],['inc','player.hp.current',-20,{targetName:'Cora'}]]});assert.equal(wrong.next.systems.effects.length,0);assert.equal(wrong.next.player.hp.current,100);
+  context.chatMetadata={tretaresia_rpg_state:accepted.next};context.chat=[{is_user:true,mes:'I wait.'}];context.saveMetadata=async()=>{};
+  await host.processUserTravelIntent(0);assert.equal(host.getState().player.hp.current,97);assert.equal(host.getState().systems.effects[0].remainingTurns,1);
+  await host.processUserTravelIntent(0);assert.equal(host.getState().player.hp.current,97);
+  context.chat.push({is_user:true,mes:'I wait again.'});await host.processUserTravelIntent(1);assert.equal(host.getState().player.hp.current,94);assert.equal(host.getState().systems.effects.length,0);
+  const expired=host.defaultState();expired.systems.effects=[host.statusEffect({name:'Expired curse',damagePerTurn:9,remainingTurns:0,origin:'declared'})];assert.equal(host.advanceTurnResourcesFromUserMessage({mes:'I wait.'},expired,1).player.hp.current,100);
+ }finally{context.chatMetadata=prior.metadata;context.chat=prior.chat;context.extensionSettings=prior.settings;context.saveMetadata=prior.save;sandbox.document=prior.document;}
+});
 
 test('normal main-chat practice commits bounded permanent stats, fatigue and native notifications exactly once',async()=>{
  const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,toastr:sandbox.toastr,document:sandbox.document};

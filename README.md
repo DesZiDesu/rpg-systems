@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.67.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.67.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -27,6 +27,8 @@ The list fills the mobile window with one scrolling area. Page controls and batc
 Aincrad’s optional HP/Lv display reads `NPC.stats.hp` and `NPC.stats.level`; unknown values are hidden and HP 0 remains visible. Its HP underline is decorative, without an invented maximum or percentage. Entrance motion finishes in 330ms, respects Reduce Motion, and only plays for the latest fresh reply or a design switch; streaming and state/Voice refreshes do not replay it. New font assets are local to the extension and only load when used. Appearance, badge, motion and HUD choices follow chat/world presets and one-card setup.
 
 Enable **Header**, **Dialogue** and **Narrative** independently. Disabling Dialogue displays `"text"` in the speaker’s color; disabling Narrative displays italic text; Header becomes a plain speaker name. Header and Narrative stay transparent. Choices are saved per chat and included in presets and one-card setup. Original remains the default, retired themes migrate to Original, and retired color-mode fields are ignored. User UI stays on the right. Shared mode preserves native Regex/MVU widgets and Voice controls; saved story and spoken text stay unchanged. [PC / mobile / color preview](docs/previews/chat-folio/index.html) · [Thai guide](docs/chat-designs-v0.65.0.th.md).
+
+**Fixed in 0.67.1:** All five designs now honor the 48–144px NPC portrait frame setting, and the NPC editor previews the actual chat frames. Player narration reads from the left within its right-side block, with matching theme ornaments and compact spacing. NPC injuries, corpses and dialogue no longer trigger guessed player HP loss or conditions; expired conditions no longer tick. Recognizable legacy keyword conditions are removed conservatively without inventing a historical HP refund. [Mobile / PC fixes preview](docs/previews/chat-fixes/index.html) · [Thai guide](docs/chat-fixes-v0.67.1.th.md).
 
 ## Install
 
@@ -112,6 +114,8 @@ Check the browser console for loading failures. To temporarily skip RoleForge st
 Report issues with your RoleForge version, SillyTavern version, browser, reproduction steps and panel diagnostic if available. Remove API keys and private chat details before posting to [GitHub Issues](https://github.com/DesZiDesu/rpg-systems/issues).
 
 ## Development and validation
+
+Version **0.67.1** passes **1,235 unit/host tests** and syntax checks. Browser checks verify five portrait designs at 48/72/144px on 320/390/768/1280px screens, the production NPC editor, late-loaded legacy CSS, player Markdown and native widget preservation. Full theme, Regex/MVU, player lifecycle and current/legacy startup checks pass. [Validation record](docs/validation-chat-fixes-v0.67.1.json).
 
 The extension runs directly from **manifest.json** and **loader.js**. Runtime modules are in **src/**, styles in **styles/**, and settings/Character Forge templates in **templates/**. Small CSS files at the repository root support cached older loaders and must remain.
 

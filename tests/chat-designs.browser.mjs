@@ -52,6 +52,14 @@ try{
     await page.evaluate(()=>{window.chatDesignPreview.profile.stats={hp:'',level:null};window.chatDesignPreview.render();});assert.equal(await story.locator('.trpg-npc-stat').count(),0);
     await page.evaluate(()=>{window.chatDesignPreview.profile.stats=window.savedStats;window.chatDesignPreview.render();});
    }
+   await page.locator('#portrait').check();
+   for(const size of [48,144,72]){
+    await page.locator('#portrait-size').evaluate((n,size)=>{n.value=size;n.dispatchEvent(new Event('input',{bubbles:true}));},size);
+    await page.waitForFunction(()=>document.querySelector('.trpg-photo')?.naturalWidth>0);
+    assert.equal(await page.locator('#portrait-size-value').textContent(),size+' px');
+    const box=await story.locator('.trpg-portrait').boundingBox();assert.ok(Math.abs(box.width-size)<1&&Math.abs(box.height-size)<1,'preview slider preserves the configured square frame');
+    assert.equal(await story.evaluate(n=>n.scrollWidth<=n.clientWidth+1),true,'large portraits fit the chat');
+   }
    for(const photo of [true,false]){
     await page.locator('#portrait').setChecked(photo);
     if(photo){await page.waitForFunction(()=>document.querySelector('.trpg-photo')?.naturalWidth>0);const [frame,name]=await Promise.all([story.locator('.trpg-portrait').boundingBox(),story.locator('.trpg-identity>strong').boundingBox()]);assert.ok(Math.abs(frame.width-frame.height)<1,'portrait is square');assert.equal(theme==='codex'?frame.x>name.x+name.width:frame.x+frame.width<=name.x,true,'portrait sits on the approved side');}

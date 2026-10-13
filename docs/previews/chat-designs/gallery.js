@@ -1,8 +1,8 @@
-import {renderStoryBlocks} from '../../../src/npc-chat.js?v=0.67.0';
-import {croppedPortrait} from '../../../src/npc-portraits.js?v=0.67.0';
-import {setUiLanguageProvider} from '../../../src/ui-language.js?v=0.67.0';
-import {createVoiceAddons} from '../../../src/voice-addons.js?v=0.67.0';
-import {CHAT_THEMES} from '../../../src/chat-themes.js?v=0.67.0';
+import {renderStoryBlocks} from '../../../src/npc-chat.js?v=0.67.1';
+import {croppedPortrait} from '../../../src/npc-portraits.js?v=0.67.1';
+import {setUiLanguageProvider} from '../../../src/ui-language.js?v=0.67.1';
+import {createVoiceAddons} from '../../../src/voice-addons.js?v=0.67.1';
+import {CHAT_THEMES} from '../../../src/chat-themes.js?v=0.67.1';
 
 setUiLanguageProvider(()=> 'th');
 const $=id=>document.getElementById(id),root=$('story'),host=$('chat-host'),stage=$('preview-stage'),dialog=$('preview-dialog'),positioner=stage.querySelector('.host-positioner');
@@ -20,7 +20,7 @@ function openProfile(){
 }
 const appearance=()=>({theme,header:$('header').checked,dialogue:$('dialogue').checked,narrative:$('narrative').checked,badgeMode:$('badge').value,badgeAbility:'เวทน้ำ',npcVitals:$('npc-stats').checked,effects:$('effects').checked});
 function render(){
- dispose?.();root.replaceChildren();profile.identityColor=$('color').value;
+ dispose?.();root.replaceChildren();profile.identityColor=$('color').value;profile.portraitSize=Number($('portrait-size').value);$('portrait-size-value').value=profile.portraitSize+' px';
  const displayed=$('long-text').checked?blocks.map(b=>({...b,text:b.text?b.text+'\n\n'+('LongSceneNameAndUninterruptedText'.repeat(6))+'\n\n'+b.text.repeat(3):undefined})):blocks;
  renderStoryBlocks(root,displayed,new Map([[profile.name.toLowerCase(),profile]]),profile.name,openProfile,async()=> $('portrait').checked?photoUrl:null,null,appearance());
  root.classList.toggle('trpg-entrance',$('effects').checked);dispose=voice.decorateMessage(root,displayed,{id:0,message});
@@ -37,6 +37,7 @@ root.addEventListener('click',event=>{if(event.target.closest('[data-roleforge-c
 document.querySelectorAll('[data-design]').forEach(b=>b.addEventListener('click',()=>{theme=b.dataset.design;render();}));
 document.querySelectorAll('[data-device]').forEach(b=>b.addEventListener('click',()=>{device=b.dataset.device;document.querySelectorAll('[data-device]').forEach(n=>n.setAttribute('aria-pressed',String(n===b)));layout();}));
 for(const id of ['portrait','header','dialogue','narrative','long-text','npc-stats','effects','color','badge'])$(id).addEventListener('change',render);
+$('portrait-size').addEventListener('input',render);
 $('close-dialog').addEventListener('click',()=>dialog.close());
 new ResizeObserver(layout).observe(stage);
 const params=new URLSearchParams(location.search);if(['chapter','codex','aincrad'].includes(params.get('theme')))theme=params.get('theme');if(['mobile','desktop'].includes(params.get('device')))device=params.get('device');if(params.get('portrait')==='0')$('portrait').checked=false;

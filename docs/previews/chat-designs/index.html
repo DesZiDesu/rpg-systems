@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <title>RoleForge · Three Tales — Design Preview</title>
-  <link rel="stylesheet" href="../../../styles/npc-ui.css?v=0.67.0">
-<link rel="stylesheet" href="../../../styles/voice-addons.css?v=0.67.0">
-<link rel="stylesheet" href="../../../styles/chat-themes.css?v=0.67.0">
-<link rel="stylesheet" href="../../../styles/chat-illustrated.css?v=0.67.0">
-<link rel="stylesheet" href="gallery.css?v=0.67.0">
+  <link rel="stylesheet" href="../../../styles/npc-ui.css?v=0.67.1">
+<link rel="stylesheet" href="../../../styles/voice-addons.css?v=0.67.1">
+<link rel="stylesheet" href="../../../styles/chat-themes.css?v=0.67.1">
+<link rel="stylesheet" href="../../../styles/chat-illustrated.css?v=0.67.1">
+<link rel="stylesheet" href="gallery.css?v=0.67.1">
 </head>
 <body>
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -35,7 +35,7 @@
       <div class="study-tag"><svg class="icon"><use href="#i-book"/></svg> ROLEFORGE · PRODUCTION PREVIEW</div>
       <h1>Three <em>Tales.</em></h1>
       <p>Header · Dialogue · Narrative <span id="inspiration">แรงบันดาลใจจาก SAO · Aincrad</span></p>
-      <div class="scope-note">ROLEFORGE 0.67.0 <span>renderer / CSS จริง · กรอบแชทจำลอง</span></div>
+      <div class="scope-note">ROLEFORGE 0.67.1 <span>renderer / CSS จริง · กรอบแชทจำลอง</span></div>
     </header>
 
     <nav class="design-tabs" aria-label="เลือกดีไซน์">
@@ -51,6 +51,7 @@
         <button type="button" data-device="desktop" aria-pressed="false">PC</button>
       </div>
       <label class="check-control"><input type="checkbox" id="portrait" checked> ภาพตัวละคร</label>
+      <label class="portrait-size-control">กรอบภาพ <input type="range" id="portrait-size" min="48" max="144" step="4" value="72"> <output id="portrait-size-value">72 px</output></label>
       <details class="extra-controls"><summary>ลองตัวเลือกเพิ่มเติม</summary><fieldset><legend>แสดงกรอบ UI</legend>
         <label><input type="checkbox" id="header" checked> Header</label>
         <label><input type="checkbox" id="dialogue" checked> Dialogue</label>
@@ -98,6 +99,6 @@
   </main>
   <dialog id="preview-dialog" aria-labelledby="dialog-caption"><div class="dialog-top"><span id="dialog-caption"></span><button id="close-dialog" type="button" aria-label="ปิด"><svg class="icon"><use href="#i-close"/></svg></button></div><div id="dialog-content"></div></dialog>
   <template id="portrait-asset"><img src="../chat-original/assets/sample-character.jpg" alt="ภาพตัวละครตัวอย่าง"></template>
-  <script type="module" src="gallery.js?v=0.67.0"></script>
+  <script type="module" src="gallery.js?v=0.67.1"></script>
 </body>
 </html>
