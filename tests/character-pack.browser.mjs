@@ -29,7 +29,7 @@ try{
             window.host.characters=[{avatar:'one-card.png',name:card.data.name,data:structuredClone(card.data),json_data:JSON.stringify(card)}];window.host.characterId=0;window.host.groupId=null;
             window.cardRequests=[];window.host.fetch=async(url,options)=>{window.cardRequests.push(JSON.parse(options.body));return{ok:!window.cardSaveFails,status:window.cardSaveFails?503:200};};
             await window.hStatsPreview.switchChat('one-card-new',{});
-            document.querySelectorAll('#tretaresia-rpg-settings details').forEach(node=>node.open=true);
+            document.querySelectorAll('#tretaresia-rpg-settings details').forEach(node=>node.open=true);document.getElementById('tretaresia-rpg-settings').rfSettingsNavigation.open('card-pack',{direct:true});
         },card);
         await page.waitForFunction(n=>document.querySelectorAll('#roleforge-power-editor [data-power-id]').length===n,card.data.extensions.roleforge_character_pack.powerPreset.definitions.length);
         assert.equal(await page.locator('#roleforge-forge-editor input').evaluateAll((inputs,data)=>inputs.some(input=>input.value===data.extensions.roleforge_character_pack.forgePreset.origins[0]),card.data),true);

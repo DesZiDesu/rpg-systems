@@ -1,5 +1,9 @@
 import * as worldPresets from '../src/world-presets.js';
 import * as npcCapacity from '../src/npc-capacity.js';
+import * as archiveCache from '../src/archive-cache.js';
+import * as sparseNpcs from '../src/sparse-npc-state.js?v=0.69.0';
+import * as worldPackClient from '../src/world-pack-client.js';
+import * as worldPackCore from '../src/world-pack-core.js';
 import {npcReferenceProfiles} from '../src/npc-core.js';
 import * as chatThemes from '../src/chat-themes.js';
 import * as playerConsequences from '../src/player-consequences.js';
@@ -70,12 +74,12 @@ const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enable
 const sandbox={...taskGeneration,...itemLearning,...itemDefinition,...itemEffects,...lootDiscovery,...commerceRights,renderRightsInventory,commerceIconMarkup,readCommercePrices,...mainChatSystems,normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,...commerceEngine,auctionAvailable:commerceEngine.commerceAvailable,auctionFundsValid:commerceEngine.commerceFundsValid,createCommerceRuntime,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,...locationList,...sceneCompletion,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},showApiRequestNotice:(kind,reason,language)=>showApiRequestNotice(kind,reason,language,sandbox.toastr),...powerMastery,...incantationCore,...itemCore,...voiceCore,SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelector(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
-Object.assign(sandbox,hostPolicy,worldPresets,npcCapacity,chatThemes,playerConsequences,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet,npcReferenceProfiles});
-const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
+Object.assign(sandbox,hostPolicy,worldPresets,npcCapacity,archiveCache,sparseNpcs,worldPackClient,worldPackCore,chatThemes,playerConsequences,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet,npcReferenceProfiles});
+const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replace(/^export .*;$/gm,'');
  vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantVariantKey,assistantTurnKey,scheduleAssistantPatch,cleanInlinePatchSurfaces,assistantPatchTimers,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig,shortHash,getForgePreset,activeLoreOptions,saveCharacterPackSetup,saveChatPresetComponents,currentWorldPreset,defaultWorldPreset,getGlobalSettings,changeWorldSetting,initializeChatPresets,queueAssistantTurnReplacement,bindCheckbox})',sandbox);
 const host=sandbox.testHost;
-vm.runInContext('Object.assign(globalThis.testHost,{activeNpcOptions,persistNpcOptions,hasStoryNpcCapacity})',sandbox);
+vm.runInContext('Object.assign(globalThis.testHost,{activeNpcOptions,persistNpcOptions,hasStoryNpcCapacity,prepareNpcReferences,archiveDiagnostics})',sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{reconcileCompletedTurn,advanceTurnResourcesFromUserMessage,processUserTravelIntent,statusEffect,combatLogEntry})',sandbox);
 
 test('NPC burns, corpses, old scars, speech and reasoning never invent player HP damage or a condition',()=>{
@@ -305,7 +309,7 @@ test('complete handoff uses durable fallback storage without dropping Chat NPCs,
   context.chatMetadata={tretaresia_rpg_selected_hstats_npc:'cora'};
   const state=host.normalize({...host.defaultState(),npcs:[{...alternateFixture(),npcScope:'chat',hStats:{loyaltyHearts:4}}]});
   assert.equal(await host.writeContinuitySnapshot(state),true);
-  const saved=[...records.values()][0];assert.equal(saved.npcTransfer,'all');assert.equal(saved.state.npcs[0].npcScope,'chat');
+  const saved=[...records.values()][0];assert.equal(saved.npcTransfer,'scoped');assert.equal(saved.state.npcs[0].npcScope,'chat');
   assert.equal(saved.state.npcs[0].hStats.loyaltyHearts,4);assert.equal(saved.state.npcs[0].alternateProfiles.length,2);
   assert.equal(saved.state.npcs[0].alternateProfiles[0].portraitPath,'/user/images/tretaresia-npc/child.webp');
   assert.deepEqual(Array.from(saved.hStatsRoster.visible),['cora']);assert.equal(saved.hStatsRoster.selected,'cora');
@@ -1440,9 +1444,26 @@ test('host getState merges only the current card library and leaves legacy NPCs 
  context.characters=[{name:'Same display name',avatar:'first.png'},{name:'Same display name',avatar:'second.png'}];context.characterId=0;
  host.getSettings().npcCharacterLibraries={'card:first.png':[host.npcProfile({id:'shared',name:'Shared',background:'Card history'})]};
  context.chatMetadata.tretaresia_rpg_state={...host.defaultState(),npcs:[{id:'local',name:'Local'}]};
- const state=host.getState();assert.equal(state.npcs.length,2);assert.equal(state.npcs[0].npcScope,'chat');assert.equal(state.npcs[1].npcScope,'character');
+ assert.equal(host.getState().npcs.length,1,'unrequested shared dossiers remain in the archive');
+ const state=host.getState({npcIds:['shared']});assert.equal(state.npcs.length,2);assert.equal(state.npcs[0].npcScope,'chat');assert.equal(state.npcs[1].npcScope,'character');
  context.characterId=1;assert.equal(host.getState().npcs.length,1);
- context.characterId=0;context.chatMetadata={};assert.equal(host.getState().npcs.length,1);assert.equal(host.getState().npcs[0].name,'Shared');
+ context.characterId=0;context.chatMetadata={};assert.equal(host.getState({npcIds:['shared']}).npcs.length,1);assert.equal(host.getState({npcIds:['shared']}).npcs[0].name,'Shared');
+});
+
+test('missing World Pack cannot discard chat deltas, contacts or party links before it is restored',()=>{
+ const prior={cards:context.characters,card:context.characterId,group:context.groupId,metadata:context.chatMetadata,worlds:vm.runInContext('worldPacks',sandbox)};
+ try{
+  const owner='card:pending-library.png',ref={format:'roleforge-world-archive-ref',version:1,archiveId:'pending-world',revision:'1',manifestSha256:'a'.repeat(64),required:true};
+  context.characters=[{avatar:'pending-library.png',data:{extensions:{roleforge_world_archive:ref}}}];context.characterId=0;context.groupId=null;
+  const state=host.defaultState();state.contacts=[{id:'friend',name:'Pending NPC',npcId:'pending-shared'}];state.social.party={name:'Pending party',memberIds:['pending-shared']};
+  state.npcScopes={format:2,owner,archiveId:ref.archiveId,archiveRevision:'1',activeIds:['pending-shared'],hidden:[],overrides:{'pending-shared':{stats:{hp:70},met:true}},bases:{'pending-shared':{stats:{hp:100},met:false}},archives:{}};
+  context.chatMetadata={tretaresia_rpg_state:state};
+  const missing=host.getState();assert.equal(missing.npcs.length,0);assert.equal(missing.contacts[0].npcId,'pending-shared');assert.deepEqual([...missing.social.party.memberIds],['pending-shared']);
+  const saved=host.storedNpcState(missing);assert.equal(saved.npcScopes.archiveId,ref.archiveId);assert.equal(saved.npcScopes.overrides['pending-shared'].stats.hp,70);assert.deepEqual([...saved.npcScopes.activeIds],['pending-shared']);
+  const profile=host.npcProfile({id:'pending-shared',name:'Pending NPC',enabled:true,met:false,stats:{hp:100}});
+  const catalog=Object.assign(archiveCache.createArchiveCatalog([profile],{owner}),{ref,external:true});sandbox.pendingArchiveFixture={peek:()=>catalog};vm.runInContext('worldPacks=pendingArchiveFixture',sandbox);context.chatMetadata={tretaresia_rpg_state:saved};
+  const restored=host.getState();assert.equal(restored.npcs.length,1);assert.equal(restored.npcs[0].stats.hp,70);assert.equal(restored.npcs[0].met,true);assert.equal(restored.contacts[0].npcId,'pending-shared');assert.deepEqual([...restored.social.party.memberIds],['pending-shared']);
+ }finally{context.characters=prior.cards;context.characterId=prior.card;context.groupId=prior.group;context.chatMetadata=prior.metadata;sandbox.pendingArchiveFixture=prior.worlds;vm.runInContext('worldPacks=pendingArchiveFixture',sandbox);delete sandbox.pendingArchiveFixture;}
 });
 
 test('AI cannot replace a server portrait and image paths stay outside model context',()=>{
@@ -1455,11 +1476,11 @@ test('AI cannot replace a server portrait and image paths stay outside model con
 test('real AI patch cannot choose Character scope or modify the shared library',()=>{
  context.characterId=0;context.chatMetadata={};const current=host.getState();
  const result=host.applyStatePatch(current,{ops:[['upsert','npcs',{id:'shared',name:'Shared',location:'New scene',npcScope:'chat'}],['upsert','npcs',{id:'new',name:'AI created',npcScope:'character',npcOwner:'card:first.png'}]]});
- assert.equal(result.next.npcs.find(p=>p.id==='shared').npcScope,'character');assert.equal(result.next.npcs.find(p=>p.id==='new').npcScope,'chat');
+ assert.equal(result.next.npcs.find(p=>p.id==='shared').npcScope,'character',JSON.stringify({catalog:host.characterNpcLibrary().map(n=>[n.id,n.npcScope,n.npcOwner]),current:current.npcScopes,result:result.next.npcs.map(n=>[n.id,n.npcScope,n.npcOwner])}));assert.equal(result.next.npcs.find(p=>p.id==='new').npcScope,'chat');
  context.chatMetadata.tretaresia_rpg_state=host.storedNpcState(result.next);
  assert.equal(context.chatMetadata.tretaresia_rpg_state.npcs.length,1);assert.equal(host.getState().npcs.find(p=>p.id==='shared').location,'New scene');
  assert.notEqual(host.characterNpcLibrary()[0].location,'New scene');
- context.chatMetadata={};assert.notEqual(host.getState().npcs[0].location,'New scene');assert.equal(host.getState().npcs.some(p=>p.name==='AI created'),false);
+ context.chatMetadata={};assert.notEqual(host.getState({npcIds:['shared']}).npcs[0].location,'New scene');assert.equal(host.getState().npcs.some(p=>p.name==='AI created'),false);
 });
 test('scope save rejects a stale chat or card before mutation',async()=>{
  const before=JSON.stringify(host.getSettings().npcCharacterLibraries);
@@ -1537,7 +1558,7 @@ test('preserves upstream v0.30.2: Safari safe mode prevents startup and prompt i
  vm.createContext(safe);vm.runInContext(source,safe);await safe.TretaresiaRpgGenerateInterceptor();assert.equal(listeners,0);assert.equal(prompts,0);
 });
 test('hidden or foreign-card Character contacts cannot resurrect as Chat NPCs',()=>{
- context.characterId=0;context.chatMetadata={};const active=host.getState();active.contacts=[{id:'contact',npcId:'shared',name:'Shared'}];active.npcs=[];
+ context.characterId=0;context.chatMetadata={};const active=host.getState({npcIds:['shared']});active.contacts=[{id:'contact',npcId:'shared',name:'Shared'}];active.npcs=[];
  context.chatMetadata.tretaresia_rpg_state=host.storedNpcState(active);assert.equal(host.getState().npcs.length,0);
  context.characterId=1;assert.equal(host.getState().npcs.length,0);
 });
@@ -1561,7 +1582,7 @@ test('story Character destination persists in library and survives fresh chats w
  const routed=await host.routeStoryNpcState(result.next,before,context);
  context.chatMetadata.tretaresia_rpg_state=host.storedNpcState(routed);
  assert.equal(context.chatMetadata.tretaresia_rpg_state.npcs.length,0);assert.equal(host.characterNpcLibrary()[0].name,'Generated');assert.equal(host.getState().npcs[0].stats.hp,82);
- context.chatMetadata={};assert.equal(host.getState().npcs[0].name,'Generated');context.characterId=1;assert.equal(host.getState().npcs.length,0);
+ context.chatMetadata={};assert.equal(host.getState({npcIds:['generated']}).npcs[0].name,'Generated');context.characterId=1;assert.equal(host.getState().npcs.length,0);
  settings.npcGenerationScope='chat';settings.npcCharacterLibraries={};context.chatMetadata={};
 });
 test('tracking prompt requests full stats even when chat presentation is off',()=>{
@@ -1598,9 +1619,9 @@ test('Thai duplicate creation reuses canonical NPC without resetting its dossier
  assert.equal(result.next.npcs.length,1);const p=result.next.npcs[0];assert.equal(p.id,'kohaku');assert.equal(p.name,'Kohaku');assert.equal(p.background,'Established history');assert.equal(p.stats.hp,83);assert.equal(p.trust,44);assert.equal(p.npcScope,'character');assert.ok(p.aliases.includes('โคฮาคุ'));
  assert.equal(host.registerStorySpeakers(state,{mes:'<tr-dialogue name="โคฮาคุ">Hello</tr-dialogue>'},context),1);assert.equal(state.npcs[0].met,true);
 });
-test('full name index includes NPCs outside the detailed context shortlist',()=>{
+test('prompt identity index stays bounded while the internal archive remains complete',()=>{
  const state={...host.defaultState(),npcs:Array.from({length:40},(_,i)=>host.npcProfile({id:`npc-${i}`,name:`NPC ${i}`,aliases:[`Alias ${i}`]}))};
- assert.equal(host.roleplayState(state).privateTrackerReferenceIndex.npcNames.length,40);assert.ok(JSON.stringify(host.roleplayState(state).privateTrackerReferenceIndex.npcNames).includes('Alias 39'));
+ assert.equal(host.roleplayState(state).privateTrackerReferenceIndex.npcNames.length,32);assert.ok(JSON.stringify(host.roleplayState(state).privateTrackerReferenceIndex.npcNames).includes('Alias 39'));
 });
 test('disabled NPC remains identifiable but an AI patch cannot reactivate or duplicate them',()=>{
  const state={...host.defaultState(),npcs:[host.npcProfile({id:'kohaku',name:'Kohaku',enabled:false})]};
@@ -2949,12 +2970,12 @@ test('character capacity is chat-owned, preserves large archives when lowered, a
   context.characters=[{avatar:'capacity.png',data:{extensions:{tretaresia_rpg_npcs:shared,roleforge_character_pack:{format:'roleforge-character-pack',version:1,npcOptions:{entryLimit:600}}}}},{avatar:'other-capacity.png'}];
   context.chatMetadata={};context.saveMetadata=async()=>{};sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:null};
   const initial=host.defaultState();initial.player.hp.current=61;initial.npcs=Array.from({length:520},(_,i)=>host.npcProfile({id:`local_${i}`,name:`Local ${i}`,enabled:i<20}));context.chatMetadata.tretaresia_rpg_state=initial;
-  await host.initializeChatPresets();assert.equal(host.activeNpcOptions().entryLimit,600);assert.equal(host.characterNpcLibrary().length,500);assert.equal(host.getState().npcs.length,1020);
-  await host.persistNpcOptions({entryLimit:200},'card:capacity.png');assert.equal(host.getState().npcs.length,1020);assert.equal(host.getState().player.hp.current,61);
+  await host.initializeChatPresets();assert.equal(host.activeNpcOptions().entryLimit,600);assert.equal(host.characterNpcLibrary().length,500);assert.equal(host.getState().npcs.length,520);
+  await host.persistNpcOptions({entryLimit:200},'card:capacity.png');assert.equal(host.getState().npcs.length,520);assert.equal(host.getState().player.hp.current,61);
   const locals=host.getState().npcs.filter(n=>n.npcScope!=='character');locals.at(-1).notes='Retained past the old cap';
   await host.persistNpcScope('chat',locals,'npc-management',id,'card:capacity.png');assert.equal(host.getState().npcs.find(n=>n.id==='local_519').notes,'Retained past the old cap');
   await assert.rejects(host.persistNpcScope('chat',[...locals,host.npcProfile({name:'New local'})],'npc-management',id,'card:capacity.png'),/200/);
-  assert.equal(host.getState().npcs.length,1020);assert.equal(host.characterNpcLibrary().at(-1).personality,'Profile 499');
+  assert.equal(host.getState().npcs.length,520);assert.equal(host.characterNpcLibrary().at(-1).personality,'Profile 499');
   const a=context.chatMetadata;context.chatMetadata={};id='capacity-B';await host.initializeChatPresets();assert.equal(host.activeNpcOptions().entryLimit,600);
   await host.persistNpcOptions({entryLimit:1000},'card:capacity.png');const b=context.chatMetadata;context.chatMetadata=a;id='capacity-A';assert.equal(host.activeNpcOptions().entryLimit,200);
   context.saveMetadata=async()=>{throw Error('Offline capacity save');};await assert.rejects(host.persistNpcOptions({entryLimit:0},'card:capacity.png'),/Offline/);assert.equal(host.activeNpcOptions().entryLimit,200);
@@ -2971,10 +2992,10 @@ test('finite capacities guard multi-NPC AI patches and named speakers in the use
   const patch={ops:[['upsert','npcs',{id:'new-a',name:'Arrival Alpha',npcScope:'character',npcOwner:'card:wrong'}],['upsert','npcs',{id:'new-b',name:'Arrival Beta'}]]};
   const chat=host.applyStatePatch(host.getState(),patch);assert.equal(chat.next.npcs.filter(n=>n.npcScope!=='character').length,2);assert.equal(chat.next.npcs.find(n=>n.id==='new-a').npcOwner,'');
   const social=host.applyStatePatch(chat.next,{ops:[['upsert','partyMembers',{npcName:'Overflow party member'}]]});assert.equal(social.next.npcs.length,chat.next.npcs.length,'indirect social creation cannot bypass the Chat library cap');
-  host.getGlobalSettings().npcGenerationScope='character';const full=host.applyStatePatch(host.getState(),patch);assert.equal(full.next.npcs.length,3,'a full Character archive keeps its existing profiles and rejects new additions');
-  context.chatMetadata.roleforge_chat_presets={version:1,config:{npcOptions:{entryLimit:3}}};const character=host.applyStatePatch(host.getState(),patch);assert.equal(character.next.npcs.length,4);assert.equal(character.next.npcs.find(n=>n.id==='new-a').npcScope,'character');
+  host.getGlobalSettings().npcGenerationScope='character';const full=host.applyStatePatch(host.getState(),patch);assert.equal(full.next.npcs.length,1,'a full Character archive remains unloaded and rejects new additions');assert.equal(host.characterNpcLibrary().length,2);
+  context.chatMetadata.roleforge_chat_presets={version:1,config:{npcOptions:{entryLimit:3}}};const character=host.applyStatePatch(host.getState(),patch);assert.equal(character.next.npcs.length,2);assert.equal(character.next.npcs.find(n=>n.id==='new-a').npcScope,'character');
   const routed=await host.routeStoryNpcState(character.next,host.getState(),context);assert.equal(host.characterNpcLibrary().length,3);assert.equal(routed.npcs.find(n=>n.id==='new-a').npcOwner,'card:scope-capacity.png');
-  const before=structuredClone(routed);assert.equal(host.registerStorySpeakers(routed,{mes:'<tr-dialogue name="Fourth Shared">Hello</tr-dialogue>'},context,before),0);assert.equal(routed.npcs.length,4);
+  const before=structuredClone(routed);assert.equal(host.registerStorySpeakers(routed,{mes:'<tr-dialogue name="Fourth Shared">Hello</tr-dialogue>'},context,before),0);assert.equal(routed.npcs.length,2);
  }finally{Object.assign(context,{extensionSettings:prior.settings,chatMetadata:prior.metadata,characters:prior.cards,characterId:prior.card,groupId:prior.group,saveMetadata:prior.save});}
 });
 
@@ -2983,8 +3004,8 @@ test('500 stored NPCs with 20 enabled keep reference lookup while detailed track
  try{
   context.extensionSettings={tretaresia_rpg:{autoContinuity:false}};context.chatMetadata={};context.chat=[{is_user:true,mes:'Ask alias-0499 about the library.'}];
   const state=host.defaultState();state.npcs=Array.from({length:500},(_,i)=>host.npcProfile({id:`dossier_${i}`,name:`Dossier ${String(i).padStart(4,'0')}`,aliases:[`alias-${String(i).padStart(4,'0')}`],enabled:i<20,met:true,personality:`Canon profile ${i}`}));
-  const reference=host.roleplayState(state).privateTrackerReferenceIndex;assert.equal(reference.npcNames.length,500);assert.equal(reference.npcProfiles.length,16);assert.equal(reference.npcProfiles[0].id,'dossier_499');assert.equal(reference.npcProfiles[0].enabled,false);assert.equal(reference.npcProfiles[0].personality,'Canon profile 499');
-  const tracked=host.aiState(state);assert.equal(tracked.npcNames.length,500);assert.equal(tracked.npcIndex.length,20);assert.ok(tracked.npcs.every(n=>Number(n.id.slice(8))<20));assert.equal(host.friendlyNpcs(state).length,20);
+  const reference=host.roleplayState(state).privateTrackerReferenceIndex;assert.equal(reference.npcNames.length,32);assert.equal(reference.npcProfiles.length,16);assert.equal(reference.npcProfiles[0].id,'dossier_499');assert.equal(reference.npcProfiles[0].enabled,false);assert.equal(reference.npcProfiles[0].personality,'Canon profile 499');
+  const tracked=host.aiState(state);assert.equal(tracked.npcNames.length,32);assert.equal(tracked.npcIndex.length,20);assert.ok(tracked.npcs.every(n=>Number(n.id.slice(8))<20));assert.equal(host.friendlyNpcs(state).length,20);
   const changed=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'dossier_499',name:'Dossier 0499',enabled:true,affection:99}],['set','npcValues',{id:'dossier_499',field:'affection',value:99}],['inc','npcValues',{id:'dossier_499',field:'stats.hp',amount:-10}],['delete','npcs',{id:'dossier_499'}],['append','npcDiary',{npcId:'dossier_499',summary:'Updated while closed',body:'New event'}]]});assert.equal(changed.next.npcs[499].enabled,false);assert.equal(changed.next.npcs[499].affection,state.npcs[499].affection);assert.equal(changed.next.npcs[499].stats.hp,state.npcs[499].stats.hp);assert.equal(changed.next.npcs[499].diary.length,0);assert.equal(changed.next.npcs.length,500);
  }finally{context.chat=prior.chat;context.chatMetadata=prior.metadata;context.extensionSettings=prior.settings;}
 });

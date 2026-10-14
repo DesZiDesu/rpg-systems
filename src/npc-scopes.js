@@ -1,5 +1,6 @@
-import { keyName, resolveNpc } from './npc-core.js?v=0.68.5';
-import {hasNpcCapacity} from './npc-capacity.js?v=0.68.5';
+import { keyName, resolveNpc } from './npc-core.js?v=0.69.0';
+import {hasNpcCapacity} from './npc-capacity.js?v=0.69.0';
+import {hydrateSparseNpcs,packSparseNpcs,sparseNpcScope,inheritNpcBaselines} from './sparse-npc-state.js?v=0.69.0';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -76,6 +77,7 @@ export function characterOwner(context) {
 
 export function scopeEnvelope(value) {
     if (!value || typeof value !== 'object' || typeof value.owner !== 'string') return {};
+    if(value.format===2)return sparseNpcScope(value);
     const record = { owner: value.owner.slice(0, 500), overrides: {}, bases: {}, hidden: [] };
     for (const field of ['overrides', 'bases']) {
         if (!value[field] || typeof value[field] !== 'object') continue;
@@ -91,7 +93,8 @@ export function scopeEnvelope(value) {
     return record;
 }
 
-export function hydrateScopedNpcs(state, library, owner) {
+export function hydrateScopedNpcs(state, library, owner,options={}) {
+    if(options.sparse||state.npcScopes?.format===2)return hydrateSparseNpcs(state,library,owner,options);
     const scope = scopeEnvelope(state.npcScopes);
     const libraryIds=new Set(library.map(p=>p.id));
     const retired = scope.owner === owner ? (scope.sharedIds || []).filter(id => !libraryIds.has(id)) : [];
@@ -126,7 +129,8 @@ export function hydrateScopedNpcs(state, library, owner) {
 // Metadata contains local NPCs and per-chat deltas only, never the shared archive.
 // Bases travel with in-memory turn checkpoints to avoid rolling back a later
 // explicit Character edit when a user swipes an older AI reply.
-export function packScopedNpcs(state, library, owner) {
+export function packScopedNpcs(state, library, owner,options={}) {
+    if(options.sparse||state.npcScopes?.format===2)return packSparseNpcs(state,library,owner,options);
     const {npcs,npcScopes,...rest}=state;
     const result = clone(rest), envelope = scopeEnvelope(npcScopes);
     result.npcs = (state.npcs || []).filter(p => p.npcScope !== 'character').map(p => ({ ...clone(p), npcScope: 'chat', npcOwner: '' }));
@@ -212,14 +216,14 @@ export function scopedPortraitKey(profile, chatId, owner = '') {
 // The user, never an AI patch, chooses where NEW story NPCs are archived.
 // Existing shared records keep per-chat deltas instead of rewriting their base.
 export function routeNewStoryNpcs(state, previous, library, owner, destination,options={}) {
- const next=clone(state),archive=clone(library);let added=0,overflow=0;
+ const next=inheritNpcBaselines(clone(state),state);let archive=library,added=0,overflow=0;
  if(destination!=='character'||!owner)return {state:next,library:archive,added,overflow};
  const ids=new Set(previous.npcs.map(p=>p.id)),names=new Set(previous.npcs.flatMap(p=>[p.name,...(p.aliases||[])]).map(keyName));
  for(const p of next.npcs){
   if(ids.has(p.id)||names.has(keyName(p.name))||resolveNpc(previous.npcs,p))continue;
   if(resolveNpc(archive,p))continue;
   if(!hasNpcCapacity(archive.length,options)){p.npcScope='chat';p.npcOwner='';overflow++;continue;}
-  p.npcScope='character';p.npcOwner=owner;archive.push(clone(p));added++;
+  p.npcScope='character';p.npcOwner=owner;if(!added)archive=[...library];archive.push({...clone(p),met:false,contactId:'',diary:[]});added++;
  }
  return {state:next,library:archive,added,overflow};
 }

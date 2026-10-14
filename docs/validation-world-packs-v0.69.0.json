@@ -1,0 +1,562 @@
+{
+  "release": "0.69.0",
+  "baseCommit": "119056d631aab22d78925ccd806d367bf2141ffd",
+  "testedAt": "2026-10-14T12:13:24.468Z",
+  "unitTests": {
+    "passed": 1287,
+    "failed": 0,
+    "command": "npm test"
+  },
+  "syntax": "PASS: npm run check",
+  "sourceSha256": {
+    "index.js": "558e24fea6d01811f7c6ee2087e6987c3fe1dbd0a675133f10c742f9b9c25594",
+    "manifest.json": "d9126e25e70d7e70e88880231be7631d6f3066ad1448eae859dba4efce69c376",
+    "src/archive-cache.js": "cf5d8c5f87f6ac1263f7e99aebe18d197c2514586c1ec231d64027fdf86dbc70",
+    "src/sparse-npc-state.js": "c70413c5d424f8594977a5474887a498424beb695b254c91cf0d2873008d494f",
+    "src/character-archive.js": "8d3b7c17d14d50dc75e7e1c66824aa5a727d29d5aed0a00e2b44ad23018da3b3",
+    "src/lore-core.js": "24b7087bdf6dd0d21772b9f880bb2e022715791b89aa507faf85f9ea8d36444c",
+    "src/lore-workspace.js": "d3d848bea22a8cedd7a73317eea0fa330f729785403ec00c01a9511744772b6b",
+    "src/npc-scopes.js": "2bf242367b3b49679d3060caad44f86a0e4f715af962923c8b2ee8bdb41db6a2",
+    "src/npc-workspace.js": "4a0ee5617c0550428ac08f4e500e20cd17a55ae43562c9fd05e3adfe351c97cb",
+    "src/world-pack-client.js": "d11dc25abd76a92031d4d81c00e9a6c57d41275557f322330f35352f4b95e007",
+    "src/world-pack-core.js": "c0b6e6339e0076619cb959762d38317f56613e53f0fd450aff75931d4d3a48ee",
+    "src/world-pack-worker.js": "8a3070cde787e6cac58cbf8e44a80135856d44776150daa51b8e68aa9007cef8",
+    "ui-polish.css": "a233abade7117ade37fc0c06ec74f02515b6f755ddd172e1f50427186fda3341"
+  },
+  "integrity": {
+    "status": "PASS",
+    "payloadFiles": 3552,
+    "npcBodies": 800,
+    "nativeVersions": 1771,
+    "worldLore": 178,
+    "abilitySupplements": 4329,
+    "comparedSourceVersions": 0,
+    "limits": "Integrity and field inheritance only; no browser, native host or model generation."
+  },
+  "realSillyTavern": {
+    "release": "0.69.0",
+    "date": "2026-10-14T12:13:24.468Z",
+    "fixture": {
+      "npcBodies": 800,
+      "nativeVersions": 1771,
+      "worldLore": 178,
+      "abilitySupplements": 4329
+    },
+    "cases": [
+      {
+        "label": "chromium-390",
+        "browser": "151.0.7922.173",
+        "device": "Linux browser with mobile viewport; not a physical iPhone",
+        "checks": [
+          "Required missing archive is reported; Core is not mistaken for a complete library.",
+          "800 summary rows, 20/page; listing/search normalize no dossier; one opened NPC retains all 11 Archer versions, selects Strange Fake and edits only its notes.",
+          "Ten real interceptor preparations keep normalization/cache bounded, checkpoints below 50 KB, version selection unchanged and lookup separate from enabled/met; quiet/impersonate do not load records.",
+          "Worker ZIP export preserves every original body/version field, all colors/stats/long abilities, all 178 world Lore and all 4,329 supplements, except the two intentional Archer edits.",
+          "Changed payload hash is rejected even when the original revision is installed; existing archive remains usable.",
+          "Switching cards while real Worker retrieval is delayed aborts the old generation and leaks no NPC or prompt state into the new card.",
+          "Edited backup imports in a clean browser profile, links the card, retains the chosen version and notes, and survives page reload."
+        ],
+        "coldImportMs": 23746,
+        "importResponsiveness": {
+          "timerTicks": 445,
+          "maxLongTaskMs": 277
+        },
+        "cold": {
+          "owner": "card:RF Fate archive chromium-390 mv82mkqc.png",
+          "external": true,
+          "revision": 0,
+          "npcBodies": 800,
+          "versions": 1771,
+          "normalized": 0,
+          "cached": 0,
+          "runtimeIds": [],
+          "runtimeCount": 0,
+          "storedBytes": 6321,
+          "lore": 178,
+          "error": ""
+        },
+        "summaryManagerMs": 646,
+        "beforeRepeated": {
+          "owner": "card:RF Fate archive chromium-390 mv82mkqc.png",
+          "external": true,
+          "revision": 2,
+          "npcBodies": 800,
+          "versions": 1771,
+          "normalized": 1,
+          "cached": 1,
+          "runtimeIds": [],
+          "runtimeCount": 0,
+          "storedBytes": 6321,
+          "lore": 178,
+          "error": ""
+        },
+        "preparations": [
+          61.69999998807907,
+          31.099999964237213,
+          44.700000047683716,
+          42.799999952316284,
+          46.30000001192093,
+          30.19999998807907,
+          28.100000023841858,
+          36.10000002384186,
+          31.299999952316284,
+          37
+        ],
+        "afterRepeated": {
+          "owner": "card:RF Fate archive chromium-390 mv82mkqc.png",
+          "external": true,
+          "revision": 2,
+          "npcBodies": 800,
+          "versions": 1771,
+          "normalized": 1,
+          "cached": 1,
+          "runtimeIds": [
+            "fate-fgo-200200"
+          ],
+          "runtimeCount": 1,
+          "storedBytes": 6338,
+          "lore": 178,
+          "error": ""
+        },
+        "backupBytes": 5651415
+      },
+      {
+        "label": "webkit-390",
+        "browser": "26.5",
+        "device": "Linux browser with mobile viewport; not a physical iPhone",
+        "checks": [
+          "Required missing archive is reported; Core is not mistaken for a complete library.",
+          "800 summary rows, 20/page; listing/search normalize no dossier; one opened NPC retains all 11 Archer versions, selects Strange Fake and edits only its notes.",
+          "Ten real interceptor preparations keep normalization/cache bounded, checkpoints below 50 KB, version selection unchanged and lookup separate from enabled/met; quiet/impersonate do not load records.",
+          "Worker ZIP export preserves every original body/version field, all colors/stats/long abilities, all 178 world Lore and all 4,329 supplements, except the two intentional Archer edits.",
+          "Changed payload hash is rejected even when the original revision is installed; existing archive remains usable.",
+          "Switching cards while real Worker retrieval is delayed aborts the old generation and leaks no NPC or prompt state into the new card.",
+          "Edited backup imports in a clean browser profile, links the card, retains the chosen version and notes, and survives page reload."
+        ],
+        "coldImportMs": 21432,
+        "importResponsiveness": {
+          "timerTicks": 381,
+          "maxLongTaskMs": 0
+        },
+        "cold": {
+          "owner": "card:RF Fate archive webkit-390 mv82mkqc.png",
+          "external": true,
+          "revision": 0,
+          "npcBodies": 800,
+          "versions": 1771,
+          "normalized": 0,
+          "cached": 0,
+          "runtimeIds": [],
+          "runtimeCount": 0,
+          "storedBytes": 6319,
+          "lore": 178,
+          "error": ""
+        },
+        "summaryManagerMs": 562,
+        "beforeRepeated": {
+          "owner": "card:RF Fate archive webkit-390 mv82mkqc.png",
+          "external": true,
+          "revision": 2,
+          "npcBodies": 800,
+          "versions": 1771,
+          "normalized": 1,
+          "cached": 1,
+          "runtimeIds": [],
+          "runtimeCount": 0,
+          "storedBytes": 6319,
+          "lore": 178,
+          "error": ""
+        },
+        "preparations": [
+          64,
+          63,
+          62,
+          70,
+          82,
+          99,
+          151,
+          57,
+          24,
+          24
+        ],
+        "afterRepeated": {
+          "owner": "card:RF Fate archive webkit-390 mv82mkqc.png",
+          "external": true,
+          "revision": 2,
+          "npcBodies": 800,
+          "versions": 1771,
+          "normalized": 1,
+          "cached": 1,
+          "runtimeIds": [
+            "fate-fgo-200200"
+          ],
+          "runtimeCount": 1,
+          "storedBytes": 6336,
+          "lore": 178,
+          "error": ""
+        },
+        "backupBytes": 5650671
+      }
+    ],
+    "providerCalls": [],
+    "errors": [],
+    "sillyTavern": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "status": "PASS"
+  },
+  "storageAndMigration": {
+    "release": "0.69.0",
+    "checks": [
+      "Valid-hash but invalid NPC schema is rejected before readiness; old library remains installed.",
+      "Cancellation during staged writes rejects the import and publishes no partial library.",
+      "Injected IndexedDB QuotaExceededError after the first committed staging batch aborts the next transaction, cleans partial files and leaves the prior archive readable. This is failure injection, not physical disk exhaustion.",
+      "Native card-save failure after archive storage keeps embedded NPC/Lore and the old card reference intact.",
+      "Explicit native migration stores all base/selected-version/long-ability/Lore fields before clearing embedded arrays, retains presets and survives real server reload."
+    ],
+    "errors": [],
+    "providerCalls": [],
+    "status": "PASS"
+  },
+  "bulkMenuRegression": {
+    "release": "0.69.0",
+    "testedAt": "2026-10-14T12:08:59.133Z",
+    "cases": [
+      {
+        "engine": "webkit",
+        "width": 390,
+        "input": "touchscreen tap",
+        "outcomes": [
+          {
+            "kind": "npc",
+            "initialRecords": 500,
+            "selectPage": 20,
+            "crossPage": 21,
+            "selectAll": 500,
+            "clear": true,
+            "disableAndUndo": true,
+            "filteredSelection": true,
+            "cancelledDeleteKeptData": true,
+            "confirmedDelete": 1,
+            "outsideDismiss": true,
+            "keyboardFocus": true,
+            "unassignedFocusLoss": true,
+            "mobileFocusPolicy": "native blur() with null relatedTarget, then touchscreen tap",
+            "fit": {
+              "width": 390,
+              "scrollWidth": 390
+            }
+          },
+          {
+            "kind": "lore",
+            "initialRecords": 4019,
+            "selectPage": 20,
+            "crossPage": 21,
+            "selectAll": 4019,
+            "clear": true,
+            "disableAndUndo": true,
+            "filteredSelection": true,
+            "cancelledDeleteKeptData": true,
+            "confirmedDelete": 1,
+            "outsideDismiss": true,
+            "keyboardFocus": true,
+            "unassignedFocusLoss": true,
+            "mobileFocusPolicy": "native blur() with null relatedTarget, then touchscreen tap",
+            "fit": {
+              "width": 390,
+              "scrollWidth": 390
+            }
+          }
+        ],
+        "realServerReload": true
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "input": "touchscreen tap",
+        "outcomes": [
+          {
+            "kind": "npc",
+            "initialRecords": 500,
+            "selectPage": 20,
+            "crossPage": 21,
+            "selectAll": 500,
+            "clear": true,
+            "disableAndUndo": true,
+            "filteredSelection": true,
+            "cancelledDeleteKeptData": true,
+            "confirmedDelete": 1,
+            "outsideDismiss": true,
+            "keyboardFocus": true,
+            "unassignedFocusLoss": true,
+            "mobileFocusPolicy": "native blur() with null relatedTarget, then touchscreen tap",
+            "fit": {
+              "width": 390,
+              "scrollWidth": 390
+            }
+          },
+          {
+            "kind": "lore",
+            "initialRecords": 4019,
+            "selectPage": 20,
+            "crossPage": 21,
+            "selectAll": 4019,
+            "clear": true,
+            "disableAndUndo": true,
+            "filteredSelection": true,
+            "cancelledDeleteKeptData": true,
+            "confirmedDelete": 1,
+            "outsideDismiss": true,
+            "keyboardFocus": true,
+            "unassignedFocusLoss": true,
+            "mobileFocusPolicy": "native blur() with null relatedTarget, then touchscreen tap",
+            "fit": {
+              "width": 390,
+              "scrollWidth": 390
+            }
+          }
+        ],
+        "realServerReload": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1440,
+        "input": "mouse click",
+        "outcomes": [
+          {
+            "kind": "npc",
+            "initialRecords": 500,
+            "selectPage": 20,
+            "crossPage": 21,
+            "selectAll": 500,
+            "clear": true,
+            "disableAndUndo": true,
+            "filteredSelection": true,
+            "cancelledDeleteKeptData": true,
+            "confirmedDelete": 1,
+            "outsideDismiss": true,
+            "keyboardFocus": true,
+            "unassignedFocusLoss": false,
+            "mobileFocusPolicy": null,
+            "fit": {
+              "width": 1178,
+              "scrollWidth": 1178
+            }
+          },
+          {
+            "kind": "lore",
+            "initialRecords": 4019,
+            "selectPage": 20,
+            "crossPage": 21,
+            "selectAll": 4019,
+            "clear": true,
+            "disableAndUndo": true,
+            "filteredSelection": true,
+            "cancelledDeleteKeptData": true,
+            "confirmedDelete": 1,
+            "outsideDismiss": true,
+            "keyboardFocus": true,
+            "unassignedFocusLoss": false,
+            "mobileFocusPolicy": null,
+            "fit": {
+              "width": 1178,
+              "scrollWidth": 1178
+            }
+          }
+        ],
+        "realServerReload": true
+      }
+    ],
+    "pageErrors": [],
+    "generationRequests": [],
+    "sillyTavern": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "success": true
+  },
+  "actualPackIdentitySearch": {
+    "status": "PASS",
+    "method": "Supplied file data through production archive search in Node; browser tests are separate.",
+    "matches": [
+      {
+        "id": "fate-fgo-100100",
+        "name": "Artoria Pendragon (Saber)",
+        "color": "#854ABF",
+        "selected": "fate-fgo-100100-v5",
+        "versions": 10
+      },
+      {
+        "id": "fate-fgo-100200",
+        "name": "Artoria Pendragon (Saber Alter)",
+        "color": "#624ABF",
+        "selected": "fate-fgo-100200-v1",
+        "versions": 4
+      },
+      {
+        "id": "fate-fgo-302000",
+        "name": "Artoria Pendragon (Lancer)",
+        "color": "#53C37A",
+        "selected": "fate-fgo-302000-v1",
+        "versions": 3
+      },
+      {
+        "id": "fate-fgo-900900",
+        "name": "Artoria Pendragon (Summer Ruler)",
+        "color": "#BF4AA0",
+        "selected": "fate-fgo-900900-v1",
+        "versions": 3
+      },
+      {
+        "id": "fate-fgo-106500",
+        "name": "Lord Logres (Saber)",
+        "color": "#924ABF",
+        "selected": "fate-fgo-106500-v1",
+        "versions": 3
+      },
+      {
+        "id": "fate-fgo-605300",
+        "name": "Hassan-i Sabbah / Azrael (Assassin)",
+        "color": "#4A9BBF",
+        "selected": "fate-fgo-605300-v1",
+        "versions": 2
+      },
+      {
+        "id": "fate-body-sidra-azrael-assassin-body",
+        "name": "Sidra Azrael (Assassin Body)",
+        "color": "#A7C65D",
+        "selected": "fate-body-sidra-azrael-assassin-body-v1",
+        "versions": 1
+      }
+    ],
+    "gilgamesh": {
+      "id": "fate-fgo-200200",
+      "identity": "gilgamesh",
+      "score": 109000,
+      "referenceAlternateId": "fate-fgo-200200-v9"
+    },
+    "normalizedDossiers": 0
+  },
+  "priorEmbeddedControl": {
+    "title": "Fate — Nasuverse Cleaned Native Test",
+    "avatar": "Fate — Nasuverse Cleaned Native Test.png",
+    "importMs": 1872,
+    "openMs": 24637.799999952316,
+    "npcBodies": 800,
+    "versions": 1771,
+    "lore": 178,
+    "disabled": 800,
+    "initialGreeting": "",
+    "heap": 805561313,
+    "longTasks": [
+      {
+        "start": 493.5,
+        "duration": 184
+      },
+      {
+        "start": 1184.199999988079,
+        "duration": 57
+      },
+      {
+        "start": 2347.899999976158,
+        "duration": 198
+      },
+      {
+        "start": 2796.300000011921,
+        "duration": 128
+      },
+      {
+        "start": 2931.199999988079,
+        "duration": 101
+      },
+      {
+        "start": 3183.399999976158,
+        "duration": 321
+      },
+      {
+        "start": 4906.100000023842,
+        "duration": 168
+      },
+      {
+        "start": 5124.699999988079,
+        "duration": 93
+      },
+      {
+        "start": 6237.199999988079,
+        "duration": 144
+      },
+      {
+        "start": 6639.399999976158,
+        "duration": 191
+      },
+      {
+        "start": 7430.899999976158,
+        "duration": 574
+      },
+      {
+        "start": 8385.899999976158,
+        "duration": 71
+      },
+      {
+        "start": 19207.100000023842,
+        "duration": 292
+      },
+      {
+        "start": 19501.5,
+        "duration": 184
+      },
+      {
+        "start": 20327.100000023842,
+        "duration": 3749
+      },
+      {
+        "start": 24182.399999976158,
+        "duration": 636
+      },
+      {
+        "start": 24822.600000023842,
+        "duration": 2352
+      },
+      {
+        "start": 27333.30000001192,
+        "duration": 16032
+      },
+      {
+        "start": 43466.19999998808,
+        "duration": 871
+      }
+    ],
+    "managerOpenMs": 3303,
+    "sillyTavern": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "roleForge": "0.68.5 (119056d)",
+    "browser": "151.0.7922.173",
+    "device": "Linux headless Chromium, emulated 390x844; not a physical phone",
+    "errors": [
+      "Unexpected token 'I', \"Internal S\"... is not valid JSON"
+    ]
+  },
+  "limits": [
+    "No provider/model generation requests; production interceptor preparation only.",
+    "Linux mobile viewport/touch and desktop; not a physical iPhone.",
+    "QuotaExceededError is injected after a staged batch in real IndexedDB, not physical disk exhaustion.",
+    "Native Horde discovery is disabled in browser fixtures; card persistence and archive APIs are real.",
+    "The original v2 source is unavailable; no new canon audit is claimed.",
+    "Prior embedded control is a different storage workflow/profile, not a controlled speed ratio."
+  ]
+}

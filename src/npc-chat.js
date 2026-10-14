@@ -1,20 +1,20 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.68.5';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.68.5';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.68.5';
-import {renderSceneTracker} from './scene-tracker.js?v=0.68.5';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.68.5';
-import {renderGroupBoard} from './group-board-ui.js?v=0.68.5';
-import {uiText} from './ui-language.js?v=0.68.5';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.68.5';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.68.5';
-import { croppedPortrait } from './npc-portraits.js?v=0.68.5';
-import { effectiveNpc } from './npc-alternates.js?v=0.68.5';
-import {speechDisplayText} from './voice-core.js?v=0.68.5';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.68.5';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.68.5';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.68.5';
-import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.68.5';
-import {hostReplyGenerating} from './host-generation-state.js?v=0.68.5';
+import {renderStoryEvents} from './story-events-ui.js?v=0.69.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.69.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.69.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.69.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.69.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.69.0';
+import {uiText} from './ui-language.js?v=0.69.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.69.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.69.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.69.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.69.0';
+import {speechDisplayText} from './voice-core.js?v=0.69.0';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.69.0';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.69.0';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.69.0';
+import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.69.0';
+import {hostReplyGenerating} from './host-generation-state.js?v=0.69.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -345,7 +345,7 @@ export function createChatPresentation(api, open) {
         timer=null;const context=api.context(),chatId=context.getCurrentChatId?.()||'';
         if(chatId!==currentChat){currentChat=chatId;clearPortraits();document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}
         const settings=api.settings(),view=chatAppearance(settings),viewKey=JSON.stringify(view),mode=chatPresentationMode(settings),preserveNativeChat=mode==='native';
-        const npcs=(api.state().npcs||[]).map(effectiveNpc), lookup=new Map();
+        const npcs=(api.presentationNpcs?.()||api.state().npcs||[]).map(n=>n._archiveSummary?n:effectiveNpc(n)), lookup=new Map();
         for(const npc of npcs)for(const name of [npc.name,...(npc.aliases||[])])if(!lookup.has(keyName(name)))lookup.set(keyName(name),npc);
         for(const [host,entry]of mounted)if(!host.isConnected){entry.disposeVoice?.();mounted.delete(host);}
         const hosts=[...document.querySelectorAll('#chat .mes')].map(visibleHost).filter(Boolean),active=new Set(hosts);

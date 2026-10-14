@@ -16,10 +16,16 @@ const report = {release, testedAt: new Date().toISOString(), cases: [], pageErro
 const run = Date.now().toString(36);
 await mkdir(output, {recursive: true});
 
+async function nativeReady(page){
+    await page.evaluate(()=>{window.__rfAppReady=false;const c=SillyTavern.getContext();const ready=()=>{window.__rfAppReady=true;c.eventSource.removeListener(c.eventTypes.APP_READY,ready);};c.eventSource.on(c.eventTypes.APP_READY,ready);});
+    const done=page.waitForFunction(()=>window.__rfAppReady,{},{timeout:120000});
+    await Promise.race([done,page.locator('dialog.popup').filter({hasText:'Welcome to SillyTavern!'}).locator('.popup-button-ok').click({timeout:120000}).then(()=>done)]);
+}
+
 async function ready(page) {
     await page.waitForFunction(() => document.getElementById('tretaresia-rpg-settings')?.rfSettingsNavigation
         && document.getElementById('tretaresia-npc-wand-launcher')?.onclick, {}, {timeout: 60000});
-    assert.equal(await page.evaluate(() => TretaresiaRelease), release);
+    await nativeReady(page);assert.equal(await page.evaluate(() => TretaresiaRelease), release);
 }
 
 async function importFixture(page, title) {
@@ -109,6 +115,7 @@ try {
         page = await browser.newPage({viewport: {width, height: mobile ? 844 : 1000},
             hasTouch: mobile, isMobile: mobile, reducedMotion: 'reduce'});
         page.setDefaultTimeout(30000);
+        await page.addLocatorHandler(page.locator('dialog.popup').filter({hasText:'Welcome to SillyTavern!'}),async popup=>{await popup.locator('.popup-button-ok').click();});
         let acceptDelete = false;
         page.on('dialog', d => acceptDelete ? d.accept() : d.dismiss());
         page.on('pageerror', e => report.pageErrors.push({label, message: e.message}));

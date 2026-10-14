@@ -1,5 +1,5 @@
-import {parseStory} from './npc-core.js?v=0.68.5';
-import {readCommercePrices} from './commerce-prices.js?v=0.68.5';
+import {parseStory} from './npc-core.js?v=0.69.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.69.0';
 
 export function publicCommerceStory(story){
     return String(story??'').replace(/<(?:planning|think|thinking|analysis)\b[^>]*>[\s\S]*?<\/(?:planning|think|thinking|analysis)>/giu,'')

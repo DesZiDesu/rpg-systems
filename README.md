@@ -1,12 +1,18 @@
 # RoleForge
 
-**Public release: 0.68.5** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.69.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+## Large NPC / Lore libraries
+
+**New in 0.69.0:** Management uses cached summary rows and loads dossiers when opened or relevant to the outgoing chat. Runtime state and new checkpoints store NPC changes separately from the reference archive. On-demand lookup preserves disabled/unmet state and manual version selection; unloaded records are never treated as deletions.
+
+For large worlds, import a **World Pack ZIP/folder** from **Presets & character cards → Character card**. A Worker validates hashes, indexes and complete versions before publishing the archive to browser-local IndexedDB. The card carries its pinned reference. Explicit migration can move an existing embedded library only after storage and card writes succeed. **Export / Backup** includes all versions, world Lore, supplements and this card's edits. A Core card alone does not transfer a browser-local library to another device. [Thai guide](docs/world-packs.th.md) · [Real application validation and screenshots](docs/world-packs-validation.th.md).
 
 ## Extension settings
 
@@ -134,6 +140,8 @@ Check the browser console for loading failures. To temporarily skip RoleForge st
 Report issues with your RoleForge version, SillyTavern version, browser, reproduction steps and panel diagnostic if available. Remove API keys and private chat details before posting to [GitHub Issues](https://github.com/DesZiDesu/rpg-systems/issues).
 
 ## Development and validation
+
+Version **0.69.0** passes **1,287 unit/host tests** and syntax checks. Real **SillyTavern 1.19.0** checks on Chromium and WebKit use the supplied **800 NPC / 1,771-version** Fate archive, preserve all **178 world Lore / 4,329 supplements** in Worker backups and restore them in a clean browser profile. Checks cover bounded preparation, manual version selection, owner switching during retrieval, import cancellation, injected quota failure, native migration/save failure and the NPC/Lore bulk menus at mobile/desktop widths. These browser checks make no provider generation requests. [Validation and limits](docs/world-packs-validation.th.md).
 
 Version **0.68.5** passed **1,263 unit/host tests**, syntax checks and archive QoL/deletion browser regressions. Real **SillyTavern 1.19.0** checks use WebKit touch at 390px and Chromium touch/mouse at 390/1440px, with 500 NPCs and 4,019 Lore entries. They cover native unassigned focus loss before a tap, page/all/filtered selection, cross-page selection, clearing, disable/Undo, cancellation/confirmation of deletion and actual server reloads. WebKit on Linux is supplemented with explicit native `blur()` to exercise iOS-style focus loss; a physical iPhone remains unverified. No provider generation requests are made. [Validation record](docs/validation-archive-menu-v0.68.5.json).
 

@@ -1,4 +1,4 @@
-import {DEFAULT_CURRENCY_VALUES,currencyValues,currencyValue,currencyRule,splitCurrencyValue} from './currency-config.js?v=0.68.5';
+import {DEFAULT_CURRENCY_VALUES,currencyValues,currencyValue,currencyRule,splitCurrencyValue} from './currency-config.js?v=0.69.0';
 export const CURRENCY_VALUES=DEFAULT_CURRENCY_VALUES;
 export const CURRENCY_RULE=currencyRule();
 export const walletValue=currencyValue;

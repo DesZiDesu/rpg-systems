@@ -101,3 +101,21 @@ test('Lore import rejects card switches during file reading',async()=>{
  setOwner('card:b');finish(exportLore([{id:'x',title:'X',content:'Facts',enabled:true}]));await pending;
  assert.match(status(),/card changed/);assert.deepEqual(api.listLore(),[]);
 });
+
+test('Lore import also rejects a card switch while the existing external archive is loading',async()=>{
+ const {panel,api,setOwner,status}=fixture();let finish,writes=0;
+ api.exportLore=()=>new Promise(resolve=>finish=resolve);api.persistLore=()=>{writes++;};
+ const input=find(panel,n=>n.type==='file')[0];input.files=[{size:300,text:async()=>exportLore([{id:'x',title:'X',content:'Facts',enabled:true}])}];
+ const pending=input.fire('change');await new Promise(resolve=>setImmediate(resolve));assert.equal(typeof finish,'function');
+ setOwner('card:b');finish([]);await pending;assert.equal(writes,0);assert.deepEqual(api.listLore(),[]);assert.match(status(),/card changed/);
+});
+
+test('opening a second Lore summary ignores the first dossier if it finishes later',async()=>{
+ const {panel,api,ui}=fixture(),resolvers=new Map();
+ api.listLore=()=>['First','Second'].map(title=>({id:title,title,enabled:true,preview:'Summary',_archiveSummary:true}));
+ api.readLore=id=>new Promise(resolve=>resolvers.set(id,resolve));ui.open();await click(panel,'First');await click(panel,'Second');
+ resolvers.get('Second')({id:'Second',title:'Second',content:'Second full dossier',enabled:true});await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(find(panel,n=>n.name==='loreTitle')[0].value,'Second');
+ resolvers.get('First')({id:'First',title:'First',content:'First full dossier',enabled:true});await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(find(panel,n=>n.name==='loreTitle')[0].value,'Second');
+});

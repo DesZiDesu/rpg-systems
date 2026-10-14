@@ -1,13 +1,13 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.68.5';
-import { element } from './npc-chat.js?v=0.68.5';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.68.5';
-import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.68.5';
-import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.68.5';
+import {uiText,uiMarkup} from './ui-language.js?v=0.69.0';
+import { element } from './npc-chat.js?v=0.69.0';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.69.0';
+import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.69.0';
+import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.69.0';
 
 export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
     let owner = '', dirty = false, query = '', editing = null, saving = false, session=0, preferencesOpen=false, undo=[],renderList=null;
     const isEnabled=item=>item.enabled===true;
-    const browser=createArchiveBrowser({isEnabled,searchText:item=>`${item.title} ${item.content} ${(item.keywords||[]).join(' ')}`});
+    const browser=createArchiveBrowser({isEnabled,searchText:item=>`${item.title} ${item.searchText??item.content??''} ${(item.keywords||[]).join(' ')}`});
     const canLeave = () => !saving && (!dirty || confirm(uiText("ยังมี Lore ที่ไม่ได้บันทึก ต้องการทิ้งการแก้ไขนี้หรือไม่?")));
     const entries = () => api.listLore?.() || [];
     const button = (label, action) => {const b=element('button','',label);b.type='button';b.addEventListener('click',action);return b;};
@@ -65,7 +65,7 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
         optionsPanel.append(element('p','trpg-muted trpg-lore-scope',info?uiText("Character · {0} — ใช้ร่วมกันทุกแชทของการ์ดนี้",[info.label]):uiText("เปิดแชทของการ์ดตัวละครเดี่ยวเพื่อจัดการ Lore")));
         if(!info){if(optionsPanel!==panel)panel.append(element('p','trpg-empty',uiText("เปิดแชทของการ์ดตัวละครเดี่ยวเพื่อจัดการ Lore")));return;}
         const options=api.loreOptions?.()||{budget:LORE_ACTIVE_LIMIT,mode:'all'};
-        const active=all.filter(item=>item.enabled),count=active.reduce((n,item)=>n+item.title.length+item.content.length,0);
+        const active=all.filter(item=>item.enabled),count=active.reduce((n,item)=>n+(item.characters??item.title.length+(item.content||'').length),0);
         const preferenceDetails=element('details','trpg-lore-preferences');preferenceDetails.open=preferencesOpen;preferenceDetails.setAttribute('data-lore-preferences','');
         preferenceDetails.append(element('summary','',uiText('Lore storage & delivery')));
         preferenceDetails.addEventListener('toggle',()=>{if(preferenceDetails.isConnected!==false)preferencesOpen=preferenceDetails.open;});
@@ -93,7 +93,9 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
                 if(selected.size>LORE_FILE_LIMIT)throw Error(uiText("ไฟล์ Lore ต้องไม่เกิน 12 MB"));
                 const imported=parseLoreFile(await selected.text());
                 if(ticket!==session||target!==owner||target!==api.scopeInfo()?.key)throw Error(uiText("การ์ดเปลี่ยนแล้ว กรุณาเลือกไฟล์ใหม่ในการ์ดที่ต้องการ"));
-                const merged=mergeLore(entries(),imported,api.loreOptions?.());
+                const existing=api.exportLore?await api.exportLore():entries();
+                if(ticket!==session||target!==owner||target!==api.scopeInfo()?.key)throw Error(uiText("การ์ดเปลี่ยนแล้ว กรุณาเลือกไฟล์ใหม่ในการ์ดที่ต้องการ"));
+                const merged=mergeLore(existing,imported,api.loreOptions?.());
                 if(!merged.added){say(uiText("ไม่มีรายการใหม่ · ข้ามข้อมูลซ้ำ {0} รายการ",[merged.skipped]));return;}
                 if(!confirm(uiText("นำเข้า Lore {0} รายการไปยัง {1}? ข้ามข้อมูลซ้ำ {2} รายการ โดยเก็บ Lore เดิมไว้ทั้งหมด",[merged.added,info.label,merged.skipped])))return;
                 workspaceUi.closeOptions?.();
@@ -102,9 +104,11 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
         });
         const exportParts=element('div','trpg-lore-option-actions');
         function downloadFile(text,name){const blob=new Blob([text],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=element('a');a.href=url;a.download=name;document.body.append(a);try{a.click();}finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}}
-        const download=button(uiText("Export JSON"),()=>attempt(()=>{
+        const download=button(uiText("Export JSON"),()=>attempt(async()=>{
             if(owner!==api.scopeInfo()?.key)throw Error(uiText("การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่"));
-            const files=exportLoreFiles(entries());exportParts.replaceChildren();
+            const ticket=session,target=owner,existing=api.exportLore?await api.exportLore():entries();
+            if(ticket!==session||target!==owner||target!==api.scopeInfo()?.key)throw Error(uiText("การ์ดเปลี่ยนแล้ว กรุณาเปิด Lore Management ใหม่"));
+            const files=exportLoreFiles(existing);exportParts.replaceChildren();
             if(files.length===1){downloadFile(files[0],'roleforge-lore.json');say(uiText("ส่งออก Lore ที่บันทึกแล้วเป็นไฟล์ JSON"));return;}
             exportParts.append(element('p','trpg-muted',uiText('Large archive: download all {0} parts, then import each file into the same card. Each file is within 12 MB.',[files.length])));
             files.forEach((text,index)=>exportParts.append(button(uiText('Download Lore part {0} / {1}',[index+1,files.length]),()=>downloadFile(text,`roleforge-lore-${String(index+1).padStart(3,'0')}-of-${files.length}.json`))));
@@ -128,7 +132,7 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
                 });
                 toggleLabel.append(toggle,element('span','',archiveStateText(item.enabled)));
                 const open=button(item.title,()=>{if(canLeave())edit(item);});open.className='trpg-lore-title';
-                const copy=element('div','trpg-lore-copy');copy.append(open,element('p','trpg-lore-excerpt',item.content.slice(0,180)));if(item.always)copy.append(element('small','trpg-archive-pin',uiText('Pinned for relevant delivery')));
+                const copy=element('div','trpg-lore-copy');copy.append(open,element('p','trpg-lore-excerpt',(item.preview??item.content??'').slice(0,180)));if(item.always)copy.append(element('small','trpg-archive-pin',uiText('Pinned for relevant delivery')));
                 row.append(toggleLabel,copy,button(uiText("ลบ"),()=>deleteEntries([item.id])));
                 if(browser.selecting){
                     const label=element('label','trpg-archive-select'),check=element('input');check.type='checkbox';check.checked=browser.has(item.id);check.setAttribute('data-archive-select',item.id);check.setAttribute('aria-label',uiText('Select {0}',[item.title]));
@@ -143,7 +147,12 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
         }
         renderList=renderRows;search.addEventListener('input',()=>{if(saving)return;query=search.value;browser.setQuery(query);renderRows({resetScroll:true});});renderRows();
     }
-    function edit(item) {
+    async function edit(item) {
+        if(item._archiveSummary&&api.readLore){
+            const ticket=session,target=owner,requested=item.id;editing=requested;
+            try{item=await api.readLore(requested);if(ticket!==session||target!==owner||target!==api.scopeInfo()?.key||editing!==requested)return;if(!item)throw Error('Lore is no longer available.');}
+            catch(error){if(ticket===session&&editing===requested){editing=null;say(error.message);}return;}
+        }
         workspaceUi.closeOptions?.();editing=item.id;renderList=null;dirty=false;panel.replaceChildren();workspaceUi.onView?.('edit');say('');
         const form=element('form','trpg-lore-editor'),titleLabel=element('label','',uiText("ชื่อ Lore")),title=element('input'),bodyLabel=element('label','',uiText("เนื้อหา Lore")),body=element('textarea'),enabledLabel=element('label','trpg-lore-toggle'),enabled=element('input');
         title.value=item.title;title.required=true;title.maxLength=160;title.name='loreTitle';body.value=item.content;body.required=true;body.maxLength=LORE_CONTENT_LIMIT;body.rows=14;body.name='loreContent';enabled.type='checkbox';enabled.checked=item.enabled;

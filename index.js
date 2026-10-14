@@ -1,85 +1,90 @@
-import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.68.5';
-import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.68.5';
-import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.68.5';
-import {npcReferenceProfiles} from './src/npc-core.js?v=0.68.5';
-import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.68.5';
-import {mountSettingsNavigation} from './src/settings-navigation.js?v=0.68.5';
-import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.68.5';
-import {playerResourceNarrative,isLegacyGuessedEffect,effectTargetsPlayer} from './src/player-consequences.js?v=0.68.5';
-import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.68.5';
-import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.68.5';
-import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.68.5';
-import {createStatComposer} from './src/stat-composer.js?v=0.68.5';
-import {mountStatWorkspace} from './src/stat-workspace.js?v=0.68.5';
-import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue,currencyKeys,currencyAmounts,isCurrencyId} from './src/currency-config.js?v=0.68.5';
-import {fitForgeToChat} from './src/forge-layout.js?v=0.68.5';
-import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.68.5';
-import {mountSkillBrowser} from './src/skill-browser.js?v=0.68.5';
-import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.68.5';
-import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.68.5';
-import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.68.5';
-import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.68.5';
-import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.68.5';
-import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.68.5';
-import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.68.5';
-import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.68.5';
-import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.68.5';
-import {createMemoryAddons} from './src/memory-addons.js?v=0.68.5';
-import {createVoiceAddons} from './src/voice-addons.js?v=0.68.5';
-import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.68.5';
-import {showApiRequestNotice} from './src/api-request-notice.js?v=0.68.5';
-import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.68.5';
-import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.68.5';
-import {createItemRuntime} from './src/item-runtime.js?v=0.68.5';
-import {createComposerDock} from './src/composer-dock.js?v=0.68.5';
-import {createIncantationComposer} from './src/incantation-composer.js?v=0.68.5';
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.68.5';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.68.5';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.68.5';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.68.5';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.68.5';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.68.5';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.68.5';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.68.5';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.68.5';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.68.5';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.68.5';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions } from './src/lore-core.js?v=0.68.5';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.68.5';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.68.5';
-import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.68.5';
-import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.68.5';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.68.5';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.68.5';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.68.5';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.68.5';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.68.5';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.68.5';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.68.5';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.68.5';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.68.5';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.68.5';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.68.5';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.68.5';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.68.5';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.68.5';
-import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.68.5';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.68.5';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.68.5';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.68.5';
+import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.69.0';
+import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.69.0';
+import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.69.0';
+import {npcReferenceProfiles} from './src/npc-core.js?v=0.69.0';
+import {createArchiveRevisionCache,searchNpcArchive,resolveIndexedNpc,npcArchiveSummary,loreArchiveSummary} from './src/archive-cache.js?v=0.69.0';
+import {inheritNpcBaselines,preserveNpcCanon} from './src/sparse-npc-state.js?v=0.69.0';
+import {createWorldPackClient,characterWorldRef,mountWorldPackControls} from './src/world-pack-client.js?v=0.69.0';
+import {worldKey,worldSearchText} from './src/world-pack-core.js?v=0.69.0';
+import {writeCharacterWorldReference} from './src/character-archive.js?v=0.69.0';
+import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.69.0';
+import {mountSettingsNavigation} from './src/settings-navigation.js?v=0.69.0';
+import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.69.0';
+import {playerResourceNarrative,isLegacyGuessedEffect,effectTargetsPlayer} from './src/player-consequences.js?v=0.69.0';
+import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.69.0';
+import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.69.0';
+import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.69.0';
+import {createStatComposer} from './src/stat-composer.js?v=0.69.0';
+import {mountStatWorkspace} from './src/stat-workspace.js?v=0.69.0';
+import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue,currencyKeys,currencyAmounts,isCurrencyId} from './src/currency-config.js?v=0.69.0';
+import {fitForgeToChat} from './src/forge-layout.js?v=0.69.0';
+import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.69.0';
+import {mountSkillBrowser} from './src/skill-browser.js?v=0.69.0';
+import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.69.0';
+import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.69.0';
+import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.69.0';
+import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.69.0';
+import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.69.0';
+import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.69.0';
+import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.69.0';
+import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.69.0';
+import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.69.0';
+import {createMemoryAddons} from './src/memory-addons.js?v=0.69.0';
+import {createVoiceAddons} from './src/voice-addons.js?v=0.69.0';
+import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.69.0';
+import {showApiRequestNotice} from './src/api-request-notice.js?v=0.69.0';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.69.0';
+import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.69.0';
+import {createItemRuntime} from './src/item-runtime.js?v=0.69.0';
+import {createComposerDock} from './src/composer-dock.js?v=0.69.0';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.69.0';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.69.0';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.69.0';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.69.0';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.69.0';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.69.0';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.69.0';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.69.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.69.0';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.69.0';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.69.0';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.69.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions,prepareLoreArchive,loreEntries,assertLoreCapacity } from './src/lore-core.js?v=0.69.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.69.0';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.69.0';
+import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.69.0';
+import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.69.0';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.69.0';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.69.0';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.69.0';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.69.0';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.69.0';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.69.0';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.69.0';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.69.0';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.69.0';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.69.0';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.69.0';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.69.0';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.69.0';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.69.0';
+import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.69.0';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.69.0';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.69.0';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.69.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.68.5';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.68.5';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.68.5';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.68.5';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.68.5';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.68.5';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.68.5';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.68.5';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.68.5';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.68.5';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.68.5';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.68.5';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.69.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.69.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.69.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.69.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.69.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.69.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.69.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.69.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.69.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.69.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.69.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.69.0';
 
 let npcWorkspace = null;
 let adultPromptControls = null;
@@ -445,7 +450,7 @@ async function commitItemDetails({context,next,unchanged}){
         await pendingSave.catch(()=>undefined);if(!unchanged())throw Error('stale');
         if(!await persistState(next,'items',{deferMetadataSave:true})||!stable())throw Error('stale');
         const latest=latestAssistantMessageId(),message=context.chat[latest],checkpoint=message?assistantCheckpoint(latest):null;
-        if(checkpoint?.variants?.[assistantVariantKey(message)])checkpoint.variants[assistantVariantKey(message)].state=clone(getState());
+        if(checkpoint?.variants?.[assistantVariantKey(message)])checkpoint.variants[assistantVariantKey(message)].state=storedNpcState(getState());
         if(!await saveCurrentChatMetadata(context,{commerceCommit:true}))throw Error('save');saved=true;
         if(current())writeContinuitySnapshot(getState());
     }catch(failure){
@@ -472,7 +477,7 @@ async function commitItemContinuation({context,source,message,result,unchanged})
         const receipt=result.next.itemSystem.receipts.find(r=>r.id===result.receipt.id);if(receipt)receipt.source={...source,variant};
         result.receipt.source={...source,variant};
         if(!await persistState(result.next,'items',{deferMetadataSave:true})||!current()||context.chat[source.messageId]!==message||message.mes!==appended)throw Error('save');
-        const checkpoint=assistantCheckpoint(source.messageId,{create:true});checkpoint.variants[variant]={state:clone(getState()),savedAt:new Date().toISOString(),reconcileVersion:TURN_RECONCILE_VERSION};checkpoint.activeVariant=variant;checkpoint.applied=true;
+        const checkpoint=assistantCheckpoint(source.messageId,{create:true});checkpoint.variants[variant]={state:storedNpcState(getState()),savedAt:new Date().toISOString(),reconcileVersion:TURN_RECONCILE_VERSION};checkpoint.activeVariant=variant;checkpoint.applied=true;
         const prior=metadata[SOCIAL_EVENTS_KEY]?.[source.turnKey]?.[variant]?.resourceEvents||[],events=itemNotifications(result.events,getState());
         if(!events.length&&result.receipt.outcome!=='success')events.push({kind:'inventory',action:'refused',title:getSettings().language==='th'?'รายการไอเทมไม่สำเร็จ':'Item action did not succeed',detail:result.receipt.reason,value:getSettings().language==='th'?'ไม่ลดจำนวน':'Unchanged'});
         rememberResourceEvents(source.messageId,message,[...prior,...events]);processedAssistantMessages.set(message,variant);completedAssistantMessages.add(message);
@@ -548,7 +553,7 @@ async function commitCommerceContinuation({context,source,message,previous,resul
         if(Object.values(delta).some(Boolean))appendCurrencyTransaction(result.next,delta,`${result.session.title||result.session.items[0]?.item.name} · ${result.session.kind==='auction'?'Auction result':'Trade result'}`,'commerce');
         if(!await persistState(result.next,result.session.kind==='auction'?'auction':'marketplace',{deferMetadataSave:true})||!current())throw Error('save');
         const checkpoint=assistantCheckpoint(source.messageId,{create:true});
-        checkpoint.variants[variant]={state:clone(getState()),savedAt:new Date().toISOString(),reconcileVersion:TURN_RECONCILE_VERSION};checkpoint.activeVariant=variant;checkpoint.applied=true;
+        checkpoint.variants[variant]={state:storedNpcState(getState()),savedAt:new Date().toISOString(),reconcileVersion:TURN_RECONCILE_VERSION};checkpoint.activeVariant=variant;checkpoint.applied=true;
         const notifications=[];
         if(Object.values(delta).some(Boolean))notifications.push({kind:'currency',eyebrow:'WALLET',title:getSettings().language==='th'?'บันทึกการซื้อขายแล้ว':'Commerce settled',detail:result.session.title,
             value:Object.entries(delta).filter(([,amount])=>amount).map(([unit,amount])=>`${amount>0?'+':''}${amount} ${unit}`).join(' · ')});
@@ -645,7 +650,7 @@ async function runPowerTrainingChoice(choiceId) {
         if (!stillHere()) return false;
         const fresh = clone(getState());
         if (fresh.powerMastery?.session?.id === session.id) {
-            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.68.5', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
+            fresh.powerMastery.session = { ...session, phase: 'choices', choiceId: '', diagnostics: JSON.stringify({release: globalThis.TretaresiaRelease||'0.69.0', system:'training', power:power.name, error:error.message, details:error.details||null, generation:taskGenerationMode(context), rawResponse:typeof trainingResponse==='string'?trainingResponse.slice(0,12000):trainingResponse},null,2) };
             await persistState(fresh, 'power-training-retry');
         }
         notify('error', error.message || 'Power training failed.');
@@ -732,7 +737,7 @@ let assistantRollbackQueue = Promise.resolve();
 const assistantRollbackFailures = new WeakMap();
 
 const uid = () => globalThis.crypto?.randomUUID?.() || `tretaresia-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const clone = value => globalThis.structuredClone ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+const clone = value => inheritNpcBaselines(globalThis.structuredClone ? structuredClone(value) : JSON.parse(JSON.stringify(value)),value);
 const shortHash = value => {
     let hash = 2166136261;
     for (const character of String(value ?? '')) {
@@ -956,10 +961,12 @@ function refreshPresetWorkspace(){
 
 let characterPackSaving=false;
 function refreshCharacterPackDrawer() {
+    refreshWorldPackControls();
     const panel=document.getElementById('roleforge-character-pack');if(!panel)return;
     const thai=getSettings().language==='th',owner=characterOwner(SillyTavern.getContext());
     panel.querySelector('[data-pack-title]').textContent=thai?'รวมข้อมูล RoleForge ในการ์ด':'RoleForge Character Card Pack';
     panel.querySelector('[data-pack-help]').textContent=thai?'บันทึก NPC ฝั่ง Character, Lore และ preset พลัง/สร้างตัวละคร/ค่าเงิน/ฝึก stat/ระบบที่เปิดใช้/ธีมบทสนทนา แล้ว Export การ์ดจาก SillyTavern ผู้รับนำเข้าการ์ดครั้งเดียวได้ครบ':'Save Character NPCs, Lore and Power, Character Creation, currency, training, world-system and chat appearance presets in this card, then export it from SillyTavern. Recipients import only the card.';
+    if(characterWorldRef(SillyTavern.getContext(),owner?.key))panel.querySelector('[data-pack-help]').textContent=thai?'การ์ดนี้เก็บ preset และรหัสอ้างอิง World Pack ผู้รับต้อง Import การ์ดและ World Pack ZIP ที่เชื่อมกันหนึ่งครั้งในแต่ละเบราว์เซอร์ ใช้ Export / Backup ด้านบนเพื่อสำรองคลัง':'This card saves presets and a World Pack reference. Recipients import the card and its linked World Pack ZIP once in each browser. Use Export / Backup above to preserve the library.';
     panel.querySelector('[data-pack-seed-label]').textContent=thai?'ใช้ข้อมูลผู้เล่นและโลกปัจจุบันเป็นค่าเริ่มต้นของแชทใหม่':'Use the current player and world as the starting state for new chats';
     panel.querySelector('[data-pack-seed-help]').textContent=thai?'ปิดไว้จะเก็บค่าเริ่มต้นเดิมของการ์ด ไม่คัดลอกความคืบหน้าในแชท ข้อมูลแชทเดิมของผู้รับจะไม่ถูกทับ':'Unchecked keeps the card\'s existing starting state. Saved chat progress is never replaced.';
     const button=panel.querySelector('[data-pack-save]');button.textContent=thai?'บันทึกชุดข้อมูลลงการ์ด':'Save setup in this card';button.disabled=!owner||characterPackSaving;
@@ -985,7 +992,8 @@ async function saveCharacterPackSetup({includeState=false}={}) {
     }
     characterPackSaving=true;refreshCharacterPackDrawer();
     try {
-        const result=await writeCharacterPack(context,getSettings(),owner.key,pack,{npcs:characterNpcLibrary(owner.key).map(npc=>({...npc,npcOwner:''})),lore:activeCharacterLore()});
+        const result=await writeCharacterPack(context,getSettings(),owner.key,pack,characterNpcCatalog(owner.key).external?{}:
+            {npcs:readCharacterArchive(context,getSettings(),owner.key,'npcs'),lore:readCharacterArchive(context,getSettings(),owner.key,'lore')});
         const active=SillyTavern.getContext();
         if(characterOwner(active)?.key!==owner.key||active.chatMetadata!==metadata)throw Error(thai?'บันทึกการ์ดเดิมแล้ว แต่ตอนนี้เปลี่ยนแชท กรุณาเปิดการ์ดเดิมเพื่อ Export':'Saved the original card. Reopen it to export; the active chat changed.');
         updatePrompt();return result;
@@ -1416,7 +1424,7 @@ function npcAbility(value) {
     return {
         id: text(value.id, uid(), 100), name: text(value.name, '', 120), category: text(value.category, 'General', 80),
         level: text(value.level, 'Unknown', 80), proficiency: number(value.proficiency, 0, 0, 100),
-        description: text(value.description, '', 400),
+        description: text(value.description, '', 1000),
     };
 }
 
@@ -2061,7 +2069,7 @@ function normalize(candidate, base = defaultState()) {
     const npcByName = new Map(result.npcs.map(entry => [entry.name.toLocaleLowerCase(), entry]));
     result.contacts.forEach(entry => {
         let linked = npcById.get(entry.npcId) || ((entry.npcId || migratingLegacyNpcs) ? npcByName.get(entry.name.toLocaleLowerCase()) : null);
-        if (!linked && (entry.npcId || migratingLegacyNpcs)) {
+        if (!linked && (entry.npcId || migratingLegacyNpcs) && !knownScopedNpc(source,entry.npcId)) {
             linked = npcProfile({ name: entry.name, title: entry.title, faction: entry.affiliation, relationship: entry.relationship,
                 notes: entry.notes, contactId: entry.id, updatedAt: entry.lastLetterAt || new Date().toISOString() });
             if (linked) {
@@ -2084,8 +2092,9 @@ function normalize(candidate, base = defaultState()) {
     const legacyParty = !socialSource.party && text(player.party, '', 140) && !['Solo', 'None'].includes(text(player.party, '', 140))
         ? { name: player.party } : null;
     const friendlyIds = new Set(friendlyNpcs(result).map(entry => entry.id));
+    const eligibleSocialId=id=>friendlyIds.has(id)||knownScopedNpc(source,id,{friendly:true});
     const cleanSocialIds = values => [...new Set((Array.isArray(values) ? values : [])
-        .map(value => text(value, '', 100)).filter(value => value === 'player' || friendlyIds.has(value)))].slice(0, 100);
+        .map(value => text(value, '', 100)).filter(value => value === 'player' || eligibleSocialId(value)))].slice(0, 100);
     const party = partyProfile(socialSource.party || legacyParty, result.social.party);
     if (party) party.memberIds = cleanSocialIds(party.memberIds).filter(value => value !== 'player');
     const sourceGuilds = Array.isArray(socialSource.guilds) ? socialSource.guilds : result.social.guilds;
@@ -2096,7 +2105,7 @@ function normalize(candidate, base = defaultState()) {
         guildsByName.set(key, guildsByName.has(key) ? { ...guildsByName.get(key), ...entry, id: guildsByName.get(key).id } : entry);
     });
     const household = householdProfile(socialSource.household, result.social.household);
-    household.members = household.members.filter(entry => !entry.npcId || friendlyIds.has(entry.npcId));
+    household.members = household.members.filter(entry => !entry.npcId || eligibleSocialId(entry.npcId));
     result.social = { party, guilds: [...guildsByName.values()].slice(0, 30), household };
     if (party) result.player.party = party.name;
     if (result.social.guilds.length) result.player.guild = result.social.guilds[0].name;
@@ -2123,6 +2132,7 @@ function normalize(candidate, base = defaultState()) {
     }
     result.updatedAt = typeof source.updatedAt === 'string' ? source.updatedAt : result.updatedAt;
     result.npcScopes = scopeEnvelope(source.npcScopes ?? result.npcScopes);
+    inheritNpcBaselines(result,source,base);
     result.updateSource = text(source.updateSource, result.updateSource, 40);
     result.syncCursor = {
         user: Number.isInteger(source.syncCursor?.user) ? source.syncCursor.user : result.syncCursor.user,
@@ -2143,7 +2153,87 @@ function initialCharacterState(context) {
     characterSeedStates.set(metadata,{owner,pack,state});return clone(state);
 }
 
-function getState() {
+const npcReferenceSessions=new WeakMap();
+let worldPacks=null,worldPackControls=null,referenceRequest=0;
+const referenceFailures=new WeakMap();
+function worldPackClient(){return worldPacks||=createWorldPackClient({normalizeNpc:(npc,owner)=>npcProfile({...npc,npcScope:'character',npcOwner:owner})});}
+function refreshWorldPackControls(){
+    const root=document.getElementById('roleforge-world-pack');if(!root)return;
+    if(worldPackControls?.root!==root)worldPackControls={root,...mountWorldPackControls(root,{
+        language:()=>getSettings().language,client:worldPackClient(),ticket:referenceTicket,valid:referenceTicketValid,
+        owner:()=>characterOwner(SillyTavern.getContext())?.key,ref:()=>characterWorldRef(SillyTavern.getContext(),characterOwner(SillyTavern.getContext())?.key),
+        current:async()=>{const ticket=referenceTicket();const catalog=await openWorldArchive(ticket);if(!catalog||!referenceTicketValid(ticket))throw Error('Open a card with an installed World Pack first.');return catalog;},
+        attach:async(ref,ticket,{clearEmbedded=false,sourceHash=''}={})=>{if(!ticket.owner||!referenceTicketValid(ticket))throw Error('Chat/card changed. Reopen World Pack settings.');
+            await worldPackClient().open(ticket.owner,ref);if(!referenceTicketValid(ticket))throw Error('Chat/card changed. The library is stored; link it from the intended card.');
+            if(clearEmbedded){if(characterArchiveBusy(ticket.owner)||pendingUserConfigSave||characterPackSaving)throw Error('Wait for card saving to finish before moving its archive.');
+                await worldPackClient().rpc('verifySource',{avatar:ticket.owner.slice(5),headers:ticket.context.getRequestHeaders(),sourceHash});
+                if(!referenceTicketValid(ticket))throw Error('Chat/card changed. Embedded data was kept.');}
+            await writeCharacterWorldReference(ticket.context,ticket.owner,{...ref,required:true},{clearEmbedded});
+            if(SillyTavern.getContext().chatMetadata!==ticket.metadata||characterOwner(SillyTavern.getContext())?.key!==ticket.owner)return;
+            await prepareNpcReferences();updatePrompt();renderAll();npcWorkspace?.refresh();},
+    })};worldPackControls.update();
+}
+function referenceTicket(){const context=SillyTavern.getContext(),owner=characterOwner(context)?.key||'',ref=characterWorldRef(context,owner);return {context,metadata:context.chatMetadata,chatId:context.getCurrentChatId?.(),owner,ref,archiveRevision:worldPacks?.peek(owner,ref)?.revision,npcSource:readCharacterArchive(context,getSettings(),owner,'npcs'),loreSource:readCharacterArchive(context,getSettings(),owner,'lore')};}
+function referenceTicketValid(ticket){const current=SillyTavern.getContext();return current.chatMetadata===ticket.metadata&&current.getCurrentChatId?.()===ticket.chatId&&(characterOwner(current)?.key||'')===ticket.owner&&worldKey(characterWorldRef(current,ticket.owner)||{})===worldKey(ticket.ref||{})&&(ticket.archiveRevision===undefined||worldPacks?.peek(ticket.owner,ticket.ref)?.revision===ticket.archiveRevision)&&readCharacterArchive(current,getSettings(),ticket.owner,'npcs')===ticket.npcSource&&readCharacterArchive(current,getSettings(),ticket.owner,'lore')===ticket.loreSource;}
+async function openWorldArchive(ticket=referenceTicket()) {
+    if(!ticket.ref)return null;
+    try{return await worldPackClient().open(ticket.owner,ticket.ref);}
+    catch(error){if(ticket.ref.required||!readCharacterArchive(ticket.context,getSettings(),ticket.owner,'npcs').length)throw error;return null;}
+}
+async function prepareNpcReferences(messages,{generation=false}={}) {
+    const ticket=referenceTicket(),request=++referenceRequest;
+    if(!ticket.chatId||!ticket.owner)return ticket;
+    const external=await openWorldArchive(ticket);
+    if(!referenceTicketValid(ticket)||request!==referenceRequest||external&&worldPacks.peek(ticket.owner,ticket.ref)!==external)throw Error('Chat/card or generation changed while loading references. Send again in the current chat.');
+    const catalog=external||characterNpcCatalog(ticket.owner),source=ticket.metadata[METADATA_KEY]||{};
+    const visible=(Array.isArray(messages)?messages:ticket.context.chat||[]).filter(m=>m&&!m.is_system&&m.role!=='system').slice(-8)
+        .map(m=>extractStatePatch(m.mes??(typeof m.content==='string'?m.content:'')).visible.slice(-3000)).join('\n');
+    const matches=searchNpcArchive(catalog.summaries,visible,{limit:16}),party=source.social?.party?.memberIds||[];
+    const patchRefs=generation?[]:(Array.isArray(messages)?messages:ticket.context.chat||[]).slice(-1).flatMap(message=>
+        (extractStatePatch(message.mes||'').patch?.ops||[]).filter(op=>['npcs','npcValues','npcHStats','npcAbilities','npcMeters','npcDiary','partyMembers','guildMembers'].includes(op[1]))
+            .map(op=>(resolveNpc(catalog.summaries,op[2])||resolveIndexedNpc(catalog.summaries,op[2]))?.id).filter(Boolean));
+    const previous=source.npcScopes?.activeIds||[];
+    const ids=[...new Set([...party,...matches.map(m=>m.id),...patchRefs,...previous,...catalog.summaries.filter(p=>p.enabled!==false).slice(0,16).map(p=>p.id)])].filter(id=>catalog.has(id)).slice(0,32);
+    const abilityReferences=[];
+    if(external){await external.load(ids,{pin:true});await external.lore(visible,activeLoreOptions(ticket.owner));
+        const query=visible.normalize('NFKC').toLocaleLowerCase();let used=0;
+        for(const record of external.getMany(ids)){
+            const npc=effectiveNpc(record),ability=(npc.abilities||[]).find(a=>{const name=String(a.name||'').replace(/\s*\[[^\]]*\]\s*$/u,'').normalize('NFKC').toLocaleLowerCase();return name.length>=4&&query.includes(name);});
+            if(!ability||abilityReferences.length>=3)continue;
+            for(const supplement of await external.supplements({id:record.id,versionId:record.activeAlternateId,abilityId:ability.id,query:visible})){
+                const value={npcId:record.id,selectedVersionId:record.activeAlternateId,name:ability.name,description:ability.description,referenceOnly:true,...supplement};
+                const cost=JSON.stringify(value).length;if(used+cost>6000)continue;used+=cost;abilityReferences.push(value);
+            }
+        }
+    }
+    else {catalog.pin?.(ids);catalog.getMany(ids);}
+    if(!referenceTicketValid(ticket)||request!==referenceRequest||external&&worldPacks.peek(ticket.owner,ticket.ref)!==external)throw Error('Chat/card or generation changed while loading references. Send again in the current chat.');
+    npcReferenceSessions.set(ticket.metadata,{owner:ticket.owner,ids,request,generation,abilityReferences});referenceFailures.delete(ticket.metadata);
+    worldPackControls?.update();return ticket;
+}
+function knownScopedNpc(state,id,{friendly=false}={}) {
+    const owner=characterOwner(SillyTavern.getContext())?.key;
+    if(!id||state?.npcScopes?.format!==2||state.npcScopes.owner!==owner)return false;
+    const catalog=characterNpcCatalog(owner);
+    if(catalog.unavailable)return !state.npcScopes.hidden?.includes(id);
+    const summary=catalog.summary(id);if(!summary)return false;
+    const delta=state.npcScopes.overrides?.[id]||{};
+    return !friendly||(delta.enabled??summary.enabled)!==false&&!(delta.isHostile??summary.isHostile);
+}
+function selectedStateNpcIds(context,source,extra=[]) {
+    const owner=characterOwner(context)?.key||'',session=npcReferenceSessions.get(context.chatMetadata);
+    const scoped=source?.npcScopes?.owner===owner?source.npcScopes:{};
+    const selected=session?.owner===owner?session.ids:scoped.activeIds||Object.keys(scoped.overrides||{});
+    const party=source?.social?.party?.memberIds||[];
+    return [...new Set([...selected,...(scoped.activeIds||[]),...party,...extra].filter(id=>typeof id==='string'&&id!=='player'))];
+}
+async function prepareSnapshotReferences(snapshot){
+    const ticket=referenceTicket(),catalog=await openWorldArchive(ticket);
+    if(!referenceTicketValid(ticket))return false;
+    if(catalog)await catalog.load(selectedStateNpcIds(ticket.context,snapshot),{pin:true});
+    return referenceTicketValid(ticket);
+}
+function getState({npcIds=[]}={}) {
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.()) return defaultState();
     const saved = context.chatMetadata[METADATA_KEY];
@@ -2159,13 +2249,17 @@ function getState() {
         context.chatMetadata.tretaresia_rpg_location_migration = 1;
     }
     const source = saved && typeof saved === 'object' ? (Array.isArray(saved.npcs) ? saved : normalize(saved)) : initialCharacterState(context);
-    return normalize(hydrateScopedNpcs(source, characterNpcLibrary(), characterOwner(context)?.key));
+    const owner=characterOwner(context)?.key||'';
+    return normalize(hydrateScopedNpcs(source,characterNpcCatalog(owner),owner,{sparse:true,activeIds:selectedStateNpcIds(context,source,npcIds)}));
 }
 
 function activeCharacterLore() {
     const context = SillyTavern.getContext(), owner = characterOwner(context)?.key;
     const stored = readCharacterArchive(context, getSettings(), owner, 'lore');
-    return characterLore({loreCharacterLibraries:{[owner]:stored}}, owner);
+    const ref=characterWorldRef(context,owner),external=ref&&worldPacks?.peek(owner,ref);
+    if(!external)return prepareLoreArchive(stored);
+    const selected=new Map([...stored,...external.preparedLore].map(entry=>[entry.id,entry]));
+    return prepareLoreArchive([...selected.values()]);
 }
 
 function activeLorePrompt(request = '', overrides = {}) {
@@ -2182,17 +2276,48 @@ async function persistCharacterLoreOptions(options, expectedOwner) {
 async function persistCharacterLore(entries, expectedOwner) {
     const context = SillyTavern.getContext();
     const owner = characterOwner(context)?.key;
+    const catalog=characterNpcCatalog(owner);
+    if(catalog.external){
+        if(owner!==expectedOwner)throw Error('Card changed. Reopen Lore Management.');
+        assertLoreCapacity(entries.length,activeLoreOptions(owner),catalog.loreSummaries.length);
+        for(const value of entries)if(!value._archiveSummary&&(!value.id||!value.title?.trim()||!value.content?.trim()||value.content.length>12000))throw Error('Invalid Lore title/content');
+        const preserved=[];for(const value of entries)preserved.push(value._archiveSummary?value:{...await catalog.loreRecord(value.id),...value});
+        await catalog.save('lore',preserved);
+        if(characterOwner(SillyTavern.getContext())?.key===owner){await prepareNpcReferences();updatePrompt();}return true;
+    }
+    const rawById=new Map(readCharacterArchive(context,getSettings(),owner,'lore').map(value=>[value.id,value]));
+    entries=entries.map(value=>value._archiveSummary?{...rawById.get(value.id),enabled:value.enabled}:value);
     const staged = {loreCharacterOptions:{[owner]:activeLoreOptions(owner)},loreCharacterLibraries:{[owner]:activeCharacterLore()}};
     const normalized = writeCharacterLore(staged, entries, expectedOwner, owner);
-    await writeCharacterArchive(context, getSettings(), owner, 'lore', normalized);
+    await writeCharacterArchive(context, getSettings(), owner, 'lore', normalized.map(value=>({...rawById.get(value.id),...entries.find(e=>e.id===value.id),...value})));
     updatePrompt();
 }
 
+const npcArchiveCache=createArchiveRevisionCache(),missingArchiveRecords=Object.freeze([]);
+function characterLoreCatalog(owner=characterOwner(SillyTavern.getContext())?.key){
+    const catalog=characterNpcCatalog(owner);if(catalog.external)return catalog;
+    const source=readCharacterArchive(SillyTavern.getContext(),getSettings(),owner,'lore');
+    return npcArchiveCache.read(owner||'','lore',source,{normalize:value=>loreEntries([value])[0],summarize:(raw,id)=>({...loreArchiveSummary(raw,id),searchText:worldSearchText(raw.content),_archiveSummary:true})});
+}
+function characterNpcSummaries(owner=characterOwner(SillyTavern.getContext())?.key){return characterNpcCatalog(owner).summaries;}
+function characterLoreSummaries(){const catalog=characterLoreCatalog();return catalog.external?catalog.loreSummaries:catalog.summaries;}
+async function readNpcArchiveRecord(id,scope='character'){
+    if(scope!=='character')return getState().npcs.find(n=>n.id===id)||null;
+    const ticket=referenceTicket(),catalog=characterNpcCatalog(ticket.owner);if(catalog.external)await catalog.load([id]);
+    if(!referenceTicketValid(ticket))throw Error('Chat/card changed while opening the NPC.');const value=catalog.raw(id)||catalog.get(id);return value?{...value,npcScope:'character',npcOwner:ticket.owner}:null;
+}
+async function readLoreArchiveRecord(id){const ticket=referenceTicket(),catalog=characterLoreCatalog(ticket.owner),value=catalog.external?await catalog.loreRecord(id):catalog.raw(id);
+    if(!referenceTicketValid(ticket))throw Error('Chat/card changed while opening Lore.');return value;}
+function characterNpcCatalog(owner = characterOwner(SillyTavern.getContext())?.key) {
+    const ref=characterWorldRef(SillyTavern.getContext(),owner),external=ref&&worldPacks?.peek(owner,ref);
+    if(external)return external;
+    if(ref?.required){const pending=npcArchiveCache.read(owner||'','missing',missingArchiveRecords,{revision:worldKey(ref)});pending.ref=ref;pending.unavailable=true;return pending;}
+    const saved=readCharacterArchive(SillyTavern.getContext(),getSettings(),owner,'npcs');
+    return npcArchiveCache.read(owner||'','npcs',saved,{normalize:(npc,owner)=>npcProfile({...npc,npcScope:'character',npcOwner:owner}),summarize:(raw,id,owner)=>({...npcArchiveSummary(raw,id,owner),_archiveSummary:true})});
+}
 function characterNpcLibrary(owner = characterOwner(SillyTavern.getContext())?.key) {
     if (!owner) return [];
-    const saved = readCharacterArchive(SillyTavern.getContext(), getSettings(), owner, 'npcs');
-    return (Array.isArray(saved) ? saved : [])
-        .map(npc => npcProfile({ ...npc, npcScope: 'character', npcOwner: owner })).filter(Boolean);
+    return characterNpcCatalog(owner).all();
 }
 
 function scheduleArchiveMigration() {
@@ -2207,7 +2332,17 @@ function scheduleArchiveMigration() {
 }
 
 function storedNpcState(state) {
-    return packScopedNpcs(state, characterNpcLibrary(), characterOwner(SillyTavern.getContext())?.key);
+    const owner=characterOwner(SillyTavern.getContext())?.key||'';
+    return packScopedNpcs(state,characterNpcCatalog(owner),owner,{sparse:true});
+}
+function materializeWorkingNpc(state,identity){
+    const owner=characterOwner(SillyTavern.getContext())?.key||'',catalog=characterNpcCatalog(owner);
+    const summary=resolveNpc(catalog.summaries,identity)||resolveIndexedNpc(catalog.summaries,identity);if(!summary||state.npcScopes?.hidden?.includes(summary.id))return null;
+    const existing=state.npcs.find(n=>n.id===summary.id);if(existing)return existing;
+    if(!catalog.get(summary.id))return null;
+    const stored=storedNpcState(state),activeIds=[...state.npcs.filter(n=>n.npcScope==='character').map(n=>n.id),summary.id];
+    Object.assign(state,normalize(hydrateScopedNpcs(stored,catalog,owner,{sparse:true,activeIds})));
+    return state.npcs.find(n=>n.id===summary.id)||null;
 }
 
 async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner) {
@@ -2215,16 +2350,24 @@ async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner)
     if(pendingUserConfigSave||characterPackSaving)throw Error(uiText('Wait for configuration saving to finish before editing characters.'));
     const deleting=source==='npc-management-delete';
     if (context.getCurrentChatId?.() !== expectedChat || owner !== expectedOwner) throw new Error(uiText("แชตหรือการ์ดเปลี่ยนแล้ว กรุณาเปิดรายการใหม่"));
-    const previousCount=scope==='character'?characterNpcLibrary(owner).length:getState().npcs.filter(npc=>npc.npcScope!=='character').length;
+    const previousCount=scope==='character'?characterNpcCatalog(owner).size:getState().npcs.filter(npc=>npc.npcScope!=='character').length;
     assertNpcCapacity(npcs.length,activeNpcOptions(owner),previousCount);
     if (scope === 'character') {
         if (!owner) throw new Error(uiText("Character Scope ต้องเปิดแชตของการ์ดตัวละครเดี่ยว"));
         const settings = getSettings();
-        const removed = characterNpcLibrary(owner).filter(p => !npcs.some(n => n.id === p.id)).map(p => p.id);
+        const retainedIds=new Set(npcs.map(n=>n.id));
+        const removed = characterNpcCatalog(owner).ids.filter(id=>!retainedIds.has(id));
         const current = getState();
-        const archive = npcs.map(npc => npcProfile({ ...npc, npcScope: 'character', npcOwner: owner }));
-        await writeCharacterArchive(context, settings, owner, 'npcs', archive);
-        if (context.getCurrentChatId?.() !== expectedChat || characterOwner(context)?.key !== expectedOwner) return true;
+        const catalog=characterNpcCatalog(owner);
+        if(catalog.external){const entries=npcs.map(npc=>npc._archiveSummary?npc:catalog.raw(npc.id)?preserveNpcCanon(catalog.raw(npc.id),npcProfile(npc),catalog.get(npc.id)):npc);
+            const next=await catalog.save('npcs',entries);await next.load(selectedStateNpcIds(context,current),{pin:true});}
+        else {
+            const archive = npcs.map(npc => npc._archiveSummary?{...catalog.raw(npc.id),enabled:npc.enabled}:
+                catalog.has(npc.id)?preserveNpcCanon(catalog.raw(npc.id),npcProfile({...npc,npcScope:'character',npcOwner:owner}),catalog.get(npc.id)):{...npc,npcScope:'character',npcOwner:owner});
+            await writeCharacterArchive(context, settings, owner, 'npcs', archive);
+        }
+        const active=SillyTavern.getContext();
+        if (active.chatMetadata!==context.chatMetadata||active.getCurrentChatId?.() !== expectedChat || characterOwner(active)?.key !== expectedOwner) return true;
         const finish=async()=>{
             if (removed.length) {
                 retainNpcDeletions(turnHistory(context, false), removed);
@@ -2250,7 +2393,7 @@ async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner)
     const restoreHistory=()=>{if(stagedHistory&&metadata[TURN_HISTORY_KEY]===stagedHistory)metadata[TURN_HISTORY_KEY]=originalHistory;};
     let committed=false;
     try{
-        const saved=await persistState(hydrateScopedNpcs(stored, characterNpcLibrary(), owner),source,{saveBeforeRender:deleting,onMetadataSaved:()=>{committed=true;}});
+        const saved=await persistState(hydrateScopedNpcs(stored,characterNpcCatalog(owner),owner,{sparse:true,activeIds:selectedStateNpcIds(context,stored)}),source,{saveBeforeRender:deleting,onMetadataSaved:()=>{committed=true;}});
         if(!saved&&!committed)restoreHistory();return saved||committed;
     }catch(error){
         if(committed){console.warn('[RoleForge] NPC deletion was saved; follow-up chat refresh failed.',error);return true;}
@@ -2260,9 +2403,13 @@ async function persistNpcScope(scope, npcs, source, expectedChat, expectedOwner)
 
 async function routeStoryNpcState(state, previous, context) {
     const owner = characterOwner(context)?.key;
-    const routed = routeNewStoryNpcs(state, previous, characterNpcLibrary(owner), owner, getSettings().npcGenerationScope,activeNpcOptions(owner));
+    const previousIds=new Set(previous.npcs.map(n=>n.id)),catalog=characterNpcCatalog(owner);
+    if(!state.npcs.some(n=>!previousIds.has(n.id)&&!catalog.has(n.id)))return state;
+    const library=catalog.external?catalog.summaries:readCharacterArchive(context,getSettings(),owner,'npcs');
+    const routed = routeNewStoryNpcs(state, previous, library, owner, getSettings().npcGenerationScope,activeNpcOptions(owner));
     if (routed.added) {
-        await writeCharacterArchive(context, getSettings(), owner, 'npcs', routed.library);
+        if(catalog.external){const updated=await catalog.save('npcs',routed.library);await updated.load(routed.state.npcs.filter(n=>n.npcScope==='character').map(n=>n.id),{pin:true});}
+        else await writeCharacterArchive(context, getSettings(), owner, 'npcs', routed.library);
     }
     if (routed.overflow) notify('warning', uiText("Character archive is full. New NPCs were kept in Chat; no records were discarded."));
     return routed.state;
@@ -2278,8 +2425,8 @@ function hasStoryNpcCapacity(state,destination=storyNpcDestination()) {
     const options=activeNpcOptions(destination.owner);
     if(!npcEntryLimit(options))return true;
     if(destination.scope==='chat')return hasNpcCapacity(state.npcs.filter(n=>n.npcScope!=='character').length,options);
-    const library=characterNpcLibrary(destination.owner),ids=new Set(library.map(n=>n.id));
-    return hasNpcCapacity(library.length+state.npcs.filter(n=>n.npcScope==='character'&&!ids.has(n.id)).length,options);
+    const catalog=characterNpcCatalog(destination.owner);
+    return hasNpcCapacity(catalog.size+state.npcs.filter(n=>n.npcScope==='character'&&!catalog.has(n.id)).length,options);
 }
 function registerStorySpeakers(state, message, context, previous = {npcs:[]}) {
     const blocks = parseStory(extractStatePatch(message?.mes || '').visible) || [];
@@ -2290,7 +2437,7 @@ function registerStorySpeakers(state, message, context, previous = {npcs:[]}) {
     for (const block of blocks) {
         const name = text(block.name, '', 120), key = keyName(name);
         if (block.type !== 'dialogue' || !name || excluded.has(key)) continue;
-        const known = resolveNpcSpeaker(state.npcs, name);
+        const known = materializeWorkingNpc(state,{name})||resolveNpcSpeaker(state.npcs, name);
         if (known) {
             if (known.enabled!==false&&!known.met) { known.met = true; known.updatedAt = new Date().toISOString(); changes++; }
             continue;
@@ -2321,7 +2468,7 @@ function writeContinuitySnapshot(state) {
     const key = continuityStorageKey(activeContinuityKey(context));
     const chatId = context.getCurrentChatId?.();
     if (!key || !chatId) return false;
-    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), npcTransfer: 'all', presets:currentWorldPreset(state), state: completeNpcContinuity(normalize(state),characterNpcLibrary(),characterOwner(context)?.key),
+    const record = { format: STATE_PACKAGE_FORMAT, version: 1, sourceChatId: chatId, savedAt: new Date().toISOString(), npcTransfer: 'scoped', presets:currentWorldPreset(state), state: storedNpcState(state),
         hStatsRoster:{visible:clone(Array.isArray(context.chatMetadata?.[H_VISIBLE_KEY]) ? context.chatMetadata[H_VISIBLE_KEY]
             : context.chatMetadata?.[H_SELECTION_KEY] ? [context.chatMetadata[H_SELECTION_KEY]] : []),selected:context.chatMetadata?.[H_SELECTION_KEY] || ''},
         memoryLink:getSettings().enableMemorySummaries ? memorySummaries?.continuityLink() : context.chatMetadata?.[MEMORY_LINK_KEY] };
@@ -2408,9 +2555,10 @@ async function restoreContinuityForCurrentChat() {
         if (beforeCopy.getCurrentChatId?.() !== chatId || beforeCopy.chatMetadata !== metadata || activeContinuityKey(beforeCopy) !== characterKey || beforeCopy.chatMetadata?.[METADATA_KEY] || hasUserReply()) return false;
         // Legacy snapshots keep their original scope rules; new complete handoffs
         // carry local dossiers as independent records in the destination chat.
+        if(record.npcTransfer==='scoped'&&!await prepareSnapshotReferences(record.state))return false;
         const restored = record.npcTransfer === 'all'
             ? restoreCompleteNpcContinuity(normalize(record.state),characterNpcLibrary(),characterOwner(context)?.key)
-            : withoutChatNpcContinuity(normalize(record.state));
+            : record.npcTransfer==='scoped'?assistantRestoreState(record.state):withoutChatNpcContinuity(normalize(record.state));
         const continued = await copyContinuityMedia(restored, record.sourceChatId, chatId);
         const active = SillyTavern.getContext();
         if (active.getCurrentChatId?.() !== chatId || active.chatMetadata !== metadata || activeContinuityKey(active) !== characterKey || active.chatMetadata?.[METADATA_KEY] || hasUserReply()) return false;
@@ -2418,14 +2566,14 @@ async function restoreContinuityForCurrentChat() {
         continued.updatedAt = null;
         continued.updateSource = 'continuity';
         if (record.memoryLink?.owner === activeContinuityKey(context)) context.chatMetadata[MEMORY_LINK_KEY] = clone(record.memoryLink);
-        if (record.npcTransfer === 'all' && record.hStatsRoster) {
+        if (['all','scoped'].includes(record.npcTransfer) && record.hStatsRoster) {
             context.chatMetadata[H_VISIBLE_KEY] = clone(record.hStatsRoster.visible || []);
             context.chatMetadata[H_SELECTION_KEY] = record.hStatsRoster.selected || '';
         }
         const oldPreset=metadata[CHAT_PRESET_KEY];let restoredPreset;
         if(record.presets&&!oldPreset)try{restoredPreset={version:1,config:validatePresetConfig(record.presets)};metadata[CHAT_PRESET_KEY]=restoredPreset;}catch(error){console.warn('[RoleForge] Ignored invalid continuity preset.',error);}
         let saved;
-        try{saved=await persistState(record.npcTransfer === 'all' ? restoreCompleteNpcContinuity(continued, characterNpcLibrary(), characterOwner(context)?.key) : hydrateScopedNpcs(continued, characterNpcLibrary(), characterOwner(context)?.key), 'continuity');}
+        try{saved=await persistState(record.npcTransfer === 'all' ? restoreCompleteNpcContinuity(continued, characterNpcLibrary(), characterOwner(context)?.key) : hydrateScopedNpcs(continued, characterNpcCatalog(), characterOwner(context)?.key,{sparse:true,activeIds:selectedStateNpcIds(context,continued)}), 'continuity');}
         finally{if(!saved&&restoredPreset&&metadata[CHAT_PRESET_KEY]===restoredPreset){if(oldPreset===undefined)delete metadata[CHAT_PRESET_KEY];else metadata[CHAT_PRESET_KEY]=oldPreset;}}
         if (saved) {
             globalThis.dispatchEvent(new CustomEvent('tretaresia-rpg:continuity-restored', {
@@ -2475,7 +2623,8 @@ function bindNewChatSummaryCompatibility() {
 }
 
 function portableState(state) {
-    const portable = normalize(state);
+    const scoped=state?.npcScopes?.format===2;
+    const portable = normalize(scoped&&state.npcs?.some(p=>p.npcScope==='character')?storedNpcState(state):state);
     portable.npcs.forEach(entry => {
         for (const portrait of enumerateNpcPortraits(entry)) {
             const server = portrait.portraitSource === 'server' && Boolean(portrait.portraitPath);
@@ -2485,7 +2634,7 @@ function portableState(state) {
         }
         entry.npcScope = 'chat'; entry.npcOwner = '';
     });
-    portable.npcScopes = {};
+    if(!scoped)portable.npcScopes = {};
     portable.music = { tracks: [], currentId: '', repeat: portable.music.repeat, shuffle: portable.music.shuffle };
     portable.syncCursor = { user: null, assistant: null };
     return portable;
@@ -2499,6 +2648,7 @@ function exportStatePackage() {
         format: STATE_PACKAGE_FORMAT, version: 1, exportedAt: new Date().toISOString(),
         character: { key: activeContinuityKey(context), name: state.player.name },
         localMediaIncluded: false, state: portableState(state), presets:currentWorldPreset(),
+        worldArchive:characterWorldRef(context,characterOwner(context)?.key),
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -2517,12 +2667,24 @@ async function importStatePackage(file) {
     if (!file) return;
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.()) throw new Error(getSettings().language === 'th' ? uiText("เปิดแชตก่อนนำเข้าข้อมูล") : uiText("Open a chat before importing state."));
-    const parsed = JSON.parse(await file.text());
+    const scope=referenceTicket(),parsed = JSON.parse(await file.text());
+    if(!referenceTicketValid(scope))throw Error('Chat/card changed while reading the state file.');
     const candidate = parsed?.format === STATE_PACKAGE_FORMAT ? parsed.state : parsed?.state || parsed;
     if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error(uiText("This is not a valid RoleForge state file."));
     const confirmed = globalThis.confirm?.(getSettings().language === 'th' ? uiText("แทนที่ข้อมูล RPG ของแชตนี้ด้วยไฟล์ที่เลือก?") : uiText("Replace this chat's RPG state with the selected file?"));
     if (confirmed === false) return;
-    const imported = portableState(candidate);
+    let restored=candidate;
+    if(candidate.npcScopes?.format===2){
+        const catalog=await openWorldArchive(scope)||characterNpcCatalog(scope.owner);
+        if(!referenceTicketValid(scope))throw Error('Chat/card changed while loading state references.');
+        const archiveId=catalog.ref?.archiveId||'embedded',expected=parsed.worldArchive?.archiveId||candidate.npcScopes.archiveId||'embedded';
+        if(expected!=='embedded'&&expected!==archiveId)throw Error('Install and link this state file’s World Pack before importing progress.');
+        const savedIds=[...(candidate.npcScopes.activeIds||[]),...Object.keys(candidate.npcScopes.overrides||{})];
+        if(savedIds.some(id=>!catalog.has(id)))throw Error('Some referenced NPCs are unavailable. Restore their archive before importing progress.');
+        restored={...candidate,npcScopes:{...candidate.npcScopes,owner:scope.owner}};
+        if(!await prepareSnapshotReferences(restored)||!referenceTicketValid(scope))throw Error('Chat/card changed while restoring progress.');
+    }
+    const imported = candidate.npcScopes?.format===2?assistantRestoreState(portableState(restored)):portableState(restored);
     if(parsed?.presets)await saveChatPresetComponents(validatePresetConfig(parsed.presets),{candidate:imported});
     else await persistState(imported, 'import');
     notify('success', getSettings().language === 'th' ? uiText("นำเข้าข้อมูลตัวละครแล้ว") : uiText("Character state imported."));
@@ -2999,7 +3161,7 @@ async function acceptBoardMission(messageId, missionId, token) {
         if (!result.accepted || !await persistState(result.next,'mission-board-accept',{deferMetadataSave:true})) return false;
         stagedState = metadata[METADATA_KEY];
         if (context.chatMetadata !== metadata || context.getCurrentChatId?.() !== chatId) return false;
-        if (checkpoint?.variants?.[variant]?.state) checkpoint.variants[variant].state = clone(getState());
+        if (checkpoint?.variants?.[variant]?.state) checkpoint.variants[variant].state = storedNpcState(getState());
         if (!await saveCurrentChatMetadata(context)) return false;
         saved = true;
         if (context.chatMetadata !== metadata || context.getCurrentChatId?.() !== chatId) return true;
@@ -3138,7 +3300,7 @@ async function answerGroupOffer(messageId, key, accepted) {
         }
         if (!await persistState(state,`${offer.kind}-invitation`)) return false;
         const variant = assistantVariantKey(message), checkpoint = assistantCheckpoint(messageId);
-        if (checkpoint?.variants?.[variant]?.state) checkpoint.variants[variant].state = clone(getState());
+        if (checkpoint?.variants?.[variant]?.state) checkpoint.variants[variant].state = storedNpcState(getState());
     }
     offer.status = accepted ? 'accepted' : 'rejected';
     await saveCurrentChatMetadata(context);
@@ -3160,7 +3322,7 @@ async function answerHouseholdOffer(messageId, npcId, accepted) {
         if (!await persistState(state, 'household-invitation')) return false;
         const variant = assistantVariantKey(message);
         const checkpoint = assistantCheckpoint(messageId);
-        if (checkpoint?.variants?.[variant]?.state) checkpoint.variants[variant].state = clone(getState());
+        if (checkpoint?.variants?.[variant]?.state) checkpoint.variants[variant].state = storedNpcState(getState());
     }
     offer.status = accepted ? 'accepted' : 'rejected';
     await saveCurrentChatMetadata(context);
@@ -3250,7 +3412,7 @@ function assistantCheckpoint(messageId, { create = false } = {}) {
         entry = {
             key,
             messageId: Number(messageId),
-            baseState: clone(getState()),
+            baseState: storedNpcState(getState()),
             variants: {},
             activeVariant: '',
             applied: false,
@@ -3271,13 +3433,15 @@ function assistantRestoreState(snapshot) {
     for(const key of ['currencyPreset','trainingPreset'])if(presets[key])config[key]=presets[key];
     // Configuration belongs to the chat, while story progress remains
     // reversible. Convert historical balances without restoring old rules.
-    const state=normalize(clone(snapshot));
+    const context=SillyTavern.getContext(),owner=characterOwner(context)?.key||'';
+    const state=normalize(hydrateScopedNpcs(snapshot,characterNpcCatalog(owner),owner,{sparse:true,activeIds:selectedStateNpcIds(context,snapshot)}));
     return Object.keys(config).length?normalize(applyPresetState(state,config)):state;
 }
 
 async function persistExactState(snapshot, source, { deferMetadataSave = false, preparedState = null } = {}) {
     const context = SillyTavern.getContext();
     if (!context.getCurrentChatId?.() || !snapshot) return false;
+    if(!preparedState&&!await prepareSnapshotReferences(snapshot))return false;
     const state = preparedState || assistantRestoreState(snapshot);
     state.updatedAt = new Date().toISOString();
     state.updateSource = source;
@@ -3306,6 +3470,9 @@ async function replaceAssistantTurnState(messageId, { reuseVariant = false, reas
     const message = context.chat?.[Number(messageId)];
     const variantKey = reuseVariant ? assistantVariantKey(message) : '';
     const storedVariant = variantKey ? entry.variants?.[variantKey] : null;
+    const referenceScope=referenceTicket();
+    if(!await prepareSnapshotReferences({...entry.baseState,npcScopes:{...entry.baseState.npcScopes,activeIds:[...(entry.baseState.npcScopes?.activeIds||[]),...(storedVariant?.state?.npcScopes?.activeIds||[])]}})
+        ||!referenceTicketValid(referenceScope)||context.chat?.[Number(messageId)]!==message)return false;
     // Validate both snapshots before changing state or checkpoint flags.
     // Old active trades and incompatible bounds cannot partially roll back.
     const baseState=assistantRestoreState(entry.baseState);
@@ -3372,7 +3539,7 @@ function aiSceneMap(state) {
 }
 
 function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
-    const npcNames=state.npcs.map(({id,name,aliases,enabled})=>[id,name,aliases||[],enabled!==false]);
+    const npcNames=npcReferenceProfiles(state.npcs,focusTranscript||SillyTavern.getContext().chat.slice(-8).map(m=>extractStatePatch(m.mes||'').visible).join('\n'),32).map(({id,name,aliases,enabled})=>[id,name,aliases||[],enabled!==false]);
     state = { ...state, npcs: state.npcs.filter(entry=>entry.enabled!==false).map(effectiveNpc) };
     const safePlayer = { ...state.player };
     delete safePlayer.portrait;
@@ -3497,9 +3664,10 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
 }
 
 function roleplayState(state) {
-    const npcNames=state.npcs.map(({id,name,aliases,enabled,met})=>[id,name,aliases||[],enabled!==false,met===true]);
     const transcript=SillyTavern.getContext().chat.slice(-8).map(message=>extractStatePatch(message.mes||'').visible.slice(-3000)).join(' ');
+    const npcNames=npcReferenceProfiles(state.npcs,transcript,32).map(({id,name,aliases,enabled,met})=>[id,name,aliases||[],enabled!==false,met===true]);
     const referenceProfiles=npcReferenceProfiles(state.npcs,transcript).map(effectiveNpc);
+    const references=budgetNpcReferences(referenceProfiles,transcript);
     state = { ...state, npcs: state.npcs.filter(entry=>entry.enabled!==false).map(effectiveNpc) };
     const friendly = friendlyNpcs(state);
     const characterLifeCharacters = characterLifeCharacterReferences();
@@ -3562,18 +3730,24 @@ function roleplayState(state) {
             questRewardReceipts: state.questRewardReceipts.slice(-40).map(({questId,name}) => [questId,name]),
             questArchive: state.quests.filter(entry => ['Completed', 'Failed'].includes(entry.status)).slice(-16).map(({ id, name, type, status, rewardClaimed }) => [id, name, type, status, rewardClaimed]),
             npcNames,
-            npcProfiles: referenceProfiles.map(entry => ({
-                ...alternatePromptContext(entry),
-                id: entry.id, name: entry.name, title: entry.title, occupation: entry.occupation,
-                race: entry.race, age: entry.age, gender: entry.gender, faction: entry.faction,
-                relationship: entry.relationship, isHostile: entry.isHostile,enabled:entry.enabled!==false, met: entry.met,
-                hStats: Object.fromEntries(Object.entries(entry.hStats || {}).filter(([, value]) => value !== null && value !== '')),
-                appearance: entry.appearance.slice(0, 600), personality: entry.personality.slice(0, 600),
-                background: entry.background.slice(0, 600), goals: entry.goals.slice(0, 400), speechStyle: entry.speechStyle.slice(0, 400),
-            })),
+            npcProfiles:references,
+            npcAbilityReferences:npcReferenceSessions.get(SillyTavern.getContext().chatMetadata)?.abilityReferences||[],
             contacts: state.contacts.slice(-12).map(({ id, name }) => [id, name]),
         },
     };
+}
+
+function budgetNpcReferences(profiles,transcript,budget=24000){
+    const query=transcript.normalize('NFKC').toLocaleLowerCase(),result=[];let used=0;
+    for(const entry of profiles){
+        const abilities=[...(entry.abilities||[])].sort((a,b)=>Number(query.includes(b.name.toLocaleLowerCase()))-Number(query.includes(a.name.toLocaleLowerCase()))).slice(0,3);
+        const facts={...alternatePromptContext(entry),id:entry.id,name:entry.name,title:entry.title,occupation:entry.occupation,race:entry.race,age:entry.age,gender:entry.gender,faction:entry.faction,
+            relationship:entry.relationship,isHostile:entry.isHostile,enabled:entry.enabled!==false,met:entry.met,stats:entry.stats,
+            abilities:abilities.map(({id,name,category,level,description})=>({id,name,category,level,description})),
+            hStats:Object.fromEntries(Object.entries(entry.hStats||{}).filter(([,value])=>value!==null&&value!=='')),
+            appearance:entry.appearance.slice(0,600),personality:entry.personality.slice(0,600),background:entry.background.slice(0,600),goals:entry.goals.slice(0,400),speechStyle:entry.speechStyle.slice(0,400)};
+        const cost=JSON.stringify(facts).length;if(used+cost>budget)continue;used+=cost;result.push(facts);
+    }return result;
 }
 
 function hasUserReply(context = SillyTavern.getContext()) {
@@ -3837,7 +4011,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.68.5`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.69.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card); fitForgeToChat(card, chat);
     }
@@ -4008,7 +4182,7 @@ function patchInstructions() {
         'Quests: type is Story, Side-Story, Mission, Quest, Dungeon, Contract, or Personal. Upsert when formally offered/assigned/received; Offered=optional unaccepted, Active=accepted/assigned. Update progress only from confirmed objective progress; Completed always becomes 100 and Failed is archived. On the FIRST transition to Completed, grant its established reward once in the SAME patch; every reward op must carry {"category":"quest-reward","questId":"canonical id","reason":"specific reward"}. questRewardReceipts and questArchive entries with rewardClaimed=true are history: never pay their currency/EXP/items/rank/loot again, never reset progress, and do not reactivate without an explicit story event. Rumors and casual advice are not quests.',
         'Proficiency: inc only a discipline genuinely used/trained (1-3; 4-8 breakthrough). New powers/styles use customMagic/customSword {id,name,proficiency,description,iconKey}. iconKey values: ' + iconKeys + '. Mana is not easily detected: non-sensing characters perceive nothing and even sensing specialists normally notice only a faint presence, while explicitly godlike beings with major lore may be exceptional. Formless Aura is wholly undetectable. False Magic uses a medium; True Magic does not; Aura commonly has one Origin; Constructs grant forged abilities.',
         'Teleport and warp canon: teleportation/warp magic is inaccessible and most people believe it does not exist. Do not grant, teach, create, or casually use such a spell, item, skill, route, or world crossing unless the visible story explicitly establishes an extraordinary canon exception. A map browse or travel request is never such an exception.',
-        'NPC identity: npcNames=[id,canonicalName,aliases,enabled] lists ALL saved NPC identities. Before creating anyone, check it including translated/transliterated names (for example Kohaku and โคฮาคุ). Reuse the canonical id and name; add the translated name to aliases. Never invent a new id for an existing person or replace their established dossier. Disabled NPCs remain in this identity index: never reactivate or create a copy of one. Do not merge distinct people merely because their names sound similar.',
+        'NPC identity: npcNames=[id,canonicalName,aliases,enabled] contains the relevant retrieved identities, not the complete reference library. Reuse supplied canonical ids and aliases. An absent identity is not proof that a character has no saved dossier: do not fabricate a verified biography or alternate chapter. Newly introduced visible names are resolved locally for following turns. Disabled references must not be reactivated or duplicated. Do not merge distinct people merely because their names sound similar.',
         'NPCs and knowledge: upsert relevant named NPCs or confirmed changes; preserve npcIndex id. Set isHostile:true for hostile/enemy/foe/antagonist/villain/threat NPCs; they remain in NPC Management, but stay out of friendly Codex/social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Improve a known skill after confirmed practice/use with ["inc","npcAbilities",{"npcId":"...","name":"Existing skill","amount":2}], optionally setting level when a milestone is confirmed. Upsert a new skill only after learning it. Supply complete plausible starting stats and relationship values for new NPCs; zero is a real value, never an unknown placeholder. Never raise existing combat stats from conversation alone. Record only facts an NPC actually learns using npcKnowledge {npcId,id,fact,source,confidence,learnedDay}; do not copy private tracker facts. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
         `Player and NPC H-Stats: ${hFieldKeys}. Applies to female, male and futanari partners with every field available; no extra Condition field or unlock logic. For established details use ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}] or ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}]; use playerHStats with the same field/value or field/amount shape and no npcId for the player. Track all confirmed relevant physical qualities/states, last partners, encounters, volume in liters, infidelity stage/progress, loyalty hearts, pregnancy/other parent, favorite partner/size/position, births, orgasms, and current fantasy. Do not invent values or advance counters twice. infidelityStage 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Record only established facts. Name is the person's actual name; title is a separate role or epithet. Set met:true only once the player has actually met the NPC, and keep mere lore/remote mentions out of the visible Codex.`,
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
@@ -4117,6 +4291,7 @@ function updatePrompt(state = getState(), {generationChat,generationType=''}={})
 
 globalThis.TretaresiaRpgGenerateInterceptor = async function (generationChat,contextSize,abort,generationType='') {
     if (SAFE_MODE) return;
+    const referenceScope=referenceTicket();
     if (pendingUserConfigSave) {
         const context=SillyTavern.getContext(),metadata=context.chatMetadata,chatId=context.getCurrentChatId?.();
         // Send must see either the accepted configuration or its rollback,
@@ -4137,7 +4312,11 @@ globalThis.TretaresiaRpgGenerateInterceptor = async function (generationChat,con
     // protects hosts that replace their extension-prompt collection after
     // MESSAGE_SENT while keeping tracking inside the one normal reply.
     await assistantRollbackQueue.catch(()=>undefined);
+    if(!referenceTicketValid(referenceScope)){abort?.(true);return;}
     if(assistantRollbackFailures.has(SillyTavern.getContext().chatMetadata)){abort?.(true);return;}
+    try {await prepareNpcReferences(generationChat,{generation:true});}
+    catch(error){abort?.(true);if(referenceTicketValid(referenceScope))notify('warning',error.message);return;}
+    if(!referenceTicketValid(referenceScope)){abort?.(true);return;}
     updatePrompt(getState(),{generationChat,generationType});
 };
 
@@ -8851,6 +9030,12 @@ function applyPatchOperation(state, operation, storySource = {}) {
         &&!effectTargetsPlayer({target:operation[3].target,targetName:operation[3].targetName},{names:recipientNames}))return false;
     if(path==='inventory'&&incomingValue?.commerceRightId)return false;
     let value = incomingValue;
+    if(['npcs','npcValues','npcHStats','npcAbilities','npcMeters','npcDiary','partyMembers','guildMembers','householdMembers','householdInvitation','partyInvitation','guildInvitation'].includes(path)){
+        const loaded=materializeWorkingNpc(state,value);
+        if(loaded&&value&&typeof value==='object')value=path==='npcs'?{...value,id:loaded.id}:{...value,npcId:loaded.id};
+        const summary=resolveNpc(characterNpcCatalog().summaries,value)||resolveIndexedNpc(characterNpcCatalog().summaries,value);
+        if(summary&&!state.npcs.some(n=>n.id===summary.id))return false;
+    }
     const systemKey = {storyMemories:'enableStoryMemory',storyAgenda:'enableStoryAgenda',questObjectives:'enableQuestObjectives'}[path];
     if (systemKey && !getSettings()[systemKey]) return false;
     if(typeof path==='string' && path.startsWith('customPowers.')) return applyPowerOperation(state,getPowerPreset(),verb,path,value);
@@ -9328,7 +9513,8 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
     const priorNpcById=new Map(),priorNpcByName=new Map();
     for(const npc of current.npcs){if(!priorNpcById.has(npc.id))priorNpcById.set(npc.id,npc);const key=npc.name.toLocaleLowerCase();if(!priorNpcByName.has(key))priorNpcByName.set(key,npc);}
     next.npcs.forEach(entry => {
-        const previous = priorNpcById.get(entry.id) || priorNpcByName.get(entry.name.toLocaleLowerCase());
+        const previous = priorNpcById.get(entry.id) || priorNpcByName.get(entry.name.toLocaleLowerCase())
+            ||(entry.npcScope==='character'?characterNpcCatalog().get(entry.id):null);
         entry.hasPortrait = Boolean(previous?.hasPortrait);
         entry.portraitView = clone(previous?.portraitView || defaultState().player.portraitView);
         entry.portraitSource = previous?.portraitSource || '';
@@ -9784,6 +9970,9 @@ async function processAssistantPatchNow(messageId, generationType = '', scope) {
     if (!message || message.is_user || message.is_system || !text(message.mes)) return;
     const incomingVariant = assistantVariantKey(message);
     if (processedAssistantMessages.get(message) === incomingVariant) {commerceRuntime?.refresh();return;}
+    const referenceScope=referenceTicket();
+    try{await prepareNpcReferences(context.chat.slice(0,messageId+1));}catch(error){if(referenceTicketValid(referenceScope))notify('warning',error.message);return;}
+    if(!referenceTicketValid(referenceScope)||context.chat[messageId]!==message||assistantVariantKey(message)!==incomingVariant)return;
     if (!settings.autoTrack) {
         processedAssistantMessages.set(message, incomingVariant);
         await rememberScene(messageId, message, getState());
@@ -9959,7 +10148,7 @@ async function processAssistantPatchNow(messageId, generationType = '', scope) {
             await rememberScene(messageId, message, getState(), details);
             if (checkpoint) {
                 checkpoint.variants[variantKey] = {
-                    state: clone(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
+                    state: storedNpcState(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
                 };
                 const variantKeys = Object.keys(checkpoint.variants);
                 for (const stale of variantKeys.slice(0, Math.max(0, variantKeys.length - 6))) delete checkpoint.variants[stale];
@@ -9978,7 +10167,7 @@ async function processAssistantPatchNow(messageId, generationType = '', scope) {
             await rememberScene(messageId, message, reconciled.next, details);
             if (checkpoint) {
                 checkpoint.variants[variantKey] = {
-                    state: clone(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
+                    state: storedNpcState(getState()), savedAt: new Date().toISOString(), reconcileVersion: TURN_RECONCILE_VERSION,
                 };
                 const variantKeys = Object.keys(checkpoint.variants);
                 for (const stale of variantKeys.slice(0, Math.max(0, variantKeys.length - 6))) delete checkpoint.variants[stale];
@@ -10038,7 +10227,7 @@ async function completeSceneLocations() {
         written=metadata[METADATA_KEY];
         await rememberScene(id,message,getState(),result.scene);
         const checkpoint=assistantCheckpoint(id),variant=assistantVariantKey(message);
-        if(checkpoint?.variants?.[variant])checkpoint.variants[variant].state=clone(getState());
+        if(checkpoint?.variants?.[variant])checkpoint.variants[variant].state=storedNpcState(getState());
         if(!await saveCurrentChatMetadata(context))throw Error(thai?'แชทเปลี่ยนก่อนบันทึกเสร็จ':'Chat changed before saving completed.');
         writeContinuitySnapshot(getState());
         notify('success',thai?'เติมฉากและรายการสถานที่แล้ว ระยะประมาณจะแสดงแยกชัดเจน':'Scene and Location List updated. Estimated distances are labeled.');
@@ -10791,6 +10980,9 @@ function bindChatEvents() {
         closePortraitEditor();
         openedLetterId = null;
         selectedNpcId = null;
+        const referenceScope=referenceTicket();
+        try{await prepareNpcReferences();}catch(error){if(referenceTicketValid(referenceScope)){referenceFailures.set(referenceScope.metadata,error.message);notify('warning',error.message);}}
+        if(!referenceTicketValid(referenceScope))return;
         const restored = await restoreContinuityForCurrentChat();
         try{await initializeChatPresets();}catch(error){console.warn('[RoleForge] Chat preset defaults could not be saved.',error);}
         if (!restored) {
@@ -10987,7 +11179,10 @@ async function initialize() {
             marketplaceForMessage, refreshMarketplace, systemStatusForMessage, prepareChatSystemRequest,
             profile: npcProfile, persist: persistState,
             scopeInfo: () => characterOwner(SillyTavern.getContext()),
-            listScope: scope => scope === 'character' ? characterNpcLibrary() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
+            listScope: scope => scope === 'character' ? characterNpcSummaries() : getState().npcs.filter(npc => npc.npcScope !== 'character'),
+            readNpc:readNpcArchiveRecord,
+            cachedNpc:(id,scope)=>scope==='character'?characterNpcCatalog().raw(id)||characterNpcCatalog().get(id):getState().npcs.find(n=>n.id===id),
+            presentationNpcs:()=>{const active=getState().npcs,seen=new Set(active.map(n=>n.id));return [...active,...characterNpcSummaries().filter(n=>!seen.has(n.id))];},
             persistScope: persistNpcScope,
             npcOptions: activeNpcOptions,persistNpcOptions,
             resetNpcInChat: async baseline => {
@@ -10996,7 +11191,9 @@ async function initialize() {
                 state.npcs = state.npcs.map(npc => npc.id === baseline.id ? clone(baseline) : npc);
                 return persistState(state, 'npc-management');
             },
-            listLore: activeCharacterLore, persistLore: persistCharacterLore,
+            listLore:characterLoreSummaries,readLore:readLoreArchiveRecord,
+            exportLore:async()=>{const catalog=characterLoreCatalog();return catalog.external?Promise.all(catalog.loreSummaries.map(row=>catalog.loreRecord(row.id))):readCharacterArchive(SillyTavern.getContext(),getSettings(),characterOwner(SillyTavern.getContext())?.key,'lore');},
+            persistLore: persistCharacterLore,
             lorePrompt: request => activeLorePrompt(request, {mode:'relevant',budget:Math.min(12000,activeLoreOptions().budget)}),
             loreOptions: () => activeLoreOptions(), persistLoreOptions: persistCharacterLoreOptions,
             supportsPortraitVision: async () => {
@@ -11014,6 +11211,7 @@ async function initialize() {
         });
         bindNewChatSummaryCompatibility();
         void scheduleArchiveMigration();
+        try{await prepareNpcReferences();}catch(error){const c=SillyTavern.getContext();if(c.chatMetadata)referenceFailures.set(c.chatMetadata,error.message);notify('warning',error.message);}
         if (SillyTavern.getContext().chatMetadata?.[METADATA_KEY]) writeContinuitySnapshot(getState());
         else await restoreContinuityForCurrentChat();
         try{await initializeChatPresets();}catch(error){console.warn('[RoleForge] Chat preset defaults could not be saved.',error);}
@@ -11037,7 +11235,7 @@ async function initialize() {
             if (controlCenterOpen()) return;
             closeInterface();
         });
-        console.info('[RoleForge] Role-play interface v0.68.5 loaded.');
+        console.info('[RoleForge] Role-play interface v0.69.0 loaded.');
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);
@@ -11054,3 +11252,10 @@ if(BLOCKED_HOST){
 } else {
     void initialize();
 }
+
+// Read-only diagnostics for reproducible archive performance checks.
+function archiveDiagnostics(){
+    const context=SillyTavern.getContext(),catalog=characterNpcCatalog(),state=getState();
+    return {owner:characterOwner(context)?.key||'',external:Boolean(catalog.external),revision:catalog.revision,npcBodies:catalog.size,versions:catalog.summaries.reduce((n,p)=>n+(p.versions?.length||0),0),normalized:catalog.normalizedCount,cached:catalog.cachedCount??catalog.normalizedCount,runtimeIds:state.npcs.filter(n=>n.npcScope==='character').map(n=>n.id),runtimeCount:state.npcs.length,storedBytes:new TextEncoder().encode(JSON.stringify(storedNpcState(state))).length,lore:characterLoreSummaries().length,error:referenceFailures.get(context.chatMetadata)||''};
+}
+export {archiveDiagnostics,prepareNpcReferences};

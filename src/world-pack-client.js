@@ -1,0 +1,83 @@
+import {WORLD_REF_FIELD,worldRef,worldKey} from './world-pack-core.js?v=0.69.0';
+import {freezeArchiveRecord} from './archive-cache.js?v=0.69.0';
+import {readCharacterExtension} from './character-archive.js?v=0.69.0';
+
+export function createWorldPackClient({normalizeNpc=value=>value,onProgress=()=>{}}={}) {
+    let worker,sequence=0;const pending=new Map(),catalogs=new Map(),opens=new Map();
+    function rpc(action,payload,progress=onProgress){
+        if(!worker){worker=new Worker(new URL('./world-pack-worker.js?v=0.69.0',import.meta.url),{type:'module'});
+            worker.onmessage=({data})=>{const job=pending.get(data.id);if(!job)return;if(data.progress){job.progress(data.progress);return;}pending.delete(data.id);data.error?job.reject(Object.assign(Error(data.error.message),{name:data.error.name})):job.resolve(data.result);};
+            worker.onerror=event=>{const error=Error(event.message||'World Pack Worker could not start');for(const job of pending.values())job.reject(error);pending.clear();catalogs.clear();opens.clear();worker.terminate();worker=null;};}
+        const id=++sequence,promise=new Promise((resolve,reject)=>{pending.set(id,{resolve,reject,progress});worker.postMessage({id,action,payload});});
+        promise.cancel=()=>worker?.postMessage({action:'cancel',payload:{id}});return promise;
+    }
+    function install(view,owner){
+        const existing=catalogs.get(owner),same=existing?.sessionId===view.sessionId&&existing.revision===view.revision;
+        if(same)return existing;
+        const details=new Map(),raws=new Map(),summaries=Object.freeze(view.npcs.map(value=>freezeArchiveRecord({...value,npcScope:'character',npcOwner:owner}))),summaryById=new Map(summaries.map(v=>[v.id,v]));
+        let normalized=0,pinned=new Set();
+        const catalog={owner,kind:'npcs',external:true,sessionId:view.sessionId,revision:view.revision,ref:view.ref,
+            summaries,ids:Object.freeze(summaries.map(v=>v.id)),loreSummaries:freezeArchiveRecord(view.lore),preparedLore:Object.freeze([]),
+            get size(){return summaries.length;},get normalizedCount(){return normalized;},get cachedCount(){return details.size;},
+            has:id=>summaryById.has(id),summary:id=>summaryById.get(id),raw:id=>raws.get(id),get:id=>details.get(id)||null,
+            getMany(ids){return ids.map(id=>this.get(id)).filter(Boolean);},all(){return this.getMany(this.ids);},
+            async load(ids,{pin=false}={}){
+                const requested=[...new Set(ids)].filter(id=>this.has(id));if(pin)pinned=new Set(requested);
+                const missing=requested.filter(id=>!details.has(id));
+                for(let start=0;start<missing.length;start+=16){const rows=await rpc('records',{sessionId:this.sessionId,ids:missing.slice(start,start+16)});
+                    for(const raw of rows.filter(Boolean)){raws.set(raw.id,freezeArchiveRecord(raw));details.set(raw.id,freezeArchiveRecord(normalizeNpc(raw,owner)));normalized++;}}
+                // Bounded cache, but never evict the runtime cast while a sync
+                // state reader still needs its baseline for chat deltas.
+                for(const id of details.keys())if(details.size>48&&!pinned.has(id)&&!requested.includes(id)){details.delete(id);raws.delete(id);}
+                return this.getMany(requested);
+            },
+            async lore(query,options){const rows=await rpc('lore',{sessionId:this.sessionId,query,options});this.preparedLore=freezeArchiveRecord(rows);return rows;},
+            loreRecord:id=>rpc('loreRecord',{sessionId:view.sessionId,id}),
+            supplements:options=>rpc('supplements',{sessionId:view.sessionId,...options}),
+            async save(kind,entries){const result=await rpc('edit',{sessionId:this.sessionId,kind,entries});return install(result,owner);},
+            export:()=>rpc('export',{sessionId:view.sessionId}),
+        };catalogs.set(owner,catalog);return catalog;
+    }
+    return {rpc,peek(owner,ref){const value=catalogs.get(owner);return value&&(!ref||worldKey(value.ref)===worldKey(ref))?value:null;},
+        async open(owner,ref){const current=this.peek(owner,ref);if(current)return current;const key=owner+'\u0000'+worldKey(ref);if(!opens.has(key)){const task=rpc('open',{owner,ref}).then(view=>install(view,owner)).finally(()=>opens.delete(key));opens.set(key,task);}return opens.get(key);},
+        import:(source,progress)=>rpc('import',source,progress),list:()=>rpc('list',{}),
+        dispose(){worker?.terminate();worker=null;for(const job of pending.values())job.reject(Error('World Pack closed'));pending.clear();catalogs.clear();opens.clear();},
+    };
+}
+export function characterWorldRef(context,owner){
+    return worldRef(readCharacterExtension(context,owner,WORLD_REF_FIELD));
+}
+
+// Keep controls in SillyTavern’s native drawer style.
+export function mountWorldPackControls(root,api){
+    const text=(th,en)=>api.language()==='th'?th:en,node=(tag,value='')=>{const n=document.createElement(tag);n.textContent=value;return n;};
+    let busy=false,job=null,downloadOwner='';const downloadUrls=[];
+    const heading=node('h4',text('World Pack · คลังข้อมูลขนาดใหญ่','World Pack · reference library')),
+        note=node('p',text('คลังเก็บในเบราว์เซอร์นี้ ใช้ Export สำรองก่อนย้ายเครื่องหรือล้างข้อมูล ส่วนการ์ดเก็บรหัสอ้างอิงคลัง','Libraries are stored in this browser. Export a backup before moving devices or clearing storage. Cards carry an archive reference.')),
+        status=node('p'),actions=node('div'),downloads=node('div'),file=node('input'),folder=node('input'),progress=node('progress'),cancel=node('button',text('ยกเลิก','Cancel'));
+    status.setAttribute('role','status');note.className='notes';file.type=folder.type='file';file.accept='.zip';file.hidden=folder.hidden=true;folder.multiple=true;folder.setAttribute('webkitdirectory','');progress.hidden=cancel.hidden=true;
+    const button=(th,en,fn)=>{const b=node('button',text(th,en));b.type='button';b.className='menu_button';b.addEventListener('click',fn);actions.append(b);return b;};
+    function clearDownloads(){for(const url of downloadUrls)URL.revokeObjectURL(url);downloadUrls.length=0;downloads.replaceChildren();downloads.hidden=true;downloadOwner='';}
+    async function act(fn){if(busy)return;clearDownloads();busy=true;root.dataset.busy='true';actions.inert=true;progress.hidden=false;progress.removeAttribute('value');cancel.hidden=true;try{const message=await fn();status.textContent=typeof message==='string'?message:text('คลังพร้อมใช้งาน','Library ready');}catch(e){status.textContent=e.message;}finally{job=null;busy=false;root.dataset.busy='false';actions.inert=false;cancel.hidden=progress.hidden=true;}}
+    const report=value=>{progress.max=value.total||1;progress.value=value.done||0;status.textContent=text('ตรวจและบันทึกคลัง','Validating and storing archive')+` · ${value.done}/${value.total}`;};
+    const matchLabel=node('label'),match=node('input');match.type='checkbox';match.checked=true;matchLabel.append(match,document.createTextNode(text('ตรวจให้ตรงกับคลังที่การ์ดระบุ (ปิดเมื่อนำเข้า Backup ที่แก้ไขแล้ว)','Match the card’s pinned archive (turn off for an edited backup)')));root.append(matchLabel);
+    const importFiles=(files,isFolder)=>act(async()=>{const ticket=api.ticket(),expected=match.checked?api.ref():null;job=api.client.import(isFolder?{files:[...files].map(file=>({file,path:file.webkitRelativePath||file.name})),expected}:{zip:files[0],expected},report);cancel.hidden=false;const result=await job;cancel.hidden=true;await api.attach(result.ref,ticket);});
+    file.addEventListener('change',()=>{if(file.files.length)void importFiles(file.files,false);file.value='';});folder.addEventListener('change',()=>{if(folder.files.length)void importFiles(folder.files,true);folder.value='';});
+    button('Import World Pack ZIP','Import World Pack ZIP',()=>file.click());button('Import โฟลเดอร์','Import folder',()=>folder.click());
+    button('ย้ายคลังฝังในการ์ดไป World Pack','Move embedded archive to World Pack',()=>void act(async()=>{const ticket=api.ticket();if(!ticket.owner)throw Error('Open a character card first.');
+        job=api.client.rpc('externalize',{avatar:ticket.owner.slice(5),headers:ticket.context.getRequestHeaders()},report);cancel.hidden=false;const result=await job;cancel.hidden=true;await api.attach(result.ref,ticket,{clearEmbedded:true,sourceHash:result.sourceHash});}));
+    const download=(blob,name,label)=>{const url=URL.createObjectURL(blob),a=node('a',label);downloadUrls.push(url);a.href=url;a.download=name;a.className='menu_button';downloads.append(a);downloads.hidden=false;};
+    button('Export / Backup','Export / Backup',()=>void act(async()=>{const ticket=api.ticket(),catalog=await api.current(),result=await catalog.export();
+        if(!api.valid(ticket))throw Error(text('การ์ดเปลี่ยนแล้ว กรุณาสำรองจากการ์ดที่ต้องการอีกครั้ง','Card changed. Prepare the backup again from the intended card.'));
+        // Safari requires a fresh user gesture after the Worker finishes. Keep
+        // real links available instead of two delayed programmatic downloads.
+        downloadOwner=ticket.owner;download(result.blob,`${result.ref.archiveId}-backup.zip`,text('ดาวน์โหลด World Pack ZIP','Download World Pack ZIP'));
+        download(new Blob([JSON.stringify(result.ref,null,2)],{type:'application/json'}),'roleforge-world-reference.json',text('ดาวน์โหลด reference JSON','Download reference JSON'));
+        return text('เตรียมสำรองแล้ว · กดดาวน์โหลด ZIP ด้านล่าง ไฟล์ reference ใช้กับแพ็กสำรองนี้','Backup prepared. Download the ZIP below; the reference JSON belongs to this backup.');}));
+    const libraries=node('select');libraries.className='text_pole';actions.append(libraries);
+    button('ดูคลังที่ติดตั้ง','Refresh installed libraries',()=>void act(async()=>{libraries.replaceChildren();for(const row of await api.client.list()){const option=node('option',`${row.ref.archiveId} · ${row.ref.revision}`);option.value=JSON.stringify(row.ref);libraries.append(option);}}));
+    button('เชื่อมคลังที่เลือก','Link selected library',()=>void act(async()=>{if(!libraries.value)throw Error(text('เลือกคลังก่อน','Choose a library first'));await api.attach(JSON.parse(libraries.value),api.ticket());}));
+    cancel.type='button';cancel.className='menu_button';cancel.addEventListener('click',()=>job?.cancel());
+    clearDownloads();root.dataset.busy='false';root.replaceChildren(heading,note,status,matchLabel,actions,downloads,progress,cancel,file,folder);
+    return {update(){if(downloadOwner&&downloadOwner!==api.owner())clearDownloads();if(!busy){const ref=api.ref();status.textContent=ref?`${ref.archiveId} · ${ref.revision} · ${api.client.peek(api.owner(),ref)?text('พร้อมใช้','ready'):text('ยังไม่โหลด · Import/เชื่อมคลังในเบราว์เซอร์นี้','not loaded · import/link the archive in this browser')}`:text('การ์ดนี้ใช้คลังฝังในการ์ด','This card uses an embedded archive');}}};
+}

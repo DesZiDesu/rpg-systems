@@ -1,8 +1,8 @@
-import {validatePowerConfig} from './power-presets.js?v=0.68.5';
-import {validateForgePreset} from './forge-presets.js?v=0.68.5';
-import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.68.5';
-import {validatePresetConfig} from './world-presets.js?v=0.68.5';
-import {assertNpcCapacity} from './npc-capacity.js?v=0.68.5';
+import {validatePowerConfig} from './power-presets.js?v=0.69.0';
+import {validateForgePreset} from './forge-presets.js?v=0.69.0';
+import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.69.0';
+import {validatePresetConfig} from './world-presets.js?v=0.69.0';
+import {assertNpcCapacity} from './npc-capacity.js?v=0.69.0';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the
@@ -14,6 +14,8 @@ export const ARCHIVE_FIELDS = Object.freeze({
 const LEGACY_FIELDS = Object.freeze({npcs:'npcCharacterLibraries',lore:'loreCharacterLibraries'});
 const writes = new Map();
 const packs = new WeakMap();
+const cardJsons = new WeakMap();
+const EMPTY_ARCHIVE=Object.freeze([]);
 export const CHARACTER_PACK_FIELD = 'roleforge_character_pack';
 export const characterArchiveBusy = owner => writes.has(owner);
 const STATE_LIMIT = 1024 * 1024;
@@ -35,7 +37,18 @@ function replacementUpdate(previous, next) {
 function cardFor(context, owner) {
     if (!owner?.startsWith('card:')) return null;
     const avatar = owner.slice(5);
+    const current=context.characters?.[context.characterId??context.chid];
+    if(current?.avatar===avatar)return current;
     return context.characters?.find(card => card?.avatar === avatar) || null;
+}
+
+function parsedCardJson(card) {
+    const source=card?.json_data;
+    if(typeof source!=='string')return null;
+    const cached=cardJsons.get(card);
+    if(cached?.source===source)return cached.value;
+    let value=null;try{value=JSON.parse(source);}catch{}
+    cardJsons.set(card,{source,value});return value;
 }
 
 function cardArchive(card, kind) {
@@ -43,7 +56,7 @@ function cardArchive(card, kind) {
     if (!field || !card) return null;
     let archive = card.data?.extensions?.[field];
     if (!Array.isArray(archive) && typeof card.json_data === 'string') {
-        try { archive = JSON.parse(card.json_data)?.data?.extensions?.[field]; }
+        try { archive = parsedCardJson(card)?.data?.extensions?.[field]; }
         catch { /* An unparsed card cannot replace the intact legacy archive. */ }
     }
     return Array.isArray(archive) ? archive : null;
@@ -53,7 +66,10 @@ export function readCharacterArchive(context, settings, owner, kind) {
     const stored = cardArchive(cardFor(context, owner), kind);
     if (stored) return stored;
     const legacy = settings?.[LEGACY_FIELDS[kind]]?.[owner];
-    return Array.isArray(legacy) ? legacy : [];
+    return Array.isArray(legacy) ? legacy : EMPTY_ARCHIVE;
+}
+export function readCharacterExtension(context,owner,field){
+    const card=cardFor(context,owner);return card?.data?.extensions?.[field]??parsedCardJson(card)?.data?.extensions?.[field];
 }
 
 function packDefaults(raw) {
@@ -82,7 +98,7 @@ export function readCharacterPack(context, owner) {
     if(cached&&cached.raw===raw&&cached.json===card.json_data)return cached.value;
     let source=raw;
     if(source===undefined&&typeof card.json_data==='string') {
-        try {source=JSON.parse(card.json_data)?.data?.extensions?.[CHARACTER_PACK_FIELD];} catch {}
+        try {source=parsedCardJson(card)?.data?.extensions?.[CHARACTER_PACK_FIELD];} catch {}
     }
     const value=packDefaults(source);packs.set(card,{raw,json:card.json_data,value});return value;
 }
@@ -159,6 +175,14 @@ function queueCardWrite(owner, operation) {
     return result;
 }
 
+// Called only after the Worker has durably committed a complete archive.
+// Embedded data is retained unless the caller explicitly migrates it.
+export function writeCharacterWorldReference(context,owner,ref,{clearEmbedded=false}={}) {
+    const fields={roleforge_world_archive:ref};
+    if(clearEmbedded)Object.assign(fields,{[ARCHIVE_FIELDS.npcs]:[],[ARCHIVE_FIELDS.lore]:[]});
+    return queueCardWrite(owner,()=>saveCardExtensions(context,owner,fields));
+}
+
 export async function writeCharacterArchive(context, settings, owner, kind, records, {migration = false} = {}) {
     const field = ARCHIVE_FIELDS[kind];
     if (!field || !Array.isArray(records)) throw Error('Invalid character archive');
@@ -211,6 +235,7 @@ export async function migrateCharacterArchives(context, settings) {
         if (!legacy || typeof legacy !== 'object') continue;
         for (const [owner, records] of Object.entries(legacy)) {
             if (!cardFor(context, owner)) continue; // Preserve data for cards not loaded here.
+            if(readCharacterExtension(context,owner,'roleforge_world_archive'))continue; // External readiness is checked separately; retain legacy fallback data.
             try {
                 if (cardArchive(cardFor(context, owner), kind) || Array.isArray(records) && !records.length) {
                     cleaned = clearLegacy(context, settings, owner, kind, false) || cleaned;

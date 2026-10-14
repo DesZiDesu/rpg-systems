@@ -1,4 +1,4 @@
-import {uiText} from './ui-language.js?v=0.68.5';
+import {uiText} from './ui-language.js?v=0.69.0';
 
 // Character-owned reference data. AI output cannot write to this archive.
 // A zero entry limit means unlimited storage. Context budgets are separate.
@@ -27,6 +27,7 @@ export function writeLoreOptions(settings, options, expectedOwner, currentOwner)
 }
 const STOP = new Set(['about','after','before','with','from','into','their','there','this','that','have','been','would','could','where','while','the','and','for','are','you','your','was','were','คือ','และ','ของ','เป็น','ใน','ที่','จาก','ให้','แล้ว','ด้วย','เมื่อ','หรือ','ได้','เขา','เธอ','มัน','ฉัน','นี้','นั้น']);
 const SEGMENTER = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter(undefined, {granularity:'word'}) : null;
+const preparedArchives=new WeakSet(),preparedSources=new WeakMap(),searchIndexes=new WeakMap();
 function terms(value) {
     const source = String(value).normalize('NFKC').toLocaleLowerCase();
     const parts = SEGMENTER ? [...SEGMENTER.segment(source)].filter(part => part.isWordLike).map(part => part.segment)
@@ -38,15 +39,17 @@ export function selectLore(entries, options = {}, query = '') {
     const search = String(query).normalize('NFKC').toLocaleLowerCase();
     const queryTerms = mode === 'relevant' ? new Set(terms(search)) : new Set();
     const contentQueries = [...queryTerms].filter(term => term.length >= 4 || /\p{Script=Thai}/u.test(term));
-    const candidates = loreEntries(entries).filter(item => item.enabled && item.content.trim()).map(item => {
+    const candidates = (preparedArchives.has(entries)?entries:loreEntries(entries)).filter(item => item.enabled && item.content.trim()).map(item => {
         if (mode !== 'relevant' || item.always || !queryTerms.size) return {item,score:0};
-        const keys = [item.title,...item.keywords];
-        const explicit = keys.filter(key => key.length >= 2 && search.includes(key.normalize('NFKC').toLocaleLowerCase())).length;
-        const headline = terms(item.title).filter(term => queryTerms.has(term) && term.length >= 3).length;
-        const content = item.content.slice(0, 4000).normalize('NFKC').toLocaleLowerCase();
+        let index=searchIndexes.get(item);
+        if(!index){index={keys:[item.title,...item.keywords].map(key=>key.normalize('NFKC').toLocaleLowerCase()),
+            headline:terms(item.title),content:item.content.slice(0,4000).normalize('NFKC').toLocaleLowerCase(),contentTerms:null};searchIndexes.set(item,index);}
+        const explicit = index.keys.filter(key => key.length >= 2 && search.includes(key)).length;
+        const headline = index.headline.filter(term => queryTerms.has(term) && term.length >= 3).length;
+        const content = index.content;
         // A substring precheck only skips impossible matches. Positive cases
         // still use word boundaries, so "wind" cannot match "window".
-        const contentTerms = contentQueries.some(term => content.includes(term)) ? terms(content) : [];
+        const contentTerms = contentQueries.some(term => content.includes(term)) ? (index.contentTerms||=terms(content)) : [];
         const overlap = contentTerms.filter(term => queryTerms.has(term) && (term.length >= 4 || /\p{Script=Thai}/u.test(term))).length;
         // A single long distinctive term or two shorter terms can identify a record.
         const evidence = overlap >= 2 || contentTerms.some(term => term.length >= 5 && queryTerms.has(term)) ? overlap : 0;
@@ -75,6 +78,16 @@ export function loreEntries(value) {
             keywords: (Array.isArray(item.keywords) ? item.keywords : []).filter(v => typeof v === 'string').map(v => v.trim().slice(0,120)).filter(Boolean).slice(0,30),
             always: item.always === true,
         }));
+}
+// Only explicit, immutable archive snapshots opt into the identity cache.
+// Mutable callers of loreEntries/selectLore retain their historical behavior.
+export function prepareLoreArchive(source) {
+    if(!Array.isArray(source))return [];
+    if(preparedArchives.has(source))return source;
+    if(preparedSources.has(source))return preparedSources.get(source);
+    const entries=loreEntries(source);
+    for(const entry of entries){Object.freeze(entry.keywords);Object.freeze(entry);}
+    Object.freeze(entries);preparedArchives.add(entries);preparedSources.set(source,entries);return entries;
 }
 export function characterLore(settings, owner) {
     return owner && Object.hasOwn(settings.loreCharacterLibraries || {}, owner)
