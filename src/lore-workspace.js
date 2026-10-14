@@ -1,8 +1,8 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.68.4';
-import { element } from './npc-chat.js?v=0.68.4';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.68.4';
-import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.68.4';
-import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.68.4';
+import {uiText,uiMarkup} from './ui-language.js?v=0.68.5';
+import { element } from './npc-chat.js?v=0.68.5';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.68.5';
+import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.68.5';
+import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.68.5';
 
 export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
     let owner = '', dirty = false, query = '', editing = null, saving = false, session=0, preferencesOpen=false, undo=[],renderList=null;
@@ -115,7 +115,7 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
         const transferHelp=element('details','trpg-lore-transfer-help');transferHelp.append(element('summary','',uiText('About Lore import / export')),element('p','trpg-muted',uiText("Import/Export ไฟล์ Lore JSON · นำเข้าแบบเพิ่มรวมและข้ามรายการที่เหมือนกันทุกช่อง · เก็บชื่อ เนื้อหา คำค้น เปิด/ปิด และการตรึง · งบและโหมดของการ์ดนี้ไม่เปลี่ยน")));
         optionsPanel.append(exportParts,transferHelp);
         const pager=element('div','trpg-pagination');pager.setAttribute('data-lore-pagination','');
-        const archiveTools=createArchiveTools(browser,{refresh:renderRows,change:setEnabled,undo:restoreEnabled,remove:deleteEntries,pager});panel.append(archiveTools.root);
+        const archiveTools=createArchiveTools(browser,{refresh:renderRows,change:setEnabled,undo:restoreEnabled,remove:deleteEntries,eventRoot:panel.closest('dialog')||panel,pager});panel.append(archiveTools.root);
         const heading=element('div','trpg-list-heading'),total=element('span');heading.append(element('span','',uiText('LORE RECORDS')),total);
         const rows=element('div','trpg-lore-rows'),scroller=element('div','trpg-archive-scroll');scroller.setAttribute('data-lore-scroll','');scroller.append(heading,rows);panel.append(scroller,archiveTools.dock);
         function renderRows({resetScroll=false}={}){rows.replaceChildren();const current=entries(),view=browser.view(current);archiveTools.update(view,{busy:saving,canUndo:undo.length>0});total.textContent=uiText('{0} / {1} entries',[view.filtered.length,current.length]);

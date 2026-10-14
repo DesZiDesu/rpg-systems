@@ -1,0 +1,220 @@
+{
+  "release": "0.68.5",
+  "testedAt": "2026-10-14T03:13:26.840Z",
+  "cases": [
+    {
+      "engine": "webkit",
+      "width": 390,
+      "input": "touchscreen tap",
+      "outcomes": [
+        {
+          "kind": "npc",
+          "initialRecords": 500,
+          "selectPage": 20,
+          "crossPage": 21,
+          "selectAll": 500,
+          "clear": true,
+          "disableAndUndo": true,
+          "filteredSelection": true,
+          "cancelledDeleteKeptData": true,
+          "confirmedDelete": 1,
+          "outsideDismiss": true,
+          "keyboardFocus": true,
+          "unassignedFocusLoss": true,
+          "mobileFocusPolicy": "native blur() with null relatedTarget, then touchscreen tap",
+          "fit": {
+            "width": 390,
+            "scrollWidth": 390
+          }
+        },
+        {
+          "kind": "lore",
+          "initialRecords": 4019,
+          "selectPage": 20,
+          "crossPage": 21,
+          "selectAll": 4019,
+          "clear": true,
+          "disableAndUndo": true,
+          "filteredSelection": true,
+          "cancelledDeleteKeptData": true,
+          "confirmedDelete": 1,
+          "outsideDismiss": true,
+          "keyboardFocus": true,
+          "unassignedFocusLoss": true,
+          "mobileFocusPolicy": "native blur() with null relatedTarget, then touchscreen tap",
+          "fit": {
+            "width": 390,
+            "scrollWidth": 390
+          }
+        }
+      ],
+      "realServerReload": true
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "input": "touchscreen tap",
+      "outcomes": [
+        {
+          "kind": "npc",
+          "initialRecords": 500,
+          "selectPage": 20,
+          "crossPage": 21,
+          "selectAll": 500,
+          "clear": true,
+          "disableAndUndo": true,
+          "filteredSelection": true,
+          "cancelledDeleteKeptData": true,
+          "confirmedDelete": 1,
+          "outsideDismiss": true,
+          "keyboardFocus": true,
+          "unassignedFocusLoss": true,
+          "mobileFocusPolicy": "native blur() with null relatedTarget, then touchscreen tap",
+          "fit": {
+            "width": 390,
+            "scrollWidth": 390
+          }
+        },
+        {
+          "kind": "lore",
+          "initialRecords": 4019,
+          "selectPage": 20,
+          "crossPage": 21,
+          "selectAll": 4019,
+          "clear": true,
+          "disableAndUndo": true,
+          "filteredSelection": true,
+          "cancelledDeleteKeptData": true,
+          "confirmedDelete": 1,
+          "outsideDismiss": true,
+          "keyboardFocus": true,
+          "unassignedFocusLoss": true,
+          "mobileFocusPolicy": "native blur() with null relatedTarget, then touchscreen tap",
+          "fit": {
+            "width": 390,
+            "scrollWidth": 390
+          }
+        }
+      ],
+      "realServerReload": true
+    },
+    {
+      "engine": "chromium",
+      "width": 1440,
+      "input": "mouse click",
+      "outcomes": [
+        {
+          "kind": "npc",
+          "initialRecords": 500,
+          "selectPage": 20,
+          "crossPage": 21,
+          "selectAll": 500,
+          "clear": true,
+          "disableAndUndo": true,
+          "filteredSelection": true,
+          "cancelledDeleteKeptData": true,
+          "confirmedDelete": 1,
+          "outsideDismiss": true,
+          "keyboardFocus": true,
+          "unassignedFocusLoss": false,
+          "mobileFocusPolicy": null,
+          "fit": {
+            "width": 1178,
+            "scrollWidth": 1178
+          }
+        },
+        {
+          "kind": "lore",
+          "initialRecords": 4019,
+          "selectPage": 20,
+          "crossPage": 21,
+          "selectAll": 4019,
+          "clear": true,
+          "disableAndUndo": true,
+          "filteredSelection": true,
+          "cancelledDeleteKeptData": true,
+          "confirmedDelete": 1,
+          "outsideDismiss": true,
+          "keyboardFocus": true,
+          "unassignedFocusLoss": false,
+          "mobileFocusPolicy": null,
+          "fit": {
+            "width": 1178,
+            "scrollWidth": 1178
+          }
+        }
+      ],
+      "realServerReload": true
+    }
+  ],
+  "pageErrors": [],
+  "generationRequests": [],
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "success": true,
+  "checkedAt": "2026-10-14T03:17:58.288663+00:00",
+  "baseCommit": "1e8ad1e2a919843a8a8cb2eab4cc755b64987b5a",
+  "reproduction": {
+    "release": "0.68.4",
+    "input": "Native summary.blur() produces focusout with null relatedTarget before a touchscreen choice",
+    "expectedFailure": "Unassigned focus loss must not close the menu before a touch choice.\n\nfalse !== true\n",
+    "result": "Menu closes prematurely; selecting remains at 0",
+    "details": "docs/previews/archive-menu-fix/before-reproduction.json"
+  },
+  "unitHostTests": {
+    "command": "npm test",
+    "passed": 1263,
+    "failed": 0,
+    "skipped": 0
+  },
+  "syntaxChecks": "npm run check and node --check tests/archive-menu.real.browser.mjs: passed",
+  "controlledBrowserRegressions": {
+    "archiveQol": {
+      "passed": true,
+      "widths": [
+        320,
+        390,
+        1280
+      ]
+    },
+    "archiveDelete": {
+      "passed": true,
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "includes": [
+        "cancel and failed-save retry",
+        "stale confirmations/responses",
+        "scope isolation",
+        "empty-page clamp",
+        "English and Thai"
+      ]
+    }
+  },
+  "limitations": [
+    "No physical iPhone; WebKit runs on Linux with a mobile viewport and touchscreen input",
+    "Linux WebKit button focus policy differs from iOS; native blur() explicitly reproduces a null-relatedTarget transition before touch activation",
+    "No live model generation; fixture cards use the real local SillyTavern frontend, card import, persistence and server reloads"
+  ],
+  "runtimeSha256": {
+    "index.js": "b1a6f702e836e2d5de88d5a059e59ac99cbab17adec1b9099f0e4eb719928edd",
+    "manifest.json": "5be29a3f3e29156f5327370782d5afaeb3e211e9560c20a3098c2b4faa834fa4",
+    "src/archive-browser.js": "9b5294cc67cc70530aea8cbac0ee24f70076a0a1491098cdf6cded90f5e61b42",
+    "src/npc-workspace.js": "2ecadd26b01ec06226c288f2535c915231215a73aeba08f9507a1b8187b435bd",
+    "src/lore-workspace.js": "3d375f8f7bc7f6c4bfa3f96757d93a6827569974b086e922bc9b94aa0fbbe3c1"
+  },
+  "screenshots": [
+    "docs/previews/archive-menu-fix/mobile-npc-selected.png",
+    "docs/previews/archive-menu-fix/mobile-lore-selected.png",
+    "docs/previews/archive-menu-fix/pc-npc-selected.png",
+    "docs/previews/archive-menu-fix/pc-lore-selected.png"
+  ]
+}

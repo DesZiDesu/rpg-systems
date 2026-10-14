@@ -1,5 +1,5 @@
-import {uiText} from './ui-language.js?v=0.68.4';
-import {element} from './npc-chat.js?v=0.68.4';
+import {uiText} from './ui-language.js?v=0.68.5';
+import {element} from './npc-chat.js?v=0.68.5';
 
 const enabledByDefault = item => item.enabled !== false;
 const normalize = value => String(value || '').normalize('NFKC').toLocaleLowerCase().trim();
@@ -67,7 +67,23 @@ export function removeArchiveEntries(all,ids) {
     return {entries,removed};
 }
 
-export function createArchiveTools(browser,{refresh,change,undo,remove,pager=element('div','trpg-pagination')}={}) {
+const selectionMenuRoots=new WeakSet();
+function watchSelectionMenus(eventRoot) {
+    if(selectionMenuRoots.has(eventRoot))return;
+    selectionMenuRoots.add(eventRoot);
+    // iOS may blur the summary without focusing a tapped button. Closing on
+    // focusout hides that button before its click. Observe actual outside
+    // interaction instead, once per manager (Lore rebuilds its tools on save).
+    const dismiss=event=>{
+        if(event.type==='focusin'&&event.target===eventRoot)return;
+        for(const menu of eventRoot.querySelectorAll('.trpg-archive-selection-menu[open]'))
+            if(!menu.contains(event.target))menu.open=false;
+    };
+    eventRoot.addEventListener('pointerdown',dismiss,true);
+    eventRoot.addEventListener('focusin',dismiss,true);
+}
+
+export function createArchiveTools(browser,{refresh,change,undo,remove,eventRoot,pager=element('div','trpg-pagination')}={}) {
     const root=element('div','trpg-archive-tools');
     const filters=element('div','trpg-archive-filters');filters.setAttribute('role','group');filters.setAttribute('aria-label',uiText('Filter by enabled state'));
     let current=null,blocked=false,undoInMenu=false;
@@ -91,7 +107,7 @@ export function createArchiveTools(browser,{refresh,change,undo,remove,pager=ele
     const clear=button('Clear selection','clear',()=>{browser.clear();finishChoice();});choices.append(selectPage,selectResults,clear);
     const deleteButton=button('Archive delete action','delete',()=>remove?.([...current.selected]));deleteButton.className='trpg-danger';deleteButton.hidden=typeof remove!=='function';choices.append(deleteButton);
     menu.addEventListener('keydown',event=>{if(event.key==='Escape'&&menu.open){event.preventDefault();event.stopPropagation();menu.open=false;summary.focus();}});
-    dock.addEventListener('focusout',event=>{if(!menu.contains?.(event.relatedTarget))menu.open=false;});
+    watchSelectionMenus(eventRoot||dock);
     const actions=element('div','trpg-archive-batch-actions');
     const enable=button('Enable selected','enable',()=>change(current.selected,true));
     const disable=button('Disable selected','disable',()=>change(current.selected,false));actions.append(enable,disable,menu);

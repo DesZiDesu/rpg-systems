@@ -1,0 +1,95 @@
+{
+  "release": "0.68.4",
+  "testedAt": "2026-10-14T03:08:35.341Z",
+  "cases": [],
+  "pageErrors": [],
+  "generationRequests": [],
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "failure": "Unassigned focus loss must not close the menu before a touch choice.\n\nfalse !== true\n",
+  "lastEvents": [
+    {
+      "type": "pointerdown",
+      "tag": "BUTTON",
+      "key": "archiveSelectMode",
+      "related": null,
+      "open": false
+    },
+    {
+      "type": "pointerup",
+      "tag": "BUTTON",
+      "key": "archiveSelectMode",
+      "related": null,
+      "open": false
+    },
+    {
+      "type": "focusout",
+      "tag": "BUTTON",
+      "key": "archiveOptionsToggle,lock",
+      "related": "BUTTON",
+      "open": false
+    },
+    {
+      "type": "focusin",
+      "tag": "BUTTON",
+      "key": "archiveSelectMode",
+      "related": "BUTTON",
+      "open": false
+    },
+    {
+      "type": "click",
+      "tag": "BUTTON",
+      "key": "archiveSelectMode",
+      "related": null,
+      "open": false
+    },
+    {
+      "type": "pointerdown",
+      "tag": "SUMMARY",
+      "key": "archiveSelectionMenu",
+      "related": null,
+      "open": false
+    },
+    {
+      "type": "pointerup",
+      "tag": "SUMMARY",
+      "key": "archiveSelectionMenu",
+      "related": null,
+      "open": false
+    },
+    {
+      "type": "focusout",
+      "tag": "BUTTON",
+      "key": "archiveSelectMode",
+      "related": "SUMMARY",
+      "open": false
+    },
+    {
+      "type": "focusin",
+      "tag": "SUMMARY",
+      "key": "archiveSelectionMenu",
+      "related": "BUTTON",
+      "open": false
+    },
+    {
+      "type": "click",
+      "tag": "SUMMARY",
+      "key": "archiveSelectionMenu",
+      "related": null,
+      "open": false
+    },
+    {
+      "type": "focusout",
+      "tag": "SUMMARY",
+      "key": "archiveSelectionMenu",
+      "related": null,
+      "open": true
+    }
+  ]
+}

@@ -6,8 +6,9 @@ import {characterLore,writeCharacterLore,loreOptions,writeLoreOptions} from '../
 import {exportLore} from '../src/lore-transfer.js';
 class Node {
  constructor(tag){this.tag=tag;this.children=[];this.listeners={};}
- append(...nodes){this.children.push(...nodes);}
- replaceChildren(...nodes){this.children=nodes;}
+ append(...nodes){this.children.push(...nodes);for(const node of nodes)node.parentElement=this;}
+ replaceChildren(...nodes){for(const child of this.children)child.parentElement=null;this.children=[];this.append(...nodes);}
+ closest(tag){for(let node=this;node;node=node.parentElement)if(node.tag===tag)return node;return null;}
  setAttribute(key,value){this[key]=value;}
  addEventListener(name,fn){(this.listeners[name]||=[]).push(fn);}
  fire(name){return Promise.all((this.listeners[name]||[]).map(fn=>fn({preventDefault(){}})));}

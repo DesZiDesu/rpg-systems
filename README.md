@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.68.4** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.68.5** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -23,6 +23,8 @@ Stats, currency, Power, Character Creation and presets have their own management
 **New in 0.68.2:** add any number of currency units per chat, with independent names, symbols, rates, colors and animated icon sets. Expand a unit to edit or remove it; search and 10-unit pages keep large schemes manageable. Wallets, group funds, transactions, quests, shops, auctions and refundable deposits use configured protocol IDs. Existing value and legacy 1–3-unit presets remain compatible; currency Import/Export and one-card setup retain every unit. [Thai tutorial](docs/currency-multi-unit-v0.68.2.th.md) · [Real SillyTavern mobile/desktop GIFs](docs/previews/currency-multi-unit/index.html).
 
 ## Character and Lore management
+
+**Fixed in 0.68.5:** NPC/Lore selection menus keep their choices available when a mobile tap blurs the menu without focusing a new control. Outside taps, keyboard navigation and Escape still dismiss the menu. One handler per manager also avoids accumulating listeners when Lore rebuilds its tools. [Fix and real application checks](docs/archive-menu-v0.68.5.th.md) · [Mobile / desktop results](docs/previews/archive-menu-fix/index.html).
 
 **New in 0.68.4:** Character storage defaults to **Unlimited entries**. In **NPC Management → ⋯ → Character capacity**, set an optional maximum for each Chat/Character library. The setting follows the current chat, reusable presets and one-card setup. Enabled and disabled records both count toward storage capacity. Lowering the limit keeps existing records readable/editable and blocks further growth; imports preserve disabled switches and archives beyond the former 200-record ceiling.
 
@@ -133,6 +135,8 @@ Report issues with your RoleForge version, SillyTavern version, browser, reprodu
 
 ## Development and validation
 
+Version **0.68.5** passed **1,263 unit/host tests**, syntax checks and archive QoL/deletion browser regressions. Real **SillyTavern 1.19.0** checks use WebKit touch at 390px and Chromium touch/mouse at 390/1440px, with 500 NPCs and 4,019 Lore entries. They cover native unassigned focus loss before a tap, page/all/filtered selection, cross-page selection, clearing, disable/Undo, cancellation/confirmation of deletion and actual server reloads. WebKit on Linux is supplemented with explicit native `blur()` to exercise iOS-style focus loss; a physical iPhone remains unverified. No provider generation requests are made. [Validation record](docs/validation-archive-menu-v0.68.5.json).
+
 Version **0.68.4** passed **1,263 unit/host tests**, syntax checks and preset regressions. Real **SillyTavern 1.19.0** checks at 390/1440px import 500 NPCs with 20 enabled, test finite/unlimited capacities, preserve records when lowering limits, edit over-limit archives, reload real server saves, isolate chats and export one-card setup. A 320px viewport checks settings fit. The real generation interceptor retrieves a mentioned disabled dossier without enabling it; these checks make no provider generation requests. [Validation record](docs/validation-npc-capacity-v0.68.4.json).
 
 Version **0.68.3** passed **1,253 unit/host tests**, syntax checks, preset regressions and the settings navigation suite. Real **SillyTavern 1.19.0** checks at 390/1440px verify default-on tracking with legacy off presets, global on/off persistence across cards and actual server reloads, unchanged RPG progress and separate world settings. These preference checks make no AI calls. [Validation record](docs/validation-tracking-global-v0.68.3.json).
@@ -187,6 +191,8 @@ Run `npm run test:lore-capacity` for large Lore libraries, capacity settings, ch
 Run `ST_REAL_URL=http://127.0.0.1:18174/ npm run test:npc-capacity:real` against a real, isolated SillyTavern test profile. It creates dummy cards and imports 500 test dossiers; it does not contact a text provider.
 
 Run `npm run test:archive-delete` for NPC/Lore batch deletion, cancellation, failed saves and storage/context guards.
+
+Run `ST_REAL_URL=http://127.0.0.1:18174/ npm run test:archive-menu:real` against a real, isolated SillyTavern test profile, with Playwright Chromium and WebKit available. It imports dummy cards with large archives and tests native touch, focus transitions, batch controls and server saves/reloads.
 
 Run `npm run test:themes` for chat designs and native settings. `npm run preview:chat-designs` rebuilds the production gallery, portable HTML and screenshots; this also needs `esbuild` alongside Playwright (`npm install --no-save --package-lock=false esbuild playwright`).
 
