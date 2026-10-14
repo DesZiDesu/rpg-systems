@@ -1,7 +1,8 @@
-import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.69.0';
-import {WORLD_LIMITS,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.69.0';
-import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.69.0';
-import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.69.0';
+import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.70.0';
+import {WORLD_LIMITS,WORLD_PAYLOAD_FIELD,WORLD_REF_FIELD,worldError,validateInlinePayload,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.70.0';
+import {decodeInlineFiles,encodeInlineFiles} from './world-pack-inline.js?v=0.70.0';
+import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.70.0';
+import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.70.0';
 
 const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true}),sessions=new Map(),cancelled=new Set();
 const request=request=>new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
@@ -37,7 +38,8 @@ function zipMembers(bytes){
         });
     }return members;
 }
-async function importSources({zip,files}){
+async function importSources({zip,files,inline,expected},id){
+    if(inline){if(!worldRef(expected))throw worldError('WORLD_PACK_INLINE_INVALID','An embedded archive requires its pinned reference');return decodeInlineFiles(inline,{check:()=>checkCancelled(id),progress:value=>progress(id,value.phase,value.done,value.total)});}
     if(zip){if(zip.size>WORLD_LIMITS.zip)throw Error('World Pack ZIP is too large');return zipMembers(new Uint8Array(await zip.arrayBuffer()));}
     if(!Array.isArray(files)||files.length>WORLD_LIMITS.files)throw Error('Select a World Pack ZIP or folder');
     const result=new Map();let total=0;
@@ -55,9 +57,11 @@ async function publish(stage,key,pack){
     return done;
 }
 async function importWorld(payload,id){
-    const members=await importSources(payload),manifests=[...members.keys()].filter(p=>p==='manifest.json'||p.endsWith('/manifest.json'));
+    checkCancelled(id);const members=await importSources(payload,id),manifests=[...members.keys()].filter(p=>p==='manifest.json'||p.endsWith('/manifest.json'));
     if(manifests.length!==1)throw Error('Select one World Pack containing manifest.json');
-    const path=manifests[0],prefix=path.slice(0,-'manifest.json'.length),manifestBytes=await members.get(path)(),manifest=validateWorldManifest(safeWorldJson(decoder.decode(manifestBytes)));
+    const path=manifests[0],prefix=path.slice(0,-'manifest.json'.length),manifestBytes=await members.get(path)();
+    if(manifestBytes.length>WORLD_LIMITS.record)throw Error('World Pack manifest size limit exceeded');
+    const manifest=validateWorldManifest(safeWorldJson(decoder.decode(manifestBytes)));
     const manifestSha256=await worldHash(manifestBytes),ref=worldRef({format:'roleforge-world-archive-ref',version:1,archiveId:manifest.archiveId,revision:manifest.revision,manifestPath:'manifest.json',manifestSha256,required:true,counts:manifest.counts}),key=worldKey(ref);
     if(payload.expected&&worldKey(worldRef(payload.expected))!==key)throw Error('World Pack does not match this card’s pinned archive revision/hash');
     const existing=Boolean((await read('packs',key))?.ready),stage=key+'#'+worldRandomId(),storageKey=existing?key:stage;
@@ -83,6 +87,7 @@ async function importWorld(payload,id){
             const selected=row.defaultVersionId??base.activeAlternateId??'';
             npcSummaries.push({...npcArchiveSummary({...base,activeAlternateId:selected,alternateProfiles:versions.has(selected)?[versions.get(selected)]:[]},row.id),
                 activeAlternateId:selected,versions:row.versions.map(v=>({id:v.id,label:v.label})),context:[row.sourceHint||''],_archiveSummary:true});
+            if(npcSummaries.length%16===0)progress(id,'index',npcSummaries.length,manifest.counts.npcBodies);
             if(row.supplementsPath){const supplement=await fileAt(storageKey,row.supplementsPath);if(supplement?.npcId!==row.id||!Array.isArray(supplement.abilities))throw Error('NPC supplement mismatch');
                 for(const a of supplement.abilities){const r=a.descriptionRef,fields=r?.versionId?versions.get(r.versionId)?.fields:null;if(r?.npcId!==row.id||r.versionId&&!fields||!(fields?.abilities??base.abilities??[]).some(p=>p.id===r.abilityId)||(a.versionIds||[]).some(v=>!versions.has(v)))throw Error('Unresolved ability supplement');}supplements+=supplement.abilities.length;
             }
@@ -94,10 +99,13 @@ async function importWorld(payload,id){
     }catch(error){if(!existing)await removeStaging(stage).catch(()=>{});throw error;}
 }
 async function openSession({ref:raw,owner}){
-    const ref=worldRef(raw),key=worldKey(ref),pack=await read('packs',key);if(!pack?.ready)throw Error('World Pack is missing in this browser. Import its ZIP/folder or restore a backup.');
+    const ref=worldRef(raw);if(!ref)throw worldError('WORLD_PACK_REFERENCE_INVALID','Invalid World Pack reference');
+    const key=worldKey(ref),pack=await read('packs',key);if(!pack)throw worldError('WORLD_PACK_MISSING','World Pack is missing in this browser. Use an embedded card or import its ZIP/folder.');
+    if(!pack.ready||worldKey(pack.ref)!==key||!pack.manifest)throw worldError('WORLD_PACK_STORAGE_INVALID','Stored World Pack is incomplete or invalid. Existing data was kept; restore a verified backup.');
     const sessionId=key+'\u0000'+owner;
     if(sessions.has(sessionId))return sessionView(sessions.get(sessionId));
     const npcIndex=await fileAt(key,pack.manifest.indexes.npcs),loreIndex=await fileAt(key,pack.manifest.indexes.lore),edits=new Map(await transaction('edits','readonly',s=>request(s.getAll(IDBKeyRange.bound([key,owner,''],[key,owner,'\uffff'])))));
+    if(!Array.isArray(npcIndex)||!Array.isArray(loreIndex))throw worldError('WORLD_PACK_STORAGE_INVALID','Stored World Pack indexes are missing. Existing data was kept; restore a verified backup.');
     const s={key,owner,sessionId,pack,npcIndex,loreIndex,edits,revision:0,npcs:[],lore:[],bodies:new Map()};
     const derived=new Map((pack.npcSummaries||[]).map(value=>[value.id,value]));
     for(const row of npcIndex){const edit=edits.get('npcs:'+row.id);if(edit?.deleted)continue;
@@ -132,10 +140,11 @@ async function editSession({sessionId,kind,entries},id){const s=sessions.get(ses
     if(kind==='npcs')s.npcs=[...summaries.values()];else{s.loreRaw=[...summaries.values()];s.lore=prepareLoreArchive(s.loreRaw);}
     s.revision++;return sessionView(s);
 }
-async function exportSession({sessionId}){const s=sessions.get(sessionId);if(!s)throw Error('Open a World Pack first');
+async function exportFiles({sessionId},id){const current=sessions.get(sessionId);if(!current)throw Error('Open a World Pack first');
+    const s={...current,edits:new Map(current.edits),npcs:[...current.npcs],loreRaw:[...current.loreRaw]};
     // Build a complete portable revision including this card’s explicit edits.
-    const payload={},npcIndex=[],loreIndex=[];
-    for(const row of s.npcs){const value=await body(s,row.id),{alternateProfiles,...base}=value,segment=encodeURIComponent(row.id).replaceAll('.','%2E'),basePath=`npcs/${segment}/base.json`,versions=[];
+    const payload=Object.create(null),npcIndex=[],loreIndex=[];
+    for(const row of s.npcs){checkCancelled(id);const value=await body(s,row.id),{alternateProfiles,...base}=value,segment=encodeURIComponent(row.id).replaceAll('.','%2E'),basePath=`npcs/${segment}/base.json`,versions=[];
         const original=s.npcIndex.find(n=>n.id===row.id),sourceBase=original?await fileAt(s.key,original.basePath):null;
         if(sourceBase&&Object.hasOwn(sourceBase,'alternateProfiles'))base.alternateProfiles=[];
         payload[basePath]=base;
@@ -147,11 +156,31 @@ async function exportSession({sessionId}){const s=sessions.get(sessionId);if(!s)
     }
     for(const row of s.loreRaw){const path=`lore/${encodeURIComponent(row.id).replaceAll('.','%2E')}.json`;worldPath(path);payload[path]=row;loreIndex.push({id:row.id,title:row.title,keywords:row.keywords,enabled:row.enabled,always:row.always,path});}
     payload['indexes/npcs.json']=npcIndex;payload['indexes/lore.json']=loreIndex;payload['presets.json']=await fileAt(s.key,s.pack.manifest.presets);
-    const files=[],zipped={};for(const [path,value]of Object.entries(payload)){const bytes=encoder.encode(JSON.stringify(value));files.push({path,bytes:bytes.length,sha256:await worldHash(bytes)});zipped[path]=bytes;}
-    const manifest={...s.pack.manifest,revision:s.pack.ref.revision+'-backup',files,counts:{...s.pack.manifest.counts,npcBodies:npcIndex.length,nativeVersions:npcIndex.reduce((n,r)=>n+r.versions.length,0),worldLore:loreIndex.length,abilitySupplements:Object.values(payload).filter(p=>p?.npcId&&Array.isArray(p.abilities)).reduce((n,p)=>n+p.abilities.length,0)}};
+    const files=[],zipped=Object.create(null);for(const [path,value]of Object.entries(payload)){const bytes=encoder.encode(JSON.stringify(value));files.push({path,bytes:bytes.length,sha256:await worldHash(bytes)});zipped[path]=bytes;}
+    const manifest={...s.pack.manifest,revision:s.pack.ref.revision.slice(0,60)+'-backup-'+Date.now().toString(36)+'-'+worldRandomId().slice(0,8),files,counts:{...s.pack.manifest.counts,npcBodies:npcIndex.length,nativeVersions:npcIndex.reduce((n,r)=>n+r.versions.length,0),worldLore:loreIndex.length,abilitySupplements:Object.values(payload).filter(p=>p?.npcId&&Array.isArray(p.abilities)).reduce((n,p)=>n+p.abilities.length,0)}};
     const bytes=encoder.encode(JSON.stringify(manifest));zipped['manifest.json']=bytes;
     const ref={...s.pack.ref,revision:manifest.revision,manifestSha256:await worldHash(bytes)};
-    return {blob:new Blob([zipSync(zipped,{level:6})],{type:'application/zip'}),ref};
+    if(current.revision!==s.revision)throw worldError('WORLD_PACK_CHANGED','Archive changed during export. Retry with the latest saved edits.');
+    checkCancelled(id);return {files:zipped,ref,sourceRevision:s.revision};
+}
+
+async function exportSession(payload,id){const {files,ref}=await exportFiles(payload,id);return {blob:new Blob([zipSync(files,{level:6})],{type:'application/zip'}),ref};}
+async function embedSession(payload,id){
+    const built=await exportFiles(payload,id),inline=await encodeInlineFiles(new Map(Object.entries(built.files)),{check:()=>checkCancelled(id),progress:value=>progress(id,value.phase,value.done,value.total)});
+    // Publish the new revision before changing the card. The previous revision
+    // and this card's edits remain untouched if storage or card saving fails.
+    const files=Object.entries(built.files).map(([path,bytes])=>({path,file:new Blob([bytes])}));
+    await importWorld({files,expected:built.ref},id);
+    if(sessions.get(payload.sessionId)?.revision!==built.sourceRevision)throw worldError('WORLD_PACK_CHANGED','Archive changed during embedding. Retry with the latest saved edits.');
+    return {ref:built.ref,payload:inline,sourceRevision:built.sourceRevision};
+}
+async function exportCard({avatar,headers,expected,compressedSha256}){
+    const response=await fetch('/api/characters/export',{method:'POST',headers,body:JSON.stringify({avatar_url:avatar,format:'json'})});
+    if(!response.ok)throw Error('Could not export the saved card (HTTP '+response.status+')');
+    const blob=await response.blob();if(blob.size>WORLD_LIMITS.total)throw Error('Character card exceeds export size limit');
+    const card=safeWorldJson(await blob.text()),ext=card.data?.extensions||{};
+    if(worldKey(worldRef(ext[WORLD_REF_FIELD])||{})!==worldKey(expected)||validateInlinePayload(ext[WORLD_PAYLOAD_FIELD]).compressedSha256!==compressedSha256)throw worldError('WORLD_PACK_CHANGED','Card changed during export. Prepare the self-contained card again.');
+    return {blob,name:String(card.data?.name||card.name||'RoleForge').replace(/[\\/:*?"<>|\x00-\x1f]/gu,'_')+'-self-contained.json'};
 }
 
 async function externalizeNative({avatar,headers},id){
@@ -162,7 +191,7 @@ async function externalizeNative({avatar,headers},id){
     if(extensions.roleforge_world_archive)throw Error('This card already references a World Pack. Import its original pack to preserve supplements.');
     const npcs=extensions.tretaresia_rpg_npcs||[],lore=extensions.tretaresia_rpg_lore||[];
     if(!Array.isArray(npcs)||!Array.isArray(lore)||!npcs.length&&!lore.length)throw Error('No embedded RoleForge archive to move');
-    const payload={},npcIndex=[],loreIndex=[],segment=id=>encodeURIComponent(id).replaceAll('.','%2E');let versions=0;
+    const payload=Object.create(null),npcIndex=[],loreIndex=[],segment=id=>encodeURIComponent(id).replaceAll('.','%2E');let versions=0;
     for(const npc of npcs){if(!npc?.id)throw Error('Save legacy NPC identities before moving this archive');const {alternateProfiles=[],...base}=npc,basePath=`npcs/${segment(npc.id)}/base.json`,list=[];payload[basePath]=base;
         for(const v of alternateProfiles){const path=`npcs/${segment(npc.id)}/versions/${segment(v.id)}.json`;payload[path]=v;list.push({id:v.id,label:v.label,path});versions++;}
         npcIndex.push({id:npc.id,name:npc.name,aliases:npc.aliases||[],identityColor:npc.identityColor,roleIcon:npc.roleIcon,basePath,defaultVersionId:npc.activeAlternateId||'',versions:list});
@@ -185,7 +214,7 @@ const actions={import:importWorld,externalize:externalizeNative,open:openSession
         return (supplement.abilities||[]).filter(a=>(a.versionIds||[]).includes(versionId)&&a.abilityId===abilityId)
             .filter(a=>!/atlasacademy|FGO|strengthStatus|Data unlock conditions/iu.test(a.additionalText)||/FGO|Grand Order/iu.test(version?.label||'')||/FGO|Grand Order|technical|simulation|ข้อมูลเกม|ข้อมูลอ้างอิง/iu.test(query))
             .slice(0,3).map(a=>({id:a.id,classification:a.classification,additionalText:a.additionalText,descriptionRef:a.descriptionRef,sourceRestriction:'Source-specific technical reference/citation only. A simulation duration or numeric unlock condition grants no in-story power, knowledge or unlock.'}));},
-    edit:editSession,export:exportSession,
+    edit:editSession,export:exportSession,embed:embedSession,exportCard,
     async list(){return transaction('packs','readonly',async s=>(await request(s.getAll())).filter(p=>p.ready).map(p=>({ref:p.ref,importedAt:p.importedAt})));},
 };
-self.onmessage=async({data:{id,action,payload}})=>{if(action==='cancel'){cancelled.add(payload.id);return;}try{const result=await actions[action](payload,id);postMessage({id,result});}catch(error){postMessage({id,error:{message:error.message,name:error.name}});}finally{cancelled.delete(id);}};
+self.onmessage=async({data:{id,action,payload}})=>{if(action==='cancel'){cancelled.add(payload.id);return;}try{const result=await actions[action](payload,id);postMessage({id,result});}catch(error){postMessage({id,error:{message:error.message,name:error.name,code:error.code}});}finally{cancelled.delete(id);}};

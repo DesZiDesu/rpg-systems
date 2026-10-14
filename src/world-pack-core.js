@@ -1,7 +1,16 @@
 // Portable contract validation. All paths are local archive members, never URLs.
 export const WORLD_REF_FIELD='roleforge_world_archive';
+export const WORLD_PAYLOAD_FIELD='roleforge_world_archive_payload';
 export const WORLD_LIMITS=Object.freeze({zip:64*1024*1024,total:256*1024*1024,record:4*1024*1024,files:50000});
 const forbidden=new Set(['__proto__','prototype','constructor']);
+export function worldError(code,message){return Object.assign(Error(message),{code});}
+// Cheap envelope checks only. Decoding, hashing and inflation belong in Worker.
+export function validateInlinePayload(raw){
+    if(!raw||raw.format!=='roleforge-inline-world-pack'||raw.version!==1||raw.encoding!=='gzip-base64')throw worldError('WORLD_PACK_INLINE_INVALID','Unsupported embedded World Pack payload');
+    if(!Number.isSafeInteger(raw.compressedBytes)||raw.compressedBytes<18||raw.compressedBytes>WORLD_LIMITS.zip||!Number.isSafeInteger(raw.uncompressedBytes)||raw.uncompressedBytes<1||raw.uncompressedBytes>WORLD_LIMITS.total)throw worldError('WORLD_PACK_INLINE_SIZE','Embedded World Pack size limit exceeded');
+    if(!/^[a-f0-9]{64}$/iu.test(raw.compressedSha256||'')||typeof raw.data!=='string'||raw.data.length!==Math.ceil(raw.compressedBytes/3)*4)throw worldError('WORLD_PACK_INLINE_INVALID','Invalid embedded World Pack hash or Base64 size');
+    return raw;
+}
 export function worldPath(value) {
     if(typeof value!=='string'||!value||value.length>500||value.startsWith('/')||value.includes('\\')||value.includes(':')||value.split('/').some(p=>!p||p==='.'||p==='..')||/[\x00-\x1f]/u.test(value))throw Error('Invalid World Pack path');
     return value;
@@ -12,7 +21,7 @@ export function safeWorldJson(text) {
 export async function worldHash(bytes,provider=globalThis.crypto){
     if(provider?.subtle)return Array.from(new Uint8Array(await provider.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');
     // Plain HTTP LAN addresses used by mobile clients lack crypto.subtle.
-    const {sha256}=await import('./vendor/js-sha256/index.js?v=0.69.0');return sha256(bytes);
+    const {sha256}=await import('./vendor/js-sha256/index.js?v=0.70.0');return sha256(bytes);
 }
 export function worldRandomId(provider=globalThis.crypto){
     if(provider?.randomUUID)return provider.randomUUID();

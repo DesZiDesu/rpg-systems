@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.69.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.70.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -12,7 +12,9 @@ The extension adds instructions for enabled systems to your existing text-genera
 
 **New in 0.69.0:** Management uses cached summary rows and loads dossiers when opened or relevant to the outgoing chat. Runtime state and new checkpoints store NPC changes separately from the reference archive. On-demand lookup preserves disabled/unmet state and manual version selection; unloaded records are never treated as deletions.
 
-For large worlds, import a **World Pack ZIP/folder** from **Presets & character cards → Character card**. A Worker validates hashes, indexes and complete versions before publishing the archive to browser-local IndexedDB. The card carries its pinned reference. Explicit migration can move an existing embedded library only after storage and card writes succeed. **Export / Backup** includes all versions, world Lore, supplements and this card's edits. A Core card alone does not transfer a browser-local library to another device. [Thai guide](docs/world-packs.th.md) · [Real application validation and screenshots](docs/world-packs-validation.th.md).
+**New in 0.70.0: self-contained World Pack cards.** Import one character card and open its chat: RoleForge automatically installs its embedded `gzip-base64` archive in a Worker, with progress and cancellation. Ready revisions are reused without decoding again. **Update embedded archive / Export self-contained card** includes this card's saved NPC/Lore edits and atomically saves a new pinned reference plus payload. The payload stays in the card for moving devices; previous installed revisions remain available. [Usage and authoring contract](docs/inline-world-packs.th.md).
+
+Reference-only cards and **World Pack ZIP/folder** import/export remain supported. A Worker validates hashes, indexes and all versions before publishing browser-local IndexedDB readiness. Explicit migration can move native embedded arrays only after storage and card writes succeed. **Export / Backup** includes all versions, Lore, supplements and card-specific edits. A reference-only Core card still requires its separate archive. [ZIP guide](docs/world-packs.th.md) · [0.69.0 validation](docs/world-packs-validation.th.md).
 
 ## Extension settings
 
@@ -140,6 +142,8 @@ Check the browser console for loading failures. To temporarily skip RoleForge st
 Report issues with your RoleForge version, SillyTavern version, browser, reproduction steps and panel diagnostic if available. Remove API keys and private chat details before posting to [GitHub Issues](https://github.com/DesZiDesu/rpg-systems/issues).
 
 ## Development and validation
+
+Version **0.70.0** passes **1,296 unit/host tests** and syntax checks. Real **SillyTavern 1.19.0** runs on Chromium and WebKit verify one-card automatic installation, waiting generation preparation, reload reuse without decoding, NPC/version/Lore edits, self-contained JSON transfer into empty browser contexts, swipe/rollback, owner switching, cancellation and injected storage/card-save failures using the supplied **800 NPC / 1,771 versions / 178 Lore / 4,329 supplements** Fate pack. Legacy ZIP and native-card migration checks also pass. No model/provider requests or physical iPhone tests. [Validation, changed files and limits](docs/inline-world-pack-validation.th.md) · [Screenshots](docs/previews/inline-world-packs-0700/index.html).
 
 Version **0.69.0** passes **1,287 unit/host tests** and syntax checks. Real **SillyTavern 1.19.0** checks on Chromium and WebKit use the supplied **800 NPC / 1,771-version** Fate archive, preserve all **178 world Lore / 4,329 supplements** in Worker backups and restore them in a clean browser profile. Checks cover bounded preparation, manual version selection, owner switching during retrieval, import cancellation, injected quota failure, native migration/save failure and the NPC/Lore bulk menus at mobile/desktop widths. These browser checks make no provider generation requests. [Validation and limits](docs/world-packs-validation.th.md).
 

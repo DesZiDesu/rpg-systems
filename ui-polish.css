@@ -1,5 +1,5 @@
 /* Compatibility entry for cached pre-0.41 loaders. Do not remove or relocate. */
-@import url("./styles/ui-polish.css?v=0.69.0");
+@import url("./styles/ui-polish.css?v=0.70.0");
 
 
 /* World Pack uses native drawer controls and follows the active ST theme. */
@@ -10,3 +10,7 @@
 #roleforge-world-pack select, #roleforge-world-pack progress { width: 100%; min-width: 0; max-width: 100%; }
 #roleforge-world-pack label { display: flex; align-items: flex-start; gap: 8px; margin-block: 10px; }
 #roleforge-world-pack p { overflow-wrap: anywhere; }
+#roleforge-inline-progress { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:8px 12px; color:var(--SmartThemeBodyColor); background:var(--SmartThemeBlurTintColor); font-size:0.85em; min-width:0; }
+#roleforge-inline-progress span { flex:1 1 220px; overflow-wrap:anywhere; }
+#roleforge-inline-progress progress { flex:1 1 100px; min-width:0; max-width:100%; }
+#roleforge-inline-progress .menu_button { margin:0; padding:4px 8px; width:auto; }

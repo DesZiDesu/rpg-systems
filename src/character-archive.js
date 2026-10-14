@@ -1,8 +1,9 @@
-import {validatePowerConfig} from './power-presets.js?v=0.69.0';
-import {validateForgePreset} from './forge-presets.js?v=0.69.0';
-import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.69.0';
-import {validatePresetConfig} from './world-presets.js?v=0.69.0';
-import {assertNpcCapacity} from './npc-capacity.js?v=0.69.0';
+import {validatePowerConfig} from './power-presets.js?v=0.70.0';
+import {validateForgePreset} from './forge-presets.js?v=0.70.0';
+import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.70.0';
+import {validatePresetConfig} from './world-presets.js?v=0.70.0';
+import {assertNpcCapacity} from './npc-capacity.js?v=0.70.0';
+import {WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD,worldRef,worldKey,validateInlinePayload} from './world-pack-core.js?v=0.70.0';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the
@@ -71,6 +72,7 @@ export function readCharacterArchive(context, settings, owner, kind) {
 export function readCharacterExtension(context,owner,field){
     const card=cardFor(context,owner);return card?.data?.extensions?.[field]??parsedCardJson(card)?.data?.extensions?.[field];
 }
+export const readCharacterWorldPayload=(context,owner)=>readCharacterExtension(context,owner,WORLD_PAYLOAD_FIELD);
 
 function packDefaults(raw) {
     if (!raw || raw.format !== 'roleforge-character-pack' || raw.version !== 1) return {};
@@ -119,6 +121,7 @@ async function saveCardExtensions(context, owner, fields) {
     let previous=card.data?.extensions?.[CHARACTER_PACK_FIELD];
     if(previous===undefined&&typeof card.json_data==='string')try{previous=JSON.parse(card.json_data)?.data?.extensions?.[CHARACTER_PACK_FIELD];}catch{}
     const update={...fields,[CHARACTER_PACK_FIELD]:replacementUpdate(previous,fields[CHARACTER_PACK_FIELD])};
+    for(const field of [WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD])if(Object.hasOwn(fields,field))update[field]=replacementUpdate(readCharacterExtension(context,owner,field),fields[field]);
     const response=await (context.fetch||fetch)('/api/characters/merge-attributes',{
         method:'POST',headers:context.getRequestHeaders(),body:JSON.stringify({avatar:card.avatar,data:{extensions:update}}),
     });
@@ -177,10 +180,19 @@ function queueCardWrite(owner, operation) {
 
 // Called only after the Worker has durably committed a complete archive.
 // Embedded data is retained unless the caller explicitly migrates it.
-export function writeCharacterWorldReference(context,owner,ref,{clearEmbedded=false}={}) {
-    const fields={roleforge_world_archive:ref};
+export function writeCharacterWorldReference(context,owner,raw,{clearEmbedded=false,payload,valid=()=>true}={}) {
+    const ref=worldRef(raw);if(!ref)throw Error('Invalid World Pack reference');
+    if(payload!==undefined)validateInlinePayload(payload);
+    const fields={[WORLD_REF_FIELD]:ref};
+    if(payload!==undefined)fields[WORLD_PAYLOAD_FIELD]=payload;
     if(clearEmbedded)Object.assign(fields,{[ARCHIVE_FIELDS.npcs]:[],[ARCHIVE_FIELDS.lore]:[]});
-    return queueCardWrite(owner,()=>saveCardExtensions(context,owner,fields));
+    return queueCardWrite(owner,()=>{
+        if(!valid())throw Error('Chat/card or archive changed before saving. Existing card data was kept.');
+        // A ZIP/link to another revision must not leave an unrelated payload
+        // pretending that the new reference is portable.
+        if(payload===undefined&&worldKey(readCharacterExtension(context,owner,WORLD_REF_FIELD)||{})!==worldKey(ref)&&readCharacterWorldPayload(context,owner))fields[WORLD_PAYLOAD_FIELD]=null;
+        return saveCardExtensions(context,owner,fields);
+    });
 }
 
 export async function writeCharacterArchive(context, settings, owner, kind, records, {migration = false} = {}) {

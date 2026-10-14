@@ -1,0 +1,181 @@
+{
+  "release": "0.70.0",
+  "baseCommit": "ea702c5fe0e7f56687d1ab3660a7a285ffe30edb",
+  "date": "2026-10-14T13:39:27.264Z",
+  "status": "PASS",
+  "fixture": {
+    "npcBodies": 800,
+    "nativeVersions": 1771,
+    "worldLore": 178,
+    "abilitySupplements": 4329,
+    "compressedBytes": 1358915,
+    "uncompressedBytes": 16432537
+  },
+  "unit": {
+    "tests": 1296,
+    "pass": 1296,
+    "fail": 0,
+    "syntax": "PASS"
+  },
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "realBrowserCases": [
+    {
+      "engine": "chromium",
+      "browser": "151.0.7922.173",
+      "checks": [
+        "A clean browser imports only one native character JSON, opens its empty-first_mes chat, sees automatic progress and installs all 800/1771/178/4329 records; Character Creation and all eight native preset components remain.",
+        "Reload and repeated real generation-interceptor preparations reuse the installed pinned revision; zero payload imports or decompression after reload. No model request.",
+        "Management opens and switches all 11 Archer versions, saves NPC and Lore edits, and preserves disabled/unmet flags, appearance, Stats, Ability and selected version.",
+        "Real MESSAGE_RECEIVED and MESSAGE_SWIPED handlers create and restore both reply variants after later manual NPC/Lore edits; the saved database revision, selected version and notes survive rollback. Replies are explicit fixtures, not provider generations.",
+        "Native self-contained JSON export atomically saves a new pinned reference and compressed payload, preserves every untouched NPC/version field and all 4,329 supplements, carries exactly one Lore edit and all presets, keeps old installed revisions, and never copies payload into metadata/settings.",
+        "The saved card and the actual downloaded JSON both auto-install in independent empty browser contexts, including a new native avatar; manual version and NPC/Lore edits travel with the card.",
+        "Injected QuotaExceededError on staged write 35 leaves the previous installed archive and saved card/payload intact; not a claim of physical disk exhaustion.",
+        "Wrong compressed hash and valid-hash damaged gzip are rejected without replacing any existing archive.",
+        "Native Cancel stops automatic preparation and never publishes an incomplete revision.",
+        "Switching cards during automatic import cannot publish NPCs, references or the progress window into the new owner."
+      ],
+      "coldInstallMs": 23204,
+      "status": "PASS"
+    },
+    {
+      "engine": "webkit",
+      "browser": "26.5",
+      "checks": [
+        "A clean browser imports only one native character JSON, opens its empty-first_mes chat, sees automatic progress and installs all 800/1771/178/4329 records; Character Creation and all eight native preset components remain.",
+        "Reload and repeated real generation-interceptor preparations reuse the installed pinned revision; zero payload imports or decompression after reload. No model request.",
+        "Management opens and switches all 11 Archer versions, saves NPC and Lore edits, and preserves disabled/unmet flags, appearance, Stats, Ability and selected version.",
+        "Real MESSAGE_RECEIVED and MESSAGE_SWIPED handlers create and restore both reply variants after later manual NPC/Lore edits; the saved database revision, selected version and notes survive rollback. Replies are explicit fixtures, not provider generations.",
+        "Native self-contained JSON export atomically saves a new pinned reference and compressed payload, preserves every untouched NPC/version field and all 4,329 supplements, carries exactly one Lore edit and all presets, keeps old installed revisions, and never copies payload into metadata/settings.",
+        "The saved card and the actual downloaded JSON both auto-install in independent empty browser contexts, including a new native avatar; manual version and NPC/Lore edits travel with the card."
+      ],
+      "coldInstallMs": 52266,
+      "status": "PASS"
+    }
+  ],
+  "storageAndMigration": [
+    "Valid-hash but invalid NPC schema is rejected before readiness; old library remains installed.",
+    "Cancellation during staged writes rejects the import and publishes no partial library.",
+    "Injected IndexedDB QuotaExceededError after the first committed staging batch aborts the next transaction, cleans partial files and leaves the prior archive readable. This is failure injection, not physical disk exhaustion.",
+    "Native card-save failure after archive storage keeps embedded NPC/Lore and the old card reference intact.",
+    "Explicit native migration stores all base/selected-version/long-ability/Lore fields before clearing embedded arrays, retains presets and survives real server reload.",
+    "Update embedded archive retains the entire old card/ref on native HTTP 503; retry atomically saves the new reference and payload and preserves native presets.",
+    "An installed revision with a deliberately removed NPC index reports WORLD_PACK_STORAGE_INVALID; it does not read a payload or attempt automatic re-import."
+  ],
+  "legacyZipRegression": {
+    "status": "PASS",
+    "cases": [
+      {
+        "label": "chromium-390",
+        "browser": "151.0.7922.173",
+        "device": "Linux browser with mobile viewport; not a physical iPhone",
+        "checks": [
+          "Required missing archive is reported; Core is not mistaken for a complete library.",
+          "800 summary rows, 20/page; listing/search normalize no dossier; one opened NPC retains all 11 Archer versions, selects Strange Fake and edits only its notes.",
+          "Ten real interceptor preparations keep normalization/cache bounded, checkpoints below 50 KB, version selection unchanged and lookup separate from enabled/met; quiet/impersonate do not load records.",
+          "Worker ZIP export preserves every original body/version field, all colors/stats/long abilities, all 178 world Lore and all 4,329 supplements, except the two intentional Archer edits.",
+          "Changed payload hash is rejected even when the original revision is installed; existing archive remains usable.",
+          "Switching cards while real Worker retrieval is delayed aborts the old generation and leaks no NPC or prompt state into the new card.",
+          "Edited backup imports in a clean browser profile, links the card, retains the chosen version and notes, and survives page reload."
+        ],
+        "coldImportMs": 23511,
+        "importResponsiveness": {
+          "timerTicks": 449,
+          "maxLongTaskMs": 64
+        },
+        "cold": {
+          "owner": "card:RF Fate archive chromium-390 mv859guj.png",
+          "external": true,
+          "revision": 0,
+          "npcBodies": 800,
+          "versions": 1771,
+          "normalized": 0,
+          "cached": 0,
+          "runtimeIds": [],
+          "runtimeCount": 0,
+          "storedBytes": 6321,
+          "lore": 178,
+          "error": ""
+        },
+        "summaryManagerMs": 880,
+        "beforeRepeated": {
+          "owner": "card:RF Fate archive chromium-390 mv859guj.png",
+          "external": true,
+          "revision": 2,
+          "npcBodies": 800,
+          "versions": 1771,
+          "normalized": 1,
+          "cached": 1,
+          "runtimeIds": [],
+          "runtimeCount": 0,
+          "storedBytes": 6321,
+          "lore": 178,
+          "error": ""
+        },
+        "preparations": [
+          106.19999998807907,
+          43.5,
+          65.10000002384186,
+          86.10000002384186,
+          57.59999996423721,
+          83.30000001192093,
+          70.60000002384186,
+          48.39999997615814,
+          77.69999998807907,
+          76.5
+        ],
+        "afterRepeated": {
+          "owner": "card:RF Fate archive chromium-390 mv859guj.png",
+          "external": true,
+          "revision": 2,
+          "npcBodies": 800,
+          "versions": 1771,
+          "normalized": 1,
+          "cached": 1,
+          "runtimeIds": [
+            "fate-fgo-200200"
+          ],
+          "runtimeCount": 1,
+          "storedBytes": 6338,
+          "lore": 178,
+          "error": ""
+        },
+        "backupBytes": 5651769
+      }
+    ]
+  },
+  "additionalVerification": [
+    "Rehashed every manifest payload and both compressed exports independently; all original 178 Lore records match, except one intentional content edit.",
+    "Character Forge controlled-host fixtures pass 320/390/1280 px; opening/proxy fixtures pass 320/390/1280 px."
+  ],
+  "providerCalls": [],
+  "pageErrors": [],
+  "limits": [
+    "Linux emulated touch viewport, not physical iOS. Single-card JSON transfer is tested; PNG transfer is not tested in this release.",
+    "QuotaExceededError is injected at staged write 35; physical disk exhaustion is not claimed.",
+    "No real provider/proxy/model generation: only real interceptors and explicit completed-reply fixtures.",
+    "A concurrent extra WebKit run reached a 180-second export-test timeout. The independent WebKit file-upload/roundtrip run passed; cold import/export is device/load dependent.",
+    "One earlier test used a browser-constructed upload and accepted HTTP 200 with an error body; final disk-file helper checks native JSON import results.",
+    "External image/audio paths and chat saves are separate; explicit Update/Export is needed after local archive edits."
+  ],
+  "sourceSha256": {
+    "index.js": "ea6b83bcfe69d6c292d1aa2ed0ffbf4c7261c2418a43f7c53d71b065a938e03e",
+    "src/character-archive.js": "b34915feef03ff58477b07e95a24a6853e1d9e453bac9a154d3acfb93cdb28e6",
+    "src/world-pack-core.js": "cdfa09e57b3f4b3996b3abc7402f3519d202872cb4c44d7619a832e71bc8c638",
+    "src/world-pack-inline.js": "61032745914cd3b906c95e7cf071a9dd3bfb9535f3f34f8e5c4fad6d74947208",
+    "src/world-pack-worker.js": "0f366a3960322cab30bdb8ca66909e1bb0904bbb46baf4446ba08b900f83792a",
+    "src/world-pack-client.js": "3b91f70d92c38caf55a493e6a537f88b2939d6a22d70470212d807f498df70db",
+    "src/npc-scopes.js": "00437531f0c6eb93506ea887da3a085a2453abe3f0b98bab22cb8fab87b0a8b2",
+    "src/sparse-npc-state.js": "003c61f063a72e8393e47a4d19f08188c9737f38d1438b9ec83d97938b83f061",
+    "src/archive-cache.js": "cf5d8c5f87f6ac1263f7e99aebe18d197c2514586c1ec231d64027fdf86dbc70",
+    "ui-polish.css": "1ba798f693190973e056c2a3eef102109e1a3f4a998e88616aea566db3c8ff88",
+    "manifest.json": "f99fbe55432e83757b873f5133e90d0122725e0b64338e2a3ceb00ecbb820bb8",
+    "package.json": "bde18308b3de63fd7a01a897e12f62d1fad243826fb92e2a5b465c1c87ad6060"
+  }
+}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ARCHIVE_FIELDS,readCharacterArchive,writeCharacterArchive,migrateCharacterArchives,readCharacterPack,writeCharacterPack,characterDefaultSettings} from '../src/character-archive.js';
+import {ARCHIVE_FIELDS,readCharacterArchive,writeCharacterArchive,migrateCharacterArchives,readCharacterPack,writeCharacterPack,characterDefaultSettings,writeCharacterWorldReference,readCharacterWorldPayload} from '../src/character-archive.js';
 
 function fixture() {
     const cards=[{avatar:'one.png',data:{extensions:{}},json_data:JSON.stringify({data:{extensions:{}}})},{avatar:'two.png',data:{extensions:{}}}];
@@ -10,6 +10,17 @@ function fixture() {
         fetch:async(url,options)=>{requests.push({url,body:JSON.parse(options.body)});return {ok:true,status:200};}};
     return {cards,settings,context,requests,saves:()=>saves};
 }
+
+test('embedded archive ref and payload are one acknowledged card write, retained on failure',async()=>{
+    const {context,cards,requests,settings}=fixture(),ref={format:'roleforge-world-archive-ref',version:1,archiveId:'world',revision:'1',manifestSha256:'a'.repeat(64)},payload={format:'roleforge-inline-world-pack',version:1,encoding:'gzip-base64',compressedBytes:18,uncompressedBytes:2,compressedSha256:'b'.repeat(64),data:'a'.repeat(24)};
+    await writeCharacterWorldReference(context,'card:one.png',ref,{payload});
+    assert.equal(requests.length,1);assert.deepEqual(requests[0].body.data.extensions.roleforge_world_archive_payload,payload);assert.equal(readCharacterWorldPayload(context,'card:one.png'),payload);
+    assert.equal(JSON.stringify(settings).includes('gzip-base64'),false);
+    const before=JSON.stringify(cards);context.fetch=async()=>({ok:false,status:503});
+    await assert.rejects(writeCharacterWorldReference(context,'card:one.png',{...ref,revision:'2'},{payload:{...payload,data:'b'.repeat(24)}}),/503/);assert.equal(JSON.stringify(cards),before);
+    context.fetch=async()=>{throw Error('Must not send a stale write');};
+    await assert.rejects(writeCharacterWorldReference(context,'card:one.png',ref,{payload,valid:()=>false}),/changed/);
+});
 
 test('card write is acknowledged before dropping a legacy archive, and excludes it from global settings',async()=>{
     const {cards,settings,context,requests,saves}=fixture();
