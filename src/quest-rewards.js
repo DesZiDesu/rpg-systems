@@ -1,4 +1,4 @@
-import {isCurrencyId} from './currency-config.js?v=0.72.0';
+import {isCurrencyId} from './currency-config.js?v=0.72.1';
 // Persist payment identity independently of prose, amount and the visible quest archive.
 const clean = (value, limit = 180) => typeof value === 'string' ? value.trim().slice(0, limit) : '';
 const key = value => clean(value).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');

@@ -57,6 +57,7 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     card = json.loads(input_path.read_text())
     ext = card['data']['extensions']
+    ext['roleforge_icon_packs'] = ['fate-servant-classes']
     ref, payload = ext['roleforge_world_archive'], ext['roleforge_world_archive_payload']
     zipped = base64.b64decode(payload['data'], validate=True)
     assert len(zipped) == payload['compressedBytes'] and sha(zipped) == payload['compressedSha256']

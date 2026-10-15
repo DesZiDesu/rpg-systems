@@ -1,0 +1,68 @@
+{
+  "release": "0.72.1",
+  "baseCommit": "b34e8a55e4f296c9cba1a5a01b5c715f98f4b078",
+  "unitTests": {
+    "command": "npm test",
+    "status": "PASS",
+    "tests": 1321,
+    "failures": 0
+  },
+  "syntaxChecks": {
+    "command": "npm run check",
+    "status": "PASS"
+  },
+  "pythonSyntax": {
+    "command": "python3 -m py_compile tools/build-fate-servant-icons.py",
+    "status": "PASS"
+  },
+  "realSillyTavern": {
+    "release": "0.72.1",
+    "testedAt": "2026-10-15T07:27:46.067Z",
+    "cases": [
+      {
+        "engine": "chromium",
+        "browser": "151.0.7922.173",
+        "checks": [
+          "Six native fixture cards: ordinary/misleading names have no catalog; legacy Fate pack/archive IDs and explicit card marker show it; explicit empty marker disables it. Repeated card switches do not leak the catalog.",
+          "Visible generic upload button opens the native file chooser on an unrelated card; save changes only its image and edit timestamp. Fate class selection saves independently; identical NPC IDs across cards do not mix images.",
+          "Reload preserves card isolation and saved generic art. Native export/reimport into a fresh browser context preserves the explicit catalog marker. Mobile 390px screenshots use actual SillyTavern UI.",
+          "Desktop 1440px catalog and generic-image editor screenshots fit the actual SillyTavern window."
+        ]
+      },
+      {
+        "engine": "webkit",
+        "browser": "26.5",
+        "checks": [
+          "Six native fixture cards: ordinary/misleading names have no catalog; legacy Fate pack/archive IDs and explicit card marker show it; explicit empty marker disables it. Repeated card switches do not leak the catalog.",
+          "Visible generic upload button opens the native file chooser on an unrelated card; save changes only its image and edit timestamp. Fate class selection saves independently; identical NPC IDs across cards do not mix images.",
+          "Reload preserves card isolation and saved generic art. Native export/reimport into a fresh browser context preserves the explicit catalog marker. Mobile 390px screenshots use actual SillyTavern UI."
+        ]
+      }
+    ],
+    "errors": [],
+    "providerCalls": [],
+    "sillyTavern": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "status": "PASS"
+  },
+  "deliveredCardCompatibility": {
+    "file": "Fate-Nasuverse-Servant-Icons-Card.json (0.72.0)",
+    "characterPackId": "fate-nasuverse-v3-core",
+    "archiveId": "fate-nasuverse-archive-v3-test",
+    "explicitMarkerAbsent": true,
+    "result": "Matches the legacy card resolver; no reimport needed."
+  },
+  "scope": [
+    "Six tiny native cards imported through the real SillyTavern API, including an optional missing archive reference.",
+    "Existing 800-NPC archive content is unchanged; the full Fate World Pack was not reimported in this release test.",
+    "Chromium: mobile 390x844 and desktop 1440x1000. WebKit: mobile 390x844 on Linux, no physical iPhone.",
+    "Visible custom upload button opens the native file chooser. Both engines save images, reload, export and import the explicit catalog marker.",
+    "No provider calls, no page errors, no access to the user's own SillyTavern instance."
+  ]
+}

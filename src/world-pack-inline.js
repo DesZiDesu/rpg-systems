@@ -1,6 +1,6 @@
 // Worker-only codec. Subfile text is encoded verbatim before manifest hashes.
-import {Gunzip,gzipSync} from './vendor/fflate/index.js?v=0.72.0';
-import {WORLD_LIMITS,validateInlinePayload,safeWorldJson,worldPath,worldHash,worldError} from './world-pack-core.js?v=0.72.0';
+import {Gunzip,gzipSync} from './vendor/fflate/index.js?v=0.72.1';
+import {WORLD_LIMITS,validateInlinePayload,safeWorldJson,worldPath,worldHash,worldError} from './world-pack-core.js?v=0.72.1';
 
 const encoder=new TextEncoder(),yieldTask=()=>new Promise(resolve=>setTimeout(resolve,0));
 const crcTable=Uint32Array.from({length:256},(_,value)=>{for(let bit=0;bit<8;bit++)value=(value>>>1)^((value&1)?0xedb88320:0);return value>>>0;});
