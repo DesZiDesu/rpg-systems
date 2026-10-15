@@ -1,9 +1,9 @@
-import {validatePowerConfig} from './power-presets.js?v=0.71.0';
-import {validateForgePreset} from './forge-presets.js?v=0.71.0';
-import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.71.0';
-import {validatePresetConfig} from './world-presets.js?v=0.71.0';
-import {assertNpcCapacity} from './npc-capacity.js?v=0.71.0';
-import {WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD,worldRef,worldKey,validateInlinePayload} from './world-pack-core.js?v=0.71.0';
+import {validatePowerConfig} from './power-presets.js?v=0.72.0';
+import {validateForgePreset} from './forge-presets.js?v=0.72.0';
+import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.72.0';
+import {validatePresetConfig} from './world-presets.js?v=0.72.0';
+import {assertNpcCapacity} from './npc-capacity.js?v=0.72.0';
+import {WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD,worldRef,worldKey,validateInlinePayload} from './world-pack-core.js?v=0.72.0';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the
@@ -195,10 +195,11 @@ export function writeCharacterWorldReference(context,owner,raw,{clearEmbedded=fa
     });
 }
 
-export async function writeCharacterArchive(context, settings, owner, kind, records, {migration = false} = {}) {
+export async function writeCharacterArchive(context, settings, owner, kind, records, {migration = false, valid = () => true} = {}) {
     const field = ARCHIVE_FIELDS[kind];
     if (!field || !Array.isArray(records)) throw Error('Invalid character archive');
     return queueCardWrite(owner, async () => {
+        if(!valid())throw Error('Chat/card or archive changed. Existing data was kept.');
         let card = cardFor(context, owner);
         if (!card) throw Error('การ์ดตัวละครนี้ไม่พร้อมใช้งาน กรุณาเปิดการ์ดอีกครั้ง');
         if (migration && cardArchive(card, kind)) {

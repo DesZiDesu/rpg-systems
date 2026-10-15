@@ -1,0 +1,205 @@
+{
+  "release": "0.72.0",
+  "baseline": {
+    "version": "0.71.0",
+    "commit": "2e36837c396de7ca5333f315847e6d6885746560"
+  },
+  "date": "2026-10-15T04:04:58.187728+00:00",
+  "status": "PASS",
+  "unitAndHost": {
+    "command": "npm test",
+    "passed": 1318,
+    "failed": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "status": "PASS"
+  },
+  "realSillyTavern": {
+    "release": "0.72.0",
+    "date": "2026-10-15T03:50:16.878Z",
+    "cases": [
+      {
+        "engine": "chromium",
+        "browser": "151.0.7922.173",
+        "checks": [
+          "Injected native HTTP 503 after complete staging keeps original ref/payload, live catalog and all existing chat/checkpoints intact.",
+          "Image-only update applied to existing Fate card: all 800 NPCs, 1,771 versions, 178 Lore and 4,329 supplements retained; 521 body icons added. Field-by-field comparison preserves saved NPC/Lore edits, manual version, enabled/met, all presets and original chat/checkpoints.",
+          "Re-importing the same update is idempotent. Review is paginated at ten rows and never mutates data.",
+          "Reload reuses the installed archive without another payload import. Human Waver stays unmodified; manually selected Archer version and notes survive.",
+          "Real host swipe restores the earlier turn without reverting later canonical notes, selected version or new image. Reply texts are fixtures; no provider generation.",
+          "Downloaded undo file removes only the applied images and restores original inheritance. Reapplying remains safe and keeps version/Lore edits.",
+          "Both the delivered self-contained card and the exported updated existing card install in independent empty browser contexts with images and saved manual edits, without ZIP or library linking. Empty first_mes/Character Creation still work.",
+          "Native embedded archive path changes base/alternate images only, retains selected Lancer and Stats, and skips an existing user-custom image by default.",
+          "Explicit replace option is independently reviewed; switching to another owner clears the old review. Actual Main Chat image headers render on 390px mobile and 1440px desktop.",
+          "Injected IndexedDB quota failure on staged file write 35 preserves the complete prior card/reference/payload. This is deterministic fault injection, not physical disk exhaustion.",
+          "Real Worker job gates verify Cancel and changing cards during apply: no card write, no cross-owner data, old ref/payload retained, obsolete review cleared."
+        ]
+      },
+      {
+        "engine": "webkit",
+        "browser": "26.5",
+        "checks": [
+          "Image-only update applied to existing Fate card: all 800 NPCs, 1,771 versions, 178 Lore and 4,329 supplements retained; 521 body icons added. Field-by-field comparison preserves saved NPC/Lore edits, manual version, enabled/met, all presets and original chat/checkpoints.",
+          "Re-importing the same update is idempotent. Review is paginated at ten rows and never mutates data.",
+          "Reload reuses the installed archive without another payload import. Human Waver stays unmodified; manually selected Archer version and notes survive.",
+          "Real host swipe restores the earlier turn without reverting later canonical notes, selected version or new image. Reply texts are fixtures; no provider generation.",
+          "Downloaded undo file removes only the applied images and restores original inheritance. Reapplying remains safe and keeps version/Lore edits.",
+          "Both the delivered self-contained card and the exported updated existing card install in independent empty browser contexts with images and saved manual edits, without ZIP or library linking. Empty first_mes/Character Creation still work.",
+          "Native embedded archive path changes base/alternate images only, retains selected Lancer and Stats, and skips an existing user-custom image by default.",
+          "Explicit replace option is independently reviewed; switching to another owner clears the old review. Actual Main Chat image headers render on 390px mobile and 1440px desktop."
+        ]
+      }
+    ],
+    "errors": [],
+    "providerCalls": [],
+    "sillyTavern": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "status": "PASS"
+  },
+  "legacyNativeOptionalReference": {
+    "release": "0.72.0",
+    "errors": [],
+    "providerCalls": [],
+    "status": "PASS",
+    "checks": [
+      "Native aliases accepted without a World Pack install; an optional missing reference falls back to native records.",
+      "Apply chooses the actual storage mode, updates both images in the native array, preserves every other field and the optional reference, and never fabricates an inline payload."
+    ]
+  },
+  "classImagesAndPowersRegression": {
+    "release": "0.72.0",
+    "testedAt": "2026-10-15T03:45:30.378Z",
+    "cases": [
+      {
+        "engine": "chromium",
+        "browser": "151.0.7922.173",
+        "checks": [
+          "Compact Power tab shows only three acquired/selected records; no raw value editors or unused zero cards. Existing Resource power keeps its 3/3 gauge. Manage opens native settings and both number/resource edits persist.",
+          "Actual gears Servant picker saves a portable raster image in the native card. Classic icon NPCs remain unchanged.",
+          "Alternate class art inherits the base by default, can be independently overridden, and can explicitly return to inheritance without changing base art.",
+          "Actual Main Chat headers display the saved custom class image in all five existing themes using native theme controls.",
+          "Custom image file upload uses the same portable image path as the built-in class picker.",
+          "Real MESSAGE_RECEIVED tracking lazily materializes an archived NPC, preserves author-owned class art against a model-supplied replacement URL, and keeps canonical met state unchanged. Completed reply is a fixture, with no provider call.",
+          "Power dashboard fits 320px, 390px and 1440px viewports without horizontal overflow.",
+          "Reload preserves edited numeric/resource values. Native card export includes optional custom art and existing presets; no canceled Custom Status component.",
+          "Actual exported card reimports into a fresh browser context with custom imagery and all existing power definitions intact."
+        ]
+      }
+    ],
+    "errors": [],
+    "providerCalls": [],
+    "sillyTavern": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    }
+  },
+  "deliveredCard": {
+    "counts": {
+      "npcBodies": 800,
+      "nativeVersions": 1771,
+      "worldLore": 178,
+      "abilitySupplements": 4329
+    },
+    "npcsWithIcons": 521,
+    "inheritedVersions": 1466,
+    "unknownClassEntries": [
+      {
+        "id": "fate-fgo-9945590",
+        "name": "E-Flare Marie (Flare encounter)",
+        "class": "Unknown",
+        "image": "icons/unknown.png",
+        "versions": 1,
+        "evidence": "Class not verified in the supplied archive; original text preserved"
+      },
+      {
+        "id": "fate-fgo-9945600",
+        "name": "E-Aqua Marie (Aqua encounter)",
+        "class": "Unknown",
+        "image": "icons/unknown.png",
+        "versions": 1,
+        "evidence": "Class not verified in the supplied archive; original text preserved"
+      },
+      {
+        "id": "fate-fgo-9946280",
+        "name": "E-Grand Marie (Grand encounter)",
+        "class": "Unknown",
+        "image": "icons/unknown.png",
+        "versions": 1,
+        "evidence": "Class not verified in the supplied archive; original text preserved"
+      },
+      {
+        "id": "fate-fgo-9946760",
+        "name": "E-Stellar Marie (Stellar encounter)",
+        "class": "Unknown",
+        "image": "icons/unknown.png",
+        "versions": 1,
+        "evidence": "Class not verified in the supplied archive; original text preserved"
+      },
+      {
+        "id": "fate-fgo-4000100",
+        "name": "U-Olga Marie (Alien God body)",
+        "class": "Unknown",
+        "image": "icons/unknown.png",
+        "versions": 3,
+        "evidence": "Class not verified in the supplied archive; original text preserved"
+      },
+      {
+        "id": "fate-body-bragi",
+        "name": "Bragi",
+        "class": "Unknown",
+        "image": "icons/unknown.png",
+        "versions": 1,
+        "evidence": "Class not verified in the supplied archive; original text preserved"
+      }
+    ],
+    "unchangedFileTexts": 3031,
+    "reference": {
+      "format": "roleforge-world-archive-ref",
+      "version": 1,
+      "archiveId": "fate-nasuverse-archive-v3-test",
+      "revision": "3.0.0-servant-icons.1",
+      "manifestPath": "manifest.json",
+      "required": true,
+      "counts": {
+        "npcBodies": 800,
+        "nativeVersions": 1771,
+        "worldLore": 178,
+        "abilitySupplements": 4329
+      },
+      "manifestSha256": "9ec33afbc35470345c3ddefa549a6a7062fc219609df1f81be1b8a859fcd452b"
+    }
+  },
+  "files": {
+    "Fate-Nasuverse-Servant-Icons-Card.json": {
+      "bytes": 2598825,
+      "sha256": "c0633e0b2eab0ace92466ebc4152576c2e99155465b2162a3cb38220746ead57"
+    },
+    "Fate-Servant-Icons-Update.json": {
+      "bytes": 237153,
+      "sha256": "ffa29179160999617ed52c28325d45ef77d8f8b177e6440ced5922e07e0a03cb"
+    },
+    "Icon-Coverage-Report.json": {
+      "bytes": 149297,
+      "sha256": "2dfe8089647b83887da9f8613cc09c9ceab48be2317532ec1167c228c5a2bd08"
+    }
+  },
+  "limitations": [
+    "Chromium and Linux WebKit automation; no physical iPhone/Android test.",
+    "Completed message/swipe fixtures exercise real host events; no actual model generation requests.",
+    "Quota and HTTP 503 are deterministic fault injection, not physical disk exhaustion.",
+    "Simultaneous editing of the same card in multiple browser tabs was not tested.",
+    "Default keeps existing custom images. Explicit replacement of external URL icons requires embedding the old image first so the undo remains portable.",
+    "Six entries have unverified class data and use Unknown; original dossiers are unchanged."
+  ]
+}

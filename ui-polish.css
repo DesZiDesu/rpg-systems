@@ -1,5 +1,5 @@
 /* Compatibility entry for cached pre-0.41 loaders. Do not remove or relocate. */
-@import url("./styles/ui-polish.css?v=0.71.0");
+@import url("./styles/ui-polish.css?v=0.72.0");
 
 
 /* World Pack uses native drawer controls and follows the active ST theme. */
@@ -10,6 +10,18 @@
 #roleforge-world-pack select, #roleforge-world-pack progress { width: 100%; min-width: 0; max-width: 100%; }
 #roleforge-world-pack label { display: flex; align-items: flex-start; gap: 8px; margin-block: 10px; }
 #roleforge-world-pack p { overflow-wrap: anywhere; }
+.rf-icon-update { min-width: 0; padding-block: 8px 18px; border-bottom: 1px solid var(--SmartThemeBorderColor); }
+.rf-icon-update [hidden] { display: none !important; }
+.rf-icon-update > button, .rf-icon-update > a { width: 100%; white-space: normal; margin-block: 5px; }
+.rf-icon-update p { overflow-wrap: anywhere; }
+.rf-icon-update label { display: flex; gap: 8px; align-items: flex-start; margin-block: 12px; }
+.rf-icon-update progress { width: 100%; }
+.rf-icon-update-row { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--SmartThemeBorderColor); min-width: 0; }
+.rf-icon-update-row img { width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px; }
+.rf-icon-update-row div { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.rf-icon-update-row strong, .rf-icon-update-row small { overflow-wrap: anywhere; }
+.rf-icon-update-row small { opacity: .75; }
+.rf-icon-update-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-block: 8px; }
 #roleforge-inline-progress { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:8px 12px; color:var(--SmartThemeBodyColor); background:var(--SmartThemeBlurTintColor); font-size:0.85em; min-width:0; }
 #roleforge-inline-progress span { flex:1 1 220px; overflow-wrap:anywhere; }
 #roleforge-inline-progress progress { flex:1 1 100px; min-width:0; max-width:100%; }

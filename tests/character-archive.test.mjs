@@ -75,6 +75,15 @@ test('writes to the same card are serialized so the last accepted edit wins',asy
     assert.equal(cards[0].data.extensions[ARCHIVE_FIELDS.npcs][0].id,'second');
 });
 
+test('a queued native icon write rechecks owner/source validity before sending',async()=>{
+    const {context,settings,requests,cards}=fixture();let finish,valid=true;
+    context.fetch=async(url,options)=>{requests.push(JSON.parse(options.body));return new Promise(resolve=>{finish=resolve;});};
+    const first=writeCharacterArchive(context,settings,'card:one.png','npcs',[{id:'first'}]);
+    const second=writeCharacterArchive(context,settings,'card:one.png','npcs',[{id:'stale'}],{valid:()=>valid});
+    const rejection=assert.rejects(second,/changed/);await new Promise(resolve=>setImmediate(resolve));valid=false;finish({ok:true,status:200});await first;await rejection;
+    assert.equal(requests.length,1);assert.equal(cards[0].data.extensions[ARCHIVE_FIELDS.npcs][0].id,'first');
+});
+
 test('one-card setup and archives save atomically without changing another extension or local overrides',async()=>{
     const {cards,settings,context,requests}=fixture();
     cards[0].data.extensions.regex_scripts=[{id:'mvu',replaceString:'<StatusPlaceHolderImpl/>'}];

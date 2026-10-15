@@ -1,8 +1,9 @@
-import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.71.0';
-import {WORLD_LIMITS,WORLD_PAYLOAD_FIELD,WORLD_REF_FIELD,worldError,validateInlinePayload,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.71.0';
-import {decodeInlineFiles,encodeInlineFiles} from './world-pack-inline.js?v=0.71.0';
-import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.71.0';
-import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.71.0';
+import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.72.0';
+import {WORLD_LIMITS,WORLD_PAYLOAD_FIELD,WORLD_REF_FIELD,worldError,validateInlinePayload,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.72.0';
+import {decodeInlineFiles,encodeInlineFiles} from './world-pack-inline.js?v=0.72.0';
+import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.72.0';
+import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.72.0';
+import {NPC_ICON_UPDATE_BYTES,validateNpcIconUpdate,checkNpcIconTarget,planNpcIconUpdate} from './npc-icon-update.js?v=0.72.0';
 
 const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true}),sessions=new Map(),cancelled=new Set();
 const request=request=>new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
@@ -140,8 +141,11 @@ async function editSession({sessionId,kind,entries},id){const s=sessions.get(ses
     if(kind==='npcs')s.npcs=[...summaries.values()];else{s.loreRaw=[...summaries.values()];s.lore=prepareLoreArchive(s.loreRaw);}
     s.revision++;return sessionView(s);
 }
-async function exportFiles({sessionId},id){const current=sessions.get(sessionId);if(!current)throw Error('Open a World Pack first');
+async function exportFiles({sessionId},id,iconUpdates){const current=sessions.get(sessionId);if(!current)throw Error('Open a World Pack first');
     const s={...current,edits:new Map(current.edits),npcs:[...current.npcs],loreRaw:[...current.loreRaw]};
+    // Virtual edits for an image-only update. Do not mutate the live session or
+    // its durable edits until the fully validated new revision is on the card.
+    if(iconUpdates)for(const [key,value]of iconUpdates)s.edits.set('npcs:'+key,{value});
     // Build a complete portable revision including this card’s explicit edits.
     const payload=Object.create(null),npcIndex=[],loreIndex=[];
     for(const row of s.npcs){checkCancelled(id);const value=await body(s,row.id),{alternateProfiles,...base}=value,segment=encodeURIComponent(row.id).replaceAll('.','%2E'),basePath=`npcs/${segment}/base.json`,versions=[];
@@ -152,27 +156,52 @@ async function exportFiles({sessionId},id){const current=sessions.get(sessionId)
         const supplementsPath=original?.supplementsPath;
         if(supplementsPath){const supplement=await fileAt(s.key,supplementsPath),validVersions=new Set(versions.map(v=>v.id));
             payload[supplementsPath]={...supplement,abilities:supplement.abilities.filter(a=>!a.descriptionRef.versionId||validVersions.has(a.descriptionRef.versionId)).map(a=>({...a,versionIds:(a.versionIds||[]).filter(id=>validVersions.has(id))}))};}
-        npcIndex.push({id:row.id,name:base.name,aliases:base.aliases||[],identityColor:base.identityColor,roleIcon:base.roleIcon,roleIconImage:base.roleIconImage,basePath,defaultVersionId:base.activeAlternateId||'',versions,...(supplementsPath?{supplementsPath}:{}),sourceHint:original?.sourceHint||''});
+        npcIndex.push({id:row.id,name:base.name,aliases:base.aliases||[],identityColor:base.identityColor,roleIcon:base.roleIcon,basePath,defaultVersionId:base.activeAlternateId||'',versions,...(supplementsPath?{supplementsPath}:{}),sourceHint:original?.sourceHint||''});
     }
     for(const row of s.loreRaw){const path=`lore/${encodeURIComponent(row.id).replaceAll('.','%2E')}.json`;worldPath(path);payload[path]=row;loreIndex.push({id:row.id,title:row.title,keywords:row.keywords,enabled:row.enabled,always:row.always,path});}
     payload['indexes/npcs.json']=npcIndex;payload['indexes/lore.json']=loreIndex;payload['presets.json']=await fileAt(s.key,s.pack.manifest.presets);
     const files=[],zipped=Object.create(null);for(const [path,value]of Object.entries(payload)){const bytes=encoder.encode(JSON.stringify(value));files.push({path,bytes:bytes.length,sha256:await worldHash(bytes)});zipped[path]=bytes;}
     const manifest={...s.pack.manifest,revision:s.pack.ref.revision.slice(0,60)+'-backup-'+Date.now().toString(36)+'-'+worldRandomId().slice(0,8),files,counts:{...s.pack.manifest.counts,npcBodies:npcIndex.length,nativeVersions:npcIndex.reduce((n,r)=>n+r.versions.length,0),worldLore:loreIndex.length,abilitySupplements:Object.values(payload).filter(p=>p?.npcId&&Array.isArray(p.abilities)).reduce((n,p)=>n+p.abilities.length,0)}};
     const bytes=encoder.encode(JSON.stringify(manifest));zipped['manifest.json']=bytes;
-    const ref={...s.pack.ref,revision:manifest.revision,manifestSha256:await worldHash(bytes)};
+    const ref={...s.pack.ref,counts:manifest.counts,revision:manifest.revision,manifestSha256:await worldHash(bytes)};
     if(current.revision!==s.revision)throw worldError('WORLD_PACK_CHANGED','Archive changed during export. Retry with the latest saved edits.');
     checkCancelled(id);return {files:zipped,ref,sourceRevision:s.revision};
 }
 
 async function exportSession(payload,id){const {files,ref}=await exportFiles(payload,id);return {blob:new Blob([zipSync(files,{level:6})],{type:'application/zip'}),ref};}
-async function embedSession(payload,id){
-    const built=await exportFiles(payload,id),inline=await encodeInlineFiles(new Map(Object.entries(built.files)),{check:()=>checkCancelled(id),progress:value=>progress(id,value.phase,value.done,value.total)});
+async function embedSession(payload,id,iconUpdates){
+    const built=await exportFiles(payload,id,iconUpdates),inline=await encodeInlineFiles(new Map(Object.entries(built.files)),{check:()=>checkCancelled(id),progress:value=>progress(id,value.phase,value.done,value.total)});
     // Publish the new revision before changing the card. The previous revision
     // and this card's edits remain untouched if storage or card saving fails.
     const files=Object.entries(built.files).map(([path,bytes])=>({path,file:new Blob([bytes])}));
     await importWorld({files,expected:built.ref},id);
     if(sessions.get(payload.sessionId)?.revision!==built.sourceRevision)throw worldError('WORLD_PACK_CHANGED','Archive changed during embedding. Retry with the latest saved edits.');
     return {ref:built.ref,payload:inline,sourceRevision:built.sourceRevision};
+}
+const iconPlans=new Map();
+async function reviewIcons({file,sessionId,records,target,replaceExisting=false},id){
+    if(!file||file.size>NPC_ICON_UPDATE_BYTES)throw Error('NPC icon update exceeds the 16 MiB limit');
+    const patch=validateNpcIconUpdate(safeWorldJson(await file.text())),s=sessionId?sessions.get(sessionId):null;
+    if(sessionId&&!s)throw Error('World Pack session expired');
+    const actual=s?{...target,archiveId:s.pack.ref.archiveId}:target,revision=s?.revision;
+    checkNpcIconTarget(patch,actual||{});
+    const byId=new Map();
+    if(s){const ids=[...new Set(patch.entries.map(e=>e.npcId))];for(let i=0;i<ids.length;i++){checkCancelled(id);const value=await body(s,ids[i]);if(value)byId.set(value.id,value);if(i%16===0)progress(id,'icons',i,ids.length);}}
+    else{if(!Array.isArray(records))throw Error('Open a character archive first');for(const r of records)byId.set(r.id,r);}
+    const plan=planNpcIconUpdate(patch,byId,{target:actual,replaceExisting});
+    if(s&&s.revision!==revision)throw worldError('WORLD_PACK_CHANGED','Archive changed during icon review. Review the update again.');
+    checkCancelled(id);const token=worldRandomId();while(iconPlans.size>=3)iconPlans.delete(iconPlans.keys().next().value);
+    iconPlans.set(token,{sessionId,revision,plan,records});
+    return {token,name:patch.name,counts:plan.counts,icons:patch.icons,rows:plan.rows.map(({icon,...r},i)=>({...r,icon:patch.entries[i].icon??null})),backup:new Blob([JSON.stringify(plan.backup,null,2)],{type:'application/json'})};
+}
+async function applyIcons({token},id){
+    const prepared=iconPlans.get(token);if(!prepared)throw Error('Icon review expired. Choose the update file again.');
+    const {sessionId,revision,plan,records}=prepared;
+    if(!plan.counts.changed)throw Error('No icon changes to apply');
+    checkCancelled(id);
+    if(!sessionId)return {records:records.map(r=>plan.updates.get(r.id)||r),counts:plan.counts};
+    if(sessions.get(sessionId)?.revision!==revision)throw worldError('WORLD_PACK_CHANGED','Archive changed after review. Review the icons again.');
+    return {...await embedSession({sessionId},id,plan.updates),counts:plan.counts};
 }
 async function exportCard({avatar,headers,expected,compressedSha256}){
     const response=await fetch('/api/characters/export',{method:'POST',headers,body:JSON.stringify({avatar_url:avatar,format:'json'})});
@@ -194,7 +223,7 @@ async function externalizeNative({avatar,headers},id){
     const payload=Object.create(null),npcIndex=[],loreIndex=[],segment=id=>encodeURIComponent(id).replaceAll('.','%2E');let versions=0;
     for(const npc of npcs){if(!npc?.id)throw Error('Save legacy NPC identities before moving this archive');const {alternateProfiles=[],...base}=npc,basePath=`npcs/${segment(npc.id)}/base.json`,list=[];payload[basePath]=base;
         for(const v of alternateProfiles){const path=`npcs/${segment(npc.id)}/versions/${segment(v.id)}.json`;payload[path]=v;list.push({id:v.id,label:v.label,path});versions++;}
-        npcIndex.push({id:npc.id,name:npc.name,aliases:npc.aliases||[],identityColor:npc.identityColor,roleIcon:npc.roleIcon,roleIconImage:npc.roleIconImage,basePath,defaultVersionId:npc.activeAlternateId||'',versions:list});
+        npcIndex.push({id:npc.id,name:npc.name,aliases:npc.aliases||[],identityColor:npc.identityColor,roleIcon:npc.roleIcon,basePath,defaultVersionId:npc.activeAlternateId||'',versions:list});
     }
     for(const entry of lore){if(!entry?.id)throw Error('Save legacy Lore identities before moving this archive');const path=`lore/${segment(entry.id)}.json`;payload[path]=entry;loreIndex.push({id:entry.id,title:entry.title,keywords:entry.keywords||[],enabled:entry.enabled,always:entry.always,path});}
     payload['indexes/npcs.json']=npcIndex;payload['indexes/lore.json']=loreIndex;payload['presets.json']=extensions.roleforge_character_pack||{format:'roleforge-character-pack',version:1};
@@ -214,7 +243,7 @@ const actions={import:importWorld,externalize:externalizeNative,open:openSession
         return (supplement.abilities||[]).filter(a=>(a.versionIds||[]).includes(versionId)&&a.abilityId===abilityId)
             .filter(a=>!/atlasacademy|FGO|strengthStatus|Data unlock conditions/iu.test(a.additionalText)||/FGO|Grand Order/iu.test(version?.label||'')||/FGO|Grand Order|technical|simulation|ข้อมูลเกม|ข้อมูลอ้างอิง/iu.test(query))
             .slice(0,3).map(a=>({id:a.id,classification:a.classification,additionalText:a.additionalText,descriptionRef:a.descriptionRef,sourceRestriction:'Source-specific technical reference/citation only. A simulation duration or numeric unlock condition grants no in-story power, knowledge or unlock.'}));},
-    edit:editSession,export:exportSession,embed:embedSession,exportCard,
+    edit:editSession,export:exportSession,embed:embedSession,exportCard,reviewIcons,applyIcons,
     async list(){return transaction('packs','readonly',async s=>(await request(s.getAll())).filter(p=>p.ready).map(p=>({ref:p.ref,importedAt:p.importedAt})));},
 };
 self.onmessage=async({data:{id,action,payload}})=>{if(action==='cancel'){cancelled.add(payload.id);return;}try{const result=await actions[action](payload,id);postMessage({id,result});}catch(error){postMessage({id,error:{message:error.message,name:error.name,code:error.code}});}finally{cancelled.delete(id);}};
