@@ -1,20 +1,21 @@
-import {renderStoryEvents} from './story-events-ui.js?v=0.70.0';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.70.0';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.70.0';
-import {renderSceneTracker} from './scene-tracker.js?v=0.70.0';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.70.0';
-import {renderGroupBoard} from './group-board-ui.js?v=0.70.0';
-import {uiText} from './ui-language.js?v=0.70.0';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.70.0';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.70.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.70.0';
-import { effectiveNpc } from './npc-alternates.js?v=0.70.0';
-import {speechDisplayText} from './voice-core.js?v=0.70.0';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.70.0';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.70.0';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.70.0';
-import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.70.0';
-import {hostReplyGenerating} from './host-generation-state.js?v=0.70.0';
+import {customIconSource} from './custom-icons.js?v=0.71.0';
+import {renderStoryEvents} from './story-events-ui.js?v=0.71.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.71.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.71.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.71.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.71.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.71.0';
+import {uiText} from './ui-language.js?v=0.71.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.71.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.71.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.71.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.71.0';
+import {speechDisplayText} from './voice-core.js?v=0.71.0';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.71.0';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.71.0';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.71.0';
+import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.71.0';
+import {hostReplyGenerating} from './host-generation-state.js?v=0.71.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -23,7 +24,9 @@ export function element(tag, className = '', text) {
 }
 export function icon(name) { const node = element('i', `fa-solid fa-${name}`); node.setAttribute('aria-hidden','true'); return node; }
 // Saved legacy keys keep their original Font Awesome appearance.
-export function roleIcon(key) {
+export function roleIcon(key, imageSource='') {
+    const source=customIconSource(imageSource);
+    if(source){const image=element('img','trpg-role-image');image.alt='';image.setAttribute('aria-hidden','true');image.src=source;image.addEventListener('error',()=>image.replaceWith(roleIcon(key)),{once:true});return image;}
     const [style,role] = String(key || '').split(':');
     if (!['medallion','emblem'].includes(style) || !Object.hasOwn(MEDALLION_ROLES,role)) return icon(ROLE_ICONS[key] || ROLE_ICONS.book);
     const node=element('span','trpg-role-art'); node.setAttribute('aria-hidden','true');
@@ -72,7 +75,7 @@ export function speakerHeader(profile, open, appearance='roleforge') {
     header.style.setProperty('--speaker',p.identityColor); header.style.setProperty('--portrait',`${p.portraitSize}px`);
     header.setAttribute('aria-label',uiText("เปิดข้อมูล {0}",[p.name]));
     const designed=illustratedChatTheme(view.theme),badge=view.theme!=='roleforge'?headerBadge(p,view):null;
-    const details=element('span','trpg-identity'), role=element('span','trpg-role'); role.append(roleIcon(p.roleIcon));
+    const details=element('span','trpg-identity'), role=element('span','trpg-role'); role.append(roleIcon(p.roleIcon,p.roleIconImage));
     role.append(document.createTextNode([p.title,...(badge&&view.badgeMode==='occupation'&&usable(p.title)?[]:[p.occupation])].filter(usable).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') || 'ROLEFORGE'));
     details.append(role,element('strong','',p.name));
     const meta=element('span','trpg-meta');for(const value of [p.race,p.relationship,p.faction].filter(usable))meta.append(element('span','',value));details.append(meta);

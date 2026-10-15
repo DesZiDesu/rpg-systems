@@ -48,7 +48,7 @@ export function npcArchiveSummary(raw,id,owner='') {
         occupation:label(fields.occupation??raw.occupation),race:label(fields.race??raw.race),
         faction:label(fields.faction??raw.faction),aliases:labels(raw.aliases),
         enabled:raw.enabled!==false,met:raw.met===true,isHostile:Boolean(raw.isHostile??raw.hostile),npcScope:raw.npcScope||'character',npcOwner:owner,
-        identityColor:active?.identityColor||raw.identityColor,roleIcon:active?.roleIcon||raw.roleIcon,
+        identityColor:active?.identityColor||raw.identityColor,roleIcon:active?.roleIcon||raw.roleIcon,roleIconImage:active?.roleIconImage??raw.roleIconImage,
         hasPortrait:active?.hasPortrait??raw.hasPortrait,portraitSource:active?.portraitSource||raw.portraitSource,
         portraitPath:active?.portraitPath||raw.portraitPath,portraitChatId:active?.portraitChatId||raw.portraitChatId,
         portraitSize:active?.portraitSize||raw.portraitSize,

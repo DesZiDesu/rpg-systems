@@ -418,3 +418,8 @@
  .trpg-manager .trpg-manager-footer{padding:5px 10px;min-height:0;font-size:11px}
  .trpg-manager .trpg-manager-footer>[role=status]{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:anywhere;line-height:1.5}
 }
+
+/* Optional class imagery is independent of the square portrait crop. */
+.trpg-role-image{display:block;width:1.6em;height:1.6em;object-fit:contain;flex:none}
+.trpg-custom-icon-picker{grid-column:1/-1;min-width:0;border-block:1px solid color-mix(in srgb,currentColor 16%,transparent);padding-block:12px}.trpg-custom-icon-picker>summary{cursor:pointer;min-height:36px}.trpg-custom-icon-preview{display:flex;align-items:center;padding:12px;min-height:54px;font-size:28px}.trpg-custom-icon-picker input{max-width:100%;box-sizing:border-box}.trpg-servant-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;max-height:280px;overflow:auto;overscroll-behavior:contain;margin-block:12px}.trpg-servant-choice{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 4px!important;min-width:0;min-height:76px}.trpg-servant-choice img{width:36px;height:36px;object-fit:contain}.trpg-servant-choice small{font-size:9px;line-height:1.3;overflow-wrap:anywhere}.trpg-custom-icon-preview>.trpg-role-image{width:48px;height:48px}
+.trpg-role>.trpg-role-image{width:24px;height:24px;min-width:24px}.trpg-list-emblem>.trpg-role-image{width:32px;height:32px}

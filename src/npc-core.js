@@ -1,4 +1,5 @@
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.70.0';
+import {customIconSource} from './custom-icons.js?v=0.71.0';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.71.0';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -89,6 +90,7 @@ export function identity(raw={}, base={}) {
  result.aliases=(Array.isArray(aliases)?aliases:typeof aliases==='string'?aliases.split(','):[]).map(v=>clean(v,120)).filter(Boolean).slice(0,30);
  result.identityColor=/^#[0-9a-f]{6}$/i.test(raw.identityColor)?raw.identityColor:/^#[0-9a-f]{6}$/i.test(base.identityColor)?base.identityColor:'#d6b458';
  result.roleIcon=Object.hasOwn(ROLE_ICONS,raw.roleIcon)?raw.roleIcon:Object.hasOwn(ROLE_ICONS,base.roleIcon)?base.roleIcon:'book';
+ result.roleIconImage=customIconSource(raw.roleIconImage ?? base.roleIconImage);
  result.portraitSize=clamp(raw.portraitSize ?? base.portraitSize ?? 72,48,144);
  result.portraitSource=['server','local','none','character-life'].includes(raw.portraitSource)?raw.portraitSource:['server','local','none','character-life'].includes(base.portraitSource)?base.portraitSource:'';
  const path=raw.portraitPath??base.portraitPath;
@@ -174,7 +176,7 @@ export function importCharacters(data) {
  const seen=new Map();
  for(const v of records){
   if(!v||typeof v!=='object'||!clean(v.name))continue;
-  const n=profileFields(v);
+  const n=profileFields(v);n.roleIconImage=customIconSource(v.roleIconImage);
   n.enabled=v.enabled!==false;
   const mapping={role:'occupation',species:'race',affiliation:'faction',relationshipToUser:'relationship',currentState:'activity'};
   for(const [from,to]of Object.entries(mapping))if(clean(v[from]))n[to]=clean(v[from],to==='activity'?240:160);
@@ -311,6 +313,7 @@ export function generatedNpcDraft(raw, current={}) {
   isHostile:typeof raw.isHostile==='boolean'?raw.isHostile:Boolean(current.isHostile),
   identityColor:incoming.identityColor||identity(current).identityColor,
   roleIcon:previous.roleIcon||incoming.roleIcon||identity(current).roleIcon,
+  roleIconImage:customIconSource(current.roleIconImage),
   portraitSize:Number.isFinite(raw.portraitSize)?clamp(raw.portraitSize,48,144):identity(current).portraitSize};
 }
 

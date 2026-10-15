@@ -1,8 +1,8 @@
-import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.70.0';
-import {WORLD_LIMITS,WORLD_PAYLOAD_FIELD,WORLD_REF_FIELD,worldError,validateInlinePayload,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.70.0';
-import {decodeInlineFiles,encodeInlineFiles} from './world-pack-inline.js?v=0.70.0';
-import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.70.0';
-import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.70.0';
+import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.71.0';
+import {WORLD_LIMITS,WORLD_PAYLOAD_FIELD,WORLD_REF_FIELD,worldError,validateInlinePayload,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.71.0';
+import {decodeInlineFiles,encodeInlineFiles} from './world-pack-inline.js?v=0.71.0';
+import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.71.0';
+import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.71.0';
 
 const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true}),sessions=new Map(),cancelled=new Set();
 const request=request=>new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
@@ -152,7 +152,7 @@ async function exportFiles({sessionId},id){const current=sessions.get(sessionId)
         const supplementsPath=original?.supplementsPath;
         if(supplementsPath){const supplement=await fileAt(s.key,supplementsPath),validVersions=new Set(versions.map(v=>v.id));
             payload[supplementsPath]={...supplement,abilities:supplement.abilities.filter(a=>!a.descriptionRef.versionId||validVersions.has(a.descriptionRef.versionId)).map(a=>({...a,versionIds:(a.versionIds||[]).filter(id=>validVersions.has(id))}))};}
-        npcIndex.push({id:row.id,name:base.name,aliases:base.aliases||[],identityColor:base.identityColor,roleIcon:base.roleIcon,basePath,defaultVersionId:base.activeAlternateId||'',versions,...(supplementsPath?{supplementsPath}:{}),sourceHint:original?.sourceHint||''});
+        npcIndex.push({id:row.id,name:base.name,aliases:base.aliases||[],identityColor:base.identityColor,roleIcon:base.roleIcon,roleIconImage:base.roleIconImage,basePath,defaultVersionId:base.activeAlternateId||'',versions,...(supplementsPath?{supplementsPath}:{}),sourceHint:original?.sourceHint||''});
     }
     for(const row of s.loreRaw){const path=`lore/${encodeURIComponent(row.id).replaceAll('.','%2E')}.json`;worldPath(path);payload[path]=row;loreIndex.push({id:row.id,title:row.title,keywords:row.keywords,enabled:row.enabled,always:row.always,path});}
     payload['indexes/npcs.json']=npcIndex;payload['indexes/lore.json']=loreIndex;payload['presets.json']=await fileAt(s.key,s.pack.manifest.presets);
@@ -194,7 +194,7 @@ async function externalizeNative({avatar,headers},id){
     const payload=Object.create(null),npcIndex=[],loreIndex=[],segment=id=>encodeURIComponent(id).replaceAll('.','%2E');let versions=0;
     for(const npc of npcs){if(!npc?.id)throw Error('Save legacy NPC identities before moving this archive');const {alternateProfiles=[],...base}=npc,basePath=`npcs/${segment(npc.id)}/base.json`,list=[];payload[basePath]=base;
         for(const v of alternateProfiles){const path=`npcs/${segment(npc.id)}/versions/${segment(v.id)}.json`;payload[path]=v;list.push({id:v.id,label:v.label,path});versions++;}
-        npcIndex.push({id:npc.id,name:npc.name,aliases:npc.aliases||[],identityColor:npc.identityColor,roleIcon:npc.roleIcon,basePath,defaultVersionId:npc.activeAlternateId||'',versions:list});
+        npcIndex.push({id:npc.id,name:npc.name,aliases:npc.aliases||[],identityColor:npc.identityColor,roleIcon:npc.roleIcon,roleIconImage:npc.roleIconImage,basePath,defaultVersionId:npc.activeAlternateId||'',versions:list});
     }
     for(const entry of lore){if(!entry?.id)throw Error('Save legacy Lore identities before moving this archive');const path=`lore/${segment(entry.id)}.json`;payload[path]=entry;loreIndex.push({id:entry.id,title:entry.title,keywords:entry.keywords||[],enabled:entry.enabled,always:entry.always,path});}
     payload['indexes/npcs.json']=npcIndex;payload['indexes/lore.json']=loreIndex;payload['presets.json']=extensions.roleforge_character_pack||{format:'roleforge-character-pack',version:1};

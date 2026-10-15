@@ -1,16 +1,16 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.70.0';
-import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.70.0';
+import {uiText,uiMarkup,uiLanguage} from './ui-language.js?v=0.71.0';
+import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.71.0';
 const el=(tag,text='')=>{const node=document.createElement(tag);node.textContent=text;return node;};
 const button=(text,action)=>{const b=el('button',text);b.type='button';b.addEventListener('click',action);return b;};
 function download(text){const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=el('a');a.href=url;a.download='roleforge-powers.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 export function mountPowerWorkspace(host,api){
- let config=api.config(),busy=false,editing;
+ let config=api.config(),busy=false,editing,valueSignature='';
  const root=el('section');root.className='rf-power-workspace';host.append(root);
  const status=el('p');status.setAttribute('role','status');
  const act=async fn=>{if(busy)return;busy=true;root.inert=true;try{await fn();}catch(e){status.textContent=e.message;}finally{busy=false;root.inert=false;}};
  const save=async next=>{await api.save(next);config=next;};
  function render(){
-  editing=undefined;
+  editing=undefined;valueSignature=JSON.stringify(api.state?.()?.customPowers||{});
   root.replaceChildren(el('h3',api.valuesOnly?uiText("Current powers"):uiText("Power Preset")),status);status.textContent='';
   if(!api.valuesOnly){
   const toolbar=el('div');toolbar.className='rf-power-toolbar';
@@ -27,6 +27,7 @@ export function mountPowerWorkspace(host,api){
   root.append(name,button(uiText("บันทึกชื่อ Preset"),()=>act(()=>save({...config,name:name.value}))),button(uiText("＋ สร้างพลัง"),()=>edit()));
   if(!config.definitions.length)root.append(el('p',uiText("Custom ยังว่าง — กดสร้างพลังเพื่อเริ่ม ไม่มีพลังเดิมเพิ่มให้อัตโนมัติ")));
   }else if(!config.definitions.length)root.append(el('p',uiText("No powers configured. Manage presets in Extensions → RoleForge → Power Presets.")));
+  if(!api.valuesOnly&&api.state&&api.value){const values=el('details');values.className='rf-power-manual-values';const summary=el('summary',uiText('Current powers')+' · '+(uiLanguage()==='th'?'แก้ค่าด้วยตนเอง':'Edit values'));values.append(summary);root.append(values);values.addEventListener('toggle',()=>{if(values.open&&!values.dataset.mounted){values.dataset.mounted='true';values.rfValues=mountPowerWorkspace(values,{...api,valuesOnly:true});}});}
   const grid=el('div');grid.className='rf-power-grid';root.append(grid);
   for(const def of config.definitions){
    const card=el('article');card.className='rf-power-card';card.style.setProperty('--rf-power-color',def.color);card.dataset.powerId=def.id;
@@ -39,7 +40,7 @@ export function mountPowerWorkspace(host,api){
    else{field.type='number';field.min=0;field.max=def.max;field.step='any';field.value=value;}
    card.append(field);
    if(def.type==='resource'){const meter=el('progress');meter.max=def.max;meter.value=value;meter.setAttribute('aria-label',def.name);card.append(meter,el('small',`${value} / ${def.max}`));}
-   field.onchange=()=>act(async()=>{if(!field.checkValidity())throw Error(uiText("ค่าพลังอยู่นอกช่วงที่กำหนด"));await api.value(def.id,def.type==='toggle'?field.checked:Number(field.value));});
+   field.onchange=()=>act(async()=>{if(!field.checkValidity())throw Error(uiText("ค่าพลังอยู่นอกช่วงที่กำหนด"));await api.value(def.id,def.type==='toggle'?field.checked:Number(field.value));render();});
    }else card.append(button(uiText("แก้ไข"),()=>edit(def)),button(uiText("ลบ"),()=>{if(confirm(uiText("ลบพลัง “{0}” ออกจาก Preset? ค่าที่บันทึกไว้จะยังอยู่",[def.name])))return act(()=>save({...config,definitions:config.definitions.filter(d=>d.id!==def.id)}));}));grid.append(card);
   }
  }
@@ -60,7 +61,7 @@ export function mountPowerWorkspace(host,api){
   const submit=el('button',uiText("บันทึกพลัง"));submit.type='submit';form.append(submit,button(uiText("ยกเลิก"),render));
   form.onsubmit=e=>{e.preventDefault();return act(async()=>{const next=powerDefinition({...draft,name:name.value,description:desc.value,type:type.value,max:Number(max.value),initial:Number(initial.value),ranks:ranks.value.split('\n').map(s=>s.trim()).filter(Boolean),color:color.value,icon:icon.value,selectable:selectable.checked});await save({...config,definitions:def?config.definitions.map(d=>d.id===def.id?next:d):[...config.definitions,next]});});};
  }
- render();return {root,refreshLanguage(){
+ render();return {root,refreshValues(){if(api.valuesOnly){const next=JSON.stringify(api.state?.()?.customPowers||{});if(!busy&&!root.contains(document.activeElement)&&next!==valueSignature)render();}else root.querySelector('.rf-power-manual-values')?.rfValues?.refreshValues();},refreshLanguage(){
   if(editing===undefined){render();return;}
   const values=[...root.querySelectorAll('[name]')].map(n=>({name:n.name,value:n.value,checked:n.checked}));
   edit(editing);

@@ -1,12 +1,16 @@
 # RoleForge
 
-**Public release: 0.70.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.71.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+## NPC class images and compact powers
+
+**New in 0.71.0:** NPC role symbols can optionally use an uploaded image or one of **161 gears Servant-class icons**. Each alternate can inherit the base icon or use its own; custom images travel with native character exports and embedded archives. Original role symbols remain available. The Power page now shows compact acquired/selected records with expandable details; **Manage → Current powers** opens value editing in native settings. Existing Resource powers keep their current/max gauges. [Guide and screenshots](docs/npc-class-icons-powers.th.md).
 
 ## Large NPC / Lore libraries
 
@@ -142,6 +146,8 @@ Check the browser console for loading failures. To temporarily skip RoleForge st
 Report issues with your RoleForge version, SillyTavern version, browser, reproduction steps and panel diagnostic if available. Remove API keys and private chat details before posting to [GitHub Issues](https://github.com/DesZiDesu/rpg-systems/issues).
 
 ## Development and validation
+
+Version **0.71.0** passes **1,306 unit/host tests** and syntax checks. Real **SillyTavern 1.19.0** on Chromium and WebKit verifies optional NPC class images across all five chat themes, alternate inheritance, image upload, native card export/import, compact Power records and existing Resource gauges. Mobile/desktop layouts and portrait regressions pass. No separate Custom Status subsystem was added. [Guide, validation and screenshots](docs/npc-class-icons-powers.th.md).
 
 Version **0.70.0** passes **1,296 unit/host tests** and syntax checks. Real **SillyTavern 1.19.0** runs on Chromium and WebKit verify one-card automatic installation, waiting generation preparation, reload reuse without decoding, NPC/version/Lore edits, self-contained JSON transfer into empty browser contexts, swipe/rollback, owner switching, cancellation and injected storage/card-save failures using the supplied **800 NPC / 1,771 versions / 178 Lore / 4,329 supplements** Fate pack. Legacy ZIP and native-card migration checks also pass. No model/provider requests or physical iPhone tests. [Validation, changed files and limits](docs/inline-world-pack-validation.th.md) · [Screenshots](docs/previews/inline-world-packs-0700/index.html).
 

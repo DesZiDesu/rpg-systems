@@ -1,0 +1,74 @@
+{
+  "release": "0.71.0",
+  "testedAt": "2026-10-15T02:34:27.618Z",
+  "cases": [
+    {
+      "engine": "chromium",
+      "browser": "151.0.7922.173",
+      "checks": [
+        "Compact Power tab shows only three acquired/selected records; no raw value editors or unused zero cards. Existing Resource power keeps its 3/3 gauge. Manage opens native settings and both number/resource edits persist.",
+        "Actual gears Servant picker saves a portable raster image in the native card. Classic icon NPCs remain unchanged.",
+        "Alternate class art inherits the base by default, can be independently overridden, and can explicitly return to inheritance without changing base art.",
+        "Actual Main Chat headers display the saved custom class image in all five existing themes using native theme controls.",
+        "Custom image file upload uses the same portable image path as the built-in class picker.",
+        "Real MESSAGE_RECEIVED tracking lazily materializes an archived NPC, preserves author-owned class art against a model-supplied replacement URL, and keeps canonical met state unchanged. Completed reply is a fixture, with no provider call.",
+        "Power dashboard fits 320px, 390px and 1440px viewports without horizontal overflow.",
+        "Reload preserves edited numeric/resource values. Native card export includes optional custom art and existing presets; no canceled Custom Status component.",
+        "Actual exported card reimports into a fresh browser context with custom imagery and all existing power definitions intact."
+      ]
+    },
+    {
+      "engine": "webkit",
+      "browser": "26.5",
+      "checks": [
+        "Compact Power tab shows only three acquired/selected records; no raw value editors or unused zero cards. Existing Resource power keeps its 3/3 gauge. Manage opens native settings and both number/resource edits persist.",
+        "Actual gears Servant picker saves a portable raster image in the native card. Classic icon NPCs remain unchanged.",
+        "Alternate class art inherits the base by default, can be independently overridden, and can explicitly return to inheritance without changing base art.",
+        "Actual Main Chat headers display the saved custom class image in all five existing themes using native theme controls.",
+        "Custom image file upload uses the same portable image path as the built-in class picker.",
+        "Real MESSAGE_RECEIVED tracking lazily materializes an archived NPC, preserves author-owned class art against a model-supplied replacement URL, and keeps canonical met state unchanged. Completed reply is a fixture, with no provider call.",
+        "Reload preserves edited numeric/resource values. Native card export includes optional custom art and existing presets; no canceled Custom Status component.",
+        "Actual exported card reimports into a fresh browser context with custom imagery and all existing power definitions intact."
+      ]
+    }
+  ],
+  "errors": [],
+  "providerCalls": [],
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "unitTests": {
+    "command": "npm test",
+    "tests": 1306,
+    "pass": 1306,
+    "fail": 0,
+    "durationMs": 36739.303357
+  },
+  "syntaxCheck": {
+    "command": "npm run check",
+    "result": "pass"
+  },
+  "portraitRegression": {
+    "script": "tests/chat-portrait-user-regressions.browser.mjs",
+    "widths": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "themes": 5,
+    "result": "pass"
+  },
+  "baseRevision": "d3f1232cd58dfcba00d6bdbf949d9f14fc854a12",
+  "scope": "Optional NPC images and compact Power UI using existing Resource powers; canceled Custom Status code is absent.",
+  "limits": [
+    "UI fixtures and native card data; no provider generation requests.",
+    "WebKit runs on Linux, not a physical iPhone.",
+    "Remote HTTPS image URLs still require their remote host; picked/uploaded images are portable."
+  ]
+}

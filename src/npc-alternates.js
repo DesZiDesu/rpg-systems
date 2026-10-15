@@ -1,4 +1,5 @@
-import { FIELDS, RELATIONS, STATS, ROLE_ICONS, clean, clamp, profileFields } from './npc-core.js?v=0.70.0';
+import {customIconSource} from './custom-icons.js?v=0.71.0';
+import { FIELDS, RELATIONS, STATS, ROLE_ICONS, clean, clamp, profileFields } from './npc-core.js?v=0.71.0';
 
 // Alternate dossiers belong to one NPC identity. Selecting a period is a user
 // action; model patches may update its fields but cannot change that selection.
@@ -11,7 +12,7 @@ const safeId = value => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_-]{
 const copy = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 const textFields = Object.keys(FIELDS).filter(key => key !== 'name');
 const portraitKeys = ['hasPortrait', 'portraitSource', 'portraitPath', 'portraitChatId', 'portraitView'];
-const styleKeys = ['portraitSize', 'identityColor', 'roleIcon'];
+const styleKeys = ['portraitSize', 'identityColor', 'roleIcon', 'roleIconImage'];
 
 function uniqueId(value, used, fallback) {
     const stem = safeId(value) || fallback;
@@ -80,6 +81,7 @@ function presentationFields(raw) {
         && (typeof raw.portraitSize === 'number' || typeof raw.portraitSize === 'string' && raw.portraitSize.trim())) result.portraitSize = clamp(raw.portraitSize, 48, 144);
     if (own(raw, 'identityColor') && /^#[0-9a-f]{6}$/i.test(raw.identityColor)) result.identityColor = raw.identityColor;
     if (own(raw, 'roleIcon') && Object.hasOwn(ROLE_ICONS, raw.roleIcon)) result.roleIcon = raw.roleIcon;
+    if (own(raw, 'roleIconImage')) result.roleIconImage = customIconSource(raw.roleIconImage);
     return result;
 }
 
