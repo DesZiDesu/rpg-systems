@@ -67,3 +67,4 @@ test('Lore custom and unlimited capacities round-trip with world/chat presets an
  assert.equal(p.validatePresetConfig({loreOptions:{mode:'all',budget:1000}}).loreOptions.entryLimit,0);
  assert.throws(()=>p.validatePresetConfig({loreOptions:{mode:'all',budget:1000,entryLimit:-1}}));
 });
+test('Stories round-trip independently and with World presets without progress or active instances',async()=>{const {storyPack}=await import('./fixtures/story.mjs');const standalone=p.importWorldPreset(JSON.stringify(storyPack));assert.deepEqual(standalone.config.storyPreset,p.validatePresetConfig({storyPreset:storyPack}).storyPreset);const complete=p.importWorldPreset(p.exportWorldPreset({storyPreset:storyPack},'World stories'));assert.equal(complete.config.storyPreset.entries[0].id,'harbor-letter');assert.equal(complete.config.storyPreset.storyMissions,undefined);});

@@ -1,9 +1,10 @@
-import {validatePowerConfig} from './power-presets.js?v=0.72.1';
-import {validateForgePreset} from './forge-presets.js?v=0.72.1';
-import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.72.1';
-import {validatePresetConfig} from './world-presets.js?v=0.72.1';
-import {assertNpcCapacity} from './npc-capacity.js?v=0.72.1';
-import {WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD,worldRef,worldKey,validateInlinePayload} from './world-pack-core.js?v=0.72.1';
+import {validatePowerConfig} from './power-presets.js?v=0.73.0';
+import {validateForgePreset} from './forge-presets.js?v=0.73.0';
+import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.73.0';
+import {validatePresetConfig} from './world-presets.js?v=0.73.0';
+import {assertNpcCapacity} from './npc-capacity.js?v=0.73.0';
+import {WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD,worldRef,worldKey,validateInlinePayload} from './world-pack-core.js?v=0.73.0';
+import {STORY_PACK_FIELD,validateStoryPack} from './story-core.js?v=0.73.0';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the
@@ -82,7 +83,8 @@ function packDefaults(raw) {
     // are never part of the schema and are never executed or applied.
     try { if (raw.powerPreset) result.powerPreset=validatePowerConfig(raw.powerPreset); } catch {}
     try { if (raw.forgePreset) result.forgePreset=validateForgePreset(raw.forgePreset); } catch {}
-    for(const key of ['currencyPreset','trainingPreset','npcOptions','systems','chatAppearance'])if(Object.hasOwn(raw,key))try{Object.assign(result,validatePresetConfig({[key]:raw[key]}));}catch{}
+    for(const key of ['currencyPreset','trainingPreset','npcOptions','systems','chatAppearance','storyPreset'])if(Object.hasOwn(raw,key))try{Object.assign(result,validatePresetConfig({[key]:raw[key]}));}catch{}
+    if(raw.storyPresetRef&&typeof raw.storyPresetRef.id==='string'&&Number.isSafeInteger(raw.storyPresetRef.revision))result.storyPresetRef={id:raw.storyPresetRef.id,revision:raw.storyPresetRef.revision};
     if(raw.loreOptions&&typeof raw.loreOptions==='object'&&!Array.isArray(raw.loreOptions))
         result.loreOptions=loreOptions({loreCharacterOptions:{card:raw.loreOptions}},'card');
     if(raw.initialState&&typeof raw.initialState==='object'&&!Array.isArray(raw.initialState)) {
@@ -142,9 +144,10 @@ async function saveCardExtensions(context, owner, fields) {
 export function writeCharacterPack(context, settings, owner, raw, {npcs,lore}={}) {
     const pack=packDefaults(raw);
     if(!pack.format)throw Error('Unsupported RoleForge character pack');
-    for(const key of ['powerPreset','forgePreset','currencyPreset','trainingPreset','systems','loreOptions','npcOptions','chatAppearance','initialState'])
+    for(const key of ['powerPreset','forgePreset','currencyPreset','trainingPreset','systems','loreOptions','npcOptions','chatAppearance','storyPreset','initialState'])
         if(Object.hasOwn(raw,key)&&!Object.hasOwn(pack,key))throw Error(`Invalid character pack ${key}`);
     const fields={[CHARACTER_PACK_FIELD]:pack};
+    if(pack.storyPreset){fields[STORY_PACK_FIELD]=pack.storyPreset;pack.storyPresetRef={id:pack.storyPreset.id,revision:pack.storyPreset.revision};delete pack.storyPreset;}
     if(raw.loreOptions)writeLoreOptions({}, {...pack.loreOptions,...raw.loreOptions},'pack','pack');
     for(const [kind,records] of Object.entries({npcs,lore}))if(records!==undefined){
         if(!Array.isArray(records))throw Error(`Invalid character pack ${kind}`);
@@ -159,6 +162,11 @@ export function writeCharacterPack(context, settings, owner, raw, {npcs,lore}={}
         for(const kind of ['npcs','lore'])if(Object.hasOwn(snapshot,ARCHIVE_FIELDS[kind]))clearLegacy(context,settings,owner,kind,false);
         context.saveSettingsDebounced?.();return snapshot[CHARACTER_PACK_FIELD];
     });
+}
+
+export function writeCharacterStoryPack(context,owner,raw,{valid=()=>true}={}){
+    const pack=validateStoryPack(raw),snapshot=JSON.parse(JSON.stringify(pack));
+    return queueCardWrite(owner,async()=>{if(!valid())throw Error('Chat/card changed. Story templates were kept.');await saveCardExtensions(context,owner,{[STORY_PACK_FIELD]:snapshot});return pack;});
 }
 
 function clearLegacy(context, settings, owner, kind, save = true) {
@@ -185,7 +193,7 @@ export function writeCharacterWorldReference(context,owner,raw,{clearEmbedded=fa
     if(payload!==undefined)validateInlinePayload(payload);
     const fields={[WORLD_REF_FIELD]:ref};
     if(payload!==undefined)fields[WORLD_PAYLOAD_FIELD]=payload;
-    if(clearEmbedded)Object.assign(fields,{[ARCHIVE_FIELDS.npcs]:[],[ARCHIVE_FIELDS.lore]:[]});
+    if(clearEmbedded)Object.assign(fields,{[ARCHIVE_FIELDS.npcs]:[],[ARCHIVE_FIELDS.lore]:[],[STORY_PACK_FIELD]:null});
     return queueCardWrite(owner,()=>{
         if(!valid())throw Error('Chat/card or archive changed before saving. Existing card data was kept.');
         // A ZIP/link to another revision must not leave an unrelated payload

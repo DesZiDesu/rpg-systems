@@ -1,0 +1,17 @@
+{
+  "release": "0.73.0",
+  "checks": [
+    "Valid-hash but invalid NPC schema is rejected before readiness; old library remains installed.",
+    "Valid-hash Story file with no objectives is rejected before archive readiness; the prior installed pack remains untouched.",
+    "Cancellation during staged writes rejects the import and publishes no partial library.",
+    "Injected IndexedDB QuotaExceededError after the first committed staging batch aborts the next transaction, cleans partial files and leaves the prior archive readable. This is failure injection, not physical disk exhaustion.",
+    "Injected quota failure in the Story edits transaction changes neither the durable library nor its live session summaries/definitions.",
+    "Native card-save failure after archive storage keeps embedded NPC/Lore and the old card reference intact.",
+    "Explicit native migration stores all base/selected-version/long-ability/Lore/Story fields before clearing embedded arrays and the native Story pack, retains presets and survives real server reload.",
+    "Update embedded archive retains the entire old card/ref on native HTTP 503; retry atomically saves the new reference and payload and preserves native presets.",
+    "An installed revision with a deliberately removed NPC index reports WORLD_PACK_STORAGE_INVALID; it does not read a payload or attempt automatic re-import."
+  ],
+  "errors": [],
+  "providerCalls": [],
+  "status": "PASS"
+}

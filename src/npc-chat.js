@@ -1,21 +1,21 @@
-import {customIconSource} from './custom-icons.js?v=0.72.1';
-import {renderStoryEvents} from './story-events-ui.js?v=0.72.1';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.72.1';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.72.1';
-import {renderSceneTracker} from './scene-tracker.js?v=0.72.1';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.72.1';
-import {renderGroupBoard} from './group-board-ui.js?v=0.72.1';
-import {uiText} from './ui-language.js?v=0.72.1';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.72.1';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.72.1';
-import { croppedPortrait } from './npc-portraits.js?v=0.72.1';
-import { effectiveNpc } from './npc-alternates.js?v=0.72.1';
-import {speechDisplayText} from './voice-core.js?v=0.72.1';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.72.1';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.72.1';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.72.1';
-import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.72.1';
-import {hostReplyGenerating} from './host-generation-state.js?v=0.72.1';
+import {customIconSource} from './custom-icons.js?v=0.73.0';
+import {renderStoryEvents} from './story-events-ui.js?v=0.73.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.73.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.73.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.73.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.73.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.73.0';
+import {uiText} from './ui-language.js?v=0.73.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.73.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.73.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.73.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.73.0';
+import {speechDisplayText} from './voice-core.js?v=0.73.0';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.73.0';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.73.0';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.73.0';
+import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.73.0';
+import {hostReplyGenerating} from './host-generation-state.js?v=0.73.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -364,7 +364,7 @@ export function createChatPresentation(api, open) {
             const prior=context.chat?.[id-1],key=[stamp,message,message.mes,message.extra?.display_text,message.name,message.is_user,prior,prior?.mes];
             const priorCheck=checked.get(host);
             if(!dirty.has(mes)&&priorCheck&&key.every((value,index)=>value===priorCheck[index]))continue;
-            dirty.delete(mes);checked.set(host,key);
+            dirty.delete(mes);
             if(!old&&host.matches('.TH-streaming,.mes_streaming'))releaseClonedPresentation(host);
             const currentNative=old?.storyRoot&&host.contains(old.storyRoot)?old.original:nativeNodes(host,old);
             if(!nativeDisplayPresent(currentNative)&&!(old?.shared?.valid()&&nativeDisplayPresent(old.shared.native))){
@@ -372,6 +372,7 @@ export function createChatPresentation(api, open) {
                 // Do not reconstruct hidden raw prose, headers or state cards.
                 if(old)restore(host,old,message.mes);continue;
             }
+            checked.set(host,key);
             if(message.is_user){
                 const source=String(message.extra?.display_text??message.mes??'');
                 // Preserve other formatters' widgets/wrappers for player rows.
@@ -515,22 +516,22 @@ export function createChatPresentation(api, open) {
     }
     function schedule(){if(!destroyed&&timer==null)timer=setTimeout(render,90);}
     const observer=new MutationObserver(records=>{
-        if(records.some(r=>{
+        if(records.map(r=>{
             const target=r.target.nodeType===1?r.target:r.target.parentElement;
             if(target?.closest('.trpg-chat')&&!target.closest('[data-roleforge-story],tr-dialogue,tr-narrative'))return false;
             // Our own sibling insertion/removal must not retrigger mounting.
             if(r.type==='childList'&&[...r.addedNodes,...r.removedNodes].length&&[...r.addedNodes,...r.removedNodes].every(node=>node.nodeType===1&&node.classList.contains('trpg-chat')))return false;
             const mes=target?.closest('.mes');if(mes)dirty.add(mes);
             return target?.closest('#chat');
-        }))schedule();
+        }).some(Boolean))schedule();
     });
     // Observe only the chat, not the full settings/editor tree. Host events handle chat replacement.
     let observedChat;
     function observe(){if(destroyed)return;const chat=document.getElementById('chat');if(chat!==observedChat){observer.disconnect();observedChat=chat;if(chat)observer.observe(chat,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['data-roleforge-story','data-roleforge-name','name','class']});}schedule();}
     const subscriptions=[];
     const context=api.context();for(const event of ['CHAT_CHANGED','CHARACTER_MESSAGE_RENDERED','USER_MESSAGE_RENDERED','MESSAGE_SENT','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED','STREAM_TOKEN_RECEIVED','GENERATION_STARTED']){
-        const type=(context.eventTypes||context.event_types)?.[event];if(type){context.eventSource?.on(type,observe);subscriptions.push(type);}
+        const type=(context.eventTypes||context.event_types)?.[event];if(type){const listener=event==='CHAT_CHANGED'?()=>{revision++;observe();}:observe;context.eventSource?.on(type,listener);subscriptions.push([type,listener]);}
     }
     observe();
-    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){destroyed=true;clearTimeout(timer);observer.disconnect();removeFormattingHooks();clearPortraits();for(const type of subscriptions)context.eventSource?.off?.(type,observe);document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
+    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){destroyed=true;clearTimeout(timer);observer.disconnect();removeFormattingHooks();clearPortraits();for(const [type,listener]of subscriptions)context.eventSource?.off?.(type,listener);document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
 }

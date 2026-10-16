@@ -1,0 +1,45 @@
+{
+  "release": "0.73.0",
+  "sourceBase": "b002847d20d97d42dfeee92f1a4f08145ba37098",
+  "unit": {
+    "command": "npm test",
+    "tests": 1376,
+    "passed": 1376,
+    "failed": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "status": "PASS"
+  },
+  "browserHosts": {
+    "status": "PASS",
+    "commands": [
+      "npm run test:mvu",
+      "npm run test:regex"
+    ],
+    "coverage": [
+      "MVU Game Maker/Status Menu Builder Regex layouts and iframe identity at 390/1280px",
+      "native/shared Regex and presentation settings at 320/390/1280px",
+      "200-message render performance: one scene read for one changed tail"
+    ]
+  },
+  "realSillyTavern": {
+    "version": "1.19.0",
+    "revision": "06bde93",
+    "browser": "Chromium / headless desktop and mobile emulation",
+    "reports": [
+      "real-application.json",
+      "real-layout.json",
+      "real-storage.json",
+      "real-chat-restore.json"
+    ],
+    "providerCalls": 0
+  },
+  "limits": [
+    "Replies are explicit fixtures sent through real host event handlers, not provider-generated dialogue.",
+    "Mobile uses browser emulation, not a physical iOS/Android device.",
+    "Storage quota is failure injection; no physical disk exhaustion.",
+    "Nested condition groups and per-objective state rules are preserved through JSON; this editor edits flat start-condition rows.",
+    "Story JSON limit 8 MiB; World Preset file limit remains 1 MiB."
+  ]
+}

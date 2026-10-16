@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-16T07:08:45.575Z",
+  "checks": [
+    "Native card import loads its 12 templates; real wand button opens manager, ten rows per page, mobile full detail and read-only condition test.",
+    "Native editing and card saves work; active contract retains EXP 50 after template changes to 999; completed-reply events progress objectives; manual claim pays exactly once and remains claimed after chat reload.",
+    "Native MESSAGE_SWIPED restores progress, wallet and receipt together; returning to the rewarded branch keeps its manual claim, while the later saved template revision remains 999.",
+    "Production editor creates a new enabled mission across all four tabs, including currency, item and flag rewards.",
+    "Single JSON card exported through native API imports into a fresh browser with edited templates, objectives and reward definitions, while gameplay progress remains separate.",
+    "Native extension Preset workspace captures Stories as a standalone system; definitions include all 13 entries and no gameplay progress.",
+    "Real JSON Import rejects preview-only data, reviews existing IDs, merges a matching template plus a new story, and retains the completed mission, money and once-only receipt.",
+    "Actual Fate data: Worker automatically installs 800 NPC / 1,771 versions / 178 Lore / 4,329 ability supplements plus Stories; manager saves browser-local template edits; self-contained export creates a pinned revision with correct manifest/hashes and all records; fresh browser imports it without ZIP/linking and retains edited Story definitions."
+  ],
+  "errors": [],
+  "providerCalls": [],
+  "release": "0.73.0",
+  "host": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "pass": true
+}

@@ -1,9 +1,10 @@
-import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.72.1';
-import {WORLD_LIMITS,WORLD_PAYLOAD_FIELD,WORLD_REF_FIELD,worldError,validateInlinePayload,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.72.1';
-import {decodeInlineFiles,encodeInlineFiles} from './world-pack-inline.js?v=0.72.1';
-import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.72.1';
-import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.72.1';
-import {NPC_ICON_UPDATE_BYTES,validateNpcIconUpdate,checkNpcIconTarget,planNpcIconUpdate} from './npc-icon-update.js?v=0.72.1';
+import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.73.0';
+import {WORLD_LIMITS,WORLD_PAYLOAD_FIELD,WORLD_REF_FIELD,worldError,validateInlinePayload,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.73.0';
+import {decodeInlineFiles,encodeInlineFiles} from './world-pack-inline.js?v=0.73.0';
+import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.73.0';
+import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.73.0';
+import {NPC_ICON_UPDATE_BYTES,validateNpcIconUpdate,checkNpcIconTarget,planNpcIconUpdate} from './npc-icon-update.js?v=0.73.0';
+import {STORY_PACK_FIELD,validateStoryPack,validateStoryEntry,storySummary} from './story-core.js?v=0.73.0';
 
 const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true}),sessions=new Map(),cancelled=new Set();
 const request=request=>new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
@@ -15,6 +16,14 @@ const write=(store,key,value)=>transaction(store,'readwrite',s=>request(s.put(va
 const fileAt=(key,path)=>read('files',[key,path]);
 const progress=(id,phase,done,total)=>postMessage({id,progress:{phase,done,total}});
 const checkCancelled=id=>{if(cancelled.has(id))throw Error('World Pack import cancelled');};
+function storyMeta(raw){if(!raw)return null;const p=validateStoryPack({...raw,entries:[]});const {entries,...meta}=p;return meta;}
+async function validatedStories(manifest,index,storageKey,job){
+    if(!manifest.indexes?.stories)return {meta:null,summaries:[]};
+    const meta=storyMeta(manifest.storyPack);if(!Array.isArray(index)||index.length!==manifest.counts.storyTemplates)throw Error('Story index/count mismatch');
+    const ids=new Set(),paths=new Set(manifest.files.map(f=>f.path)),summaries=[];
+    for(const row of index){checkCancelled(job);if(!row?.id||ids.has(row.id)||!paths.has(worldPath(row.path)))throw Error('Duplicate or missing story file');ids.add(row.id);const value=validateStoryEntry(await fileAt(storageKey,row.path));if(value.id!==row.id)throw Error('Story identity mismatch');summaries.push(storySummary(value));}
+    return {meta,summaries};
+}
 
 // Inspect central directory before inflation, including uncompressed size limits.
 function zipMembers(bytes){
@@ -73,12 +82,13 @@ async function importWorld(payload,id){
                 const source=members.get(prefix+row.path);if(!source)throw Error('Missing World Pack file: '+row.path);
                 const bytes=await source();if(bytes.length!==row.bytes||await worldHash(bytes)!==row.sha256.toLowerCase())throw Error('World Pack hash/size mismatch: '+row.path);
                 const value=safeWorldJson(decoder.decode(bytes));batch.push([row.path,value]);
-                if([manifest.indexes.npcs,manifest.indexes.lore].includes(row.path))indexFiles.set(row.path,value);
+                if([manifest.indexes.npcs,manifest.indexes.lore,manifest.indexes.stories].includes(row.path))indexFiles.set(row.path,value);
             }
             if(!existing)await transaction('files','readwrite',async s=>{for(const [path,value]of batch)s.put(value,[stage,path]);});
             done+=batch.length;progress(id,'validate',done,manifest.files.length);
         }
         validateWorldIndexes(manifest,indexFiles.get(manifest.indexes.npcs),indexFiles.get(manifest.indexes.lore));
+        const stories=await validatedStories(manifest,indexFiles.get(manifest.indexes.stories),storageKey,id);
         if(existing)return {ref,reused:true};
         // Resolve every ID, version and supplement link before publishing readiness.
         let supplements=0;const npcSummaries=[];
@@ -95,7 +105,7 @@ async function importWorld(payload,id){
         }
         for(const row of indexFiles.get(manifest.indexes.lore)){const value=await fileAt(storageKey,row.path);if(value?.id!==row.id||typeof value.content!=='string'||!value.content.trim())throw Error('Lore identity/content mismatch');}
         if(manifest.counts.abilitySupplements!==undefined&&supplements!==manifest.counts.abilitySupplements)throw Error('Ability supplement count mismatch');
-        checkCancelled(id);const reused=await publish(stage,key,{ready:true,ref,manifest,manifestBytes,npcSummaries,importedAt:new Date().toISOString()});progress(id,'ready',done,done);
+        checkCancelled(id);const reused=await publish(stage,key,{ready:true,ref,manifest,manifestBytes,npcSummaries,storyMeta:stories.meta,storySummaries:stories.summaries,importedAt:new Date().toISOString()});progress(id,'ready',done,done);
         return {ref,reused};
     }catch(error){if(!existing)await removeStaging(stage).catch(()=>{});throw error;}
 }
@@ -107,7 +117,12 @@ async function openSession({ref:raw,owner}){
     if(sessions.has(sessionId))return sessionView(sessions.get(sessionId));
     const npcIndex=await fileAt(key,pack.manifest.indexes.npcs),loreIndex=await fileAt(key,pack.manifest.indexes.lore),edits=new Map(await transaction('edits','readonly',s=>request(s.getAll(IDBKeyRange.bound([key,owner,''],[key,owner,'\uffff'])))));
     if(!Array.isArray(npcIndex)||!Array.isArray(loreIndex))throw worldError('WORLD_PACK_STORAGE_INVALID','Stored World Pack indexes are missing. Existing data was kept; restore a verified backup.');
-    const s={key,owner,sessionId,pack,npcIndex,loreIndex,edits,revision:0,npcs:[],lore:[],bodies:new Map()};
+    const storyIndex=pack.manifest.indexes.stories?await fileAt(key,pack.manifest.indexes.stories):[];
+    const storyCache=pack.storySummaries?{meta:pack.storyMeta,summaries:pack.storySummaries}:await validatedStories(pack.manifest,storyIndex,key,0);
+    const storyHeader=edits.get('story-meta')?.value||storyCache.meta;
+    const storyRows=new Map(storyCache.summaries.map(r=>[r.id,r]));
+    for(const [k,edit]of edits)if(k.startsWith('stories:')){const identity=k.slice(8);if(edit.deleted)storyRows.delete(identity);else storyRows.set(identity,storySummary(edit.value));}
+    const s={key,owner,sessionId,pack,npcIndex,loreIndex,edits,revision:0,npcs:[],lore:[],bodies:new Map(),storyIndex,storyMeta:storyHeader,stories:[...storyRows.values()]};
     const derived=new Map((pack.npcSummaries||[]).map(value=>[value.id,value]));
     for(const row of npcIndex){const edit=edits.get('npcs:'+row.id);if(edit?.deleted)continue;
         if(!edit&&derived.has(row.id)){s.npcs.push({...derived.get(row.id),npcOwner:owner});continue;}
@@ -119,7 +134,21 @@ async function openSession({ref:raw,owner}){
     for(const [key,edit]of edits){if(edit.deleted)continue;const [kind]=key.split(':');if(kind==='npcs'&&!npcIndex.some(r=>r.id===edit.value.id))s.npcs.push({...npcArchiveSummary(edit.value,edit.value.id,owner),_archiveSummary:true});if(kind==='lore'&&!loreIndex.some(r=>r.id===edit.value.id))s.lore.push(edit.value);}
     s.loreRaw=s.lore;s.lore=prepareLoreArchive(s.loreRaw);sessions.set(sessionId,s);return sessionView(s);
 }
-function sessionView(s){return {sessionId:s.sessionId,revision:s.revision,ref:s.pack.ref,counts:s.pack.manifest.counts,npcs:s.npcs,lore:s.loreRaw.map(raw=>({...loreArchiveSummary(raw,raw.id),searchText:worldSearchText(raw.content),_archiveSummary:true}))};}
+function sessionView(s){return {sessionId:s.sessionId,revision:s.revision,ref:s.pack.ref,counts:s.pack.manifest.counts,npcs:s.npcs,storyMeta:s.storyMeta,stories:s.stories,lore:s.loreRaw.map(raw=>({...loreArchiveSummary(raw,raw.id),searchText:worldSearchText(raw.content),_archiveSummary:true}))};}
+async function storyBody(s,identity){const edit=s.edits.get('stories:'+identity);if(edit)return edit.deleted?null:edit.value;const row=s.storyIndex.find(r=>r.id===identity);return row?validateStoryEntry(await fileAt(s.key,row.path)):null;}
+async function editStories({sessionId,pack:raw},job){
+    const s=sessions.get(sessionId);if(!s)throw Error('World Pack session expired');
+    const meta=storyMeta(raw),entries=raw.entries;if(!Array.isArray(entries))throw Error('Invalid story library edit');
+    const oldById=new Map(s.stories.map(r=>[r.id,r])),ids=new Set(),updates=[];
+    for(const entry of entries){checkCancelled(job);if(ids.has(entry.id))throw Error('Duplicate story identity');ids.add(entry.id);
+        if(entry._storySummary){const old=oldById.get(entry.id);if(!old)throw Error('Story summary expired');if(entry.enabled!==old.enabled){const value=await storyBody(s,entry.id);updates.push(['stories:'+entry.id,{value:validateStoryEntry({...value,enabled:entry.enabled,revision:value.revision+1})}]);}}
+        else updates.push(['stories:'+entry.id,{value:validateStoryEntry(entry)}]);}
+    for(const row of s.stories)if(!ids.has(row.id))updates.push(['stories:'+row.id,{deleted:true}]);
+    updates.push(['story-meta',{value:meta}]);
+    await transaction('edits','readwrite',async store=>{for(const [k,v]of updates)store.put([k,v],[s.key,s.owner,k]);});
+    for(const [k,v]of updates)s.edits.set(k,v);const rows=new Map(oldById);for(const [k,v]of updates)if(k.startsWith('stories:')){const identity=k.slice(8);if(v.deleted)rows.delete(identity);else rows.set(identity,storySummary(v.value));}
+    s.storyMeta=meta;s.stories=[...rows.values()];s.revision++;return sessionView(s);
+}
 async function body(s,id){const edit=s.edits.get('npcs:'+id);if(edit)return edit.deleted?null:edit.value;const row=s.npcIndex.find(r=>r.id===id);if(!row)return null;
     const base=await fileAt(s.key,row.basePath),versions=[];for(const v of row.versions)versions.push(await fileAt(s.key,v.path));
     return {...base,alternateProfiles:versions,activeAlternateId:row.defaultVersionId??base.activeAlternateId??'',npcScope:'character',npcOwner:s.owner};
@@ -141,8 +170,9 @@ async function editSession({sessionId,kind,entries},id){const s=sessions.get(ses
     if(kind==='npcs')s.npcs=[...summaries.values()];else{s.loreRaw=[...summaries.values()];s.lore=prepareLoreArchive(s.loreRaw);}
     s.revision++;return sessionView(s);
 }
-async function exportFiles({sessionId},id,iconUpdates){const current=sessions.get(sessionId);if(!current)throw Error('Open a World Pack first');
-    const s={...current,edits:new Map(current.edits),npcs:[...current.npcs],loreRaw:[...current.loreRaw]};
+async function exportFiles({sessionId,storyPack},id,iconUpdates){const current=sessions.get(sessionId);if(!current)throw Error('Open a World Pack first');
+    const s={...current,edits:new Map(current.edits),npcs:[...current.npcs],loreRaw:[...current.loreRaw],stories:[...current.stories]};
+    if(storyPack){const pack=validateStoryPack(storyPack);s.storyMeta=storyMeta(pack);s.stories=pack.entries.map(storySummary);for(const entry of pack.entries)s.edits.set('stories:'+entry.id,{value:entry});}
     // Virtual edits for an image-only update. Do not mutate the live session or
     // its durable edits until the fully validated new revision is on the card.
     if(iconUpdates)for(const [key,value]of iconUpdates)s.edits.set('npcs:'+key,{value});
@@ -160,8 +190,10 @@ async function exportFiles({sessionId},id,iconUpdates){const current=sessions.ge
     }
     for(const row of s.loreRaw){const path=`lore/${encodeURIComponent(row.id).replaceAll('.','%2E')}.json`;worldPath(path);payload[path]=row;loreIndex.push({id:row.id,title:row.title,keywords:row.keywords,enabled:row.enabled,always:row.always,path});}
     payload['indexes/npcs.json']=npcIndex;payload['indexes/lore.json']=loreIndex;payload['presets.json']=await fileAt(s.key,s.pack.manifest.presets);
+    if(s.storyMeta){const index=[];for(const row of s.stories){const path=`stories/${encodeURIComponent(row.id).replaceAll('.','%2E')}.json`;worldPath(path);payload[path]=await storyBody(s,row.id);index.push({id:row.id,path});}payload['indexes/stories.json']=index;}
     const files=[],zipped=Object.create(null);for(const [path,value]of Object.entries(payload)){const bytes=encoder.encode(JSON.stringify(value));files.push({path,bytes:bytes.length,sha256:await worldHash(bytes)});zipped[path]=bytes;}
     const manifest={...s.pack.manifest,revision:s.pack.ref.revision.slice(0,60)+'-backup-'+Date.now().toString(36)+'-'+worldRandomId().slice(0,8),files,counts:{...s.pack.manifest.counts,npcBodies:npcIndex.length,nativeVersions:npcIndex.reduce((n,r)=>n+r.versions.length,0),worldLore:loreIndex.length,abilitySupplements:Object.values(payload).filter(p=>p?.npcId&&Array.isArray(p.abilities)).reduce((n,p)=>n+p.abilities.length,0)}};
+    if(s.storyMeta){manifest.indexes={...manifest.indexes,stories:'indexes/stories.json'};manifest.storyPack=s.storyMeta;manifest.counts.storyTemplates=s.stories.length;}
     const bytes=encoder.encode(JSON.stringify(manifest));zipped['manifest.json']=bytes;
     const ref={...s.pack.ref,counts:manifest.counts,revision:manifest.revision,manifestSha256:await worldHash(bytes)};
     if(current.revision!==s.revision)throw worldError('WORLD_PACK_CHANGED','Archive changed during export. Retry with the latest saved edits.');
@@ -219,7 +251,8 @@ async function externalizeNative({avatar,headers},id){
     const card=safeWorldJson(decoder.decode(bytes)),extensions=card.data?.extensions||card.extensions||{};
     if(extensions.roleforge_world_archive)throw Error('This card already references a World Pack. Import its original pack to preserve supplements.');
     const npcs=extensions.tretaresia_rpg_npcs||[],lore=extensions.tretaresia_rpg_lore||[];
-    if(!Array.isArray(npcs)||!Array.isArray(lore)||!npcs.length&&!lore.length)throw Error('No embedded RoleForge archive to move');
+    const storyPack=extensions[STORY_PACK_FIELD]?validateStoryPack(extensions[STORY_PACK_FIELD]):null;
+    if(!Array.isArray(npcs)||!Array.isArray(lore)||!npcs.length&&!lore.length&&!storyPack?.entries.length)throw Error('No embedded RoleForge archive to move');
     const payload=Object.create(null),npcIndex=[],loreIndex=[],segment=id=>encodeURIComponent(id).replaceAll('.','%2E');let versions=0;
     for(const npc of npcs){if(!npc?.id)throw Error('Save legacy NPC identities before moving this archive');const {alternateProfiles=[],...base}=npc,basePath=`npcs/${segment(npc.id)}/base.json`,list=[];payload[basePath]=base;
         for(const v of alternateProfiles){const path=`npcs/${segment(npc.id)}/versions/${segment(v.id)}.json`;payload[path]=v;list.push({id:v.id,label:v.label,path});versions++;}
@@ -227,13 +260,18 @@ async function externalizeNative({avatar,headers},id){
     }
     for(const entry of lore){if(!entry?.id)throw Error('Save legacy Lore identities before moving this archive');const path=`lore/${segment(entry.id)}.json`;payload[path]=entry;loreIndex.push({id:entry.id,title:entry.title,keywords:entry.keywords||[],enabled:entry.enabled,always:entry.always,path});}
     payload['indexes/npcs.json']=npcIndex;payload['indexes/lore.json']=loreIndex;payload['presets.json']=extensions.roleforge_character_pack||{format:'roleforge-character-pack',version:1};
+    if(storyPack){const index=[];for(const entry of storyPack.entries){const path=`stories/${segment(entry.id)}.json`;payload[path]=entry;index.push({id:entry.id,path});}payload['indexes/stories.json']=index;}
     const files=[],sources=[];
     for(const [path,value]of Object.entries(payload)){worldPath(path);const raw=encoder.encode(JSON.stringify(value));files.push({path,bytes:raw.length,sha256:await worldHash(raw)});sources.push({path,file:new Blob([raw])});}
     const sourceHash=await worldHash(bytes),manifest={format:'roleforge-world-pack',version:1,archiveId:'local-world-'+sourceHash.slice(0,24),revision:'1',counts:{npcBodies:npcs.length,nativeVersions:versions,worldLore:lore.length,abilitySupplements:0},indexes:{npcs:'indexes/npcs.json',lore:'indexes/lore.json'},presets:'presets.json',files};
+    if(storyPack){manifest.indexes.stories='indexes/stories.json';manifest.storyPack=storyMeta(storyPack);manifest.counts.storyTemplates=storyPack.entries.length;}
     sources.push({path:'manifest.json',file:new Blob([JSON.stringify(manifest)])});return {...await importWorld({files:sources},id),sourceHash};
 }
 
 const actions={import:importWorld,externalize:externalizeNative,open:openSession,
+    async storyRecord({sessionId,id}){const s=sessions.get(sessionId);if(!s)throw Error('World Pack session expired');return storyBody(s,id);},
+    async storyExport({sessionId}){const s=sessions.get(sessionId);if(!s?.storyMeta)return null;const entries=[];for(const row of s.stories)entries.push(await storyBody(s,row.id));return validateStoryPack({...s.storyMeta,entries});},
+    storyEdit:editStories,
     async verifySource({avatar,headers,sourceHash}){const r=await fetch('/api/characters/export',{method:'POST',headers,body:JSON.stringify({avatar_url:avatar,format:'json'})});if(!r.ok||await worldHash(await r.arrayBuffer())!==sourceHash)throw Error('The card changed during migration. Embedded data was kept; retry from the updated card.');return true;},
     async records({sessionId,ids}){const s=sessions.get(sessionId);if(!s)throw Error('World Pack session expired');return Promise.all([...new Set(ids)].slice(0,32).map(id=>body(s,id)));},
     async lore({sessionId,query,options}){const s=sessions.get(sessionId);if(!s)throw Error('World Pack session expired');return selectLore(s.lore,options,query).entries;},

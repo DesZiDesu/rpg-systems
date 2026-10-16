@@ -1,0 +1,85 @@
+{
+  "format": "roleforge-story-preset",
+  "version": 1,
+  "id": "harbor",
+  "revision": 1,
+  "name": "Harbor stories",
+  "entries": [
+    {
+      "id": "harbor-letter",
+      "revision": 1,
+      "name": "Letter at the harbor",
+      "kind": "mission",
+      "enabled": true,
+      "summary": "Deliver a sealed letter to the harbor contact.",
+      "authorNotes": "The contact reveals the next chapter only after delivery.",
+      "startMode": "offer",
+      "priority": 5,
+      "triggers": {
+        "match": "all",
+        "rules": [
+          {
+            "type": "location",
+            "target": "Harbor",
+            "op": "gte",
+            "field": "place",
+            "value": true
+          },
+          {
+            "type": "npc",
+            "target": "rin",
+            "op": "gte",
+            "field": "met",
+            "value": true
+          },
+          {
+            "type": "item",
+            "target": "red-letter",
+            "op": "gte",
+            "value": 1
+          }
+        ]
+      },
+      "objectives": [
+        {
+          "id": "deliver",
+          "title": "Deliver the sealed letter",
+          "optional": false,
+          "notes": ""
+        },
+        {
+          "id": "ask",
+          "title": "Ask about the sender",
+          "optional": true,
+          "notes": ""
+        }
+      ],
+      "reward": {
+        "experience": 50,
+        "money": [
+          {
+            "unit": "silver",
+            "amount": 25
+          }
+        ],
+        "items": [
+          {
+            "id": "contact-notes",
+            "name": "Contact notes",
+            "quantity": 1,
+            "description": "Directions to the archive",
+            "category": "Quest reward"
+          }
+        ],
+        "flags": [
+          {
+            "id": "archive-open",
+            "value": true
+          }
+        ],
+        "delivery": "claim",
+        "description": ""
+      }
+    }
+  ]
+}

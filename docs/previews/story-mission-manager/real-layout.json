@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-16T07:11:57.289Z",
+  "checks": [
+    "Actual wand menu and all four editor pages fit 320px (Thai) without horizontal overflow.",
+    "Actual wand menu and all four editor pages fit 390px (Thai) without horizontal overflow.",
+    "Actual wand menu and all four editor pages fit 1440px (English) without horizontal overflow.",
+    "Final source/owner/reference guards allow acknowledged native export and migrated World Pack edits/export, with a usable download link after the asynchronous operation."
+  ],
+  "errors": [],
+  "providerCalls": [],
+  "release": "0.73.0",
+  "pass": true
+}

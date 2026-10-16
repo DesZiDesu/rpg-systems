@@ -21,7 +21,7 @@ export function safeWorldJson(text) {
 export async function worldHash(bytes,provider=globalThis.crypto){
     if(provider?.subtle)return Array.from(new Uint8Array(await provider.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');
     // Plain HTTP LAN addresses used by mobile clients lack crypto.subtle.
-    const {sha256}=await import('./vendor/js-sha256/index.js?v=0.72.1');return sha256(bytes);
+    const {sha256}=await import('./vendor/js-sha256/index.js?v=0.73.0');return sha256(bytes);
 }
 export function worldRandomId(provider=globalThis.crypto){
     if(provider?.randomUUID)return provider.randomUUID();
@@ -41,7 +41,8 @@ export function validateWorldManifest(raw) {
     for(const row of raw.files){worldPath(row.path);if(seen.has(row.path))throw Error('Duplicate World Pack path');seen.add(row.path);
         if(!Number.isSafeInteger(row.bytes)||row.bytes<1||row.bytes>WORLD_LIMITS.record||!/^[a-f0-9]{64}$/iu.test(row.sha256||''))throw Error('Invalid World Pack size or hash');total+=row.bytes;}
     if(total>WORLD_LIMITS.total)throw Error('World Pack exceeds decompressed size limit');
-    for(const path of [raw.indexes?.npcs,raw.indexes?.lore,raw.presets])if(path&&!seen.has(worldPath(path)))throw Error('World Pack index/preset file is missing');
+    for(const path of [raw.indexes?.npcs,raw.indexes?.lore,raw.indexes?.stories,raw.presets])if(path&&!seen.has(worldPath(path)))throw Error('World Pack index/preset file is missing');
+    if(raw.indexes?.stories&&(!raw.storyPack||!Number.isSafeInteger(raw.counts?.storyTemplates)||raw.counts.storyTemplates<0))throw Error('World Pack story metadata/count is missing');
     if(!raw.indexes?.npcs||!raw.indexes?.lore)throw Error('World Pack requires NPC and Lore indexes');
     return raw;
 }

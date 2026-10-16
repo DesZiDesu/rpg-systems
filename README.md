@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.72.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.73.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -13,6 +13,8 @@ The extension adds instructions for enabled systems to your existing text-genera
 **New in 0.72.0:** Import an image-only NPC update in **Presets & character cards → Pack setup into a character card**. Review ten rows per page, preserve existing custom images by default, download an undo file and apply to the existing card without replacing its avatar or chats. Both native archives and self-contained World Packs are supported. World Pack updates stage a new revision containing saved NPC/Lore edits before atomically saving its reference and payload. [Thai step-by-step guide and Fate coverage](docs/fate-servant-icons-update.th.md).
 
 ## NPC class images and compact powers
+
+**Updated in 0.73.0:** a separate wand-menu **Story / Mission Manager** creates reusable mission/story templates with confirmed-state triggers, objectives, once-only EXP/money/item rewards and chat-specific progress. Stories round-trip through JSON, World Presets, native cards and compressed World Packs. Active missions keep their accepted rules when templates change. Saved-chat Header/Dialogue/Narrative now restore without Edit → Cancel. [Thai guide, schema and real SillyTavern previews](docs/story-mission-manager.th.md).
 
 **Updated in 0.72.1:** the bundled Servant-class gallery appears only for Fate cards. Other cards keep the standard role symbols and generic custom-image upload. Existing Fate v3 Core/Native and self-contained cards are recognized without reimporting; new cards can opt in with `data.extensions.roleforge_icon_packs: ["fate-servant-classes"]`. An explicit empty array hides the gallery. Existing saved images are kept. [Card scope and real application checks](docs/card-icon-packs-v0.72.1.th.md).
 

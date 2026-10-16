@@ -1,0 +1,401 @@
+{
+  "cases": [
+    {
+      "name": "first greeting",
+      "header": 1,
+      "dialogue": 1,
+      "narrative": 1,
+      "rows": [
+        {
+          "id": "0",
+          "cards": 1,
+          "markers": 3
+        }
+      ],
+      "chat": "RoleForge Story Workshop 1792124390299 - 2026-10-16@04h20m07s959ms"
+    },
+    {
+      "name": "six saved replies",
+      "header": 7,
+      "dialogue": 7,
+      "narrative": 7,
+      "rows": [
+        {
+          "id": "0",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "1",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "2",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "3",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "4",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "5",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "6",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "7",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "8",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "9",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "10",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "11",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "12",
+          "cards": 1,
+          "markers": 3
+        }
+      ],
+      "chat": "RoleForge Story Workshop 1792124390299 - 2026-10-16@04h20m07s959ms"
+    },
+    {
+      "name": "reload saved chat",
+      "header": 7,
+      "dialogue": 7,
+      "narrative": 7,
+      "rows": [
+        {
+          "id": "0",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "1",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "2",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "3",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "4",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "5",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "6",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "7",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "8",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "9",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "10",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "11",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "12",
+          "cards": 1,
+          "markers": 3
+        }
+      ],
+      "chat": "RoleForge Story Workshop 1792124390299 - 2026-10-16@04h20m07s959ms"
+    },
+    {
+      "name": "cold browser reload and reopen saved card",
+      "header": 7,
+      "dialogue": 7,
+      "narrative": 7,
+      "rows": [
+        {
+          "id": "0",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "1",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "2",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "3",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "4",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "5",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "6",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "7",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "8",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "9",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "10",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "11",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "12",
+          "cards": 1,
+          "markers": 3
+        }
+      ],
+      "chat": "RoleForge Story Workshop 1792124390299 - 2026-10-16@04h20m07s959ms"
+    },
+    {
+      "name": "native batch update of unchanged replies",
+      "header": 7,
+      "dialogue": 7,
+      "narrative": 7,
+      "rows": [
+        {
+          "id": "0",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "1",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "2",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "3",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "4",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "5",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "6",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "7",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "8",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "9",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "10",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "11",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "12",
+          "cards": 1,
+          "markers": 3
+        }
+      ],
+      "chat": "RoleForge Story Workshop 1792124390299 - 2026-10-16@04h20m07s959ms"
+    },
+    {
+      "name": "native edit and cancel last reply",
+      "header": 7,
+      "dialogue": 7,
+      "narrative": 7,
+      "rows": [
+        {
+          "id": "0",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "1",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "2",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "3",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "4",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "5",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "6",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "7",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "8",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "9",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "10",
+          "cards": 1,
+          "markers": 3
+        },
+        {
+          "id": "11",
+          "cards": 0,
+          "markers": 0
+        },
+        {
+          "id": "12",
+          "cards": 1,
+          "markers": 3
+        }
+      ],
+      "chat": "RoleForge Story Workshop 1792124390299 - 2026-10-16@04h20m07s959ms"
+    }
+  ],
+  "errors": [],
+  "providerCalls": [],
+  "release": "0.73.0",
+  "sillyTavern": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "pass": true,
+  "fixtureTitle": "RoleForge Story Workshop 1792124390299"
+}

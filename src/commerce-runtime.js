@@ -1,16 +1,16 @@
-import {requestCommerceDecision} from './commerce-generation.js?v=0.72.1';
-import {inspectCommerceResponse} from './commerce-protocol.js?v=0.72.1';
-import {resolveMarketplaceReply} from './marketplace-events.js?v=0.72.1';
-import {requestedCommerceKind} from './main-chat-systems.js?v=0.72.1';
-import {readCommercePrices} from './commerce-prices.js?v=0.72.1';
-import {commerceRepairReference,requestCommerceRepair,validateCommerceRepair} from './commerce-repair.js?v=0.72.1';
-import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.72.1';
-import {disclosedBookBundle} from './commerce-public-offers.js?v=0.72.1';
-import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.72.1';
-import {createCommerceComposer} from './commerce-composer.js?v=0.72.1';
-import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.72.1';
-import {commerceGenerationMode} from './commerce-task.js?v=0.72.1';
-import {hasTaskGeneration} from './task-generation.js?v=0.72.1';
+import {requestCommerceDecision} from './commerce-generation.js?v=0.73.0';
+import {inspectCommerceResponse} from './commerce-protocol.js?v=0.73.0';
+import {resolveMarketplaceReply} from './marketplace-events.js?v=0.73.0';
+import {requestedCommerceKind} from './main-chat-systems.js?v=0.73.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.73.0';
+import {commerceRepairReference,requestCommerceRepair,validateCommerceRepair} from './commerce-repair.js?v=0.73.0';
+import {publicCommerceStory} from './commerce-dialogue-facts.js?v=0.73.0';
+import {disclosedBookBundle} from './commerce-public-offers.js?v=0.73.0';
+import {createCommerceSession,normalizeCommerce,prepareCommerceAction,applyCommerceDecision,commerceDecisionPrompt} from './commerce-engine.js?v=0.73.0';
+import {createCommerceComposer} from './commerce-composer.js?v=0.73.0';
+import {commerceOpeningRefused,requestCommerceOpening,validateCommerceOpening} from './commerce-opening.js?v=0.73.0';
+import {commerceGenerationMode} from './commerce-task.js?v=0.73.0';
+import {hasTaskGeneration} from './task-generation.js?v=0.73.0';
 
 // Normalized legacy NPC records can acquire default timestamps on every read.
 // Compare gameplay data, not those incidental normalization timestamps.

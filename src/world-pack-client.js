@@ -1,11 +1,11 @@
-import {WORLD_REF_FIELD,worldRef,worldKey,worldError} from './world-pack-core.js?v=0.72.1';
-import {freezeArchiveRecord} from './archive-cache.js?v=0.72.1';
-import {readCharacterExtension} from './character-archive.js?v=0.72.1';
+import {WORLD_REF_FIELD,worldRef,worldKey,worldError} from './world-pack-core.js?v=0.73.0';
+import {freezeArchiveRecord} from './archive-cache.js?v=0.73.0';
+import {readCharacterExtension} from './character-archive.js?v=0.73.0';
 
 export function createWorldPackClient({normalizeNpc=value=>value,onProgress=()=>{}}={}) {
     let worker,sequence=0;const pending=new Map(),catalogs=new Map(),opens=new Map(),installs=new Map(),revisions=new Map();
     function rpc(action,payload,progress=onProgress){
-        if(!worker){worker=new Worker(new URL('./world-pack-worker.js?v=0.72.1',import.meta.url),{type:'module'});
+        if(!worker){worker=new Worker(new URL('./world-pack-worker.js?v=0.73.0',import.meta.url),{type:'module'});
             worker.onmessage=({data})=>{const job=pending.get(data.id);if(!job)return;if(data.progress){job.progress(data.progress);return;}pending.delete(data.id);data.error?job.reject(Object.assign(Error(data.error.message),{name:data.error.name,code:data.error.code})):job.resolve(data.result);};
             worker.onerror=event=>{const error=Error(event.message||'World Pack Worker could not start');for(const job of pending.values())job.reject(error);pending.clear();catalogs.clear();opens.clear();installs.clear();revisions.clear();worker.terminate();worker=null;};}
         const id=++sequence,promise=new Promise((resolve,reject)=>{pending.set(id,{resolve,reject,progress});worker.postMessage({id,action,payload});});
@@ -15,10 +15,14 @@ export function createWorldPackClient({normalizeNpc=value=>value,onProgress=()=>
         revisions.set(owner+'\u0000'+worldKey(view.ref),view.revision);
         const existing=catalogs.get(owner),same=existing?.sessionId===view.sessionId&&existing.revision===view.revision;
         if(same)return existing;
-        const details=new Map(),raws=new Map(),summaries=Object.freeze(view.npcs.map(value=>freezeArchiveRecord({...value,npcScope:'character',npcOwner:owner}))),summaryById=new Map(summaries.map(v=>[v.id,v]));
+        const details=new Map(),raws=new Map(),storyDetails=new Map(),summaries=Object.freeze(view.npcs.map(value=>freezeArchiveRecord({...value,npcScope:'character',npcOwner:owner}))),summaryById=new Map(summaries.map(v=>[v.id,v]));
         let normalized=0,pinned=new Set();
         const catalog={owner,kind:'npcs',external:true,sessionId:view.sessionId,revision:view.revision,ref:view.ref,
             summaries,ids:Object.freeze(summaries.map(v=>v.id)),loreSummaries:freezeArchiveRecord(view.lore),preparedLore:Object.freeze([]),
+            storyMeta:freezeArchiveRecord(view.storyMeta||null),storySummaries:freezeArchiveRecord(view.stories||[]),
+            async storyRecord(id){if(storyDetails.has(id))return storyDetails.get(id);const value=await rpc('storyRecord',{sessionId:this.sessionId,id});if(value)storyDetails.set(id,freezeArchiveRecord(value));for(const key of storyDetails.keys())if(storyDetails.size>48&&key!==id)storyDetails.delete(key);return value;},
+            storyExport:()=>rpc('storyExport',{sessionId:view.sessionId}),
+            async saveStories(pack){return install(await rpc('storyEdit',{sessionId:this.sessionId,pack}),owner);},
             get size(){return summaries.length;},get normalizedCount(){return normalized;},get cachedCount(){return details.size;},
             has:id=>summaryById.has(id),summary:id=>summaryById.get(id),raw:id=>raws.get(id),get:id=>details.get(id)||null,
             getMany(ids){return ids.map(id=>this.get(id)).filter(Boolean);},all(){return this.getMany(this.ids);},

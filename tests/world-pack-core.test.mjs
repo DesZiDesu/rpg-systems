@@ -44,3 +44,4 @@ test('archive integrity and staging IDs work on plain-HTTP mobile LAN origins',a
     assert.equal(await worldHash(new TextEncoder().encode('abc'),{}),'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
     const ids=new Set(Array.from({length:100},()=>worldRandomId({getRandomValues:crypto.getRandomValues.bind(crypto)})));assert.equal(ids.size,100);
 });
+test('optional Story index is pinned in the manifest and requires its header and exact count',()=>{const m=manifest();m.indexes.stories='indexes/stories.json';assert.throws(()=>validateWorldManifest(m),/missing/);m.files.push({path:m.indexes.stories,bytes:2,sha256:'0'.repeat(64)});assert.throws(()=>validateWorldManifest(m),/story/i);m.storyPack={format:'roleforge-story-preset',version:1,id:'test',revision:1,name:'Stories'};m.counts.storyTemplates=0;assert.equal(validateWorldManifest(m).counts.storyTemplates,0);m.counts.storyTemplates=-1;assert.throws(()=>validateWorldManifest(m));});
