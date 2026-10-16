@@ -1,0 +1,234 @@
+{
+  "release": "0.74.0",
+  "errors": [],
+  "checks": [
+    "Off by default after native card import; no sample weapons granted.",
+    "Mobile/desktop fit 320/390/430/1440; invalid counters reject without changing inventory.",
+    "Real native Generate consumes ammunition once, reloads from Inventory, retains partial magazine and suppresses duplicate AI inventory decrement.",
+    "Duplicate native completion events do not consume twice.",
+    "Excalibur and Ea resolve owned exact names; completed player outcomes activate the approved blade light / opposing-cylinder animation.",
+    "Reduce Motion freezes special animation.",
+    "Uploaded art is resized into the scoped preset, not copied into state/checkpoints.",
+    "Changing cards closes the stale manager; unrelated cards retain the default-off state and receive no Fate weapons or art.",
+    "Reload preserves equipment, resources and art; chatbar windows reopen minimized.",
+    "Native ammo configuration rejects overflow and retains the existing stack quantity.",
+    "A native exported card imports into a new character/chat with uploaded art, counters and equipment intact."
+  ],
+  "layouts": [
+    {
+      "width": 320,
+      "pageWidth": 329,
+      "panel": {
+        "x": 0,
+        "y": 524,
+        "width": 320,
+        "height": 274.5,
+        "top": 524,
+        "right": 320,
+        "bottom": 798.5,
+        "left": 0
+      },
+      "dock": {
+        "x": 0,
+        "y": 485,
+        "width": 320,
+        "height": 318.5,
+        "top": 485,
+        "right": 320,
+        "bottom": 803.5,
+        "left": 0
+      },
+      "chatbar": {
+        "x": 0,
+        "y": 803.5,
+        "width": 320,
+        "height": 38.5,
+        "top": 803.5,
+        "right": 320,
+        "bottom": 842,
+        "left": 0
+      },
+      "count": {
+        "x": 225.34375,
+        "y": 650,
+        "width": 83.65625,
+        "height": 30,
+        "top": 650,
+        "right": 309,
+        "bottom": 680,
+        "left": 225.34375
+      },
+      "hostWidthWithoutDock": 329
+    },
+    {
+      "width": 390,
+      "pageWidth": 390,
+      "panel": {
+        "x": 0,
+        "y": 498,
+        "width": 390,
+        "height": 300.5,
+        "top": 498,
+        "right": 390,
+        "bottom": 798.5,
+        "left": 0
+      },
+      "dock": {
+        "x": 0,
+        "y": 457,
+        "width": 390,
+        "height": 346.5,
+        "top": 457,
+        "right": 390,
+        "bottom": 803.5,
+        "left": 0
+      },
+      "chatbar": {
+        "x": 0,
+        "y": 803.5,
+        "width": 390,
+        "height": 38.5,
+        "top": 803.5,
+        "right": 390,
+        "bottom": 842,
+        "left": 0
+      },
+      "count": {
+        "x": 282.6875,
+        "y": 634.75,
+        "width": 90.3125,
+        "height": 37.5,
+        "top": 634.75,
+        "right": 373,
+        "bottom": 672.25,
+        "left": 282.6875
+      },
+      "hostWidthWithoutDock": 390
+    },
+    {
+      "width": 430,
+      "pageWidth": 430,
+      "panel": {
+        "x": 0,
+        "y": 498,
+        "width": 430,
+        "height": 300.5,
+        "top": 498,
+        "right": 430,
+        "bottom": 798.5,
+        "left": 0
+      },
+      "dock": {
+        "x": 0,
+        "y": 457,
+        "width": 430,
+        "height": 346.5,
+        "top": 457,
+        "right": 430,
+        "bottom": 803.5,
+        "left": 0
+      },
+      "chatbar": {
+        "x": 0,
+        "y": 803.5,
+        "width": 430,
+        "height": 38.5,
+        "top": 803.5,
+        "right": 430,
+        "bottom": 842,
+        "left": 0
+      },
+      "count": {
+        "x": 322.6875,
+        "y": 634.75,
+        "width": 90.3125,
+        "height": 37.5,
+        "top": 634.75,
+        "right": 413,
+        "bottom": 672.25,
+        "left": 322.6875
+      },
+      "hostWidthWithoutDock": 430
+    },
+    {
+      "width": 1440,
+      "pageWidth": 1440,
+      "panel": {
+        "x": 0,
+        "y": 615,
+        "width": 1440,
+        "height": 300.5,
+        "top": 615,
+        "right": 1440,
+        "bottom": 915.5,
+        "left": 0
+      },
+      "dock": {
+        "x": 0,
+        "y": 574,
+        "width": 1440,
+        "height": 346.5,
+        "top": 574,
+        "right": 1440,
+        "bottom": 920.5,
+        "left": 0
+      },
+      "chatbar": {
+        "x": 0,
+        "y": 920.5,
+        "width": 1440,
+        "height": 38.5,
+        "top": 920.5,
+        "right": 1440,
+        "bottom": 959,
+        "left": 0
+      },
+      "count": {
+        "x": 1332.6875,
+        "y": 751.75,
+        "width": 90.3125,
+        "height": 37.5,
+        "top": 751.75,
+        "right": 1423,
+        "bottom": 789.25,
+        "left": 1332.6875
+      },
+      "hostWidthWithoutDock": 1440
+    }
+  ],
+  "nativeGenerationRequests": 4,
+  "providerCalls": 0,
+  "note": "Real SillyTavern with native JSON card imports, Dark Lite, chatbar controls and locally supplied SSE generation fixtures. Mobile is Chromium emulation.",
+  "host": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "theme": "Dark Lite (exact supplied CSS)",
+  "pass": true,
+  "unitTests": {
+    "passed": 1390,
+    "failed": 0
+  },
+  "syntaxChecks": "npm run check passed",
+  "assetAudit": {
+    "files": 36,
+    "bytes": 187145,
+    "duplicateContent": [],
+    "modelsAre2D": true,
+    "runtimeGifFiles": 0,
+    "specialHashes": {
+      "excalibur-front.jpg": "9aaa8beec4db29e5a9b36b250db272600c2ed8c4dc04d6d2c84f8a5a5302ddaf",
+      "ea.jpg": "3f5d5392f8aa915cadd08539ccee3151973b0dc3469cd038602dba57de084adb"
+    }
+  },
+  "limitations": [
+    "Mobile viewports are Chromium emulation, not physical iOS/Safari.",
+    "Native Generate uses four local SSE fixture replies; no external AI provider was called.",
+    "At 320 px Dark Lite/native host already has 9 px document overflow; weapon panel fits 320 px and adds none.",
+    "Artwork is 2D. Ea uses the photographed pattern on its unseen rear, not a full 3D model."
+  ]
+}

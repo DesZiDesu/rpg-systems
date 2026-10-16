@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.73.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.74.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -13,6 +13,8 @@ The extension adds instructions for enabled systems to your existing text-genera
 **New in 0.72.0:** Import an image-only NPC update in **Presets & character cards → Pack setup into a character card**. Review ten rows per page, preserve existing custom images by default, download an undo file and apply to the existing card without replacing its avatar or chats. Both native archives and self-contained World Packs are supported. World Pack updates stage a new revision containing saved NPC/Lore edits before atomically saving its reference and payload. [Thai step-by-step guide and Fate coverage](docs/fate-servant-icons-update.th.md).
 
 ## NPC class images and compact powers
+
+**Updated in 0.74.0:** optional **Weapons & ammunition** dock, off by default and scoped to the current chat/card preset. Includes 34 generic 2D models, uploaded artwork, owned-item Excalibur/Ea effects, separate Inventory ammunition and once-only confirmed-outcome tracking in normal replies. Weapon profiles travel through Presets and character cards. [Setup and limits](docs/weapons-v0.74.0.th.md) · [Asset organization and provenance](assets/weapons/README.md).
 
 **Updated in 0.73.1:** NPC Manager remembers Character/Chat scope and the NPC/Lore tab after close or reload. Streaming follows the native auto-scroll preference across RoleForge layout changes, while allowing readers to scroll up and resume at the bottom. [Fix details and real SillyTavern tests](docs/chat-navigation-v0.73.1.th.md).
 

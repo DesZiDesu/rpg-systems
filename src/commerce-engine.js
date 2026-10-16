@@ -1,10 +1,10 @@
-import {currencyValues,currencyRule,currencyScheme,currencyAmounts,isCurrencyId} from './currency-config.js?v=0.73.1';
-import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.73.1';
-import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.73.1';
-import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.73.1';
-import {walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.73.1';
-import {readCommercePrices} from './commerce-prices.js?v=0.73.1';
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.73.1';
+import {currencyValues,currencyRule,currencyScheme,currencyAmounts,isCurrencyId} from './currency-config.js?v=0.74.0';
+import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.74.0';
+import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.74.0';
+import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.74.0';
+import {walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.74.0';
+import {readCommercePrices} from './commerce-prices.js?v=0.74.0';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.74.0';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);
@@ -62,7 +62,7 @@ export function createCommerceSession(event, source = {}, configuration) {
                 participants.set(bidder.id,{id:bidder.id,name:bidder.name,npcId:bidder.npcId||'',budget,spent:0});
                 bidders.push(bidder.id);
             }
-            session.lots.push({id:lot.id,name:lot.name,description:completeItemDefinition(lot).description,usage:completeItemDefinition(lot).usage,properties:completeItemDefinition(lot).properties,category:lot.category||'Item',rarity:completeItemDefinition(lot).rarity,quantity:lot.quantity||1,
+            session.lots.push({id:lot.id,name:lot.name,description:completeItemDefinition(lot).description,usage:completeItemDefinition(lot).usage,properties:completeItemDefinition(lot).properties,category:lot.category||'Item',rarity:completeItemDefinition(lot).rarity,quantity:lot.quantity||1,...(lot.weapon?{weapon:completeItemDefinition(lot).weapon}:{}),...(lot.ammo?{ammo:completeItemDefinition(lot).ammo}:{}),
                 openingBid:lot.openingBid,minIncrement:lot.minIncrement,bidders,withdrawn:[],status:'pending',price:0,leader:''});
             if(lot.currentBidder||lot.currentBid){
                 const leader=participants.get(lot.currentBidder);
@@ -262,8 +262,8 @@ export function applyCommerceDecision(state, prepared, result, now=new Date().to
         item=completeItemDefinition(item);const existing=next.inventory.find(entry=>quantity<0?(item.id?entry.id===item.id:key(entry.name)===key(item.name)):itemDefinitionsMergeable(entry,item));
         if(quantity<0){if(!existing||existing.quantity<-quantity)return false;existing.quantity+=quantity;if(!existing.quantity)next.inventory=next.inventory.filter(entry=>entry!==existing);return true;}
         if(existing&&existing.commerceRightId)return false;
-        if(existing){if(existing.quantity+quantity>99999)return false;existing.quantity+=quantity;Object.assign(existing,{category:item.category,description:item.description,usage:item.usage,rarity:item.rarity,properties:item.properties});}
-        else{if(next.inventory.length>=200)return false;next.inventory.push({id:item.id&&!next.inventory.some(e=>e.id===item.id)?item.id:`commerce-item-${hash(`${session.id}|${itemDefinitionKey(item)}`)}`,name:item.name,quantity,category:item.category||'Item',description:item.description,usage:item.usage,rarity:item.rarity,properties:item.properties,...(item.commerceRightId?{commerceRightId:item.commerceRightId}:{})});}return true;
+        if(existing){if(existing.quantity+quantity>99999)return false;existing.quantity+=quantity;Object.assign(existing,{category:item.category,description:item.description,usage:item.usage,rarity:item.rarity,properties:item.properties,...(item.weapon?{weapon:item.weapon}:{}),...(item.ammo?{ammo:item.ammo}:{})});}
+        else{if(next.inventory.length>=200)return false;next.inventory.push({id:item.id&&!next.inventory.some(e=>e.id===item.id)?item.id:`commerce-item-${hash(`${session.id}|${itemDefinitionKey(item)}`)}`,name:item.name,quantity,category:item.category||'Item',description:item.description,usage:item.usage,rarity:item.rarity,properties:item.properties,...(item.commerceRightId?{commerceRightId:item.commerceRightId}:{}),...(item.weapon?{weapon:item.weapon}:{}),...(item.ammo?{ammo:item.ammo}:{})});}return true;
     };
     if(prepared.action==='talk'){
         if(decision.outcome!=='unchanged'||decision.participants?.length||decision.amount!=null&&decision.amount!==session.quote)return fail('outcome');

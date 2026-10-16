@@ -1,7 +1,7 @@
-import {currencyValues,currencyScheme,currencyAmounts,isCurrencyId} from './currency-config.js?v=0.73.1';
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.73.1';
-import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.73.1';
-import {commercePricePattern} from './commerce-prices.js?v=0.73.1';
+import {currencyValues,currencyScheme,currencyAmounts,isCurrencyId} from './currency-config.js?v=0.74.0';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.74.0';
+import { interactionEvidence, withInteractionEvidence } from './interaction-evidence.js?v=0.74.0';
+import {commercePricePattern} from './commerce-prices.js?v=0.74.0';
 // Auction amounts, commitments and settlement are owned by the extension, not AI.
 const clean = (value, size = 160) => typeof value === 'string' ? value.trim().slice(0, size) : '';
 const key = value => clean(value, 1200).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, ' ');
@@ -33,7 +33,7 @@ export function normalizeAuctionOffer(raw) {
             if (bidders.length === 5) break;
         }
         lots.push({id:lotId,name:clean(input.name,100),description:completeItemDefinition(input).description,usage:completeItemDefinition(input).usage,properties:completeItemDefinition(input).properties,category:clean(input.category,60) || 'Item',
-            rarity:completeItemDefinition(input).rarity,quantity:integer(input.quantity,1,1,9999),openingBid,minIncrement,bidders});
+            rarity:completeItemDefinition(input).rarity,quantity:integer(input.quantity,1,1,9999),openingBid,minIncrement,bidders,...(input.weapon?{weapon:completeItemDefinition(input).weapon}:{}),...(input.ammo?{ammo:completeItemDefinition(input).ammo}:{})});
         if(input.currentBidder||input.currentBid){
             const leader=bidders.find(b=>b.id===input.currentBidder||b.name===input.currentBidder),price=integer(input.currentBid);
             if(!leader||price<openingBid||price>(leader.budget??leader.maxBid))return null;
@@ -197,7 +197,7 @@ export function applyAuctionAction(state, rawOffer, action, {amount,revision = 0
                     if (!existing && next.inventory.length >= 200 || existing && existing.quantity+lot.quantity > 99999) return fail('inventory');
                     next.progression.currency[session.denomination] -= lot.price;
                     if (existing) existing.quantity += lot.quantity;
-                    else next.inventory.push({id:`auction-item-${hash(`${session.id}:${lot.id}`)}`,name:lot.name,quantity:lot.quantity,category:lot.category,description:[lot.rarity,lot.description].filter(Boolean).join('\n').slice(0,300)});
+                    else next.inventory.push({id:`auction-item-${hash(`${session.id}:${lot.id}`)}`,name:lot.name,quantity:lot.quantity,category:lot.category,description:[lot.rarity,lot.description].filter(Boolean).join('\n').slice(0,300),...(lot.weapon?{weapon:lot.weapon}:{}),...(lot.ammo?{ammo:lot.ammo}:{})});
                     events.push({type:'won',name:lot.name,amount:lot.price,quantity:lot.quantity});
                 } else events.push({type:lot.highestBidder ? 'sold' : 'unsold',name:lot.bidders.find(b => b.id === lot.highestBidder)?.name || '',amount:lot.price});
                 lot.status = lot.highestBidder ? 'Sold' : 'Unsold';

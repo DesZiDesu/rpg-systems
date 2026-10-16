@@ -21,7 +21,7 @@ export function safeWorldJson(text) {
 export async function worldHash(bytes,provider=globalThis.crypto){
     if(provider?.subtle)return Array.from(new Uint8Array(await provider.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');
     // Plain HTTP LAN addresses used by mobile clients lack crypto.subtle.
-    const {sha256}=await import('./vendor/js-sha256/index.js?v=0.73.1');return sha256(bytes);
+    const {sha256}=await import('./vendor/js-sha256/index.js?v=0.74.0');return sha256(bytes);
 }
 export function worldRandomId(provider=globalThis.crypto){
     if(provider?.randomUUID)return provider.randomUUID();

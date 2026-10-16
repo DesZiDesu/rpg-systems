@@ -1,13 +1,13 @@
-import {currencyScheme,currencyValues,isCurrencyId} from './currency-config.js?v=0.73.1';
-import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.73.1';
-import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.73.1';
-import {publicCommerceStory,publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.73.1';
-import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.73.1';
-import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.73.1';
-import {commerceDiscussionOnly} from './commerce-intent.js?v=0.73.1';
-import {normalizePurchaseTerms} from './commerce-rights.js?v=0.73.1';
-import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.73.1';
-import {commercePricePattern,readCommercePrices} from './commerce-prices.js?v=0.73.1';
+import {currencyScheme,currencyValues,isCurrencyId} from './currency-config.js?v=0.74.0';
+import {completeItemDefinition,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.74.0';
+import {validateShopSelection,selectionFromShopRequest} from './commerce-stock-selection.js?v=0.74.0';
+import {publicCommerceStory,publicTradeDialogues,optionPriceFacts,quotedTradeRefused} from './commerce-dialogue-facts.js?v=0.74.0';
+import {disclosedRoomCatalog} from './commerce-room-catalog.js?v=0.74.0';
+import {disclosedGoodsOffer} from './commerce-public-offers.js?v=0.74.0';
+import {commerceDiscussionOnly} from './commerce-intent.js?v=0.74.0';
+import {normalizePurchaseTerms} from './commerce-rights.js?v=0.74.0';
+import { interactionEvidence, withInteractionEvidence, evidenceText, namedInteraction } from './interaction-evidence.js?v=0.74.0';
+import {commercePricePattern,readCommercePrices} from './commerce-prices.js?v=0.74.0';
 // Read-only opening event normalization. Active commerce is handled only by
 // commerce-runtime/commerce-engine; ordinary turns never run a simulator.
 const clean = (value, max = 240) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -116,7 +116,7 @@ function itemRecord(raw, fallback = {}) {
         category: clean(source.category || fallback.category, 80) || 'Item',
         description: clean(source.description || fallback.description, 360),
         properties: Array.isArray(source.properties) ? source.properties.map(v => clean(v, 160)).filter(Boolean).slice(0, 8) : Array.isArray(fallback.properties)?fallback.properties:[],
-        quantity,usage:source.usage||fallback.usage,rarity:source.rarity||fallback.rarity,
+        quantity,usage:source.usage||fallback.usage,rarity:source.rarity||fallback.rarity,weapon:source.weapon||fallback.weapon,ammo:source.ammo||fallback.ammo,
     });
 }
 

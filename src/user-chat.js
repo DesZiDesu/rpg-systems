@@ -1,5 +1,5 @@
-import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.73.1';
-import {dialogueFrame,illustratedChatTheme} from './chat-folio.js?v=0.73.1';
+import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.74.0';
+import {dialogueFrame,illustratedChatTheme} from './chat-folio.js?v=0.74.0';
 // This shorthand is a player display convention, never an assistant protocol.
 const escaped=(source,index)=>{let slashes=0;while(index>0&&source[--index]==='\\')slashes++;return slashes%2===1;};
 function richMarkdown(source){

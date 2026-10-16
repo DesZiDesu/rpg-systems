@@ -1,11 +1,12 @@
-import {itemLearningMissing,applyItemLearning,itemLearningAvailability,validItemLearning,normalizeItemLearning} from './item-learning.js?v=0.73.1';
-import {normalizeItemUsage,completeItemDefinition,validStatEffects,normalizeStatEffects,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.73.1';
-import {applyItemStats,itemStatOptions,normalizeItemBuffs,expireItemBuffs} from './item-effects.js?v=0.73.1';
-export {normalizeItemUsage} from './item-definition.js?v=0.73.1';
-import {itemSaleBlocked,rightsView,storyMinute} from './commerce-rights.js?v=0.73.1';
-import {commerceInventoryValid} from './commerce-engine.js?v=0.73.1';
-import {marketplaceInventoryValid} from './marketplace-core.js?v=0.73.1';
-import {evidenceText} from './interaction-evidence.js?v=0.73.1';
+import {itemLearningMissing,applyItemLearning,itemLearningAvailability,validItemLearning,normalizeItemLearning} from './item-learning.js?v=0.74.0';
+import {normalizeItemUsage,completeItemDefinition,validStatEffects,normalizeStatEffects,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.74.0';
+import {applyItemStats,itemStatOptions,normalizeItemBuffs,expireItemBuffs} from './item-effects.js?v=0.74.0';
+export {normalizeItemUsage} from './item-definition.js?v=0.74.0';
+import {itemSaleBlocked,rightsView,storyMinute} from './commerce-rights.js?v=0.74.0';
+import {commerceInventoryValid} from './commerce-engine.js?v=0.74.0';
+import {marketplaceInventoryValid} from './marketplace-core.js?v=0.74.0';
+import {evidenceText} from './interaction-evidence.js?v=0.74.0';
+import {normalizeWeaponMetadata,normalizeAmmoMetadata} from './weapon-core.js?v=0.74.0';
 const clean=(s,n=300)=>typeof s==='string'?s.trim().slice(0,n):'';
 const clone=s=>structuredClone(s);
 const whole=(n,max=99999)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
@@ -22,7 +23,7 @@ export function mergeItemUsage(previous, update, entry={}){
 export function itemRecord(raw){
  if(!raw||typeof raw!=='object'||!clean(raw.name,100)||!clean(raw.id,100)||!whole(raw.quantity))return null;
  const item={id:clean(raw.id,100),name:clean(raw.name,100),category:clean(raw.category,60)||'Other',quantity:raw.quantity,description:clean(raw.description,600),...(raw.rarity?{rarity:clean(raw.rarity,80)}:{}),...(Array.isArray(raw.properties)?{properties:list(raw.properties,12)}:{}),...(raw.commerceRightId?{commerceRightId:clean(raw.commerceRightId,180)}:{})};
- item.usage=normalizeItemUsage(raw.usage,item);return item;
+ item.usage=normalizeItemUsage(raw.usage,item);const weapon=normalizeWeaponMetadata(raw.weapon),ammo=normalizeAmmoMetadata(raw.ammo);if(weapon)item.weapon=weapon;if(ammo)item.ammo=ammo;return item;
 }
 const identity=itemDefinitionKey;
 export function normalizeItemSystem(raw){
