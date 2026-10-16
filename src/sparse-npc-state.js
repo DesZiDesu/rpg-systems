@@ -1,6 +1,6 @@
 // Chat state holds selected dossiers and field deltas. Canon and historical
 // versions stay in a reference catalog, outside serialized state/checkpoints.
-import {pruneNpcReferences} from './npc-scopes.js?v=0.73.0';
+import {pruneNpcReferences} from './npc-scopes.js?v=0.73.1';
 const UNSAFE=new Set(['__proto__','constructor','prototype']);
 const RESERVED=new Set([...UNSAFE,'id','npcScope','npcOwner']);
 const baselineReferences=new WeakMap(),arrayIndexes=new WeakMap();

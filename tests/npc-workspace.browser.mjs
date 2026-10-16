@@ -81,7 +81,7 @@ try{
  await page.locator('[data-archive-options-toggle]').click();await page.locator('[data-new]').click();assert.equal(await page.locator('[data-draft-scope]').inputValue(),'character');
  // Real canvas-generated image exercises upload preparation and request attachment.
  const image=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=8;const g=c.getContext('2d');g.fillStyle='red';g.fillRect(0,0,8,8);return c.toDataURL('image/png').split(',')[1];});
- await page.locator('form .trpg-section input[type=file]').setInputFiles({name:'portrait.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')});
+ await page.locator('[data-npc-portrait]').setInputFiles({name:'portrait.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')});
  await page.waitForFunction(()=>!document.querySelector('fieldset').disabled);
  assert.equal(await page.locator('[data-send-portrait]').isChecked(),true, 'Uploading a portrait must enable image reading without an extra click');
  await page.evaluate(()=>window.noVision=true);const priorRequests=(await page.evaluate(()=>counts())).requests;

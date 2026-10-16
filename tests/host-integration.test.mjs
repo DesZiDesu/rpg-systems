@@ -3,7 +3,7 @@ import * as powerDashboardUi from '../src/power-dashboard.js';
 import * as worldPresets from '../src/world-presets.js';
 import * as npcCapacity from '../src/npc-capacity.js';
 import * as archiveCache from '../src/archive-cache.js';
-import * as sparseNpcs from '../src/sparse-npc-state.js?v=0.73.0';
+import * as sparseNpcs from '../src/sparse-npc-state.js?v=0.73.1';
 import * as worldPackClient from '../src/world-pack-client.js';
 import * as worldPackCore from '../src/world-pack-core.js';
 import {npcReferenceProfiles} from '../src/npc-core.js';

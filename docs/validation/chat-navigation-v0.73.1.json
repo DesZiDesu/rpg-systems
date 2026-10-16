@@ -1,0 +1,212 @@
+{
+  "release": "0.73.1",
+  "sourceBase": "025b9e401e6e40b0d1cefa90450ddba7fa64fb0e",
+  "validatedAt": "2026-10-16T09:46:31.951163+00:00",
+  "unitTests": {
+    "command": "npm test",
+    "status": "pass",
+    "tests": 1376,
+    "passed": 1376,
+    "failed": 0,
+    "skipped": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "status": "pass"
+  },
+  "browserFixtures": [
+    {
+      "command": "npm run test:scroll",
+      "status": "pass",
+      "checks": [
+        "Native auto-scroll preference, quiet/dry-run and Waifu policies",
+        "Native layout shrinkage while reading and a pending bottom-scroll after upward input",
+        "Pause/resume with wheel, slow touch, keyboard and scrollbar drag",
+        "Visible message anchor with auto-scroll off",
+        "Instant compensation under CSS smooth scrolling",
+        "Chat changes, stale animation frames and cleanup",
+        "Manager navigation changes cause zero historical DOM writes or scene reads",
+        "100 token events without native DOM writes remain coalesced (fewer than 25 state reads)"
+      ],
+      "tailUpdate": {
+        "historyReplies": 200,
+        "sceneReads": 1,
+        "domMutations": 2
+      }
+    },
+    {
+      "command": "npm run test:mvu",
+      "status": "pass",
+      "widths": [
+        390,
+        1280
+      ],
+      "checks": [
+        "Shared/native modes, MVU Regex, iframe identity, hidden history, thinking boxes and streaming controls",
+        "200-reply tail update stays local"
+      ]
+    },
+    {
+      "command": "npm run test:regex",
+      "status": "pass",
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "checks": [
+        "Shared Regex and NPC/Voice/User UI",
+        "Presentation settings and lifecycle across chats"
+      ]
+    },
+    {
+      "command": "node tests/npc-workspace.browser.mjs",
+      "status": "pass",
+      "checks": [
+        "Wand, draft/save, stale responses and viewport",
+        "Image-only vision and preservation with unsupported vision",
+        "Character destination/list, attribute repair, unsaved header recovery"
+      ]
+    }
+  ],
+  "realSillyTavern": {
+    "command": "ST_REAL_URL=http://127.0.0.1:18180 npm run test:scroll:real",
+    "browser": "Chromium 151.0.7922.173",
+    "viewports": [
+      {
+        "width": 390,
+        "height": 844,
+        "mobileEmulation": true
+      },
+      {
+        "width": 1440,
+        "height": 960
+      }
+    ],
+    "engine": "chromium",
+    "errors": [],
+    "requests": [
+      "local-fixture",
+      "local-fixture",
+      "local-fixture",
+      "local-fixture",
+      "local-fixture",
+      "local-fixture"
+    ],
+    "cases": [
+      {
+        "name": "mobile-normal",
+        "width": 390,
+        "type": "normal",
+        "auto": true,
+        "count": 40,
+        "manualReadAndResume": false,
+        "smoothThemeAndFade": false,
+        "maxBottomGap": 0,
+        "finalGap": 0,
+        "readerTopChange": null,
+        "frames": 177
+      },
+      {
+        "name": "mobile-continue",
+        "width": 390,
+        "type": "continue",
+        "auto": true,
+        "count": 25,
+        "manualReadAndResume": false,
+        "smoothThemeAndFade": false,
+        "maxBottomGap": 0,
+        "finalGap": 0,
+        "readerTopChange": null,
+        "frames": 192
+      },
+      {
+        "name": "mobile-read-resume",
+        "width": 390,
+        "type": "normal",
+        "auto": true,
+        "count": 40,
+        "manualReadAndResume": true,
+        "smoothThemeAndFade": false,
+        "maxBottomGap": 0,
+        "finalGap": 0,
+        "readerTopChange": null,
+        "frames": 134
+      },
+      {
+        "name": "mobile-auto-off",
+        "width": 390,
+        "type": "normal",
+        "auto": false,
+        "count": 15,
+        "manualReadAndResume": false,
+        "smoothThemeAndFade": false,
+        "maxBottomGap": null,
+        "finalGap": 33709,
+        "readerTopChange": 2,
+        "frames": 82
+      },
+      {
+        "name": "mobile-smooth-theme",
+        "width": 390,
+        "type": "normal",
+        "auto": true,
+        "count": 20,
+        "manualReadAndResume": false,
+        "smoothThemeAndFade": true,
+        "maxBottomGap": 0,
+        "finalGap": 0,
+        "readerTopChange": null,
+        "frames": 42
+      },
+      {
+        "name": "desktop-normal",
+        "width": 1440,
+        "type": "normal",
+        "auto": true,
+        "count": 25,
+        "manualReadAndResume": false,
+        "smoothThemeAndFade": false,
+        "maxBottomGap": 0,
+        "finalGap": 0,
+        "readerTopChange": null,
+        "frames": 51
+      }
+    ],
+    "managerChecks": [
+      "Explicit Character scope and pagination persist across close/reopen; bulk selection clears and NPC generation destination remains Chat.",
+      "Lore/NPC tab and scope survive native settings save and browser reload; explicit Chat scope is remembered as well."
+    ],
+    "release": "0.73.1",
+    "host": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "providerCalls": 0,
+    "note": "The real SillyTavern Generate/StreamingProcessor pipeline consumes local timed SSE fixtures. No provider/API key is used.",
+    "pass": true
+  },
+  "realChatReload": {
+    "command": "node tests/chat-reopen.real.browser.mjs",
+    "status": "pass",
+    "checks": [
+      "7 sets of Header/Dialogue/Narrative remain after native chat reload and cold browser reload",
+      "Native batch formatting and edit/cancel retain all 7 UI sets"
+    ]
+  },
+  "beforeFix": {
+    "release": "0.73.0",
+    "characterScopeOnReopen": "chat",
+    "maximumBottomGapPx": 14898
+  },
+  "limitations": [
+    "Timed responses come from a local SSE fixture through the native SillyTavern generation pipeline; no external model/provider was called.",
+    "Mobile Chromium emulation and desktop Chromium were tested. A physical iPhone was not tested.",
+    "WebKit could not launch because the runner lacks system shared libraries; Safari is not claimed as tested.",
+    "Manager list page/query/filter persist only during the same chat session; scope and NPC/Lore tab persist across browser reloads."
+  ]
+}

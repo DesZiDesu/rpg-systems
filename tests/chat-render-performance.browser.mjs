@@ -20,21 +20,24 @@ try{
     await page.evaluate(theme=>window.performanceChatTheme=theme,process.env.CHAT_RENDER_THEME||'roleforge');
     await page.evaluate(async()=>{
         const {createChatPresentation}=await import('/src/npc-chat.js');
-        const events=new Map(),chat=[],count=200;window.perfReads=0;window.perfChanges=0;
-        const context={chat,getCurrentChatId:()=> 'render-performance',eventTypes:{STREAM_TOKEN_RECEIVED:'stream'},eventSource:{on:(type,fn)=>events.set(type,fn),off:type=>events.delete(type)}};
+        const events=new Map(),chat=[],count=200;window.perfReads=0;window.perfChanges=0;window.perfStateReads=0;
+        const context={isGenerating:()=>Boolean(window.perfStreaming),chat,getCurrentChatId:()=> 'render-performance',eventTypes:{STREAM_TOKEN_RECEIVED:'stream'},eventSource:{on:(type,fn)=>events.set(type,fn),off:type=>events.delete(type)}};
         const settings={language:'en',chatRegexMode:'shared',chatPresentation:true,showSceneTracker:true,enableVoiceAddon:false,chatTheme:window.performanceChatTheme};
         for(let i=0;i<count;i++){
             chat.push({is_user:true,mes:'Continue.'});const id=chat.length,source=`<tr-dialogue name="Cora">Reply ${i}.</tr-dialogue>`;chat.push({is_user:false,mes:source});
             const row=document.createElement('div');row.className='mes';row.setAttribute('mesid',id);const body=document.createElement('div');body.className='mes_text';body.textContent=source;row.append(body);document.getElementById('chat').append(row);
         }
-        const api={context:()=>context,settings:()=>settings,state:()=>({npcs:[]}),visible:text=>text,sceneForMessage:()=>{window.perfReads++;return null;}};
-        window.perfPresentation=createChatPresentation(api,()=>{});
+        const api={context:()=>context,settings:()=>settings,state:()=>{window.perfStateReads++;return{npcs:[]};},visible:text=>text,sceneForMessage:()=>{window.perfReads++;return null;}};
+        window.perfPresentation=createChatPresentation(api,()=>{});window.perfEvents=events;
+        window.updateManagerNavigation=()=>{window.perfReads=0;window.perfChanges=0;window.perfStateReads=0;settings.npcManagerView={scope:'character',tab:'npc'};events.get('stream')();};
         const observer=new MutationObserver(records=>{window.perfChanges+=records.length;});observer.observe(document.getElementById('chat'),{childList:true,subtree:true});
-        window.updatePerfTail=()=>{window.perfReads=0;window.perfChanges=0;const last=chat.length-1;chat[last].mes='<tr-dialogue name="Cora">Updated tail.</tr-dialogue>';document.querySelector(`[mesid="${last}"] .mes_text`).textContent=chat[last].mes;events.get('stream')();};
+        window.updatePerfTail=()=>{window.perfReads=0;window.perfChanges=0;window.perfStateReads=0;const last=chat.length-1;chat[last].mes='<tr-dialogue name="Cora">Updated tail.</tr-dialogue>';document.querySelector(`[mesid="${last}"] .mes_text`).textContent=chat[last].mes;events.get('stream')();};
     });
     await page.waitForFunction(()=>document.querySelectorAll('.trpg-dialogue').length===200);
     assert.equal(await page.evaluate(()=>window.perfReads),200);
     if(process.env.CHAT_RENDER_THEME==='aincrad')assert.equal(await page.locator('.trpg-entrance').count(),1,'opening a long history animates only the latest reply');
+    if(!baseline){await page.evaluate(()=>window.updateManagerNavigation());await page.waitForTimeout(180);assert.equal(await page.evaluate(()=>window.perfReads),0,'manager navigation must not invalidate historical presentation');assert.equal(await page.evaluate(()=>window.perfChanges),0);}
+    if(!baseline){const reads=await page.evaluate(async()=>{window.perfStreaming=true;window.perfStateReads=0;for(let i=0;i<100;i++){perfEvents.get('stream')();await new Promise(r=>setTimeout(r,2));}window.perfStreaming=false;await new Promise(r=>setTimeout(r,100));return window.perfStateReads;});assert(reads<25,'tokens without native DOM updates must stay coalesced: '+reads);}
     await page.evaluate(()=>window.updatePerfTail());await page.waitForTimeout(180);
     const metrics=await page.evaluate(()=>({rows:200,updatedSceneReads:window.perfReads,domMutations:window.perfChanges,tail:document.querySelector('.mes:last-child .trpg-dialogue-copy').textContent}));
     if(process.env.CHAT_RENDER_THEME==='aincrad')assert.equal(await page.locator('.trpg-entrance').count(),0,'streaming revision does not replay the entrance');

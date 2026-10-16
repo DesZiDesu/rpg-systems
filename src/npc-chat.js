@@ -1,21 +1,22 @@
-import {customIconSource} from './custom-icons.js?v=0.73.0';
-import {renderStoryEvents} from './story-events-ui.js?v=0.73.0';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.73.0';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.73.0';
-import {renderSceneTracker} from './scene-tracker.js?v=0.73.0';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.73.0';
-import {renderGroupBoard} from './group-board-ui.js?v=0.73.0';
-import {uiText} from './ui-language.js?v=0.73.0';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.73.0';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.73.0';
-import { croppedPortrait } from './npc-portraits.js?v=0.73.0';
-import { effectiveNpc } from './npc-alternates.js?v=0.73.0';
-import {speechDisplayText} from './voice-core.js?v=0.73.0';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.73.0';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.73.0';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.73.0';
-import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.73.0';
-import {hostReplyGenerating} from './host-generation-state.js?v=0.73.0';
+import {createChatScrollKeeper} from './chat-scroll.js?v=0.73.1';
+import {customIconSource} from './custom-icons.js?v=0.73.1';
+import {renderStoryEvents} from './story-events-ui.js?v=0.73.1';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.73.1';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.73.1';
+import {renderSceneTracker} from './scene-tracker.js?v=0.73.1';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.73.1';
+import {renderGroupBoard} from './group-board-ui.js?v=0.73.1';
+import {uiText} from './ui-language.js?v=0.73.1';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.73.1';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.73.1';
+import { croppedPortrait } from './npc-portraits.js?v=0.73.1';
+import { effectiveNpc } from './npc-alternates.js?v=0.73.1';
+import {speechDisplayText} from './voice-core.js?v=0.73.1';
+import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.73.1';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.73.1';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.73.1';
+import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.73.1';
+import {hostReplyGenerating} from './host-generation-state.js?v=0.73.1';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -296,8 +297,8 @@ function supportsStoryPresentation(nodes, source, blocks) {
 }
 
 export function createChatPresentation(api, open) {
-    const mounted=new Map(), portraits=new Map(), checked=new WeakMap(),dirty=new WeakSet(),entrances=new WeakMap();let timer,revision=0,epoch=0,currentChat='',destroyed=false;
-    const removeFormattingHooks=installChatFormattingHooks(api);
+    const mounted=new Map(), portraits=new Map(), checked=new WeakMap(),dirty=new WeakSet(),entrances=new WeakMap();let timer,revision=0,epoch=0,currentChat='',destroyed=false,streamRenderQueued=false;
+    const removeFormattingHooks=installChatFormattingHooks(api),scrollKeeper=createChatScrollKeeper(api);
     function clearPortraits(){++epoch;for(const record of portraits.values())if(record.url)URL.revokeObjectURL(record.url);portraits.clear();}
     async function imageFor(p){
         const frame=p.portraitView?.[matchMedia('(max-width: 650px)').matches?'mobile':'desktop']||{x:50,y:50,zoom:1};
@@ -345,7 +346,11 @@ export function createChatPresentation(api, open) {
         mounted.delete(host);
     }
     function render(){
-        timer=null;const context=api.context(),chatId=context.getCurrentChatId?.()||'';
+        timer=null;const viewport=scrollKeeper.capture();
+        try{renderMessages();}finally{observer.takeRecords();scrollKeeper.restore(viewport);}
+    }
+    function renderMessages(){
+        const context=api.context(),chatId=context.getCurrentChatId?.()||'';
         if(chatId!==currentChat){currentChat=chatId;clearPortraits();document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}
         const settings=api.settings(),view=chatAppearance(settings),viewKey=JSON.stringify(view),mode=chatPresentationMode(settings),preserveNativeChat=mode==='native';
         const npcs=(api.presentationNpcs?.()||api.state().npcs||[]).map(n=>n._archiveSummary?n:effectiveNpc(n)), lookup=new Map();
@@ -353,7 +358,8 @@ export function createChatPresentation(api, open) {
         for(const [host,entry]of mounted)if(!host.isConnected){entry.disposeVoice?.();mounted.delete(host);}
         const hosts=[...document.querySelectorAll('#chat .mes')].map(visibleHost).filter(Boolean),active=new Set(hosts);
         for(const [host,entry]of mounted)if(!active.has(host))restore(host,entry);
-        const stamp=JSON.stringify([revision,settings]);
+        const {npcManagerView,...presentationSettings}=settings;
+        const stamp=JSON.stringify([revision,presentationSettings]);
         for(const host of hosts){
             const mes=host.closest('.mes'), id=Number(mes.getAttribute('mesid')), message=context.chat?.[id];
             let old=mounted.get(host);
@@ -514,7 +520,15 @@ export function createChatPresentation(api, open) {
         // should schedule another pass; this prevents formatter feedback loops.
         observer.takeRecords();
     }
-    function schedule(){if(!destroyed&&timer==null)timer=setTimeout(render,90);}
+    function schedule(immediate=false){
+        if(destroyed||streamRenderQueued)return;
+        if(immediate&&hostReplyGenerating({context:api.context()})){
+            // Native streaming replaces .mes_text. Mount before the next paint
+            // so the raw and framed heights cannot alternate for several frames.
+            clearTimeout(timer);timer=null;streamRenderQueued=true;
+            queueMicrotask(()=>{streamRenderQueued=false;if(!destroyed)render();});
+        }else if(timer==null)timer=setTimeout(render,90);
+    }
     const observer=new MutationObserver(records=>{
         if(records.map(r=>{
             const target=r.target.nodeType===1?r.target:r.target.parentElement;
@@ -523,15 +537,15 @@ export function createChatPresentation(api, open) {
             if(r.type==='childList'&&[...r.addedNodes,...r.removedNodes].length&&[...r.addedNodes,...r.removedNodes].every(node=>node.nodeType===1&&node.classList.contains('trpg-chat')))return false;
             const mes=target?.closest('.mes');if(mes)dirty.add(mes);
             return target?.closest('#chat');
-        }).some(Boolean))schedule();
+        }).some(Boolean))schedule(true);
     });
     // Observe only the chat, not the full settings/editor tree. Host events handle chat replacement.
     let observedChat;
-    function observe(){if(destroyed)return;const chat=document.getElementById('chat');if(chat!==observedChat){observer.disconnect();observedChat=chat;if(chat)observer.observe(chat,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['data-roleforge-story','data-roleforge-name','name','class']});}schedule();}
+    function observe(){if(destroyed)return;scrollKeeper.observe();const chat=document.getElementById('chat');if(chat!==observedChat){observer.disconnect();observedChat=chat;if(chat)observer.observe(chat,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['data-roleforge-story','data-roleforge-name','name','class']});}schedule();}
     const subscriptions=[];
-    const context=api.context();for(const event of ['CHAT_CHANGED','CHARACTER_MESSAGE_RENDERED','USER_MESSAGE_RENDERED','MESSAGE_SENT','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED','STREAM_TOKEN_RECEIVED','GENERATION_STARTED']){
-        const type=(context.eventTypes||context.event_types)?.[event];if(type){const listener=event==='CHAT_CHANGED'?()=>{revision++;observe();}:observe;context.eventSource?.on(type,listener);subscriptions.push([type,listener]);}
+    const context=api.context();for(const event of ['CHAT_CHANGED','CHARACTER_MESSAGE_RENDERED','USER_MESSAGE_RENDERED','MESSAGE_SENT','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED','GENERATION_STOPPED','STREAM_TOKEN_RECEIVED','GENERATION_STARTED']){
+        const type=(context.eventTypes||context.event_types)?.[event];if(type){const listener=event==='CHAT_CHANGED'?()=>{scrollKeeper.reset();revision++;observe();}:event==='GENERATION_STARTED'?(...args)=>{scrollKeeper.start(...args);observe();}:event==='STREAM_TOKEN_RECEIVED'?()=>{scrollKeeper.token();observe();}:['GENERATION_ENDED','GENERATION_STOPPED'].includes(event)?()=>{scrollKeeper.end();observe();}:observe;context.eventSource?.on(type,listener);subscriptions.push([type,listener]);}
     }
     observe();
-    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){destroyed=true;clearTimeout(timer);observer.disconnect();removeFormattingHooks();clearPortraits();for(const [type,listener]of subscriptions)context.eventSource?.off?.(type,listener);document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
+    return {refresh(){revision++;clearPortraits();schedule();},reset(){currentChat='';observe();},destroy(){destroyed=true;clearTimeout(timer);scrollKeeper.destroy();observer.disconnect();removeFormattingHooks();clearPortraits();for(const [type,listener]of subscriptions)context.eventSource?.off?.(type,listener);document.querySelectorAll('.trpg-diary-book').forEach(book=>book.remove());for(const [host,entry]of mounted)restore(host,entry);}};
 }
