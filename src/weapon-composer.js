@@ -1,11 +1,11 @@
-import {weaponCategory} from './weapon-catalog.js?v=0.74.0';
-import {equippedWeapon,ownedWeaponViews,weaponReserve} from './weapon-core.js?v=0.74.0';
-import {createWeaponArt} from './weapon-art.js?v=0.74.0';
+import {weaponCategory} from './weapon-catalog.js?v=0.74.1';
+import {equippedWeapon,ownedWeaponViews,weaponReserve} from './weapon-core.js?v=0.74.1';
+import {createWeaponArt} from './weapon-art.js?v=0.74.1';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function createWeaponComposer({document:doc=globalThis.document,dock,settings=()=>({}),preset=()=>({}),configure=()=>{},act=async()=>{},busy=()=>false}={}){
  const root=doc.createElement('section');root.className='rf-weapon-composer';
- root.innerHTML='<header class="rf-ability-heading"><span data-weapon-heading></span><div><button type="button" class="rf-ability-button" data-weapon-config><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 3-1 3-3 1-2 3 2 2v3l2 3 3-1 3 1 3-2-1-3 1-3-2-3-3 1Z"/><circle cx="11.5" cy="11.5" r="3"/></svg></button><button type="button" class="rf-ability-button" data-weapon-minimize>−</button></div></header><div class="rf-weapon-body"><div class="rf-weapon-title"><div><small data-weapon-category></small><strong data-weapon-name></strong></div><span data-weapon-condition></span></div><div class="rf-weapon-main"><div class="rf-weapon-stage"><img class="rf-weapon-image" alt=""></div><div class="rf-weapon-counter"><small data-weapon-resource-label></small><strong data-weapon-count></strong><span data-weapon-count-note></span></div></div><div class="rf-weapon-foot"><span data-weapon-reserve></span><span data-weapon-state></span></div><div class="rf-weapon-actions"></div><p class="rf-weapon-feedback" role="status" hidden></p></div>';
+ root.innerHTML='<header class="rf-ability-heading"><span data-weapon-heading></span><div><button type="button" class="rf-ability-button" data-weapon-config><i class="fa-solid fa-gear" aria-hidden="true"></i></button><button type="button" class="rf-ability-button" data-weapon-minimize>−</button></div></header><div class="rf-weapon-body"><div class="rf-weapon-title"><div><small data-weapon-category></small><strong data-weapon-name></strong></div><span data-weapon-condition></span></div><div class="rf-weapon-main"><div class="rf-weapon-stage"><img class="rf-weapon-image" alt=""></div><div class="rf-weapon-counter"><small data-weapon-resource-label></small><strong data-weapon-count></strong><span data-weapon-count-note></span></div></div><div class="rf-weapon-foot"><span data-weapon-reserve></span><span data-weapon-state></span></div><div class="rf-weapon-actions"></div><p class="rf-weapon-feedback" role="status" hidden></p></div>';
  const q=s=>root.querySelector(s),text=(s,v)=>{const el=q(s);if(el.textContent!==v)el.textContent=v;},t=(th,en)=>settings().language==='th'?th:en;
  let art=null,state=null,scope='',fingerprint='',working=false,request=0;
  const remove=()=>{art?.destroy();art=null;dock.remove('weapons');fingerprint='';};
