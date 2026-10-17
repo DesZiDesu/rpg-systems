@@ -1,0 +1,884 @@
+{
+  "release": "0.76.0",
+  "baseCommit": "acd159163675b4706368953ef0a11259bf4e9008",
+  "date": "2026-10-17",
+  "unit": {
+    "command": "npm test",
+    "passed": 1403,
+    "failed": 0,
+    "skipped": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "pass": true
+  },
+  "isolatedBrowser": {
+    "settingsNavigation": {
+      "kind": "isolated host browser fixture",
+      "results": [
+        "PASS settings 320px: 7 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls",
+        "PASS settings 390px: 7 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls",
+        "PASS settings 768px: 7 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls",
+        "PASS settings 1440px: 7 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls"
+      ]
+    },
+    "dockIsolated": {
+      "kind": "isolated host browser fixture",
+      "results": [
+        "PASS 11-panel dock at 320/390/430/768/1440: no covered tabs, native picker, all commerce labels, keyboard, resize, minimized reopening, draft and chat scroll."
+      ]
+    },
+    "drawer": {
+      "kind": "isolated host browser fixture",
+      "results": [
+        "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 320px / full pane",
+        "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 390px / full pane",
+        "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 1280px / 300 pane",
+        "PASS organized drawer, preserved hooks/actions, persistence, dynamic workspaces and expanded geometry at 1280px / full pane"
+      ]
+    },
+    "optionalSystems": {
+      "kind": "isolated host browser fixture",
+      "results": [
+        "PASS rebuilt commerce pause/resume with held commitments, optional defaults OFF, live gates, prompt removal, saved records, pending auction recovery, memory storage/API pause and both settings entry points at 320px",
+        "PASS rebuilt commerce pause/resume with held commitments, optional defaults OFF, live gates, prompt removal, saved records, pending auction recovery, memory storage/API pause and both settings entry points at 390px",
+        "PASS rebuilt commerce pause/resume with held commitments, optional defaults OFF, live gates, prompt removal, saved records, pending auction recovery, memory storage/API pause and both settings entry points at 1280px"
+      ]
+    },
+    "memoryAddons": {
+      "kind": "isolated host browser fixture",
+      "results": [
+        "PASS separate native Memory Addons drawer, legacy settings/archive preservation, collapse during API, enable/off/reload, API notice, composer routing, local search, grouped settings and no-chat draft isolation at 320px",
+        "PASS separate native Memory Addons drawer, legacy settings/archive preservation, collapse during API, enable/off/reload, API notice, composer routing, local search, grouped settings and no-chat draft isolation at 390px",
+        "PASS separate native Memory Addons drawer, legacy settings/archive preservation, collapse during API, enable/off/reload, API notice, composer routing, local search, grouped settings and no-chat draft isolation at 1280px"
+      ]
+    },
+    "scroll": {
+      "kind": "isolated host browser fixture",
+      "results": [
+        "PASS native auto-scroll, queued input, reader anchors, smooth CSS, quiet/dry-run, visual-novel policy, chat switches and cleanup"
+      ]
+    }
+  },
+  "actualSillyTavern": {
+    "host": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "browser": "Chromium",
+    "mobile": "touch/mobile emulation, not physical iOS/Safari",
+    "themes": [
+      "Dark Lite (supplied CSS)",
+      "Azure (bundled)"
+    ],
+    "widths": [
+      320,
+      390,
+      430,
+      1440
+    ],
+    "externalModelCalls": 0,
+    "generation": "controlled local SSE fixtures through native Generate and StreamingProcessor",
+    "centralSettings": {
+      "release": "0.76.0",
+      "source": "Native SillyTavern drawer, browser and save handlers",
+      "cases": [
+        {
+          "device": "mobile",
+          "theme": "Dark Lite",
+          "hub": true,
+          "left": 6.046875,
+          "right": 313.953125,
+          "width": 320,
+          "overflow": 0
+        },
+        {
+          "device": "mobile",
+          "theme": "Dark Lite",
+          "hub": true,
+          "left": 6.046875,
+          "right": 383.953125,
+          "width": 390,
+          "overflow": 0
+        },
+        {
+          "device": "mobile",
+          "theme": "Dark Lite",
+          "hub": true,
+          "left": 6.046875,
+          "right": 423.953125,
+          "width": 430,
+          "overflow": 0
+        },
+        {
+          "device": "mobile",
+          "theme": "Azure",
+          "hub": true,
+          "left": 6.046875,
+          "right": 313.953125,
+          "width": 320,
+          "overflow": 0
+        },
+        {
+          "device": "mobile",
+          "theme": "Azure",
+          "hub": true,
+          "left": 6.046875,
+          "right": 383.953125,
+          "width": 390,
+          "overflow": 0
+        },
+        {
+          "device": "mobile",
+          "theme": "Azure",
+          "hub": true,
+          "left": 6.046875,
+          "right": 423.953125,
+          "width": 430,
+          "overflow": 0
+        },
+        {
+          "device": "mobile",
+          "toggles": 7,
+          "persistedAfterReload": true,
+          "layoutsAndLanguage": true,
+          "weaponManager": true,
+          "contextualSystems": 3,
+          "legacyLinks": true,
+          "search": true,
+          "recordsUnchanged": true
+        },
+        {
+          "device": "desktop",
+          "theme": "Dark Lite",
+          "hub": true,
+          "left": 722.5,
+          "right": 1073.953125,
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "device": "desktop",
+          "theme": "Azure",
+          "hub": true,
+          "left": 722.5,
+          "right": 1073.953125,
+          "width": 1440,
+          "overflow": 0
+        },
+        {
+          "device": "desktop",
+          "toggles": 7,
+          "persistedAfterReload": true,
+          "layoutsAndLanguage": true,
+          "weaponManager": true,
+          "contextualSystems": 3,
+          "legacyLinks": true,
+          "search": true,
+          "recordsUnchanged": true
+        }
+      ],
+      "errors": [],
+      "modelCalls": 0,
+      "host": {
+        "agent": "SillyTavern:1.19.0:Cohee#1207",
+        "pkgVersion": "1.19.0",
+        "gitRevision": "06bde93",
+        "gitBranch": "release",
+        "commitDate": "2026-09-14 21:01:34 +0200",
+        "isLatest": true
+      },
+      "pass": true
+    },
+    "utilityMobile": {
+      "release": "0.76.0",
+      "device": "Chromium mobile/touch emulation",
+      "errors": [],
+      "checks": [
+        "Independent toggles, inventory paging/search/item selection, mission progress/status, H-Stats sections/unknown values, no state changes or AI calls from browsing.",
+        "All weapon actions use native Continue: no added User turns, same assistant reply extends, unsent draft survives, repeated use/reload apply once, Morgan effects and inspection resolve correctly.",
+        "Reload retains optional panels, button receipts, weapon counts and final activation state.",
+        "Switching cards shows only current inventory/missions/H-Stats, with no preview data carried over."
+      ],
+      "layouts": [
+        {
+          "id": "inventory",
+          "width": 320,
+          "left": 0,
+          "right": 320,
+          "height": 454.578125,
+          "overflow": false
+        },
+        {
+          "id": "missions",
+          "width": 320,
+          "left": 0,
+          "right": 320,
+          "height": 298.359375,
+          "overflow": false
+        },
+        {
+          "id": "hstats",
+          "width": 320,
+          "left": 0,
+          "right": 320,
+          "height": 485.53125,
+          "overflow": false
+        },
+        {
+          "id": "inventory",
+          "width": 390,
+          "left": 0,
+          "right": 390,
+          "height": 454.578125,
+          "overflow": false
+        },
+        {
+          "id": "missions",
+          "width": 390,
+          "left": 0,
+          "right": 390,
+          "height": 298.359375,
+          "overflow": false
+        },
+        {
+          "id": "hstats",
+          "width": 390,
+          "left": 0,
+          "right": 390,
+          "height": 446.53125,
+          "overflow": false
+        },
+        {
+          "id": "inventory",
+          "width": 430,
+          "left": 0,
+          "right": 430,
+          "height": 454.578125,
+          "overflow": false
+        },
+        {
+          "id": "missions",
+          "width": 430,
+          "left": 0,
+          "right": 430,
+          "height": 298.359375,
+          "overflow": false
+        },
+        {
+          "id": "hstats",
+          "width": 430,
+          "left": 0,
+          "right": 430,
+          "height": 446.53125,
+          "overflow": false
+        }
+      ],
+      "requests": [
+        {
+          "weapon": "AKM",
+          "action": "use",
+          "requestId": "wb-25218091-4833-4910-9ded-2875ed4a5610"
+        },
+        {
+          "weapon": "AKM",
+          "action": "use",
+          "requestId": "wb-d1fc65f6-190f-49c9-af7f-59218737fe4d"
+        },
+        {
+          "weapon": "AKM",
+          "action": "reload",
+          "requestId": "wb-289a6bfe-a3b8-4808-b342-cd045b455965"
+        },
+        {
+          "weapon": "AKM",
+          "action": "describe",
+          "requestId": "wb-82e29db8-ff6f-4f2a-81db-7a033873b6fb"
+        },
+        {
+          "weapon": "Excalibur Morgan",
+          "action": "activate",
+          "requestId": "wb-f58397f2-7286-4c22-a39e-9712f8135eae"
+        },
+        {
+          "weapon": "Excalibur Morgan",
+          "action": "deactivate",
+          "requestId": "wb-9c087046-e9b1-4b48-a437-338babe37a45"
+        },
+        {
+          "weapon": "Excalibur Morgan",
+          "action": "describe",
+          "requestId": "wb-edd12446-1e93-4271-822f-7cfe72f3342b"
+        },
+        {
+          "weapon": "Excalibur Morgan",
+          "action": "use",
+          "requestId": "wb-5c8b7a78-4bfd-464f-9a33-35224d3818db"
+        }
+      ],
+      "unexpectedRequests": 0,
+      "draftLeaks": 0,
+      "pass": true
+    },
+    "utilityDesktop": {
+      "release": "0.76.0",
+      "device": "Desktop Chromium",
+      "errors": [],
+      "checks": [
+        "Independent toggles, inventory paging/search/item selection, mission progress/status, H-Stats sections/unknown values, no state changes or AI calls from browsing.",
+        "All weapon actions use native Continue: no added User turns, same assistant reply extends, unsent draft survives, repeated use/reload apply once, Morgan effects and inspection resolve correctly.",
+        "Reload retains optional panels, button receipts, weapon counts and final activation state.",
+        "Switching cards shows only current inventory/missions/H-Stats, with no preview data carried over."
+      ],
+      "layouts": [
+        {
+          "id": "inventory",
+          "width": 1440,
+          "left": 0,
+          "right": 1440,
+          "height": 406.578125,
+          "overflow": false
+        },
+        {
+          "id": "missions",
+          "width": 1440,
+          "left": 0,
+          "right": 1440,
+          "height": 267.96875,
+          "overflow": false
+        },
+        {
+          "id": "hstats",
+          "width": 1440,
+          "left": 0,
+          "right": 1440,
+          "height": 454.53125,
+          "overflow": false
+        }
+      ],
+      "requests": [
+        {
+          "weapon": "AKM",
+          "action": "use",
+          "requestId": "wb-977a600c-efa6-46e2-a00f-0e67482128da"
+        },
+        {
+          "weapon": "AKM",
+          "action": "use",
+          "requestId": "wb-90a5ec14-98fa-42c8-843a-76cb205d8f04"
+        },
+        {
+          "weapon": "AKM",
+          "action": "reload",
+          "requestId": "wb-f6f5069b-8e71-4400-959a-f998ee8a04fa"
+        },
+        {
+          "weapon": "AKM",
+          "action": "describe",
+          "requestId": "wb-2f114dea-d9cb-4f77-8eb1-7008748fdcc7"
+        },
+        {
+          "weapon": "Excalibur Morgan",
+          "action": "activate",
+          "requestId": "wb-0d3af242-b436-413c-9ea4-21e5b60b44f4"
+        },
+        {
+          "weapon": "Excalibur Morgan",
+          "action": "deactivate",
+          "requestId": "wb-43e9a286-6d00-4bc1-b1ce-0d43adb6808a"
+        },
+        {
+          "weapon": "Excalibur Morgan",
+          "action": "describe",
+          "requestId": "wb-d1987a80-335e-4585-a114-b3a9ccec7628"
+        },
+        {
+          "weapon": "Excalibur Morgan",
+          "action": "use",
+          "requestId": "wb-3a7bcab0-4fa1-432b-8277-d81be71f97c3"
+        }
+      ],
+      "unexpectedRequests": 0,
+      "draftLeaks": 0,
+      "pass": true
+    },
+    "dock": {
+      "kind": "Actual SillyTavern browser",
+      "checks": [
+        {
+          "device": "mobile",
+          "width": 320,
+          "kind": "buy",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 329,
+          "viewport": 320,
+          "dockWidth": 320,
+          "dockClient": 320,
+          "scrollWidth": 495,
+          "stripWidth": 209
+        },
+        {
+          "device": "mobile",
+          "width": 390,
+          "kind": "buy",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 390,
+          "viewport": 390,
+          "dockWidth": 390,
+          "dockClient": 390,
+          "scrollWidth": 495,
+          "stripWidth": 279
+        },
+        {
+          "device": "mobile",
+          "width": 430,
+          "kind": "buy",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 430,
+          "viewport": 430,
+          "dockWidth": 430,
+          "dockClient": 430,
+          "scrollWidth": 495,
+          "stripWidth": 319
+        },
+        {
+          "device": "mobile",
+          "width": 320,
+          "kind": "sell",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 329,
+          "viewport": 320,
+          "dockWidth": 320,
+          "dockClient": 320,
+          "scrollWidth": 499,
+          "stripWidth": 209
+        },
+        {
+          "device": "mobile",
+          "width": 390,
+          "kind": "sell",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 390,
+          "viewport": 390,
+          "dockWidth": 390,
+          "dockClient": 390,
+          "scrollWidth": 499,
+          "stripWidth": 279
+        },
+        {
+          "device": "mobile",
+          "width": 430,
+          "kind": "sell",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 430,
+          "viewport": 430,
+          "dockWidth": 430,
+          "dockClient": 430,
+          "scrollWidth": 499,
+          "stripWidth": 319
+        },
+        {
+          "device": "mobile",
+          "width": 320,
+          "kind": "auction",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 329,
+          "viewport": 320,
+          "dockWidth": 320,
+          "dockClient": 320,
+          "scrollWidth": 511,
+          "stripWidth": 209
+        },
+        {
+          "device": "mobile",
+          "width": 390,
+          "kind": "auction",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 390,
+          "viewport": 390,
+          "dockWidth": 390,
+          "dockClient": 390,
+          "scrollWidth": 511,
+          "stripWidth": 279
+        },
+        {
+          "device": "mobile",
+          "width": 430,
+          "kind": "auction",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 430,
+          "viewport": 430,
+          "dockWidth": 430,
+          "dockClient": 430,
+          "scrollWidth": 511,
+          "stripWidth": 319
+        },
+        {
+          "device": "desktop",
+          "width": 1440,
+          "kind": "buy",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 1440,
+          "viewport": 1440,
+          "dockWidth": 1440,
+          "dockClient": 1440,
+          "scrollWidth": 1322,
+          "stripWidth": 1322
+        },
+        {
+          "device": "desktop",
+          "width": 1440,
+          "kind": "sell",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 1440,
+          "viewport": 1440,
+          "dockWidth": 1440,
+          "dockClient": 1440,
+          "scrollWidth": 1322,
+          "stripWidth": 1322
+        },
+        {
+          "device": "desktop",
+          "width": 1440,
+          "kind": "auction",
+          "panels": 9,
+          "allTabsHit": true,
+          "picker": true,
+          "minimizedReopens": true,
+          "inside": true,
+          "noOverlap": true,
+          "hit": true,
+          "dockFits": true,
+          "hostPageWidth": 1440,
+          "viewport": 1440,
+          "dockWidth": 1440,
+          "dockClient": 1440,
+          "scrollWidth": 1322,
+          "stripWidth": 1322
+        }
+      ],
+      "requests": [
+        {
+          "device": "mobile",
+          "fixture": true
+        },
+        {
+          "device": "mobile",
+          "fixture": true
+        },
+        {
+          "device": "mobile",
+          "fixture": true
+        },
+        {
+          "device": "desktop",
+          "fixture": true
+        },
+        {
+          "device": "desktop",
+          "fixture": true
+        },
+        {
+          "device": "desktop",
+          "fixture": true
+        }
+      ],
+      "unexpected": 0,
+      "errors": [],
+      "pass": true
+    },
+    "weapons": {
+      "release": "0.76.0",
+      "errors": [],
+      "checks": [
+        "Off by default after native card import; no sample weapons granted.",
+        "Mobile/desktop fit 320/390/430/1440; invalid counters reject without changing inventory.",
+        "Real native Continue consumes ammunition once, reloads from Inventory, retains partial magazine and suppresses duplicate AI inventory decrement.",
+        "Duplicate native completion events do not consume twice.",
+        "Excalibur and Ea resolve owned exact names; completed player outcomes activate the approved blade light / opposing-cylinder animation.",
+        "Morgan is a distinct owned model: native settings, activation, blade-only aura, unchanged hilt, and 320/390/430/1440 layouts.",
+        "Reduce Motion freezes special animation.",
+        "Uploaded art is resized into the scoped preset, not copied into state/checkpoints.",
+        "Changing cards closes the stale manager; unrelated cards retain the default-off state and receive no Fate weapons or art.",
+        "Reload preserves equipment, resources and art; chatbar windows reopen minimized.",
+        "Native ammo configuration rejects overflow and retains the existing stack quantity.",
+        "A native exported card imports into a new character/chat with uploaded art, counters and equipment intact."
+      ],
+      "layouts": [
+        {
+          "width": 320,
+          "pageWidth": 329,
+          "panel": {
+            "x": 0,
+            "y": 524,
+            "width": 320,
+            "height": 274.5,
+            "top": 524,
+            "right": 320,
+            "bottom": 798.5,
+            "left": 0
+          },
+          "dock": {
+            "x": 0,
+            "y": 469,
+            "width": 320,
+            "height": 334.5,
+            "top": 469,
+            "right": 320,
+            "bottom": 803.5,
+            "left": 0
+          },
+          "chatbar": {
+            "x": 0,
+            "y": 803.5,
+            "width": 320,
+            "height": 38.5,
+            "top": 803.5,
+            "right": 320,
+            "bottom": 842,
+            "left": 0
+          },
+          "count": {
+            "x": 225.34375,
+            "y": 650,
+            "width": 83.65625,
+            "height": 30,
+            "top": 650,
+            "right": 309,
+            "bottom": 680,
+            "left": 225.34375
+          },
+          "hostWidthWithoutDock": 329
+        },
+        {
+          "width": 390,
+          "pageWidth": 390,
+          "panel": {
+            "x": 0,
+            "y": 498,
+            "width": 390,
+            "height": 300.5,
+            "top": 498,
+            "right": 390,
+            "bottom": 798.5,
+            "left": 0
+          },
+          "dock": {
+            "x": 0,
+            "y": 443,
+            "width": 390,
+            "height": 360.5,
+            "top": 443,
+            "right": 390,
+            "bottom": 803.5,
+            "left": 0
+          },
+          "chatbar": {
+            "x": 0,
+            "y": 803.5,
+            "width": 390,
+            "height": 38.5,
+            "top": 803.5,
+            "right": 390,
+            "bottom": 842,
+            "left": 0
+          },
+          "count": {
+            "x": 282.6875,
+            "y": 634.75,
+            "width": 90.3125,
+            "height": 37.5,
+            "top": 634.75,
+            "right": 373,
+            "bottom": 672.25,
+            "left": 282.6875
+          },
+          "hostWidthWithoutDock": 390
+        },
+        {
+          "width": 430,
+          "pageWidth": 430,
+          "panel": {
+            "x": 0,
+            "y": 498,
+            "width": 430,
+            "height": 300.5,
+            "top": 498,
+            "right": 430,
+            "bottom": 798.5,
+            "left": 0
+          },
+          "dock": {
+            "x": 0,
+            "y": 443,
+            "width": 430,
+            "height": 360.5,
+            "top": 443,
+            "right": 430,
+            "bottom": 803.5,
+            "left": 0
+          },
+          "chatbar": {
+            "x": 0,
+            "y": 803.5,
+            "width": 430,
+            "height": 38.5,
+            "top": 803.5,
+            "right": 430,
+            "bottom": 842,
+            "left": 0
+          },
+          "count": {
+            "x": 322.6875,
+            "y": 634.75,
+            "width": 90.3125,
+            "height": 37.5,
+            "top": 634.75,
+            "right": 413,
+            "bottom": 672.25,
+            "left": 322.6875
+          },
+          "hostWidthWithoutDock": 430
+        },
+        {
+          "width": 1440,
+          "pageWidth": 1440,
+          "panel": {
+            "x": 0,
+            "y": 615,
+            "width": 1440,
+            "height": 300.5,
+            "top": 615,
+            "right": 1440,
+            "bottom": 915.5,
+            "left": 0
+          },
+          "dock": {
+            "x": 0,
+            "y": 564,
+            "width": 1440,
+            "height": 356.5,
+            "top": 564,
+            "right": 1440,
+            "bottom": 920.5,
+            "left": 0
+          },
+          "chatbar": {
+            "x": 0,
+            "y": 920.5,
+            "width": 1440,
+            "height": 38.5,
+            "top": 920.5,
+            "right": 1440,
+            "bottom": 959,
+            "left": 0
+          },
+          "count": {
+            "x": 1332.6875,
+            "y": 751.75,
+            "width": 90.3125,
+            "height": 37.5,
+            "top": 751.75,
+            "right": 1423,
+            "bottom": 789.25,
+            "left": 1332.6875
+          },
+          "hostWidthWithoutDock": 1440
+        }
+      ],
+      "nativeGenerationRequests": 5,
+      "providerCalls": 0,
+      "note": "Real SillyTavern with native JSON card imports, Dark Lite, chatbar controls and locally supplied SSE generation fixtures. Mobile is Chromium emulation.",
+      "theme": "Dark Lite (exact supplied CSS)",
+      "pass": true
+    }
+  },
+  "limitations": [
+    "Mobile was Chromium emulation. Physical iOS/Safari was not tested.",
+    "External model compliance was not tested: response fixtures exercised the native generation path.",
+    "On 320px the native SillyTavern page can report 329px document width; the dock/control geometry remained within the 320px viewport."
+  ],
+  "preview": "previews/chatbar-windows-0760/index.html",
+  "pass": true
+}

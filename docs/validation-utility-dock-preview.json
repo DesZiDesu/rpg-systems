@@ -1,0 +1,177 @@
+{
+  "recordedAt": "2026-10-17T05:41:20.950030+00:00",
+  "release": "0.75.0",
+  "baseCommit": "acd159163675b4706368953ef0a11259bf4e9008",
+  "previewOnly": true,
+  "committed": false,
+  "pushed": false,
+  "host": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "theme": "Dark Lite",
+  "hostSource": "Local SillyTavern installation with a separate disposable test profile",
+  "unitTests": {
+    "command": "npm test",
+    "passed": 1400,
+    "failed": 0,
+    "log": "/workspace/artifacts/utility-all-unit-final.log"
+  },
+  "syntaxChecks": {
+    "command": "npm run check",
+    "passed": true,
+    "log": "/workspace/artifacts/utility-check-final.log"
+  },
+  "nativeBrowser": [
+    {
+      "device": "Chromium mobile/touch emulation",
+      "pass": true,
+      "viewportWidths": [
+        320,
+        390,
+        430
+      ],
+      "weaponActions": 8,
+      "actions": [
+        "use",
+        "use",
+        "reload",
+        "describe",
+        "activate",
+        "deactivate",
+        "describe",
+        "use"
+      ],
+      "draftLeaks": 0,
+      "unexpectedRequests": 0,
+      "checks": [
+        "Independent toggles, inventory paging/search/item selection, mission progress/status, H-Stats sections/unknown values, no state changes or AI calls from browsing.",
+        "All weapon actions use native Continue: no added User turns, same assistant reply extends, unsent draft survives, repeated use/reload apply once, Morgan effects and inspection resolve correctly.",
+        "Reload retains optional panels, button receipts, weapon counts and final activation state.",
+        "Switching cards shows only current inventory/missions/H-Stats, with no preview data carried over."
+      ],
+      "errors": []
+    },
+    {
+      "device": "Desktop Chromium",
+      "pass": true,
+      "viewportWidths": [
+        1440
+      ],
+      "weaponActions": 8,
+      "actions": [
+        "use",
+        "use",
+        "reload",
+        "describe",
+        "activate",
+        "deactivate",
+        "describe",
+        "use"
+      ],
+      "draftLeaks": 0,
+      "unexpectedRequests": 0,
+      "checks": [
+        "Independent toggles, inventory paging/search/item selection, mission progress/status, H-Stats sections/unknown values, no state changes or AI calls from browsing.",
+        "All weapon actions use native Continue: no added User turns, same assistant reply extends, unsent draft survives, repeated use/reload apply once, Morgan effects and inspection resolve correctly.",
+        "Reload retains optional panels, button receipts, weapon counts and final activation state.",
+        "Switching cards shows only current inventory/missions/H-Stats, with no preview data carried over."
+      ],
+      "errors": []
+    }
+  ],
+  "missionRedesign": {
+    "nextObjective": true,
+    "collapsedChecklist": true,
+    "arrowAndNativePickerNavigation": true,
+    "filterIsReadOnly": true,
+    "preservesRequiredObjectiveProgress": true,
+    "currentLayouts": [
+      {
+        "device": "mobile",
+        "height": 301.0625,
+        "width": 390,
+        "overflow": false
+      },
+      {
+        "device": "desktop",
+        "height": 272.375,
+        "width": 1440,
+        "overflow": false
+      }
+    ]
+  },
+  "readOnlyPreviewCapture": {
+    "errors": [],
+    "modelRequests": 0,
+    "title": "Utility Preview 1792215420924",
+    "missionLayouts": [
+      {
+        "device": "mobile",
+        "height": 301.0625,
+        "width": 390,
+        "overflow": false
+      },
+      {
+        "device": "desktop",
+        "height": 272.375,
+        "width": 1440,
+        "overflow": false
+      }
+    ],
+    "pass": true
+  },
+  "chatScrollRegression": {
+    "pass": true,
+    "log": "/workspace/artifacts/utility-scroll-regression-final.log",
+    "coverage": "Native auto-scroll, queued input, reader anchors, smooth CSS, quiet/dry-run, visual-novel policy, chat switches and cleanup"
+  },
+  "weaponsRegressionBeforeMissionRestyling": {
+    "pass": true,
+    "checks": 12,
+    "report": "/workspace/artifacts/weapon-continue-regression/weapons-real.json"
+  },
+  "artifactsDirectory": "/workspace/artifacts/utility-dock-preview",
+  "changedFiles": [
+    "index.js",
+    "src/weapon-continuation.js",
+    "src/weapon-core.js",
+    "src/utility-composer.js",
+    "src/composer-dock.js",
+    "styles/utility-composer.css",
+    "templates/settings.html",
+    "src/runtime-styles.js",
+    "package.json",
+    "tests/weapon-continuation.test.mjs",
+    "tests/utility-dock-preview.real.browser.mjs",
+    "tests/host-integration.test.mjs",
+    "tests/weapons.real.browser.mjs",
+    "tools/capture-utility-preview.mjs",
+    "tools/build-utility-preview.mjs",
+    "docs/utility-dock-preview.th.md",
+    "docs/validation-utility-dock-preview.json"
+  ],
+  "limitations": [
+    "Mobile uses touch-enabled Chromium emulation, not a physical iPhone/Safari.",
+    "Native Generate/StreamingProcessor tested with local controlled SSE replies; no external model provider was called.",
+    "Weapon buttons require a nonempty latest assistant reply, tracking enabled and a connected generation backend. They do not fall back to sending User messages.",
+    "Preview work is uncommitted and not released on main."
+  ],
+  "gallery": {
+    "pass": true,
+    "source": "Actual SillyTavern captures",
+    "mobileAndDesktop": true,
+    "contextAndCloseupViews": true
+  },
+  "gif": {
+    "frames": 36,
+    "width": 420,
+    "height": 689,
+    "path": "/workspace/artifacts/utility-dock-preview/dock-tour.gif",
+    "source": "Native SillyTavern mobile UI screen sequence"
+  }
+}

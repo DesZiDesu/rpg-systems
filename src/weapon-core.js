@@ -1,5 +1,5 @@
-import {WEAPON_CATEGORIES,WEAPON_CATEGORY_IDS,weaponCategory,namedWeaponModel,SPECIAL_WEAPON_MODELS,weaponModelUrl} from './weapon-catalog.js?v=0.75.0';
-import {evidenceText,interactionEvidence} from './interaction-evidence.js?v=0.75.0';
+import {WEAPON_CATEGORIES,WEAPON_CATEGORY_IDS,weaponCategory,namedWeaponModel,SPECIAL_WEAPON_MODELS,weaponModelUrl} from './weapon-catalog.js?v=0.76.0';
+import {evidenceText,interactionEvidence} from './interaction-evidence.js?v=0.76.0';
 
 const clean=(v,n=160)=>typeof v==='string'?v.trim().slice(0,n):'';
 const object=v=>v&&typeof v==='object'&&!Array.isArray(v);
@@ -117,13 +117,15 @@ export function weaponPromptReference(state,preset){
 }
 const words={equip:/สวม|ถือ|หยิบ|ชัก|เปลี่ยนอาวุธ|\b(?:equip|draw|wield|take|switch|ready|hold)\b/iu,unequip:/เก็บ|ปลด|วาง|\b(?:unequip|sheathe|holster|put away|stow)\b/iu,use:/ยิง|โจมตี|ฟัน|แทง|ขว้าง|ใช้|ปล่อย|\b(?:fire|shoot|attack|strike|slash|stab|throw|use|cast|release)\b/iu,reload:/บรรจุ|รีโหลด|ใส่.*(?:แม็ก|แม็ค|ลูก|กระสุน|เซลล์)|\b(?:reload|load|nock|replace.*cell)\b/iu,activate:/ปลุก|ปลดปล่อย|เปิดใช้|ใช้โฮกุ|\b(?:activate|unleash|release|noble phantasm)\b/iu,deactivate:/ดับ|จาง|หยุด|พัก|เก็บ|\b(?:deactivate|fade|stop|power down|cease)\b/iu,recharge:/ฟื้น|เติม|ชาร์จ|\b(?:recharge|replenish|restore|refill)\b/iu,describe:/ตรวจ|ดู|สำรวจ|\b(?:inspect|check|examine|look)\b/iu};
 const denied=/(?:สมมุติ|ถ้า|หาก|วางแผน|ยังไม่|ไม่ได้|ไม่(?:ยิง|ใช้|โจมตี|บรรจุ|รีโหลด)|\b(?:if|hypothetical|would|will|not yet|did not|do not|don't|watch|watches)\b)/iu;
-function confirmedEvent(raw,weapon,{story,user,playerName=''}){
+function confirmedEvent(raw,weapon,{story,user,playerName='',authorization}){
+ if(authorization){story=authorization.story;user='';}
  const evidence=clean(raw.evidence,2000),quote=evidenceText(evidence),userQuote=clean(raw.userEvidence,1000),action=words[raw.action];
  if(!action||!quote||!key(quote).includes(key(weapon.name))||denied.test(quote)||denied.test(user))return false;
  const subject=/\b(?:you|your|player)\b|คุณ|ผู้เล่น/iu;
  const player=key(playerName);const hasPlayer=subject.test(quote)||player&&key(quote).includes(player);
  const narrative=String(story).replace(/<tr-dialogue\b[^>]*>[\s\S]*?<\/tr-dialogue\s*>/giu,'');
  if(!interactionEvidence(evidence,narrative,user,{test:()=>hasPlayer},action))return false;
+ if(authorization)return true;
  if(raw.action==='describe')return true;
  if(raw.action==='deactivate'&&weapon.active)return true;
  return Boolean(userQuote&&evidenceText(user).includes(evidenceText(userQuote))&&action.test(evidenceText(userQuote))&&!denied.test(userQuote));
@@ -131,13 +133,17 @@ function confirmedEvent(raw,weapon,{story,user,playerName=''}){
 const countWords=['zero','one','two','three','four','five','six','seven','eight','nine','ten'];
 const thaiCounts=['ศูนย์','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า','สิบ'];
 function explicitCount(evidence,count){return count===1||new RegExp(`(?:^|[^0-9])${count}(?:[^0-9]|$)`,'u').test(evidence)||count<11&&(new RegExp(`\\b${countWords[count]}\\b`,'iu').test(evidence)||String(evidence).includes(thaiCounts[count]));}
-export function applyWeaponEvents(state,input,{enabled=false,preset=emptyWeaponPreset(),story='',user='',source={},reserved=()=>false}={}){
+export function applyWeaponEvents(state,input,{enabled=false,preset=emptyWeaponPreset(),story='',user='',source={},reserved=()=>false,authorizedActions=[]}={}){
  const accepted=[],errors=[],managedInventory=new Set();if(!enabled||!Array.isArray(input)||!input.length)return{next:state,accepted,errors,managedInventory};
  let next=structuredClone(state);next.weaponSystem=normalizeWeaponSystem(next.weaponSystem);
- for(const raw of (Array.isArray(input)?input:[]).slice(0,16)){
+ for(const raw of (Array.isArray(input)?input:[]).slice(0,128)){
   if(!object(raw)||!clean(raw.id,100)||raw.actor!=='player'||raw.outcome!=='success')continue;
-  const receiptKey=[source.turnKey||source.messageId||'',source.variant||'',raw.id].join('|');if(next.weaponSystem.receipts.some(r=>r.key===receiptKey))continue;
-  const weapon=ownedWeaponViews(next,preset).find(w=>w.itemId===raw.itemId);if(!weapon||!confirmedEvent(raw,weapon,{story,user,playerName:state.player?.name})){errors.push('evidence');continue;}
+  const authorization=authorizedActions.find(r=>r.id===raw.requestId&&r.itemId===raw.itemId&&r.action===raw.action);
+  if(raw.requestId&&!authorization){errors.push('request');continue;}
+  // Continuing changes the content variant of this SAME assistant message.
+  // A button nonce is single-use across those content variants, not per hash.
+  const receiptKey=authorization?[source.turnKey||source.messageId||'','button',authorization.id].join('|'):[source.turnKey||source.messageId||'',source.variant||'',raw.id].join('|');if(next.weaponSystem.receipts.some(r=>r.key===receiptKey))continue;
+  const weapon=ownedWeaponViews(next,preset).find(w=>w.itemId===raw.itemId);if(!weapon||!confirmedEvent(raw,weapon,{story,user,playerName:state.player?.name,authorization})){errors.push('evidence');continue;}
   const trial=structuredClone(next),system=normalizeWeaponSystem(trial.weaponSystem),metadata=normalizeWeaponMetadata(weapon);let affected=[];
   if(raw.action==='equip')system.equippedItemId=weapon.itemId;
   else if(raw.action==='unequip'){if(system.equippedItemId===weapon.itemId)system.equippedItemId='';}
@@ -180,4 +186,4 @@ export function weaponActionText(weapon,action,language='en'){
  const th=language==='th',name=weapon.name;
  return ({use:th?`ฉันใช้อาวุธ ${name} โจมตีตามสถานการณ์ตรงหน้า`:`I use my ${name} against the current threat.`,reload:th?`ฉันบรรจุกระสุนหรือพลังงานให้ ${name} จากของที่มีในคลัง`:`I reload my ${name} using compatible ammunition or a cell I actually have.`,activate:th?`ฉันปลดปล่อยพลังของ ${name} ตามความสามารถและเงื่อนไขที่มีจริงในโรล`:`I activate my ${name}, respecting its established abilities and conditions.`,deactivate:th?`ฉันพักพลังของ ${name}`:`I deactivate my ${name}.`,describe:th?`ฉันตรวจสอบ ${name} ของฉัน รวมถึงจำนวนที่บรรจุ ความจุ และกระสุนที่ใช้ได้`:`I inspect my ${name}, including its loaded resources, capacity and compatible ammunition.`})[action]||'';
 }
-export const WEAPON_INSTRUCTIONS=`OPTIONAL WEAPON TRACKING: Only owned positive-quantity Inventory items can appear in the weapon dock. Models are visuals, never grants. Categories: ${WEAPON_CATEGORY_IDS.join(', ')}. New inventory weapon definitions may include weapon:{category,mode:"none|magazine|rounds|arrows|energy|quantity|charges",capacity:null,current:null,ammoType:"",ammoItemId:""}; preserve unknown null counts, never assume a full weapon or spare magazines. Ammunition is a SEPARATE inventory item with ammo:{kind:"round|magazine|cell|arrow|bolt",type:"caliber or energy type",roundsPerUnit:integer|null,capacity:integer|null}. A magazine/cell stack quantity counts packs, roundsPerUnit is its actual contents. Other ammo units contain one round/arrow. Exact owned names Excalibur/Ea automatically select their art; never add these weapons because they exist in the visual catalog, and never emit images/URLs. In the SAME normal reply emit weaponEvents:[{id,actor:"player",outcome:"success",action:"describe|equip|unequip|use|reload|activate|deactivate|recharge",itemId,userEvidence:exact latest user action quote,evidence:exact visible player outcome quote naming the weapon,count:positive integer,ammoItemId,weapon:{...known inspection metadata}}]. Equip only on an actual draw/equip; owning a weapon is not equipping it. Inspection fills unknown values, never refills. use decrements loaded count (or quantity for thrown weapons); count must be stated in the visible outcome when above one. reload consumes only existing compatible inventory ammo; one magazine/cell swaps its actual contents, loose ammo adds count within capacity. Retain the removed magazine/cell, including an empty one. Do not ALSO emit inventory ops/itemEvents for the SAME ammo or thrown quantity consumed by weaponEvents. Do not apply NPC actions, dialogue, plans or hypothetical attacks to the player's weapon. Activate/deactivate visuals only for actual player-owned effects in the scene. Do not invent mana costs/cooldowns for named weapons; existing world rules control those separately. No extra API call is needed.`;
+export const WEAPON_INSTRUCTIONS=`OPTIONAL WEAPON TRACKING: Only owned positive-quantity Inventory items can appear in the weapon dock. Models are visuals, never grants. Categories: ${WEAPON_CATEGORY_IDS.join(', ')}. New inventory weapon definitions may include weapon:{category,mode:"none|magazine|rounds|arrows|energy|quantity|charges",capacity:null,current:null,ammoType:"",ammoItemId:""}; preserve unknown null counts, never assume a full weapon or spare magazines. Ammunition is a SEPARATE inventory item with ammo:{kind:"round|magazine|cell|arrow|bolt",type:"caliber or energy type",roundsPerUnit:integer|null,capacity:integer|null}. A magazine/cell stack quantity counts packs, roundsPerUnit is its actual contents. Other ammo units contain one round/arrow. Exact owned names Excalibur/Ea automatically select their art; never add these weapons because they exist in the visual catalog, and never emit images/URLs. In the SAME role-play reply emit weaponEvents:[{id,actor:"player",outcome:"success",action:"describe|equip|unequip|use|reload|activate|deactivate|recharge",itemId,userEvidence:exact latest typed user action quote (or requestId from a verified weapon-button continuation),evidence:exact visible player outcome quote naming the weapon,count:positive integer,ammoItemId,weapon:{...known inspection metadata}}]. Equip only on an actual draw/equip; owning a weapon is not equipping it. Inspection fills unknown values, never refills. use decrements loaded count (or quantity for thrown weapons); count must be stated in the visible outcome when above one. reload consumes only existing compatible inventory ammo; one magazine/cell swaps its actual contents, loose ammo adds count within capacity. Retain the removed magazine/cell, including an empty one. Do not ALSO emit inventory ops/itemEvents for the SAME ammo or thrown quantity consumed by weaponEvents. Do not apply NPC actions, dialogue, plans or hypothetical attacks to the player's weapon. Activate/deactivate visuals only for actual player-owned effects in the scene. Do not invent mana costs/cooldowns for named weapons; existing world rules control those separately. No extra API call is needed.`;

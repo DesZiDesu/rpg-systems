@@ -1,6 +1,7 @@
 // Real production prompt assembly, reply processing and composer. Model replies
 // are fixtures; assertions separate ordinary replies from additional API calls.
 import assert from 'node:assert/strict';
+import {openDockPanel} from './composer-dock-fixture.mjs';
 import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -34,6 +35,7 @@ async function receive(page,user,story,patch,type='normal'){
     },{story,patch});
     await page.evaluate(async id=>{await window.host.eventSource.emit('MESSAGE_RECEIVED',id,'normal');await window.host.eventSource.emit('GENERATION_ENDED');},id);
     await page.waitForFunction(id=>Object.keys(window.host.chatMetadata.tretaresia_rpg_scene_history||{}).some(key=>key.startsWith(`${id}:`)),id);
+    if(await page.locator('.rf-commerce-composer').count())await openDockPanel(page);
 }
 let browser;
 try{
@@ -169,10 +171,10 @@ try{
         // Exact latest report: a training window is already open, no machine
         // marketplace object exists, and opening must make commerce visible.
         await receive(page,'ฉันมีวิชา Fire Ball','<tr-narrative>คุณรู้จักวิชา Fire Ball แต่ยังไม่เข้าใจรายละเอียด</tr-narrative>',{ops:[['upsert','proficiencies.techniques',{id:'fire',name:'Fire Ball',category:'Magic',description:'',proficiency:0}]]});
-        const abilities=page.locator('.rf-incantation');await abilities.locator('[data-ability-select]').selectOption('technique:fire');await abilities.locator('[data-ability-action="train"]').click();
+        const abilities=page.locator('.rf-incantation');await openDockPanel(page,'abilities');await abilities.locator('[data-ability-select]').selectOption('technique:fire');await abilities.locator('[data-ability-action="train"]').click();
         const training=page.locator('.rf-training-composer');await training.locator('[data-ability-action="practice-understanding"]').waitFor();
         await receive(page,currentRoomUser,currentRoomStory,null);await bar.locator('[data-commerce-action="confirm"]').waitFor();
-        assert.equal(await training.isVisible(),false);assert.equal(await bar.isVisible(),true);assert.equal(await page.locator('.rf-composer-dock [role="tab"]').count(),3);
+        assert.equal(await training.isVisible(),false);assert.equal(await bar.isVisible(),true);for(const id of ['abilities','training','commerce'])assert.equal(await page.locator('[data-dock-panel="'+id+'"]').count(),1);
         assert.equal(await page.evaluate(()=>window.calls.length),7,'latest screenshot opens alongside training with zero extra API');
         const opening=await page.evaluate(()=>Object.values(window.host.chatMetadata.tretaresia_rpg_social_events||{}).flatMap(v=>Object.values(v)).at(-1)?.commerceOpening);
         if(opening){assert.equal(opening.status,'ready');assert.equal(opening.source,'public-dialogue');}

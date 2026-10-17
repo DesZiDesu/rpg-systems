@@ -2,7 +2,8 @@
 // stay mounted; moving between pages never writes settings or discards a draft.
 export const SETTINGS_ROUTES = Object.freeze({
     general: { icon:'sliders', title:['General play','การเล่นทั่วไป'], description:['Language, actions and continuity','ภาษา การส่งคำสั่ง และการสานต่อแชท'], aliases:'language ภาษา interaction delivery continuity ต่อเนื่อง launcher' },
-    interface: { icon:'display', title:['Windows & appearance','หน้าต่างและรูปลักษณ์'], description:['Chatbar windows, chat cards and colors','หน้าต่างเหนือแชท รูปแบบข้อความ และสี'], aliases:'UI appearance layout หน้าต่าง สี header dialogue narrative status training' },
+    chatbar: { icon:'window-maximize', title:['Windows above Chatbar','หน้าต่างเหนือ Chatbar'], description:['All window toggles, layouts, incantations and weapons','เปิดปิดทุกแผง รูปแบบ บทร่าย และอาวุธในที่เดียว'], aliases:'chatbar composer dock UI HUD inventory mission quest H-Stats stat training status weapons gun ammunition ammo magazine model Excalibur Ea incantation chant NPC language marketplace shop auction memory layouts windows หน้าต่างเหนือช่องพิมพ์ สถานะ ฝึก กระเป๋า ภารกิจ อาวุธ กระสุน โมเดล บทร่าย ร่ายเวท ซื้อ ขาย ประมูล ความจำ' },
+    interface: { icon:'display', title:['Chat appearance & navigation','รูปแบบแชทและการนำทาง'], description:['Chat cards, scene display, navigation and colors','รูปแบบข้อความ ฉาก การนำทาง และสี'], aliases:'UI appearance layout หน้าต่าง สี header dialogue narrative scene navigation' },
     world: { icon:'globe', title:['World & rules','โลกและกติกา'], description:['Stats, currency, powers and optional systems','Stats ค่าเงิน พลัง และระบบเสริม'], aliases:'world rules โลก กติกา stat เงิน power magic skill' },
     presets: { icon:'boxes-stacked', title:['Presets & character cards','Preset และการ์ดตัวละคร'], description:['Reusable setups, import/export and card packs','คลังชุดตั้งค่า Import/Export และแพ็กลงการ์ด'], aliases:'preset import export library card JSON คลัง การ์ด นำเข้า ส่งออก' },
     tracking: { icon:'arrows-rotate', title:['Tracking & notifications','ติดตามและแจ้งเตือน'], description:['Story updates, prompts and event alerts','ข้อมูลจากโรล การแนบสถานะ และการแจ้งเตือน'], aliases:'tracking prompt patch auto notify ติดตาม แจ้งเตือน' },
@@ -11,10 +12,8 @@ export const SETTINGS_ROUTES = Object.freeze({
     'interface-colors': { parent:'interface', icon:'palette', title:['RoleForge colors & density','สีและความหนาแน่น RoleForge'], description:['Accent, aura color, glass and glow','สีหลัก สีออร่า ความโปร่ง และแสง'], aliases:'accent aura density glass glow color สี มานา ออร่า' },
     stats: { parent:'world', icon:'heart', title:['Stats & practice','ค่าสถานะและการฝึก'], description:['Values, custom stats and practice methods','ค่าปัจจุบัน Custom Stats และวิธีฝึก'], aliases:'HP MP ST MAX INT STR DF AG stamina intelligence strength defense agility stats ฝึก สถิติ พลังชีวิต สตามิน่า' },
     currency: { parent:'world', icon:'coins', title:['Currency & exchange rates','ค่าเงินและอัตราแลก'], description:['Units, exchange rates and animated icons','หน่วยเงิน อัตราแลก และไอคอนเคลื่อนไหว'], aliases:'currency money gold silver copper dollar banknote icons coin เงิน ทอง เงินทองแดง ธนบัตร เหรียญ อัตราแลก' },
-    weapons: { parent:'world',icon:'crosshairs',title:['Weapons & ammunition','อาวุธและกระสุน'],description:['Optional chatbar dock, equipped weapons and ammo','แถบอาวุธที่เลือกใช้ ภาพ และกระสุน'],aliases:'weapon weapons gun ammunition ammo magazine model Excalibur Ea อาวุธ ปืน ดาบ กระสุน แม็ก โมเดล' },
     powers: { parent:'world', icon:'bolt', title:['Power systems','ระบบพลัง'], description:['Configure this chat’s power preset','กำหนดระบบพลังของแชทนี้'], aliases:'power powers mana magic MP aura resource พลัง เวท มานา ออร่า' },
     forge: { parent:'world', icon:'user-pen', title:['Character Creation','การสร้างตัวละคร'], description:['Origin, skill, mastery, arsenal and path choices','ถิ่นกำเนิด สกิล ความเชี่ยวชาญ อาวุธ และเส้นทาง'], aliases:'forge creation character origin standing arsenal weapon rank party guild alignment preset ตัวละคร ถิ่นกำเนิด สถานะสังคม อาวุธ อันดับ ฝ่าย' },
-    incantation: { parent:'world', icon:'book-open', title:['Incantation rules','กติกาวิชาและบทร่าย'], description:['NPC chants and incantation language','การร่ายของ NPC และภาษาบทร่าย'], aliases:'incantation chant NPC language บทร่าย ร่ายเวท ภาษา' },
     optional: { parent:'world', icon:'cubes', title:['Optional systems','ระบบเสริม'], description:['Enable only the systems you use','เลือกเปิดระบบที่ต้องการเล่น'], aliases:'optional marketplace shop negotiation auction mission party guild dungeon memory survival hunger thirst ระบบเสริม ตลาด ซื้อขาย ประมูล กิลด์ ปาร์ตี้ ภารกิจ ความจำ' },
     diary: { parent:'world', icon:'book', title:['NPC diary','บันทึกของ NPC'], description:['How often NPCs record their thoughts','ความถี่ในการบันทึกความคิดของ NPC'], aliases:'NPC diary thoughts frequency บันทึก ไดอารี่ ความคิด ความถี่' },
     'preset-library': { parent:'presets', icon:'boxes-stacked', title:['Preset library','คลัง Preset'], description:['Create, load, rename, delete and share setups','สร้าง ใช้ เปลี่ยนชื่อ ลบ และแชร์ชุดตั้งค่า'], aliases:'preset import export save create delete rename reset library JSON คลัง ลบ บันทึก เปลี่ยนชื่อ โหลด' },
@@ -24,6 +23,9 @@ export const SETTINGS_ROUTES = Object.freeze({
     diagnostics: { parent:'advanced', icon:'circle-info', title:['Request usage & tracking guide','จำนวนคำขอและคู่มือการติดตาม'], description:['Check request counts and understand updates','ตรวจจำนวนคำขอและวิธีอัปเดตข้อมูล'], aliases:'API request diagnostics debug tracking patch error latency performance usage คำขอ ปัญหา ช้า คู่มือ' },
 });
 
+// Retain old in-extension links while the controls live in one page only.
+const LEGACY_CHATBAR_SECTIONS = Object.freeze({weapons:'roleforge-chatbar-weapons',incantation:'roleforge-chatbar-incantation'});
+
 const COPY = {
     'search-label':['Find a setting','ค้นหาการตั้งค่า'],
     'search-placeholder':['Try “Header”, “currency” or “HP”','เช่น Header, ค่าเงิน หรือ HP'],
@@ -31,6 +33,35 @@ const COPY = {
     language:['Language','ภาษา'],
     actions:['Actions & continuity','การส่งคำสั่งและการสานต่อแชท'],
     'above-chatbar':['Windows above Chatbar','หน้าต่างเหนือ Chatbar'],
+    'chatbar-help':['Manage every chatbar window here. Swipe its tab strip or use the all-windows button to switch panels.','จัดการหน้าต่างเหนือช่องพิมพ์ทั้งหมดจากหน้านี้ สลับแผงได้ด้วยการปัดแท็บหรือปุ่มเลือกหน้าต่างทั้งหมด'],
+    'chatbar-visibility':['Show windows','แสดงหน้าต่าง'],
+    "chatbar-show-status":["Status", "สถานะ"],
+    "chatbar-show-inventory":["Inventory", "กระเป๋า"],
+    "chatbar-show-missions":["Missions", "ภารกิจ"],
+    "chatbar-show-hstats":["H-Stats", "H-Stats"],
+    "chatbar-show-practice":["Stat training", "ฝึกค่าสถานะ"],
+    "chatbar-show-incantation":["Skills & incantations", "วิชา ทักษะ และบทร่าย"],
+    "chatbar-show-weapons":["Weapons & tracking", "อาวุธและการติดตาม"],
+    "chatbar-status-layout":["Status layout", "รูปแบบสถานะ"],
+    "chatbar-practice-layout":["Training layout", "รูปแบบหน้าฝึก"],
+    "chatbar-npc-rules":["NPC incantation rules", "ให้ NPC ร่ายเวทตามความสามารถ"],
+    "chatbar-chant-language":["Chant language", "ภาษาบทร่าย"],
+    "chatbar-custom-language":["Custom chant language", "ภาษาที่ระบุเอง"],
+    "chatbar-weapon-scope":["Off by default. Enable it only for the chat/card preset you play.", "เริ่มต้นปิด เปิดเฉพาะแชท/การ์ดหรือ Preset ที่ต้องการใช้"],
+    "chatbar-manage-weapons":["Manage weapons & ammunition", "จัดการอาวุธและกระสุน"],
+    "chatbar-owned-weapons":["Choose an owned item, its artwork and loaded resources. Spare ammunition stays in Inventory.", "เลือกอาวุธที่มีในกระเป๋า ภาพ และจำนวนบรรจุ กระสุนสำรองเก็บแยกในคลัง"],
+
+    'chatbar-scope-help':['Status, Inventory, Missions, H-Stats and stat-training visibility apply across chats. Incantations, weapons and trade systems follow the chat/card preset. Turning them off retains saved data.','สถานะ กระเป๋า ภารกิจ H-Stats และหน้าฝึกใช้ค่ารวม ส่วนบทร่าย อาวุธ และซื้อขายอิง Preset แชท/การ์ด ปิดแล้วเก็บข้อมูลไว้'],
+    'chatbar-layouts':['Layouts & coin icons','รูปแบบหน้าต่างและไอคอนเงิน'],
+    'chatbar-layouts-help':['Status, stat training and shared coin appearance','สถานะ หน้าฝึก และชุดไอคอนเงินที่ใช้ร่วมกัน'],
+    'chatbar-incantation':['Skills & incantations','วิชา ทักษะ และบทร่าย'],
+    'chatbar-incantation-help':['NPC rules and chant language','กติกาการร่ายของ NPC และภาษาบทร่าย'],
+    'chatbar-incantation-rules':['Hiding this window leaves the player’s world incantation rules in place.','การซ่อนหน้าต่างไม่ปิดกติกาบทร่ายของผู้เล่นที่กำหนดไว้ในโลกโรล'],
+    'chatbar-weapons':['Weapons & ammunition','อาวุธและกระสุน'],
+    'chatbar-weapons-help':['Owned items, artwork and loaded resources','เลือกของที่มี ภาพอาวุธ และจำนวนบรรจุ'],
+    'chatbar-contextual':['Contextual windows','หน้าต่างตามสถานการณ์'],
+    'chatbar-contextual-help':['Buying, selling, auctions and memory jobs','ซื้อ ขาย ประมูล และงานความจำ'],
+    'chatbar-items-help':['Item and Loot details appear when you select an item or have loot to collect. The systems below control contextual trade and memory windows.','หน้าต่างไอเทมและ Loot จะแสดงเมื่อเลือกของหรือมีของให้เก็บ ระบบด้านล่างใช้เปิดหน้าซื้อขาย ประมูล และงานความจำตามสถานการณ์'],
     'scene-and-navigation':['Scene display & navigation','ฉากและการเลือกหน้าต่าง'],
     'coin-icons':['Default coin icon set','ชุดไอคอนเงินเริ่มต้น'],
     'chant-rules':['Incantation rules','กติกาบทร่าย'],
@@ -84,6 +115,10 @@ export function mountSettingsNavigation(root, {language=()=> 'en'} = {}) {
         root.dataset.rfSettingsCurrent=id;
     }
     function open(id,{direct=false,focus=true}={}) {
+        if(Object.hasOwn(LEGACY_CHATBAR_SECTIONS,id)){
+            const section=doc.getElementById(LEGACY_CHATBAR_SECTIONS[id]);if(section)section.open=true;
+            id='chatbar';
+        }
         if(!pages.has(id)||stack.at(-1).id===id)return false;
         remember();
         if(direct){
@@ -171,7 +206,7 @@ export function mountSettingsNavigation(root, {language=()=> 'en'} = {}) {
     for(const page of pages.values())observer.observe(page,{childList:true,subtree:true});
     const api={
         open,back,refresh,
-        reveal(target){const page=target?.closest?.('[data-rf-settings-page]');return page?open(page.dataset.rfSettingsPage,{direct:true,focus:false}):false;},
+        reveal(target){const page=target?.closest?.('[data-rf-settings-page]');if(!page)return false;for(let parent=target.parentElement;parent&&parent!==page;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;return open(page.dataset.rfSettingsPage,{direct:true,focus:false});},
         get current(){return stack.at(-1).id;},
         home(){while(stack.length>1)stack.pop();paint();restore(stack[0]);},
         destroy(){destroyed=true;if(scheduled)win.cancelAnimationFrame(scheduled);observer.disconnect();root.removeEventListener('click',onClick);root.removeEventListener('input',onInput);root.removeEventListener('change',schedule);root.removeEventListener('keydown',onKey);delete root.rfSettingsNavigation;},

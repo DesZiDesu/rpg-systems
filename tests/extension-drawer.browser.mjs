@@ -97,7 +97,7 @@ try {
         await page.goto(`http://127.0.0.1:${server.address().port}/?pane=${pane}`);await ready(page);
         const settings = page.locator('#tretaresia-rpg-settings'), name = `${width}-${pane}`;
         for (const id of ids) assert.equal(await settings.locator(`[id="${id}"]`).count(), id === 'tretaresia-rpg-settings' ? 0 : 1, `original/new hook ${id} retained exactly once`);
-        assert.equal(await settings.locator('[data-rf-settings-groups]>button').count(),6);
+        assert.equal(await settings.locator('[data-rf-settings-groups]>button').count(),7);
         assert.equal(await settings.locator('[data-rf-settings-page]').count(),20);
         assert.equal(await settings.locator('[data-rf-settings-page]:not([hidden])').count(),0,'editors begin hidden behind the home menu');
         const presentationKeys=await page.locator('#tretaresia-presentation-settings [data-presentation-setting]').evaluateAll(nodes=>nodes.map(node=>node.dataset.presentationSetting).sort());
@@ -105,7 +105,7 @@ try {
         assert.equal(await settings.locator(':scope > .trpg-settings').count(),0,'NPC runtime settings stay inside their dedicated group');
         assert.equal(await page.locator('.trpg-presentation-status').count(),1);
         assert.match(await page.locator('.trpg-presentation-status').textContent(), /คำตอบล่าสุดไม่มีบล็อกจัดรูปแบบ/);
-        assert.equal(await page.locator('#roleforge-optional-settings [data-optional-setting]').count(),9);
+        assert.equal(await page.locator('#tretaresia-rpg-settings [data-optional-setting]').count(),9);
         // Compare with a neighbouring native extension, including the closed
         // header: RoleForge must inherit the host typography, colour and chrome.
         const nativeStyle = await page.locator('#native-neighbour .inline-drawer-header').evaluate(node => {

@@ -1,0 +1,377 @@
+{
+  "recordedAt": "2026-10-17T06:16:35.743429+00:00",
+  "baseCommit": "acd159163675b4706368953ef0a11259bf4e9008",
+  "release": "0.75.0",
+  "previewOnly": true,
+  "committed": false,
+  "pushed": false,
+  "changes": [
+    "Independent horizontally scrollable tab strip and fixed-size minimize/all-window controls",
+    "Native picker lists every mounted panel, including minimized dock",
+    "Selected or newly activated commerce tab scrolls inside the strip without scrolling main chat",
+    "Mission status moved into heading; progress grouped with bar; explicit mission navigation and reward labels; fewer duplicate numbers"
+  ],
+  "host": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "theme": "Dark Lite",
+  "unit": {
+    "passed": 1400,
+    "failed": 0,
+    "command": "npm test"
+  },
+  "syntax": {
+    "pass": true,
+    "command": "npm run check"
+  },
+  "isolatedDock": {
+    "type": "Isolated production dock DOM / CSS",
+    "checks": [
+      {
+        "width": 320,
+        "pass": true,
+        "panels": 11,
+        "pickerAndHitTests": true,
+        "keyboard": true,
+        "resize": true,
+        "unchangedDraftAndChatScroll": true
+      },
+      {
+        "width": 390,
+        "pass": true,
+        "panels": 11,
+        "pickerAndHitTests": true,
+        "keyboard": true,
+        "resize": true,
+        "unchangedDraftAndChatScroll": true
+      },
+      {
+        "width": 430,
+        "pass": true,
+        "panels": 11,
+        "pickerAndHitTests": true,
+        "keyboard": true,
+        "resize": true,
+        "unchangedDraftAndChatScroll": true
+      },
+      {
+        "width": 768,
+        "pass": true,
+        "panels": 11,
+        "pickerAndHitTests": true,
+        "keyboard": true,
+        "resize": true,
+        "unchangedDraftAndChatScroll": true
+      },
+      {
+        "width": 1440,
+        "pass": true,
+        "panels": 11,
+        "pickerAndHitTests": true,
+        "keyboard": true,
+        "resize": true,
+        "unchangedDraftAndChatScroll": true
+      }
+    ],
+    "errors": [],
+    "pass": true
+  },
+  "actualSillyTavern": {
+    "pass": true,
+    "modelRequests": 6,
+    "unexpectedRequests": 0,
+    "cases": [
+      {
+        "device": "mobile",
+        "width": 320,
+        "kind": "buy",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "mobile",
+        "width": 390,
+        "kind": "buy",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "mobile",
+        "width": 430,
+        "kind": "buy",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "mobile",
+        "width": 320,
+        "kind": "sell",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "mobile",
+        "width": 390,
+        "kind": "sell",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "mobile",
+        "width": 430,
+        "kind": "sell",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "mobile",
+        "width": 320,
+        "kind": "auction",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "mobile",
+        "width": 390,
+        "kind": "auction",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "mobile",
+        "width": 430,
+        "kind": "auction",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "desktop",
+        "width": 1440,
+        "kind": "buy",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "desktop",
+        "width": 1440,
+        "kind": "sell",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      },
+      {
+        "device": "desktop",
+        "width": 1440,
+        "kind": "auction",
+        "panels": 9,
+        "allTabsHit": true,
+        "picker": true,
+        "minimizedReopens": true,
+        "inside": true,
+        "noOverlap": true,
+        "hit": true,
+        "dockFits": true
+      }
+    ],
+    "errors": [],
+    "rawReport": "/workspace/artifacts/dock-overflow-review/native-validation.json"
+  },
+  "touchGesture": {
+    "source": "Actual SillyTavern read-only captures",
+    "calls": 0,
+    "errors": [],
+    "layouts": [],
+    "pass": true,
+    "touch": {
+      "before": 99,
+      "after": 232,
+      "hit": {
+        "inside": true,
+        "hit": true
+      },
+      "panels": 9,
+      "frames": 60
+    }
+  },
+  "readOnlyCaptures": {
+    "source": "Actual SillyTavern read-only captures",
+    "calls": 0,
+    "errors": [],
+    "layouts": [
+      {
+        "device": "mobile",
+        "kind": "buy",
+        "width": 279,
+        "contentWidth": 495,
+        "panels": 9,
+        "right": 284,
+        "controlLeft": 288
+      },
+      {
+        "device": "mobile",
+        "kind": "sell",
+        "width": 279,
+        "contentWidth": 499,
+        "panels": 9,
+        "right": 284,
+        "controlLeft": 288
+      },
+      {
+        "device": "mobile",
+        "kind": "auction",
+        "width": 279,
+        "contentWidth": 511,
+        "panels": 9,
+        "right": 284,
+        "controlLeft": 288
+      },
+      {
+        "device": "desktop",
+        "kind": "buy",
+        "width": 1322,
+        "contentWidth": 1322,
+        "panels": 9,
+        "right": 1329,
+        "controlLeft": 1335
+      },
+      {
+        "device": "desktop",
+        "kind": "sell",
+        "width": 1322,
+        "contentWidth": 1322,
+        "panels": 9,
+        "right": 1329,
+        "controlLeft": 1335
+      },
+      {
+        "device": "desktop",
+        "kind": "auction",
+        "width": 1322,
+        "contentWidth": 1322,
+        "panels": 9,
+        "right": 1329,
+        "controlLeft": 1335
+      }
+    ],
+    "pass": true
+  },
+  "gallery": {
+    "pass": true,
+    "mobileAndDesktop": true,
+    "buySellAuction": true,
+    "expandedMission": true,
+    "contextAndCloseup": true,
+    "source": "Actual SillyTavern screenshots"
+  },
+  "commerceRegression": {
+    "pass": true,
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "log": "/workspace/artifacts/dock-overflow-commerce-regression.log",
+    "coverage": "Current-room offers alongside training, exact wallet settlement, excluded sale goods retained, ability learning, selected lists and no extra opening API calls",
+    "fixtureUpdate": "Explicitly open/select the intended pane; verify required tabs remain rather than assume exactly three tabs"
+  },
+  "chatScrollRegression": {
+    "pass": true,
+    "log": "/workspace/artifacts/dock-overflow-scroll-regression.log"
+  },
+  "gif": {
+    "frames": 60,
+    "width": 390,
+    "height": 844,
+    "path": "/workspace/artifacts/dock-overflow-review/swipe-and-open.gif",
+    "source": "Actual native browser touch-pan and tap; no simulated popup illustration"
+  },
+  "filesForThisRevision": [
+    "src/composer-dock.js",
+    "styles/incantation.css",
+    "src/utility-composer.js",
+    "styles/utility-composer.css",
+    "tests/composer-dock.browser.mjs",
+    "tests/dock-overflow.real.browser.mjs",
+    "tests/commerce-openings.browser.mjs",
+    "tools/capture-dock-overflow.mjs",
+    "tools/build-dock-overflow-preview.mjs",
+    "docs/utility-dock-preview.th.md",
+    "docs/validation-dock-overflow-preview.json"
+  ],
+  "limitations": [
+    "Mobile/touch Chromium emulation and CDP touch gestures, not physical iPhone/Safari.",
+    "Native SillyTavern Generate/StreamingProcessor use local controlled SSE fixtures; no external model provider was called.",
+    "The 320px stock SillyTavern top navigation extends approximately 9px beyond the viewport under this profile; dock bounds and tab/control hit targets fit independently.",
+    "Native OS select popups are device rendered; the gallery shows the actual control and resulting selections, not a mock iOS picker."
+  ]
+}

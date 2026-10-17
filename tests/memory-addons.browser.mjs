@@ -15,7 +15,7 @@ const server=http.createServer(async(req,res)=>{
     }catch{res.writeHead(404).end();}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const artifacts=new URL('docs/previews/memory-addons-v0522/',root);await mkdir(artifacts,{recursive:true});
+const artifacts=process.env.MEMORY_ADDONS_ARTIFACTS?new URL(`file://${process.env.MEMORY_ADDONS_ARTIFACTS.replace(/\/$/,'')}/`):new URL('docs/previews/memory-addons-v0522/',root);await mkdir(artifacts,{recursive:true});
 const preserved={memorySummaryBatchSize:50,memorySummaryInterval:7,memoryInject:false,memorySummaryBudget:1110,memoryRetrievalBudget:520,memorySummaryInputBudget:7000,memorySummaryOutputTokens:2600,memorySummaryTimeoutSeconds:60,memorySummaryStrategy:'single'};
 async function capture(page,name,width){
     // Model the main RoleForge drawer folded, leaving Memory open independently.
@@ -57,9 +57,11 @@ try{
         assert.equal(await panel.locator('[data-memory-summarized]').innerText(),'12');
         assert.equal(await panel.locator('[data-memory-chapters]').innerText(),'1');
         // Off hides the drawer without deleting stored summaries or preferences.
-        const toggle=page.locator('#roleforge-optional-settings [data-optional-setting="enableMemorySummaries"]');
-        await toggle.uncheck();assert.equal(await page.locator('#roleforge-memory-addons').isVisible(),false);
-        await toggle.check();await panel.locator('[data-memory-chapters]').waitFor({state:'visible'});
+        const toggle=page.locator('#roleforge-chatbar-optional-settings [data-optional-setting="enableMemorySummaries"]');
+        await toggle.evaluate(n=>{n.closest('.inline-drawer-content').style.display='block';n.closest('#tretaresia-rpg-settings').rfSettingsNavigation.reveal(n);});await page.waitForTimeout(80);await toggle.uncheck();assert.equal(await page.locator('#roleforge-memory-addons').isVisible(),false);
+        await toggle.check();await toggle.evaluate(n=>n.closest('.inline-drawer-content').style.display='none');
+        assert.equal(await drawer.evaluate(node=>node.open),false,'enabling Memory keeps its separate drawer folded');
+        await drawer.locator(':scope>summary').click();await panel.locator('[data-memory-chapters]').waitFor({state:'visible'});
         await page.waitForFunction(()=>document.querySelector('[data-memory-chapters]')?.textContent==='1');
         assert.equal(await page.evaluate(()=>window.navigationSummaryPreview.api.calls.length),1);
         await page.reload();await page.waitForFunction(()=>window.navigationSummaryPreview?.ready&&document.querySelector('[data-memory-chapters]')?.textContent==='1');
@@ -69,6 +71,7 @@ try{
         await panel.locator('[data-action="memory-summary-run"]').click();await page.locator('.rf-memory-job[data-status="ready"]').waitFor();
         await page.locator('#preview-settings-close').click();
         await page.evaluate(()=>{window.nativeDrawerOpens=0;document.querySelector('#extensions-settings-button>.drawer-toggle').addEventListener('click',()=>window.nativeDrawerOpens++);});
+        const expand=page.locator('[data-dock-collapse]');if(await expand.getAttribute('aria-expanded')==='false')await expand.click();
         await page.locator('[data-memory-composer-action="open"]').click();
         await panel.waitFor({state:'visible'});assert.equal(await page.evaluate(()=>window.nativeDrawerOpens),1);
         assert.equal(await page.locator('#tretaresia-rpg-overlay').evaluate(node=>node.classList.contains('is-open')),false);

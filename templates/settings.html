@@ -31,6 +31,7 @@
                     <p class="rf-settings-empty" data-rf-settings-empty="" hidden="" role="status"></p>
                     <div class="rf-settings-groups" data-rf-settings-groups="">
                         <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="general"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                        <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="chatbar"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                         <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="interface"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                         <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="world"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                         <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="presets"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
@@ -98,29 +99,26 @@
                     </section>
                     <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="writing"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                 </section>
-                <section class="rf-settings-page" data-rf-settings-page="interface" hidden="">
+                <section class="rf-settings-page" data-rf-settings-page="chatbar" hidden="">
+                    <p class="tretaresia-rpg-settings-copy" data-rf-label="chatbar-help"></p>
                     <section class="rf-settings-section">
-                        <header class="rf-settings-section-head">
-                            <div>
-                                <h3 data-rf-label="above-chatbar"></h3>
-                            </div>
-                        </header>
+                        <header class="rf-settings-section-head"><i class="fa-solid fa-window-maximize" aria-hidden="true"></i><div><h3 data-rf-label="chatbar-visibility"></h3></div></header>
                         <div class="rf-settings-section-body">
-                            <label class="checkbox_label">
-                                <input type="checkbox" id="tretaresia-rpg-status-composer">
-                                <span>Show status window / แสดงสถานะเหนือช่องพิมพ์</span>
-                            </label>
-                            <label class="checkbox_label">
-                                <input type="checkbox" id="tretaresia-rpg-stat-training-composer">
-                                <span>Show stat training / แสดงหน้าต่างฝึกค่าสถานะ</span>
-                            </label>
-                            <label class="checkbox_label">
-                                <input type="checkbox" id="tretaresia-rpg-incantation">
-                                <span>Show incantation window / แสดงหน้าต่างบทร่าย</span>
-                            </label>
-                            <p class="tretaresia-rpg-settings-copy">ปิดเพื่อซ่อนหน้าต่าง กฎบทร่ายของผู้เล่นยังทำงานตามโลกโรล</p>
+                            <label class="checkbox_label" for="tretaresia-rpg-status-composer"><input type="checkbox" id="tretaresia-rpg-status-composer"><span data-rf-label="chatbar-show-status">Show status window / สถานะ</span></label>
+                            <label class="checkbox_label" for="tretaresia-rpg-inventory-composer"><input type="checkbox" id="tretaresia-rpg-inventory-composer"><span data-rf-label="chatbar-show-inventory">Inventory / กระเป๋า</span></label>
+                            <label class="checkbox_label" for="tretaresia-rpg-missions-composer"><input type="checkbox" id="tretaresia-rpg-missions-composer"><span data-rf-label="chatbar-show-missions">Missions / ภารกิจ</span></label>
+                            <label class="checkbox_label" for="tretaresia-rpg-hstats-composer"><input type="checkbox" id="tretaresia-rpg-hstats-composer"><span data-rf-label="chatbar-show-hstats">H-Stats</span></label>
+                            <label class="checkbox_label" for="tretaresia-rpg-stat-training-composer"><input type="checkbox" id="tretaresia-rpg-stat-training-composer"><span data-rf-label="chatbar-show-practice">Stat training / ฝึกค่าสถานะ</span></label>
+                            <label class="checkbox_label" for="tretaresia-rpg-incantation"><input type="checkbox" id="tretaresia-rpg-incantation"><span data-rf-label="chatbar-show-incantation">Skills &amp; incantation / วิชา ทักษะ และบทร่าย</span></label>
+                            <label class="checkbox_label" for="tretaresia-rpg-weapons"><input type="checkbox" id="tretaresia-rpg-weapons"><span data-rf-label="chatbar-show-weapons">Weapon dock &amp; tracking / อาวุธและการติดตาม</span></label>
+                            <p class="tretaresia-rpg-settings-copy" data-rf-label="chatbar-scope-help"></p>
+                        </div>
+                    </section>
+                    <details class="rf-settings-fold" id="roleforge-chatbar-layouts">
+                        <summary><i class="fa-solid fa-sliders" aria-hidden="true"></i><span><strong data-rf-label="chatbar-layouts"></strong><small data-rf-label="chatbar-layouts-help"></small></span></summary>
+                        <div class="rf-settings-fold-body rf-settings-section-body">
                             <label class="tretaresia-settings-field">
-                                <span>Status layout / รูปแบบสถานะ</span>
+                                <span data-rf-label="chatbar-status-layout">Status layout</span>
                                 <select id="tretaresia-rpg-status-layout">
                                     <option value="A">A · Character Dossier</option>
                                     <option value="B">B · Vital Core</option>
@@ -128,15 +126,72 @@
                                 </select>
                             </label>
                             <label class="tretaresia-settings-field">
-                                <span>Training layout / รูปแบบหน้าฝึก</span>
+                                <span data-rf-label="chatbar-practice-layout">Training layout</span>
                                 <select id="tretaresia-rpg-stat-training-layout">
                                     <option value="A">A · Character Dossier</option>
                                     <option value="B">B · Vital Core</option>
                                     <option value="C">C · Tactical Strip</option>
                                 </select>
                             </label>
+                            <label class="tretaresia-settings-field" for="tretaresia-rpg-coin-style">
+                                <span data-rf-label="coin-icons">Coin icon set</span>
+                                <select id="tretaresia-rpg-coin-style">
+                                    <option value="stack">เหรียญซ้อน / Coin stacks</option>
+                                    <option value="minted">เหรียญตราดาว / Minted coins</option>
+                                    <option value="outline">เหรียญรูน / Rune</option>
+                                    <option value="pixel">pixel</option>
+                                    <option value="banknote">banknote</option>
+                                    <option value="gem">gem</option>
+                                    <option value="crest">crest</option>
+                                    <option value="neon">Arcade · โทเคนแสงพิกเซล</option>
+                                </select>
+                                <small>ใช้ร่วมกันใน Inventory และหน้าต่างซื้อขาย/ประมูล</small>
+                            </label>
                         </div>
-                    </section>
+                    </details>
+                    <details class="rf-settings-fold" id="roleforge-chatbar-incantation">
+                        <summary><i class="fa-solid fa-book-open" aria-hidden="true"></i><span><strong data-rf-label="chatbar-incantation"></strong><small data-rf-label="chatbar-incantation-help"></small></span></summary>
+                        <div class="rf-settings-fold-body rf-settings-section-body">
+                            <p class="tretaresia-rpg-settings-copy" data-rf-label="chatbar-incantation-rules"></p>
+                            <label class="checkbox_label">
+                                <input type="checkbox" id="tretaresia-rpg-npc-incantation">
+                                <span data-rf-label="chatbar-npc-rules">NPC incantation rules</span>
+                            </label>
+                            <label class="tretaresia-settings-field" for="tretaresia-rpg-incantation-language">
+                                <span data-rf-label="chatbar-chant-language">Chant language</span>
+                                <select id="tretaresia-rpg-incantation-language">
+                                    <option value="auto">ตามภาษาโรล / Follow role-play</option>
+                                    <option value="th">ไทย</option>
+                                    <option value="en">English</option>
+                                    <option value="ja">日本語</option>
+                                    <option value="zh">中文</option>
+                                    <option value="la">Latin</option>
+                                    <option value="custom">Custom / ระบุเอง</option>
+                                </select>
+                            </label>
+                            <label class="tretaresia-settings-field" for="tretaresia-rpg-incantation-custom-language">
+                                <span data-rf-label="chatbar-custom-language">Custom chant language</span>
+                                <input type="text" id="tretaresia-rpg-incantation-custom-language" maxlength="100" placeholder="เช่น ภาษาเอลฟ์ตาม lore">
+                            </label>
+                        </div>
+                    </details>
+                    <details class="rf-settings-fold" id="roleforge-chatbar-weapons">
+                        <summary><i class="fa-solid fa-crosshairs" aria-hidden="true"></i><span><strong data-rf-label="chatbar-weapons"></strong><small data-rf-label="chatbar-weapons-help"></small></span></summary>
+                        <div class="rf-settings-fold-body rf-settings-section-body">
+                        <p class="tretaresia-rpg-settings-copy" data-rf-label="chatbar-weapon-scope"></p>
+                        <button type="button" class="menu_button" id="roleforge-manage-weapons" data-rf-label="chatbar-manage-weapons">Manage weapons &amp; ammunition</button>
+                        <p class="tretaresia-rpg-settings-copy" data-rf-label="chatbar-owned-weapons"></p>
+                        </div>
+                    </details>
+                    <details class="rf-settings-fold" id="roleforge-chatbar-contextual">
+                        <summary><i class="fa-solid fa-store" aria-hidden="true"></i><span><strong data-rf-label="chatbar-contextual"></strong><small data-rf-label="chatbar-contextual-help"></small></span></summary>
+                        <div class="rf-settings-fold-body rf-settings-section-body">
+                            <p class="tretaresia-rpg-settings-copy" data-rf-label="chatbar-items-help"></p>
+                            <div id="roleforge-chatbar-optional-settings"></div>
+                        </div>
+                    </details>
+                </section>
+                <section class="rf-settings-page" data-rf-settings-page="interface" hidden="">
                     <section class="rf-settings-section">
                         <header class="rf-settings-section-head">
                             <div>
@@ -176,10 +231,8 @@
                 <section class="rf-settings-page" data-rf-settings-page="world" hidden="">
                     <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="stats"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                     <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="currency"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
-                    <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="weapons"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                     <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="powers"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                     <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="forge"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
-                    <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="incantation"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                     <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="optional"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                     <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="diary"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                 </section>
@@ -274,29 +327,6 @@
                         <summary>Currency setup · ค่าเงิน อัตราแลก และไอคอน</summary>
                         <div id="roleforge-currency-editor"></div>
                     </details>
-                    <section class="rf-settings-section">
-                        <header class="rf-settings-section-head">
-                            <div>
-                                <h3 data-rf-label="coin-icons"></h3>
-                            </div>
-                        </header>
-                        <div class="rf-settings-section-body">
-                            <label class="tretaresia-settings-field" for="tretaresia-rpg-coin-style">
-                                <span>ชุดไอคอนเงิน / Coin icon set</span>
-                                <select id="tretaresia-rpg-coin-style">
-                                    <option value="stack">เหรียญซ้อน / Coin stacks</option>
-                                    <option value="minted">เหรียญตราดาว / Minted coins</option>
-                                    <option value="outline">เหรียญรูน / Rune</option>
-                                    <option value="pixel">pixel</option>
-                                    <option value="banknote">banknote</option>
-                                    <option value="gem">gem</option>
-                                    <option value="crest">crest</option>
-                                    <option value="neon">Arcade · โทเคนแสงพิกเซล</option>
-                                </select>
-                                <small>ใช้ร่วมกันใน Inventory และหน้าต่างซื้อขาย/ประมูล</small>
-                            </label>
-                        </div>
-                    </section>
                 </section>
                 <section class="rf-settings-page" data-rf-settings-page="powers" data-rf-settings-parent="world" hidden="">
                     <details id="roleforge-power-settings" data-rf-settings-managed="" class="rf-settings-managed" open="">
@@ -310,46 +340,8 @@
                         <div id="roleforge-forge-editor"></div>
                     </details>
                 </section>
-                <section class="rf-settings-page" data-rf-settings-page="weapons" data-rf-settings-parent="world" hidden="">
-                    <div class="rf-settings-section-body">
-                        <label class="checkbox_label" for="tretaresia-rpg-weapons"><input id="tretaresia-rpg-weapons" type="checkbox"><span>Weapon dock &amp; tracking / แถบอาวุธและการติดตาม</span></label>
-                        <p class="tretaresia-rpg-settings-copy">Off by default. Applies only to this chat/card preset. / ปิดเป็นค่าเริ่มต้น เปิดเฉพาะแชทหรือ Preset ที่ใช้</p>
-                        <button type="button" class="menu_button" id="roleforge-manage-weapons">Manage weapons &amp; ammunition / จัดการอาวุธและกระสุน</button>
-                        <p class="tretaresia-rpg-settings-copy">Choose an owned Inventory item, artwork and loaded resources. Ammo stays in separate Inventory items. / เลือกไอเทมที่มี ภาพ และจำนวนบรรจุ กระสุนสำรองแยกเป็นไอเทมในคลัง</p>
-                    </div>
-                </section>
-                <section class="rf-settings-page" data-rf-settings-page="incantation" data-rf-settings-parent="world" hidden="">
-                    <section class="rf-settings-section">
-                        <header class="rf-settings-section-head">
-                            <div>
-                                <h3 data-rf-label="chant-rules"></h3>
-                            </div>
-                        </header>
-                        <div class="rf-settings-section-body">
-                            <label class="checkbox_label">
-                                <input type="checkbox" id="tretaresia-rpg-npc-incantation">
-                                <span>NPC incantation rules / ให้ NPC ร่ายเวทตามความสามารถ</span>
-                            </label>
-                            <label class="tretaresia-settings-field" for="tretaresia-rpg-incantation-language">
-                                <span>Chant language / ภาษาบทร่าย</span>
-                                <select id="tretaresia-rpg-incantation-language">
-                                    <option value="auto">ตามภาษาโรล / Follow role-play</option>
-                                    <option value="th">ไทย</option>
-                                    <option value="en">English</option>
-                                    <option value="ja">日本語</option>
-                                    <option value="zh">中文</option>
-                                    <option value="la">Latin</option>
-                                    <option value="custom">Custom / ระบุเอง</option>
-                                </select>
-                            </label>
-                            <label class="tretaresia-settings-field" for="tretaresia-rpg-incantation-custom-language">
-                                <span>Custom chant language / ภาษาที่ระบุเอง</span>
-                                <input type="text" id="tretaresia-rpg-incantation-custom-language" maxlength="100" placeholder="เช่น ภาษาเอลฟ์ตาม lore">
-                            </label>
-                        </div>
-                    </section>
-                </section>
                 <section class="rf-settings-page" data-rf-settings-page="optional" data-rf-settings-parent="world" hidden="">
+                    <button class="rf-settings-route menu_button" type="button" data-rf-settings-open="chatbar"><i class="fa-solid" data-rf-route-icon="" aria-hidden="true"></i><span><strong data-rf-route-title=""></strong><small data-rf-route-description=""></small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                     <div id="roleforge-optional-settings"></div>
                 </section>
                 <section class="rf-settings-page" data-rf-settings-page="diary" data-rf-settings-parent="world" hidden="">

@@ -5,10 +5,10 @@ import {createRequire} from 'node:module';
 import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?`${process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES}/playwright`:'playwright');
 const root=new URL('../',import.meta.url),base='/scripts/extensions/third-party/rpg-systems/';
-const artifacts=new URL('../docs/previews/settings-drawer-review/',import.meta.url);await mkdir(new URL('screenshots/',artifacts),{recursive:true});
+const artifacts=new URL((process.env.SETTINGS_ARTIFACTS||new URL('../docs/previews/settings-drawer-review/',import.meta.url).pathname).replace(/\/?$/u,'/'),'file:');await mkdir(new URL('screenshots/',artifacts),{recursive:true});
 const source=await readFile(new URL('index.js',root),'utf8');
 const drawerCode=source.slice(source.indexOf('async function addSettingsDrawer()'),source.indexOf('function bindChatEvents()'));
-const expectedBindings=[...drawerCode.matchAll(/bind(?:Checkbox|SettingControl)\('([^']+)'/gu)].map(m=>m[1]);
+const expectedBindings=[...drawerCode.matchAll(/bind(?:Checkbox|SettingControl)\('([^']+)'\s*,/gu)].map(m=>m[1]).concat(['tretaresia-rpg-inventory-composer','tretaresia-rpg-missions-composer','tretaresia-rpg-hstats-composer']);
 const results={scope:'Production settings navigation and save handlers in an isolated SillyTavern host',widths:[],errors:[]};
 const server=http.createServer(async(req,res)=>{try{
  const url=new URL(req.url,'http://localhost');if(url.pathname.startsWith('/api/')){res.setHeader('content-type','application/json');res.end('[]');return;}
@@ -40,14 +40,18 @@ try{
    const toolbar=document.createElement('div');toolbar.className='st-review-toolbar';toolbar.innerHTML='<i class="fa-solid fa-sliders"></i><span>A</span><i class="fa-solid fa-book-open"></i><i class="fa-solid fa-user"></i><i class="fa-solid fa-image"></i><i class="fa-solid fa-cubes"></i><i class="fa-solid fa-face-smile"></i>';document.body.append(toolbar);
    const native=document.createElement('div');native.className='native-settings-header';native.innerHTML='<h2>โปรแกรมส่วนขยาย</h2><p>☑ แจ้งเตือนเมื่อมีการอัปเดตส่วนขยาย</p><div><button class="menu_button" type="button">จัดการส่วนขยาย</button><button class="menu_button" type="button">ติดตั้งส่วนขยาย</button></div><div class="native-settings-addon">Character Expressions <i class="fa-solid fa-circle-chevron-down"></i></div><div class="native-settings-addon">TTS <i class="fa-solid fa-circle-chevron-down"></i></div>';
    document.getElementById('extensions_settings2').prepend(native);
-   const scene=document.createElement('div');scene.className='review-chat';scene.innerHTML='<b>SillyTavern · โฮสต์จำลอง</b><p>พรีวิวหน้าตั้งค่าใหม่ของ RoleForge<br>เมนูหลัก 6 หมวด พร้อมค้นหาและหน้าจัดการ</p>';document.body.append(scene);
+   const scene=document.createElement('div');scene.className='review-chat';scene.innerHTML='<b>SillyTavern · โฮสต์จำลอง</b><p>พรีวิวหน้าตั้งค่าใหม่ของ RoleForge<br>เมนูหลัก 7 หมวด พร้อมค้นหาและหน้าจัดการ</p>';document.body.append(scene);
   });await page.waitForTimeout(500);
-  assert.equal(await page.locator('[data-rf-settings-groups]>button').count(),6);
+  assert.equal(await page.locator('[data-rf-settings-groups]>button').count(),7);
   assert.equal(await page.locator('[data-rf-settings-page]').count(),20);
   for(const id of expectedBindings)assert.equal(await page.locator('#'+id).count(),1,`Existing setting ${id} is retained once`);
   assert.equal(await page.locator('[data-rf-settings-page]:not([hidden])').count(),0);
+  for(const id of ['status-composer','inventory-composer','missions-composer','hstats-composer','stat-training-composer','incantation','weapons','status-layout','stat-training-layout','coin-style','npc-incantation','incantation-language','incantation-custom-language'])assert.equal(await page.locator('[data-rf-settings-page="chatbar"] #tretaresia-rpg-'+id).count(),1);
+  for(const key of ['enableAuctions','enableMarketplace','enableMemorySummaries']){assert.equal(await page.locator('#roleforge-chatbar-optional-settings [data-optional-setting="'+key+'"]').count(),1);assert.equal(await page.locator('#roleforge-optional-settings [data-optional-setting="'+key+'"]').count(),0);}
+  for(const id of ['weapons','incantation']){await go(page,id);assert.equal(await page.evaluate(()=>document.getElementById('tretaresia-rpg-settings').rfSettingsNavigation.current),'chatbar');assert.equal(await page.locator('#roleforge-chatbar-'+id).getAttribute('open'),'');}await home(page);
+
   const before=await page.evaluate(()=>JSON.stringify([window.host.extensionSettings,window.host.chatMetadata]));
-  for(const id of ['general','interface','world','presets','tracking','advanced','chat-appearance','interface-colors','stats','currency','powers','forge','incantation','optional','diary','preset-library','card-pack','notifications','writing','diagnostics']){await go(page,id);await fit(page,id);}
+  for(const id of ['general','chatbar','interface','world','presets','tracking','advanced','chat-appearance','interface-colors','stats','currency','powers','forge','incantation','optional','diary','preset-library','card-pack','notifications','writing','diagnostics']){await go(page,id);await fit(page,id);}
   assert.equal(await page.evaluate(()=>JSON.stringify([window.host.extensionSettings,window.host.chatMetadata])),before,'Navigation changes no saved values or state');
   await go(page,'stats');await page.locator('#extensions_settings2').evaluate(n=>{n.scrollTop=n.scrollHeight;});await go(page,'currency');
   assert.ok(await page.locator('#roleforge-currency-editor').evaluate(n=>n.getBoundingClientRect().top>=document.querySelector('[data-rf-settings-header]').getBoundingClientRect().bottom-1),'A new editor opens at its top below the sticky Back header');
@@ -67,7 +71,7 @@ try{
    // Capture the ordinary demo values rather than the draft used by the assertions.
    await go(page,'stats');await intelligence.fill(initialInt);await page.locator('#roleforge-stat-editor [data-stat-config] button[type=submit]').click();await page.waitForFunction(value=>window.host.chatMetadata.tretaresia_rpg_state.player.attributes.intelligence===Number(value),initialInt);
    await go(page,'currency');await page.locator('#roleforge-currency-editor [name=currencyName]').fill(initialCurrency);await home(page);
-   for(const [id,name]of [['home','home'],['interface','windows'],['world','world'],['stats','stats'],['currency','currency'],['presets','presets'],['chat-appearance','chat'],['tracking','tracking']]){
+   for(const [id,name]of [['home','home'],['chatbar','chatbar'],['interface','windows'],['world','world'],['stats','stats'],['currency','currency'],['presets','presets'],['chat-appearance','chat'],['tracking','tracking']]){
     if(id==='home'){await home(page);await page.locator('#extensions_settings2').evaluate(n=>{n.scrollTop=0;});}else await go(page,id);
     await page.mouse.move(1,1);await page.evaluate(()=>document.activeElement?.blur());await page.screenshot({path:new URL(`screenshots/${width===390?'mobile':'pc'}-${name}.png`,artifacts).pathname});
    }
@@ -78,8 +82,8 @@ try{
     await writeFile(new URL('snapshot.json',artifacts),JSON.stringify(snapshot));
    }
   }
-  assert.equal(await page.evaluate(()=>window.settingsAiCalls),0);assert.deepEqual(errors,[]);results.widths.push({width,groups:6,pages:20,controls:expectedBindings.length,search:true,back:true,drafts:true,realSave:true,languageSwitch:true,overflow:false,aiCalls:0});
-  console.log(`PASS settings ${width}px: 6 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls`);await page.close();
+  assert.equal(await page.evaluate(()=>window.settingsAiCalls),0);assert.deepEqual(errors,[]);results.widths.push({width,groups:7,pages:20,controls:expectedBindings.length,search:true,back:true,drafts:true,realSave:true,languageSwitch:true,overflow:false,aiCalls:0});
+  console.log(`PASS settings ${width}px: 7 groups, all bindings retained, search, drafts, actual saves, bilingual labels and zero AI calls`);await page.close();
  }
  await writeFile(new URL('validation.json',artifacts),JSON.stringify(results,null,2));
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
