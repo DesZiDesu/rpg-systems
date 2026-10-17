@@ -7,8 +7,8 @@ directory contains only production assets; reviews and GIF captures belong in
 | Directory | Files | Original bytes | Purpose |
 | --- | ---: | ---: | --- |
 | `generic/` | 34 SVGs | 112,837 | Original vector illustrations, one per category |
-| `special/` | 2 JPEGs | 74,308 | Approved user-supplied Excalibur/Ea reference images |
-| Total | 36 | 187,145 (182.8 KiB) | No duplicate files or animation-frame sequences |
+| `special/` | 2 JPEGs + 1 PNG | 438,464 | Approved Excalibur/Ea references and Morgan illustration |
+| Total | 37 | 551,301 (538.4 KiB) | No duplicate files or animation-frame sequences |
 
 `src/weapon-catalog.js` owns the stable category IDs, exact-name aliases and local
 asset URLs. URLs carry the installed release version to avoid stale art caches.
@@ -36,6 +36,14 @@ The two JPEGs are unchanged copies of images supplied for this project:
 
 Reference artwork retains its original ownership. These files are not the source
 for the generic illustrations and are not represented as new original artwork.
+
+`special/excalibur-morgan.png` is the approved 2172×724 transparent illustration
+(364,156 bytes), generated from the user's Morgan references for this project.
+It is copied unchanged from the approved preview; source art, blade alpha,
+crimson rune overlay and glow remain separate. The runtime layers live in
+`src/weapon-morgan-art.js`. The source is never recolored or stretched; only a
+uniform scale and transparent-margin fitting are applied. The crimson aura
+starts beyond the guard, keeping the black blade and hilt legible.
 
 `src/weapon-art.js` draws the approved effects at runtime. Excalibur preserves
 the front-view proportions with a uniform quarter-turn and a separate blade-light

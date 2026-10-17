@@ -1,6 +1,6 @@
-import {statTrainingTargets} from './stat-training.js?v=0.74.1';
-import {currencyDisplay} from './currency-config.js?v=0.74.1';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.74.1';
+import {statTrainingTargets} from './stat-training.js?v=0.75.0';
+import {currencyDisplay} from './currency-config.js?v=0.75.0';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.75.0';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const translated=(v,th,target)=>{
@@ -8,6 +8,7 @@ const translated=(v,th,target)=>{
  const parts=String(v||'').split(' / ');return th?parts.at(-1):parts[0];
 };
 const glyph=name=>{
+ if(name==='train')return '<i class="fa-solid fa-dumbbell rf-stat-training-icon" aria-hidden="true"></i>';
  const paths={
   hp:'<path d="M8 13S2 9.5 2 5.7C2 2.5 6 1.7 8 4c2-2.3 6-1.5 6 1.7C14 9.5 8 13 8 13Z"/>',
   mp:'<path d="m8 2 1.7 4.3L14 8l-4.3 1.7L8 14 6.3 9.7 2 8l4.3-1.7L8 2Z"/>',
@@ -18,7 +19,6 @@ const glyph=name=>{
   agility:'<path d="M2 5h8a2 2 0 1 0-2-2M2 8h11a2 2 0 1 1-2 2M2 11h4"/>',
   hunger:'<path d="M3 2v5m2-5v5M7 2v5M3 5h4M5 7v7M12 2c-2 2-2 5 0 6h1m0-6v12"/>',
   thirst:'<path d="M8 2S3 7.5 3 10a5 5 0 0 0 10 0c0-2.5-5-8-5-8Z"/>',
-  train:'<path d="m2 13 5-5 4 4M7 8V3m0 0 4 2M7 3 3 5M9 10l4-4"/>',
   info:'<circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 4v.3"/>',
   check:'<path d="m3 8 3 3 7-7"/>',
   chevron:'<path d="m6 3 5 5-5 5"/>',
@@ -52,7 +52,7 @@ export function createStatComposer({document:doc=globalThis.document,dock,settin
   status.dataset.layout=layout;status.setAttribute('aria-label',t('สถานะผู้เล่น','Player status'));
   const health=vital('HP','hp',p.hp,'rf-stat-health'),secondary=`<div class="rf-stat-secondary">${vital('MP','mp',p.mp)}${vital('ST','stamina',p.stamina)}</div>`,needs=`<div class="rf-stat-needs">${vital('HUNGER','hunger',{current:p.survival?.hunger,max:100})}${vital('THIRST','thirst',{current:p.survival?.thirst,max:100})}</div>`;
   const values=targets.filter(d=>!d.path.endsWith('.max')&&d.showStatus),coreValues=values.filter(d=>!d.path.startsWith('player.customStats.')),custom=values.filter(d=>d.path.startsWith('player.customStats.'));
-  const valueMarkup=d=>`<span><small>${esc(d.name)}</small><strong>${d.value}${esc(d.unit)}</strong></span>`;
+  const valueMarkup=d=>`<span><small>${esc(d.name)}</small><strong>${d.value}${d.unit?` <small class="rf-stat-unit">${esc(d.unit)}</small>`:''}</strong></span>`;
   const attributes=`<div class="rf-stat-values">${coreValues.map(valueMarkup).join('')}</div>`,customValues=custom.length?`<div class="rf-stat-custom-values">${custom.map(valueMarkup).join('')}</div>`:'';
   const condition=p.condition?`<span class="rf-stat-condition"><i></i>${esc(p.condition)}</span>`:'',identity=`<div class="rf-stat-identity">${layout==='A'?`<span class="rf-stat-seal">${esc(Array.from(String(p.name||'?'))[0])}<small>${esc(p.level)}</small></span>`:''}<div>${layout==='A'?`<small class="rf-stat-eyebrow">${esc(t('ข้อมูลตัวละคร','CHARACTER RECORD'))}</small>`:''}<strong>${esc(p.name||'—')}</strong><small>LV ${esc(p.level)}${p.profession?' · '+esc(p.profession):''}</small></div>${condition}</div>`;
   const context=[p.party,p.guild].filter(Boolean).join(' · '),footer=`<div class="rf-stat-footer"><div class="rf-stat-context"><span>${glyph('pin')}${esc(state.location?.place||'—')}</span>${context?`<span>${esc(context)}</span>`:''}</div><div class="rf-stat-wallet">${currencyDisplay(currency).map(u=>`<span>${commerceIconMarkup('coin',u.id,currency?.scheme?u.iconSet:settings().coinStyle||u.iconSet,currency?.scheme?u:undefined)}<b>${u.amount.toLocaleString()}</b><small>${esc(u.symbol||u.name)}</small></span>`).join('')}</div></div>`;
@@ -71,12 +71,12 @@ export function createStatComposer({document:doc=globalThis.document,dock,settin
   if(!all.some(d=>d.id===selected)){selected=all[0]?.id||'';method=0;detailsOpen=false;}
   const target=all.find(d=>d.id===selected),disabled=working||busy(),th=settings().language==='th';
   training.dataset.layout=layout;training.setAttribute('aria-label',t('ฝึกค่าสถานะ','Stat training'));
-  const options=`<div class="rf-stat-options" role="group" aria-label="${esc(t('เลือกค่าสถานะที่จะฝึก','Choose a stat to train'))}">${all.map(d=>`<button type="button" class="rf-ability-button${d.path.startsWith('player.customStats.')?' rf-custom-stat':''}" data-stat-select="${esc(d.id)}" aria-pressed="${d.id===selected}"><span>${glyph(d.id)}<b>${esc(d.name)}</b></span><small>${d.value}${d.path.endsWith('.max')?' MAX':esc(d.unit)}</small></button>`).join('')}</div>`;
+  const options=`<div class="rf-stat-options" role="group" aria-label="${esc(t('เลือกค่าสถานะที่จะฝึก','Choose a stat to train'))}">${all.map(d=>`<button type="button" class="rf-ability-button${d.path.startsWith('player.customStats.')?' rf-custom-stat':''}" data-stat-select="${esc(d.id)}" aria-pressed="${d.id===selected}"><span>${glyph(d.id)}<b>${esc(d.name)}</b></span><small>${d.value}${d.path.endsWith('.max')?' MAX':d.unit?' '+esc(d.unit):''}</small></button>`).join('')}</div>`;
   let content=options;
   if(target){
    method=Math.min(method,target.methods.length-1);
    const capacity=target.path.endsWith('.max'),hint=capacity?t('เพิ่มค่าสูงสุดถาวร · ค่าปัจจุบันและความเหนื่อยเป็นไปตามโรล','Permanent max growth. Current resources and fatigue follow the story.'):t('เพิ่มค่าตัวเลขของสถิติเมื่อฝึกสำเร็จ','This numeric stat grows after successful practice.');
-   const meaning=translated(target.description,th,target),gain=`<span class="rf-stat-gain">${esc(t('สูงสุด','Up to'))} <b>+${target.gain}</b></span>`,focus=`<div class="rf-stat-focus">${layout==='B'?`<div class="rf-stat-focus-round">${glyph(target.id)}<b>${target.value}</b><small>${esc(target.name)}${capacity?' MAX':esc(target.unit)}</small></div>`:''}<div><strong>${layout==='C'?glyph(target.id):''}${esc(title(target))}</strong>${layout!=='C'?`<p>${esc(meaning)}</p>`:''}</div>${layout!=='B'?`<div class="rf-stat-focus-value"><b>${target.value}</b><small>${esc(target.name)}${capacity?' MAX':esc(target.unit)}</small>${gain}</div>`:gain}</div>`;
+   const meaning=translated(target.description,th,target),gain=`<span class="rf-stat-gain">${esc(t('สูงสุด','Up to'))} <b>+${target.gain}</b></span>`,focus=`<div class="rf-stat-focus">${layout==='B'?`<div class="rf-stat-focus-round">${glyph(target.id)}<b>${target.value}</b><small>${esc(target.name)}${capacity?' MAX':target.unit?' · '+esc(target.unit):''}</small></div>`:''}<div><strong>${layout==='C'?glyph(target.id):''}${esc(title(target))}</strong>${layout!=='C'?`<p>${esc(meaning)}</p>`:''}</div>${layout!=='B'?`<div class="rf-stat-focus-value"><b>${target.value}</b><small>${esc(target.name)}${capacity?' MAX':target.unit?' · '+esc(target.unit):''}</small>${gain}</div>`:gain}</div>`;
    const methods=`<div class="rf-stat-methods" role="group" aria-label="${esc(t('วิธีฝึก','Practice method'))}">${target.methods.map((m,i)=>`<button type="button" class="rf-ability-button rf-stat-method-choice" data-stat-method-choice="${i}" aria-pressed="${i===method}"${disabled?' disabled':''}><span class="rf-stat-method-number">${String(i+1).padStart(2,'0')}</span><span><b>${esc(methodTitle(target,i))}</b>${layout!=='B'?`<small>${esc(translated(m,th,target))}</small>`:''}</span><i>${glyph(i===method?'check':'chevron')}</i></button>`).join('')}</div>`;
    const exercise=`<div class="rf-stat-method"><span>${glyph('train')}${esc(t('แนวฝึกที่เลือก','Selected exercise'))}</span><p>${esc(translated(target.methods[method],th,target))}</p></div>`;
    const details=`<details class="rf-stat-practice-details" data-stat-details${detailsOpen?' open':''}><summary>${glyph('info')}${esc(t('วิธีฝึกและเงื่อนไขทั้งหมด','Full practice method and conditions'))}</summary><p>${esc(meaning)}</p>${exercise}<p class="rf-ability-note rf-stat-hint">${esc(hint)}</p><p class="rf-ability-note">${esc(t('AI ต่อฉากในแชทหลัก · ผลเพิ่มเมื่อฝึกสำเร็จจริง','AI continues in the main chat. Gains require successful completed practice.'))}</p></details>`;

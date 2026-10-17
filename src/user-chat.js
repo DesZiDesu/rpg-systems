@@ -1,5 +1,5 @@
-import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.74.1';
-import {dialogueFrame,illustratedChatTheme} from './chat-folio.js?v=0.74.1';
+import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.75.0';
+import {dialogueFrame,illustratedChatTheme} from './chat-folio.js?v=0.75.0';
 // This shorthand is a player display convention, never an assistant protocol.
 const escaped=(source,index)=>{let slashes=0;while(index>0&&source[--index]==='\\')slashes++;return slashes%2===1;};
 function richMarkdown(source){
@@ -33,7 +33,8 @@ export function renderUserBlocks(blocks,{name='User',language='en',accent='#d6b4
     const view=normalizeChatAppearance(appearance);applyChatTheme(root,view);
     if(/^#[0-9a-f]{6}$/iu.test(accent))root.style.setProperty('--speaker',`var(--tretaresia-accent, ${accent})`);
     if(/^#[0-9a-f]{6}$/iu.test(ink))root.style.setProperty('--prose',`var(--tretaresia-ink, ${ink})`);
-    if(view.header){const header=node('header','trpg-user-header');header.append(node('small','',language==='th'?'ผู้เล่น':'PLAYER'),node('strong','',name));root.append(header);}
+    // SillyTavern already identifies the player above their message. Keep the
+    // speaker label inside dialogue, without adding a second player nameplate.
     for(const block of blocks){
         if(block.type==='narrative'){
             const prose=narrative(block.text,view.narrative,view),mark=prose.querySelector?.('.trpg-prose-mark');
@@ -46,7 +47,7 @@ export function renderUserBlocks(blocks,{name='User',language='en',accent='#d6b4
         }
         if(block.type==='thought'){
             const thought=node('aside','trpg-user-thought'),label=language==='th'?'พูดในใจ':'Inner thought';thought.setAttribute('aria-label',label);
-            thought.append(node('small','',label),appendText(node('p','',undefined),block.text));root.append(thought);continue;
+            thought.append(node('small','trpg-thought-label',label),appendText(node('p','',undefined),block.text));root.append(thought);continue;
         }
         if(block.type==='plain'&&!block.text.trim())continue;
         const body=block.type==='dialogue'?dialogueFrame(name,view,doc):node('div','trpg-plain');

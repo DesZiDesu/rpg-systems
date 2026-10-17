@@ -1,6 +1,6 @@
-import {weaponCategory} from './weapon-catalog.js?v=0.74.1';
-import {equippedWeapon,ownedWeaponViews,weaponReserve} from './weapon-core.js?v=0.74.1';
-import {createWeaponArt} from './weapon-art.js?v=0.74.1';
+import {weaponCategory} from './weapon-catalog.js?v=0.75.0';
+import {equippedWeapon,ownedWeaponViews,weaponReserve} from './weapon-core.js?v=0.75.0';
+import {createWeaponArt} from './weapon-art.js?v=0.75.0';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function createWeaponComposer({document:doc=globalThis.document,dock,settings=()=>({}),preset=()=>({}),configure=()=>{},act=async()=>{},busy=()=>false}={}){
@@ -30,7 +30,7 @@ export function createWeaponComposer({document:doc=globalThis.document,dock,sett
    const reserve=weaponReserve(state,view),usesAmmo=['magazine','rounds','arrows','energy'].includes(view.mode),known=Boolean(view.ammoType||view.ammoItemId);
    text('[data-weapon-reserve]',usesAmmo?known?`${t('สำรอง','RESERVE')} · ${reserve.units} ${reserve.kind==='packs'?t('แพ็ก','packs'):t('ลูก','rounds')}${reserve.kind==='packs'?` · ${reserve.rounds} ${t('ลูก/หน่วย','rounds/units')}`:''}`:t('สำรอง · ยังไม่กำหนดชนิดกระสุน','RESERVE · ammo type unknown'):view.mode==='quantity'?t('จำนวนตรงกับ Inventory','Quantity follows Inventory'):t('ไม่กำหนดค่าใช้จ่ายเพิ่ม','Costs follow world rules'));
    text('[data-weapon-state]',view.active?t('กำลังใช้พลัง','POWER ACTIVE'):t('สวมใส่อยู่','EQUIPPED'));root.classList.toggle('is-active',view.active);
-   const buttons=[['use',t('ใช้อาวุธ','Use')],...(usesAmmo?[['reload',t('บรรจุ','Reload')]]:[]),...(['excalibur','ea'].includes(view.modelId)?[[view.active?'deactivate':'activate',view.active?t('พักพลัง','Power down'):t('ปลดปล่อย','Unleash')]]:[]),['describe',t('ตรวจดู','Inspect')]];
+   const buttons=[['use',t('ใช้อาวุธ','Use')],...(usesAmmo?[['reload',t('บรรจุ','Reload')]]:[]),...(['excalibur','ea','excalibur-morgan'].includes(view.modelId)?[[view.active?'deactivate':'activate',view.active?t('พักพลัง','Power down'):t('ปลดปล่อย','Unleash')]]:[]),['describe',t('ตรวจดู','Inspect')]];
    q('.rf-weapon-actions').innerHTML=buttons.map(([id,label])=>`<button type="button" class="rf-ability-button" data-weapon-action="${id}"${disabled?' disabled':''}>${esc(label)}</button>`).join('');
   }else{
    art?.destroy();art=null;root.classList.remove('is-active');

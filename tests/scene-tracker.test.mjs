@@ -34,6 +34,19 @@ test('mobile ledger uses configured Tretaresia theme and safe text nodes',()=>{
     assert.match(css,/\.trpg-scene-ledger\{[^}]*--sc:var\(--tretaresia-accent/);
     assert.match(css,/@media\(max-width:480px\)\{\.trpg-scene-ledger\{grid-template-columns:42px minmax\(0,1fr\)/);
 });
+test('scene theme selection changes presentation only, including partial and legacy snapshots',()=>{
+    globalThis.document={createElement:tag=>new Node(tag)};
+    const snapshot={sequence:52,day:1,location:'Camp',participants:['Mash'],temperature:12};
+    const before=JSON.stringify(snapshot);
+    for(const theme of ['roleforge','folio','chapter','codex','aincrad']){
+        const card=renderSceneTracker(snapshot,'en',{theme,effects:false});
+        assert.equal(card.attributes['data-rf-chat-theme'],theme);
+        assert.equal(card.className,'trpg-scene-ledger');
+        assert.equal(JSON.stringify(snapshot),before);
+    }
+    assert.equal(renderSceneTracker(snapshot).attributes['data-rf-chat-theme'],'roleforge');
+    assert.equal(renderSceneTracker(snapshot,'en',{theme:'unknown'}).attributes['data-rf-chat-theme'],'roleforge');
+});
 test('a complete scene records the same full calendar and environment as Rune without placeholders',()=>{
     const state={worldClock:{day:2,dayName:'Moonday',time:'09:25',phase:'Morning'},onboarding:{locationSeeded:true},
         location:{place:'Moon Hall',region:'East Quarter',continent:'Central Continent'},

@@ -28,6 +28,21 @@ test('unknown counters remain unknown; configuration rejects overflow; items kee
  const raw=completeItemDefinition(fixture().inventory[0]);assert.equal(itemRecord(raw).weapon.current,6);assert.equal(itemRecord(fixture().inventory[1]).ammo.roundsPerUnit,30);
  assert.notEqual(itemDefinitionKey(fixture().inventory[1]),itemDefinitionKey({...fixture().inventory[1],ammo:{...fixture().inventory[1].ammo,roundsPerUnit:5}}));
 });
+test('Morgan uses its own owned exact-name model and portable profile, without granting Fate items',()=>{
+ const state=fixture();
+ state.inventory.push({id:'alter',name:'Excalibur Morgan',category:'Weapon',quantity:1},{id:'saber',name:'Excalibur',category:'Weapon',quantity:1},{id:'mention',name:'Replica of Excalibur Morgan',category:'Weapon',quantity:1});
+ const views=ownedWeaponViews(state);
+ assert.equal(views.find(w=>w.itemId==='alter').modelId,'excalibur-morgan');
+ assert.equal(views.find(w=>w.itemId==='saber').modelId,'excalibur');
+ assert.equal(views.find(w=>w.itemId==='mention').modelId,'generic');
+ assert.equal(namedWeaponModel('Excalibur Morgan (Saber Alter)'),'excalibur-morgan');
+ assert.equal(namedWeaponModel('Morgan’s staff'),'');
+ assert.equal(normalizeWeaponMetadata({modelId:'excalibur-morgan'}).modelId,'excalibur-morgan');
+ const preset=validateWeaponPreset({format:'roleforge-weapon-preset',version:1,definitions:[{id:'alter-art',name:'Alter blade',aliases:[],category:'sword',mode:'none',modelId:'excalibur-morgan',image:'',capacity:null,ammoType:''}]});
+ state.inventory.push({id:'authored',name:'Alter blade',category:'Weapon',quantity:1});
+ assert.equal(ownedWeaponViews(state,preset).find(w=>w.itemId==='authored').modelId,'excalibur-morgan');
+ assert.equal(ownedWeaponViews({inventory:[]},preset).length,0);
+});
 test('confirmed uses consume once, retain inventory ownership, and do no work while disabled',()=>{
  const state=fixture(),e=event(),result=applyWeaponEvents(state,[e],context(e));assert.equal(equippedWeapon(result.next).current,4);assert.equal(state.inventory[0].weapon.current,6);assert.equal(result.next.inventory[0].quantity,1);assert.equal(result.accepted.length,1);
  const repeated=applyWeaponEvents(result.next,[e],context(e));assert.equal(equippedWeapon(repeated.next).current,4);assert.equal(repeated.accepted.length,0);

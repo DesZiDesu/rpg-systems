@@ -1,5 +1,5 @@
-import {WEAPON_CATEGORIES,WEAPON_CATEGORY_IDS,weaponCategory,namedWeaponModel,SPECIAL_WEAPON_MODELS,weaponModelUrl} from './weapon-catalog.js?v=0.74.1';
-import {evidenceText,interactionEvidence} from './interaction-evidence.js?v=0.74.1';
+import {WEAPON_CATEGORIES,WEAPON_CATEGORY_IDS,weaponCategory,namedWeaponModel,SPECIAL_WEAPON_MODELS,weaponModelUrl} from './weapon-catalog.js?v=0.75.0';
+import {evidenceText,interactionEvidence} from './interaction-evidence.js?v=0.75.0';
 
 const clean=(v,n=160)=>typeof v==='string'?v.trim().slice(0,n):'';
 const object=v=>v&&typeof v==='object'&&!Array.isArray(v);
@@ -29,7 +29,7 @@ export async function prepareWeaponImage(file,{document:doc=globalThis.document}
 export function normalizeWeaponMetadata(raw){
  if(!object(raw))return null;
  const category=WEAPON_CATEGORY_IDS.includes(raw.category)?raw.category:'relic',mode=modes.has(raw.mode)?raw.mode:weaponCategory(category).resourceMode,capacity=amount(raw.capacity),current=amount(raw.current);
- return{category,modelId:['auto','generic','excalibur','ea','custom'].includes(raw.modelId)?raw.modelId:'auto',profileId:clean(raw.profileId,80),mode,capacity,current:current===null?null:capacity===null?current:Math.min(current,capacity),ammoItemId:clean(raw.ammoItemId,100),ammoType:clean(raw.ammoType,80),active:raw.active===true,condition:clean(raw.condition,100)};
+ return{category,modelId:['auto','generic','excalibur','ea','excalibur-morgan','custom'].includes(raw.modelId)?raw.modelId:'auto',profileId:clean(raw.profileId,80),mode,capacity,current:current===null?null:capacity===null?current:Math.min(current,capacity),ammoItemId:clean(raw.ammoItemId,100),ammoType:clean(raw.ammoType,80),active:raw.active===true,condition:clean(raw.condition,100)};
 }
 export function normalizeAmmoMetadata(raw){
  if(!object(raw)||!['round','magazine','cell','arrow','bolt'].includes(raw.kind))return null;
@@ -40,7 +40,7 @@ export function normalizeAmmoMetadata(raw){
 export function validateWeaponPreset(raw){
  if(!object(raw)||raw.version!==1||!Array.isArray(raw.definitions)||raw.definitions.length>64)throw Error('Invalid weapon preset.');
  const ids=new Set(),definitions=raw.definitions.map(d=>{
-  if(!object(d)||!/^[a-z0-9_-]{1,80}$/iu.test(d.id||'')||ids.has(d.id)||!clean(d.name,100)||!WEAPON_CATEGORY_IDS.includes(d.category)||!modes.has(d.mode)||!['auto','generic','excalibur','ea','custom'].includes(d.modelId))throw Error('Every weapon profile needs a unique ID, name, category and model.');
+  if(!object(d)||!/^[a-z0-9_-]{1,80}$/iu.test(d.id||'')||ids.has(d.id)||!clean(d.name,100)||!WEAPON_CATEGORY_IDS.includes(d.category)||!modes.has(d.mode)||!['auto','generic','excalibur','ea','excalibur-morgan','custom'].includes(d.modelId))throw Error('Every weapon profile needs a unique ID, name, category and model.');
   if(d.image&&!weaponImageSource(d.image)||d.capacity!==null&&d.capacity!==undefined&&!integer(d.capacity))throw Error('Invalid weapon image or capacity.');
   ids.add(d.id);return{id:d.id,name:clean(d.name,100),aliases:(Array.isArray(d.aliases)?d.aliases:[]).map(v=>clean(v,100)).filter(Boolean).slice(0,12),category:d.category,mode:d.mode,modelId:d.modelId,image:weaponImageSource(d.image),capacity:amount(d.capacity),ammoType:clean(d.ammoType,80)};
  });
@@ -77,7 +77,7 @@ export function ownedWeaponViews(state,preset=emptyWeaponPreset()){
   const profile=profiles.find(d=>d.id===item.weapon?.profileId||[d.name,...d.aliases||[]].some(n=>key(n)===key(item.name))),saved=system.entries.find(e=>e.itemId===item.id),category=profile?.category||saved?.category||inferWeaponCategory(item);
   if(!category)return[];
   const metadata=normalizeWeaponMetadata({category,...item.weapon,...saved,...(profile?{category:profile.category,mode:profile.mode,modelId:profile.modelId,capacity:profile.capacity,ammoType:profile.ammoType,profileId:profile.id}:{})});
-  const named=namedWeaponModel(item.name),requested=metadata.modelId,modelId=profile&&['excalibur','ea'].includes(profile.modelId)?profile.modelId:requested==='generic'?'generic':requested==='custom'&&profile?.image?'custom':named&&['auto',named].includes(requested)?named:'generic';
+  const named=namedWeaponModel(item.name),requested=metadata.modelId,modelId=profile&&['excalibur','ea','excalibur-morgan'].includes(profile.modelId)?profile.modelId:requested==='generic'?'generic':requested==='custom'&&profile?.image?'custom':named&&['auto',named].includes(requested)?named:'generic';
   const actual=modelId==='custom'?'custom':modelId;
   return[{itemId:item.id,name:item.name,quantity:item.quantity,...metadata,modelId:actual,image:actual==='custom'?profile.image:SPECIAL_WEAPON_MODELS[actual]?.image||weaponModelUrl(category),equipped:system.equippedItemId===item.id,profile:profile||null,current:metadata.mode==='quantity'?item.quantity:metadata.current}];
  });

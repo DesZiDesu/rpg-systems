@@ -1,0 +1,144 @@
+{
+  "release": "0.75.0",
+  "baseCommit": "048873e58e24276c22d6dbe7d9328d5fd91a3a40",
+  "unitTests": {
+    "command": "npm test",
+    "passed": 1392,
+    "failed": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "passed": true
+  },
+  "actualSillyTavern": {
+    "host": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "theme": "Dark Lite, exact installed CSS asserted in the browser",
+    "mobile": {
+      "device": "Chromium touch/mobile emulation, not a physical iPhone",
+      "widths": [
+        320,
+        390,
+        430,
+        1440
+      ],
+      "checks": [
+        "Native card import and completed Generate create real Scene Tracker and user thoughts; no duplicated player header.",
+        "All 5 themes fit 320/390/430/1440; expand/collapse retains every scene field; stored text and RPG state stay unchanged.",
+        "Fate-style custom units retain authored data and visible spacing; training uses the installed Font Awesome dumbbell in both locations.",
+        "Late NPC stylesheet cannot override the new shapes; Header/Dialogue/Narrative toggles still act independently.",
+        "Native reload/reopen restores scene/thought theme and custom stats without editing a message."
+      ],
+      "passed": true,
+      "pageErrors": []
+    },
+    "desktop": {
+      "device": "Desktop Chromium (mouse, no touch)",
+      "widths": [
+        1440
+      ],
+      "checks": [
+        "Native card import and completed Generate create real Scene Tracker and user thoughts; no duplicated player header.",
+        "All 5 themes fit 1440 desktop; expand/collapse retains every scene field; stored text and RPG state stay unchanged.",
+        "Fate-style custom units retain authored data and visible spacing; training uses the installed Font Awesome dumbbell in both locations.",
+        "Late NPC stylesheet cannot override the new shapes; Header/Dialogue/Narrative toggles still act independently.",
+        "Native reload/reopen restores scene/thought theme and custom stats without editing a message."
+      ],
+      "passed": true,
+      "pageErrors": []
+    },
+    "weapons": {
+      "passed": true,
+      "checks": [
+        "Off by default after native card import; no sample weapons granted.",
+        "Mobile/desktop fit 320/390/430/1440; invalid counters reject without changing inventory.",
+        "Real native Generate consumes ammunition once, reloads from Inventory, retains partial magazine and suppresses duplicate AI inventory decrement.",
+        "Duplicate native completion events do not consume twice.",
+        "excalibur motion frames captured from the production dock in real SillyTavern.",
+        "ea motion frames captured from the production dock in real SillyTavern.",
+        "Excalibur and Ea resolve owned exact names; completed player outcomes activate the approved blade light / opposing-cylinder animation.",
+        "morgan motion frames captured from the production dock in real SillyTavern.",
+        "Morgan is a distinct owned model: native settings, activation, blade-only aura, unchanged hilt, and 320/390/430/1440 layouts.",
+        "Reduce Motion freezes special animation.",
+        "Uploaded art is resized into the scoped preset, not copied into state/checkpoints.",
+        "Changing cards closes the stale manager; unrelated cards retain the default-off state and receive no Fate weapons or art.",
+        "Reload preserves equipment, resources and art; chatbar windows reopen minimized.",
+        "Native ammo configuration rejects overflow and retains the existing stack quantity.",
+        "A native exported card imports into a new character/chat with uploaded art, counters and equipment intact."
+      ],
+      "pageErrors": [],
+      "nativeFixtureGenerations": 5,
+      "externalModelCalls": 0
+    }
+  },
+  "hostFixtureBrowserRegressions": [
+    {
+      "command": "node tests/user-chat.browser.mjs",
+      "passed": true,
+      "widths": [
+        320,
+        390,
+        1280
+      ]
+    },
+    {
+      "command": "node tests/regex-shared.browser.mjs",
+      "passed": true,
+      "widths": [
+        320,
+        390,
+        1280
+      ]
+    },
+    {
+      "command": "node tests/chat-portrait-user-regressions.browser.mjs",
+      "passed": true,
+      "widths": [
+        320,
+        390,
+        768,
+        1280
+      ]
+    },
+    {
+      "command": "node tests/chat-appearance.browser.mjs",
+      "passed": true,
+      "widths": [
+        320
+      ]
+    },
+    {
+      "command": "node tests/scene-locations.browser.mjs",
+      "passed": true,
+      "widths": [
+        320,
+        390,
+        1280
+      ]
+    }
+  ],
+  "portablePreview": {
+    "pass": true,
+    "externalAssetRequests": 0,
+    "themeSelector": true,
+    "sizeSelector": true,
+    "sceneDetails": true,
+    "errors": []
+  },
+  "morganAsset": {
+    "path": "assets/weapons/special/excalibur-morgan.png",
+    "bytes": 364156,
+    "sha256": "6351a0ab7d7bd129178983e80c7e91c8fe1749905cc8465b3a91e88c54be17da",
+    "approvedPreviewReusedUnchanged": true
+  },
+  "limits": [
+    "Mobile tests emulate Chromium touch/mobile; no physical iOS/Safari device was tested.",
+    "Actual SillyTavern generation uses local SSE fixtures via the native Generate/StreamingProcessor pipeline; no external model provider or model-specific output quality/performance was tested."
+  ]
+}

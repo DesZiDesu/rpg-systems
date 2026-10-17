@@ -1,4 +1,5 @@
-import {weaponModelUrl} from './weapon-catalog.js?v=0.74.1';
+import {weaponModelUrl} from './weapon-catalog.js?v=0.75.0';
+import {createMorganBlade} from './weapon-morgan-art.js?v=0.75.0';
 // The approved reference art uses separate, state-driven light/rotation layers.
 // Generic and custom art remain ordinary images; only built-in art enters Canvas.
  const TAU=Math.PI*2,WIDTH=2172,HEIGHT=724;
@@ -12,8 +13,9 @@ export function createWeaponArt({stage,image,document:doc=stage.ownerDocument}={
  const win=doc.defaultView,global={document:doc},canvas=doc.createElement('canvas');canvas.className='rf-weapon-canvas';canvas.setAttribute('aria-hidden','true');canvas.hidden=true;stage.append(canvas);
  const ctx=canvas.getContext('2d'),media=win.matchMedia('(prefers-reduced-motion: reduce)');
  let weapon=null,scale=1,dpr=1,dx=0,dy=0,frame=0,removed=false,start=0,sprite=null,atlas=null,atlasKey='',failedImage='',manual=false;
- const special=()=>weapon&&['excalibur','ea'].includes(weapon.modelId)&&weapon.image!==failedImage;
- function resize(){const b=image.getBoundingClientRect(),p=stage.getBoundingClientRect();if(!b.width||!b.height)return;canvas.style.left=(b.left-p.left)+'px';canvas.style.top=(b.top-p.top)+'px';canvas.style.width=b.width+'px';canvas.style.height=b.height+'px';dpr=Math.min(win.devicePixelRatio||1,2.5);const w=Math.round(b.width*dpr),h=Math.round(b.height*dpr);if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;scale=Math.min(b.width/WIDTH,b.height/HEIGHT);dx=(b.width-WIDTH*scale)/2;dy=(b.height-HEIGHT*scale)/2;}
+ const morgan=createMorganBlade({image,document:doc});
+ const special=()=>weapon&&['excalibur','ea','excalibur-morgan'].includes(weapon.modelId)&&weapon.image!==failedImage;
+ function resize(){const b=image.getBoundingClientRect(),p=stage.getBoundingClientRect();if(!b.width||!b.height)return;canvas.style.left=(b.left-p.left)+'px';canvas.style.top=(b.top-p.top)+'px';canvas.style.width=b.width+'px';canvas.style.height=b.height+'px';dpr=Math.min(win.devicePixelRatio||1,2.5);const w=Math.round(b.width*dpr),h=Math.round(b.height*dpr);if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;scale=Math.min(b.width/WIDTH,b.height/(weapon?.modelId==='excalibur-morgan'?450:HEIGHT));dx=(b.width-WIDTH*scale)/2;dy=(b.height-HEIGHT*scale)/2;}
  function clear(){ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);}
  function begin(){clear();ctx.setTransform(scale*dpr,0,0,scale*dpr,dx*dpr,dy*dpr);}
   function materials(){
@@ -94,7 +96,7 @@ export function createWeaponArt({stage,image,document:doc=stage.ownerDocument}={
   const isSpecial=special();canvas.hidden=!isSpecial;stage.classList.toggle('has-special-art',Boolean(isSpecial));
   if(!isSpecial||!image.complete||!image.naturalWidth)return;
   const reduced=media.matches,strength=active?(reduced?1:smooth(time/.8)):0,phase=active&&!reduced?TAU*time/1.8:0;
-  begin();if(weapon.modelId==='excalibur')excalibur(strength,reduced?0:time);else ea(strength,phase);
+  begin();if(weapon.modelId==='excalibur')excalibur(strength,reduced?0:time);else if(weapon.modelId==='excalibur-morgan')morgan.draw(ctx,{strength,time:reduced?0:time,scale,dpr});else ea(strength,phase);
  }
  function tick(now){frame=0;if(removed||manual)return;const visible=stage.getBoundingClientRect().height>0&&!doc.hidden;if(visible)paint((now-start)/1000);if(visible&&special()&&weapon.active&&!media.matches)frame=win.requestAnimationFrame(tick);}
  function wake(){if(!removed&&!manual&&!frame)frame=win.requestAnimationFrame(tick);}

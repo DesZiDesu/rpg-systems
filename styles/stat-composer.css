@@ -18,7 +18,10 @@
 .rf-stat-secondary .rf-stat-track{height:3px}.rf-stat-needs{margin:12px 0}.rf-stat-needs span{font-size:9px}.rf-stat-needs b{font-size:10px}.rf-stat-needs .rf-stat-track{height:3px}
 .rf-stat-values,.rf-stat-custom-values{display:flex;justify-content:space-between;gap:7px;flex-wrap:wrap;min-width:0;padding:9px 0;border-top:1px solid #343434;border-bottom:1px solid #343434}
 .rf-stat-values>span,.rf-stat-custom-values>span{display:flex;align-items:baseline;gap:5px;min-width:0;max-width:100%}.rf-stat-values small,.rf-stat-custom-values small{font-size:9px;color:#929292;overflow-wrap:anywhere}.rf-stat-values strong,.rf-stat-custom-values strong{font-size:12px;font-weight:600;overflow-wrap:anywhere}
-.rf-stat-custom-values{justify-content:flex-start;gap:7px 16px;border-top:0}.rf-stat-custom-values>span{border:1px solid #393939;padding:3px 7px;border-radius:5px}
+.rf-stat-custom-values{justify-content:flex-start;gap:7px 16px;border-top:0}.rf-stat-custom-values>span{border:1px solid #393939;padding:5px 8px;border-radius:5px;flex-wrap:wrap;gap:3px 8px}
+.rf-stat-custom-values strong{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:4px}
+.rf-stat-custom-values .rf-stat-unit{font:400 9px/1.5 system-ui,sans-serif;color:#aaa}
+.rf-stat-composer .rf-stat-training-icon{display:inline-block;flex:none;width:16px;min-width:16px;text-align:center;font-size:14px;line-height:1;color:inherit}
 .rf-stat-footer{display:flex;justify-content:space-between;gap:4px 10px;flex-wrap:wrap;min-width:0;margin-top:8px}
 .rf-stat-context{display:flex;gap:4px 12px;flex-wrap:wrap;min-width:0;max-width:100%;font-size:9px;color:#999;align-items:center}.rf-stat-context>span{display:inline-flex;gap:4px;align-items:center;min-width:0;max-width:100%;overflow-wrap:anywhere}.rf-stat-context svg{width:11px;height:11px}.rf-stat-context>span+span{font-size:8px;color:#888}
 .rf-stat-wallet{display:flex;gap:6px 12px;flex-wrap:wrap;min-width:0;max-width:100%}.rf-stat-wallet>span{display:flex;align-items:center;gap:5px;min-width:0;max-width:100%}.rf-stat-wallet b{font-size:11px;font-weight:500;overflow-wrap:anywhere}.rf-stat-wallet small{font-size:9px;color:#999;overflow-wrap:anywhere}.rf-stat-wallet svg.rf-commerce-icon{width:16px;height:16px}

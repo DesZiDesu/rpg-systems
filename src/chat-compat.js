@@ -1,7 +1,7 @@
 // Compose with the host's already formatted DOM. Never run regex per block or
 // recreate another extension's card with innerHTML/clones.
-import {parseUserMessage} from './user-chat.js?v=0.74.1';
-import {cleanChatProse} from './foreign-chat.js?v=0.74.1';
+import {parseUserMessage} from './user-chat.js?v=0.75.0';
+import {cleanChatProse} from './foreign-chat.js?v=0.75.0';
 export function chatPresentationMode(settings = {}) {
     return ['shared','native','roleforge'].includes(settings.chatRegexMode)
         ? settings.chatRegexMode : settings.preserveNativeChat === true ? 'native' : 'shared';
@@ -319,7 +319,6 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,dialogue,te
             voiceBlocks[index].name=markerName(target) || block.name;
         }
     }
-    if(user){const root=user.render([]),anchor=nodes.find(node=>node.parentNode===host)||host.firstChild;root.classList.add('rf-shared-header');root.dataset.roleforgeMount='user';host.insertBefore(root,anchor);roots.push(root);}
     const gaps=compactSharedSeparators(roots,markers);
     // A whole-message regex may remove all story boundaries. Keep its exact
     // card in place; expose Voice for the original structured blocks separately

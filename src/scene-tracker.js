@@ -1,4 +1,5 @@
-import {recoverLocationGeography} from './location-memory.js?v=0.74.1';
+import {recoverLocationGeography} from './location-memory.js?v=0.75.0';
+import {normalizeChatAppearance} from './chat-themes.js?v=0.75.0';
 // Small, per-reply scene records; the host may complete omitted scene details.
 const value = (source, limit = 180) => typeof source === 'string' ? source.trim().slice(0, limit) : '';
 const known = source => source && !/^(?:unknown|none|n\/a|unspecified|not specified|not known|undefined|null|tbd|ไม่ทราบ|ไม่ระบุ|ไม่รู้|—|–|-|\?|…|\.{2,})$/i.test(source) ? source : '';
@@ -111,11 +112,14 @@ function node(tag, className = '', content = '') {
     return element;
 }
 
-export function renderSceneTracker(snapshot, language = 'en') {
+export function renderSceneTracker(snapshot, language = 'en', appearance = {}) {
     const thai = language === 'th';
     const missing = missingSceneFields(snapshot);
     const word = (en, th) => thai ? th : en;
     const card = node('section', 'trpg-scene-ledger');
+    const view = normalizeChatAppearance(appearance);
+    card.setAttribute('data-rf-chat-theme', view.theme);
+    if (view.effects) card.className += ' trpg-effects';
     card.setAttribute('aria-label', word('Scene Tracker', 'ข้อมูลฉาก'));
     const side = node('div', 'trpg-scene-side');
     const number = snapshot.sequence ?? snapshot.day;
@@ -125,7 +129,7 @@ export function renderSceneTracker(snapshot, language = 'en') {
     const top = node('div', 'trpg-scene-top');
     top.append(node('span', '', missing.length ? 'SCENE STATUS / PARTIAL' : 'SCENE STATUS / LIVE'),
         node('span', '', [snapshot.dayName,snapshot.day == null || snapshot.dayName === `Day ${snapshot.day}` ? '' : `${word('Day', 'วันที่')} ${snapshot.day}`].filter(Boolean).join(' · ') || '—'));
-    const hero = node('div', 'trpg-scene-hero'), place = node('div');
+    const hero = node('div', 'trpg-scene-hero'), place = node('div', 'trpg-scene-location');
     place.append(node('small', '', word('CURRENT LOCATION', 'ตำแหน่งในเนื้อเรื่อง')),
         node('strong', '', snapshot.location || '—'), node('span', '', narrativeLocationLabel({
             place: snapshot.location, region: snapshot.region, continent: snapshot.continent,

@@ -87,11 +87,11 @@ try{
   {
    const style=await page.locator(`[mesid="${user}"] .trpg-user-chat`).evaluate(root=>({
     transparent:[root,...root.querySelectorAll('.trpg-user-header,.trpg-narrative,.trpg-prose-glow')].every(node=>{const c=getComputedStyle(node);return c.backgroundImage==='none'&&c.backgroundColor==='rgba(0, 0, 0, 0)'&&c.boxShadow==='none';}),
-    name:getComputedStyle(root.querySelector('.trpg-user-header')).color,
+    headerCount:root.querySelectorAll('.trpg-user-header').length,
     thought:getComputedStyle(root.querySelector('.trpg-user-thought small')).color,
    }));
    assert.equal(style.transparent,true,'player Header/Narrative and their parent stay transparent');
-   assert.equal(style.thought,style.name,'inner thought label retains the player accent on transparent backgrounds');
+   assert.equal(style.headerCount,0,'the native player identity is not duplicated');
   }
   await change(page,'showChatHeader',false);await change(page,'showChatDialogue',false);assert.equal(await page.locator(`[mesid="${user}"] .trpg-user-header`).count(),0);assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue.trpg-unframed`).count(),1);assert.equal(await page.locator(`[mesid="${user}"] .trpg-narrative:not(.trpg-unframed)`).count(),1);assert.equal(await page.locator(`[mesid="${user}"] .trpg-user-thought`).count(),1);
   assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue-copy`).evaluate(n=>getComputedStyle(n,'::before').content),JSON.stringify('"'));

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="th">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RoleForge — Scene & Inner Thoughts</title>
+<link rel="stylesheet" href="../../../styles/npc-ui.css">
+<link rel="stylesheet" href="../../../styles/chat-themes.css">
+<link rel="stylesheet" href="../../../styles/chat-illustrated.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101213;color:#e6e4dd;font:14px/1.6 system-ui,sans-serif;--tretaresia-accent:#b8c9df;--tretaresia-accent-alt:#d4e2f3;--tretaresia-ink:#e4e6e8;--tretaresia-surface:#15191e;--tretaresia-panel:#15191e;--SmartThemeBodyColor:#e4e6e8}
+body>header,main{max-width:1540px;margin:auto;padding:24px}body>header{padding-bottom:5px}h1{font:400 30px/1.3 Georgia,serif;margin:8px 0}header p{color:#a5aaae;margin:8px 0}header small{letter-spacing:.15em;color:#bba577;font-size:10px}.controls{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}label{display:flex;gap:8px;align-items:center;color:#b8bdc0}select{min-height:40px;background:#23272a;color:#eee;border:1px solid #485057;border-radius:6px;padding:7px 10px;font:inherit}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:22px;padding-top:0}article{min-width:0}article[hidden]{display:none}h2{font:400 22px/1.3 Georgia,serif;margin:8px 0}article>p{font-size:12px;color:#a6adaf;margin:4px 0 12px}.viewport{width:100%;max-width:390px;min-width:0;margin:0 auto;padding:12px;background:#1d1d1d;border:1px solid #34393d;border-radius:10px}.viewport .trpg-scene-ledger{margin:0 0 24px}.viewport .trpg-user-chat{margin:0!important}.viewport .trpg-user-thought{margin-inline:0!important}.native-label{color:#91979b;font:400 10px/1.4 system-ui;margin:0 0 10px;letter-spacing:.05em}.native-label:last-of-type{padding-top:2px}body[data-size=desktop] main{grid-template-columns:repeat(auto-fit,minmax(min(100%,620px),1fr))}body[data-size=desktop] .viewport{max-width:720px;padding:20px}body[data-sheet] header .controls{display:none}body[data-sheet] main{grid-template-columns:repeat(5,minmax(0,1fr));max-width:none;padding:18px;gap:16px}body[data-sheet] header{max-width:none;padding:20px 22px 0}body[data-sheet] .viewport{padding:12px}body[data-sheet] article>p{min-height:38px}a{color:#d1b37b}footer{padding:0 24px 24px;color:#989fa4;font-size:12px;max-width:1540px;margin:auto}
+</style>
+<header><small>ROLEFORGE · SCENE / INNER THOUGHTS</small><h1>ฉากเดียวกัน ห้าดีไซน์ที่เข้าชุดกับแชต</h1><p>ใช้ renderer และ CSS จริงของส่วนเสริม · ข้อมูลฉากและข้อความเหมือนกันทุกแบบ</p><div class="controls"><label>ดีไซน์ <select id="theme"><option value="all">ดูทั้ง 5 แบบ</option></select></label><label>ขนาดแชต <select id="size"><option value="mobile">Mobile · 390 px</option><option value="desktop">Desktop · 720 px</option></select></label></div></header>
+<main id="gallery"></main>
+<footer>Scene details กดเปิดดูได้จริง · Inner Thoughts ใช้ข้อความ <code>|พูดในใจ|</code> ของ User ตามเดิม · ไม่มีแถบผู้เล่นซ้ำ</footer>
+<script type="module">
+import {CHAT_THEMES} from '../../../src/chat-themes.js';
+import {renderSceneTracker} from '../../../src/scene-tracker.js';
+import {renderUserBlocks} from '../../../src/user-chat.js';
+import {narrative,appendStoryText} from '../../../src/npc-chat.js';
+const snapshot={sequence:52,day:1,dayName:'Day 1',month:'October',year:'1431',era:'Common Era',calendar:'Gregorian',time:'22:26',period:'Night',season:'Autumn',location:'La Charité Outskirts',region:'Orléans Region',continent:'France',position:'Beside the campfire',weather:'Clear skies',temperature:12,lighting:'Firelight',participants:['Mash Kyrielight','Jino'],objective:'Reach the nearby camp',safety:'Safe',atmosphere:'Quiet and watchful',elapsed:'15 min'};
+const descriptions=['แถบสถานะและเส้นความคิดที่เรียบคม','บันทึกเดินทางและกระดาษความคิดขอบโค้ง','กรอบวอลนัตกับแถบความคิดน้ำตาลทอง','บันทึกเส้นคู่และความคิดแบบคัมภีร์','แผงสีเงินส้มกับความคิดในหน้าต่าง Interface'];
+for(const [i,theme] of CHAT_THEMES.entries()){
+ const article=document.createElement('article');article.dataset.theme=theme.key;
+ const heading=document.createElement('h2');heading.textContent=theme.name;
+ const info=document.createElement('p');info.textContent=descriptions[i];
+ const viewport=document.createElement('div');viewport.className='viewport';
+ const label=document.createElement('div');label.className='native-label';label.textContent='LIVE SCENE STATUS';
+ const thoughtLabel=label.cloneNode();thoughtLabel.textContent='USER · INNER THOUGHTS';
+ const thought=renderUserBlocks([{type:'thought',text:'ค่ายพักอยู่ใกล้แล้ว แต่เรายังควรระวังตัวไว้ก่อน…'}],{name:'Jino',language:'th',accent:'#b8c9df',appearance:{theme:theme.key,effects:false},narrative,appendText:appendStoryText});
+ viewport.append(label,renderSceneTracker(snapshot,'th',{theme:theme.key,effects:false}),thoughtLabel,thought);article.append(heading,info,viewport);gallery.append(article);
+ const option=document.createElement('option');option.value=theme.key;option.textContent=theme.name;document.getElementById('theme').append(option);
+}
+document.getElementById('theme').addEventListener('change',e=>{for(const card of gallery.children)card.hidden=e.target.value!=='all'&&card.dataset.theme!==e.target.value;});
+document.getElementById('size').addEventListener('change',e=>document.body.dataset.size=e.target.value);
+if(new URLSearchParams(location.search).has('sheet'))document.body.dataset.sheet='';
+window.sceneThoughtPreview={ready:true};
+</script>
+</html>

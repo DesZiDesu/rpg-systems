@@ -47,9 +47,9 @@ const appendText=(node,text)=>{node.textContent=text;return node;};
 test('player rendering uses text nodes, validated theme colors and distinct thought labels',()=>{
     const blocks=content(parse('*Walks.* "Hello." |A secret.|'));
     const root=renderUserBlocks(blocks,{document:doc,name:'<img onerror=evil()>',language:'th',accent:'#a9d98c',ink:'#d6d0c1',appendText,narrative:text=>appendText(new Node('narrative'),text)});
-    assert.equal(root.children[0].children[1].textContent,'<img onerror=evil()>');
+    assert.equal(root.children.some(node=>node.tag==='header'),false);
     assert.equal(root.properties['--speaker'],'var(--tretaresia-accent, #a9d98c)');assert.equal(root.properties['--prose'],'var(--tretaresia-ink, #d6d0c1)');
-    assert.deepEqual(root.children.map(node=>node.tag),['header','narrative','div','aside']);
-    assert.equal(root.children[3]['aria-label'],'พูดในใจ');assert.equal(root.children[3].children[1].textContent,'A secret.');
+    assert.deepEqual(root.children.map(node=>node.tag),['narrative','div','aside']);
+    assert.equal(root.children[2]['aria-label'],'พูดในใจ');assert.equal(root.children[2].children[1].textContent,'A secret.');
     const invalid=renderUserBlocks([],{document:doc,accent:'url(secret)',ink:'red;display:none',appendText});assert.deepEqual(invalid.properties,{});
 });

@@ -174,11 +174,11 @@ try{
         await page.locator('[data-presentation-setting="userChatPresentation"]').check();
         await rules(page,{global:[script('/Hello/g','Hello <span data-native="player-inline"><button>Player action</button><input type="checkbox"></span>',{placement:[1]}),script('/Think/g','Consider',{placement:[1]})]});
         const styledUser=await add(page,'*I wait* "Hello" |Think|',{user:true});await assertNative(page,styledUser);
-        assert.equal(await row(page,styledUser).locator('.trpg-user-header').count(),1);assert.equal(await row(page,styledUser).locator('.trpg-dialogue').count(),1);assert.equal(await row(page,styledUser).locator('.trpg-narrative').count(),1);assert.equal(await row(page,styledUser).locator('.trpg-user-thought').count(),1);assert.match(await row(page,styledUser).locator('.trpg-user-thought').innerText(),/Consider/);
+        assert.equal(await row(page,styledUser).locator('.trpg-user-header').count(),0);assert.equal(await row(page,styledUser).locator('.trpg-dialogue').count(),1);assert.equal(await row(page,styledUser).locator('.trpg-narrative').count(),1);assert.equal(await row(page,styledUser).locator('.trpg-user-thought').count(),1);assert.match(await row(page,styledUser).locator('.trpg-user-thought').innerText(),/Consider/);
         assert.equal(await row(page,styledUser).locator('.trpg-prose-mark svg').count(),1,'player narrative keeps its pen');assert.equal(await row(page,styledUser).locator('.rf-voice-play,.trpg-header').count(),0);
         if(artifacts&&width===390)await row(page,styledUser).screenshot({path:`${artifacts}/user-regex-mobile.png`});
         await rules(page,{global:[script('/[\\s\\S]+/','<section data-native="user"><button>Player card</button><input type="checkbox"></section>',{placement:[1]})]});
-        const user=await add(page,'*I wait* "Hello" |A thought|',{user:true});await assertNative(page,user);assert.equal(await row(page,user).locator('.trpg-user-header').count(),1);assert.equal(await row(page,user).locator('.rf-voice-play,.trpg-header').count(),0);
+        const user=await add(page,'*I wait* "Hello" |A thought|',{user:true});await assertNative(page,user);assert.equal(await row(page,user).locator('.trpg-user-header').count(),0);assert.equal(await row(page,user).locator('.rf-voice-play,.trpg-header').count(),0);
         const ai=await add(page,'*I wait* "Hello" |A thought|');assert.equal(await row(page,ai).locator('.trpg-user-header,.trpg-user-thought').count(),0);
         // encode_tags, code examples and protected tag attributes remain native
         // formatting concerns; literal code is not mounted as story UI.

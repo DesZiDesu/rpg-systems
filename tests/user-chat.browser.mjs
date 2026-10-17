@@ -69,7 +69,7 @@ try{
         await toggle(page,true);
         const widget=await add(page,'"Native widget" |thought|',{native:'<section class="custom-widget"><button type="button">Native action</button></section>'});
         await page.evaluate(id=>{window.widgetClicks=0;window.widget=document.querySelector(`[mesid="${id}"] .custom-widget`);window.widget.querySelector('button').addEventListener('click',()=>window.widgetClicks++);},widget);
-        assert.equal(await row(page,widget).locator('.trpg-user-header').count(),1,'shared user identity accompanies the native Regex card');
+        assert.equal(await row(page,widget).locator('.trpg-user-header').count(),0,'native identity is not duplicated above the Regex card');
         assert.equal(await row(page,widget).locator('.trpg-dialogue,.trpg-user-thought').count(),0,'whole-message Regex does not duplicate shorthand body');
         await row(page,widget).locator('button').click();await toggle(page,false);await toggle(page,true);
         assert.equal(await page.evaluate(id=>document.querySelector(`[mesid="${id}"] .custom-widget`)===window.widget,widget),true);assert.equal(await page.evaluate(()=>window.widgetClicks),1);
@@ -77,7 +77,7 @@ try{
             const id=await add(page,source);assert.equal(await row(page,id).locator('.trpg-user-chat').count(),0);assert.equal(await row(page,id).locator('img').count(),0);
         }
         const system=await add(page,'*action* "speech" |thought|',{system:true});assert.equal(await row(page,system).locator('.trpg-user-chat').count(),0);
-        const unsafeName=await add(page,'"Hello."',{name:'<img src=x onerror=evil()>'});assert.equal(await row(page,unsafeName).locator('img').count(),0);assert.equal(await row(page,unsafeName).locator('.trpg-user-header strong').innerText(),'<img src=x onerror=evil()>');
+        const unsafeName=await add(page,'"Hello."',{name:'<img src=x onerror=evil()>'});assert.equal(await row(page,unsafeName).locator('img').count(),0);assert.equal(await row(page,unsafeName).locator('.trpg-dialogue-copy').innerText(),'Hello.');
         await page.evaluate(userId=>{const editor=document.createElement('textarea');editor.id='curEditTextarea';editor.className='edit_textarea';document.querySelector(`[mesid="${userId}"]`).append(editor);},userId);
         await page.waitForTimeout(180);assert.equal(await row(page,userId).locator('.trpg-user-chat').count(),0,'editing reveals the native editor without player cards');
         await page.evaluate(async userId=>{
@@ -89,7 +89,7 @@ try{
         // Re-render a host update, then wrap a live card as another formatter does.
         await page.evaluate(async userId=>{const body=document.querySelector(`[mesid="${userId}"] .mes_text`);body.innerHTML=window.userChatPreview.nativeHtml(window.host.chat[userId].mes);await window.host.eventSource.emit(window.host.eventTypes.MESSAGE_UPDATED,userId);},userId);await page.waitForTimeout(180);
         await page.evaluate(userId=>{const body=document.querySelector(`[mesid="${userId}"] .mes_text`),card=body.querySelector('.trpg-user-chat'),wrapper=document.createElement('section');wrapper.className='external-wrapper';card.replaceWith(wrapper);wrapper.append(card);},userId);await page.waitForTimeout(180);
-        assert.equal(await row(page,userId).locator('.trpg-user-header').count(),1);assert.match(await row(page,userId).locator('.external-wrapper').innerText(),/คืนนี้ต้องระวัง/,'external wrapper survives with restored native content');
+        assert.equal(await row(page,userId).locator('.trpg-user-header').count(),0);assert.match(await row(page,userId).locator('.external-wrapper').innerText(),/คืนนี้ต้องระวัง/,'external wrapper survives with restored native content');
         await page.evaluate(async()=>{window.host.chat=[];document.querySelector('#chat').replaceChildren();await window.hStatsPreview.switchChat('user-preview-next');});
         const next=await add(page,'*A new scene.* "Hello again." |No old thoughts.|');assert.equal(await row(page,next).locator('.trpg-user-chat').count(),1);assert.equal(await page.locator('.trpg-user-chat').count(),1);
         // Explicit assistant presentation continues to work, separate from shorthand.
