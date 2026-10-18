@@ -1,4 +1,4 @@
-@import url('./chat-scene-thought.css?v=0.76.0');
+@import url('./chat-scene-thought.css?v=0.77.0');
 /* Original geometry and speech paper live in npc-ui.css; Folio is isolated below.
    Header, Narrative and their parent containers stay transparent. */
 .trpg-chat[data-rf-chat-theme] {

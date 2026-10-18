@@ -1,0 +1,36 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.76.0",
+  "id": "great-sage",
+  "kind": "system",
+  "name": "Great Sage",
+  "capabilities": [
+    "sage-panel",
+    "read-scene",
+    "read-stats",
+    "read-inventory",
+    "read-skills",
+    "analysis-on-request",
+    "local-follow-up",
+    "voice-on-request"
+  ],
+  "notes": [
+    {
+      "id": "analysis",
+      "title": "วิเคราะห์ด้วยข้อมูลที่รู้",
+      "text": "การวิเคราะห์อ้างอิงฉาก ค่าสถานะ ไอเทม และความสามารถที่บันทึกไว้ ข้อมูลที่ยังไม่มีจะคงเป็นสิ่งที่ไม่ทราบ ไม่มีการเพิ่มพลังหรือไอเทมจากการวิเคราะห์"
+    },
+    {
+      "id": "separate",
+      "title": "ผู้ช่วยประจำการเดินทาง",
+      "text": "เปิด Great Sage เฉพาะแชทที่ต้องการได้ การติดตั้งไม่ได้ทำให้ตัวละครเป็น Rimuru หรือได้รับสกิลใหม่อัตโนมัติ"
+    },
+    {
+      "id": "resources",
+      "title": "ประเมินก่อนลงมือ",
+      "text": "Great Sage ช่วยเสนอทางเลือกได้ การใช้ไอเทม ฝึกสกิล หรือใช้พลังยังทำผ่านระบบเดิมและผลในเนื้อเรื่อง"
+    }
+  ],
+  "version": "1.0.0"
+}

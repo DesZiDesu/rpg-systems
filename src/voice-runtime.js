@@ -1,14 +1,17 @@
-import {normalizeVoiceSettings,splitSpeech,voiceCacheKey,assignedVoice} from './voice-core.js?v=0.76.0';
-import {isMp3Blob} from './voice-download.js?v=0.76.0';
+import {normalizeVoiceSettings,splitSpeech,voiceCacheKey,assignedVoice} from './voice-core.js?v=0.77.0';
+import {isMp3Blob} from './voice-download.js?v=0.77.0';
+import {createVoiceActivity} from './voice-activity.js?v=0.77.0';
 
 export function createVoiceRuntime({settings,storage,client,changed=()=>{},notify=()=>{},audio:makeAudio=()=>new Audio(),url=globalThis.URL}={}) {
     let credential='',connectionTicket=0,playTicket=0,connectionController,controller,player,releasePlayer,unlockedPlayer;
     let restored='',lowWarning='',quotaTicket=0,testTicket=0;
+    const activity=createVoiceActivity();
     const state={connected:false,connecting:false,error:'',voices:[],quota:null,quotaError:'',phase:'idle',currentId:'',queue:false,previewId:'',testClip:null};
     const emit=()=>changed(state);
     const th=()=>settings().language==='th';
     const say=(en,thai)=>th()?thai:en;
     function stop(){
+        activity.clear();
         playTicket++;controller?.abort();controller=null;
         player?.pause();if(unlockedPlayer&&unlockedPlayer!==player)unlockedPlayer.pause();releasePlayer?.();player=null;releasePlayer=null;
         Object.assign(state,{phase:'idle',currentId:'',queue:false,previewId:''});emit();
@@ -97,7 +100,10 @@ export function createVoiceRuntime({settings,storage,client,changed=()=>{},notif
             Promise.resolve(sound.play()).catch(()=>finish(new Error(say('Tap Play to allow audio playback in this browser.','เบราว์เซอร์ยังไม่อนุญาตเสียง กรุณากดฟังด้วยตัวเอง'))));
         });
     }
-    const playBlob=(blob,ticket)=>playSource(url.createObjectURL(blob),ticket,true);
+    const playBlob=async(blob,ticket)=>{
+        if(state.currentId.startsWith('addon:great-sage:'))await activity.prepare(blob,()=>ticket===playTicket);
+        if(ticket===playTicket)return playSource(url.createObjectURL(blob),ticket,true);
+    };
     async function listen(entries,{queue=false,captureTest=false}={}) {
         const config=settings();if(!config.enableVoiceAddon)return;
         if(!state.connected){notify('warning',say('Connect ElevenLabs in Voice Addon settings first.','เชื่อม ElevenLabs ในตั้งค่า Voice Addon ก่อน'));return;}
@@ -158,5 +164,6 @@ export function createVoiceRuntime({settings,storage,client,changed=()=>{},notif
         finally{if(ticket===playTicket)stop();}
     }
     return {state,key:()=>credential,hasKey,connect,disconnect,update,refreshVoices,quota,selectedVoice,listen,toggle,stop,preview,activate,generateTest,clearTest,
-        setSpeed(value){settings().voiceSpeed=value;if(player)player.playbackRate=value;},destroy(){disconnect();}};
+        activateActivity:()=>activity.activate(),activity:()=>activity.sample(player,state.phase==='playing'),
+        setSpeed(value){settings().voiceSpeed=value;if(player)player.playbackRate=value;},destroy(){disconnect();activity.destroy();}};
 }

@@ -42,7 +42,9 @@ export function createComposerDock({document:doc=globalThis.document,language=()
  }
  const styleValue=(name,value)=>{if(root.style.getPropertyValue(name)!==value)root.style.setProperty(name,value);};
  function position(){if(destroyed)return;if(!panels.size&&!status){root.remove();return;}
-  const input=doc.querySelector('#send_textarea'),next=doc.querySelector('#send_form')||input?.closest('form')||input?.parentElement;
+  // SillyTavern's tooltip accessibility log can contain a hidden HTML copy of
+  // the host, including duplicate form IDs. Anchor to the live message input.
+  const input=[...doc.querySelectorAll('#send_textarea')].find(node=>!node.closest('.ui-helper-hidden-accessible,[role="log"],template,[hidden]')&&node.getClientRects().length),next=input?.closest('#send_form')||input?.closest('form')||input?.parentElement;
   if(!input||!next?.parentElement||win.getComputedStyle(input).display==='none'||win.getComputedStyle(next).display==='none'){root.remove();return;}
   if(anchor!==next){resize.disconnect();resize.observe(next);anchor=next;}
   const style=win.getComputedStyle(next),parent=win.getComputedStyle(next.parentElement),fixed=['fixed','absolute'].includes(style.position)||(['flex','inline-flex'].includes(parent.display)&&parent.flexDirection.startsWith('row'));

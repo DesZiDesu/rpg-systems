@@ -1,12 +1,18 @@
 # RoleForge
 
-**Public release: 0.76.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.77.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+## Workshop and Great Sage
+
+**New in 0.77.0:** open **Extensions → RoleForge → RoleForge Workshop** or its Wand Menu entry. Install Great Sage, then enable it for the current chat. Each installed addon gets its own Wand entry and optional draggable shortcut. Great Sage uses a rotating orb, a smooth response frame, optional audio-driven pulses, and a compact chatbar panel. Select its synthetic voice through the existing ElevenLabs Voice Addon. Installation, browsing and local follow-up do not call a model; each analysis uses the active SillyTavern connection.
+
+Workshop is a beta bundled catalog with Great Sage and Field Notes. Packages, per-chat settings and bounded history live in IndexedDB, with backup/import for moving browsers. It does not yet accept arbitrary third-party scripts or travel inside a character card. [Thai setup, screenshots and test results](docs/workshop-great-sage-v0.77.0.th.md).
 
 ## One place for chatbar windows
 

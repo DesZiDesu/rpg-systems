@@ -1,0 +1,203 @@
+{
+  "release": "0.77.0",
+  "testedAt": "2026-10-18T11:14:24.126093+00:00",
+  "baseCommit": "a7545e0b279fd7d38fbe4ed1ff3ef49be317709e",
+  "unit": {
+    "command": "npm test",
+    "tests": 1414,
+    "pass": 1414,
+    "fail": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "pass": true
+  },
+  "finalTargetedChecks": {
+    "tests": 22,
+    "pass": true,
+    "voiceUnitRerun": true
+  },
+  "composerRegression": {
+    "command": "node tests/composer-dock.browser.mjs",
+    "pass": true,
+    "widths": [
+      320,
+      390,
+      430,
+      768,
+      1440
+    ],
+    "panels": 11
+  },
+  "realSillyTavern": {
+    "host": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "theme": "Dark Lite",
+    "browser": "Chromium headless",
+    "mobile": "emulated viewport + touch; not physical iOS/Safari",
+    "lifecycle": [
+      {
+        "device": "mobile",
+        "pass": true,
+        "search": true,
+        "filters": true,
+        "workerInstall": true,
+        "defaultOff": true,
+        "perChatEnable": true,
+        "nativeAnalysis": true,
+        "noDraftSent": true,
+        "sourcePermissions": true,
+        "corruptHashPreservesOld": true,
+        "quotaFaultPreservesOld": true,
+        "updatePreservesData": true,
+        "invalidReplyDoesNotSave": true,
+        "notes": true,
+        "history": true,
+        "followReplyNoExtraAPI": true,
+        "crossOwnerInFlightDiscarded": true,
+        "backup": true,
+        "uninstallKeepData": true,
+        "reinstall": true,
+        "reload": true,
+        "freshBrowserRestore": true
+      },
+      {
+        "device": "desktop",
+        "pass": true,
+        "search": true,
+        "filters": true,
+        "workerInstall": true,
+        "defaultOff": true,
+        "perChatEnable": true,
+        "nativeAnalysis": true,
+        "noDraftSent": true,
+        "sourcePermissions": true,
+        "corruptHashPreservesOld": true,
+        "quotaFaultPreservesOld": true,
+        "updatePreservesData": true,
+        "invalidReplyDoesNotSave": true,
+        "notes": true,
+        "history": true,
+        "followReplyNoExtraAPI": true,
+        "crossOwnerInFlightDiscarded": true,
+        "backup": true,
+        "uninstallKeepData": true,
+        "reinstall": true,
+        "reload": true,
+        "freshBrowserRestore": true
+      }
+    ],
+    "motionAndVoice": [
+      {
+        "device": "mobile",
+        "shortcuts": true,
+        "touchDrag": true,
+        "mouseDrag": false,
+        "dragDoesNotOpen": true,
+        "wandOpensAddonDirectly": true,
+        "idleRotation": true,
+        "realAmplitudePulse": true,
+        "pulseStopsWithAudio": true,
+        "smoothResponseFrame": true,
+        "layout": {
+          "floating": true,
+          "wand": true,
+          "x": 0,
+          "y": 0.17671345995045418
+        }
+      },
+      {
+        "device": "mobile",
+        "pass": true,
+        "voiceStopsOnChatChange": true,
+        "referenceMotion": true,
+        "movingPixels": true,
+        "reducedMotion": true,
+        "motionOff": true,
+        "azure": true,
+        "skip": true,
+        "nativeTTSBridge": true,
+        "playStop": true,
+        "audioCache": true,
+        "autoSpeakOneRequest": true,
+        "noCredentialInProfile": true,
+        "noRoleForgeStateChange": true
+      },
+      {
+        "device": "desktop",
+        "shortcuts": true,
+        "touchDrag": false,
+        "mouseDrag": true,
+        "dragDoesNotOpen": true,
+        "wandOpensAddonDirectly": true,
+        "idleRotation": true,
+        "realAmplitudePulse": true,
+        "pulseStopsWithAudio": true,
+        "smoothResponseFrame": true,
+        "layout": {
+          "floating": true,
+          "wand": true,
+          "x": 0,
+          "y": 0.1395955642530985
+        }
+      },
+      {
+        "device": "desktop",
+        "pass": true,
+        "voiceStopsOnChatChange": true,
+        "referenceMotion": true,
+        "movingPixels": true,
+        "reducedMotion": true,
+        "motionOff": true,
+        "azure": true,
+        "skip": true,
+        "nativeTTSBridge": true,
+        "playStop": true,
+        "audioCache": true,
+        "autoSpeakOneRequest": true,
+        "noCredentialInProfile": true,
+        "noRoleForgeStateChange": true
+      }
+    ],
+    "startupRecovery": [
+      {
+        "fault": "catalog",
+        "hostInitialized": true,
+        "cleanup": true,
+        "retry": true,
+        "noModelCalls": true,
+        "pass": true
+      },
+      {
+        "fault": "storage",
+        "hostInitialized": true,
+        "cleanup": true,
+        "retry": true,
+        "noModelCalls": true,
+        "pass": true
+      }
+    ],
+    "pageErrors": [],
+    "modelEndpoints": "controlled local fixtures through native SillyTavern generation; no external model calls",
+    "voiceEndpoints": "intercepted ElevenLabs responses with locally synthesized MP3; actual browser decode and playback tested",
+    "limitations": [
+      "Final user-selected ElevenLabs voice and provider billing were not tested",
+      "Workshop is a bundled beta catalog, not a public upload marketplace",
+      "Addon backup is separate from character-card export",
+      "Mobile Safari and physical devices were not tested"
+    ]
+  },
+  "runtime": {
+    "code": "src/workshop",
+    "stylesheet": "styles/workshop.css",
+    "previewFlagsRequired": false,
+    "importsPrototypeCode": false
+  },
+  "pass": true
+}
