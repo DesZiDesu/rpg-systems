@@ -1,6 +1,6 @@
-import {H_FIELDS} from './h-stats.js?v=0.77.0';
-import {effectiveNpc} from './npc-alternates.js?v=0.77.0';
-import {questObjectiveProgress} from './quest-objectives.js?v=0.77.0';
+import {H_FIELDS} from './h-stats.js?v=0.77.1';
+import {effectiveNpc} from './npc-alternates.js?v=0.77.1';
+import {questObjectiveProgress} from './quest-objectives.js?v=0.77.1';
 const esc=value=>String(value??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const known=value=>value!==null&&value!==undefined&&value!=='';
 export function createUtilityComposer({document:doc=globalThis.document,dock,settings=()=>({}),openItem=()=>{},openManager=()=>{},hRoster=()=>[]}={}){

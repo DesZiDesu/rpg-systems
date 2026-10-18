@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir,rename} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright');
-const base=process.env.ST_REAL_URL||'http://127.0.0.1:18182',out=process.env.WORKSHOP_ARTIFACTS||'/workspace/artifacts/workshop-v0.77.0',audio=await readFile(out+'/synthetic-test-voice.mp3');await mkdir(out+'/motion-frames',{recursive:true});await mkdir(out+'/videos',{recursive:true});await mkdir(out+'/pulse-frames',{recursive:true});await mkdir(out+'/pulse-frames-desktop',{recursive:true});await mkdir(out+'/reveal-frames',{recursive:true});
+const base=process.env.ST_REAL_URL||'http://127.0.0.1:18182',out=process.env.WORKSHOP_ARTIFACTS||'/workspace/artifacts/workshop-v0.77.1',audio=await readFile(out+'/synthetic-test-voice.mp3');await mkdir(out+'/motion-frames',{recursive:true});await mkdir(out+'/videos',{recursive:true});await mkdir(out+'/pulse-frames',{recursive:true});await mkdir(out+'/pulse-frames-desktop',{recursive:true});await mkdir(out+'/reveal-frames',{recursive:true});
 assert(['127.0.0.1','localhost'].includes(new URL(base).hostname));
 const b=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']}),report={releaseCandidate:true,reference:'https://vt.tiktok.com/ZSgNPJEbp/',checks:[],errors:[],speech:[],modelCalls:0,externalProviderCalls:0,voiceFixture:'Flite local synthetic English voice; not an ElevenLabs account voice or final Great Sage voice'};let p,modelGate;
 let releaseModel;const gate=()=>{modelGate=new Promise(r=>releaseModel=r);};

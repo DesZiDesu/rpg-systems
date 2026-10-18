@@ -1,4 +1,4 @@
-import {memoryRecordKey} from './memory-insights.js?v=0.77.0';
+import {memoryRecordKey} from './memory-insights.js?v=0.77.1';
 
 export function createMemoryInsightRenderer(view,word,e,action) {
     const currentKeys=new Set((view.facts||[]).map(memoryRecordKey));

@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.77.0",
+  "version": "0.77.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -55,6 +55,7 @@
     "test:chatbar:real": "node tests/chatbar-settings.real.browser.mjs && node tests/utility-dock-preview.real.browser.mjs && node tests/dock-overflow.real.browser.mjs",
     "test:scene-thought:real": "node tests/scene-thought.real.browser.mjs",
     "test:workshop": "node --test tests/workshop.test.mjs tests/voice-activity.test.mjs",
-    "test:workshop:real": "node tests/workshop.real.browser.mjs && node tests/workshop-motion-voice.real.browser.mjs && node tests/workshop-startup.real.browser.mjs"
+    "test:workshop:real": "node tests/workshop.real.browser.mjs && node tests/workshop-motion-voice.real.browser.mjs && node tests/workshop-startup.real.browser.mjs",
+    "test:workshop:layout:real": "node tests/workshop-layout.real.browser.mjs"
   }
 }
