@@ -1,0 +1,130 @@
+{
+  "release": "0.77.2",
+  "baseCommit": "e78418737fd6fa61b07a9f48f0ed03bd71905457",
+  "testedAt": "2026-10-19T03:51:07.179521+00:00",
+  "unit": {
+    "command": "npm test",
+    "tests": 1414,
+    "pass": 1414,
+    "fail": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "pass": true
+  },
+  "nativeSillyTavern": {
+    "host": "SillyTavern 1.19.0 (06bde93)",
+    "theme": "Dark Lite",
+    "browser": "Chromium headless",
+    "mobile": "viewport/touch emulation, 390x844; not a physical iOS/Safari device",
+    "desktop": "1440x1000",
+    "disableAndNames": [
+      {
+        "device": "mobile",
+        "defaultOffHasNoShortcuts": true,
+        "disableRemovesFloatingAndWand": true,
+        "otherAddonStaysEnabled": true,
+        "allOffHidesRail": true,
+        "reenableRestoresSavedPosition": true,
+        "perChatScope": true,
+        "reloadStaysDisabled": true,
+        "themeNamesOnly": true,
+        "themePersists": true,
+        "noRoleForgeStateChanges": true,
+        "pass": true
+      },
+      {
+        "device": "desktop",
+        "defaultOffHasNoShortcuts": true,
+        "disableRemovesFloatingAndWand": true,
+        "otherAddonStaysEnabled": true,
+        "allOffHidesRail": true,
+        "reenableRestoresSavedPosition": true,
+        "perChatScope": true,
+        "reloadStaysDisabled": true,
+        "themeNamesOnly": true,
+        "themePersists": true,
+        "noRoleForgeStateChanges": true,
+        "pass": true
+      }
+    ],
+    "motionAndVoice": [
+      {
+        "device": "mobile",
+        "shortcuts": true,
+        "touchDrag": true,
+        "mouseDrag": false,
+        "dragDoesNotOpen": true,
+        "wandOpensAddonDirectly": true,
+        "idleRotation": true,
+        "realAmplitudePulse": true,
+        "pulseStopsWithAudio": true,
+        "smoothResponseFrame": true,
+        "layout": {
+          "floating": true,
+          "wand": true,
+          "x": 0,
+          "y": 0.17671345995045418
+        }
+      },
+      {
+        "device": "mobile",
+        "pass": true,
+        "voiceStopsOnChatChange": true,
+        "referenceMotion": true,
+        "movingPixels": true,
+        "reducedMotion": true,
+        "motionOff": true,
+        "azure": true,
+        "skip": true,
+        "nativeTTSBridge": true,
+        "playStop": true,
+        "audioCache": true,
+        "autoSpeakOneRequest": true,
+        "noCredentialInProfile": true,
+        "noRoleForgeStateChange": true
+      },
+      {
+        "device": "desktop",
+        "shortcuts": true,
+        "touchDrag": false,
+        "mouseDrag": true,
+        "dragDoesNotOpen": true,
+        "wandOpensAddonDirectly": true,
+        "idleRotation": true,
+        "realAmplitudePulse": true,
+        "pulseStopsWithAudio": true,
+        "smoothResponseFrame": true,
+        "layout": {
+          "floating": true,
+          "wand": true,
+          "x": 0,
+          "y": 0.1395955642530985
+        }
+      },
+      {
+        "device": "desktop",
+        "pass": true,
+        "voiceStopsOnChatChange": true,
+        "referenceMotion": true,
+        "movingPixels": true,
+        "reducedMotion": true,
+        "motionOff": true,
+        "azure": true,
+        "skip": true,
+        "nativeTTSBridge": true,
+        "playStop": true,
+        "audioCache": true,
+        "autoSpeakOneRequest": true,
+        "noCredentialInProfile": true,
+        "noRoleForgeStateChange": true
+      }
+    ],
+    "pageErrors": [],
+    "disableTestModelCalls": 0,
+    "voiceTests": "Native Voice Addon with intercepted ElevenLabs responses and a local synthesized MP3; no live provider calls",
+    "generationTests": "Controlled model responses through native SillyTavern generation"
+  },
+  "storageSchemaChanged": false,
+  "pass": true
+}

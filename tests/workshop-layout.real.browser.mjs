@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright');
-const base=process.env.ST_REAL_URL||'http://127.0.0.1:18182',out=process.env.WORKSHOP_ARTIFACTS||'/workspace/artifacts/workshop-v0.77.1';
+const base=process.env.ST_REAL_URL||'http://127.0.0.1:18182',out=process.env.WORKSHOP_ARTIFACTS||'/workspace/artifacts/workshop-v0.77.2';
 const release=JSON.parse(await readFile(new URL('../manifest.json',import.meta.url))).version;
 assert(['127.0.0.1','localhost'].includes(new URL(base).hostname));await mkdir(out+'/captures',{recursive:true});
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']}),report={release,host:'SillyTavern 1.19.0',theme:'Dark Lite',checks:[],errors:[],modelCalls:0};let page;

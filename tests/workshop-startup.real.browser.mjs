@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {writeFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright');
-const base=process.env.ST_REAL_URL||'http://127.0.0.1:18182',out=process.env.WORKSHOP_ARTIFACTS||'/workspace/artifacts/workshop-v0.77.1';
+const base=process.env.ST_REAL_URL||'http://127.0.0.1:18182',out=process.env.WORKSHOP_ARTIFACTS||'/workspace/artifacts/workshop-v0.77.2';
 assert(['127.0.0.1','localhost'].includes(new URL(base).hostname));await mkdir(out,{recursive:true});
-const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']}),report={release:'0.77.1',checks:[],errors:[]};
+const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']}),report={release:'0.77.2',checks:[],errors:[]};
 try{
  for(const fault of ['catalog','storage']){
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});let broken=true,modelCalls=0;
@@ -20,7 +20,7 @@ try{
   await page.goto(base+'/');await page.waitForFunction(()=>!!document.getElementById('rfws-open-workshop'),{},{timeout:120000});
   const welcome=page.locator('dialog.popup').filter({hasText:'Welcome to SillyTavern!'}).locator('.popup-button-ok');if(await welcome.count())await welcome.click();
   await page.waitForFunction(()=>!globalThis.RoleForgeWorkshop&&!document.querySelector('link[href*="styles/workshop.css"]'));
-  assert(messages.some(message=>message.includes('Role-play interface v0.77.1 loaded')));
+  assert(messages.some(message=>message.includes('Role-play interface v0.77.2 loaded')));
   assert.equal(await page.locator('#roleforge-workshop,.rfsg-cinema,.rfws-addon-orbits').count(),0,'failed mounts clean up their UI and listeners');
   // Trigger the real native settings entry; it retries without reinitializing RoleForge.
   broken=false;await page.evaluate(()=>document.getElementById('rfws-open-workshop').click());
