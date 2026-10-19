@@ -1,0 +1,129 @@
+{
+  "version": "0.78.1",
+  "dateUTC": "2026-10-19",
+  "baseCommit": "4c2eb7d8408b2b6f5ec70e653790f0a00a1ef12d",
+  "scope": "Travel lifecycle/visibility fix; H-Stats progression proposal only",
+  "unit": {
+    "command": "npm test",
+    "passed": 1436,
+    "failed": 0,
+    "newTravelTests": 4
+  },
+  "syntax": {
+    "command": "npm run check",
+    "pass": true
+  },
+  "nativeSillyTavern": {
+    "version": "0.78.1",
+    "revision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+    "browser": "Chromium",
+    "theme": "Dark Lite",
+    "physicalMobileDevice": false,
+    "modelResponses": "Controlled streaming fixtures through native Generate and swipe generation; no external provider calls",
+    "host": "Actual local SillyTavern",
+    "errors": [],
+    "requests": [
+      {
+        "device": "mobile",
+        "fixture": true
+      },
+      {
+        "device": "mobile",
+        "fixture": true
+      },
+      {
+        "device": "mobile",
+        "fixture": true
+      },
+      {
+        "device": "mobile",
+        "fixture": true
+      },
+      {
+        "device": "mobile",
+        "fixture": true
+      },
+      {
+        "device": "mobile",
+        "fixture": true
+      },
+      {
+        "device": "mobile",
+        "fixture": true
+      },
+      {
+        "device": "desktop",
+        "fixture": true
+      },
+      {
+        "device": "desktop",
+        "fixture": true
+      },
+      {
+        "device": "desktop",
+        "fixture": true
+      },
+      {
+        "device": "desktop",
+        "fixture": true
+      },
+      {
+        "device": "desktop",
+        "fixture": true
+      },
+      {
+        "device": "desktop",
+        "fixture": true
+      },
+      {
+        "device": "desktop",
+        "fixture": true
+      }
+    ],
+    "checks": [
+      {
+        "device": "mobile",
+        "importIntoNativeHost": true,
+        "activeBarVisible": true,
+        "questionsDoNotArrive": true,
+        "confirmedSceneClosesTripWithoutTravelOp": true,
+        "hiddenMarkupCleared": true,
+        "swipeRestoresCorrectTravelState": true,
+        "laterSceneNotPinned": true,
+        "reloadKeepsArrivedHidden": true,
+        "newJourneyStartsClean": true,
+        "togglePreservesTrip": true,
+        "cardIsolation": true,
+        "explicitArrivalHidden": true,
+        "unestimatedZeroDoesNotTeleport": true
+      },
+      {
+        "device": "desktop",
+        "importIntoNativeHost": true,
+        "activeBarVisible": true,
+        "questionsDoNotArrive": true,
+        "confirmedSceneClosesTripWithoutTravelOp": true,
+        "hiddenMarkupCleared": true,
+        "swipeRestoresCorrectTravelState": true,
+        "laterSceneNotPinned": true,
+        "reloadKeepsArrivedHidden": true,
+        "newJourneyStartsClean": true,
+        "togglePreservesTrip": true,
+        "cardIsolation": true,
+        "explicitArrivalHidden": true,
+        "unestimatedZeroDoesNotTeleport": true
+      }
+    ],
+    "pass": true
+  },
+  "hStats": {
+    "runtimeReworkImplemented": false,
+    "proposal": "h-stats-progression-proposal.th.md",
+    "hStatsModuleUnchangedSha256": "04f8b6881ca66f39bb605353b6a9b3b171d20eb88262ac307b1858ab8acd9e03"
+  },
+  "limitations": [
+    "No physical iPhone, Safari or WebKit test.",
+    "Native model responses are controlled fixtures, not a live provider evaluation.",
+    "Automatic arrival uses a changed current player scene with an exact normalized destination name; fuzzy aliases and nearby landmarks are not treated as arrival."
+  ]
+}

@@ -1,6 +1,6 @@
 # RoleForge
 
-**Public release: 0.78.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.78.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -8,7 +8,7 @@ RoleForge brings an RPG workspace into your SillyTavern chat. Track your charact
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
 
-**Added in 0.78.0:** transfer money to an NPC in the current scene from Inventory or Status above the chatbar. Manage directed Known Names inside NPC Management: player → NPC, NPC → player, and NPC → NPC remain independent. [Guide and browser validation](docs/money-known-names-v0.78.0.th.md).
+**Fixed in 0.78.1:** the floating Journey tracker closes at arrival, recognizes a confirmed destination scene, and keeps unknown travel durations from completing a trip. [Details and native browser validation](docs/travel-journey-v0.78.1.th.md).
 
 ## Workshop and Great Sage
 

@@ -1,4 +1,4 @@
-import {WEAPON_INSTRUCTIONS} from './weapon-core.js?v=0.78.0';
+import {WEAPON_INSTRUCTIONS} from './weapon-core.js?v=0.78.1';
 // Button consent belongs to the assistant continuation, never a fabricated User
 // turn. Only small receipts are saved; the transient prompt is always cleared.
 export const WEAPON_BUTTON_KEY='roleforge_weapon_buttons';
