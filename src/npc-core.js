@@ -1,5 +1,5 @@
-import {customIconSource} from './custom-icons.js?v=0.78.1';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.78.1';
+import {customIconSource} from './custom-icons.js?v=0.79.0';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.79.0';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -20,7 +20,7 @@ export function npcReferenceProfiles(npcs,transcript='',limit=16) {
  return npcs.map((npc,index)=>({npc,index,position:Math.max(-1,...[npc.name,...(npc.aliases||[])].map(normalize).filter(value=>value.length>=2).map(value=>text.lastIndexOf(value)))}))
   .sort((a,b)=>b.position-a.position||Number(b.npc.enabled!==false)-Number(a.npc.enabled!==false)||b.index-a.index).slice(0,limit).map(entry=>entry.npc);
 }
-export const ATTRIBUTE_INSTRUCTIONS = `Every new NPC needs complete stats {level,rank,hp,mp,stamina,strength,agility,intelligence,endurance} and affection,trust,loyalty,fear,corruption,lust (numbers 0-100). Choose fictional starting values consistent with role, power and relationships, not all-zero placeholders. Level and core attributes should normally be positive; HP/stamina are positive for healthy active NPCs. Zero HP for death, zero MP for no magic and zero relationship meters where appropriate are valid. Never increase existing combat stats just for conversation. These are private bookkeeping values, not knowledge visible to characters.`;
+export const ATTRIBUTE_INSTRUCTIONS = `Every new NPC needs complete stats {level,rank,hp,mp,stamina,strength,agility,intelligence,endurance} and affection,trust,loyalty,fear,corruption,lust (numbers 0-100). Choose fictional starting values consistent with role, power and relationships, not all-zero placeholders. Level and core attributes should normally be positive; HP/stamina are positive for healthy active NPCs. Zero HP for death, zero MP for no magic and zero relationship meters where appropriate are valid. Never increase existing combat stats just for conversation. Affection/trust/loyalty/corruption progression uses the directed relationshipEvents contract, not raw npcValues or NPC upsert fields; keep those seeded values until a confirmed event. These are private bookkeeping values, not knowledge visible to characters.`;
 // Missing numbers are not the same as intentional zero (death/no magic/no trust).
 export function npcAttributeDefaults(raw={}, base={}) {
  const valid=v=>(typeof v==='number'||typeof v==='string'&&v.trim()!=='')&&Number.isFinite(Number(v));

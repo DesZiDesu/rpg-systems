@@ -1,105 +1,107 @@
-import {normalizeMoneyTransfers,applyMoneyTransfer,moneyTransferReference,MONEY_TRANSFER_INSTRUCTIONS} from './src/money-transfer.js?v=0.78.1';
-import {createMoneyTransferComposer} from './src/money-transfer-composer.js?v=0.78.1';
-import {normalizeKnownNames,applyNameKnowledge,nameKnowledgeReference,guardTaggedNameDialogue,NAME_KNOWLEDGE_INSTRUCTIONS} from './src/name-knowledge.js?v=0.78.1';
-import {createUtilityComposer} from './src/utility-composer.js?v=0.78.1';
-import {continueWeaponAction,weaponButtonAuthorizations} from './src/weapon-continuation.js?v=0.78.1';
-import {normalizeWeaponMetadata,normalizeAmmoMetadata,normalizeWeaponSystem,emptyWeaponPreset,equippedWeapon,weaponPromptReference,applyWeaponEvents,WEAPON_INSTRUCTIONS} from './src/weapon-core.js?v=0.78.1';
-import {createWeaponComposer} from './src/weapon-composer.js?v=0.78.1';
-import {createWeaponManager} from './src/weapon-manager.js?v=0.78.1';
-import {itemReserved} from './src/item-core.js?v=0.78.1';
-import {powerDashboard} from './src/power-dashboard.js?v=0.78.1';
-import {STORY_PACK_FIELD,STORY_CONTRACTS_KEY,emptyStoryPack,normalizeStoryRuntime,validateStoryContracts,managedStoryOperation} from './src/story-core.js?v=0.78.1';
-import {createStoryRuntime} from './src/story-runtime.js?v=0.78.1';
-import {createStoryManager} from './src/story-manager.js?v=0.78.1';
-import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.78.1';
-import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.78.1';
-import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.78.1';
-import {npcReferenceProfiles} from './src/npc-core.js?v=0.78.1';
-import {createArchiveRevisionCache,searchNpcArchive,resolveIndexedNpc,npcArchiveSummary,loreArchiveSummary} from './src/archive-cache.js?v=0.78.1';
-import {inheritNpcBaselines,preserveNpcCanon} from './src/sparse-npc-state.js?v=0.78.1';
-import {createWorldPackClient,characterWorldRef,mountWorldPackControls} from './src/world-pack-client.js?v=0.78.1';
-import {mountNpcIconUpdate} from './src/npc-icon-update-ui.js?v=0.78.1';
-import {ICON_PACKS_FIELD,availableIconPacks} from './src/icon-packs.js?v=0.78.1';
-import {worldKey,worldSearchText} from './src/world-pack-core.js?v=0.78.1';
-import {writeCharacterWorldReference,readCharacterWorldPayload,readCharacterExtension,writeCharacterStoryPack} from './src/character-archive.js?v=0.78.1';
-import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.78.1';
-import {mountSettingsNavigation} from './src/settings-navigation.js?v=0.78.1';
-import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.78.1';
-import {playerResourceNarrative,isLegacyGuessedEffect,effectTargetsPlayer} from './src/player-consequences.js?v=0.78.1';
-import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.78.1';
-import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.78.1';
-import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.78.1';
-import {createStatComposer} from './src/stat-composer.js?v=0.78.1';
-import {mountStatWorkspace} from './src/stat-workspace.js?v=0.78.1';
-import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue,currencyKeys,currencyAmounts,isCurrencyId} from './src/currency-config.js?v=0.78.1';
-import {fitForgeToChat} from './src/forge-layout.js?v=0.78.1';
-import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.78.1';
-import {mountSkillBrowser} from './src/skill-browser.js?v=0.78.1';
-import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.78.1';
-import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.78.1';
-import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.78.1';
-import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.78.1';
-import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.78.1';
-import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.78.1';
-import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.78.1';
-import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.78.1';
-import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.78.1';
-import {createMemoryAddons} from './src/memory-addons.js?v=0.78.1';
-import {createVoiceAddons} from './src/voice-addons.js?v=0.78.1';
-import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.78.1';
-import {showApiRequestNotice} from './src/api-request-notice.js?v=0.78.1';
-import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.78.1';
-import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.78.1';
-import {createItemRuntime} from './src/item-runtime.js?v=0.78.1';
-import {createComposerDock} from './src/composer-dock.js?v=0.78.1';
-import {createIncantationComposer} from './src/incantation-composer.js?v=0.78.1';
-import {commerceIconMarkup} from './src/commerce-icons.js?v=0.78.1';
-import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.78.1';
-import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.78.1';
-import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.78.1';
-import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.78.1';
-import { readCommercePrices } from './src/commerce-prices.js?v=0.78.1';
-import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.78.1';
-import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.78.1';
-import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.78.1';
-import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.78.1';
-import {mountPowerWorkspace} from './src/power-workspace.js?v=0.78.1';
-import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions,prepareLoreArchive,loreEntries,assertLoreCapacity } from './src/lore-core.js?v=0.78.1';
-import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.78.1';
-import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.78.1';
-import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.78.1';
-import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.78.1';
-import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.78.1';
-import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.78.1';
-import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.78.1';
-import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.78.1';
-import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.78.1';
-import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.78.1';
-import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.78.1';
-import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.78.1';
-import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.78.1';
-import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.78.1';
-import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.78.1';
-import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.78.1';
-import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.78.1';
-import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.78.1';
-import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.78.1';
-import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.78.1';
-import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.78.1';
-import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.78.1';
+import {normalizeRelationships,relationshipPreset,applyRelationshipPreset,editRelationship,relationshipPromptReference,relationshipEventNpcIds,applyRelationshipEvents,retainRelationshipEdits,LEGACY_BOND_FIELDS,RELATIONSHIP_INSTRUCTIONS} from './src/relationship-core.js?v=0.79.0';
+import {createRelationshipPanel} from './src/relationship-ui.js?v=0.79.0';
+import {normalizeMoneyTransfers,applyMoneyTransfer,moneyTransferReference,MONEY_TRANSFER_INSTRUCTIONS} from './src/money-transfer.js?v=0.79.0';
+import {createMoneyTransferComposer} from './src/money-transfer-composer.js?v=0.79.0';
+import {normalizeKnownNames,applyNameKnowledge,nameKnowledgeReference,guardTaggedNameDialogue,NAME_KNOWLEDGE_INSTRUCTIONS} from './src/name-knowledge.js?v=0.79.0';
+import {createUtilityComposer} from './src/utility-composer.js?v=0.79.0';
+import {continueWeaponAction,weaponButtonAuthorizations} from './src/weapon-continuation.js?v=0.79.0';
+import {normalizeWeaponMetadata,normalizeAmmoMetadata,normalizeWeaponSystem,emptyWeaponPreset,equippedWeapon,weaponPromptReference,applyWeaponEvents,WEAPON_INSTRUCTIONS} from './src/weapon-core.js?v=0.79.0';
+import {createWeaponComposer} from './src/weapon-composer.js?v=0.79.0';
+import {createWeaponManager} from './src/weapon-manager.js?v=0.79.0';
+import {itemReserved} from './src/item-core.js?v=0.79.0';
+import {powerDashboard} from './src/power-dashboard.js?v=0.79.0';
+import {STORY_PACK_FIELD,STORY_CONTRACTS_KEY,emptyStoryPack,normalizeStoryRuntime,validateStoryContracts,managedStoryOperation} from './src/story-core.js?v=0.79.0';
+import {createStoryRuntime} from './src/story-runtime.js?v=0.79.0';
+import {createStoryManager} from './src/story-manager.js?v=0.79.0';
+import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.79.0';
+import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.79.0';
+import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.79.0';
+import {npcReferenceProfiles} from './src/npc-core.js?v=0.79.0';
+import {createArchiveRevisionCache,searchNpcArchive,resolveIndexedNpc,npcArchiveSummary,loreArchiveSummary} from './src/archive-cache.js?v=0.79.0';
+import {inheritNpcBaselines,preserveNpcCanon} from './src/sparse-npc-state.js?v=0.79.0';
+import {createWorldPackClient,characterWorldRef,mountWorldPackControls} from './src/world-pack-client.js?v=0.79.0';
+import {mountNpcIconUpdate} from './src/npc-icon-update-ui.js?v=0.79.0';
+import {ICON_PACKS_FIELD,availableIconPacks} from './src/icon-packs.js?v=0.79.0';
+import {worldKey,worldSearchText} from './src/world-pack-core.js?v=0.79.0';
+import {writeCharacterWorldReference,readCharacterWorldPayload,readCharacterExtension,writeCharacterStoryPack} from './src/character-archive.js?v=0.79.0';
+import {mountPresetWorkspace} from './src/preset-workspace.js?v=0.79.0';
+import {mountSettingsNavigation} from './src/settings-navigation.js?v=0.79.0';
+import {CHAT_APPEARANCE_KEYS,chatAppearance,validateChatAppearance} from './src/chat-themes.js?v=0.79.0';
+import {playerResourceNarrative,isLegacyGuessedEffect,effectTargetsPlayer} from './src/player-consequences.js?v=0.79.0';
+import {CORE_USER_STATS,normalizeStatTraining,normalizeUserAttributes,normalizeUserCustomStats,statTrainingTargets,applyUserStatOperation,statTrainingAction,statTrainingInstructions,resolveStatTrainingOps,userStatGrowth} from './src/stat-training.js?v=0.79.0';
+import {mountCurrencyWorkspace} from './src/currency-workspace.js?v=0.79.0';
+import {walletValue,debitWallet} from './src/commerce-currency.js?v=0.79.0';
+import {createStatComposer} from './src/stat-composer.js?v=0.79.0';
+import {mountStatWorkspace} from './src/stat-workspace.js?v=0.79.0';
+import {currencyScheme,currencyValues,currencyRule,currencyUnitLabel,normalizeCurrencyScheme,currencyDisplay,MONEY_ICON_SETS,splitCurrencyValue,currencyKeys,currencyAmounts,isCurrencyId} from './src/currency-config.js?v=0.79.0';
+import {fitForgeToChat} from './src/forge-layout.js?v=0.79.0';
+import {FORGE_OPENING_PROMPT_KEY,FORGE_OPENING_USER_PROMPT,prepareForgeOpeningRequest,forgeOpeningFailure} from './src/forge-opening.js?v=0.79.0';
+import {mountSkillBrowser} from './src/skill-browser.js?v=0.79.0';
+import {duplicateItemLearningOperation,itemLearningSummary} from './src/item-learning.js?v=0.79.0';
+import {requestMetadataTask,hasTaskGeneration,taskGenerationMode} from './src/task-generation.js?v=0.79.0';
+import {resolveReplyLoot,acquiredItemNames} from './src/loot-discovery.js?v=0.79.0';
+import {hasForeignTrackerData,stripForeignTrackerData,cleanChatProse,mapRoleForgeProse} from './src/foreign-chat.js?v=0.79.0';
+import {completeItemDefinition,itemDefinitionKey,ITEM_DEFINITION_INSTRUCTIONS} from './src/item-definition.js?v=0.79.0';
+import {duplicateItemStatOperation,itemResourceCap,expireItemBuffs,itemStatLabel,itemStatSummary} from './src/item-effects.js?v=0.79.0';
+import {applyUnderstandingDetails} from './src/ability-learning.js?v=0.79.0';
+import {rightsView,rightsPromptReference,applyRightsEvents,itemSaleBlocked,COMMERCE_RIGHTS_INSTRUCTIONS} from './src/commerce-rights.js?v=0.79.0';
+import {renderRightsInventory} from './src/commerce-rights-ui.js?v=0.79.0';
+import {createMemoryAddons} from './src/memory-addons.js?v=0.79.0';
+import {createVoiceAddons} from './src/voice-addons.js?v=0.79.0';
+import {normalizeVoiceSettings,voiceInstructions} from './src/voice-core.js?v=0.79.0';
+import {showApiRequestNotice} from './src/api-request-notice.js?v=0.79.0';
+import {normalizeAbility, abilityMastery, abilityLevel, abilityTrainingTargets, writeAbilityTrainingMastery, abilityPromptReference, incantationInstructions} from './src/incantation-core.js?v=0.79.0';
+import {normalizeItemUsage,mergeItemUsage,normalizeItemSystem,itemPromptReference,ingestLoot,lootErrorText,applyStoryItemEvents,ITEM_INSTRUCTIONS} from './src/item-core.js?v=0.79.0';
+import {createItemRuntime} from './src/item-runtime.js?v=0.79.0';
+import {createComposerDock} from './src/composer-dock.js?v=0.79.0';
+import {createIncantationComposer} from './src/incantation-composer.js?v=0.79.0';
+import {commerceIconMarkup} from './src/commerce-icons.js?v=0.79.0';
+import { createCommerceRuntime } from './src/commerce-runtime.js?v=0.79.0';
+import { normalizeCommerce, commerceAvailable as auctionAvailable, commerceFundsValid as auctionFundsValid, commerceInventoryValid, commercePublicSummary, applyCommerceRoleplay, commerceRoleplayPrompt, COMMERCE_INSTRUCTIONS, COMMERCE_AUCTION_OPENING } from './src/commerce-engine.js?v=0.79.0';
+import { mainChatSystemInstructions, mainChatOutputContract, missingChatSystems, requestedChatSystems, requestedCommerceKind, settledCommerceFollowup, confirmedCommerceIntent } from './src/main-chat-systems.js?v=0.79.0';
+import { commerceOpeningRefused } from './src/commerce-opening.js?v=0.79.0';
+import { readCommercePrices } from './src/commerce-prices.js?v=0.79.0';
+import {uiText,uiMarkup,bindStaticUi,refreshStaticUi} from './src/ui-language.js?v=0.79.0';
+import {readPowerConfig,writePowerConfig,normalizePowerValues,normalizePowerSelections,powerValue,applyPowerOperation,customPowerPrompt} from './src/power-presets.js?v=0.79.0';
+import {readForgePreset,writeForgePreset,activeForgeChoices} from './src/forge-presets.js?v=0.79.0';
+import {mountForgeWorkspace} from './src/forge-workspace.js?v=0.79.0';
+import {mountPowerWorkspace} from './src/power-workspace.js?v=0.79.0';
+import { characterLore, lorePrompt, writeCharacterLore, loreOptions, writeLoreOptions,prepareLoreArchive,loreEntries,assertLoreCapacity } from './src/lore-core.js?v=0.79.0';
+import { sceneSnapshot, sceneTrackerOperations, missingSceneFields, expandScene, normalizeNarrativeLocation, narrativeLocationLabel } from './src/scene-tracker.js?v=0.79.0';
+import { normalizeLocationMemory, rememberLocation, mergeLocationMemory, confirmedLocationMemory, locationMemoryForPrompt, recoverLocationGeography, locationPath } from './src/location-memory.js?v=0.79.0';
+import {locationListMarkup,mountLocationList} from './src/location-list.js?v=0.79.0';
+import {sceneCompletionPrompt,prepareSceneCompletion} from './src/scene-completion.js?v=0.79.0';
+import { questRewardGuard, normalizeQuestRewardReceipts } from './src/quest-rewards.js?v=0.79.0';
+import { normalizeStoryMemories, upsertStoryMemory, relevantStoryMemories } from './src/story-memory.js?v=0.79.0';
+import { normalizeStoryAgenda, upsertStoryAgenda, storyAgendaState, storyAgendaSummary } from './src/story-agenda.js?v=0.79.0';
+import { normalizeQuestObjectives, mergeQuestObjectives, upsertQuestObjective, questObjectiveProgress, questObjectivesReady } from './src/quest-objectives.js?v=0.79.0';
+import { renderStoryMemoryPanel, renderStoryAgendaPanel, renderQuestObjectives } from './src/story-workspace.js?v=0.79.0';
+import { MISSION_BOARD_INSTRUCTIONS, confirmedMissionBoard, normalizeMissionBoard, boardQuest, missionQuest } from './src/mission-board.js?v=0.79.0';
+import { GROUP_BOARD_INSTRUCTIONS, confirmedGroupBoard, normalizeGroupBoard, groupBoardEntry } from './src/group-board.js?v=0.79.0';
+import { growthInventoryNotifications } from './src/growth-notifications.js?v=0.79.0';
+import { normalizeAuctionOffer, confirmedAuctionOffer, normalizeAuctions, normalizeAuctionReceipts, auctionPublicSummary, auctionBlocksOperation } from './src/auction-core.js?v=0.79.0';
+import { normalizeMarketplace, marketplacePublicListing, marketplaceBlocksOperation, marketplaceInventoryValid } from './src/marketplace-core.js?v=0.79.0';
+import { MARKETPLACE_EVENT_INSTRUCTIONS, normalizeMarketplaceEvent, resolveMarketplaceReply } from './src/marketplace-events.js?v=0.79.0';
+import { POWER_TRAINING_CHOICES, normalizePowerMastery, normalizePowerTrainingResult, beginPowerTraining, trainingChoice, requestPowerTraining, applyPowerTrainingResult, consumePowerTrainingResult } from './src/power-mastery.js?v=0.79.0';
+import { MEMORY_LINK_KEY, normalizeMemoryStrategy, normalizeMemoryOutputTokens } from './src/memory-summaries.js?v=0.79.0';
+import { createMemorySummaries, memoryJobMessage, memorySummaryNativeGenerationActive } from './src/memory-summary-runtime.js?v=0.79.0';
+import { memoryPhaseLabel, memoryBusy } from './src/memory-summary-ui.js?v=0.79.0';
+import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.79.0';
+import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.79.0';
+import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.79.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.78.1';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.78.1';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.78.1';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.78.1';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.78.1';
-import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.78.1';
-import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.78.1';
-import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.78.1';
-import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.78.1';
-import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.78.1';
-import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.78.1';
-import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.78.1';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.79.0';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.79.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.79.0';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.79.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.79.0';
+import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.79.0';
+import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.79.0';
+import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat } from './src/h-stats.js?v=0.79.0';
+import { mountAdultTagControls } from './src/nsfw-tags-ui.js?v=0.79.0';
+import { mountAdultPromptControls } from './src/nsfw-prompt-ui.js?v=0.79.0';
+import { allowedDiaryOps, diaryRates, householdOffers, groupOffers, confirmedGroupMembership, establishedGroupOperations, groupMembershipEnded } from './src/social-events.js?v=0.79.0';
+import { ensureRuntimeStyles } from './src/runtime-styles.js?v=0.79.0';
 
 let npcWorkspace = null;
 let storyRuntime=null,storyManager=null;
@@ -117,6 +119,7 @@ let itemBusy = false;
 let incantationComposer = null;
 let statComposer = null;
 let utilityComposer = null;
+let mainRelationshipPanel=null;
 let weaponComposer=null,weaponManager=null,weaponActionBusy=false;
 const weaponMetadataScopes=new WeakMap();let weaponScopeSerial=0;
 let statWorkspace = null;
@@ -896,13 +899,13 @@ function defaultWorldPreset() {
     const owner=powerPresetOwner(),base=activeCardSettings(owner),pack=readCharacterPack(SillyTavern.getContext(),owner),state=defaultState();
     return {powerPreset:pack.powerPreset || readPowerConfig(base,owner),forgePreset:pack.forgePreset || readForgePreset(base,owner),
         currencyPreset:pack.currencyPreset || currentCurrencyPreset({progression:{currency:pack.initialState?.progression?.currency || state.progression.currency}},base.coinStyle),
-        weaponPreset:pack.weaponPreset || emptyWeaponPreset(),
+        weaponPreset:pack.weaponPreset || emptyWeaponPreset(),relationshipPreset:pack.relationshipPreset || relationshipPreset(state),
         trainingPreset:pack.trainingPreset || normalizeStatTraining(pack.initialState?.statTraining),loreOptions:pack.loreOptions || loreOptions(base,owner),npcOptions:pack.npcOptions || validateNpcOptions({}),
         systems:Object.fromEntries(WORLD_SYSTEM_KEYS.map(key=>[key,pack.systems?.[key]??base[key]])),chatAppearance:pack.chatAppearance || chatAppearance(base)};
 }
 function currentWorldPreset(state=getState()) {
     const settings=getSettings();
-    return {weaponPreset:getWeaponPreset(),powerPreset:getPowerPreset(),forgePreset:getForgePreset(),currencyPreset:currentCurrencyPreset(state,settings.coinStyle),trainingPreset:state.statTraining,
+    return {relationshipPreset:relationshipPreset(state),weaponPreset:getWeaponPreset(),powerPreset:getPowerPreset(),forgePreset:getForgePreset(),currencyPreset:currentCurrencyPreset(state,settings.coinStyle),trainingPreset:state.statTraining,
         loreOptions:activeLoreOptions(),npcOptions:activeNpcOptions(),systems:Object.fromEntries(WORLD_SYSTEM_KEYS.map(key=>[key,settings[key]])),chatAppearance:chatAppearance(settings),...((readChatPreset(SillyTavern.getContext().chatMetadata).storyPreset)?{storyPreset:readChatPreset(SillyTavern.getContext().chatMetadata).storyPreset}:{})};
 }
 function getWeaponPreset(){const context=SillyTavern.getContext();return readChatPreset(context.chatMetadata).weaponPreset || readCharacterPack(context,characterOwner(context)?.key).weaponPreset || emptyWeaponPreset();}
@@ -933,6 +936,30 @@ async function saveNameKnowledge(id,map,key){
  let release;pendingUserConfigSave=new Promise(resolve=>{release=resolve;});
  try{return await commitStoryProgress(state,'name-knowledge',{retainNameObserver:id});}finally{pendingUserConfigSave=null;release();refreshIncantationComposer();}
 }
+function relationshipPanelOptions(variant='dock') {return {variant,language:()=>getSettings().language,targets:knownNameTargets,read:readRelationshipState,save:saveRelationshipChange,importPreset:importRelationshipPreset,busy:storyEditingBusy};}
+async function readRelationshipState(actorId,targetId,key){
+ const c=SillyTavern.getContext(),metadata=c.chatMetadata;if(weaponScope()!==key)throw Error('The chat changed.');
+ const ids=[...new Set([actorId,targetId].filter(id=>id&&id!=='player'))];
+ for(const id of ids)if(characterNpcCatalog().has(id))await readNpcArchiveRecord(id,'character');
+ if(weaponScope()!==key||SillyTavern.getContext().chatMetadata!==metadata)throw Error('The chat changed.');
+ return getState({npcIds:ids});
+}
+async function saveRelationshipChange(request,key){
+ if(weaponScope()!==key||storyEditingBusy())return false;
+ const state=await readRelationshipState(request.actorId,request.targetId,key);
+ if(weaponScope()!==key||storyEditingBusy())return false;
+ const candidate=editRelationship(state,request,{reason:request.reason||'Manual rules edit'});
+ let release;pendingUserConfigSave=new Promise(resolve=>{release=resolve;});
+ try{return await commitStoryProgress(candidate,'relationships',{retainRelationships:{actorId:request.actorId,targetId:request.values||request.bond?request.targetId:null,config:Boolean(request.config),profile:Boolean(request.profile),fields:Object.keys(request.values||{}),retainBond:Boolean(request.bond)}});}
+ finally{pendingUserConfigSave=null;release();refreshIncantationComposer();}
+}
+async function importRelationshipPreset(preset,key){
+ if(weaponScope()!==key||storyEditingBusy())return false;
+ await saveChatPresetComponents({relationshipPreset:preset});return weaponScope()===key;
+}
+function mountMainRelationships(panel,state,actorId){if(!actorId)return;const host=panel.querySelector?.('[data-main-relationships]');if(!host||!document.createElement)return;
+ mainRelationshipPanel ||= createRelationshipPanel(relationshipPanelOptions('main'));mainRelationshipPanel.update(state,weaponScope(),actorId);host.replaceChildren(mainRelationshipPanel.root);
+}
 function weaponBusy(){return weaponActionBusy||statPracticeBusy||Boolean(pendingUserConfigSave)||Boolean(pendingCommerceSave)||characterPackSaving||mainReplyGenerating()||itemBusy||commerceBusy||powerTrainingBusy||memorySummaryNativeGenerationActive();}
 async function beginWeaponAction(itemId,action){if(weaponBusy()||!weaponScope()||!getSettings().enableWeapons)return false;const state=getState(),weapon=equippedWeapon(state,getWeaponPreset());if(!weapon||weapon.itemId!==itemId)return false;if(!getSettings().autoTrack)throw Error(getSettings().language==='th'?'เปิดการติดตามคำตอบ AI ก่อนใช้อาวุธ':'Enable normal-reply tracking before using weapon actions.');if(!['use','reload','activate','deactivate','describe'].includes(action))return false;weaponActionBusy=true;try{return await continueWeaponAction({context:SillyTavern.getContext(),weapon,action,scope:weaponScope,language:getSettings().language,visible:value=>extractStatePatch(value).visible,reference:weaponPromptReference(state,getWeaponPreset())});}finally{weaponActionBusy=false;refreshIncantationComposer();}}
 async function captureCurrentWorldPreset({includeStories=true}={}){const t=storyRuntime?.ticket(),config=currentWorldPreset();if(t&&includeStories){config.storyPreset=await storyRuntime.exportPack();if(!storyRuntime.valid(t))throw Error('Chat/card changed while capturing this preset.');}return config;}
@@ -946,15 +973,18 @@ async function saveChatPresetComponents(changes,{candidate=null,resetStory=false
     const next=normalize(applyPresetState(candidate || getState(),validated));
     if(!Number.isSafeInteger(walletValue(next.progression.currency)))throw Error('The wallet exceeds the exact currency range.');
     if(!auctionFundsValid(next,next)||!marketplaceInventoryValid(next)||!commerceInventoryValid(next))throw Error('Finish active trades before loading this preset. / จบรายการซื้อขายที่ค้างก่อน');
-    const oldConfig=metadata[CHAT_PRESET_KEY],oldState=metadata[METADATA_KEY];
+    const oldConfig=metadata[CHAT_PRESET_KEY],oldState=metadata[METADATA_KEY],oldHistory=metadata[TURN_HISTORY_KEY];
+    const stagedHistory=validated.relationshipPreset&&oldHistory?clone(oldHistory):oldHistory;
+    if(validated.relationshipPreset&&stagedHistory)for(const entry of stagedHistory.entries||[])for(const snapshot of [entry.baseState,...Object.values(entry.variants||{}).map(v=>v.state)])if(snapshot)snapshot.relationships=applyRelationshipPreset(snapshot,validated.relationshipPreset).relationships;
     const stagedConfig={version:1,config:clone(config)},stagedState=storedNpcState(next);
     let release;pendingUserConfigSave=new Promise(resolve=>{release=resolve;});
-    metadata[CHAT_PRESET_KEY]=stagedConfig;metadata[METADATA_KEY]=stagedState;
+    metadata[CHAT_PRESET_KEY]=stagedConfig;metadata[METADATA_KEY]=stagedState;if(stagedHistory!==oldHistory)metadata[TURN_HISTORY_KEY]=stagedHistory;
     try{
         if(!await saveCurrentChatMetadata(context))throw Error('The chat changed before saving. / เปลี่ยนแชทก่อนบันทึกสำเร็จ');
     }catch(error){
         if(metadata[CHAT_PRESET_KEY]===stagedConfig){if(oldConfig===undefined)delete metadata[CHAT_PRESET_KEY];else metadata[CHAT_PRESET_KEY]=oldConfig;}
         if(metadata[METADATA_KEY]===stagedState){if(oldState===undefined)delete metadata[METADATA_KEY];else metadata[METADATA_KEY]=oldState;}
+        if(stagedHistory!==oldHistory&&metadata[TURN_HISTORY_KEY]===stagedHistory){if(oldHistory===undefined)delete metadata[TURN_HISTORY_KEY];else metadata[TURN_HISTORY_KEY]=oldHistory;}
         throw error;
     }finally{pendingUserConfigSave=null;release();}
     assistantRollbackFailures.delete(metadata);
@@ -1193,6 +1223,7 @@ function defaultState() {
         journal: [],
         transactions: [],
         moneyTransfers:normalizeMoneyTransfers(),
+        relationships:normalizeRelationships(),
         journeyLogs: [],
         systems: defaultSystemsState(),
         onboarding: { identitySeeded: false, loadoutSeeded: false, locationSeeded: false },
@@ -1965,6 +1996,7 @@ function normalize(candidate, base = defaultState()) {
     const migratingLegacyNpcs = !Array.isArray(source.npcs);
     const result = clone(base);
     result.moneyTransfers=normalizeMoneyTransfers(source.moneyTransfers??result.moneyTransfers);
+    result.relationships=normalizeRelationships(source.relationships??result.relationships);
     result.itemSystem=normalizeItemSystem(source.itemSystem??result.itemSystem);
     result.statTraining=normalizeStatTraining(source.statTraining??result.statTraining);
     const bonus=resource=>result.itemSystem.buffs.filter(b=>b.kind==='cap'&&b.stat===`player.${resource}.current`).reduce((n,b)=>n+b.amount,0);
@@ -2239,11 +2271,11 @@ function normalize(candidate, base = defaultState()) {
 const characterSeedStates=new WeakMap();
 function initialCharacterState(context) {
     const owner=characterOwner(context)?.key,pack=readCharacterPack(context,owner),metadata=context.chatMetadata;
-    if(!pack.initialState&&!pack.currencyPreset&&!pack.trainingPreset)return defaultState();
+    if(!pack.initialState&&!pack.currencyPreset&&!pack.trainingPreset&&!pack.relationshipPreset)return defaultState();
     const cached=characterSeedStates.get(metadata);
     if(cached?.owner===owner&&cached.pack===pack)return clone(cached.state);
     let state;try{state=normalize(pack.initialState||defaultState());}catch{state=defaultState();}
-    for(const key of ['currencyPreset','trainingPreset'])if(pack[key])try{state=applyPresetState(state,{[key]:pack[key]});}
+    for(const key of ['currencyPreset','trainingPreset','relationshipPreset'])if(pack[key])try{state=applyPresetState(state,{[key]:pack[key]});}
     catch(error){console.warn(`[RoleForge] Ignoring incompatible character-pack ${key}; starting state retained.`,error);}
     characterSeedStates.set(metadata,{owner,pack,state});return clone(state);
 }
@@ -2275,7 +2307,7 @@ function initializeStoryManager(){
 }
 async function commitStoryProgress(candidate,source,options={}){
     const context=SillyTavern.getContext(),metadata=context.chatMetadata,before=metadata[TURN_HISTORY_KEY]===undefined?undefined:clone(metadata[TURN_HISTORY_KEY]);let acknowledged=false;
-    try{return await persistState(candidate,source,{...options,saveBeforeRender:true,prepareSave:state=>{if(options.retainNameObserver){const observer=options.retainNameObserver,current=observer==='player'?state.player:state.npcs.find(n=>n.id===observer);if(current)for(const e of metadata[TURN_HISTORY_KEY]?.entries||[])for(const snapshot of [e.baseState,...Object.values(e.variants||{}).map(v=>v.state)]){if(!snapshot)continue;if(observer==='player'&&snapshot.player)snapshot.player.knownNames=clone(current.knownNames);else{const npc=snapshot.npcs?.find(n=>n.id===observer);if(npc)npc.knownNames=clone(current.knownNames);else if(current.npcScope==='character'&&snapshot.npcScopes){snapshot.npcScopes.overrides||={};snapshot.npcScopes.overrides[observer]={...snapshot.npcScopes.overrides[observer],knownNames:clone(current.knownNames)};}}}}
+    try{return await persistState(candidate,source,{...options,saveBeforeRender:true,prepareSave:state=>{if(options.retainRelationships)retainRelationshipEdits(metadata[TURN_HISTORY_KEY],state,options.retainRelationships);if(options.retainNameObserver){const observer=options.retainNameObserver,current=observer==='player'?state.player:state.npcs.find(n=>n.id===observer);if(current)for(const e of metadata[TURN_HISTORY_KEY]?.entries||[])for(const snapshot of [e.baseState,...Object.values(e.variants||{}).map(v=>v.state)]){if(!snapshot)continue;if(observer==='player'&&snapshot.player)snapshot.player.knownNames=clone(current.knownNames);else{const npc=snapshot.npcs?.find(n=>n.id===observer);if(npc)npc.knownNames=clone(current.knownNames);else if(current.npcScope==='character'&&snapshot.npcScopes){snapshot.npcScopes.overrides||={};snapshot.npcScopes.overrides[observer]={...snapshot.npcScopes.overrides[observer],knownNames:clone(current.knownNames)};}}}}
         const id=latestAssistantMessageId(),message=context.chat[id],checkpoint=message&&assistantCheckpoint(id);if(checkpoint?.variants?.[assistantVariantKey(message)])checkpoint.variants[assistantVariantKey(message)].state=storedNpcState(state);},onMetadataSaved:()=>{acknowledged=true;}})||acknowledged;}
     finally{if(!acknowledged){if(before===undefined)delete metadata[TURN_HISTORY_KEY];else metadata[TURN_HISTORY_KEY]=before;}}
 }
@@ -3002,7 +3034,7 @@ async function persistUserConfig(candidate,source){
 
 async function persistState(candidate, source = 'manual', { deferMetadataSave = false, saveBeforeRender = false, onMetadataSaved = null,prepareSave=null } = {}) {
     if (pendingCommerceSave && !['auction', 'marketplace', 'items'].includes(source)) return false;
-    if(pendingUserConfigSave&&!['user-stats-config','currency-config','weapon-config','money-transfer','name-knowledge'].includes(source))return false;
+    if(pendingUserConfigSave&&!['user-stats-config','currency-config','weapon-config','money-transfer','name-knowledge','relationships'].includes(source))return false;
     const context = SillyTavern.getContext();
     const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata, owner = characterOwner(context)?.key;
     if (!chatId) {
@@ -3011,6 +3043,15 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
     }
     const previous = getState();
     let state = normalize(candidate, previous);
+    const relationshipEdits=[];
+    if(['npc','npc-management'].includes(source))for(const n of state.npcs){
+        const old=previous.npcs.find(v=>v.id===n.id);if(!old||old.activeAlternateId!==n.activeAlternateId)continue;
+        const active=npc=>({...npc,...npc.alternateProfiles?.find(v=>v.id===npc.activeAlternateId)?.fields}),before=active(old),after=active(n),values={};
+        for(const [field,metric]of [['affection','love'],['trust','trust'],['loyalty','commitment']])if(after[field]!==before[field])values[metric]=after[field];
+        const corruption=after.corruption!==before.corruption;
+        if(Object.keys(values).length||corruption)relationshipEdits.push({actorId:n.id,targetId:'player',fields:Object.keys(values),profile:corruption,retainBond:false});
+        if(Object.keys(values).length||corruption)state=editRelationship(state,{actorId:n.id,targetId:'player',...(Object.keys(values).length?{values}:{}),...(corruption?{profile:{...state.relationships.profiles[n.id],resistance:state.relationships.profiles[n.id]?.resistance??50,corruption:after.corruption}}:{})},{reason:'NPC profile edit'});
+    }
     if(!Number.isSafeInteger(walletValue(state.progression.currency))){notify('warning',getSettings().language==='th'?'ยอดเงินรวมสูงเกินช่วงที่คำนวณได้แม่นยำ โปรดลดยอดหรืออัตราแลกก่อนบันทึก':'The total balance exceeds the exact currency range. Reduce the balance or exchange rate before saving.');return false;}
     if (!auctionFundsValid(state,['import','continuity'].includes(source) ? state : previous)) {
         notify('warning',getSettings().language === 'th' ? 'เงินส่วนนี้กันไว้สำหรับการประมูล ใช้ได้เฉพาะยอดที่ไม่ถูกกันไว้ และเปลี่ยนสกุลเงินได้เมื่อจบงาน' : 'These funds are reserved for an auction. Spend only available funds; finish the auction before changing currency.');
@@ -3039,6 +3080,7 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
         const auraControl = document.getElementById('tretaresia-rpg-aura-color');
         if (auraControl instanceof HTMLInputElement) auraControl.value = state.player.aura.color;
     }
+    for(const edit of relationshipEdits)retainRelationshipEdits(turnHistory(context,false),state,edit);
     if (['npc-management', 'character-life-import'].includes(source)) {
         retainManualNpcEdits(turnHistory(context, false), previous, state);
     }
@@ -3769,6 +3811,7 @@ function aiState(state, { privateTracker = false, focusTranscript = '' } = {}) {
         scene: state.scene,
         sceneMap: aiSceneMap(state),
         nameKnowledge:nameKnowledgeReference(state,rankedNpcs.slice(0,24)),
+        relationships:relationshipPromptReference(state,rankedNpcs.slice(0,24),characterNpcSummaries()),
         moneyTransfers:moneyTransferReference(state),
         items: itemPromptReference(state),
         ...(getSettings().enableWeapons?{weapons:weaponPromptReference(state,getWeaponPreset())}:{}),
@@ -4197,7 +4240,7 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());
         card.setAttribute('aria-label',uiText("RoleForge character creation"));
         const frame = document.createElement('iframe');
-        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.78.1`;
+        frame.title = uiText("RoleForge Character Forge"); frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/character-creation.html?v=0.79.0`;
         frame.addEventListener('load', () => { if (forgeCard() === card) sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card); fitForgeToChat(card, chat);
     }
@@ -4322,7 +4365,7 @@ function legacyPatchInstructions() {
         'Currency rules: use the currency established by the current story; do not assume a region or a currency from a built-in world. Record every confirmed gain or decrease immediately. Every configured currency-unit set or inc operation must include fourth-position metadata with a concrete reason, such as {"reason":"Reward from the escort contract","category":"currency"} or {"reason":"Paid for two nights at the inn","category":"currency"}; never use a vague reason such as transaction. When the active currency changes, set progression.currency.name and update only denominations actually gained or spent; never silently convert wealth without an established exchange.',
         `Allowed custom proficiency iconKey values: ${iconKeys}. Choose the closest semantic icon; omit iconKey to let the extension infer it from the name.`,
         'NPC update rules: for every named friendly NPC who directly participates, consider relationship, location, lastSeen, abilities, custom meters, diary, and revealed stats. A substantive friendly/helpful exchange may change affection or trust by 1-3; hostility, deception, fear, romance, loyalty, or corruption should adjust only the relevant meters in proportion to what actually occurred. Use ["inc","npcValues",{"npcId":"...","field":"trust","amount":2}] for deltas or ["set","npcValues",{"npcId":"...","field":"stats.level","value":12}] for revealed absolute values. Valid relationship fields are affection, trust, loyalty, fear, corruption, lust. Valid stat fields are stats.level, stats.rank, stats.hp, stats.mp, stats.stamina, stats.strength, stats.agility, stats.intelligence, stats.endurance. Zero numeric NPC core stats mean unknown, not literal zero. Conversation alone does not increase NPC level or combat stats. Hostile, enemy, foe, antagonist, villain, aggressor, or threat NPCs must not be added to the visible NPC Codex, party invitations, guild invitations, or household roster; keep hostile encounters in the story only.',
-        `H-Stats fields on the player and each NPC (female, male, futanari): ${hFieldKeys}. Update from confirmed events using ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}], ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}], or the same field/value or field/amount shape with playerHStats and no npcId for the player's own sheet. Counts and liters are nonnegative; infidelityStage is 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Set pregnant true/false and pregnancyFather only from established facts. Keep all unestablished values unknown and never insert a Condition field or add unlock rules. Set NPC met:true only after the player has met them; retain false for entries merely known through lore. Never substitute a title for a character's name.`,
+        `H-Stats fields on the player and each NPC (female, male, futanari): ${hFieldKeys}. Update from confirmed events using ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}], ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}], or the same field/value or field/amount shape with playerHStats and no npcId for the player's own sheet. Counts and liters are nonnegative. Legacy hearts/stage fields are read-only history; use relationshipEvents for feelings and commitments. Set pregnant true/false and pregnancyFather only from established facts. Keep all unestablished values unknown and never insert a Condition field or add unlock rules. Set NPC met:true only after the player has met them; retain false for entries merely known through lore. Never substitute a title for a character's name.`,
         'Track the complete active scene: time, phase, day/dayName, place, region, continent/realm, location detail, scene position, weather and temperature. Reuse established facts. When enclosing geography is unnamed, establish coherent fictional names in this same narrative and patch consistent with the card/lore. Never use atlas coordinates or overwrite known facts.',
         'Location Memory: when this completed reply confirms durable geography, include top-level locations:[{id,name,kind:"Realm"|"Region"|"Place"|"Landmark"|"Route",parentId or parentName,region,continent,detail,conditions,landmarks:[{name,detail}],connections:[{toId or to,direction,distance,route,estimated,bidirectional,evidence}],evidence:"exact quote from this reply"}]. Reuse stable ids, preserve established detail, and use correction:true only for an explicit correction. Records without an exact evidence quote are ignored; never infer distance or direction from travel percentage.',
         'Maintain a sparse overhead local map only from confirmed or strongly implied spatial facts. Create a sceneMaps record, then its sceneFloors, sceneRooms, and sceneConnections. Room coordinates use x 0-100, y 0-70, width 8-70, height 7-50. Reveal or add rooms gradually; never invent a complete unseen building. Use canonical mapId/floorId/room ids, set the active ids and playerRoomId as the player moves, and preserve all locked maps, rooms, and connections.',
@@ -4370,7 +4413,7 @@ function patchInstructions() {
         'Teleport and warp canon: teleportation/warp magic is inaccessible and most people believe it does not exist. Do not grant, teach, create, or casually use such a spell, item, skill, route, or world crossing unless the visible story explicitly establishes an extraordinary canon exception. A map browse or travel request is never such an exception.',
         'NPC identity: npcNames=[id,canonicalName,aliases,enabled] contains the relevant retrieved identities, not the complete reference library. Reuse supplied canonical ids and aliases. An absent identity is not proof that a character has no saved dossier: do not fabricate a verified biography or alternate chapter. Newly introduced visible names are resolved locally for following turns. Disabled references must not be reactivated or duplicated. Do not merge distinct people merely because their names sound similar.',
         'NPCs and knowledge: upsert relevant named NPCs or confirmed changes; preserve npcIndex id. Set isHostile:true for hostile/enemy/foe/antagonist/villain/threat NPCs; they remain in NPC Management, but stay out of friendly Codex/social rosters. For participating friends consider relationship/location/lastSeen/abilities/meters/diary/revealed stats. Relationship deltas are usually 1-3. npcValues fields: affection,trust,loyalty,fear,corruption,lust or stats.level/rank/hp/mp/stamina/strength/agility/intelligence/endurance. Improve a known skill after confirmed practice/use with ["inc","npcAbilities",{"npcId":"...","name":"Existing skill","amount":2}], optionally setting level when a milestone is confirmed. Upsert a new skill only after learning it. Supply complete plausible starting stats and relationship values for new NPCs; zero is a real value, never an unknown placeholder. Never raise existing combat stats from conversation alone. Record only facts an NPC actually learns using npcKnowledge {npcId,id,fact,source,confidence,learnedDay}; do not copy private tracker facts. Diary only for meaningful private thoughts/turning points. Portrait data is forbidden.',
-        `Player and NPC H-Stats: ${hFieldKeys}. Applies to female, male and futanari partners with every field available; no extra Condition field or unlock logic. For established details use ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}] or ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}]; use playerHStats with the same field/value or field/amount shape and no npcId for the player. Track all confirmed relevant physical qualities/states, last partners, encounters, volume in liters, infidelity stage/progress, loyalty hearts, pregnancy/other parent, favorite partner/size/position, births, orgasms, and current fantasy. Do not invent values or advance counters twice. infidelityStage 1–5, infidelityProgress 0–100, loyaltyHearts 0–5. Record only established facts. Name is the person's actual name; title is a separate role or epithet. Set met:true only once the player has actually met the NPC, and keep mere lore/remote mentions out of the visible Codex.`,
+        `Player and NPC H-Stats: ${hFieldKeys}. Applies to female, male and futanari partners with every field available; no extra Condition field or unlock logic. For established details use ["set","npcHStats",{"npcId":"stable-id","field":"favoritePosition","value":"established preference"}] or ["inc","npcHStats",{"npcId":"stable-id","field":"oralSexCount","amount":1}]; use playerHStats with the same field/value or field/amount shape and no npcId for the player. Track all confirmed relevant physical qualities/states, last partners, encounters, volume in liters, pregnancy/other parent, favorite partner/size/position, births, orgasms, and current fantasy. Do not invent values or advance counters twice. Legacy hearts and stage are historical, not progression thresholds. Use relationshipEvents for feelings and commitments. Record only established facts. Name is the person's actual name; title is a separate role or epithet. Set met:true only once the player has actually met the NPC, and keep mere lore/remote mentions out of the visible Codex.`,
         'Living NPC world: update an NPC location/activity only when the completed story turn directly establishes or strongly implies that change for that NPC. Never simulate unseen off-screen lives from hidden tracker data, never teleport anyone, and never manufacture activities merely because time advanced. Story only changes only when involved; Paused never changes automatically. Party members follow the player only when the visible story establishes they are presently together.',
         'Social auto-sync: update Party and Guild for confirmed changes. Household invitations require consent: when a met friendly NPC in the current scene or named in this completed reply asks to enter the family, emit ["offer","householdInvitation",{"npcId":"stable-id","role":"specific relationship"}]. This leaves a permanent Accept/Decline card on that message; NEVER upsert householdMembers or embed members inside household. Only the player confirms entry, including a partner/spouse/child/relative. A confirmed departure may delete householdMembers.',
         'If an NPC explicitly invites the player to a party or guild, emit ["offer","partyInvitation" or "guildInvitation",{"npcId":"established inviter id","name":"group name","role":"specific player position","leaderName":"established leader if known","memberCount":128,"rank":"established rank","completedQuests":12,"reputation":742,"members":[{"name":"known member","role":"known role"}]}]. Include rank, completedQuests and reputation only if known, and update a group through a partial party/guilds upsert when a confirmed quest completion changes its record. Provide a coherent total including offscreen members for newly invented groups; preserve canonical totals, or omit genuinely unknown totals; never infer a famous guild has only the few named people or fabricate missing member records. An invitation alone requires the Accept/Decline button. If the story instead states the player is already a member, immediately upsert party or guilds with membershipStatus:"established" and membershipEvidence containing an exact 8–300 character quote from this completed reply or latest user role-play that asserts current membership. Supply name and playerRole; set leaderId to the established NPC id or "unidentified-leader" and leaderName to the established leader name when known. Include only established knownMembers and memberCount (already including the player); do not invent names or charge a founding fee. Existing groups can receive confirmed partial updates.',
@@ -4416,7 +4459,8 @@ function statePrompt(state, { includeState = true, track = true, activeCommerce=
         lines.push('New NPCs must include a full dossier with appearance,personality,background,goals,speechStyle,relationshipState and complete stats/relationships in the same patch. Existing NPC updates remain partial and preserve prior facts. Storage scope is controlled by the user; never emit npcScope or npcOwner.');
         lines.push('NPCs with enabled=false remain read-only canon references. You may use their established profile facts in the story, but never enable them, update their stats/relationships/diary or delete their dossiers. The user controls their enabled state.');
     }
-    lines.push(NAME_KNOWLEDGE_INSTRUCTIONS,MONEY_TRANSFER_INSTRUCTIONS);
+    lines.push(NAME_KNOWLEDGE_INSTRUCTIONS,MONEY_TRANSFER_INSTRUCTIONS,RELATIONSHIP_INSTRUCTIONS);
+    if(!includeState)lines.push('RELATIONSHIP STATE: '+JSON.stringify(relationshipPromptReference(state,state.npcs.filter(n=>n.enabled!==false).slice(-24),characterNpcSummaries())));
     if(!includeState){lines.push('NAME KNOWLEDGE STATE (private author reference): '+JSON.stringify(nameKnowledgeReference(state,state.npcs.filter(n=>n.enabled!==false).slice(-24))));const receipts=moneyTransferReference(state);if(receipts.length)lines.push('SETTLED MONEY TRANSFERS (already applied): '+JSON.stringify(receipts));}
     if (state.npcs.some(npc => npc.alternateProfiles?.length)) lines.push(NPC_ALTERNATE_INSTRUCTIONS);
     if (getSettings().chatPresentation) lines.push(track ? CHAT_INSTRUCTIONS : CHAT_INSTRUCTIONS.split(' TRACKER DATA:')[0]);
@@ -6920,8 +6964,9 @@ function renderNpcs(panel, state) {
     void hydrateNpcPortraits(panel, state);
 }
 
+function hStatsCandidates(state){return (state.npcs||[]).filter(n=>n.enabled!==false&&n.met===true);}
 const H_GROUPS = ['Body', 'History', 'Bonds', 'Preferences'];
-const H_GROUP_LABELS = { Body:'ร่างกาย', History:'ประสบการณ์', Bonds:'ความสัมพันธ์', Preferences:'ความชอบ' };
+const H_GROUP_LABELS = { Body:'ร่างกาย', History:'ประสบการณ์', Bonds:'ข้อมูลเดิม / ข้อตกลง', Preferences:'ความชอบ' };
 function syncHStatsSelectionChat(context = SillyTavern.getContext()) {
     const chatId = context.getCurrentChatId?.() || '';
     if (hStatsSelectionChatId !== chatId) {
@@ -6939,10 +6984,10 @@ function visibleHStatsNpcs(state = getState(), context = syncHStatsSelectionChat
     const saved = context.chatMetadata?.[H_VISIBLE_KEY];
     // Earlier versions stored only an explicitly chosen NPC, never a roster.
     const ids = Array.isArray(saved) ? saved : context.chatMetadata?.[H_SELECTION_KEY] ? [context.chatMetadata[H_SELECTION_KEY]] : [];
-    return [...new Set(ids)].slice(0, 100).map(id => metFriendlyNpcs(state).find(entry => entry.id === id)).filter(Boolean);
+    return [...new Set(ids)].slice(0, 100).map(id => hStatsCandidates(state).find(entry => entry.id === id)).filter(Boolean);
 }
 function chooseHStatsNpc(id, state = getState()) {
-    if (!metFriendlyNpcs(state).some(entry => entry.id === id)) return false;
+    if (!hStatsCandidates(state).some(entry => entry.id === id)) return false;
     const context = syncHStatsSelectionChat();
     const ids = visibleHStatsNpcs(state, context).map(entry => entry.id);
     if (!ids.includes(id)) ids.push(id);
@@ -6955,6 +7000,7 @@ function chooseHStatsNpc(id, state = getState()) {
         context.chatMetadata[H_SELECTION_KEY] = id;
         void saveCurrentChatMetadata(context).catch(error => console.warn('[RoleForge] Could not save H-Stats selection.', error));
     }
+    utilityComposer?.update(state,weaponScope());
     return true;
 }
 function removeHStatsNpc(id, state = getState()) {
@@ -6970,6 +7016,7 @@ function removeHStatsNpc(id, state = getState()) {
     hStatsEditing = false;
     hStatsPendingRemovalId = null;
     void saveCurrentChatMetadata(context).catch(error => console.warn('[RoleForge] Could not save H-Stats selection.', error));
+    utilityComposer?.update(state,weaponScope());
     return true;
 }
 function getHStatsLayout() {
@@ -7006,7 +7053,7 @@ function undoHideHStatsNpc(state = getState()) {
     const context = syncHStatsSelectionChat();
     const hidden = hStatsLastHiddenNpc;
     if (!hidden || hidden.chatId !== hStatsSelectionChatId || !context.chatMetadata
-        || !metFriendlyNpcs(state).some(entry => entry.id === hidden.id)) return false;
+        || !hStatsCandidates(state).some(entry => entry.id === hidden.id)) return false;
     const ids = visibleHStatsNpcs(state, context).map(entry => entry.id);
     if (ids.includes(hidden.id)) { hStatsLastHiddenNpc = null; return false; }
     ids.splice(Math.min(hidden.index, ids.length), 0, hidden.id);
@@ -7099,7 +7146,7 @@ function hStatsBaselineKey(npcId, context = SillyTavern.getContext()) {
     return `${context.getCurrentChatId?.()}:${characterOwner(context)?.key || ''}:${npcId}`;
 }
 function hStatsMissingFields(npc) {
-    return H_FIELDS.filter(field => npc?.hStats?.[field.key] === null || npc?.hStats?.[field.key] === '' || npc?.hStats?.[field.key] === undefined);
+    return H_FIELDS.filter(field => !LEGACY_BOND_FIELDS.includes(field.key)).filter(field => npc?.hStats?.[field.key] === null || npc?.hStats?.[field.key] === '' || npc?.hStats?.[field.key] === undefined);
 }
 
 function hStatsBaselineDefaults(npc) {
@@ -7108,6 +7155,7 @@ function hStatsBaselineDefaults(npc) {
     const values = {};
     for (const field of H_FIELDS) {
         const key = field.key;
+        if(LEGACY_BOND_FIELDS.includes(key))continue;
         if (field.type === 'count' || field.type === 'liters' || field.type === 'progress') values[key] = 0;
         else if (field.type === 'stage') values[key] = 1;
         else if (field.type === 'hearts') values[key] = 5;
@@ -7132,7 +7180,7 @@ async function completeHStatsBaseline(npcId) {
     const owner = characterOwner(context)?.key, metadata = context.chatMetadata;
     const jobKey = hStatsBaselineKey(npcId, context);
     if (!chatId || hStatsBaselineJobs.has(jobKey)) return;
-    const npc = metFriendlyNpcs(getState()).find(entry => entry.id === npcId);
+    const npc = hStatsCandidates(getState()).find(entry => entry.id === npcId);
     if (!npc || !hStatsMissingFields(npc).length) return;
     hStatsBaselineJobs.add(jobKey);
     try {
@@ -7141,7 +7189,7 @@ async function completeHStatsBaseline(npcId) {
             try {
                 recordExtensionRequest('hStatsBaseline', `RPG H-Stats baseline ${npc.name}`);
                 const response = await requestMetadataTask(context,{
-                    quietPrompt: `Create a complete, fictional INITIAL H-Stats profile for this role-play NPC. Return only JSON {"hStats":{"fieldKey":value}} for EVERY missing key. These are GENERATED assumptions, not events or known canon. Preserve all existing values and established facts. Keep a neutral profile: when history is absent use zero counts and liters; do not invent named past partners, encounters or exact measurements. For body descriptions use short, non-graphic traits suited to the NPC's established gender and appearance; for absent anatomy use "ไม่มีอวัยวะส่วนนี้". Use five loyalty hearts and stage 1/0 progress as neutral defaults unless the dossier establishes something else. Never add a Condition field or unlock rule. Missing keys and types: ${JSON.stringify(hStatsMissingFields(npc).map(({key,type})=>[key,type]))}. Existing H-Stats: ${JSON.stringify(npc.hStats)}. NPC dossier: ${JSON.stringify({name:npc.name,gender:npc.gender,age:npc.age,race:npc.race,appearance:npc.appearance,personality:npc.personality,relationship:npc.relationship,relationshipState:npc.relationshipState,background:npc.background,notes:npc.notes})}.`,
+                    quietPrompt: `Create a complete, fictional INITIAL H-Stats profile for this role-play NPC. Return only JSON {"hStats":{"fieldKey":value}} for EVERY missing key. These are GENERATED assumptions, not events or known canon. Preserve all existing values and established facts. Keep a neutral profile: when history is absent use zero counts and liters; do not invent named past partners, encounters or exact measurements. For body descriptions use short, non-graphic traits suited to the NPC's established gender and appearance; for absent anatomy use "ไม่มีอวัยวะส่วนนี้". Never infer love, loyalty, a partner, cheating or relationship stage from missing history. Never add a Condition field or unlock rule. Missing keys and types: ${JSON.stringify(hStatsMissingFields(npc).map(({key,type})=>[key,type]))}. Existing H-Stats: ${JSON.stringify(npc.hStats)}. NPC dossier: ${JSON.stringify({name:npc.name,gender:npc.gender,age:npc.age,race:npc.race,appearance:npc.appearance,personality:npc.personality,relationship:npc.relationship,relationshipState:npc.relationshipState,background:npc.background,notes:npc.notes})}.`,
                     skipWIAN:true, responseLength:2600, removeReasoning:true,
                 },'NPC baseline');
                 const parsed = parseJson(response);
@@ -7152,7 +7200,7 @@ async function completeHStatsBaseline(npcId) {
         }
         const active = SillyTavern.getContext();
         if (active.getCurrentChatId?.() !== chatId || characterOwner(active)?.key !== owner || active.chatMetadata !== metadata) return;
-        const state = clone(getState()), current = metFriendlyNpcs(state).find(entry => entry.id === npcId);
+        const state = clone(getState()), current = hStatsCandidates(state).find(entry => entry.id === npcId);
         if (!current) return;
         const defaults = hStatsBaselineDefaults(current), added = [];
         for (const field of hStatsMissingFields(current)) {
@@ -7195,23 +7243,11 @@ function renderHStats(panel, state) {
     const controls = renderHStatsControls(roster, panel.querySelector?.('.tretaresia-h-layout-settings')?.open || false);
     const directory = roster.length ? renderHStatsDirectory(roster, selected) : '';
     const layout = getHStatsLayout();
-    const available = metFriendlyNpcs(state).filter(entry => !roster.some(visible => visible.id === entry.id));
+    const available = hStatsCandidates(state).filter(entry => !roster.some(visible => visible.id === entry.id));
     const picker = available.length ? (uiMarkup('<div class="tretaresia-h-picker"><label><span>เลือกคนที่จะแสดง / Add to H-Stats</span><select name="hStatsNpcId">')
         + available.map(entry => (uiMarkup('<option value="')+html(entry.id)+uiMarkup('">')+html(entry.name)+uiMarkup('</option>'))).join('')
         + uiMarkup('</select></label><button type="button" class="tretaresia-secondary-button" data-action="add-hstats-npc">เพิ่ม / Add</button></div>')) : '';
-    const openPanel = activeTabIndex === TAB_ORDER.indexOf('hstats')
-        && document.getElementById?.('tretaresia-rpg-overlay')?.classList?.contains('is-open');
-    if (selected && hStatsMissingFields(selected).length && openPanel) {
-        const failed = hStatsBaselineFailures.has(hStatsBaselineKey(selected.id, context));
-        if (!failed) void completeHStatsBaseline(selected.id);
-        panel.innerHTML = (uiMarkup("")+(heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse'))+picker+controls+`<div class="tretaresia-h-shell" data-h-layout="${layout}">${directory}<div class="tretaresia-h-main">`+uiMarkup("\n            <section class=\"tretaresia-h-empty\" role=\"status\"><i class=\"fa-solid fa-heart-pulse\"></i><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(failed ? 'บันทึกโปรไฟล์ยังไม่สำเร็จ กรุณาลองใหม่' : 'กำลังสร้างโปรไฟล์ H-Stats ให้ครบทุกช่อง และเก็บค่าที่เนื้อเรื่องยืนยันไว้')+uiMarkup("</p>")+(failed ? uiMarkup("<button type=\"button\" class=\"tretaresia-primary-button\" data-action=\"retry-hstats-baseline\">ลองสร้างอีกครั้ง</button>") : '')+uiMarkup("</section></div></div>"));
-        if (typeof panel.querySelectorAll === 'function') void hydrateNpcPortraits(panel, state);
-        return;
-    }
     const sheet = selected ? hStats(selected.hStats) : null;
-    const stage = sheet?.infidelityStage ?? '—', progress = sheet?.infidelityProgress ?? null;
-    const hearts = sheet?.loyaltyHearts;
-    const heartSvg = filled => (uiMarkup("<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" class=\"")+(filled ? 'is-filled' : '')+uiMarkup("\"><path d=\"M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z\"/></svg>"));
     const generated = new Set(selected?.hStatsGenerated || []);
     const knownH = key => html(sheet?.[key] === null || sheet?.[key] === '' || sheet?.[key] === undefined ? 'ยังไม่ทราบ' : String(sheet[key]))
         + (generated.has(key) ? uiMarkup("<small class=\"tretaresia-h-generated\">ค่าเริ่มต้น AI</small>") : '');
@@ -7223,9 +7259,10 @@ function renderHStats(panel, state) {
     ] : [];
     const fields = H_FIELDS.filter(field => field.group === selectedHStatsSection);
     panel.innerHTML = `${heading(uiText("H-Stats"), 'PARTNER DOSSIER · ROLEFORGE', 'fa-solid fa-heart-pulse')}
-        ${picker}${controls}
-        ${roster.length ? (`<div class="tretaresia-h-shell" data-h-layout="${layout}">${directory}`+uiMarkup("<div class=\"tretaresia-h-main\"><section class=\"tretaresia-h-hero\"><div class=\"tretaresia-h-portrait-stage\"><span class=\"tretaresia-h-monogram\">")+(npcPortraitSlot(selected, 'tretaresia-npc-portrait tretaresia-h-photo'))+uiMarkup("</span><small>PARTNER · ")+(html(selected.name))+uiMarkup("</small></div><div class=\"tretaresia-h-hero-info\"><div class=\"tretaresia-h-identity\"><div><small>")+(html(selected.gender || '—'))+uiMarkup(" · ")+(html(selected.race || selected.location || '—'))+uiMarkup("</small><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(html(selected.title || selected.occupation || selected.relationship || '—'))+uiMarkup("</p><span>")+(html(selected.location || '—'))+uiMarkup("</span></div></div>\n        <div class=\"tretaresia-h-status\"><div><span>ความซื่อสัตย์ต่อผู้เล่น</span><div class=\"tretaresia-h-heart-value\"><div class=\"tretaresia-h-hearts\" aria-label=\"Loyalty ")+(hearts === null ? 'unknown' : hearts + ' of 5')+uiMarkup("\">")+(Array.from({length:5},(_,i)=>heartSvg(hearts !== null && i < hearts)).join(''))+uiMarkup("</div><small>")+(hearts === null ? 'ยังไม่ทราบ' : `${hearts} / 5${generated.has('loyaltyHearts') ? ' · AI' : ''}`)+uiMarkup("</small></div></div><div><span>แนวโน้มนอกใจ</span><strong>STAGE ")+(stage)+uiMarkup(" / 5 · ")+(progress ?? '—')+uiMarkup("%")+(generated.has('infidelityStage') || generated.has('infidelityProgress') ? ' · AI' : '')+uiMarkup("</strong></div><div class=\"tretaresia-h-track\" role=\"progressbar\" aria-label=\"Infidelity stage progress\" ")+(progress === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"`)+uiMarkup("><i style=\"width:")+(progress ?? 0)+uiMarkup("%\"></i></div><div><span>การตั้งครรภ์</span><strong>")+(sheet.pregnant === null ? 'ยังไม่ทราบ' : sheet.pregnant ? 'ท้อง' : 'ไม่ท้อง')+uiMarkup("")+(generated.has('pregnant') ? ' · AI' : '')+uiMarkup("</strong></div></div></div></section>\n        <section class=\"tretaresia-h-highlights\" aria-label=\"H-Stats overview\">")+(highlights.map(([title,icon,quality,stateKey,count]) => (uiMarkup("<article><header><i class=\"fa-solid ")+(icon)+uiMarkup("\" aria-hidden=\"true\"></i><strong>")+(title)+uiMarkup("</strong></header><div><span>")+(html(H_FIELD_MAP[quality].label))+uiMarkup("</span><b>")+(knownH(quality))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[stateKey].label))+uiMarkup("</span><b>")+(knownH(stateKey))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[count].label))+uiMarkup("</span><b>")+(knownH(count))+uiMarkup("</b></div></article>"))).join(''))+uiMarkup("</section>\n        <p class=\"tretaresia-h-sync-note\">")+(generated.size ? `${generated.size} ช่องเป็นค่าเริ่มต้นที่สร้างขึ้นและจะเปลี่ยนเมื่อเรื่องยืนยันข้อมูลใหม่` : 'ข้อมูลทุกช่องมาจากเรื่องหรือการแก้ไขของคุณ')+uiMarkup(" <button type=\"button\" data-action=\"open-manual-sync\">เลือกช่วงข้อความเพื่ออัปเดตทุกแท็บ</button></p>\n        <nav class=\"tretaresia-h-sections\" aria-label=\"H-Stats categories\">")+(H_GROUPS.map(group => (uiMarkup("<button type=\"button\" data-action=\"select-hstats-section\" data-id=\"")+(group)+uiMarkup("\" class=\"")+(selectedHStatsSection === group ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selectedHStatsSection === group)+uiMarkup("\">")+(H_GROUP_LABELS[group])+uiMarkup("</button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-h-detail\"><header><h4>")+(H_GROUP_LABELS[selectedHStatsSection])+uiMarkup("</h4><button type=\"button\" data-action=\"toggle-hstats-edit\" aria-pressed=\"")+(hStatsEditing)+uiMarkup("\"><i class=\"fa-solid ")+(hStatsEditing ? 'fa-xmark' : 'fa-pen')+uiMarkup("\"></i> ")+(hStatsEditing ? 'ยกเลิกแก้ไข / Cancel' : 'แก้ไขข้อมูล / Edit')+uiMarkup("</button></header>\n        ")+(hStatsEditing ? (uiMarkup("<form data-form=\"npc-hstats\" class=\"tretaresia-h-form\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(selected.id))+uiMarkup("\"><div class=\"tretaresia-h-grid\">")+(fields.map(field => hFieldControl(field, sheet[field.key])).join(''))+uiMarkup("</div><button type=\"submit\" class=\"tretaresia-primary-button\">บันทึกข้อมูล / Save</button></form>")) : (uiMarkup("<div class=\"tretaresia-h-readout\">")+(fields.map(field => (uiMarkup("<div><span>")+(html(field.label))+uiMarkup("</span><strong>")+(html(sheet[field.key] === null || sheet[field.key] === '' ? 'ยังไม่ทราบ' : field.type === 'boolean' ? sheet[field.key] ? 'ท้อง / Pregnant' : 'ไม่ท้อง / Not pregnant' : String(sheet[field.key])))+uiMarkup("")+(generated.has(field.key) ? uiMarkup("<small class=\"tretaresia-h-generated\">ค่าเริ่มต้น AI</small>") : '')+uiMarkup("</strong></div>"))).join(''))+uiMarkup("</div>")))+uiMarkup("</section></div></div>")) : (uiMarkup("<section class=\"tretaresia-h-empty\"><i class=\"fa-solid fa-users-viewfinder\"></i><h3>ยังไม่ได้เลือกตัวละคร</h3><p>เลือก NPC ที่เคยพบจากเมนูด้านบน หรือเปิดข้อมูล NPC แล้วกด H-Stats</p><button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open>เปิด NPC Management</button></section>"))}`;
+        ${picker}${controls}${selected&&hStatsMissingFields(selected).length?'<button type="button" class="tretaresia-small-button" data-action="retry-hstats-baseline">เติมโปรไฟล์ร่างกายที่ยังว่าง / Fill missing body profile</button>':''}
+        ${roster.length ? (`<div class="tretaresia-h-shell" data-h-layout="${layout}">${directory}`+uiMarkup("<div class=\"tretaresia-h-main\"><section class=\"tretaresia-h-hero\"><div class=\"tretaresia-h-portrait-stage\"><span class=\"tretaresia-h-monogram\">")+(npcPortraitSlot(selected, 'tretaresia-npc-portrait tretaresia-h-photo'))+uiMarkup("</span><small>PARTNER · ")+(html(selected.name))+uiMarkup("</small></div><div class=\"tretaresia-h-hero-info\"><div class=\"tretaresia-h-identity\"><div><small>")+(html(selected.gender || '—'))+uiMarkup(" · ")+(html(selected.race || selected.location || '—'))+uiMarkup("</small><h3>")+(html(selected.name))+uiMarkup("</h3><p>")+(html(selected.title || selected.occupation || selected.relationship || '—'))+uiMarkup("</p><span>")+(html(selected.location || '—'))+uiMarkup("</span></div></div>\n        </div></section><div data-main-relationships></div>\n        <section class=\"tretaresia-h-highlights\" aria-label=\"H-Stats overview\">")+(highlights.map(([title,icon,quality,stateKey,count]) => (uiMarkup("<article><header><i class=\"fa-solid ")+(icon)+uiMarkup("\" aria-hidden=\"true\"></i><strong>")+(title)+uiMarkup("</strong></header><div><span>")+(html(H_FIELD_MAP[quality].label))+uiMarkup("</span><b>")+(knownH(quality))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[stateKey].label))+uiMarkup("</span><b>")+(knownH(stateKey))+uiMarkup("</b></div><div><span>")+(html(H_FIELD_MAP[count].label))+uiMarkup("</span><b>")+(knownH(count))+uiMarkup("</b></div></article>"))).join(''))+uiMarkup("</section>\n        <p class=\"tretaresia-h-sync-note\">")+(generated.size ? `${generated.size} ช่องเป็นค่าเริ่มต้นที่สร้างขึ้นและจะเปลี่ยนเมื่อเรื่องยืนยันข้อมูลใหม่` : 'ข้อมูลทุกช่องมาจากเรื่องหรือการแก้ไขของคุณ')+uiMarkup(" <button type=\"button\" data-action=\"open-manual-sync\">เลือกช่วงข้อความเพื่ออัปเดตทุกแท็บ</button></p>\n        <nav class=\"tretaresia-h-sections\" aria-label=\"H-Stats categories\">")+(H_GROUPS.map(group => (uiMarkup("<button type=\"button\" data-action=\"select-hstats-section\" data-id=\"")+(group)+uiMarkup("\" class=\"")+(selectedHStatsSection === group ? 'is-active' : '')+uiMarkup("\" aria-pressed=\"")+(selectedHStatsSection === group)+uiMarkup("\">")+(H_GROUP_LABELS[group])+uiMarkup("</button>"))).join(''))+uiMarkup("</nav>\n        <section class=\"tretaresia-h-detail\"><header><h4>")+(H_GROUP_LABELS[selectedHStatsSection])+uiMarkup("</h4><button type=\"button\" data-action=\"toggle-hstats-edit\" aria-pressed=\"")+(hStatsEditing)+uiMarkup("\"><i class=\"fa-solid ")+(hStatsEditing ? 'fa-xmark' : 'fa-pen')+uiMarkup("\"></i> ")+(hStatsEditing ? 'ยกเลิกแก้ไข / Cancel' : 'แก้ไขข้อมูล / Edit')+uiMarkup("</button></header>\n        ")+(hStatsEditing ? (uiMarkup("<form data-form=\"npc-hstats\" class=\"tretaresia-h-form\"><input type=\"hidden\" name=\"npcId\" value=\"")+(html(selected.id))+uiMarkup("\"><div class=\"tretaresia-h-grid\">")+(fields.map(field => hFieldControl(field, sheet[field.key])).join(''))+uiMarkup("</div><button type=\"submit\" class=\"tretaresia-primary-button\">บันทึกข้อมูล / Save</button></form>")) : (uiMarkup("<div class=\"tretaresia-h-readout\">")+(fields.map(field => (uiMarkup("<div><span>")+(html(field.label))+uiMarkup("</span><strong>")+(html(sheet[field.key] === null || sheet[field.key] === '' ? 'ยังไม่ทราบ' : field.type === 'boolean' ? sheet[field.key] ? 'ท้อง / Pregnant' : 'ไม่ท้อง / Not pregnant' : String(sheet[field.key])))+uiMarkup("")+(generated.has(field.key) ? uiMarkup("<small class=\"tretaresia-h-generated\">ค่าเริ่มต้น AI</small>") : '')+uiMarkup("</strong></div>"))).join(''))+uiMarkup("</div>")))+uiMarkup("</section></div></div>")) : (uiMarkup("<section class=\"tretaresia-h-empty\"><i class=\"fa-solid fa-users-viewfinder\"></i><h3>ยังไม่ได้เลือกตัวละคร</h3><p>เลือก NPC ที่เคยพบจากเมนูด้านบน หรือเปิดข้อมูล NPC แล้วกด H-Stats</p><button type=\"button\" class=\"tretaresia-primary-button\" data-trpg-open>เปิด NPC Management</button></section>"))}`;
     if (selected && typeof panel.querySelectorAll === 'function') void hydrateNpcPortraits(panel, state);
+    mountMainRelationships(panel,state,selected?.id);
 }
 
 function renderNpcDossier(entry, linkedContact) {
@@ -8055,7 +8092,7 @@ async function onSubmit(event) {
             break;
         }
         case 'npc-hstats': {
-            const npc = metFriendlyNpcs(state).find(entry => entry.id === values.npcId);
+            const npc = hStatsCandidates(state).find(entry => entry.id === values.npcId);
             if (!npc) break;
             const incoming = hStatsFormValues(values);
             npc.hStats = hStats(incoming, npc.hStats);
@@ -9247,6 +9284,10 @@ function applyPatchOperation(state, operation, storySource = {}) {
         &&!effectTargetsPlayer({target:operation[3].target,targetName:operation[3].targetName},{names:recipientNames}))return false;
     if(path==='inventory'&&incomingValue?.commerceRightId)return false;
     let value = incomingValue;
+    if(['npcHStats','playerHStats'].includes(path)&&LEGACY_BOND_FIELDS.includes(value?.field))return false;
+    if(path==='npcValues'&&['affection','trust','loyalty','corruption'].includes(value?.field))return false;
+    if(path==='npcs'&&value&&typeof value==='object'){value={...value};for(const k of ['affection','trust','loyalty','corruption'])delete value[k];if(value.hStats)value.hStats=Object.fromEntries(Object.entries(value.hStats).filter(([k])=>!LEGACY_BOND_FIELDS.includes(k)));}
+
     if(['npcs','npcValues','npcHStats','npcAbilities','npcMeters','npcDiary','partyMembers','guildMembers','householdMembers','householdInvitation','partyInvitation','guildInvitation'].includes(path)){
         const loaded=materializeWorkingNpc(state,value);
         if(loaded&&value&&typeof value==='object')value=path==='npcs'?{...value,id:loaded.id}:{...value,npcId:loaded.id};
@@ -9644,7 +9685,11 @@ function applyStatePatch(current, patch, {sourceMessageId, sourceDay, source = '
     if (!patch || typeof patch !== 'object' || !Array.isArray(patch.ops)) throw new Error(uiText("State patch is missing an ops array."));
     const candidate = clone(current);
     const acceptedOps = [];
-    const explicit = patch.ops.slice(0, 75).flatMap(canonicalPatchOperations).slice(0, 100);
+    const bodyEvents=Array.isArray(patch.relationshipEvents)&&patch.relationshipEvents.some(e=>['intimacy','history'].includes(e?.kind));
+    const explicit = patch.ops.slice(0, 75).flatMap(canonicalPatchOperations).slice(0, 100).flatMap(op=>{
+      if(!bodyEvents)return [op];if(['npcHStats','playerHStats'].includes(op[1]))return [];
+      if(op[1]==='npcs'&&op[2]?.hStats){const v={...op[2]};delete v.hStats;return [[op[0],op[1],v]];}return [op];
+    });
     const operations = [...explicit, ...sceneTrackerOperations(patch.sceneTracker, explicit)].filter(op=>allowStoryRewards||!managedStoryOperation(current,op)&&!storyRuntime?.guardsOperation(current,op));
     const locationRecords = normalizeLocationMemory(patch.locations).filter(entry => entry.evidence.length).slice(0, 40);
     let locationMemoryChanged = false;
@@ -9848,7 +9893,7 @@ function coerceStatePatch(raw) {
     }
     const locations = normalizeLocationMemory(source.locations).filter(entry => entry.evidence.length).slice(0, 40);
     const hasInteraction = ['missionBoard','groupBoard','auction','marketplace','commerce','commerceIntent'].some(key => source[key] && typeof source[key] === 'object' && !Array.isArray(source[key]));
-    if (!source.loot && !Array.isArray(source.nameKnowledgeEvents) && !Array.isArray(source.weaponEvents) && !Array.isArray(source.storyEvents) && !Array.isArray(source.itemEvents) && !hasInteraction && !operations.length && !sceneTrackerOperations(source.sceneTracker).length && !locations.length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates) && !normalizeMissionBoard(source.missionBoard) && !normalizeGroupBoard(source.groupBoard) && !normalizeAuctionOffer(source.auction) && !normalizeMarketplaceEvent(source.marketplace)) return null;
+    if (!source.loot && !Array.isArray(source.relationshipEvents) && !Array.isArray(source.nameKnowledgeEvents) && !Array.isArray(source.weaponEvents) && !Array.isArray(source.storyEvents) && !Array.isArray(source.itemEvents) && !hasInteraction && !operations.length && !sceneTrackerOperations(source.sceneTracker).length && !locations.length && !Array.isArray(source.ops) && !Array.isArray(source.operations) && !Array.isArray(source.updates) && !normalizeMissionBoard(source.missionBoard) && !normalizeGroupBoard(source.groupBoard) && !normalizeAuctionOffer(source.auction) && !normalizeMarketplaceEvent(source.marketplace)) return null;
     return {
         ops: operations.slice(0, 75),
         summary: text(source.summary || raw.summary, '', 300),
@@ -9863,6 +9908,7 @@ function coerceStatePatch(raw) {
         commerce: source.commerce && typeof source.commerce==='object' && !Array.isArray(source.commerce) ? source.commerce : null,
         loot:Array.isArray(source.loot)?source.loot.slice(0,12):source.loot&&typeof source.loot==='object'?[source.loot]:[],
         itemEvents:Array.isArray(source.itemEvents)?source.itemEvents.slice(0,12):[],
+        relationshipEvents:Array.isArray(source.relationshipEvents)?source.relationshipEvents.slice(0,100):[],
         nameKnowledgeEvents:Array.isArray(source.nameKnowledgeEvents)?source.nameKnowledgeEvents.slice(0,100):[],
         weaponEvents:Array.isArray(source.weaponEvents)?source.weaponEvents.slice(0,16):[],
         storyEvents:Array.isArray(source.storyEvents)?source.storyEvents.slice(0,40):[],
@@ -9978,6 +10024,7 @@ function extractStatePatch(message, {keepReasoning=false,keepForeign=false} = {}
         commerce: [...patches].reverse().find(patch => patch.commerce)?.commerce || null,
         loot:patches.flatMap(patch=>patch.loot||[]).slice(0,12),
         itemEvents:patches.flatMap(patch=>patch.itemEvents||[]).slice(0,12),
+        relationshipEvents:patches.flatMap(patch=>patch.relationshipEvents||[]).slice(0,100),
         nameKnowledgeEvents:patches.flatMap(patch=>patch.nameKnowledgeEvents||[]).slice(0,100),
         weaponEvents:patches.flatMap(patch=>patch.weaponEvents||[]).slice(0,128),
         storyEvents:patches.flatMap(patch=>patch.storyEvents||[]).slice(0,40),
@@ -10049,6 +10096,7 @@ function npcProgressionOperations(raw, targets, state, base) {
         if (!npc || !prior) return false;
         if (path === 'npcValues') {
             const field = text(value.field, '', 80), amount = Number(value.amount);
+            if(['affection','trust','loyalty','corruption'].includes(field))return false;
             if (NPC_RELATIONSHIP_FIELDS.has(field)) return verb === 'inc' && Number.isInteger(amount) && Math.abs(amount) >= 1 && Math.abs(amount) <= 5
                 && npc[field] === prior[field];
             if (['stats.strength','stats.agility','stats.intelligence','stats.endurance'].includes(field))
@@ -10059,7 +10107,7 @@ function npcProgressionOperations(raw, targets, state, base) {
             && Number(value.amount) >= 1 && Number(value.amount) <= 4
             && npc.abilities.some(ability => matchesPatchIdentity(ability, value)
                 && prior.abilities.some(previous => matchesPatchIdentity(previous, value) && previous.proficiency === ability.proficiency));
-        if (path === 'npcHStats') return ['set','inc'].includes(verb) && Object.hasOwn(H_FIELD_MAP, value.field)
+        if (path === 'npcHStats') return !LEGACY_BOND_FIELDS.includes(value.field) && ['set','inc'].includes(verb) && Object.hasOwn(H_FIELD_MAP, value.field)
             && npc.hStats?.[value.field] === prior.hStats?.[value.field];
         return false;
     });
@@ -10199,7 +10247,7 @@ async function processAssistantPatchNow(messageId, generationType = '', scope) {
     const incomingVariant = assistantVariantKey(message);
     if (processedAssistantMessages.get(message) === incomingVariant) {commerceRuntime?.refresh();return;}
     const referenceScope=referenceTicket();
-    try{await prepareNpcReferences(context.chat.slice(0,messageId+1));}catch(error){if(referenceTicketValid(referenceScope))notify('warning',error.message);return;}
+    try{await prepareNpcReferences(context.chat.slice(0,messageId+1));for(const id of relationshipEventNpcIds(extractStatePatch(message.mes).patch?.relationshipEvents))if(characterNpcCatalog().has(id))await readNpcArchiveRecord(id,'character');}catch(error){if(referenceTicketValid(referenceScope))notify('warning',error.message);return;}
     if(!referenceTicketValid(referenceScope)||context.chat[messageId]!==message||assistantVariantKey(message)!==incomingVariant)return;
     if (!settings.autoTrack) {
         processedAssistantMessages.set(message, incomingVariant);
@@ -10234,7 +10282,7 @@ async function processAssistantPatchNow(messageId, generationType = '', scope) {
     processedAssistantMessages.set(message, variantKey);
     let commerceRollback=null;
     try {
-        const base = getState();
+        const base = getState({npcIds:relationshipEventNpcIds(extracted.patch?.relationshipEvents)});
         const shouldConsumeTrainingNotice = Boolean(base.powerMastery?.lastResult && !base.powerMastery.lastResult.consumed && !base.powerMastery.session);
         let patched = shouldConsumeTrainingNotice ? clone(base) : base;
         const trainingNoticeConsumed = shouldConsumeTrainingNotice && consumePowerTrainingNotice(patched);
@@ -10358,6 +10406,9 @@ async function processAssistantPatchNow(messageId, generationType = '', scope) {
             accepted += recovered.accepted;
             notifications.push(...recovered.notifications);
         }
+        const relationships=applyRelationshipEvents(reconciled.next,extracted.patch?.relationshipEvents,{story:extracted.visible,user:extractStatePatch(userMessage?.mes).visible,source:assistantTurnKey(messageId)+'|'+variantKey});
+        reconciled.next=relationships.next;reconciled.changes+=relationships.changed;
+        if(relationships.errors.length)notify('warning',settings.language==='th'?'บางเหตุการณ์ความสัมพันธ์ยังยืนยันไม่ได้ ค่านั้นยังไม่เปลี่ยน':'Some relationship events lack confirmed evidence; those values are unchanged.');
         const rightsResult=applyRightsEvents(reconciled.next,extracted.patch?.commerceRights,{story:extracted.visible,user:userMessage?.mes||''});
         if(rightsResult.errors.length)notify('warning',settings.language==='th'?'ข้อมูลสิทธิ์หรือการคืนยังยืนยันไม่ครบ รายการนั้นยังไม่เปลี่ยน':'An entitlement action lacks valid confirmation; that right is unchanged.');
         if(rightsResult.ok){
@@ -10668,6 +10719,7 @@ function analyzerPrompt(state, transcript, {messageId = null, historical = false
         .some(name => name && transcript.toLocaleLowerCase().includes(name.toLocaleLowerCase()))).slice(0, 8);
     const rules = patchInstructions().split('\n').filter(line => /^(?:Story memory:|Quest objectives:|Appointments and deadlines:|Allowed ops:|Compact state arrays:|EPISTEMIC FIREWALL:|Resource, injury, and damage rules:|Survival rules:|Aura mechanics:|World identity:|EXP:|Money:|Inventory lifecycle:|Quests:|Proficiency:|NPC identity:|NPCs and knowledge:|Player and NPC H-Stats:|Social auto-sync:)/.test(line)).join('\n');
     return `MANUAL SYNC: Audit this ONE completed reply (#${messageId === null ? '?' : messageId + 1}) across every story-driven tab. Return only changes genuinely missing from CURRENT STATE; never replay earlier rewards, costs, experience or counters already applied. Never treat another reply, an earlier plan, or a hypothetical as the event for this turn. ${historical ? 'This is an older reply: supply its historical sceneTracker, but do not move the CURRENT location, clock, weather, travel state or overwrite later known facts.' : 'This is the latest reply: the sceneTracker describes the actual current scene.'}
+${RELATIONSHIP_INSTRUCTIONS}
 Review ${[getSettings().enableStoryMemory && 'story memory',getSettings().enableStoryAgenda && 'appointments and deadlines',getSettings().enableQuestObjectives && 'quest objectives'].filter(Boolean).map(value => value+', ').join('')}player status, scene, inventory, skills, techniques, quests, rank, groups, household, NPCs, all applicable H-Stats fields, physical mail, stable location memory and systems touched by the story. Preserve unrelated values. Include all sceneTracker keys dayName,day,month,year,era,calendar,time,period,season,location,region,continent,position,weather,temperature,lighting,participants,objective,safety,atmosphere,elapsed. For confirmed durable geography include locations:[{id,name,kind,parentId or parentName,detail,conditions,connections,distance,direction,evidence:"exact quote from this reply"}] and omit records without evidence; carry forward established facts and create coherent fictional details only for unspecified scene properties. H-Stats fields (key/type): ${JSON.stringify(H_FIELDS.map(({key,type})=>[key,type]))}. Record separately every confirmed quality, current state, last partner, relevant counters, measured liters, pregnancy, relationships and preferences for the NPC named in the story. A single confirmed event may update multiple distinct counters; never guess measured volumes or a favorite. Do not add an H-Stats Condition field.
 CURRENT STATE:
 ${JSON.stringify(aiState(state, {privateTracker:true,focusTranscript:transcript}))}
@@ -10814,6 +10866,8 @@ async function analyzeChat({ manual = false, startIndex, endIndex } = {}) {
             const result = applyStatePatch(draft, {...parsed, ops:operations, sceneTracker:historical ? {} : parsed.sceneTracker},
                 {sourceMessageId:marker.index,sourceDay:parsed.sceneTracker?.day ?? null,source:'manual-sync'});
             draft = result.next;
+            const relationshipResult=applyRelationshipEvents(draft,parsed.relationshipEvents,{story:extractStatePatch(message.mes).visible,user:extractStatePatch(context.chat.slice(0,marker.index).findLast(m=>m.is_user)?.mes).visible,source:assistantTurnKey(marker.index)+'|'+assistantVariantKey(message)});
+            draft=relationshipResult.next;accepted+=relationshipResult.changed;
             accepted += result.accepted;
             summary = result.summary || summary;
             allNotifications.push(...result.notifications);
@@ -11404,7 +11458,7 @@ async function initialize() {
         weaponComposer=createWeaponComposer({dock:composerDock,settings:getSettings,preset:getWeaponPreset,configure:()=>weaponManager?.open(equippedWeapon(getState(),getWeaponPreset())?.itemId),act:beginWeaponAction,busy:weaponBusy});
         initializeCommerce();
         initializeItems();
-        utilityComposer=createUtilityComposer({dock:composerDock,settings:getSettings,transfer:()=>moneyTransferComposer.open(),hRoster:state=>visibleHStatsNpcs(state),openItem:id=>{itemRuntime?.openItem(id);composerDock.select('items');},openManager:async id=>{await openInterface();activateTab({inventory:'inventory',missions:'quests',hstats:'hstats'}[id]);}});
+        utilityComposer=createUtilityComposer({relationships:relationshipPanelOptions(),dock:composerDock,settings:getSettings,transfer:()=>moneyTransferComposer.open(),hRoster:state=>visibleHStatsNpcs(state),openItem:id=>{itemRuntime?.openItem(id);composerDock.select('items');},openManager:async id=>{await openInterface();activateTab({inventory:'inventory',missions:'quests',hstats:'hstats'}[id]);}});
         memoryComposerStatus = createMemoryComposerStatus({dock:composerDock,language:() => getSettings().language,
             cancel:() => memorySummaries?.cancel(),open:openMemoryAddons,
             retry:() => { const view = memorySummaries?.view(); if (view) void memorySummaries.run({prepare:Boolean(view.job.prepare),retry:true}); }});
@@ -11504,7 +11558,7 @@ async function initialize() {
             closeInterface();
         });
         // Workshop is optional: storage/style failures must not interrupt RoleForge.
-        void import('./src/workshop/native.js?v=0.78.1').then(({mountNativeWorkshop})=>{
+        void import('./src/workshop/native.js?v=0.79.0').then(({mountNativeWorkshop})=>{
             mountNativeWorkshop({dock:composerDock,state:getState,owner:()=>characterOwner(SillyTavern.getContext())?.key,busy:mainReplyGenerating,voice:{catalog:()=>voiceAddons.addonVoices(),activity:()=>voiceAddons.addonActivity(),activate:()=>voiceAddons.activateAddon(),speak:(...args)=>voiceAddons.speakAddon(...args),stop:()=>voiceAddons.stopAddon(),setup:()=>{if(!voiceAddons.open())openWorldSettings('optional');}}});
         }).catch(error=>console.warn('[RoleForge] Workshop unavailable',error));
         console.info('[RoleForge] Role-play interface v0.77.3 loaded.');

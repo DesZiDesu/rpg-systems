@@ -1,3 +1,4 @@
+async function selectMira(){const picker=p.locator('.rf-utility-profile-picker');if(!await picker.evaluate(n=>n.open))await picker.locator('summary').click();await p.locator('[data-utility-person=mira]').click();}
 // Real SillyTavern gestures and production panels. Chromium touch emulation
 // exercises the host's own swipe recognizer; it is not a physical iOS device.
 import assert from 'node:assert/strict';
@@ -36,7 +37,7 @@ try{
   for(const suffix of ['weapons','inventory-composer','missions-composer','hstats-composer','incantation']){const control=p.locator('#tretaresia-rpg-'+suffix);await control.evaluate(n=>document.getElementById('tretaresia-rpg-settings').rfSettingsNavigation.reveal(n));await control.check();}await p.locator('#extensions-settings-button .drawer-toggle').click();
   await p.evaluate(()=>RoleForgeWorkshop.open());const workshop=p.locator('#roleforge-workshop');await workshop.locator('[data-ws-action=detail][data-id=great-sage]').first().click();await workshop.locator('[data-ws-action=install]').click();await p.waitForFunction(()=>!RoleForgeWorkshop.debug().busy);await workshop.locator('[data-ws-nav=chat]').click();await workshop.locator('[data-ws-enable=great-sage]').check();await p.waitForFunction(()=>!RoleForgeWorkshop.debug().busy);await workshop.locator('[data-ws-action=close]').click();await p.locator('[data-dock-choice=great-sage]').waitFor({state:'attached'});await p.locator('[data-dock-choice=loot]').waitFor({state:'attached'});
   await choose('inventory');await p.locator('[data-utility-item=potion]').click();await choose('abilities');assert.equal(await p.locator('[data-ability-action=train] .fa-dumbbell').count(),1);assert.equal(await p.locator('.rf-incantation svg').count(),0);
-  await p.locator('[data-ability-action=train]').click();await p.locator('#rf-dock-panel-training').waitFor({state:'visible'});await choose('hstats');await p.locator('[data-utility-person]').selectOption('mira');await shot(device+'-hstats');
+  await p.locator('[data-ability-action=train]').click();await p.locator('#rf-dock-panel-training').waitFor({state:'visible'});await choose('hstats');await selectMira();await shot(device+'-hstats');
   await p.evaluate(async()=>{const c=SillyTavern.getContext(),h=await import('/script.js'),m=c.chat.at(-1);m.swipes=[m.mes,m.mes+'\nAlternative two.',m.mes+'\nAlternative three.'];m.swipe_id=1;m.mes=m.swipes[1];m.swipe_info=m.swipes.map(()=>({send_date:m.send_date,extra:{}}));await h.printMessages();h.showSwipeButtons();(await import('/scripts/power-user.js')).power_user.gestures=true;window.__dockTouchLeaks=0;for(const type of ['touchstart','touchmove','touchend','swiped-left','swiped-right'])document.addEventListener(type,e=>{if(e.target.closest('.rf-composer-dock'))__dockTouchLeaks++;});});
   const draft='UNSENT chatbar regression draft';await p.locator('#send_textarea').fill(draft);
   if(mobile){
@@ -59,7 +60,7 @@ try{
   await p.selectOption('#themes','Dark Lite',{force:true});await p.setViewportSize({width:mobile?390:1440,height:mobile?844:1000});
   await p.evaluate(async()=>{const c=SillyTavern.getContext(),s=c.chatMetadata.tretaresia_rpg_state,n=s.npcs.find(n=>n.id==='mira');n.name='Mira_Long_Name_'.repeat(8);for(const key of ['mouthQuality','mouthState','mouthLastPartner','favoriteSexPartner','favoritePenisOwner','currentFantasy'])n.hStats[key]=('LongUnbrokenValue'.repeat(30));await c.eventSource.emit(c.eventTypes.CHAT_CHANGED);});await p.waitForTimeout(350);
   const before=await p.evaluate(()=>JSON.stringify(SillyTavern.getContext().chatMetadata.tretaresia_rpg_state));
-  for(const width of mobile?[320,390,430]:[768,1440]){await p.setViewportSize({width,height:mobile?844:1000});await choose('hstats');await p.locator('[data-utility-person]').selectOption('mira');
+  for(const width of mobile?[320,390,430]:[768,1440]){await p.setViewportSize({width,height:mobile?844:1000});await choose('hstats');await selectMira();
    for(const section of ['Summary','Body','History','Bonds','Preferences']){await p.locator('[data-utility-h-section='+section+']').click();report.layouts.push({device,adversarialLongValues:true,section,...await fit('hstats')});}
    if(width===390||width===1440){await p.locator('[data-utility-h-section=Summary]').click();await p.locator('.rf-composer-dock').evaluate(n=>n.scrollTop=n.scrollHeight);await shot(device+'-hstats-long-values');}
   }

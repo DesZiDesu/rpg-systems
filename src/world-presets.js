@@ -1,18 +1,19 @@
-import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.78.1';
-import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.78.1';
-import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.78.1';
-import {normalizeStatTraining} from './stat-training.js?v=0.78.1';
-import {writeLoreOptions} from './lore-core.js?v=0.78.1';
-import {validateChatAppearance} from './chat-themes.js?v=0.78.1';
-import {validateNpcOptions} from './npc-capacity.js?v=0.78.1';
-import {validateStoryPack,importStoryPack} from './story-core.js?v=0.78.1';
+import {validateRelationshipPreset,applyRelationshipPreset} from './relationship-core.js?v=0.79.0';
+import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.79.0';
+import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.79.0';
+import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.79.0';
+import {normalizeStatTraining} from './stat-training.js?v=0.79.0';
+import {writeLoreOptions} from './lore-core.js?v=0.79.0';
+import {validateChatAppearance} from './chat-themes.js?v=0.79.0';
+import {validateNpcOptions} from './npc-capacity.js?v=0.79.0';
+import {validateStoryPack,importStoryPack} from './story-core.js?v=0.79.0';
 
-import {validateWeaponPreset,assertWeaponPresetCompatible} from './weapon-core.js?v=0.78.1';
+import {validateWeaponPreset,assertWeaponPresetCompatible} from './weapon-core.js?v=0.79.0';
 
 export const CHAT_PRESET_KEY = 'roleforge_chat_presets';
 export const PRESET_LIBRARY_KEY = 'roleforgePresetLibrary';
 export const PRESET_FILE_LIMIT = 1024 * 1024;
-export const PRESET_COMPONENTS = ['powerPreset','forgePreset','currencyPreset','trainingPreset','weaponPreset','loreOptions','npcOptions','systems','chatAppearance','storyPreset'];
+export const PRESET_COMPONENTS = ['powerPreset','forgePreset','currencyPreset','trainingPreset','weaponPreset','relationshipPreset','loreOptions','npcOptions','systems','chatAppearance','storyPreset'];
 // Main-reply tracking is a global user preference (default on), not a world
 // rule. Legacy chat/card presets must not override it when switching bots.
 export const WORLD_SYSTEM_KEYS = ['enableWeapons','enableIncantation','npcIncantation','incantationLanguage','incantationCustomLanguage','enableMissionBoard','enableGroupBoard','enableAuctions','enableMarketplace','enableStoryMemory','enableStoryAgenda','enableQuestObjectives','showSceneTracker','injectState','npcDiaryFrequency'];
@@ -57,6 +58,7 @@ export function validatePresetConfig(raw) {
         if (key === 'npcOptions') result[key] = validateNpcOptions(raw[key]);
         if (key === 'chatAppearance') result[key] = validateChatAppearance(raw[key]);
         if (key === 'storyPreset') result[key] = validateStoryPack(raw[key]);
+        if (key === 'relationshipPreset') result[key]=validateRelationshipPreset(raw[key]);
         if (key === 'weaponPreset') result[key] = validateWeaponPreset(raw[key]);
     }
     if (!Object.keys(result).length) throw Error('The preset has no supported configuration.');
@@ -74,6 +76,7 @@ export function readChatPreset(metadata) {
 export function applyPresetState(state, config) {
     const validated = validatePresetConfig(config);
     let next = structuredClone(state);
+    if(validated.relationshipPreset)next=applyRelationshipPreset(next,validated.relationshipPreset);
     if(validated.weaponPreset)assertWeaponPresetCompatible(next,validated.weaponPreset);
     if (validated.currencyPreset) next = reconfigureCurrencyWallet(next,validated.currencyPreset.scheme,validated.currencyPreset.name);
     if (validated.trainingPreset) {
@@ -103,6 +106,7 @@ export function importWorldPreset(text) {
     if (data?.format === 'roleforge-character-forge-preset') {const forgePreset=importForgePreset(text);return {name:forgePreset.name,config:{forgePreset}};}
     if (data?.format === 'roleforge-currency-preset' && data.version === 1) {const currencyPreset=validateCurrencyPreset(data.preset);return {name:currencyPreset.name,config:{currencyPreset}};}
     if (data?.format === 'roleforge-weapon-preset' && data.version === 1 && name(data.name)) return {name:name(data.name),config:{weaponPreset:validateWeaponPreset(data.preset)}};
+    if (data?.format === 'roleforge-relationship-preset' && data.version===1 && name(data.name))return {name:name(data.name),config:{relationshipPreset:validateRelationshipPreset(data.preset)}};
     if (data?.format === 'roleforge-story-preset') {const storyPreset=importStoryPack(text);return {name:storyPreset.name,config:{storyPreset}};}
     if (data?.format !== 'roleforge-world-preset' || data.version !== 1 || !name(data.name)) throw Error('Unsupported RoleForge preset file.');
     return {name:name(data.name),config:validatePresetConfig(data.config)};

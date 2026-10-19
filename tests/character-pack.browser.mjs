@@ -1,3 +1,4 @@
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 // Actual loader and UI, declarative card data, mocked card-save endpoint.
 import assert from 'node:assert/strict';
 import http from 'node:http';
@@ -31,8 +32,11 @@ try{
             await window.hStatsPreview.switchChat('one-card-new',{});
             document.querySelectorAll('#tretaresia-rpg-settings details').forEach(node=>node.open=true);document.getElementById('tretaresia-rpg-settings').rfSettingsNavigation.open('card-pack',{direct:true});
         },card);
-        await page.waitForFunction(n=>document.querySelectorAll('#roleforge-power-editor [data-power-id]').length===n,card.data.extensions.roleforge_character_pack.powerPreset.definitions.length);
+        await revealSetting(page,'#roleforge-power-editor');
+        await page.waitForFunction(n=>document.querySelectorAll('#roleforge-power-editor > .rf-power-workspace > .rf-power-grid > [data-power-id]').length===n,card.data.extensions.roleforge_character_pack.powerPreset.definitions.length);
+        await revealSetting(page,'#roleforge-forge-editor');
         assert.equal(await page.locator('#roleforge-forge-editor input').evaluateAll((inputs,data)=>inputs.some(input=>input.value===data.extensions.roleforge_character_pack.forgePreset.origins[0]),card.data),true);
+        await revealSetting(page,'#roleforge-character-pack');
         const pack=page.locator('#roleforge-character-pack'),save=pack.locator('[data-pack-save]');
         assert.equal(await pack.locator('[data-pack-seed]').isChecked(),false);assert.equal(await save.isEnabled(),true);
         await save.click();await page.waitForFunction(()=>document.querySelector('[data-pack-status]').textContent.includes('Saved.'));
@@ -60,7 +64,8 @@ try{
             window.host.characters.push({avatar:'reimported.png',name:exported.data.name,data:exported.data,json_data:JSON.stringify(exported)});window.host.characterId=1;
             await window.hStatsPreview.switchChat('reimported-new',{});document.querySelectorAll('#tretaresia-rpg-settings details').forEach(node=>node.open=true);
         });
-        await page.waitForFunction(n=>document.querySelectorAll('#roleforge-power-editor [data-power-id]').length===n,card.data.extensions.roleforge_character_pack.powerPreset.definitions.length);
+        await revealSetting(page,'#roleforge-power-editor');
+        await page.waitForFunction(n=>document.querySelectorAll('#roleforge-power-editor > .rf-power-workspace > .rf-power-grid > [data-power-id]').length===n,card.data.extensions.roleforge_character_pack.powerPreset.definitions.length);
         await page.evaluate(async()=>{window.host.groupId='group';await window.hStatsPreview.switchChat('group',{});});assert.equal(await save.isDisabled(),true,'no single-card setup applied to group chats');
         const overflow=await pack.evaluate(node=>node.scrollWidth>node.clientWidth+1);assert.equal(overflow,false,'native pack drawer fits the viewport');
         assert.deepEqual(errors,[]);console.log(`PASS ${width}px: one-card Powers/Forge/archives, native setup drawer, atomic save, failure protection, exported-card reimport and group exclusion`);await page.close();

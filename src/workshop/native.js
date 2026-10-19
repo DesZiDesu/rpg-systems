@@ -1,5 +1,5 @@
-import {mountWorkshop,icon} from './ui.js?v=0.78.1';
-import {requestDataTask} from '../task-generation.js?v=0.78.1';
+import {mountWorkshop,icon} from './ui.js?v=0.79.0';
+import {requestDataTask} from '../task-generation.js?v=0.79.0';
 
 // Keep the native entry points available even if optional storage cannot open.
 export function mountNativeWorkshop({dock,state,owner,busy,voice}={}){
@@ -9,7 +9,7 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice}={}){
   const c=SillyTavern.getContext(),chatId=c.getCurrentChatId?.(),identity=owner();
   return{key:chatId?`${identity||'group'}::${chatId}`:'',nonce:c.chatMetadata,label:c.characters?.[c.characterId]?.name||c.groupId||'ยังไม่ได้เปิดแชท',state:chatId?state():{},chat:c.chat};
  };
- const api={version:globalThis.TretaresiaRelease||'0.78.1',context,voice,
+ const api={version:globalThis.TretaresiaRelease||'0.79.0',context,voice,
   async generate(args){if(busy())throw Error('รอข้อความที่กำลังเจนให้จบก่อน');return requestDataTask(SillyTavern.getContext(),args,{quietPrompt:args.prompt,responseLength:args.responseLength},{task:'Great Sage analysis'});},
   subscribe(listener){
    const c=SillyTavern.getContext(),events=[[c.eventTypes.CHAT_CHANGED,()=>listener('chat').catch(console.warn)],[c.eventTypes.MESSAGE_RECEIVED,()=>listener('reply').catch(console.warn)]];
@@ -21,7 +21,7 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice}={}){
   if(destroyed)return Promise.reject(Error('ปิด Workshop แล้ว'));
   if(app)return Promise.resolve(app);
   return mounting||= (async()=>{
-   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.78.1',base);
+   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.79.0',base);
    await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ')),15000);
     style.onload=()=>{clearTimeout(timer);resolve();};style.onerror=()=>{clearTimeout(timer);reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ'));};document.head.append(style);

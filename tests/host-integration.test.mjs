@@ -1,3 +1,4 @@
+import * as relationshipCore from '../src/relationship-core.js';
 import * as nameKnowledge from '../src/name-knowledge.js';
 import * as moneyTransfer from '../src/money-transfer.js';
 import * as weaponContinuation from '../src/weapon-continuation.js';
@@ -80,13 +81,13 @@ const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enable
 const sandbox={...weaponContinuation,...weaponCore,...taskGeneration,...itemLearning,...itemDefinition,...itemEffects,...lootDiscovery,...commerceRights,renderRightsInventory,commerceIconMarkup,readCommercePrices,...mainChatSystems,normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,...commerceEngine,auctionAvailable:commerceEngine.commerceAvailable,auctionFundsValid:commerceEngine.commerceFundsValid,createCommerceRuntime,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,...locationList,...sceneCompletion,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},showApiRequestNotice:(kind,reason,language)=>showApiRequestNotice(kind,reason,language,sandbox.toastr),...powerMastery,...incantationCore,...itemCore,...voiceCore,SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelector(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
-Object.assign(sandbox,nameKnowledge,moneyTransfer,storyCore,powerDashboardUi,hostPolicy,worldPresets,npcCapacity,archiveCache,sparseNpcs,worldPackClient,worldPackCore,chatThemes,playerConsequences,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet,npcReferenceProfiles});
+Object.assign(sandbox,relationshipCore,nameKnowledge,moneyTransfer,storyCore,powerDashboardUi,hostPolicy,worldPresets,npcCapacity,archiveCache,sparseNpcs,worldPackClient,worldPackCore,chatThemes,playerConsequences,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet,npcReferenceProfiles});
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replace(/^export .*;$/gm,'');
  vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantVariantKey,assistantTurnKey,scheduleAssistantPatch,cleanInlinePatchSurfaces,assistantPatchTimers,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig,shortHash,getForgePreset,activeLoreOptions,saveCharacterPackSetup,saveChatPresetComponents,currentWorldPreset,defaultWorldPreset,getGlobalSettings,changeWorldSetting,initializeChatPresets,queueAssistantTurnReplacement,bindCheckbox})',sandbox);
 const host=sandbox.testHost;
 vm.runInContext('Object.assign(globalThis.testHost,{syncTravelTracker})',sandbox);
-vm.runInContext('Object.assign(globalThis.testHost,{weaponScope,performMoneyTransfer,saveNameKnowledge,commitStoryProgress})',sandbox);
+vm.runInContext('Object.assign(globalThis.testHost,{weaponScope,performMoneyTransfer,saveNameKnowledge,commitStoryProgress,readRelationshipState,saveRelationshipChange,importRelationshipPreset})',sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{activeNpcOptions,persistNpcOptions,hasStoryNpcCapacity,prepareNpcReferences,archiveDiagnostics})',sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{reconcileCompletedTurn,advanceTurnResourcesFromUserMessage,processUserTravelIntent,statusEffect,combatLogEntry})',sandbox);
 
@@ -360,8 +361,8 @@ test('story upserts change only active alternate fields and cannot replace or se
 test('relationship, attribute, skill and custom meter operations evolve active alternate without overwriting base',()=>{
  const state=host.normalize({...host.defaultState(),npcs:[alternateFixture()]});const before=state.npcs[0];
  const {accepted,next}=host.applyStatePatch(state,{ops:[['inc','npcValues',{npcId:'cora',field:'stats.strength',amount:1}],['inc','npcValues',{npcId:'cora',field:'trust',amount:2}],['upsert','npcAbilities',{npcId:'cora',id:'child-skill',name:'Fishing',proficiency:10}],['inc','npcAbilities',{npcId:'cora',id:'child-skill',amount:3}],['upsert','npcMeters',{npcId:'cora',id:'focus',name:'Focus',value:15}]]});
- assert.equal(accepted,5);const npc=next.npcs[0],view=npcAlternates.effectiveNpc(npc);
- assert.equal(view.stats.strength,4);assert.equal(view.trust,before.trust+2);assert.equal(view.abilities[0].name,'Fishing');assert.equal(view.abilities[0].proficiency,13);assert.equal(view.customMeters[0].value,15);
+ assert.equal(accepted,4);const npc=next.npcs[0],view=npcAlternates.effectiveNpc(npc);
+ assert.equal(view.stats.strength,4);assert.equal(view.trust,before.trust);assert.equal(view.abilities[0].name,'Fishing');assert.equal(view.abilities[0].proficiency,13);assert.equal(view.customMeters[0].value,15);
  assert.equal(npc.stats.strength,18);assert.equal(npc.trust,before.trust);assert.equal(npc.abilities[0].id,'adult-skill');assert.equal(npc.customMeters[0].value,50);
  const restored=npcAlternates.effectiveNpc({...npc,activeAlternateId:''});assert.equal(restored.age,'28');assert.equal(restored.abilities[0].name,'Tracking');
 });
@@ -957,13 +958,12 @@ test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in 
   assert.match(panel.innerHTML,/data-id="rin" class="is-active"/);
   assert.match(panel.innerHTML,/data-npc-portrait="rin"/);
   assert.match(panel.innerHTML,/tretaresia-h-photo/);
-  assert.match(panel.innerHTML,/M12 21\.35l-1\.45-1\.32C5\.4 15\.36 2 12\.28 2 8\.5/);
+  assert.match(panel.innerHTML,/data-main-relationships/);
   assert.match(panel.innerHTML,/ยังไม่ทราบ/);
   assert.equal(context.chatMetadata.tretaresia_rpg_selected_hstats_npc,'rin');
   const updated=host.applyStatePatch(base,{ops:[['set','npcHStats',{npcId:'rin',field:'loyaltyHearts',value:4}]]});
   host.renderHStats(panel,updated.next);
-  assert.match(panel.innerHTML,/Loyalty 4 of 5/);
-  assert.equal((panel.innerHTML.match(/class="is-filled"/g)||[]).length,4);
+  assert.equal(updated.accepted,0);assert.doesNotMatch(panel.innerHTML,/Loyalty 4 of 5|tretaresia-h-hearts/);
   assert.equal(host.removeHStatsNpc('rin',base),true);
   host.renderHStats(panel,base);
   assert.match(panel.innerHTML,/No character selected/);
@@ -1129,8 +1129,8 @@ test('H-Stats keeps selection, layouts and protected management available while 
   settings.hStatsLayout='compact';
   vm.runInContext('globalThis.hLoadingTestKeys.forEach(key=>{hStatsBaselineFailures.delete(key);hStatsBaselineJobs.add(key);});',sandbox);
   host.requestHideHStatsNpc('lysa',state);host.renderHStats(panel,state);
-  assert.match(panel.innerHTML,/role="status"/);
-  assert.doesNotMatch(panel.innerHTML,/data-action="retry-hstats-baseline"/);
+  assert.match(panel.innerHTML,/data-main-relationships/);
+  assert.match(panel.innerHTML,/data-action="retry-hstats-baseline"/);
   assert.match(panel.innerHTML,/data-h-layout="compact"/);
   assert.match(panel.innerHTML,/<select name="hStatsSelectedNpc">/);
   assert.match(panel.innerHTML,/<option value="lysa" selected>Lysa<\/option>/);
@@ -1221,7 +1221,7 @@ test('H-Stats use a complete neutral baseline when the profile model is unavaila
   await host.completeHStatsBaseline('kohaku');
   const entry=host.getState().npcs[0];
   assert.equal(host.hStatsMissingFields(entry).length,0);
-  assert.equal(entry.hStatsGenerated.length,H_FIELDS.length);
+  assert.equal(entry.hStatsGenerated.length,H_FIELDS.length-3);assert.equal(entry.hStats.loyaltyHearts,null);assert.equal(entry.hStats.infidelityStage,null);
   assert.equal(entry.hStats.pregnant,false);
   assert.equal(entry.hStats.analSexCount,0);
  }finally{context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.getElement;}
@@ -1237,9 +1237,9 @@ test('same-turn patches update NPC relationships, skills and H-Stats without res
   ['set','npcHStats',{npcId:'a',field:'pregnant',value:false}],
  ]});
  const npc=result.next.npcs[0];
- assert.equal(result.accepted,5);assert.equal(npc.trust,13);
+ assert.equal(result.accepted,3);assert.equal(npc.trust,10);
  assert.equal(npc.abilities[0].proficiency,24);assert.equal(npc.abilities[0].category,'Aura');
- assert.equal(npc.hStats.loyaltyHearts,5);assert.equal(npc.hStats.oralSexCount,1);assert.equal(npc.hStats.pregnant,false);
+ assert.equal(npc.hStats.loyaltyHearts,null);assert.equal(npc.hStats.oralSexCount,1);assert.equal(npc.hStats.pregnant,false);
  const later=host.applyStatePatch(result.next,{ops:[['upsert','npcs',{id:'a',name:'Aria',stats:{hp:88},hStats:{favoritePosition:'Established preference'}}],
   ['upsert','npcAbilities',{npcId:'a',name:'Aura Weaving',proficiency:29}]]}).next.npcs[0];
  assert.equal(later.hStats.oralSexCount,1);assert.equal(later.hStats.favoritePosition,'Established preference');
@@ -1575,7 +1575,7 @@ test('new NPCs receive complete missing attributes; explicit zeros and partial u
  const state=host.applyStatePatch(host.defaultState(),{ops:[['upsert','npcs',{name:'New guard',stats:{level:4}}]]}).next;
  const p=state.npcs[0];assert.equal(p.stats.level,4);assert.equal(p.stats.hp,100);assert.equal(p.stats.mp,30);assert.equal(p.trust,10);
  const next=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:p.id,stats:{hp:0,mp:0},trust:0}]]}).next.npcs[0];
- assert.equal(next.stats.hp,0);assert.equal(next.stats.mp,0);assert.equal(next.trust,0);assert.equal(next.stats.level,4);
+ assert.equal(next.stats.hp,0);assert.equal(next.stats.mp,0);assert.equal(next.trust,10);assert.equal(next.stats.level,4);
 });
 test('dialogue-only speakers are registered once, aliases and player names are excluded',()=>{
  const state=host.defaultState();state.player.name='Player';state.npcs=[host.npcProfile({name:'Alice',aliases:['Al']})];
@@ -1624,7 +1624,7 @@ test('Thai duplicate creation reuses canonical NPC without resetting its dossier
  const canonical=host.npcProfile({id:'kohaku',name:'Kohaku',background:'Established history',stats:{hp:83},npcScope:'character',npcOwner:'card:first.png'});
  const state={...host.defaultState(),npcs:[canonical]};
  const result=host.applyStatePatch(state,{ops:[['upsert','npcs',{id:'new-thai-id',name:'โคฮาคุ',background:'Replacement history',stats:{hp:100}}],['set','npcValues',{npcName:'โคฮาคุ',field:'trust',value:44}]]});
- assert.equal(result.next.npcs.length,1);const p=result.next.npcs[0];assert.equal(p.id,'kohaku');assert.equal(p.name,'Kohaku');assert.equal(p.background,'Established history');assert.equal(p.stats.hp,83);assert.equal(p.trust,44);assert.equal(p.npcScope,'character');assert.ok(p.aliases.includes('โคฮาคุ'));
+ assert.equal(result.next.npcs.length,1);const p=result.next.npcs[0];assert.equal(p.id,'kohaku');assert.equal(p.name,'Kohaku');assert.equal(p.background,'Established history');assert.equal(p.stats.hp,83);assert.equal(p.trust,10);assert.equal(p.npcScope,'character');assert.ok(p.aliases.includes('โคฮาคุ'));
  assert.equal(host.registerStorySpeakers(state,{mes:'<tr-dialogue name="โคฮาคุ">Hello</tr-dialogue>'},context),1);assert.equal(state.npcs[0].met,true);
 });
 test('prompt identity index stays bounded while the internal archive remains complete',()=>{
@@ -1841,7 +1841,7 @@ test('Manual Sync selected turns advance story driven data across tabs in order 
   await host.analyzeChat({manual:true,startIndex:0,endIndex:3});
   assert.equal(requests,2);assert.equal(writes,1);
   assert.equal(host.getState().quests[0].name,'Quest One');
-  assert.equal(host.getState().npcs[0].trust,10);
+  assert.equal(host.getState().npcs[0].trust,8);
   assert.equal(host.getState().inventory[0].quantity,1);
   assert.equal(host.getState().location.place,'Moon Hall');
   assert.equal(host.sceneForMessage(1,context.chat[1]).location,'Old Hall');
@@ -1903,10 +1903,10 @@ test('inline NPC progression is applied without any recovery generation',async()
  const saved={chat:context.chat,metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata};
  const settings=host.getGlobalSettings(), prior=settings.autoTrack;settings.autoTrack=true;
  try{
-  const state=host.defaultState();state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true,trust:10})];
+  const state=host.defaultState();state.player.name='Alex';state.npcs=[host.npcProfile({id:'kohaku',name:'Kohaku',met:true,trust:10})];
   context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};
   const ops=[['inc','npcValues',{npcId:'kohaku',field:'trust',amount:2}]];
-  context.chat=[{is_user:true,mes:'Talk.'},{is_user:false,mes:`Kohaku trusts you.<!--tretaresia_patch:${JSON.stringify({ops,sceneTracker:fullScene})}-->`}];
+  context.chat=[{is_user:true,mes:'Talk.'},{is_user:false,mes:`Kohaku helped Alex and stayed to support Alex.<!--tretaresia_patch:${JSON.stringify({ops,sceneTracker:fullScene,relationshipEvents:[{actorId:'kohaku',targetId:'player',kind:'support',evidence:'Kohaku helped Alex and stayed to support Alex.',changes:{trust:2}}]})}-->`}];
   let requests=0;context.generateQuietPrompt=async()=>{requests++;throw Error('Unexpected generation');};context.saveMetadata=async()=>{};
   await host.processAssistantPatch(1,'normal');await host.processAssistantPatch(1,'normal');
   assert.equal(host.getState().npcs[0].trust,12);assert.equal(requests,0);
@@ -3216,4 +3216,58 @@ test('same-place conversation, destination mentions and nearby scene names do no
 });
 test('an unestimated journey cannot arrive or teleport because its default duration is zero',()=>{
  for(const status of ['Preparing','Traveling','Delayed']){const old=host.defaultState();old.location.place='Village';Object.assign(old.travel,{status,origin:'Village',destination:'North Gate',destinationPlace:'North Gate',totalDays:0,remainingDays:0});const next=structuredClone(old);host.synchronizeWorldState(next,old);assert.equal(next.travel.status,status);assert.equal(next.location.place,'Village');assert.equal(host.travelProgress(next),0);const walked=host.advanceActiveTravelFromUserMessage(1,{mes:'I walk along the road toward North Gate.'},old);assert.notEqual(walked.travel.status,'Arrived');assert.notEqual(walked.location.place,'North Gate');}
+});
+
+test('relationship event-only patches survive parsing and update both NPC owners without raw-op duplication or player charges',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,document:sandbox.document};
+ try{
+  sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:prior.document.getElementById(id)};
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false,eventNotifications:false,enableMemorySummaries:false,autoTrack:true}};
+  const base=host.defaultState();base.player.name='Alex';base.player.hStats=hStats({oralSexCount:7});base.npcs=[host.npcProfile({id:'mira',name:'Mira',enabled:true,met:true,background:'Mira dossier',hStats:{oralSexCount:2,loyaltyHearts:5}}),host.npcProfile({id:'kai',name:'Kai',enabled:true,met:false,hStats:{oralSexCount:1}})];
+  const quote='Mira and Kai shared a consensual intimate oral encounter.',events=[{actorId:'mira',targetId:'kai',kind:'intimacy',evidence:quote,hStats:[{ownerId:'mira',field:'oralSexCount',verb:'inc',value:1},{ownerId:'kai',field:'oralSexCount',verb:'inc',value:1},{ownerId:'player',field:'oralSexCount',verb:'inc',value:1}]}];
+  const only=host.extractStatePatch(quote+'<!--tretaresia_patch:'+JSON.stringify({relationshipEvents:events})+'-->');assert.equal(only.patch.relationshipEvents.length,1);
+  context.chatMetadata={tretaresia_rpg_state:base};context.chat=[{is_user:true,mes:'Continue.'},{is_user:false,mes:quote+'<!--tretaresia_patch:'+JSON.stringify({relationshipEvents:events,ops:[['inc','npcHStats',{npcId:'mira',field:'oralSexCount',amount:1}],['inc','playerHStats',{field:'oralSexCount',amount:1}]]})+'-->'}];context.saveMetadata=async()=>{};
+  await host.processAssistantPatch(1,'normal');await host.processAssistantPatch(1,'normal');const after=host.getState();
+  assert.equal(after.npcs.find(n=>n.id==='mira').hStats.oralSexCount,3);assert.equal(after.npcs.find(n=>n.id==='kai').hStats.oralSexCount,2);assert.equal(after.player.hStats.oralSexCount,7);assert.equal(after.relationships.links.find(v=>v.actorId==='kai'&&v.targetId==='mira').encounters,1);
+  assert.equal(after.npcs.find(n=>n.id==='mira').hStats.loyaltyHearts,5);assert.equal(after.npcs.find(n=>n.id==='kai').met,false);assert.equal(after.npcs.find(n=>n.id==='mira').background,'Mira dossier');
+ }finally{Object.assign(context,{chat:prior.chat,chatMetadata:prior.metadata,extensionSettings:prior.settings,saveMetadata:prior.save});sandbox.document=prior.document;}
+});
+test('manual relationship saves are atomic on a rejected host promise, retain only intentional pair edits in checkpoints and reject stale scopes',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,document:sandbox.document};
+ try{
+  sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:prior.document.getElementById(id)};
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false,eventNotifications:false,enableMemorySummaries:false}};
+  const base=host.defaultState();base.npcs=[host.npcProfile({id:'mira',name:'Mira',enabled:true,background:'New author dossier'}),host.npcProfile({id:'kai',name:'Kai',enabled:true})];const old=structuredClone(base);old.npcs[0].background='Old chapter';old.npcs[0].stats.strength=3;
+  context.chat=[{is_user:true,mes:'Continue.'}];context.chatMetadata={tretaresia_rpg_state:base,tretaresia_rpg_turn_history:{version:1,entries:[{key:'old',baseState:old,variants:{0:{state:structuredClone(old)}}}]}};
+  const key=host.weaponScope(),before=JSON.stringify(context.chatMetadata),request={actorId:'mira',targetId:'kai',values:{love:25,interest:40,trust:72,commitment:30}};context.saveMetadata=async()=>{throw Error('Relationship storage offline');};await assert.rejects(host.saveRelationshipChange(request,key),/storage offline/);assert.equal(JSON.stringify(context.chatMetadata),before);
+  context.saveMetadata=async()=>{};assert.equal(await host.saveRelationshipChange(request,key),true);assert.equal(host.getState().relationships.links[0].trust,72);
+  for(const snap of [context.chatMetadata.tretaresia_rpg_turn_history.entries[0].baseState,context.chatMetadata.tretaresia_rpg_turn_history.entries[0].variants[0].state]){assert.equal(snap.relationships.links[0].trust,72);assert.equal(snap.npcs[0].background,'Old chapter');assert.equal(snap.npcs[0].stats.strength,3);}
+  assert.equal(host.getState().npcs[0].background,'New author dossier');assert.equal(context.chat.length,1);context.chatMetadata={tretaresia_rpg_state:host.defaultState()};assert.equal(await host.saveRelationshipChange(request,key),false);assert.equal(host.getState().relationships.links.length,0);
+ }finally{Object.assign(context,{chat:prior.chat,chatMetadata:prior.metadata,extensionSettings:prior.settings,saveMetadata:prior.save});sandbox.document=prior.document;}
+});
+test('relationship configuration and missing seeds travel in world presets and card setup without receipts or replacing played pairs',()=>{
+ const base=host.defaultState();base.npcs=[host.npcProfile({id:'mira',name:'Mira'}),host.npcProfile({id:'kai',name:'Kai'})];const played=relationshipCore.editRelationship(base,{actorId:'mira',targetId:'kai',values:{love:35,trust:72}}),preset=relationshipCore.relationshipPreset(played);preset.links[0].trust=1;preset.config.pace='balanced';
+ const next=worldPresets.applyPresetState(played,{relationshipPreset:preset});assert.equal(next.relationships.links[0].trust,72);assert.equal(next.relationships.config.pace,'balanced');assert.equal(played.relationships.config.pace,'slow');
+ const captured=host.currentWorldPreset(played).relationshipPreset;assert.equal(captured.links[0].trust,72);assert.equal(Object.hasOwn(captured,'receipts'),false);assert.equal(Object.hasOwn(captured,'history'),false);
+ const json=worldPresets.exportWorldPreset({relationshipPreset:captured},'Story relationships');assert.equal(worldPresets.importWorldPreset(json).config.relationshipPreset.links[0].love,35);
+});
+test('relationship preset seeds and policy imports survive all snapshots and roll back with a rejected metadata save',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,document:sandbox.document};
+ try{
+  sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:prior.document.getElementById(id)};context.extensionSettings={tretaresia_rpg:{autoContinuity:false,eventNotifications:false,enableMemorySummaries:false}};
+  const base=host.defaultState();base.npcs=[host.npcProfile({id:'mira',name:'Mira'}),host.npcProfile({id:'kai',name:'Kai'})];const old=structuredClone(base);context.chat=[{is_user:true,mes:'Wait.'}];context.chatMetadata={tretaresia_rpg_state:base,tretaresia_rpg_turn_history:{version:1,entries:[{key:'old',baseState:old,variants:{0:{state:structuredClone(old)}}}]}};
+  const seed=relationshipCore.relationshipPreset(relationshipCore.editRelationship(base,{actorId:'mira',targetId:'kai',values:{trust:35}})),before=JSON.stringify(context.chatMetadata);context.saveMetadata=async()=>{throw Error('Preset storage offline');};await assert.rejects(host.importRelationshipPreset(seed,host.weaponScope()),/storage offline/);assert.equal(JSON.stringify(context.chatMetadata),before);
+  context.saveMetadata=async()=>{};assert.equal(await host.importRelationshipPreset(seed,host.weaponScope()),true);for(const snapshot of [context.chatMetadata.tretaresia_rpg_turn_history.entries[0].baseState,context.chatMetadata.tretaresia_rpg_turn_history.entries[0].variants[0].state])assert.equal(snapshot.relationships.links[0].trust,35);
+ }finally{Object.assign(context,{chat:prior.chat,chatMetadata:prior.metadata,extensionSettings:prior.settings,saveMetadata:prior.save});sandbox.document=prior.document;}
+});
+test('H-Stats can display a met rival for NPC-to-NPC tracking without enabling or revealing a lore-only person',()=>{
+ const saved={metadata:context.chatMetadata,save:context.saveMetadata};try{context.chatMetadata={};context.saveMetadata=async()=>{};const state=host.defaultState();state.npcs=[host.npcProfile({id:'rival',name:'Rival',met:true,isHostile:true}),host.npcProfile({id:'lore',name:'Lore',met:false}),host.npcProfile({id:'off',name:'Off',met:true,enabled:false})];assert.equal(host.chooseHStatsNpc('rival',state),true);assert.equal(host.chooseHStatsNpc('lore',state),false);assert.equal(host.chooseHStatsNpc('off',state),false);assert.equal(host.visibleHStatsNpcs(state)[0].id,'rival');assert.equal(state.npcs[0].isHostile,true);}finally{context.chatMetadata=saved.metadata;context.saveMetadata=saved.save;}
+});
+test('the existing NPC editor updates the selected-version relationship and old snapshots without changing its base dossier or switching versions',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,document:sandbox.document};
+ try{sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:prior.document.getElementById(id)};context.extensionSettings={tretaresia_rpg:{autoContinuity:false,eventNotifications:false,enableMemorySummaries:false}};
+  const base=host.defaultState();base.npcs=[host.npcProfile({id:'mira',name:'Mira',age:'25',trust:85,corruption:5,activeAlternateId:'future',alternateProfiles:[{id:'future',label:'Future',fields:{age:'36',trust:30}}]})];base.relationships=relationshipCore.normalizeRelationships({links:[{actorId:'mira',targetId:'player',trust:30}]});context.chat=[{is_user:true,mes:'Wait.'}];context.chatMetadata={tretaresia_rpg_state:base,tretaresia_rpg_turn_history:{version:1,entries:[{key:'old',baseState:structuredClone(base),variants:{}}]}};context.saveMetadata=async()=>{};
+  const next=host.getState();next.npcs[0].alternateProfiles[0].fields.trust=42;assert.equal(await host.persistState(next,'npc-management'),true);let after=host.getState();assert.equal(after.relationships.links[0].trust,42);assert.equal(after.npcs[0].trust,85);assert.equal(after.npcs[0].activeAlternateId,'future');assert.equal(context.chatMetadata.tretaresia_rpg_turn_history.entries[0].baseState.relationships.links[0].trust,42);assert.equal(relationshipCore.relationshipProfile(after,'mira').corruption,5);
+  const switched=host.getState();switched.npcs[0].activeAlternateId='';await host.persistState(switched,'npc-management');assert.equal(host.getState().relationships.links[0].trust,42);
+ }finally{Object.assign(context,{chat:prior.chat,chatMetadata:prior.metadata,extensionSettings:prior.settings,saveMetadata:prior.save});sandbox.document=prior.document;}
 });

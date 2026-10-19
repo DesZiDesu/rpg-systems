@@ -1,0 +1,48 @@
+{
+  "version": "0.79.0",
+  "base": "7284e4d17b4e83a23e8866ab7d05b0780f5e25a8",
+  "syntaxCheck": "pass",
+  "unit": {
+    "passed": 1483,
+    "failed": 0
+  },
+  "nativeSillyTavern": {
+    "version": "1.19.0",
+    "commit": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+    "browser": "Chromium",
+    "devices": "desktop and touch/mobile emulation",
+    "themes": [
+      "Dark Lite",
+      "Azure",
+      "Dark V 1.0"
+    ],
+    "relationshipGenerationFixtures": 8,
+    "relationshipLayouts": 15,
+    "chatbarLayouts": 190,
+    "providerCallsLive": 0,
+    "pass": true
+  },
+  "browserFixtures": {
+    "hStatsDirectory": [
+      320,
+      390,
+      1280
+    ],
+    "worldPresets": [
+      320,
+      390,
+      1280
+    ],
+    "characterPack": [
+      320,
+      390,
+      1280
+    ],
+    "pass": true
+  },
+  "limits": [
+    "No physical iPhone/Safari test",
+    "Generation uses controlled streaming fixtures through native SillyTavern, not a live provider",
+    "Host save promise rejection rollback is a unit/host test; native SillyTavern may swallow HTTP save errors"
+  ]
+}

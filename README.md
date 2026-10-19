@@ -1,12 +1,14 @@
 # RoleForge
 
-**Public release: 0.78.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.79.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+**New in 0.79.0:** relationships now track each directed pair, including NPC ↔ NPC. H-Stats in RoleForge and above the chatbar show Love, Interest, Trust, Commitment, separate feeling leaders, confirmed events and per-chat progression rules. Slow scene budgets and explicit commitments replace heart/stage thresholds; legacy records stay saved. Relationship presets travel with world presets and character cards. [Thai guide, screenshots and validation](docs/relationships-v0.79.0.th.md).
 
 **Fixed in 0.78.1:** the floating Journey tracker closes at arrival, recognizes a confirmed destination scene, and keeps unknown travel durations from completing a trip. [Details and native browser validation](docs/travel-journey-v0.78.1.th.md).
 

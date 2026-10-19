@@ -1,10 +1,10 @@
-import {validatePowerConfig} from './power-presets.js?v=0.78.1';
-import {validateForgePreset} from './forge-presets.js?v=0.78.1';
-import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.78.1';
-import {validatePresetConfig} from './world-presets.js?v=0.78.1';
-import {assertNpcCapacity} from './npc-capacity.js?v=0.78.1';
-import {WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD,worldRef,worldKey,validateInlinePayload} from './world-pack-core.js?v=0.78.1';
-import {STORY_PACK_FIELD,validateStoryPack} from './story-core.js?v=0.78.1';
+import {validatePowerConfig} from './power-presets.js?v=0.79.0';
+import {validateForgePreset} from './forge-presets.js?v=0.79.0';
+import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.79.0';
+import {validatePresetConfig} from './world-presets.js?v=0.79.0';
+import {assertNpcCapacity} from './npc-capacity.js?v=0.79.0';
+import {WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD,worldRef,worldKey,validateInlinePayload} from './world-pack-core.js?v=0.79.0';
+import {STORY_PACK_FIELD,validateStoryPack} from './story-core.js?v=0.79.0';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the
@@ -83,7 +83,7 @@ function packDefaults(raw) {
     // are never part of the schema and are never executed or applied.
     try { if (raw.powerPreset) result.powerPreset=validatePowerConfig(raw.powerPreset); } catch {}
     try { if (raw.forgePreset) result.forgePreset=validateForgePreset(raw.forgePreset); } catch {}
-    for(const key of ['currencyPreset','trainingPreset','weaponPreset','npcOptions','systems','chatAppearance','storyPreset'])if(Object.hasOwn(raw,key))try{Object.assign(result,validatePresetConfig({[key]:raw[key]}));}catch{}
+    for(const key of ['currencyPreset','trainingPreset','weaponPreset','relationshipPreset','npcOptions','systems','chatAppearance','storyPreset'])if(Object.hasOwn(raw,key))try{Object.assign(result,validatePresetConfig({[key]:raw[key]}));}catch{}
     if(raw.storyPresetRef&&typeof raw.storyPresetRef.id==='string'&&Number.isSafeInteger(raw.storyPresetRef.revision))result.storyPresetRef={id:raw.storyPresetRef.id,revision:raw.storyPresetRef.revision};
     if(raw.loreOptions&&typeof raw.loreOptions==='object'&&!Array.isArray(raw.loreOptions))
         result.loreOptions=loreOptions({loreCharacterOptions:{card:raw.loreOptions}},'card');
@@ -144,7 +144,7 @@ async function saveCardExtensions(context, owner, fields) {
 export function writeCharacterPack(context, settings, owner, raw, {npcs,lore}={}) {
     const pack=packDefaults(raw);
     if(!pack.format)throw Error('Unsupported RoleForge character pack');
-    for(const key of ['powerPreset','forgePreset','currencyPreset','trainingPreset','weaponPreset','systems','loreOptions','npcOptions','chatAppearance','storyPreset','initialState'])
+    for(const key of ['powerPreset','forgePreset','currencyPreset','trainingPreset','weaponPreset','relationshipPreset','systems','loreOptions','npcOptions','chatAppearance','storyPreset','initialState'])
         if(Object.hasOwn(raw,key)&&!Object.hasOwn(pack,key))throw Error(`Invalid character pack ${key}`);
     const fields={[CHARACTER_PACK_FIELD]:pack};
     if(pack.storyPreset){fields[STORY_PACK_FIELD]=pack.storyPreset;pack.storyPresetRef={id:pack.storyPreset.id,revision:pack.storyPreset.revision};delete pack.storyPreset;}

@@ -1,6 +1,6 @@
-import {composerIcon as glyph} from './composer-icons.js?v=0.78.1';
-import {learnedAbilities} from './incantation-core.js?v=0.78.1';
-import {POWER_TRAINING_CHOICES} from './power-mastery.js?v=0.78.1';
+import {composerIcon as glyph} from './composer-icons.js?v=0.79.0';
+import {learnedAbilities} from './incantation-core.js?v=0.79.0';
+import {POWER_TRAINING_CHOICES} from './power-mastery.js?v=0.79.0';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 export function createIncantationComposer({document:doc=globalThis.document,dock,settings=()=>({}),train=()=>{},choose=()=>{},stop=()=>{},again=()=>{},level=v=>v,busy=()=>false,notify=()=>{}}={}){

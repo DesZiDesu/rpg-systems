@@ -1,0 +1,203 @@
+{
+  "version": "0.79.0",
+  "host": "Actual local SillyTavern",
+  "errors": [],
+  "requests": [
+    {
+      "device": "mobile",
+      "fixture": true,
+      "relationshipContract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "relationshipContract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "relationshipContract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "relationshipContract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "relationshipContract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "relationshipContract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "relationshipContract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "relationshipContract": true
+    }
+  ],
+  "checks": [
+    {
+      "device": "mobile",
+      "nativeCardImport": true,
+      "presetSeeds": true,
+      "npcToNpcFeelings": true,
+      "directedNotMirrored": true,
+      "rankCanChange": true,
+      "noPlayerPenalty": true,
+      "sceneBudget": true,
+      "participantCounters": true,
+      "noDoubleCount": true,
+      "legacyHeartsPreserved": true,
+      "mainAndDockAgree": true,
+      "manualEditingNoAI": true,
+      "rulesNoUserMessage": true,
+      "normalReload": true,
+      "nativeSwipeRestoresEvents": true,
+      "manualEditsSurviveSwipe": true,
+      "presetImportPreservesPlayedPairs": true,
+      "nativeSaveSetupAndExportCard": true,
+      "presetExportPortableCard": true,
+      "cardIsolation": true
+    },
+    {
+      "device": "desktop",
+      "nativeCardImport": true,
+      "presetSeeds": true,
+      "npcToNpcFeelings": true,
+      "directedNotMirrored": true,
+      "rankCanChange": true,
+      "noPlayerPenalty": true,
+      "sceneBudget": true,
+      "participantCounters": true,
+      "noDoubleCount": true,
+      "legacyHeartsPreserved": true,
+      "mainAndDockAgree": true,
+      "manualEditingNoAI": true,
+      "rulesNoUserMessage": true,
+      "normalReload": true,
+      "nativeSwipeRestoresEvents": true,
+      "manualEditsSurviveSwipe": true,
+      "presetImportPreservesPlayedPairs": true,
+      "nativeSaveSetupAndExportCard": true,
+      "presetExportPortableCard": true,
+      "cardIsolation": true
+    }
+  ],
+  "layouts": [
+    {
+      "device": "mobile",
+      "tab": "overview",
+      "width": 320,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "mobile",
+      "tab": "history",
+      "width": 320,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "mobile",
+      "tab": "rules",
+      "width": 320,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "mobile",
+      "tab": "overview",
+      "width": 390,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "mobile",
+      "tab": "history",
+      "width": 390,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "mobile",
+      "tab": "rules",
+      "width": 390,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "mobile",
+      "tab": "overview",
+      "width": 430,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "mobile",
+      "tab": "history",
+      "width": 430,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "mobile",
+      "tab": "rules",
+      "width": 430,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "desktop",
+      "tab": "overview",
+      "width": 768,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "desktop",
+      "tab": "history",
+      "width": 768,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "desktop",
+      "tab": "rules",
+      "width": 768,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "desktop",
+      "tab": "overview",
+      "width": 1440,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "desktop",
+      "tab": "history",
+      "width": 1440,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "desktop",
+      "tab": "rules",
+      "width": 1440,
+      "inside": true,
+      "overflow": false
+    }
+  ],
+  "pass": true
+}
