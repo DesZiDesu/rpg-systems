@@ -8,7 +8,7 @@ test('only declared capabilities and supported host versions can install',()=>{
  assert.equal(validatePackage(raw).id,'great-sage');
  assert.throws(()=>validatePackage({...raw,capabilities:[...raw.capabilities,'run-javascript']}),/ไม่รองรับ/);
  assert.throws(()=>validatePackage({...raw,code:'anything'}),/ข้อมูลที่กำหนด/);
- assert.throws(()=>validatePackage({...raw,minimumRoleForge:'0.78.0'}),/0.78.0/);
+ assert.throws(()=>validatePackage({...raw,minimumRoleForge:'0.78.0'},'0.77.3'),/0.78.0/);
  assert.equal(compare('1.10.0','1.9.0'),1);
 });
 test('analysis receives only selected data, never inactive NPC dossiers or private patches',()=>{

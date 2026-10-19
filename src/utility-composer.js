@@ -1,9 +1,9 @@
-import {H_FIELDS} from './h-stats.js?v=0.77.3';
-import {effectiveNpc} from './npc-alternates.js?v=0.77.3';
-import {questObjectiveProgress} from './quest-objectives.js?v=0.77.3';
+import {H_FIELDS} from './h-stats.js?v=0.78.0';
+import {effectiveNpc} from './npc-alternates.js?v=0.78.0';
+import {questObjectiveProgress} from './quest-objectives.js?v=0.78.0';
 const esc=value=>String(value??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const known=value=>value!==null&&value!==undefined&&value!=='';
-export function createUtilityComposer({document:doc=globalThis.document,dock,settings=()=>({}),openItem=()=>{},openManager=()=>{},hRoster=()=>[]}={}){
+export function createUtilityComposer({document:doc=globalThis.document,dock,settings=()=>({}),openItem=()=>{},transfer=()=>{},openManager=()=>{},hRoster=()=>[]}={}){
  const roots=Object.fromEntries(['inventory','missions','hstats'].map(id=>{const n=doc.createElement('section');n.className='rf-utility-composer rf-utility-'+id;return[id,n];}));
  const t=(th,en)=>settings().language==='th'?th:en;
  let scope='',state=null,search='',category='all',page=0,mission='',missionStatus='Active',person='',section='Summary',hPage=0,fingerprint='',hPeople=[],pageSize=4;
@@ -15,7 +15,7 @@ export function createUtilityComposer({document:doc=globalThis.document,dock,set
   const root=roots.inventory;if(!settings().showInventoryComposer){dock.remove('inventory');return;}
   const owned=(state.inventory||[]).filter(i=>i.quantity>0),needle=search.normalize('NFKC').toLocaleLowerCase(),filtered=owned.filter(i=>(category==='all'||itemGroup(i)===category)&&[i.name,i.category].join(' ').normalize('NFKC').toLocaleLowerCase().includes(needle)),total=Math.ceil(filtered.length/pageSize);page=Math.min(page,Math.max(0,total-1));
   const groups=[['all',t('ทั้งหมด','All')],['consumables',t('ใช้สิ้นเปลือง','Consumables')],['equipment',t('อุปกรณ์','Equipment')],['other',t('อื่น ๆ','Other')]];
-  root.innerHTML=header('inventory',t('กระเป๋า','Inventory'),'box-open',`${owned.length} ${t('รายการ','items')}`)+`<div class="rf-utility-body"><label class="rf-utility-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search" data-utility-search value="${esc(search)}" placeholder="${esc(t('ค้นหาของในกระเป๋า…','Search inventory…'))}" aria-label="${esc(t('ค้นหาไอเทม','Search inventory'))}"></label><nav class="rf-utility-filters" aria-label="${esc(t('หมวดไอเทม','Inventory categories'))}">${groups.map(([id,label])=>`<button type="button" data-utility-category="${id}" aria-pressed="${category===id}">${esc(label)}</button>`).join('')}</nav><div class="rf-utility-item-list">${filtered.slice(page*pageSize,page*pageSize+pageSize).map(item=>`<button type="button" class="rf-utility-item" data-utility-item="${esc(item.id)}"><span class="rf-utility-item-icon"><i class="fa-solid fa-${item.weapon?'crosshairs':item.ammo?'grip':itemGroup(item)==='consumables'?'flask-vial':'cube'}" aria-hidden="true"></i></span><span><strong>${esc(item.name)}</strong><small>${esc(item.category||t('ไอเทม','Item'))}</small></span><b>×${esc(item.quantity)}</b><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>`).join('')||empty(t('ไม่พบไอเทมในหมวดนี้','No matching items.'))}</div>${pages('inventory',page,total)}<small class="rf-utility-note">${esc(t('แตะไอเทมเพื่อดูข้อมูลและเลือกใช้ · ยังไม่ใช้ทันที','Tap an item for details and actions. Nothing is consumed on selection.'))}</small></div>`;
+  root.innerHTML=header('inventory',t('กระเป๋า','Inventory'),'box-open',`${owned.length} ${t('รายการ','items')}`)+`<div class="rf-utility-body"><button type="button" class="rf-money-entry" data-utility-transfer><i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i>${esc(t('โอนเงินให้ NPC','Transfer money to an NPC'))}</button><label class="rf-utility-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search" data-utility-search value="${esc(search)}" placeholder="${esc(t('ค้นหาของในกระเป๋า…','Search inventory…'))}" aria-label="${esc(t('ค้นหาไอเทม','Search inventory'))}"></label><nav class="rf-utility-filters" aria-label="${esc(t('หมวดไอเทม','Inventory categories'))}">${groups.map(([id,label])=>`<button type="button" data-utility-category="${id}" aria-pressed="${category===id}">${esc(label)}</button>`).join('')}</nav><div class="rf-utility-item-list">${filtered.slice(page*pageSize,page*pageSize+pageSize).map(item=>`<button type="button" class="rf-utility-item" data-utility-item="${esc(item.id)}"><span class="rf-utility-item-icon"><i class="fa-solid fa-${item.weapon?'crosshairs':item.ammo?'grip':itemGroup(item)==='consumables'?'flask-vial':'cube'}" aria-hidden="true"></i></span><span><strong>${esc(item.name)}</strong><small>${esc(item.category||t('ไอเทม','Item'))}</small></span><b>×${esc(item.quantity)}</b><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>`).join('')||empty(t('ไม่พบไอเทมในหมวดนี้','No matching items.'))}</div>${pages('inventory',page,total)}<small class="rf-utility-note">${esc(t('แตะไอเทมเพื่อดูข้อมูลและเลือกใช้ · ยังไม่ใช้ทันที','Tap an item for details and actions. Nothing is consumed on selection.'))}</small></div>`;
   dock.panel('inventory',root,{label:t('กระเป๋า','Inventory')});
  }
  function missions(){
@@ -56,6 +56,7 @@ export function createUtilityComposer({document:doc=globalThis.document,dock,set
  function render(){if(!state||!scope){for(const id of Object.keys(roots))dock.remove(id);return;}inventory();missions();hstats();}
  for(const root of Object.values(roots)){
   root.addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;
+   if(button.hasAttribute('data-utility-transfer')){transfer();return;}
    if(button.dataset.utilityMinimize){dock.minimize(button.dataset.utilityMinimize);return;}
    if(button.dataset.utilityManage){openManager(button.dataset.utilityManage);return;}
    if(button.dataset.utilityItem){openItem(button.dataset.utilityItem);return;}

@@ -1,0 +1,202 @@
+{
+  "version": "0.78.0",
+  "testedDateUTC": "2026-10-19",
+  "baseCommit": "47fa7b03570e14d2a415d45b663f65ff667c55ca",
+  "unit": {
+    "command": "npm test",
+    "tests": 1432,
+    "passed": 1432,
+    "failed": 0,
+    "includes": "Core, mocked host save rejection/rollback, directed knowledge and historical snapshots"
+  },
+  "syntax": {
+    "command": "npm run check",
+    "pass": true
+  },
+  "nativeSillyTavern": {
+    "version": "0.78.0",
+    "revision": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+    "browser": "Chromium",
+    "theme": "Dark Lite",
+    "physicalMobileDevice": false,
+    "modelResponses": "Controlled streaming fixtures through native Generate/StreamingProcessor; no provider calls",
+    "host": "Actual local SillyTavern",
+    "errors": [],
+    "checks": [
+      {
+        "device": "mobile",
+        "nativeImport": true,
+        "bothEntryPoints": true,
+        "onlySceneNPCs": true,
+        "eightCurrencyPagination": true,
+        "noUserMessagesOrAIForTransfers": true,
+        "draftPreserved": true,
+        "invalidAmountsBlocked": true,
+        "doubleSubmitAppliedOnce": true,
+        "persistentReceiptsAndKnownNames": true,
+        "directedAllPairs": true,
+        "knowledgeInsideNpcManagement": true,
+        "noStandaloneKnowledgeDialog": true,
+        "bareAIBypassRejected": true,
+        "unknownNameDisplayGuard": true,
+        "automaticIntroductions": true,
+        "offSceneKnowledgeBlocked": true,
+        "noTransferReplayByModel": true,
+        "chatIsolation": true
+      },
+      {
+        "device": "desktop",
+        "nativeImport": true,
+        "bothEntryPoints": true,
+        "onlySceneNPCs": true,
+        "eightCurrencyPagination": true,
+        "noUserMessagesOrAIForTransfers": true,
+        "draftPreserved": true,
+        "invalidAmountsBlocked": true,
+        "doubleSubmitAppliedOnce": true,
+        "persistentReceiptsAndKnownNames": true,
+        "directedAllPairs": true,
+        "knowledgeInsideNpcManagement": true,
+        "noStandaloneKnowledgeDialog": true,
+        "bareAIBypassRejected": true,
+        "unknownNameDisplayGuard": true,
+        "automaticIntroductions": true,
+        "offSceneKnowledgeBlocked": true,
+        "noTransferReplayByModel": true,
+        "chatIsolation": true
+      }
+    ],
+    "requests": [
+      {
+        "device": "mobile",
+        "fixture": true,
+        "knowledgeContract": true,
+        "settledTransferContract": true
+      },
+      {
+        "device": "mobile",
+        "fixture": true,
+        "knowledgeContract": true,
+        "settledTransferContract": true
+      },
+      {
+        "device": "desktop",
+        "fixture": true,
+        "knowledgeContract": true,
+        "settledTransferContract": true
+      },
+      {
+        "device": "desktop",
+        "fixture": true,
+        "knowledgeContract": true,
+        "settledTransferContract": true
+      }
+    ],
+    "layouts": [
+      {
+        "device": "mobile",
+        "width": 320,
+        "inside": true,
+        "overflow": false
+      },
+      {
+        "device": "mobile",
+        "width": 390,
+        "inside": true,
+        "overflow": false
+      },
+      {
+        "device": "mobile",
+        "width": 430,
+        "inside": true,
+        "overflow": false
+      },
+      {
+        "panel": "known-names-in-npc-management",
+        "device": "mobile",
+        "width": 320,
+        "inside": true,
+        "overflow": false
+      },
+      {
+        "panel": "known-names-in-npc-management",
+        "device": "mobile",
+        "width": 390,
+        "inside": true,
+        "overflow": false
+      },
+      {
+        "panel": "known-names-in-npc-management",
+        "device": "mobile",
+        "width": 430,
+        "inside": true,
+        "overflow": false
+      },
+      {
+        "device": "desktop",
+        "width": 768,
+        "inside": true,
+        "overflow": false
+      },
+      {
+        "device": "desktop",
+        "width": 1440,
+        "inside": true,
+        "overflow": false
+      },
+      {
+        "panel": "known-names-in-npc-management",
+        "device": "desktop",
+        "width": 768,
+        "inside": true,
+        "overflow": false
+      },
+      {
+        "panel": "known-names-in-npc-management",
+        "device": "desktop",
+        "width": 1440,
+        "inside": true,
+        "overflow": false
+      }
+    ],
+    "pass": true
+  },
+  "browserRegressions": [
+    {
+      "command": "node tests/regex-shared.browser.mjs",
+      "pass": true,
+      "output": "PASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 320px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)\nPASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 390px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)\nPASS shared Regex + NPC/Voice/User UI, exact DOM, lifecycle and composers at 1280px (ST 06bde939fb1e9c4c8d8641d810f0a916b5bce127)"
+    },
+    {
+      "command": "node tests/regex-compat.browser.mjs",
+      "pass": true,
+      "output": "Regex/native HTML compatibility passed at 320px\nRegex/native HTML compatibility passed at 390px\nRegex/native HTML compatibility passed at 1280px"
+    },
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/voice-addons.browser.mjs",
+      "pass": true,
+      "output": "PASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 320px\nPASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 390px\nPASS Voice opt-in, encrypted key, quota, dialogue/playback/cache/reload, NPC defaults, narration/editor, cancellation, Library, MP3 test download/rename/clear and API notices at 1280px"
+    },
+    {
+      "command": "node tests/chat-render-performance.browser.mjs",
+      "pass": true,
+      "output": "{\"implementation\":\"working tree\",\"theme\":\"roleforge\",\"rows\":200,\"updatedSceneReads\":1,\"domMutations\":2,\"tail\":\"Updated tail.\"}"
+    },
+    {
+      "command": "node tests/composer-dock.browser.mjs",
+      "pass": true,
+      "output": "PASS 11-panel dock at 320/390/430/768/1440: no covered tabs, custom picker, repeated open/close, outside/Escape dismissal, all commerce labels, keyboard, resize, minimized reopening, draft and chat scroll."
+    },
+    {
+      "command": "node tests/stats-currency.browser.mjs",
+      "pass": true,
+      "output": "PASS stats/currency production UI at 320px: normal chat, bounds, custom definitions, hidden buttons, exact money, native settings, reduced motion, reload, no overflow\nPASS stats/currency production UI at 390px: normal chat, bounds, custom definitions, hidden buttons, exact money, native settings, reduced motion, reload, no overflow\nPASS stats/currency production UI at 1280px: normal chat, bounds, custom definitions, hidden buttons, exact money, native settings, reduced motion, reload, no overflow"
+    }
+  ],
+  "limitations": [
+    "No physical iPhone, Safari or WebKit test.",
+    "Name display protection applies to structured RoleForge speech/shared blocks and RoleForge voice; raw message source, narration, native mode and opaque foreign widgets retain native content.",
+    "Actual native saves/reloads passed; save rejection rollback was verified with the host mock. SillyTavern may swallow HTTP save failures, so complete server-failure detection is not claimed.",
+    "NPC receipts record received gifts; the feature does not invent an NPC total wealth balance."
+  ]
+}

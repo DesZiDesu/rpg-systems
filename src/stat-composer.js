@@ -1,7 +1,7 @@
-import {composerIcon as glyph} from './composer-icons.js?v=0.77.3';
-import {statTrainingTargets} from './stat-training.js?v=0.77.3';
-import {currencyDisplay} from './currency-config.js?v=0.77.3';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.77.3';
+import {composerIcon as glyph} from './composer-icons.js?v=0.78.0';
+import {statTrainingTargets} from './stat-training.js?v=0.78.0';
+import {currencyDisplay} from './currency-config.js?v=0.78.0';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.78.0';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const translated=(v,th,target)=>{
@@ -13,7 +13,7 @@ const translated=(v,th,target)=>{
 export const STAT_COMPOSER_LAYOUTS=Object.freeze(['A','B','C']);
 export const normalizeStatComposerLayout=value=>STAT_COMPOSER_LAYOUTS.includes(value)?value:'C';
 
-export function createStatComposer({document:doc=globalThis.document,dock,settings=()=>({}),train=async()=>{},busy=()=>false}={}){
+export function createStatComposer({document:doc=globalThis.document,dock,settings=()=>({}),train=async()=>{},transfer=()=>{},busy=()=>false}={}){
  const status=doc.createElement('section'),training=doc.createElement('section');
  status.className='rf-stat-composer rf-user-status';training.className='rf-stat-composer rf-stat-training';
  let state=null,scope='',selected='hp',method=0,working=false,fingerprint='',detailsOpen=false,error='';
@@ -38,7 +38,7 @@ export function createStatComposer({document:doc=globalThis.document,dock,settin
   const valueMarkup=d=>`<span><small>${esc(d.name)}</small><strong>${d.value}${d.unit?` <small class="rf-stat-unit">${esc(d.unit)}</small>`:''}</strong></span>`;
   const attributes=`<div class="rf-stat-values">${coreValues.map(valueMarkup).join('')}</div>`,customValues=custom.length?`<div class="rf-stat-custom-values">${custom.map(valueMarkup).join('')}</div>`:'';
   const condition=p.condition?`<span class="rf-stat-condition"><i></i>${esc(p.condition)}</span>`:'',identity=`<div class="rf-stat-identity">${layout==='A'?`<span class="rf-stat-seal">${esc(Array.from(String(p.name||'?'))[0])}<small>${esc(p.level)}</small></span>`:''}<div>${layout==='A'?`<small class="rf-stat-eyebrow">${esc(t('ข้อมูลตัวละคร','CHARACTER RECORD'))}</small>`:''}<strong>${esc(p.name||'—')}</strong><small>LV ${esc(p.level)}${p.profession?' · '+esc(p.profession):''}</small></div>${condition}</div>`;
-  const context=[p.party,p.guild].filter(Boolean).join(' · '),footer=`<div class="rf-stat-footer"><div class="rf-stat-context"><span>${glyph('pin')}${esc(state.location?.place||'—')}</span>${context?`<span>${esc(context)}</span>`:''}</div><div class="rf-stat-wallet">${currencyDisplay(currency).map(u=>`<span>${commerceIconMarkup('coin',u.id,currency?.scheme?u.iconSet:settings().coinStyle||u.iconSet,currency?.scheme?u:undefined)}<b>${u.amount.toLocaleString()}</b><small>${esc(u.symbol||u.name)}</small></span>`).join('')}</div></div>`;
+  const context=[p.party,p.guild].filter(Boolean).join(' · '),footer=`<div class="rf-stat-footer"><div class="rf-stat-context"><span>${glyph('pin')}${esc(state.location?.place||'—')}</span>${context?`<span>${esc(context)}</span>`:''}</div><div class="rf-stat-wallet">${currencyDisplay(currency).map(u=>`<span>${commerceIconMarkup('coin',u.id,currency?.scheme?u.iconSet:settings().coinStyle||u.iconSet,currency?.scheme?u:undefined)}<b>${u.amount.toLocaleString()}</b><small>${esc(u.symbol||u.name)}</small></span>`).join('')}<button type="button" class="rf-money-entry" data-stat-transfer>${glyph('transfer')}${esc(t('โอนเงิน','Transfer'))}</button></div></div>`;
   let vitals=health+secondary;
   if(layout==='B'){
    const value=Number(p.hp?.current)||0,max=Math.max(1,Number(p.hp?.max)||100),ratio=Math.max(0,Math.min(100,value/max*100));
@@ -72,7 +72,7 @@ export function createStatComposer({document:doc=globalThis.document,dock,settin
   dock.panel('stats',training,{label:t('ฝึก Stats','Train stats'),busy:working});
  }
  function render(){if(state){renderStatus();renderTraining();}}
- status.addEventListener('click',e=>{if(e.target.closest('[data-stat-minimize]'))dock.minimize('status');});
+ status.addEventListener('click',e=>{if(e.target.closest('[data-stat-transfer]')){transfer();return;}if(e.target.closest('[data-stat-minimize]'))dock.minimize('status');});
  training.addEventListener('click',async e=>{
   const choice=e.target.closest('[data-stat-select]');if(choice){selected=choice.dataset.statSelect;method=0;detailsOpen=false;const detail=training.querySelector('[data-stat-details]');if(detail)detail.open=false;renderTraining();return;}
   const exercise=e.target.closest('[data-stat-method-choice]');if(exercise&&!working&&!busy()){method=Number(exercise.dataset.statMethodChoice)||0;renderTraining();return;}

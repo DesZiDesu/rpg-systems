@@ -108,7 +108,11 @@ try{
             script('/Welcome/g','OLDER_DEPTH',{minDepth:2,maxDepth:5}),
             script('/(Welcome), (traveler)\\./g','<strong>$1</strong>, $2. {{user}}'),
         ]});
-        const captures=await add(page);assert.match(await row(page,captures).locator('.trpg-dialogue').innerText(),/Welcome, traveler\. Nova/);
+        const captures=await add(page);assert.match(await row(page,captures).locator('.trpg-dialogue').innerText(),/Welcome, traveler\. you/);
+        // Expanding {{user}} is a formatter action, not an introduction. The
+        // shared view guards it; switching to native restores its exact text.
+        await mode(page,'native');assert.match(await row(page,captures).innerText(),/Welcome, traveler\. Nova/);
+        await mode(page,'shared');assert.match(await row(page,captures).locator('.trpg-dialogue').innerText(),/Welcome, traveler\. you/);
         assert.equal(await row(page,captures).locator('.trpg-dialogue strong').innerText(),'Welcome');
         assert.doesNotMatch(await row(page,captures).innerText(),/DISABLED|PROMPT_ONLY|USER_ONLY|OLDER_DEPTH/);
         // A catch-all regex removes the protocol and creates one custom card.

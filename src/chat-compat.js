@@ -1,7 +1,7 @@
 // Compose with the host's already formatted DOM. Never run regex per block or
 // recreate another extension's card with innerHTML/clones.
-import {parseUserMessage} from './user-chat.js?v=0.77.3';
-import {cleanChatProse} from './foreign-chat.js?v=0.77.3';
+import {parseUserMessage} from './user-chat.js?v=0.78.0';
+import {cleanChatProse} from './foreign-chat.js?v=0.78.0';
 export function chatPresentationMode(settings = {}) {
     return ['shared','native','roleforge'].includes(settings.chatRegexMode)
         ? settings.chatRegexMode : settings.preserveNativeChat === true ? 'native' : 'shared';
@@ -264,7 +264,7 @@ function compactSharedSeparators(roots,markers) {
     return [...gaps];
 }
 
-export function mountSharedStory({host,nodes,blocks,header,narrative,dialogue,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,dialogueEnabled=true,document:doc=globalThis.document}) {
+export function mountSharedStory({host,nodes,blocks,header,narrative,dialogue,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,dialogueEnabled=true,transformDialogueText,document:doc=globalThis.document}) {
     const roots = [], wrappers = [], targets = Array(blocks.length).fill(null), voiceBlocks = blocks.map(block => ({...block}));
     const create = (tag,cls,text) => {const node=doc.createElement(tag);node.className=cls;if(cls.includes('trpg-chat'))node.dataset.roleforgeMount='shared';if(text!==undefined)node.textContent=text;return node;};
     const markers = protocolNodes(nodes);
@@ -308,6 +308,10 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,dialogue,te
         content.dataset.roleforgeNativeContent='';
         if(!user){const rendered=header(name,speaker,true);shell.style.setProperty('--speaker',rendered.color);shell.append(body);}
         const textEdits=user?trimPlayerDelimiters(target,block.type,doc):[];
+        if(!user&&block.type==='dialogue'&&transformDialogueText){
+            const walker=doc.createTreeWalker(target,4,{acceptNode:node=>node.parentElement?.closest('button,input,textarea,select,summary,style,script,pre,code,[aria-hidden="true"]')?2:1});
+            let node;while((node=walker.nextNode())){const before=node.data,after=transformDialogueText(before,name);if(before!==after){node.data=after;textEdits.push({node,before,after});}}
+        }
         const ownedBodyChildren=new Set(body.childNodes),nativeText=target.textContent;
         target.before(shell);moveNative(content,target);roots.push(shell);wrappers.push({shell,body,content,target,ownedBodyChildren,nativeText,textEdits});targets[index]=body;
         // Host-processed speech may change words. Read prose only, excluding

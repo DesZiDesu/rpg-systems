@@ -1,22 +1,23 @@
-import {customIconSource,prepareCustomIcon} from './custom-icons.js?v=0.77.3';
-import {SERVANT_ICONS,servantIconUrl} from './servant-icons.js?v=0.77.3';
-import {FATE_SERVANT_ICON_PACK} from './icon-packs.js?v=0.77.3';
-import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.77.3';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.77.3';
-import { createLoreWorkspace } from './lore-workspace.js?v=0.77.3';
-import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.77.3';
-import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.77.3';
-import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.77.3';
-import { element, icon, roleIcon, speakerHeader, renderStoryBlocks, createChatPresentation } from './npc-chat.js?v=0.77.3';
-import { collectPortraitBackups } from './npc-media.js?v=0.77.3';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.77.3';
-import { H_FIELDS } from './h-stats.js?v=0.77.3';
-import {chatPresentationMode} from './chat-compat.js?v=0.77.3';
-import {mountChatAppearanceControls} from './chat-appearance-ui.js?v=0.77.3';
-import {chatAppearance} from './chat-themes.js?v=0.77.3';
-import {createArchiveBrowser,createArchiveTools,createArchiveOptions,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.77.3';
-import {assertNpcCapacity} from './npc-capacity.js?v=0.77.3';
-import {mountNpcCapacityControls} from './npc-capacity-ui.js?v=0.77.3';
+import {customIconSource,prepareCustomIcon} from './custom-icons.js?v=0.78.0';
+import {SERVANT_ICONS,servantIconUrl} from './servant-icons.js?v=0.78.0';
+import {FATE_SERVANT_ICON_PACK} from './icon-packs.js?v=0.78.0';
+import {uiText,uiMarkup,uiLanguage,bindStaticUi} from './ui-language.js?v=0.78.0';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.78.0';
+import { createLoreWorkspace } from './lore-workspace.js?v=0.78.0';
+import { FIELDS, STATS, RELATIONS, ROLE_ICONS, CLASSIC_ROLE_ICONS, identity, profileFields, completeDraft, generatedNpcDraft, generatedAttributes, npcAttributeDefaults, ATTRIBUTE_INSTRUCTIONS, importCharacters, readCharacterFile, keyName, resolveNpc, clean, usable, usableNpcName, validateGeneratedNpcName, NPC_FIELD_INSTRUCTIONS, parseStory } from './npc-core.js?v=0.78.0';
+import { portraitForGeneration, PORTRAIT_INSTRUCTIONS, visualDescription, npcCanonContext,requestNpcDraft,canGenerateNpcDraft } from './npc-generation.js?v=0.78.0';
+import { portraitEditor, preparePortrait, croppedPortrait } from './npc-portraits.js?v=0.78.0';
+import { element, icon, roleIcon, speakerHeader, renderStoryBlocks, createChatPresentation } from './npc-chat.js?v=0.78.0';
+import { collectPortraitBackups } from './npc-media.js?v=0.78.0';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, enumerateNpcPortraits } from './npc-alternates.js?v=0.78.0';
+import { H_FIELDS } from './h-stats.js?v=0.78.0';
+import {chatPresentationMode} from './chat-compat.js?v=0.78.0';
+import {mountChatAppearanceControls} from './chat-appearance-ui.js?v=0.78.0';
+import {chatAppearance} from './chat-themes.js?v=0.78.0';
+import {createArchiveBrowser,createArchiveTools,createArchiveOptions,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.78.0';
+import {assertNpcCapacity} from './npc-capacity.js?v=0.78.0';
+import {mountNpcCapacityControls} from './npc-capacity-ui.js?v=0.78.0';
+import {createNameKnowledgePanel} from './name-knowledge-ui.js?v=0.78.0';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -26,7 +27,7 @@ export function createNpcWorkspace(api) {
     let dialog,form,roster,status,editor,base={},recordBase={},editAlternateId='',draftId='',chatId='',ownerKey='',scope='chat',view='list',token=0,busy=false,dirty=false,photoBlob=null,photoDirty=false,photoInherit=false,frameDirty=false,previewUrl=null,previewGeneration=0;
     let brief='',referenceBlob=null,referenceUrl=null,viewportFrame=0,unobscuredHeight=0,lore,tab='npc',presentationStatus=null,presentationSettingsGroup=null,formattingModeLabel=null,formattingModeHelp=null,userPresentationLabel=null,userPresentationHelp=null;
     const presentationSubscriptions=[];
-    let appearanceControls=null;
+    let appearanceControls=null,nameKnowledge=null;
     const archiveBrowser=createArchiveBrowser({searchText:n=>`${n.name} ${n.occupation} ${n.faction} ${(n.aliases||[]).join(' ')}`,normalizeQuery:keyName});
     let archiveTools=null,archiveUndo=[],archiveOptions=null,capacityControls=null;
     const archiveRecords=(all=api.listScope(scope))=>all.map(n=>n._archiveSummary?n:effectiveNpc(n)).sort((a,b)=>a.name.localeCompare(b.name));
@@ -80,8 +81,8 @@ export function createNpcWorkspace(api) {
         presentationStatus.textContent=`RoleForge ${globalThis.TretaresiaRelease||'0.73.1'} · ${mode} · ${source}`;
     }
     const chat=createChatPresentation(api,open);
-    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.77.3',import.meta.url).href;document.head.append(sheet);
-    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.77.3',import.meta.url).href;document.head.append(alternateSheet);
+    const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/npc-ui.css?v=0.78.0',import.meta.url).href;document.head.append(sheet);
+    const alternateSheet=document.createElement('link');alternateSheet.rel='stylesheet';alternateSheet.href=new URL('../styles/npc-alternates.css?v=0.78.0',import.meta.url).href;document.head.append(alternateSheet);
     const alternateText=(en,th,values=[])=>uiText(uiLanguage()==='th'?th:en,values);
     const say=(message)=>{if(status)status.textContent=message;archiveOptions?.say(message);};
     const currentChat=()=>api.context().getCurrentChatId?.()||'';
@@ -135,6 +136,7 @@ export function createNpcWorkspace(api) {
         dialog.querySelector('.trpg-browser').hidden=next!=='list';dialog.querySelector('.trpg-record').hidden=next==='list';
         dialog.querySelector('[data-back]').hidden=next==='list';
         form.hidden=next!=='edit';dialog.querySelector('[data-editor-actions]').hidden=next!=='edit';dialog.querySelector('[data-detail]').hidden=next!=='detail';dialog.querySelector('[data-import-preview]').hidden=next!=='import';
+        if(next!=='names')nameKnowledge?.close();
         dialog.querySelector('[data-scope-select]').disabled=next!=='list'||busy;
         dialog.querySelector('[data-archive-options-toggle]').hidden=next!=='list'||tab==='lore'&&dialog.dataset.loreView==='edit';
         dialog.querySelector('.trpg-record').scrollTop=0;
@@ -144,7 +146,7 @@ export function createNpcWorkspace(api) {
     function releaseReference(){if(referenceUrl)URL.revokeObjectURL(referenceUrl);referenceUrl=null;referenceBlob=null;}
     function lock(value){busy=value;archiveOptions?.setBusy(value);if(form)form.querySelector('fieldset').disabled=value;dialog?.querySelectorAll('[data-lock]').forEach(n=>n.disabled=value);dialog?.setAttribute('aria-busy',String(value));const picker=dialog?.querySelector('[data-scope-select]');if(picker)picker.disabled=value||view!=='list';archiveTools?.update(archiveBrowser.view(archiveRecords()),{busy,canUndo:archiveUndo.length>0});if(dialog)dialog.querySelector('[data-search]').disabled=value;}
     function canLeave(){if(tab==='lore')return lore.canLeave();return !dirty || confirm(uiText("ยังมีร่างที่ไม่ได้บันทึก ต้องการทิ้งการแก้ไขนี้หรือไม่?"));}
-    function close(force=false){if(!force&&!canLeave())return;archiveOptions?.close({restoreFocus:false,force:true});watchViewport(false);++token;dirty=false;lore?.reset();archiveBrowser.setSelecting(false);archiveUndo=[];lock(false);editor?.destroy();releasePreview();releaseReference();dialog?.close();}
+    function close(force=false){if(!force&&!canLeave())return;nameKnowledge?.close();archiveOptions?.close({restoreFocus:false,force:true});watchViewport(false);++token;dirty=false;lore?.reset();archiveBrowser.setSelecting(false);archiveUndo=[];lock(false);editor?.destroy();releasePreview();releaseReference();dialog?.close();}
     function ensureDialog(){
         if(dialog&&!dialog.open&&dialog.dataset.uiLanguage!==uiLanguage()){dialog.remove();dialog=null;}
         if(dialog)return;
@@ -163,6 +165,11 @@ export function createNpcWorkspace(api) {
         const listHeading=dialog.querySelector('.trpg-list-heading');listHeading.before(scroller);scroller.append(listHeading,dialog.querySelector('[data-list]'));
         dialog.querySelector('.trpg-manager-footer span:last-child').textContent=`SCOPED ARCHIVE · v${globalThis.TretaresiaRelease||'0.73.1'}`;
         document.body.append(dialog);form=dialog.querySelector('form');roster=dialog.querySelector('[data-list]');status=dialog.querySelector('[role=status]');
+        if(api.nameKnowledge){
+            const panel=element('section');dialog.querySelector('.trpg-record').append(panel);
+            nameKnowledge=createNameKnowledgePanel(panel,{...api.nameKnowledge,language:()=>api.settings().language,onBusy:lock});
+            const names=element('button','trpg-known-names-open');names.type='button';names.dataset.knownNamesOpen='';names.dataset.lock='';names.append(icon('address-book'),document.createTextNode(alternateText('Known Names','ความรู้เรื่องชื่อ')));names.addEventListener('click',()=>void openNameKnowledge());dialog.querySelector('.trpg-browser-tools').append(names);
+        }
         lore=createLoreWorkspace(dialog.querySelector('[data-lore-panel]'),api,say,{optionsPanel:archiveOptions.lore,closeOptions:()=>archiveOptions.close({restoreFocus:false}),optionsOpen:()=>archiveOptions.isOpen,onBusy:value=>archiveOptions.setBusy(value),onView:next=>{dialog.dataset.loreView=next;more.hidden=next!=='list';if(tab==='lore')header.querySelector('small').textContent=`ROLEFORGE · ${uiText('Character archive source')}`;}});
         dialog.querySelectorAll('[data-management-tab]').forEach(button=>button.addEventListener('click',()=>{
             if(busy||button.dataset.managementTab===tab||!canLeave())return;
@@ -251,6 +258,7 @@ export function createNpcWorkspace(api) {
         detail.append(alternateChooser(record));
         const actions=element('div','trpg-detail-actions'),edit=element('button','trpg-primary',editAlternateId?alternateText('Edit this version','แก้ไขเวอร์ชันนี้'):uiText("แก้ไขข้อมูล"));edit.type='button';edit.dataset.lock='';edit.addEventListener('click',()=>{if(!busy&&canLeave())void load(records().find(n=>n.id===p.id)||record);});actions.append(edit);
         const toggle=element('button','',p.enabled===false?uiText("เปิดใช้งานตัวละคร"):uiText("ปิดใช้งานตัวละคร"));toggle.type='button';toggle.dataset.lock='';toggle.setAttribute('aria-pressed',String(p.enabled!==false));toggle.addEventListener('click',()=>void toggleRecord(p));actions.append(toggle);
+        if(nameKnowledge){const names=element('button','',alternateText('Known Names','ความรู้เรื่องชื่อ'));names.type='button';names.dataset.lock='';names.dataset.npcKnownNames=p.id;names.addEventListener('click',()=>void openNameKnowledge(p.id));actions.append(names);}
         const liveRecord=scope==='character'?api.state().npcs.find(n=>n.id===p.id&&n.npcScope==='character'):null;
         const live=liveRecord?effectiveNpc(liveRecord):null;
         const history=changeHistory(p,live);detail.append(history.block);
@@ -620,6 +628,12 @@ export function createNpcWorkspace(api) {
         }
         showList();if(saved.tab==='lore'&&ownerKey)selectTab('lore');
     }
+    async function openNameKnowledge(id='player'){
+        if(busy||!canLeave()||!nameKnowledge)return;
+        ++token;editor?.destroy();releasePreview();releaseReference();dirty=false;archiveOptions.close({restoreFocus:false});setView('names');
+        dialog.querySelector('[data-archive-context]').textContent=alternateText('ROLEFORGE · Chat knowledge','ROLEFORGE · ความรู้เฉพาะแชต');say('');
+        await nameKnowledge.open(id);
+    }
     async function save(){
         if(busy)return;const v=values();if(!v.name){form.elements.namedItem('name').focus();say(uiText("กรอกชื่อตัวละครก่อนบันทึก"));return;}
         if(form.elements.namedItem('roleIconImage')?.value.trim()&&!v.roleIconImage){say(alternateText('Use an HTTPS image URL or upload an icon.','ใช้ URL ภาพแบบ HTTPS หรืออัปโหลดไอคอน'));return;}
@@ -826,5 +840,5 @@ The visibleAppearance value is authoritative: copy it into appearance without ad
     }
     const context=api.context(),events=context.eventTypes||context.event_types;if(events?.CHAT_CHANGED)context.eventSource?.on(events.CHAT_CHANGED,()=>{close(true);chat.reset();updatePresentationStatus();});
     for(const name of ['CHARACTER_MESSAGE_RENDERED','MESSAGE_RECEIVED','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED'])if(events?.[name]&&context.eventSource?.on){context.eventSource.on(events[name],updatePresentationStatus);presentationSubscriptions.push(events[name]);}
-    return {open,refresh(){chat.refresh();updatePresentationStatus();if(dialog?.open){if(tab==='lore')lore.refresh();else list();}},destroy(){close(true);chat.destroy();appearanceControls?.destroy();for(const event of presentationSubscriptions)context.eventSource?.off?.(event,updatePresentationStatus);presentationSettingsGroup?.remove();sheet.remove();alternateSheet.remove();dialog?.remove();}};
+    return {open,refresh(){chat.refresh();updatePresentationStatus();nameKnowledge?.refresh();if(dialog?.open){if(tab==='lore')lore.refresh();else if(view!=='names')list();}},destroy(){close(true);chat.destroy();nameKnowledge?.destroy();appearanceControls?.destroy();for(const event of presentationSubscriptions)context.eventSource?.off?.(event,updatePresentationStatus);presentationSettingsGroup?.remove();sheet.remove();alternateSheet.remove();dialog?.remove();}};
 }

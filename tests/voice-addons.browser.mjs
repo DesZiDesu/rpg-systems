@@ -1,6 +1,7 @@
 // Production loader, native dialogue rendering, real browser Audio / IndexedDB.
 // Provider replies and waveform are local fixtures; no paid requests are made.
 import assert from 'node:assert/strict';
+import {revealSetting} from './fixtures/settings-drawer.mjs';
 import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -33,7 +34,7 @@ try{
         assert.equal(await toggle.isChecked(),false);assert.equal(await memory.isChecked(),false);
         assert.equal(await page.locator('.trpg-dialogue .rf-voice-play').count(),0);assert.equal(await page.locator('#roleforge-voice-addons').isVisible(),false);
         assert.equal(await page.evaluate(()=>window.voicePreview.calls.length),0);
-        await page.evaluate(()=>window.navigationSummaryPreview.openSettings());await toggle.check();
+        await page.evaluate(()=>window.navigationSummaryPreview.openSettings());await revealSetting(page,'[data-optional-setting="enableVoiceAddon"]');await toggle.check();
         const panel=page.locator('[data-voice-panel]'),drawer=page.locator('#roleforge-voice-addons>details');
         assert.equal(await drawer.evaluate(node=>node.open),false,'enabling Voice starts its settings collapsed');assert.equal(await panel.isVisible(),false);
         await drawer.locator(':scope>summary').click();await panel.waitFor({state:'visible'});
@@ -163,7 +164,7 @@ try{
         const fit=await exportPanel.evaluate(node=>({client:node.clientWidth,scroll:node.scrollWidth}));assert(fit.scroll<=fit.client+1);if(width<600)assert.equal(await exportPanel.locator('[name="test-filename"]').evaluate(node=>getComputedStyle(node).fontSize),'16px');
         await exportPanel.locator('[data-voice-action="clear-test"]').click();assert.equal(await exportPanel.isVisible(),false);assert.equal(await page.evaluate(()=>window.voicePreview.calls.length),apiCount);
         // Off removes controls and does not erase the voice assignments or saved key.
-        await page.evaluate(()=>{window.navigationSummaryPreview.openSettings();document.querySelector('#tretaresia-rpg-settings>.inline-drawer>.inline-drawer-content').style.display='';});await toggle.uncheck();assert.equal(await page.locator('#roleforge-voice-addons').isVisible(),false);await page.waitForFunction(()=>!document.querySelector('.trpg-dialogue .rf-voice-play'));
+        await page.evaluate(()=>{window.navigationSummaryPreview.openSettings();document.querySelector('#tretaresia-rpg-settings>.inline-drawer>.inline-drawer-content').style.display='';});await revealSetting(page,'[data-optional-setting="enableVoiceAddon"]');await toggle.uncheck();assert.equal(await page.locator('#roleforge-voice-addons').isVisible(),false);await page.waitForFunction(()=>!document.querySelector('.trpg-dialogue .rf-voice-play'));
         const count=await page.evaluate(()=>window.voicePreview.calls.length);await page.waitForTimeout(150);assert.equal(await page.evaluate(()=>window.voicePreview.calls.length),count);
         assert.equal(await memory.isChecked(),false);assert.equal(await page.evaluate(()=>window.host.extensionSettings.tretaresia_rpg.voiceDefaultId),'demo-garrick');
         assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);

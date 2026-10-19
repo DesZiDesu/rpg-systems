@@ -1,0 +1,46 @@
+/* Reuse the Inventory panel shell, neutral buttons and spacing. */
+.rf-money-transfer{max-width:100%;--u-accent:#c7ced4}
+.rf-money-transfer [hidden]{display:none!important}
+.rf-money-transfer .rf-money-body{padding:10px 12px}
+.rf-money-transfer fieldset{margin:0 0 14px;padding:0;border:0;min-width:0}
+.rf-money-transfer legend{display:flex;align-items:center;gap:8px;width:100%;padding:0 0 7px;color:#9ca3aa;font:11px/1.5 system-ui}
+.rf-money-transfer legend small{font-size:9px;color:#838e98}
+.rf-money-transfer button{max-width:100%;white-space:normal;overflow-wrap:anywhere;box-shadow:none}
+.rf-money-transfer :is(.rf-money-people>button,.rf-money-units>button,[data-money-action=max],.rf-money-currency,.rf-money-pages button){min-height:44px;padding:8px 10px;border:1px solid #42494f;border-radius:6px;background:#24292e;color:#c9d0d6;font:12px/1.5 system-ui}
+.rf-money-people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.rf-money-people>button{display:flex;align-items:center;text-align:start;gap:10px}
+.rf-money-people>button>span:nth-child(2){flex:1}
+.rf-money-people strong{display:block;font-size:12px;font-weight:500}
+.rf-money-people small{display:block;font-size:9px;color:#8f99a2}
+.rf-money-people>button>i:last-child{font-size:11px;flex:none}
+.rf-money-transfer :is(.rf-money-people,.rf-money-units) [aria-pressed=true]{border-color:#9eaab4;background:#333d45;color:#e1e6eb}
+.rf-money-empty{grid-column:1/-1;margin:0;padding:18px 12px;border:1px dashed #464e55;border-radius:6px;color:#939da5;font-size:12px;overflow-wrap:anywhere}
+.rf-money-units{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:7px}
+.rf-money-units button{text-align:start}
+.rf-money-units strong,.rf-money-units small{display:block;font-weight:400;overflow-wrap:anywhere}
+.rf-money-units small{font-size:10px;color:#929ea8}
+.rf-money-transfer .rf-money-amount{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 8px;color:#9ca3aa;font:11px/1.5 system-ui;margin-top:12px}
+.rf-money-amount>input{grid-column:1;grid-row:2;display:block;width:100%;max-width:100%;min-height:44px;margin:0;padding:8px 11px!important;border:1px solid #424a52!important;border-radius:6px!important;background:#171b1e!important;color:#ddd!important;font:16px/1.5 system-ui!important;box-shadow:none!important}
+.rf-money-amount>button{grid-column:2;grid-row:2}
+.rf-money-available{display:block;margin-top:6px;color:#939da5;font-size:10px}
+.rf-money-available b{font-weight:500;color:#c6cdd3;margin-inline-start:4px}
+.rf-money-pages{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:8px;color:#939da5;font-size:10px}
+.rf-money-transfer .rf-money-pages button{width:36px;min-height:34px;padding:0;font-size:21px;line-height:1}
+.rf-money-review{display:flex;align-items:baseline;gap:10px;padding:12px 0;border-block:1px solid #353c42;min-width:0}
+.rf-money-review>small{font-size:10px;color:#939da5}
+.rf-money-review>strong{flex:1;overflow-wrap:anywhere;font-size:12px;font-weight:500;color:#d5dce1}
+.rf-money-review>span{max-width:48%;overflow-wrap:anywhere;font:500 16px/1.5 system-ui;color:#dce3e8;text-align:end}
+.rf-money-error{min-height:0;margin:8px 0;color:#dfaaa1;font-size:11px;overflow-wrap:anywhere}
+.rf-money-error:empty{display:none}
+.rf-money-transfer .rf-money-primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:42px;margin-top:12px;padding:9px 12px;border:1px solid #c5c9cd;border-radius:6px;background:#c5c9cd;color:#202326;font:500 12px/1.5 system-ui}
+.rf-money-transfer .rf-money-primary:hover:not(:disabled){background:#e0e3e6}
+.rf-money-note{display:block;margin-top:7px;color:#818d97;text-align:center;font-size:9px}
+.rf-money-success{display:grid;justify-items:center;gap:7px;padding:18px 10px;text-align:center;color:#bdc9b5}
+.rf-money-success>i{display:grid;place-items:center;width:38px;height:38px;border:1px solid #6d8060;border-radius:50%;background:#293326;font-size:17px}
+.rf-money-success strong{font-weight:500;font-size:16px;color:#d4dfcd}.rf-money-success span{font-size:13px;color:#d0d8dd;overflow-wrap:anywhere}.rf-money-success small{font-size:10px;color:#89959e;overflow-wrap:anywhere}
+.rf-money-entry{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;max-width:100%;padding:6px 10px;border:1px solid #4b5055;border-radius:6px;background:#292d31;color:#bdc5cc;font:11px/1.5 system-ui;cursor:pointer;touch-action:manipulation;box-shadow:none;white-space:normal;overflow-wrap:anywhere}
+.rf-money-entry:hover{border-color:#87919b;background:#353b41}.rf-money-entry i{font-size:12px}.rf-utility-body>[data-utility-transfer]{margin-bottom:10px;width:100%}
+@container(min-width:720px){.rf-money-transfer .rf-money-body{padding:14px 20px}.rf-money-transfer form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 20px}.rf-money-transfer form>fieldset{margin-bottom:14px}.rf-money-transfer form>:not(fieldset){grid-column:1/-1}.rf-money-people{grid-template-columns:minmax(0,1fr)}}
+@container(max-width:350px){.rf-money-people{grid-template-columns:minmax(0,1fr)}}
+
+.rf-money-transfer .rf-money-currency{display:flex;align-items:center;gap:9px;width:100%;text-align:start;min-height:43px;background:#191e22}.rf-money-currency>i{font-size:12px;color:#9caab6}.rf-money-currency>i:last-child{font-size:10px}.rf-money-currency strong{flex:1;font-size:12px;font-weight:500;overflow-wrap:anywhere}.rf-money-currency small{font-size:10px;color:#939da5;overflow-wrap:anywhere;max-width:40%}.rf-money-catalog{padding:9px;margin-top:6px;border:1px solid #3e464d;border-radius:6px;background:#15191c}.rf-money-transfer .rf-money-catalog .rf-utility-search{padding-inline:9px}.rf-money-catalog .rf-money-units{margin-top:7px}
