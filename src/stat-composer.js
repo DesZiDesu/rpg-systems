@@ -1,31 +1,14 @@
-import {statTrainingTargets} from './stat-training.js?v=0.77.2';
-import {currencyDisplay} from './currency-config.js?v=0.77.2';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.77.2';
+import {composerIcon as glyph} from './composer-icons.js?v=0.77.3';
+import {statTrainingTargets} from './stat-training.js?v=0.77.3';
+import {currencyDisplay} from './currency-config.js?v=0.77.3';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.77.3';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const translated=(v,th,target)=>{
  if(target?.path.startsWith('player.customStats.'))return String(v||'');
  const parts=String(v||'').split(' / ');return th?parts.at(-1):parts[0];
 };
-const glyph=name=>{
- if(name==='train')return '<i class="fa-solid fa-dumbbell rf-stat-training-icon" aria-hidden="true"></i>';
- const paths={
-  hp:'<path d="M8 13S2 9.5 2 5.7C2 2.5 6 1.7 8 4c2-2.3 6-1.5 6 1.7C14 9.5 8 13 8 13Z"/>',
-  mp:'<path d="m8 2 1.7 4.3L14 8l-4.3 1.7L8 14 6.3 9.7 2 8l4.3-1.7L8 2Z"/>',
-  stamina:'<path d="m9 2-6 7h4l-1 5 7-8H9l1-4Z"/>',
-  intelligence:'<path d="M8 4C5 2 3 2 1 3v10c3-1 5-1 7 1 2-2 4-2 7-1V3c-2-1-4-1-7 1Zm0 0v10"/>',
-  strength:'<path d="M5 8h6M3 4v8M5 5v6M11 5v6M13 4v8"/>',
-  defense:'<path d="m8 2 5 2v4c0 3-5 6-5 6S3 11 3 8V4l5-2Z"/>',
-  agility:'<path d="M2 5h8a2 2 0 1 0-2-2M2 8h11a2 2 0 1 1-2 2M2 11h4"/>',
-  hunger:'<path d="M3 2v5m2-5v5M7 2v5M3 5h4M5 7v7M12 2c-2 2-2 5 0 6h1m0-6v12"/>',
-  thirst:'<path d="M8 2S3 7.5 3 10a5 5 0 0 0 10 0c0-2.5-5-8-5-8Z"/>',
-  info:'<circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 4v.3"/>',
-  check:'<path d="m3 8 3 3 7-7"/>',
-  chevron:'<path d="m6 3 5 5-5 5"/>',
-  pin:'<path d="M12 6c0 3-4 7-4 7S4 9 4 6a4 4 0 0 1 8 0Z"/><circle cx="8" cy="6" r="1.3"/>',
- };
- return `<svg viewBox="0 0 16 16" aria-hidden="true">${paths[name]||paths.mp}</svg>`;
-};
+
 
 export const STAT_COMPOSER_LAYOUTS=Object.freeze(['A','B','C']);
 export const normalizeStatComposerLayout=value=>STAT_COMPOSER_LAYOUTS.includes(value)?value:'C';

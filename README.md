@@ -1,12 +1,14 @@
 # RoleForge
 
-**Public release: 0.77.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.77.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+**Fixed in 0.77.3:** chatbar tab scrolling no longer swipes chat replies. The all-windows button opens an in-page picker, training controls use consistent native icons, and long H-Stats values stay inside their cells. [Details and native browser checks](docs/chatbar-v0.77.3.th.md).
 
 ## Workshop and Great Sage
 

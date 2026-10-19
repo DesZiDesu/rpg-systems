@@ -1,9 +1,10 @@
-import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.77.2';
-import {completeItemDefinition} from './item-definition.js?v=0.77.2';
-import {itemStatOptions,itemStatSummary,itemStatLabel} from './item-effects.js?v=0.77.2';
-import {commerceIconMarkup as icon} from './commerce-icons.js?v=0.77.2';
-import {normalizeItemUsage,itemAvailability,itemReserved,itemRecord,missingInventoryDetails} from './item-core.js?v=0.77.2';
-import {itemSaleBlocked} from './commerce-rights.js?v=0.77.2';
+import {composerIcon} from './composer-icons.js?v=0.77.3';
+import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.77.3';
+import {completeItemDefinition} from './item-definition.js?v=0.77.3';
+import {itemStatOptions,itemStatSummary,itemStatLabel} from './item-effects.js?v=0.77.3';
+import {commerceIconMarkup as icon} from './commerce-icons.js?v=0.77.3';
+import {normalizeItemUsage,itemAvailability,itemReserved,itemRecord,missingInventoryDetails} from './item-core.js?v=0.77.3';
+import {itemSaleBlocked} from './commerce-rights.js?v=0.77.3';
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function createItemComposer({dock,document:doc=globalThis.document,language=()=> 'en',perform,inspect=()=>{},cancel=()=>{},clearResult=()=>{}}){
  const itemPanel=doc.createElement('section'),lootPanel=doc.createElement('section');itemPanel.className=lootPanel.className='rf-item-panel';
@@ -40,7 +41,7 @@ export function createItemComposer({dock,document:doc=globalThis.document,langua
     if(ownedBlocked)content+=`<p class="rf-item-note">${icon('lock')}${esc(t('ของเช่าหรือสิทธิ์บริการ · ต้องคืนหรือเปลี่ยนสิทธิ์ผ่านผู้ให้บริการ','Rental/service entitlement: return or transfer through its provider.'))}</p>`;
     else if(!view.npcs.length)content+=`<p class="rf-item-note">${icon('info')}${esc(t('ไม่มี NPC อยู่ในฉากนี้ จึงยังมอบให้ผู้รับไม่ได้','No NPC is present in this scene to receive the item.'))}</p>`;
     if(availability.error==='unknown')content+=button('inspect',icon('search')+esc(t('เตรียมโรลตรวจสอบไอเทม','Draft an inspection role')));
-    content+=button('configure',icon('settings')+esc(t('กำหนดคุณสมบัติไอเทม','Configure item properties')));
+    content+=button('configure',composerIcon('settings')+esc(t('กำหนดคุณสมบัติไอเทม','Configure item properties')));
     content+=button('picker',icon('item')+esc(t('เลือกไอเทมอื่น','Choose another item')),{extra:'class="rf-item-row-action"'});
    }else{
     content+=`<div class="rf-item-quantity-line"><span>${esc(t('จำนวน','Quantity'))}</span>${stepper('action',quantity,item.quantity)}</div>`;

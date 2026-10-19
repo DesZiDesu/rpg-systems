@@ -1,4 +1,4 @@
-/* Preview: three optional readers share the existing dock and its one scroll
+/* Three optional readers share the existing dock and its one scroll
    owner. Lists paginate instead of adding nested mobile scroll containers. */
 .rf-utility-composer{--u-accent:var(--tretaresia-accent,#cbb77c);box-sizing:border-box;min-width:0;width:100%;border:1px solid #414345;border-radius:10px;background:linear-gradient(125deg,#202123,#191b1d);color:#ddd;font:13px/1.6 system-ui,sans-serif;container-type:inline-size;overflow:hidden}
 .rf-utility-composer *{box-sizing:border-box;min-width:0}.rf-utility-composer .rf-ability-heading{padding:6px 12px;border-bottom:1px solid #393c3f}.rf-utility-composer .rf-ability-heading>span{display:flex;align-items:center;gap:9px}.rf-utility-composer .rf-ability-heading>span>i{font-size:15px;color:#b9c0c7}.rf-utility-composer .rf-ability-heading small{font:400 10px/1.4 system-ui;color:#939ba2}.rf-utility-composer button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}.rf-utility-composer button:disabled{opacity:.35;cursor:default}.rf-utility-composer button:focus-visible,.rf-utility-composer input:focus-visible,.rf-utility-composer select:focus-visible,.rf-utility-composer summary:focus-visible{outline:2px solid var(--u-accent);outline-offset:-2px}.rf-utility-composer .rf-ability-heading button{min-width:34px;min-height:34px;padding:6px 9px}.rf-utility-composer .rf-ability-heading button i{font-size:12px}
@@ -62,3 +62,19 @@
 .rf-mission-reward>span>small{display:block;color:#97917f;font:9px/1.5 system-ui}
 .rf-mission-reward>span{font-size:11px}
 .rf-mission-navigation label{min-width:80px}
+
+/* Host themes may give dt/dd and strong a fixed width or nowrap. Keep each
+   saved value readable inside its own cell, including long names and URLs. */
+.rf-utility-composer :is(.rf-utility-body,.rf-utility-person,.rf-utility-h-fields,.rf-utility-h-fields>div){min-width:0;max-width:100%}
+.rf-utility-composer :is(.rf-utility-person strong,.rf-utility-person small,.rf-utility-h-fields dt,.rf-utility-h-fields dd,.rf-utility-h-fields strong,.rf-utility-h-fields small,.rf-utility-h-fields em,.rf-utility-bond strong,.rf-utility-bond small,.rf-utility-progress-label>*){min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+.rf-utility-composer .rf-utility-h-fields :is(dt,dd){width:auto;padding:0;float:none}
+.rf-utility-composer .rf-utility-h-fields>div{margin:0;min-inline-size:0}
+.rf-utility-composer .rf-utility-person{flex-wrap:wrap}
+.rf-utility-composer .rf-utility-person>div{flex:1 1 100px}
+.rf-utility-composer .rf-utility-private{white-space:normal;overflow-wrap:anywhere}
+.rf-utility-composer .rf-utility-bond{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rf-utility-composer .rf-utility-item small{white-space:normal;overflow-wrap:anywhere}
+.rf-utility-composer .rf-mission-footer{flex-wrap:wrap}
+.rf-utility-composer .rf-mission-reward{flex:1 1 120px;min-width:0}
+.rf-utility-composer .rf-utility-filters button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+@container(max-width:350px){.rf-utility-h-fields{grid-template-columns:minmax(0,1fr)}.rf-utility-private{flex-basis:100%;justify-content:flex-end}}
