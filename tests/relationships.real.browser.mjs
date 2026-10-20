@@ -189,6 +189,11 @@ async function generate(text) {
   );
   await p.waitForTimeout(650);
 }
+async function relationshipTab(tab) {
+  const section = tab === "history" ? "History" : "Summary";
+  await dock().locator("[data-utility-h-section=" + section + "]").click();
+  if (tab === "rules") await dock().locator("[data-utility-h-rules]").click();
+}
 async function chooseTarget(root, id) {
   await root.locator("[data-rel-action=choose]").click();
   await root
@@ -752,9 +757,7 @@ try {
     );
     await chooseDock();
     await shot(device + "-dock-after");
-    await panel()
-      .locator("[data-rel-action=tab][data-rel-tab=history]")
-      .click();
+    await relationshipTab("history");
     assert.match(await panel().innerText(), /Mira.*Kai/s);
     await panel().screenshot({
       path: out + "/" + device + "-events-panel.png",
@@ -778,11 +781,10 @@ try {
     console.log(device, "native swipe alternative restored counters");
     const beforeCalls = report.requests.length,
       beforeChat = await p.evaluate(() => SillyTavern.getContext().chat.length);
-    await panel()
-      .locator("[data-rel-action=tab][data-rel-tab=overview]")
-      .click();
+    await relationshipTab("overview");
     await chooseTarget(panel(), "kai");
-    await panel().locator("[data-rel-action=edit]").click();
+    await relationshipTab("rules");
+    await panel().locator("[data-rel-edit=true]").click();
     const f = panel().locator("[data-rel-form=pair]");
     await f.locator("[name=trust]").fill("72");
     await f.locator("[name=reason]").fill("Manual author correction");
@@ -792,7 +794,7 @@ try {
       .filter({ hasText: "บันทึกแล้ว" })
       .waitFor();
     assert.equal(await metric(panel(), "trust"), 72);
-    await panel().locator("[data-rel-action=tab][data-rel-tab=rules]").click();
+    await relationshipTab("rules");
     await panel().locator("[name=pace][value=balanced]").check();
     await panel()
       .locator("[name=anchor]")
@@ -919,7 +921,7 @@ try {
       1,
     );
     await chooseDock();
-    await panel().locator("[data-rel-action=tab][data-rel-tab=rules]").click();
+    await relationshipTab("rules");
     await p.locator("#extensions-settings-button .drawer-toggle").click();
     if (
       !(await p
@@ -981,9 +983,7 @@ try {
     for (const width of mobile ? [320, 390, 430] : [768, 1440]) {
       await p.setViewportSize({ width, height: mobile ? 844 : 1000 });
       for (const tab of ["overview", "history", "rules"]) {
-        await panel()
-          .locator("[data-rel-action=tab][data-rel-tab=" + tab + "]")
-          .click();
+        await relationshipTab(tab);
         const fit = await panel().evaluate((n) => ({
           width: innerWidth,
           inside: n.getBoundingClientRect().right <= innerWidth + 1,
@@ -1012,9 +1012,7 @@ try {
       width: mobile ? 390 : 1440,
       height: mobile ? 844 : 1000,
     });
-    await panel()
-      .locator("[data-rel-action=tab][data-rel-tab=overview]")
-      .click();
+    await relationshipTab("overview");
     await chooseTarget(panel(), "kai");
     await shot(device + "-dock-final");
     m = await main();

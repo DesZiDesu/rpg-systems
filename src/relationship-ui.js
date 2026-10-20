@@ -7,7 +7,7 @@ import {
   relationshipProfile,
   relationshipRanking,
   relationshipPreset,
-} from "./relationship-core.js?v=0.79.1";
+} from "./relationship-core.js?v=0.80.0";
 const esc = (v) =>
   String(v ?? "").replace(
     /[&<>"']/gu,
@@ -27,10 +27,14 @@ export function createRelationshipPanel({
   importPreset = async () => false,
   busy = () => false,
   variant = "dock",
+  layout = "standard",
+  selectionChanged = () => {},
 } = {}) {
   const root = doc.createElement("section");
   root.className = "rf-relationships";
   root.dataset.relationshipPanel = variant;
+  const dossier = variant === "dock" && layout === "dossier";
+  if (dossier) root.classList.add("rf-rel-dossier");
   let state = null,
     scope = "",
     actor = "",
@@ -142,6 +146,29 @@ export function createRelationshipPanel({
       `<div class="rf-rel-pair-head"><div><small>${esc(t("ความรู้สึกของ", "Feelings of"))} ${esc(name(actor))}</small><strong><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> ${esc(name(target))}</strong></div>${icon("choose", "user-group", t("เลือกคนที่ต้องการดู", "Choose a person"))}${icon("edit", "pen", t("แก้ไขคู่นี้", "Edit this pair"))}</div>${picker ? targetPicker() : ""}${link ? `<div class="rf-rel-meters">${RELATIONSHIP_METRICS.map((k) => `<div data-rel-metric="${k}"><div><span>${esc(metrics()[k])}</span><strong>${fmt(link[k])}<small> / 100</small></strong></div><div class="rf-rel-track" role="progressbar" aria-label="${esc(metrics()[k])}" aria-valuemin="0" aria-valuemax="100" ${link[k] === null ? 'aria-valuetext="Unknown"' : `aria-valuenow="${link[k]}"`}><i style="width:${link[k] ?? 0}%"></i></div></div>`).join("")}</div><div class="rf-rel-bond"><span><i class="fa-solid fa-link" aria-hidden="true"></i>${esc(statuses()[bond.status])}</span><span>${esc(agreements()[bond.agreement])}</span>${bond.breach ? `<span class="rf-rel-breach">${esc(t("มีการผิดข้อตกลง", "Agreement breached"))}${bond.repairing ? " · " + esc(t("กำลังฟื้นฟู", "Repairing")) : ""}</span>` : ""}<span>${esc(t("เหตุการณ์ใกล้ชิด", "Intimate encounters"))} <b data-rel-encounters>${link.encounters}</b></span></div>${link.lastReason ? `<p class="rf-rel-reason">${esc(link.lastReason)}</p>` : ""}` : ""}<footer class="rf-rel-values"><span>${esc(t("การเปลี่ยนหลักยึด", "Corruption"))} <b>${fmt(profile.corruption)}</b></span><span>${esc(t("แรงยึดเหนี่ยว", "Resistance"))} <b>${profile.resistance}</b></span></footer>${editing ? editForm(link, bond) : ""}`
     );
   }
+  // The dock has a single category bar. The main RoleForge panel continues
+  // to use the original renderer, tabs, editors and directory.
+  function dossierOverview() {
+    const link = relationshipLink(state, actor, target),
+      bond = relationshipBond(state, actor, target),
+      profile = relationshipProfile(state, actor);
+    if (!link) return `<p class="rf-rel-empty">${esc(t("เลือก NPC ใน H-Stats เพื่อดูสายสัมพันธ์", "Add an NPC to H-Stats to view relationships."))}</p>`;
+    const progress = (key, label, segmented = false) => {
+      const v = link[key];
+      return `<div class="${segmented ? "rf-hd-chapters" : "rf-hd-track"}" role="progressbar" aria-label="${esc(label)}" aria-valuemin="0" aria-valuemax="100" ${v == null ? `aria-valuetext="${esc(t("ยังไม่ทราบ", "Unknown"))}"` : `aria-valuenow="${v}"`}>${segmented ? Array.from({ length: 20 }, (_, i) => `<i${i * 5 < (v || 0) ? ' class="is-filled"' : ""}></i>`).join("") : `<i style="width:${v ?? 0}%"></i>`}</div>`;
+    };
+    const leaders = [
+      ["love", t("ผูกพันมากที่สุด", "Strongest bond")],
+      ["interest", t("สนใจมากที่สุด", "Strongest interest")],
+    ].map(([metric, label]) => {
+      const list = relationshipRanking(state, actor, metric),
+        top = list.filter(v => v[metric] === list[0]?.[metric]);
+      return `<article class="rf-hd-leader" data-rel-leader="${metric}"><small>${esc(label)}</small><div>${top.length ? `<span class="rf-hd-initial" aria-hidden="true">${esc(Array.from(name(top[0].targetId))[0])}</span><strong title="${esc(top.map(v => name(v.targetId)).join(" / "))}">${esc(name(top[0].targetId))}${top.length > 1 ? ` <em>+${top.length - 1}</em>` : ""}</strong><b>${fmt(top[0][metric])}</b>` : `<strong>${esc(t("ยังไม่มีข้อมูล", "Not established"))}</strong>`}</div></article>`;
+    }).join("");
+    return `<div class="rf-hd-pair"><div><small>${esc(t("ความรู้สึกต่อ", "Feelings toward"))}</small>${button("choose", `<strong>${esc(name(target))}</strong><i class="fa-solid fa-chevron-down" aria-hidden="true"></i>`, `aria-label="${esc(t("เลือกคนที่ต้องการดู", "Choose a person"))}" aria-expanded="${picker}"`)}</div><span class="rf-hd-bond"><i class="fa-solid fa-link" aria-hidden="true"></i>${esc(statuses()[bond.status])}</span></div>${picker ? targetPicker() : ""}
+      <div class="rf-hd-scores"><div class="rf-hd-spotlight" data-rel-metric="love"><small>${esc(t("ความผูกพัน", "Love / bond"))}</small><div><strong>${fmt(link.love)}</strong><span>/ 100</span></div>${progress("love", metrics().love, true)}</div><div class="rf-hd-other-scores">${RELATIONSHIP_METRICS.filter(k => k !== "love").map(k => `<div class="rf-hd-meter" data-rel-metric="${k}"><div><span>${esc(k === "interest" ? t("สนใจ", "Interest") : k === "trust" ? t("เชื่อใจ", "Trust") : metrics()[k])}</span><strong>${fmt(link[k])}<small> / 100</small></strong></div>${progress(k, metrics()[k])}</div>`).join("")}</div></div>
+      ${bond.breach ? `<p class="rf-hd-breach">${esc(t("มีการผิดข้อตกลง", "Agreement breached"))}${bond.repairing ? " · " + esc(t("กำลังฟื้นฟู", "Repairing")) : ""}</p>` : ""}<div class="rf-hd-leaders">${leaders}</div><footer class="rf-hd-foot"><span>${esc(t("หลักยึดเปลี่ยน", "Corruption"))} <b>${fmt(profile.corruption)}</b></span><span>${esc(t("แรงยึดเหนี่ยว", "Resistance"))} <b>${fmt(profile.resistance)}</b></span><span>${esc(t("ใกล้ชิด", "Encounters"))} <b data-rel-encounters>${link.encounters}${language() === "th" ? " ครั้ง" : ""}</b></span></footer>${editing ? editForm(link, bond) : ""}`;
+  }
   function editForm(link, bond) {
     return `<form data-rel-form="pair" class="rf-rel-form"><p>${esc(t("แก้ข้อมูลโดยตรงสำหรับผู้เล่น/ผู้สร้างการ์ด · เว้นว่าง = ยังไม่ทราบ", "Direct author/player edit. Empty = unknown."))}</p><div class="rf-rel-inputs">${RELATIONSHIP_METRICS.map((k) => input(k, metrics()[k], link?.[k])).join("")}</div><fieldset><legend>${esc(t("สถานะที่ตกลงกัน", "Established relationship"))}</legend>${RELATIONSHIP_STATUSES.map((s) => `<label><input type="radio" name="status" value="${s}"${s === bond?.status ? " checked" : ""}>${esc(statuses()[s])}</label>`).join("")}</fieldset><fieldset><legend>${esc(t("ข้อตกลง", "Agreement"))}</legend>${Object.entries(
       agreements(),
@@ -204,6 +231,14 @@ export function createRelationshipPanel({
     if (!ids.includes(target))
       target =
         relationshipRanking(state, actor, "love")[0]?.targetId || ids[0] || "";
+    if (dossier) {
+      root.dataset.relationshipView = tab;
+      root.dataset.relationshipActor = actor;
+      root.dataset.relationshipTarget = target;
+      selectionChanged({ actorId: actor, targetId: target, bond: relationshipBond(state, actor, target) });
+      root.innerHTML = `${tab === "rules" ? `<nav class="rf-hd-tools" aria-label="${esc(t("ตั้งค่าความสัมพันธ์", "Relationship settings"))}">${button("tab", esc(t("แก้ไขคู่นี้", "Edit pair")), 'data-rel-tab="overview" data-rel-edit="true"')}${button("tab", esc(t("กติกา / Preset", "Rules / Preset")), 'data-rel-tab="rules" aria-pressed="true"')}</nav>` : ""}${tab === "overview" ? dossierOverview() : tab === "history" ? history() : settingsForm()}<p class="rf-rel-feedback" data-rel-feedback role="status" aria-live="polite">${esc(status)}</p>`;
+      return;
+    }
     root.innerHTML = `<header class="rf-rel-heading"><span><i class="fa-solid fa-heart" aria-hidden="true"></i>${esc(t("สายสัมพันธ์", "Relationships"))}</span><small>${esc(name(actor))}</small></header><nav class="rf-rel-tabs" aria-label="${esc(t("ความสัมพันธ์", "Relationships"))}">${[
       ["overview", t("ภาพรวม", "Overview")],
       ["history", t("เหตุการณ์", "Events")],
@@ -273,7 +308,7 @@ export function createRelationshipPanel({
     if (action === "tab") {
       tab = b.dataset.relTab;
       picker = false;
-      editing = false;
+      editing = b.dataset.relEdit === "true";
       page = 0;
       status = "";
       render();
@@ -406,6 +441,15 @@ export function createRelationshipPanel({
   });
   return {
     root,
+    show(view) {
+      if (!["overview", "history", "rules"].includes(view)) return;
+      tab = view;
+      picker = false;
+      editing = false;
+      page = 0;
+      status = "";
+      render();
+    },
     update(next, key, actorId) {
       const changed = scope !== key || actor !== actorId;
       if (changed) {

@@ -539,3 +539,28 @@
 .rf-utility-profile-picker > summary > i {
   flex: none;
 }
+
+/* Main H-Stats keeps its existing layout and controls. Only the material,
+   typography and button treatment follow the native RoleForge palette. */
+.rf-relationships[data-relationship-panel="main"] {
+  --rel-accent: var(--tretaresia-accent, #d6b458);
+  --rel-edge: var(--tretaresia-line, #61502c);
+  --rel-muted: var(--tretaresia-muted, #9e9785);
+  --rel-bg: #100f0d;
+  color: var(--tretaresia-ink, #e8e1cc);
+  background: linear-gradient(125deg,rgba(214,180,88,.045),transparent 65%),#100f0d;
+  box-shadow: inset 0 0 0 3px #100f0d,inset 0 0 0 4px rgba(214,180,88,.08);
+  font-family: var(--tretaresia-body-font, "Noto Sans Thai", system-ui, sans-serif);
+}
+.rf-relationships[data-relationship-panel="main"] :is(button,input,textarea,fieldset,.rf-rel-picker,.rf-rel-leaders article,.rf-rel-portable label) { border-radius: 0; }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-heading > span { color: var(--rel-accent); letter-spacing: .06em; }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-tabs button { border-bottom: 1px solid var(--rel-edge); }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-tabs button[aria-pressed="true"] { border-bottom: 2px solid var(--rel-accent); background: rgba(214,180,88,.07); }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-leaders article { border-color: var(--rel-edge); background: linear-gradient(135deg,rgba(214,180,88,.07),transparent); }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-leaders strong { font-family: Georgia,"Times New Roman",serif; font-weight: 400; color: var(--rel-accent); }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-pair-head strong { color: var(--tretaresia-ink,#e8e1cc); }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-track { border-radius: 0; height: 4px; background: rgba(214,180,88,.12); }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-track i { border-radius: 0; background: linear-gradient(90deg,#8e753e,var(--rel-accent)); }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-history article { border-bottom-color: var(--tretaresia-line-soft,#3b3322); }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-history article > span { color: var(--rel-accent); }
+.rf-relationships[data-relationship-panel="main"] .rf-rel-form > button[type="submit"] { color: #17130b; }

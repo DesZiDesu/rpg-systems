@@ -1,4 +1,4 @@
-import {validatePackage,normalizeProfile,LIMIT,compare,hashBytes} from './core.js?v=0.79.1';
+import {validatePackage,normalizeProfile,LIMIT,compare,hashBytes} from './core.js?v=0.80.0';
 let dbPromise;
 // Keep the prototype database name so existing local installations retain data.
 function db(){return dbPromise||=new Promise((resolve,reject)=>{const r=indexedDB.open('roleforge-workshop-preview-v1',1);r.onupgradeneeded=()=>{r.result.createObjectStore('packs',{keyPath:'id'});r.result.createObjectStore('profiles',{keyPath:'key'});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}

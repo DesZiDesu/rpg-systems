@@ -1,0 +1,53 @@
+{
+  "version": "0.80.0",
+  "host": "Actual SillyTavern",
+  "controlledReplies": true,
+  "liveProviderTest": false,
+  "checks": [
+    {
+      "device": "desktop",
+      "nativeBranchButton": true,
+      "oldPointBeyondThreeCheckpoints": true,
+      "entireProgressRestored": true,
+      "futureExcludedFromJournal": true,
+      "parentIsolated": true,
+      "reloadIdempotent": true,
+      "userMessageBranch": true,
+      "nonactiveAndActiveSwipe": true,
+      "ordinaryNewChatContinuity": true,
+      "legacySurvivingCheckpoint": true,
+      "missingLegacyPointBlocksFuture": true,
+      "stateBackupWithPresetsRecovers": true,
+      "hstatsDossier": true,
+      "child": "Branch Journal desktop 1792539539658 - 2026-10-20@23h38m59s667ms - Branch #1"
+    },
+    {
+      "device": "mobile",
+      "nativeBranchButton": true,
+      "oldPointBeyondThreeCheckpoints": true,
+      "entireProgressRestored": true,
+      "futureExcludedFromJournal": true,
+      "parentIsolated": true,
+      "reloadIdempotent": true,
+      "userMessageBranch": true,
+      "nonactiveAndActiveSwipe": true,
+      "ordinaryNewChatContinuity": true,
+      "legacySurvivingCheckpoint": true,
+      "missingLegacyPointBlocksFuture": true,
+      "stateBackupWithPresetsRecovers": true,
+      "hstatsDossier": true,
+      "child": "Branch Journal mobile 1792539598306 - 2026-10-20@23h39m58s315ms - Branch #1"
+    }
+  ],
+  "errors": [],
+  "modelCalls": 0,
+  "hostVersion": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "pass": true
+}

@@ -1,4 +1,5 @@
 import * as relationshipCore from '../src/relationship-core.js';
+import * as chatBranches from '../src/chat-branches.js';
 import * as nameKnowledge from '../src/name-knowledge.js';
 import * as moneyTransfer from '../src/money-transfer.js';
 import * as weaponContinuation from '../src/weapon-continuation.js';
@@ -86,10 +87,54 @@ const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace
  vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantVariantKey,assistantTurnKey,scheduleAssistantPatch,cleanInlinePatchSurfaces,assistantPatchTimers,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig,shortHash,getForgePreset,activeLoreOptions,saveCharacterPackSetup,saveChatPresetComponents,currentWorldPreset,defaultWorldPreset,getGlobalSettings,changeWorldSetting,initializeChatPresets,queueAssistantTurnReplacement,bindCheckbox})',sandbox);
 const host=sandbox.testHost;
+Object.assign(sandbox,chatBranches);
+Object.assign(sandbox,{MEMORY_LINK_KEY:memory.MEMORY_LINK_KEY});
+vm.runInContext('Object.assign(globalThis.testHost,{prepareBranchState,finishBranchRestore,captureCurrentBranchPoint,currentBranchPoints,resumeUnfinishedAssistantPatch})',sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{syncTravelTracker})',sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{weaponScope,performMoneyTransfer,saveNameKnowledge,commitStoryProgress,readRelationshipState,saveRelationshipChange,importRelationshipPreset})',sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{activeNpcOptions,persistNpcOptions,hasStoryNpcCapacity,prepareNpcReferences,archiveDiagnostics})',sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{reconcileCompletedTurn,advanceTurnResourcesFromUserMessage,processUserTravelIntent,statusEffect,combatLogEntry})',sandbox);
+
+test('native copied branch metadata restores an old complete point, prunes future records and leaves its parent unchanged',async()=>{
+ const prior={chat:context.chat,chatMetadata:context.chatMetadata,extensionSettings:context.extensionSettings,saveMetadata:context.saveMetadata,getCurrentChatId:context.getCurrentChatId,characters:context.characters,characterId:context.characterId};
+ try{
+  let chatId='branch-parent';context.getCurrentChatId=()=>chatId;context.characters=[{name:'Branch fixture',avatar:'branch-fixture.png',data:{extensions:{}}}];context.characterId=0;
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false,eventNotifications:false,npcDiaryFrequency:'off'}};context.saveMetadata=async()=>{};
+  context.chat=[{is_user:false,mes:'Opening'}];context.chatMetadata={integrity:'parent-integrity',tretaresia_rpg_state:host.defaultState()};await host.saveCurrentChatMetadata(context);
+  for(let i=1;i<=8;i++){
+   context.chat.push({is_user:true,mes:'I wait '+i},{is_user:false,mes:'Recorded reply '+i});const state=host.defaultState();state.player.hp.current=100-i;state.progression.currency.gold=i*10;state.player.hStats.oralSexCount=i;
+   state.npcs=[host.npcProfile({id:'mira',name:'Mira',met:true,trust:i,hStats:{oralSexCount:i}})];state.relationships=relationshipCore.normalizeRelationships({links:[{actorId:'mira',targetId:'player',trust:i}]});
+   state.location.place='Hall '+i;state.syncCursor={user:context.chat.length-2,assistant:context.chat.length-1};if(i>2)state.inventory=[{id:'future-sword',name:'FUTURE_ONLY_SWORD',quantity:1}];
+   context.chatMetadata.tretaresia_rpg_state=host.storedNpcState(host.normalize(state));context.chatMetadata.tretaresia_rpg_visible_hstats_npcs=['mira'];await host.saveCurrentChatMetadata(context);
+  }
+  const stale=host.defaultState();stale.player.hp.current=1;stale.npcs=[host.npcProfile({id:'mira',name:'Mira',trust:99})];const oldVariant=host.assistantVariantKey(context.chat[4]);context.chatMetadata.tretaresia_rpg_turn_history={version:1,entries:[{key:host.assistantTurnKey(4),messageId:4,baseState:stale,activeVariant:oldVariant,variants:{[oldVariant]:{state:stale,reconcileVersion:3}}}]};
+  const parent=context.chatMetadata,parentChat=context.chat,parentBytes=JSON.stringify(parent);chatId='branch-child';context.chat=structuredClone(parentChat.slice(0,5));context.chatMetadata={...structuredClone(parent),main_chat:'branch-parent',integrity:'child-integrity',other_tracker:{value:999},tretaresia_rpg_memory_link:{owner:'character:branch-fixture.png',ancestry:['branch-parent']}};
+  const restored=host.getState();assert.equal(restored.progression.currency.gold,20);assert.equal(restored.player.hp.current,98);assert.equal(restored.player.hStats.oralSexCount,2);assert.equal(restored.npcs.find(n=>n.id==='mira').hStats.oralSexCount,2);assert.equal(restored.relationships.links[0].trust,2);assert.equal(restored.location.place,'Hall 2');assert.equal(restored.inventory.length,0);const checkpoint=host.assistantCheckpoint(4);assert.equal(checkpoint.variants[checkpoint.activeVariant].state.player.hp.current,98);
+  await host.finishBranchRestore();assert.equal(context.chatMetadata.tretaresia_rpg_branch_restore.status,'restored');assert(!JSON.stringify(context.chatMetadata.tretaresia_rpg_branch_history).includes('FUTURE_ONLY_SWORD'));assert.equal(context.chatMetadata.tretaresia_rpg_memory_link,undefined);assert.equal(context.chatMetadata.other_tracker.value,999);assert.equal(JSON.stringify(parent),parentBytes);
+  chatId='branch-parent';context.chat=parentChat;context.chatMetadata=parent;assert.equal(host.getState().progression.currency.gold,80);
+ }finally{Object.assign(context,prior);}
+});
+test('a legacy branch uses the selected surviving reply checkpoint rather than its later copied state',async()=>{
+ const prior={chat:context.chat,chatMetadata:context.chatMetadata,extensionSettings:context.extensionSettings,saveMetadata:context.saveMetadata,getCurrentChatId:context.getCurrentChatId};
+ try{
+  let chatId='legacy-parent';context.getCurrentChatId=()=>chatId;context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false,eventNotifications:false,npcDiaryFrequency:'off'}};context.saveMetadata=async()=>{};
+  context.chat=[{is_user:false,mes:'Opening'},{is_user:true,mes:'Wait'},{is_user:false,mes:'Past reply'},{is_user:true,mes:'Later'},{is_user:false,mes:'Future reply'}];
+  const old=host.defaultState();old.progression.currency.gold=2;old.syncCursor={user:1,assistant:2};const future=host.defaultState();future.progression.currency.gold=99;future.syncCursor={user:3,assistant:4};context.chatMetadata={integrity:'legacy-integrity',tretaresia_rpg_state:future};
+  const key=host.assistantTurnKey(2),variant=host.assistantVariantKey(context.chat[2]);context.chatMetadata.tretaresia_rpg_turn_history={version:1,entries:[{key,messageId:2,baseState:host.defaultState(),activeVariant:variant,variants:{[variant]:{state:old,reconcileVersion:3}}},{messageId:4,key:host.assistantTurnKey(4),variants:{},baseState:old}]};
+  context.chatMetadata={...structuredClone(context.chatMetadata),main_chat:'legacy-parent',integrity:'legacy-branch'};context.chat=context.chat.slice(0,3);chatId='legacy-child';assert.equal(host.getState().progression.currency.gold,2);await host.finishBranchRestore();assert.equal(context.chatMetadata.tretaresia_rpg_branch_restore.status,'restored');assert.equal(context.chatMetadata.tretaresia_rpg_turn_history.entries.length,1);
+ }finally{Object.assign(context,prior);}
+});
+test('an unavailable historical point never sends copied future state; an acknowledged state import recovers it',async()=>{
+ const prior={chat:context.chat,chatMetadata:context.chatMetadata,extensionSettings:context.extensionSettings,saveMetadata:context.saveMetadata,getCurrentChatId:context.getCurrentChatId,setExtensionPrompt:context.setExtensionPrompt},priorDocument=sandbox.document;
+ try{
+  sandbox.document={...priorDocument,getElementById:id=>id==='tretaresia-travel-tracker'?{}:priorDocument.getElementById(id)};
+  let chatId='missing-parent';context.getCurrentChatId=()=>chatId;context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false,eventNotifications:false,npcDiaryFrequency:'off'}};context.saveMetadata=async()=>{};
+  context.chat=[{is_user:false,mes:'Opening'},{is_user:true,mes:'Old point'},{is_user:false,mes:'Later'}, {is_user:true,mes:'Future'},{is_user:false,mes:'After future'}];const future=host.defaultState();future.progression.currency.gold=99;context.chatMetadata={integrity:'missing-parent-integrity',tretaresia_rpg_state:future};await host.saveCurrentChatMetadata(context);
+  context.chatMetadata={...structuredClone(context.chatMetadata),main_chat:'missing-parent',integrity:'missing-child'};context.chat=context.chat.slice(0,2);chatId='missing-child';assert.notEqual(host.getState().progression.currency.gold,99);await host.finishBranchRestore();assert.equal(context.chatMetadata.tretaresia_rpg_branch_restore.status,'missing');chatId='missing-renamed';assert.equal(host.prepareBranchState().missing,true);
+  let aborted=false;await sandbox.TretaresiaRpgGenerateInterceptor(context.chat,100000,()=>{aborted=true;},'normal');assert(aborted);
+  const recovered=host.defaultState();recovered.progression.currency.gold=7;assert(await host.persistState(recovered,'import'));assert.equal(context.chatMetadata.tretaresia_rpg_branch_restore.status,'recovered');assert.equal(host.getState().progression.currency.gold,7);
+ }finally{Object.assign(context,prior);sandbox.document=priorDocument;}
+});
 
 test('NPC burns, corpses, old scars, speech and reasoning never invent player HP damage or a condition',()=>{
  const base=host.defaultState();base.player.name='Noah';base.player.hp.current=75;
@@ -3283,4 +3328,46 @@ test('player-NPC relationship events persist both H-Stats sheets, preserve unrel
   await host.processAssistantPatch(1,'normal');await host.processAssistantPatch(1,'normal');const after=host.getState();
   assert.equal(after.player.hStats.oralSexCount,8);assert.equal(after.player.hStats.mouthLastPartner,'Mira');assert.equal(after.npcs[0].hStats.oralSexCount,3);assert.equal(after.npcs[0].hStats.favoritePosition,'Established preference');assert.equal(after.relationships.links.find(v=>v.actorId==='player'&&v.targetId==='mira').encounters,1);
  }finally{Object.assign(context,{chat:prior.chat,chatMetadata:prior.metadata,extensionSettings:prior.settings,saveMetadata:prior.save});sandbox.document=prior.document;}
+});
+
+test('branch fingerprints normalize an uninitialized first swipe but keep identical-text alternatives distinct',()=>{
+ const prior=context.chat;
+ try{
+  context.chat=[{is_user:false,mes:'Same visible story'}];const first=host.currentBranchPoints(context)[0].hash;
+  context.chat[0].swipe_id=0;assert.equal(host.currentBranchPoints(context)[0].hash,first);
+  context.chat[0].swipe_id=1;assert.notEqual(host.currentBranchPoints(context)[0].hash,first);
+ }finally{context.chat=prior;}
+});
+test('a rejected branch save remains pending for retry and never changes its parent',async()=>{
+ const prior={chat:context.chat,chatMetadata:context.chatMetadata,extensionSettings:context.extensionSettings,saveMetadata:context.saveMetadata,getCurrentChatId:context.getCurrentChatId};
+ try{
+  let chatId='failed-save-parent';context.getCurrentChatId=()=>chatId;context.saveMetadata=async()=>{};context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false}};
+  context.chat=[{is_user:false,mes:'Opening'}];context.chatMetadata={integrity:'parent',tretaresia_rpg_state:host.defaultState()};await host.saveCurrentChatMetadata();const old=structuredClone(context.chatMetadata);
+  context.chat.push({is_user:true,mes:'Future'},{is_user:false,mes:'Future result'});context.chatMetadata.tretaresia_rpg_state.progression.currency.gold=90;await host.saveCurrentChatMetadata();const parent=JSON.stringify(context.chatMetadata);
+  context.chat=context.chat.slice(0,1);context.chatMetadata={...structuredClone(context.chatMetadata),main_chat:chatId,integrity:'fork'};chatId='failed-save-child';context.saveMetadata=async()=>{throw Error('Disk unavailable');};
+  assert.equal(host.getState().progression.currency.gold,old.tretaresia_rpg_state.progression.currency.gold);const receipt=host.prepareBranchState();await assert.rejects(host.finishBranchRestore(),/Disk unavailable/);assert.equal(receipt.needsSave,true);
+  context.saveMetadata=async()=>{};await host.finishBranchRestore();assert.equal(receipt.needsSave,false);assert.equal(context.chatMetadata.tretaresia_rpg_branch_restore.status,'restored');assert(parent.includes('90'));
+ }finally{Object.assign(context,prior);}
+});
+test('a card switch during branch media copying cannot save state into the new owner',async()=>{
+ const prior={chat:context.chat,chatMetadata:context.chatMetadata,extensionSettings:context.extensionSettings,saveMetadata:context.saveMetadata,getCurrentChatId:context.getCurrentChatId},priorStore=sandbox.SillyTavern.libs.localforage;
+ try{
+  let chatId='copy-parent';context.getCurrentChatId=()=>chatId;context.saveMetadata=async()=>{};context.extensionSettings={tretaresia_rpg:{autoContinuity:false,enableMemorySummaries:false}};
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'local',name:'Local',hasPortrait:true,portraitSource:'local',met:true})];context.chat=[{is_user:false,mes:'Opening'}];context.chatMetadata={integrity:'parent',tretaresia_rpg_state:state};await host.saveCurrentChatMetadata();
+  context.chatMetadata={...structuredClone(context.chatMetadata),main_chat:chatId,integrity:'fork'};chatId='copy-child';host.getState();let release,started;
+  const held=new Promise(r=>started=r);sandbox.SillyTavern.libs.localforage={getItem:()=>new Promise(r=>{release=r;started();}),setItem:async()=>{}};
+  const copying=host.finishBranchRestore();await held;let writes=0;const other={integrity:'other',tretaresia_rpg_state:host.defaultState()};context.chatMetadata=other;chatId='other-card-chat';context.saveMetadata=async()=>writes++;release(new Blob(['portrait']));assert.equal(await copying,null);assert.equal(writes,0);assert.equal(context.chatMetadata,other);assert.equal(other.tretaresia_rpg_branch_restore,undefined);
+ }finally{Object.assign(context,prior);sandbox.SillyTavern.libs.localforage=priorStore;}
+});
+
+test('a recovered backup acknowledges its exact retained protocol reply without replaying it on reload',async()=>{
+ const prior={chat:context.chat,chatMetadata:context.chatMetadata,extensionSettings:context.extensionSettings,saveMetadata:context.saveMetadata};
+ try{
+  context.saveMetadata=async()=>{};context.extensionSettings={tretaresia_rpg:{autoTrack:true,autoContinuity:false,enableMemorySummaries:false}};
+  const message={is_user:false,mes:'Saved reply <!--tretaresia_patch:{"ops":[["inc","progression.currency.gold",4]]}-->'};
+  const state=host.defaultState();state.syncCursor={user:0,assistant:1};context.chat=[{is_user:true,mes:'Wait'},message];context.chatMetadata={tretaresia_rpg_state:state,tretaresia_rpg_branch_restore:{status:'recovered'}};await host.saveCurrentChatMetadata();
+  host.resumeUnfinishedAssistantPatch();assert.equal(host.assistantPatchTimers.has(message),false);
+  message.mes='Different regenerated reply <!--tretaresia_patch:{"ops":[["inc","progression.currency.gold",8]]}-->';
+  host.resumeUnfinishedAssistantPatch();assert.equal(host.assistantPatchTimers.has(message),true);clearTimeout(host.assistantPatchTimers.get(message));host.assistantPatchTimers.delete(message);
+ }finally{Object.assign(context,prior);}
 });

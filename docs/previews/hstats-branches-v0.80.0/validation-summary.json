@@ -1,0 +1,102 @@
+{
+  "release": "0.80.0",
+  "baseRevision": "d5317f39b32752989fbbc19fbae4cbde0564b220",
+  "verificationDateUTC": "2026-10-20",
+  "unitAndIntegration": {
+    "command": "npm test",
+    "passed": 1532,
+    "failed": 0,
+    "syntaxCommand": "npm run check",
+    "syntaxPassed": true,
+    "coverage": [
+      "structural deltas and complete historical state",
+      "points beyond the three live swipe checkpoints",
+      "first-message origin and large arrays",
+      "unsafe/corrupt journal rejection",
+      "future edits in mutable parent checkpoints do not leak on branch swipe",
+      "save promise rejection and retry",
+      "switching owner during media copy",
+      "state backup recovery, including presets",
+      "renaming a branch with unavailable checkpoints keeps generation guarded",
+      "recovered backups do not replay an already applied retained protocol reply; different regenerated alternatives remain processable"
+    ]
+  },
+  "nativeSillyTavern": {
+    "hostVersion": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "browser": "Chromium /usr/bin/chromium",
+    "devices": [
+      "desktop 1440px",
+      "mobile touch emulation 390px"
+    ],
+    "commands": [
+      "npm run test:branches:real",
+      "npm run test:hstats-dossier:real",
+      "npm run test:relationships:real",
+      "npm run test:chatbar:touch:real"
+    ],
+    "reports": [
+      "branches-native.json",
+      "hstats-native.json",
+      "relationships-native.json",
+      "chatbar-native.json"
+    ],
+    "passed": true,
+    "layouts": {
+      "selectedHStats": 24,
+      "relationshipRegression": 15,
+      "chatbarRegression": 190
+    },
+    "themes": [
+      "Dark Lite",
+      "Azure",
+      "Dark V 1.0"
+    ],
+    "layoutWidths": [
+      320,
+      390,
+      430,
+      768,
+      1440
+    ],
+    "branchExample": {
+      "parentAfterEightRepliesGold": 46,
+      "branchAtSecondReplyGold": 13,
+      "futureTokenAbsent": true,
+      "childAfterPlayingGold": 33,
+      "parentUnaffected": true
+    },
+    "controlledReplies": true,
+    "liveModelProviderTest": false,
+    "extraModelCallsFromHStatsBrowsing": 0
+  },
+  "fixtureBrowser": {
+    "commands": [
+      "CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/h-stats.browser.mjs",
+      "CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/smart-memory-continuity.browser.mjs"
+    ],
+    "passed": true,
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "coverage": [
+      "original main H-Stats layouts, editing, portraits and chat isolation",
+      "memory summaries and full ordinary New Chat continuity including media and IndexedDB fallback"
+    ]
+  },
+  "limitations": [
+    "Points whose old checkpoints were discarded before this update cannot be restored exactly without a state backup; the branch warns and blocks normal generation rather than using the parent future.",
+    "Manual Sync is explicitly user initiated reconstruction, not guaranteed recovery of every discarded old value.",
+    "Physical iPhone/Safari and live model reasoning were not tested.",
+    "Shared author NPC/Lore libraries retain their intended current edits; this is a journal of chat progress, not historical copies of entire World Packs.",
+    "The journal lives in chat metadata and grows with observed changes; back up chats as well as cards."
+  ]
+}

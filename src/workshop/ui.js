@@ -1,7 +1,7 @@
-import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog} from './core.js?v=0.79.1';
-import {createStore,downloadPack} from './client.js?v=0.79.1';
-import {createSageScene} from './scene.js?v=0.79.1';
-import {createAddonLaunchers} from './launchers.js?v=0.79.1';
+import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog} from './core.js?v=0.80.0';
+import {createStore,downloadPack} from './client.js?v=0.80.0';
+import {createSageScene} from './scene.js?v=0.80.0';
+import {createAddonLaunchers} from './launchers.js?v=0.80.0';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Use SillyTavern's bundled icon family; Great Sage has its actual orb identity.
 const icons={close:'xmark',back:'arrow-left',arrow:'arrow-right',download:'download',search:'magnifying-glass',grid:'compass',sage:'atom',book:'book-open',check:'check',shield:'shield-halved',settings:'sliders',trash:'trash-can',clock:'clock-rotate-left',external:'arrow-up-right-from-square',refresh:'arrows-rotate',upload:'arrow-up-from-bracket',box:'box-archive',workshop:'hammer',chat:'comment-dots',installed:'layer-group',spark:'wand-magic-sparkles',sound:'volume-high',stop:'stop',chevron:'chevron-right',globe:'globe'};
