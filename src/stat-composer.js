@@ -1,7 +1,7 @@
-import {composerIcon as glyph} from './composer-icons.js?v=0.79.0';
-import {statTrainingTargets} from './stat-training.js?v=0.79.0';
-import {currencyDisplay} from './currency-config.js?v=0.79.0';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.79.0';
+import {composerIcon as glyph} from './composer-icons.js?v=0.79.1';
+import {statTrainingTargets} from './stat-training.js?v=0.79.1';
+import {currencyDisplay} from './currency-config.js?v=0.79.1';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.79.1';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const translated=(v,th,target)=>{

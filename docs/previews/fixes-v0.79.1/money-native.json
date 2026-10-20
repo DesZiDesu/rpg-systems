@@ -1,0 +1,413 @@
+{
+  "version": "0.79.1",
+  "host": "Actual local SillyTavern",
+  "errors": [],
+  "checks": [
+    {
+      "device": "mobile",
+      "nativeImport": true,
+      "bothEntryPoints": true,
+      "onlySceneNPCs": true,
+      "eightCurrencyPagination": true,
+      "noUserMessagesOrAIForTransfers": true,
+      "draftPreserved": true,
+      "invalidAmountsBlocked": true,
+      "doubleSubmitAppliedOnce": true,
+      "persistentReceiptsAndKnownNames": true,
+      "directedAllPairs": true,
+      "knowledgeInsideNpcManagement": true,
+      "noStandaloneKnowledgeDialog": true,
+      "bareAIBypassRejected": true,
+      "unknownNameDisplayGuard": true,
+      "automaticIntroductions": true,
+      "offSceneKnowledgeBlocked": true,
+      "noTransferReplayByModel": true,
+      "chatIsolation": true
+    },
+    {
+      "device": "desktop",
+      "nativeImport": true,
+      "bothEntryPoints": true,
+      "onlySceneNPCs": true,
+      "eightCurrencyPagination": true,
+      "noUserMessagesOrAIForTransfers": true,
+      "draftPreserved": true,
+      "invalidAmountsBlocked": true,
+      "doubleSubmitAppliedOnce": true,
+      "persistentReceiptsAndKnownNames": true,
+      "directedAllPairs": true,
+      "knowledgeInsideNpcManagement": true,
+      "noStandaloneKnowledgeDialog": true,
+      "bareAIBypassRejected": true,
+      "unknownNameDisplayGuard": true,
+      "automaticIntroductions": true,
+      "offSceneKnowledgeBlocked": true,
+      "noTransferReplayByModel": true,
+      "chatIsolation": true
+    }
+  ],
+  "requests": [
+    {
+      "device": "mobile",
+      "fixture": true,
+      "knowledgeContract": true,
+      "settledTransferContract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "knowledgeContract": true,
+      "settledTransferContract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "knowledgeContract": true,
+      "settledTransferContract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "knowledgeContract": true,
+      "settledTransferContract": true
+    }
+  ],
+  "layouts": [
+    {
+      "device": "mobile",
+      "theme": "Dark Lite",
+      "width": 320,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "theme": "Dark Lite",
+      "width": 390,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "theme": "Dark Lite",
+      "width": 430,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "theme": "Azure",
+      "width": 320,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "theme": "Azure",
+      "width": 390,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "theme": "Azure",
+      "width": 430,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "theme": "Dark V 1.0",
+      "width": 320,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "theme": "Dark V 1.0",
+      "width": 390,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "theme": "Dark V 1.0",
+      "width": 430,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "panel": "known-names-in-npc-management",
+      "device": "mobile",
+      "width": 320,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "panel": "known-names-in-npc-management",
+      "device": "mobile",
+      "width": 390,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "panel": "known-names-in-npc-management",
+      "device": "mobile",
+      "width": 430,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "device": "desktop",
+      "theme": "Dark Lite",
+      "width": 768,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "theme": "Dark Lite",
+      "width": 1440,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "theme": "Azure",
+      "width": 768,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "theme": "Azure",
+      "width": 1440,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "theme": "Dark V 1.0",
+      "width": 768,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "theme": "Dark V 1.0",
+      "width": 1440,
+      "inside": true,
+      "overflow": false,
+      "badge": {
+        "width": 38,
+        "height": 38,
+        "display": "flex",
+        "lineHeight": "13px",
+        "fontFamily": "system-ui, sans-serif",
+        "transform": "none",
+        "icon": true,
+        "glyphCenter": {
+          "x": 0,
+          "y": 0.0078125
+        }
+      }
+    },
+    {
+      "panel": "known-names-in-npc-management",
+      "device": "desktop",
+      "width": 768,
+      "inside": true,
+      "overflow": false
+    },
+    {
+      "panel": "known-names-in-npc-management",
+      "device": "desktop",
+      "width": 1440,
+      "inside": true,
+      "overflow": false
+    }
+  ],
+  "pass": true
+}

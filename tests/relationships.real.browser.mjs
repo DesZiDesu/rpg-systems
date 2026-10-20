@@ -204,6 +204,256 @@ async function metric(root, key) {
       .then((v) => v.split("/")[0].trim()),
   );
 }
+async function regressionCases(device, template) {
+  const title = "Relationship regression " + device + " " + Date.now();
+  const card = structuredClone(template);
+  card.data.name = title;
+  const initial = card.data.extensions.roleforge_character_pack.initialState;
+  delete card.data.extensions.roleforge_character_pack.relationshipPreset;
+  initial.player = { name: "ชีฟ", age: "25", hStats: { oralSexCount: 7 } };
+  initial.npcs = [
+    {
+      id: "den",
+      name: "Den",
+      aliases: ["เดน"],
+      age: "26",
+      enabled: true,
+      met: true,
+      trust: 0,
+      hStats: { oralSexCount: 0 },
+    },
+    {
+      id: "siffelia",
+      name: "Siffelia",
+      aliases: ["ซิฟเฟเลีย"],
+      age: "25",
+      enabled: true,
+      met: true,
+      trust: 0,
+      hStats: { oralSexCount: 0 },
+    },
+  ];
+  const make = (text, events = [], ops = []) =>
+    text +
+    "\n<!--tretaresia_patch:" +
+    JSON.stringify({
+      sceneTracker: { ...scene, who: ["Den", "Siffelia"] },
+      ops,
+      relationshipEvents: events,
+    }) +
+    "-->";
+  card.data.first_mes = make(
+    "<tr-narrative>Den and Siffelia wait in Oakland Inn.</tr-narrative>",
+  );
+  await importCard(card);
+  await select(title);
+  await p.evaluate(async () => {
+    const h = await import("/script.js"),
+      o = await import("/scripts/openai.js");
+    h.changeMainAPI("openai");
+    Object.assign(o.oai_settings, {
+      chat_completion_source: "custom",
+      custom_url: "http://127.0.0.1:18182/local-relationship-fixture",
+      custom_model: "relationship-fixture",
+      stream_openai: true,
+      openai_max_context: 32768,
+      openai_max_tokens: 1800,
+    });
+    h.setOnlineStatus("local-fixture");
+  });
+  await p.evaluate(() => {
+    window.__relationshipWarnings = [];
+    const old = toastr.warning;
+    toastr.warning = function (message, title, ...args) {
+      if (title === "RoleForge") __relationshipWarnings.push(String(message));
+      return old.call(this, message, title, ...args);
+    };
+  });
+  const evidence =
+    "เดนช่วยชีฟจัดหนังสือเรียบร้อยแล้ว แต่ยังไม่ได้เห็นห้องชั้นบน";
+  await generate(
+    make("<tr-narrative>" + evidence + "</tr-narrative>", [
+      {
+        actorId: "den",
+        targetId: "player",
+        kind: "support",
+        evidence,
+        changes: { trust: 1 },
+      },
+    ]),
+  );
+  assert.equal(
+    (await state()).relationships.links.find(
+      (v) => v.actorId === "den" && v.targetId === "player",
+    ).trust,
+    1,
+  );
+  const speech = "ฉันช่วยชีฟเก็บหนังสือเรียบร้อยแล้ว";
+  await generate(
+    make('<tr-dialogue name="Den">' + speech + "</tr-dialogue>", [
+      {
+        actorId: "den",
+        targetId: "player",
+        kind: "support",
+        evidence: speech,
+        changes: { trust: 2 },
+      },
+    ]),
+  );
+  assert.equal(
+    (await state()).relationships.links.find(
+      (v) => v.actorId === "den" && v.targetId === "player",
+    ).trust,
+    2,
+  );
+  const greeting = "Den ขอให้ชีฟพาขึ้นไปดูห้องหน่อย";
+  await generate(
+    make('<tr-dialogue name="Den">' + greeting + "</tr-dialogue>", [
+      {
+        actorId: "den",
+        targetId: "player",
+        kind: "support",
+        evidence: greeting,
+        changes: { trust: 0 },
+      },
+    ]),
+  );
+  assert.deepEqual(await p.evaluate(() => __relationshipWarnings), []);
+  const encounter =
+    "Den and Siffelia shared a consensual intimate oral encounter.";
+  await generate(
+    make(
+      "<tr-narrative>" + encounter + "</tr-narrative>",
+      [
+        {
+          actorId: "den",
+          targetId: "siffelia",
+          kind: "intimacy",
+          evidence: encounter,
+          hStats: [
+            { ownerId: "den", field: "oralSexCount", verb: "inc", value: 1 },
+            {
+              ownerId: "siffelia",
+              field: "oralSexCount",
+              verb: "inc",
+              value: 1,
+            },
+          ],
+        },
+      ],
+      [
+        ["inc", "playerHStats", { field: "oralSexCount", amount: 1 }],
+        [
+          "inc",
+          "npcHStats",
+          { npcId: "den", field: "oralSexCount", amount: 1 },
+        ],
+        [
+          "set",
+          "npcHStats",
+          {
+            npcId: "siffelia",
+            field: "favoritePosition",
+            value: "Established preference",
+          },
+        ],
+      ],
+    ),
+  );
+  let s = await state();
+  assert.equal(s.player.hStats.oralSexCount, 7);
+  assert.equal(s.npcs.find((n) => n.id === "den").hStats.oralSexCount, 1);
+  assert.equal(s.npcs.find((n) => n.id === "siffelia").hStats.oralSexCount, 1);
+  assert.equal(
+    s.npcs.find((n) => n.id === "siffelia").hStats.favoritePosition,
+    "Established preference",
+  );
+  const playerEncounter =
+    "Den and ชีฟ shared a consensual intimate oral encounter.";
+  await generate(
+    make("<tr-narrative>" + playerEncounter + "</tr-narrative>", [
+      {
+        actorId: "den",
+        targetId: "player",
+        kind: "intimacy",
+        evidence: playerEncounter,
+        hStats: [
+          { ownerId: "den", field: "oralSexCount", verb: "inc", value: 1 },
+          { ownerId: "player", field: "oralSexCount", verb: "inc", value: 1 },
+          {
+            ownerId: "player",
+            field: "mouthLastPartner",
+            verb: "set",
+            value: "Den",
+          },
+        ],
+      },
+    ]),
+  );
+  s = await state();
+  assert.equal(s.player.hStats.oralSexCount, 8);
+  assert.equal(s.player.hStats.mouthLastPartner, "Den");
+  assert.equal(s.npcs.find((n) => n.id === "den").hStats.oralSexCount, 2);
+  assert.deepEqual(await p.evaluate(() => __relationshipWarnings), []);
+  let m = await main();
+  await m.locator("[name=hStatsNpcId]").selectOption("den");
+  await m.locator("[data-action=add-hstats-npc]").click();
+  await chooseTarget(m.locator("[data-relationship-panel=main]"), "player");
+  assert.equal(
+    await metric(m.locator("[data-relationship-panel=main]"), "trust"),
+    2,
+  );
+  await shot(device + "-thai-main");
+  await closeMain();
+  await chooseDock();
+  let picker = dock().locator(".rf-utility-profile-picker");
+  if (!(await picker.evaluate((n) => n.open)))
+    await picker.locator("summary").click();
+  await dock().locator("[data-utility-person=den]").click();
+  await chooseTarget(panel(), "player");
+  assert.equal(await metric(panel(), "trust"), 2);
+  await shot(device + "-thai-relationship");
+  picker = dock().locator(".rf-utility-profile-picker");
+  if (!(await picker.evaluate((n) => n.open)))
+    await picker.locator("summary").click();
+  await dock().locator("[data-utility-person=player]").click();
+  await dock().locator("[data-utility-h-section=History]").click();
+  assert.equal(
+    await dock()
+      .locator(".rf-utility-h-fields>div")
+      .filter({ hasText: "มีเซ็กส์ทางปากกี่รอบ" })
+      .locator("dd")
+      .innerText(),
+    "8",
+  );
+  await shot(device + "-player-hstats");
+  await p.reload();
+  await ready();
+  await select(title);
+  s = await state();
+  assert.equal(s.player.hStats.oralSexCount, 8);
+  assert.equal(s.npcs.find((n) => n.id === "den").hStats.oralSexCount, 2);
+  assert.equal(s.npcs.find((n) => n.id === "siffelia").hStats.oralSexCount, 1);
+  assert.equal(
+    s.relationships.links.find(
+      (v) => v.actorId === "den" && v.targetId === "player",
+    ).trust,
+    2,
+  );
+  report.checks.push({
+    device,
+    thaiPersonaAndNpcAlias: true,
+    verifiedFirstPersonDialogue: true,
+    unrelatedUnfinishedClauseAllowed: true,
+    noSpuriousRelationshipWarnings: true,
+    noOpRequestsDoNotGrow: true,
+    npcOnlyDoesNotChargePlayer: true,
+    playerAndNpcCountersBothSaved: true,
+    unrelatedPreferencesPreserved: true,
+    mainAndDockShowSameProgress: true,
+    bodyHistoryShownAndRetainedOnReload: true,
+  });
+}
 try {
   for (const mobile of [true, false]) {
     const device = mobile ? "mobile" : "desktop",
@@ -805,6 +1055,7 @@ try {
       presetExportPortableCard: true,
       cardIsolation: true,
     });
+    await regressionCases(device, card);
     await ctx.close();
     console.log("PASS native relationships", device);
   }

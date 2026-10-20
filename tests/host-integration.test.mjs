@@ -3271,3 +3271,16 @@ test('the existing NPC editor updates the selected-version relationship and old 
   const switched=host.getState();switched.npcs[0].activeAlternateId='';await host.persistState(switched,'npc-management');assert.equal(host.getState().relationships.links[0].trust,42);
  }finally{Object.assign(context,{chat:prior.chat,chatMetadata:prior.metadata,extensionSettings:prior.settings,saveMetadata:prior.save});sandbox.document=prior.document;}
 });
+
+test('player-NPC relationship events persist both H-Stats sheets, preserve unrelated profile updates and reject double processing',async()=>{
+ const prior={chat:context.chat,metadata:context.chatMetadata,settings:context.extensionSettings,save:context.saveMetadata,document:sandbox.document};
+ try{
+  sandbox.document={...prior.document,getElementById:id=>id==='tretaresia-travel-tracker'?{}:prior.document.getElementById(id)};
+  context.extensionSettings={tretaresia_rpg:{autoContinuity:false,eventNotifications:false,enableMemorySummaries:false,autoTrack:true}};
+  const base=host.defaultState();base.player.name='Alex';base.player.hStats=hStats({oralSexCount:7});base.npcs=[host.npcProfile({id:'mira',name:'Mira',enabled:true,met:true,hStats:{oralSexCount:2}})];
+  const quote='Mira and Alex shared a consensual intimate oral encounter.',events=[{actorId:'player',targetId:'mira',kind:'intimacy',evidence:quote,hStats:[{ownerId:'mira',field:'oralSexCount',verb:'inc',value:1},{ownerId:'player',field:'oralSexCount',verb:'inc',value:1},{ownerId:'player',field:'mouthLastPartner',verb:'set',value:'Mira'}]}];
+  context.chatMetadata={tretaresia_rpg_state:base};context.chat=[{is_user:true,mes:'Continue.'},{is_user:false,mes:quote+'<!--tretaresia_patch:'+JSON.stringify({relationshipEvents:events,ops:[['inc','npcHStats',{npcId:'mira',field:'oralSexCount',amount:1}],['inc','playerHStats',{field:'oralSexCount',amount:1}],['set','npcHStats',{npcId:'mira',field:'favoritePosition',value:'Established preference'}]]})+'-->'}];context.saveMetadata=async()=>{};
+  await host.processAssistantPatch(1,'normal');await host.processAssistantPatch(1,'normal');const after=host.getState();
+  assert.equal(after.player.hStats.oralSexCount,8);assert.equal(after.player.hStats.mouthLastPartner,'Mira');assert.equal(after.npcs[0].hStats.oralSexCount,3);assert.equal(after.npcs[0].hStats.favoritePosition,'Established preference');assert.equal(after.relationships.links.find(v=>v.actorId==='player'&&v.targetId==='mira').encounters,1);
+ }finally{Object.assign(context,{chat:prior.chat,chatMetadata:prior.metadata,extensionSettings:prior.settings,saveMetadata:prior.save});sandbox.document=prior.document;}
+});

@@ -36,8 +36,10 @@
 .rf-money-transfer .rf-money-primary:hover:not(:disabled){background:#e0e3e6}
 .rf-money-note{display:block;margin-top:7px;color:#818d97;text-align:center;font-size:9px}
 .rf-money-success{display:grid;justify-items:center;gap:7px;padding:18px 10px;text-align:center;color:#bdc9b5}
-.rf-money-success>i{display:grid;place-items:center;width:38px;height:38px;border:1px solid #6d8060;border-radius:50%;background:#293326;font-size:17px}
-.rf-money-success strong{font-weight:500;font-size:16px;color:#d4dfcd}.rf-money-success span{font-size:13px;color:#d0d8dd;overflow-wrap:anywhere}.rf-money-success small{font-size:10px;color:#89959e;overflow-wrap:anywhere}
+/* The badge owns its size; the shared Font Awesome glyph has an em width. */
+.rf-money-success>.rf-money-success-icon{display:flex;align-items:center;justify-content:center;box-sizing:border-box;inline-size:38px;block-size:38px;min-inline-size:38px;aspect-ratio:1;flex:none;line-height:1;border:1px solid #6d8060;border-radius:50%;background:#293326;color:#bdc9b5}
+.rf-money-success-icon>.rf-composer-icon{margin:0;padding:0}
+.rf-money-success strong{font-weight:500;font-size:16px;color:#d4dfcd}.rf-money-success>span:not(.rf-money-success-icon){font-size:13px;color:#d0d8dd;overflow-wrap:anywhere}.rf-money-success small{font-size:10px;color:#89959e;overflow-wrap:anywhere}
 .rf-money-entry{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;max-width:100%;padding:6px 10px;border:1px solid #4b5055;border-radius:6px;background:#292d31;color:#bdc5cc;font:11px/1.5 system-ui;cursor:pointer;touch-action:manipulation;box-shadow:none;white-space:normal;overflow-wrap:anywhere}
 .rf-money-entry:hover{border-color:#87919b;background:#353b41}.rf-money-entry i{font-size:12px}.rf-utility-body>[data-utility-transfer]{margin-bottom:10px;width:100%}
 @container(min-width:720px){.rf-money-transfer .rf-money-body{padding:14px 20px}.rf-money-transfer form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 20px}.rf-money-transfer form>fieldset{margin-bottom:14px}.rf-money-transfer form>:not(fieldset){grid-column:1/-1}.rf-money-people{grid-template-columns:minmax(0,1fr)}}

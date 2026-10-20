@@ -1,4 +1,5 @@
-import { H_FIELD_MAP, updateHStat } from "./h-stats.js?v=0.79.0";
+import { H_FIELD_MAP, updateHStat } from "./h-stats.js?v=0.79.1";
+import { parseStory } from "./npc-core.js?v=0.79.1";
 
 const object = (v) => v && typeof v === "object" && !Array.isArray(v);
 const clean = (v, max = 180) =>
@@ -214,7 +215,7 @@ export function normalizeRelationships(raw = {}) {
 }
 export function relationshipPeople(state) {
   return new Map([
-    ["player", { ...state.player, id: "player" }],
+    ["player", state.player],
     ...(state.npcs || []).filter((n) => n?.id).map((n) => [n.id, n]),
   ]);
 }
@@ -523,6 +524,7 @@ const normalizeQuote = (v) =>
   String(v || "")
     .normalize("NFKC")
     .replace(/<[^>]+>/gu, " ")
+    .replace(/[\u200b\u200c\u200d\ufeff]/gu, "")
     .replace(/\s+/gu, " ")
     .trim();
 function mentions(person, quote, player) {
@@ -548,8 +550,17 @@ function mentions(person, quote, player) {
       return false;
     });
 }
+function evidencePerson(people, actorId, userName) {
+  const person = people.get(actorId);
+  return actorId === "player"
+    ? {
+        ...person,
+        aliases: [...(person?.aliases || []), userName].filter(Boolean),
+      }
+    : person;
+}
 const hypothetical =
-  /\b(?:if|would|might|maybe|rumou?r|allegedly|pretend|will)\b|\b(?:has|have) not\b|\bnot yet\b|(?:สมมติ|หากว่า|อาจจะ|คงจะ|ข่าวลือ|ยังไม่ได้|ยังไม่เคย|กำลังจะ)|\(\(|\bOOC\s*:/iu;
+  /\b(?:if|would|might|maybe|rumou?r|allegedly|pretend|will|plan(?:s|ned|ning)? to|want(?:s|ed)? to)\b|\b(?:has|have) not\b|\bnot yet\b|(?:สมมติ|ถ้า|หาก|อาจจะ|คงจะ|ข่าวลือ|ยังไม่ได้|ยังไม่เคย|กำลังจะ)|\(\(|\bOOC\s*:/iu;
 const actualPatterns = {
   support:
     /help|care|support|comfort|protect|rescue|ช่วย|ดูแล|ปลอบ|ปกป้อง|รับฟัง|เปิดใจ/iu,
@@ -573,6 +584,146 @@ const actualPatterns = {
   repair:
     /forgiv|reconcil|rebuild.*trust|ให้อภัย|คืนดี|ฟื้นฟู.*(?:สัมพันธ์|เชื่อใจ)/iu,
 };
+// Inspect complete source clauses, not just the excerpt supplied by the model.
+// An unrelated future/negative sentence cannot erase a completed event; nor
+// can cropping "maybe" off an excerpt turn an imagined event into a fact.
+const clauseBoundary =
+  /[.!?。;\n]+|\b(?:but|however|whereas)\b|แต่(?!ง)|ขณะที่|ส่วน(?!ตัว)|\s+and\s+(?=(?:will|might|would|has not|have not|not yet)\b)|และ(?=(?:ยังไม่|กำลังจะ|คงจะ|อาจจะ|จะ))/iu;
+const firstPerson =
+  /\b(?:I|me|my|we|our|us)\b|ฉัน|ผม|ข้า|เรา|หนู|กระผม|ดิฉัน/iu;
+const negative =
+  /\b(?:does not|do not|did not|doesn['’]t|don['’]t|didn['’]t|never|hasn['’]t|haven['’]t)\b|ไม่ได้|ไม่เคย/iu;
+const unreal =
+  /dream|fantasy|imagined|coerc|forced|without consent|ฝัน|จินตนาการ|ถูกบังคับ|ขืนใจ|ไม่ยินยอม/iu;
+const request =
+  /\b(?:please|can you|could you|would you|will you)\b|(?:ช่วย|โปรด|กรุณา).{0,100}(?:หน่อย|ได้ไหม|ได้มั้ย|ทีนะ)/iu;
+function relationshipEvidence(
+  evidence,
+  kind,
+  actorId,
+  targetId,
+  people,
+  { story, user, userName, participants },
+) {
+  const quote = normalizeQuote(evidence);
+  participants = Array.isArray(participants) ? participants : [];
+  if (
+    !quote ||
+    quote.length > 1500 ||
+    ![story, user].some((text) => normalizeQuote(text).includes(quote))
+  )
+    return { code: "evidence" };
+  const person = (id) => evidencePerson(people, id, userName);
+  const player = person("player");
+  const speakerId = (name) => {
+    const matches = [...people.keys()].filter((id) =>
+      [person(id)?.name, ...(person(id)?.aliases || [])].some(
+        (v) => v && textKey(v) === textKey(name),
+      ),
+    );
+    return matches.length === 1 ? matches[0] : "";
+  };
+  const blocks = [];
+  for (const [source, own] of [
+    [String(story || ""), false],
+    [String(user || ""), true],
+  ]) {
+    for (const block of parseStory(source) || [
+      { type: "plain", text: source },
+    ]) {
+      if (block.type === "header") continue;
+      const dialogue = block.type === "dialogue";
+      blocks.push({
+        text: block.text,
+        speaker: own ? "player" : dialogue ? speakerId(block.name) : "",
+        dialogue,
+      });
+    }
+  }
+  let code = "event";
+  const facts = [];
+  for (const block of blocks) {
+    if (/^\s*(?:\(\(|\[OOC\b|OOC\s*:)/iu.test(normalizeQuote(block.text)))
+      continue;
+    let pairEstablished = false;
+    for (const part of String(block.text)
+      .replace(/<[^>]+>/gu, " ")
+      .split(clauseBoundary)) {
+      const fact = normalizeQuote(part);
+      if (
+        !fact ||
+        !(fact.includes(quote) || quote.includes(fact)) ||
+        !actualPatterns[kind].test(fact)
+      )
+        continue;
+      const sharedPair =
+        pairEstablished &&
+        /\b(?:they|both|each other|their)\b|ทั้งคู่|ทั้งสอง|ต่อกัน/iu.test(
+          fact,
+        ) &&
+        ![...people.keys()].some(
+          (id) =>
+            ![actorId, targetId].includes(id) &&
+            mentions(person(id), fact, false),
+        );
+      const named = (id) =>
+        sharedPair ||
+        mentions(person(id), fact, false) ||
+        (block.speaker === id && firstPerson.test(fact)) ||
+        (id === "player" &&
+          mentions(player, fact, true) &&
+          (!block.dialogue ||
+            (participants.length === 1 && participants[0] === block.speaker)));
+      if (!named(actorId) || (kind !== "values" && !named(targetId))) {
+        code = "participants";
+        continue;
+      }
+      // Negating hesitation or stopping is not negating the completed act.
+      const checked = fact.replace(
+        /\b(?:did not|didn['’]t) hesitate to\b|\bnever stopped\b|ไม่ได้ลังเลที่จะ|ไม่ลังเลที่จะ|ไม่เคยหยุด/giu,
+        " ",
+      );
+      const actionAt = checked.search(actualPatterns[kind]);
+      const beforeAction = checked.slice(0, actionAt);
+      if (
+        hypothetical.test(checked) ||
+        request.test(checked) ||
+        /(?:จะ|อยาก|ต้องการ|หวังว่า).{0,16}$/u.test(beforeAction) ||
+        (negative.test(checked) &&
+          [
+            "romance",
+            "support",
+            "promise",
+            "establish",
+            "intimacy",
+            "betrayal",
+            "separate",
+            "repair",
+          ].includes(kind)) ||
+        (["intimacy", "history", "betrayal", "establish", "separate"].includes(
+          kind,
+        ) &&
+          unreal.test(checked))
+      ) {
+        code = "unconfirmed";
+        continue;
+      }
+      pairEstablished = true;
+      facts.push(fact);
+    }
+  }
+  return facts.length ? { quote: facts.join(". ") } : { code };
+}
+function hasRelationshipChange(e) {
+  if (["intimacy", "establish", "separate", "betrayal"].includes(e?.kind))
+    return true;
+  if (Array.isArray(e?.hStats) && e.hStats.length) return true;
+  if (e?.milestone && milestones.has(e.milestone)) return true;
+  return [...RELATIONSHIP_METRICS, "corruption"].some(
+    (k) =>
+      Number.isFinite(Number(e?.changes?.[k])) && Number(e.changes[k]) !== 0,
+  );
+}
 function validMilestone(kind, milestone, quote) {
   if (!milestones.has(milestone)) return "";
   if (
@@ -659,26 +810,85 @@ export function relationshipEventNpcIds(events) {
     ),
   ];
 }
+export function filterRelationshipBodyOperations(operations, events, state) {
+  const body = (Array.isArray(events) ? events : []).filter((e) =>
+    ["intimacy", "history"].includes(e?.kind),
+  );
+  if (!body.length || state?.relationships?.config?.enabled === false)
+    return operations;
+  // Encounters, parentage and last partners have a single authoritative path.
+  // A proposed NPC-only encounter must not also charge the player's counters.
+  // Other body/preferences fields still work, even if one event is rejected.
+  const reserved = (ownerId, field) => {
+    if (typeof field !== "string") return false;
+    const meta = H_FIELD_MAP[field];
+    return (
+      ["count", "liters", "boolean"].includes(meta?.type) ||
+      field === "pregnancyFather" ||
+      field.endsWith("LastPartner") ||
+      body.some((e) =>
+        (Array.isArray(e.hStats) ? e.hStats : []).some(
+          (v) => v?.ownerId === ownerId && v.field === field,
+        ),
+      )
+    );
+  };
+  return operations.flatMap((operation) => {
+    const [verb, path, value, ...rest] = operation;
+    if (["npcHStats", "playerHStats"].includes(path))
+      return reserved(
+        path === "playerHStats" ? "player" : value?.npcId,
+        value?.field || "",
+      )
+        ? []
+        : [operation];
+    if (path === "npcs" && object(value?.hStats)) {
+      const fields = Object.fromEntries(
+        Object.entries(value.hStats).filter(
+          ([field]) => !reserved(value.id, field),
+        ),
+      );
+      const next = { ...value };
+      delete next.hStats;
+      if (Object.keys(fields).length) next.hStats = fields;
+      return [[verb, path, next, ...rest]];
+    }
+    return [operation];
+  });
+}
 export function applyRelationshipEvents(
   state,
   raw,
-  { story = "", user = "", source = "", at = new Date().toISOString() } = {},
+  {
+    story = "",
+    user = "",
+    userName = state.player?.name,
+    participants = [],
+    source = "",
+    at = new Date().toISOString(),
+  } = {},
 ) {
   if (!Array.isArray(raw) || !raw.length)
-    return { next: state, changed: 0, errors: [] };
+    return { next: state, changed: 0, errors: [], diagnostics: [] };
   const initial = normalizeRelationships(state.relationships),
     config = initial.config;
-  if (!config.enabled) return { next: state, changed: 0, errors: [] };
+  if (!config.enabled)
+    return { next: state, changed: 0, errors: [], diagnostics: [] };
   let next = state,
     r = initial,
     people = relationshipPeople(state),
     changed = 0;
   const errors = [],
-    visible = normalizeQuote(story),
-    userText = normalizeQuote(user),
+    diagnostics = [],
     scene = relationshipSceneKey(state),
     key = sourceKey(source);
-  if (!key) return { next: state, changed: 0, errors: ["source"] };
+  if (!key)
+    return {
+      next: state,
+      changed: 0,
+      errors: ["source"],
+      diagnostics: [{ code: "source" }],
+    };
   const ensure = () => {
     if (next === state) {
       next = structuredClone(state);
@@ -711,29 +921,39 @@ export function applyRelationshipEvents(
     }
   }
   for (const e of events) {
+    if (!hasRelationshipChange(e)) continue;
     const actorId = id(e?.actorId),
       targetId = id(e?.targetId),
       kind = e?.kind,
       actor = people.get(actorId),
-      target = people.get(targetId),
-      quote = normalizeQuote(e?.evidence);
+      target = people.get(targetId);
+    const reject = (code) => {
+      errors.push(code);
+      diagnostics.push({ actorId, targetId, kind: clean(kind, 40), code });
+    };
     if (
       !kinds.has(kind) ||
       !actor ||
       actor.enabled === false ||
       (kind !== "values" &&
-        (!target || target.enabled === false || actorId === targetId)) ||
-      !quote ||
-      quote.length > 1500 ||
-      (!visible.includes(quote) && !userText.includes(quote)) ||
-      hypothetical.test(quote) ||
-      !actualPatterns[kind].test(quote) ||
-      !mentions(actor, quote, actorId === "player") ||
-      (kind !== "values" && !mentions(target, quote, targetId === "player"))
+        (!target || target.enabled === false || actorId === targetId))
     ) {
-      errors.push("evidence");
+      reject("participants");
       continue;
     }
+    const confirmed = relationshipEvidence(
+      e?.evidence,
+      kind,
+      actorId,
+      targetId,
+      people,
+      { story, user, userName, participants },
+    );
+    if (!confirmed.quote) {
+      reject(confirmed.code);
+      continue;
+    }
+    const quote = confirmed.quote;
     const identity =
         kind === "intimacy"
           ? relationshipBondKey(actorId, targetId)
@@ -762,19 +982,10 @@ export function applyRelationshipEvents(
           ![v.a, v.b].includes(targetId),
       );
     if (
-      ["romance", "support", "promise", "establish"].includes(kind) &&
-      /\b(?:does not|do not|did not|doesn['’]t|didn['’]t|never)\b|ไม่ได้|ไม่เคย/iu.test(
-        quote,
-      )
-    ) {
-      errors.push("unconfirmed");
-      continue;
-    }
-    if (
       (kind === "establish" && !["dating", "married"].includes(milestone)) ||
       (kind === "values" && milestone !== "values_shift")
     ) {
-      errors.push("milestone");
+      reject("milestone");
       continue;
     }
     if (
@@ -788,23 +999,12 @@ export function applyRelationshipEvents(
         !people.has(e.thirdPartyId) ||
         [actorId, targetId].includes(e.thirdPartyId) ||
         !mentions(
-          people.get(e.thirdPartyId),
+          evidencePerson(people, e.thirdPartyId, userName),
           quote,
           e.thirdPartyId === "player",
         ))
     ) {
-      errors.push("agreement");
-      continue;
-    }
-    if (
-      ["intimacy", "history", "betrayal", "establish", "separate"].includes(
-        kind,
-      ) &&
-      /dream|fantasy|imagined|coerc|forced|without consent|ฝัน|จินตนาการ|ถูกบังคับ|ขืนใจ|ไม่ยินยอม/iu.test(
-        quote,
-      )
-    ) {
-      errors.push("unconfirmed");
+      reject("agreement");
       continue;
     }
     ensure();
@@ -1002,7 +1202,7 @@ export function applyRelationshipEvents(
           if (!/pregnan|parent|พ่อ|ตั้งครรภ์|ท้อง/iu.test(quote)) continue;
           const counterpart = ownerId === actorId ? targetId : actorId;
           const namedParent = mentions(
-            people.get(counterpart),
+            evidencePerson(people, counterpart, userName),
             String(value),
             counterpart === "player",
           );
@@ -1019,7 +1219,11 @@ export function applyRelationshipEvents(
           field.type === "text" &&
           field.key.endsWith("LastPartner") &&
           !mentions(
-            people.get(ownerId === actorId ? targetId : actorId),
+            evidencePerson(
+              people,
+              ownerId === actorId ? targetId : actorId,
+              userName,
+            ),
             String(value),
             ownerId === actorId ? targetId === "player" : actorId === "player",
           )
@@ -1051,7 +1255,7 @@ export function applyRelationshipEvents(
     changed++;
   }
   if (next !== state) next.relationships = normalizeRelationships(r);
-  return { next, changed, errors: [...new Set(errors)] };
+  return { next, changed, errors: [...new Set(errors)], diagnostics };
 }
 export function relationshipPromptReference(
   state,
@@ -1160,4 +1364,4 @@ export function retainRelationshipEdits(
         snapshot.relationships = old;
       }
 }
-export const RELATIONSHIP_INSTRUCTIONS = `RELATIONSHIP PROGRESSION / ALL PAIRS: relationships is a directed graph, including NPC->NPC and player->NPC. A->B does not imply B->A. love/bond, interest/attraction, trust and commitment are 0-100; absent is unknown. Bonds store an explicitly established relationship and agreement; scores never declare dating, marriage or cheating. Legacy loyalty hearts/stage are historical fields, never gameplay thresholds. Do not write legacy bond H-Stats, npc affection/trust/loyalty/corruption or the relationships graph through scalar/upsert operations. Use relationshipEvents:[{actorId,targetId,kind,evidence:"exact completed visible scene quote naming BOTH people",changes:{love:1,interest:1,trust:1,commitment:1},milestone:"optional"}]. Kinds: support,romance,promise,conflict,discovery,values,establish,separate,betrayal,repair,intimacy,history. Emit a separate directed event for reciprocal feelings only when independently established. Ordinary greetings/compliments give no automatic growth; gains are SLOW and capped per continuous scene, not per reply. Preserve personality, commitments and profile anchors before writing the story; do not jump to an affair from a few compliments. Openness, mutual_interest and kept_promise milestones require explicit supporting events. Establish requires milestone dating/married and explicit mutual acceptance, plus agreement exclusive/open/unknown; never infer an exclusive agreement from hearts, a title or high affection. Betrayal requires an existing exclusive dating/married bond, milestone boundary_crossed, thirdPartyId, actual completed breach and evidence naming all involved. Do not manufacture an affair when allowInfidelity is false, or from desire, pressure, fantasy, rumor, fear, scores or off-screen elapsed time. A betrayed person does not lose trust until they actually learn what happened; use kind discovery with an explicit learned/witnessed quote for that person. Betrayal changes only the betraying actor commitment; do not fabricate the unaware partner response. Corruption requires kind values, changes.corruption, milestone values_shift, and an explicit change of principles; it is separate from intimacy and betrayal. Intimacy between ANY two adults records that pair's encounter, not the player's; it never grants love automatically. For confirmed physical/history changes include hStats:[{ownerId,field,verb:"inc"|"set",value}] only for the two participants, and quote the actual relevant act. Include both owners' applicable updates in ONE intimacy event. Counts are per completed act, not per text paragraph. Never add the same updates to npcHStats/playerHStats as well. No player stats change from NPC-only encounters. Use kind history for confirmed pregnancy/parentage/birth, which must not count as a new intimate encounter. Body/history facts and last partners remain supported. No new model/API calls are needed.`;
+export const RELATIONSHIP_INSTRUCTIONS = `RELATIONSHIP PROGRESSION / ALL PAIRS: relationships is a directed graph, including NPC->NPC and player->NPC. A->B does not imply B->A. love/bond, interest/attraction, trust and commitment are 0-100; absent is unknown. Bonds store an explicitly established relationship and agreement; scores never declare dating, marriage or cheating. Legacy loyalty hearts/stage are historical fields, never gameplay thresholds. Do not write legacy bond H-Stats, npc affection/trust/loyalty/corruption or the relationships graph through scalar/upsert operations. Use relationshipEvents:[{actorId,targetId,kind,evidence:"exact quote of a completed visible act involving the pair",changes:{love:1,interest:1,trust:1,commitment:1},milestone:"optional"}]. Use existing stable catalog IDs, never names as IDs. Keep evidence short and specific to the completed act, excluding unrelated plans or requests. Both people must be identifiable in that act by their actual names/aliases or the active player name. A verified tr-dialogue speaker may use first-person pronouns for themselves; ambiguous addressees do not identify another NPC. Do not emit zero-change/greeting events, future requests, or invented milestones. Kinds: support,romance,promise,conflict,discovery,values,establish,separate,betrayal,repair,intimacy,history. Emit a separate directed event for reciprocal feelings only when independently established. Ordinary greetings/compliments give no automatic growth; gains are SLOW and capped per continuous scene, not per reply. Preserve personality, commitments and profile anchors before writing the story; do not jump to an affair from a few compliments. Openness, mutual_interest and kept_promise milestones require explicit supporting events. Establish requires milestone dating/married and explicit mutual acceptance, plus agreement exclusive/open/unknown; never infer an exclusive agreement from hearts, a title or high affection. Betrayal requires an existing exclusive dating/married bond, milestone boundary_crossed, thirdPartyId, actual completed breach and evidence naming all involved. Do not manufacture an affair when allowInfidelity is false, or from desire, pressure, fantasy, rumor, fear, scores or off-screen elapsed time. A betrayed person does not lose trust until they actually learn what happened; use kind discovery with an explicit learned/witnessed quote for that person. Betrayal changes only the betraying actor commitment; do not fabricate the unaware partner response. Corruption requires kind values, changes.corruption, milestone values_shift, and an explicit change of principles; it is separate from intimacy and betrayal. Intimacy between ANY two adults records that pair's encounter, not the player's; it never grants love automatically. For confirmed physical/history changes include hStats:[{ownerId,field,verb:"inc"|"set",value}] only for the two participants, and quote the actual relevant act. Include both owners' applicable updates in ONE intimacy event. Counts are per completed act, not per text paragraph. Never add the same updates to npcHStats/playerHStats as well. No player stats change from NPC-only encounters. Use kind history for confirmed pregnancy/parentage/birth, which must not count as a new intimate encounter. Body/history facts and last partners remain supported. No new model/API calls are needed.`;

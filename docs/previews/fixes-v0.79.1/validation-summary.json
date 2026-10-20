@@ -1,0 +1,146 @@
+{
+  "version": "0.79.1",
+  "checkedAt": "2026-10-20T14:22:52.686650+00:00",
+  "baseline": {
+    "version": "0.79.0",
+    "branch": "main",
+    "commit": "bab87a557bc5ad638ad4411d5daabb3b906a97c7"
+  },
+  "environment": {
+    "sillyTavern": "1.19.0",
+    "sillyTavernCommit": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+    "url": "http://127.0.0.1:18182",
+    "browser": "Chromium",
+    "devices": "desktop and mobile touch emulation"
+  },
+  "unitAndHostIntegration": {
+    "command": "npm test",
+    "tests": 1513,
+    "passed": 1513,
+    "failed": 0
+  },
+  "syntax": {
+    "command": "npm run check",
+    "pass": true
+  },
+  "nativeSillyTavern": [
+    {
+      "command": "node tests/money-name.real.browser.mjs",
+      "report": "money-native.json",
+      "pass": true,
+      "layoutChecks": 20,
+      "errors": 0
+    },
+    {
+      "command": "node tests/relationships.real.browser.mjs",
+      "report": "relationships-native.json",
+      "pass": true,
+      "layoutChecks": 15,
+      "errors": 0
+    },
+    {
+      "command": "node tests/chatbar-touch.real.browser.mjs",
+      "report": "chatbar-native.json",
+      "pass": true,
+      "layoutChecks": 190,
+      "errors": 0
+    },
+    {
+      "command": "node tests/weapons.real.browser.mjs",
+      "report": "weapons-native.json",
+      "pass": true,
+      "layoutChecks": 4,
+      "errors": 0
+    },
+    {
+      "command": "node tests/travel-journey.real.browser.mjs",
+      "report": "travel-native.json",
+      "pass": true,
+      "layoutChecks": 0,
+      "errors": 0
+    },
+    {
+      "command": "node tests/story-manager-layout.real.browser.mjs",
+      "report": "story-native.json",
+      "pass": true,
+      "layoutChecks": 0,
+      "errors": 0
+    },
+    {
+      "command": "node tests/chat-reopen.real.browser.mjs",
+      "report": "reopen-native.json",
+      "pass": true,
+      "layoutChecks": 0,
+      "errors": 0
+    },
+    {
+      "command": "node tests/workshop-disable.real.browser.mjs",
+      "report": "workshop-native.json",
+      "pass": true,
+      "layoutChecks": 0,
+      "errors": 0
+    }
+  ],
+  "browserFixtures": [
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/h-stats.browser.mjs",
+      "pass": true,
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "host": "production runtime in browser fixture, separate from native SillyTavern"
+    },
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/items.browser.mjs",
+      "pass": true,
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "host": "production runtime in browser fixture, separate from native SillyTavern"
+    },
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium node tests/presets.browser.mjs",
+      "pass": true,
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "host": "production runtime in browser fixture, separate from native SillyTavern"
+    }
+  ],
+  "moneyBadge": {
+    "before": [
+      14.9375,
+      38
+    ],
+    "after": [
+      38,
+      38
+    ],
+    "checks": 15,
+    "themes": [
+      "Dark Lite",
+      "Azure",
+      "Dark V 1.0"
+    ],
+    "widths": [
+      320,
+      390,
+      430,
+      768,
+      1440
+    ]
+  },
+  "limitations": [
+    "Mobile is Chromium touch emulation, not a physical iPhone or Safari.",
+    "Generation responses are controlled fixtures through native SillyTavern generation/streaming; no external model-provider evaluation.",
+    "The reported relationship message was recreated with equivalent Thai contexts because the original inline patch was not attached.",
+    "Host saveMetadata rejected-promise rollback is covered by integration tests; SillyTavern may swallow HTTP save failures, so native HTTP failure detection is not claimed."
+  ],
+  "pass": true
+}

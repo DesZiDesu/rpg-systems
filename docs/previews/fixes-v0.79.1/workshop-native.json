@@ -1,0 +1,37 @@
+{
+  "release": "0.79.1",
+  "host": "SillyTavern 1.19.0",
+  "checks": [
+    {
+      "device": "mobile",
+      "defaultOffHasNoShortcuts": true,
+      "disableRemovesFloatingAndWand": true,
+      "otherAddonStaysEnabled": true,
+      "allOffHidesRail": true,
+      "reenableRestoresSavedPosition": true,
+      "perChatScope": true,
+      "reloadStaysDisabled": true,
+      "themeNamesOnly": true,
+      "themePersists": true,
+      "noRoleForgeStateChanges": true,
+      "pass": true
+    },
+    {
+      "device": "desktop",
+      "defaultOffHasNoShortcuts": true,
+      "disableRemovesFloatingAndWand": true,
+      "otherAddonStaysEnabled": true,
+      "allOffHidesRail": true,
+      "reenableRestoresSavedPosition": true,
+      "perChatScope": true,
+      "reloadStaysDisabled": true,
+      "themeNamesOnly": true,
+      "themePersists": true,
+      "noRoleForgeStateChanges": true,
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "modelCalls": 0,
+  "pass": true
+}
