@@ -1,4 +1,4 @@
-import {PRESET_COMPONENTS,PRESET_FILE_LIMIT,presetLibrary,exportWorldPreset,importWorldPreset} from './world-presets.js?v=0.82.0';
+import {PRESET_COMPONENTS,PRESET_FILE_LIMIT,presetLibrary,exportWorldPreset,importWorldPreset} from './world-presets.js?v=0.82.1';
 const labels={relationshipPreset:['สายสัมพันธ์และกติกา','Relationships & rules'],weaponPreset:['อาวุธและภาพ','Weapons & art'],storyPreset:['เนื้อเรื่องและภารกิจ','Stories & missions'],world:['ทุกระบบของโลก','World · all systems'],powerPreset:['พลัง','Power'],forgePreset:['สร้างตัวละคร','Character Creation'],currencyPreset:['ค่าเงิน','Currency'],trainingPreset:['สถิติและวิธีฝึก','Stats & training'],loreOptions:['โหมดและงบ Lore','Lore options'],npcOptions:['จำนวนตัวละคร','Character capacity'],systems:['ระบบที่เปิดใช้','World systems'],chatAppearance:['ธีมและการแสดงบทสนทนา','Chat appearance']};
 const node=(tag,text='')=>{const n=document.createElement(tag);n.textContent=text;return n;};
 export function mountPresetWorkspace(root,api) {

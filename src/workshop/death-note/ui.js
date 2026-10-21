@@ -1,20 +1,22 @@
-import {localId} from '../core.js?v=0.82.0';
-import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.82.0';
-import {mountPaperEditor} from './paper-editor.js?v=0.82.0';
-import {uiLanguage} from '../../ui-language.js?v=0.82.0';
-import {t,html} from './strings.js?v=0.82.0';
-import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.82.0';
-import {eyeInsight} from './eyes.js?v=0.82.0';
-import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.82.0';
-import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,perceivedName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.82.0';
-import {setNpcVisibilityProvider,setNpcStoryGuard} from '../../npc-visibility.js?v=0.82.0';
+import {localId} from '../core.js?v=0.82.1';
+import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.82.1';
+import {stageWrittenPaper} from './deferred.js?v=0.82.1';
+import {faceKnowledge} from './faces.js?v=0.82.1';
+import {mountPaperEditor} from './paper-editor.js?v=0.82.1';
+import {uiLanguage} from '../../ui-language.js?v=0.82.1';
+import {t,html} from './strings.js?v=0.82.1';
+import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.82.1';
+import {eyeInsight} from './eyes.js?v=0.82.1';
+import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,visibleText,replyAnchor,INSCRIPTIONS,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.82.1';
+import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,perceivedName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.82.1';
+import {setNpcVisibilityProvider,setNpcStoryGuard} from '../../npc-visibility.js?v=0.82.1';
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sealURL=new URL('../../../assets/workshop/death-note/rules-seal.png',import.meta.url).href;
 const fa=n=>`<i class="fa-solid fa-${n}" aria-hidden="true"></i>`;
 const button=(action,text,cls='',more='')=>`<button type="button" class="${cls}" data-dn-action="${action}" ${more}>${text}</button>`;
 const paperTime=s=>{const v=formatStoryTime(s);return html`วันที่ ${v.day} · ${v.time}`;};
 export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
- const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.82.0',import.meta.url);document.head.append(sheet);
+ const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.82.1',import.meta.url);document.head.append(sheet);
  const root=document.createElement('dialog');root.id='roleforge-death-note-preview';root.className='rfdn';root.setAttribute('aria-label',t('Death Note — สมุดบันทึก'));document.body.append(root);
  const panel=document.createElement('section');panel.id='roleforge-death-note-dock';panel.className='dn-dock';panel.dataset.swipeIgnore='true';
  const c=()=>SillyTavern.getContext(),live=()=>api.context(),state=()=>({...live().state,deathNoteRules:live().deathNoteRules||{}}),chat=()=>live().chat||[];
@@ -22,7 +24,13 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  const scope=()=>{const v=live();if(!v.key)return '';if(!nonces.has(v.nonce))nonces.set(v.nonce,++nonce);return v.key+'::'+nonces.get(v.nonce);};
  let owner='',page='cover',bookId='',draft=empty(),notice='',working=false,disposed=false,showDock=true,policyStamp='',bootstrap=null,actionTarget='',confirmation='',reconcileTimer,ruleIndex=0,ruleDraft={title:'',text:''},eraseRuleId='';
  let paperState=blankPaper(),paperKey='',paperTimer,paperQueue=Promise.resolve(),paperDirty=false,paperEditor,dockEditor,clearPaperConfirm=false;
- const subscriptions=[];
+ const subscriptions=[],referenceCache=new WeakMap();
+ function referenceIds(npcs=[],messages=[]){
+  const stamp=JSON.stringify(npcs.map(n=>[n.id,n.name,n.title,n.occupation,n.aliases]));
+  const ids=new Set(ledger(messages).map(r=>r.targetId));
+  for(const message of messages){if(message.is_system)continue;let cached=referenceCache.get(message);if(!cached||cached.text!==message.mes||cached.stamp!==stamp){cached={text:message.mes,stamp,ids:storyEvents(message.is_user?String(message.mes).replace(/<!--[\s\S]*?-->/gu,''):message.mes,{npcs}).filter(e=>['introduce','name-learned','face-seen'].includes(e.type)).map(e=>e.npcId)};referenceCache.set(message,cached);}for(const id of cached.ids)ids.add(id);if(!message.is_user)for(const e of activeEvents(message))if(e.npcId)ids.add(e.npcId);}
+  return [...ids].slice(-256);
+ }
  function empty(){return {name:'',targetId:'',faceKnown:false,cause:'',details:'',timing:'default',delaySeconds:600};}
  const world=()=>worldState(chat(),state()),records=()=>ledger(chat());
  const currentBook=()=>{const w=world();return w.books[bookId]||Object.values(w.books).find(b=>b.holderId==='player')||Object.values(w.books).find(b=>b.ownerId==='player')||Object.values(w.books).find(b=>b.firstHumanOwnerId==='player')||Object.values(w.books)[0];};
@@ -39,13 +47,14 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  }
  async function appendEvents(events,captured=scope()) {
   if(!events.length)return;const message=chat().at(-1);if(!message||message.is_user||message.is_system)throw Error(t('รอให้ AI เล่าเหตุการณ์ก่อน'));
-  const {plain}=await import('./world.js?v=0.82.0');if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));
+  const {plain}=await import('./world.js?v=0.82.1');if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));
   message.extra||={};const previous=message.extra[WORLD_EVENTS]||[],offset=plain(message.mes).length,swipe=Number(message.swipe_id)||0;
   const added=events.map(e=>({...e,id:e.id||'dn-event-'+localId(),offset,swipe}));message.extra[WORLD_EVENTS]=[...previous,...added];
   try{await c().saveChat();if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทระหว่างบันทึก'));}catch(error){if(scope()===captured&&chat().at(-1)===message)message.extra[WORLD_EVENTS]=previous;throw error;}
   return {message,added,previous};
  }
  async function initialize() {
+  await api.prepareNpcs?.();
   const captured=scope();if(!captured||!enabled()||!chat().at(-1)||chat().at(-1).is_user)return;
   const events=registeredEvents();if(events.length)await appendEvents(events,captured);
  }
@@ -58,14 +67,14 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
   return html`<nav class="dn-rule-pager" aria-label="กติกา"><div class="dn-rule-left">${button('rule-first',t('กลับหน้าแรก'),'dn-rule-small',t('aria-label="กติกาหน้าแรก" ')+(spread.first?'disabled':''))}${button('rule-prev','⟵','dn-rule-arrow',t('aria-label="กติกาหน้าก่อน" ')+(spread.first?'disabled':''))}</div><span data-dn-rule-position>${spread.start+1}${spread.right?'–'+(spread.start+2):''} / ${spread.pages.length}</span><div class="dn-rule-right">${button('rule-next','⟶','dn-rule-arrow',t('aria-label="กติกาหน้าถัดไป" ')+(spread.last?'disabled':''))}${access()?button('forge-open',t('จารึกเพิ่ม'),'dn-rule-small',t('aria-label="เพิ่มกฎปลอม"')):''}</div></nav>`;
  }
  function forgePage(){return html`<div class="dn-manuscript-editor"><h2>ข้อความในสมุด</h2><div class="dn-forge-presets">${fakeRulePresets(uiLanguage()).map(p=>'<button type="button" data-dn-rule-preset="'+p.id+'">'+esc(p.title)+'</button>').join('')}</div><input name="ruleTitle" placeholder="หัวข้อ" aria-label="หัวข้อกฎที่เขียนเพิ่ม" maxlength="80" value="${esc(ruleDraft.title)}"><textarea name="ruleText" placeholder="เขียนข้อความที่ต้องการให้ผู้อ่านเห็น…" aria-label="ข้อความกฎที่เขียนเพิ่ม" maxlength="1200">${esc(ruleDraft.text)}</textarea><p>ข้อความนี้ใช้หลอกผู้อ่านได้ แต่อำนาจจริงของสมุดไม่เปลี่ยน</p><div>${button('forge-rule',t('จารึกข้อความ ')+fa('pen-nib'),'dn-rule-add',!ruleDraft.text.trim()?'disabled':'')}${button('rules',t('กลับไปอ่าน'),'dn-rule-add')}</div></div>`;}
- function faceChoices(){return (state().npcs||[]).filter(n=>n.met===true&&n.enabled!==false&&/^(human|มนุษย์)$/iu.test(n.race||'')&&n.stats?.hp!==0).map(n=>`<button type="button" data-dn-face="${esc(n.id)}" aria-pressed="${draft.targetId===n.id}" class="dn-face-choice"><span class="dn-face-sketch">${fa('user')}</span><span><b>${eyeLabel(n)}</b><small>${esc(n.title||n.occupation||t('ใบหน้าที่คุณเคยพบ'))}</small></span>${draft.targetId===n.id?fa('check'):''}</button>`).join('');}
+ function faceChoices(){return (state().npcs||[]).filter(n=>faceKnowledge(world(),n,state()).known&&/^(human|มนุษย์)$/iu.test(n.race||'')&&n.stats?.hp!==0).map(n=>`<button type="button" data-dn-face="${esc(n.id)}" aria-pressed="${draft.targetId===n.id}" class="dn-face-choice"><span class="dn-face-sketch">${fa('user')}</span><span><b>${eyeLabel(n)}</b><small>${esc(n.title||n.occupation||t('ใบหน้าที่คุณเคยพบ'))}</small></span>${draft.targetId===n.id?fa('check'):''}</button>`).join('');}
  function ensurePaper(){const id=bookId||currentBook()?.id||'';if(id&&!bookId)bookId=id;const key=scope()+'::'+id;if(key!==paperKey){clearTimeout(paperTimer);paperKey=key;paperQueue=Promise.resolve();paperState=readPaper(chat(),id);paperDirty=false;clearPaperConfirm=false;}return paperState;}
  function writingSurface(){return html`<div class="dn-free-paper" data-dn-paper tabindex="0" aria-label="หน้ากระดาษว่าง แตะเพื่อเขียน"></div>`;}
  function writePage(){return access()?writingSurface():lockedPage();}
  function paperFooter(){
   const data=ensurePaper(),fresh=data.pages[data.active].blocks.some(b=>b.text.trim()&&b.text!==b.submittedText);
   if(clearPaperConfirm)return html`<div class="dn-paper-footer dn-clear-confirm"><small>ล้างเฉพาะกระดาษ ผลในเรื่องยังอยู่</small>${button('paper-clear',t('ล้างกระดาษ'))}${button('paper-keep',t('เก็บไว้'))}</div>`;
-  return `<div class="dn-writing-footer"><div class="dn-paper-footer"><div>${button('paper-clear-open',t('ล้างทั้งหมด'),'dn-paper-small',working?'disabled':'')}</div><div class="dn-paper-folios">${button('paper-prev','⟵','','aria-label="'+t('หน้าก่อน')+'" '+(data.active===0||working?'disabled':''))}<span>${String(data.active+1).padStart(2,'0')}</span>${button('paper-next','⟶','','aria-label="'+t('หน้าถัดไป')+'" '+(working?'disabled':''))}</div>${button('paper-inscribe',working?t('กำลังเขียน…'):t('ยืนยัน'),'dn-paper-submit',!fresh||working?'disabled':'')}</div><small class="dn-paper-status" role="status">${esc(notice)}</small></div>`;
+  return `<div class="dn-writing-footer"><div class="dn-paper-footer"><div>${button('paper-clear-open',t('ล้างทั้งหมด'),'dn-paper-small',working?'disabled':'')}</div><div class="dn-paper-folios">${button('paper-prev','⟵','','aria-label="'+t('หน้าก่อน')+'" '+(data.active===0||working?'disabled':''))}<span>${String(data.active+1).padStart(2,'0')}</span>${button('paper-next','⟶','','aria-label="'+t('หน้าถัดไป')+'" '+(working?'disabled':''))}</div>${button('paper-inscribe',working?t('กำลังเขียน…'):t('ต่อเรื่อง'),'dn-paper-submit',!fresh||working?'disabled':'')}</div><small class="dn-paper-status" role="status">${esc(notice)}</small></div>`;
  }
  function paperError(error){notice=t(error?.message||error);for(const node of [root,panel]){const status=node.querySelector('.dn-paper-status');if(status)status.textContent=notice;}}
  function queuePaper(next){
@@ -73,18 +82,40 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
   for(const node of [root,panel]){const save=node.querySelector('[data-dn-action=paper-inscribe]');if(save)save.disabled=working||!paperState.pages[paperState.active].blocks.some(b=>b.text.trim()&&b.text!==b.submittedText);}
  }
  function savePaper(){
-  clearTimeout(paperTimer);if(!paperDirty)return paperQueue;const captured=scope(),snapshot=cleanPaper(paperState),id=bookId||currentBook()?.id,message=chat().at(-1),context=c();
+  clearTimeout(paperTimer);if(!paperDirty)return paperQueue;const captured=scope(),snapshot=cleanPaper(paperState),id=bookId||currentBook()?.id,message=chat().findLast(m=>!m.is_user&&!m.is_system),context=c(),sourceTurn=replyAnchor(chat());
   if(!id||!message||message.is_user||message.is_system)return Promise.reject(Error(t('รอคำตอบ AI ก่อน')));
-  const task=paperQueue.catch(()=>{}).then(async()=>{if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));const previous=message.extra?.[PAPER];message.extra||={};message.extra[PAPER]=paperRows(message,id,snapshot);
+  const task=paperQueue.catch(()=>{}).then(async()=>{if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));const previous=message.extra?.[PAPER];message.extra||={};message.extra[PAPER]=paperRows(message,id,snapshot,{sourceTurn});
    try{await context.saveChat();if(scope()!==captured)throw Error(t('เปลี่ยนแชทระหว่างบันทึก'));if(JSON.stringify(paperState)===JSON.stringify(snapshot))paperDirty=false;}catch(error){if(scope()===captured){if(previous)message.extra[PAPER]=previous;else delete message.extra[PAPER];}throw error;}
   });paperQueue=task;return task;
  }
+ async function prepareGeneration(type='normal'){
+  if(disposed||!enabled()||!scope()||working||!['','normal','continue'].includes(type))return;
+  const captured=scope();if(bootstrap)await bootstrap;await api.prepareNpcs?.();if(scope()!==captured||!enabled())return;
+  await savePaper();if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));
+  const context=c(),message=chat().findLast(m=>!m.is_user&&!m.is_system);if(!message)return;
+  const sourceTurn=replyAnchor(chat()),current=state(),w=world(),previous=message.extra?structuredClone(message.extra):{},papers=[];const requests=[],errors=[];
+  for(const b of Object.values(w.books)){
+   if(!canWrite(w,current,b.id))continue;
+   const paper=b.id===currentBook()?.id?ensurePaper():readPaper(chat(),b.id),stage=stageWrittenPaper(paper,current,w,[...records(),...requests.map(r=>({...r,status:'waiting'}))],b.id);
+   errors.push(...stage.errors);if(stage.requests.length||(JSON.stringify(stage.paper)!==JSON.stringify(paper))){papers.push({bookId:b.id,paper:stage.paper});requests.push(...stage.requests);}
+  }
+  if(papers.length){
+   if((message.extra?.[INSCRIPTIONS]?.length||0)+requests.length>128)throw Error(t('หน้านี้เต็มแล้ว เริ่มเทิร์นเรื่องใหม่ก่อนจดเพิ่ม'));
+   message.extra||={};message.extra[INSCRIPTIONS]=[...(message.extra[INSCRIPTIONS]||[]),...requests.map(r=>({...r,...(sourceTurn?{sourceTurn}:{}),swipe:Number(message.swipe_id)||0,offset:visibleText(message.mes).length}))];
+   for(const p of papers)message.extra[PAPER]=paperRows(message,p.bookId,p.paper,{sourceTurn});
+   try{await context.saveChat();if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทระหว่างบันทึก'));}
+   catch(error){message.extra=previous;throw error;}
+   const active=papers.find(p=>p.bookId===currentBook()?.id);if(active){paperState=active.paper;paperDirty=false;}
+  }
+  notice=errors.length?t(errors[0]):requests.length?t('จดชื่อแล้ว รอผลในเนื้อเรื่อง'):notice;
+  refresh();if(papers.length||errors.length){render();renderDock();}return requests;
+ }
  function attachPaperEditors(){
-  if(root.open&&page==='write'&&access())paperEditor=mountPaperEditor({host:root.querySelector('[data-dn-paper]'),paper:ensurePaper(),onChange:queuePaper,onError:paperError,disabled:working});
+  if(root.open&&page==='write'&&access())paperEditor=mountPaperEditor({host:root.querySelector('[data-dn-paper]'),paper:ensurePaper(),onChange:queuePaper,onError:paperError,disabled:working||busy()});
  }
  async function inscribePaper(){
   if(working||busy()||!access())return;working=true;const captured=scope();let proposals,queued=[];
-  try{proposals=paperInputs(ensurePaper(),state(),world());for(const p of proposals){if(!p.input.cause)p.input.cause=t('หัวใจวาย');const check=eligibleTarget(state(),p.input);if(!check.ok)throw Error(check.message);}render();renderDock();await savePaper();}
+  try{await api.prepareNpcs?.();proposals=paperInputs(ensurePaper(),state(),world());for(const p of proposals){if(!p.input.cause)p.input.cause=t('หัวใจวาย');const check=eligibleTarget(state(),p.input);if(!check.ok)throw Error(check.message);}render();renderDock();await savePaper();}
   catch(error){working=false;notice=t(error.message);render();renderDock();return;}
   notice='';render();renderDock();
   try{const result=await continueInscriptions({context:c(),scope,currentState:state,inputs:proposals.map(p=>p.input),enabled,hasAccess:access,commitResult,onQueued:requests=>{queued=requests;}});if(scope()!==captured)return;paperState=markPaperSubmitted(paperState,proposals.flatMap(p=>p.blockIds));paperDirty=true;await savePaper();notice=result.warning?t(result.warning):t('เรื่องราวบันทึกผลแล้ว');}
@@ -100,14 +131,14 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  function pages(){return page==='records'?recordsPage():page==='rights'?rightsPage():page==='deal'?dealPage():page==='review'?reviewPage():page==='forge'?forgePage():writePage();}
  function render(){if(!root.open)return;paperEditor?.destroy();paperEditor=null;ensurePaper();root.lang=uiLanguage();root.setAttribute('aria-label',t('Death Note — สมุดบันทึก'));root.dataset.page=page;root.dataset.working=String(working);const isRules=page==='rules',dark=isRules||page==='forge',spread=ruleSpread(world(),currentBook()?.id,ruleIndex,innerWidth,uiLanguage());ruleIndex=spread.start;
   root.innerHTML=`<div class="dn-floating-tools"><span>DEATH NOTE</span><div>${button('dock',fa('window-minimize'),'',t('aria-label="ใช้เหนือ chatbar"'))}${button('close',fa('xmark'),'',t('aria-label="ปิดสมุด"'))}</div></div>${page==='cover'?cover():html`<div class="dn-open-book ${dark?'dn-reading-rules':''}"><aside class="dn-inside-cover">${isRules&&spread.step===1?'':rules(isRules?spread.left:rulePages(world(),currentBook()?.id,uiLanguage())[0],isRules?spread.start+1:1)}</aside><section class="dn-leaf"><div class="dn-leaf-scroll">${isRules?'<div class="dn-mobile-rules">'+rules(spread.step===2?spread.right:spread.left,spread.start+(spread.step===2?2:1))+'</div>':pages()}</div><footer class="dn-page-bottom">${isRules?ruleNavigation():page==='write'&&access()?paperFooter():`<span>${notice?esc(notice):''}</span><span>${page==='records'?'02':page==='rights'||page==='deal'?'03':'01'}</span>`}</footer></section><nav class="dn-bookmarks" aria-label="ที่คั่นหน้า">${[['write',t('เขียน')],['records',t('รายชื่อ')],['rules',t('กติกา')],['rights',t('สิทธิ์')]].map(([v,t])=>`<button type="button" data-dn-page="${v}" aria-current="${page===v?'page':'false'}">${t}</button>`).join('')}</nav><button class="dn-turn-corner" data-dn-action="${isRules?'rule-next':page==='write'?'paper-next':'next-page'}" aria-label="พลิกหน้าถัดไป" ${isRules&&spread.last?'disabled':''}></button></div>`}`;syncViewport();attachPaperEditors();}
- function renderDock(){dockEditor?.destroy();dockEditor=null;panel.lang=uiLanguage();if(disposed)return;if(!enabled()||!scope()||!showDock){dock?.remove('death-note');return;}const b=currentBook(),w=world(),held=access();panel.innerHTML=`<header class="dn-dock-header"><div><span class="dn-tiny-cover">DN</span><span>Death Note</span></div><div>${button('fullscreen',fa('expand'),'',t('aria-label="เปิดสมุดเต็มหน้า"'))}${button('minimize',fa('minus'),'',t('aria-label="ย่อหน้าต่าง"'))}${button('hide-dock',fa('xmark'),'',t('aria-label="ปิดหน้าต่างเหนือ chatbar"'))}</div></header>${b&&!b.holderId?html`<div class="dn-discovery"><div class="dn-found-book" aria-hidden="true"><span>DEATH<br>NOTE</span></div><div><small>คุณพบสมุดปกดำ</small><h3>จะทำอย่างไรกับมัน?</h3><p>${esc(b.location)}</p><div>${button('touch',t('แตะปก'))}${button('take',t('หยิบสมุด'))}${button('leave',t('ปล่อยไว้'))}</div></div></div>`:held?`<div class="dn-dock-paper dn-dock-free">${writingSurface()}${paperFooter()}</div>`:`<div class="dn-dock-locked"><span class="dn-tiny-cover">DN</span><div><strong>${b?.holderId?t('สมุดอยู่กับ ')+esc(label(b.holderId)):t('ยังไม่มีสมุดอยู่กับตัว')}</strong><p>${b?.ownerId==='player'?t('คุณยังเป็นเจ้าของสิทธิ์'):t('ต้องพบสมุดในเนื้อเรื่องก่อนจึงจะใช้ได้')}</p></div>${button('rights',fa('book-open'),'',t('aria-label="ดูสมุดและสิทธิ์"'))}</div>`}<div class="dn-dock-note" role="status">${esc((held?'':notice)|| (held?'':w.eyes?t('ดวงตาของยมทูตกำลังทำงาน'):working?t('กำลังต่อเรื่องจากคำตอบ AI เดิม…'):''))}</div>`;dock?.panel('death-note',panel,{label:'Death Note',busy:working});if(held)dockEditor=mountPaperEditor({host:panel.querySelector('[data-dn-paper]'),paper:ensurePaper(),onChange:queuePaper,onError:paperError,disabled:working});}
+ function renderDock(){dockEditor?.destroy();dockEditor=null;panel.lang=uiLanguage();if(disposed)return;if(!enabled()||!scope()||!showDock){dock?.remove('death-note');return;}const b=currentBook(),w=world(),held=access();panel.innerHTML=`<header class="dn-dock-header"><div><span class="dn-tiny-cover">DN</span><span>Death Note</span></div><div>${button('fullscreen',fa('expand'),'',t('aria-label="เปิดสมุดเต็มหน้า"'))}${button('minimize',fa('minus'),'',t('aria-label="ย่อหน้าต่าง"'))}${button('hide-dock',fa('xmark'),'',t('aria-label="ปิดหน้าต่างเหนือ chatbar"'))}</div></header>${b&&!b.holderId?html`<div class="dn-discovery"><div class="dn-found-book" aria-hidden="true"><span>DEATH<br>NOTE</span></div><div><small>คุณพบสมุดปกดำ</small><h3>จะทำอย่างไรกับมัน?</h3><p>${esc(b.location)}</p><div>${button('touch',t('แตะปก'))}${button('take',t('หยิบสมุด'))}${button('leave',t('ปล่อยไว้'))}</div></div></div>`:held?`<div class="dn-dock-paper dn-dock-free">${writingSurface()}${paperFooter()}</div>`:`<div class="dn-dock-locked"><span class="dn-tiny-cover">DN</span><div><strong>${b?.holderId?t('สมุดอยู่กับ ')+esc(label(b.holderId)):t('ยังไม่มีสมุดอยู่กับตัว')}</strong><p>${b?.ownerId==='player'?t('คุณยังเป็นเจ้าของสิทธิ์'):t('ต้องพบสมุดในเนื้อเรื่องก่อนจึงจะใช้ได้')}</p></div>${button('rights',fa('book-open'),'',t('aria-label="ดูสมุดและสิทธิ์"'))}</div>`}<div class="dn-dock-note" role="status">${esc((held?'':notice)|| (held?'':w.eyes?t('ดวงตาของยมทูตกำลังทำงาน'):working?t('กำลังต่อเรื่องจากคำตอบ AI เดิม…'):''))}</div>`;dock?.panel('death-note',panel,{label:'Death Note',busy:working});if(held)dockEditor=mountPaperEditor({host:panel.querySelector('[data-dn-paper]'),paper:ensurePaper(),onChange:queuePaper,onError:paperError,disabled:working||busy()});}
  function syncViewport(){root.style.setProperty('--dn-vh',(visualViewport?.height||innerHeight)+'px');root.style.setProperty('--dn-vtop',(visualViewport?.offsetTop||0)+'px');}
  function refresh(){if(disposed)return;const next=scope();if(owner!==next){owner=next;clearTimeout(paperTimer);paperKey='';paperDirty=false;draft=empty();page='cover';ruleIndex=0;ruleDraft={title:'',text:''};bookId='';notice='';confirmation='';showDock=true;if(root.open)root.close();policyStamp='';}
   const active=enabled()&&Boolean(next),w=active?world():null,stamp=active?JSON.stringify([next,uiLanguage(),w.claims,w.faces,w.eyes,w.memoryLost,Object.values(w.books).map(b=>[b.id,b.ownerId]),state().deathNoteRules,(state().npcs||[]).map(n=>[n.id,n.name,n.met])]):'off';
   if(active&&bookId&&!w.books[bookId]){bookId='';paperKey='';}
   if(stamp!==policyStamp){policyStamp=stamp;const identityState=state(),seen=new Map((identityState.npcs||[]).map(n=>[n.id,n]));setNpcVisibilityProvider(active?n=>playerIdentity(w,{...n,name:seen.get(n.id)?.name||n.name,met:seen.get(n.id)?.met??n.met},identityState,uiLanguage()):null);setNpcStoryGuard(active?(ops,ctx)=>protectManuscriptOps(protectNotebookOps(ops,ctx),{...ctx,base:{...ctx.base,deathNoteRules:state().deathNoteRules}}):null);api.refreshHost?.();}
   c().setExtensionPrompt(WORLD_PROMPT,active?worldInstruction(w,state()):'',1,1,false,0);
-  const pending=active?records().filter(e=>e.status==='waiting').slice(-5):[];c().setExtensionPrompt(PENDING_PROMPT,pending.map(e=>continuationInstruction(e,{pending:true})).join('\n\n'),1,1,false,0);
+  const pending=active?records().filter(e=>e.status==='waiting').slice(-128):[];c().setExtensionPrompt(PENDING_PROMPT,pending.map(e=>continuationInstruction(e,{pending:true})).join('\n\n'),1,1,false,0);
   if(!active){if(root.open)root.close();c().setExtensionPrompt(ACTION_PROMPT,'',1,0,false,0);}
   if(active&&!bootstrap){bootstrap=initialize().catch(error=>{notice=t(error.message);}).finally(()=>{bootstrap=null;});}
   if(root.open&&!root.contains(document.activeElement)&&!paperEditor?.selected)render();if(!panel.contains(document.activeElement)&&!dockEditor?.selected)renderDock();
@@ -175,9 +206,9 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
   const readyButton=root.querySelector('[data-dn-action=review]');if(readyButton)readyButton.disabled=!ready();
  }
  async function reconcile(){if(disposed||!enabled()||working)return;const captured=scope(),message=chat().at(-1);if(!message||message.is_user)return;
-  try{const rows=activeEvents(message),events=storyEvents(message.mes,state()),proposals=events.filter(e=>!rows.some(r=>r.type===e.type&&r.evidence===e.evidence&&(r.bookId||r.npcId)===(e.bookId||e.npcId)));for(const e of events)if(e.type==='discover'&&e.shinigamiId&&world().books[e.bookId]&&!world().books[e.bookId].originalShinigamiId)proposals.push({type:'bind-shinigami',bookId:e.bookId,shinigamiId:e.shinigamiId,evidence:e.evidence});
+  try{await api.prepareNpcs?.();if(scope()!==captured||!enabled())return;const rows=activeEvents(message),events=storyEvents(message.mes,state()),proposals=events.filter(e=>!rows.some(r=>r.type===e.type&&r.evidence===e.evidence&&(r.bookId||r.npcId)===(e.bookId||e.npcId)));for(const e of events)if(e.type==='discover'&&e.shinigamiId&&world().books[e.bookId]&&!world().books[e.bookId].originalShinigamiId)proposals.push({type:'bind-shinigami',bookId:e.bookId,shinigamiId:e.shinigamiId,evidence:e.evidence});
    if(proposals.length)await appendEvents([...registeredEvents(),...proposals],captured);
-   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending);if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.82.0');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
+   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending);for(const entry of pending)if(entry.validName===false&&!values.some(r=>r.requestId===entry.id)&&(entry.messageIndex<chat().indexOf(message)||visibleText(message.mes).length>entry.offset))values.push({requestId:entry.id,status:'ineffective',elapsedSeconds:0,evidence:'ชื่อที่เขียนไม่ทำให้เกิดผลตามกติกาของสมุด',engineVerdict:true});if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.82.1');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
    if(scope()===captured){for(const b of Object.values(world().books)){if(scope()!==captured||!enabled())return;await updateInventory(b,world(),captured);}refresh();if(proposals.some(e=>e.type==='discover')){showDock=true;renderDock();dock?.select('death-note');}}
   }catch(error){if(scope()===captured){notice=t(error.message);renderDock();}}
  }
@@ -187,6 +218,6 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  root.addEventListener('click',click);panel.addEventListener('click',click);root.addEventListener('input',input);panel.addEventListener('input',input);root.addEventListener('submit',e=>e.preventDefault());root.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('input'))e.preventDefault();});
  const onLanguage=e=>{if(e.target.matches?.('#tretaresia-rpg-language,[data-ui-setting=language],[data-setting=language]'))queueMicrotask(()=>{refresh();if(root.open)render();});};document.addEventListener('change',onLanguage);
  const resized=()=>{syncViewport();if(root.open&&page==='rules')render();};window.addEventListener('resize',resized);visualViewport?.addEventListener('resize',syncViewport);
- const app={root,open,refresh,records,world,debug:()=>({scope:scope(),enabled:enabled(),owned:access(),working,page,ruleIndex,rulePageCount:rulePages(world(),currentBook()?.id).length,bookId:currentBook()?.id||'',entries:records().length,paper:structuredClone(ensurePaper())}),destroy(){disposed=true;document.removeEventListener('change',onLanguage);paperEditor?.destroy();dockEditor?.destroy();clearTimeout(paperTimer);globalThis.removeEventListener('tretaresia-rpg:continuity-captured',onStateSaved);clearTimeout(reconcileTimer);for(const [event,fn]of subscriptions)context.eventSource.removeListener(event,fn);for(const p of [WORLD_PROMPT,PENDING_PROMPT,ACTION_PROMPT])context.setExtensionPrompt(p,'',1,0,false,0);setNpcVisibilityProvider(null);setNpcStoryGuard(null);window.removeEventListener('resize',resized);visualViewport?.removeEventListener('resize',syncViewport);dock?.remove('death-note');root.remove();sheet.remove();if(globalThis.RoleForgeDeathNote===app)delete globalThis.RoleForgeDeathNote;if(globalThis.RoleForgeDeathNotePreview===app)delete globalThis.RoleForgeDeathNotePreview;}};
+ const app={root,open,refresh,records,world,referenceIds,prepareGeneration,debug:()=>({scope:scope(),enabled:enabled(),owned:access(),working,page,ruleIndex,rulePageCount:rulePages(world(),currentBook()?.id).length,bookId:currentBook()?.id||'',entries:records().length,paper:structuredClone(ensurePaper())}),destroy(){disposed=true;document.removeEventListener('change',onLanguage);paperEditor?.destroy();dockEditor?.destroy();clearTimeout(paperTimer);globalThis.removeEventListener('tretaresia-rpg:continuity-captured',onStateSaved);clearTimeout(reconcileTimer);for(const [event,fn]of subscriptions)context.eventSource.removeListener(event,fn);for(const p of [WORLD_PROMPT,PENDING_PROMPT,ACTION_PROMPT])context.setExtensionPrompt(p,'',1,0,false,0);setNpcVisibilityProvider(null);setNpcStoryGuard(null);window.removeEventListener('resize',resized);visualViewport?.removeEventListener('resize',syncViewport);dock?.remove('death-note');root.remove();sheet.remove();if(globalThis.RoleForgeDeathNote===app)delete globalThis.RoleForgeDeathNote;if(globalThis.RoleForgeDeathNotePreview===app)delete globalThis.RoleForgeDeathNotePreview;}};
  globalThis.RoleForgeDeathNote=app;globalThis.RoleForgeDeathNotePreview=app;refresh();return app;
 }

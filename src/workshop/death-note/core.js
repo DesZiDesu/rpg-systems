@@ -1,10 +1,15 @@
-import {localId} from '../core.js?v=0.82.0';
-import {norm,trueNameOf} from './world.js?v=0.82.0';
+import {localId} from '../core.js?v=0.82.1';
+import {norm,trueNameOf} from './world.js?v=0.82.1';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.82.1';
 // Installing the addon never grants an item. Keep legacy journal keys for saved chats.
 export const INSCRIPTIONS = 'roleforge_death_note_inscriptions_preview';
 export const RESULTS = 'roleforge_death_note_results_preview';
 export const PROMPT = 'roleforge_death_note_write_preview';
 export const PENDING_PROMPT = 'roleforge_death_note_pending_preview';
+// A normal Send is already in chat when interception runs. Its dependent ink
+// must not follow the preceding assistant into a branch cut before that Send.
+export function replyAnchor(chat){const index=(chat||[]).length-1,message=chat?.[index];return message?.is_user?{index,hash:sha256(String(message.mes||''))}:null;}
+export function anchorActive(anchor,chat){if(!anchor)return true;const message=chat?.[anchor.index];return Number.isSafeInteger(anchor.index)&&anchor.index>=0&&message?.is_user===true&&anchor.hash===sha256(String(message.mes||''));}
 const key = text => String(text || '').normalize('NFKC').trim().replace(/\s+/gu, ' ').toLocaleLowerCase();
 const safeId = id => typeof id === 'string' && id.length < 180 && !['__proto__', 'constructor', 'prototype'].includes(id);
 export const visibleText = text => String(text || '').replace(/<think\b[^>]*>[\s\S]*?<\/think>/giu, '').replace(/<!--[\s\S]*?-->/gu, '').replace(/<[^>]*>/gu, ' ').replace(/\s+/gu, ' ').trim();
@@ -18,7 +23,7 @@ export function eligibleTarget(state, {name, targetId, faceKnown = false} = {}) 
   const targets=(state.npcs||[]).filter(npc=>targetId?npc.id===targetId:key(npc.name)===key(name));
   if(targets.length!==1)return {ok:false,code:'name',message:'เลือกใบหน้าที่กำลังนึกถึง'};
   const target=targets[0];
-  if(!safeId(target.id)||!faceKnown||target.met!==true)return {ok:false,code:'face',message:'ต้องเคยเห็นและจดจำใบหน้าของคนนี้'};
+  if(!safeId(target.id)||!faceKnown)return {ok:false,code:'face',message:'ต้องเคยเห็นและจดจำใบหน้าของคนนี้'};
   if(!/^(?:human|มนุษย์)$/iu.test(String(target.race||'').trim()))return {ok:false,code:'species',message:'กติกาสมุดใช้กับมนุษย์เท่านั้น'};
   if(target.stats?.hp===0||/^(?:deceased|dead|เสียชีวิต)$/iu.test(target.activity||''))return {ok:false,code:'deceased',message:'คนนี้เสียชีวิตแล้วในเนื้อเรื่อง'};
   return {ok:true,target,validName:norm(name)===norm(trueNameOf(state,target))};
@@ -39,7 +44,7 @@ export function ledger(chat) {
   const rows = new Map();
   for (const [messageIndex, message] of (chat || []).entries()) {
     if (message.is_user || message.is_system) continue;
-    for (const entry of activeRows(message, INSCRIPTIONS)) if (safeId(entry.id)) rows.set(entry.id, {...entry, status: 'waiting', messageIndex});
+    for (const entry of activeRows(message, INSCRIPTIONS)) if (safeId(entry.id)&&anchorActive(entry.sourceTurn,chat)) rows.set(entry.id, {...entry, status: 'waiting', messageIndex});
     for (const result of activeRows(message, RESULTS)) {
       const entry = rows.get(result.requestId);
       if (entry) Object.assign(entry, result, {id: entry.id, resultMessageIndex: messageIndex});
@@ -58,7 +63,7 @@ export function makeInscription(state, input, records = [], id = 'dn-' + localId
   return {id, targetId: checked.target.id, name:String(input.name).trim(), validName:checked.validName, cause, details: String(input.details || '').trim().slice(0, 500), delaySeconds, writtenStorySeconds: storySeconds(state), dueStorySeconds: storySeconds(state) + delaySeconds, faceKnown: true, createdAt: new Date().toISOString()};
 }
 export function continuationInstruction(request, {pending = false} = {}) {
-  return `ROLEFORGE_DEATH_NOTE — NOTEBOOK ACTION\n${pending ? 'An already valid inscription is pending. Continue normal roleplay; never create a new inscription or reset its clock.' : 'The player explicitly pressed the notebook inscription button. This is action consent; do not invent a User turn.'}\nINSCRIPTION: ${JSON.stringify(request)}\nContinue the existing assistant message from its ending. Write only new story, never repeat the old scene, add player dialogue, a User message, or send an inventory purchase. The player physically holds a notebook and has chosen a remembered human face. The written name is NOT automatically valid. Engine name check: ${request.validName===false?'WRONG NAME. The inscription is INEFFECTIVE. Do not kill or injure this person, do not emit any HP/death patch; narrate that nothing happens without revealing the real name.':'MATCHES canonical true name.'} Apply the established fictional Death Note/world rules; no effect before delaySeconds of STORY time. No real-time waiting or hidden model call. For the default 40 seconds you may narrate those seconds in this continuation; for a scheduled later time continue the current scene and keep the inscription waiting until that time. Do not force a time skip to the scheduled time. A person already known to be dead cannot die twice. Unsupported or impossible details must not magically occur; explain an ineffective outcome when canon requires it.\nWhen this continuation establishes a result, append <!--roleforge_death_note:{"requestId":"${request.id}","status":"waiting|resolved|ineffective","elapsedSeconds":0,"evidence":"exact quote of the NEW visible story naming ${request.name}"}-->. Use the actual elapsed STORY seconds since writing. A resolved result requires elapsedSeconds >= ${request.delaySeconds} and an explicit completed death in that quote. For waiting, do not change the NPC's HP or activity. Only after a confirmed death, include the existing tretaresia_patch NPC update using stable id ${request.targetId}, stats.hp:0 and activity:"Deceased", preserving all other profile/history fields. Keep the normal sceneTracker day/time consistent with the elapsed story time; it has minute precision. Use normal tr-narrative/tr-dialogue blocks and preserve the notebook item. Never reveal an unknown person's real name from a hidden library.`;
+  return `ROLEFORGE_DEATH_NOTE — NOTEBOOK ACTION\n${pending ? 'An already recorded inscription is pending. Continue normal roleplay; never create a new inscription or reset its clock.' : request.trigger==='next-reply'?'The player wrote this name on the notebook paper and chose to wait for the next story reply. The written ink is action consent; do not invent a User turn.':'The player explicitly pressed the notebook inscription button. This is action consent; do not invent a User turn.'}\nINSCRIPTION: ${JSON.stringify(request)}\nWhen the host uses Continue, append to the existing assistant message from its ending. On a normal reply, answer the actual latest User turn while applying this inscription. Write only new story, never repeat the old scene, add player dialogue, a User message, or send an inventory purchase. The player physically holds a notebook and has chosen a remembered human face. The written name is NOT automatically valid. Engine name check: ${request.validName===false?'WRONG NAME. The inscription is INEFFECTIVE. Do not kill or injure this person, do not emit any HP/death patch; narrate that nothing happens without revealing the real name.':'MATCHES canonical true name.'} Apply the established fictional Death Note/world rules; no effect before delaySeconds of STORY time. No real-time waiting or hidden model call. For the default 40 seconds you may narrate those seconds in this continuation; for a scheduled later time continue the current scene and keep the inscription waiting until that time. Do not force a time skip to the scheduled time. A person already known to be dead cannot die twice. Unsupported or impossible details must not magically occur; explain an ineffective outcome when canon requires it.\nWhen this continuation establishes a result, append <!--roleforge_death_note:{"requestId":"${request.id}","status":"waiting|resolved|ineffective","elapsedSeconds":0,"evidence":"exact quote of the NEW visible story naming ${request.name}"}-->. Use the actual elapsed STORY seconds since writing. A resolved result requires elapsedSeconds >= ${request.delaySeconds} and an explicit completed death in that quote. For waiting, do not change the NPC's HP or activity. Only after a confirmed death, include the existing tretaresia_patch NPC update using stable id ${request.targetId}, stats.hp:0 and activity:"Deceased", preserving all other profile/history fields. Keep the normal sceneTracker day/time consistent with the elapsed story time; it has minute precision. Use normal tr-narrative/tr-dialogue blocks and preserve the notebook item. Never reveal an unknown person's real name from a hidden library.`;
 }
 export function parseResults(source, records) {
   const results = [], text = visibleText(source);

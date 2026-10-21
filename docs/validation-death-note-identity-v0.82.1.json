@@ -1,0 +1,124 @@
+{
+  "release": "0.82.1",
+  "unit": {
+    "tests": 1668,
+    "fail": 0
+  },
+  "syntax": "passed",
+  "native": {
+    "realSillyTavern": true,
+    "liveModel": false,
+    "controlledDelayedSSE": true,
+    "theme": "Dark Lite",
+    "devices": [
+      {
+        "device": "desktop",
+        "branchBeforeSendHasNoFutureInscription": true,
+        "chatbarNoConfirm": true,
+        "latestUserFaceEvidence": true,
+        "mobileTouchEmulation": false,
+        "archivedNpc": false,
+        "retryAfterFailedNormalReply": false,
+        "newsNameAndPhotoWithoutMet": true,
+        "npcManagementReportedName": true,
+        "noConfirmNeeded": true,
+        "earlierPageInkProcessed": true,
+        "noCallWhileTyping": true,
+        "oneNormalReply": true,
+        "noSyntheticUser": true,
+        "realHPUpdated": true,
+        "noDuplicateNextReply": true,
+        "inkPreserved": true,
+        "reloadPersists": true
+      },
+      {
+        "device": "mobile",
+        "branchBeforeSendHasNoFutureInscription": true,
+        "chatbarNoConfirm": true,
+        "latestUserFaceEvidence": true,
+        "mobileTouchEmulation": true,
+        "archivedNpc": true,
+        "retryAfterFailedNormalReply": true,
+        "newsNameAndPhotoWithoutMet": true,
+        "npcManagementReportedName": true,
+        "noConfirmNeeded": true,
+        "earlierPageInkProcessed": true,
+        "noCallWhileTyping": true,
+        "oneNormalReply": true,
+        "noSyntheticUser": true,
+        "realHPUpdated": true,
+        "noDuplicateNextReply": true,
+        "inkPreserved": true,
+        "reloadPersists": true
+      }
+    ],
+    "errors": [],
+    "roleForgeVersion": "0.82.1",
+    "hostVersion": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "expectedFailures": [
+      {
+        "device": "mobile",
+        "error": "Got response status 503"
+      }
+    ],
+    "pass": true
+  },
+  "continueCloseRegression": {
+    "realSillyTavern": true,
+    "liveModel": false,
+    "controlledDelayedSSE": true,
+    "theme": "Dark Lite",
+    "devices": [
+      {
+        "device": "desktop",
+        "touchEmulation": false,
+        "closeWhileWaiting": true,
+        "continueOriginalAIReply": true,
+        "modalStaysClosed": true,
+        "dockMinimizePersists": true,
+        "dockClosePersists": true,
+        "reopenReadOnly": true,
+        "launcherReturnsToPendingPaper": true,
+        "duplicateSubmissionBlocked": true,
+        "noUserMessage": true,
+        "unsentDraftPreserved": true,
+        "failedRequestRetry": true,
+        "reloadPersists": true
+      },
+      {
+        "device": "mobile",
+        "touchEmulation": true,
+        "closeWhileWaiting": true,
+        "continueOriginalAIReply": true,
+        "modalStaysClosed": true,
+        "dockMinimizePersists": true,
+        "dockClosePersists": true,
+        "reopenReadOnly": true,
+        "launcherReturnsToPendingPaper": true,
+        "duplicateSubmissionBlocked": true,
+        "noUserMessage": true,
+        "unsentDraftPreserved": true,
+        "failedRequestRetry": true,
+        "reloadPersists": true
+      }
+    ],
+    "errors": [],
+    "roleForgeVersion": "0.82.1",
+    "hostVersion": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "pass": true
+  }
+}

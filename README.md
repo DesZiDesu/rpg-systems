@@ -1,12 +1,14 @@
 # RoleForge
 
-**Public release: 0.81.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.82.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+**Fixed in 0.82.1:** Death Note learns names and faces from visible news, documents and clear photographs without requiring an in-person meeting. Write a name and send your next roleplay turn to process it in that reply; the small **Continue story** link is optional. Ink and outcomes retain their chat/swipe scope. [Thai details and native validation](docs/death-note-identity-v0.82.1.th.md).
 
 **Fixed in 0.81.1:** close or minimize Death Note while waiting for AI. The existing assistant reply continues and saves its result once; closed windows stay closed, and reopening pending paper keeps it read-only. [Thai details and native regression tests](docs/death-note-close-v0.81.1.th.md).
 

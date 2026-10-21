@@ -1,4 +1,4 @@
-import {uiLanguage} from '../../ui-language.js?v=0.82.0';
+import {uiLanguage} from '../../ui-language.js?v=0.82.1';
 
 // Only authored interface text passes through this table. Saved names, prose
 // and manuscripts are interpolated after static template parts are translated.
@@ -18,6 +18,7 @@ export const ENGLISH_UI=Object.freeze({
  'หน้าก่อน':'Previous page',
  'หน้าถัดไป':'Next page',
  'ยืนยัน':'Confirm',
+ 'ต่อเรื่อง':'Continue story',
  'สมุดเก็บหน้าจดได้ 32 หน้า':'The notebook holds up to 32 writing pages',
  'ระบุใบหน้าจากโรลยังไม่ได้ ชื่อนี้ตรงกับหลายคน':'The story does not identify one face for this shared name',
  'เขียนชื่อที่ต้องการจดในบรรทัดของตัวเองก่อน':'Write each intended name on its own line first',
