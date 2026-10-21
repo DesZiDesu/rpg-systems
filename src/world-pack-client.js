@@ -1,11 +1,11 @@
-import {WORLD_REF_FIELD,worldRef,worldKey,worldError} from './world-pack-core.js?v=0.81.0';
-import {freezeArchiveRecord} from './archive-cache.js?v=0.81.0';
-import {readCharacterExtension} from './character-archive.js?v=0.81.0';
+import {WORLD_REF_FIELD,worldRef,worldKey,worldError} from './world-pack-core.js?v=0.81.1';
+import {freezeArchiveRecord} from './archive-cache.js?v=0.81.1';
+import {readCharacterExtension} from './character-archive.js?v=0.81.1';
 
 export function createWorldPackClient({normalizeNpc=value=>value,onProgress=()=>{}}={}) {
     let worker,sequence=0;const pending=new Map(),catalogs=new Map(),opens=new Map(),installs=new Map(),revisions=new Map();
     function rpc(action,payload,progress=onProgress){
-        if(!worker){worker=new Worker(new URL('./world-pack-worker.js?v=0.81.0',import.meta.url),{type:'module'});
+        if(!worker){worker=new Worker(new URL('./world-pack-worker.js?v=0.81.1',import.meta.url),{type:'module'});
             worker.onmessage=({data})=>{const job=pending.get(data.id);if(!job)return;if(data.progress){job.progress(data.progress);return;}pending.delete(data.id);data.error?job.reject(Object.assign(Error(data.error.message),{name:data.error.name,code:data.error.code})):job.resolve(data.result);};
             worker.onerror=event=>{const error=Error(event.message||'World Pack Worker could not start');for(const job of pending.values())job.reject(error);pending.clear();catalogs.clear();opens.clear();installs.clear();revisions.clear();worker.terminate();worker=null;};}
         const id=++sequence,promise=new Promise((resolve,reject)=>{pending.set(id,{resolve,reject,progress});worker.postMessage({id,action,payload});});

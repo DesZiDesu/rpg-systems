@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted,PAPER_LIMITS} from '../src/workshop/death-note/paper.js';
 import {worldState,storyEvents,applyEvent,playerIdentity,WORLD_EVENTS} from '../src/workshop/death-note/world.js';
 import {faceKnowledge} from '../src/workshop/death-note/faces.js';
@@ -7,7 +8,8 @@ import {eligibleTarget,continueInscriptions,INSCRIPTIONS,PROMPT,ledger} from '..
 import {RULE_PAGES,rulePages,ruleSpread,fakeRulePresets} from '../src/workshop/death-note/rules.js';
 import {ENGLISH_RULES} from '../src/workshop/death-note/rules-en.js';
 import {t,html,ENGLISH_UI} from '../src/workshop/death-note/strings.js';
-import {setUiLanguageProvider} from '../src/ui-language.js?v=0.81.0';
+const release=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url),'utf8')).version;
+const {setUiLanguageProvider}=await import('../src/ui-language.js?v='+release);
 const state=()=>({inventory:[{id:'note',name:'Death Note',quantity:1}],npcs:[{id:'a',name:'Elias Voss',met:true,race:'Human',title:'ชายสวมเสื้อคลุม',stats:{hp:100}},{id:'b',name:'Mara Hale',met:true,race:'Human',stats:{hp:100}}],deathNoteRules:{books:[{itemId:'note',ownerId:'player',originalShinigamiId:'ryuk'}]},worldClock:{day:1,time:'20:00'}});
 const block=(id,text,x=.1,y=.1)=>({id,text,x,y,size:24,submittedText:''});
 function paper(...blocks){const p=blankPaper();p.pages[0].blocks=blocks;return p;}

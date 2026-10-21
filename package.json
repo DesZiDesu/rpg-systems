@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.81.0",
+  "version": "0.81.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -69,6 +69,7 @@
     "test:relationships:language:real": "node tests/relationship-language.real.browser.mjs",
     "test:hstats-branches:real": "node tests/hstats-branches.real.browser.mjs",
     "test:death-note:real": "node tests/death-note.real.browser.mjs",
+    "test:death-note:close:real": "node tests/death-note-close.real.browser.mjs",
     "test:death-note": "node --test tests/death-note-core.test.mjs tests/death-note-world.test.mjs tests/death-note-rules-eyes.test.mjs tests/death-note-paper.test.mjs"
   }
 }

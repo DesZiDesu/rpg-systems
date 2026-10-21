@@ -1,20 +1,20 @@
-import {localId} from '../core.js?v=0.81.0';
-import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.81.0';
-import {mountPaperEditor} from './paper-editor.js?v=0.81.0';
-import {uiLanguage} from '../../ui-language.js?v=0.81.0';
-import {t,html} from './strings.js?v=0.81.0';
-import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.81.0';
-import {eyeInsight} from './eyes.js?v=0.81.0';
-import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.81.0';
-import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,perceivedName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.81.0';
-import {setNpcVisibilityProvider,setNpcStoryGuard} from '../../npc-visibility.js?v=0.81.0';
+import {localId} from '../core.js?v=0.81.1';
+import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.81.1';
+import {mountPaperEditor} from './paper-editor.js?v=0.81.1';
+import {uiLanguage} from '../../ui-language.js?v=0.81.1';
+import {t,html} from './strings.js?v=0.81.1';
+import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.81.1';
+import {eyeInsight} from './eyes.js?v=0.81.1';
+import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.81.1';
+import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,perceivedName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.81.1';
+import {setNpcVisibilityProvider,setNpcStoryGuard} from '../../npc-visibility.js?v=0.81.1';
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sealURL=new URL('../../../assets/workshop/death-note/rules-seal.png',import.meta.url).href;
 const fa=n=>`<i class="fa-solid fa-${n}" aria-hidden="true"></i>`;
 const button=(action,text,cls='',more='')=>`<button type="button" class="${cls}" data-dn-action="${action}" ${more}>${text}</button>`;
 const paperTime=s=>{const v=formatStoryTime(s);return html`วันที่ ${v.day} · ${v.time}`;};
 export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
- const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.81.0',import.meta.url);document.head.append(sheet);
+ const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.81.1',import.meta.url);document.head.append(sheet);
  const root=document.createElement('dialog');root.id='roleforge-death-note-preview';root.className='rfdn';root.setAttribute('aria-label',t('Death Note — สมุดบันทึก'));document.body.append(root);
  const panel=document.createElement('section');panel.id='roleforge-death-note-dock';panel.className='dn-dock';panel.dataset.swipeIgnore='true';
  const c=()=>SillyTavern.getContext(),live=()=>api.context(),state=()=>({...live().state,deathNoteRules:live().deathNoteRules||{}}),chat=()=>live().chat||[];
@@ -39,7 +39,7 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  }
  async function appendEvents(events,captured=scope()) {
   if(!events.length)return;const message=chat().at(-1);if(!message||message.is_user||message.is_system)throw Error(t('รอให้ AI เล่าเหตุการณ์ก่อน'));
-  const {plain}=await import('./world.js?v=0.81.0');if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));
+  const {plain}=await import('./world.js?v=0.81.1');if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));
   message.extra||={};const previous=message.extra[WORLD_EVENTS]||[],offset=plain(message.mes).length,swipe=Number(message.swipe_id)||0;
   const added=events.map(e=>({...e,id:e.id||'dn-event-'+localId(),offset,swipe}));message.extra[WORLD_EVENTS]=[...previous,...added];
   try{await c().saveChat();if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทระหว่างบันทึก'));}catch(error){if(scope()===captured&&chat().at(-1)===message)message.extra[WORLD_EVENTS]=previous;throw error;}
@@ -112,7 +112,7 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
   if(active&&!bootstrap){bootstrap=initialize().catch(error=>{notice=t(error.message);}).finally(()=>{bootstrap=null;});}
   if(root.open&&!root.contains(document.activeElement)&&!paperEditor?.selected)render();if(!panel.contains(document.activeElement)&&!dockEditor?.selected)renderDock();
  }
- async function open(nextPage='cover'){refresh();if(!enabled()||!scope())return false;if(bootstrap)await bootstrap;if(!enabled()||scope()!==owner)return false;page=nextPage;showDock=true;bookId=currentBook()?.id||'';renderDock();if(!root.open)root.showModal();render();return true;}
+ async function open(nextPage='cover'){refresh();if(!enabled()||!scope())return false;if(bootstrap)await bootstrap;if(!enabled()||scope()!==owner)return false;page=working&&nextPage==='cover'?'write':nextPage;showDock=true;bookId=currentBook()?.id||'';renderDock();if(!root.open)root.showModal();render();return true;}
  async function updateInventory(b,nextWorld,captured){if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));const current=state(),held=nextWorld.books[b.id]?.holderId==='player';if(Boolean(current.inventory?.find(i=>i.id===b.itemId)?.quantity>0)===held)return;const next=structuredClone(current),item=next.inventory?.find(i=>i.id===b.itemId);next.inventory||=[];
   if(item)item.quantity=held?Math.max(1,item.quantity):0;else if(held)next.inventory.push({id:b.itemId,name:'Death Note',quantity:1,category:'Artifact',description:t('สมุดปกดำที่พบในเนื้อเรื่อง'),properties:['roleforge:addon:death-note']});
   delete next.deathNoteRules;
@@ -141,16 +141,19 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
   catch(error){if(scope()===captured)notice=t(error.message);}finally{working=false;refresh();render();renderDock();}
  }
  function changePage(next){const opening=page==='cover';page=next;confirmation='';notice='';render();if(opening){root.querySelector('.dn-inside-cover')?.animate([{transform:'rotateY(85deg)',transformOrigin:'right center',opacity:.2},{transform:'rotateY(0deg)',transformOrigin:'right center',opacity:1}],{duration:750,easing:'cubic-bezier(.2,.7,.2,1)'});}root.querySelector('.dn-open-book')?.animate([{opacity:.45,transform:'rotateY(-4deg)'},{opacity:1,transform:'rotateY(0deg)'}],{duration:380,easing:'ease-out'});}
- async function click(e){const face=e.target.closest('[data-dn-face]'),target=e.target.closest('[data-dn-lend-target]'),tab=e.target.closest('[data-dn-page]'),timing=e.target.closest('[data-dn-timing]'),delay=e.target.closest('[data-dn-delay]'),preset=e.target.closest('[data-dn-rule-preset]'),act=e.target.closest('[data-dn-action]');if(working)return;
+ async function click(e){const face=e.target.closest('[data-dn-face]'),target=e.target.closest('[data-dn-lend-target]'),tab=e.target.closest('[data-dn-page]'),timing=e.target.closest('[data-dn-timing]'),delay=e.target.closest('[data-dn-delay]'),preset=e.target.closest('[data-dn-rule-preset]'),act=e.target.closest('[data-dn-action]'),a=act?.dataset.dnAction;
+  // Visibility controls never cancel or wait for Continue. The running task owns
+  // paper/result saves; editing and a second inscription remain locked below.
+  if(['close','dock','leave'].includes(a)){if(!working)try{await savePaper();}catch(error){notice=t(error.message);render();return;}root.close();if(a==='dock'){showDock=true;renderDock();dock?.select('death-note');}if(a==='leave'){notice=t('ปล่อยสมุดไว้ที่เดิม');renderDock();dock?.minimize('death-note');}return;}
+  if(a==='hide-dock'){showDock=false;dock?.remove('death-note');return;}if(a==='minimize'){dock?.minimize('death-note');return;}
+  if(a==='fullscreen'||a==='dock-write'){await open(a==='dock-write'||working?'write':'cover');return;}
+  if(working)return;
   if(preset){const value=fakeRulePresets(uiLanguage()).find(p=>p.id===preset.dataset.dnRulePreset);if(value){ruleDraft={title:value.title,text:value.text};render();}return;}
   if(face){draft.targetId=face.dataset.dnFace;const targetNpc=(state().npcs||[]).find(n=>n.id===draft.targetId);const name=targetNpc&&eyeInsight(world(),targetNpc,state(),uiLanguage())?.trueName||label(draft.targetId);if(!draft.name&&name!=='???')draft.name=name;render();return;}
   if(target){actionTarget=target.dataset.dnLendTarget;render();return;}
   if(tab){changePage(tab.dataset.dnPage);return;}
   if(timing){draft.timing=timing.dataset.dnTiming;render();return;}if(delay){draft.delaySeconds=Number(delay.dataset.dnDelay);render();return;}
-  if(!act)return;const a=act.dataset.dnAction;
-  if(['close','dock','leave'].includes(a)){try{await savePaper();}catch(error){notice=t(error.message);render();return;}root.close();if(a==='dock'){showDock=true;renderDock();dock?.select('death-note');}if(a==='leave'){notice=t('ปล่อยสมุดไว้ที่เดิม');renderDock();dock?.minimize('death-note');}return;}
-  if(a==='hide-dock'){showDock=false;dock?.remove('death-note');return;}if(a==='minimize'){dock?.minimize('death-note');return;}
-  if(a==='fullscreen'){await open('cover');return;}if(a==='dock-write'){await open('write');return;}
+  if(!act)return;
   if(['open-cover','edit','new','write'].includes(a)){if(a==='new')draft=empty();if(!root.open){await open('write');}else changePage('write');return;}
   if(a==='paper-inscribe'){await inscribePaper();return;}
   if(a==='paper-clear-open'){clearPaperConfirm=true;render();renderDock();return;}
@@ -174,7 +177,7 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  async function reconcile(){if(disposed||!enabled()||working)return;const captured=scope(),message=chat().at(-1);if(!message||message.is_user)return;
   try{const rows=activeEvents(message),events=storyEvents(message.mes,state()),proposals=events.filter(e=>!rows.some(r=>r.type===e.type&&r.evidence===e.evidence&&(r.bookId||r.npcId)===(e.bookId||e.npcId)));for(const e of events)if(e.type==='discover'&&e.shinigamiId&&world().books[e.bookId]&&!world().books[e.bookId].originalShinigamiId)proposals.push({type:'bind-shinigami',bookId:e.bookId,shinigamiId:e.shinigamiId,evidence:e.evidence});
    if(proposals.length)await appendEvents([...registeredEvents(),...proposals],captured);
-   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending);if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.81.0');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
+   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending);if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.81.1');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
    if(scope()===captured){for(const b of Object.values(world().books)){if(scope()!==captured||!enabled())return;await updateInventory(b,world(),captured);}refresh();if(proposals.some(e=>e.type==='discover')){showDock=true;renderDock();dock?.select('death-note');}}
   }catch(error){if(scope()===captured){notice=t(error.message);renderDock();}}
  }

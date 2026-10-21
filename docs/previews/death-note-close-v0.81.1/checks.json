@@ -1,0 +1,28 @@
+{
+  "version": "0.81.1",
+  "syntaxCheck": "passed",
+  "unitTests": {
+    "tests": 1644,
+    "passed": 1644,
+    "failed": 0
+  },
+  "notebookRegression": {
+    "passed": true,
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "controlledModel": true,
+    "physicalIPhoneTested": false
+  },
+  "closeWhileGenerating": {
+    "passed": true,
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "includesLauncherReopen": true,
+    "failedRequestRetry": true,
+    "reloadPersists": true
+  }
+}

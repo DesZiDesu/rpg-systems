@@ -1,12 +1,14 @@
 # RoleForge
 
-**Public release: 0.81.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.81.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+**Fixed in 0.81.1:** close or minimize Death Note while waiting for AI. The existing assistant reply continues and saves its result once; closed windows stay closed, and reopening pending paper keeps it read-only. [Thai details and native regression tests](docs/death-note-close-v0.81.1.th.md).
 
 **New in 0.81.0:** install the optional Death Note addon from Workshop for a notebook above the chatbar or in a full-page view. Tap blank paper to write, drag and resize ink, and retain earlier pages without sending a message. Hidden names and false introductions stay separate from canonical NPC records; Shinigami Eyes reveal red true names and authored original lifespans at the cost of half the remaining life. Read 71 bilingual black rulebook pages and add deceptive manuscripts without changing real rules. Writing continues the existing AI reply without sending a User message. [Thai guide, native screenshots and test limits](docs/death-note-v0.81.0.th.md).
 

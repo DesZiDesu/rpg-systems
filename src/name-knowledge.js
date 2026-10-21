@@ -1,4 +1,4 @@
-import {resolveNpcSpeaker} from './npc-core.js?v=0.81.0';
+import {resolveNpcSpeaker} from './npc-core.js?v=0.81.1';
 // Directed knowledge: A knowing B's name never implies B knows A, or that C
 // knows either name. These maps belong to the observer's shared identity.
 const blocked=new Set(['__proto__','constructor','prototype']);
