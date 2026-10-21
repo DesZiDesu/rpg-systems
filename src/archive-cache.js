@@ -51,6 +51,7 @@ export function npcArchiveSummary(raw,id,owner='') {
         identityColor:active?.identityColor||raw.identityColor,roleIcon:active?.roleIcon||raw.roleIcon,roleIconImage:active?.roleIconImage??raw.roleIconImage,
         hasPortrait:active?.hasPortrait??raw.hasPortrait,portraitSource:active?.portraitSource||raw.portraitSource,
         portraitPath:active?.portraitPath||raw.portraitPath,portraitChatId:active?.portraitChatId||raw.portraitChatId,
+        portraitImage:active?.portraitSource==='embedded'?active.portraitImage:raw.portraitImage,
         portraitSize:active?.portraitSize||raw.portraitSize,
         portraitView:structuredClone(active?.portraitView||raw.portraitView),
         activeAlternateId:raw.activeAlternateId||'',alternateProfiles:[],

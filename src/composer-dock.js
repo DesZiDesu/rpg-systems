@@ -1,4 +1,4 @@
-import {composerIcon} from './composer-icons.js?v=0.81.2';
+import {composerIcon} from './composer-icons.js?v=0.82.0';
 // A single placement owner. Tabs appear only when several windows are open;
 // collapsing never discards a panel, a draft, or an in-flight task.
 export function createComposerDock({document:doc=globalThis.document,language=()=> 'en'}={}){

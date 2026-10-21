@@ -1,7 +1,7 @@
-import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog,releaseDownloadUrl} from './core.js?v=0.81.2';
-import {createStore,downloadPack} from './client.js?v=0.81.2';
-import {createSageScene} from './scene.js?v=0.81.2';
-import {createAddonLaunchers} from './launchers.js?v=0.81.2';
+import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog,releaseDownloadUrl,cardAddonDefaults} from './core.js?v=0.82.0';
+import {createStore,downloadPack} from './client.js?v=0.82.0';
+import {createSageScene} from './scene.js?v=0.82.0';
+import {createAddonLaunchers} from './launchers.js?v=0.82.0';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Use SillyTavern's bundled icon family; Great Sage has its actual orb identity.
 const icons={close:'xmark',back:'arrow-left',arrow:'arrow-right',download:'download',search:'magnifying-glass',grid:'compass',sage:'atom',book:'book-open',check:'check',shield:'shield-halved',settings:'sliders',trash:'trash-can',clock:'clock-rotate-left',external:'arrow-up-right-from-square',refresh:'arrows-rotate',upload:'arrow-up-from-bracket',box:'box-archive',workshop:'hammer',chat:'comment-dots',installed:'layer-group',spark:'wand-magic-sparkles',sound:'volume-high',stop:'stop',chevron:'chevron-right',globe:'globe'};
@@ -106,7 +106,32 @@ export async function mountWorkshop({api,dock,base=new URL('./',import.meta.url)
  window.visualViewport?.addEventListener('resize',syncViewport);window.visualViewport?.addEventListener('scroll',syncViewport);window.addEventListener('resize',syncViewport);
  function open(next='browse'){syncViewport();navigate(next);if(!root.open)root.showModal();root.querySelector('.rfws-brand-copy strong,.sg-wordmark strong')?.focus({preventScroll:true});}
  function openSage(tab='analysis'){sageTab=tab;open('sage');}
- async function reload(){const context=current(),id=++epoch;key=context.key||'';nonce=context.nonce;profile=null;selectedResult=null;question='';notice='';analysisSerial++;analysisBusy=false;voiceSerial++;voiceBusy=false;api.voice?.stop();scene.reset();render();const data=await store.call('snapshot',{key});if(id!==epoch||disposed)return;packages=data.packs;profile=data.profile;if(profile?.history.length)scene.complete(profile.history.at(-1).result);render();}
+ let reloadFlight;
+ async function reload(){
+  const context=current(),id=++epoch,capturedKey=context.key||'';key=capturedKey;nonce=context.nonce;profile=null;selectedResult=null;question='';notice='';analysisSerial++;analysisBusy=false;voiceSerial++;voiceBusy=false;api.voice?.stop();scene.reset();render();
+  const flight=(async()=>{
+   const data=await store.call('snapshot',{key:capturedKey});if(id!==epoch||disposed)return;packages=data.packs;profile=data.profile;
+   const defaults=cardAddonDefaults(context.workshopDefaults);
+   if(profile&&!data.profileStored&&defaults.length){
+    for(const addonId of defaults){
+     const p=addon(addonId),release=p?.releases.at(-1);if(!p||!compatible(p))continue;
+     if(!packages.some(p=>p.id===addonId&&compare(p.version,release.version)>=0)){
+      const bytes=await downloadPack(releaseDownloadUrl(release,base));
+      await store.call('install',{bytes,sha256:release.sha256,host:api.version,expectedId:addonId,expectedVersion:release.version});
+     }
+     if(id!==epoch||disposed||current().key!==capturedKey||current().nonce!==context.nonce)return;
+    }
+    const fresh=await store.call('snapshot',{key:capturedKey});
+    if(id!==epoch||disposed||current().key!==capturedKey||current().nonce!==context.nonce)return;
+    packages=fresh.packs;
+    // A concurrent explicit user choice always wins over card defaults.
+    const saved=fresh.profileStored?fresh.profile:await store.call('profile',{key:capturedKey,ifMissing:true,profile:{...fresh.profile,enabled:defaults.filter(id=>packages.some(p=>p.id===id))}});
+    if(id!==epoch||disposed||current().key!==capturedKey||current().nonce!==context.nonce)return;profile=saved;
+   }
+   if(id!==epoch||disposed)return;
+   if(profile?.history.length)scene.complete(profile.history.at(-1).result);render();
+  })();reloadFlight=flight;return flight;
+ }
  async function saveProfile(next){const ticket=current(),id=epoch;if(!ticket.key||next.key!==ticket.key||ticket.key!==key||ticket.nonce!==nonce)return false;busy=true;render();try{const saved=await store.call('profile',{key:ticket.key,profile:next});if(id===epoch&&current().key===ticket.key&&current().nonce===ticket.nonce){profile=saved;return true;}return false;}finally{busy=false;render();}}
  async function enable(id,value){if(!canMutate())return;const next=copy(profile);next.enabled=value?[...new Set([...next.enabled,id])]:next.enabled.filter(x=>x!==id);if(await saveProfile(next)){if(id===SAGE&&!value){scene.reset();voiceSerial++;voiceBusy=false;api.voice?.stop();}note(value?`${addon(id).name} พร้อมใช้เฉพาะแชทนี้แล้ว`:`ปิด ${addon(id).name} แล้ว ประวัติยังอยู่`);}}
  async function install(id,update=false){if(busy||analysisBusy)return;const p=addon(id),release=p.releases.at(-1);if(!compatible(p))return;busy=true;progress='กำลังดาวน์โหลดแพ็ก…';notice='';render();
@@ -167,5 +192,5 @@ export async function mountWorkshop({api,dock,base=new URL('./',import.meta.url)
  panel.addEventListener('click',event=>{const b=event.target.closest('[data-sg-open]');if(b)openSage(b.dataset.sgOpen);if(event.target.closest('[data-sg-scene]'))scene.open();if(event.target.closest('[data-sg-speak]'))playVoice(profile.history.at(-1)?.result.summary||'รับทราบ พร้อมรับคำสั่ง').catch(e=>note(e.message,true));});
  const unsubscribe=api.subscribe?.(async event=>{if(event==='chat'){await reload();return;}if(enabled(SAGE)&&profile.sage.followReplies){renderPanel();if(root.open&&view==='sage')render();}});
  try{await reload();}catch(error){disposed=true;unsubscribe?.();store.destroy();window.visualViewport?.removeEventListener('resize',syncViewport);window.visualViewport?.removeEventListener('scroll',syncViewport);window.removeEventListener('resize',syncViewport);launchers.destroy();scene.destroy();dock.remove('great-sage');root.remove();confirm.remove();throw error;}
- return{open,openSage,reload,root,panel,async snapshot(){return store.call('snapshot',{key});},async restore(file){return restoreBackup(file);},destroy(){disposed=true;unsubscribe?.();store.destroy();window.visualViewport?.removeEventListener('resize',syncViewport);window.visualViewport?.removeEventListener('scroll',syncViewport);window.removeEventListener('resize',syncViewport);launchers.destroy();voiceSerial++;api.voice?.stop();scene.destroy();dock.remove('great-sage');root.remove();confirm.remove();analysisSerial++;},debug:()=>({view,key,enabled:profile?.enabled||[],busy,analysisBusy,voiceBusy,voicePhase:api.voice?.catalog().phase||'idle',version:api.version,activity:api.voice?.activity?.()||{}})};
+ return{open,openSage,reload,async ready(){if(reloadFlight)await reloadFlight;},root,panel,async snapshot(){return store.call('snapshot',{key});},async restore(file){return restoreBackup(file);},destroy(){disposed=true;unsubscribe?.();store.destroy();window.visualViewport?.removeEventListener('resize',syncViewport);window.visualViewport?.removeEventListener('scroll',syncViewport);window.removeEventListener('resize',syncViewport);launchers.destroy();voiceSerial++;api.voice?.stop();scene.destroy();dock.remove('great-sage');root.remove();confirm.remove();analysisSerial++;},debug:()=>({view,key,enabled:profile?.enabled||[],busy,analysisBusy,voiceBusy,voicePhase:api.voice?.catalog().phase||'idle',version:api.version,activity:api.voice?.activity?.()||{}})};
 }

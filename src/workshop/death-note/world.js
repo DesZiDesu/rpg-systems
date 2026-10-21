@@ -1,6 +1,8 @@
-import {localId} from '../core.js?v=0.81.2';
-import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.81.2';
-import {faceKnowledge} from './faces.js?v=0.81.2';
+import {localId} from '../core.js?v=0.82.0';
+import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.82.0';
+import {faceKnowledge} from './faces.js?v=0.82.0';
+import {trueNameOf} from './names.js?v=0.82.0';
+export {trueNameOf} from './names.js?v=0.82.0';
 // Chat-local notebook rules. Legacy journal keys remain readable after the preview. Canonical NPC records are never renamed.
 export const WORLD_EVENTS = 'roleforge_death_note_world_preview';
 export const WORLD_PROMPT = 'roleforge_death_note_world_preview';
@@ -9,7 +11,6 @@ const safe = s => typeof s === 'string' && s.length > 0 && s.length < 180 && !['
 export const norm = s => String(s || '').normalize('NFKC').replace(/\s+/gu,' ').trim().toLocaleLowerCase();
 export const plain = s => String(s || '').replace(/<think\b[^>]*>[\s\S]*?<\/think>/giu,'').replace(/<!--[\s\S]*?-->/gu,'').replace(/<[^>]+>/gu,' ').replace(/\s+/gu,' ').trim();
 export const notebookItem = item => item?.quantity > 0 && ((item.properties || []).includes('roleforge:addon:death-note') || ['death note','เดธโน้ต','สมุดเดธโน้ต','สมุดเดธโน๊ต'].includes(norm(item.name)));
-export const trueNameOf=(state,npc)=>String(state.deathNoteRules?.trueNames?.[npc.id]||npc.name||'').trim();
 const emptyWorld = () => ({books:{},claims:{},faces:{},eyes:false,lifespanFraction:1,memoryLost:false,history:[]});
 export function activeEvents(message) {
  const length=plain(message.mes).length,swipe=Number(message.swipe_id)||0;

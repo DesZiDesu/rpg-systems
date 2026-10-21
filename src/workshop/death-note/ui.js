@@ -1,20 +1,20 @@
-import {localId} from '../core.js?v=0.81.2';
-import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.81.2';
-import {mountPaperEditor} from './paper-editor.js?v=0.81.2';
-import {uiLanguage} from '../../ui-language.js?v=0.81.2';
-import {t,html} from './strings.js?v=0.81.2';
-import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.81.2';
-import {eyeInsight} from './eyes.js?v=0.81.2';
-import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.81.2';
-import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,perceivedName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.81.2';
-import {setNpcVisibilityProvider,setNpcStoryGuard} from '../../npc-visibility.js?v=0.81.2';
+import {localId} from '../core.js?v=0.82.0';
+import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.82.0';
+import {mountPaperEditor} from './paper-editor.js?v=0.82.0';
+import {uiLanguage} from '../../ui-language.js?v=0.82.0';
+import {t,html} from './strings.js?v=0.82.0';
+import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.82.0';
+import {eyeInsight} from './eyes.js?v=0.82.0';
+import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.82.0';
+import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,perceivedName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.82.0';
+import {setNpcVisibilityProvider,setNpcStoryGuard} from '../../npc-visibility.js?v=0.82.0';
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sealURL=new URL('../../../assets/workshop/death-note/rules-seal.png',import.meta.url).href;
 const fa=n=>`<i class="fa-solid fa-${n}" aria-hidden="true"></i>`;
 const button=(action,text,cls='',more='')=>`<button type="button" class="${cls}" data-dn-action="${action}" ${more}>${text}</button>`;
 const paperTime=s=>{const v=formatStoryTime(s);return html`วันที่ ${v.day} · ${v.time}`;};
 export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
- const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.81.2',import.meta.url);document.head.append(sheet);
+ const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.82.0',import.meta.url);document.head.append(sheet);
  const root=document.createElement('dialog');root.id='roleforge-death-note-preview';root.className='rfdn';root.setAttribute('aria-label',t('Death Note — สมุดบันทึก'));document.body.append(root);
  const panel=document.createElement('section');panel.id='roleforge-death-note-dock';panel.className='dn-dock';panel.dataset.swipeIgnore='true';
  const c=()=>SillyTavern.getContext(),live=()=>api.context(),state=()=>({...live().state,deathNoteRules:live().deathNoteRules||{}}),chat=()=>live().chat||[];
@@ -39,7 +39,7 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  }
  async function appendEvents(events,captured=scope()) {
   if(!events.length)return;const message=chat().at(-1);if(!message||message.is_user||message.is_system)throw Error(t('รอให้ AI เล่าเหตุการณ์ก่อน'));
-  const {plain}=await import('./world.js?v=0.81.2');if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));
+  const {plain}=await import('./world.js?v=0.82.0');if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));
   message.extra||={};const previous=message.extra[WORLD_EVENTS]||[],offset=plain(message.mes).length,swipe=Number(message.swipe_id)||0;
   const added=events.map(e=>({...e,id:e.id||'dn-event-'+localId(),offset,swipe}));message.extra[WORLD_EVENTS]=[...previous,...added];
   try{await c().saveChat();if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทระหว่างบันทึก'));}catch(error){if(scope()===captured&&chat().at(-1)===message)message.extra[WORLD_EVENTS]=previous;throw error;}
@@ -177,7 +177,7 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  async function reconcile(){if(disposed||!enabled()||working)return;const captured=scope(),message=chat().at(-1);if(!message||message.is_user)return;
   try{const rows=activeEvents(message),events=storyEvents(message.mes,state()),proposals=events.filter(e=>!rows.some(r=>r.type===e.type&&r.evidence===e.evidence&&(r.bookId||r.npcId)===(e.bookId||e.npcId)));for(const e of events)if(e.type==='discover'&&e.shinigamiId&&world().books[e.bookId]&&!world().books[e.bookId].originalShinigamiId)proposals.push({type:'bind-shinigami',bookId:e.bookId,shinigamiId:e.shinigamiId,evidence:e.evidence});
    if(proposals.length)await appendEvents([...registeredEvents(),...proposals],captured);
-   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending);if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.81.2');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
+   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending);if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.82.0');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
    if(scope()===captured){for(const b of Object.values(world().books)){if(scope()!==captured||!enabled())return;await updateInventory(b,world(),captured);}refresh();if(proposals.some(e=>e.type==='discover')){showDock=true;renderDock();dock?.select('death-note');}}
   }catch(error){if(scope()===captured){notice=t(error.message);renderDock();}}
  }

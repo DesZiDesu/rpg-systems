@@ -1,4 +1,4 @@
-import {powerValue} from './power-presets.js?v=0.81.2';
+import {powerValue} from './power-presets.js?v=0.82.0';
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function activePowerDefinitions(config,state){const selected=new Set(state.customPowerSelections||[]);return config.definitions.filter(d=>selected.has(d.id)||Number(powerValue(d,state.customPowers?.[d.id]))>0);}
 export function powerDashboard(config,state,language='en'){

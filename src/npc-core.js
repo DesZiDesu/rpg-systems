@@ -1,5 +1,6 @@
-import {customIconSource} from './custom-icons.js?v=0.81.2';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.81.2';
+import {customIconSource} from './custom-icons.js?v=0.82.0';
+import {embeddedPortraitSource} from './embedded-portrait.js?v=0.82.0';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.82.0';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -92,7 +93,8 @@ export function identity(raw={}, base={}) {
  result.roleIcon=Object.hasOwn(ROLE_ICONS,raw.roleIcon)?raw.roleIcon:Object.hasOwn(ROLE_ICONS,base.roleIcon)?base.roleIcon:'book';
  result.roleIconImage=customIconSource(raw.roleIconImage ?? base.roleIconImage);
  result.portraitSize=clamp(raw.portraitSize ?? base.portraitSize ?? 72,48,144);
- result.portraitSource=['server','local','none','character-life'].includes(raw.portraitSource)?raw.portraitSource:['server','local','none','character-life'].includes(base.portraitSource)?base.portraitSource:'';
+ result.portraitSource=['server','local','none','character-life','embedded'].includes(raw.portraitSource)?raw.portraitSource:['server','local','none','character-life','embedded'].includes(base.portraitSource)?base.portraitSource:'';
+ result.portraitImage=embeddedPortraitSource(raw.portraitImage??base.portraitImage);
  const path=raw.portraitPath??base.portraitPath;
  result.portraitPath=typeof path==='string'&&/^\/?user\/images\/tretaresia-npc\/[a-zA-Z0-9_-]+\.(webp|jpg|jpeg|png)$/.test(path)?path:'';
  result.npcScope=(raw.npcScope??base.npcScope)==='character'?'character':'chat';

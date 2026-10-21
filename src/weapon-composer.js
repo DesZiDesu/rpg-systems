@@ -1,6 +1,6 @@
-import {weaponCategory} from './weapon-catalog.js?v=0.81.2';
-import {equippedWeapon,ownedWeaponViews,weaponReserve} from './weapon-core.js?v=0.81.2';
-import {createWeaponArt} from './weapon-art.js?v=0.81.2';
+import {weaponCategory} from './weapon-catalog.js?v=0.82.0';
+import {equippedWeapon,ownedWeaponViews,weaponReserve} from './weapon-core.js?v=0.82.0';
+import {createWeaponArt} from './weapon-art.js?v=0.82.0';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function createWeaponComposer({document:doc=globalThis.document,dock,settings=()=>({}),preset=()=>({}),configure=()=>{},act=async()=>{},busy=()=>false}={}){

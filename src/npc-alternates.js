@@ -1,5 +1,6 @@
-import {customIconSource} from './custom-icons.js?v=0.81.2';
-import { FIELDS, RELATIONS, STATS, ROLE_ICONS, clean, clamp, profileFields } from './npc-core.js?v=0.81.2';
+import {customIconSource} from './custom-icons.js?v=0.82.0';
+import {embeddedPortraitSource} from './embedded-portrait.js?v=0.82.0';
+import { FIELDS, RELATIONS, STATS, ROLE_ICONS, clean, clamp, profileFields } from './npc-core.js?v=0.82.0';
 
 // Alternate dossiers belong to one NPC identity. Selecting a period is a user
 // action; model patches may update its fields but cannot change that selection.
@@ -11,7 +12,7 @@ const RESERVED_IDS = new Set(['__proto__', 'prototype', 'constructor']);
 const safeId = value => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,119}$/.test(value) && !RESERVED_IDS.has(value) ? value : '';
 const copy = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 const textFields = Object.keys(FIELDS).filter(key => key !== 'name');
-const portraitKeys = ['hasPortrait', 'portraitSource', 'portraitPath', 'portraitChatId', 'portraitView'];
+const portraitKeys = ['hasPortrait', 'portraitSource', 'portraitPath', 'portraitChatId', 'portraitView', 'portraitImage'];
 const styleKeys = ['portraitSize', 'identityColor', 'roleIcon', 'roleIconImage'];
 
 function uniqueId(value, used, fallback) {
@@ -67,7 +68,8 @@ function presentationFields(raw) {
     if (!record(raw)) return {};
     const result = {};
     if (own(raw, 'hasPortrait') && typeof raw.hasPortrait === 'boolean') result.hasPortrait = raw.hasPortrait;
-    if (own(raw, 'portraitSource') && ['local', 'server', 'none'].includes(raw.portraitSource)) result.portraitSource = raw.portraitSource;
+    if (own(raw, 'portraitSource') && ['local', 'server', 'none', 'embedded'].includes(raw.portraitSource)) result.portraitSource = raw.portraitSource;
+    if (own(raw, 'portraitImage')) result.portraitImage = embeddedPortraitSource(raw.portraitImage);
     if (own(raw, 'portraitPath') && typeof raw.portraitPath === 'string') {
         result.portraitPath = /^\/?user\/images\/tretaresia-npc\/[a-zA-Z0-9_-]+\.(webp|jpg|jpeg|png)$/.test(raw.portraitPath) ? raw.portraitPath : '';
     }
@@ -126,6 +128,7 @@ function portraitMetadata(npc, alternate) {
         result.hasPortrait = hasOwnPortrait(alternate);
         result.portraitSource = result.hasPortrait ? alternate.portraitSource || 'local' : 'none';
         result.portraitPath = alternate.portraitPath || '';
+        result.portraitImage = alternate.portraitImage || '';
         result.portraitChatId = alternate.portraitChatId || '';
         if (alternate.portraitView) result.portraitView = copy(alternate.portraitView);
         else if (npc.portraitView) result.portraitView = copy(npc.portraitView);

@@ -1,4 +1,4 @@
-import {sha256} from '../vendor/js-sha256/index.js?v=0.81.2';
+import {sha256} from '../vendor/js-sha256/index.js?v=0.82.0';
 export const FORMAT='roleforge-workshop-addon';
 export const addonIds=['great-sage','field-notes','death-note'];
 export const localId=()=>globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -22,6 +22,10 @@ export async function verifiedPackageBytes(bytes,expectedHash){
 }
 export function releaseDownloadUrl(release,base){
  const url=new URL(release.path,base);url.searchParams.set('sha256',release.sha256);return url;
+}
+export function cardAddonDefaults(raw){
+ if(raw?.format!=='roleforge-workshop-card-defaults'||raw.version!==1||!Array.isArray(raw.enabled))return [];
+ return [...new Set(raw.enabled.filter(id=>addonIds.includes(id)))];
 }
 export const SAGE='great-sage';
 export const SCOPES=['scene','stats','inventory','skills'];
@@ -47,7 +51,7 @@ export function validateCatalog(raw){
  }
  return raw;
 }
-export function validatePackage(raw,host='0.81.2'){
+export function validatePackage(raw,host='0.82.0'){
  if(!raw||![FORMAT,'roleforge-workshop-addon-preview'].includes(raw.format)||raw.schema!==1||!addonIds.includes(raw.id))throw Error('ไม่รองรับแพ็กนี้');
  version(raw.version);version(raw.minimumRoleForge);
  if(compare(host,raw.minimumRoleForge)<0)throw Error(`ต้องใช้ RoleForge ${raw.minimumRoleForge} ขึ้นไป`);

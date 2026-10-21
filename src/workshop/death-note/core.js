@@ -1,5 +1,5 @@
-import {localId} from '../core.js?v=0.81.2';
-import {norm,trueNameOf} from './world.js?v=0.81.2';
+import {localId} from '../core.js?v=0.82.0';
+import {norm,trueNameOf} from './world.js?v=0.82.0';
 // Installing the addon never grants an item. Keep legacy journal keys for saved chats.
 export const INSCRIPTIONS = 'roleforge_death_note_inscriptions_preview';
 export const RESULTS = 'roleforge_death_note_results_preview';

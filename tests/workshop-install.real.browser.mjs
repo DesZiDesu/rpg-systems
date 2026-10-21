@@ -37,10 +37,13 @@ try{
     const before=await store.call('snapshot',{}),text=await (await fetch(prefix+'src/workshop/'+release.path)).text();
     const changed=text.replace('"name":','"modifiedName":'),bytes=new TextEncoder().encode(changed).buffer;let error='';
     try{await store.call('install',{bytes,sha256:release.sha256,host:version,expectedId:'death-note',expectedVersion:release.version});}catch(e){error=e.message;}
-    const after=await store.call('snapshot',{});return{error,retained:JSON.stringify(before.packs)===JSON.stringify(after.packs)};
+    const after=await store.call('snapshot',{}),key='card-defaults-concurrency-test';
+    await store.call('profile',{key,profile:{enabled:[]}});
+    const preserved=await store.call('profile',{key,ifMissing:true,profile:{enabled:['death-note']}});
+    return{error,retained:JSON.stringify(before.packs)===JSON.stringify(after.packs),explicitDisablePreserved:preserved.enabled.length===0};
    }finally{store.destroy();}
   },{prefix,version,release:catalog.addons.find(p=>p.id==='death-note').releases.at(-1)});
-  assert.match(retained.error,/ไม่ตรงกับแพ็ก/);assert(retained.retained);
+  assert.match(retained.error,/ไม่ตรงกับแพ็ก/);assert(retained.retained);assert(retained.explicitDisablePreserved);
   await page.screenshot({path:out+'/'+device+'.png'});
   await page.reload();await page.waitForFunction(()=>!!globalThis.RoleForgeWorkshop,{},{timeout:120000});
   const persisted=await page.evaluate(()=>RoleForgeWorkshop.snapshot());assert.equal(persisted.packs.length,3);

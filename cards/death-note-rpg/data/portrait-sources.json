@@ -1,0 +1,2042 @@
+[
+  {
+    "name": "A",
+    "file": "assets/portraits/a.webp",
+    "filename": "A.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/6/67/A.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:A.jpg",
+    "mime": "image/webp",
+    "bytes": 6716,
+    "sha256": "dbf90f9b07c99b263eeb41174a354e583e87a098ffaefc36fef750914b39664d",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Adolf Tucker",
+    "file": "assets/portraits/adolf-tucker.webp",
+    "filename": "Adolf_Tucker.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/3c/Adolf_Tucker.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Adolf_Tucker.jpg",
+    "mime": "image/webp",
+    "bytes": 9106,
+    "sha256": "2e6996ee1ffd17be70d737692500104a8a9693200e5c80d09da76a3f9bd71ec6",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Aiber",
+    "file": "assets/portraits/aiber.webp",
+    "filename": "Aiber.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/9/95/Aiber.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Aiber.jpg",
+    "mime": "image/webp",
+    "bytes": 12438,
+    "sha256": "335c59acca31b1f802194d8967b4a59c0207761cbd9e9eeb276bf610775ca2e3",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Alexey Ivanov",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Alois Bateson",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Ami Hamazaki",
+    "file": "assets/portraits/ami-hamazaki.webp",
+    "filename": "Ami_Hamazaki.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/2/25/Ami_Hamazaki.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Ami_Hamazaki.png",
+    "mime": "image/webp",
+    "bytes": 17034,
+    "sha256": "6cd1e6f5aea12a9905c86b25aaa76a41a50d1a4b504061ccf9bd24e1e695b6f8",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Anthony Rester",
+    "file": "assets/portraits/anthony-rester.webp",
+    "filename": "Anthony_Rester.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/7/7d/Anthony_Rester.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Anthony_Rester.jpg",
+    "mime": "image/webp",
+    "bytes": 11390,
+    "sha256": "e13c94c62ebae2ffc08cf8a1a450136221e8ed9c5152c94762751a38db46971f",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Antony Skomal",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Arayoshi Hatori",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Arire Weekwood",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Arma",
+    "file": "assets/portraits/arma.webp",
+    "filename": "Films_character_icon_Arma.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/1/15/Films_character_icon_Arma.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Arma.jpg",
+    "mime": "image/webp",
+    "bytes": 27114,
+    "sha256": "611f7136333696bba8dffc1c39adc897784a9bfe6d8b6d91bc52e51611432ce1",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Armonia Justin Beyondormason",
+    "file": "assets/portraits/armonia-justin-beyondormason.webp",
+    "filename": "Armonia.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/6/6f/Armonia.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Armonia.jpg",
+    "mime": "image/webp",
+    "bytes": 7272,
+    "sha256": "89fab2b1e44bbd90ab6a43c759f5e02c96bb99dd270f16f5f3b2d8044d0df961",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Asaji Mainichi",
+    "file": "assets/portraits/asaji-mainichi.webp",
+    "filename": "Asaji_Mainichi.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/d/de/Asaji_Mainichi.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Asaji_Mainichi.jpg",
+    "mime": "image/webp",
+    "bytes": 18016,
+    "sha256": "37c7b734332d2a7ab4217863c10e8f7ea5417d98ed2df48bd844bf517753a9fd",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Asao Konishi",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Atsushi Majime",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Ayame Asaoka",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Backyard Bottomslash",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Beck Wallese",
+    "file": "assets/portraits/beck-wallese.webp",
+    "filename": "Beck_Wallese.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/6/6e/Beck_Wallese.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Beck_Wallese.png",
+    "mime": "image/webp",
+    "bytes": 7006,
+    "sha256": "bbc6119a1f9e4924d3dfc4f7a188c41493b07ef94f9e814dc0beaa4019829fdd",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Believe Bridesmaid",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Bepo",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Beyond Birthday",
+    "file": "assets/portraits/beyond-birthday.webp",
+    "filename": "BB.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/4/44/BB.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:BB.jpg",
+    "mime": "image/webp",
+    "bytes": 5474,
+    "sha256": "0d1998fbe96b14efc58554b81650951c9f11ae90d4b104bae9166bb76f628419",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "C-Kira",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Calikarcha",
+    "file": "assets/portraits/calikarcha.webp",
+    "filename": "Calikarcha.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/2/2f/Calikarcha.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Calikarcha.jpg",
+    "mime": "image/webp",
+    "bytes": 15388,
+    "sha256": "fee2e43099dc0c2923f1049cd19ec9e0a18197c882694ff415cb3458eb88fe01",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Daisuke Matoba",
+    "file": "assets/portraits/daisuke-matoba.webp",
+    "filename": "Matoba.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/6/6e/Matoba.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Matoba.jpg",
+    "mime": "image/webp",
+    "bytes": 6460,
+    "sha256": "823355297b28e42f1c3913245fad5dc42253b779c20ffdc813e6cc642475a66b",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Danny Bloyer",
+    "file": "assets/portraits/danny-bloyer.webp",
+    "filename": "Danny_Bloyer.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/9/9b/Danny_Bloyer.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Danny_Bloyer.png",
+    "mime": "image/webp",
+    "bytes": 12928,
+    "sha256": "6e9c166c53e71e5ab44bc68a39504bc1f1a325c801078596083181693cf7feb0",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Daril Ghiroza",
+    "file": "assets/portraits/daril-ghiroza.webp",
+    "filename": "Dalil_Guillohrtha.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/d/dd/Dalil_Guillohrtha.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Dalil_Guillohrtha.jpg",
+    "mime": "image/webp",
+    "bytes": 52956,
+    "sha256": "356830a54db9e7333f3d9cacdaef8a47105cd49a308bb6c79808bf5c31b46ece",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Daril Mocry",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "David Hoope",
+    "file": "assets/portraits/david-hoope.webp",
+    "filename": "David_Hoope.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/87/David_Hoope.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:David_Hoope.png",
+    "mime": "image/webp",
+    "bytes": 10622,
+    "sha256": "d93fe84b67a3e9b834b0e79233a39519d1eaae9e7ab31cd19680d2de2ee38ccc",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Deneuve",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Deridovely",
+    "file": "assets/portraits/deridovely.webp",
+    "filename": "Deridovely.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/80/Deridovely.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Deridovely.jpg",
+    "mime": "image/webp",
+    "bytes": 6642,
+    "sha256": "f5ff65856785b22f379cc623b08da3966becb7694c85f7b69f2b24c8f3010190",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Detective Sasaki",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Eddie",
+    "file": "assets/portraits/eddie.webp",
+    "filename": "Eddie.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/c/c3/Eddie.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Eddie.png",
+    "mime": "image/webp",
+    "bytes": 5458,
+    "sha256": "03d99ffdb08fe0e00fd611f08e05caad2ef8ad328c02c3524770bc376045d0b6",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Eiichi Takahashi",
+    "file": "assets/portraits/eiichi-takahashi.webp",
+    "filename": "Eiichi_Takahashi.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/bb/Eiichi_Takahashi.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Eiichi_Takahashi.jpg",
+    "mime": "image/webp",
+    "bytes": 5388,
+    "sha256": "cb0259ff4145888e5acfaf03dbeb8ed4e06afee75bc7dd41c2d027f0fe184cfb",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ellickson Gardner",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Elliot Schmidt",
+    "file": "assets/portraits/elliot-schmidt.webp",
+    "filename": "Elliot_Schmidt.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/ba/Elliot_Schmidt.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Elliot_Schmidt.jpg",
+    "mime": "image/webp",
+    "bytes": 6944,
+    "sha256": "93c6df29a100778bbcea639369c98704b8eed1abc59ce5ab6374d007100b6a8d",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Emi",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "English teacher",
+    "file": "assets/portraits/english-teacher.webp",
+    "filename": "English_teacher.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/2/23/English_teacher.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:English_teacher.png",
+    "mime": "image/webp",
+    "bytes": 2864,
+    "sha256": "8b774272f5409b010c35241d36eb6a3ccaa5b0018e322e614cdd95ee258be81f",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Eraldo Coil",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Eriko Aizawa",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "F",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "FBI Agent (Spiraling Trap)",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Freddi Guntair",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Gelus",
+    "file": "assets/portraits/gelus.webp",
+    "filename": "Gelus.PNG",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/e3/Gelus.PNG/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Gelus.PNG",
+    "mime": "image/webp",
+    "bytes": 61740,
+    "sha256": "16cb9fd31ed0f6687712e3a92428e25553ae404ba7b0fc3f7119b16a316c8bee",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "George Sairas",
+    "file": "assets/portraits/george-sairas.webp",
+    "filename": "George_Sairas.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/d/db/George_Sairas.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:George_Sairas.jpg",
+    "mime": "image/webp",
+    "bytes": 4664,
+    "sha256": "57f19702ba935286ef0b1ad6d6ee457571372e93dc468c4db9f2cf297f569288",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ginzo Kaneboshi",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Glen Humphreys",
+    "file": "assets/portraits/glen-humphreys.webp",
+    "filename": "Glen_Humphreys.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/e8/Glen_Humphreys.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Glen_Humphreys.jpg",
+    "mime": "image/webp",
+    "bytes": 9488,
+    "sha256": "46107d86175062fcc9bcf03ba70ab954c154f1ced50d29f2a3a2827c023e3c7b",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Gook",
+    "file": "assets/portraits/gook.webp",
+    "filename": "Gook.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/7/70/Gook.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Gook.jpg",
+    "mime": "image/webp",
+    "bytes": 60428,
+    "sha256": "1b73a96a200f5a24b1f10eda6ef4d84ec6066931cde03564eb6b4ff2a3f0a531",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Haley Belle",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Halle Lidner",
+    "file": "assets/portraits/halle-lidner.webp",
+    "filename": "Halle_Lidner.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/ed/Halle_Lidner.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Halle_Lidner.jpg",
+    "mime": "image/webp",
+    "bytes": 7838,
+    "sha256": "47d3ab7051394d5d0c48da17636734784f026ae44fc2d9b22ccee0de247b496d",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Haruna Kiyokawa",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Hatsune Misawa",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Hideaki Suruga",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Hideki Ide",
+    "file": "assets/portraits/hideki-ide.webp",
+    "filename": "Hideki_Ide.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/6/61/Hideki_Ide.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Hideki_Ide.jpg",
+    "mime": "image/webp",
+    "bytes": 4390,
+    "sha256": "b27a3d0f39a62a41111ba77a93b5ba5f0b2236545439cb2980ec5e65f5c498ec",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Hideki Ryuga",
+    "file": "assets/portraits/hideki-ryuga.webp",
+    "filename": "Hideki_Ryuga.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/3f/Hideki_Ryuga.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Hideki_Ryuga.png",
+    "mime": "image/webp",
+    "bytes": 23774,
+    "sha256": "b72cf14b5c76d340e5c7a9d1339240ba3a4ecc99778fbdad9f63f2a9eb689974",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Hikari Yagami",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Hirokazu Ukita",
+    "file": "assets/portraits/hirokazu-ukita.webp",
+    "filename": "Hirokazu_Ukita.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/f/fc/Hirokazu_Ukita.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Hirokazu_Ukita.png",
+    "mime": "image/webp",
+    "bytes": 24946,
+    "sha256": "4740d3d851b8e02402fa2fdb1ccef53744203b889ca6f1f03089d29210021e08",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Hitoshi Demegawa",
+    "file": "assets/portraits/hitoshi-demegawa.webp",
+    "filename": "Hitoshi_Demegawa.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/a/ae/Hitoshi_Demegawa.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Hitoshi_Demegawa.png",
+    "mime": "image/webp",
+    "bytes": 16364,
+    "sha256": "48bfb74f9098d0f11e7385cd1b96671584192127b7ac5a0d6d3c2cbe53c428ce",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Housekeeper",
+    "file": "assets/portraits/housekeeper.webp",
+    "filename": "Housekeeper.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/6/6d/Housekeeper.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Housekeeper.jpg",
+    "mime": "image/webp",
+    "bytes": 9566,
+    "sha256": "525145b1d7cb22a269f41c5e9c0d5eb4997d781421a38fe1a282018a5e2faa05",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ill Ratt",
+    "file": "assets/portraits/ill-ratt.webp",
+    "filename": "Ill_Ratt.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/8a/Ill_Ratt.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Ill_Ratt.jpg",
+    "mime": "image/webp",
+    "bytes": 5614,
+    "sha256": "4cafddba774afff22cbc74f82b25cf93e82e7abeeac1efd0c577ce020113280c",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Imai",
+    "file": "assets/portraits/imai.webp",
+    "filename": "Imai.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/e1/Imai.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Imai.png",
+    "mime": "image/webp",
+    "bytes": 3690,
+    "sha256": "fadf62eb01f051ca795a3d0f910bfd82c9868af27ee163c3a26e6172063a9dab",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ito Shiroba",
+    "file": "assets/portraits/ito-shiroba.webp",
+    "filename": "Ito_Shiroba.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/d/d7/Ito_Shiroba.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Ito_Shiroba.jpg",
+    "mime": "image/webp",
+    "bytes": 4818,
+    "sha256": "05b6928863004a55efcdd540914ca4a1703c671bc7d39a057bd60bfa5a1d9d6f",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "J",
+    "file": "assets/portraits/j.webp",
+    "filename": "J.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/c/c4/J.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:J.jpg",
+    "mime": "image/webp",
+    "bytes": 8016,
+    "sha256": "0a633816326ac459245e8cccc837c55119a33f67da1311be9c855e37de06aa9c",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Jack Neylon",
+    "file": "assets/portraits/jack-neylon.webp",
+    "filename": "Jack_Neylon.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/d/df/Jack_Neylon.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Jack_Neylon.jpg",
+    "mime": "image/webp",
+    "bytes": 9866,
+    "sha256": "7ae5eac977a0222ade938234a52c555af88da92ad2f07667f14a4c3b064d5dd4",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "James Brode",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Japanese Prime Minister (one-shot)",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Jeffrey Miller",
+    "file": "assets/portraits/jeffrey-miller.webp",
+    "filename": "Jeffrey_Miller.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/86/Jeffrey_Miller.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Jeffrey_Miller.jpg",
+    "mime": "image/webp",
+    "bytes": 9860,
+    "sha256": "3f9a1d4931cc4e819174304da8b12b84b88b98b050a54feb213ea623e87767c0",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "John McEnroe",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "John Skyner",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Jose",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Junrou Sugawara",
+    "file": "assets/portraits/junrou-sugawara.webp",
+    "filename": "Films_character_icon_Sugawara.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/c/c2/Films_character_icon_Sugawara.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Sugawara.jpg",
+    "mime": "image/webp",
+    "bytes": 12620,
+    "sha256": "2bc2e768a4a405446dd36b396cd54f232f06f1d42d05448476c737bb6903b604",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Kanichi Takimura",
+    "file": "assets/portraits/kanichi-takimura.webp",
+    "filename": "Kanichi_Takimura.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/6/66/Kanichi_Takimura.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Kanichi_Takimura.jpg",
+    "mime": "image/webp",
+    "bytes": 4586,
+    "sha256": "12e0e4d1d313e5720f5544a744f094fb3cd1ee38e25c8c776f18a6ceabf63ed2",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Karin Kanatomo",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Kazuhiko Hibima",
+    "file": "assets/portraits/kazuhiko-hibima.webp",
+    "filename": "Kazuhiko_Hibima.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/7/75/Kazuhiko_Hibima.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Kazuhiko_Hibima.jpg",
+    "mime": "image/webp",
+    "bytes": 9326,
+    "sha256": "b6e779c0ee6ad30fb7fb2ac5097f6fbb8f2a27afbaae0b7d09670edc34f52ab3",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ken Yadanaka",
+    "file": "assets/portraits/ken-yadanaka.webp",
+    "filename": "Ken_Yadanaka.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/0/0d/Ken_Yadanaka.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Ken_Yadanaka.jpg",
+    "mime": "image/webp",
+    "bytes": 16460,
+    "sha256": "2ad339242a54f6ba902bd4d85d308d39d72478ea048b9e5ebc8365df480b400e",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Kenichi Mikuriya",
+    "file": "assets/portraits/kenichi-mikuriya.webp",
+    "filename": "Kenichi_Mikuriya.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/a/ad/Kenichi_Mikuriya.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Kenichi_Mikuriya.jpg",
+    "mime": "image/webp",
+    "bytes": 6936,
+    "sha256": "6e69cf8444d3df195daf6a236b70b855d025b4bcd41f06a732e04b3009804318",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Kenny Doyle",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Kiichiro Osoreda",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Kimihiko Nikaido",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Kimiko Kujo",
+    "file": "assets/portraits/kimiko-kujo.webp",
+    "filename": "Kujo.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/c/c4/Kujo.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Kujo.jpg",
+    "mime": "image/webp",
+    "bytes": 11372,
+    "sha256": "6303c589814e269cf48d77b56c797c9092475e9bf9d6e98d2cac70dc273469d0",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Kinddara Guivelostain",
+    "file": "assets/portraits/kinddara-guivelostain.webp",
+    "filename": "KinddaraGuivelostain.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/89/KinddaraGuivelostain.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:KinddaraGuivelostain.jpg",
+    "mime": "image/webp",
+    "bytes": 13366,
+    "sha256": "84b57dbe596440b803a163bbea374ff570e51057d7d15a1de0cbc4339d151c37",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "King of Death",
+    "file": "assets/portraits/king-of-death.webp",
+    "filename": "King_of_Death.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/bd/King_of_Death.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:King_of_Death.jpg",
+    "mime": "image/webp",
+    "bytes": 41960,
+    "sha256": "f57224da072602742f8b4aa00d2c67745a89e0cdb1dc0d18ad85da79ec08ccc9",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Kiyomi Takada",
+    "file": "assets/portraits/kiyomi-takada.webp",
+    "filename": "Kiyomi_Takada.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/be/Kiyomi_Takada.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Kiyomi_Takada.jpg",
+    "mime": "image/webp",
+    "bytes": 11880,
+    "sha256": "16a2d3b06211b5dbd04594f7094747f3fed9eeea4e33ae80bdcae898b59dcd94",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Koichi Matsudo",
+    "file": "assets/portraits/koichi-matsudo.webp",
+    "filename": "Koichi_Matsudo.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/ea/Koichi_Matsudo.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Koichi_Matsudo.jpg",
+    "mime": "image/webp",
+    "bytes": 13418,
+    "sha256": "398f3cf728556272ffb68c2e089dfc67e0f595cf7c999376fd9340dca57a9a18",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Koki Tanakabara",
+    "file": "assets/portraits/koki-tanakabara.webp",
+    "filename": "Koki_Tanakabara.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/2/28/Koki_Tanakabara.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Koki_Tanakabara.png",
+    "mime": "image/webp",
+    "bytes": 7052,
+    "sha256": "10c983c5ff3d9375c1a26edc753ac592864d5229547f7969e839c6491232b7ea",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Koreyoshi Kitamura",
+    "file": "assets/portraits/koreyoshi-kitamura.webp",
+    "filename": "Koreyoshi_Kitamura.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/c/cf/Koreyoshi_Kitamura.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Koreyoshi_Kitamura.jpg",
+    "mime": "image/webp",
+    "bytes": 6156,
+    "sha256": "4519c799f9a2762ef977be1c574c3b9bdfe3084f6ba07ef6baba914c6645b903",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Kurou Otoharada",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Kurt McBride",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Kyle Block",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Kyoko",
+    "file": "assets/portraits/kyoko.webp",
+    "filename": "Kyoko.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/d/de/Kyoko.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Kyoko.jpg",
+    "mime": "image/webp",
+    "bytes": 5370,
+    "sha256": "781af0b0162c538eafe89cb062a0e588061df5fbb72c6f0b23e12f3c325e01cf",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Kyosuke Higuchi",
+    "file": "assets/portraits/kyosuke-higuchi.webp",
+    "filename": "Higuchi.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/4/46/Higuchi.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Higuchi.jpg",
+    "mime": "image/webp",
+    "bytes": 13598,
+    "sha256": "16ab9389a554a4cfba0589183cb1fef5be692fe31c6db6b1ac939c4cac703f32",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "L (character)",
+    "file": "assets/portraits/l--character.webp",
+    "filename": "L.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/34/L.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:L.jpg",
+    "mime": "image/webp",
+    "bytes": 14090,
+    "sha256": "82319a77734d7ca37d84a5605c3070a6c42fc91a4260dbe5e08a58f671905eaa",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Lester Klan",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Light Yagami",
+    "file": "assets/portraits/light-yagami.webp",
+    "filename": "Light_Yagami.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/2/24/Light_Yagami.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Light_Yagami.jpg",
+    "mime": "image/webp",
+    "bytes": 7324,
+    "sha256": "a8c5479cd0d31547e6c284e869096f2c1e4a6beb7430c093dcbf01626e4fc502",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Lind L. Tailor",
+    "file": "assets/portraits/lind-l--tailor.webp",
+    "filename": "Lind_L_Tailor.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/e0/Lind_L_Tailor.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Lind_L_Tailor.jpg",
+    "mime": "image/webp",
+    "bytes": 7434,
+    "sha256": "792c6decd138d03380c6158c746c38190e92c093d2dc33f01b21f95fd61d828d",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Linda",
+    "file": "assets/portraits/linda.webp",
+    "filename": "Linda.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/c/c1/Linda.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Linda.jpg",
+    "mime": "image/webp",
+    "bytes": 31862,
+    "sha256": "9020ba528719735b412c09cd0af843e80b39c15dfcdea3181fa9869c52cca8b5",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Maki",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Maki Nikaido",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Mako Kitano",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Masaaki Shirami",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Masahiko Kida",
+    "file": "assets/portraits/masahiko-kida.webp",
+    "filename": "Masahiko_Kida.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/e8/Masahiko_Kida.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Masahiko_Kida.jpg",
+    "mime": "image/webp",
+    "bytes": 7056,
+    "sha256": "d126e92e664ef7f56e0a2cb98e2e546a8e36ed5969e52b35eefbc443c116a079",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Masakazu Nanamemaru",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Masaru Kamoda",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Matsushiro Nakaokaji",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Matt",
+    "file": "assets/portraits/matt.webp",
+    "filename": "Matt.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/4/45/Matt.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Matt.jpg",
+    "mime": "image/webp",
+    "bytes": 7618,
+    "sha256": "ff0abef0d3de2c5250900e9d8b388e89fbb7165f260d9d0661ae3318985e3e1e",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Mayu",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Mello",
+    "file": "assets/portraits/mello.webp",
+    "filename": "Mello.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/7/72/Mello.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Mello.png",
+    "mime": "image/webp",
+    "bytes": 9210,
+    "sha256": "4531a965a065e6acf32ffa1a013a3d35bf8d4ec56bbd39ad38a5c0e57e26b991",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Midora",
+    "file": "assets/portraits/midora.webp",
+    "filename": "Midora_one-shot.JPG",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/a/a1/Midora_one-shot.JPG/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Midora_one-shot.JPG",
+    "mime": "image/webp",
+    "bytes": 43540,
+    "sha256": "70ab6ce4e3415da230e60b5c1dbe7b7db5d2797b9c302b5623622b3cb8ed6723",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Miho Sato",
+    "file": "assets/portraits/miho-sato.webp",
+    "filename": "Miho_Sato.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/b7/Miho_Sato.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Miho_Sato.jpg",
+    "mime": "image/webp",
+    "bytes": 9918,
+    "sha256": "b6e97c433a801b8e479f24af9f7d445253e67f3232baaa9490eef707c74265b2",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Miller",
+    "file": "assets/portraits/miller.webp",
+    "filename": "Miller.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/9/95/Miller.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Miller.jpg",
+    "mime": "image/webp",
+    "bytes": 4182,
+    "sha256": "83a90199a451fc6418dc151a742aa0d47bf57f62b4377d264ff670481708a93f",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Minoru Tanaka",
+    "file": "assets/portraits/minoru-tanaka.webp",
+    "filename": "Minoru_Tanaka.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/1/18/Minoru_Tanaka.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Minoru_Tanaka.jpg",
+    "mime": "image/webp",
+    "bytes": 31766,
+    "sha256": "907f7fd95cb69881e993144ab892c0638533be7c369bcdd75b23030bb0e2050b",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Misa Amane",
+    "file": "assets/portraits/misa-amane.webp",
+    "filename": "Misa_Amane.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/7/7d/Misa_Amane.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Misa_Amane.jpg",
+    "mime": "image/webp",
+    "bytes": 8780,
+    "sha256": "68d5ff8038a6ef5fe9b27e5690b801a2fdaaeb7f6690304d4ece15a2c5ac7540",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Misa Amane's friend",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Misa Amane's stalker",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Miura",
+    "file": "assets/portraits/miura.webp",
+    "filename": "Miura.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/0/0f/Miura.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Miura.jpg",
+    "mime": "image/webp",
+    "bytes": 28654,
+    "sha256": "00306e02c034f79371321b633d34631343d191f617e1fc5900c123ebb7c21db0",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ms. Mikami",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "N-Suke Yamanaka",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Nakajima",
+    "file": "assets/portraits/nakajima.webp",
+    "filename": "Nakajima.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/b5/Nakajima.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Nakajima.png",
+    "mime": "image/webp",
+    "bytes": 4222,
+    "sha256": "9d18d8b30d123da40a8e18272424a6e45a5bcb52c39a93fc271542c825ac150f",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Naomi Misora",
+    "file": "assets/portraits/naomi-misora.webp",
+    "filename": "Naomi_Misora.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/7/78/Naomi_Misora.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Naomi_Misora.jpg",
+    "mime": "image/webp",
+    "bytes": 9782,
+    "sha256": "db16740a0c9bddc2837533dacaf67f2fc7e1fe2dd03b0a537db3b86683c5c52e",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Near",
+    "file": "assets/portraits/near.webp",
+    "filename": "Near.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/4/4c/Near.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Near.jpg",
+    "mime": "image/webp",
+    "bytes": 36986,
+    "sha256": "e6b9b0c2ca0c6af138ec89ee0ccc567ea1b524a177b2ced20c26270c54f78f65",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Niel Wray",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Nishinaka",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Nori",
+    "file": "assets/portraits/nori.webp",
+    "filename": "Nori.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/be/Nori.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Nori.jpg",
+    "mime": "image/webp",
+    "bytes": 10296,
+    "sha256": "b774452abefb01f9401e3bb1a74ba17fa6c3f3fd618c8af5959254caee763b74",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Nu",
+    "file": "assets/portraits/nu.webp",
+    "filename": "Nu.PNG",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/1/1f/Nu.PNG/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Nu.PNG",
+    "mime": "image/webp",
+    "bytes": 14198,
+    "sha256": "96f5f46607a23af8b51e49d1defb4ea8e89f168af86ff5c33a61aec023950f45",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Pedoro Kollet",
+    "file": "assets/portraits/pedoro-kollet.webp",
+    "filename": "Pedoro_Kollet.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/a/a0/Pedoro_Kollet.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Pedoro_Kollet.jpg",
+    "mime": "image/webp",
+    "bytes": 26032,
+    "sha256": "236fc1ea23226a8e736014b14c295f3b7ea46886c391a5555568550673833133",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "President of China (one-shot)",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Q",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Quarter Queen",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Rashual Bid",
+    "file": "assets/portraits/rashual-bid.webp",
+    "filename": "Rashual_Bid.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/35/Rashual_Bid.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Rashual_Bid.jpg",
+    "mime": "image/webp",
+    "bytes": 5152,
+    "sha256": "329df719284fbd7df490f0074a42c6f721aa5d528a953feb25bb0f52116a8b38",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Raye Penber",
+    "file": "assets/portraits/raye-penber.webp",
+    "filename": "Raye_Penber.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/a/a9/Raye_Penber.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Raye_Penber.jpg",
+    "mime": "image/webp",
+    "bytes": 4390,
+    "sha256": "54ac2620a25c58e1f4fff02f7587e3c2ccae999cef94515840de1f4081795adb",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Reiji Namikawa",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Rem",
+    "file": "assets/portraits/rem.webp",
+    "filename": "Rem.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/0/01/Rem.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Rem.jpg",
+    "mime": "image/webp",
+    "bytes": 29108,
+    "sha256": "e4afde5e8ef40f8580250243734a31959f5e0c0b1e09db17fcd986b380a98025",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Robert Fairman",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Rod Ross",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Roger Irving",
+    "file": "assets/portraits/roger-irving.webp",
+    "filename": "Roger_Irving.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/f/fd/Roger_Irving.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Roger_Irving.png",
+    "mime": "image/webp",
+    "bytes": 9266,
+    "sha256": "f709e7bdbbe1c7f91c5597424d575f424d3d921290e6f189fc6eca3e9c4f15a7",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Roger Ruvie",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Rokuro Natsugawa",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Roy",
+    "file": "assets/portraits/roy.webp",
+    "filename": "Roy.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/9/92/Roy.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Roy.png",
+    "mime": "image/webp",
+    "bytes": 43634,
+    "sha256": "bc50d2da188e175b5992f30a3c26d88ebff2bb2173e9b9cfb5df40f99ee2e451",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ryo",
+    "file": "assets/portraits/ryo.webp",
+    "filename": "Ryo.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/37/Ryo.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Ryo.jpg",
+    "mime": "image/webp",
+    "bytes": 5016,
+    "sha256": "3438039e2f810e0c64a5d9b80f153cb259355fa1a57aa4f5d5e242079122b5c8",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ryuk",
+    "file": "assets/portraits/ryuk.webp",
+    "filename": "Ryuk.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/32/Ryuk.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Ryuk.jpg",
+    "mime": "image/webp",
+    "bytes": 26428,
+    "sha256": "20ac9cfcb866d67316f5443cd49b33abd76414325cf394ef557b8fc2e1a5246c",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ryuzaki (film character)",
+    "file": "assets/portraits/ryuzaki--film-character.webp",
+    "filename": "Films_character_icon_Ryuzaki.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/0/04/Films_character_icon_Ryuzaki.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Ryuzaki.jpg",
+    "mime": "image/webp",
+    "bytes": 32234,
+    "sha256": "3d2da1c4e646a48d535749fdc7b3d805920e7da2646ff3011805a7c589d68e68",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Sachiko Yagami",
+    "file": "assets/portraits/sachiko-yagami.webp",
+    "filename": "Sachiko_Yagami.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/1/1f/Sachiko_Yagami.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Sachiko_Yagami.jpg",
+    "mime": "image/webp",
+    "bytes": 12794,
+    "sha256": "bb8d46fa10e7b106b18c1630cffc367dac233f0691cf599c0b41bd5e7a652ee4",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Saeko Nishiyama",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Sakura Aoi",
+    "file": "assets/portraits/sakura-aoi.webp",
+    "filename": "Films_character_icon_Sakura.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/6/64/Films_character_icon_Sakura.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Sakura.jpg",
+    "mime": "image/webp",
+    "bytes": 22272,
+    "sha256": "a8b82eb070fe52a6418030698563efcb02c9c3669d0fd67ced39af46b8164bd0",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Sanami",
+    "file": "assets/portraits/sanami.webp",
+    "filename": "Sanami.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/39/Sanami.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Sanami.jpg",
+    "mime": "image/webp",
+    "bytes": 19830,
+    "sha256": "381af52496a3c9bddc9f0672df8b212c2535e90f7b0bc69580bb14a7cc087224",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Santaro Zenzai",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Sasaki",
+    "file": "assets/portraits/sasaki.webp",
+    "filename": "Sasaki.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/2/25/Sasaki.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Sasaki.jpg",
+    "mime": "image/webp",
+    "bytes": 7706,
+    "sha256": "085dcea442de0a98b61490d6084f190e0672b4f017d50ebd91181bd771570f61",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Sayu Yagami",
+    "file": "assets/portraits/sayu-yagami.webp",
+    "filename": "Sayu_Yagami.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/8d/Sayu_Yagami.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Sayu_Yagami.jpg",
+    "mime": "image/webp",
+    "bytes": 15042,
+    "sha256": "b9ed7f9ded9447ae61ec5aea0032628a49bd566710e46633b37d7cfea5d903b2",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Serina Kudo",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Shiho",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Shingo Mido",
+    "file": "assets/portraits/shingo-mido.webp",
+    "filename": "Shingo_Mido.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/c/c4/Shingo_Mido.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Shingo_Mido.jpg",
+    "mime": "image/webp",
+    "bytes": 8576,
+    "sha256": "9a87d27d34fd387602d5c7edcc795e2ebdfd42b0d6ba9ec5ab86fbd6e87b3ac1",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Shiniichiro Yamasaki",
+    "file": "assets/portraits/shiniichiro-yamasaki.webp",
+    "filename": "Shiniichiro_Yamasaki.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/0/0f/Shiniichiro_Yamasaki.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Shiniichiro_Yamasaki.jpg",
+    "mime": "image/webp",
+    "bytes": 26420,
+    "sha256": "1b0c0269af4c2b460889dbc5141dc43ec40cb8fea30217079f535c2ac7e3cc06",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Shiori Akino",
+    "file": "assets/portraits/shiori-akino.webp",
+    "filename": "Films_character_icon_Shiori.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/34/Films_character_icon_Shiori.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Shiori.jpg",
+    "mime": "image/webp",
+    "bytes": 6360,
+    "sha256": "61345fed617676f3eab7ef9718ed388b813600a3c045f280f1fb44d109e7b451",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Sho Nanase",
+    "file": "assets/portraits/sho-nanase.webp",
+    "filename": "Films_character_icon_Sho_Nanase.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/33/Films_character_icon_Sho_Nanase.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Sho_Nanase.jpg",
+    "mime": "image/webp",
+    "bytes": 23820,
+    "sha256": "df46aa1f3c838514ada193b7cbd2b2f7bb4ac2078eb7f8cf1b841b6504fe0471",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Shoko Himura",
+    "file": "assets/portraits/shoko-himura.webp",
+    "filename": "Shoko_Himura.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/bf/Shoko_Himura.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Shoko_Himura.jpg",
+    "mime": "image/webp",
+    "bytes": 15148,
+    "sha256": "e2d41648bd654858a51d1a48110b3b82bcb40197eaf1073084b51f9d46f46111",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Shuichi Aizawa",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Sidoh",
+    "file": "assets/portraits/sidoh.webp",
+    "filename": "SIDOHH.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/e8/SIDOHH.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:SIDOHH.png",
+    "mime": "image/webp",
+    "bytes": 9648,
+    "sha256": "058d4cbadfa870acf3e3b6267e1d6e596213d30a1cf47a44a01e9bbc3a8ad370",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Skyer",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Soichiro Yagami",
+    "file": "assets/portraits/soichiro-yagami.webp",
+    "filename": "Soichiro_Yagami.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/7/79/Soichiro_Yagami.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Soichiro_Yagami.jpg",
+    "mime": "image/webp",
+    "bytes": 14322,
+    "sha256": "5fddd7e716d1fec50986ae461fdbd5f36b23f2b921836c712fc90bea0c7464f4",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Stephen Gevanni",
+    "file": "assets/portraits/stephen-gevanni.webp",
+    "filename": "Stephen_Gevanni.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/f/fe/Stephen_Gevanni.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Stephen_Gevanni.jpg",
+    "mime": "image/webp",
+    "bytes": 4062,
+    "sha256": "6858b8563af6734f7ebbb7b70c7587867de4c13108deee36493c1cb3aa0e8d2a",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Steve Mason",
+    "file": "assets/portraits/steve-mason.webp",
+    "filename": "Steve_Mason.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/88/Steve_Mason.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Steve_Mason.jpg",
+    "mime": "image/webp",
+    "bytes": 4796,
+    "sha256": "24166398b2aa2e76a744f221e30bef0cb792e68b84b6ff1ac45b36302b873400",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Sudou",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Suguru Shimura",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Taichi Amazawa",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Takagi",
+    "file": "assets/portraits/takagi.webp",
+    "filename": "Takagi.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/2/25/Takagi.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Takagi.jpg",
+    "mime": "image/webp",
+    "bytes": 25206,
+    "sha256": "4d88f37b2c4193cd2501dfeefe05234d5247f369baa67860af42f1eda9cf2f4e",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Takahashi",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Takeshi Ooi",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Takuo Shibuimaru",
+    "file": "assets/portraits/takuo-shibuimaru.webp",
+    "filename": "Takuo_Shibuimaru.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/3a/Takuo_Shibuimaru.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Takuo_Shibuimaru.jpg",
+    "mime": "image/webp",
+    "bytes": 6642,
+    "sha256": "85d669c03159fa592c37319020bc847eacdd8cf35701f53d3b6035bcd17711f7",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Tamotsu Yoshizawa",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Taro Kagami",
+    "file": "assets/portraits/taro-kagami.webp",
+    "filename": "Taro_Kagami.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/d/d8/Taro_Kagami.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Taro_Kagami.jpg",
+    "mime": "image/webp",
+    "bytes": 24386,
+    "sha256": "2dd4395d696add4e4f6a7f0e83bbb0d9106283c62fe75518a370b62a653b02e2",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Tasayoshi Yoda",
+    "file": "assets/portraits/tasayoshi-yoda.webp",
+    "filename": "Tasayoshi_Yoda.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/31/Tasayoshi_Yoda.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Tasayoshi_Yoda.png",
+    "mime": "image/webp",
+    "bytes": 7470,
+    "sha256": "ed27c438b30aa759ed9966934abf4a1cc3943f2c248b95ed22688614de59ec4a",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Tatsumi Ooyama",
+    "file": "assets/portraits/tatsumi-ooyama.webp",
+    "filename": "Tatsumi_Ooyama.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/f/f4/Tatsumi_Ooyama.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Tatsumi_Ooyama.png",
+    "mime": "image/webp",
+    "bytes": 8050,
+    "sha256": "88e1b6f06e83ff83ca9df53bf203334cec300485b33b3c8f41402cf7cd3ef614",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Teru Mikami",
+    "file": "assets/portraits/teru-mikami.webp",
+    "filename": "Teru_Mikami.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/5/53/Teru_Mikami.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Teru_Mikami.jpg",
+    "mime": "image/webp",
+    "bytes": 8560,
+    "sha256": "6c93060405da4d04cfd31dfb36f4a98721e8734de7bbaa0becf9a514cd0f9b7e",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Touta Matsuda",
+    "file": "assets/portraits/touta-matsuda.webp",
+    "filename": "Touta_Matsuda.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/5/54/Touta_Matsuda.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Touta_Matsuda.jpg",
+    "mime": "image/webp",
+    "bytes": 10550,
+    "sha256": "3fefd53e7c72b977850f8ba31d9a2c3a2941caccc14e08f578dd9aa7894f2122",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Tsukuru Mishima",
+    "file": "assets/portraits/tsukuru-mishima.webp",
+    "filename": "Films_character_icon_Tsukuru_Mishima.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/0/0b/Films_character_icon_Tsukuru_Mishima.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Tsukuru_Mishima.jpg",
+    "mime": "image/webp",
+    "bytes": 27734,
+    "sha256": "50dec5211c88d474d27ab703a457e7b054c082afd86d9a98c49267970fed4683",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Uei Uragami",
+    "file": "assets/portraits/uei-uragami.webp",
+    "filename": "Films_character_icon_Uragami.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/8f/Films_character_icon_Uragami.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Uragami.jpg",
+    "mime": "image/webp",
+    "bytes": 14616,
+    "sha256": "3353360263cc0cfaba80e63a8c0c4b913923751fae347b35bdb90e26497193ac",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "United States President (one-shot)",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Unnamed Kira worshiper",
+    "file": "assets/portraits/unnamed-kira-worshiper.webp",
+    "filename": "Unnamed_Kira_worshiper.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/1/10/Unnamed_Kira_worshiper.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Unnamed_Kira_worshiper.jpg",
+    "mime": "image/webp",
+    "bytes": 40172,
+    "sha256": "81ed4abcc0bec587eae944eb5dafcef0f7579843202eb0df062d0a2c37b03381",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Unnamed Shinigami",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Unnamed woman",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Watari",
+    "file": "assets/portraits/watari.webp",
+    "filename": "Watari.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/0/0f/Watari.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Watari.jpg",
+    "mime": "image/webp",
+    "bytes": 10288,
+    "sha256": "fa473196e1ac084b95b15887b8d2501d806fbc171c6892c19d86f9df0436bd75",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Wedy",
+    "file": "assets/portraits/wedy.webp",
+    "filename": "Wedy.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/84/Wedy.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Wedy.jpg",
+    "mime": "image/webp",
+    "bytes": 13822,
+    "sha256": "b1b17e106751ebc8dcc2ce4e0c88c078b757eb0e103d68a27745c79fd3839952",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Y462",
+    "file": "assets/portraits/y462.webp",
+    "filename": "Y462.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/30/Y462.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Y462.jpg",
+    "mime": "image/webp",
+    "bytes": 10304,
+    "sha256": "3b34c43a40b4926e8fd131208d21933a4e621504e108330b1bdc540c38b0f33c",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Yamamoto",
+    "file": "assets/portraits/yamamoto.webp",
+    "filename": "Yamamoto.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/bb/Yamamoto.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Yamamoto.jpg",
+    "mime": "image/webp",
+    "bytes": 6320,
+    "sha256": "c7dc97e4b6089f5ab988c78ac6f21484704c5445630b1a68d2ab0a60ef036423",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Yamamoto (student)",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Yasunaga",
+    "file": "assets/portraits/yasunaga.webp",
+    "filename": "Yasunaga.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/bb/Yasunaga.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Yasunaga.jpg",
+    "mime": "image/webp",
+    "bytes": 8222,
+    "sha256": "41994e7551380b02bdb84ca6251dbdb0511b945389ded2a2f2aa91581e545a42",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Yitzak Ghazanin",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Yonegoro Nusumi",
+    "file": "assets/portraits/yonegoro-nusumi.webp",
+    "filename": "Yonegoro_Nusumi.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/f/f1/Yonegoro_Nusumi.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Yonegoro_Nusumi.jpg",
+    "mime": "image/webp",
+    "bytes": 9504,
+    "sha256": "ca58e9573f44c083784a2e90a450e6e0da39d5fd5319fb34ed77f2b450ac155b",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Yoshi",
+    "file": "assets/portraits/yoshi.webp",
+    "filename": "Yoshi.png",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/4/48/Yoshi.png/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Yoshi.png",
+    "mime": "image/webp",
+    "bytes": 7720,
+    "sha256": "de88847e8dab70a146b9e648867ef68fe66f1d65ef3654324c3d6cabdb4a38a6",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Yoshio Anderson",
+    "file": "assets/portraits/yoshio-anderson.webp",
+    "filename": "Yoshio_Anderson.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/6/67/Yoshio_Anderson.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Yoshio_Anderson.jpg",
+    "mime": "image/webp",
+    "bytes": 27012,
+    "sha256": "60b96a04a97cb430bf01a14171b70e0d90eda644a16d66a23ad5f396bc4d444e",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Yuki Shien",
+    "file": "assets/portraits/yuki-shien.webp",
+    "filename": "Films_character_icon_Yuki_Shien.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/e9/Films_character_icon_Yuki_Shien.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Yuki_Shien.jpg",
+    "mime": "image/webp",
+    "bytes": 26680,
+    "sha256": "51c85a42b067424f1db4e966f15738231abfb5f7a5ca61ac2016d2de92c13407",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Yumi Aizawa",
+    "file": "assets/portraits/yumi-aizawa.webp",
+    "filename": "Yumi_Aizawa.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/b1/Yumi_Aizawa.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Yumi_Aizawa.jpg",
+    "mime": "image/webp",
+    "bytes": 9068,
+    "sha256": "1afa508bae495b6cbddef0048a5c154861d8a590bd9a5634213244085ff6d372",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Yuri",
+    "file": "assets/portraits/yuri.webp",
+    "filename": "Yuri.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/b7/Yuri.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Yuri.jpg",
+    "mime": "image/webp",
+    "bytes": 34276,
+    "sha256": "1055a3a7029e92a7e1e6d7ccf6c68292df5c5c1af3c1628ffcebe71ccf019729",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Zakk Irius",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Zellogi",
+    "missing": true,
+    "reason": "No verified public portrait candidate downloaded"
+  },
+  {
+    "name": "Zenta Suji",
+    "file": "assets/portraits/zenta-suji.webp",
+    "filename": "Zenta_Suji.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/4/4f/Zenta_Suji.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Zenta_Suji.jpg",
+    "mime": "image/webp",
+    "bytes": 7426,
+    "sha256": "7436614b1397e769a353e353e2596a048f7b849225c93a86d41647096f034645",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Light Yagami/Films",
+    "file": "assets/portraits/light-yagami-films.webp",
+    "filename": "Films_character_icon_Light.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/bd/Films_character_icon_Light.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Light.jpg",
+    "mime": "image/webp",
+    "bytes": 20132,
+    "sha256": "ba278862aa479a43328b4f60e33bbabb1e0f3a61534ecd413e3b26b7828e027e",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "L (character)/Films",
+    "file": "assets/portraits/l--character--films.webp",
+    "filename": "Films_character_icon_L.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/84/Films_character_icon_L.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_L.jpg",
+    "mime": "image/webp",
+    "bytes": 8342,
+    "sha256": "ef3397611feee7ac5a834b96fec6897ac67cbeede22a3af5281e8f37c223917a",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Misa Amane/Films",
+    "file": "assets/portraits/misa-amane-films.webp",
+    "filename": "Films_character_icon_Misa.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/1/11/Films_character_icon_Misa.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Misa.jpg",
+    "mime": "image/webp",
+    "bytes": 6394,
+    "sha256": "f868c9e3776e8bce1b7f8733ee36f22428ba4d41f2010828366366549060a65f",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Naomi Misora/Films",
+    "file": "assets/portraits/naomi-misora-films.webp",
+    "filename": "Films_character_icon_Naomi.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/3d/Films_character_icon_Naomi.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Naomi.jpg",
+    "mime": "image/webp",
+    "bytes": 18676,
+    "sha256": "4edb44675359d4bfb8cb382d83de9caf81b2ab867ff752f9d34dff57ec221565",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ryuk/Films",
+    "file": "assets/portraits/ryuk-films.webp",
+    "filename": "Films_character_icon_Ryuk.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/ef/Films_character_icon_Ryuk.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Ryuk.jpg",
+    "mime": "image/webp",
+    "bytes": 7834,
+    "sha256": "29472a80b307130577f373fef2fc70dad76a5f1e729ab00443f38c0c9d13ecb0",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Rem/Films",
+    "file": "assets/portraits/rem-films.webp",
+    "filename": "Films_character_icon_Rem.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/7/70/Films_character_icon_Rem.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Rem.jpg",
+    "mime": "image/webp",
+    "bytes": 9434,
+    "sha256": "c6973c4a00866a177e4e80dfbec78999f8743d5e204a6fa863d960e15a28287b",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Kiyomi Takada/Films",
+    "file": "assets/portraits/kiyomi-takada-films.webp",
+    "filename": "Films_character_icon_Kiyomi.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/c/c0/Films_character_icon_Kiyomi.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Kiyomi.jpg",
+    "mime": "image/webp",
+    "bytes": 10834,
+    "sha256": "d52bc51623d14e45bcd26bfb1f04f1e6dc484aa7ad8adcd479690631e50d1d0e",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Soichiro Yagami/Films",
+    "file": "assets/portraits/soichiro-yagami-films.webp",
+    "filename": "Films_character_icon_Soichiro.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/f/fa/Films_character_icon_Soichiro.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Soichiro.jpg",
+    "mime": "image/webp",
+    "bytes": 11790,
+    "sha256": "f83a956eef637e8070e1d8a7dfb0c6abcaeb861196d5ed288b1b5dcee4a466e9",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Shin Kuromoto",
+    "file": "assets/portraits/shin-kuromoto.webp",
+    "filename": "Films_character_icon_Kuromoto.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/38/Films_character_icon_Kuromoto.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Kuromoto.jpg",
+    "mime": "image/webp",
+    "bytes": 14166,
+    "sha256": "e299d62f69c3bd690eab0578ffec58bae2100d3663584fc79fefe7d5c963245d",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Touta Matsuda/Films 2016",
+    "file": "assets/portraits/touta-matsuda-films-2016.webp",
+    "filename": "Films_character_icon_Matsuda-LNW.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/3/32/Films_character_icon_Matsuda-LNW.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Matsuda-LNW.jpg",
+    "mime": "image/webp",
+    "bytes": 17666,
+    "sha256": "cf277b27dcfb9087d692d30e61aaf60c427cda4b2d51e667aeb62e956086e925",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Misa Amane/Films 2016",
+    "file": "assets/portraits/misa-amane-films-2016.webp",
+    "filename": "Films_character_icon_Misa-LNW.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/f/f9/Films_character_icon_Misa-LNW.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Misa-LNW.jpg",
+    "mime": "image/webp",
+    "bytes": 27680,
+    "sha256": "400baed31da1f6b4120f85bc584543dc7745f6157717b04ac45e412bb68284bb",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Ryuk/Films 2016",
+    "file": "assets/portraits/ryuk-films-2016.webp",
+    "filename": "Films_character_icon_Ryuk-LNW.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/9/96/Films_character_icon_Ryuk-LNW.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Films_character_icon_Ryuk-LNW.jpg",
+    "mime": "image/webp",
+    "bytes": 21458,
+    "sha256": "e3e28217072f1dd88300e3267c0288827f8a546e57e85e8a30f2337291eb2c7d",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Light Yagami/Drama",
+    "file": "assets/portraits/light-yagami-drama.webp",
+    "filename": "Drama_character_icon_Light.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/7/70/Drama_character_icon_Light.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Drama_character_icon_Light.jpg",
+    "mime": "image/webp",
+    "bytes": 9040,
+    "sha256": "b9f2a199ffb45bf13708456f9ce220ab488b07dac46b0a0d644290bed7ee7597",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "L (character)/Drama",
+    "file": "assets/portraits/l--character--drama.webp",
+    "filename": "Drama_character_icon_L.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/e/e6/Drama_character_icon_L.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Drama_character_icon_L.jpg",
+    "mime": "image/webp",
+    "bytes": 12558,
+    "sha256": "2417b35f46b5f30401b8624a1cbccc58dc667b183b17b3d2b894ab970f6894f4",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Misa Amane/Drama",
+    "file": "assets/portraits/misa-amane-drama.webp",
+    "filename": "Drama_character_icon_Misa.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/5/56/Drama_character_icon_Misa.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Drama_character_icon_Misa.jpg",
+    "mime": "image/webp",
+    "bytes": 22776,
+    "sha256": "abaa1e8ef0bef81b1276c67d483ebb43d97b01bd925a440df63e916bee27c938",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Near/Drama",
+    "file": "assets/portraits/near-drama.webp",
+    "filename": "Drama_character_icon_Near.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/b4/Drama_character_icon_Near.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Drama_character_icon_Near.jpg",
+    "mime": "image/webp",
+    "bytes": 16900,
+    "sha256": "09e4ff140f71ad2fc8fee01dd83de68a2f3065e318775e3f159798a281e419cd",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Light Turner",
+    "file": "assets/portraits/light-turner.webp",
+    "filename": "Netflix_character_icon_Light.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/8/8e/Netflix_character_icon_Light.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Netflix_character_icon_Light.jpg",
+    "mime": "image/webp",
+    "bytes": 19144,
+    "sha256": "27c9b1a3ebeca65aaf4e2d4b5a60bbdfd74a9c3638b37c4b327b1e3548c14e18",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Mia Sutton",
+    "file": "assets/portraits/mia-sutton.webp",
+    "filename": "Netflix_character_icon_Mia.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/5/5f/Netflix_character_icon_Mia.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Netflix_character_icon_Mia.jpg",
+    "mime": "image/webp",
+    "bytes": 30480,
+    "sha256": "86adfd0376f6395872dce28e506b5a43cb022ff82218c4595621c2203a474630",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "James Turner",
+    "missing": true,
+    "reason": "No verified public portrait located"
+  },
+  {
+    "name": "L (character)/Netflix",
+    "file": "assets/portraits/l--character--netflix.webp",
+    "filename": "Netflix_character_icon_L.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/b/b7/Netflix_character_icon_L.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Netflix_character_icon_L.jpg",
+    "mime": "image/webp",
+    "bytes": 11526,
+    "sha256": "713e25dfd4b53a26d203789736adb225591267374f659a0ba5f8ab973f5f66d2",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Watari/Netflix",
+    "file": "assets/portraits/watari-netflix.webp",
+    "filename": "Netflix_character_icon_Watari.jpg",
+    "url": "https://static.wikia.nocookie.net/deathnote/images/f/f3/Netflix_character_icon_Watari.jpg/revision/latest/scale-to-width-down/320",
+    "page": "https://deathnote.fandom.com/wiki/File:Netflix_character_icon_Watari.jpg",
+    "mime": "image/webp",
+    "bytes": 24096,
+    "sha256": "da7fecaa216c01ed75620446397f8dd288094f4df472e26a2a7b19bd6067f862",
+    "assetKind": "published-character-reference",
+    "modified": false
+  },
+  {
+    "name": "Shin Kagami",
+    "missing": true,
+    "reason": "No verified public portrait located"
+  },
+  {
+    "name": "Light Yagami/School",
+    "file": "assets/portraits/light-yagami-school.webp",
+    "filename": "light-yagami-school.webp",
+    "url": "https://nedeo.fr/images/death-note/light-yagami/light-yagami-9.webp",
+    "page": "https://nedeo.fr/personnages/death-note/light-yagami",
+    "mime": "image/webp",
+    "bytes": 27238,
+    "sha256": "7d022059ef1857ff9179fbe5b5f6b1fa7cc91435a5be7e2951e3af1ef346c13e",
+    "assetKind": "anime-still",
+    "modified": false
+  },
+  {
+    "name": "Kanzo Mogi",
+    "file": "assets/portraits/kanzo-mogi-reference.jpg",
+    "filename": "kanzo-mogi-reference.jpg",
+    "url": "https://www.animecharactersdatabase.com/uploads/chars/4758-205652157.jpg",
+    "page": "https://www.animecharactersdatabase.com/fr/characters.php?id=44917",
+    "mime": "image/jpeg",
+    "bytes": 12038,
+    "sha256": "9caf8d30bbe8dc20e47cf848bf9fb5f8a2e94e61c48bb63f4f32c7c0eb1be2d3",
+    "assetKind": "anime-character-reference",
+    "modified": false
+  }
+]

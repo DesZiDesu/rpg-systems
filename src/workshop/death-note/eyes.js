@@ -1,4 +1,5 @@
-import {faceKnowledge} from './faces.js?v=0.81.2';
+import {faceKnowledge} from './faces.js?v=0.82.0';
+import {trueNameOf} from './names.js?v=0.82.0';
 const safeKey=id=>typeof id==='string'&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
 export function originalLifespan(state,npcId,language='th'){
  if(!safeKey(npcId))return null;const v=state.deathNoteRules?.originalLifespans?.[npcId];if(!v||typeof v!=='object'||Array.isArray(v))return null;
@@ -10,7 +11,7 @@ export function originalLifespan(state,npcId,language='th'){
 export function eyeInsight(world,npc,state,language='th'){
  const human=/^(human|มนุษย์)$/iu.test(String(npc.race||'')),living=npc.stats?.hp!==0&&!/^(dead|deceased|เสียชีวิต)$/iu.test(npc.activity||'');
  if(!world.eyes||world.memoryLost||npc.met!==true||!faceKnowledge(world,npc,state).known||!human||!living||npc.id==='player')return null;
- const trueName=String(state.deathNoteRules?.trueNames?.[npc.id]||npc.name||'').trim();if(!trueName)return null;
+ const trueName=trueNameOf(state,npc);if(!trueName)return null;
  const owner=Object.values(world.books).some(b=>b.ownerId===npc.id),original=owner?null:originalLifespan(state,npc.id,language);
  return {trueName,lifespan:original?.text||'',lifespanReason:owner?'owner':original?'original':'unknown'};
 }
