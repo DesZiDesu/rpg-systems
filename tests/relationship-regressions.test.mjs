@@ -328,3 +328,53 @@ test("a persona alias also validates the NPC last partner without overwriting th
   assert.equal(r.next.npcs[0].hStats.mouthLastPartner, "ชีฟ");
   assert.equal(r.next.player.name, "Player");
 });
+
+for (const [kind, quote, changes, field] of [
+  ['support','Den ไว้วางใจเอลิอันมากขึ้นหลังจากได้พูดคุยกัน',{trust:1},'trust'],
+  ['support','Den เชื่อมั่นในตัวเอลิอันมากขึ้น',{trust:1},'trust'],
+  ['support','Den อยู่เคียงข้างเอลิอันและให้กำลังใจเขา',{trust:1},'trust'],
+  ['support','Den trusts Elian after their conversation.',{trust:1},'trust'],
+  ['romance','Den หลงใหลเอลิอันและแสดงความเสน่หาต่อเขา',{interest:1},'interest'],
+  ['romance','Den คิดถึงเอลิอันและยอมรับความรู้สึกนั้น',{love:1},'love'],
+]) test('explicit Thai/English feelings update the correct bilingual player: '+quote,()=>{
+  const s=state();s.player.name='Elian / เอลิอัน';
+  const r=applyRelationshipEvents(s,[event(quote,{kind,changes})],{story:quote,userName:'Elian',source:'thai-case'});
+  assert.equal(r.changed,1);assert.deepEqual(r.errors,[]);assert.equal(relationshipLink(r.next,'den','player')[field],1);assert.equal(r.next.player.name,'Elian / เอลิอัน');
+});
+for(const quote of [
+ 'Den ชอบชีฟหรือเปล่า?','Den ชอบชีฟมั้ย','Den ชอบชีฟไหมครับ',
+ 'Does Den love ชีฟ?','Den loves ชีฟ?','Den loves ชีฟ？',
+ 'Den ไม่ชอบชีฟ','Den ไม่ไว้วางใจชีฟ','Den never trusted ชีฟ.',
+])test('questions and negated feelings cannot become confirmed changes: '+quote,()=>{
+ const kind=/ไว้|trust/iu.test(quote)?'support':'romance',r=run(event(quote,{kind,changes:{love:1,trust:1}}),quote);
+ assert.equal(r.changed,0);assert.equal(r.diagnostics[0].code,'unconfirmed');
+});
+test('a question cannot supply the pair for a pronoun-based claimed answer',()=>{
+ const quote='Do Den and Siffelia love each other? They feel fond of each other.';
+ assert.equal(run(event(quote,{targetId:'siffelia',kind:'romance',changes:{love:1}}),quote).changed,0);
+});
+test('a later question does not erase a completed supported statement',()=>{
+ const quote='Den helped ชีฟ carry the books. Does Den love ชีฟ?';
+ const r=run(event(quote),quote);assert.equal(r.changed,1);assert.deepEqual(r.errors,[]);
+});
+test('silk and fire words are not interpreted as Thai question particles',()=>{
+ for(const quote of ['Den ช่วยชีฟขนผ้าไหม','Den ช่วยชีฟออกจากกองไฟไหม้'])assert.equal(run(event(quote),quote).changed,1);
+});
+test('care embedded inside another English word does not confirm support',()=>{
+ for(const quote of ['Den was scared of ชีฟ.','Den carelessly ignored ชีฟ.'])assert.equal(run(event(quote),quote).changed,0);
+});
+test('negative changes of principles stay unconfirmed',()=>{
+ const quote='Den ไม่ได้เปลี่ยนหลักการของตนเพื่อชีฟ';
+ const r=run(event(quote,{kind:'values',milestone:'values_shift',changes:{corruption:1}}),quote);assert.equal(r.changed,0);
+});
+test('a rejected proposal keeps only a short evidence excerpt for diagnosis',()=>{
+ const quote='Den and ชีฟ say hello. '+ 'x'.repeat(700);
+ const r=run(event(quote),quote);assert.equal(r.diagnostics[0].evidence.length,320);assert.equal(r.diagnostics[0].actorId,'den');
+});
+
+for(const quote of ['Den ไม่มีความไว้วางใจชีฟ','Den สูญเสียความเชื่อมั่นในชีฟ','Den lost his trust in ชีฟ.','Den no longer trusts ชีฟ.'])test('a withdrawal of trust cannot validate a positive support event: '+quote,()=>{
+ assert.equal(run(event(quote),quote).changed,0);
+ const s=state();s.npcs[0].trust=10;
+ const r=applyRelationshipEvents(s,[event(quote,{kind:'conflict',changes:{trust:-1}})],{story:quote,userName:'ชีฟ',source:'withdrawal'});
+ assert.equal(r.changed,1);assert.equal(relationshipLink(r.next,'den','player').trust,9);
+});

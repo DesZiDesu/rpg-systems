@@ -1,0 +1,75 @@
+{
+  "version": "0.80.1",
+  "baseRevision": "895450aaade5905307d2bee2604e7acbddf241a2",
+  "verificationDateUTC": "2026-10-21",
+  "unit": {
+    "command": "npm test",
+    "passed": 1557,
+    "failed": 0,
+    "focusedCommand": "node --test tests/relationship-core.test.mjs tests/relationship-regressions.test.mjs",
+    "focusedPassed": 95,
+    "syntaxCommand": "npm run check",
+    "syntaxPassed": true
+  },
+  "nativeBrowser": {
+    "command": "npm run test:relationships:language:real",
+    "report": "native-validation.json",
+    "passed": true,
+    "hostVersion": {
+      "agent": "SillyTavern:1.19.0:Cohee#1207",
+      "pkgVersion": "1.19.0",
+      "gitRevision": "06bde93",
+      "gitBranch": "release",
+      "commitDate": "2026-09-14 21:01:34 +0200",
+      "isLatest": true
+    },
+    "theme": "Dark Lite",
+    "browser": "Chromium /usr/bin/chromium",
+    "devices": [
+      "desktop 1440×1000",
+      "mobile touch emulation 390×844"
+    ],
+    "assertions": [
+      "confirmed Thai trust/affection updates save real values",
+      "bilingual player spelling identifies the same saved player",
+      "verified speaker uses first person",
+      "NPC-to-NPC changes remain directed and pair-specific",
+      "questions stay unchanged with an unconfirmed diagnostic",
+      "no-op conversation stays unchanged",
+      "main and dock render the saved values",
+      "reload preserves values and name",
+      "other card does not inherit the NPC",
+      "only 7 explicit generations per device; no UI-triggered requests"
+    ],
+    "positiveCasesWarnings": 0,
+    "values": {
+      "playerDirectedTrust": [
+        40,
+        43
+      ],
+      "playerDirectedInterest": [
+        20,
+        21
+      ],
+      "npcToNpcTrust": [
+        10,
+        11
+      ]
+    },
+    "controlledReplies": true,
+    "liveModelProviderTest": false,
+    "privateChatImported": false,
+    "fixtures": "Independent new adult characters; nonsexual dialogue"
+  },
+  "scope": [
+    "General relationship evidence and explicit bilingual player identity only",
+    "No private chat content included in the repository or regression fixtures",
+    "No automatic replay or repair of historical chats",
+    "Existing per-scene progression budgets and milestone rules retained"
+  ],
+  "limitations": [
+    "Physical iPhone/Safari not tested",
+    "No live model reasoning/compliance test",
+    "The parser still requires correct structured events and explicit evidence; it is not a general natural-language inference engine"
+  ]
+}

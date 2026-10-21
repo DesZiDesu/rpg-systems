@@ -1,5 +1,5 @@
-import { H_FIELD_MAP, updateHStat } from "./h-stats.js?v=0.80.0";
-import { parseStory } from "./npc-core.js?v=0.80.0";
+import { H_FIELD_MAP, updateHStat } from "./h-stats.js?v=0.80.1";
+import { parseStory } from "./npc-core.js?v=0.80.1";
 
 const object = (v) => v && typeof v === "object" && !Array.isArray(v);
 const clean = (v, max = 180) =>
@@ -555,18 +555,26 @@ function evidencePerson(people, actorId, userName) {
   return actorId === "player"
     ? {
         ...person,
-        aliases: [...(person?.aliases || []), userName].filter(Boolean),
+        // An explicitly entered bilingual player name ("Elian / เอลิอัน")
+        // identifies the same person by either spelling, without rewriting it.
+        aliases: [...new Set([person?.name, ...(person?.aliases || []), userName]
+          .filter(v => typeof v === "string" && v.trim())
+          .flatMap(v => [v, ...v.split(/\s*[\/|]\s*/u)])
+          .filter(v => v.length >= 2 && /\p{L}/u.test(v)))],
       }
     : person;
 }
 const hypothetical =
   /\b(?:if|would|might|maybe|rumou?r|allegedly|pretend|will|plan(?:s|ned|ning)? to|want(?:s|ed)? to)\b|\b(?:has|have) not\b|\bnot yet\b|(?:สมมติ|ถ้า|หาก|อาจจะ|คงจะ|ข่าวลือ|ยังไม่ได้|ยังไม่เคย|กำลังจะ)|\(\(|\bOOC\s*:/iu;
+// Trust words can describe a loss as well as a gain. Keep withdrawals in
+// conflict events instead of accepting a positive support proposal for them.
+const trustWithdrawal = /\b(?:no longer trust\w*|(?:lost|lack(?:s|ed|ing)?)\s+(?:(?:his|her|their|any|all)\s+)?trust|(?:does|do|did) not trust|doesn['’]t trust|don['’]t trust|didn['’]t trust|no trust)\b|ไม่(?:เชื่อใจ|เชื่อมั่น|ไว้ใจ|ไว้วางใจ)|(?:ไม่มี|ขาด|หมด|สูญเสีย)(?:ความ)?(?:เชื่อใจ|เชื่อมั่น|ไว้ใจ|ไว้วางใจ)/iu;
 const actualPatterns = {
   support:
-    /help|care|support|comfort|protect|rescue|ช่วย|ดูแล|ปลอบ|ปกป้อง|รับฟัง|เปิดใจ/iu,
+    /\b(?:help(?:s|ed|ing)?|care(?:s|d)?|caring|support(?:s|ed|ing)?|comfort(?:s|ed|ing)?|protect(?:s|ed|ing)?|rescu(?:e|es|ed|ing)|trust(?:s|ed|ing)?|reassur(?:e|es|ed|ing)|listen(?:s|ed|ing)?)\b|ช่วย|ดูแล|ปลอบ|ปกป้อง|รับฟัง|เปิดใจ|เชื่อใจ|เชื่อมั่น|ไว้ใจ|ไว้วางใจ|วางใจ|อุ่นใจ|ให้กำลังใจ|เคียงข้าง/iu,
   romance:
-    /love|attract|feel|fond|interest|confess|affection|รัก|ชอบ|หวั่นไหว|สนใจ|รู้สึก|สารภาพ|ผูกพัน/iu,
-  promise: /kept|honou?r|fulfill|promise|รักษา.*สัญญา|ทำตาม.*สัญญา|คำมั่น/iu,
+    /\b(?:love(?:s|d)?|loving|attract(?:s|ed|ion)?|feel(?:s|ing|ings)?|felt|fond|interest(?:s|ed)?|confess(?:es|ed|ing)?|affection|desire(?:s|d)?|long(?:s|ed|ing)? for)\b|รัก|ชอบ|หวั่นไหว|สนใจ|รู้สึก|สารภาพ|ผูกพัน|หลงใหล|เสน่หา|คิดถึง|ตกหลุมรัก|หลงรัก/iu,
+  promise: /kept|honou?r|fulfill|promise|รักษา.*(?:สัญญา|คำพูด)|ทำตาม.*(?:สัญญา|คำพูด|คำมั่น)|คำมั่น/iu,
   discovery:
     /discover|learn(?:ed|s)?|witness|found out|realiz|รู้ความจริง|พบความจริง|เห็นกับตา|จับได้|รู้ว่า/iu,
   history: /birth|pregnan|parent|คลอด|ตั้งครรภ์|ท้อง|พ่อของ/iu,
@@ -576,7 +584,7 @@ const actualPatterns = {
     /betray|affair|broke.*(?:promise|exclusiv)|cheat|นอกใจ|ทรยศ|ผิดคำมั่น|ผิดคำสัญญา|ละเมิด.*(?:ข้อตกลง|คำมั่น)/iu,
   intimacy:
     /intimat|encounter|kiss|sex|intercourse|close encounter|ร่วมรัก|สัมพันธ์ทางกาย|ใกล้ชิด|จูบ|มีเพศสัมพันธ์/iu,
-  values: /principl|value|belief|conviction|หลักยึด|ค่านิยม|ความเชื่อ|จุดยืน/iu,
+  values: /principl|value|belief|conviction|หลักยึด|หลักการ|ค่านิยม|ความเชื่อ|จุดยืน/iu,
   establish:
     /agreed|accept|are dating|are married|became.*(?:couple|partner)|ตกลง|คบกัน|คู่รัก|แต่งงาน|คู่สมรส/iu,
   separate:
@@ -588,7 +596,7 @@ const actualPatterns = {
 // An unrelated future/negative sentence cannot erase a completed event; nor
 // can cropping "maybe" off an excerpt turn an imagined event into a fact.
 const clauseBoundary =
-  /[.!?。;\n]+|\b(?:but|however|whereas)\b|แต่(?!ง)|ขณะที่|ส่วน(?!ตัว)|\s+and\s+(?=(?:will|might|would|has not|have not|not yet)\b)|และ(?=(?:ยังไม่|กำลังจะ|คงจะ|อาจจะ|จะ))/iu;
+  /[.!?？。;\n]+|\b(?:but|however|whereas)\b|แต่(?!ง)|ขณะที่|ส่วน(?!ตัว)|\s+and\s+(?=(?:will|might|would|has not|have not|not yet)\b)|และ(?=(?:ยังไม่|กำลังจะ|คงจะ|อาจจะ|จะ))/iu;
 const firstPerson =
   /\b(?:I|me|my|we|our|us)\b|ฉัน|ผม|ข้า|เรา|หนู|กระผม|ดิฉัน/iu;
 const negative =
@@ -597,6 +605,23 @@ const unreal =
   /dream|fantasy|imagined|coerc|forced|without consent|ฝัน|จินตนาการ|ถูกบังคับ|ขืนใจ|ไม่ยินยอม/iu;
 const request =
   /\b(?:please|can you|could you|would you|will you)\b|(?:ช่วย|โปรด|กรุณา).{0,100}(?:หน่อย|ได้ไหม|ได้มั้ย|ทีนะ)/iu;
+// Keep the question mark attached to its source clause. Splitting it away
+// made a question such as "Does Mira love Kai?" look like a confirmed fact.
+function evidenceClauses(text) {
+  const source = String(text).replace(/<[^>]+>/gu, " "), clauses = [];
+  let start = 0;
+  for (const match of source.matchAll(new RegExp(clauseBoundary.source, "giu"))) {
+    clauses.push({ text: source.slice(start, match.index), question: /[?？]/u.test(match[0]) });
+    start = match.index + match[0].length;
+  }
+  clauses.push({ text: source.slice(start), question: false });
+  return clauses;
+}
+function isEvidenceQuestion(fact) {
+  const checked = fact.replace(/(?:ผ้า|ตัว|เส้น|รัง|ต้น)ไหม(?:พรม)?|ไหม้/gu, " ");
+  return /^\s*["'“‘]*(?:does|do|did|is|are|was|were|has|have|can|could|would|will|should|what|why|when|who|how)\b/iu.test(checked)
+    || /ไหม|มั้ย|หรือเปล่า|รึเปล่า|หรือไม่|หรือยัง|หรอ|เหรอ/iu.test(checked);
+}
 function relationshipEvidence(
   evidence,
   kind,
@@ -646,14 +671,12 @@ function relationshipEvidence(
     if (/^\s*(?:\(\(|\[OOC\b|OOC\s*:)/iu.test(normalizeQuote(block.text)))
       continue;
     let pairEstablished = false;
-    for (const part of String(block.text)
-      .replace(/<[^>]+>/gu, " ")
-      .split(clauseBoundary)) {
-      const fact = normalizeQuote(part);
+    for (const clause of evidenceClauses(block.text)) {
+      const fact = normalizeQuote(clause.text);
       if (
         !fact ||
         !(fact.includes(quote) || quote.includes(fact)) ||
-        !actualPatterns[kind].test(fact)
+        !(actualPatterns[kind].test(fact) || kind === "conflict" && trustWithdrawal.test(fact))
       )
         continue;
       const sharedPair =
@@ -686,10 +709,11 @@ function relationshipEvidence(
       const actionAt = checked.search(actualPatterns[kind]);
       const beforeAction = checked.slice(0, actionAt);
       if (
+        clause.question || isEvidenceQuestion(checked) ||
         hypothetical.test(checked) ||
         request.test(checked) ||
         /(?:จะ|อยาก|ต้องการ|หวังว่า).{0,16}$/u.test(beforeAction) ||
-        (negative.test(checked) &&
+        ((negative.test(checked) || trustWithdrawal.test(checked) || /(?:ไม่|มิได้|ไม่ค่อย)\s*$/u.test(beforeAction)) &&
           [
             "romance",
             "support",
@@ -699,6 +723,7 @@ function relationshipEvidence(
             "betrayal",
             "separate",
             "repair",
+            "values",
           ].includes(kind)) ||
         (["intimacy", "history", "betrayal", "establish", "separate"].includes(
           kind,
@@ -929,7 +954,7 @@ export function applyRelationshipEvents(
       target = people.get(targetId);
     const reject = (code) => {
       errors.push(code);
-      diagnostics.push({ actorId, targetId, kind: clean(kind, 40), code });
+      diagnostics.push({ actorId, targetId, kind: clean(kind, 40), code, evidence: clean(e?.evidence, 320) });
     };
     if (
       !kinds.has(kind) ||
@@ -1364,4 +1389,4 @@ export function retainRelationshipEdits(
         snapshot.relationships = old;
       }
 }
-export const RELATIONSHIP_INSTRUCTIONS = `RELATIONSHIP PROGRESSION / ALL PAIRS: relationships is a directed graph, including NPC->NPC and player->NPC. A->B does not imply B->A. love/bond, interest/attraction, trust and commitment are 0-100; absent is unknown. Bonds store an explicitly established relationship and agreement; scores never declare dating, marriage or cheating. Legacy loyalty hearts/stage are historical fields, never gameplay thresholds. Do not write legacy bond H-Stats, npc affection/trust/loyalty/corruption or the relationships graph through scalar/upsert operations. Use relationshipEvents:[{actorId,targetId,kind,evidence:"exact quote of a completed visible act involving the pair",changes:{love:1,interest:1,trust:1,commitment:1},milestone:"optional"}]. Use existing stable catalog IDs, never names as IDs. Keep evidence short and specific to the completed act, excluding unrelated plans or requests. Both people must be identifiable in that act by their actual names/aliases or the active player name. A verified tr-dialogue speaker may use first-person pronouns for themselves; ambiguous addressees do not identify another NPC. Do not emit zero-change/greeting events, future requests, or invented milestones. Kinds: support,romance,promise,conflict,discovery,values,establish,separate,betrayal,repair,intimacy,history. Emit a separate directed event for reciprocal feelings only when independently established. Ordinary greetings/compliments give no automatic growth; gains are SLOW and capped per continuous scene, not per reply. Preserve personality, commitments and profile anchors before writing the story; do not jump to an affair from a few compliments. Openness, mutual_interest and kept_promise milestones require explicit supporting events. Establish requires milestone dating/married and explicit mutual acceptance, plus agreement exclusive/open/unknown; never infer an exclusive agreement from hearts, a title or high affection. Betrayal requires an existing exclusive dating/married bond, milestone boundary_crossed, thirdPartyId, actual completed breach and evidence naming all involved. Do not manufacture an affair when allowInfidelity is false, or from desire, pressure, fantasy, rumor, fear, scores or off-screen elapsed time. A betrayed person does not lose trust until they actually learn what happened; use kind discovery with an explicit learned/witnessed quote for that person. Betrayal changes only the betraying actor commitment; do not fabricate the unaware partner response. Corruption requires kind values, changes.corruption, milestone values_shift, and an explicit change of principles; it is separate from intimacy and betrayal. Intimacy between ANY two adults records that pair's encounter, not the player's; it never grants love automatically. For confirmed physical/history changes include hStats:[{ownerId,field,verb:"inc"|"set",value}] only for the two participants, and quote the actual relevant act. Include both owners' applicable updates in ONE intimacy event. Counts are per completed act, not per text paragraph. Never add the same updates to npcHStats/playerHStats as well. No player stats change from NPC-only encounters. Use kind history for confirmed pregnancy/parentage/birth, which must not count as a new intimate encounter. Body/history facts and last partners remain supported. No new model/API calls are needed.`;
+export const RELATIONSHIP_INSTRUCTIONS = `RELATIONSHIP PROGRESSION / ALL PAIRS: relationships is a directed graph, including NPC->NPC and player->NPC. A->B does not imply B->A. love/bond, interest/attraction, trust and commitment are 0-100; absent is unknown. Bonds store an explicitly established relationship and agreement; scores never declare dating, marriage or cheating. Legacy loyalty hearts/stage are historical fields, never gameplay thresholds. Do not write legacy bond H-Stats, npc affection/trust/loyalty/corruption or the relationships graph through scalar/upsert operations. Use relationshipEvents:[{actorId,targetId,kind,evidence:"exact quote of a completed visible act involving the pair",changes:{love:1,interest:1,trust:1,commitment:1},milestone:"optional"}]. Use existing stable catalog IDs, never names as IDs. Keep evidence short and specific to the completed act, excluding unrelated plans or requests. A completed, explicitly stated emotional change (including Thai ไว้วางใจ/เชื่อมั่น/หลงใหล/เสน่หา) may support the appropriate trust/romance event without a new physical encounter. Questions about feelings, imagined physical acts and plans are not completed encounters or changes of principles. Both people must be identifiable in that act by their actual names/aliases or the active player name. A verified tr-dialogue speaker may use first-person pronouns for themselves; ambiguous addressees do not identify another NPC. Do not emit zero-change/greeting events, future requests, or invented milestones. Kinds: support,romance,promise,conflict,discovery,values,establish,separate,betrayal,repair,intimacy,history. Emit a separate directed event for reciprocal feelings only when independently established. Ordinary greetings/compliments give no automatic growth; gains are SLOW and capped per continuous scene, not per reply. Preserve personality, commitments and profile anchors before writing the story; do not jump to an affair from a few compliments. Openness, mutual_interest and kept_promise milestones require explicit supporting events. Establish requires milestone dating/married and explicit mutual acceptance, plus agreement exclusive/open/unknown; never infer an exclusive agreement from hearts, a title or high affection. Betrayal requires an existing exclusive dating/married bond, milestone boundary_crossed, thirdPartyId, actual completed breach and evidence naming all involved. Do not manufacture an affair when allowInfidelity is false, or from desire, pressure, fantasy, rumor, fear, scores or off-screen elapsed time. A betrayed person does not lose trust until they actually learn what happened; use kind discovery with an explicit learned/witnessed quote for that person. Betrayal changes only the betraying actor commitment; do not fabricate the unaware partner response. Corruption requires kind values, changes.corruption, milestone values_shift, and an explicit change of principles; it is separate from intimacy and betrayal. Intimacy between ANY two adults records that pair's encounter, not the player's; it never grants love automatically. For confirmed physical/history changes include hStats:[{ownerId,field,verb:"inc"|"set",value}] only for the two participants, and quote the actual relevant act. Include both owners' applicable updates in ONE intimacy event. Counts are per completed act, not per text paragraph. Never add the same updates to npcHStats/playerHStats as well. No player stats change from NPC-only encounters. Use kind history for confirmed pregnancy/parentage/birth, which must not count as a new intimate encounter. Body/history facts and last partners remain supported. No new model/API calls are needed.`;

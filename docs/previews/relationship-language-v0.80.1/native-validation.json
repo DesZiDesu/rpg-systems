@@ -1,0 +1,126 @@
+{
+  "version": "0.80.1",
+  "host": "Actual local SillyTavern",
+  "controlledReplies": true,
+  "liveProviderTest": false,
+  "privateChatImported": false,
+  "allNewFixturesAdults": true,
+  "requests": [
+    {
+      "device": "mobile",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "fixture": true,
+      "contract": true
+    }
+  ],
+  "checks": [
+    {
+      "device": "mobile",
+      "trustBefore": 40,
+      "trustAfter": 43,
+      "interestBefore": 20,
+      "interestAfter": 21,
+      "npcPairTrustBefore": 10,
+      "npcPairTrustAfter": 11,
+      "positiveCasesNoWarnings": true,
+      "questionsStayUnconfirmed": true,
+      "noOpConversationUnchanged": true,
+      "bilingualNamePreserved": true,
+      "mainAndDockAgree": true,
+      "reloadIdempotent": true,
+      "ownerIsolation": true,
+      "sevenExplicitModelRequestsOnly": true
+    },
+    {
+      "device": "desktop",
+      "trustBefore": 40,
+      "trustAfter": 43,
+      "interestBefore": 20,
+      "interestAfter": 21,
+      "npcPairTrustBefore": 10,
+      "npcPairTrustAfter": 11,
+      "positiveCasesNoWarnings": true,
+      "questionsStayUnconfirmed": true,
+      "noOpConversationUnchanged": true,
+      "bilingualNamePreserved": true,
+      "mainAndDockAgree": true,
+      "reloadIdempotent": true,
+      "ownerIsolation": true,
+      "sevenExplicitModelRequestsOnly": true
+    }
+  ],
+  "errors": [],
+  "hostVersion": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "pass": true
+}
