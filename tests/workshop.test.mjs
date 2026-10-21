@@ -31,7 +31,7 @@ test('missing output is rejected and history is bounded before persistence',()=>
 
 test('bundled releases match their catalog hashes and byte counts',async()=>{
  const catalog=validateCatalog(JSON.parse(await readFile(new URL('../src/workshop/catalog.json',import.meta.url))));
- assert.deepEqual(catalog.addons.map(a=>a.id),['great-sage','field-notes']);
+ assert.deepEqual(catalog.addons.map(a=>a.id),['great-sage','field-notes','death-note']);
  for(const addon of catalog.addons)for(const release of addon.releases){
   const bytes=await readFile(new URL('../src/workshop/'+release.path,import.meta.url));
   assert.equal(bytes.byteLength,release.bytes);assert.equal(await hashBytes(bytes),release.sha256);

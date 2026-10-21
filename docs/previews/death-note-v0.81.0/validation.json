@@ -1,0 +1,633 @@
+{
+  "baseRevision": "8362ec2",
+  "roleForgeVersion": "0.81.0",
+  "addonVersion": "0.3.0",
+  "realSillyTavern": true,
+  "liveModel": false,
+  "controlledSSE": true,
+  "theme": "Dark Lite",
+  "devices": [
+    {
+      "device": "desktop",
+      "mobileTouchEmulation": false,
+      "nativeWorkshopInstall": true,
+      "noFreeItem": true,
+      "maskedNPCManagement": true,
+      "canonicalSearchHidden": true,
+      "falseNameNoDeath": true,
+      "trueNameDeath": true,
+      "noUserMessage": true,
+      "unsentDraftPreserved": true,
+      "eyesExplicitConsent": true,
+      "lifespanCostPersists": true,
+      "lendingRetainsRights": true,
+      "provenReturnRestoresInventory": true,
+      "borrowerBlocksWriting": true,
+      "relinquishmentTransfersRights": true,
+      "lastOwnershipLosesEyesAndMemories": true,
+      "reloadPersists": true,
+      "otherCardUnaffected": true,
+      "discoveryChoicesAboveChatbar": true,
+      "touchDoesNotTake": true,
+      "takeAddsRealInventoryItem": true,
+      "dockDraftOpensPaper": true,
+      "dropRetainsOwnership": true
+    },
+    {
+      "device": "mobile",
+      "mobileTouchEmulation": true,
+      "nativeWorkshopInstall": true,
+      "noFreeItem": true,
+      "maskedNPCManagement": true,
+      "canonicalSearchHidden": true,
+      "falseNameNoDeath": true,
+      "trueNameDeath": true,
+      "noUserMessage": true,
+      "unsentDraftPreserved": true,
+      "eyesExplicitConsent": true,
+      "lifespanCostPersists": true,
+      "lendingRetainsRights": true,
+      "provenReturnRestoresInventory": true,
+      "borrowerBlocksWriting": true,
+      "relinquishmentTransfersRights": true,
+      "lastOwnershipLosesEyesAndMemories": true,
+      "reloadPersists": true,
+      "otherCardUnaffected": true,
+      "discoveryChoicesAboveChatbar": true,
+      "touchDoesNotTake": true,
+      "takeAddsRealInventoryItem": true,
+      "dockDraftOpensPaper": true,
+      "dropRetainsOwnership": true
+    }
+  ],
+  "requests": [
+    {
+      "device": "desktop",
+      "mode": "alias",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "false",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "real",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "valid",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "alias-eyes",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "discover",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "false-rule-attack",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "false-rule-attack",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "alias",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "false-bad",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "scheduled",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "advance",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "alias-eyes",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "desktop",
+      "mode": "multi",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "alias",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "false",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "real",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "valid",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "alias-eyes",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "discover",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "false-rule-attack",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "false-rule-attack",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "action",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "alias",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "false-bad",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "scheduled",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "advance",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "alias-eyes",
+      "controlled": true,
+      "draftExcluded": true
+    },
+    {
+      "device": "mobile",
+      "mode": "multi",
+      "controlled": true,
+      "draftExcluded": true
+    }
+  ],
+  "layouts": [
+    {
+      "device": "desktop",
+      "stage": "cover",
+      "viewport": 1440,
+      "height": 1000,
+      "left": 140,
+      "right": 1300,
+      "bottom": 970
+    },
+    {
+      "device": "desktop",
+      "stage": "write",
+      "viewport": 1440,
+      "height": 1000,
+      "left": 140,
+      "right": 1300,
+      "bottom": 970,
+      "scroll": 639,
+      "width": 639
+    },
+    {
+      "device": "desktop",
+      "stage": "write-768",
+      "viewport": 768,
+      "height": 1000,
+      "left": 15.359375,
+      "right": 752.625,
+      "bottom": 970,
+      "scroll": 398,
+      "width": 398
+    },
+    {
+      "device": "desktop",
+      "stage": "write-1440",
+      "viewport": 1440,
+      "height": 1000,
+      "left": 140,
+      "right": 1300,
+      "bottom": 970,
+      "scroll": 639,
+      "width": 639
+    },
+    {
+      "device": "desktop",
+      "stage": "rules",
+      "viewport": 1440,
+      "height": 1000,
+      "left": 140,
+      "right": 1300,
+      "bottom": 970,
+      "scroll": 639,
+      "width": 639
+    },
+    {
+      "device": "mobile",
+      "stage": "cover",
+      "viewport": 390,
+      "height": 844,
+      "left": 0,
+      "right": 390,
+      "bottom": 844
+    },
+    {
+      "device": "mobile",
+      "stage": "write",
+      "viewport": 390,
+      "height": 844,
+      "left": 0,
+      "right": 390,
+      "bottom": 844,
+      "scroll": 348,
+      "width": 348
+    },
+    {
+      "device": "mobile",
+      "stage": "write-320",
+      "viewport": 320,
+      "height": 844,
+      "left": 0,
+      "right": 320,
+      "bottom": 844,
+      "scroll": 278,
+      "width": 278
+    },
+    {
+      "device": "mobile",
+      "stage": "write-390",
+      "viewport": 390,
+      "height": 844,
+      "left": 0,
+      "right": 390,
+      "bottom": 844,
+      "scroll": 348,
+      "width": 348
+    },
+    {
+      "device": "mobile",
+      "stage": "write-430",
+      "viewport": 430,
+      "height": 844,
+      "left": 0,
+      "right": 430,
+      "bottom": 844,
+      "scroll": 388,
+      "width": 388
+    },
+    {
+      "device": "mobile",
+      "stage": "rules",
+      "viewport": 390,
+      "height": 844,
+      "left": 0,
+      "right": 390,
+      "bottom": 844,
+      "scroll": 350,
+      "width": 350
+    }
+  ],
+  "errors": [],
+  "videos": [],
+  "hostVersion": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "paperEditing": [
+    {
+      "device": "desktop",
+      "tapToWrite": true,
+      "drag": "mouse",
+      "cancelRestoresPosition": true,
+      "acceptPersistsPosition": true,
+      "fontSliderPersists": true,
+      "pageTurnsRetainText": true,
+      "closingRetainsText": true,
+      "noAIForLayout": true,
+      "noFaceCheckbox": true,
+      "clearRetainsDeaths": true,
+      "severalNamesOneContinue": true
+    },
+    {
+      "device": "mobile",
+      "tapToWrite": true,
+      "drag": "CDP touch gesture",
+      "cancelRestoresPosition": true,
+      "acceptPersistsPosition": true,
+      "fontSliderPersists": true,
+      "pageTurnsRetainText": true,
+      "closingRetainsText": true,
+      "noAIForLayout": true,
+      "noFaceCheckbox": true,
+      "clearRetainsDeaths": true,
+      "severalNamesOneContinue": true
+    }
+  ],
+  "languages": [
+    {
+      "device": "desktop",
+      "englishRules": true,
+      "englishControls": true,
+      "thaiControls": true,
+      "authoredTextUnchanged": true,
+      "borderlessArrows": true,
+      "referenceSealLoaded": true,
+      "localFonts": true
+    },
+    {
+      "device": "mobile",
+      "englishRules": true,
+      "englishControls": true,
+      "thaiControls": true,
+      "authoredTextUnchanged": true,
+      "borderlessArrows": true,
+      "referenceSealLoaded": true,
+      "localFonts": true
+    }
+  ],
+  "rules": [
+    {
+      "device": "desktop",
+      "total": 71,
+      "forwardBackward": true,
+      "lastBoundary": true,
+      "blackPages": true
+    },
+    {
+      "device": "mobile",
+      "total": 71,
+      "forwardBackward": true,
+      "lastBoundary": true,
+      "blackPages": true
+    }
+  ],
+  "eyeViews": [
+    {
+      "device": "desktop",
+      "claimedNameRetained": true,
+      "trueNameShownSeparately": true,
+      "originalDateVisible": true,
+      "ownerDateHidden": true,
+      "color": "rgb(231, 130, 135)"
+    },
+    {
+      "device": "mobile",
+      "claimedNameRetained": true,
+      "trueNameShownSeparately": true,
+      "originalDateVisible": true,
+      "ownerDateHidden": true,
+      "color": "rgb(231, 130, 135)"
+    }
+  ],
+  "manuscripts": [
+    {
+      "device": "desktop",
+      "appendedAsReadablePage": true,
+      "notAdvertisedAsFakeInReader": true,
+      "doesNotChangeHPOrEyes": true,
+      "crossedOutWithoutDeletingCanon": true,
+      "maliciousRuleDeathPatchBlocked": true
+    },
+    {
+      "device": "mobile",
+      "appendedAsReadablePage": true,
+      "notAdvertisedAsFakeInReader": true,
+      "doesNotChangeHPOrEyes": true,
+      "crossedOutWithoutDeletingCanon": true,
+      "maliciousRuleDeathPatchBlocked": true
+    }
+  ],
+  "extendedChecks": [
+    {
+      "device": "desktop",
+      "ordinaryReplyInvalidDeathPatchBlocked": true,
+      "engineRejectsFalseNameDespiteBadModelProtocol": true,
+      "scheduledTargetStaysAlive": true,
+      "laterNormalContinuationConfirmsDeath": true,
+      "storyClockReachesDueTime": true
+    },
+    {
+      "device": "mobile",
+      "ordinaryReplyInvalidDeathPatchBlocked": true,
+      "engineRejectsFalseNameDespiteBadModelProtocol": true,
+      "scheduledTargetStaysAlive": true,
+      "laterNormalContinuationConfirmsDeath": true,
+      "storyClockReachesDueTime": true
+    }
+  ],
+  "pass": true,
+  "unit": {
+    "command": "npm test",
+    "tests": 1644,
+    "passed": 1644,
+    "failed": 0
+  },
+  "releaseSmoke": [
+    {
+      "device": "desktop",
+      "version": "0.81.0",
+      "freshLoad": true,
+      "missingRandomUUID": true,
+      "inkSaved": true,
+      "englishRules": true,
+      "referenceSeal": true,
+      "errors": []
+    },
+    {
+      "device": "mobile",
+      "version": "0.81.0",
+      "freshLoad": true,
+      "missingRandomUUID": true,
+      "inkSaved": true,
+      "englishRules": true,
+      "referenceSeal": true,
+      "errors": []
+    }
+  ]
+}

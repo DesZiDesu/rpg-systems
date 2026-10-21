@@ -423,3 +423,10 @@
 .trpg-role-image{display:block;width:1.6em;height:1.6em;object-fit:contain;flex:none}
 .trpg-custom-icon-picker{grid-column:1/-1;min-width:0;border-block:1px solid color-mix(in srgb,currentColor 16%,transparent);padding-block:12px}.trpg-custom-icon-picker>summary{cursor:pointer;min-height:36px}.trpg-custom-icon-preview{display:flex;align-items:center;padding:12px;min-height:54px;font-size:28px}.trpg-custom-icon-picker input{max-width:100%;box-sizing:border-box}.trpg-servant-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;max-height:280px;overflow:auto;overscroll-behavior:contain;margin-block:12px}.trpg-servant-choice{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 4px!important;min-width:0;min-height:76px}.trpg-servant-choice img{width:36px;height:36px;object-fit:contain}.trpg-servant-choice small{font-size:9px;line-height:1.3;overflow-wrap:anywhere}.trpg-custom-icon-preview>.trpg-role-image{width:48px;height:48px}
 .trpg-role>.trpg-role-image{width:24px;height:24px;min-width:24px}.trpg-list-emblem>.trpg-role-image{width:32px;height:32px}
+/* Optional notebook sight: the claimed identity stays visible beside the truth. */
+.trpg-manager .rf-npc-true-name,.trpg-chat .rf-npc-true-name{color:#e78287}
+.trpg-manager .rf-npc-original-lifespan,.trpg-chat .rf-npc-original-lifespan{display:block;color:#ce777e;font-size:10px;font-weight:400;line-height:1.6;letter-spacing:.025em;overflow-wrap:anywhere}
+.trpg-list-copy strong{overflow-wrap:anywhere}
+.trpg-manager .trpg-list-copy strong.rf-npc-eye-identity{display:block;-webkit-line-clamp:unset;overflow:visible}
+.trpg-manager .trpg-list-copy strong.rf-npc-true-name{color:#e78287}
+.trpg-manager .trpg-list-copy .rf-npc-original-lifespan{white-space:normal;overflow:visible}

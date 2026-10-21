@@ -1,7 +1,7 @@
-import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog} from './core.js?v=0.80.2';
-import {createStore,downloadPack} from './client.js?v=0.80.2';
-import {createSageScene} from './scene.js?v=0.80.2';
-import {createAddonLaunchers} from './launchers.js?v=0.80.2';
+import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog} from './core.js?v=0.81.0';
+import {createStore,downloadPack} from './client.js?v=0.81.0';
+import {createSageScene} from './scene.js?v=0.81.0';
+import {createAddonLaunchers} from './launchers.js?v=0.81.0';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Use SillyTavern's bundled icon family; Great Sage has its actual orb identity.
 const icons={close:'xmark',back:'arrow-left',arrow:'arrow-right',download:'download',search:'magnifying-glass',grid:'compass',sage:'atom',book:'book-open',check:'check',shield:'shield-halved',settings:'sliders',trash:'trash-can',clock:'clock-rotate-left',external:'arrow-up-right-from-square',refresh:'arrows-rotate',upload:'arrow-up-from-bracket',box:'box-archive',workshop:'hammer',chat:'comment-dots',installed:'layer-group',spark:'wand-magic-sparkles',sound:'volume-high',stop:'stop',chevron:'chevron-right',globe:'globe'};
@@ -22,6 +22,7 @@ export async function mountWorkshop({api,dock,base=new URL('./',import.meta.url)
  let voiceBusy=false,voiceSerial=0;
  const launchers=createAddonLaunchers({scene,onOpen:id=>launchAddon(id).catch(e=>note(e.message,true)),onLayout:layout=>{if(!canMutate())return;const next=copy(profile);next.launchers=layout;saveProfile(next).catch(e=>note(e.message,true));}});
  const installed=id=>packages.find(p=>p.id===id),addon=id=>catalog.addons.find(p=>p.id===id),enabled=id=>Boolean(profile?.key===key&&profile?.enabled.includes(id)),compatible=p=>compare(api.version,p.minimumRoleForge)>=0;
+ api.isAddonEnabled=enabled;
  const btn=(label,action,cls='',extra='')=>`<button type="button" data-ws-action="${action}" class="${cls}" ${extra}>${label}</button>`;
  const current=()=>api.context();
  const canMutate=()=>!busy&&!analysisBusy&&Boolean(profile&&key);
@@ -43,10 +44,10 @@ export async function mountWorkshop({api,dock,base=new URL('./',import.meta.url)
   for(const b of root.querySelectorAll('[data-speech-control]')){b.dataset.wsAction=voiceBusy?'voice-stop':'voice-result';b.innerHTML=icon(voiceBusy?'stop':'sound')+(voiceBusy?'หยุดเสียง':profile.history.length?'ฟังรายงาน':'ลองฟังเสียง');}
   scene.refresh();
  }
- async function launchAddon(id){if(!installed(id))return;if(id===SAGE)openSage();else navigate('notes');if(!root.open)root.showModal();}
+ async function launchAddon(id){if(!installed(id))return;if(id==='death-note'){if(!enabled(id)){detailId=id;navigate('detail');if(!root.open)root.showModal();return;}root.close();await api.openAddon?.(id);return;}if(id===SAGE)openSage();else navigate('notes');if(!root.open)root.showModal();}
  function note(message,error=false){notice=message;noticeError=error;render();}
  function label(id){return enabled(id)?'<span class="ws-status is-on">เปิดในแชทนี้</span>':installed(id)?'<span class="ws-status">ติดตั้งแล้ว</span>':'<span class="ws-status">ยังไม่ได้ติดตั้ง</span>';}
- function packIcon(p){return`<div class="ws-pack-icon ${p.id===SAGE?'is-sage':p.color}" aria-hidden="true">${p.id===SAGE?'<canvas data-addon-orb></canvas>':icon('book')}</div>`;}
+ function packIcon(p){return`<div class="ws-pack-icon ${p.id===SAGE?'is-sage':p.id==='death-note'?'is-death-note':p.color}" aria-hidden="true">${p.id===SAGE?'<canvas data-addon-orb></canvas>':p.id==='death-note'?'<span>DEATH<br>NOTE</span>':icon('book')}</div>`;}
  function card(p){
   const have=installed(p.id),latest=p.releases.at(-1),update=have&&compare(latest.version,have.version)>0;
   return`<article class="ws-card" data-ws-card="${p.id}"><div class="ws-card-top">${packIcon(p)}<div class="ws-card-copy"><div class="ws-card-title"><h3>${esc(p.name)}</h3>${!compatible(p)?'<span class="ws-status">'+esc(p.minimumRoleForge)+'+</span>':have?'<span class="ws-status is-on">'+(update?'มีอัปเดต':'ติดตั้งแล้ว')+'</span>':''}</div><p>${esc(p.subtitle||p.world)}</p></div></div><div class="ws-card-bottom"><span class="ws-card-meta">${icon(p.kind==='system'?'spark':'book')}${esc(p.world)}</span><div class="ws-card-actions">${have?btn('เปิด','launch-addon','ws-card-launch','data-id="'+p.id+'"'):''}${btn((have?'จัดการ':'รายละเอียด')+icon('chevron'),'detail','ws-link','data-id="'+p.id+'"')}${have?toggle(p.id,enabled(p.id),!canMutate()):''}</div></div></article>`;
@@ -91,7 +92,7 @@ export async function mountWorkshop({api,dock,base=new URL('./',import.meta.url)
   if(root.open)root.querySelector('.rfws-main').scrollTop=before;
   for(const c of root.querySelectorAll('.rfsg-stage canvas'))scene.attach(c);
   for(const c of root.querySelectorAll('[data-workshop-orb],[data-start-orb],[data-addon-orb]'))scene.attachOrb(c);
-  renderPanel();launchers.sync({packs:packages,profile,key});scene.refresh();
+  renderPanel();launchers.sync({packs:packages,profile,key});scene.refresh();api.refreshAddons?.();
  }
 
  function renderPanel(){

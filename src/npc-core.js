@@ -1,5 +1,5 @@
-import {customIconSource} from './custom-icons.js?v=0.80.2';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.80.2';
+import {customIconSource} from './custom-icons.js?v=0.81.0';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.81.0';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -349,6 +349,7 @@ export function resolveNpc(records, value) {
 // A generated dialogue header occasionally puts a unique title in its name slot.
 // Resolve it to the recorded person, while preserving canonical name and title.
 export function resolveNpcSpeaker(records, value) {
+ if(typeof value==='string'){const byId=records.find(p=>p.id===value);if(byId)return byId;}
  const raw=typeof value==='string'?{name:value}:value||{};
  const exact=(raw.npcId||raw.id)&&records.find(p=>p.id===(raw.npcId||raw.id));if(exact)return exact;
  const wanted=keyName(raw.npcName||raw.name);if(!wanted)return null;

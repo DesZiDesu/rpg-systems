@@ -1,6 +1,6 @@
-import {sha256} from '../vendor/js-sha256/index.js?v=0.80.2';
+import {sha256} from '../vendor/js-sha256/index.js?v=0.81.0';
 export const FORMAT='roleforge-workshop-addon';
-export const addonIds=['great-sage','field-notes'];
+export const addonIds=['great-sage','field-notes','death-note'];
 export const localId=()=>globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export async function hashBytes(bytes){
  if(globalThis.crypto?.subtle){const result=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(result)].map(n=>n.toString(16).padStart(2,'0')).join('');}
@@ -9,7 +9,7 @@ export async function hashBytes(bytes){
 export const LIMIT=256*1024;
 export const SAGE='great-sage';
 export const SCOPES=['scene','stats','inventory','skills'];
-const allowed=new Set(['sage-panel','read-scene','read-stats','read-inventory','read-skills','analysis-on-request','local-follow-up','read-notes','voice-on-request']);
+const allowed=new Set(['sage-panel','read-scene','read-stats','read-inventory','read-skills','analysis-on-request','local-follow-up','read-notes','voice-on-request','read-known-npcs','continue-scene-on-request','manage-notebook-inventory']);
 export const copy=value=>structuredClone(value);
 export const clean=(value,max=4000)=>typeof value==='string'?value.trim().slice(0,max):'';
 export function version(value){if(!/^\d+\.\d+\.\d+$/.test(value||''))throw Error('รูปแบบเวอร์ชันไม่ถูกต้อง');return value.split('.').map(Number);}
@@ -31,7 +31,7 @@ export function validateCatalog(raw){
  }
  return raw;
 }
-export function validatePackage(raw,host='0.80.2'){
+export function validatePackage(raw,host='0.81.0'){
  if(!raw||![FORMAT,'roleforge-workshop-addon-preview'].includes(raw.format)||raw.schema!==1||!addonIds.includes(raw.id))throw Error('ไม่รองรับแพ็กนี้');
  version(raw.version);version(raw.minimumRoleForge);
  if(compare(host,raw.minimumRoleForge)<0)throw Error(`ต้องใช้ RoleForge ${raw.minimumRoleForge} ขึ้นไป`);
@@ -44,7 +44,7 @@ export function validatePackage(raw,host='0.80.2'){
 export function defaultProfile(key){return{key,enabled:[],launchers:{floating:true,wand:true,x:1,y:.72},sage:{showPanel:true,followReplies:false,tone:'calm',motion:true,theme:'prismatic',voiceId:'',voiceAuto:false,sources:Object.fromEntries(SCOPES.map(k=>[k,true]))},history:[]};}
 export function normalizeProfile(raw,key){
  const p=defaultProfile(key);if(!raw)return p;
- p.enabled=Array.isArray(raw.enabled)?[...new Set(raw.enabled.filter(x=>[SAGE,'field-notes'].includes(x)))]:[];
+ p.enabled=Array.isArray(raw.enabled)?[...new Set(raw.enabled.filter(x=>addonIds.includes(x)))]:[];
  p.launchers={floating:raw.launchers?.floating!==false,wand:raw.launchers?.wand!==false,x:Number.isFinite(raw.launchers?.x)?Math.min(1,Math.max(0,raw.launchers.x)):1,y:Number.isFinite(raw.launchers?.y)?Math.min(1,Math.max(0,raw.launchers.y)):.72};
  p.sage.showPanel=raw.sage?.showPanel!==false;p.sage.followReplies=raw.sage?.followReplies===true;
  p.sage.tone=['calm','concise','detailed'].includes(raw.sage?.tone)?raw.sage.tone:'calm';

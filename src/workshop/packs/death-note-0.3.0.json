@@ -1,0 +1,23 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.81.0",
+  "id": "death-note",
+  "kind": "system",
+  "name": "Death Note",
+  "version": "0.3.0",
+  "capabilities": [
+    "read-inventory",
+    "read-known-npcs",
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-notebook-inventory"
+  ],
+  "notes": [
+    {
+      "id": "notebook",
+      "title": "สมุดจากโลกของยมทูต",
+      "text": "สมุดกระดาษว่างที่แตะเขียน ย้าย และปรับขนาดได้ ใช้เหนือ chatbar พร้อมใบหน้าจากโรล ชื่อจริงและอายุขัยจากดวงตา กติกาไทย/อังกฤษ 71 หน้า และกฎปลอมที่ไม่เปลี่ยนอำนาจจริง"
+    }
+  ]
+}
