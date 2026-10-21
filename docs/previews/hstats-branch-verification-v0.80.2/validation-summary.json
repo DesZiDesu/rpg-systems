@@ -1,0 +1,41 @@
+{
+  "version": "0.80.2",
+  "baseRevision": "845b984e33961411f518b1f0a118e728454abd26",
+  "unitTests": {
+    "passed": 1561,
+    "failed": 0,
+    "log": "hstats-branch-0802-unit.log"
+  },
+  "focusedUnitTests": {
+    "passed": 112,
+    "failed": 0
+  },
+  "syntaxCheck": true,
+  "nativeHStats": {
+    "pass": true,
+    "devices": [
+      "Chromium 390x844 touch emulation",
+      "Chromium 1440x1000 desktop"
+    ],
+    "explicitControlledGenerations": 20,
+    "liveModelProviderTested": false,
+    "privateChatImported": false
+  },
+  "sourceSha256": {
+    "index.js": "65fc5ba9a318fe230a62e85fd49e9e101e1b258c6485df16d4efc085fe578e4e",
+    "src/h-stats.js": "e33485fb75234ff061ba604119785971479bbacd48021e9f8610091fad2ecc5d",
+    "manifest.json": "c29a35f93f60348cf923b1735f834b1bea59398f8e713d3e25eb5adc8fff9935"
+  },
+  "nativeBranchRegression": {
+    "pass": true,
+    "devices": [
+      "desktop",
+      "mobile Chromium touch emulation"
+    ],
+    "modelCalls": 0,
+    "legacyCheckpoint": true,
+    "missingPointBlocksFuture": true,
+    "explicitStateImportRecovers": true,
+    "ordinaryNewChatContinuity": true
+  }
+}

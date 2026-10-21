@@ -1,12 +1,14 @@
 # RoleForge
 
-**Public release: 0.80.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.80.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+**Fixed in 0.80.2:** explicit H-Stats dossier corrections survive swipe/rollback without copying later story counters into earlier checkpoints. Branch continuation is verified with new replies, NPC-to-NPC history, both H-Stats views and reload. [Thai verification report](docs/hstats-branch-verification-v0.80.2.th.md).
 
 **Fixed in 0.80.1:** relationship evidence recognizes additional Thai trust/feeling statements and explicit bilingual player names. Questions remain unconfirmed, trust withdrawals stay separate from positive support, and rejected proposals retain a short diagnostic excerpt. Valid changes save consistently in the main and chatbar views. [Thai details and native browser validation](docs/relationship-language-v0.80.1.th.md).
 

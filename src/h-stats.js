@@ -74,3 +74,51 @@ export function updateHStat(previous, field, verb, value) {
     const next = hStats({[field]: value}, current);
     return next[field] === current[field] ? null : next;
 }
+
+// Explicit dossier corrections survive live swipe/rollback. Keep the old
+// story values of every untouched field, and leave the Branch journal alone:
+// a new fork of an earlier message must still recover that earlier point.
+export function retainHStatsEdits(history, before, after, packedAfter = after) {
+    if (!Array.isArray(history?.entries)) return;
+    const previous = new Map((before.npcs || []).map(npc => [npc.id, npc]));
+    const snapshots = history.entries.flatMap(entry => [entry.baseState,
+        ...Object.values(entry.variants || {}).map(variant => variant.state)]).filter(Boolean);
+    for (const npc of after.npcs || []) {
+        if (['__proto__', 'constructor', 'prototype'].includes(npc.id)) continue;
+        const old = previous.get(npc.id);
+        if (!old) continue;
+        const confirmed = new Set((old.hStatsGenerated || []).filter(key => !(npc.hStatsGenerated || []).includes(key)));
+        const fields = H_FIELDS.map(field => field.key).filter(key =>
+            old.hStats?.[key] !== npc.hStats?.[key] || confirmed.has(key));
+        if (!fields.length) continue;
+        for (const snapshot of snapshots) {
+            let target = snapshot.npcs?.find(value => value.id === npc.id);
+            if (target) {
+                target.hStats ||= {};
+                for (const key of fields) target.hStats[key] = npc.hStats[key];
+            } else {
+                const scope = snapshot.npcScopes, packed = packedAfter.npcScopes;
+                if (npc.npcScope !== 'character' || !scope || scope.owner !== npc.npcOwner
+                    || packed?.owner !== scope.owner || scope.archiveId !== packed.archiveId) continue;
+                scope.overrides ||= {}; scope.bases ||= {};
+                target = scope.overrides[npc.id] ||= {};
+                const baseline = scope.bases[npc.id] ||= {};
+                target.hStats ||= {}; baseline.hStats ||= {};
+                for (const key of fields) {
+                    if (Object.hasOwn(packed.overrides?.[npc.id]?.hStats || {}, key)) {
+                        target.hStats[key] = packed.overrides[npc.id].hStats[key];
+                        if (Object.hasOwn(packed.bases?.[npc.id]?.hStats || {}, key))
+                            baseline.hStats[key] = structuredClone(packed.bases[npc.id].hStats[key]);
+                        else delete baseline.hStats[key];
+                    } else {
+                        delete target.hStats[key]; delete baseline.hStats[key];
+                    }
+                }
+            }
+            // Remove only annotations the user confirmed, preserving other
+            // fields' original provenance in each historical snapshot.
+            if (Array.isArray(target.hStatsGenerated))
+                target.hStatsGenerated = target.hStatsGenerated.filter(key => !fields.includes(key));
+        }
+    }
+}

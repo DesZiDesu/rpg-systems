@@ -1,0 +1,161 @@
+{
+  "version": "0.80.2",
+  "host": "Actual local SillyTavern",
+  "theme": "Dark Lite",
+  "controlledReplies": true,
+  "liveProviderTest": false,
+  "privateChatImported": false,
+  "allNewFixturesAdults": true,
+  "requests": [
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "mobile",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    },
+    {
+      "device": "desktop",
+      "contract": true
+    }
+  ],
+  "checks": [
+    {
+      "device": "mobile",
+      "nativeOldPointBranch": true,
+      "futureExcluded": true,
+      "initial": {
+        "trust": 41,
+        "npcTrust": 11,
+        "love": 16,
+        "interest": 21,
+        "births": 0
+      },
+      "final": {
+        "trust": 44,
+        "npcTrust": 14,
+        "love": 17,
+        "interest": 22,
+        "births": 2
+      },
+      "childProgresses": true,
+      "npcOnlyCountersIsolated": true,
+      "sameSceneRepeatLimit": true,
+      "freshSceneProgression": true,
+      "reloadNoReplay": true,
+      "progressionAfterReload": true,
+      "mainAndDockAgree": true,
+      "swipeReplacesCounters": true,
+      "manualBodyEditSurvivesSwipe": true,
+      "parentUnchanged": true
+    },
+    {
+      "device": "desktop",
+      "nativeOldPointBranch": true,
+      "futureExcluded": true,
+      "initial": {
+        "trust": 41,
+        "npcTrust": 11,
+        "love": 16,
+        "interest": 21,
+        "births": 0
+      },
+      "final": {
+        "trust": 44,
+        "npcTrust": 14,
+        "love": 17,
+        "interest": 22,
+        "births": 2
+      },
+      "childProgresses": true,
+      "npcOnlyCountersIsolated": true,
+      "sameSceneRepeatLimit": true,
+      "freshSceneProgression": true,
+      "reloadNoReplay": true,
+      "progressionAfterReload": true,
+      "mainAndDockAgree": true,
+      "swipeReplacesCounters": true,
+      "manualBodyEditSurvivesSwipe": true,
+      "parentUnchanged": true
+    }
+  ],
+  "errors": [],
+  "hostVersion": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "pass": true
+}

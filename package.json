@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.80.1",
+  "version": "0.80.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -66,6 +66,7 @@
     "test:branches": "node --test tests/chat-branches.test.mjs",
     "test:branches:real": "node tests/chat-branches.real.browser.mjs",
     "test:hstats-dossier:real": "node tests/hstats-dossier.real.browser.mjs",
-    "test:relationships:language:real": "node tests/relationship-language.real.browser.mjs"
+    "test:relationships:language:real": "node tests/relationship-language.real.browser.mjs",
+    "test:hstats-branches:real": "node tests/hstats-branches.real.browser.mjs"
   }
 }
