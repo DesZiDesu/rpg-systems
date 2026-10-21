@@ -1,4 +1,4 @@
-import {sha256} from '../vendor/js-sha256/index.js?v=0.81.1';
+import {sha256} from '../vendor/js-sha256/index.js?v=0.81.2';
 export const FORMAT='roleforge-workshop-addon';
 export const addonIds=['great-sage','field-notes','death-note'];
 export const localId=()=>globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -7,6 +7,22 @@ export async function hashBytes(bytes){
  return sha256(new Uint8Array(bytes));
 }
 export const LIMIT=256*1024;
+// Git on Windows may check out text packages as CRLF. Verify the catalog's
+// canonical LF bytes too; this does not accept changed JSON contents/spacing.
+export async function verifiedPackageBytes(bytes,expectedHash){
+ if(!(bytes instanceof ArrayBuffer)||bytes.byteLength>LIMIT)throw Error('แพ็กมีขนาดเกินกำหนด');
+ const mismatch=()=>Error('ไฟล์ดาวน์โหลดไม่ตรงกับแพ็กเดิม คลังที่ติดตั้งอยู่ยังถูกเก็บไว้');
+ if(!/^[a-f0-9]{64}$/.test(expectedHash||''))throw mismatch();
+ if(await hashBytes(bytes)===expectedHash)return bytes;
+ const source=new Uint8Array(bytes),offset=source[0]===0xef&&source[1]===0xbb&&source[2]===0xbf?3:0;
+ let text;try{text=new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(source.subarray(offset));}catch{throw mismatch();}
+ const normalized=new TextEncoder().encode(text.replace(/\r\n/g,'\n'));
+ if(await hashBytes(normalized)!==expectedHash)throw mismatch();
+ return normalized.buffer;
+}
+export function releaseDownloadUrl(release,base){
+ const url=new URL(release.path,base);url.searchParams.set('sha256',release.sha256);return url;
+}
 export const SAGE='great-sage';
 export const SCOPES=['scene','stats','inventory','skills'];
 const allowed=new Set(['sage-panel','read-scene','read-stats','read-inventory','read-skills','analysis-on-request','local-follow-up','read-notes','voice-on-request','read-known-npcs','continue-scene-on-request','manage-notebook-inventory']);
@@ -31,7 +47,7 @@ export function validateCatalog(raw){
  }
  return raw;
 }
-export function validatePackage(raw,host='0.81.1'){
+export function validatePackage(raw,host='0.81.2'){
  if(!raw||![FORMAT,'roleforge-workshop-addon-preview'].includes(raw.format)||raw.schema!==1||!addonIds.includes(raw.id))throw Error('ไม่รองรับแพ็กนี้');
  version(raw.version);version(raw.minimumRoleForge);
  if(compare(host,raw.minimumRoleForge)<0)throw Error(`ต้องใช้ RoleForge ${raw.minimumRoleForge} ขึ้นไป`);

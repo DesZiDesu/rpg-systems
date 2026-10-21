@@ -1,6 +1,6 @@
-import {localId} from '../core.js?v=0.81.1';
-import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.81.1';
-import {faceKnowledge} from './faces.js?v=0.81.1';
+import {localId} from '../core.js?v=0.81.2';
+import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.81.2';
+import {faceKnowledge} from './faces.js?v=0.81.2';
 // Chat-local notebook rules. Legacy journal keys remain readable after the preview. Canonical NPC records are never renamed.
 export const WORLD_EVENTS = 'roleforge_death_note_world_preview';
 export const WORLD_PROMPT = 'roleforge_death_note_world_preview';

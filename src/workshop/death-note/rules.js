@@ -1,4 +1,4 @@
-import {ENGLISH_RULES} from './rules-en.js?v=0.81.1';
+import {ENGLISH_RULES} from './rules-en.js?v=0.81.2';
 // Original Thai operational summaries; numbering follows a sequential reader,
 // retaining the manga labels where Japanese/Viz page numbering differs.
 export const RULE_SOURCES=Object.freeze({manga:'https://deathnote.fandom.com/wiki/Rules_of_the_Death_Note/Manga_Chapter_Rules',guide:'https://deathnote.fandom.com/wiki/Rules_of_the_Death_Note/How_to_Read_Rules',later:'https://deathnote.fandom.com/wiki/The_a-Kira_Story'});

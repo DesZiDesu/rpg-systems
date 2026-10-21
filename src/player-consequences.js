@@ -1,4 +1,4 @@
-import {parseStory} from './npc-core.js?v=0.81.1';
+import {parseStory} from './npc-core.js?v=0.81.2';
 
 const escape=value=>String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const resource='(?:HP|health|MP|mana|aura|stamina|ST|พลังชีวิต|มานา|ออร่า|เรี่ยวแรง|ความอึด)';

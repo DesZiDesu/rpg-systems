@@ -1,0 +1,3 @@
+# Workshop catalog hashes refer to the committed LF bytes on every platform.
+/src/workshop/catalog.json text eol=lf
+/src/workshop/packs/*.json text eol=lf

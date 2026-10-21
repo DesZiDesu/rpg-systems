@@ -1,7 +1,7 @@
-import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog} from './core.js?v=0.81.1';
-import {createStore,downloadPack} from './client.js?v=0.81.1';
-import {createSageScene} from './scene.js?v=0.81.1';
-import {createAddonLaunchers} from './launchers.js?v=0.81.1';
+import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog,releaseDownloadUrl} from './core.js?v=0.81.2';
+import {createStore,downloadPack} from './client.js?v=0.81.2';
+import {createSageScene} from './scene.js?v=0.81.2';
+import {createAddonLaunchers} from './launchers.js?v=0.81.2';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Use SillyTavern's bundled icon family; Great Sage has its actual orb identity.
 const icons={close:'xmark',back:'arrow-left',arrow:'arrow-right',download:'download',search:'magnifying-glass',grid:'compass',sage:'atom',book:'book-open',check:'check',shield:'shield-halved',settings:'sliders',trash:'trash-can',clock:'clock-rotate-left',external:'arrow-up-right-from-square',refresh:'arrows-rotate',upload:'arrow-up-from-bracket',box:'box-archive',workshop:'hammer',chat:'comment-dots',installed:'layer-group',spark:'wand-magic-sparkles',sound:'volume-high',stop:'stop',chevron:'chevron-right',globe:'globe'};
@@ -110,7 +110,7 @@ export async function mountWorkshop({api,dock,base=new URL('./',import.meta.url)
  async function saveProfile(next){const ticket=current(),id=epoch;if(!ticket.key||next.key!==ticket.key||ticket.key!==key||ticket.nonce!==nonce)return false;busy=true;render();try{const saved=await store.call('profile',{key:ticket.key,profile:next});if(id===epoch&&current().key===ticket.key&&current().nonce===ticket.nonce){profile=saved;return true;}return false;}finally{busy=false;render();}}
  async function enable(id,value){if(!canMutate())return;const next=copy(profile);next.enabled=value?[...new Set([...next.enabled,id])]:next.enabled.filter(x=>x!==id);if(await saveProfile(next)){if(id===SAGE&&!value){scene.reset();voiceSerial++;voiceBusy=false;api.voice?.stop();}note(value?`${addon(id).name} พร้อมใช้เฉพาะแชทนี้แล้ว`:`ปิด ${addon(id).name} แล้ว ประวัติยังอยู่`);}}
  async function install(id,update=false){if(busy||analysisBusy)return;const p=addon(id),release=p.releases.at(-1);if(!compatible(p))return;busy=true;progress='กำลังดาวน์โหลดแพ็ก…';notice='';render();
-  try{const bytes=await downloadPack(new URL(release.path,base),{progress:size=>{progress=`ดาวน์โหลด ${(size/1024).toFixed(1)} / ${(release.bytes/1024).toFixed(1)} KB`;render();}});
+  try{const bytes=await downloadPack(releaseDownloadUrl(release,base),{progress:size=>{progress=`ดาวน์โหลด ${(size/1024).toFixed(1)} / ${(release.bytes/1024).toFixed(1)} KB`;render();}});
    await store.call('install',{bytes,sha256:release.sha256,host:api.version,expectedId:id,expectedVersion:release.version},phase=>{progress=phase==='verify'?'กำลังตรวจสอบแพ็ก…':'กำลังบันทึกในเครื่อง…';render();});
    const snapshotKey=key,snapshotEpoch=epoch,snapshot=await store.call('snapshot',{key:snapshotKey});packages=snapshot.packs;if(snapshot.profile&&snapshotKey===key&&snapshotEpoch===epoch)profile=snapshot.profile;notice=update?'อัปเดตแล้ว การตั้งค่าและประวัติยังอยู่':'ติดตั้งแล้ว เลือกเปิดใช้กับแชทนี้ได้เลย';noticeError=false;
   }catch(e){notice=e.message;noticeError=true;}finally{busy=false;progress='';render();}

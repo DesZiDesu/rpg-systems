@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {validatePackage,collectFacts,normalizeProfile,analysisPrompt,validateAnalysis,compare,validateCatalog,hashBytes} from '../src/workshop/core.js';
+import {validatePackage,collectFacts,normalizeProfile,analysisPrompt,validateAnalysis,compare,validateCatalog,hashBytes,verifiedPackageBytes,releaseDownloadUrl,LIMIT} from '../src/workshop/core.js';
 import {createStore} from '../src/workshop/client.js';
 const raw=JSON.parse(await readFile(new URL('../src/workshop/packs/great-sage-1.0.0.json',import.meta.url)));
 test('only declared capabilities and supported host versions can install',()=>{
@@ -48,6 +48,25 @@ test('hash verification also works on a LAN without secure-context crypto',async
   Object.defineProperty(globalThis,'crypto',{configurable:true,value:undefined});
   assert.equal(await hashBytes(new TextEncoder().encode('abc')),'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
  }finally{if(descriptor)Object.defineProperty(globalThis,'crypto',descriptor);else delete globalThis.crypto;}
+});
+
+test('Windows CRLF and UTF-8 BOM retain the catalog checksum without allowing content edits',async()=>{
+ const catalog=JSON.parse(await readFile(new URL('../src/workshop/catalog.json',import.meta.url)));
+ for(const addon of catalog.addons)for(const release of addon.releases){
+  const original=await readFile(new URL('../src/workshop/'+release.path,import.meta.url),'utf8');
+  const encode=text=>new TextEncoder().encode(text).buffer;
+  for(const text of [original,original.replace(/\n/g,'\r\n'),'\ufeff'+original,'\ufeff'+original.replace(/\n/g,'\r\n')]){
+   const verified=await verifiedPackageBytes(encode(text),release.sha256);
+   assert.equal(await hashBytes(verified),release.sha256);
+   assert.equal(JSON.parse(new TextDecoder().decode(verified)).id,addon.id);
+  }
+  await assert.rejects(verifiedPackageBytes(encode(original.replace('"name":','"changedName":')),release.sha256),/ไม่ตรงกับแพ็ก/);
+  await assert.rejects(verifiedPackageBytes(encode(original+' '),release.sha256),/ไม่ตรงกับแพ็ก/);
+  const url=releaseDownloadUrl(release,'https://example.test/roleforge/src/workshop/');
+  assert.equal(url.pathname,'/roleforge/src/workshop/'+release.path);assert.equal(url.searchParams.get('sha256'),release.sha256);
+ }
+ await assert.rejects(verifiedPackageBytes(new Uint8Array([255,254]).buffer,'a'.repeat(64)),/ไม่ตรงกับแพ็ก/);
+ await assert.rejects(verifiedPackageBytes(new ArrayBuffer(LIMIT+1),'a'.repeat(64)),/เกินกำหนด/);
 });
 
 test('pre-release backup packages remain readable without accepting unknown addons',()=>{

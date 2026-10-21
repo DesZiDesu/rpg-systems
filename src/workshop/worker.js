@@ -1,4 +1,4 @@
-import {validatePackage,normalizeProfile,LIMIT,compare,hashBytes} from './core.js?v=0.81.1';
+import {validatePackage,normalizeProfile,LIMIT,compare,verifiedPackageBytes} from './core.js?v=0.81.2';
 let dbPromise;
 // Keep the prototype database name so existing local installations retain data.
 function db(){return dbPromise||=new Promise((resolve,reject)=>{const r=indexedDB.open('roleforge-workshop-preview-v1',1);r.onupgradeneeded=()=>{r.result.createObjectStore('packs',{keyPath:'id'});r.result.createObjectStore('profiles',{keyPath:'key'});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
@@ -11,8 +11,8 @@ self.onmessage=async({data:{id,type,payload}})=>{
   if(type==='snapshot')result={packs:await read('packs'),profile:payload.key?normalizeProfile(await read('profiles',payload.key),payload.key):null};
   else if(type==='install'){
    if(!(payload.bytes instanceof ArrayBuffer)||payload.bytes.byteLength>LIMIT)throw Error('แพ็กมีขนาดเกินกำหนด');progress('verify');
-   if(await hashBytes(payload.bytes)!==payload.sha256)throw Error('ไฟล์ดาวน์โหลดไม่ตรงกับแพ็กเดิม คลังที่ติดตั้งอยู่ยังถูกเก็บไว้');
-   const pack=validatePackage(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(payload.bytes)),payload.host);
+   const verified=await verifiedPackageBytes(payload.bytes,payload.sha256);
+   const pack=validatePackage(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(verified)),payload.host);
    if(pack.id!==payload.expectedId||pack.version!==payload.expectedVersion)throw Error('แพ็กไม่ตรงกับรายการที่เลือก');
    const old=await read('packs',pack.id);if(old&&compare(old.version,pack.version)>0)throw Error('ไม่ติดตั้งเวอร์ชันเก่าทับเวอร์ชันใหม่');
    progress('save');await write(['packs'],t=>t.objectStore('packs').put(pack));result=pack;
