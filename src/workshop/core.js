@@ -1,4 +1,4 @@
-import {sha256} from '../vendor/js-sha256/index.js?v=0.83.0';
+import {sha256} from '../vendor/js-sha256/index.js?v=0.83.1';
 export const FORMAT='roleforge-workshop-addon';
 export const addonIds=['great-sage','field-notes','death-note'];
 export const localId=()=>globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -61,11 +61,11 @@ export function validatePackage(raw,host='0.83.0'){
  const notes=raw.notes.map(n=>{if(!clean(n.id,80)||!clean(n.title,140)||!clean(n.text,10000))throw Error('บันทึกในแพ็กไม่ครบ');return{id:clean(n.id,80),title:clean(n.title,140),text:clean(n.text,10000)};});
  return{format:FORMAT,schema:1,id:raw.id,kind:raw.kind,version:raw.version,minimumRoleForge:raw.minimumRoleForge,name:clean(raw.name,80),capabilities:[...new Set(raw.capabilities)],notes,installedAt:Date.now()};
 }
-export function defaultProfile(key){return{key,enabled:[],launchers:{floating:true,wand:true,x:1,y:.72},sage:{showPanel:true,followReplies:false,tone:'calm',motion:true,theme:'prismatic',voiceId:'',voiceAuto:false,sources:Object.fromEntries(SCOPES.map(k=>[k,true]))},history:[]};}
+export function defaultProfile(key){return{key,enabled:[],launchers:{floating:true,wand:true,deathNote:true,x:1,y:.72},sage:{showPanel:true,followReplies:false,tone:'calm',motion:true,theme:'prismatic',voiceId:'',voiceAuto:false,sources:Object.fromEntries(SCOPES.map(k=>[k,true]))},history:[]};}
 export function normalizeProfile(raw,key){
  const p=defaultProfile(key);if(!raw)return p;
  p.enabled=Array.isArray(raw.enabled)?[...new Set(raw.enabled.filter(x=>addonIds.includes(x)))]:[];
- p.launchers={floating:raw.launchers?.floating!==false,wand:raw.launchers?.wand!==false,x:Number.isFinite(raw.launchers?.x)?Math.min(1,Math.max(0,raw.launchers.x)):1,y:Number.isFinite(raw.launchers?.y)?Math.min(1,Math.max(0,raw.launchers.y)):.72};
+ p.launchers={deathNote:raw.launchers?.deathNote!==false,floating:raw.launchers?.floating!==false,wand:raw.launchers?.wand!==false,x:Number.isFinite(raw.launchers?.x)?Math.min(1,Math.max(0,raw.launchers.x)):1,y:Number.isFinite(raw.launchers?.y)?Math.min(1,Math.max(0,raw.launchers.y)):.72};
  p.sage.showPanel=raw.sage?.showPanel!==false;p.sage.followReplies=raw.sage?.followReplies===true;
  p.sage.tone=['calm','concise','detailed'].includes(raw.sage?.tone)?raw.sage.tone:'calm';
  p.sage.motion=raw.sage?.motion!==false;p.sage.theme=raw.sage?.theme==='azure'?'azure':'prismatic';

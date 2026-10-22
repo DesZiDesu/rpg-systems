@@ -21,7 +21,7 @@ test('analysis receives only selected data, never inactive NPC dossiers or priva
 test('rebind a portable profile without accepting arbitrary addon IDs or config values',()=>{
  const p=normalizeProfile({key:'old',enabled:['great-sage','arbitrary','great-sage'],launchers:{x:42,y:-1,wand:false},sage:{tone:'invalid',sources:{inventory:false}},history:[]},'new');
  assert.equal(p.key,'new');assert.deepEqual(p.enabled,['great-sage']);assert.equal(p.sage.tone,'calm');assert.equal(p.sage.sources.inventory,false);assert.equal(p.sage.sources.scene,true);
- assert.deepEqual(p.launchers,{x:1,y:0,wand:false,floating:true});assert.equal(p.sage.theme,'prismatic');
+ assert.deepEqual(p.launchers,{x:1,y:0,wand:false,floating:true,deathNote:true});assert.equal(p.sage.theme,'prismatic');
 });
 test('missing output is rejected and history is bounded before persistence',()=>{
  assert.throws(()=>validateAnalysis({observations:['partial']}),/คำตอบวิเคราะห์ไม่ครบ/);
@@ -92,3 +92,9 @@ test('an unresponsive Worker times out and is terminated',async()=>{
  try{await assert.rejects(store.call('snapshot',{}),/นานเกินไป/);assert.equal(instance.closed,true);}
  finally{store.destroy();if(original)globalThis.Worker=original;else delete globalThis.Worker;}
 });
+
+ test('Death Note floating preference survives profile normalization without disabling other shortcuts',()=>{
+ const p=normalizeProfile({enabled:['death-note'],launchers:{deathNote:false,wand:true,floating:true,x:.2,y:.6}},'chat');
+ assert.equal(p.launchers.deathNote,false);assert.equal(p.launchers.wand,true);assert.equal(p.launchers.floating,true);assert.deepEqual(p.enabled,['death-note']);
+ assert.equal(normalizeProfile(p,'chat').launchers.deathNote,false);
+ });

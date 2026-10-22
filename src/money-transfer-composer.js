@@ -1,6 +1,6 @@
-import {currencyScheme} from './currency-config.js?v=0.83.0';
-import {transferRecipients,transferableAmount,quoteMoneyTransfer} from './money-transfer.js?v=0.83.0';
-import {composerIcon} from './composer-icons.js?v=0.83.0';
+import {currencyScheme} from './currency-config.js?v=0.83.1';
+import {transferRecipients,transferableAmount,quoteMoneyTransfer} from './money-transfer.js?v=0.83.1';
+import {composerIcon} from './composer-icons.js?v=0.83.1';
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function createMoneyTransferComposer({document:doc=globalThis.document,dock,settings=()=>({}),state:readState,scope:readScope,participants=()=>[],busy=()=>false,perform=async()=>{}}){
  const root=doc.createElement('section');root.className='rf-utility-composer rf-money-transfer';let opened=false,scope='',npcId='',unit='',amount='',search='',unitPage=0,unitsOpen=false,peoplePage=0,working=false,error='',receipt=null,requestId='';

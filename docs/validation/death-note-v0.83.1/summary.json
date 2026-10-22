@@ -1,0 +1,22 @@
+{
+  "version": "0.83.1",
+  "validatedAt": "2026-10-22T09:10:23.354939+00:00",
+  "sillyTavern": "1.19.0",
+  "baseCommit": "69af92830adfbd06cb5d841260a102dfcd7ff9b5",
+  "themeSha256": "beaa954c59ed1466e8d9dd47f88feee8692b02790ff4d69e0e682b8e22f31541",
+  "unit": {
+    "passed": 1709,
+    "failed": 0
+  },
+  "syntaxCheck": true,
+  "reports": [
+    "controls-chromium.json",
+    "controls-webkit.json",
+    "close.json",
+    "baseline.json",
+    "actors.json"
+  ],
+  "allReportsPassed": true,
+  "mobileMethod": "Viewport/touch emulation; no physical iPhone",
+  "liveModel": false
+}

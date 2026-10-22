@@ -31,7 +31,10 @@ try{
   const themes=[];for(const voice of [false,true]){
    const toggle=p.locator('[data-optional-setting=enableVoiceAddon]').first();await toggle.evaluate((n,on)=>{n.checked=on;n.dispatchEvent(new Event('change',{bubbles:true}));},voice);
    for(const theme of ['roleforge','folio','chapter','codex','aincrad']){await control('chatTheme',theme);for(const header of [true,false]){await control('showChatHeader',header);await control('showChatDialogue',true);await p.waitForFunction(()=>document.querySelector('#chat .trpg-dialogue-label .rf-npc-true-name'));
-    const styles=await p.locator('#chat .trpg-dialogue-label .rf-npc-true-name').evaluateAll(nodes=>nodes.map(n=>({color:getComputedStyle(n).color,fill:getComputedStyle(n).webkitTextFillColor})));assert(styles.every(s=>s.fill==='rgb(231, 130, 135)'),theme+' red text fill');assert.equal(await p.locator('#chat .trpg-dialogue-label .rf-npc-original-lifespan').count()>0,true);
+    // Capture one connected DOM snapshot. A locator resolved before the host
+    // rerenders can otherwise return detached nodes with empty computed styles.
+    const styleSnapshot=await p.waitForFunction(()=>{const nodes=[...document.querySelectorAll('#chat .trpg-dialogue-label .rf-npc-true-name')],styles=nodes.map(n=>({color:getComputedStyle(n).color,fill:getComputedStyle(n).webkitTextFillColor}));return nodes.length&&nodes.every(n=>n.isConnected)&&styles.every(s=>s.fill==='rgb(231, 130, 135)')?styles:false;});
+    const styles=await styleSnapshot.jsonValue();assert(styles.every(s=>s.fill==='rgb(231, 130, 135)'),theme+' red text fill '+JSON.stringify(styles));assert.equal(await p.locator('#chat .trpg-dialogue-label .rf-npc-original-lifespan').count()>0,true);
     assert.equal(await p.locator('#chat .mes_text').first().evaluate(n=>n.scrollWidth<=n.clientWidth+1),true,theme+' no chat overflow');
     if(!voice&&header){await p.evaluate(()=>document.querySelector('#chat .mes[mesid="0"]').scrollIntoView({block:'start'}));await shot('theme-'+theme+'-voice-off');}
     themes.push({theme,header,voice,redText:true,noOverflow:true});

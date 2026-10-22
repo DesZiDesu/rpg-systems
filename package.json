@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.83.0",
+  "version": "0.83.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -73,6 +73,7 @@
     "test:death-note": "node --test tests/death-note-core.test.mjs tests/death-note-world.test.mjs tests/death-note-rules-eyes.test.mjs tests/death-note-paper.test.mjs tests/death-note-identity-deferred.test.mjs tests/death-note-ownership-recovery.test.mjs tests/death-note-actors-books.test.mjs",
     "test:death-note:ownership:real": "node tests/death-note-ownership.real.browser.mjs && node tests/death-note-thai.real.browser.mjs",
     "test:death-note:identity:real": "node tests/death-note-identity.real.browser.mjs",
+    "test:death-note:controls:real": "node tests/death-note-controls.real.browser.mjs",
     "test:death-note:actors:real": "node tests/death-note-actors.real.browser.mjs"
   }
 }

@@ -1,6 +1,6 @@
-import {eyeAbility,isHuman,isShinigami,actorKey} from './actors.js?v=0.83.0';
-import {faceKnowledge} from './faces.js?v=0.83.0';
-import {trueNameOf} from './names.js?v=0.83.0';
+import {eyeAbility,isHuman,isShinigami,actorKey} from './actors.js?v=0.83.1';
+import {faceKnowledge} from './faces.js?v=0.83.1';
+import {trueNameOf} from './names.js?v=0.83.1';
 const safeKey=id=>typeof id==='string'&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
 export function originalLifespan(state,npcId,language='th',world={}){
  if(!safeKey(npcId))return null;const v=state.deathNoteRules?.originalLifespans?.[npcId]||world.originalLifespans?.[npcId];if(!v||typeof v!=='object'||Array.isArray(v))return null;

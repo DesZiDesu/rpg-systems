@@ -1,0 +1,43 @@
+{
+  "version": "0.83.1",
+  "themeFileHash": "beaa954c59ed1466e8d9dd47f88feee8692b02790ff4d69e0e682b8e22f31541",
+  "baselineRef": "69af92830adfbd06cb5d841260a102dfcd7ff9b5",
+  "browser": "Chromium",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "widths": [
+        {
+          "text": "คุโร่ โอโตฮาราดะ\nKurou Otoharada ตายกระทันหัน\nHaruki Yodo ตกตึกเสียชีวิต\nTakuo Shibimaru\nSasuki Kurokawa\nTakai Seiji\nTendo Susumaru",
+          "width": 60,
+          "height": 438.78125
+        },
+        {
+          "text": "Beyond Birthday",
+          "width": 60,
+          "height": 46.1875
+        }
+      ]
+    },
+    {
+      "device": "mobile",
+      "widths": [
+        {
+          "text": "คุโร่ โอโตฮาราดะ\nKurou Otoharada ตายกระทันหัน\nHaruki Yodo ตกตึกเสียชีวิต\nTakuo Shibimaru\nSasuki Kurokawa\nTakai Seiji\nTendo Susumaru",
+          "width": 60,
+          "height": 438.78125
+        },
+        {
+          "text": "Beyond Birthday",
+          "width": 60,
+          "height": 46.1875
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

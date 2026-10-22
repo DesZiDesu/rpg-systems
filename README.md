@@ -1,12 +1,14 @@
 # RoleForge
 
-**Public release: 0.83.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.83.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+**Fixed in 0.83.1:** Workshop can hide the draggable Death Note shortcut; dragging follows the pointer per frame. Addon settings can toggle unknown NPC name masking and use the active Persona for the player. Notebook ink reflows on panel reveal, resize and font loading. Page numbers have balanced arrow spacing, and the eye colour picker has a round swatch. [Thai report and screenshots](docs/death-note-v0.83.1.th.md).
 
 **New in 0.83.0:** Death Note settings in Workshop, separate player/NPC eye origins (including non-bargain eyes), stable notebook IDs with independent original/current/attached Shinigami, witnessed NPC ownership changes, and eye labels across all five chat designs. Disabling keeps chat data and hides addon-only sections. [Details, native validation and screenshots](docs/death-note-v0.83.0.th.md).
 

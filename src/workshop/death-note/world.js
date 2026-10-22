@@ -1,12 +1,12 @@
-import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.83.0';
-import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.83.0';
-import {localId} from '../core.js?v=0.83.0';
-import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.83.0';
-import {observedIdentities,identityBound,learnedName,seenFace} from './identity.js?v=0.83.0';
-import {faceKnowledge} from './faces.js?v=0.83.0';
-import {trueNameOf,trueNameSpellings} from './names.js?v=0.83.0';
-import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.83.0';
-export {trueNameOf} from './names.js?v=0.83.0';
+import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.83.1';
+import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.83.1';
+import {localId} from '../core.js?v=0.83.1';
+import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.83.1';
+import {observedIdentities,identityBound,learnedName,seenFace} from './identity.js?v=0.83.1';
+import {faceKnowledge} from './faces.js?v=0.83.1';
+import {trueNameOf,trueNameSpellings} from './names.js?v=0.83.1';
+import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.83.1';
+export {trueNameOf} from './names.js?v=0.83.1';
 // Chat-local notebook rules. Legacy journal keys remain readable after the preview. Canonical NPC records are never renamed.
 export const WORLD_EVENTS = 'roleforge_death_note_world_preview';
 export const WORLD_PROMPT = 'roleforge_death_note_world_preview';
@@ -122,7 +122,8 @@ export function worldState(chat,state) {
  syncPlayerEyes(w);return w;
 }
 export function perceivedName(world,npc){return world.claims[npc.id]?.name||'???';}
-export function playerIdentity(world,npc,state,language='th'){return {name:perceivedName(world,npc),sight:eyeInsight(world,npc,state,language),face:faceKnowledge(world,npc,state),display:world.settings,deathNote:npcNotebookFacts(world,npc,language)};}
+export function npcDisplayName(world,npc){return world.claims[npc.id]?.name||(world.settings?.maskUnknownNames===false?npc.name:'???')||'???';}
+export function playerIdentity(world,npc,state,language='th'){return {name:npcDisplayName(world,npc),sight:eyeInsight(world,npc,state,language),face:faceKnowledge(world,npc,state),display:world.settings,deathNote:npcNotebookFacts(world,npc,language)};}
 export function npcNotebookFacts(world,npc,language='th'){
  const ability=eyeAbility(world,npc.id),god=isShinigami(npc),books=Object.values(world.books).filter(b=>b.knownToPlayer&&(b.holderId===npc.id||b.ownerId===npc.id&&b.ownerKnownToPlayer||god&&b.touchedBy.includes('player')&&[b.originalShinigamiId,b.currentShinigamiId,b.attachedShinigamiId].includes(npc.id)));
  return {race:god?'Shinigami':'',eyeSource:world.knownAbilities?.[npc.id]?eyeSourceLabel(ability.source,language):'',books:books.map(b=>({id:b.id,holder:b.holderId===npc.id,owner:b.ownerId===npc.id&&b.ownerKnownToPlayer,originalShinigami:god&&b.originalShinigamiId===npc.id,currentShinigami:god&&b.currentShinigamiId===npc.id,attachedShinigami:god&&b.attachedShinigamiId===npc.id}))};

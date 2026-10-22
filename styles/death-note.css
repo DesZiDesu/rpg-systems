@@ -72,9 +72,9 @@
 .dn-free-tools>span{font:10px DNThai,sans-serif;min-width:15px;text-align:center}
 .rfdn .dn-free-tools button,.dn-dock .dn-free-tools button{width:28px;height:40px;border:0!important;padding:0!important;background:none!important;color:#655338;box-shadow:none!important;font:21px Georgia,serif}
 .dn-paper-footer{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;width:100%;min-width:0;gap:8px}
-.dn-paper-folios{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0}.dn-paper-folios>span{font:10px Georgia,serif;opacity:.6}
+.dn-paper-folios{display:grid;grid-template-columns:44px minmax(28px,auto) 44px;align-items:center;justify-content:center;gap:10px;min-width:0}.dn-paper-folios>span{font:12px/1.4 Georgia,serif;min-width:28px;text-align:center;letter-spacing:.06em;opacity:.6}
 .rfdn .dn-paper-footer button,.dn-dock .dn-paper-footer button{background:none!important;border:0!important;box-shadow:none!important;border-radius:0;padding:0 3px!important;min-height:42px;color:#79674a;font:11px/1.5 DNThai,sans-serif}
-.rfdn .dn-paper-folios button,.dn-dock .dn-paper-folios button{font:23px/1 Georgia,serif;width:29px}
+.rfdn .dn-paper-folios button,.dn-dock .dn-paper-folios button{display:grid;place-items:center;font:23px/1 Georgia,serif!important;width:44px;min-width:44px;min-height:44px;padding:0!important}
 .dn-paper-footer .dn-paper-submit{justify-self:end;text-align:right;letter-spacing:.02em}.dn-paper-footer .dn-paper-small{font-size:9px!important;opacity:.6}
 .rfdn[data-page=write] .dn-page-bottom{padding:2px 23px;border-top-color:#b7a78b22}
 .dn-clear-confirm{grid-template-columns:1fr auto auto;font-size:10px;letter-spacing:0}.dn-clear-confirm small{line-height:1.7}

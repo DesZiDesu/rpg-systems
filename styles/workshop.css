@@ -141,6 +141,15 @@
 .rfws-addon-orbit[data-addon-launch=death-note]{background:linear-gradient(145deg,#282722,#121310);border-color:#6b6046}
 
 /* Death Note author controls share Workshop typography, spacing and surfaces. */
-.dn-settings{max-width:820px;margin-inline:auto;min-width:0}.dn-settings fieldset{border:0;padding:0;margin:0;min-width:0}.dn-settings .ws-block{margin-block:20px;padding:24px}.dn-settings h2{font:400 24px/1.4 Georgia,serif;margin:0 0 20px}.dn-settings .ws-field{margin-block:16px}.dn-settings select{width:100%;max-width:100%}.dn-config-facts,.dn-book-facts>div{display:flex;gap:20px;justify-content:space-between;padding:12px 0;border-bottom:1px solid #baab7830}.dn-book-facts{margin-block:20px}.dn-book-facts dd{margin:0;text-align:right;overflow-wrap:anywhere}.dn-settings .ws-primary{margin-top:18px}.dn-exchange{border-top:1px solid #baab7830;padding-top:18px;margin-top:24px}.dn-writing-help pre{white-space:pre-wrap;line-height:1.8;border-left:1px solid #b9a46a;padding:12px 18px;color:inherit}.dn-settings .ws-note{line-height:1.8}.dn-settings input[type=color]{height:36px;width:72px;padding:3px}
+.dn-settings{max-width:820px;margin-inline:auto;min-width:0}.dn-settings fieldset{border:0;padding:0;margin:0;min-width:0}.dn-settings .ws-block{margin-block:20px;padding:24px}.dn-settings h2{font:400 24px/1.4 Georgia,serif;margin:0 0 20px}.dn-settings .ws-field{margin-block:16px}.dn-settings select{width:100%;max-width:100%}.dn-config-facts,.dn-book-facts>div{display:flex;gap:20px;justify-content:space-between;padding:12px 0;border-bottom:1px solid #baab7830}.dn-book-facts{margin-block:20px}.dn-book-facts dd{margin:0;text-align:right;overflow-wrap:anywhere}.dn-settings .ws-primary{margin-top:18px}.dn-exchange{border-top:1px solid #baab7830;padding-top:18px;margin-top:24px}.dn-writing-help pre{white-space:pre-wrap;line-height:1.8;border-left:1px solid #b9a46a;padding:12px 18px;color:inherit}.dn-settings .ws-note{line-height:1.8}
 @media(max-width:600px){.dn-settings .ws-block{padding:18px 16px}.dn-settings h2{font-size:21px}.dn-settings .ws-row{gap:14px}.dn-book-facts>div{font-size:13px}.dn-settings .ws-primary,.dn-exchange .ws-quiet{width:100%;justify-content:center}}
 .dn-settings .ws-field{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;line-height:1.7}.dn-settings .ws-field input[type=color]{justify-self:start}
+
+/* Position on the compositor; host transitions must never tween a drag. */
+.rfws-addon-orbits{left:0;top:0;transition:none!important;will-change:transform}
+.rfws-addon-orbits button[hidden]{display:none!important}
+
+/* Native pickers keep their OS dialog; a square swatch stays round on Safari. */
+.dn-settings .dn-eye-color{display:block;position:relative;justify-self:start;width:44px;height:44px;aspect-ratio:1;flex:none;border-radius:50%;background:var(--dn-eye-swatch);border:1px solid #e8dcc380;box-shadow:0 0 0 4px #e8dcc312}
+.dn-settings .dn-eye-color input[type=color]{position:absolute;inset:0;display:block;width:100%!important;height:100%!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;border-radius:50%;opacity:0;cursor:pointer}
+.dn-settings .dn-eye-color:focus-within{outline:2px solid var(--ws-accent);outline-offset:5px}

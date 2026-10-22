@@ -1,6 +1,6 @@
-import {localId} from '../core.js?v=0.83.0';
-import {cleanPaper,PAPER_LIMITS} from './paper.js?v=0.83.0';
-import {t} from './strings.js?v=0.83.0';
+import {localId} from '../core.js?v=0.83.1';
+import {cleanPaper,PAPER_LIMITS} from './paper.js?v=0.83.1';
+import {t} from './strings.js?v=0.83.1';
 
 export function mountPaperEditor({host,paper,onChange,onError=()=>{},disabled=false}){
  let data=cleanPaper(paper),selection=null,drag=null,disposed=false;
@@ -8,6 +8,17 @@ export function mountPaperEditor({host,paper,onChange,onError=()=>{},disabled=fa
  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
  const emit=()=>{if(!disposed)onChange(cleanPaper(data));};
  const surface=()=>host.getBoundingClientRect();
+ // A dock editor can mount while another tab is active or the dock is folded.
+ // Reflow existing nodes on reveal, resize and font load; never rebuild a draft.
+ function reflow(){
+  if(disposed||!host.clientWidth||!host.clientHeight)return;
+  for(const node of host.querySelectorAll('[data-paper-block]')){
+   const b=block(node.dataset.paperBlock);if(b)dimensions(node,selection?.id===b.id?{...b,...selection.draft}:b);
+  }
+  placeTools();
+ }
+ const resize=new ResizeObserver(reflow);resize.observe(host);
+ const fonts=document.fonts;fonts?.addEventListener('loadingdone',reflow);fonts?.ready.then(reflow);
  function dimensions(node,b){
   const text=node.querySelector('.dn-free-content'),width=Math.max(60,host.clientWidth*(1-b.x)-20),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
   text.style.fontSize=b.size+'px';ctx.font=getComputedStyle(text).font;
@@ -72,5 +83,5 @@ export function mountPaperEditor({host,paper,onChange,onError=()=>{},disabled=fa
  }
  const listeners=[['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',up],['input',input],['click',click],['keydown',key]];
  for(const [event,fn]of listeners)host.addEventListener(event,fn);
- render();return {add,finish,destroy(){disposed=true;for(const [event,fn]of listeners)host.removeEventListener(event,fn);host.replaceChildren();},get selected(){return Boolean(selection);}};
+ render();return {add,finish,destroy(){disposed=true;resize.disconnect();fonts?.removeEventListener('loadingdone',reflow);for(const [event,fn]of listeners)host.removeEventListener(event,fn);host.replaceChildren();},get selected(){return Boolean(selection);}};
 }

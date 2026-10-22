@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {worldState,applyEvent,WORLD_EVENTS,storyEvents,playerIdentity,npcNotebookFacts,validateAction,worldInstruction} from '../src/workshop/death-note/world.js';
+import {worldState,applyEvent,WORLD_EVENTS,storyEvents,playerIdentity,npcNotebookFacts,validateAction,worldInstruction,perceivedName} from '../src/workshop/death-note/world.js';
 import {eyeAbility,isShinigami} from '../src/workshop/death-note/actors.js';
 import {eyeInsight,eyeLifeCost,simulatedLifespan,originalLifespan} from '../src/workshop/death-note/eyes.js';
 import {deathNoteSettingsMarkup,settingsEvent,deathNoteHelp} from '../src/workshop/death-note/settings.js';
@@ -105,4 +105,19 @@ test('later visible ownership identifies the same notebook without changing a co
  assert.equal(w.books.gamma.ownerId,'a');assert.equal(w.books.gamma.ownerKnownToPlayer,true);
  for(const e of storyEvents(source({type:'npc-register',bookId:'gamma',actorId:'b',rightsEstablished:true},'Mara Hale owns and holds notebook gamma.'),s))applyEvent(w,e);
  assert.equal(w.books.gamma.ownerId,'a');assert.equal(w.books.gamma.holderId,'a');
+});
+
+test('unknown-name masking is a reversible display preference and never teaches a true name',()=>{
+ const s=fixture(),w=worldState([],s),npc=s.npcs[0];
+ assert.equal(playerIdentity(w,npc,s).name,'???');
+ applyEvent(w,settingsEvent(form({kind:'display'}),w,s));
+ assert.equal(playerIdentity(w,npc,s).name,'Elias Voss');assert.equal(w.claims.a,undefined);assert.equal(perceivedName(w,npc),'???');assert.equal(eyeInsight(w,npc,s),null);
+ applyEvent(w,settingsEvent(form({kind:'display',maskUnknownNames:'on'}),w,s));assert.equal(playerIdentity(w,npc,s).name,'???');
+ applyEvent(w,{type:'introduce',npcId:'a',claimedName:'Adrian Grey'});assert.equal(playerIdentity(w,npc,s).name,'Adrian Grey');
+});
+test('eye author controls use the active persona while keeping the stable player actor id',()=>{
+ const s=fixture();s.player.name='Adventurer';const w=worldState([],s);
+ const html=deathNoteSettingsMarkup({world:w,state:s,personaName:'Light <Yagami>'});
+ assert(html.includes('value="player" selected>Light &lt;Yagami&gt;</option>'));assert(!html.includes('Adventurer'));
+ assert.equal(settingsEvent(form({kind:'actor',actorId:'player',source:'innate'}),w,s).actorId,'player');
 });
