@@ -1,6 +1,7 @@
-import {eyeAbility,isHuman,isShinigami,actorKey} from './actors.js?v=0.83.1';
-import {faceKnowledge} from './faces.js?v=0.83.1';
-import {trueNameOf} from './names.js?v=0.83.1';
+import {playerLifeDeadline,deadlineValue} from './lifespan.js?v=0.84.0';
+import {eyeAbility,isHuman,isShinigami,actorKey} from './actors.js?v=0.84.0';
+import {faceKnowledge} from './faces.js?v=0.84.0';
+import {trueNameOf} from './names.js?v=0.84.0';
 const safeKey=id=>typeof id==='string'&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
 export function originalLifespan(state,npcId,language='th',world={}){
  if(!safeKey(npcId))return null;const v=state.deathNoteRules?.originalLifespans?.[npcId]||world.originalLifespans?.[npcId];if(!v||typeof v!=='object'||Array.isArray(v))return null;
@@ -15,11 +16,11 @@ export function eyeInsight(world,npc,state,language='th',viewerId='player'){
  const face=viewerId==='player'?faceKnowledge(world,npc,state).known:Boolean(world.actorFaces?.[viewerId]?.[npc.id]||state.deathNoteRules?.actorKnownFaces?.[viewerId]?.[npc.id]);
  if((!ability.active&&!isShinigami(viewer))||!face||!human||!living||npc.id===viewerId)return null;
  const trueName=trueNameOf(state,npc);if(!trueName)return null;
- const owner=!isShinigami(viewer)&&Object.values(world.books).some(b=>b.ownerId===npc.id),candidate=owner?null:originalLifespan(state,npc.id,language,world),original=candidate?.source==='simulation'&&world.settings?.lifespanMode!=='simulated'?null:candidate;
+ const owner=!isShinigami(viewer)&&Object.values(world.books).some(b=>b.ownerId===npc.id),playerDeadline=npc.id==='player'?deadlineValue(playerLifeDeadline(world,state)):null,candidate=owner?null:playerDeadline?{...playerDeadline,source:world.playerLifespan?.source||originalLifespan(state,'player',language,world)?.source||'authored',text:(language==='en'?'Day ':'วันที่ ')+playerDeadline.day+' · '+playerDeadline.time}:originalLifespan(state,npc.id,language,world),original=candidate?.source==='simulation'&&world.settings?.lifespanMode!=='simulated'?null:candidate;
  return {trueName,lifespan:original?.text||'',lifespanSource:original?.source||'',lifespanReason:owner?'owner':original?'original':'unknown'};
 }
 export function lifespanSeconds(value){if(!value?.day)return null;const [h,m,s=0]=value.time.split(':').map(Number);return (value.day-1)*86400+h*3600+m*60+s;}
-export function eyeLifeCost(world,state,actorId='player'){const [h=0,m=0,s=0]=String(state.worldClock?.time||'00:00').split(':').map(Number),at=(Math.max(1,Number(state.worldClock?.day)||1)-1)*86400+h*3600+m*60+s;const before=world.lifeDeadlines?.[actorId]??(actorId==='player'?world.lifeDeadlineSeconds:undefined)??lifespanSeconds(originalLifespan(state,actorId,'th',world));if(!Number.isFinite(before)||before<=at)return null;return {at,before,deadline:at+Math.floor((before-at)/2)};}
+export function eyeLifeCost(world,state,actorId='player'){const [h=0,m=0,s=0]=String(state.worldClock?.time||'00:00').split(':').map(Number),at=(Math.max(1,Number(state.worldClock?.day)||1)-1)*86400+h*3600+m*60+s;const before=(actorId==='player'?playerLifeDeadline(world,state):null)??world.lifeDeadlines?.[actorId]??(actorId==='player'?world.lifeDeadlineSeconds:undefined)??lifespanSeconds(originalLifespan(state,actorId,'th',world));if(!Number.isFinite(before)||before<=at)return null;return {at,before,deadline:at+Math.floor((before-at)/2)};}
 
 // A generated deadline is recorded once in this branch. It is a game value,
 // never presented as an authored/canonical prediction and never rerolled by UI.

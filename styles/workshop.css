@@ -149,7 +149,24 @@
 .rfws-addon-orbits{left:0;top:0;transition:none!important;will-change:transform}
 .rfws-addon-orbits button[hidden]{display:none!important}
 
-/* Native pickers keep their OS dialog; a square swatch stays round on Safari. */
+/* Native picker overlays keep their OS dialog, including Safari. */
 .dn-settings .dn-eye-color{display:block;position:relative;justify-self:start;width:44px;height:44px;aspect-ratio:1;flex:none;border-radius:50%;background:var(--dn-eye-swatch);border:1px solid #e8dcc380;box-shadow:0 0 0 4px #e8dcc312}
 .dn-settings .dn-eye-color input[type=color]{position:absolute;inset:0;display:block;width:100%!important;height:100%!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;border-radius:50%;opacity:0;cursor:pointer}
 .dn-settings .dn-eye-color:focus-within{outline:2px solid var(--ws-accent);outline-offset:5px}
+
+/* Architectural RoleForge surfaces; the Sage orb and activity ring stay circular. */
+#roleforge-workshop.rfws,.rfws.ws-confirm{border-radius:0}
+#roleforge-workshop :is(button,input:not([type=checkbox]):not([type=radio]),select,textarea,.rfws-brand-mark,.rfws-preview,.ws-feature,.ws-card,.ws-pack-icon:not(.is-sage),.ws-status,.ws-install-box,.ws-block,.ws-chat-context,.ws-chat-addon,.ws-backup-card,.ws-notice,.ws-search,.sg-ask),.rfws.ws-confirm button{border-radius:0}
+#roleforge-workshop .ws-feature::before{border-radius:0}
+#roleforge-workshop .ws-card{background:linear-gradient(135deg,#201e191a,#181817);border-color:#b7a47630}
+#roleforge-workshop .ws-card:hover{border-color:#c7ae7070}
+#roleforge-workshop input.ws-switch{border-radius:0!important}
+#roleforge-workshop input.ws-switch::before{border-radius:0!important}
+#roleforge-workshop .dn-eye-color,#roleforge-workshop .dn-eye-color input{border-radius:0}
+#roleforge-workshop .dn-life-time-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#roleforge-workshop .dn-life-time-fields .ws-field{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin:14px 0}
+#roleforge-workshop .dn-life-time-fields input{box-sizing:border-box;min-width:0;width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--ws-line);background:#141413;color:var(--ws-text);font-variant-numeric:tabular-nums;font-size:16px}
+.dn-life-settings-value{display:flex;align-items:baseline;flex-wrap:wrap;gap:12px;margin:20px 0 12px}
+.dn-life-settings-value strong{font:400 30px/1.4 Georgia,serif;color:var(--ws-gold)}
+.dn-life-settings-value small{color:var(--ws-muted);font-size:11px}
+@media(max-width:480px){#roleforge-workshop .dn-life-time-fields{gap:8px}.dn-life-settings-value strong{font-size:26px}}

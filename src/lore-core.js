@@ -1,4 +1,4 @@
-import {uiText} from './ui-language.js?v=0.83.1';
+import {uiText} from './ui-language.js?v=0.84.0';
 
 // Character-owned reference data. AI output cannot write to this archive.
 // A zero entry limit means unlimited storage. Context budgets are separate.

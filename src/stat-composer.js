@@ -1,7 +1,8 @@
-import {composerIcon as glyph} from './composer-icons.js?v=0.83.1';
-import {statTrainingTargets} from './stat-training.js?v=0.83.1';
-import {currencyDisplay} from './currency-config.js?v=0.83.1';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.83.1';
+import {deathNoteSummary} from './npc-visibility.js?v=0.84.0';
+import {composerIcon as glyph} from './composer-icons.js?v=0.84.0';
+import {statTrainingTargets} from './stat-training.js?v=0.84.0';
+import {currencyDisplay} from './currency-config.js?v=0.84.0';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.84.0';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const translated=(v,th,target)=>{
@@ -13,7 +14,7 @@ const translated=(v,th,target)=>{
 export const STAT_COMPOSER_LAYOUTS=Object.freeze(['A','B','C']);
 export const normalizeStatComposerLayout=value=>STAT_COMPOSER_LAYOUTS.includes(value)?value:'C';
 
-export function createStatComposer({document:doc=globalThis.document,dock,settings=()=>({}),train=async()=>{},transfer=()=>{},busy=()=>false}={}){
+export function createStatComposer({document:doc=globalThis.document,dock,settings=()=>({}),train=async()=>{},transfer=()=>{},configureLifespan=()=>globalThis.RoleForgeWorkshop?.openDeathNoteSettings?.(),busy=()=>false}={}){
  const status=doc.createElement('section'),training=doc.createElement('section');
  status.className='rf-stat-composer rf-user-status';training.className='rf-stat-composer rf-stat-training';
  let state=null,scope='',selected='hp',method=0,working=false,fingerprint='',detailsOpen=false,error='';
@@ -28,6 +29,12 @@ export function createStatComposer({document:doc=globalThis.document,dock,settin
   const value=Number(raw?.current)||0,max=Math.max(1,Number(raw?.max)||100),ratio=Math.max(0,Math.min(100,value/max*100));
   const label=name==='HUNGER'?t('ความอิ่ม','Hunger'):name==='THIRST'?t('น้ำ','Thirst'):name;
   return `<div class="rf-stat-vital ${classes}" data-vital="${name}"><div><span>${glyph(icon)}<span>${esc(label)}</span></span><b>${value}<small> / ${max}</small></b></div><div class="rf-stat-track" role="meter" aria-label="${name}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${Math.min(max,Math.max(0,value))}" aria-valuetext="${value} / ${max}"><i style="width:${ratio}%"></i></div></div>`;
+ }
+ const lifeSummary=()=>{const summary=deathNoteSummary();return summary&&scope&&(!globalThis.SillyTavern||globalThis.SillyTavern.getContext().chatMetadata===summary.contextToken)&&(summary.scope===scope||summary.scope?.endsWith('::'+scope))?summary.playerLifespan:null;};
+ function lifespanMarkup(){
+  const life=lifeSummary();if(!life)return '';
+  const wasOpen=status.querySelector('[data-stat-life-details]')?.open;
+  return `<section class="rf-stat-lifespan" aria-label="${t('อายุขัย','Lifespan')}"><div class="rf-stat-life-main"><div><small>DEATH NOTE · ${t('อายุขัย','LIFESPAN')}</small><strong>${esc(life.remaining)}</strong><span>${esc(t('เวลาที่เหลือในเรื่อง','Remaining story time'))}</span></div><button type="button" data-stat-life-config aria-label="${t('ตั้งค่าอายุขัย','Configure lifespan')}" title="${t('ตั้งค่าอายุขัย','Configure lifespan')}"><i class="fa-solid fa-sliders" aria-hidden="true"></i></button></div><details data-stat-life-details${wasOpen?' open':''}><summary>${t('รายละเอียดอายุขัย','Lifespan details')} <span aria-hidden="true">⌄</span></summary><dl><div><dt>${t('อายุขัยเดิม','Original natural deadline')}</dt><dd>${esc(life.naturalText)}</dd></div><div><dt>${t('กำหนดปัจจุบัน','Current deadline')}</dt><dd>${esc(life.deadlineText)}</dd></div><div><dt>${t('สัดส่วนหลังแลกดวงตา','Fraction after bargains')}</dt><dd>${Math.round(life.fraction*100)}%</dd></div></dl><p>${t('ข้อมูลผู้สร้างโรล · ตัวละครไม่ได้รู้ค่านี้โดยอัตโนมัติ','Author information · characters do not automatically know this value')}</p></details></section>`;
  }
  function renderStatus(){
   if(!state||!scope||!settings().showStatusComposer){dock.remove('status');return;}
@@ -44,7 +51,7 @@ export function createStatComposer({document:doc=globalThis.document,dock,settin
    const value=Number(p.hp?.current)||0,max=Math.max(1,Number(p.hp?.max)||100),ratio=Math.max(0,Math.min(100,value/max*100));
    vitals=`<div class="rf-stat-core-vitals"><div class="rf-stat-hp-ring"><svg viewBox="0 0 112 112" aria-hidden="true"><circle class="rf-stat-ring-base" cx="56" cy="56" r="46"/><circle class="rf-stat-ring-fill" cx="56" cy="56" r="46" pathLength="100" stroke-dasharray="${ratio} 100"/></svg><div>${glyph('hp')}<b>${value}</b><small>HP / ${max}</small></div>${health}</div>${secondary}</div>`;
   }
-  status.innerHTML=head(t('สถานะผู้เล่น','Player status'),'status','hp')+`<div class="rf-ability-body rf-stat-status-body">${identity}<div class="rf-stat-vitals">${vitals}</div>${needs}${attributes}${customValues}${footer}</div>`;
+  status.innerHTML=head(t('สถานะผู้เล่น','Player status'),'status','hp')+`<div class="rf-ability-body rf-stat-status-body">${identity}<div class="rf-stat-vitals">${vitals}</div>${needs}${attributes}${customValues}${lifespanMarkup()}${footer}</div>`;
   dock.panel('status',status,{label:t('สถานะ','Status')});
  }
  function renderTraining(){
@@ -72,7 +79,7 @@ export function createStatComposer({document:doc=globalThis.document,dock,settin
   dock.panel('stats',training,{label:t('ฝึก Stats','Train stats'),busy:working});
  }
  function render(){if(state){renderStatus();renderTraining();}}
- status.addEventListener('click',e=>{if(e.target.closest('[data-stat-transfer]')){transfer();return;}if(e.target.closest('[data-stat-minimize]'))dock.minimize('status');});
+ status.addEventListener('click',e=>{if(e.target.closest('[data-stat-life-config]')){configureLifespan();return;}if(e.target.closest('[data-stat-transfer]')){transfer();return;}if(e.target.closest('[data-stat-minimize]'))dock.minimize('status');});
  training.addEventListener('click',async e=>{
   const choice=e.target.closest('[data-stat-select]');if(choice){selected=choice.dataset.statSelect;method=0;detailsOpen=false;const detail=training.querySelector('[data-stat-details]');if(detail)detail.open=false;renderTraining();return;}
   const exercise=e.target.closest('[data-stat-method-choice]');if(exercise&&!working&&!busy()){method=Number(exercise.dataset.statMethodChoice)||0;renderTraining();return;}
@@ -84,7 +91,7 @@ export function createStatComposer({document:doc=globalThis.document,dock,settin
   update(next,key){
    if(!key){state=null;scope='';error='';fingerprint='';dock.remove('status');dock.remove('stats');return;}
    if(scope!==key){scope=key;selected='hp';method=0;detailsOpen=false;error='';training.innerHTML='';fingerprint='';}state=next;
-   const cfg=settings(),nextFingerprint=JSON.stringify([scope,state.player,state.statTraining,state.progression?.currency,state.location?.place,cfg.showStatusComposer,cfg.showStatTrainingComposer,cfg.statusComposerLayout,cfg.statTrainingLayout,cfg.language,cfg.coinStyle,busy()]);
+   const cfg=settings(),nextFingerprint=JSON.stringify([scope,state.player,state.statTraining,state.progression?.currency,state.location?.place,lifeSummary(),cfg.showStatusComposer,cfg.showStatTrainingComposer,cfg.statusComposerLayout,cfg.statTrainingLayout,cfg.language,cfg.coinStyle,busy()]);
    if(fingerprint===nextFingerprint)return;fingerprint=nextFingerprint;render();
   },
   destroy(){state=null;scope='';dock.remove('status');dock.remove('stats');},

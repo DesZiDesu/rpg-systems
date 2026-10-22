@@ -1,26 +1,27 @@
-import {eyeAbility,eyeSourceLabel,isHuman,isShinigami} from './actors.js?v=0.83.1';
-import {deathNoteSettingsMarkup,settingsEvent,deathNoteHelp} from './settings.js?v=0.83.1';
-import {localId} from '../core.js?v=0.83.1';
-import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.83.1';
-import {stageWrittenPaper} from './deferred.js?v=0.83.1';
-import {OPENING_BOOK,greetingBooks} from './opening.js?v=0.83.1';
-import {recoverPaperResults} from './recovery.js?v=0.83.1';
-import {faceKnowledge} from './faces.js?v=0.83.1';
-import {mountPaperEditor} from './paper-editor.js?v=0.83.1';
-import {uiLanguage} from '../../ui-language.js?v=0.83.1';
-import {t,html} from './strings.js?v=0.83.1';
-import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.83.1';
-import {eyeInsight,originalLifespan,simulatedLifespan} from './eyes.js?v=0.83.1';
-import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,visibleText,replyAnchor,INSCRIPTIONS,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.83.1';
-import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,npcDisplayName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.83.1';
-import {setNpcVisibilityProvider,setNpcStoryGuard,setDeathNoteSummary} from '../../npc-visibility.js?v=0.83.1';
+import {playerLifespanInfo} from './lifespan.js?v=0.84.0';
+import {eyeAbility,eyeSourceLabel,isHuman,isShinigami} from './actors.js?v=0.84.0';
+import {deathNoteSettingsMarkup,settingsEvent,deathNoteHelp} from './settings.js?v=0.84.0';
+import {localId} from '../core.js?v=0.84.0';
+import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.84.0';
+import {stageWrittenPaper} from './deferred.js?v=0.84.0';
+import {OPENING_BOOK,greetingBooks} from './opening.js?v=0.84.0';
+import {recoverPaperResults} from './recovery.js?v=0.84.0';
+import {faceKnowledge} from './faces.js?v=0.84.0';
+import {mountPaperEditor} from './paper-editor.js?v=0.84.0';
+import {uiLanguage} from '../../ui-language.js?v=0.84.0';
+import {t,html} from './strings.js?v=0.84.0';
+import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.84.0';
+import {eyeInsight,originalLifespan,simulatedLifespan} from './eyes.js?v=0.84.0';
+import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,visibleText,replyAnchor,INSCRIPTIONS,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.84.0';
+import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,npcDisplayName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.84.0';
+import {setNpcVisibilityProvider,setNpcStoryGuard,setDeathNoteSummary} from '../../npc-visibility.js?v=0.84.0';
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sealURL=new URL('../../../assets/workshop/death-note/rules-seal.png',import.meta.url).href;
 const fa=n=>`<i class="fa-solid fa-${n}" aria-hidden="true"></i>`;
 const button=(action,text,cls='',more='')=>`<button type="button" class="${cls}" data-dn-action="${action}" ${more}>${text}</button>`;
 const paperTime=s=>{const v=formatStoryTime(s);return html`วันที่ ${v.day} · ${v.time}`;};
 export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
- const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.83.1',import.meta.url);document.head.append(sheet);
+ const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.84.0',import.meta.url);document.head.append(sheet);
  const root=document.createElement('dialog');root.id='roleforge-death-note-preview';root.className='rfdn';root.setAttribute('aria-label',t('Death Note — สมุดบันทึก'));document.body.append(root);
  const panel=document.createElement('section');panel.id='roleforge-death-note-dock';panel.className='dn-dock';panel.dataset.swipeIgnore='true';
  const c=()=>SillyTavern.getContext(),live=()=>api.context(),state=()=>({...live().state,deathNoteRules:live().deathNoteRules||{}}),chat=()=>live().chat||[];
@@ -53,9 +54,9 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  async function appendEvents(events,captured=scope()) {
   if(!events.length)return;const message=chat().at(-1);if(!message||message.is_user||message.is_system)throw Error(t('รอให้ AI เล่าเหตุการณ์ก่อน'));
   const source=message.mes,selectedSwipe=Number(message.swipe_id)||0;
-  const {plain}=await import('./world.js?v=0.83.1');if(scope()!==captured||!enabled()||chat().at(-1)!==message||message.mes!==source||(Number(message.swipe_id)||0)!==selectedSwipe)throw Error(t('เปลี่ยนแชทแล้ว'));
+  const {plain}=await import('./world.js?v=0.84.0');if(scope()!==captured||!enabled()||chat().at(-1)!==message||message.mes!==source||(Number(message.swipe_id)||0)!==selectedSwipe)throw Error(t('เปลี่ยนแชทแล้ว'));
   message.extra||={};const previous=message.extra[WORLD_EVENTS]||[],offset=plain(message.mes).length,swipe=Number(message.swipe_id)||0;
-  const added=events.map(e=>({...e,...(e.type==='npc-eye-deal'?{recordedClock:{day:state().worldClock?.day||1,time:state().worldClock?.time||'00:00'}}:{}),id:e.id||'dn-event-'+localId(),offset,swipe}));message.extra[WORLD_EVENTS]=[...previous,...added];
+  const added=events.map(e=>({...e,...(['npc-eye-deal','eye-deal','lifespan-record'].includes(e.type)?{recordedClock:{day:state().worldClock?.day||1,time:state().worldClock?.time||'00:00'}}:{}),id:e.id||'dn-event-'+localId(),offset,swipe}));message.extra[WORLD_EVENTS]=[...previous,...added];
   try{await c().saveChat();if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทระหว่างบันทึก'));}catch(error){if(scope()===captured&&chat().at(-1)===message)message.extra[WORLD_EVENTS]=previous;throw error;}
   return {message,added,previous};
  }
@@ -99,7 +100,10 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  async function configure(form){
   if(!enabled()||busy()||working)throw Error(t('รอให้ AI เล่าเหตุการณ์ก่อน'));
   const captured=scope();if(bootstrap)await bootstrap;await api.prepareNpcs?.();if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทแล้ว'));
-  const event=settingsEvent(form,world(),state());await appendEvents([...registeredEvents(),event],captured);await rememberLifespans(captured);refresh();return true;
+  // Persist a reply's established facts before settings saved on that same reply.
+  // Otherwise a fast lock click could replay ahead of an unjournalled AI seed.
+  const message=chat().at(-1),rows=message?activeEvents(message):[],proposals=storyEvents(message?.mes||'',state()).filter(e=>!rows.some(r=>r.type===e.type&&r.evidence===e.evidence&&(r.bookId||r.npcId)===(e.bookId||e.npcId)));
+  const event=settingsEvent(form,world(),state());await appendEvents([...registeredEvents(),...proposals,event],captured);await rememberLifespans(captured);refresh();return true;
  }
  function notebookPicker(){const books=Object.values(world().books).filter(b=>b.knownToPlayer||b.holderId==='player'||b.ownerId==='player');return books.length>1?`<label class="dn-notebook-picker"><span>${uiLanguage()==='en'?'Notebook':'สมุดเล่มที่'}</span><select data-dn-book aria-label="${uiLanguage()==='en'?'Notebook':'สมุดเล่มที่'}">${books.map(b=>`<option value="${esc(b.id)}"${currentBook()?.id===b.id?' selected':''}>${esc(b.id)}</option>`).join('')}</select></label>`:'';}
  function masthead(){return `<div class="dn-wordmark" aria-label="Death Note"><span>D</span><span>E</span><span>A</span><span>T</span><span>H</span><b></b><span>N</span><span>O</span><span>T</span><span>E</span></div>`;}
@@ -178,9 +182,9 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  function renderDock(){dockEditor?.destroy();dockEditor=null;panel.lang=uiLanguage();if(disposed)return;if(!enabled()||!scope()||!showDock){dock?.remove('death-note');return;}const b=currentBook(),w=world(),held=access();panel.innerHTML=`<header class="dn-dock-header"><div><span class="dn-tiny-cover">DN</span><span>Death Note</span></div><div>${button('fullscreen',fa('expand'),'',t('aria-label="เปิดสมุดเต็มหน้า"'))}${button('minimize',fa('minus'),'',t('aria-label="ย่อหน้าต่าง"'))}${button('hide-dock',fa('xmark'),'',t('aria-label="ปิดหน้าต่างเหนือ chatbar"'))}</div></header>${b&&!b.holderId?html`<div class="dn-discovery"><div class="dn-found-book" aria-hidden="true"><span>DEATH<br>NOTE</span></div><div><small>คุณพบสมุดปกดำ</small><h3>จะทำอย่างไรกับมัน?</h3><p>${esc(b.location)}</p><div>${button('touch',t('แตะปก'))}${button('take',t('หยิบสมุด'))}${button('leave',t('ปล่อยไว้'))}</div></div></div>`:held?`<div class="dn-dock-paper dn-dock-free">${writingSurface()}${paperFooter()}</div>`:`<div class="dn-dock-locked"><span class="dn-tiny-cover">DN</span><div><strong>${b?.holderId?t('สมุดอยู่กับ ')+esc(label(b.holderId)):t('ยังไม่มีสมุดอยู่กับตัว')}</strong><p>${b?.ownerId==='player'?t('คุณยังเป็นเจ้าของสิทธิ์'):t('ต้องพบสมุดในเนื้อเรื่องก่อนจึงจะใช้ได้')}</p></div>${button('rights',fa('book-open'),'',t('aria-label="ดูสมุดและสิทธิ์"'))}</div>`}<div class="dn-dock-note" role="status">${esc((held?'':notice)|| (held?'':w.eyes?t('ดวงตาของยมทูตกำลังทำงาน'):working?t('กำลังต่อเรื่องจากคำตอบ AI เดิม…'):''))}</div>`;dock?.panel('death-note',panel,{label:'Death Note',busy:working});if(held)dockEditor=mountPaperEditor({host:panel.querySelector('[data-dn-paper]'),paper:ensurePaper(),onChange:queuePaper,onError:paperError,disabled:working||busy()});}
  function syncViewport(){root.style.setProperty('--dn-vh',(visualViewport?.height||innerHeight)+'px');root.style.setProperty('--dn-vtop',(visualViewport?.offsetTop||0)+'px');}
  function refresh(){if(disposed)return;const next=scope();if(owner!==next){owner=next;clearTimeout(paperTimer);paperKey='';paperDirty=false;draft=empty();page='cover';ruleIndex=0;ruleDraft={title:'',text:''};bookId='';notice='';confirmation='';showDock=true;if(root.open)root.close();policyStamp='';}
-  const active=enabled()&&Boolean(next),w=active?world():null,stamp=active?JSON.stringify([next,uiLanguage(),w.claims,w.faces,w.eyes,w.memoryLost,Object.values(w.books).map(b=>[b.id,b.ownerId]),w.settings,w.actorEyes,w.knownAbilities,w.originalLifespans,w.books,state().deathNoteRules,(state().npcs||[]).map(n=>[n.id,n.name,n.met])]):'off';
+  const active=enabled()&&Boolean(next),w=active?world():null,stamp=active?JSON.stringify([next,uiLanguage(),w.claims,w.faces,w.eyes,w.memoryLost,Object.values(w.books).map(b=>[b.id,b.ownerId]),w.settings,w.actorEyes,w.knownAbilities,w.originalLifespans,w.playerLifespan,w.lifeDeadlines,state().worldClock,w.books,state().deathNoteRules,(state().npcs||[]).map(n=>[n.id,n.name,n.met])]):'off';
   if(active&&bookId&&!w.books[bookId]){bookId='';paperKey='';}
-  if(stamp!==policyStamp){policyStamp=stamp;const identityState=state(),seen=new Map((identityState.npcs||[]).map(n=>[n.id,n]));setDeathNoteSummary(active?{eyeSource:eyeSourceLabel(eyeAbility(w).source,uiLanguage()),books:Object.values(w.books).filter(b=>b.knownToPlayer).map(b=>({id:b.id,holderId:b.holderId,ownerId:b.ownerKnownToPlayer?b.ownerId:''}))}:null);setNpcVisibilityProvider(active?n=>playerIdentity(w,{...n,name:seen.get(n.id)?.name||n.name,met:seen.get(n.id)?.met??n.met},identityState,uiLanguage()):null);setNpcStoryGuard(active?(ops,ctx)=>protectManuscriptOps(protectNotebookOps(ops,ctx),{...ctx,base:{...ctx.base,deathNoteRules:state().deathNoteRules}}):null);api.refreshHost?.();}
+  if(stamp!==policyStamp){policyStamp=stamp;const identityState=state(),seen=new Map((identityState.npcs||[]).map(n=>[n.id,n]));setDeathNoteSummary(active?{scope:live().key,contextToken:live().nonce,playerLifespan:playerLifespanInfo(w,state(),uiLanguage()),eyeSource:eyeSourceLabel(eyeAbility(w).source,uiLanguage()),books:Object.values(w.books).filter(b=>b.knownToPlayer).map(b=>({id:b.id,holderId:b.holderId,ownerId:b.ownerKnownToPlayer?b.ownerId:''}))}:null);setNpcVisibilityProvider(active?n=>playerIdentity(w,{...n,name:seen.get(n.id)?.name||n.name,met:seen.get(n.id)?.met??n.met},identityState,uiLanguage()):null);setNpcStoryGuard(active?(ops,ctx)=>protectManuscriptOps(protectNotebookOps(ops,ctx),{...ctx,base:{...ctx.base,deathNoteRules:state().deathNoteRules}}):null);api.refreshHost?.();}
   c().setExtensionPrompt(WORLD_PROMPT,active?worldInstruction(w,state()):'',1,1,false,0);
   const pending=active?records().filter(e=>e.status==='waiting').slice(-128):[];c().setExtensionPrompt(PENDING_PROMPT,pending.map(e=>continuationInstruction(e,{pending:true})).join('\n\n'),1,1,false,0);
   if(!active){if(root.open)root.close();c().setExtensionPrompt(ACTION_PROMPT,'',1,0,false,0);}
@@ -252,7 +256,7 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  async function reconcile(){if(disposed||!enabled()||working)return;const captured=scope(),message=chat().at(-1);if(!message||message.is_user||reconciling===captured)return;reconciling=captured;
   try{await api.prepareNpcs?.();if(scope()!==captured||!enabled())return;const rows=activeEvents(message),events=storyEvents(message.mes,state()),proposals=events.filter(e=>!rows.some(r=>r.type===e.type&&r.evidence===e.evidence&&(r.bookId||r.npcId)===(e.bookId||e.npcId)));for(const e of events)if(e.type==='discover'&&e.shinigamiId&&world().books[e.bookId]&&!world().books[e.bookId].originalShinigamiId)proposals.push({type:'bind-shinigami',bookId:e.bookId,shinigamiId:e.shinigamiId,evidence:e.evidence});
    if(proposals.length)await appendEvents([...registeredEvents(),...proposals],captured);
-   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending,{messageIndex:chat().indexOf(message)});for(const entry of pending)if(entry.validName===false&&!values.some(r=>r.requestId===entry.id)&&(entry.messageIndex<chat().indexOf(message)||visibleText(message.mes).length>entry.offset))values.push({requestId:entry.id,status:'ineffective',elapsedSeconds:0,evidence:'ชื่อที่เขียนไม่ทำให้เกิดผลตามกติกาของสมุด',engineVerdict:true});if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.83.1');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
+   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending,{messageIndex:chat().indexOf(message)});for(const entry of pending)if(entry.validName===false&&!values.some(r=>r.requestId===entry.id)&&(entry.messageIndex<chat().indexOf(message)||visibleText(message.mes).length>entry.offset))values.push({requestId:entry.id,status:'ineffective',elapsedSeconds:0,evidence:'ชื่อที่เขียนไม่ทำให้เกิดผลตามกติกาของสมุด',engineVerdict:true});if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.84.0');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
    if(scope()===captured){for(const b of Object.values(world().books)){if(scope()!==captured||!enabled())return;await updateInventory(b,world(),captured);}refresh();if(proposals.some(e=>e.type==='discover')){showDock=true;renderDock();dock?.select('death-note');}}
   }catch(error){if(scope()===captured){notice=t(error.message);renderDock();}}finally{if(reconciling===captured)reconciling='';}
  }

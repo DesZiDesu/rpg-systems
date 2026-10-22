@@ -1,5 +1,5 @@
 /* Compatibility entry for cached pre-0.41 loaders. Do not remove or relocate. */
-@import url("./styles/ui-polish.css?v=0.83.1");
+@import url("./styles/ui-polish.css?v=0.84.0");
 
 
 /* World Pack uses native drawer controls and follows the active ST theme. */

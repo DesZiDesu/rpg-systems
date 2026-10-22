@@ -1,0 +1,20 @@
+{
+  "version": "0.84.0",
+  "host": "SillyTavern 1.19.0",
+  "unitTests": {
+    "passed": 1721,
+    "failed": 0
+  },
+  "syntaxCheck": "passed",
+  "diffWhitespaceCheck": "passed",
+  "mobile": "viewport/touch emulation; no physical iPhone",
+  "model": "controlled SSE through native Generate; no external model calls",
+  "eyes": "five chat themes tested in actors suite; three Status layouts tested in lifespan suite",
+  "reports": [
+    "lifespan-chromium-validation.json",
+    "lifespan-webkit-validation.json",
+    "death-note-actors-validation.json",
+    "death-note-controls-validation.json",
+    "death-note-close-validation.json"
+  ]
+}

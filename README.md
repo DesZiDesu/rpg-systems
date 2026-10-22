@@ -1,12 +1,14 @@
 # RoleForge
 
-**Public release: 0.83.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.84.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
 RoleForge brings an RPG workspace into your SillyTavern chat. Track your character, inventory, powers, skills, techniques, NPCs and the current scene while role-playing normally. Optional systems add shops, auctions, mission and recruitment boards, memory summaries and ElevenLabs voices.
 
 The extension adds instructions for enabled systems to your existing text-generation connection and reads structured updates from completed AI replies. You do not need to write JSON yourself. The model still determines the story and must supply readable data for trackers to update.
+
+**New in 0.84.0:** Square Workshop surfaces, the Death Note floating-shortcut toggle in its addon settings, and player lifespan above the chatbar. Configure remaining story time, inspect the natural deadline and bargain fraction, or let AI establish a missing baseline. Turning the addon off hides lifespan without deleting it. [Thai guide and desktop/mobile screenshots](docs/workshop-lifespan-v0.84.0.th.md).
 
 **Fixed in 0.83.1:** Workshop can hide the draggable Death Note shortcut; dragging follows the pointer per frame. Addon settings can toggle unknown NPC name masking and use the active Persona for the player. Notebook ink reflows on panel reveal, resize and font loading. Page numbers have balanced arrow spacing, and the eye colour picker has a round swatch. [Thai report and screenshots](docs/death-note-v0.83.1.th.md).
 

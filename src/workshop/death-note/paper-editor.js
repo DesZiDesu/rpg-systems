@@ -1,6 +1,6 @@
-import {localId} from '../core.js?v=0.83.1';
-import {cleanPaper,PAPER_LIMITS} from './paper.js?v=0.83.1';
-import {t} from './strings.js?v=0.83.1';
+import {localId} from '../core.js?v=0.84.0';
+import {cleanPaper,PAPER_LIMITS} from './paper.js?v=0.84.0';
+import {t} from './strings.js?v=0.84.0';
 
 export function mountPaperEditor({host,paper,onChange,onError=()=>{},disabled=false}){
  let data=cleanPaper(paper),selection=null,drag=null,disposed=false;
