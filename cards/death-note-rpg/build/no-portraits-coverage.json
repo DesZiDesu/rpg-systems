@@ -1,0 +1,101 @@
+{
+  "edition": "no-portraits",
+  "npcBodies": 208,
+  "nativeVersions": 652,
+  "worldLore": 65,
+  "storyTemplates": 146,
+  "routes": 13,
+  "portraits": 0,
+  "openingCount": 10,
+  "openings": [
+    {
+      "number": 1,
+      "id": "falling-notebook",
+      "title": "วันที่สมุดตกลงมาต่อหน้า",
+      "continuity": "manga",
+      "paragraphs": 2,
+      "characters": 401
+    },
+    {
+      "number": 2,
+      "id": "light-finds-notebook",
+      "title": "วันที่ไลท์ได้รับสมุด",
+      "continuity": "manga",
+      "paragraphs": 2,
+      "characters": 444
+    },
+    {
+      "number": 3,
+      "id": "after-lind-tailor",
+      "title": "หลังลินด์ แอล. เทเลอร์เสียชีวิต",
+      "continuity": "manga",
+      "paragraphs": 2,
+      "characters": 492
+    },
+    {
+      "number": 4,
+      "id": "japanese-task-force",
+      "title": "สมาชิกหน่วยสืบสวนญี่ปุ่น",
+      "continuity": "manga",
+      "paragraphs": 2,
+      "characters": 431
+    },
+    {
+      "number": 5,
+      "id": "second-notebook-owner",
+      "title": "ผู้ได้รับสมุดอีกคน",
+      "continuity": "manga",
+      "paragraphs": 2,
+      "characters": 453
+    },
+    {
+      "number": 6,
+      "id": "light-up-new-world",
+      "title": "Light Up the New World",
+      "continuity": "jp-films",
+      "paragraphs": 2,
+      "characters": 547
+    },
+    {
+      "number": 7,
+      "id": "wammys-house",
+      "title": "เด็กคนหนึ่งแห่งบ้านแวมมีส์",
+      "continuity": "manga",
+      "paragraphs": 2,
+      "characters": 481
+    },
+    {
+      "number": 8,
+      "id": "after-l-manga",
+      "title": "หลังแอลเสียชีวิต — มังงะ",
+      "continuity": "manga",
+      "paragraphs": 2,
+      "characters": 505
+    },
+    {
+      "number": 9,
+      "id": "six-notebooks",
+      "title": "ศึกแย่งสมุดหกเล่ม",
+      "continuity": "jp-films",
+      "paragraphs": 2,
+      "characters": 521
+    },
+    {
+      "number": 10,
+      "id": "shinigami-after-three-weeks",
+      "title": "พบยมทูตหลังได้รับสมุดสามสัปดาห์",
+      "continuity": "manga",
+      "paragraphs": 2,
+      "characters": 482
+    }
+  ],
+  "files": 1076,
+  "allSubfileHashesVerified": true,
+  "allNpcVersionsPreserved": true,
+  "pngMetadataRoundTrip": true,
+  "jsonBytes": 296508,
+  "pngBytes": 2813910,
+  "sourceJsonBytes": 3695761,
+  "jsonSha256": "c6229a48822271f94bcb10c57a38d0f414f2e58430b34c75ee79bee727ca48c3",
+  "pngSha256": "9225e9fdba6cb256d760b2f1d69b2093f9fbc722abb44e2df089e86302f6e2d2"
+}

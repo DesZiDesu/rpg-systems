@@ -1,5 +1,7 @@
 # Death Note RPG
 
+ฉบับไม่มีภาพตัวละครแยกต่างหาก: **[Death-Note-RPG-No-Portraits.json](build/Death-Note-RPG-No-Portraits.json)** หรือ **[PNG](build/Death-Note-RPG-No-Portraits.png)** — ตัวละครและทุกเวอร์ชันอยู่ครบ มีข้อความเริ่มต้นภาษาไทย 10 แบบ แบบละ 2 ย่อหน้า เลือกโดยปัดข้อความแรกใน SillyTavern [อ่านฉากเริ่มทั้งหมดและวิธีใช้](build/Death-Note-RPG-No-Portraits.th.md) ฉาก 6/9 ใช้ Japanese films ส่วนที่เหลือใช้ Manga ในเมนู Campaign ฉากเริ่มซิงก์เข้าสถานะด้วยคำตอบ AI แรกตามปกติ ไม่ใช่ checkpoint อัตโนมัติ
+
 นำเข้า **[Death-Note-RPG.png](build/Death-Note-RPG.png)** หรือ **[Death-Note-RPG.json](build/Death-Note-RPG.json)** เพียงไฟล์เดียวใน SillyTavern ที่ติดตั้ง RoleForge **0.82.0 ขึ้นไป** ไม่ต้องนำเข้า World Pack, Lorebook หรือภาพแยก ไฟล์ทั้งสองมีข้อมูลเหมือนกัน เลือกนำเข้าอย่างใดอย่างหนึ่ง
 
 1. อัปเดต RoleForge แล้ว reload SillyTavern
@@ -33,6 +35,8 @@ Import either the single PNG card or the JSON alternative into SillyTavern with 
 ## Build and validation
 
 `node cards/death-note-rpg/tools/build.mjs` builds PNG and JSON, checks every subfile hash, validates the World Pack and Story schemas, checks all 13 routes in canon and free mode, and confirms PNG metadata round-trips. Raster assets remain unchanged; framing lives in RoleForge metadata.
+
+`node cards/death-note-rpg/tools/build-no-portraits.mjs` builds the separate no-portrait edition from that card without changing the original. It strips images from all base/alternate NPC records, repacks and checks the archive, and embeds the ten Thai greetings. `node --test tests/death-note-no-portraits.test.mjs` compares all NPC facts, every version and all Lore/mission bytes with the original. `node tests/death-note-no-portraits.real.browser.mjs` tests native JSON/PNG import, all ten greeting swipes, the source selector and image-free dossiers on desktop and touch-emulated mobile; it makes no provider-generation requests.
 
 Native validation: `node tests/death-note-card.real.browser.mjs` and repeat with `DN_CARD_FILE=.../Death-Note-RPG.png`. The tests use real SillyTavern import, Worker storage, Campaign and NPC Management, with fresh desktop and touch-emulated mobile browser contexts. Provider generation is controlled separately; this is not a physical iPhone test or a claim that every model follows the instructions perfectly.
 

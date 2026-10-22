@@ -1,0 +1,51 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "devices": [
+    {
+      "device": "desktop",
+      "format": "json",
+      "mobileTouchEmulation": false,
+      "oneFileImport": true,
+      "npcBodies": 208,
+      "versions": 652,
+      "worldLore": 65,
+      "storyTemplates": 146,
+      "allTenThaiGreetingsSwipedInOrder": true,
+      "greetingsWrapWithoutGeneration": true,
+      "allNpcBasesWithoutImages": true,
+      "dossierHasNoPhoto": true,
+      "beyondBirthdayRetained": true,
+      "thirteenCampaignRoutes": true
+    },
+    {
+      "device": "mobile",
+      "format": "png",
+      "mobileTouchEmulation": true,
+      "oneFileImport": true,
+      "npcBodies": 208,
+      "versions": 652,
+      "worldLore": 65,
+      "storyTemplates": 146,
+      "allTenThaiGreetingsSwipedInOrder": true,
+      "greetingsWrapWithoutGeneration": true,
+      "allNpcBasesWithoutImages": true,
+      "dossierHasNoPhoto": true,
+      "beyondBirthdayRetained": true,
+      "thirteenCampaignRoutes": true
+    }
+  ],
+  "providerRequests": 0,
+  "errors": [],
+  "pass": true,
+  "unitChecks": {
+    "file": "tests/death-note-no-portraits.test.mjs",
+    "passed": 5,
+    "failed": 0,
+    "scope": "Every base/alternate NPC fact, all Lore/mission bytes, no embedded images, all archive hashes, PNG/JSON round-trip, greeting order/length"
+  },
+  "limits": [
+    "Mobile uses Chromium touch emulation, not a physical iPhone.",
+    "Native checks verify card import, greeting selection and archive/UI content; no external model generation was made.",
+    "Starting scenes synchronize through ordinary first-reply RoleForge patches; they do not preload individual runtime checkpoints."
+  ]
+}
