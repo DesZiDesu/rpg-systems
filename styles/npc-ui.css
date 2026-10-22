@@ -430,3 +430,10 @@
 .trpg-manager .trpg-list-copy strong.rf-npc-eye-identity{display:block;-webkit-line-clamp:unset;overflow:visible}
 .trpg-manager .trpg-list-copy strong.rf-npc-true-name{color:#e78287}
 .trpg-manager .trpg-list-copy .rf-npc-original-lifespan{white-space:normal;overflow:visible}
+
+/* Eye ink must override gradient text fill in every chat theme. */
+.trpg-manager .rf-npc-true-name,.trpg-chat .rf-npc-true-name{color:var(--rf-eye-color,#e78287)!important;-webkit-text-fill-color:var(--rf-eye-color,#e78287)!important;background-image:none!important;overflow-wrap:anywhere}
+.trpg-manager .rf-npc-original-lifespan,.trpg-chat .rf-npc-original-lifespan{color:var(--rf-eye-color,#e78287)!important;-webkit-text-fill-color:var(--rf-eye-color,#e78287)!important;background-image:none!important;white-space:normal}
+.trpg-chat .trpg-eye-dialogue-label{display:block;font-size:.78em;line-height:1.6;margin:0 0 .7em;letter-spacing:.03em;overflow-wrap:anywhere}
+.trpg-chat .rf-npc-eye-identity{min-width:0;white-space:normal;overflow-wrap:anywhere}
+.rf-dn-npc-facts p{overflow-wrap:anywhere;color:var(--trpg-muted,#aaa)}

@@ -32,7 +32,7 @@ test('all Lore and mission records remain byte-for-byte equal to the original ed
  const lore=await get('indexes/lore.json'),stories=await get('indexes/stories.json');assert.equal(lore.length,65);assert.equal(stories.length,146);
  for(const [path,read]of files)if(path.startsWith('lore/')||path.startsWith('stories/')||path.startsWith('indexes/'))assert.deepEqual(await read(),await oldFiles.get(path)(),path);
  assert.deepEqual(card.data.extensions.roleforge_campaigns,original.data.extensions.roleforge_campaigns);assert.equal(card.data.extensions.roleforge_campaigns.options.length,13);
- assert.deepEqual(card.data.extensions.roleforge_death_note,original.data.extensions.roleforge_death_note);
+ const rules=card.data.extensions.roleforge_death_note;assert.deepEqual({...rules,greetingBooks:undefined},{...original.data.extensions.roleforge_death_note,greetingBooks:undefined});assert.equal(rules.greetingBooks.length,2);assert.equal(rules.actorEyes['dn-beyond-birthday'].source,'innate');
 });
 test('no NPC image or image icon survives in the embedded payload or metadata',async()=>{
  assert(!JSON.stringify(card).includes('data:image/'));assert.deepEqual(card.data.extensions.roleforge_sources.portraits,[]);

@@ -1,8 +1,9 @@
-import {uiText,uiMarkup} from './ui-language.js?v=0.82.2';
-import { element } from './npc-chat.js?v=0.82.2';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.82.2';
-import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.82.2';
-import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.82.2';
+import {deathNoteSummary,playerNpc} from './npc-visibility.js?v=0.83.0';
+import {uiText,uiMarkup} from './ui-language.js?v=0.83.0';
+import { element } from './npc-chat.js?v=0.83.0';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.83.0';
+import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.83.0';
+import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.83.0';
 
 export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
     let owner = '', dirty = false, query = '', editing = null, saving = false, session=0, preferencesOpen=false, undo=[],renderList=null;
@@ -62,6 +63,8 @@ export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
         editing=null;dirty=false;panel.replaceChildren();workspaceUi.onView?.('list');
         const optionsPanel=workspaceUi.optionsPanel||panel;if(optionsPanel!==panel)optionsPanel.replaceChildren();
         const info=api.scopeInfo(), all=entries();
+        const notebook=deathNoteSummary();if(notebook){const section=element('details','trpg-section rf-dn-lore-facts');section.append(element('summary','','Death Note'),element('p','trpg-muted',notebook.eyeSource));for(const book of notebook.books){const holder=book.holderId==='player'?uiText('คุณ'):playerNpc({id:book.holderId,name:'???'})?.name||'—';section.append(element('p','',book.id+' · '+holder));}panel.append(section);}
+
         optionsPanel.append(element('p','trpg-muted trpg-lore-scope',info?uiText("Character · {0} — ใช้ร่วมกันทุกแชทของการ์ดนี้",[info.label]):uiText("เปิดแชทของการ์ดตัวละครเดี่ยวเพื่อจัดการ Lore")));
         if(!info){if(optionsPanel!==panel)panel.append(element('p','trpg-empty',uiText("เปิดแชทของการ์ดตัวละครเดี่ยวเพื่อจัดการ Lore")));return;}
         const options=api.loreOptions?.()||{budget:LORE_ACTIVE_LIMIT,mode:'all'};

@@ -1,8 +1,13 @@
-import {uiLanguage} from '../../ui-language.js?v=0.82.2';
+import {uiLanguage} from '../../ui-language.js?v=0.83.0';
 
 // Only authored interface text passes through this table. Saved names, prose
 // and manuscripts are interpolated after static template parts are translated.
 export const ENGLISH_UI=Object.freeze({
+ 'บันทึกเก่า · ไม่ระบุเล่ม':'Legacy entry · notebook not recorded',
+ 'ยมทูตเจ้าของปัจจุบัน':'Current Shinigami owner',
+ 'ยมทูตประจำสมุด':'Attached Shinigami',
+ 'ยังไม่ทราบ':'Unknown',
+ 'วิธีใช้':'Guide',
  'ข้อความบนกระดาษ':'Text on the page',
  'พิมพ์บนกระดาษ…':'Write on the page…',
  'ขนาดตัวอักษร':'Text size',
@@ -94,7 +99,7 @@ export const ENGLISH_UI=Object.freeze({
  'ยังมองไม่เห็น':'Not yet visible',
  'ยังไม่ทราบยมทูตประจำสมุด':'The attached Shinigami is not yet identified',
  'กู้คืนจากข้อความในเรื่อง · ไม่ได้บันทึกเวลาจดไว้':'Recovered from the story · writing time was not recorded',
- 'สละสิทธิ์ในสมุดเล่มสุดท้ายแล้ว ความทรงจำเกี่ยวกับ Death Note และดวงตายมทูตหายไป อายุขัยที่จ่ายไปไม่คืนกลับ':'You relinquished your last notebook. Death Note memories and Shinigami Eyes are lost. The lifespan you paid is not returned.',
+ 'สละสิทธิ์ในสมุดเล่มสุดท้ายแล้ว ความทรงจำเกี่ยวกับ Death Note และดวงตาจากข้อตกลงหายไป ดวงตาที่มีโดยไม่แลกยังอยู่ อายุขัยที่จ่ายไปไม่คืนกลับ':'You relinquished your last notebook. Death Note memories and bargain eyes are lost. Non-bargain eyes remain. The lifespan you paid is not returned.',
  'แตะปก':'Touch',
  'หยิบสมุด':'Take',
  'ปล่อยไว้':'Leave',
@@ -115,7 +120,7 @@ export const ENGLISH_UI=Object.freeze({
  'คุณยังเป็นเจ้าของสิทธิ์และไม่สูญเสียความทรงจำ คนอื่นอาจหยิบสมุดไปได้':'You keep ownership and your memories. Someone else may pick it up.',
  'สละสิทธิ์':'Relinquish',
  'ลายเซ็นการสละสิทธิ์':'A signature of relinquishment',
- 'หากเป็นสมุดเล่มสุดท้ายของคุณ ความทรงจำเรื่องสมุดและดวงตาจะหายไป ผู้ยืมที่ถืออยู่จะรับสิทธิ์แทน หากไม่มีผู้ถือ สมุดจะรอเจ้าของคนใหม่':'If this is your last notebook, its memories and your Eyes are lost. A borrower holding it receives ownership; otherwise it waits for a new owner.',
+ 'หากเป็นสมุดเล่มสุดท้ายของคุณ ความทรงจำเรื่องสมุดและดวงตาจากข้อตกลงจะหายไป ดวงตาที่มีโดยไม่แลกยังอยู่ ผู้ยืมที่ถืออยู่จะรับสิทธิ์แทน หากไม่มีผู้ถือ สมุดจะรอเจ้าของคนใหม่':'If this is your last notebook, its memories and bargain eyes are lost; non-bargain eyes remain. A borrower holding it receives ownership; otherwise it waits for a new owner.',
  'ฉันเข้าใจและยอมสละสิทธิ์':'I understand and relinquish ownership',
  'สิทธิ์ในสมุด':'Ownership',
  'สมุดอยู่กับใคร':'Whose notebook is it?',

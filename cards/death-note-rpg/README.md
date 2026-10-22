@@ -41,3 +41,6 @@ Import either the single PNG card or the JSON alternative into SillyTavern with 
 Native validation: `node tests/death-note-card.real.browser.mjs` and repeat with `DN_CARD_FILE=.../Death-Note-RPG.png`. The tests use real SillyTavern import, Worker storage, Campaign and NPC Management, with fresh desktop and touch-emulated mobile browser contexts. Provider generation is controlled separately; this is not a physical iPhone test or a claim that every model follows the instructions perfectly.
 
 ภาพจาก SillyTavern: [เลือกเส้นเรื่องบนคอม](screenshots/desktop-campaign.png) · [เลือกบนมือถือ](screenshots/mobile-campaign.png) · [Portrait บนคอม](screenshots/desktop-portrait.png) · [Portrait บนมือถือ](screenshots/mobile-portrait.png)
+
+
+อัปเดตสำหรับ RoleForge 0.83.0: ตั้งค่าดวงตาผู้เล่นและ NPC ใน Workshop → Death Note → ตั้งค่า ได้ทั้งแบบแลกและไม่ผ่านข้อตกลง Beyond Birthday ระบุเป็นมนุษย์ที่มีดวงตาตั้งแต่เกิด ไม่ได้รับสมุดอัตโนมัติ แต่ละเล่มเก็บรหัสเดิมและแยกยมทูตดั้งเดิม เจ้าของปัจจุบัน ผู้ติดตาม ผู้ถือ และสิทธิ์มนุษย์ไว้ การ์ดเก่ารองรับการอ่านข้อมูลเดิม ไม่ต้องนำเข้าใหม่เพื่อใช้ระบบใหม่ หากต้องการ metadata ฉบับใหม่ใช้ไฟล์ build นี้กับแชทใหม่ โดยเก็บแชทเก่าไว้ได้

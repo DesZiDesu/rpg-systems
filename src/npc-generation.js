@@ -1,4 +1,4 @@
-import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.82.2';
+import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.83.0';
 export const canGenerateNpcDraft=hasTaskGeneration;
 export function requestNpcDraft(context,prompt,responseLength){
  return requestDataTask(context,{systemPrompt:'Reply with one concise valid JSON object. No markdown, explanation or hidden reasoning.',prompt,responseLength,trimNames:false},

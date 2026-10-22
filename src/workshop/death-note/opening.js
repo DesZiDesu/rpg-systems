@@ -31,3 +31,11 @@ export function originalShinigamiEvents(source,npcs,books){
  }
  return events;
 }
+
+// Author-defined facts belong only to the active greeting, never to unused
+// alternatives. Physical books and NPC rights can be seeded without spoilers.
+export function greetingBooks(chat,state){
+ const first=(chat||[]).find(m=>!m.is_system);if(!first||first.is_user)return [];
+ const match=(state.deathNoteRules?.greetingBooks||[]).find(row=>typeof row.text==='string'&&visible(row.text).trim()===visible(first.mes).trim());
+ return Array.isArray(match?.books)?match.books.slice(0,6):[];
+}

@@ -93,9 +93,9 @@
   "allSubfileHashesVerified": true,
   "allNpcVersionsPreserved": true,
   "pngMetadataRoundTrip": true,
-  "jsonBytes": 300508,
-  "pngBytes": 2819246,
-  "sourceJsonBytes": 3699615,
-  "jsonSha256": "326616c97ce1ff5ac144c9299cfa345220432de15f4354acfd8b700e9af6eca8",
-  "pngSha256": "1f8a8ee9789dd77dd7aad07b86bef8b95e606228af8761b6331d9cc82405ed56"
+  "jsonBytes": 303727,
+  "pngBytes": 2823538,
+  "sourceJsonBytes": 3700099,
+  "jsonSha256": "671a8e71fa21c0a5a72426b947c6d3a1e936874bfbdb06f6ef133ad55df194c7",
+  "pngSha256": "046dca583c07b6053d445f2364e0686aa574526eeb49c5d45689167d2d048b87"
 }

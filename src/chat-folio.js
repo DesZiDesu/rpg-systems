@@ -1,4 +1,5 @@
-import {usable,keyName} from './npc-core.js?v=0.82.2';
+import {appendPlayerNpcName} from './npc-visibility.js?v=0.83.0';
+import {usable,keyName} from './npc-core.js?v=0.83.0';
 const fact=value=>typeof value==='string'&&usable(value);
 export const illustratedChatTheme=theme=>['chapter','codex','aincrad'].includes(theme);
 
@@ -37,14 +38,17 @@ export function headerBadge(profile={},appearance={}) {
 
 // Only owned presentation nodes are added. Saved story/Regex text stays intact.
 export function dialogueFrame(name,appearance={},doc=globalThis.document) {
+    const profile=typeof name==='object'&&name?name:null,displayName=profile?.name||name||'NPC';
+    const paint=node=>profile?appendPlayerNpcName(node,profile,'dialogue'):(node.textContent=displayName,node);
     const body=doc.createElement('div');body.className=`trpg-dialogue${appearance.dialogue===false?' trpg-unframed':''}`;
     if(appearance.theme==='folio'&&appearance.dialogue!==false){
-        const label=doc.createElement('span');label.className='trpg-dialogue-label';label.textContent=name||'NPC';label.setAttribute('aria-hidden','true');body.append(label);
+        const label=doc.createElement('span');label.className='trpg-dialogue-label';paint(label);label.setAttribute('aria-hidden','true');body.append(label);
     }
     if(illustratedChatTheme(appearance.theme)&&appearance.dialogue!==false){
         const top=doc.createElement('span');top.className='trpg-speech-top';top.setAttribute('aria-hidden','true');
         const book=chatDesignIcon('book',doc);
-        const label=doc.createElement('span');label.className='trpg-dialogue-label';label.textContent=name||'NPC';top.append(book,label);body.append(top);
+        const label=doc.createElement('span');label.className='trpg-dialogue-label';paint(label);top.append(book,label);body.append(top);
     }
+    if(profile?._rfNameSight&&profile._rfEyeDisplay?.dialogue!==false&&!body.querySelector('.trpg-dialogue-label')){const label=doc.createElement('span');label.className='trpg-dialogue-label trpg-eye-dialogue-label';paint(label);body.append(label);}
     const copy=doc.createElement('span');copy.className='trpg-dialogue-copy';body.append(copy);return body;
 }

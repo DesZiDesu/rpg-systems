@@ -9,9 +9,9 @@ export function containsIdentity(text,value){
 }
 const speculative=/\b(?:if|would|could|will|pretend|imagine|plans? to)\b|สมมติ|กำลังจะ|อาจจะ|ถ้าหาก|ถ้าคุณ|ถ้าฉัน|ถ้าผม|อยาก.{0,24}(?:เห็น|ดู|อ่าน|รู้)|ตั้งใจจะ/iu;
 const unavailableFace=/ไม่(?:เคย)?เห็น(?:หน้า|ใบหน้า)|ยังไม่.{0,18}(?:เห็น|หน้า)|(?:ปิดบัง|ปกปิด|บดบัง|เบลอ|พร่ามัว).{0,12}(?:หน้า|ภาพ)|(?:หน้า|ภาพ).{0,12}(?:เบลอ|พร่ามัว|ถูกปิด|ไม่ชัด)|\b(?:cannot|can't|didn't|not|never)\b.{0,22}(?:see|seen|face|photo)|\b(?:masked|blurred|obscured|concealed)\b/iu;
-export function seenFace(evidence){
+export function seenFace(evidence,{npcViewer=false}={}){
  if(speculative.test(evidence)||unavailableFace.test(evidence))return false;
- if(/\b(?:he|she|they|an NPC)\b.{0,20}\b(?:sees?|saw|views?)\b|(?:เขา|เธอ|พวกเขา)มองเห็น/iu.test(evidence)&&!/(?:คุณ|ฉัน|ผม|ผู้เล่น)|\b(?:you|I|player)\b/iu.test(evidence))return false;
+ if(!npcViewer&&/\b(?:he|she|they|an NPC)\b.{0,20}\b(?:sees?|saw|views?)\b|(?:เขา|เธอ|พวกเขา)มองเห็น/iu.test(evidence)&&!/(?:คุณ|ฉัน|ผม|ผู้เล่น)|\b(?:you|I|player)\b/iu.test(evidence))return false;
  const face=/ใบหน้า|หน้าตา|ภาพถ่าย|รูปถ่าย|รูปหน้า|ภาพใบหน้า|\b(?:face|photograph|photo|mugshot|portrait)\b/iu.test(evidence);
  const witnessed=/เห็น|มอง|เผย|ถอดหน้ากาก|ชัดเจน|แสดง|ปรากฏ|จดจำ|จำ(?:ใบ)?หน้า|รู้(?:จัก)?ชื่อและ(?:ใบหน้า|หน้าตา)|รู้ทั้งชื่อและหน้าตา|\b(?:see|sees|seen|saw|view|views|viewed|shows?|display\w*|reveal\w*|unmask\w*|clear\w*|recogniz\w*)\b/iu.test(evidence);
  return face&&witnessed;

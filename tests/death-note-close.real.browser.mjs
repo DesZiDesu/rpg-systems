@@ -4,7 +4,7 @@ import {createRequire} from 'node:module';
 
 const require = createRequire(import.meta.url);
 const {chromium} = require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES + '/playwright');
-const base = 'http://127.0.0.1:18182';
+const base = process.env.ST_REAL_URL || 'http://127.0.0.1:18182';
 const out = process.env.DN_ARTIFACTS || '/workspace/artifacts/death-note-close-v0.81.1';
 const DRAFT = 'DEATH_NOTE_CLOSE_UNSENT_DRAFT';
 const names = ['Elias Voss', 'Mara Hale', 'Silas Vale', 'Ada North'];
@@ -24,7 +24,7 @@ async function ready() {
         const c = SillyTavern.getContext();
         c.eventSource.on(c.eventTypes.APP_READY, () => {window.__dnCloseReady = true;});
     });
-    const loaded = p.waitForFunction(() => window.__dnCloseReady, {}, {timeout: 120000});
+    const loaded = p.waitForFunction(() => window.__dnCloseReady || SillyTavern.getContext().eventSource.autoFireLastArgs?.has(SillyTavern.getContext().eventTypes.APP_READY), {}, {timeout: 120000});
     const welcome = p.locator('dialog.popup').filter({hasText: 'Welcome to SillyTavern!'}).locator('.popup-button-ok');
     await Promise.race([loaded, welcome.click({timeout: 120000}).then(() => loaded)]);
 }
