@@ -1,7 +1,7 @@
-import {localId} from '../core.js?v=0.82.1';
-import {visibleText,anchorActive} from './core.js?v=0.82.1';
-import {trueNameOf} from './names.js?v=0.82.1';
-import {faceKnowledge} from './faces.js?v=0.82.1';
+import {localId} from '../core.js?v=0.82.2';
+import {visibleText,anchorActive} from './core.js?v=0.82.2';
+import {trueNameSpellings} from './names.js?v=0.82.2';
+import {faceKnowledge} from './faces.js?v=0.82.2';
 
 export const PAPER='roleforge_death_note_paper';
 export const PAPER_LIMITS=Object.freeze({pages:32,blocks:24,text:1200,characters:48000,minSize:12,maxSize:44});
@@ -29,8 +29,14 @@ const norm=s=>String(s||'').normalize('NFKC').replace(/\s+/gu,' ').trim().toLoca
 function timing(text){const m=text.match(/(?:หลังจาก|อีก|ใน|in|after)\s*(\d+)\s*(วินาที|นาที|ชั่วโมง|วัน|seconds?|minutes?|hours?|days?)/iu);if(!m)return {};const scale=/วินาที|second/iu.test(m[2])?1:/นาที|minute/iu.test(m[2])?60:/ชั่วโมง|hour/iu.test(m[2])?3600:86400;return {timing:'scheduled',delaySeconds:Number(m[1])*scale};}
 export function paperInputs(paper,state,world,{optional=false}={}){
  const normalized=cleanPaper(paper),current=normalized.pages[normalized.active],fresh=current.blocks.filter(b=>b.text.trim()&&b.text!==b.submittedText),names=new Map(),entries=[],loose=[];
- for(const npc of state.npcs||[])for(const name of [trueNameOf(state,npc),npc.name,...npc.aliases||[],world.claims?.[npc.id]?.name]){const key=norm(name);if(!key||key==='???')continue;const list=names.get(key)||[];if(!list.includes(npc))list.push(npc);names.set(key,list);}
- for(const block of fresh){let entry;for(const line of block.text.split(/\r?\n/u)){const name=line.trim().replace(/^(?:name|ชื่อ)\s*[:：]\s*/iu,''),matches=names.get(norm(name));if(matches?.length>1)throw Error('ระบุใบหน้าจากโรลยังไม่ได้ ชื่อนี้ตรงกับหลายคน');if(matches?.length===1){entry={name,target:matches[0],lines:[],blocks:new Set([block.id]),x:block.x,y:block.y};entries.push(entry);}else if(entry)entry.lines.push(line);else if(line.trim())loose.push({text:line,block});}}
+ for(const npc of state.npcs||[])for(const name of [...trueNameSpellings(state,npc),npc.name,...npc.aliases||[],world.claims?.[npc.id]?.name]){const key=norm(name);if(!key||key==='???')continue;const list=names.get(key)||[];if(!list.includes(npc))list.push(npc);names.set(key,list);}
+ const spellings=[...names.keys()].sort((a,b)=>b.length-a.length);
+ for(const block of fresh){let entry;for(const line of block.text.split(/\r?\n/u)){
+  const written=line.trim().normalize('NFKC').replace(/^(?:name|ชื่อ)\s*[:：]\s*/iu,'').replace(/\s+/gu,' '),normalizedLine=norm(written),prefix=names.has(normalizedLine)?normalizedLine:spellings.find(n=>{if(!normalizedLine.startsWith(n))return false;const rest=normalizedLine.slice(n.length);return /^[,:：;—–-]/u.test(rest.trimStart())||/^\s+(?:ตาย|เสียชีวิต|หัวใจ|โดน|ถูก|อุบัติเหตุ|หลังจาก|อีก|ใน\s*\d|cause\b|death\b|dies?\b|heart\b|after\b|in\s+\d)/iu.test(rest);});
+  const name=prefix?written.slice(0,prefix.length).trim():written,tail=prefix?written.slice(prefix.length).replace(/^[\s,:：;—–-]+/u,'').trim():'',matches=prefix?names.get(prefix):null;
+  if(matches?.length>1)throw Error('ระบุใบหน้าจากโรลยังไม่ได้ ชื่อนี้ตรงกับหลายคน');
+  if(matches?.length===1){entry={name,target:matches[0],lines:tail?[tail]:[],blocks:new Set([block.id]),x:block.x,y:block.y};entries.push(entry);}else if(entry)entry.lines.push(line);else if(line.trim())loose.push({text:line,block});
+ }}
  for(const {text,block}of loose){if(!entries.length)break;const nearest=entries.toSorted((a,b)=>Math.hypot(a.x-block.x,a.y-block.y)-Math.hypot(b.x-block.x,b.y-block.y))[0];nearest.lines.push(text);nearest.blocks.add(block.id);}
  if(!entries.length&&optional)return [];
  if(!entries.length)throw Error('เขียนชื่อที่ต้องการจดในบรรทัดของตัวเองก่อน');

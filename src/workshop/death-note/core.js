@@ -1,7 +1,10 @@
-import {localId} from '../core.js?v=0.82.1';
-import {norm,trueNameOf} from './world.js?v=0.82.1';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.82.1';
-// Installing the addon never grants an item. Keep legacy journal keys for saved chats.
+import {localId} from '../core.js?v=0.82.2';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.82.2';
+import {matchesTrueName,trueNameSpellings} from './names.js?v=0.82.2';
+import {containsIdentity} from './identity.js?v=0.82.2';
+import {implicitResults,namesInResult,completedDeath} from './outcomes.js?v=0.82.2';
+// Installing alone grants no item; an active greeting can establish possession.
+// Keep legacy journal keys for saved chats.
 export const INSCRIPTIONS = 'roleforge_death_note_inscriptions_preview';
 export const RESULTS = 'roleforge_death_note_results_preview';
 export const PROMPT = 'roleforge_death_note_write_preview';
@@ -20,13 +23,13 @@ export function ownedNotebook(state) {
 export function eligibleTarget(state, {name, targetId, faceKnown = false} = {}) {
   if (!ownedNotebook(state)) return {ok:false,code:'ownership',message:'ยังไม่ได้ถือ Death Note อยู่ในกระเป๋า'};
   if (!String(name||'').trim() || String(name).length>120 || /^\?+$/u.test(String(name).trim())) return {ok:false,code:'name',message:'เขียนชื่อที่คุณต้องการลงในสมุด'};
-  const targets=(state.npcs||[]).filter(npc=>targetId?npc.id===targetId:key(npc.name)===key(name));
+  const targets=(state.npcs||[]).filter(npc=>targetId?npc.id===targetId:[npc.name,...trueNameSpellings(state,npc)].some(n=>key(n)===key(name)));
   if(targets.length!==1)return {ok:false,code:'name',message:'เลือกใบหน้าที่กำลังนึกถึง'};
   const target=targets[0];
   if(!safeId(target.id)||!faceKnown)return {ok:false,code:'face',message:'ต้องเคยเห็นและจดจำใบหน้าของคนนี้'};
   if(!/^(?:human|มนุษย์)$/iu.test(String(target.race||'').trim()))return {ok:false,code:'species',message:'กติกาสมุดใช้กับมนุษย์เท่านั้น'};
   if(target.stats?.hp===0||/^(?:deceased|dead|เสียชีวิต)$/iu.test(target.activity||''))return {ok:false,code:'deceased',message:'คนนี้เสียชีวิตแล้วในเนื้อเรื่อง'};
-  return {ok:true,target,validName:norm(name)===norm(trueNameOf(state,target))};
+  return {ok:true,target,validName:matchesTrueName(state,target,name)};
 }
 export function storySeconds(state) {
   const [hours = 0, minutes = 0, seconds = 0] = String(state.worldClock?.time || '00:00').split(':').map(Number);
@@ -60,24 +63,24 @@ export function makeInscription(state, input, records = [], id = 'dn-' + localId
   if (!Number.isSafeInteger(delaySeconds) || delaySeconds < 40 || delaySeconds > 23 * 86400) throw Error('กำหนดเวลาตั้งแต่ 40 วินาที ถึง 23 วันในเรื่อง');
   const cause = String(input.cause || 'หัวใจวาย').trim().slice(0, 160);
   if (!cause) throw Error('ระบุสาเหตุก่อนจดชื่อ');
-  return {id, targetId: checked.target.id, name:String(input.name).trim(), validName:checked.validName, cause, details: String(input.details || '').trim().slice(0, 500), delaySeconds, writtenStorySeconds: storySeconds(state), dueStorySeconds: storySeconds(state) + delaySeconds, faceKnown: true, createdAt: new Date().toISOString()};
+  return {id, targetId: checked.target.id, name:String(input.name).trim(), validName:checked.validName, acceptedNames:checked.validName?trueNameSpellings(state,checked.target):[], cause, details: String(input.details || '').trim().slice(0, 500), delaySeconds, writtenStorySeconds: storySeconds(state), dueStorySeconds: storySeconds(state) + delaySeconds, faceKnown: true, createdAt: new Date().toISOString()};
 }
 export function continuationInstruction(request, {pending = false} = {}) {
   return `ROLEFORGE_DEATH_NOTE — NOTEBOOK ACTION\n${pending ? 'An already recorded inscription is pending. Continue normal roleplay; never create a new inscription or reset its clock.' : request.trigger==='next-reply'?'The player wrote this name on the notebook paper and chose to wait for the next story reply. The written ink is action consent; do not invent a User turn.':'The player explicitly pressed the notebook inscription button. This is action consent; do not invent a User turn.'}\nINSCRIPTION: ${JSON.stringify(request)}\nWhen the host uses Continue, append to the existing assistant message from its ending. On a normal reply, answer the actual latest User turn while applying this inscription. Write only new story, never repeat the old scene, add player dialogue, a User message, or send an inventory purchase. The player physically holds a notebook and has chosen a remembered human face. The written name is NOT automatically valid. Engine name check: ${request.validName===false?'WRONG NAME. The inscription is INEFFECTIVE. Do not kill or injure this person, do not emit any HP/death patch; narrate that nothing happens without revealing the real name.':'MATCHES canonical true name.'} Apply the established fictional Death Note/world rules; no effect before delaySeconds of STORY time. No real-time waiting or hidden model call. For the default 40 seconds you may narrate those seconds in this continuation; for a scheduled later time continue the current scene and keep the inscription waiting until that time. Do not force a time skip to the scheduled time. A person already known to be dead cannot die twice. Unsupported or impossible details must not magically occur; explain an ineffective outcome when canon requires it.\nWhen this continuation establishes a result, append <!--roleforge_death_note:{"requestId":"${request.id}","status":"waiting|resolved|ineffective","elapsedSeconds":0,"evidence":"exact quote of the NEW visible story naming ${request.name}"}-->. Use the actual elapsed STORY seconds since writing. A resolved result requires elapsedSeconds >= ${request.delaySeconds} and an explicit completed death in that quote. For waiting, do not change the NPC's HP or activity. Only after a confirmed death, include the existing tretaresia_patch NPC update using stable id ${request.targetId}, stats.hp:0 and activity:"Deceased", preserving all other profile/history fields. Keep the normal sceneTracker day/time consistent with the elapsed story time; it has minute precision. Use normal tr-narrative/tr-dialogue blocks and preserve the notebook item. Never reveal an unknown person's real name from a hidden library.`;
 }
-export function parseResults(source, records) {
+export function parseResults(source, records, {messageIndex=null}={}) {
   const results = [], text = visibleText(source);
   for (const match of String(source || '').matchAll(/<!--\s*roleforge_death_note\s*:\s*(\{[\s\S]*?\})\s*-->/giu)) {
     try {
       const value = JSON.parse(match[1]), entry = records.find(record => record.id === value.requestId);
       if (!entry || !['waiting', 'resolved', 'ineffective'].includes(value.status) || !Number.isSafeInteger(value.elapsedSeconds) || value.elapsedSeconds < 0 || value.elapsedSeconds > 23 * 86400) continue;
       const evidence = String(value.evidence || '').trim().slice(0, 1200);
-      if (!evidence || !text.includes(visibleText(evidence)) || !key(evidence).includes(key(entry.name))) continue;
-      if (value.status === 'resolved' && (entry.validName===false || value.elapsedSeconds < entry.delaySeconds || !/เสียชีวิต|died|is dead|has died/iu.test(evidence) || /ยังไม่|ไม่ได้|will die|not dead|not died|อาจจะ/iu.test(evidence))) continue;
+      if (!evidence || !text.includes(visibleText(evidence)) || !namesInResult(entry).some(n=>containsIdentity(evidence,n))) continue;
+      if (value.status === 'resolved' && (entry.validName===false || value.elapsedSeconds < entry.delaySeconds || !completedDeath(evidence))) continue;
       results.push({requestId: value.requestId, status: value.status, elapsedSeconds: value.elapsedSeconds, evidence});
     } catch { /* An unreadable protocol is never a success. */ }
   }
-  return results;
+  return /<!--\s*roleforge_death_note\s*:/iu.test(String(source||''))?results:[...results,...(messageIndex===null?implicitResults(source,records):records.flatMap(entry=>implicitResults(entry.messageIndex===messageIndex?visibleText(source).slice(entry.offset):source,records).filter(r=>r.requestId===entry.id)))];
 }
 export async function continueInscription(options) {
   const batch=await continueInscriptions({...options,inputs:[options.input],onQueued:requests=>options.onQueued?.(requests[0])});

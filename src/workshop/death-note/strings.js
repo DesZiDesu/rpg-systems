@@ -1,4 +1,4 @@
-import {uiLanguage} from '../../ui-language.js?v=0.82.1';
+import {uiLanguage} from '../../ui-language.js?v=0.82.2';
 
 // Only authored interface text passes through this table. Saved names, prose
 // and manuscripts are interpolated after static template parts are translated.
@@ -92,6 +92,8 @@ export const ENGLISH_UI=Object.freeze({
  'สมุดที่ยังเอื้อมไม่ถึง':'A notebook beyond your reach',
  'ในฉาก':'In the scene',
  'ยังมองไม่เห็น':'Not yet visible',
+ 'ยังไม่ทราบยมทูตประจำสมุด':'The attached Shinigami is not yet identified',
+ 'กู้คืนจากข้อความในเรื่อง · ไม่ได้บันทึกเวลาจดไว้':'Recovered from the story · writing time was not recorded',
  'สละสิทธิ์ในสมุดเล่มสุดท้ายแล้ว ความทรงจำเกี่ยวกับ Death Note และดวงตายมทูตหายไป อายุขัยที่จ่ายไปไม่คืนกลับ':'You relinquished your last notebook. Death Note memories and Shinigami Eyes are lost. The lifespan you paid is not returned.',
  'แตะปก':'Touch',
  'หยิบสมุด':'Take',

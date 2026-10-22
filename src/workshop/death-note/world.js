@@ -1,9 +1,10 @@
-import {localId} from '../core.js?v=0.82.1';
-import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.82.1';
-import {observedIdentities,identityBound,learnedName,seenFace} from './identity.js?v=0.82.1';
-import {faceKnowledge} from './faces.js?v=0.82.1';
-import {trueNameOf} from './names.js?v=0.82.1';
-export {trueNameOf} from './names.js?v=0.82.1';
+import {localId} from '../core.js?v=0.82.2';
+import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.82.2';
+import {observedIdentities,identityBound,learnedName,seenFace} from './identity.js?v=0.82.2';
+import {faceKnowledge} from './faces.js?v=0.82.2';
+import {trueNameOf,trueNameSpellings} from './names.js?v=0.82.2';
+import {openingBook,originalShinigamiEvents} from './opening.js?v=0.82.2';
+export {trueNameOf} from './names.js?v=0.82.2';
 // Chat-local notebook rules. Legacy journal keys remain readable after the preview. Canonical NPC records are never renamed.
 export const WORLD_EVENTS = 'roleforge_death_note_world_preview';
 export const WORLD_PROMPT = 'roleforge_death_note_world_preview';
@@ -22,7 +23,7 @@ function introduction(quote, name) {
  return name && !/\b(?:not|don't|if|pretend|will)\b|ไม่ได้ชื่อ|ยังไม่บอก|สมมติ|ถ้าฉัน|ถ้าผม/iu.test(quote) && new RegExp('(?:my name is|call me|I am named|I am called|ชื่อ(?:ของ)?(?:ฉัน|ผม|ข้า|เรา|ดิฉัน)(?:คือ)?|(?:ฉัน|ผม|ข้า|เรา|ดิฉัน)ชื่อ)\\s*["“‘\']?'+escaped+'(?=$|[\\s,.!?"”’\']|ครับ|ค่ะ|นะ)','iu').test(quote);
 }
 export function storyEvents(source, state) {
- const npcs=state.npcs||[],events=observedIdentities(source,npcs),text=plain(source);
+ const npcs=(state.npcs||[]).map(n=>({...n,aliases:[...n.aliases||[],...trueNameSpellings(state,n)]})),events=observedIdentities(source,npcs),text=plain(source);
  // Direct tagged self-introductions need no model protocol and can contain a lie.
  for(const m of String(source||'').matchAll(/<tr-dialogue\b[^>]*\bname=(?:"([^"]+)"|'([^']+)')[^>]*>([\s\S]*?)<\/tr-dialogue>/giu)) {
   const speaker=m[1]||m[2],npc=npcs.find(n=>norm(n.name)===norm(speaker)||n.id===speaker);if(!npc)continue;
@@ -87,9 +88,12 @@ export function applyEvent(world,e) {
 export function worldState(chat,state) {
  const w=emptyWorld(),rows=(chat||[]).flatMap(m=>m.is_user||m.is_system?[]:activeEvents(m)),recorded=new Set(rows.filter(e=>['register','discover'].includes(e.type)).map(e=>e.bookId));
  const configs=Array.isArray(state.deathNoteRules?.books)?state.deathNoteRules.books:[];
+ const opening=openingBook(chat,state,(state.inventory||[]).filter(notebookItem));if(opening){const config=configs.find(b=>(b.bookId||b.itemId)===opening.bookId);applyEvent(w,{...opening,shinigamiId:config?.originalShinigamiId||''});}
  for(const config of configs){const id=config.bookId||config.itemId;if(!safe(id)||recorded.has(id))continue;const held=(state.inventory||[]).some(i=>i.id===config.itemId&&notebookItem(i));if(!held&&!config.holderId&&!config.location)continue;applyEvent(w,{type:'register',bookId:id,itemId:config.itemId||id,ownerId:config.ownerId|| (held?'player':''),holderId:config.holderId|| (held?'player':''),firstHumanOwnerId:config.firstHumanOwnerId||config.ownerId,shinigamiId:config.originalShinigamiId,location:config.location});}
- for(const item of state.inventory||[])if(notebookItem(item)&&safe(item.id)&&!recorded.has(item.id)&&!Object.values(w.books).some(b=>b.itemId===item.id))applyEvent(w,{type:'register',bookId:item.id,itemId:item.id,ownerId:'player',holderId:'player'});
- for(const m of chat||[]){if(m.is_system)continue;if(!m.is_user)for(const e of activeEvents(m))applyEvent(w,e);for(const e of (m.is_user?observedIdentities(m.mes,state.npcs||[]):storyEvents(m.mes,state)))if(['introduce','name-learned','face-seen'].includes(e.type))applyEvent(w,e);}
+ for(const item of state.inventory||[])if(notebookItem(item)&&(!item.properties?.includes('roleforge:death-note:opening')||opening)&&safe(item.id)&&!recorded.has(item.id)&&!Object.values(w.books).some(b=>b.itemId===item.id))applyEvent(w,{type:'register',bookId:item.id,itemId:item.id,ownerId:'player',holderId:'player'});
+ const descriptors=[...new Map([...Object.values(w.books),...rows.filter(e=>['register','discover'].includes(e.type)).map(e=>({id:e.bookId}))].map(b=>[b.id,b])).values()],bindings=[];
+ for(const m of chat||[]){if(m.is_system)continue;if(!m.is_user){for(const e of activeEvents(m))applyEvent(w,e);bindings.push(...originalShinigamiEvents(m.mes,state.npcs||[],descriptors));}for(const e of (m.is_user?observedIdentities(m.mes,state.npcs||[]):storyEvents(m.mes,state)))if(['introduce','name-learned','face-seen'].includes(e.type))applyEvent(w,e);}
+ for(const binding of bindings)applyEvent(w,binding);
  return w;
 }
 export function perceivedName(world,npc){return world.claims[npc.id]?.name||'???';}

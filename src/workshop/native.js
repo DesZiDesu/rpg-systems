@@ -1,7 +1,7 @@
-import {mountWorkshop,icon} from './ui.js?v=0.82.1';
-import {requestDataTask} from '../task-generation.js?v=0.82.1';
-import {mountDeathNote} from './death-note/ui.js?v=0.82.1';
-import {readCharacterExtension} from '../character-archive.js?v=0.82.1';
+import {mountWorkshop,icon} from './ui.js?v=0.82.2';
+import {requestDataTask} from '../task-generation.js?v=0.82.2';
+import {mountDeathNote} from './death-note/ui.js?v=0.82.2';
+import {readCharacterExtension} from '../character-archive.js?v=0.82.2';
 
 // Keep the native entry points available even if optional storage cannot open.
 export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,refreshHost,npcReferences=()=>[],prepareNpcs=async()=>{}}={}){
@@ -9,10 +9,10 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,ref
  let app,mounting,style,destroyed=false,deathNote;
  const context=()=>{
   const c=SillyTavern.getContext(),chatId=c.getCurrentChatId?.(),identity=owner(),snapshot=chatId?state():{};
-  const npcs=[...new Map([...npcReferences(),...snapshot.npcs||[]].map(n=>[n.id,n])).values()],ids=deathNote?.referenceIds(npcs,c.chat)||[];
-  return{key:chatId?`${identity||'group'}::${chatId}`:'',nonce:c.chatMetadata,label:c.characters?.[c.characterId]?.name||c.groupId||'ยังไม่ได้เปิดแชท',state:chatId?(ids.length?state({npcIds:ids}):snapshot):{},deathNoteRules:readCharacterExtension(c,identity,'roleforge_death_note')||{},workshopDefaults:readCharacterExtension(c,identity,'roleforge_workshop'),chat:c.chat};
+  const deathNoteRules=readCharacterExtension(c,identity,'roleforge_death_note')||{},npcs=[...new Map([...npcReferences(),...snapshot.npcs||[]].map(n=>[n.id,n])).values()],ids=deathNote?.referenceIds(npcs,c.chat,deathNoteRules)||[];
+  return{key:chatId?`${identity||'group'}::${chatId}`:'',nonce:c.chatMetadata,label:c.characters?.[c.characterId]?.name||c.groupId||'ยังไม่ได้เปิดแชท',state:chatId?(ids.length?state({npcIds:ids}):snapshot):{},deathNoteRules,workshopDefaults:readCharacterExtension(c,identity,'roleforge_workshop'),chat:c.chat};
  };
- const api={version:globalThis.TretaresiaRelease||'0.82.1',context,voice,commitState,refreshHost,async prepareNpcs(){const v=context();await prepareNpcs(deathNote?.referenceIds([...new Map([...npcReferences(),...v.state.npcs||[]].map(n=>[n.id,n])).values()],v.chat)||[]);},
+ const api={version:globalThis.TretaresiaRelease||'0.82.2',context,voice,commitState,refreshHost,async prepareNpcs(){const v=context();await prepareNpcs(deathNote?.referenceIds([...new Map([...npcReferences(),...v.state.npcs||[]].map(n=>[n.id,n])).values()],v.chat,v.deathNoteRules)||[]);},
   async openAddon(id){if(id!=='death-note')return false;deathNote||=mountDeathNote({api,dock,enabled:()=>api.isAddonEnabled?.('death-note')===true,busy});return deathNote.open();},
   refreshAddons(){if(api.isAddonEnabled?.('death-note')===true)deathNote||=mountDeathNote({api,dock,enabled:()=>api.isAddonEnabled?.('death-note')===true,busy});deathNote?.refresh();},
   async generate(args){if(busy())throw Error('รอข้อความที่กำลังเจนให้จบก่อน');return requestDataTask(SillyTavern.getContext(),args,{quietPrompt:args.prompt,responseLength:args.responseLength},{task:'Great Sage analysis'});},
@@ -26,7 +26,7 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,ref
   if(destroyed)return Promise.reject(Error('ปิด Workshop แล้ว'));
   if(app)return Promise.resolve(app);
   return mounting||= (async()=>{
-   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.82.1',base);
+   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.82.2',base);
    await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ')),15000);
     style.onload=()=>{clearTimeout(timer);resolve();};style.onerror=()=>{clearTimeout(timer);reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ'));};document.head.append(style);

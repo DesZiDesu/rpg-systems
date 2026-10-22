@@ -1,0 +1,42 @@
+{
+  "realSillyTavern": true,
+  "liveModel": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "mobileTouchEmulation": false,
+      "allTenGreetings": true,
+      "openingFiveAndTenImmediateBook": true,
+      "otherGreetingsNoBook": true,
+      "ryukAttached": true,
+      "swipeBackRemovesAutomaticBook": true,
+      "noModelRequest": true,
+      "suppliedExportImportedNatively": true,
+      "legacyEnglishSuccessRecovered": true,
+      "failedThaiHistoryPreserved": true,
+      "canonicalHPZero": true,
+      "originalMessagesUnchanged": true,
+      "inkPreservedAndSubmitted": true,
+      "reloadNoDuplicate": true
+    },
+    {
+      "device": "mobile",
+      "mobileTouchEmulation": true,
+      "allTenGreetings": true,
+      "openingFiveAndTenImmediateBook": true,
+      "otherGreetingsNoBook": true,
+      "ryukAttached": true,
+      "swipeBackRemovesAutomaticBook": true,
+      "noModelRequest": true,
+      "suppliedExportImportedNatively": true,
+      "legacyEnglishSuccessRecovered": true,
+      "failedThaiHistoryPreserved": true,
+      "canonicalHPZero": true,
+      "originalMessagesUnchanged": true,
+      "inkPreservedAndSubmitted": true,
+      "reloadNoDuplicate": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

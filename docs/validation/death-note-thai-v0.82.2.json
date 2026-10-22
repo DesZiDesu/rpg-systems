@@ -1,0 +1,43 @@
+{
+  "nativeSillyTavern": true,
+  "liveModel": false,
+  "controlledSSE": true,
+  "devices": [
+    {
+      "device": "desktop",
+      "mobileTouchEmulation": false,
+      "archivedNpc": false,
+      "thaiNewsNameAndFace": true,
+      "openingSeedsBook": true,
+      "thaiNameAndSameLineCause": true,
+      "noConfirmRequired": true,
+      "oneRealUserTurn": true,
+      "oneModelRequest": true,
+      "englishOutcomeMatchesThaiInscription": true,
+      "noFooterFallbackVerified": true,
+      "journalResolved": true,
+      "hpZero": true,
+      "inkPreserved": true,
+      "reopenRepairsMissingResultWithoutGeneration": true
+    },
+    {
+      "device": "mobile",
+      "mobileTouchEmulation": true,
+      "archivedNpc": true,
+      "thaiNewsNameAndFace": true,
+      "openingSeedsBook": true,
+      "thaiNameAndSameLineCause": true,
+      "noConfirmRequired": true,
+      "oneRealUserTurn": true,
+      "oneModelRequest": true,
+      "englishOutcomeMatchesThaiInscription": true,
+      "noFooterFallbackVerified": true,
+      "journalResolved": true,
+      "hpZero": true,
+      "inkPreserved": true,
+      "reopenRepairsMissingResultWithoutGeneration": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

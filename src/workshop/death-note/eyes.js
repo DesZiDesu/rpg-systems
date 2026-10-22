@@ -1,5 +1,5 @@
-import {faceKnowledge} from './faces.js?v=0.82.1';
-import {trueNameOf} from './names.js?v=0.82.1';
+import {faceKnowledge} from './faces.js?v=0.82.2';
+import {trueNameOf} from './names.js?v=0.82.2';
 const safeKey=id=>typeof id==='string'&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
 export function originalLifespan(state,npcId,language='th'){
  if(!safeKey(npcId))return null;const v=state.deathNoteRules?.originalLifespans?.[npcId];if(!v||typeof v!=='object'||Array.isArray(v))return null;

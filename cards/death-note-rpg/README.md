@@ -1,8 +1,8 @@
 # Death Note RPG
 
-ฉบับไม่มีภาพตัวละครแยกต่างหาก: **[Death-Note-RPG-No-Portraits.json](build/Death-Note-RPG-No-Portraits.json)** หรือ **[PNG](build/Death-Note-RPG-No-Portraits.png)** — ตัวละครและทุกเวอร์ชันอยู่ครบ มีข้อความเริ่มต้นภาษาไทย 10 แบบ แบบละ 2 ย่อหน้า เลือกโดยปัดข้อความแรกใน SillyTavern [อ่านฉากเริ่มทั้งหมดและวิธีใช้](build/Death-Note-RPG-No-Portraits.th.md) ฉาก 6/9 ใช้ Japanese films ส่วนที่เหลือใช้ Manga ในเมนู Campaign ฉากเริ่มซิงก์เข้าสถานะด้วยคำตอบ AI แรกตามปกติ ไม่ใช่ checkpoint อัตโนมัติ
+ฉบับไม่มีภาพตัวละครแยกต่างหาก: **[Death-Note-RPG-No-Portraits.json](build/Death-Note-RPG-No-Portraits.json)** หรือ **[PNG](build/Death-Note-RPG-No-Portraits.png)** — ตัวละครและทุกเวอร์ชันอยู่ครบ มีข้อความเริ่มต้นภาษาไทย 10 แบบ แบบละ 2 ย่อหน้า เลือกโดยปัดข้อความแรกใน SillyTavern [อ่านฉากเริ่มทั้งหมดและวิธีใช้](build/Death-Note-RPG-No-Portraits.th.md) ฉาก 6/9 ใช้ Japanese films ส่วนที่เหลือใช้ Manga ในเมนู Campaign เมื่อเปิด Death Note Addon ฉาก 5 และ 10 จะแสดงสมุดที่ผู้เล่นถืออยู่ทันทีตามข้อความเปิดที่เลือก ฉากที่เห็นสมุดตกหรือ Light ได้สมุดจะไม่มอบสมุดให้ผู้เล่น
 
-นำเข้า **[Death-Note-RPG.png](build/Death-Note-RPG.png)** หรือ **[Death-Note-RPG.json](build/Death-Note-RPG.json)** เพียงไฟล์เดียวใน SillyTavern ที่ติดตั้ง RoleForge **0.82.0 ขึ้นไป** ไม่ต้องนำเข้า World Pack, Lorebook หรือภาพแยก ไฟล์ทั้งสองมีข้อมูลเหมือนกัน เลือกนำเข้าอย่างใดอย่างหนึ่ง
+นำเข้า **[Death-Note-RPG.png](build/Death-Note-RPG.png)** หรือ **[Death-Note-RPG.json](build/Death-Note-RPG.json)** เพียงไฟล์เดียวใน SillyTavern ที่ติดตั้ง RoleForge **0.82.2 ขึ้นไป** ไม่ต้องนำเข้า World Pack, Lorebook หรือภาพแยก ไฟล์ทั้งสองมีข้อมูลเหมือนกัน เลือกนำเข้าอย่างใดอย่างหนึ่ง
 
 1. อัปเดต RoleForge แล้ว reload SillyTavern
 2. Import การ์ดและเปิดแชทใหม่ เมนู Death Note จะเตรียมให้แชทนี้ครั้งแรก การปิด Addon เองภายหลังจะไม่ถูกการ์ดเปิดคืน
@@ -28,7 +28,7 @@
 
 ## English
 
-Import either the single PNG card or the JSON alternative into SillyTavern with RoleForge 0.82.0+. Both embed the same world archive, portraits, presets and missions. Open **Wand → Campaign**, choose a source and canon/free play, then complete Character Creation. The card prepares the bundled Death Note addon once for this chat and respects later explicit disable. It grants no notebook, eye deal, funds, relationships or secret identities. Your model connection stays under your control.
+Import either the single PNG card or the JSON alternative into SillyTavern with RoleForge 0.82.2+. Both embed the same world archive, portraits, presets and missions. Open **Wand → Campaign**, choose a source and canon/free play, then complete Character Creation. The card prepares the bundled Death Note addon once for this chat and respects later explicit disable. It grants no notebook, eye deal, funds, relationships or secret identities. Your model connection stays under your control.
 
 208 character references, 652 adaptation/period dossiers, 65 Lore entries and 146 authored mission chapters across 13 isolated routes. Brief incidental references retain unknown facts rather than inventing complete biographies. Source-specific pilot/US-film exceptions remain narrated events without dedicated addon controls. BANK/CASH/COIN are convertible wallet denominations, not independent bank/cash accounts. Missing or unpublished faces remain blank. All portrait provenance is included; no external portrait download is required during play.
 
