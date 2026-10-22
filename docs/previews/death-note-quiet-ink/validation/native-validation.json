@@ -1,0 +1,65 @@
+{
+  "pass": true,
+  "realSillyTavern": true,
+  "liveModel": false,
+  "externalProviderCalls": 0,
+  "controlledTTS": true,
+  "devices": [
+    {
+      "device": "desktop",
+      "viewport": "1440×1050",
+      "touchEmulation": false,
+      "realVoiceToggle": true,
+      "noAudioRowsWhenDisabled": true,
+      "sceneFromRealSceneHistory": true,
+      "allSceneDetailsRetained": true,
+      "actualSpeechEditor": true,
+      "actualPlaybackWithLocalFixture": true,
+      "loadingPauseResume": true,
+      "sourceStateDraftUnchanged": true,
+      "allThreeActors": true,
+      "noDuplicateUserHeader": true,
+      "addonGate": true,
+      "rerenderCleanup": true
+    },
+    {
+      "device": "mobile",
+      "viewport": "390×844",
+      "touchEmulation": true,
+      "realVoiceToggle": true,
+      "noAudioRowsWhenDisabled": true,
+      "sceneFromRealSceneHistory": true,
+      "allSceneDetailsRetained": true,
+      "actualSpeechEditor": true,
+      "actualPlaybackWithLocalFixture": true,
+      "loadingPauseResume": true,
+      "sourceStateDraftUnchanged": true,
+      "allThreeActors": true,
+      "noDuplicateUserHeader": true,
+      "addonGate": true,
+      "rerenderCleanup": true
+    }
+  ],
+  "errors": [],
+  "speech": [
+    {
+      "device": "desktop",
+      "characters": 71,
+      "voiceId": "quiet-voice-fixture"
+    },
+    {
+      "device": "mobile",
+      "characters": 71,
+      "voiceId": "quiet-voice-fixture"
+    }
+  ],
+  "release": "0.82.1",
+  "host": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  }
+}

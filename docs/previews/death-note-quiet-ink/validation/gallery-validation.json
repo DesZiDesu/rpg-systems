@@ -1,0 +1,64 @@
+{
+  "pass": true,
+  "liveModel": false,
+  "voiceProvider": false,
+  "widths": [
+    {
+      "width": 1440,
+      "touchEmulation": false,
+      "voiceOnOff": true,
+      "noVoiceRowWhenDisabled": true,
+      "sceneAllDetails": true,
+      "languages": 2,
+      "longText": true,
+      "largeText": true,
+      "accessibleVoiceVectors": true,
+      "foldableThoughts": true,
+      "addonGate": true,
+      "reducedMotion": true
+    },
+    {
+      "width": 390,
+      "touchEmulation": true,
+      "voiceOnOff": true,
+      "noVoiceRowWhenDisabled": true,
+      "sceneAllDetails": true,
+      "languages": 2,
+      "longText": true,
+      "largeText": true,
+      "accessibleVoiceVectors": true,
+      "foldableThoughts": true,
+      "addonGate": true,
+      "reducedMotion": true
+    },
+    {
+      "width": 320,
+      "touchEmulation": true,
+      "voiceOnOff": true,
+      "noVoiceRowWhenDisabled": true,
+      "sceneAllDetails": true,
+      "languages": 2,
+      "longText": true,
+      "largeText": true,
+      "accessibleVoiceVectors": true,
+      "foldableThoughts": true,
+      "addonGate": true,
+      "reducedMotion": true
+    },
+    {
+      "width": 768,
+      "touchEmulation": false,
+      "voiceOnOff": true,
+      "noVoiceRowWhenDisabled": true,
+      "sceneAllDetails": true,
+      "languages": 2,
+      "longText": true,
+      "largeText": true,
+      "accessibleVoiceVectors": true,
+      "foldableThoughts": true,
+      "addonGate": true,
+      "reducedMotion": true
+    }
+  ],
+  "errors": []
+}
