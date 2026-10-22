@@ -1,0 +1,58 @@
+{
+  "pass": true,
+  "realSillyTavern": true,
+  "previewOnly": true,
+  "liveModel": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "viewport": "1440 × 1000",
+      "themeReadingWidth": "max 900px",
+      "mobileTouchEmulation": false,
+      "actors": 3,
+      "components": 4,
+      "designs": 2,
+      "realAddonToggle": true,
+      "sourceUnchanged": true,
+      "stateUnchanged": true,
+      "draftUnchanged": true,
+      "scopeCleanup": true,
+      "realChatSwitch": true,
+      "remountAfterRerender": true,
+      "noDuplicatedUserHeader": true,
+      "thoughtToggle": true,
+      "englishAndThai": true,
+      "noOverflow": true
+    },
+    {
+      "device": "mobile",
+      "viewport": "390 × 1000",
+      "themeReadingWidth": "max 900px",
+      "mobileTouchEmulation": true,
+      "actors": 3,
+      "components": 4,
+      "designs": 2,
+      "realAddonToggle": true,
+      "sourceUnchanged": true,
+      "stateUnchanged": true,
+      "draftUnchanged": true,
+      "scopeCleanup": true,
+      "realChatSwitch": true,
+      "remountAfterRerender": true,
+      "noDuplicatedUserHeader": true,
+      "thoughtToggle": true,
+      "englishAndThai": true,
+      "noOverflow": true
+    }
+  ],
+  "errors": [],
+  "version": "0.82.1",
+  "host": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  }
+}

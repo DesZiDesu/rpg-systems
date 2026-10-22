@@ -1,0 +1,59 @@
+{
+  "pass": true,
+  "devices": [
+    {
+      "width": 1440,
+      "touchEmulation": false,
+      "designs": 2,
+      "languages": 2,
+      "allFourComponents": true,
+      "foldableThoughts": true,
+      "addonGate": true,
+      "longText": true,
+      "largeType": true,
+      "reducedMotion": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 390,
+      "touchEmulation": true,
+      "designs": 2,
+      "languages": 2,
+      "allFourComponents": true,
+      "foldableThoughts": true,
+      "addonGate": true,
+      "longText": true,
+      "largeType": true,
+      "reducedMotion": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 320,
+      "touchEmulation": true,
+      "designs": 2,
+      "languages": 2,
+      "allFourComponents": true,
+      "foldableThoughts": true,
+      "addonGate": true,
+      "longText": true,
+      "largeType": true,
+      "reducedMotion": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 768,
+      "touchEmulation": false,
+      "designs": 2,
+      "languages": 2,
+      "allFourComponents": true,
+      "foldableThoughts": true,
+      "addonGate": true,
+      "longText": true,
+      "largeType": true,
+      "reducedMotion": true,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "errors": [],
+  "liveModel": false
+}

@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "selfContained": true,
+  "liveModel": false,
+  "requests": [],
+  "errors": [],
+  "widths": [
+    1440,
+    390,
+    320
+  ]
+}
