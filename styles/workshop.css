@@ -170,3 +170,73 @@
 .dn-life-settings-value strong{font:400 30px/1.4 Georgia,serif;color:var(--ws-gold)}
 .dn-life-settings-value small{color:var(--ws-muted);font-size:11px}
 @media(max-width:480px){#roleforge-workshop .dn-life-time-fields{gap:8px}.dn-life-settings-value strong{font-size:26px}}
+
+/* RoleForge manager language: etched square frames, charcoal and muted gold. */
+#roleforge-workshop{--ws-bg:#090a0b;--ws-panel:#101111;--ws-soft:#191810;--ws-line:#524326;--ws-text:#ece7da;--ws-muted:#a89e89;--ws-gold:#d6b458;--ws-accent:#d6b458;--ws-blue:#d6b458;font-family:'Chakra Petch',var(--mainFontFamily,system-ui),sans-serif;border:1px solid #9c8042;box-shadow:0 30px 100px #000b,inset 0 0 0 5px #d6b4580c}
+#roleforge-workshop,#roleforge-workshop :is(button,input,select,textarea,article,fieldset,details,.ws-pack-icon,.rfws-brand-mark,.rfws-preview,.ws-status,.ws-install-box,.ws-block,.ws-chat-context,.ws-backup-card,.ws-chat-addon,.ws-notice,.sg-ask,.rfsg-answer){border-radius:0!important}
+#roleforge-workshop::backdrop{background:#000b;backdrop-filter:blur(4px)}
+#roleforge-workshop .rfws-header{min-height:86px;background:radial-gradient(ellipse at 100% 0,#d6b45813,transparent 60%),linear-gradient(110deg,#15140f,#090909);padding:18px 26px;border-color:var(--ws-line)}
+#roleforge-workshop .rfws-brand-mark{width:42px;height:46px;border-color:#9c804277;background:#d6b45808;box-shadow:inset 0 0 0 4px #090a0b}
+#roleforge-workshop .rfws-brand-copy strong{font-family:'Orbitron','Chakra Petch',sans-serif;font-size:21px;letter-spacing:1.7px;color:#f4dc93;font-weight:500}
+#roleforge-workshop .rfws-brand-copy small{letter-spacing:2px;font-size:9px;color:#bba56d}
+#roleforge-workshop .rfws-preview{border-color:#524326;color:#a69364;background:transparent}
+#roleforge-workshop .rfws-layout:not(.is-focus){grid-template-columns:196px minmax(0,1fr)}
+#roleforge-workshop .rfws-sidebar{background:linear-gradient(135deg,#15120b44,transparent 60%),#080909;border-color:var(--ws-line);padding:22px 12px;gap:6px}
+#roleforge-workshop .rfws-sidebar button{font-family:inherit;font-size:13px;min-height:50px;border-color:transparent;color:#a89e89;background:transparent}
+#roleforge-workshop .rfws-sidebar button[aria-current=page]{color:#f0d892;border:1px solid #6b582c;background:linear-gradient(120deg,#d6b45816,#d6b45803);box-shadow:inset 0 1px #d6b45818}
+#roleforge-workshop .rfws-sidebar button[aria-current=page]::before{display:none}
+#roleforge-workshop .rfws-main:not(.sg-main){background:#090a0b;padding:28px 28px 36px;scrollbar-color:#6b582c #090a0b}
+#roleforge-workshop .ws-catalog-heading{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:26px;padding-bottom:24px;border-bottom:1px solid #524326}
+#roleforge-workshop .ws-catalog-heading h1{font-family:'Chakra Petch',sans-serif;font-size:27px;font-weight:400;letter-spacing:0;margin:8px 0;color:#f4dc93}
+#roleforge-workshop .ws-catalog-heading p{font-size:12px;line-height:1.8;margin:0;color:#a89e89}
+#roleforge-workshop .ws-catalog-count{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding-left:22px;border-left:1px solid #524326;color:#bba56d;flex-shrink:0}
+#roleforge-workshop .ws-catalog-count b{font:400 30px/1.2 'Orbitron',sans-serif;color:#d6b458}
+#roleforge-workshop .ws-catalog-count small{font-size:9px;letter-spacing:1.3px}
+#roleforge-workshop .ws-toolbar{gap:12px;margin-bottom:26px}
+#roleforge-workshop .ws-search input{height:46px;background:#0f100f;border-color:#49402c;color:#ece7da;font-family:inherit}
+#roleforge-workshop .ws-filter{gap:0;border:1px solid #49402c;background:#0c0d0c}
+#roleforge-workshop .ws-filter button{border:0;border-inline-start:1px solid #49402c;min-height:44px;background:transparent;font-family:inherit}
+#roleforge-workshop .ws-filter button:first-child{border-inline-start:0}
+#roleforge-workshop .ws-filter button[aria-pressed=true]{background:#d6b45815;color:#f4dc93;box-shadow:inset 0 -1px #d6b4588c}
+#roleforge-workshop .ws-subhead{margin:0 0 15px;align-items:baseline}
+#roleforge-workshop .ws-subhead h2{font-size:15px;letter-spacing:.25px;color:#d9c78f}
+#roleforge-workshop .ws-subhead small{font-family:inherit;color:#80765f;font-size:9px;letter-spacing:1.2px}
+#roleforge-workshop .ws-grid{gap:14px;align-items:stretch}
+#roleforge-workshop .ws-card{display:flex;flex-direction:column;min-height:190px;padding:22px 20px 16px;background:radial-gradient(ellipse at 100% 0,#d6b4580b,transparent 75%),#0a0b0a;border:1px solid #61502d;box-shadow:inset 0 0 0 4px #080909,inset 0 0 0 5px #d6b4580b;transition:border-color .15s ease}
+#roleforge-workshop .ws-card:hover{border-color:#ad8f48;background-color:#0e0f0d}
+#roleforge-workshop .ws-card-top{align-items:flex-start;gap:15px;flex:1}
+#roleforge-workshop .ws-card-title{gap:8px}
+#roleforge-workshop .ws-card-title h3{font-family:'Chakra Petch',sans-serif;font-size:19px;line-height:1.4;font-weight:500;color:#eddbab;letter-spacing:.15px}
+#roleforge-workshop .ws-card p{font-size:12px;color:#a89e89;line-height:1.8;margin-top:5px}
+#roleforge-workshop .ws-pack-icon{width:52px;height:58px;flex-shrink:0;background:#14140e;border:1px solid #61502d;box-shadow:inset 0 0 0 4px #0a0b0a;color:#cbb775}
+#roleforge-workshop .ws-pack-icon.is-sage{background:#0d1714;border-color:#3f5d4d;box-shadow:inset 0 0 0 4px #090e0d}
+#roleforge-workshop .ws-card-bottom{margin-top:16px;padding-top:12px;border-color:#52432680;gap:10px}
+#roleforge-workshop .ws-card-meta{color:#918267;font-size:10px}
+#roleforge-workshop .ws-card-title .ws-status{background:transparent;border-color:#61502d;color:#bba56d;font-family:inherit;font-size:9px;line-height:1.6}
+#roleforge-workshop .ws-card-actions{gap:12px}
+#roleforge-workshop .ws-card-actions .ws-link{font-family:inherit;color:#d6b458;font-size:12px}
+#roleforge-workshop .ws-card-launch{border-color:#6b582c;background:#d6b4580c;color:#dfc77d;font-family:inherit}
+#roleforge-workshop .ws-block,#roleforge-workshop .ws-chat-addon,#roleforge-workshop .ws-install-box,#roleforge-workshop .ws-backup-card{background:#0c0d0b;border-color:#61502d;box-shadow:inset 0 0 0 4px #090a09,inset 0 0 0 5px #d6b45808}
+#roleforge-workshop .ws-primary{background:linear-gradient(110deg,#d6b458,#b99b4e);border-color:#d6b458;color:#15130d;font-family:inherit}
+#roleforge-workshop .ws-footnote{padding-top:18px;color:#786f59;font-family:inherit;font-size:10px}
+#roleforge-workshop :is(button,input,select,textarea):focus-visible{outline:2px solid #d6b458;outline-offset:3px}
+@media(max-width:760px),(max-height:500px) and (pointer:coarse){
+ #roleforge-workshop .rfws-header{min-height:76px;padding:calc(12px + env(safe-area-inset-top,0px)) 18px 12px}
+ #roleforge-workshop .rfws-brand-copy strong{font-size:18px;letter-spacing:1px}
+ #roleforge-workshop .rfws-layout:not(.is-focus){grid-template-columns:minmax(0,1fr)}
+ #roleforge-workshop .rfws-main:not(.sg-main){padding:22px 18px 28px}
+ #roleforge-workshop .rfws-sidebar{padding:0 8px calc(5px + env(safe-area-inset-bottom,0px));background:#0b0c0a;gap:4px;border-top:1px solid #61502d}
+ #roleforge-workshop .rfws-sidebar button{font-size:10px;min-height:62px;padding:10px 2px 8px;gap:7px;border:0}
+ #roleforge-workshop .rfws-sidebar button[aria-current=page]{border:0;box-shadow:inset 0 2px #d6b458;background:linear-gradient(#d6b45810,transparent)}
+ #roleforge-workshop .ws-catalog-heading{margin-bottom:20px;padding-bottom:20px;gap:16px}
+ #roleforge-workshop .ws-catalog-heading h1{font-size:23px;margin:8px 0}
+ #roleforge-workshop .ws-catalog-heading p{font-size:11px;max-width:245px}
+ #roleforge-workshop .ws-catalog-count{padding-left:14px}.ws-catalog-count b{font-size:25px!important}
+ #roleforge-workshop .ws-toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-bottom:24px}
+ #roleforge-workshop .ws-filter{justify-self:start}
+ #roleforge-workshop .ws-grid{grid-template-columns:minmax(0,1fr);gap:14px}
+ #roleforge-workshop .ws-card{padding:19px 17px 14px;min-height:178px}
+ #roleforge-workshop .ws-card-title h3{font-size:18px}
+ #roleforge-workshop .ws-card .ws-pack-icon{width:48px;height:54px}
+ #roleforge-workshop .ws-card-actions{gap:10px}
+}

@@ -1,0 +1,51 @@
+{
+  "realSillyTavern": true,
+  "liveModel": false,
+  "controlledDelayedSSE": true,
+  "theme": "Dark Lite",
+  "devices": [
+    {
+      "device": "desktop",
+      "touchEmulation": false,
+      "closeWhileWaiting": true,
+      "continueOriginalAIReply": true,
+      "modalStaysClosed": true,
+      "dockMinimizePersists": true,
+      "dockClosePersists": true,
+      "reopenReadOnly": true,
+      "launcherReturnsToPendingPaper": true,
+      "duplicateSubmissionBlocked": true,
+      "noUserMessage": true,
+      "unsentDraftPreserved": true,
+      "failedRequestRetry": true,
+      "reloadPersists": true
+    },
+    {
+      "device": "mobile",
+      "touchEmulation": true,
+      "closeWhileWaiting": true,
+      "continueOriginalAIReply": true,
+      "modalStaysClosed": true,
+      "dockMinimizePersists": true,
+      "dockClosePersists": true,
+      "reopenReadOnly": true,
+      "launcherReturnsToPendingPaper": true,
+      "duplicateSubmissionBlocked": true,
+      "noUserMessage": true,
+      "unsentDraftPreserved": true,
+      "failedRequestRetry": true,
+      "reloadPersists": true
+    }
+  ],
+  "errors": [],
+  "roleForgeVersion": "0.84.1",
+  "hostVersion": {
+    "agent": "SillyTavern:1.19.0:Cohee#1207",
+    "pkgVersion": "1.19.0",
+    "gitRevision": "06bde93",
+    "gitBranch": "release",
+    "commitDate": "2026-09-14 21:01:34 +0200",
+    "isLatest": true
+  },
+  "pass": true
+}

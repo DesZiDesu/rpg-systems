@@ -1,0 +1,24 @@
+[
+  {
+    "device": "desktop",
+    "messages": 121,
+    "beforeJsMedianMs": 1260.4,
+    "afterJsMedianMs": 118.7,
+    "speedup": 10.6,
+    "beforeContextReads": 127,
+    "afterContextReads": 2,
+    "beforeWorldReplays": 25,
+    "afterWorldReplays": 2
+  },
+  {
+    "device": "mobile",
+    "messages": 121,
+    "beforeJsMedianMs": 1247.3,
+    "afterJsMedianMs": 82,
+    "speedup": 15.2,
+    "beforeContextReads": 127,
+    "afterContextReads": 2,
+    "beforeWorldReplays": 25,
+    "afterWorldReplays": 2
+  }
+]

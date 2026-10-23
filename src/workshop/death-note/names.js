@@ -1,4 +1,4 @@
-import {CANON_NAME_SPELLINGS} from './canon-spellings.js?v=0.84.0';
+import {CANON_NAME_SPELLINGS} from './canon-spellings.js?v=0.84.1';
 const key=s=>String(s||'').normalize('NFKC').replace(/\s+/gu,' ').trim().toLocaleLowerCase();
 // A canonical codename is not a birth name. Explicit null means unpublished;
 // per-version overrides keep adaptations from borrowing each other's secrets.

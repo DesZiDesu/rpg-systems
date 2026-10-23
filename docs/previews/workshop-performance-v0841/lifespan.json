@@ -1,0 +1,59 @@
+{
+  "version": "0.84.1",
+  "browser": "Chromium",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "squareSurfaces": true,
+      "launcherMoved": true,
+      "launcherRetainedOnReload": true,
+      "manualEdit": true,
+      "aiInitialAssignment": true,
+      "fastSettingsSavePreservesAI": true,
+      "aiCalls": 1,
+      "noSyntheticUser": true,
+      "disableHidesAndSuspends": true,
+      "reenableRetains": true,
+      "nativeBranch": true,
+      "bilingual": true,
+      "statusLayouts": [
+        "A",
+        "B",
+        "C"
+      ],
+      "overflow": {
+        "width": 1410,
+        "scroll": 1410
+      }
+    },
+    {
+      "device": "mobile",
+      "squareSurfaces": true,
+      "launcherMoved": true,
+      "launcherRetainedOnReload": true,
+      "manualEdit": true,
+      "aiInitialAssignment": true,
+      "fastSettingsSavePreservesAI": true,
+      "aiCalls": 1,
+      "noSyntheticUser": true,
+      "disableHidesAndSuspends": true,
+      "reenableRetains": true,
+      "nativeBranch": true,
+      "bilingual": true,
+      "statusLayouts": [
+        "A",
+        "B",
+        "C"
+      ],
+      "overflow": {
+        "width": 360,
+        "scroll": 360
+      }
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

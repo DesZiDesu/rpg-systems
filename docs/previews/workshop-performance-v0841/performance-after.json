@@ -1,0 +1,119 @@
+{
+  "version": "0.84.1",
+  "browser": "Chromium",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "messages": 121,
+      "measurements": [
+        {
+          "jsMs": 100.30000001192093,
+          "paintMs": 129.69999998807907,
+          "context": 2,
+          "replays": 2
+        },
+        {
+          "jsMs": 131.19999998807907,
+          "paintMs": 396.5,
+          "context": 2,
+          "replays": 2
+        },
+        {
+          "jsMs": 118.7000000178814,
+          "paintMs": 136.2000000178814,
+          "context": 2,
+          "replays": 2
+        }
+      ],
+      "pages": [
+        {
+          "name": "records",
+          "jsMs": 46.5,
+          "paintMs": 123.89999997615814,
+          "context": 1,
+          "replays": 1
+        },
+        {
+          "name": "rules",
+          "jsMs": 77,
+          "paintMs": 312.39999997615814,
+          "context": 1,
+          "replays": 1
+        },
+        {
+          "name": "rights",
+          "jsMs": 57.599999994039536,
+          "paintMs": 135.2999999821186,
+          "context": 1,
+          "replays": 1
+        },
+        {
+          "name": "write",
+          "jsMs": 61.29999998211861,
+          "paintMs": 111.59999999403954,
+          "context": 1,
+          "replays": 1
+        }
+      ]
+    },
+    {
+      "device": "mobile",
+      "messages": 121,
+      "measurements": [
+        {
+          "jsMs": 83.5,
+          "paintMs": 99.89999997615814,
+          "context": 2,
+          "replays": 2
+        },
+        {
+          "jsMs": 82,
+          "paintMs": 109.40000000596046,
+          "context": 2,
+          "replays": 2
+        },
+        {
+          "jsMs": 77.40000000596046,
+          "paintMs": 140.09999999403954,
+          "context": 2,
+          "replays": 2
+        }
+      ],
+      "pages": [
+        {
+          "name": "records",
+          "jsMs": 42.599999994039536,
+          "paintMs": 75.5,
+          "context": 1,
+          "replays": 1
+        },
+        {
+          "name": "rules",
+          "jsMs": 62.400000005960464,
+          "paintMs": 156.09999999403954,
+          "context": 1,
+          "replays": 1
+        },
+        {
+          "name": "rights",
+          "jsMs": 38.099999994039536,
+          "paintMs": 59.20000001788139,
+          "context": 1,
+          "replays": 1
+        },
+        {
+          "name": "write",
+          "jsMs": 38,
+          "paintMs": 61.900000005960464,
+          "context": 1,
+          "replays": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

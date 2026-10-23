@@ -1,13 +1,13 @@
-import {applyPlayerLifespan,aiLifespanEvent,lifespanInstruction,clockSeconds} from './lifespan.js?v=0.84.0';
-import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.84.0';
-import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.84.0';
-import {localId} from '../core.js?v=0.84.0';
-import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.84.0';
-import {observedIdentities,identityBound,learnedName,seenFace} from './identity.js?v=0.84.0';
-import {faceKnowledge} from './faces.js?v=0.84.0';
-import {trueNameOf,trueNameSpellings} from './names.js?v=0.84.0';
-import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.84.0';
-export {trueNameOf} from './names.js?v=0.84.0';
+import {applyPlayerLifespan,aiLifespanEvent,lifespanInstruction,clockSeconds} from './lifespan.js?v=0.84.1';
+import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.84.1';
+import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.84.1';
+import {localId} from '../core.js?v=0.84.1';
+import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.84.1';
+import {observedIdentities,identityBound,learnedName,seenFace} from './identity.js?v=0.84.1';
+import {faceKnowledge} from './faces.js?v=0.84.1';
+import {trueNameOf,trueNameSpellings} from './names.js?v=0.84.1';
+import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.84.1';
+export {trueNameOf} from './names.js?v=0.84.1';
 // Chat-local notebook rules. Legacy journal keys remain readable after the preview. Canonical NPC records are never renamed.
 export const WORLD_EVENTS = 'roleforge_death_note_world_preview';
 export const WORLD_PROMPT = 'roleforge_death_note_world_preview';

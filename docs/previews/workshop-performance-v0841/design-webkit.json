@@ -1,0 +1,21 @@
+{
+  "version": "0.84.1",
+  "browser": "WebKit",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "square": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "device": "mobile",
+      "square": true,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

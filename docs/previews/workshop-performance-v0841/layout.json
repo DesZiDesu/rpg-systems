@@ -1,0 +1,457 @@
+{
+  "release": "0.84.1",
+  "host": "SillyTavern 1.19.0",
+  "theme": "Dark Lite",
+  "checks": [
+    {
+      "label": "mobile-catalog-320x568",
+      "fullscreen": true,
+      "width": 320,
+      "height": 568,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 568
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 500,
+        "right": 320,
+        "bottom": 568
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-catalog-390x844",
+      "fullscreen": true,
+      "width": 390,
+      "height": 844,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 776,
+        "right": 390,
+        "bottom": 844
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-catalog-430x932",
+      "fullscreen": true,
+      "width": 430,
+      "height": 932,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 430,
+        "height": 932
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 864,
+        "right": 430,
+        "bottom": 932
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-catalog-844x390",
+      "fullscreen": true,
+      "width": 844,
+      "height": 390,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 844,
+        "height": 390
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 322,
+        "right": 844,
+        "bottom": 390
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-catalog-390x420",
+      "fullscreen": true,
+      "width": 390,
+      "height": 420,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 420
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 352,
+        "right": 390,
+        "bottom": 420
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-detail",
+      "fullscreen": true,
+      "width": 390,
+      "height": 844,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 776,
+        "right": 390,
+        "bottom": 844
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-installed",
+      "fullscreen": true,
+      "width": 390,
+      "height": 844,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 776,
+        "right": 390,
+        "bottom": 844
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-chat-off",
+      "fullscreen": true,
+      "width": 390,
+      "height": 844,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 776,
+        "right": 390,
+        "bottom": 844
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-chat-on",
+      "fullscreen": true,
+      "width": 390,
+      "height": 844,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 776,
+        "right": 390,
+        "bottom": 844
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-backup",
+      "fullscreen": true,
+      "width": 390,
+      "height": 844,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 0,
+        "y": 776,
+        "right": 390,
+        "bottom": 844
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-sage",
+      "fullscreen": true,
+      "width": 390,
+      "height": 844,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "mainOverflow": false,
+      "nav": null,
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "mobile-sage-short-viewport",
+      "fullscreen": true,
+      "width": 390,
+      "height": 420,
+      "dialog": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 420
+      },
+      "mainOverflow": false,
+      "nav": null,
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "desktop-catalog-768x900",
+      "fullscreen": false,
+      "width": 768,
+      "height": 900,
+      "dialog": {
+        "x": 32,
+        "y": 32,
+        "width": 704,
+        "height": 836
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 33,
+        "y": 119,
+        "right": 229,
+        "bottom": 867
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "desktop-catalog-1024x768",
+      "fullscreen": false,
+      "width": 1024,
+      "height": 768,
+      "dialog": {
+        "x": 32,
+        "y": 32,
+        "width": 960,
+        "height": 704
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 33,
+        "y": 119,
+        "right": 229,
+        "bottom": 735
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "desktop-catalog-1440x1000",
+      "fullscreen": false,
+      "width": 1440,
+      "height": 1000,
+      "dialog": {
+        "x": 160,
+        "y": 75,
+        "width": 1120,
+        "height": 850
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 161,
+        "y": 162,
+        "right": 357,
+        "bottom": 924
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "desktop-detail",
+      "fullscreen": false,
+      "width": 1440,
+      "height": 1000,
+      "dialog": {
+        "x": 160,
+        "y": 75,
+        "width": 1120,
+        "height": 850
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 161,
+        "y": 162,
+        "right": 357,
+        "bottom": 924
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "desktop-installed",
+      "fullscreen": false,
+      "width": 1440,
+      "height": 1000,
+      "dialog": {
+        "x": 160,
+        "y": 75,
+        "width": 1120,
+        "height": 850
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 161,
+        "y": 162,
+        "right": 357,
+        "bottom": 924
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "desktop-chat-off",
+      "fullscreen": false,
+      "width": 1440,
+      "height": 1000,
+      "dialog": {
+        "x": 160,
+        "y": 75,
+        "width": 1120,
+        "height": 850
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 161,
+        "y": 162,
+        "right": 357,
+        "bottom": 924
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "desktop-chat-on",
+      "fullscreen": false,
+      "width": 1440,
+      "height": 1000,
+      "dialog": {
+        "x": 160,
+        "y": 75,
+        "width": 1120,
+        "height": 850
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 161,
+        "y": 162,
+        "right": 357,
+        "bottom": 924
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "desktop-backup",
+      "fullscreen": false,
+      "width": 1440,
+      "height": 1000,
+      "dialog": {
+        "x": 160,
+        "y": 75,
+        "width": 1120,
+        "height": 850
+      },
+      "mainOverflow": false,
+      "nav": {
+        "x": 161,
+        "y": 162,
+        "right": 357,
+        "bottom": 924
+      },
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    },
+    {
+      "label": "desktop-sage",
+      "fullscreen": false,
+      "width": 1440,
+      "height": 1000,
+      "dialog": {
+        "x": 240,
+        "y": 75,
+        "width": 960,
+        "height": 850
+      },
+      "mainOverflow": false,
+      "nav": null,
+      "closeVisible": true,
+      "overflows": 0,
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "modelCalls": 0,
+  "pass": true
+}

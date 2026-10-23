@@ -1,0 +1,51 @@
+{
+  "version": "0.84.1",
+  "host": "SillyTavern 1.19.0",
+  "unitTests": {
+    "passed": 1725,
+    "failed": 0
+  },
+  "syntax": "passed",
+  "whitespace": "passed",
+  "screenshots": "12 native screenshots, including before/after",
+  "performance": [
+    {
+      "device": "desktop",
+      "messages": 121,
+      "beforeJsMedianMs": 1260.4,
+      "afterJsMedianMs": 118.7,
+      "speedup": 10.6,
+      "beforeContextReads": 127,
+      "afterContextReads": 2,
+      "beforeWorldReplays": 25,
+      "afterWorldReplays": 2
+    },
+    {
+      "device": "mobile",
+      "messages": 121,
+      "beforeJsMedianMs": 1247.3,
+      "afterJsMedianMs": 82,
+      "speedup": 15.2,
+      "beforeContextReads": 127,
+      "afterContextReads": 2,
+      "beforeWorldReplays": 25,
+      "afterWorldReplays": 2
+    }
+  ],
+  "nativeReports": [
+    "design-chromium.json",
+    "design-webkit.json",
+    "layout.json",
+    "actors.json",
+    "controls.json",
+    "close.json",
+    "thai.json",
+    "ownership.json",
+    "lifespan.json"
+  ],
+  "limits": {
+    "mobile": "viewport/touch emulation, not a physical iPhone",
+    "ai": "Controlled SSE through native Generate; no external model used",
+    "timing": "Median of three warmed openings on the test executor; timings depend on hardware and load"
+  }
+}

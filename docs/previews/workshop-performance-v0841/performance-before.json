@@ -1,0 +1,119 @@
+{
+  "version": "0.84.0",
+  "browser": "Chromium",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "messages": 121,
+      "measurements": [
+        {
+          "jsMs": 1260.4000000059605,
+          "paintMs": 1374.5999999940395,
+          "context": 127,
+          "replays": 25
+        },
+        {
+          "jsMs": 1215.300000011921,
+          "paintMs": 1244.5,
+          "context": 127,
+          "replays": 25
+        },
+        {
+          "jsMs": 1275.9000000059605,
+          "paintMs": 1308.7999999821186,
+          "context": 127,
+          "replays": 25
+        }
+      ],
+      "pages": [
+        {
+          "name": "records",
+          "jsMs": 336.59999999403954,
+          "paintMs": 396.40000000596046,
+          "context": 24,
+          "replays": 7
+        },
+        {
+          "name": "rules",
+          "jsMs": 349.19999998807907,
+          "paintMs": 407.80000001192093,
+          "context": 21,
+          "replays": 6
+        },
+        {
+          "name": "rights",
+          "jsMs": 827.3000000119209,
+          "paintMs": 855.8000000119209,
+          "context": 59,
+          "replays": 14
+        },
+        {
+          "name": "write",
+          "jsMs": 832.2999999821186,
+          "paintMs": 891.9000000059605,
+          "context": 48,
+          "replays": 13
+        }
+      ]
+    },
+    {
+      "device": "mobile",
+      "messages": 121,
+      "measurements": [
+        {
+          "jsMs": 1247.2999999821186,
+          "paintMs": 1274,
+          "context": 127,
+          "replays": 25
+        },
+        {
+          "jsMs": 1264,
+          "paintMs": 1295.300000011921,
+          "context": 127,
+          "replays": 25
+        },
+        {
+          "jsMs": 1229.699999988079,
+          "paintMs": 1297.300000011921,
+          "context": 127,
+          "replays": 25
+        }
+      ],
+      "pages": [
+        {
+          "name": "records",
+          "jsMs": 326.5,
+          "paintMs": 378.90000000596046,
+          "context": 24,
+          "replays": 7
+        },
+        {
+          "name": "rules",
+          "jsMs": 292.59999999403954,
+          "paintMs": 337.59999999403954,
+          "context": 21,
+          "replays": 6
+        },
+        {
+          "name": "rights",
+          "jsMs": 728.5999999940395,
+          "paintMs": 760.3999999761581,
+          "context": 59,
+          "replays": 14
+        },
+        {
+          "name": "write",
+          "jsMs": 548.1000000238419,
+          "paintMs": 610.3000000119209,
+          "context": 48,
+          "replays": 13
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

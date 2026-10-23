@@ -1,0 +1,28 @@
+{
+  "realSillyTavern": true,
+  "liveModel": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "mobileTouchEmulation": false,
+      "allTenGreetings": true,
+      "openingFiveAndTenImmediateBook": true,
+      "otherGreetingsNoBook": true,
+      "ryukAttached": true,
+      "swipeBackRemovesAutomaticBook": true,
+      "noModelRequest": true
+    },
+    {
+      "device": "mobile",
+      "mobileTouchEmulation": true,
+      "allTenGreetings": true,
+      "openingFiveAndTenImmediateBook": true,
+      "otherGreetingsNoBook": true,
+      "ryukAttached": true,
+      "swipeBackRemovesAutomaticBook": true,
+      "noModelRequest": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}
