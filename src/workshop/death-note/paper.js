@@ -1,7 +1,7 @@
-import {localId} from '../core.js?v=0.84.1';
-import {visibleText,anchorActive} from './core.js?v=0.84.1';
-import {trueNameSpellings} from './names.js?v=0.84.1';
-import {faceKnowledge} from './faces.js?v=0.84.1';
+import {localId} from '../core.js?v=0.85.0';
+import {visibleText,anchorActive} from './core.js?v=0.85.0';
+import {trueNameSpellings} from './names.js?v=0.85.0';
+import {faceKnowledge} from './faces.js?v=0.85.0';
 
 export const PAPER='roleforge_death_note_paper';
 export const PAPER_LIMITS=Object.freeze({pages:32,blocks:24,text:1200,characters:48000,minSize:12,maxSize:44});

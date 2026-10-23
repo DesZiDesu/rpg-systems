@@ -1,0 +1,35 @@
+{
+  "version": "0.85.0",
+  "validatedAt": "2026-10-23T02:09:53.669763+00:00",
+  "pass": true,
+  "host": "SillyTavern 1.19.0",
+  "unitTests": {
+    "tests": 1755,
+    "pass": 1755,
+    "fail": 0
+  },
+  "syntaxCheck": "passed",
+  "reports": {
+    "fragment-chromium.json": "fragment-release/report.json",
+    "fragment-webkit.json": "release-fragment-webkit/report.json",
+    "casebook.json": "release-casebook/report.json",
+    "controls.json": "release-controls/report.json",
+    "close.json": "release-close/validation.json",
+    "long-chat.json": "release-long-chat/report.json"
+  },
+  "tested": [
+    "Casebook, evidence and rule beliefs",
+    "Fragment inventory and physical holder",
+    "Loose-sheet writing, touch scrolling and long-text visibility",
+    "Close during native Continue and retry",
+    "Paper move, size and draft preservation",
+    "Selected swipe and native Branch at message 499",
+    "500, 1000 and 2000-message timelines"
+  ],
+  "limits": [
+    "Mobile viewport/touch emulation; no physical iPhone or Android device.",
+    "Chromium mobile scrolling tested with touch input; WebKit mobile scrolling tested through scroll API.",
+    "AI responses use controlled SSE through native Generate; no live external model or voice.",
+    "NPC-authored physical page reconstruction remains unimplemented."
+  ]
+}

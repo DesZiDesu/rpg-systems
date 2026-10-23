@@ -1,0 +1,39 @@
+{
+  "version": "0.85.0",
+  "browser": "WebKit",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "material": "scrap-demo",
+      "fullScreen": true,
+      "chatbar": true,
+      "generationTriggered": false,
+      "scrollableLongText": true,
+      "finalLineReachable": true,
+      "scrollDoesNotCreateInk": true,
+      "longDraftRetained": true,
+      "longDraftFullyReachable": true,
+      "touchGestureScroll": false,
+      "mobileWebKitProgrammaticScroll": false
+    },
+    {
+      "device": "mobile",
+      "material": "scrap-demo",
+      "fullScreen": true,
+      "chatbar": true,
+      "generationTriggered": false,
+      "scrollableLongText": true,
+      "finalLineReachable": true,
+      "scrollDoesNotCreateInk": true,
+      "longDraftRetained": true,
+      "longDraftFullyReachable": true,
+      "touchGestureScroll": false,
+      "mobileWebKitProgrammaticScroll": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

@@ -1,0 +1,127 @@
+{
+  "version": "0.85.0",
+  "themeFileHash": null,
+  "baselineRef": null,
+  "browser": "Chromium",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "widths": [
+        {
+          "text": "คุโร่ โอโตฮาราดะ\nKurou Otoharada ตายกระทันหัน\nHaruki Yodo ตกตึกเสียชีวิต\nTakuo Shibimaru\nSasuki Kurokawa\nTakai Seiji\nTendo Susumaru",
+          "width": 200.0625,
+          "height": 161.65625
+        },
+        {
+          "text": "Beyond Birthday",
+          "width": 97.859375,
+          "height": 23.09375
+        }
+      ],
+      "samples": [
+        {
+          "delta": 20,
+          "error": 0
+        },
+        {
+          "delta": 50,
+          "error": 0
+        },
+        {
+          "delta": 90,
+          "error": 0
+        }
+      ],
+      "swatch": {
+        "width": 44,
+        "height": 44,
+        "radius": "0px",
+        "nativeType": "color",
+        "hit": true
+      },
+      "dockPager": {
+        "left": 10,
+        "right": 10,
+        "buttonWidth": 44,
+        "numberWidth": 28
+      },
+      "modalPager": {
+        "left": 10,
+        "right": 10,
+        "buttonWidth": 44,
+        "numberWidth": 28
+      },
+      "hiddenLayout": true,
+      "resize": true,
+      "draftRetained": true,
+      "persona": true,
+      "maskToggle": true,
+      "reload": true,
+      "floatingToggle": true,
+      "mouseOrTouch": true,
+      "dragInput": "mouse"
+    },
+    {
+      "device": "mobile",
+      "widths": [
+        {
+          "text": "คุโร่ โอโตฮาราดะ\nKurou Otoharada ตายกระทันหัน\nHaruki Yodo ตกตึกเสียชีวิต\nTakuo Shibimaru\nSasuki Kurokawa\nTakai Seiji\nTendo Susumaru",
+          "width": 200.0625,
+          "height": 161.65625
+        },
+        {
+          "text": "Beyond Birthday",
+          "width": 97.859375,
+          "height": 23.09375
+        }
+      ],
+      "samples": [
+        {
+          "delta": 20,
+          "error": 0
+        },
+        {
+          "delta": 50,
+          "error": 0
+        },
+        {
+          "delta": 90,
+          "error": 0
+        }
+      ],
+      "swatch": {
+        "width": 44,
+        "height": 44,
+        "radius": "0px",
+        "nativeType": "color",
+        "hit": true
+      },
+      "dockPager": {
+        "left": 10,
+        "right": 10,
+        "buttonWidth": 44,
+        "numberWidth": 28
+      },
+      "modalPager": {
+        "left": 10,
+        "right": 10,
+        "buttonWidth": 44,
+        "numberWidth": 28
+      },
+      "hiddenLayout": true,
+      "resize": true,
+      "draftRetained": true,
+      "persona": true,
+      "maskToggle": true,
+      "reload": true,
+      "floatingToggle": true,
+      "mouseOrTouch": true,
+      "dragInput": "touch"
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

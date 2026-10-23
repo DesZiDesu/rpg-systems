@@ -93,3 +93,27 @@
 /* Keep narrow bookmarks reachable in landscape without a sideways scrollbar. */
 .dn-bookmarks{overflow-x:hidden;scrollbar-width:none}.dn-bookmarks::-webkit-scrollbar{display:none}
 .dn-bookmarks button[aria-current=page]{transform:none}
+/* One scrollable writing surface; ink keeps its saved coordinates and size. */
+.rfdn[data-page=write] .dn-leaf-scroll{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.rfdn[data-page=write] .dn-leaf-scroll>.dn-notebook-picker{flex:none;margin:0;padding:12px 22px}
+.rfdn[data-page=write] .dn-leaf-scroll>.dn-free-paper{flex:1;height:auto;min-height:0}
+.dn-free-paper{overflow-x:hidden;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#a39474 transparent}
+.dn-paper-canvas{position:relative;width:100%;min-height:100%}
+.dn-free-block{touch-action:pan-y}.dn-free-block.is-selected{touch-action:none}
+.dn-dock{display:flex;flex-direction:column;overflow:hidden}
+.dn-dock-header,.dn-dock-note{flex:none}.dn-dock-free{display:flex;flex-direction:column;flex:1;min-height:0}
+.dn-dock-free .dn-notebook-picker{flex:none;margin:0;padding:5px 12px;font-size:10px;gap:8px}
+.dn-dock-free .dn-free-paper{flex:1 1 auto;height:190px;min-height:90px}
+.dn-dock-free .dn-writing-footer{flex:none}
+/* A loose piece of paper has no binding, spine or printed rule page. */
+.rfdn .dn-fragment-sheet{display:block;width:min(680px,calc(100% - 42px));height:calc(100% - 110px);margin:10px auto 46px;border-radius:0;background:none;box-shadow:none;filter:drop-shadow(0 16px 22px #0008)}
+.dn-fragment-sheet:before,.dn-fragment-sheet>.dn-inside-cover,.dn-fragment-sheet>.dn-turn-corner{display:none}
+.dn-fragment-sheet>.dn-leaf{height:100%;border:0;border-radius:0;box-shadow:none;background:radial-gradient(ellipse at 65% 20%,#f8f1dd88,transparent 65%),linear-gradient(112deg,#e5dac0,#ede3ca 45%,#dfd0af);clip-path:polygon(0 1%,4% .6%,9% 1.2%,15% .4%,22% 1%,30% .3%,39% 1.1%,48% .5%,58% 1%,68% .3%,77% 1.1%,87% .4%,94% 1%,100% .5%,99.6% 97.8%,96% 98.5%,92% 97.9%,87% 99.2%,82% 98.4%,77% 99.1%,72% 98.2%,65% 99.4%,59% 98.7%,53% 99.5%,47% 98.4%,41% 99.3%,34% 98.6%,28% 99.6%,21% 98.5%,16% 99.2%,10% 98.4%,5% 99.4%,.4% 98.5%)}
+.dn-fragment-sheet>.dn-leaf:before{display:none}
+.rfdn .dn-fragment-sheet .dn-page-bottom{padding:6px 22px 22px;border-top-color:#8f795133}
+.dn-fragment-sheet .dn-bookmarks{inset:auto 0 -42px;flex-direction:row;justify-content:center;gap:12px;overflow-x:auto;max-height:none}
+.rfdn .dn-fragment-sheet .dn-bookmarks button{writing-mode:horizontal-tb;width:auto;height:auto;min-width:0;min-height:36px;padding:4px 7px;font-size:10px;letter-spacing:0;border:0;background:transparent;box-shadow:none;color:#bdb5a2}
+.rfdn .dn-fragment-sheet .dn-bookmarks button[aria-current=page]{background:none;color:#e2d6b9;text-decoration:underline;text-underline-offset:6px}
+.dn-dock[data-material=fragment] .dn-dock-paper{position:relative;background:linear-gradient(120deg,#e9dfc7,#e3d5b6);border-radius:0;clip-path:polygon(0 0,100% .5%,99.7% 98%,95% 99.2%,89% 98.3%,83% 99.5%,76% 98.6%,68% 99.6%,60% 98.5%,52% 99.4%,45% 98.4%,37% 99.6%,29% 98.4%,22% 99.3%,15% 98.5%,8% 99.6%,0 98.7%);padding-bottom:10px!important}
+@media(max-width:750px){.rfdn .dn-fragment-sheet{width:calc(100% - 22px);height:calc(100% - 108px);margin:6px 11px 46px}.dn-fragment-sheet .dn-bookmarks{gap:5px}.rfdn .dn-fragment-sheet .dn-bookmarks button{padding-inline:6px}.dn-dock-free .dn-free-paper{height:175px}}
+@media(prefers-reduced-motion:reduce){.dn-paper-canvas{scroll-behavior:auto}}

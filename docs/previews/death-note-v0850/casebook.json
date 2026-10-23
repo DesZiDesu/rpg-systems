@@ -1,0 +1,49 @@
+{
+  "version": "0.85.0",
+  "browser": "Chromium",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "touchEmulation": false,
+      "observerIsolation": true,
+      "privateCluesHidden": true,
+      "distinctRuleBeliefs": true,
+      "fragmentInventory": true,
+      "parentRightsPreserved": true,
+      "fragmentOnlyWriting": true,
+      "storyTimeWaiting": true,
+      "noClockOnlyDeath": true,
+      "verifiedOutcome": true,
+      "noSyntheticUserTurn": true,
+      "unsentDraftPreserved": true,
+      "thaiEnglish": true,
+      "nativeBranch": true,
+      "reloadRetains": true,
+      "destructionPreservesOutcome": true
+    },
+    {
+      "device": "mobile",
+      "touchEmulation": true,
+      "observerIsolation": true,
+      "privateCluesHidden": true,
+      "distinctRuleBeliefs": true,
+      "fragmentInventory": true,
+      "parentRightsPreserved": true,
+      "fragmentOnlyWriting": true,
+      "storyTimeWaiting": true,
+      "noClockOnlyDeath": true,
+      "verifiedOutcome": true,
+      "noSyntheticUserTurn": true,
+      "unsentDraftPreserved": true,
+      "thaiEnglish": true,
+      "nativeBranch": true,
+      "reloadRetains": true,
+      "destructionPreservesOutcome": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

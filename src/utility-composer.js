@@ -1,8 +1,8 @@
-import {createRelationshipPanel} from './relationship-ui.js?v=0.84.1';
-import {H_FIELDS} from './h-stats.js?v=0.84.1';
-import {effectiveNpc} from './npc-alternates.js?v=0.84.1';
-import {questObjectiveProgress} from './quest-objectives.js?v=0.84.1';
-import {relationshipBond} from './relationship-core.js?v=0.84.1';
+import {createRelationshipPanel} from './relationship-ui.js?v=0.85.0';
+import {H_FIELDS} from './h-stats.js?v=0.85.0';
+import {effectiveNpc} from './npc-alternates.js?v=0.85.0';
+import {questObjectiveProgress} from './quest-objectives.js?v=0.85.0';
+import {relationshipBond} from './relationship-core.js?v=0.85.0';
 const esc=value=>String(value??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const known=value=>value!==null&&value!==undefined&&value!=='';
 export function createUtilityComposer({document:doc=globalThis.document,dock,settings=()=>({}),openItem=()=>{},transfer=()=>{},openManager=()=>{},hRoster=()=>[],portrait=async()=>null,relationships={}}={}){

@@ -1,4 +1,4 @@
-import {publicCases} from './casebook.js?v=0.84.1';
+import {publicCases} from './casebook.js?v=0.85.0';
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function casebookMarkup(w,label,language='th'){
  const t=(th,en)=>language==='en'?en:th,cases=publicCases(w),readers=Object.values(w.ruleReaders||{}).filter(r=>r.public),scoreLabel=s=>s>=60?t('สงสัยอย่างมาก','Strong suspicion'):s>=30?t('กำลังตรวจสอบ','Under investigation'):t('มีเบาะแส','Initial leads');
