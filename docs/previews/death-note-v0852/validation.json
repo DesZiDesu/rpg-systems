@@ -1,0 +1,236 @@
+{
+  "version": "0.85.2",
+  "unitTests": {
+    "passed": 1778,
+    "failed": 0
+  },
+  "syntax": "pass",
+  "browsers": {
+    "chromium": {
+      "version": "0.85.2",
+      "browser": "Chromium",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "knownMotherWithoutIntroduction": true,
+          "knownMotherWithoutEyes": true,
+          "manualKnownNamesRespected": true,
+          "manualFalseRespected": true,
+          "strangersRemainUnknown": true,
+          "falseNamePreserved": true,
+          "eyesStillNeedFaces": true,
+          "npcManagementConsistent": true,
+          "reload": true,
+          "offOn": true,
+          "themes": [
+            {
+              "theme": "roleforge",
+              "header": "HomemakerMara ValeDay 19000 \u00b7 09:31HumanMotherNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "folio",
+              "header": "MHomemakerMara ValeDay 19000 \u00b7 09:31HomemakerHumanMotherNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "chapter",
+              "header": "HomemakerMara ValeDay 19000 \u00b7 09:31HumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "codex",
+              "header": "Mara ValeDay 19000 \u00b7 09:31HomemakerHumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "aincrad",
+              "header": "Mara ValeDay 19000 \u00b7 09:31HomemakerHP100Lv1HumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            }
+          ],
+          "privateExport": true
+        },
+        {
+          "device": "mobile",
+          "knownMotherWithoutIntroduction": true,
+          "knownMotherWithoutEyes": true,
+          "manualKnownNamesRespected": true,
+          "manualFalseRespected": true,
+          "strangersRemainUnknown": true,
+          "falseNamePreserved": true,
+          "eyesStillNeedFaces": true,
+          "npcManagementConsistent": true,
+          "reload": true,
+          "offOn": true,
+          "themes": [
+            {
+              "theme": "roleforge",
+              "header": "HomemakerMara ValeDay 19000 \u00b7 09:31HumanMotherNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "folio",
+              "header": "MHomemakerMara ValeDay 19000 \u00b7 09:31HomemakerHumanMotherNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "chapter",
+              "header": "HomemakerMara ValeDay 19000 \u00b7 09:31HumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "codex",
+              "header": "Mara ValeDay 19000 \u00b7 09:31HomemakerHumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "aincrad",
+              "header": "Mara ValeDay 19000 \u00b7 09:31HomemakerHP100Lv1HumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            }
+          ],
+          "privateExport": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    },
+    "webkit": {
+      "version": "0.85.2",
+      "browser": "WebKit",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "knownMotherWithoutIntroduction": true,
+          "knownMotherWithoutEyes": true,
+          "manualKnownNamesRespected": true,
+          "manualFalseRespected": true,
+          "strangersRemainUnknown": true,
+          "falseNamePreserved": true,
+          "eyesStillNeedFaces": true,
+          "npcManagementConsistent": true,
+          "reload": true,
+          "offOn": true,
+          "themes": [
+            {
+              "theme": "roleforge",
+              "header": "HomemakerMara ValeDay 19000 \u00b7 09:31HumanMotherNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "folio",
+              "header": "MHomemakerMara ValeDay 19000 \u00b7 09:31HomemakerHumanMotherNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "chapter",
+              "header": "HomemakerMara ValeDay 19000 \u00b7 09:31HumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "codex",
+              "header": "Mara ValeDay 19000 \u00b7 09:31HomemakerHumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "aincrad",
+              "header": "Mara ValeDay 19000 \u00b7 09:31HomemakerHP100Lv1HumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            }
+          ],
+          "privateExport": true
+        },
+        {
+          "device": "mobile",
+          "knownMotherWithoutIntroduction": true,
+          "knownMotherWithoutEyes": true,
+          "manualKnownNamesRespected": true,
+          "manualFalseRespected": true,
+          "strangersRemainUnknown": true,
+          "falseNamePreserved": true,
+          "eyesStillNeedFaces": true,
+          "npcManagementConsistent": true,
+          "reload": true,
+          "offOn": true,
+          "themes": [
+            {
+              "theme": "roleforge",
+              "header": "HomemakerMara ValeDay 19000 \u00b7 09:31HumanMotherNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "folio",
+              "header": "MHomemakerMara ValeDay 19000 \u00b7 09:31HomemakerHumanMotherNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "chapter",
+              "header": "HomemakerMara ValeDay 19000 \u00b7 09:31HumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "codex",
+              "header": "Mara ValeDay 19000 \u00b7 09:31HomemakerHumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            },
+            {
+              "theme": "aincrad",
+              "header": "Mara ValeDay 19000 \u00b7 09:31HomemakerHP100Lv1HumanMotherHomemakerNPC dossier",
+              "dialogue": "Mara ValeDay 19000 \u00b7 09:31",
+              "red": true,
+              "noOverflow": true
+            }
+          ],
+          "privateExport": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    }
+  }
+}

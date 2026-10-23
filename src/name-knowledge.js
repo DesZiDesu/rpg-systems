@@ -1,12 +1,22 @@
-import {resolveNpcSpeaker} from './npc-core.js?v=0.85.1';
+import {resolveNpcSpeaker} from './npc-core.js?v=0.85.2';
 // Directed knowledge: A knowing B's name never implies B knows A, or that C
 // knows either name. These maps belong to the observer's shared identity.
 const blocked=new Set(['__proto__','constructor','prototype']);
 export function normalizeKnownNames(value){return Object.fromEntries(Object.entries(value&&typeof value==='object'&&!Array.isArray(value)?value:{}).filter(([id,known])=>id&&id.length<=120&&!blocked.has(id)&&typeof known==='boolean'));}
+// relationship is explicitly relative to the player. Only established close
+// relationships with a met person supply prior familiarity; a profession,
+// affinity score, shared scene or generic "friend" label is not enough.
+const familiarRelation=/^(?:mother|mom|mum|father|dad|parent|parents|biological mother|biological father|adoptive mother|adoptive father|stepmother|stepfather|sister|brother|sibling|daughter|son|child|grandmother|grandfather|grandparent|wife|husband|spouse|childhood friend|lifelong friend|best friend|แม่|มารดา|แม่แท้ๆ|แม่บุญธรรม|แม่เลี้ยง|พ่อ|บิดา|พ่อแท้ๆ|พ่อบุญธรรม|พ่อเลี้ยง|พ่อแม่|พี่สาว|น้องสาว|พี่ชาย|น้องชาย|พี่น้อง|ลูกสาว|ลูกชาย|ลูก|ย่า|ยาย|ปู่|ตา|ภรรยา|สามี|คู่สมรส|เพื่อนวัยเด็ก|เพื่อนสมัยเด็ก|เพื่อนสนิท)$/iu;
+export function priorNameKnowledge(state,observerId,subjectId){
+ if(observerId===subjectId)return {known:true,source:'self'};
+ const observer=observerId==='player'?state.player:state.npcs?.find(n=>n.id===observerId),declared=observer?.knownNames;
+ if(declared&&typeof declared==='object'&&!Array.isArray(declared)&&!blocked.has(subjectId)&&Object.hasOwn(declared,subjectId)&&typeof declared[subjectId]==='boolean')return {known:declared[subjectId],source:'explicit'};
+ const relative=observerId==='player'?state.npcs?.find(n=>n.id===subjectId):subjectId==='player'?observer:null;
+ if(relative?.met===true&&familiarRelation.test(String(relative.relationship||'').normalize('NFKC').trim()))return {known:true,source:'familiar'};
+ return {known:false,source:'unknown'};
+}
 export function knowsName(state,observerId,subjectId){
- if(observerId===subjectId)return true;
- const observer=observerId==='player'?state.player:state.npcs?.find(n=>n.id===observerId);
- return normalizeKnownNames(observer?.knownNames)[subjectId]===true;
+ return priorNameKnowledge(state,observerId,subjectId).known;
 }
 export function nameLabel(state,subjectId,{observerId='player',language='en'}={}){
  const subject=subjectId==='player'?state.player:state.npcs?.find(n=>n.id===subjectId);
@@ -37,7 +47,7 @@ export function applyNameKnowledge(state,events,{story='',user='',participants=[
   const normalize=s=>s.replace(/\s+/gu,' ').trim();
   if(!normalize(publicText).includes(normalize(quote))&&!normalize(userText).includes(normalize(quote)))continue;
   if(!introduction(quote,name))continue;
-  if(normalizeKnownNames(observer.knownNames)[e.subjectId]===true)continue;
+  if(knowsName(state,e.observerId,e.subjectId))continue;
   if(!changed){next=structuredClone(state);actors=new Map([['player',next.player],...(next.npcs||[]).map(n=>[n.id,n])]);changed=true;}
   const recipient=actors.get(e.observerId);recipient.knownNames={...normalizeKnownNames(recipient.knownNames),[e.subjectId]:true};
  }
@@ -45,7 +55,10 @@ export function applyNameKnowledge(state,events,{story='',user='',participants=[
 }
 export function nameKnowledgeReference(state,subjects=state.npcs||[]){
  const ids=new Set(['player',...subjects.map(n=>n.id)]);
- return[{id:'player',knownNames:Object.fromEntries(Object.entries(normalizeKnownNames(state.player?.knownNames)).filter(([id])=>ids.has(id)))},...subjects.map(n=>({id:n.id,knownNames:Object.fromEntries(Object.entries(normalizeKnownNames(n.knownNames)).filter(([id])=>ids.has(id)))}))];
+ const reference=(id,actor)=>{const knownNames=Object.fromEntries(Object.entries(normalizeKnownNames(actor?.knownNames)).filter(([key])=>ids.has(key)));
+  for(const subject of id==='player'?subjects.map(n=>n.id):['player'])if(subject!==id&&!Object.hasOwn(knownNames,subject)&&knowsName(state,id,subject))knownNames[subject]=true;
+  return {id,knownNames};};
+ return[reference('player',state.player),...subjects.map(n=>reference(n.id,n))];
 }
 export function guardNameDialogue(text,speaker,state){
  const actor=resolveNpcSpeaker(state.npcs||[],speaker)||{id:'__unknown_speaker',name:String(speaker||''),knownNames:{}};
@@ -62,4 +75,4 @@ export function guardNameDialogue(text,speaker,state){
  return guarded;
 }
 export function guardTaggedNameDialogue(source,state){return String(source||'').replace(/(<tr-dialogue\b[^>]*\bname=(?:"([^"]+)"|'([^']+)')[^>]*>)([\s\S]*?)(<\/tr-dialogue>|(?=<tr-(?:header|narrative|dialogue)\b)|$)/giu,(_,open,doubleName,singleName,body,close)=>open+guardNameDialogue(body,doubleName||singleName,state)+close);}
-export const NAME_KNOWLEDGE_INSTRUCTIONS='KNOWN NAME / DIRECTED KNOWLEDGE: nameKnowledge lists each observer and their knownNames map keyed by subject id (player means the player). knownName is true only for self or an explicitly true observer->subject entry; absent/false means the observer does not know that person\'s name. This applies to player->NPC, NPC->player, and NPC->NPC separately. Dossiers, hidden names, headers, met/enabled, friendship, transfers, shared scenes, party/guild membership and knowing a third person never grant names. While false, use a visible role, description or neutral form of address rather than the subject\'s proper name in that observer\'s speech, thoughts and viewpoint. An explicit introduction, name disclosure or readable name in the visible scene may teach listeners. Emit nameKnowledgeEvents:[{observerId,subjectId,knownName:true,evidence:"exact visible or latest user introduction/name disclosure quote"}] separately for each actual listener. Include the exact disclosed subject name in the quote. Merely greeting someone by name or mentioning a private dossier is not evidence of learning it. Never edit knownNames through NPC upserts/scalar ops. Preserve manual user choices and do not grant off-scene observers knowledge.';
+export const NAME_KNOWLEDGE_INSTRUCTIONS='KNOWN NAME / DIRECTED KNOWLEDGE: nameKnowledge lists each observer and their knownNames map keyed by subject id (player means the player). The supplied knownNames maps include explicit knowledge and established prior familiarity with a met close relative, spouse or longstanding childhood/best friend. Such people do not need to introduce themselves again. Self is known; absent/false otherwise means unknown. Explicit false overrides inferred familiarity. This applies to player->NPC, NPC->player, and NPC->NPC separately. Dossiers, hidden names, headers, met/enabled alone, an occupation, generic friendship, transfers, shared scenes, party/guild membership and knowing a third person never grant names. While false, use a visible role, description or neutral form of address rather than the subject\'s proper name in that observer\'s speech, thoughts and viewpoint. An explicit introduction, name disclosure or readable name in the visible scene may teach listeners. Emit nameKnowledgeEvents:[{observerId,subjectId,knownName:true,evidence:"exact visible or latest user introduction/name disclosure quote"}] separately for each actual listener. Include the exact disclosed subject name in the quote. Merely greeting someone by name or mentioning a private dossier is not evidence of learning it. Never edit knownNames through NPC upserts/scalar ops. Preserve manual user choices and do not grant off-scene observers knowledge.';

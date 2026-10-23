@@ -1,6 +1,6 @@
-import {actorKey,isShinigami,isHuman,EYE_SOURCES,loseFinalRights,syncPlayerEyes,eyeAbility,defaultDeathNoteSettings} from './actors.js?v=0.85.1';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.1';
-import {containsIdentity} from './identity.js?v=0.85.1';
+import {actorKey,isShinigami,isHuman,EYE_SOURCES,loseFinalRights,syncPlayerEyes,eyeAbility,defaultDeathNoteSettings} from './actors.js?v=0.85.2';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.2';
+import {containsIdentity} from './identity.js?v=0.85.2';
 export function applyNotebookEvent(w,e){
  const b=w.books[e.bookId];
  // Later witnessed ownership can identify an already-known physical book.
