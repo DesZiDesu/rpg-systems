@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {worldState,playerIdentity,perceivedName,applyEvent,worldInstruction} from '../src/workshop/death-note/world.js';
-import {knowsName,nameKnowledgeReference,guardNameDialogue} from '../src/name-knowledge.js';
+import {knowsName,nameKnowledgeReference} from '../src/name-knowledge.js';
 const fixture=()=>({player:{name:'Alex Vale',knownNames:{}},inventory:[],worldClock:{day:1,time:'18:00'},deathNoteRules:{settings:{maskUnknownNames:true},originalLifespans:{mom:{day:19000,time:'09:31'}}},npcs:[{id:'mom',name:'Mara Vale',relationship:'แม่',occupation:'Homemaker',met:true,race:'Human',knownNames:{},stats:{hp:100}},{id:'friend',name:'Elias Voss',relationship:'Acquaintance',met:true,race:'Human',knownNames:{},stats:{hp:100}},{id:'stranger',name:'Nolan Pierce',relationship:'Acquaintance',met:true,race:'Human',knownNames:{},stats:{hp:100}}]});
 const mom=s=>s.npcs[0];
 test('a met mother is already known without an introduction or Shinigami Eyes',()=>{
  const s=fixture(),before=JSON.stringify(s),w=worldState([],s),v=playerIdentity(w,mom(s),s);assert.equal(v.name,'Mara Vale');assert.equal(v.sight,null);assert.equal(w.claims.mom,undefined);assert.equal(JSON.stringify(s),before);
- assert.equal(knowsName(s,'player','mom'),true);assert.equal(knowsName(s,'mom','player'),true);assert.equal(guardNameDialogue('Alex Vale, dinner is ready.','Mara Vale',s),'Alex Vale, dinner is ready.');
+ assert.equal(knowsName(s,'player','mom'),true);assert.equal(knowsName(s,'mom','player'),true);
 });
 test('English and Thai close family and longstanding relationships need no repeated introduction',()=>{
  for(const relationship of ['Mother','Father','Sister','Spouse','Childhood friend','แม่','พ่อ','ภรรยา','สามี','เพื่อนวัยเด็ก']){const s=fixture();mom(s).relationship=relationship;assert.equal(perceivedName(worldState([],s),mom(s)),'Mara Vale',relationship);}

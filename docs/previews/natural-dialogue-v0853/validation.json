@@ -1,0 +1,360 @@
+{
+  "version": "0.85.3",
+  "unitTests": {
+    "passed": 1777,
+    "failed": 0
+  },
+  "syntax": "pass",
+  "browsers": {
+    "chromium": {
+      "version": "0.85.3",
+      "browser": "Chromium",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "cases": [
+            {
+              "mode": "shared",
+              "theme": "roleforge",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "folio",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "chapter",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "codex",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "aincrad",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "roleforge",
+              "theme": "roleforge",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "folio",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "chapter",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "codex",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "aincrad",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            }
+          ],
+          "knowledgeUnchanged": true,
+          "offOn": true,
+          "thaiAndEnglish": true,
+          "privateExport": true,
+          "reload": true,
+          "backendCalls": 0,
+          "voiceCalls": 0
+        },
+        {
+          "device": "mobile",
+          "cases": [
+            {
+              "mode": "shared",
+              "theme": "roleforge",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "folio",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "chapter",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "codex",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "aincrad",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "roleforge",
+              "theme": "roleforge",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "folio",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "chapter",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "codex",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "aincrad",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            }
+          ],
+          "knowledgeUnchanged": true,
+          "offOn": true,
+          "thaiAndEnglish": true,
+          "privateExport": true,
+          "reload": true,
+          "backendCalls": 0,
+          "voiceCalls": 0
+        }
+      ],
+      "errors": [],
+      "pass": true
+    },
+    "webkit": {
+      "version": "0.85.3",
+      "browser": "WebKit",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "cases": [
+            {
+              "mode": "shared",
+              "theme": "roleforge",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "folio",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "chapter",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "codex",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "aincrad",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "roleforge",
+              "theme": "roleforge",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "folio",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "chapter",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "codex",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "aincrad",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            }
+          ],
+          "knowledgeUnchanged": true,
+          "offOn": true,
+          "thaiAndEnglish": true,
+          "privateExport": true,
+          "reload": true,
+          "backendCalls": 0,
+          "voiceCalls": 0
+        },
+        {
+          "device": "mobile",
+          "cases": [
+            {
+              "mode": "shared",
+              "theme": "roleforge",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "folio",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "chapter",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "codex",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "shared",
+              "theme": "aincrad",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": false
+            },
+            {
+              "mode": "roleforge",
+              "theme": "roleforge",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "folio",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "chapter",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "codex",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            },
+            {
+              "mode": "roleforge",
+              "theme": "aincrad",
+              "namesPreserved": true,
+              "unknownHeader": true,
+              "speechChecked": true
+            }
+          ],
+          "knowledgeUnchanged": true,
+          "offOn": true,
+          "thaiAndEnglish": true,
+          "privateExport": true,
+          "reload": true,
+          "backendCalls": 0,
+          "voiceCalls": 0
+        }
+      ],
+      "errors": [],
+      "pass": true
+    }
+  }
+}
