@@ -1,0 +1,51 @@
+{
+  "feature": "Death Note casebook preview",
+  "baseVersion": "0.84.1",
+  "baseCommit": "30db6503d1f7b44ab893a22796c85e267557f931",
+  "branch": "preview/death-note-evidence",
+  "mainChanged": false,
+  "unitTests": {
+    "passed": 1755,
+    "failed": 0,
+    "newFeatureTests": 30
+  },
+  "syntaxCheck": true,
+  "realHost": "SillyTavern 1.19.0",
+  "browserEngines": [
+    "Chromium",
+    "WebKit"
+  ],
+  "mobile": "viewport and touch emulation, no physical device",
+  "model": "controlled SSE through native Generate, no live external model",
+  "screenshots": [
+    "desktop-awaiting.png",
+    "desktop-beliefs.png",
+    "desktop-cases-english.png",
+    "desktop-cases.png",
+    "desktop-evidence.png",
+    "desktop-face-needed.png",
+    "desktop-fragments.png",
+    "desktop-ineffective.png",
+    "desktop-resolved.png",
+    "desktop-waiting.png",
+    "mobile-awaiting.png",
+    "mobile-beliefs.png",
+    "mobile-cases-english.png",
+    "mobile-cases.png",
+    "mobile-evidence.png",
+    "mobile-face-needed.png",
+    "mobile-fragments.png",
+    "mobile-ineffective.png",
+    "mobile-resolved.png",
+    "mobile-waiting.png"
+  ],
+  "reports": {
+    "chromium": "chromium.json",
+    "webkit": "webkit.json",
+    "long-chat": "long-chat.json",
+    "close": "close.json",
+    "layout": "layout.json",
+    "actors": "actors.json"
+  },
+  "pass": true
+}

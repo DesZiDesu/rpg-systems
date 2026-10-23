@@ -1,0 +1,10 @@
+import {storySeconds} from './core.js?v=0.84.1';
+export function inscriptionProgress(entry,state,language='th'){
+ const t=(th,en)=>language==='en'?en:th;
+ if(entry.status==='resolved')return {code:'resolved',label:t('เกิดผลแล้ว','Resolved'),detail:t('เรื่องราวยืนยันการเสียชีวิตแล้ว','The story confirms the completed death.'),fraction:1};
+ if(entry.status==='ineffective')return {code:'ineffective',label:t('ไม่เกิดผล','Ineffective'),detail:entry.validName===false?t('ชื่อที่จดไม่ตรงกับบุคคลที่นึกถึง ไม่เปิดเผยชื่อจริง','The written name does not match the remembered person. The true name stays hidden.'):t('เนื้อเรื่องยืนยันว่าเงื่อนไขที่จดไม่เกิดผล ดูหลักฐานด้านล่าง','The story confirms an ineffective outcome. See the evidence below.'),fraction:0};
+ const elapsed=Math.max(Number(entry.elapsedSeconds)||0,Math.max(0,storySeconds(state)-entry.writtenStorySeconds)),remaining=Math.max(0,entry.delaySeconds-elapsed);
+ if(entry.writtenTimeEstimated)return {code:'awaiting-story',label:t('รอคำยืนยันในโรล','Awaiting story confirmation'),detail:t('กู้คืนบันทึกเก่า ไม่คาดเดาเวลาจดหรือสรุปการตายจากนาฬิกา','Recovered entry: the writing time is uncertain. Clock time alone cannot confirm a death.'),fraction:0};
+ if(remaining){const days=Math.floor(remaining/86400),hours=Math.floor(remaining/3600)%24,minutes=Math.floor(remaining/60)%60,seconds=remaining%60,time=[days?days+t(' วัน','d'):'',hours?hours+t(' ชม.','h'):'',minutes?minutes+t(' นาที','m'):'',seconds?seconds+t(' วินาที','s'):''].filter(Boolean).join(' ');return {code:'waiting-time',label:t('รอเวลาในเรื่อง','Waiting for story time'),detail:t('เหลืออีก ','Remaining: ')+time+t(' · ต่อโรลเพื่อให้เวลาเดิน',' · Continue roleplay to advance time.'),fraction:Math.min(1,elapsed/entry.delaySeconds)};}
+ return {code:'awaiting-story',label:t('รอคำยืนยันในโรล','Awaiting story confirmation'),detail:t('ถึงเวลาที่กำหนดแล้ว ต้องมีเหตุการณ์ยืนยันก่อนเปลี่ยนสถานะ','The deadline has arrived. A witnessed outcome is required before changing status.'),fraction:1};
+}

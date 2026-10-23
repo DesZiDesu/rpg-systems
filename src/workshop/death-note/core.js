@@ -1,3 +1,4 @@
+import {fragmentItem} from './fragments.js?v=0.84.1';
 import {localId} from '../core.js?v=0.84.1';
 import {sha256} from '../../vendor/js-sha256/index.js?v=0.84.1';
 import {matchesTrueName,trueNameSpellings} from './names.js?v=0.84.1';
@@ -18,7 +19,7 @@ const safeId = id => typeof id === 'string' && id.length < 180 && !['__proto__',
 export const visibleText = text => String(text || '').replace(/<think\b[^>]*>[\s\S]*?<\/think>/giu, '').replace(/<!--[\s\S]*?-->/gu, '').replace(/<[^>]*>/gu, ' ').replace(/\s+/gu, ' ').trim();
 export function ownedNotebook(state) {
   return (state?.inventory || []).find(item => item.quantity > 0 &&
-    ((item.properties || []).includes('roleforge:addon:death-note') || ['death note', 'เดธโน้ต', 'สมุดเดธโน้ต', 'สมุดเดธโน๊ต'].includes(key(item.name))));
+    (fragmentItem(item) || (item.properties || []).includes('roleforge:addon:death-note') || ['death note', 'เดธโน้ต', 'สมุดเดธโน้ต', 'สมุดเดธโน๊ต'].includes(key(item.name))));
 }
 export function eligibleTarget(state, {name, targetId, faceKnown = false} = {}) {
   if (!ownedNotebook(state)) return {ok:false,code:'ownership',message:'ยังไม่ได้ถือ Death Note อยู่ในกระเป๋า'};

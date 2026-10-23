@@ -1,0 +1,332 @@
+{
+  "version": "0.84.1",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "touchEmulation": false,
+      "freeEyesNoLifeCost": true,
+      "innateNpc": true,
+      "ownerVersusBorrower": true,
+      "allThemes": [
+        {
+          "theme": "roleforge",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "roleforge",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "folio",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "folio",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "chapter",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "chapter",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "codex",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "codex",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "aincrad",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "aincrad",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "roleforge",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "roleforge",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "folio",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "folio",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "chapter",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "chapter",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "codex",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "codex",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "aincrad",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "aincrad",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        }
+      ],
+      "displayDoesNotRemoveAbility": true,
+      "stableSimulatedLifespan": true,
+      "exchangeKeepsNotebookAndOriginal": true,
+      "disableRetainsData": true,
+      "disableClearsPromptsAndOverlays": true,
+      "reload": true,
+      "bilingual": true,
+      "nativeBranch": true,
+      "paidDealHalvesLife": true,
+      "npcPaidDeal": true,
+      "noSyntheticUser": true,
+      "modelCalls": 1
+    },
+    {
+      "device": "mobile",
+      "touchEmulation": true,
+      "freeEyesNoLifeCost": true,
+      "innateNpc": true,
+      "ownerVersusBorrower": true,
+      "allThemes": [
+        {
+          "theme": "roleforge",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "roleforge",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "folio",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "folio",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "chapter",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "chapter",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "codex",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "codex",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "aincrad",
+          "header": true,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "aincrad",
+          "header": false,
+          "voice": false,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "roleforge",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "roleforge",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "folio",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "folio",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "chapter",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "chapter",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "codex",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "codex",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "aincrad",
+          "header": true,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        },
+        {
+          "theme": "aincrad",
+          "header": false,
+          "voice": true,
+          "redText": true,
+          "noOverflow": true
+        }
+      ],
+      "displayDoesNotRemoveAbility": true,
+      "stableSimulatedLifespan": true,
+      "exchangeKeepsNotebookAndOriginal": true,
+      "disableRetainsData": true,
+      "disableClearsPromptsAndOverlays": true,
+      "reload": true,
+      "bilingual": true,
+      "nativeBranch": true,
+      "paidDealHalvesLife": true,
+      "npcPaidDeal": true,
+      "noSyntheticUser": true,
+      "modelCalls": 1
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

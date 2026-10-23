@@ -1,0 +1,229 @@
+{
+  "version": "0.84.1",
+  "browser": "Chromium",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "touchEmulation": false,
+      "measurements": [
+        {
+          "messages": 500,
+          "trials": [
+            {
+              "jsMs": 77.5,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 67,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 64.7000000178814,
+              "context": 2,
+              "replays": 2
+            }
+          ],
+          "facts": {
+            "books": 2,
+            "fragments": [
+              "early-scrap"
+            ],
+            "score": 20,
+            "ledger": [],
+            "messages": 500
+          }
+        },
+        {
+          "messages": 1000,
+          "trials": [
+            {
+              "jsMs": 109.30000001192093,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 103.10000002384186,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 100.40000000596046,
+              "context": 2,
+              "replays": 2
+            }
+          ],
+          "facts": {
+            "books": 2,
+            "fragments": [
+              "early-scrap",
+              "future-scrap"
+            ],
+            "score": 20,
+            "ledger": [
+              "waiting"
+            ],
+            "messages": 1000
+          }
+        },
+        {
+          "messages": 2000,
+          "trials": [
+            {
+              "jsMs": 185.40000000596046,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 187,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 179.7000000178814,
+              "context": 2,
+              "replays": 2
+            }
+          ],
+          "facts": {
+            "books": 2,
+            "fragments": [
+              "early-scrap",
+              "future-scrap"
+            ],
+            "score": 20,
+            "ledger": [
+              "resolved"
+            ],
+            "messages": 2000
+          }
+        }
+      ],
+      "nativeSwipe": true,
+      "nativeEarlierPointBranch": {
+        "messages": 500,
+        "fragments": [
+          "early-scrap"
+        ],
+        "entries": 0,
+        "score": 20
+      },
+      "independentNotebooks": true
+    },
+    {
+      "device": "mobile",
+      "touchEmulation": true,
+      "measurements": [
+        {
+          "messages": 500,
+          "trials": [
+            {
+              "jsMs": 70.7999999821186,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 62.900000005960464,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 63,
+              "context": 2,
+              "replays": 2
+            }
+          ],
+          "facts": {
+            "books": 2,
+            "fragments": [
+              "early-scrap"
+            ],
+            "score": 20,
+            "ledger": [],
+            "messages": 500
+          }
+        },
+        {
+          "messages": 1000,
+          "trials": [
+            {
+              "jsMs": 112.40000000596046,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 103,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 100.19999998807907,
+              "context": 2,
+              "replays": 2
+            }
+          ],
+          "facts": {
+            "books": 2,
+            "fragments": [
+              "early-scrap",
+              "future-scrap"
+            ],
+            "score": 20,
+            "ledger": [
+              "waiting"
+            ],
+            "messages": 1000
+          }
+        },
+        {
+          "messages": 2000,
+          "trials": [
+            {
+              "jsMs": 185.40000000596046,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 185.19999998807907,
+              "context": 2,
+              "replays": 2
+            },
+            {
+              "jsMs": 175.40000000596046,
+              "context": 2,
+              "replays": 2
+            }
+          ],
+          "facts": {
+            "books": 2,
+            "fragments": [
+              "early-scrap",
+              "future-scrap"
+            ],
+            "score": 20,
+            "ledger": [
+              "resolved"
+            ],
+            "messages": 2000
+          }
+        }
+      ],
+      "nativeSwipe": true,
+      "nativeEarlierPointBranch": {
+        "messages": 500,
+        "fragments": [
+          "early-scrap"
+        ],
+        "entries": 0,
+        "score": 20
+      },
+      "independentNotebooks": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}
