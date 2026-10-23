@@ -1,4 +1,4 @@
-import {uiLanguage} from '../../ui-language.js?v=0.85.0';
+import {uiLanguage} from '../../ui-language.js?v=0.85.1';
 
 // Only authored interface text passes through this table. Saved names, prose
 // and manuscripts are interpolated after static template parts are translated.
@@ -43,6 +43,7 @@ export const ENGLISH_UI=Object.freeze({
  'ยกเลิกย้าย':'Cancel move',
  'หน้านี้มีข้อความครบ 24 กล่องแล้ว':'This page already contains 24 text blocks',
  'สมุดเก็บข้อความได้ 48000 ตัวอักษร':'The notebook holds up to 48000 text characters',
+ 'ข้อความสาเหตุหรือรายละเอียดเกินขีดจำกัดของสมุด':'The cause or details exceed the notebook text limit',
  'หน้ากระดาษว่าง แตะเพื่อเขียน':'Blank paper — touch to write',
  'ล้างเฉพาะกระดาษ ผลในเรื่องยังอยู่':'Clear the paper only. Story outcomes remain.',
  'ล้างกระดาษ':'Clear paper',

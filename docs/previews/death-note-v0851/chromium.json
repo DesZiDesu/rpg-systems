@@ -1,0 +1,126 @@
+{
+  "version": "0.85.1",
+  "browser": "Chromium",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "nativeContinueCompleteDetails": true,
+      "nativeNextReplyCompleteDetails": true,
+      "buttonPickupNestedScene": true,
+      "typedPickupRepairsInventory": true,
+      "originalShinigamiPreserved": true,
+      "nativeBranchBeforePickup": true,
+      "reloadRetainsInkAndDetails": true,
+      "unsentDraftPreserved": true,
+      "detailsLength": 721,
+      "noSyntheticUserTurn": true,
+      "simulatedKeyboard": false
+    },
+    {
+      "device": "mobile",
+      "nativeContinueCompleteDetails": true,
+      "nativeNextReplyCompleteDetails": true,
+      "buttonPickupNestedScene": true,
+      "typedPickupRepairsInventory": true,
+      "originalShinigamiPreserved": true,
+      "nativeBranchBeforePickup": true,
+      "reloadRetainsInkAndDetails": true,
+      "unsentDraftPreserved": true,
+      "detailsLength": 721,
+      "noSyntheticUserTurn": true,
+      "simulatedKeyboard": true,
+      "full": {
+        "paper": {
+          "top": 114.1875,
+          "bottom": 365,
+          "height": 250.8125
+        },
+        "tools": {
+          "top": 309.1875,
+          "bottom": 351.1875
+        },
+        "submit": {
+          "top": 369,
+          "bottom": 411
+        },
+        "textBottom": 298.15625,
+        "textTop": -1047.84375,
+        "textHeight": 1346,
+        "textScrollHeight": 1346,
+        "textClientHeight": 1346,
+        "textScrollTop": 0,
+        "font": "24px / 39.6px DNInk, DNHandThai, serif",
+        "lineHeight": "39.6px",
+        "viewportTop": 0,
+        "viewportBottom": 440,
+        "value": "Nolan Pierce\nหัวใจวาย หลังจาก 10 นาที\nรายละเอียดบรรทัดที่ 1\nรายละเอียดบรรทัดที่ 2\nรายละเอียดบรรทัดที่ 3\nรายละเอียดบรรทัดที่ 4\nรายละเอียดบรรทัดที่ 5\nรายละเอียดบรรทัดที่ 6\nรายละเอียดบรรทัดที่ 7\nรายละเอียดบรรทัดที่ 8\nรายละเอียดบรรทัดที่ 9\nรายละเอียดบรรทัดที่ 10\nรายละเอียดบรรทัดที่ 11\nรายละเอียดบรรทัดที่ 12\nรายละเอียดบรรทัดที่ 13\nรายละเอียดบรรทัดที่ 14\nรายละเอียดบรรทัดที่ 15\nรายละเอียดบรรทัดที่ 16\nรายละเอียดบรรทัดที่ 17\nรายละเอียดบรรทัดที่ 18\nรายละเอียดบรรทัดที่ 19\nรายละเอียดบรรทัดที่ 20\nรายละเอียดบรรทัดที่ 21\nรายละเอียดบรรทัดที่ 22\nรายละเอียดบรรทัดที่ 23\nรายละเอียดบรรทัดที่ 24\nรายละเอียดบรรทัดที่ 25\nรายละเอียดบรรทัดที่ 26\nรายละเอียดบรรทัดที่ 27\nรายละเอียดบรรทัดที่ 28\nรายละเอียดบรรทัดที่ 29\nรายละเอียดบรรทัดที่ 30\nFINAL-CONDITION",
+        "scrollTop": 1203,
+        "selectionEnd": 734,
+        "overflow": false
+      },
+      "docked": {
+        "paper": {
+          "top": 163,
+          "bottom": 366,
+          "height": 203
+        },
+        "tools": {
+          "top": 310,
+          "bottom": 352
+        },
+        "submit": {
+          "top": 368,
+          "bottom": 410
+        },
+        "textBottom": 299.40625,
+        "textTop": -1007.59375,
+        "textHeight": 1307,
+        "textScrollHeight": 1307,
+        "textClientHeight": 1307,
+        "textScrollTop": 0,
+        "font": "24px / 39.6px DNInk, DNHandThai, serif",
+        "lineHeight": "39.6px",
+        "viewportTop": 0,
+        "viewportBottom": 440,
+        "value": "Nolan Pierce\nหัวใจวาย หลังจาก 10 นาที\nรายละเอียดบรรทัดที่ 1\nรายละเอียดบรรทัดที่ 2\nรายละเอียดบรรทัดที่ 3\nรายละเอียดบรรทัดที่ 4\nรายละเอียดบรรทัดที่ 5\nรายละเอียดบรรทัดที่ 6\nรายละเอียดบรรทัดที่ 7\nรายละเอียดบรรทัดที่ 8\nรายละเอียดบรรทัดที่ 9\nรายละเอียดบรรทัดที่ 10\nรายละเอียดบรรทัดที่ 11\nรายละเอียดบรรทัดที่ 12\nรายละเอียดบรรทัดที่ 13\nรายละเอียดบรรทัดที่ 14\nรายละเอียดบรรทัดที่ 15\nรายละเอียดบรรทัดที่ 16\nรายละเอียดบรรทัดที่ 17\nรายละเอียดบรรทัดที่ 18\nรายละเอียดบรรทัดที่ 19\nรายละเอียดบรรทัดที่ 20\nรายละเอียดบรรทัดที่ 21\nรายละเอียดบรรทัดที่ 22\nรายละเอียดบรรทัดที่ 23\nรายละเอียดบรรทัดที่ 24\nรายละเอียดบรรทัดที่ 25\nรายละเอียดบรรทัดที่ 26\nรายละเอียดบรรทัดที่ 27\nรายละเอียดบรรทัดที่ 28\nรายละเอียดบรรทัดที่ 29\nรายละเอียดบรรทัดที่ 30\nFINAL-CONDITION",
+        "scrollTop": 1212,
+        "selectionEnd": 734,
+        "overflow": false
+      },
+      "offset": {
+        "paper": {
+          "top": 149.1875,
+          "bottom": 360,
+          "height": 210.8125
+        },
+        "tools": {
+          "top": 304.1875,
+          "bottom": 346.1875
+        },
+        "submit": {
+          "top": 364,
+          "bottom": 406
+        },
+        "textBottom": 293.15625,
+        "textTop": -1052.84375,
+        "textHeight": 1346,
+        "textScrollHeight": 1346,
+        "textClientHeight": 1346,
+        "textScrollTop": 0,
+        "font": "24px / 39.6px DNInk, DNHandThai, serif",
+        "lineHeight": "39.6px",
+        "viewportTop": 35,
+        "viewportBottom": 435,
+        "value": "Nolan Pierce\nหัวใจวาย หลังจาก 10 นาที\nรายละเอียดบรรทัดที่ 1\nรายละเอียดบรรทัดที่ 2\nรายละเอียดบรรทัดที่ 3\nรายละเอียดบรรทัดที่ 4\nรายละเอียดบรรทัดที่ 5\nรายละเอียดบรรทัดที่ 6\nรายละเอียดบรรทัดที่ 7\nรายละเอียดบรรทัดที่ 8\nรายละเอียดบรรทัดที่ 9\nรายละเอียดบรรทัดที่ 10\nรายละเอียดบรรทัดที่ 11\nรายละเอียดบรรทัดที่ 12\nรายละเอียดบรรทัดที่ 13\nรายละเอียดบรรทัดที่ 14\nรายละเอียดบรรทัดที่ 15\nรายละเอียดบรรทัดที่ 16\nรายละเอียดบรรทัดที่ 17\nรายละเอียดบรรทัดที่ 18\nรายละเอียดบรรทัดที่ 19\nรายละเอียดบรรทัดที่ 20\nรายละเอียดบรรทัดที่ 21\nรายละเอียดบรรทัดที่ 22\nรายละเอียดบรรทัดที่ 23\nรายละเอียดบรรทัดที่ 24\nรายละเอียดบรรทัดที่ 25\nรายละเอียดบรรทัดที่ 26\nรายละเอียดบรรทัดที่ 27\nรายละเอียดบรรทัดที่ 28\nรายละเอียดบรรทัดที่ 29\nรายละเอียดบรรทัดที่ 30\nFINAL-CONDITION",
+        "scrollTop": 1243,
+        "selectionEnd": 734,
+        "overflow": false
+      }
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

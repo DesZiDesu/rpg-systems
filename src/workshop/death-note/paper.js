@@ -1,10 +1,11 @@
-import {localId} from '../core.js?v=0.85.0';
-import {visibleText,anchorActive} from './core.js?v=0.85.0';
-import {trueNameSpellings} from './names.js?v=0.85.0';
-import {faceKnowledge} from './faces.js?v=0.85.0';
+import {localId} from '../core.js?v=0.85.1';
+import {visibleText,anchorActive} from './core.js?v=0.85.1';
+import {trueNameSpellings} from './names.js?v=0.85.1';
+import {faceKnowledge} from './faces.js?v=0.85.1';
+import {PAPER_LIMITS} from './limits.js?v=0.85.1';
+export {PAPER_LIMITS} from './limits.js?v=0.85.1';
 
 export const PAPER='roleforge_death_note_paper';
-export const PAPER_LIMITS=Object.freeze({pages:32,blocks:24,text:1200,characters:48000,minSize:12,maxSize:44});
 const safe=id=>typeof id==='string'&&id.length>0&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
 const clamp=(n,min,max)=>Math.min(max,Math.max(min,Number(n)||0));
 const id=()=>localId();
@@ -41,6 +42,6 @@ export function paperInputs(paper,state,world,{optional=false}={}){
  if(!entries.length&&optional)return [];
  if(!entries.length)throw Error('เขียนชื่อที่ต้องการจดในบรรทัดของตัวเองก่อน');
  if(entries.length>16)throw Error('ยืนยันได้ครั้งละไม่เกิน 16 ชื่อ');
- return entries.map(e=>{const body=e.lines.join('\n').trim(),clock=timing(body),first=e.lines.find(s=>s.trim())||'',cause=/^(?:หลังจาก|อีก|ใน|in|after)\s*\d+/iu.test(first)?'':first;return {blockIds:[...e.blocks],input:{name:e.name,targetId:e.target.id,faceKnown:faceKnowledge(world,e.target,state).known,cause:cause.slice(0,160),details:body.slice(0,500),...clock}};});
+ return entries.map(e=>{const body=e.lines.join('\n').trim(),clock=timing(body),first=e.lines.find(s=>s.trim())||'',cause=/^(?:หลังจาก|อีก|ใน|in|after)\s*\d+/iu.test(first)?'':first;return {blockIds:[...e.blocks],input:{name:e.name,targetId:e.target.id,faceKnown:faceKnowledge(world,e.target,state).known,cause,details:body,...clock}};});
 }
 export function markPaperSubmitted(paper,blockIds){const next=cleanPaper(paper),ids=new Set(blockIds);for(const page of next.pages)for(const block of page.blocks)if(ids.has(block.id))block.submittedText=block.text;return next;}

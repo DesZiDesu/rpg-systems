@@ -1,6 +1,7 @@
-import {identityBound} from './identity.js?v=0.85.0';
+import {identityBound} from './identity.js?v=0.85.1';
 // A scrap is physical writing material, never a separate human ownership right.
-import {localId} from '../core.js?v=0.85.0';
+import {localId} from '../core.js?v=0.85.1';
+import {notebookInScene} from './location.js?v=0.85.1';
 const safe=id=>typeof id==='string'&&id.length>0&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
 export const fragmentItem=i=>i?.quantity>0&&i.properties?.includes('roleforge:addon:death-note-fragment');
 export const writingMaterials=w=>[...Object.values(w.books||{}),...Object.values(w.fragments||{}).filter(f=>!f.destroyed)];
@@ -28,7 +29,7 @@ export function fragmentAction(w,state,input){
   return {...input,fragmentId:'dn-scrap-'+localId()};
  }
  if(!f||f.destroyed)throw Error('ไม่พบเศษกระดาษนี้');
- if(input.type==='fragment-take'){if(f.holderId||f.location!==state.location?.place)throw Error('เศษกระดาษไม่ได้อยู่ตรงนี้');return {...input,actorId:'player'};}
+ if(input.type==='fragment-take'){if(f.holderId||!f.location||!notebookInScene(f.location,state))throw Error('เศษกระดาษไม่ได้อยู่ตรงนี้');return {...input,actorId:'player'};}
  if(f.holderId!=='player'||!state.inventory?.some(i=>i.id===f.itemId&&fragmentItem(i)))throw Error('คุณไม่ได้ถือเศษกระดาษนี้');
  if(input.type==='fragment-transfer'&&!state.npcs?.some(n=>n.id===input.targetId&&n.met&&n.inScene!==false&&n.enabled!==false&&n.stats?.hp!==0))throw Error('เลือก NPC ที่อยู่ในฉาก');
  if(input.type==='fragment-destroy'&&!input.confirm)throw Error('ยืนยันก่อนทำลายเศษกระดาษ');

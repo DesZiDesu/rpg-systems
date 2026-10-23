@@ -37,3 +37,48 @@ test('an AI handover cannot quietly give away a player-held notebook',()=>{const
 test('npcValues and name-addressed patches cannot bypass a pending invalid inscription guard',()=>{const entry=inscription({name:'Adrian Grey'}),chat=[{mes:'Quiet.',extra:{[INSCRIPTIONS]:[{...entry,offset:0,swipe:0}]}}],ops=[['set','npcValues',{npcId:'voss',field:'stats.hp',value:0}],['inc','npcValues',{npcName:'Elias Voss',field:'stats.hp',amount:-100}],['upsert','npcs',{name:'Elias Voss',stats:{hp:'0'},activity:'Deceased after heart failure'}]];const guarded=protectNotebookOps(ops,{chat,base:state()});assert.equal(guarded.length,1);assert.equal(guarded[0][2].stats.hp,undefined);assert.equal(guarded[0][2].activity,undefined);});
 test('an old ineffective inscription cannot make an NPC immortal in unrelated later replies',()=>{const entry=inscription({name:'Adrian Grey'}),chat=[{mes:'Quiet.',extra:{[INSCRIPTIONS]:[{...entry,offset:0,swipe:0}],[RESULTS]:[{requestId:entry.id,status:'ineffective',offset:0,swipe:0}]}}],ops=[['set','npcValues',{npcId:'voss',field:'stats.hp',value:0}]];assert.deepEqual(protectNotebookOps(ops,{chat,base:state(),source:'The later battle is over.'}),ops);});
 test('ordinary first-person emotion or occupation is not mistaken for a disclosed name',()=>{for(const text of ['I am afraid.','I am a detective.','I’m not sure.'])assert.equal(storyEvents('<tr-dialogue name="voss">'+text+'</tr-dialogue>',state()).length,0);assert.equal(storyEvents('<tr-dialogue name="voss">I am called Adrian Grey.</tr-dialogue>',state())[0].claimedName,'Adrian Grey');});
+
+function pickupFixture(){
+ const s=state();s.player.name='คีริน วัฒนา';s.inventory=[];s.deathNoteRules.books=[];
+ const discovered='คุณเห็นสมุดปกดำวางอยู่บนพื้นระเบียง',evidence='ปลายนิ้วของคีรินสัมผัสปกสมุดโน้ตและหยิบมันขึ้นมาจากพื้นระเบียง',make=(events,text)=>({is_user:false,mes:'<tr-narrative>'+text+'</tr-narrative><!--roleforge_death_note_world:'+JSON.stringify({events})+'-->',extra:{}});
+ return {s,evidence,chat:[make([{type:'discover',bookId:'balcony',shinigamiId:'ryuk',location:'ระเบียง',evidence:discovered}],discovered),{is_user:true,mes:'*หยิบสมุดขึ้นมาดู*'},make([{type:'acquire',bookId:'balcony',actorId:'player',evidence}],evidence)]};
+}
+test('an actual typed player pickup and a visible AI confirmation acquire the discovered book, with its existing Shinigami',()=>{
+ const {s,chat}=pickupFixture(),before=worldState(chat.slice(0,1),s),after=worldState(chat,s);assert.equal(before.books.balcony.holderId,'');
+ assert.equal(after.books.balcony.holderId,'player');assert.equal(after.books.balcony.ownerId,'player');assert.equal(after.books.balcony.firstHumanOwnerId,'player');assert.equal(after.books.balcony.originalShinigamiId,'ryuk');assert.deepEqual(after.books.balcony.touchedBy,['player']);assert.equal(after.books.balcony.location,'');
+});
+test('AI pickup protocols never manufacture player consent or treat touching, plans and NPC actions as a pickup',()=>{
+ for(const action of ['', '*แตะปกสมุด*','*ยังไม่หยิบสมุด*','ฉันจะหยิบสมุด','ฉันอยากหยิบสมุด','ฉันบอกให้ Elias Voss หยิบสมุด','Elias Voss หยิบสมุด','If I pick up the notebook']){
+  const {s,chat}=pickupFixture();chat[1].mes=action;assert.equal(worldState(chat,s).books.balcony.holderId,'',action);
+ }
+ const {s,chat}=pickupFixture();chat[2].mes=chat[2].mes.replaceAll('ปลายนิ้วของคีรินสัมผัสปกสมุดโน้ตและหยิบมันขึ้นมาจากพื้นระเบียง','คุณมอง Elias Voss หยิบสมุดขึ้นมา');assert.equal(worldState(chat,s).books.balcony.holderId,'');
+});
+test('player pickup evidence and cached proposals follow the selected prefix, User edits and AI edits',()=>{
+ const {s,chat}=pickupFixture(),saved=storyEvents(chat[2].mes,s,null,{playerAction:chat[1].mes}).find(e=>e.type==='take');assert(saved);
+ chat[2].extra[WORLD_EVENTS]=[{...saved,swipe:0,offset:0}];assert.equal(worldState(chat,s).books.balcony.holderId,'player');assert.equal(worldState(chat.slice(0,2),s).books.balcony.holderId,'');
+ chat[1].mes='ฉันมองสมุดไว้เฉย ๆ';assert.equal(worldState(chat,s).books.balcony.holderId,'');chat[1].mes='*หยิบสมุดขึ้นมาดู*';assert.equal(worldState(chat,s).books.balcony.holderId,'player');
+ chat[2].mes='A quiet balcony.';assert.equal(worldState(chat,s).books.balcony.holderId,'');
+});
+test('a player pickup cannot pull an already-held or hidden NPC notebook out of its holder',()=>{
+ const {s,chat}=pickupFixture();chat[0].extra[WORLD_EVENTS]=[{type:'register',bookId:'balcony',itemId:'balcony',ownerId:'voss',holderId:'voss',knownToPlayer:true,swipe:0,offset:0}];assert.equal(worldState(chat,s).books.balcony.holderId,'voss');
+});
+test('English typed pickup is separate from discovery and retains an existing human rights owner',()=>{
+ const {s,chat}=pickupFixture();s.player.name='Kirin Vale';chat[1].mes='I pick up the notebook.';const evidence='You pick up the notebook from the balcony.';chat[2].mes=evidence+'<!--roleforge_death_note_world:'+JSON.stringify({events:[{type:'acquire',bookId:'balcony',actorId:'player',evidence}]})+'-->';
+ chat[0].extra[WORLD_EVENTS]=[{type:'register',bookId:'balcony',itemId:'balcony',ownerId:'voss',holderId:'',knownToPlayer:true,swipe:0,offset:0}];const b=worldState(chat,s).books.balcony;assert.equal(b.holderId,'player');assert.equal(b.ownerId,'voss');
+});
+
+test('the pickup button accepts an exact scene position plus its main place, in either order',()=>{
+ for(const [place,position,location]of [['บ้านของคีริน','ระเบียงห้องนอน','ระเบียงห้องนอน บ้านของคีริน'],["Kirin’s house",'Balcony',"Balcony, Kirin’s house"],["Kirin’s house",'Balcony',"Kirin’s house — Balcony"]]){
+  const {s,chat}=pickupFixture();s.location={place};s.scene={position};const w=worldState(chat.slice(0,1),s);w.books.balcony.location=location;
+  for(const type of ['touch','take'])assert.equal(validateAction(w,s,{type,bookId:'balcony'}).type,type);
+ }
+});
+test('scene matching cannot pick up a notebook in a different room, house or merely similar place',()=>{
+ const {s,chat}=pickupFixture();s.location={place:"Kirin’s house"};s.scene={position:'Balcony'};const w=worldState(chat.slice(0,1),s);
+ for(const location of ["Bedroom, Kirin’s house","Balcony, Elias’s house","Balcony", "Balcony, Other Kirin’s house"]){w.books.balcony.location=location;assert.throws(()=>validateAction(w,s,{type:'take',bookId:'balcony'}),/ฉากปัจจุบัน/);}
+});
+test('torn paper uses the same precise scene location check and rejects unknown locations',()=>{
+ const {s,chat}=pickupFixture();s.location={place:'บ้านของคีริน'};s.scene={position:'ระเบียงห้องนอน'};const w=worldState(chat.slice(0,1),s);w.fragments={scrap:{id:'scrap',holderId:'',location:'ระเบียงห้องนอน บ้านของคีริน'}};
+ const input={type:'fragment-take',bookId:'balcony',fragmentId:'scrap'};assert.equal(validateAction(w,s,input).actorId,'player');
+ for(const location of ['', 'ห้องครัว บ้านของคีริน', 'ระเบียงห้องนอน บ้านคนอื่น']){w.fragments.scrap.location=location;assert.throws(()=>validateAction(w,s,input),/ไม่ได้อยู่ตรงนี้/);}
+});

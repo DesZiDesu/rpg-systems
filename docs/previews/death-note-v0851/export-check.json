@@ -1,0 +1,12 @@
+{
+  "version": "0.85.1",
+  "userExportReplay": true,
+  "messages": 17,
+  "buttonBeforeTypedPickup": true,
+  "locationAndPositionMatched": true,
+  "initialDiscoveryNotOwned": true,
+  "completedPlayerPickupOwned": true,
+  "originalShinigamiPreserved": true,
+  "editedUserConsentRevokesPickup": true,
+  "pass": true
+}

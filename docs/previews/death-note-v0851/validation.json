@@ -1,0 +1,37 @@
+{
+  "version": "0.85.1",
+  "pass": true,
+  "validatedAt": "2026-10-23T06:17:06.179703+00:00",
+  "host": "SillyTavern 1.19.0",
+  "unitTests": {
+    "tests": 1767,
+    "pass": 1767,
+    "fail": 0
+  },
+  "syntaxCheck": "passed",
+  "reports": [
+    "chromium.json",
+    "webkit.json",
+    "fragment-regression.json",
+    "controls.json",
+    "export-check.json"
+  ],
+  "checks": [
+    "Complete Thai/English details beyond 500 characters; full 24-block page in unit tests",
+    "Native Continue and normal Send include final written condition in model request",
+    "No synthetic User message and unsent draft preserved",
+    "Keyboard visual viewport height 330/440px and offsetTop 35; full and dock writing",
+    "No nested textarea scrolling; caret, size tools and Continue remain reachable",
+    "Native button pickup with main place plus scene position",
+    "Typed pickup repairs existing localized inventory item without losing original tags",
+    "Native Branch before pickup does not inherit later possession",
+    "Replay of supplied export, including button validation before the typed pickup",
+    "Move/size/draft regression and fragment writing regression"
+  ],
+  "limits": [
+    "Mobile viewport/touch emulation, not physical iOS/Android keyboard testing.",
+    "Software keyboard area simulated with visualViewport changes; screenshots show the remaining page area.",
+    "AI backend and token counter use controlled fixtures; no live external model or voice.",
+    "The private user export is not included in the repository."
+  ]
+}

@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted,PAPER_LIMITS} from '../src/workshop/death-note/paper.js';
 import {worldState,storyEvents,applyEvent,playerIdentity,WORLD_EVENTS} from '../src/workshop/death-note/world.js';
 import {faceKnowledge} from '../src/workshop/death-note/faces.js';
-import {eligibleTarget,continueInscriptions,INSCRIPTIONS,PROMPT,ledger} from '../src/workshop/death-note/core.js';
+import {eligibleTarget,makeInscription,continuationInstruction,continueInscriptions,INSCRIPTIONS,PROMPT,ledger} from '../src/workshop/death-note/core.js';
 import {RULE_PAGES,rulePages,ruleSpread,fakeRulePresets} from '../src/workshop/death-note/rules.js';
 import {ENGLISH_RULES} from '../src/workshop/death-note/rules-en.js';
 import {t,html,ENGLISH_UI} from '../src/workshop/death-note/strings.js';
@@ -32,3 +32,24 @@ test('all 71 rule pages have English counterparts with the same stable identity'
 test('changing language never translates saved manuscript text',()=>{const w={books:{note:{manuscript:[{id:'custom',title:'ชื่อที่ฉันเขียน',text:'คุณต้องเก็บข้อความนี้ตามเดิม'}]}}};assert.deepEqual(rulePages(w,'note','en').at(-1),rulePages(w,'note','th').at(-1));assert(fakeRulePresets('en')[0].text.includes('thirteen'));});
 test('English UI translates authored fragments without translating interpolated player writing',()=>{setUiLanguageProvider(()=> 'en');try{const user='คุณ วันที่ หัวใจวาย';assert.equal(html`<p>จารึกเพิ่ม ${user}</p>`,`<p>Add rule ${user}</p>`);assert.equal(t('กลับหน้าแรก'),'First page');assert.equal(t('ยืนยันย้าย'),'Confirm position');}finally{setUiLanguageProvider(()=> 'th');}assert.equal(t('ยืนยันย้าย'),'ยืนยันย้าย');for(const [th,en]of Object.entries(ENGLISH_UI)){assert(en.trim(),th);assert(!/[ก-๛]/u.test(en),th);}});
 test('a batch confirms several names with one Continue and no User turn',async()=>{const s=state(),chat=[{mes:'The scene.',extra:{}}],prompts=new Map();let generated=0,committed=0;const context={chat,eventTypes:{CHAT_CHANGED:'chat'},eventSource:{on(){},removeListener(){}},saveChat:async()=>{},setExtensionPrompt:(key,value)=>prompts.set(key,value),generate:async(type,args)=>{assert.equal(type,'continue');assert.deepEqual(args,{automatic_trigger:true,depth:1});generated++;const requests=[...prompts.get(PROMPT).matchAll(/INSCRIPTION: (\{[^\n]+\})/gu)].map(m=>JSON.parse(m[1]));assert.equal(requests.length,2);for(const r of requests){const evidence=r.name+' has died after forty seconds.';chat[0].mes+=' '+evidence+'<!--roleforge_death_note:'+JSON.stringify({requestId:r.id,status:'resolved',elapsedSeconds:40,evidence})+'-->';}}};const inputs=paperInputs(paper(block('one','Elias Voss\nMara Hale')),s,worldState([],s)).map(v=>v.input);const result=await continueInscriptions({context,scope:()=> 'chat',currentState:()=>s,inputs,commitResult:async(entries,results)=>{committed=results.length;}});assert.equal(result.entries.length,2);assert.equal(committed,2);assert.equal(generated,1);assert.equal(chat.length,1);assert.equal(prompts.get(PROMPT),'');});
+
+test('long Thai and English writing survives parsing, Continue and pending instructions without losing the ending',async()=>{
+ for(const details of ['หัวใจวาย '+ 'รายละเอียดที่ต้องคงอยู่ '.repeat(42)+'คำสั่งสุดท้ายที่ห้ามหาย', 'Heart attack '+ 'Preserve every circumstance. '.repeat(30)+'FINAL-CONDITION']){
+  const s=state(),ink='Elias Voss\n'+details,p=paper(block('one',ink)),input=paperInputs(p,s,worldState([],s))[0].input;
+  assert(ink.length<=PAPER_LIMITS.text);assert(details.length>500);assert.equal(input.details,details);assert.equal(input.cause,details);
+  const saved=makeInscription(s,input);assert.equal(saved.details,details);assert.equal(saved.cause,details);
+  for(const pending of [false,true])assert.equal(JSON.parse(continuationInstruction(saved,{pending}).match(/INSCRIPTION: ([^\n]+)/u)[1]).details,details);
+  const chat=[{mes:'The scene.',extra:{}}];let received;
+  const context={chat,saveChat:async()=>{},setExtensionPrompt:(key,value)=>{if(key===PROMPT&&value)received=JSON.parse(value.match(/INSCRIPTION: ([^\n]+)/u)[1]);},generate:async()=>{chat[0].mes+=' Still waiting.';}};
+  await continueInscriptions({context,scope:()=> 'chat',currentState:()=>s,inputs:[input]});assert.equal(received.details,details);assert.equal(ledger(chat)[0].details,details);assert.equal(chat.length,1);
+ }
+});
+test('all 24 blocks on a page retain their joined details, including the final block',()=>{
+ const s=state(),blocks=[block('name','Elias Voss',.1,.1),...Array.from({length:23},(_,i)=>block('details-'+i,('condition '+i+' ').padEnd(PAPER_LIMITS.text,'x'),.1,.11+i*.01))],p=paper(...blocks),details=blocks.slice(1).map(b=>b.text).join('\n');
+ const input=paperInputs(p,s,worldState([],s))[0].input;assert.equal(input.details,details);assert.equal(makeInscription(s,input).details,details);
+});
+test('oversized direct inscriptions are rejected rather than silently shortening player instructions',()=>{
+ const s=state(),input={name:'Elias Voss',targetId:'a',faceKnown:true};
+ assert.throws(()=>makeInscription(s,{...input,details:'x'.repeat(PAPER_LIMITS.characters+PAPER_LIMITS.blocks+1)}),/ขีดจำกัด/);
+ assert.throws(()=>makeInscription(s,{...input,cause:'x'.repeat(PAPER_LIMITS.characters+PAPER_LIMITS.blocks+1)}),/ขีดจำกัด/);
+});

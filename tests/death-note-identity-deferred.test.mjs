@@ -100,3 +100,12 @@ test('a deferred request and its submitted ink require the actual Send, not just
  chat[1].mes='ข้อความที่ถูกแก้แล้ว';assert.equal(ledger(chat).length,0);assert.equal(readPaper(chat,'book').pages[0].blocks[0].submittedText,'');
  assert.equal(replyAnchor([m]),null);
 });
+
+test('next-reply staging retains long circumstances through saved paper and retry without truncation',()=>{
+ const s=state(),chat=[message(news)],details='หัวใจวาย หลังจาก 10 นาที\n'+'รายละเอียดที่เขียนไว้ '.repeat(35)+'FINAL-CONDITION',p=paper('Elias Voss\n'+details),w=worldState(chat,s);
+ const staged=stageWrittenPaper(p,s,w,[],'book');assert.equal(staged.requests.length,1);assert.equal(staged.requests[0].details,details);assert.equal(staged.errors.length,0);
+ chat[0].extra[PAPER]=paperRows(chat[0],'book',staged.paper);chat[0].extra[INSCRIPTIONS]=staged.requests.map(r=>({...r,swipe:0,offset:0}));
+ assert.equal(ledger(chat)[0].details,details);assert.equal(readPaper(chat,'book').pages[0].blocks[0].text,'Elias Voss\n'+details);
+ assert.equal(stageWrittenPaper(staged.paper,s,w,ledger(chat),'book').requests.length,0);
+ assert.equal(JSON.parse(continuationInstruction(ledger(chat)[0],{pending:true}).match(/INSCRIPTION: ([^\n]+)/u)[1]).details,details);
+});

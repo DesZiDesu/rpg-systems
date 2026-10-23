@@ -1,4 +1,6 @@
-import {actorKey,isShinigami,isHuman,EYE_SOURCES,loseFinalRights,syncPlayerEyes,eyeAbility,defaultDeathNoteSettings} from './actors.js?v=0.85.0';
+import {actorKey,isShinigami,isHuman,EYE_SOURCES,loseFinalRights,syncPlayerEyes,eyeAbility,defaultDeathNoteSettings} from './actors.js?v=0.85.1';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.1';
+import {containsIdentity} from './identity.js?v=0.85.1';
 export function applyNotebookEvent(w,e){
  const b=w.books[e.bookId];
  // Later witnessed ownership can identify an already-known physical book.
@@ -51,12 +53,24 @@ export function applyNotebookEvent(w,e){
 const visible=s=>String(s||'').replace(/<!--[\s\S]*?-->/gu,'').replace(/<[^>]+>/gu,' ').replace(/\s+/gu,' ').trim();
 const negated=s=>/ยังไม่|ไม่ได้|ไม่ยอม|ไม่เคย|กำลังจะ|อาจจะ|สมมติ|หาก|\b(?:not|never|will|would|if|plans? to)\b/iu.test(s);
 // These are proposals from the visible story, not authority from private lore.
-export function notebookStoryEvent(e,npcs,state){
+export function notebookStoryEvent(e,npcs,state,{playerAction=''}={}){
  const quote=visible(e.evidence);const entry=Object.fromEntries(['type','bookId','otherBookId','actorId','npcId','fromId','toId','fromShinigamiId','toShinigamiId','shinigamiId','location','evidence'].filter(key=>typeof e[key]==='string').map(key=>[key,e[key].slice(0,key==='evidence'?1200:180)]));if(!quote||negated(quote))return null;
  const actor=id=>npcs.find(n=>n.id===id),bound=id=>{const n=actor(id);return n&&[n.id,n.name,n.title,n.occupation,...n.aliases||[]].filter(Boolean).some(name=>quote.includes(name));};
  const god=id=>isShinigami(actor(id)),human=id=>isHuman(actor(id));
  const book=actorKey(e.bookId),bookMention=id=>quote.includes(id)||/สมุด|notebook|death note/iu.test(quote);
  if(!book||!bookMention(e.bookId))return null;
+ // A witnessed pickup may follow the player's actual typed roleplay instead
+ // of the dock button. Discovery alone, touch alone and AI-only consent fail.
+ if(e.type==='acquire'&&e.actorId==='player'){
+  const action=visible(playerAction),name=String(state.player?.name||'').trim(),first=name.split(/\s+/u)[0];
+  const labels=[name,...state.player?.aliases||[],...(first&&first.length>1&&!npcs.some(n=>[n.name,...n.aliases||[]].some(v=>containsIdentity(v,first)))?[first]:[])].filter(Boolean);
+  const playerMention=/คุณ|ผู้เล่น|\byou\b/iu.test(quote)||labels.some(label=>containsIdentity(quote,label));
+  const escape=value=>String(value).replace(/[.*+?^${}()|[\]\\]/gu,'\\$&');
+  const otherPickup=text=>npcs.some(n=>[n.name,...n.aliases||[]].filter(Boolean).some(label=>new RegExp(escape(label)+'.{0,24}(?:หยิบ|เก็บสมุด|รับสมุด|picks? up|takes? (?:the |this )?notebook)','iu').test(text)));
+  const pickup=/(?:หยิบ|เก็บ|รับ)(?:เอา)?(?:สมุด|โน้ต|โน๊ต|เดธโน|มัน)|\b(?:pick(?:s|ed)?\s+(?:it|the notebook|the death note)\s+up|pick(?:s|ed)?\s+up|take|takes|took|grab(?:s|bed)?|receiv(?:e|es|ed))\b/iu;
+  if(action&&!negated(action)&&!otherPickup(action)&&!otherPickup(quote)&&!/(?:อยาก|ต้องการ|จะ)(?:หยิบ|เก็บ|รับ)|\b(?:want|intend|going to)\b/iu.test(action)&&!/บอกให้|ขอให้|สั่งให้|\b(?:ask|tell|told|order)\b/iu.test(action)&&pickup.test(action)&&playerMention&&pickup.test(quote))return {...entry,type:'take',source:'visible-player-pickup',consentHash:sha256(playerAction)};
+  return null;
+ }
  if(e.type==='npc-register'&&e.actorId!=='player'&&human(e.actorId)&&bound(e.actorId)&&/(?:ถือ|ครอบครอง|หยิบ|เก็บ|รับ).{0,50}(?:สมุด|เดธโน)|(?:holds?|owns?|picks? up|receives?).{0,50}(?:notebook|death note)/iu.test(quote))return {...entry,type:'register',source:'visible-notebook',ownerId:e.rightsEstablished===true&&/เจ้าของสิทธิ์|เป็นเจ้าของ|owns?|ownership|rights/iu.test(quote)?e.actorId:'',holderId:e.actorId,firstHumanOwnerId:e.rightsEstablished===true&&/เจ้าของสิทธิ์|เป็นเจ้าของ|owns?|ownership|rights/iu.test(quote)?e.actorId:'',shinigamiId:god(e.shinigamiId)&&bound(e.shinigamiId)?e.shinigamiId:'',knownToPlayer:true,ownerKnownToPlayer:e.rightsEstablished===true&&/เจ้าของสิทธิ์|เป็นเจ้าของ|owns?|ownership|rights/iu.test(quote)};
  if(e.type==='shinigami-exchange'&&actorKey(e.otherBookId)&&god(e.fromShinigamiId)&&god(e.toShinigamiId)&&bound(e.fromShinigamiId)&&bound(e.toShinigamiId)&&/แลก|สลับ|exchang|swap/iu.test(quote))return {...entry,exchangeAttachment:e.exchangeAttachment===true&&/ประจำ|ติดตาม|attached|attendant|accompan/iu.test(quote)};
  if(e.type==='shinigami-transfer'&&god(e.fromShinigamiId)&&god(e.toShinigamiId)&&bound(e.fromShinigamiId)&&bound(e.toShinigamiId)&&/โอน|มอบ|ยก.{0,20}สิทธิ์|transfer|gives?.{0,30}ownership/iu.test(quote))return {...entry,transferAttachment:e.transferAttachment===true&&/ประจำ|ติดตาม|attached|attendant|accompan/iu.test(quote)};

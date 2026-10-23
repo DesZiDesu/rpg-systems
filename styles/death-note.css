@@ -64,7 +64,7 @@
 .dn-free-paper{position:relative;width:100%;height:100%;min-height:240px;outline:0!important;overflow:hidden;touch-action:manipulation;color:#302820;cursor:text}
 .dn-free-block{position:absolute;max-width:calc(100% - 20px);padding:3px;min-width:34px;outline:0;cursor:grab;touch-action:none}
 .dn-free-content{font:24px/1.65 DNInk,DNHandThai,serif;letter-spacing:.01em;white-space:pre-wrap;overflow-wrap:anywhere;color:#302820;min-height:1.65em;max-width:100%}
-.rfdn .dn-free-block textarea,.dn-dock .dn-free-block textarea{display:block;resize:none!important;border:0!important;background:none!important;color:#302820!important;border-radius:0!important;box-shadow:none!important;outline:0!important;padding:0!important;margin:0!important;line-height:1.65!important;font-family:DNInk,DNHandThai,serif!important;min-width:0!important;overflow:auto}
+.rfdn .dn-free-block textarea,.dn-dock .dn-free-block textarea{display:block;resize:none!important;border:0!important;background:none!important;color:#302820!important;border-radius:0!important;box-shadow:none!important;outline:0!important;padding:0!important;margin:0!important;line-height:1.65!important;font-family:DNInk,DNHandThai,serif!important;min-width:0!important;max-height:none!important;overflow:hidden}
 .dn-free-block.is-selected{outline:1px solid #796b515e;outline-offset:5px;cursor:grab}
 .dn-free-block.is-selected:before{content:'';position:absolute;inset:-7px;pointer-events:none;border:1px solid #f5ecd859}
 .dn-free-tools{position:absolute;z-index:3;display:flex;align-items:center;gap:8px;max-width:calc(100% - 4px);height:42px;padding:2px 5px;color:#6d5b3d;background:#e6dbc4e8;box-shadow:0 3px 12px #7a67431a;border-radius:2px;cursor:default}
@@ -117,3 +117,15 @@
 .dn-dock[data-material=fragment] .dn-dock-paper{position:relative;background:linear-gradient(120deg,#e9dfc7,#e3d5b6);border-radius:0;clip-path:polygon(0 0,100% .5%,99.7% 98%,95% 99.2%,89% 98.3%,83% 99.5%,76% 98.6%,68% 99.6%,60% 98.5%,52% 99.4%,45% 98.4%,37% 99.6%,29% 98.4%,22% 99.3%,15% 98.5%,8% 99.6%,0 98.7%);padding-bottom:10px!important}
 @media(max-width:750px){.rfdn .dn-fragment-sheet{width:calc(100% - 22px);height:calc(100% - 108px);margin:6px 11px 46px}.dn-fragment-sheet .dn-bookmarks{gap:5px}.rfdn .dn-fragment-sheet .dn-bookmarks button{padding-inline:6px}.dn-dock-free .dn-free-paper{height:175px}}
 @media(prefers-reduced-motion:reduce){.dn-paper-canvas{scroll-behavior:auto}}
+
+/* Keep only the active notebook dock above the software keyboard. */
+@media(max-width:750px){
+ .rf-composer-dock[data-dn-keyboard=true]{position:fixed!important;top:var(--dn-keyboard-top)!important;left:var(--dn-keyboard-left)!important;bottom:auto!important;width:var(--dn-keyboard-width)!important;height:var(--dn-keyboard-height)!important;max-height:var(--dn-keyboard-height)!important;display:flex;flex-direction:column;overflow:hidden;z-index:10050!important}
+ .rf-composer-dock[data-dn-keyboard=true]>.rf-dock-navigation{flex:none}
+ .rf-composer-dock[data-dn-keyboard=true]>.rf-dock-body{flex:1;min-height:0;overflow:hidden}
+ .rf-composer-dock[data-dn-keyboard=true] #roleforge-death-note-dock{flex:1;min-height:0;max-height:none}
+ .rf-composer-dock[data-dn-keyboard=true] .dn-dock-free .dn-free-paper{height:auto;min-height:0}
+ .rf-composer-dock[data-dn-keyboard=true]>.rf-dock-passive{display:none}
+}
+
+body:has(.rf-composer-dock[data-dn-keyboard=true]) .rfws-addon-orbits{visibility:hidden;pointer-events:none}
