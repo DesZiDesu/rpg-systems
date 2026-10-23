@@ -1,5 +1,6 @@
-import {uiText,uiMarkup,uiLanguage} from './ui-language.js?v=0.85.3';
-import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.85.3';
+import {mountColorControls} from './color-controls.js?v=0.85.4';
+import {uiText,uiMarkup,uiLanguage} from './ui-language.js?v=0.85.4';
+import {POWER_ICONS,POWER_FILE_LIMIT,newPowerId,powerDefinition,powerValue,exportPowerPreset,importPowerPreset} from './power-presets.js?v=0.85.4';
 const el=(tag,text='')=>{const node=document.createElement(tag);node.textContent=text;return node;};
 const button=(text,action)=>{const b=el('button',text);b.type='button';b.addEventListener('click',action);return b;};
 function download(text){const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=el('a');a.href=url;a.download='roleforge-powers.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
@@ -55,7 +56,7 @@ export function mountPowerWorkspace(host,api){
   const max=field(uiText("ค่าสูงสุด (ตัวเลข / หลอดพลัง)"),'max');max.type='number';max.min=1;max.max=1000000000;max.value=draft.max||100;
   const ranks=field(uiText("ชื่อระดับขั้น หนึ่งขั้นต่อบรรทัด"),'ranks','textarea');ranks.rows=4;ranks.value=draft.ranks.join('\n');
   const initial=field(uiText("ค่าเริ่มต้น (ระดับขั้นเริ่มที่ 0; เปิด=1 ปิด=0)"),'initial');initial.type='number';initial.min=0;initial.step='any';initial.value=Number(draft.initial);
-  const color=field(uiText("สี"),'color');color.type='color';color.value=draft.color;
+  const color=field(uiText("สี"),'color');color.type='color';color.value=draft.color;mountColorControls(color);
   const icon=field(uiText("ไอคอน"),'icon','select');for(const v of POWER_ICONS){const o=el('option',uiText(v));o.value=v;icon.append(o);}icon.value=draft.icon;
   const selectable=field(uiText("ให้เลือกในหน้าสร้างตัวละคร"),'selectable');selectable.type='checkbox';selectable.checked=draft.selectable;
   const submit=el('button',uiText("บันทึกพลัง"));submit.type='submit';form.append(submit,button(uiText("ยกเลิก"),render));
@@ -66,5 +67,6 @@ export function mountPowerWorkspace(host,api){
   const values=[...root.querySelectorAll('[name]')].map(n=>({name:n.name,value:n.value,checked:n.checked}));
   edit(editing);
   for(const saved of values){const input=root.querySelector(`[name="${saved.name}"]`);if(input){input.value=saved.value;input.checked=saved.checked;}}
+  mountColorControls(root);
  }};
 }

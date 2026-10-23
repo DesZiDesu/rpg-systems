@@ -1,0 +1,100 @@
+{
+  "version": "0.85.4",
+  "unitTests": {
+    "passed": 1788,
+    "failed": 0
+  },
+  "syntax": "pass",
+  "browsers": {
+    "chromium": {
+      "version": "0.85.4",
+      "browser": "Chromium",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "themes": [
+            "roleforge",
+            "folio",
+            "chapter",
+            "codex",
+            "aincrad"
+          ],
+          "lightFullName": true,
+          "ryukRecognition": true,
+          "npcManagement": true,
+          "squareSwatch": true,
+          "portraitSliderSaved": true,
+          "colorSaved": true,
+          "privateExport": true
+        },
+        {
+          "device": "mobile",
+          "themes": [
+            "roleforge",
+            "folio",
+            "chapter",
+            "codex",
+            "aincrad"
+          ],
+          "lightFullName": true,
+          "ryukRecognition": true,
+          "npcManagement": true,
+          "squareSwatch": true,
+          "portraitSliderSaved": true,
+          "colorSaved": true,
+          "privateExport": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    },
+    "webkit": {
+      "version": "0.85.4",
+      "browser": "WebKit",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "themes": [
+            "roleforge",
+            "folio",
+            "chapter",
+            "codex",
+            "aincrad"
+          ],
+          "lightFullName": true,
+          "ryukRecognition": true,
+          "npcManagement": true,
+          "squareSwatch": true,
+          "portraitSliderSaved": true,
+          "colorSaved": true,
+          "privateExport": true
+        },
+        {
+          "device": "mobile",
+          "themes": [
+            "roleforge",
+            "folio",
+            "chapter",
+            "codex",
+            "aincrad"
+          ],
+          "lightFullName": true,
+          "ryukRecognition": true,
+          "npcManagement": true,
+          "squareSwatch": true,
+          "portraitSliderSaved": true,
+          "colorSaved": true,
+          "privateExport": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    }
+  }
+}

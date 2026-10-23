@@ -1,18 +1,18 @@
-import {applyCasebookEvent,casebookStoryEvent,casebookInstruction,worldEventKey} from './casebook.js?v=0.85.3';
-import {applyFragmentEvent,fragmentAction,fragmentStoryEvent,fragmentItem,writingMaterials,fragmentInstruction} from './fragments.js?v=0.85.3';
-import {applyPlayerLifespan,aiLifespanEvent,lifespanInstruction,clockSeconds} from './lifespan.js?v=0.85.3';
-import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.85.3';
-import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.85.3';
-import {localId} from '../core.js?v=0.85.3';
-import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.85.3';
-import {observedIdentities,identityBound,learnedName,seenFace} from './identity.js?v=0.85.3';
-import {faceKnowledge} from './faces.js?v=0.85.3';
-import {trueNameOf,trueNameSpellings} from './names.js?v=0.85.3';
-import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.85.3';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.3';
-import {notebookInScene} from './location.js?v=0.85.3';
-import {knowsName} from '../../name-knowledge.js?v=0.85.3';
-export {trueNameOf} from './names.js?v=0.85.3';
+import {applyCasebookEvent,casebookStoryEvent,casebookInstruction,worldEventKey} from './casebook.js?v=0.85.4';
+import {applyFragmentEvent,fragmentAction,fragmentStoryEvent,fragmentItem,writingMaterials,fragmentInstruction} from './fragments.js?v=0.85.4';
+import {applyPlayerLifespan,aiLifespanEvent,lifespanInstruction,clockSeconds} from './lifespan.js?v=0.85.4';
+import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.85.4';
+import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.85.4';
+import {localId} from '../core.js?v=0.85.4';
+import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.85.4';
+import {observedIdentities,identityBound,learnedName,nameDisclosure,seenFace} from './identity.js?v=0.85.4';
+import {faceKnowledge} from './faces.js?v=0.85.4';
+import {trueNameOf,trueNameSpellings} from './names.js?v=0.85.4';
+import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.85.4';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.4';
+import {notebookInScene} from './location.js?v=0.85.4';
+import {knowsName} from '../../name-knowledge.js?v=0.85.4';
+export {trueNameOf} from './names.js?v=0.85.4';
 // Chat-local notebook rules. Legacy journal keys remain readable after the preview. Canonical NPC records are never renamed.
 export const WORLD_EVENTS = 'roleforge_death_note_world_preview';
 export const WORLD_PROMPT = 'roleforge_death_note_world_preview';
@@ -30,7 +30,7 @@ function introduction(quote, name) {
  const escaped=String(name).replace(/[.*+?^${}()|[\]\\]/gu,'\\$&');
  return name && !/\b(?:not|don't|if|pretend|will)\b|ไม่ได้ชื่อ|ยังไม่บอก|สมมติ|ถ้าฉัน|ถ้าผม/iu.test(quote) && new RegExp('(?:my name is|call me|I am named|I am called|ชื่อ(?:ของ)?(?:ฉัน|ผม|ข้า|เรา|ดิฉัน)(?:คือ)?|(?:ฉัน|ผม|ข้า|เรา|ดิฉัน)ชื่อ)\\s*["“‘\']?'+escaped+'(?=$|[\\s,.!?"”’\']|ครับ|ค่ะ|นะ)','iu').test(quote);
 }
-function storyNpcs(state){return (state.npcs||[]).map(n=>({...n,aliases:[...n.aliases||[],...trueNameSpellings(state,n)]}));}
+function storyNpcs(state){return (state.npcs||[]).map(n=>({...n,identityNames:[n.name,...trueNameSpellings(state,n)],aliases:[...n.aliases||[],...trueNameSpellings(state,n)]}));}
 export function storyEvents(source, state, preparedNpcs=null, {playerAction=''}={}) {
  const npcs=preparedNpcs||storyNpcs(state),events=observedIdentities(source,npcs),text=plain(source);
  // Direct tagged self-introductions need no model protocol and can contain a lie.
@@ -57,7 +57,7 @@ export function storyEvents(source, state, preparedNpcs=null, {playerAction=''}=
     if(npc&&name.length<=100&&speech&&introduction(evidence,name))events.push({type:'introduce',npcId:npc.id,claimedName:name,evidence});
    } else if(e.type==='name-learned'&&safe(e.npcId)) {
     const npc=npcs.find(n=>n.id===e.npcId),name=String(e.claimedName||'').trim();
-    if(npc&&name&&name.length<=100&&identityBound(evidence,npc,npcs,name)&&learnedName(evidence,name))events.push({type:'name-learned',npcId:npc.id,claimedName:name,source:'visible-story',evidence});
+    if(npc&&name&&name.length<=100&&identityBound(evidence,npc,npcs,name)&&nameDisclosure(evidence,npc,npcs,name))events.push({type:'name-learned',npcId:npc.id,claimedName:name,source:'visible-story',evidence});
    } else if(e.type==='face-seen'&&safe(e.npcId)) {
     const npc=npcs.find(n=>n.id===e.npcId);
     if(npc&&identityBound(evidence,npc,npcs)&&npcs.filter(n=>identityBound(evidence,n,npcs)).length===1&&seenFace(evidence))events.push({type:'face-seen',npcId:e.npcId,evidence});
@@ -83,7 +83,10 @@ export function applyEvent(world,e) {
  const b=world.books[e.bookId];
  if(e.type==='register'&&safe(e.bookId)&&!b)world.books[e.bookId]={id:e.bookId,itemId:e.itemId||e.bookId,originalShinigamiId:e.shinigamiId||'',currentShinigamiId:e.currentShinigamiId||e.shinigamiId||'',attachedShinigamiId:e.attachedShinigamiId||e.currentShinigamiId||e.shinigamiId||'',knownToPlayer:e.knownToPlayer===true||e.ownerId==='player'||e.holderId==='player',ownerKnownToPlayer:e.ownerKnownToPlayer===true||e.ownerId==='player',firstHumanOwnerId:e.firstHumanOwnerId||e.ownerId||'',ownerId:e.ownerId||'',holderId:e.holderId||'',location:e.location||'',touchedBy:e.holderId?[e.holderId]:[],discovered:true};
  if(e.type==='discover'&&safe(e.bookId)&&!b)world.books[e.bookId]={id:e.bookId,itemId:e.bookId,originalShinigamiId:e.shinigamiId||'',currentShinigamiId:e.currentShinigamiId||e.shinigamiId||'',attachedShinigamiId:e.attachedShinigamiId||e.currentShinigamiId||e.shinigamiId||'',knownToPlayer:true,ownerKnownToPlayer:e.ownerKnownToPlayer===true||e.ownerId==='player',firstHumanOwnerId:'',ownerId:'',holderId:'',location:e.location||'',touchedBy:[],discovered:true};
- if(['introduce','name-learned'].includes(e.type)&&safe(e.npcId)&&String(e.claimedName||'').length<=100)world.claims[e.npcId]={name:e.claimedName,evidence:e.evidence||'',source:e.source||'introduction'};
+ if(['introduce','name-learned'].includes(e.type)&&safe(e.npcId)&&String(e.claimedName||'').length<=100){
+  const prior=world.claims[e.npcId],priority=e.namePriority||1,aliases=[...new Set([...(prior?.aliases||[]),prior?.name,e.claimedName].filter(Boolean))];
+  world.claims[e.npcId]=prior&&(prior.priority||1)>priority?{...prior,aliases}:{name:e.claimedName,evidence:e.evidence||'',source:e.source||'introduction',priority,aliases};
+ }
  if(e.type==='face-seen'&&safe(e.npcId))(world.faces||={})[e.npcId]={evidence:e.evidence||''};
  if(!b)return;
  if(e.type==='bind-shinigami'&&!b.originalShinigamiId&&safe(e.shinigamiId)){b.originalShinigamiId=e.shinigamiId;b.currentShinigamiId||=e.shinigamiId;b.attachedShinigamiId||=e.shinigamiId;}
@@ -108,8 +111,8 @@ export function applyEvent(world,e) {
 // card identity changes and Branch prefixes still replay selected live events.
 const storyCache=new WeakMap();
 function storyParser(state){
- const stamp=JSON.stringify([(state.npcs||[]).map(n=>[n.id,n.name,n.title,n.occupation,n.aliases,n.race]),state.deathNoteRules?.trueNameSpellings,state.player?.name,state.player?.aliases,state.location?.place]),npcs=storyNpcs(state);
- return (message,playerAction='')=>{let row=storyCache.get(message);if(!row||row.source!==message.mes||row.user!==message.is_user||row.stamp!==stamp||row.playerAction!==playerAction){row={source:message.mes,user:message.is_user,stamp,playerAction,events:message.is_user?observedIdentities(message.mes,npcs):storyEvents(message.mes,state,npcs,{playerAction})};storyCache.set(message,row);}return row.events;};
+ const stamp=JSON.stringify([(state.npcs||[]).map(n=>[n.id,n.name,n.title,n.occupation,n.aliases,n.race]),state.deathNoteRules?.trueNameSpellings,state.deathNoteRules?.trueNames,state.player?.name,state.player?.aliases,state.location?.place]),npcs=storyNpcs(state);
+ return (message,playerAction='')=>{let row=storyCache.get(message);if(!row||row.source!==message.mes||row.user!==message.is_user||row.stamp!==stamp||row.playerAction!==playerAction){row={source:message.mes,user:message.is_user,stamp,playerAction,events:message.is_user?observedIdentities(message.mes,npcs,{playerAuthored:true}):storyEvents(message.mes,state,npcs,{playerAction})};storyCache.set(message,row);}return row.events;};
 }
 export function worldState(chat,state) {
  const w=emptyWorld(),rows=(chat||[]).flatMap(m=>m.is_user||m.is_system?[]:activeEvents(m)),recorded=new Set(rows.filter(e=>['register','discover'].includes(e.type)).map(e=>e.bookId));
@@ -124,12 +127,14 @@ export function worldState(chat,state) {
  const opening=openingBook(chat,state,(state.inventory||[]).filter(notebookItem));if(opening){const config=configs.find(b=>(b.bookId||b.itemId)===opening.bookId);applyEvent(w,{...opening,shinigamiId:config?.originalShinigamiId||''});}
  for(const config of configs){const id=config.bookId||config.itemId;if(!safe(id)||recorded.has(id))continue;const held=(state.inventory||[]).some(i=>i.id===config.itemId&&notebookItem(i));if(!held&&!config.holderId&&!config.ownerId&&!config.location&&!config.knownToPlayer)continue;applyEvent(w,{type:'register',bookId:id,itemId:config.itemId||id,ownerId:config.ownerId|| (held?'player':''),holderId:config.holderId|| (held?'player':''),firstHumanOwnerId:config.firstHumanOwnerId||config.ownerId,shinigamiId:config.originalShinigamiId,currentShinigamiId:config.currentShinigamiId,attachedShinigamiId:config.attachedShinigamiId,knownToPlayer:config.knownToPlayer,ownerKnownToPlayer:config.ownerKnownToPlayer,location:config.location||(config.knownToPlayer&&!config.holderId?state.location?.place||'':'')});}
  for(const item of state.inventory||[])if(notebookItem(item)&&(!item.properties?.includes('roleforge:death-note:opening')||opening)&&safe(item.id)&&!recorded.has(item.id)&&!Object.values(w.books).some(b=>b.itemId===item.id))applyEvent(w,{type:'register',bookId:item.id,itemId:item.id,ownerId:'player',holderId:'player'});
- const bindings=[],parseStory=storyParser(state);
+ const bindings=[],parseStory=storyParser(state),people=new Map((state.npcs||[]).map(n=>[n.id,n]));
+ const derivedAlias=e=>{const n=people.get(e.npcId);return e.type==='name-learned'&&e.source==='visible-story'&&n&&(n.aliases||[]).some(a=>norm(a)===norm(e.claimedName))&&![n.name,...trueNameSpellings(state,n)].some(a=>norm(a)===norm(e.claimedName));};
  for(const [index,m] of (chat||[]).entries()){
   if(m.is_system)continue;const playerAction=chat[index-1]?.is_user?String(chat[index-1].mes||''):'',stored=m.is_user?[]:activeEvents(m).filter(e=>e.source!=='visible-player-pickup'||e.consentHash===sha256(playerAction));
-  const apply=e=>{if(e.type==='npc-eye-deal'&&!e.lifeCost)e={...e,lifeCost:eyeLifeCost(w,e.recordedClock?{...state,worldClock:e.recordedClock}:state,e.actorId)};applyEvent(w,e);};
-  for(const e of stored)apply(e);
-  for(const e of parseStory(m,playerAction)){
+  const proposals=parseStory(m,playerAction);
+  const apply=e=>{if(['introduce','name-learned'].includes(e.type))e={...e,namePriority:norm(e.claimedName)===norm(people.get(e.npcId)?.name)?2:1};if(e.type==='npc-eye-deal'&&!e.lifeCost)e={...e,lifeCost:eyeLifeCost(w,e.recordedClock?{...state,worldClock:e.recordedClock}:state,e.actorId)};applyEvent(w,e);};
+  for(const e of stored){if(derivedAlias(e)&&!proposals.some(p=>worldEventKey(p)===worldEventKey(e)))continue;apply(e);}
+  for(const e of proposals){
    if(stored.some(r=>worldEventKey(r)===worldEventKey(e)))continue;
    apply(e);
   }

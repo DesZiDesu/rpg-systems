@@ -18,6 +18,8 @@ export function seenFace(evidence,{npcViewer=false}={}){
 }
 export function learnedName(evidence,name){
  if(!containsIdentity(evidence,name)||speculative.test(evidence)||/ยังไม่(?:รู้|ทราบ|บอก)|ไม่(?:ได้|เคย)(?:รู้|ทราบ|เห็น)|\b(?:not|never|cannot|can't)\b.{0,24}(?:learn|read|know|name)/iu.test(evidence))return false;
+ const target=escape(name),directory=new RegExp('(?:directory|roster|contact entry|student record|รายชื่อ|ทะเบียน|ทำเนียบ).{0,220}'+target,'iu');
+ if(directory.test(evidence)&&/(?:you|your|I|we)|(?:คุณ|ฉัน|ผม)|(?:click\w*|open\w*|read\w*|pull\w*)/iu.test(evidence))return true;
  // A narrator merely using someone's name is not a disclosure to the player.
  return /(?:คุณ|ฉัน|ผม|เรา|ข้า).{0,45}(?:อ่าน|ได้ยิน|รู้(?:จัก)?ชื่อ|จำชื่อ|ทราบชื่อ)|(?:ชื่อ|นาม).{0,12}(?:คือ|ว่า|ระบุ)|(?:ข่าว|รายงาน|เอกสาร|บัตร|ป้าย|หนังสือพิมพ์|จอ).{0,100}(?:ชื่อ|ระบุ)|(?:บอก|แจ้ง|แนะนำ).{0,18}(?:คุณ|ฉัน|ผม).{0,75}(?:ชื่อ|นาม)|\b(?:tells?|told|informs?|introduces?)\b.{0,30}\b(?:you|me)\b.{0,80}\b(?:name|named|called)\b|\b(?:you|I|we)\b.{0,55}\b(?:read|learn\w*|hear\w*|heard|know\w*|saw)\b.{0,70}\b(?:name|named|called)\b|\b(?:news|report|document|caption|badge|ID card|nameplate|screen)\b.{0,100}\b(?:name|named|identif\w*|labels?|reads?)\b/iu.test(evidence);
 }
@@ -26,18 +28,30 @@ export function identityBound(evidence,npc,npcs,claim=''){
  return labels.some(label=>containsIdentity(evidence,label)&&npcs.filter(n=>[n.name,...n.aliases||[],n.title,n.occupation].some(v=>norm(v)===norm(label))).length===1)||
   Boolean(claim&&[npc.name,...npc.aliases||[]].some(v=>norm(v)===norm(claim))&&containsIdentity(evidence,claim)&&npcs.filter(n=>[n.name,...n.aliases||[]].some(v=>norm(v)===norm(claim))).length===1);
 }
-export function observedIdentities(source,npcs){
+// A library alias alone (for example “Kira” in general news) does not
+// establish which hidden person bears it. A named person or unique visible role
+// can anchor an actual reported alias, including a false one.
+export function nameDisclosure(evidence,npc,npcs,name){
+ const intrinsic=npc.identityNames||[npc.name];
+ const anchored=intrinsic.some(n=>containsIdentity(evidence,n))||[npc.title,npc.occupation].filter(Boolean).some(role=>containsIdentity(evidence,role)&&npcs.filter(n=>[n.title,n.occupation].includes(role)).length===1);
+ return (anchored||seenFace(evidence))&&learnedName(evidence,name);
+}
+function playerRecognition(evidence,name){
+ if(!containsIdentity(evidence,name)||speculative.test(evidence)||/\(\(|\bOOC\b|ไม่ได้|ยังไม่|\b(?:don't|do not|never)\b/iu.test(evidence))return false;
+ const target=escape(name);
+ return new RegExp('(?:\\b(?:this|that) is\\s+|\\bI (?:already )?(?:know|recognize|remember)\\s+(?:the name\\s+)?|นี่(?:คือ|ก็)|(?:ฉัน|ผม|เรา)(?:รู้จัก|รู้ชื่อ|จำชื่อ)(?:อยู่แล้ว)?\\s*)'+target+'(?![a-z0-9_])','iu').test(evidence);
+}
+export function observedIdentities(source,npcs,{playerAuthored=false}={}){
  const events=[],visible=String(source||'').replace(/<think\b[^>]*>[\s\S]*?(?:<\/think>|$)/giu,'').replace(/<!--[\s\S]*?(?:-->|$)/gu,'');
- // Keep separate paragraphs separate so one person's photo cannot
- // silently supply another person's face witness elsewhere in the reply.
  const passages=visible.split(/<\/(?:tr-narrative|tr-dialogue|p)>|\n\s*\n/iu).map(identityText).filter(s=>s&&s.length<=1200);
  for(const evidence of passages){
   const matches=npcs.filter(n=>identityBound(evidence,n,npcs));
-  if(matches.length!==1)continue;
-  const npc=matches[0];
-  const name=[npc.name,...npc.aliases||[]].filter(n=>learnedName(evidence,n)).sort((a,b)=>b.length-a.length)[0];
-  if(name)events.push({type:'name-learned',npcId:npc.id,claimedName:name,source:'visible-story',evidence});
-  if(seenFace(evidence))events.push({type:'face-seen',npcId:npc.id,evidence});
+  for(const npc of matches){
+   const names=[npc.name,...npc.aliases||[]].filter(Boolean),name=names.filter(n=>nameDisclosure(evidence,npc,npcs,n)||(playerAuthored&&playerRecognition(evidence,n))).sort((a,b)=>b.length-a.length)[0];
+   if(name)events.push({type:'name-learned',npcId:npc.id,claimedName:name,source:'visible-story',evidence});
+   // Names may be disclosed together; one face witness never proves all faces.
+   if(matches.length===1&&seenFace(evidence))events.push({type:'face-seen',npcId:npc.id,evidence});
+  }
  }
  return events;
 }

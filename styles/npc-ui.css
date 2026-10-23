@@ -90,7 +90,7 @@
 .trpg-dossier>small{font-size:10px;color:#c2a969;letter-spacing:2px}
 .trpg-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.trpg-wide{grid-column:1/-1}
 .trpg-manager label{display:grid;align-content:start;gap:6px;color:#c9bfa9;font-size:12px;min-width:0}
-.trpg-manager input:not([type=checkbox]):not([type=color]),.trpg-manager textarea,.trpg-manager select{width:100%;min-width:0;max-width:100%;font-family:inherit;font-size:16px;color:#ece7da;background:#080909;border:1px solid #49402e;border-radius:0;padding:10px;box-shadow:inset 0 1px 8px #0004;scroll-margin-block:20px}
+.trpg-manager input:not([type=checkbox]):not([type=color]):not([type=range]),.trpg-manager textarea,.trpg-manager select{width:100%;min-width:0;max-width:100%;font-family:inherit;font-size:16px;color:#ece7da;background:#080909;border:1px solid #49402e;border-radius:0;padding:10px;box-shadow:inset 0 1px 8px #0004;scroll-margin-block:20px}
 .trpg-manager input[type=color]{width:70px;height:42px;padding:3px;border:1px solid #75612f;background:#090909}.trpg-manager input[type=range]{accent-color:var(--gold);padding:8px 0!important;min-height:44px}
 .trpg-manager input[type=file]{font-size:12px!important}.trpg-manager textarea{resize:vertical;min-height:86px;line-height:1.7}.trpg-manager input[type=checkbox]{width:20px;height:20px;accent-color:var(--gold);flex-shrink:0}
 .trpg-manager label.trpg-check,.trpg-manager .trpg-import-row{display:flex;align-items:center;gap:10px;grid-column:1/-1}.trpg-import-row{padding:14px;border-bottom:1px solid #3a3120}
@@ -437,3 +437,11 @@
 .trpg-chat .trpg-eye-dialogue-label{display:block;font-size:.78em;line-height:1.6;margin:0 0 .7em;letter-spacing:.03em;overflow-wrap:anywhere}
 .trpg-chat .rf-npc-eye-identity{min-width:0;white-space:normal;overflow-wrap:anywhere}
 .rf-dn-npc-facts p{overflow-wrap:anywhere;color:var(--trpg-muted,#aaa)}
+
+/* Sliders are controls, not text fields. Keep a 44px touch area and a visible rail. */
+.trpg-manager input[type=range]{appearance:none;-webkit-appearance:none;box-sizing:border-box;width:100%;height:44px;min-height:44px;margin:0;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;cursor:pointer}
+.trpg-manager input[type=range]::-webkit-slider-runnable-track{height:3px;background:#75612f;border:0;border-radius:0}
+.trpg-manager input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:20px;margin-top:-8.5px;border:1px solid #e9cf8a;border-radius:0;background:#d6b458}
+.trpg-manager input[type=range]::-moz-range-track{height:3px;background:#75612f;border:0}
+.trpg-manager input[type=range]::-moz-range-thumb{width:14px;height:20px;border:1px solid #e9cf8a;border-radius:0;background:#d6b458}
+.trpg-manager input[type=range]:focus-visible{outline:2px solid #d6b458;outline-offset:3px}

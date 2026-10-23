@@ -1,9 +1,9 @@
-import {createItemComposer} from './item-composer.js?v=0.85.3';
-import {normalizeItemSystem,currentItemNpcs,prepareItemAction,validateItemResponse,applyItemDecision,missingInventoryDetails,applyItemDetails,configureItemUsage,ingestLoot} from './item-core.js?v=0.85.3';
-import {replyLootGap,resolveReplyLoot} from './loot-discovery.js?v=0.85.3';
-import {requestItemDecision,requestItemDetails} from './item-generation.js?v=0.85.3';
-import {evidenceText} from './interaction-evidence.js?v=0.85.3';
-import {hasTaskGeneration} from './task-generation.js?v=0.85.3';
+import {createItemComposer} from './item-composer.js?v=0.85.4';
+import {normalizeItemSystem,currentItemNpcs,prepareItemAction,validateItemResponse,applyItemDecision,missingInventoryDetails,applyItemDetails,configureItemUsage,ingestLoot} from './item-core.js?v=0.85.4';
+import {replyLootGap,resolveReplyLoot} from './loot-discovery.js?v=0.85.4';
+import {requestItemDecision,requestItemDetails} from './item-generation.js?v=0.85.4';
+import {evidenceText} from './interaction-evidence.js?v=0.85.4';
+import {hasTaskGeneration} from './task-generation.js?v=0.85.4';
 const fingerprint=s=>JSON.stringify(s,(k,v)=>['updatedAt','createdAt'].includes(k)?undefined:v);
 export function createItemRuntime(api){
  let scope='',pending=null,phase='',receipt=null,error='',retry=null,ticket=0,destroyed=false,inFlight=false,lastPools='',progress=null,saving=false;
