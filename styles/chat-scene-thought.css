@@ -176,7 +176,7 @@
   font:500 max(10px,.7em)/1.7 var(--chat-sans,RFChatSans,system-ui,sans-serif);
   letter-spacing:.035em;opacity:.8;
 }
-.trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-label:before {content:'⋯';font-size:1.35em;line-height:1;opacity:.75}
+.trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-label:before {content:none;display:none}
 .trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-copy {
   margin:0;padding:0;white-space:pre-wrap;overflow-wrap:anywhere;
   font:inherit;font-style:italic;line-height:1.9;color:inherit;text-shadow:0 1px 2px #00000014;
@@ -192,8 +192,7 @@
   letter-spacing:.035em;color:inherit;opacity:.8;
 }
 .trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>.trpg-thought-label:before {
-  content:'⋯';display:block;width:auto;height:auto;flex:none;
-  border:0;background:none;transform:none;font-size:1.35em;line-height:1;opacity:.75;
+  content:none;display:none;
 }
 .trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>.trpg-thought-label:after {content:none;display:none}
 .trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed>p {
@@ -203,6 +202,24 @@
 @media(prefers-reduced-motion:no-preference) {
   .trpg-chat.trpg-effects[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>p {animation:rf-inner-voice-enter .36s ease-out both}
   @keyframes rf-inner-voice-enter {from{opacity:.65;transform:translateY(2px)}to{opacity:1;transform:none}}
+}
+
+/* The text stays still. Only the three decorative dots move, without timers,
+   model requests or an icon font; static dots remain when motion is disabled. */
+.trpg-chat .trpg-thought-dots {display:none}
+.trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-label>.trpg-thought-dots,
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>.trpg-thought-label>.trpg-thought-dots {
+  display:inline-flex;align-items:center;gap:3px;flex:none;width:15px;height:9px;
+}
+.trpg-chat[data-rf-chat-theme] .trpg-thought-dots>i {
+  display:block;flex:none;width:3px;height:3px;margin:0;padding:0;
+  border:0;border-radius:50%;background:currentColor;box-shadow:none;opacity:.5;
+}
+@media(prefers-reduced-motion:no-preference) {
+  body:not(.reduced-motion) .trpg-chat.trpg-effects[data-rf-chat-theme] .trpg-thought-dots>i {animation:rf-thought-dot-wave 2.2s ease-in-out infinite}
+  body:not(.reduced-motion) .trpg-chat.trpg-effects[data-rf-chat-theme] .trpg-thought-dots>i:nth-child(2) {animation-delay:.16s}
+  body:not(.reduced-motion) .trpg-chat.trpg-effects[data-rf-chat-theme] .trpg-thought-dots>i:nth-child(3) {animation-delay:.32s}
+  @keyframes rf-thought-dot-wave {0%,18%,60%,100%{opacity:.5;transform:translateY(0)}36%{opacity:1;transform:translateY(-2.4px)}}
 }
 
 @container(max-width:420px) {

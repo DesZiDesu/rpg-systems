@@ -13,7 +13,7 @@ import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } 
 import { croppedPortrait } from './npc-portraits.js?v=0.85.9';
 import { effectiveNpc } from './npc-alternates.js?v=0.85.9';
 import {speechDisplayText} from './voice-core.js?v=0.85.9';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.85.9';
+import {parseUserMessage,renderUserBlocks,thoughtDots} from './user-chat.js?v=0.85.9';
 import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.85.9';
 import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.85.9';
 import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.85.9';
@@ -73,7 +73,8 @@ export function narrative(text,enabled=true,appearance={}) {
 export function npcThought(text){
     const label=uiLanguage()==='th'?'พูดในใจ':'Inner thought',node=element('aside','trpg-npc-thought');
     node.setAttribute('aria-label',label);
-    node.append(element('small','trpg-thought-label',label),appendStoryText(element('p','trpg-thought-copy'),text));
+    const heading=element('small','trpg-thought-label');heading.append(thoughtDots(),element('span','trpg-thought-caption',label));
+    node.append(heading,appendStoryText(element('p','trpg-thought-copy'),text));
     return node;
 }
 export function speakerHeader(profile, open, appearance='roleforge') {

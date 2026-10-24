@@ -2,6 +2,11 @@ import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.85.9'
 import {dialogueFrame,illustratedChatTheme} from './chat-folio.js?v=0.85.9';
 // This shorthand is a player display convention, never an assistant protocol.
 const escaped=(source,index)=>{let slashes=0;while(index>0&&source[--index]==='\\')slashes++;return slashes%2===1;};
+export function thoughtDots(doc=globalThis.document){
+    const dots=doc.createElement('span');dots.className='trpg-thought-dots';dots.setAttribute('aria-hidden','true');
+    for(let i=0;i<3;i++)dots.append(doc.createElement('i'));
+    return dots;
+}
 function richMarkdown(source){
     if(/`|^ {4}\S|^[\t ]*~{3,}|<\/?[a-z!]|\[[^\[\]\n]*\][\t ]*\(|^[\t ]*\[[^\[\]\n]+\]:/imu.test(source))return true;
     return source.split('\n').some(line=>line.includes('|')&&line.trim().split('|').filter(part=>part.trim()).every(part=>/^\s*:?-{3,}:?\s*$/u.test(part)));
@@ -47,7 +52,8 @@ export function renderUserBlocks(blocks,{name='User',language='en',accent='#d6b4
         }
         if(block.type==='thought'){
             const thought=node('aside','trpg-user-thought'+(view.dialogue?'':' trpg-thought-unframed')),label=language==='th'?'พูดในใจ':'Inner thought';thought.setAttribute('aria-label',label);
-            thought.append(node('small','trpg-thought-label',label),appendText(node('p','',undefined),block.text));root.append(thought);continue;
+            const heading=node('small','trpg-thought-label');heading.append(thoughtDots(doc),node('span','trpg-thought-caption',label));
+            thought.append(heading,appendText(node('p','',undefined),block.text));root.append(thought);continue;
         }
         if(block.type==='plain'&&!block.text.trim())continue;
         const body=block.type==='dialogue'?dialogueFrame(name,view,doc):node('div','trpg-plain');

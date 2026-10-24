@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseUserMessage,renderUserBlocks} from '../src/user-chat.js';
+import {parseUserMessage,renderUserBlocks,thoughtDots} from '../src/user-chat.js';
 const parse=mes=>parseUserMessage({is_user:true,mes});
 const content=blocks=>blocks?.filter(block=>block.type!=='plain');
 
@@ -64,3 +64,5 @@ test('Dialogue off retains a distinct player thought without its panel in every 
         assert.equal(framed.children[0].className,'trpg-user-thought');
     }
 });
+
+test('decorative thought dots have exactly three empty marks and are hidden from screen readers',()=>{const dots=thoughtDots(doc);assert.equal(dots.className,'trpg-thought-dots');assert.equal(dots['aria-hidden'],'true');assert.equal(dots.children.length,3);assert(dots.children.every(n=>n.tag==='i'&&!n.textContent));});

@@ -30,7 +30,7 @@ export function mountChatAppearanceControls(parent,api) {
         const selected=CHAT_THEMES.find(item=>item.key===view.theme);
         texts.get('chatTheme').textContent=t('Chat design','ดีไซน์ในแชท');description.textContent=t(selected.description,selected.descriptionTh);
         texts.get('chatHeaderBadgeMode').textContent=t('Header badge','ป้ายข้อมูล Header');
-        texts.get('chatEffects').textContent=t('Design motion effects','ลูกเล่นการเคลื่อนไหวของดีไซน์');effectsRow.hidden=view.theme!=='aincrad';
+        texts.get('chatEffects').textContent=t('Design motion effects','ลูกเล่นการเคลื่อนไหวของดีไซน์');effectsRow.hidden=false;
         texts.get('chatNpcVitals').textContent=t('Aincrad · NPC HP / Lv','Aincrad · HP / Lv ของ NPC');vitalsRow.hidden=vitalsHelp.hidden=view.theme!=='aincrad';
         vitalsHelp.textContent=t('Reads NPC stats.hp and stats.level. Missing values are hidden; HP 0 is shown. The underline is decorative, not a health percentage. Entrance motion is brief, skips streaming updates and respects Reduce Motion.','อ่าน stats.hp และ stats.level ของ NPC ซ่อนค่าที่ไม่มีข้อมูลและแสดง HP 0 เส้นใต้เป็นของตกแต่ง ไม่ใช่เปอร์เซ็นต์เลือด ลูกเล่นเข้าแชทเป็นภาพเคลื่อนไหวสั้น ไม่เล่นซ้ำระหว่างสตรีม และรองรับ Reduce Motion');
         for(const [value,labels]of [['occupation',['Occupation + NPC rank','อาชีพ + ระดับ NPC']],['ability',['Selected skill + mastery','สกิลที่เลือก + ขั้นความเชี่ยวชาญ']],['off',['Hide badge','ซ่อนป้ายข้อมูล']]])badgeOptions.get(value).textContent=t(...labels);
