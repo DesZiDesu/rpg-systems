@@ -151,6 +151,36 @@
 .trpg-chat[data-rf-chat-theme="aincrad"].trpg-user-chat .trpg-thought-label:before {content:'';width:6px;height:6px;border:1px solid #a16b2e;transform:rotate(45deg)}
 .trpg-chat[data-rf-chat-theme="aincrad"].trpg-user-chat .trpg-user-thought>p {font-family:RFAincrad,RFChatSans,system-ui,sans-serif}
 
+/* Dialogue OFF removes the thought's panel too, while preserving a readable
+   inner voice. Relative type follows the host's chosen chat font size. This
+   never interprets NPC emphasis or changes the saved text / voice payload. */
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed {
+  margin-inline:0;margin-block:8px;padding:8px 0 10px;
+  border:0;border-radius:0;background:none;box-shadow:none;
+  font:inherit;font-size:max(14px,.9em);line-height:1.9;
+  color:color-mix(in srgb,var(--prose) 78%,var(--SmartThemeBlurTintColor,#171816));
+}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed:before,
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed:after {content:none;display:none;animation:none}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed>.trpg-thought-label {
+  justify-content:flex-start;gap:8px;margin:0 0 5px;
+  font:500 max(10px,.66em)/1.7 var(--chat-sans,RFChatSans,system-ui,sans-serif);
+  letter-spacing:.035em;color:inherit;opacity:.8;
+}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>.trpg-thought-label:before {
+  content:'⋯';display:block;width:auto;height:auto;flex:none;
+  border:0;background:none;transform:none;font-size:1.35em;line-height:1;opacity:.75;
+}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>.trpg-thought-label:after {content:none;display:none}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed>p {
+  margin:0;padding:0;font:inherit;font-style:italic;line-height:1.9;color:inherit;
+  text-shadow:0 1px 2px #00000014;overflow-wrap:anywhere;
+}
+@media(prefers-reduced-motion:no-preference) {
+  .trpg-chat.trpg-effects[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>p {animation:rf-inner-voice-enter .36s ease-out both}
+  @keyframes rf-inner-voice-enter {from{opacity:.65;transform:translateY(2px)}to{opacity:1;transform:none}}
+}
+
 @container(max-width:420px) {
   .trpg-scene-ledger[data-rf-chat-theme] .trpg-scene-hero {flex-wrap:wrap}
   .trpg-scene-ledger[data-rf-chat-theme] .trpg-scene-location {flex:1 1 130px}

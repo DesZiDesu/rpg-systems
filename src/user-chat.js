@@ -46,7 +46,7 @@ export function renderUserBlocks(blocks,{name='User',language='en',accent='#d6b4
             root.append(prose);continue;
         }
         if(block.type==='thought'){
-            const thought=node('aside','trpg-user-thought'),label=language==='th'?'พูดในใจ':'Inner thought';thought.setAttribute('aria-label',label);
+            const thought=node('aside','trpg-user-thought'+(view.dialogue?'':' trpg-thought-unframed')),label=language==='th'?'พูดในใจ':'Inner thought';thought.setAttribute('aria-label',label);
             thought.append(node('small','trpg-thought-label',label),appendText(node('p','',undefined),block.text));root.append(thought);continue;
         }
         if(block.type==='plain'&&!block.text.trim())continue;

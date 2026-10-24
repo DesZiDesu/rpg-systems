@@ -53,3 +53,14 @@ test('player rendering uses text nodes, validated theme colors and distinct thou
     assert.equal(root.children[2]['aria-label'],'พูดในใจ');assert.equal(root.children[2].children[1].textContent,'A secret.');
     const invalid=renderUserBlocks([],{document:doc,accent:'url(secret)',ink:'red;display:none',appendText});assert.deepEqual(invalid.properties,{});
 });
+test('Dialogue off retains a distinct player thought without its panel in every theme',()=>{
+    const blocks=content(parse('|A private thought.|'));
+    for(const theme of ['roleforge','folio','chapter','codex','aincrad']){
+        const root=renderUserBlocks(blocks,{document:doc,language:'en',appearance:{theme,header:false,dialogue:false,narrative:false,effects:false},appendText});
+        assert.equal(root.children[0].className,'trpg-user-thought trpg-thought-unframed');
+        assert.equal(root.children[0]['aria-label'],'Inner thought');
+        assert.equal(root.children[0].children[1].textContent,'A private thought.');
+        const framed=renderUserBlocks(blocks,{document:doc,appearance:{theme,dialogue:true},appendText});
+        assert.equal(framed.children[0].className,'trpg-user-thought');
+    }
+});
