@@ -117,90 +117,38 @@
 .trpg-scene-ledger[data-rf-chat-theme="aincrad"] .trpg-scene-people {padding-block:9px}
 .trpg-scene-ledger[data-rf-chat-theme="aincrad"] .trpg-scene-details dl {border-color:#b7c0c6}
 
-/* Inner thoughts retain their original text / native Markdown nodes. The
-   label stays in normal flow, so long translations cannot cover the text. */
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought {
-  position:relative;isolation:isolate;min-width:0;max-width:100%;box-sizing:border-box;
-  margin-inline:clamp(0px,3%,20px) 0;padding:13px 17px;background:none;border:0;border-radius:0;
-  font:400 15px/1.9 var(--chat-prose,RFChatProse,Georgia,serif);color:var(--prose);
-}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought:before,
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought:after {content:none;animation:none}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>.trpg-thought-label {
-  display:flex;align-items:center;gap:9px;margin:0;color:var(--speaker);font:400 10px/1.7 var(--chat-sans,RFChatSans,system-ui,sans-serif);letter-spacing:.04em;
-}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>p {margin:8px 0 0;padding:0;font:italic 400 15px/1.9 var(--chat-prose,RFChatProse,Georgia,serif);color:inherit;white-space:pre-wrap;text-align:start;overflow-wrap:anywhere}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>p>:first-child {margin-top:0}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>p>:last-child {margin-bottom:0}
-.trpg-chat[data-rf-chat-theme="roleforge"].trpg-user-chat .trpg-user-thought {border-right:2px solid color-mix(in srgb,var(--speaker) 65%,transparent);background:linear-gradient(270deg,color-mix(in srgb,var(--speaker) 6%,transparent),transparent)}
-.trpg-chat[data-rf-chat-theme="roleforge"].trpg-user-chat .trpg-thought-label:after {content:'';height:1px;flex:1;background:linear-gradient(90deg,color-mix(in srgb,var(--speaker) 30%,transparent),transparent)}
-.trpg-chat[data-rf-chat-theme="folio"].trpg-user-chat .trpg-user-thought {padding:14px 19px 16px;border:1px solid color-mix(in srgb,var(--speaker) 40%,#435143);border-radius:3px 17px 17px 17px;background:color-mix(in srgb,var(--speaker) 6%,#18221e);color:#e4e4d8}
-.trpg-chat[data-rf-chat-theme="folio"].trpg-user-chat .trpg-user-thought:after {content:'';position:absolute;inset:8px auto 8px 6px;width:2px;background:linear-gradient(var(--speaker),transparent);opacity:.5}
-.trpg-chat[data-rf-chat-theme="folio"].trpg-user-chat .trpg-thought-label {font-family:RFChatProse,Georgia,serif}
-.trpg-chat[data-rf-chat-theme="folio"].trpg-user-chat .trpg-thought-label:before {content:'';width:5px;height:5px;border:1px solid var(--speaker);transform:rotate(45deg)}
-.trpg-chat[data-rf-chat-theme="chapter"].trpg-user-chat .trpg-user-thought {padding:13px 18px 15px;border-left:2px solid color-mix(in srgb,var(--speaker) 75%,#9e804f);border-radius:0 10px 2px 0;background:linear-gradient(100deg,#32271980,#201a1450);color:#dfd2bc}
-.trpg-chat[data-rf-chat-theme="chapter"].trpg-user-chat .trpg-thought-label {letter-spacing:.1em}
-.trpg-chat[data-rf-chat-theme="chapter"].trpg-user-chat .trpg-thought-label:before {content:'';width:17px;height:1px;background:var(--speaker)}
-.trpg-chat[data-rf-chat-theme="codex"].trpg-user-chat .trpg-user-thought {padding:12px 19px 17px;border-block:1px solid color-mix(in srgb,var(--speaker) 45%,#7e693c);background:linear-gradient(90deg,transparent,#b9a16009,transparent)}
-.trpg-chat[data-rf-chat-theme="codex"].trpg-user-chat .trpg-user-thought:after {content:'';position:absolute;inset:4px 0;border-block:1px solid color-mix(in srgb,var(--speaker) 18%,transparent);pointer-events:none}
-.trpg-chat[data-rf-chat-theme="codex"].trpg-user-chat .trpg-thought-label {justify-content:center;gap:11px;font-family:RFChatProse,Georgia,serif}
-.trpg-chat[data-rf-chat-theme="codex"].trpg-user-chat .trpg-thought-label:before,
-.trpg-chat[data-rf-chat-theme="codex"].trpg-user-chat .trpg-thought-label:after {content:'';width:16px;height:1px;background:var(--speaker);opacity:.6}
-.trpg-chat[data-rf-chat-theme="aincrad"].trpg-user-chat .trpg-user-thought {padding:12px 16px 15px;border:1px solid #bbc4cb;border-left:3px solid #dea254;border-radius:1px 9px 1px 9px;background:linear-gradient(125deg,#e9edf0f2,#d4dce2eb);color:#34434f;font-family:RFAincrad,RFChatSans,system-ui,sans-serif}
-.trpg-chat[data-rf-chat-theme="aincrad"].trpg-user-chat .trpg-user-thought>.trpg-thought-label {color:#7d4d19;font-family:RFAincrad,RFChatSans,system-ui,sans-serif;letter-spacing:.09em}
-.trpg-chat[data-rf-chat-theme="aincrad"].trpg-user-chat .trpg-thought-label:before {content:'';width:6px;height:6px;border:1px solid #a16b2e;transform:rotate(45deg)}
-.trpg-chat[data-rf-chat-theme="aincrad"].trpg-user-chat .trpg-user-thought>p {font-family:RFAincrad,RFChatSans,system-ui,sans-serif}
-
-/* Dialogue OFF removes the thought's panel too, while preserving a readable
-   inner voice. Relative type follows the host's chosen chat font size. This
-   never interprets NPC emphasis or changes the saved text / voice payload. */
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed {
-  margin-inline:0;margin-block:8px;padding:8px 0 10px;
-  border:0;border-radius:0;background:none;box-shadow:none;
-  font:inherit;font-size:max(14px,.9em);line-height:1.9;
-  color:color-mix(in srgb,var(--prose) 78%,var(--SmartThemeBlurTintColor,#171816));
-}
-
-/* NPC monologue is its own silent block, independent from the speech frame.
-   Ordinary narrative emphasis never receives this class. */
+/* Both inner voices sit directly on the chat surface, independent of the
+   Dialogue frame. Ordinary narrative emphasis never receives these classes. */
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought,
 .trpg-chat[data-rf-chat-theme] .trpg-npc-thought {
   position:relative;box-sizing:border-box;min-width:0;max-width:100%;
-  margin:7px 0;padding:13px 17px 15px;border-radius:2px;
-  border:1px solid color-mix(in srgb,var(--prose) 15%,transparent);
-  background:color-mix(in srgb,var(--prose) 3%,transparent);box-shadow:none;
-  color:color-mix(in srgb,var(--prose) 80%,var(--SmartThemeBlurTintColor,#171816));
+  margin:8px 0;padding:8px 0 10px;border:0;border-radius:0;
+  background:none;box-shadow:none;
+  color:color-mix(in srgb,var(--prose) 78%,var(--SmartThemeBlurTintColor,#171816));
   font:inherit;font-size:max(14px,.9em);line-height:1.9;
 }
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought:before,
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought:after,
+.trpg-chat[data-rf-chat-theme] .trpg-npc-thought:before,
+.trpg-chat[data-rf-chat-theme] .trpg-npc-thought:after {content:none;display:none;animation:none}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>.trpg-thought-label,
 .trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-label {
-  display:flex;align-items:center;gap:8px;margin:0 0 6px;color:inherit;
-  font:500 max(10px,.7em)/1.7 var(--chat-sans,RFChatSans,system-ui,sans-serif);
+  display:flex;align-items:center;justify-content:flex-start;gap:8px;margin:0 0 5px;
+  color:inherit;font:500 max(10px,.7em)/1.7 var(--chat-sans,RFChatSans,system-ui,sans-serif);
   letter-spacing:.035em;opacity:.8;
 }
-.trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-label:before {content:none;display:none}
+.trpg-chat[data-rf-chat-theme] .trpg-thought-label:before,
+.trpg-chat[data-rf-chat-theme] .trpg-thought-label:after {content:none;display:none}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>p,
 .trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-copy {
-  margin:0;padding:0;white-space:pre-wrap;overflow-wrap:anywhere;
+  margin:0;padding:0;white-space:pre-wrap;overflow-wrap:anywhere;text-align:start;
   font:inherit;font-style:italic;line-height:1.9;color:inherit;text-shadow:0 1px 2px #00000014;
 }
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>p>:first-child {margin-top:0}
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>p>:last-child {margin-bottom:0}
 @media(prefers-reduced-motion:no-preference) {
-  .trpg-chat.trpg-effects[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-copy {animation:rf-inner-voice-enter .36s ease-out both}
-}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed:before,
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed:after {content:none;display:none;animation:none}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed>.trpg-thought-label {
-  justify-content:flex-start;gap:8px;margin:0 0 5px;
-  font:500 max(10px,.66em)/1.7 var(--chat-sans,RFChatSans,system-ui,sans-serif);
-  letter-spacing:.035em;color:inherit;opacity:.8;
-}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>.trpg-thought-label:before {
-  content:none;display:none;
-}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>.trpg-thought-label:after {content:none;display:none}
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed>p {
-  margin:0;padding:0;font:inherit;font-style:italic;line-height:1.9;color:inherit;
-  text-shadow:0 1px 2px #00000014;overflow-wrap:anywhere;
-}
-@media(prefers-reduced-motion:no-preference) {
-  .trpg-chat.trpg-effects[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>p {animation:rf-inner-voice-enter .36s ease-out both}
+  body:not(.reduced-motion) .trpg-chat.trpg-effects[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>p,
+  body:not(.reduced-motion) .trpg-chat.trpg-effects[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-copy {animation:rf-inner-voice-enter .36s ease-out both}
   @keyframes rf-inner-voice-enter {from{opacity:.65;transform:translateY(2px)}to{opacity:1;transform:none}}
 }
 
@@ -208,7 +156,7 @@
    model requests or an icon font; static dots remain when motion is disabled. */
 .trpg-chat .trpg-thought-dots {display:none}
 .trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-label>.trpg-thought-dots,
-.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-thought-unframed>.trpg-thought-label>.trpg-thought-dots {
+.trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought>.trpg-thought-label>.trpg-thought-dots {
   display:inline-flex;align-items:center;gap:3px;flex:none;width:15px;height:9px;
 }
 .trpg-chat[data-rf-chat-theme] .trpg-thought-dots>i {

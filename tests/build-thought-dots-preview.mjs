@@ -4,7 +4,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {spawn} from 'node:child_process';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright');
-const out='/workspace/artifacts/thought-dots-preview/showcase';await mkdir(out+'/raw',{recursive:true});
+const out=process.env.THOUGHT_SHOWCASE_OUT||'/workspace/artifacts/thought-dots-preview/showcase';await mkdir(out+'/raw',{recursive:true});
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']});
 const report={host:'SillyTavern 1.19.0',prototype:true,liveAI:false,animationCycleSeconds:2.2,durationSeconds:7.2,devices:[],errors:[]};
 let p;
