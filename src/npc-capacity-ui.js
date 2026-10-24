@@ -1,6 +1,6 @@
-import {element} from './npc-chat.js?v=0.85.8';
-import {uiText} from './ui-language.js?v=0.85.8';
-import {npcEntryLimit} from './npc-capacity.js?v=0.85.8';
+import {element} from './npc-chat.js?v=0.85.9';
+import {uiText} from './ui-language.js?v=0.85.9';
+import {npcEntryLimit} from './npc-capacity.js?v=0.85.9';
 
 export function mountNpcCapacityControls(root,api) {
     const panel=element('details','trpg-generation-options trpg-capacity-options');panel.dataset.npcCapacityPanel='';

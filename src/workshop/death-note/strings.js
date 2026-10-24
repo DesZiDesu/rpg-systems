@@ -1,4 +1,4 @@
-import {uiLanguage} from '../../ui-language.js?v=0.85.8';
+import {uiLanguage} from '../../ui-language.js?v=0.85.9';
 
 // Only authored interface text passes through this table. Saved names, prose
 // and manuscripts are interpolated after static template parts are translated.

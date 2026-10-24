@@ -7,7 +7,7 @@ import {
   relationshipProfile,
   relationshipRanking,
   relationshipPreset,
-} from "./relationship-core.js?v=0.85.8";
+} from "./relationship-core.js?v=0.85.9";
 const esc = (v) =>
   String(v ?? "").replace(
     /[&<>"']/gu,

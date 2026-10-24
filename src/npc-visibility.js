@@ -1,4 +1,4 @@
-import {uiLanguage} from './ui-language.js?v=0.85.8';
+import {uiLanguage} from './ui-language.js?v=0.85.9';
 // Optional player-view policy. It never changes archive records or stable IDs.
 let provider=null,revision=0;
 export const npcVisibilityRevision=()=>revision;

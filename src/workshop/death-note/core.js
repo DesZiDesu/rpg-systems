@@ -1,10 +1,10 @@
-import {fragmentItem} from './fragments.js?v=0.85.8';
-import {localId} from '../core.js?v=0.85.8';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.8';
-import {matchesTrueName,trueNameSpellings} from './names.js?v=0.85.8';
-import {containsIdentity} from './identity.js?v=0.85.8';
-import {implicitResults,namesInResult,completedDeath} from './outcomes.js?v=0.85.8';
-import {INSCRIPTION_TEXT_LIMIT} from './limits.js?v=0.85.8';
+import {fragmentItem} from './fragments.js?v=0.85.9';
+import {localId} from '../core.js?v=0.85.9';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.9';
+import {matchesTrueName,trueNameSpellings} from './names.js?v=0.85.9';
+import {containsIdentity} from './identity.js?v=0.85.9';
+import {implicitResults,namesInResult,completedDeath} from './outcomes.js?v=0.85.9';
+import {INSCRIPTION_TEXT_LIMIT} from './limits.js?v=0.85.9';
 // Installing alone grants no item; an active greeting can establish possession.
 // Keep legacy journal keys for saved chats.
 export const INSCRIPTIONS = 'roleforge_death_note_inscriptions_preview';

@@ -1,10 +1,10 @@
-import {validatePowerConfig} from './power-presets.js?v=0.85.8';
-import {validateForgePreset} from './forge-presets.js?v=0.85.8';
-import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.85.8';
-import {validatePresetConfig} from './world-presets.js?v=0.85.8';
-import {assertNpcCapacity} from './npc-capacity.js?v=0.85.8';
-import {WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD,worldRef,worldKey,validateInlinePayload} from './world-pack-core.js?v=0.85.8';
-import {STORY_PACK_FIELD,validateStoryPack} from './story-core.js?v=0.85.8';
+import {validatePowerConfig} from './power-presets.js?v=0.85.9';
+import {validateForgePreset} from './forge-presets.js?v=0.85.9';
+import {loreOptions,writeLoreOptions,assertLoreCapacity} from './lore-core.js?v=0.85.9';
+import {validatePresetConfig} from './world-presets.js?v=0.85.9';
+import {assertNpcCapacity} from './npc-capacity.js?v=0.85.9';
+import {WORLD_REF_FIELD,WORLD_PAYLOAD_FIELD,worldRef,worldKey,validateInlinePayload} from './world-pack-core.js?v=0.85.9';
+import {STORY_PACK_FIELD,validateStoryPack} from './story-core.js?v=0.85.9';
 
 // Large, character-wide records belong to the character card, not the global
 // SillyTavern settings payload. Keep legacy settings as a fallback until the
