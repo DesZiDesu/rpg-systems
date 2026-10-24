@@ -1,4 +1,4 @@
-import {sha256} from '../vendor/js-sha256/index.js?v=0.85.5';
+import {sha256} from '../vendor/js-sha256/index.js?v=0.85.6';
 export const FORMAT='roleforge-workshop-addon';
 export const addonIds=['great-sage','field-notes','death-note'];
 export const localId=()=>globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`;

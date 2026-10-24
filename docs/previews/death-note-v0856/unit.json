@@ -1,0 +1,7 @@
+{
+  "command": "npm test",
+  "tests": 1833,
+  "pass": 1833,
+  "fail": 0,
+  "syntax": "npm run check: pass"
+}

@@ -1,0 +1,43 @@
+{
+  "version": "0.85.6",
+  "browser": "WebKit",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "liveVoice": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "languageVariants": true,
+      "longRoleChars": 1494,
+      "archiveReadCancellationRecovered": true,
+      "crlfGreetingDiscovery": true,
+      "typedPickup": true,
+      "wrongProtocolIdRecovered": true,
+      "inventoryQuantity": 1,
+      "nativeBranchBeforePickup": true,
+      "buttonPickup": true,
+      "noSyntheticUser": true,
+      "unsentDraftPreserved": true,
+      "controlledModelCalls": 2,
+      "privateExport": true
+    },
+    {
+      "device": "mobile",
+      "languageVariants": true,
+      "longRoleChars": 1989,
+      "archiveReadCancellationRecovered": true,
+      "crlfGreetingDiscovery": true,
+      "typedPickup": true,
+      "wrongProtocolIdRecovered": true,
+      "inventoryQuantity": 1,
+      "nativeBranchBeforePickup": true,
+      "buttonPickup": true,
+      "noSyntheticUser": true,
+      "unsentDraftPreserved": true,
+      "controlledModelCalls": 2,
+      "privateExport": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

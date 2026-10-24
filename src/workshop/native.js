@@ -1,7 +1,7 @@
-import {mountWorkshop,icon} from './ui.js?v=0.85.5';
-import {requestDataTask} from '../task-generation.js?v=0.85.5';
-import {mountDeathNote} from './death-note/ui.js?v=0.85.5';
-import {readCharacterExtension} from '../character-archive.js?v=0.85.5';
+import {mountWorkshop,icon} from './ui.js?v=0.85.6';
+import {requestDataTask} from '../task-generation.js?v=0.85.6';
+import {mountDeathNote} from './death-note/ui.js?v=0.85.6';
+import {readCharacterExtension} from '../character-archive.js?v=0.85.6';
 
 // Keep the native entry points available even if optional storage cannot open.
 export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,refreshHost,npcReferences=()=>[],prepareNpcs=async()=>{}}={}){
@@ -29,7 +29,7 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,ref
   if(destroyed)return Promise.reject(Error('ปิด Workshop แล้ว'));
   if(app)return Promise.resolve(app);
   return mounting||= (async()=>{
-   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.85.5',base);
+   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.85.6',base);
    await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ')),15000);
     style.onload=()=>{clearTimeout(timer);resolve();};style.onerror=()=>{clearTimeout(timer);reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ'));};document.head.append(style);
