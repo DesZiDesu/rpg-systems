@@ -162,6 +162,57 @@
           ]
         }
       ]
+    },
+    {
+      "id": "pokemon",
+      "name": "Pokémon",
+      "subtitle": "เพื่อนร่วมทางในทุกบทของการผจญภัย",
+      "world": "Pokémon",
+      "kind": "system",
+      "icon": "box",
+      "color": "gold",
+      "minimumRoleForge": "0.85.6",
+      "author": "RoleForge · Fan-made preview",
+      "description": "เลือกคู่หู ดูทีมและ Pokédex ต่อสู้ จับ และพัฒนาโปเกมอน พร้อมอ่านโรลเหนือ Chatbar",
+      "descriptionEn": "Choose a partner, explore the Pokédex, battle, catch and evolve Pokémon alongside your story.",
+      "features": [
+        "Pokédex 1,025 สายพันธุ์ พร้อมข้อมูลฟอร์ม",
+        "เลือกคู่หูจาก 9 ภูมิภาคและจัดทีม 6 ตัว",
+        "ต่อสู้ จับ เก็บเข้ากล่อง และวิวัฒนาการ",
+        "บันทึกตามแชท / Branch และบรรยายต่อผ่าน AI"
+      ],
+      "featuresEn": [
+        "1,025-species Pokédex with form records",
+        "Starters from nine regions and a party of six",
+        "Battles, catching, storage and evolution",
+        "Chat and branch progress; AI continues the story"
+      ],
+      "permissions": [
+        [
+          "บันทึกทีมในแชท",
+          "เก็บเหตุการณ์เกมในไฟล์แชท"
+        ],
+        [
+          "ต่อคำตอบ AI เมื่อเลือก",
+          "ใช้การเชื่อมต่อ SillyTavern เดิม"
+        ],
+        [
+          "โหลดภาพโปเกมอน",
+          "ภาพจาก PokeAPI/sprites โหลดเมื่อเปิดดู"
+        ]
+      ],
+      "releases": [
+        {
+          "version": "0.1.0",
+          "path": "packs/pokemon-0.1.0.json",
+          "sha256": "d1fbc3323a6f494bdbcb31081d2726f9fedf6751bb29f59b07e3601465fefe4a",
+          "bytes": 683,
+          "changes": [
+            "Pokémon preview แยกจาก main",
+            "ทีม Pokédex ต่อสู้ จับ กล่อง วิวัฒนาการ และเหนือ Chatbar"
+          ]
+        }
+      ]
     }
   ]
 }

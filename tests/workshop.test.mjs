@@ -21,7 +21,7 @@ test('analysis receives only selected data, never inactive NPC dossiers or priva
 test('rebind a portable profile without accepting arbitrary addon IDs or config values',()=>{
  const p=normalizeProfile({key:'old',enabled:['great-sage','arbitrary','great-sage'],launchers:{x:42,y:-1,wand:false},sage:{tone:'invalid',sources:{inventory:false}},history:[]},'new');
  assert.equal(p.key,'new');assert.deepEqual(p.enabled,['great-sage']);assert.equal(p.sage.tone,'calm');assert.equal(p.sage.sources.inventory,false);assert.equal(p.sage.sources.scene,true);
- assert.deepEqual(p.launchers,{x:1,y:0,wand:false,floating:true,deathNote:true});assert.equal(p.sage.theme,'prismatic');
+ assert.deepEqual(p.launchers,{x:1,y:0,wand:false,floating:true,deathNote:true,pokemon:true});assert.equal(p.sage.theme,'prismatic');
 });
 test('missing output is rejected and history is bounded before persistence',()=>{
  assert.throws(()=>validateAnalysis({observations:['partial']}),/คำตอบวิเคราะห์ไม่ครบ/);
@@ -31,7 +31,7 @@ test('missing output is rejected and history is bounded before persistence',()=>
 
 test('bundled releases match their catalog hashes and byte counts',async()=>{
  const catalog=validateCatalog(JSON.parse(await readFile(new URL('../src/workshop/catalog.json',import.meta.url))));
- assert.deepEqual(catalog.addons.map(a=>a.id),['great-sage','field-notes','death-note']);
+ assert.deepEqual(catalog.addons.map(a=>a.id),['great-sage','field-notes','death-note','pokemon']);
  for(const addon of catalog.addons)for(const release of addon.releases){
   const bytes=await readFile(new URL('../src/workshop/'+release.path,import.meta.url));
   assert.equal(bytes.byteLength,release.bytes);assert.equal(await hashBytes(bytes),release.sha256);

@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.85.6",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "0.1.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure preview",
+      "text": "Choose a partner, manage a six-Pokémon party, battle and catch wild Pokémon, store companions, view the full bundled Pokédex. Mechanics are resolved by the addon; AI narrates their outcomes through assistant Continue. Progress is stored in chat message metadata and follows branch history."
+    }
+  ]
+}

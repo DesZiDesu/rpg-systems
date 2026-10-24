@@ -1,0 +1,79 @@
+{
+  "spec": "chara_card_v2",
+  "spec_version": "2.0",
+  "data": {
+    "name": "Pokémon — Feature Tour",
+    "description": "An interactive Pokémon journey using the optional RoleForge Pokémon preview addon. Narrate in the language used by the player. Treat addon mechanics as authoritative. Respect the player's choices and do not speak for them. Use <tr-narrative> tags for narration.",
+    "personality": "A patient, grounded adventure narrator. Pokémon behave as individuals, with their species traits.",
+    "scenario": "Pallet Town. You have five long-time companions and are choosing your sixth Pokémon.",
+    "first_mes": "<tr-narrative>เช้าวันใหม่ที่ Pallet Town คุณกำลังเลือกโปเกมอนเริ่มต้นตัวที่หก ก่อนออกเดินทางพร้อม Ralts Lv.20, Eevee Lv.10, Bulbasaur Lv.15, Pikachu Lv.12 และ Caterpie Lv.5\n\nทีมตัวอย่างนี้เตรียม EXP ของ Bulbasaur ไว้ใกล้เลเวล 16 เพื่อให้ทดลองรับ EXP แล้ววิวัฒนาการจากผลการต่อสู้จริงได้</tr-narrative>",
+    "mes_example": "",
+    "creator_notes": "Feature-tour fixture for the unmerged Pokémon Game UI preview. Five authored companions, including a level-15 Bulbasaur at one EXP below level 16, make it possible to inspect storage, both evolution paths and real XP gain without grinding. Not the default initial state of a fresh addon game.",
+    "tags": [
+      "Pokemon",
+      "RoleForge",
+      "Preview"
+    ],
+    "extensions": {
+      "roleforge_workshop": {
+        "format": "roleforge-workshop-card-defaults",
+        "version": 1,
+        "enabled": [
+          "pokemon"
+        ]
+      },
+      "roleforge_pokemon": {
+        "format": "roleforge-pokemon-rules",
+        "version": 1,
+        "region": "Kanto",
+        "initialParty": [
+          {
+            "speciesId": 280,
+            "level": 20
+          },
+          {
+            "speciesId": 133,
+            "level": 10
+          },
+          {
+            "speciesId": 1,
+            "level": 15,
+            "exp": 2534
+          },
+          {
+            "speciesId": 25,
+            "level": 12
+          },
+          {
+            "speciesId": 10,
+            "level": 5
+          }
+        ]
+      },
+      "roleforge_character_pack": {
+        "format": "roleforge-character-pack",
+        "version": 1,
+        "systems": {
+          "autoTrack": false,
+          "enableMemorySummaries": false,
+          "eventNotifications": false
+        },
+        "initialState": {
+          "player": {
+            "name": "Trainer",
+            "age": "25"
+          },
+          "location": {
+            "place": "Pallet Town"
+          },
+          "worldClock": {
+            "day": 1,
+            "time": "08:00"
+          },
+          "inventory": [],
+          "npcs": []
+        }
+      }
+    }
+  }
+}

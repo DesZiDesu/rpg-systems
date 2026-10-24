@@ -240,3 +240,8 @@
  #roleforge-workshop .ws-card .ws-pack-icon{width:48px;height:54px}
  #roleforge-workshop .ws-card-actions{gap:10px}
 }
+
+/* Pokémon preview catalogue mark. */
+.rfws .ws-pack-icon.is-pokemon{display:grid;place-items:center}.rfws .pk-ball,.rfws-addon-orbits .pk-ball{display:block;position:relative;width:27px;height:27px;border:1px solid #d5bd84;border-radius:50%;background:linear-gradient(to bottom,#a89058 0 46%,#23251f 46% 54%,#d9d3bd 54% 100%)}.rfws .pk-ball:before,.rfws-addon-orbits .pk-ball:before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;border:2px solid #303126;border-radius:50%;background:#e6ddc2}
+/* Pokémon keeps a game-colour identity inside the RoleForge catalogue. */
+.rfws .ws-pack-icon.is-pokemon .pk-ball,.rfws-addon-orbit[data-addon-launch=pokemon] .pk-ball{border:2px solid #263e51;background:linear-gradient(to bottom,#ed4c54 0 45%,#263e51 45% 55%,#fff 55%)}.rfws .ws-pack-icon.is-pokemon .pk-ball:before,.rfws-addon-orbit[data-addon-launch=pokemon] .pk-ball:before{border-color:#263e51;background:#fff}
