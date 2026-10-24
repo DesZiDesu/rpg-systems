@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {annotateStoryHtml,chatPresentationMode,installChatFormattingHooks} from '../src/chat-compat.js';
+test('NPC thought markers survive sanitization boundaries without changing code examples',()=>{
+ const out=annotateStoryHtml('<tr-thought name="Aoi">Private character words.</tr-thought>');assert.match(out,/data-roleforge-story="thought"/);assert.match(out,/data-roleforge-name="Aoi"/);assert(!out.includes('<tr-thought'));
+ const code='<pre><tr-thought name="Aoi">An example.</tr-thought></pre>';assert.equal(annotateStoryHtml(code),code);
+});
 
 test('shared presentation is the default, with explicit native and original modes',()=>{
     assert.equal(chatPresentationMode({}),'shared');

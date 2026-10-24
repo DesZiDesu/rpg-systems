@@ -109,3 +109,13 @@ test('manual alternate addition and deletion are retained in turn snapshots with
  const history={entries:[{baseState:structuredClone(before),variants:{}}]};retainManualNpcEdits(history,before,after);retainManualNpcEdits(history,before,after);
  const saved=history.entries[0].baseState.npcs[0];assert.equal(saved.activeAlternateId,'');assert.deepEqual(saved.alternateProfiles.map(value=>value.id),['adult','future']);assert.equal(saved.alternateProfiles[1].fields.age,'40');
 });
+
+test('explicit NPC monologue is distinct from speech, actions and provider thought tags',()=>{
+ const blocks=parseStory('<tr-header name="aoi"/><tr-narrative>*She folds her arms.*</tr-narrative><tr-thought name="aoi">I should ask him later.</tr-thought><tr-dialogue name="aoi">Good evening.</tr-dialogue><tr-thought name="ren" delivery="shouting">I wonder what happened.</tr-thought>');
+ assert.deepEqual(blocks.map(b=>b.type),['header','narrative','thought','dialogue','thought']);assert.equal(blocks[2].name,'aoi');assert.equal(blocks[4].name,'ren');assert.equal(blocks[4].delivery,undefined);
+ assert.equal(parseStory('<tr-narrative>*An ordinary action.*</tr-narrative>')[0].type,'narrative');assert.equal(parseStory('<thought>Provider text is not a character block.</thought>'),null);
+});
+test('thought protocol examples stay protected and a real incomplete thought supports streaming',()=>{
+ for(const source of ['`<tr-thought name="aoi">example</tr-thought>`','```html\n<tr-thought>example</tr-thought>\n```','<pre><tr-thought>example</tr-thought></pre>','<!-- <tr-thought>example</tr-thought> -->'])assert.equal(parseStory(source),null);
+ assert.deepEqual(parseStory('<tr-thought name="aoi">I wonder'),[{type:'thought',name:'aoi',text:'I wonder'}]);
+});

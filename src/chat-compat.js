@@ -17,18 +17,18 @@ const storyName = attrs => {
 // spans keep protocol boundaries through DOMPurify; all model/regex HTML still
 // passes through the host's sanitizer, with no relaxed sanitizer configuration.
 export function annotateStoryHtml(html, doc = globalThis.document) {
-    if (typeof html !== 'string' || html.length > 1000000 || !/(?:<|&lt;)tr-(?:header|narrative|dialogue)\b/i.test(html)) return html;
+    if (typeof html !== 'string' || html.length > 1000000 || !/(?:<|&lt;)tr-(?:header|narrative|dialogue|thought)\b/i.test(html)) return html;
     let active = false;
     const decode = text => {
         if (!doc || !text.includes('&')) return text;
         const area = doc.createElement('textarea');area.innerHTML = text;return area.value;
     };
     // Literal examples/code/styles belong to the host, including escaped tags.
-    const protectedOrTag = /<(pre|code|style|custom-style|script)\b[^>]*>[\s\S]*?<\/\1\s*>|<!--[\s\S]*?-->|<\/?[\w:-]+\b(?:[^"'<>]|"[^"]*"|'[^']*')*>|&lt;\/?tr-(?:header|narrative|dialogue)\b[\s\S]*?&gt;/gi;
+    const protectedOrTag = /<(pre|code|style|custom-style|script)\b[^>]*>[\s\S]*?<\/\1\s*>|<!--[\s\S]*?-->|<\/?[\w:-]+\b(?:[^"'<>]|"[^"]*"|'[^']*')*>|&lt;\/?tr-(?:header|narrative|dialogue|thought)\b[\s\S]*?&gt;/gi;
     let output = html.replace(protectedOrTag, (whole, protectedTag) => {
         if (protectedTag) return whole;
-        const tag=/^<(\/?)(?:tr-)(header|narrative|dialogue)\b([\s\S]*?)>$/i.exec(whole)
-            || /^&lt;(\/?)(?:tr-)(header|narrative|dialogue)\b([\s\S]*?)&gt;$/i.exec(whole);
+        const tag=/^<(\/?)(?:tr-)(header|narrative|dialogue|thought)\b([\s\S]*?)>$/i.exec(whole)
+            || /^&lt;(\/?)(?:tr-)(header|narrative|dialogue|thought)\b([\s\S]*?)&gt;$/i.exec(whole);
         if(!tag)return whole;
         const [,close,type,attributes]=tag,kind=type.toLowerCase();
         const attrs=whole.startsWith('&lt;')?decode(attributes.replace(/<\/?q\b[^>]*>/gi,'')):attributes;
@@ -177,13 +177,13 @@ export function releaseClonedPresentation(host) {
 }
 
 const compact = text => String(text ?? '').replace(/\s+/g,'');
-const markerKind = node => node.dataset?.roleforgeStory || (/^TR-(HEADER|NARRATIVE|DIALOGUE)$/.test(node.tagName) ? node.tagName.slice(3).toLowerCase() : '');
+const markerKind = node => node.dataset?.roleforgeStory || (/^TR-(HEADER|NARRATIVE|DIALOGUE|THOUGHT)$/.test(node.tagName) ? node.tagName.slice(3).toLowerCase() : '');
 const markerName = node => node.dataset?.roleforgeName ?? node.getAttribute('name') ?? '';
 function protocolNodes(nodes) {
     const result = [];
     for (const root of nodes) {
         if (root.nodeType !== 1) continue;
-        for (const node of [root,...root.querySelectorAll('[data-roleforge-story],tr-header,tr-narrative,tr-dialogue')]) {
+        for (const node of [root,...root.querySelectorAll('[data-roleforge-story],tr-header,tr-narrative,tr-dialogue,tr-thought')]) {
             if (markerKind(node) && !node.closest('pre,code,style,script,custom-style,.TH-render,[data-roleforge-opaque]') && !foreignFrontend([node])) result.push(node);
         }
     }
@@ -264,7 +264,7 @@ function compactSharedSeparators(roots,markers) {
     return [...gaps];
 }
 
-export function mountSharedStory({host,nodes,blocks,header,narrative,dialogue,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,dialogueEnabled=true,document:doc=globalThis.document}) {
+export function mountSharedStory({host,nodes,blocks,header,narrative,dialogue,thought,textFor,fallbackName,previousSpeaker,voiceEnabled,language,user,dialogueEnabled=true,document:doc=globalThis.document}) {
     const roots = [], wrappers = [], targets = Array(blocks.length).fill(null), voiceBlocks = blocks.map(block => ({...block}));
     const create = (tag,cls,text) => {const node=doc.createElement(tag);node.className=cls;if(cls.includes('trpg-chat'))node.dataset.roleforgeMount='shared';if(text!==undefined)node.textContent=text;return node;};
     const markers = protocolNodes(nodes);
@@ -288,18 +288,19 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,dialogue,te
         }
         const nativeName=target?markerName(target):'';
         if (block.type === 'header') {if(!user)addHeader(nativeName || block.name,target || nodes[0]);continue;}
-        if (block.type === 'dialogue'&&!user) {
+        if (['dialogue','thought'].includes(block.type)&&!user) {
             const name=nativeName || block.name || currentName || fallbackName;
             // A dialogue can start a speaker without an explicit header.
             addHeader(name,target || nodes[0]);
         }
         if (!target || !['narrative','dialogue','plain','thought'].includes(block.type)) continue;
+        if(block.type==='thought'&&!user&&typeof thought!=='function')continue;
         if(typeof doc.documentElement.moveBefore!=='function'&&statefulNative(target,doc))continue;
         const shell=user?user.render([{...block,text:''}]):create('div','trpg-chat rf-shared-block');
         shell.dataset.roleforgeMount='shared';
         shell.classList.add('rf-shared-block');shell.querySelector('.trpg-user-header')?.remove();
         const name=nativeName || block.name || currentName || fallbackName;
-        const body=user?shell.querySelector(block.type==='thought'?'.trpg-user-thought':`.trpg-${block.type}`):block.type === 'narrative' ? narrative('') : block.type==='dialogue'&&dialogue ? dialogue(name) : create('div',block.type === 'dialogue' ? 'trpg-dialogue' : 'trpg-plain');
+        const body=user?shell.querySelector(block.type==='thought'?'.trpg-user-thought':`.trpg-${block.type}`):block.type === 'narrative' ? narrative('') : block.type==='thought'&&thought ? thought(name) : block.type==='dialogue'&&dialogue ? dialogue(name) : create('div',block.type === 'dialogue' ? 'trpg-dialogue' : 'trpg-plain');
         if(!body)continue;
         if(block.type==='dialogue'&&!dialogueEnabled)body.classList.add('trpg-unframed');
         let content=block.type === 'narrative' ? body.querySelector('.trpg-prose-copy') : block.type==='thought'?body.querySelector('p'):block.type==='dialogue'?body.querySelector('.trpg-dialogue-copy'):body;
@@ -367,7 +368,7 @@ export function scrubNativePrivateText(nodes, raw, visible, doc=globalThis.docum
     for (const match of raw.matchAll(/<(think|thinking|analysis|reasoning|planning)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>|\[(think|thinking|analysis|reasoning|planning)\]([\s\S]*?)\[\/\3\]/gi)) {
         removed.push(match[0],match[2]??match[4]);
     }
-    const preamble=/(?:^|\n)\s*(?:\{\s*CoT\s*\}|S1\s*[·:.\-]\s*INGEST\b)[\s\S]*?(?=<tr-(?:header|narrative|dialogue)\b)/iu.exec(raw);
+    const preamble=/(?:^|\n)\s*(?:\{\s*CoT\s*\}|S1\s*[·:.\-]\s*INGEST\b)[\s\S]*?(?=<tr-(?:header|narrative|dialogue|thought)\b)/iu.exec(raw);
     if(preamble)removed.push(preamble[0]);
     for (const root of nodes) if(root.nodeType===1){
         for(const node of [root,...root.querySelectorAll('think,thinking,analysis,reasoning,planning')]) {

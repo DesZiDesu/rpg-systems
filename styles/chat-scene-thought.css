@@ -160,6 +160,30 @@
   font:inherit;font-size:max(14px,.9em);line-height:1.9;
   color:color-mix(in srgb,var(--prose) 78%,var(--SmartThemeBlurTintColor,#171816));
 }
+
+/* NPC monologue is its own silent block, independent from the speech frame.
+   Ordinary narrative emphasis never receives this class. */
+.trpg-chat[data-rf-chat-theme] .trpg-npc-thought {
+  position:relative;box-sizing:border-box;min-width:0;max-width:100%;
+  margin:7px 0;padding:13px 17px 15px;border-radius:2px;
+  border:1px solid color-mix(in srgb,var(--prose) 15%,transparent);
+  background:color-mix(in srgb,var(--prose) 3%,transparent);box-shadow:none;
+  color:color-mix(in srgb,var(--prose) 80%,var(--SmartThemeBlurTintColor,#171816));
+  font:inherit;font-size:max(14px,.9em);line-height:1.9;
+}
+.trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-label {
+  display:flex;align-items:center;gap:8px;margin:0 0 6px;color:inherit;
+  font:500 max(10px,.7em)/1.7 var(--chat-sans,RFChatSans,system-ui,sans-serif);
+  letter-spacing:.035em;opacity:.8;
+}
+.trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-label:before {content:'⋯';font-size:1.35em;line-height:1;opacity:.75}
+.trpg-chat[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-copy {
+  margin:0;padding:0;white-space:pre-wrap;overflow-wrap:anywhere;
+  font:inherit;font-style:italic;line-height:1.9;color:inherit;text-shadow:0 1px 2px #00000014;
+}
+@media(prefers-reduced-motion:no-preference) {
+  .trpg-chat.trpg-effects[data-rf-chat-theme] .trpg-npc-thought>.trpg-thought-copy {animation:rf-inner-voice-enter .36s ease-out both}
+}
 .trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed:before,
 .trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed:after {content:none;display:none;animation:none}
 .trpg-chat[data-rf-chat-theme].trpg-user-chat .trpg-user-thought.trpg-thought-unframed>.trpg-thought-label {
