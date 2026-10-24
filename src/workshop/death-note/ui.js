@@ -1,32 +1,32 @@
-import {inscriptionProgress} from './journal.js?v=0.85.4';
-import {casebookMarkup,fragmentsMarkup} from './casebook-ui.js?v=0.85.4';
-import {writingMaterials,preferredMaterial} from './fragments.js?v=0.85.4';
-import {worldEventKey} from './casebook.js?v=0.85.4';
-import {createNotebookReads,notebookInputStamp,sameNotebookInputs} from './read-frame.js?v=0.85.4';
-import {playerLifespanInfo} from './lifespan.js?v=0.85.4';
-import {eyeAbility,eyeSourceLabel,isHuman,isShinigami} from './actors.js?v=0.85.4';
-import {deathNoteSettingsMarkup,settingsEvent,deathNoteHelp} from './settings.js?v=0.85.4';
-import {localId} from '../core.js?v=0.85.4';
-import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.85.4';
-import {stageWrittenPaper} from './deferred.js?v=0.85.4';
-import {OPENING_BOOK,greetingBooks} from './opening.js?v=0.85.4';
-import {recoverPaperResults} from './recovery.js?v=0.85.4';
-import {faceKnowledge} from './faces.js?v=0.85.4';
-import {mountPaperEditor} from './paper-editor.js?v=0.85.4';
-import {uiLanguage} from '../../ui-language.js?v=0.85.4';
-import {t,html} from './strings.js?v=0.85.4';
-import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.85.4';
-import {eyeInsight,originalLifespan,simulatedLifespan} from './eyes.js?v=0.85.4';
-import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,visibleText,replyAnchor,INSCRIPTIONS,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.85.4';
-import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,npcDisplayName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.85.4';
-import {setNpcVisibilityProvider,setNpcStoryGuard,setDeathNoteSummary} from '../../npc-visibility.js?v=0.85.4';
+import {inscriptionProgress} from './journal.js?v=0.85.5';
+import {casebookMarkup,fragmentsMarkup} from './casebook-ui.js?v=0.85.5';
+import {writingMaterials,preferredMaterial} from './fragments.js?v=0.85.5';
+import {worldEventKey} from './casebook.js?v=0.85.5';
+import {createNotebookReads,notebookInputStamp,sameNotebookInputs} from './read-frame.js?v=0.85.5';
+import {playerLifespanInfo} from './lifespan.js?v=0.85.5';
+import {eyeAbility,eyeSourceLabel,isHuman,isShinigami} from './actors.js?v=0.85.5';
+import {deathNoteSettingsMarkup,settingsEvent,deathNoteHelp} from './settings.js?v=0.85.5';
+import {localId} from '../core.js?v=0.85.5';
+import {PAPER,blankPaper,cleanPaper,readPaper,paperRows,nextPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.85.5';
+import {stageWrittenPaper} from './deferred.js?v=0.85.5';
+import {OPENING_BOOK,greetingBooks} from './opening.js?v=0.85.5';
+import {recoverPaperResults} from './recovery.js?v=0.85.5';
+import {faceKnowledge} from './faces.js?v=0.85.5';
+import {mountPaperEditor} from './paper-editor.js?v=0.85.5';
+import {uiLanguage} from '../../ui-language.js?v=0.85.5';
+import {t,html} from './strings.js?v=0.85.5';
+import {RULE_PAGES,FAKE_RULE_PRESETS,fakeRulePresets,rulePages,ruleSpread} from './rules.js?v=0.85.5';
+import {eyeInsight,originalLifespan,simulatedLifespan} from './eyes.js?v=0.85.5';
+import {eligibleTarget,ledger,continueInscription,continueInscriptions,parseResults,continuationInstruction,formatStoryTime,storySeconds,visibleText,replyAnchor,INSCRIPTIONS,RESULTS,PENDING_PROMPT,protectNotebookOps} from './core.js?v=0.85.5';
+import {WORLD_EVENTS,WORLD_PROMPT,ACTION_PROMPT,worldState,worldInstruction,storyEvents,activeEvents,validateAction,npcDisplayName,playerIdentity,protectManuscriptOps,canWrite,notebookItem} from './world.js?v=0.85.5';
+import {setNpcVisibilityProvider,setNpcStoryGuard,setDeathNoteSummary} from '../../npc-visibility.js?v=0.85.5';
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sealURL=new URL('../../../assets/workshop/death-note/rules-seal.png',import.meta.url).href;
 const fa=n=>`<i class="fa-solid fa-${n}" aria-hidden="true"></i>`;
 const button=(action,text,cls='',more='')=>`<button type="button" class="${cls}" data-dn-action="${action}" ${more}>${text}</button>`;
 const paperTime=s=>{const v=formatStoryTime(s);return html`วันที่ ${v.day} · ${v.time}`;};
 export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
- const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.85.4',import.meta.url);document.head.append(sheet);
+ const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../../../styles/death-note.css?v=0.85.5',import.meta.url);document.head.append(sheet);
  const root=document.createElement('dialog');root.id='roleforge-death-note-preview';root.className='rfdn';root.setAttribute('aria-label',t('Death Note — สมุดบันทึก'));document.body.append(root);
  const panel=document.createElement('section');panel.id='roleforge-death-note-dock';panel.className='dn-dock';panel.dataset.swipeIgnore='true';
  const c=()=>SillyTavern.getContext(),reads=createNotebookReads(()=>api.context(),worldState,ledger),live=reads.context,state=reads.state,chat=reads.chat;
@@ -62,14 +62,19 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  async function appendEvents(events,captured=scope()) {
   if(!events.length)return;const message=chat().at(-1);if(!message||message.is_user||message.is_system)throw Error(t('รอให้ AI เล่าเหตุการณ์ก่อน'));
   const source=message.mes,selectedSwipe=Number(message.swipe_id)||0;
-  const {plain}=await import('./world.js?v=0.85.4');if(scope()!==captured||!enabled()||chat().at(-1)!==message||message.mes!==source||(Number(message.swipe_id)||0)!==selectedSwipe)throw Error(t('เปลี่ยนแชทแล้ว'));
+  const {plain}=await import('./world.js?v=0.85.5');if(scope()!==captured||!enabled()||chat().at(-1)!==message||message.mes!==source||(Number(message.swipe_id)||0)!==selectedSwipe)throw Error(t('เปลี่ยนแชทแล้ว'));
   message.extra||={};const previous=message.extra[WORLD_EVENTS]||[],offset=plain(message.mes).length,swipe=Number(message.swipe_id)||0;
   const added=events.map(e=>({...e,...(['npc-eye-deal','eye-deal','lifespan-record'].includes(e.type)?{recordedClock:{day:state().worldClock?.day||1,time:state().worldClock?.time||'00:00'}}:{}),id:e.id||'dn-event-'+localId(),offset,swipe}));message.extra[WORLD_EVENTS]=[...previous,...added];
   try{await c().saveChat();if(scope()!==captured||!enabled())throw Error(t('เปลี่ยนแชทระหว่างบันทึก'));}catch(error){if(scope()===captured&&chat().at(-1)===message)message.extra[WORLD_EVENTS]=previous;throw error;}
   return {message,added,previous};
  }
  async function initialize(captured=scope()) {
-  await api.prepareNpcs?.();
+  try{await api.prepareNpcs?.();}catch(error){
+   // A first archive load can advance its own revision. Retry that read once
+   // in the same chat; never carry an initialization across a scope change.
+   if(scope()!==captured||!enabled())return;
+   await api.prepareNpcs?.();
+  }
   if(scope()!==captured||!captured||!enabled()||!chat().at(-1)||chat().at(-1).is_user)return;
   const w=world(),stale=(state().inventory||[]).filter(i=>i.quantity>0&&(i.properties?.includes('roleforge:death-note:opening')&&!Object.values(w.books).some(b=>b.itemId===i.id&&b.holderId==='player')||i.properties?.includes('roleforge:addon:death-note-fragment')&&!Object.values(w.fragments||{}).some(f=>f.itemId===i.id&&f.holderId==='player'&&!f.destroyed)));
   if(stale.length){const next=structuredClone(state());for(const i of next.inventory)if(stale.some(s=>s.id===i.id))i.quantity=0;delete next.deathNoteRules;if(!api.commitState||await api.commitState(next)===false)throw Error(t('RoleForge ยังบันทึก Inventory ไม่ได้'));}
@@ -281,7 +286,7 @@ export function mountDeathNote({api,dock,enabled=()=>false,busy=()=>false}={}) {
  async function reconcile(){if(disposed||!enabled()||working)return;const captured=scope(),message=chat().at(-1);if(!message||message.is_user||reconciling===captured)return;reconciling=captured;
   try{await api.prepareNpcs?.();if(scope()!==captured||!enabled())return;const rows=activeEvents(message),events=messageStoryEvents(message),proposals=events.filter(e=>!rows.some(r=>worldEventKey(r)===worldEventKey(e)));for(const e of events)if(e.type==='discover'&&e.shinigamiId&&world().books[e.bookId]&&!world().books[e.bookId].originalShinigamiId)proposals.push({type:'bind-shinigami',bookId:e.bookId,shinigamiId:e.shinigamiId,evidence:e.evidence});
    if(proposals.length)await appendEvents([...registeredEvents(),...proposals],captured);
-   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending,{messageIndex:chat().indexOf(message)});for(const entry of pending)if(entry.validName===false&&!values.some(r=>r.requestId===entry.id)&&(entry.messageIndex<chat().indexOf(message)||visibleText(message.mes).length>entry.offset))values.push({requestId:entry.id,status:'ineffective',elapsedSeconds:0,evidence:'ชื่อที่เขียนไม่ทำให้เกิดผลตามกติกาของสมุด',engineVerdict:true});if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.85.4');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
+   if(scope()!==captured||!enabled())return;const pending=records().filter(r=>r.status==='waiting'),values=parseResults(message.mes,pending,{messageIndex:chat().indexOf(message)});for(const entry of pending)if(entry.validName===false&&!values.some(r=>r.requestId===entry.id)&&(entry.messageIndex<chat().indexOf(message)||visibleText(message.mes).length>entry.offset))values.push({requestId:entry.id,status:'ineffective',elapsedSeconds:0,evidence:'ชื่อที่เขียนไม่ทำให้เกิดผลตามกติกาของสมุด',engineVerdict:true});if(values.length){await commitResult(pending,values,captured);if(scope()!==captured||!enabled())return;message.extra||={};const {plain}=await import('./world.js?v=0.85.5');if(scope()!==captured)return;const stored=message.extra[RESULTS]||=[];for(const r of values)if(!stored.some(v=>v.requestId===r.requestId&&v.status===r.status&&v.swipe===(Number(message.swipe_id)||0)))stored.push({...r,swipe:Number(message.swipe_id)||0,offset:plain(message.mes).length});await c().saveChat();}
    if(scope()===captured){for(const b of [...Object.values(world().books),...Object.values(world().fragments||{})]){if(scope()!==captured||!enabled())return;await updateInventory(b,world(),captured);}refresh();if(proposals.some(e=>e.type==='discover')){showDock=true;renderDock();dock?.select('death-note');}}
   }catch(error){if(scope()===captured){notice=t(error.message);renderDock();}}finally{if(reconciling===captured)reconciling='';}
  }

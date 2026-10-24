@@ -1,4 +1,4 @@
-import {removeMemoryChat} from './memory-deletion.js?v=0.85.4';
+import {removeMemoryChat} from './memory-deletion.js?v=0.85.5';
 // IndexedDB stores originals without inflating every RPG turn snapshot or localStorage continuity.
 export function createMemoryStore(indexedDB = globalThis.indexedDB) {
     let connection;

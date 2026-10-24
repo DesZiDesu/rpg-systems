@@ -1,7 +1,7 @@
-import {playerLifeDeadline,deadlineValue} from './lifespan.js?v=0.85.4';
-import {eyeAbility,isHuman,isShinigami,actorKey} from './actors.js?v=0.85.4';
-import {faceKnowledge} from './faces.js?v=0.85.4';
-import {trueNameOf} from './names.js?v=0.85.4';
+import {playerLifeDeadline,deadlineValue} from './lifespan.js?v=0.85.5';
+import {eyeAbility,isHuman,isShinigami,actorKey} from './actors.js?v=0.85.5';
+import {faceKnowledge} from './faces.js?v=0.85.5';
+import {trueNameOf} from './names.js?v=0.85.5';
 const safeKey=id=>typeof id==='string'&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
 export function originalLifespan(state,npcId,language='th',world={}){
  if(!safeKey(npcId))return null;const v=state.deathNoteRules?.originalLifespans?.[npcId]||world.originalLifespans?.[npcId];if(!v||typeof v!=='object'||Array.isArray(v))return null;

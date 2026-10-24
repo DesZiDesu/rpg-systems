@@ -1,0 +1,88 @@
+{
+  "version": "0.85.5",
+  "unitTests": {
+    "passed": 1800,
+    "failed": 0
+  },
+  "syntax": "pass",
+  "browsers": {
+    "chromium": {
+      "version": "0.85.5",
+      "browser": "Chromium",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "archiveReadCancellationRecovered": true,
+          "crlfGreetingDiscovery": true,
+          "typedPickup": true,
+          "wrongProtocolIdRecovered": true,
+          "inventoryQuantity": 1,
+          "nativeBranchBeforePickup": true,
+          "buttonPickup": true,
+          "noSyntheticUser": true,
+          "unsentDraftPreserved": true,
+          "controlledModelCalls": 2,
+          "privateExport": true
+        },
+        {
+          "device": "mobile",
+          "archiveReadCancellationRecovered": true,
+          "crlfGreetingDiscovery": true,
+          "typedPickup": true,
+          "wrongProtocolIdRecovered": true,
+          "inventoryQuantity": 1,
+          "nativeBranchBeforePickup": true,
+          "buttonPickup": true,
+          "noSyntheticUser": true,
+          "unsentDraftPreserved": true,
+          "controlledModelCalls": 2,
+          "privateExport": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    },
+    "webkit": {
+      "version": "0.85.5",
+      "browser": "WebKit",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "archiveReadCancellationRecovered": true,
+          "crlfGreetingDiscovery": true,
+          "typedPickup": true,
+          "wrongProtocolIdRecovered": true,
+          "inventoryQuantity": 1,
+          "nativeBranchBeforePickup": true,
+          "buttonPickup": true,
+          "noSyntheticUser": true,
+          "unsentDraftPreserved": true,
+          "controlledModelCalls": 2,
+          "privateExport": true
+        },
+        {
+          "device": "mobile",
+          "archiveReadCancellationRecovered": true,
+          "crlfGreetingDiscovery": true,
+          "typedPickup": true,
+          "wrongProtocolIdRecovered": true,
+          "inventoryQuantity": 1,
+          "nativeBranchBeforePickup": true,
+          "buttonPickup": true,
+          "noSyntheticUser": true,
+          "unsentDraftPreserved": true,
+          "controlledModelCalls": 2,
+          "privateExport": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    }
+  }
+}

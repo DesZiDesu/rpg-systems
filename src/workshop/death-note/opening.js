@@ -36,6 +36,6 @@ export function originalShinigamiEvents(source,npcs,books){
 // alternatives. Physical books and NPC rights can be seeded without spoilers.
 export function greetingBooks(chat,state){
  const first=(chat||[]).find(m=>!m.is_system);if(!first||first.is_user)return [];
- const match=(state.deathNoteRules?.greetingBooks||[]).find(row=>typeof row.text==='string'&&visible(row.text).trim()===visible(first.mes).trim());
+ const match=(state.deathNoteRules?.greetingBooks||[]).find(row=>typeof row.text==='string'&&visible(row.text).replace(/\r\n?/gu,'\n').trim()===visible(first.mes).replace(/\r\n?/gu,'\n').trim());
  return Array.isArray(match?.books)?match.books.slice(0,6):[];
 }

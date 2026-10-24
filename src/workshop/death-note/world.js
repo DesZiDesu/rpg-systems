@@ -1,18 +1,19 @@
-import {applyCasebookEvent,casebookStoryEvent,casebookInstruction,worldEventKey} from './casebook.js?v=0.85.4';
-import {applyFragmentEvent,fragmentAction,fragmentStoryEvent,fragmentItem,writingMaterials,fragmentInstruction} from './fragments.js?v=0.85.4';
-import {applyPlayerLifespan,aiLifespanEvent,lifespanInstruction,clockSeconds} from './lifespan.js?v=0.85.4';
-import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.85.4';
-import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.85.4';
-import {localId} from '../core.js?v=0.85.4';
-import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.85.4';
-import {observedIdentities,identityBound,learnedName,nameDisclosure,seenFace} from './identity.js?v=0.85.4';
-import {faceKnowledge} from './faces.js?v=0.85.4';
-import {trueNameOf,trueNameSpellings} from './names.js?v=0.85.4';
-import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.85.4';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.4';
-import {notebookInScene} from './location.js?v=0.85.4';
-import {knowsName} from '../../name-knowledge.js?v=0.85.4';
-export {trueNameOf} from './names.js?v=0.85.4';
+import {recoverNarratedPickup} from './pickup.js?v=0.85.5';
+import {applyCasebookEvent,casebookStoryEvent,casebookInstruction,worldEventKey} from './casebook.js?v=0.85.5';
+import {applyFragmentEvent,fragmentAction,fragmentStoryEvent,fragmentItem,writingMaterials,fragmentInstruction} from './fragments.js?v=0.85.5';
+import {applyPlayerLifespan,aiLifespanEvent,lifespanInstruction,clockSeconds} from './lifespan.js?v=0.85.5';
+import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.85.5';
+import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.85.5';
+import {localId} from '../core.js?v=0.85.5';
+import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.85.5';
+import {observedIdentities,identityBound,learnedName,nameDisclosure,seenFace} from './identity.js?v=0.85.5';
+import {faceKnowledge} from './faces.js?v=0.85.5';
+import {trueNameOf,trueNameSpellings} from './names.js?v=0.85.5';
+import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.85.5';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.5';
+import {notebookInScene} from './location.js?v=0.85.5';
+import {knowsName} from '../../name-knowledge.js?v=0.85.5';
+export {trueNameOf} from './names.js?v=0.85.5';
 // Chat-local notebook rules. Legacy journal keys remain readable after the preview. Canonical NPC records are never renamed.
 export const WORLD_EVENTS = 'roleforge_death_note_world_preview';
 export const WORLD_PROMPT = 'roleforge_death_note_world_preview';
@@ -123,9 +124,9 @@ export function worldState(chat,state) {
  // Older bundled cards already declare BB's congenital ability in his dossier.
  for(const n of state.npcs||[])if(!w.actorEyes[n.id]&&isHuman(n)&&(n.abilities||[]).some(a=>/^Congenital Shinigami Eyes/iu.test(a.name||'')))w.actorEyes[n.id]={source:'innate'};
  syncPlayerEyes(w);
- const configs=[...(Array.isArray(state.deathNoteRules?.books)?state.deathNoteRules.books:[]),...greetingBooks(chat,state)];
+ const greetingSeeds=greetingBooks(chat,state),greetingIds=new Set(greetingSeeds.map(b=>b.bookId||b.itemId)),configs=[...(Array.isArray(state.deathNoteRules?.books)?state.deathNoteRules.books:[]),...greetingSeeds];
  const opening=openingBook(chat,state,(state.inventory||[]).filter(notebookItem));if(opening){const config=configs.find(b=>(b.bookId||b.itemId)===opening.bookId);applyEvent(w,{...opening,shinigamiId:config?.originalShinigamiId||''});}
- for(const config of configs){const id=config.bookId||config.itemId;if(!safe(id)||recorded.has(id))continue;const held=(state.inventory||[]).some(i=>i.id===config.itemId&&notebookItem(i));if(!held&&!config.holderId&&!config.ownerId&&!config.location&&!config.knownToPlayer)continue;applyEvent(w,{type:'register',bookId:id,itemId:config.itemId||id,ownerId:config.ownerId|| (held?'player':''),holderId:config.holderId|| (held?'player':''),firstHumanOwnerId:config.firstHumanOwnerId||config.ownerId,shinigamiId:config.originalShinigamiId,currentShinigamiId:config.currentShinigamiId,attachedShinigamiId:config.attachedShinigamiId,knownToPlayer:config.knownToPlayer,ownerKnownToPlayer:config.ownerKnownToPlayer,location:config.location||(config.knownToPlayer&&!config.holderId?state.location?.place||'':'')});}
+ for(const config of configs){const id=config.bookId||config.itemId;if(!safe(id)||recorded.has(id)&&!greetingIds.has(id))continue;const held=!greetingIds.has(id)&&(state.inventory||[]).some(i=>i.id===config.itemId&&notebookItem(i));if(!held&&!config.holderId&&!config.ownerId&&!config.location&&!config.knownToPlayer)continue;applyEvent(w,{type:'register',bookId:id,itemId:config.itemId||id,ownerId:config.ownerId|| (held?'player':''),holderId:config.holderId|| (held?'player':''),firstHumanOwnerId:config.firstHumanOwnerId||config.ownerId,shinigamiId:config.originalShinigamiId,currentShinigamiId:config.currentShinigamiId,attachedShinigamiId:config.attachedShinigamiId,knownToPlayer:config.knownToPlayer,ownerKnownToPlayer:config.ownerKnownToPlayer,location:config.location||(config.knownToPlayer&&!config.holderId?state.location?.place||'':'')});}
  for(const item of state.inventory||[])if(notebookItem(item)&&(!item.properties?.includes('roleforge:death-note:opening')||opening)&&safe(item.id)&&!recorded.has(item.id)&&!Object.values(w.books).some(b=>b.itemId===item.id))applyEvent(w,{type:'register',bookId:item.id,itemId:item.id,ownerId:'player',holderId:'player'});
  const bindings=[],parseStory=storyParser(state),people=new Map((state.npcs||[]).map(n=>[n.id,n]));
  const derivedAlias=e=>{const n=people.get(e.npcId);return e.type==='name-learned'&&e.source==='visible-story'&&n&&(n.aliases||[]).some(a=>norm(a)===norm(e.claimedName))&&![n.name,...trueNameSpellings(state,n)].some(a=>norm(a)===norm(e.claimedName));};
@@ -138,6 +139,7 @@ export function worldState(chat,state) {
    if(stored.some(r=>worldEventKey(r)===worldEventKey(e)))continue;
    apply(e);
   }
+  if(!m.is_user&&playerAction){const pickup=recoverNarratedPickup(m.mes,w,state,{playerAction});if(pickup)apply(pickup);}
   if(!m.is_user)bindings.push(...originalShinigamiEvents(m.mes,state.npcs||[],Object.values(w.books)));
  }
 
