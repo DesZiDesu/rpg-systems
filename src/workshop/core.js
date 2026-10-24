@@ -1,4 +1,5 @@
-import {sha256} from '../vendor/js-sha256/index.js?v=0.85.6';
+import {normalizeDeathNoteConfig} from './death-note/character-config.js?v=0.85.7';
+import {sha256} from '../vendor/js-sha256/index.js?v=0.85.7';
 export const FORMAT='roleforge-workshop-addon';
 export const addonIds=['great-sage','field-notes','death-note'];
 export const localId=()=>globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -51,7 +52,7 @@ export function validateCatalog(raw){
  }
  return raw;
 }
-export function validatePackage(raw,host='0.85.5'){
+export function validatePackage(raw,host='0.85.7'){
  if(!raw||![FORMAT,'roleforge-workshop-addon-preview'].includes(raw.format)||raw.schema!==1||!addonIds.includes(raw.id))throw Error('ไม่รองรับแพ็กนี้');
  version(raw.version);version(raw.minimumRoleForge);
  if(compare(host,raw.minimumRoleForge)<0)throw Error(`ต้องใช้ RoleForge ${raw.minimumRoleForge} ขึ้นไป`);
@@ -64,6 +65,7 @@ export function validatePackage(raw,host='0.85.5'){
 export function defaultProfile(key){return{key,enabled:[],launchers:{floating:true,wand:true,deathNote:true,x:1,y:.72},sage:{showPanel:true,followReplies:false,tone:'calm',motion:true,theme:'prismatic',voiceId:'',voiceAuto:false,sources:Object.fromEntries(SCOPES.map(k=>[k,true]))},history:[]};}
 export function normalizeProfile(raw,key){
  const p=defaultProfile(key);if(!raw)return p;
+ p.deathNote=normalizeDeathNoteConfig(raw.deathNote);p.updatedAt=Number.isFinite(raw.updatedAt)?raw.updatedAt:0;
  p.enabled=Array.isArray(raw.enabled)?[...new Set(raw.enabled.filter(x=>addonIds.includes(x)))]:[];
  p.launchers={deathNote:raw.launchers?.deathNote!==false,floating:raw.launchers?.floating!==false,wand:raw.launchers?.wand!==false,x:Number.isFinite(raw.launchers?.x)?Math.min(1,Math.max(0,raw.launchers.x)):1,y:Number.isFinite(raw.launchers?.y)?Math.min(1,Math.max(0,raw.launchers.y)):.72};
  p.sage.showPanel=raw.sage?.showPanel!==false;p.sage.followReplies=raw.sage?.followReplies===true;

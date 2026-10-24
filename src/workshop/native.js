@@ -1,7 +1,8 @@
-import {mountWorkshop,icon} from './ui.js?v=0.85.6';
-import {requestDataTask} from '../task-generation.js?v=0.85.6';
-import {mountDeathNote} from './death-note/ui.js?v=0.85.6';
-import {readCharacterExtension} from '../character-archive.js?v=0.85.6';
+import {npcCanonContext} from '../npc-generation.js?v=0.85.7';
+import {mountWorkshop,icon} from './ui.js?v=0.85.7';
+import {requestDataTask} from '../task-generation.js?v=0.85.7';
+import {mountDeathNote} from './death-note/ui.js?v=0.85.7';
+import {readCharacterExtension} from '../character-archive.js?v=0.85.7';
 
 // Keep the native entry points available even if optional storage cannot open.
 export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,refreshHost,npcReferences=()=>[],prepareNpcs=async()=>{}}={}){
@@ -10,10 +11,10 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,ref
  const context=()=>{
   const c=SillyTavern.getContext(),chatId=c.getCurrentChatId?.(),identity=owner(),snapshot=chatId?state():{};
   const deathNoteRules=readCharacterExtension(c,identity,'roleforge_death_note')||{},npcs=[...new Map([...npcReferences(),...snapshot.npcs||[]].map(n=>[n.id,n])).values()],ids=deathNote?.referenceIds(npcs,c.chat,deathNoteRules)||[];
-  return{key:chatId?`${identity||'group'}::${chatId}`:'',nonce:c.chatMetadata,label:c.characters?.[c.characterId]?.name||c.groupId||'ยังไม่ได้เปิดแชท',state:chatId?(ids.length?state({npcIds:ids}):snapshot):{},deathNoteRules,workshopDefaults:readCharacterExtension(c,identity,'roleforge_workshop'),chat:c.chat};
+  return{settingsPrefix:identity?identity+'::':'',settingsKey:identity?'character::'+identity:c.groupId?'group::'+c.groupId:'',key:chatId?`${identity||'group'}::${chatId}`:'',nonce:c.chatMetadata,label:c.characters?.[c.characterId]?.name||c.groupId||'ยังไม่ได้เปิดแชท',state:chatId?(ids.length?state({npcIds:ids}):snapshot):{},deathNoteRules:{...deathNoteRules,characterConfiguration:api.deathNoteConfiguration?.()},workshopDefaults:readCharacterExtension(c,identity,'roleforge_workshop'),chat:c.chat};
  };
  const identity=()=>{const c=SillyTavern.getContext(),chatId=c.getCurrentChatId?.();return {key:chatId?`${owner()||'group'}::${chatId}`:'',nonce:c.chatMetadata};};
- const api={identity,version:globalThis.TretaresiaRelease||'0.85.5',context,voice,commitState,refreshHost,async prepareNpcs(){const v=context();await prepareNpcs(deathNote?.referenceIds([...new Map([...npcReferences(),...v.state.npcs||[]].map(n=>[n.id,n])).values()],v.chat,v.deathNoteRules)||[]);},
+ const api={identity,npcCanon:()=>npcCanonContext(SillyTavern.getContext()),async generateDeathNoteIdentities(args){if(busy())throw Error('Wait for the current reply');const host=SillyTavern.getContext(),metadata=host.chatMetadata,chatId=host.getCurrentChatId?.(),draft=document.getElementById('send_textarea')?.value||'';try{return await requestDataTask(host,args,{quietPrompt:args.prompt,skipWIAN:true,removeReasoning:true},{task:'Death Note identity recovery'});}finally{const active=SillyTavern.getContext(),box=document.getElementById('send_textarea');if(draft&&active.chatMetadata===metadata&&active.getCurrentChatId?.()===chatId&&box&&!box.value){box.value=draft;box.dispatchEvent(new Event('input',{bubbles:true}));}}},version:globalThis.TretaresiaRelease||'0.85.7',context,voice,commitState,refreshHost,async prepareNpcs(){const v=context();await prepareNpcs(deathNote?.referenceIds([...new Map([...npcReferences(),...v.state.npcs||[]].map(n=>[n.id,n])).values()],v.chat,v.deathNoteRules)||[]);},
   async openAddon(id){if(id!=='death-note')return false;deathNote||=mountDeathNote({api,dock,enabled:()=>api.isAddonEnabled?.('death-note')===true,busy});return deathNote.open();},
   deathNoteSettings(selection){return deathNote?.settingsMarkup(selection)||'';},
   async configureDeathNote(form){if(!deathNote)throw Error('Enable Death Note first');return deathNote.configure(form);},
@@ -29,7 +30,7 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,ref
   if(destroyed)return Promise.reject(Error('ปิด Workshop แล้ว'));
   if(app)return Promise.resolve(app);
   return mounting||= (async()=>{
-   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.85.6',base);
+   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.85.7',base);
    await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ')),15000);
     style.onload=()=>{clearTimeout(timer);resolve();};style.onerror=()=>{clearTimeout(timer);reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ'));};document.head.append(style);

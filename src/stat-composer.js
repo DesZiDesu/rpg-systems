@@ -1,8 +1,8 @@
-import {deathNoteSummary} from './npc-visibility.js?v=0.85.6';
-import {composerIcon as glyph} from './composer-icons.js?v=0.85.6';
-import {statTrainingTargets} from './stat-training.js?v=0.85.6';
-import {currencyDisplay} from './currency-config.js?v=0.85.6';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.85.6';
+import {deathNoteSummary} from './npc-visibility.js?v=0.85.7';
+import {composerIcon as glyph} from './composer-icons.js?v=0.85.7';
+import {statTrainingTargets} from './stat-training.js?v=0.85.7';
+import {currencyDisplay} from './currency-config.js?v=0.85.7';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.85.7';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const translated=(v,th,target)=>{

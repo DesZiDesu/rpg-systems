@@ -1,6 +1,6 @@
-import {customIconSource} from './custom-icons.js?v=0.85.6';
-import {embeddedPortraitSource} from './embedded-portrait.js?v=0.85.6';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.85.6';
+import {customIconSource} from './custom-icons.js?v=0.85.7';
+import {embeddedPortraitSource} from './embedded-portrait.js?v=0.85.7';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.85.7';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -60,14 +60,17 @@ const NPC_ROLE_GROUPS = [
  ['occupation','servant','servant','maid','คนรับใช้','สาวใช้'],
  ['title','king','king','กษัตริย์','ราชา'],['title','queen','queen','ราชินี'],
  ['title','prince','prince','เจ้าชาย'],['title','princess','princess','เจ้าหญิง'],
- ['title','captain','captain','กัปตัน'],['title','stranger','stranger','unknown npc','npc','unknown character','ชายแปลกหน้า','หญิงแปลกหน้า','คนแปลกหน้า','นักเดินทาง'],
+ ['title','captain','captain','กัปตัน'],['title','stranger','stranger','unknown npc','npc','unknown character','ชายแปลกหน้า','หญิงแปลกหน้า','คนแปลกหน้า','นักเดินทาง','คนเดินถนน','ชายวัยกลางคน','หญิงวัยกลางคน','ผู้สัญจร','passerby','passer-by','pedestrian'],
 ];
 export function npcRole(value) {
  const label=keyName(value).replace(/[’]/g,"'").replace(/^(?:the|my|your|our|player's|the player's|{{user}}'s)\s+/, '').replace(/^(?:พ่อ|แม่)ของ(?:ฉัน|ผม|ผู้เล่น|คุณ)$/u,m=>m.startsWith('พ่อ')?'พ่อ':'แม่');
+
  const group=NPC_ROLE_GROUPS.find(([, , ...labels])=>labels.includes(label));
- return group?{field:group[0],key:group[1]}:null;
+ if(group)return {field:group[0],key:group[1]};
+ if(/^(?:เจ้าของ(?:ร้าน|โรง|คาเฟ่|บาร์)|พนักงาน(?:ร้าน|บริษัท|ต้อนรับ)|ยาม(?:เฝ้า|รักษา)|คนขาย(?:ของ|อาหาร)|shopkeeper|convenience store (?:owner|clerk))(?:[^\n]{0,60})$/iu.test(label))return {field:'occupation',key:label};
+ return null;
 }
-export const usableNpcName = value => typeof value==='string' && usable(value) && !npcRole(value);
+export const usableNpcName = value => typeof value==='string' && usable(value) && !/^(?:\?+|ไม่ทราบชื่อ|ไม่รู้ชื่อ|unnamed|unknown name)$/iu.test(value.trim()) && !npcRole(value);
 export const NPC_FIELD_INSTRUCTIONS = `NPC IDENTITY AND FIELD RULES: name is ONLY the person's proper name, never a role, profession, kinship term or placeholder. Father/พ่อ belongs in relationship; Innkeeper/เจ้าของโรงเตี๊ยม and Gate Keeper/ยามเฝ้าประตู belong in occupation; rank/honorific/epithet belongs in title. Resolve references from the character card, lore, story and existing NPC index to the established proper name and stable id. Do not rename known people or create duplicate dossiers for their roles. For a genuinely new fictional NPC whose name is not established or deliberately concealed, create a suitable proper name ONCE in the same reply and use it consistently in dialogue and the NPC upsert. For intentionally anonymous characters, keep the descriptive label in prose and omit the named dossier until identity is established. When correcting an old role-named dossier, use its existing id and put the role in the correct field. aliases are alternate personal names, not generic shared professions. Keep appearance, personality, background, occupation and relationship in their own fields. Age/gender/race must follow established facts; omit unknown facts rather than copying a role into them. COMPACT HEADER LABELS: title and occupation (the two labels above the name), race, relationship and faction (the labels below it) must each be a brief noun phrase, ideally 1-3 words or a similarly short Thai label, never a descriptive sentence. Prefer at most 24 characters for title, occupation, race and relationship, and 32 for faction; preserve an established proper faction name if it needs more space. Examples: title/occupation: หัวหน้าสาวใช้, Priestess; race: มนุษย์; relationship: หัวหน้าสาวใช้, คนแปลกหน้า; faction: ตระกูลเอ็นแกรม. Do not append duties, personality, branch descriptions, backstory or bilingual translations to these labels. Keep title and occupation short individually; do not repeat the same role in expanded wording across both. Put duties and background in background or notes, and detailed relationship context in relationshipState. When emitting these fields in future NPC updates, condense existing verbose labels without changing their meaning or established affiliation.`;
 
 // A bad AI name may not overwrite an established one. A new unnamed dossier
