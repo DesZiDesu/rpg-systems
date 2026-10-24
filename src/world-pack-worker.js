@@ -1,10 +1,10 @@
-import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.85.7';
-import {WORLD_LIMITS,WORLD_PAYLOAD_FIELD,WORLD_REF_FIELD,worldError,validateInlinePayload,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.85.7';
-import {decodeInlineFiles,encodeInlineFiles} from './world-pack-inline.js?v=0.85.7';
-import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.85.7';
-import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.85.7';
-import {NPC_ICON_UPDATE_BYTES,validateNpcIconUpdate,checkNpcIconTarget,planNpcIconUpdate} from './npc-icon-update.js?v=0.85.7';
-import {STORY_PACK_FIELD,validateStoryPack,validateStoryEntry,storySummary} from './story-core.js?v=0.85.7';
+import {inflateSync,zipSync,strToU8} from './vendor/fflate/index.js?v=0.85.8';
+import {WORLD_LIMITS,WORLD_PAYLOAD_FIELD,WORLD_REF_FIELD,worldError,validateInlinePayload,worldPath,safeWorldJson,worldHash,worldRandomId,worldRef,worldKey,validateWorldManifest,validateWorldIndexes,worldSearchText} from './world-pack-core.js?v=0.85.8';
+import {decodeInlineFiles,encodeInlineFiles} from './world-pack-inline.js?v=0.85.8';
+import {npcArchiveSummary,loreArchiveSummary} from './archive-cache.js?v=0.85.8';
+import {prepareLoreArchive,selectLore} from './lore-core.js?v=0.85.8';
+import {NPC_ICON_UPDATE_BYTES,validateNpcIconUpdate,checkNpcIconTarget,planNpcIconUpdate} from './npc-icon-update.js?v=0.85.8';
+import {STORY_PACK_FIELD,validateStoryPack,validateStoryEntry,storySummary} from './story-core.js?v=0.85.8';
 
 const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true}),sessions=new Map(),cancelled=new Set();
 const request=request=>new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});

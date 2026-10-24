@@ -1,0 +1,91 @@
+{
+  "version": "0.85.8",
+  "deathNote": "0.4.2",
+  "unit": {
+    "pass": 1848,
+    "fail": 0
+  },
+  "native": {
+    "chromium": {
+      "version": "0.85.8",
+      "browser": "Chromium",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "originalFormat": true,
+          "humanTime": true,
+          "combinedFormat": true,
+          "explainedFormula": true,
+          "storyClockAdvances": true,
+          "noHorizontalOverflow": true,
+          "english": true,
+          "reloadPersisted": true,
+          "newChatCharacterPreference": true,
+          "noModelCalls": true,
+          "mobileTouchEmulation": false
+        },
+        {
+          "device": "mobile",
+          "originalFormat": true,
+          "humanTime": true,
+          "combinedFormat": true,
+          "explainedFormula": true,
+          "storyClockAdvances": true,
+          "noHorizontalOverflow": true,
+          "english": true,
+          "reloadPersisted": true,
+          "newChatCharacterPreference": true,
+          "noModelCalls": true,
+          "mobileTouchEmulation": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    },
+    "webkit": {
+      "version": "0.85.8",
+      "browser": "WebKit",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "originalFormat": true,
+          "humanTime": true,
+          "combinedFormat": true,
+          "explainedFormula": true,
+          "storyClockAdvances": true,
+          "noHorizontalOverflow": true,
+          "english": true,
+          "reloadPersisted": true,
+          "newChatCharacterPreference": true,
+          "noModelCalls": true,
+          "mobileTouchEmulation": false
+        },
+        {
+          "device": "mobile",
+          "originalFormat": true,
+          "humanTime": true,
+          "combinedFormat": true,
+          "explainedFormula": true,
+          "storyClockAdvances": true,
+          "noHorizontalOverflow": true,
+          "english": true,
+          "reloadPersisted": true,
+          "newChatCharacterPreference": true,
+          "noModelCalls": true,
+          "mobileTouchEmulation": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    }
+  },
+  "conversion": "original story deadline minus current story clock; 365 days per displayed year",
+  "dataMutation": false,
+  "pokemonIncluded": false
+}

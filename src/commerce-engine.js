@@ -1,10 +1,10 @@
-import {currencyValues,currencyRule,currencyScheme,currencyAmounts,isCurrencyId} from './currency-config.js?v=0.85.7';
-import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.85.7';
-import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.85.7';
-import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.85.7';
-import {walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.85.7';
-import {readCommercePrices} from './commerce-prices.js?v=0.85.7';
-import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.85.7';
+import {currencyValues,currencyRule,currencyScheme,currencyAmounts,isCurrencyId} from './currency-config.js?v=0.85.8';
+import {completeItemDefinition,itemDefinitionKey,itemDefinitionsMergeable,ITEM_DEFINITION_INSTRUCTIONS} from './item-definition.js?v=0.85.8';
+import {commerceQuantityFacts} from './commerce-stock-selection.js?v=0.85.8';
+import {normalizePurchaseTerms,normalizeCommerceRights,purchaseDeposit,purchaseTermsReady,grantPurchaseRights,rightsInventoryValid,itemSaleBlocked} from './commerce-rights.js?v=0.85.8';
+import {walletValue,convertMoney,debitWallet} from './commerce-currency.js?v=0.85.8';
+import {readCommercePrices} from './commerce-prices.js?v=0.85.8';
+import {normalizeCommerceDecision,commerceDecisionContract} from './commerce-protocol.js?v=0.85.8';
 // One engine for the rebuilt composer commerce flow. AI chooses every NPC
 // action; this module validates consent, actual funds and once-only settlement.
 const copy = value => structuredClone(value);

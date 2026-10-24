@@ -1,6 +1,6 @@
-import {containsIdentity,identityBound} from './identity.js?v=0.85.7';
+import {containsIdentity,identityBound} from './identity.js?v=0.85.8';
 // Evidence belongs to its observer. Neither suspicion nor belief changes canon.
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.7';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.8';
 const safe=id=>typeof id==='string'&&id.length>0&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
 const plain=s=>String(s||'').replace(/<[^>]*>/gu,' ').replace(/\s+/gu,' ').trim();
 const names=n=>[n?.name,n?.title,n?.occupation,...n?.aliases||[]].filter(Boolean);

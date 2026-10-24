@@ -1,9 +1,9 @@
-import {deathNoteSummary,playerNpc} from './npc-visibility.js?v=0.85.7';
-import {uiText,uiMarkup} from './ui-language.js?v=0.85.7';
-import { element } from './npc-chat.js?v=0.85.7';
-import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.85.7';
-import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.85.7';
-import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.85.7';
+import {deathNoteSummary,playerNpc} from './npc-visibility.js?v=0.85.8';
+import {uiText,uiMarkup} from './ui-language.js?v=0.85.8';
+import { element } from './npc-chat.js?v=0.85.8';
+import { LORE_CONTENT_LIMIT, LORE_ACTIVE_LIMIT, LORE_BUDGET_MAX, loreEntryLimit } from './lore-core.js?v=0.85.8';
+import { LORE_FILE_LIMIT, exportLoreFiles, parseLoreFile, mergeLore } from './lore-transfer.js?v=0.85.8';
+import {createArchiveBrowser,createArchiveTools,changeArchiveEnabled,undoArchiveEnabled,archiveStateText,removeArchiveEntries} from './archive-browser.js?v=0.85.8';
 
 export function createLoreWorkspace(panel, api, say, workspaceUi={}) {
     let owner = '', dirty = false, query = '', editing = null, saving = false, session=0, preferencesOpen=false, undo=[],renderList=null;

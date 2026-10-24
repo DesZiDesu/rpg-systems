@@ -19,7 +19,7 @@ export function loseFinalRights(world,actorId){
  syncPlayerEyes(world);
 }
 export function defaultDeathNoteSettings(raw={}){
- return {maskUnknownNames:raw.maskUnknownNames!==false,header:raw.header!==false,dialogue:raw.dialogue!==false,npc:raw.npc!==false,lifespan:raw.lifespan!==false,color:/^#[\da-f]{6}$/iu.test(raw.color||'')?raw.color:'#e78287',lifespanMode:raw.lifespanMode==='simulated'?'simulated':'authored'};
+ return {maskUnknownNames:raw.maskUnknownNames!==false,header:raw.header!==false,dialogue:raw.dialogue!==false,npc:raw.npc!==false,lifespan:raw.lifespan!==false,color:/^#[\da-f]{6}$/iu.test(raw.color||'')?raw.color:'#e78287',lifespanMode:raw.lifespanMode==='simulated'?'simulated':'authored',lifespanFormat:['human','both'].includes(raw.lifespanFormat)?raw.lifespanFormat:'story'};
 }
 export function eyeSourceLabel(source,language='th'){
  const th={none:'ไม่มีดวงตา',deal:'ข้อตกลงดวงตา',innate:'มีตั้งแต่เกิด',gift:'ได้รับพลังโดยไม่แลก',roleplay:'กำหนดจากโรล'};
