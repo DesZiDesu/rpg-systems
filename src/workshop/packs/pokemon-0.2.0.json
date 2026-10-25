@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.86.0",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "0.2.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure expansion preview",
+      "text": "Individual IV/EV/Nature/gender, a 2,222-item reference catalogue with implemented ball and medicine effects, reviewed shared stock import, Pokémon Center, four move slots with compatible level/TM/Tutor training, trainer teams, eight Kanto Gyms, rare quests and player-only Sandbox. Legacy profiles retain their stats. Actions follow chat/branch history. Simplified singles; abilities, weather, PvP and battle transformations are not simulated."
+    }
+  ]
+}

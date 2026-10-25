@@ -48,7 +48,8 @@
             "speciesId": 10,
             "level": 5
           }
-        ]
+        ],
+        "engineVersion": 2
       },
       "roleforge_character_pack": {
         "format": "roleforge-character-pack",

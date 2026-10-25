@@ -1,0 +1,26 @@
+{
+  "source": "PokeAPI/sprites mirror of original artwork",
+  "commit": "97a7832d307311c0e1c6ea9035308bf80cc94f81",
+  "entries": [
+    {
+      "id": 1,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/shiny/1.png",
+      "sha256": "522504d818f95be0f35f72976cbfe42160de28bc8bab53207b80775b23e2bb6c"
+    },
+    {
+      "id": 25,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/shiny/25.png",
+      "sha256": "9de578bee6665d1a45884686b1d355f67aedd43522f31e073bfd6e0f58e84a03"
+    },
+    {
+      "id": 133,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/shiny/133.png",
+      "sha256": "9f0e6e436912030acf87bd21bc29a70dfe5604e90a0fed94c8e41b898b738f1a"
+    },
+    {
+      "id": 282,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/shiny/282.png",
+      "sha256": "2bf197a41e0471069867b574a8b22af6c74bbf52cbc1c52fd3f15ce3ac5b06ed"
+    }
+  ]
+}

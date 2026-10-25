@@ -202,21 +202,21 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.85.6",
+      "minimumRoleForge": "0.86.0",
       "author": "RoleForge · Fan-made preview",
-      "description": "เลือกคู่หู ดูทีมและ Pokédex ต่อสู้ จับ และพัฒนาโปเกมอน พร้อมอ่านโรลเหนือ Chatbar",
-      "descriptionEn": "Choose a partner, explore the Pokédex, battle, catch and evolve Pokémon alongside your story.",
+      "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
+      "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
       "features": [
-        "Pokédex 1,025 สายพันธุ์ พร้อมข้อมูลฟอร์ม",
-        "เลือกคู่หูจาก 9 ภูมิภาคและจัดทีม 6 ตัว",
-        "ต่อสู้ จับ เก็บเข้ากล่อง และวิวัฒนาการ",
-        "บันทึกตามแชท / Branch และบรรยายต่อผ่าน AI"
+        "1,025 สายพันธุ์ พร้อม IV / EV / Nature / เพศรายตัว",
+        "ไอเทมอ้างอิง 2,222 รายการ พร้อมบอล ยา และคลังร่วม",
+        "ฝึกท่า Center Trainer ยิม Kanto 8 แห่ง และภารกิจหายาก",
+        "Sandbox ผู้เล่นควบคุม พร้อมบันทึกตามแชทและ Branch"
       ],
       "featuresEn": [
-        "1,025-species Pokédex with form records",
-        "Starters from nine regions and a party of six",
-        "Battles, catching, storage and evolution",
-        "Chat and branch progress; AI continues the story"
+        "1,025 species with individual IVs, EVs, Nature and gender",
+        "2,222-item catalogue; functional balls, medicines and shared stock",
+        "Move training, Centers, trainers, eight Kanto Gyms and rare quests",
+        "Player-controlled Sandbox and branch-aware progress"
       ],
       "permissions": [
         [
@@ -241,6 +241,18 @@
           "changes": [
             "Pokémon preview แยกจาก main",
             "ทีม Pokédex ต่อสู้ จับ กล่อง วิวัฒนาการ และเหนือ Chatbar"
+          ]
+        },
+        {
+          "version": "0.2.0",
+          "path": "packs/pokemon-0.2.0.json",
+          "sha256": "1fe23d5928501ffdbe6ec51746ddb2b53158e81493f32ee7622f27d00227d792",
+          "bytes": 845,
+          "changes": [
+            "1,025 สายพันธุ์ พร้อม IV / EV / Nature / เพศรายตัว",
+            "ไอเทมอ้างอิง 2,222 รายการ พร้อมบอล ยา และคลังร่วม",
+            "ฝึกท่า Center Trainer ยิม Kanto 8 แห่ง และภารกิจหายาก",
+            "Sandbox ผู้เล่นควบคุม พร้อมบันทึกตามแชทและ Branch"
           ]
         }
       ]

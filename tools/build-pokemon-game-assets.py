@@ -15,8 +15,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1] / 'src/workshop/pokemon'
 FIRE_RED = 'ce6406d8c2eaf46d543c8a2606de0c3cb1951982'
 SPRITES = '97a7832d307311c0e1c6ea9035308bf80cc94f81'
-ITEMS = ['poke-ball', 'great-ball', 'potion', 'fire-stone', 'water-stone',
-         'thunder-stone', 'leaf-stone', 'moon-stone']
+ITEMS = ['poke-ball', 'great-ball', 'ultra-ball', 'master-ball', 'premier-ball', 'luxury-ball', 'heal-ball', 'friend-ball', 'nest-ball', 'net-ball', 'dive-ball', 'dusk-ball', 'timer-ball', 'quick-ball', 'repeat-ball', 'level-ball', 'fast-ball', 'heavy-ball', 'love-ball', 'dream-ball', 'beast-ball', 'sport-ball', 'safari-ball', 'potion', 'super-potion', 'hyper-potion', 'max-potion', 'full-restore', 'revive', 'max-revive', 'antidote', 'burn-heal', 'ice-heal', 'awakening', 'paralyze-heal', 'full-heal', 'lum-berry', 'pecha-berry', 'rawst-berry', 'aspear-berry', 'chesto-berry', 'cheri-berry', 'oran-berry', 'sitrus-berry', 'ether', 'max-ether', 'elixir', 'max-elixir', 'leppa-berry', 'fire-stone', 'water-stone', 'thunder-stone', 'leaf-stone', 'moon-stone', 'sun-stone', 'shiny-stone', 'dusk-stone', 'dawn-stone', 'ice-stone']
 sources = []
 
 

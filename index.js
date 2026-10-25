@@ -432,7 +432,7 @@ let openingGeneration = null;
 let powerTrainingBusy = false;
 let powerTrainingGenerationMetadata = null;
 
-function saveCurrentChatMetadata(context = SillyTavern.getContext(), {commerceCommit = false} = {}) {
+function saveCurrentChatMetadata(context = SillyTavern.getContext(), {commerceCommit = false, saveMetadataOverride = null} = {}) {
     const chatId = context.getCurrentChatId?.(), metadata = context.chatMetadata;
     // Hold unrelated metadata saves outside the queue so they cannot commit a tentative commerce result.
     if (pendingCommerceSave && !commerceCommit) return pendingCommerceSave.then(() => {
@@ -446,7 +446,7 @@ function saveCurrentChatMetadata(context = SillyTavern.getContext(), {commerceCo
         const recovered=oldStatus?.status==='missing'&&['import','manual-ai-patch'].includes(metadata[METADATA_KEY]?.updateSource);
         if(recovered)metadata[BRANCH_STATUS_KEY]={...oldStatus,status:'recovered'};
         const nextHistory=captureCurrentBranchPoint(context);
-        try{await active.saveMetadata();if(recovered){const receipt=branchSessions.get(metadata);if(receipt)receipt.missing=false;if(SillyTavern.getContext().chatMetadata===metadata)updatePrompt();}}
+        try{await (saveMetadataOverride?saveMetadataOverride(active):active.saveMetadata());if(recovered){const receipt=branchSessions.get(metadata);if(receipt)receipt.missing=false;if(SillyTavern.getContext().chatMetadata===metadata)updatePrompt();}}
         catch(error){if(recovered)metadata[BRANCH_STATUS_KEY]=oldStatus;if(metadata[BRANCH_HISTORY_KEY]===nextHistory){if(oldHistory===undefined)delete metadata[BRANCH_HISTORY_KEY];else metadata[BRANCH_HISTORY_KEY]=oldHistory;}throw error;}
         return true;
     });
@@ -3168,7 +3168,7 @@ async function persistUserConfig(candidate,source){
     }finally{pendingUserConfigSave=null;release();refreshIncantationComposer();}
 }
 
-async function persistState(candidate, source = 'manual', { deferMetadataSave = false, saveBeforeRender = false, onMetadataSaved = null,prepareSave=null } = {}) {
+async function persistState(candidate, source = 'manual', { deferMetadataSave = false, saveBeforeRender = false, onMetadataSaved = null,prepareSave=null,saveMetadataOverride=null } = {}) {
     if (pendingCommerceSave && !['auction', 'marketplace', 'items'].includes(source)) return false;
     if(pendingUserConfigSave&&!['user-stats-config','currency-config','weapon-config','money-transfer','name-knowledge','relationships'].includes(source))return false;
     const context = SillyTavern.getContext();
@@ -3231,7 +3231,7 @@ async function persistState(candidate, source = 'manual', { deferMetadataSave = 
     prepareSave?.(state);
     const saveConfigFirst=!deferMetadataSave&&(saveBeforeRender||['user-stats-config','currency-config','weapon-config','import','continuity'].includes(source));
     if(saveConfigFirst){
-        try{if(!await saveCurrentChatMetadata(context)){if(metadata[METADATA_KEY]===storedState)metadata[METADATA_KEY]=oldStoredState;return false;}}
+        try{if(!await saveCurrentChatMetadata(context,{saveMetadataOverride})){if(metadata[METADATA_KEY]===storedState)metadata[METADATA_KEY]=oldStoredState;return false;}}
         catch(error){if(metadata[METADATA_KEY]===storedState)metadata[METADATA_KEY]=oldStoredState;throw error;}
         onMetadataSaved?.();
         if(SillyTavern.getContext().chatMetadata!==metadata||SillyTavern.getContext().getCurrentChatId?.()!==chatId)return false;
@@ -6755,6 +6755,8 @@ function renderInventory(panel, state) {
     if (!panel) return;
     const ordinaryInventory=state.inventory.filter(entry=>!entry.commerceRightId);
     panel.innerHTML = (uiMarkup("")+(heading(uiText("Inventory"), `${state.inventory.length} item types`, 'fa-solid fa-box-open'))+(`<section class="rf-inventory-wallet" aria-label="${html(getSettings().language==='th'?'เงินของคุณ':'Your wallet')}"><header>${html(getSettings().language==='th'?'เงินของคุณ':'Your wallet')}</header><div>${currencyDisplay(state.progression.currency).map(d=>`<span class="rf-commerce-money">${commerceIconMarkup('coin',d.id,getSettings().coinStyle,state.progression.currency)}<strong>${d.amount.toLocaleString()}</strong><small>${html(state.progression.currency.scheme?d.symbol||d.name:tr(uiText(d.name)))}</small></span>`).join('')}</div></section>` )+renderRightsInventory(state,{thai:getSettings().language==='th',coinStyle:getSettings().coinStyle})+uiMarkup("\n        <div class=\"tretaresia-item-grid\">")+(ordinaryInventory.length ? ordinaryInventory.map(entry => (uiMarkup("\n            <article class=\"tretaresia-list-card\"><div class=\"tretaresia-item-icon\"><i class=\"fa-solid fa-cube\"></i></div>\n                <div class=\"tretaresia-item-copy\"><strong>")+(html(entry.name))+uiMarkup("</strong><span>")+(html(entry.category))+uiMarkup(" · ×")+(entry.quantity)+uiMarkup("</span>\n                <p>")+(html(entry.description || tr(uiText("No description"))))+uiMarkup("</p></div><div class=\"tretaresia-card-actions\">\n                <button type=\"button\" data-action=\"delete-item\" data-id=\"")+(html(entry.id))+uiMarkup("\" title=\"")+(html(tr(uiText("Remove"))))+uiMarkup("\"><i class=\"fa-solid fa-trash\"></i></button></div></article>"))).join('') : (state.inventory.length||rightsView(state).length?'':empty(uiText("Your inventory is empty."))))+uiMarkup("</div>\n        <details class=\"tretaresia-editor\"><summary><i class=\"fa-solid fa-plus\"></i> ")+(html(tr(uiText("Add inventory item"))))+uiMarkup("</summary>\n            <form data-form=\"inventory\" class=\"tretaresia-form-grid\">")+(input('Item name', 'name', ''))+uiMarkup("\n                ")+(input('Quantity', 'quantity', 1, 'number', 'min="0"'))+uiMarkup("")+(input('Category', 'category', 'Other'))+uiMarkup("\n                ")+(input('Description', 'description', ''))+uiMarkup("<button class=\"tretaresia-primary-button tretaresia-form-submit\" type=\"submit\">")+(html(tr(uiText("Add item"))))+uiMarkup("</button>\n            </form></details>")+(renderInventoryLogs(state))+uiMarkup("")+(renderJournal(state))+uiMarkup(""));
+    const pokemonStock=globalThis.RoleForgePokemon?.inventory?.()||[];
+    if(pokemonStock.length){const section=document.createElement('section');section.className='rf-pokemon-shared-inventory';section.innerHTML='<h3>Pokémon</h3><p>'+html(getSettings().language==='th'?'คลังเดียวกับ Pokémon Addon · เลือกเพื่อเปิดใช้งาน':'Shared with Pokémon Addon · select to use')+'</p><div class="tretaresia-item-grid">'+pokemonStock.slice(0,24).map(item=>'<button type="button" class="tretaresia-list-card" data-pokemon-stock="'+html(item.id)+'"><strong>'+html(item.name)+'</strong><span> ×'+item.quantity+'</span></button>').join('')+'</div>';section.querySelectorAll('[data-pokemon-stock]').forEach(button=>button.onclick=()=>globalThis.RoleForgePokemon?.open('bag'));panel.prepend(section);}
     panel.querySelectorAll('.tretaresia-item-icon').forEach(icon=>{icon.innerHTML=commerceIconMarkup('item');});
     panel.querySelectorAll('[data-action="delete-item"]').forEach(button=>{
         const choose=document.createElement('button');choose.type='button';choose.className='rf-inventory-select';choose.dataset.action='select-item';choose.dataset.id=button.dataset.id;choose.innerHTML=commerceIconMarkup('item');const label=document.createElement('span');label.textContent=getSettings().language==='th'?'เลือกไอเทม':'Select item';choose.append(label);choose.setAttribute('aria-label',label.textContent+' '+(state.inventory.find(i=>i.id===button.dataset.id)?.name||''));button.before(choose);
@@ -10438,7 +10440,8 @@ async function processAssistantPatchNow(messageId, generationType = '', scope) {
         const trainingNoticeConsumed = shouldConsumeTrainingNotice && consumePowerTrainingNotice(patched);
         let accepted = 0;
         let notifications = [];
-        const inlineOps = filterNpcStoryOps((extracted.patch?.ops || []).flatMap(canonicalPatchOperations),{chat:context.chat.slice(0,messageId+1),source:message.mes,base});
+        let inlineOps = filterNpcStoryOps((extracted.patch?.ops || []).flatMap(canonicalPatchOperations),{chat:context.chat.slice(0,messageId+1),source:message.mes,base});
+        if(globalThis.RoleForgePokemon?.debug?.().enabled)inlineOps=globalThis.RoleForgePokemon.filterInventoryOps(inlineOps,message.mes);
         let userMessage = null,userMessageId=-1;
         for (let index = messageId - 1; index >= 0; index -= 1) {
             if (context.chat[index]?.is_user && !context.chat[index]?.is_system) {
@@ -11743,7 +11746,7 @@ async function initialize() {
         // Workshop is optional: storage/style failures must not interrupt RoleForge.
         let nativeWorkshop;
         const mountingWorkshop=import('./src/workshop/native.js?v=0.86.0').then(({mountNativeWorkshop})=>{
-            nativeWorkshop=mountNativeWorkshop({dock:composerDock,state:getState,npcReferences:()=>characterNpcCatalog().summaries,prepareNpcs:async ids=>{const ticket=referenceTicket(),catalog=characterNpcCatalog(ticket.owner),selected=ids.filter(id=>catalog.has(id));if(catalog.external)await catalog.load([...new Set([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected])],{pin:true});else{catalog.pin?.([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected]);catalog.getMany(selected);}if(!referenceTicketValid(ticket))throw Error('The chat changed while loading notebook identities.');},commitState:next=>persistState(next,'death-note',{saveBeforeRender:true}),refreshHost:()=>{npcWorkspace?.refresh();renderAll();updatePrompt();},owner:()=>characterOwner(SillyTavern.getContext())?.key,busy:mainReplyGenerating,voice:{catalog:()=>voiceAddons.addonVoices(),activity:()=>voiceAddons.addonActivity(),activate:()=>voiceAddons.activateAddon(),speak:(...args)=>voiceAddons.speakAddon(...args),stop:()=>voiceAddons.stopAddon(),setup:()=>{if(!voiceAddons.open())openWorldSettings('optional');}}});
+            nativeWorkshop=mountNativeWorkshop({dock:composerDock,state:getState,npcReferences:()=>characterNpcCatalog().summaries,prepareNpcs:async ids=>{const ticket=referenceTicket(),catalog=characterNpcCatalog(ticket.owner),selected=ids.filter(id=>catalog.has(id));if(catalog.external)await catalog.load([...new Set([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected])],{pin:true});else{catalog.pin?.([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected]);catalog.getMany(selected);}if(!referenceTicketValid(ticket))throw Error('The chat changed while loading notebook identities.');},commitState:(next,source='death-note',saveMetadataOverride=null)=>persistState(next,source,{saveBeforeRender:true,saveMetadataOverride}),refreshHost:()=>{npcWorkspace?.refresh();renderAll();updatePrompt();},owner:()=>characterOwner(SillyTavern.getContext())?.key,busy:mainReplyGenerating,voice:{catalog:()=>voiceAddons.addonVoices(),activity:()=>voiceAddons.addonActivity(),activate:()=>voiceAddons.activateAddon(),speak:(...args)=>voiceAddons.speakAddon(...args),stop:()=>voiceAddons.stopAddon(),setup:()=>{if(!voiceAddons.open())openWorldSettings('optional');}}});
         });
         workshopReady={async prepareGeneration(type){try{await mountingWorkshop;}catch{return;}return nativeWorkshop.prepareGeneration(type);},then(resolve,reject){return mountingWorkshop.then(()=>nativeWorkshop.ready()).then(resolve,reject);}};
         mountingWorkshop.catch(error=>console.warn('[RoleForge] Workshop unavailable',error));
