@@ -1,6 +1,6 @@
-# Aster One — รุ่น Preview
+# Aster One — RoleForge 0.87.0
 
-โทรศัพท์ยังอยู่ในสาขา `preview/aster-phone-release` ไม่ได้นำเข้า main และไม่ได้เปลี่ยนงาน Pokémon ที่พักไว้
+Aster Phone 1.0.0 อยู่ใน main แล้วตั้งแต่ RoleForge 0.87.0 หลังอนุมัติรุ่น Preview โดยไม่ได้เปลี่ยนงาน Pokémon ที่พักไว้ อัปเดต RoleForge แล้วเปิด Workshop เพื่อติดตั้งและตั้งค่า Aster Phone
 
 ## สิ่งที่เปลี่ยนตามคำขอล่าสุด
 

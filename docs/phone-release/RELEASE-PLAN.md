@@ -1,6 +1,6 @@
-# Aster phone release preview
+# Aster phone release
 
-Branch: preview/aster-phone-release, based on main 0.86.2. Preserve the parked smartphone prototype and Pokémon preview. Do not merge main until reviewed.
+Developed on preview/aster-phone-release from main 0.86.2. Reviewed and approved for main on 2026-10-25, released as RoleForge 0.87.0. The parked smartphone prototype and Pokémon preview remain separate.
 
 ## Delivery
 

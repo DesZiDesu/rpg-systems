@@ -5,6 +5,7 @@
 - Full repository unit suite: **1,922 passed, 0 failed** (`unit-complete.log`).
 - Phone-specific suite: **39 passed**, covering contact/NPC identity, deferred/immediate requests, groups, profiles, privacy, blocking/removal, call speech, stickers/photos/drafts, wallet conservation/retry/currency changes, branch data, ownership queues and strict save acknowledgment.
 - `npm run check`: all runtime syntax checks passed.
+- Main release checks on 2026-10-25: full 1,922-test suite and syntax checks passed again; a native SillyTavern check of queued immediate replies and preserved deferred conversations passed against the main runtime.
 
 ## Native SillyTavern
 
@@ -26,4 +27,4 @@ Controlled fixtures verify routing, validation, persistence and UI behavior. The
 
 Artifacts: `minimal-desktop`, `minimal-mobile`, `deep-desktop`, `webkit-mobile`, `queue-native`, and final `record-desktop` / `record-mobile` reports in the supplied showcase evidence. Each report records the host, browser, exercised features and errors. Screenshots are taken from the running SillyTavern extension rather than mockup renders.
 
-Preview branch only. Main remains unchanged; the Pokémon and earlier phone prototype worktrees are retained.
+The reviewed phone build is released on main as RoleForge 0.87.0. The Pokémon and earlier phone prototype worktrees are retained.

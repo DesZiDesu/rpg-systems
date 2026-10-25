@@ -8,7 +8,7 @@
     "scenario": "A modern fictional Tokyo with cafés, trains, work, friends and unexpected encounters. The player owns an Aster One smartphone.",
     "first_mes": "<tr-narrative>แสงเย็นทาบถนนใกล้สถานีชิบูย่า คาเฟ่ริมทางเริ่มเปิดไฟ โทรศัพท์ Aster One ในมือคุณแสดงเวลา 16:42 วันนี้ยังไม่มีนัดตายตัว จะหาอะไรกิน แวะพบใคร หรือเดินสำรวจเมืองก่อนก็ได้</tr-narrative>\n\n<tr-narrative>คุณเลื่อนดูหน้าจอว่าง ๆ รายชื่อเพื่อนและเรื่องราวของเมืองยังรอให้คุณเติมลงไป</tr-narrative>",
     "mes_example": "",
-    "creator_notes": "Optional demo for RoleForge 0.87.0 Aster Phone preview. Import normally, then enable/configure Aster Phone in Workshop. No model/voice credentials included.",
+    "creator_notes": "Optional demo for RoleForge 0.87.0 Aster Phone. Import normally, then enable/configure Aster Phone in Workshop. No model/voice credentials included.",
     "system_prompt": "",
     "post_history_instructions": "",
     "alternate_greetings": [],
@@ -18,7 +18,7 @@
       "Modern City"
     ],
     "creator": "RoleForge",
-    "character_version": "1.0.0-preview",
+    "character_version": "1.0.0",
     "extensions": {
       "roleforge_workshop": {
         "format": "roleforge-workshop-card-defaults",

@@ -1,6 +1,6 @@
 # Aster One — using the phone
 
-This is the Aster Phone 1.0.0 preview for the RoleForge 0.87.0 runtime. It remains on `preview/aster-phone-release`; main and the parked Pokémon work are unchanged.
+Aster Phone 1.0.0 ships with RoleForge 0.87.0 on main. The parked Pokémon work remains separate.
 
 ## Open and configure
 
@@ -68,8 +68,8 @@ The site stores canonical credit values so changing the selected denomination do
 
 Photos stores uploaded images; Notes keeps editable notes. Maps lists known RoleForge story locations and does not request real GPS. Settings includes Thai/English, light/dark appearance, wallpaper, activity permissions, reply behavior, Voice, motion and shortcut placement.
 
-## Preview installation
+## Installation
 
-The small Workshop package describes addon data; the native implementation ships with RoleForge. Use the accompanying **0.87.0 preview runtime**, not the phone package alone on main 0.86.2. Back up your existing extension folder and chat data before switching builds. Replace the extension's runtime files while retaining the containing extension folder, then hard-refresh SillyTavern. Import the optional demo card through the normal character importer and open Workshop.
+Update RoleForge to **0.87.0 or later** through SillyTavern's extension updater, then reload SillyTavern. Open Workshop, install **Aster Phone**, enable it for the selected character and open **Configure**. Import the optional demo card through the normal character importer if you want a modern-city starting point.
 
-To return to main, restore the previous extension files. This does not require deleting saved chat data. Preview data remains in chat metadata, although older runtimes cannot display the phone UI.
+The small Workshop package describes addon data; the native implementation ships with RoleForge. Installing only the phone package on an older runtime cannot add its code. Existing phone preview chats and character preferences are retained by the released runtime. Disabling the addon hides its UI without deleting saved phone data.
