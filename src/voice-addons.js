@@ -1,10 +1,10 @@
-import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.86.2';
-import {resolveNpcSpeaker} from './npc-core.js?v=0.86.2';
-import {createVoiceStorage} from './voice-storage.js?v=0.86.2';
-import {createElevenLabsClient} from './voice-api.js?v=0.86.2';
-import {createSpeechEditor} from './voice-editor.js?v=0.86.2';
-import {createVoiceRuntime} from './voice-runtime.js?v=0.86.2';
-import {defaultTestFilename,downloadMp3} from './voice-download.js?v=0.86.2';
+import {VOICE_MODELS,normalizeVoiceSettings,speakerVoiceKey,speechText,speechDraftKey} from './voice-core.js?v=0.87.0';
+import {resolveNpcSpeaker} from './npc-core.js?v=0.87.0';
+import {createVoiceStorage} from './voice-storage.js?v=0.87.0';
+import {createElevenLabsClient} from './voice-api.js?v=0.87.0';
+import {createSpeechEditor} from './voice-editor.js?v=0.87.0';
+import {createVoiceRuntime} from './voice-runtime.js?v=0.87.0';
+import {defaultTestFilename,downloadMp3} from './voice-download.js?v=0.87.0';
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shapes={play:'<path d="m9 5 11 7-11 7z"/>',pause:'<path d="M8 5v14M16 5v14"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="1"/>',wave:'<path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/>',chevron:'<path d="m9 5 7 7-7 7"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5M18 5a8 8 0 0 0-14 5M6 19a8 8 0 0 0 14-5"/>'};
@@ -220,7 +220,7 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
             const key=`${pendingAuto.chat}:${pendingAuto.id}:${message.message.swipe_id||0}`;pendingAuto=null;
             if(autoPlayed.has(key)||runtime.state.phase!=='idle'||!runtime.state.connected||message.entries.some(entry=>!runtime.selectedVoice(entry)))return;
             autoPlayed.add(key);if(autoPlayed.size>500)autoPlayed.delete(autoPlayed.values().next().value);
-            run(async()=>{await Promise.all(message.entries.map(e=>e.loaded));await runtime.listen(message.entries,{queue:true});});
+            run(async()=>{const entries=message.entries.filter(e=>!globalThis.RoleForgePhone?.ownsSpeech?.(message.id,e.name));await Promise.all(entries.map(e=>e.loaded));if(entries.length)await runtime.listen(entries,{queue:true});});
         },400);
     }
     const host=context(),events=host.eventTypes||host.event_types||{};
@@ -233,13 +233,15 @@ export function createVoiceAddons({settings,context,state,visible=value=>value,s
         // Workshop Addon API exposes voices and playback, never the credential.
         addonVoices:()=>({enabled:config().enableVoiceAddon,connected:runtime.state.connected,model:config().voiceModel,phase:runtime.state.phase,voices:runtime.state.voices.map(v=>({id:v.voice_id,name:v.name}))}),
         activateAddon(){runtime.activate();runtime.activateActivity();},
-        addonActivity:()=>runtime.state.currentId.startsWith('addon:great-sage:')?runtime.activity():{speaking:false,level:0,metered:false,time:0},
-        stopAddon(){if(runtime.state.currentId.startsWith('addon:great-sage:'))runtime.stop();},
-        async speakAddon(text,voiceId,valid=()=>true){
+        addonActivity:(channel='great-sage')=>runtime.state.currentId.startsWith('addon:'+channel+':')?runtime.activity():{speaking:false,level:0,metered:false,time:0},
+        stopAddon(channel='great-sage'){if(runtime.state.currentId.startsWith('addon:'+channel+':'))runtime.stop();},
+        addonNpcVoice:npc=>runtime.selectedVoice({kind:'dialogue',gender:npc.gender,speakerKey:speakerVoiceKey(npc,npc.name,context())}),
+        async speakAddon(text,voiceId,valid=()=>true,channel='great-sage'){
+            if(!['great-sage','smartphone'].includes(channel))throw Error('Unknown voice channel');
             if(!config().enableVoiceAddon||!runtime.state.connected)throw Error('เปิด Voice Addon และเชื่อม ElevenLabs ก่อน');
             if(!runtime.state.voices.some(v=>v.voice_id===voiceId))throw Error('เลือกเสียงจาก My Voices ก่อน');
             if(!valid())return;runtime.activate();
-            await runtime.listen([{id:'addon:great-sage:'+(globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`),voiceOverride:voiceId,text:String(text).slice(0,1500),valid}]);
+            await runtime.listen([{id:'addon:'+channel+':'+(globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`),voiceOverride:voiceId,text:String(text).slice(0,1500),valid}],{queue:true});
             if(valid()&&runtime.state.error)throw Error(runtime.state.error);
         },
         destroy(){clearTimeout(autoTimer);editor.destroy();runtime.destroy();for(const[event,handler]of subscriptions)host.eventSource?.off?.(event,handler);root?.remove();controls.clear();messages.clear();}};

@@ -193,6 +193,52 @@
           ]
         }
       ]
+    },
+    {
+      "id": "smartphone",
+      "name": "Aster Phone",
+      "world": "Modern worlds",
+      "kind": "system",
+      "color": "sage",
+      "subtitle": "A little world, inside your world",
+      "minimumRoleForge": "0.87.0",
+      "author": "RoleForge",
+      "description": "สมาร์ทโฟนในโลกของโรล พร้อมข้อความ โทรศัพท์ รายชื่อ โปรไฟล์ แอปโซเชียล เบราว์เซอร์ และ Wallet ที่ใช้ค่าเงิน RoleForge",
+      "features": [
+        "Aster One · ลากบน PC / เต็มจอมือถือ",
+        "ตอบทันทีหรือรอโรล · ข้อความหลายบับเบิล",
+        "Gather / Lumen / Murmur และ Harbor Store",
+        "Wallet, Drift และโปรไฟล์ที่แก้ไขได้"
+      ],
+      "permissions": [
+        [
+          "อ่านฉากและรายชื่อ",
+          "ใช้เฉพาะบริบทของการ์ดและแชทนี้"
+        ],
+        [
+          "ตอบข้อความเมื่อเลือก",
+          "ใช้ AI เดิมของ SillyTavern"
+        ],
+        [
+          "เงินในโลกของโรล",
+          "ใช้กระเป๋าเงินและค่าเงินที่ตั้งไว้"
+        ],
+        [
+          "เสียงในสายเมื่อเลือกเปิด",
+          "ใช้ Voice Addon เดิม ไม่เก็บ API key"
+        ]
+      ],
+      "releases": [
+        {
+          "version": "1.0.0",
+          "path": "packs/smartphone-1.0.0.json",
+          "sha256": "0923ded2fa19df7df27e7ed9c3f9824c50d0d70aa502a6cade92f03ca7c29676",
+          "bytes": 638,
+          "changes": [
+            "Initial Aster Phone release preview"
+          ]
+        }
+      ]
     }
   ]
 }

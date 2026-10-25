@@ -1,4 +1,4 @@
-import {validatePresetConfig} from './world-presets.js?v=0.86.2';
+import {validatePresetConfig} from './world-presets.js?v=0.87.0';
 
 // User choices survive chat deletion. Story state and preset-library records
 // never enter these maps. Avatar-based owners are supplied by characterOwner.

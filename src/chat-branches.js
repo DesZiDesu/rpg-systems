@@ -1,12 +1,12 @@
 // A portable state baseline plus structural deltas. Reference libraries and
 // world-pack payloads never enter this journal; callers supply packed chat state.
-import {sha256} from './vendor/js-sha256/index.js?v=0.86.2';
+import {sha256} from './vendor/js-sha256/index.js?v=0.87.0';
 
 export const BRANCH_HISTORY_KEY='tretaresia_rpg_branch_history';
 export const BRANCH_STATUS_KEY='tretaresia_rpg_branch_restore';
 export const BRANCH_ORIGIN_POINT=Object.freeze({index:-1,hash:'roleforge-branch-v1'});
 export const BRANCH_FIELDS=Object.freeze([
- 'tretaresia_rpg_state','roleforge_chat_presets','roleforge_story_contracts',
+ 'tretaresia_rpg_state','roleforge_smartphone','roleforge_chat_presets','roleforge_story_contracts',
  'tretaresia_rpg_character_creation','roleforge_creation_after_delete','tretaresia_rpg_visible_hstats_npcs','tretaresia_rpg_selected_hstats_npc',
 ]);
 const forbidden=new Set(['__proto__','constructor','prototype']);
