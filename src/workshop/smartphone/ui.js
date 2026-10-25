@@ -1,5 +1,5 @@
-import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.87.1';
-import {currencyScheme} from '../../currency-config.js?v=0.87.1';
+import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.87.2';
+import {currencyScheme} from '../../currency-config.js?v=0.87.2';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ico=(name)=>'<i class="fa-solid fa-'+name+'" aria-hidden="true"></i>';
@@ -14,17 +14,24 @@ const asset=name=>new URL('./assets/'+name,import.meta.url).pathname;
 
 export function mountPhoneUI(runtime){
  let view={app:'home'},history=[],opened=false,sheet=null,drag=null,localDrafts=new Map(),draftTimer,replyTo='',selectedUnit='',selectedAccount='',lastNotice='',toastTimer;
+ let snapshot=null,lastMarkup='',renderedRoute='',messageLimit=80,lastMessage='',viewportFrame=0;
  const root=document.createElement('section');root.id='rf-aster-phone';
- root.innerHTML='<div class="ap-outside-capsule" hidden></div><section class="ap-device" role="dialog" aria-label="Aster One" hidden><div class="ap-screen"><header class="ap-status" data-phone-drag><span class="ap-time">--:--</span><button type="button" class="ap-capsule" data-phone="capsule" aria-label="Phone activity"><span class="ap-camera"></span><span class="ap-capsule-content"></span></button><span class="ap-status-symbols">'+ico('signal')+ico('wifi')+ico('battery-three-quarters')+'</span></header><div class="ap-content"></div><button type="button" class="ap-home-indicator" data-phone="home" aria-label="Home"><span></span></button><div class="ap-toast" role="status" hidden></div><div class="ap-sheet" hidden></div></div><div class="ap-device-tools"><small>A S T E R · O N E</small>'+b(ico('xmark'),'close','','ap-tool')+'</div></section>';
+ root.innerHTML='<div class="ap-outside-capsule" hidden></div><section class="ap-device" role="dialog" aria-label="Aster One" hidden><div class="ap-screen"><header class="ap-status" data-phone-drag><span class="ap-time">--:--</span><button type="button" class="ap-capsule" data-phone="capsule" aria-label="Phone activity"><span class="ap-camera"></span><span class="ap-capsule-content"></span></button><span class="ap-status-symbols">'+ico('signal')+ico('wifi')+ico('battery-three-quarters')+'</span>'+b(ico('xmark'),'close','aria-label="Close phone"','ap-mobile-close ap-icon-button')+'</header><div class="ap-content"></div><button type="button" class="ap-home-indicator" data-phone="home" aria-label="Home"><span></span></button><div class="ap-toast" role="status" hidden></div><div class="ap-sheet" hidden></div></div><div class="ap-device-tools"><small>A S T E R · O N E</small>'+b(ico('xmark'),'close','aria-label="Close phone"','ap-tool')+'</div></section>';
  document.body.append(root);
  const device=root.querySelector('.ap-device'),content=root.querySelector('.ap-content'),overlay=root.querySelector('.ap-sheet'),outside=root.querySelector('.ap-outside-capsule');
- const get=()=>runtime.get(),t=(th,en)=>get().language==='th'?th:en,p=()=>get().phone,cfg=()=>get().config;
+ // One host snapshot per paint. Building each label must not re-clone the RPG state.
+ const get=()=>snapshot||runtime.get(),t=(th,en)=>get().language==='th'?th:en,p=()=>get().phone,cfg=()=>get().config;
+ function withSnapshot(fn){const previous=snapshot;snapshot||=runtime.get();try{return fn(snapshot);}finally{snapshot=previous;}}
+ const htmlCache=new WeakMap();
+ const setHTML=(node,html)=>{if(node&&htmlCache.get(node)!==html){if(htmlCache.has(node)||node.innerHTML!==html)node.innerHTML=html;htmlCache.set(node,html);}};
+ const hide=(node,value)=>{if(node.hidden!==value)node.hidden=value;};
+ const setStyle=(node,key,value)=>{if(node.style.getPropertyValue(key)!==value)node.style.setProperty(key,value);};
  const contact=id=>p().contacts.find(c=>c.id===id);
  const label=id=>id==='player'?(get().state.player?.name||t('คุณ','You')):contactLabel(contact(id));
  const avatar=(actor,app='messages',big=false)=>{const c=contact(actor),profile=publicProfile(p(),actor,app,label(actor)),src=profile.avatar||c?.avatar;
   return '<span class="ap-avatar '+(big?'is-big':'')+'">'+(image(src)||esc(profile.displayName.slice(0,2)))+'</span>';};
  const displayName=(actor,app)=>publicProfile(p(),actor,app,label(actor)).displayName;
- function go(app,data={}){if(app!==view.app||data.id!==view.id)history.push(view);view={app,...data};replyTo='';closeSheet();render();content.querySelector('.ap-body')?.scrollTo(0,0);}
+ function go(app,data={}){if(app!==view.app||data.id!==view.id)history.push(view);view={app,...data};messageLimit=80;replyTo='';closeSheet();render();}
  function back(){closeSheet();view=history.pop()||{app:'home'};render();}
  const head=(title,tools='',subtitle='')=>'<header class="ap-app-header">'+b(ico('chevron-left'),'back','','ap-icon-button')+'<div><h1>'+esc(title)+'</h1>'+(subtitle?'<small>'+esc(subtitle)+'</small>':'')+'</div><div class="ap-header-tools">'+tools+'</div></header>';
  const empty=(title,text)=>'<div class="ap-empty">'+ico('sparkles')+'<h2>'+title+'</h2><p>'+text+'</p></div>';
@@ -36,7 +43,7 @@ export function mountPhoneUI(runtime){
  const fmtTime=time=>time?(get().language==='th'?'วันที่ ':'Day ')+(time.day||0)+' · '+(time.time||'--:--'):'';
  function form(kind,body,button=t('บันทึก','Save'),data=''){return '<form data-phone-form="'+kind+'" '+data+'>'+body+'<button type="submit" class="ap-primary">'+button+'</button></form>';}
  function openSheet(title,body){sheet={title};overlay.hidden=false;overlay.innerHTML='<section class="ap-sheet-card"><header><h2>'+esc(title)+'</h2>'+b(ico('xmark'),'sheet-close','','ap-icon-button')+'</header><div class="ap-sheet-body">'+body+'</div></section>';overlay.querySelector('input:not([type=hidden]),textarea,button')?.focus({preventScroll:true});}
- function closeSheet(){sheet=null;overlay.hidden=true;overlay.innerHTML='';}
+ function closeSheet(){if(overlay.contains(document.activeElement))document.activeElement.blur();sheet=null;overlay.hidden=true;overlay.innerHTML='';}
  function confirm(title,action,data){openSheet(title,'<p>'+t('การกระทำนี้มีผลกับข้อมูลในโทรศัพท์ของแชทนี้','This changes phone data in this chat.')+'</p>'+b(t('ยืนยัน','Confirm'),action,data,'ap-danger ap-wide'));}
  function home(){
   const clock=get().state.worldClock||{},place=get().state.location?.place||t('พื้นที่ส่วนตัว','Your corner of the world'),apps=APPS.filter(a=>p().installed.includes(a.id)),unread=p().messages.filter(m=>m.from!=='player'&&!m.read&&!m.deleted).length;
@@ -62,12 +69,18 @@ export function mountPhoneUI(runtime){
  }
  function conversation(){
   const thread=p().threads.find(t=>t.id===view.id&&!t.deleted);if(!thread)return threads();
-  const peer=thread.members.find(v=>v!=='player'),messages=p().messages.filter(m=>m.threadId===thread.id),pending=p().pending.some(q=>q.threadId===thread.id),pinned=messages.filter(m=>m.pinned&&!m.deleted),draft=localDrafts.get(thread.id)??p().drafts[thread.id]??'';
-  return head(thread.title||label(peer),b(ico('user'),'contact',attr('id',peer),'ap-icon-button')+b(ico('phone'),'call',attr('id',peer),'ap-icon-button')+b(ico('ellipsis'),'thread-menu',attr('id',thread.id),'ap-icon-button'),thread.members.length>2?thread.members.length+' '+t('สมาชิก','members'):displayName(peer,thread.app))+
+  const peer=thread.members.find(v=>v!=='player'),messages=p().messages.filter(m=>m.threadId===thread.id),pending=p().pending.some(q=>q.threadId===thread.id),pinned=messages.filter(m=>m.pinned&&!m.deleted),draft=localDrafts.get(thread.id)??p().drafts[thread.id]??'',group=thread.members.length>2,profileName=displayName(peer,thread.app);
+  const panel=content.querySelector('.ap-chat-body');
+  if(content.querySelector('[data-phone-form=message]')?.dataset.thread===thread.id&&panel.scrollHeight-panel.scrollTop-panel.clientHeight>=48){
+   // Keep the start of the loaded window while the reader is browsing older bubbles.
+   const first=panel.querySelector('.ap-message')?.dataset.id,start=messages.findIndex(m=>m.id===first);if(start>=0)messageLimit=Math.max(messageLimit,messages.length-start);
+  }
+  return head(thread.title||label(peer),b(ico('user'),'contact',attr('id',peer),'ap-icon-button')+b(ico('phone'),'call',attr('id',peer),'ap-icon-button')+b(ico('ellipsis'),'thread-menu',attr('id',thread.id),'ap-icon-button'),group?thread.members.length+' '+t('สมาชิก','members'):profileName!==label(peer)?profileName:'')+
    '<main class="ap-body ap-chat-body">'+(pinned.length?'<div class="ap-pinned">'+ico('thumbtack')+' '+pinned.map(m=>esc(m.text||t('สติกเกอร์','Sticker'))).join(' · ')+'</div>':'')+
-   messages.map(m=>'<article class="ap-message '+(m.from==='player'?'is-outgoing':'is-incoming')+'" data-phone="message-menu" data-id="'+esc(m.id)+'" tabindex="0" role="button" aria-label="'+esc(t('ตัวเลือกข้อความ','Message options'))+'">'+(m.from!=='player'?'<small>'+esc(displayName(m.from,thread.app))+'</small>':'')+(m.replyTo?'<blockquote>'+esc(p().messages.find(v=>v.id===m.replyTo)?.text||t('ข้อความก่อนหน้า','Earlier message'))+'</blockquote>':'')+(m.deleted?'<i>'+t('ลบข้อความแล้ว','Message deleted')+'</i>':(m.stickerId?image(p().stickers.find(s=>s.id===m.stickerId)?.image):'')+(m.text?'<p>'+esc(m.text)+'</p>':'')+(m.image?'<div class="ap-message-photo">'+image(m.image)+'</div>':''))+'<footer>'+(m.pinned?ico('thumbtack')+' ':'')+esc(m.time?.time||'')+(m.edited?' · '+t('แก้ไขแล้ว','edited'):'')+(m.from==='player'?' · '+t('ส่งแล้ว','sent'):'')+'</footer></article>').join('')+
-   (pending?'<div class="ap-pending">'+(get().working?'<span class="ap-dots"><i></i><i></i><i></i></span> '+t('กำลังรอคำตอบ…','Waiting for a reply…'):t('ส่งแล้ว · รอ AI ตอบในโรลถัดไป','Sent · waiting for the next story reply'))+b(t('ขอคำตอบตอนนี้','Reply now'),'respond','','ap-text-button')+'</div>':'')+'</main>'+
-   '<form class="ap-compose" data-phone-form="message" data-thread="'+esc(thread.id)+'">'+(p().attachments[thread.id]?'<div class="ap-attachment-preview">'+image(p().attachments[thread.id])+b('×','attachment-clear',attr('thread',thread.id))+'</div>':'')+(replyTo?'<small>'+t('ตอบกลับ: ','Replying: ')+esc(p().messages.find(m=>m.id===replyTo)?.text?.slice(0,50))+'</small>':'')+b(ico('paperclip'),'photo-picker',attr('thread',thread.id),'ap-icon-button')+b(ico('face-smile'),'sticker-picker',attr('thread',thread.id),'ap-icon-button')+'<textarea name="text" rows="1" maxlength="6000" data-phone-draft="'+esc(thread.id)+'" placeholder="'+t('ข้อความ…','Message…')+'">'+esc(draft)+'</textarea><button type="submit" class="ap-send" aria-label="'+t('ส่งข้อความ','Send message')+'">'+ico('arrow-up')+'</button><div class="ap-send-mode">'+b((cfg().replyMode==='immediate'?ico('bolt')+' '+t('ตอบทันที','Reply now'):ico('clock')+' '+t('รอโรลถัดไป','Next story reply')),'reply-mode','','ap-text-button')+'</div></form>';
+   (messages.length>messageLimit?b(ico('arrow-up')+' '+t('โหลดข้อความก่อนหน้า','Load earlier messages'),'earlier-messages','','ap-earlier ap-text-button'):'')+
+   messages.slice(-messageLimit).map(m=>'<article class="ap-message '+(m.from==='player'?'is-outgoing':'is-incoming')+'" data-phone="message-menu" data-id="'+esc(m.id)+'" tabindex="0" role="button" aria-label="'+esc(t('ตัวเลือกข้อความ','Message options'))+'">'+(group&&m.from!=='player'?'<small>'+esc(displayName(m.from,thread.app))+'</small>':'')+(m.replyTo?'<blockquote>'+esc(p().messages.find(v=>v.id===m.replyTo)?.text||t('ข้อความก่อนหน้า','Earlier message'))+'</blockquote>':'')+(m.deleted?'<i>'+t('ลบข้อความแล้ว','Message deleted')+'</i>':(m.stickerId?image(p().stickers.find(s=>s.id===m.stickerId)?.image):'')+(m.text?'<p>'+esc(m.text)+'</p>':'')+(m.image?'<div class="ap-message-photo">'+image(m.image)+'</div>':''))+'<footer>'+(m.pinned?ico('thumbtack')+' ':'')+esc(m.time?.time||'')+(m.edited?' · '+t('แก้ไขแล้ว','edited'):'')+(m.from==='player'?' · '+t('ส่งแล้ว','sent'):'')+'</footer></article>').join('')+'</main>'+
+   '<div class="ap-conversation-status" role="status">'+(pending?'<span>'+(get().working?'<span class="ap-dots"><i></i><i></i><i></i></span> '+t('กำลังตอบ…','Replying…'):t('ส่งแล้ว · รอโรลถัดไป','Sent · next story reply'))+'</span>'+(!get().working?b(t('ตอบตอนนี้','Reply now'),'respond','','ap-text-button'):''):'')+'</div>'+
+   '<form class="ap-compose" data-phone-form="message" data-thread="'+esc(thread.id)+'"><div class="ap-compose-context">'+(p().attachments[thread.id]?'<div class="ap-attachment-preview">'+image(p().attachments[thread.id])+b('×','attachment-clear',attr('thread',thread.id))+'</div>':'')+(replyTo?'<small>'+t('ตอบกลับ: ','Replying: ')+esc(p().messages.find(m=>m.id===replyTo)?.text?.slice(0,50))+'</small>':'')+'</div><div class="ap-compose-row">'+b(ico('paperclip'),'photo-picker',attr('thread',thread.id)+' aria-label="'+t('แนบภาพ','Attach photo')+'"','ap-icon-button')+b(ico('face-smile'),'sticker-picker',attr('thread',thread.id)+' aria-label="'+t('สติกเกอร์','Stickers')+'"','ap-icon-button')+'<textarea name="text" rows="1" maxlength="6000" data-phone-draft="'+esc(thread.id)+'" aria-label="'+t('ข้อความ','Message')+'" placeholder="'+t('ข้อความ…','Message…')+'">'+esc(draft)+'</textarea><button type="submit" class="ap-send" aria-label="'+t('ส่งข้อความ','Send message')+'">'+ico('arrow-up')+'</button></div><div class="ap-send-mode"><span>'+t('การตอบกลับ','Replies')+'</span>'+b((cfg().replyMode==='immediate'?ico('bolt')+' '+t('ตอบทันที','Immediately'):ico('clock')+' '+t('รอโรลถัดไป','Next story reply'))+' '+ico('chevron-down'),'reply-mode','aria-label="'+t('เปลี่ยนรูปแบบการตอบกลับ','Change reply mode')+'"','ap-text-button')+'</div></form>';
  }
  function calls(){
   const current=activeCall();
@@ -110,7 +123,7 @@ export function mountPhoneUI(runtime){
   openSheet(kind==='story'?t('เรื่องราวใหม่','New story'):t('โพสต์ใหม่','New post'),form('post',area(app==='murmur'?t('มีอะไรอยู่ในใจ? (500 ตัวอักษร)','What is happening? (500 characters)'):t('คำบรรยาย','Caption'),'text',post?.text||'')+media(t('รูปภาพ','Image'),'image',post?.image||'')+hint(t('NPC จะเห็นตามการตั้งค่าความเป็นส่วนตัวของโปรไฟล์','NPCs see posts according to profile privacy.')),t('แชร์','Share'),attr('app',app)+' '+attr('id',postId||'')+' '+attr('kind',post?.kind||kind)+' '+attr('actor',post?.actor||'player')));overlay.querySelector('[name=text]')?.setAttribute('maxlength',app==='murmur'?'500':'4000');
  }
  function store(){
-  return wrap('Harbor Store','<div class="ap-store-hero"><small>CURATED FOR YOUR WORLD</small><h1>'+t('โลกเล็ก ๆ<br>ที่ใหญ่ขึ้นได้','A little world.<br>More possibilities.')+'</h1><p>'+t('แอปของเรื่องราวคุณ ข้อมูลยังอยู่เมื่อถอดแอปออก','Apps for your story. Uninstalling keeps your data.')+'</p></div>'+SOCIAL_APPS.map(app=>'<article class="ap-store-card">'+appIcon(app)+'<div><h2>'+app[0].toUpperCase()+app.slice(1)+'</h2><small>'+({gather:t('แชท กลุ่ม และสติกเกอร์','Chats, groups and stickers'),lumen:t('ภาพ เรื่องราว และผู้คน','Photos, stories and people'),murmur:t('โพสต์สั้น ตอบกลับ และรีโพสต์','Short posts, replies and reposts')}[app])+'</small></div>'+b(p().installed.includes(app)?t('เปิด','Open'):t('ติดตั้ง','Get'),p().installed.includes(app)?'app':'install',attr('app',app),'ap-store-get')+(p().installed.includes(app)?b(t('ถอนแอป','Remove'),'uninstall',attr('app',app),'ap-text-button'):'')+'</article>').join(''));
+  return wrap('Harbor Store','<div class="ap-store-hero"><small>'+t('คัดสรรเพื่อโลกของคุณ','CURATED FOR YOUR WORLD')+'</small><h1>'+t('โลกเล็ก ๆ<br>ที่ใหญ่ขึ้นได้','A little world.<br>More possibilities.')+'</h1><p>'+t('แอปของเรื่องราวคุณ ข้อมูลยังอยู่เมื่อถอดแอปออก','Apps for your story. Uninstalling keeps your data.')+'</p></div>'+SOCIAL_APPS.map(app=>'<article class="ap-store-card">'+appIcon(app)+'<div class="ap-store-info"><h2>'+app[0].toUpperCase()+app.slice(1)+'</h2><small>'+({gather:t('แชท กลุ่ม และสติกเกอร์','Chats, groups and stickers'),lumen:t('ภาพ เรื่องราว และผู้คน','Photos, stories and people'),murmur:t('โพสต์สั้น ตอบกลับ และรีโพสต์','Short posts, replies and reposts')}[app])+'</small></div><div class="ap-store-actions">'+b(p().installed.includes(app)?t('เปิด','Open'):t('ติดตั้ง','Get'),p().installed.includes(app)?'app':'install',attr('app',app),'ap-store-get')+(p().installed.includes(app)?b(t('ถอนแอป','Remove'),'uninstall',attr('app',app),'ap-text-button'):'')+'</div></article>').join(''));
  }
  function wallet(){
   const u=amountUnit(),wallet=get().state.progression?.currency||{},units=currencyScheme(wallet).units;
@@ -151,39 +164,77 @@ export function mountPhoneUI(runtime){
    '<h3 class="ap-section-label">'+t('อุปกรณ์และทางลัด','Device & shortcuts')+'</h3>'+toggle('requireDevice','ต้องมีโทรศัพท์ในเรื่องหรือกระเป๋า','Require a phone in the story or inventory')+toggle('assumeDevice','กำหนดให้ตัวละครมีโทรศัพท์แล้ว','Assume this character has a phone')+toggle('floating','ปุ่มลอย','Floating shortcut')+toggle('wand','Wand Menu','Wand Menu')+row(t('ตั้งค่า Wallet','Configure wallet'),amountUnit().name,'wallet-config')+row(t('จัดการแอป','Manage apps'),'Harbor Store','app',attr('app','store'))+row(t('ตรวจข้อความล่าสุดที่อาจตกหล่น','Check for missing recent messages'),t('อ่านเหตุการณ์โทรศัพท์จากโรลล่าสุด','Check the latest phone activity in the story'),'sync-story')+hint(t('การตั้งค่าจำตามการ์ด ข้อมูลโทรศัพท์แยกตามแชทและ Branch','Settings belong to this character. Phone progress follows the chat and branch.')));
  }
  function notifications(){return wrap(t('การแจ้งเตือน','Notifications'),p().notifications.slice().reverse().map(n=>row(n.title,n.text,'notification',attr('id',n.id),ico(n.type==='call'?'phone':'bell'),n.read?'':'●')).join(''),b(t('อ่านทั้งหมด','Read all'),'notifications-read','','ap-text-button'));}
- function render(){
-  if(!get().enabled){device.hidden=true;outside.hidden=true;return;}
-  const d=get(),conf=d.config,focus=content.querySelector(':focus'),focusInfo=focus?.name?{name:focus.name,start:focus.selectionStart,end:focus.selectionEnd}:null,oldScroll=content.querySelector('.ap-body')?.scrollTop||0;
-  root.dataset.theme=conf.theme==='system'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):conf.theme;root.dataset.wallpaper=conf.wallpaper;root.dataset.motion=String(conf.motion);root.dataset.app=view.app;device.hidden=!opened;
-  const clock=d.state.worldClock?.time||'--:--';root.querySelector('.ap-time').textContent=clock;
-  position();activity();
+ function render(){return withSnapshot(draw);}
+ function draw(d){
+  if(!d.enabled){close();outside.hidden=true;return;}
+  const conf=d.config;
+  const attributes={theme:conf.theme==='system'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):conf.theme,wallpaper:conf.wallpaper,motion:String(conf.motion),app:view.app};
+  for(const [key,value]of Object.entries(attributes))if(root.dataset[key]!==value)root.dataset[key]=value;hide(device,!opened);
+  const clock=d.state.worldClock?.time||'--:--',time=root.querySelector('.ap-time');if(time.textContent!==clock)time.textContent=clock;
+  activity();
+  // Background activity needs the capsule only. Never recreate or focus hidden fields.
+  if(!opened)return;
+  position();
+  for(const node of root.querySelectorAll('[data-phone=close]')){const label=t('ปิดโทรศัพท์','Close phone');if(node.getAttribute('aria-label')!==label)node.setAttribute('aria-label',label);}
   let body;
   if(!d.hasDevice&&view.app!=='settings')body=wrap(t('โทรศัพท์ยังไม่พร้อม','A phone is not available'),empty(t('เริ่มจากมีเครื่องก่อน','You need a phone first'),t('รับโทรศัพท์ในเรื่อง หรือกำหนดให้มีอยู่แล้วในการตั้งค่า','Acquire a phone in the story, or set “Assume a phone” in settings.'))+b(t('ตั้งค่าอุปกรณ์','Device settings'),'app',attr('app','settings'),'ap-primary ap-wide'));
   else switch(view.app){
    case 'home':body=home();break;case 'contacts':body=contacts();break;case 'contact':body=contactPage();break;case 'messages':case 'gather':body=threads(view.app);break;case 'conversation':body=conversation();break;case 'phone':body=calls();break;case 'call':body=callPage();break;case 'lumen':case 'murmur':body=social(view.app);break;case 'profile':body=profilePage();break;case 'store':body=store();break;case 'wallet':body=wallet();break;case 'browser':body=browser();break;case 'stickers':body=stickers();break;case 'photos':body=photos();break;case 'notes':body=notes();break;case 'maps':body=maps();break;case 'notifications':body=notifications();break;case 'settings':body=settings();break;default:body=home();
   }
-  const sync=d.phone.storySync,retry=sync&&['failed','empty','interrupted'].includes(sync.status),detail=d.error||(retry?(sync.error||t('การซิงก์ข้อความก่อนหน้าหยุดไป ลองอีกครั้งได้','The previous message sync was interrupted. You can retry.')):'');const error=detail?'<div class="ap-error" role="alert">'+esc(detail)+(retry?b(t('ลองซิงก์ข้อความอีกครั้ง','Retry message sync'),'sync-story','','ap-text-button'):'')+'</div>':'';content.innerHTML=error+body;
-  const scroll=content.querySelector('.ap-body');if(scroll)scroll.scrollTop=view.app==='conversation'?scroll.scrollHeight:oldScroll;
-  if(focusInfo){const input=content.querySelector('[name="'+CSS.escape(focusInfo.name)+'"]');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(focusInfo.start,focusInfo.end);}catch{}}}
+  const sync=d.phone.storySync,retry=sync&&['failed','empty','interrupted'].includes(sync.status),detail=d.error||(retry?(sync.error||t('การซิงก์ข้อความก่อนหน้าหยุดไป ลองอีกครั้งได้','The previous message sync was interrupted. You can retry.')):'');const error=detail?'<div class="ap-error" role="alert">'+esc(detail)+(retry?b(t('ลองซิงก์ข้อความอีกครั้ง','Retry message sync'),'sync-story','','ap-text-button'):'')+'</div>':'';
+  const markup=error+body,route=JSON.stringify([view,d.hasDevice]),sameRoute=route===renderedRoute;
+  if(sameRoute&&markup===lastMarkup)return;
+  const oldBody=content.querySelector('.ap-body'),oldTop=oldBody?.scrollTop||0,atBottom=!oldBody||oldBody.scrollHeight-oldTop-oldBody.clientHeight<48;
+  const anchor=sameRoute&&view.app==='conversation'&&!atBottom?[...oldBody.querySelectorAll('.ap-message')].find(n=>n.getBoundingClientRect().bottom>oldBody.getBoundingClientRect().top):null;
+  const anchorId=anchor?.dataset.id,anchorTop=anchor?.getBoundingClientRect().top;
+  const latest=view.app==='conversation'?p().messages.findLast(m=>m.threadId===view.id):null,sent=latest?.from==='player'&&latest.id!==lastMessage;
+  const focus=content.querySelector(':focus'),focusInfo=focus?.name?{name:focus.name,start:focus.selectionStart,end:focus.selectionEnd}:null;
+  if(sameRoute&&view.app==='conversation'&&content.querySelector('.ap-compose')&&d.hasDevice){
+   // Keep the form and its textarea mounted through saves, incoming bubbles and typing.
+   const template=document.createElement('template');template.innerHTML=markup;
+   for(const selector of ['.ap-error','.ap-app-header','.ap-chat-body','.ap-conversation-status']){
+    const next=template.content.querySelector(selector),current=content.querySelector(selector);
+    if(next&&current){setHTML(current,next.innerHTML);}else if(next)content.prepend(next);else current?.remove();
+   }
+   for(const selector of ['.ap-compose-context','.ap-send-mode'])setHTML(content.querySelector(selector),template.content.querySelector(selector).innerHTML);
+   const input=content.querySelector('[data-phone-draft]'),next=template.content.querySelector('[data-phone-draft]');
+   if(input.value!==next.value)input.value=next.value;
+   input.placeholder=next.placeholder;input.setAttribute('aria-label',next.getAttribute('aria-label'));
+   for(const node of content.querySelectorAll('.ap-compose-row button')){const nextButton=template.content.querySelector(node.type==='submit'?'.ap-compose-row [type=submit]':'[data-phone="'+node.dataset.phone+'"]');node.setAttribute('aria-label',nextButton.getAttribute('aria-label'));}
+  }else{
+   content.innerHTML=markup;
+   if(sameRoute&&focusInfo){const input=content.querySelector('[name="'+CSS.escape(focusInfo.name)+'"]');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(focusInfo.start,focusInfo.end);}catch{}}}
+  }
+  const scroll=content.querySelector('.ap-body');if(scroll){
+   if(view.app==='conversation'){
+    if(!sameRoute||atBottom||sent)scroll.scrollTop=scroll.scrollHeight;
+    else{scroll.scrollTop=oldTop;const nextAnchor=anchorId&&[...scroll.querySelectorAll('.ap-message')].find(n=>n.dataset.id===anchorId);if(nextAnchor)scroll.scrollTop+=nextAnchor.getBoundingClientRect().top-anchorTop;}
+   }else scroll.scrollTop=sameRoute?oldTop:0;
+  }
+  lastMarkup=markup;renderedRoute=route;lastMessage=latest?.id||'';growComposer();
  }
- function activity(){
+ function activity(){return withSnapshot(drawActivity);}
+ function drawActivity(){
   const d=get(),call=activeCall(),notice=p().notifications.filter(n=>!n.read).at(-1),capsule=root.querySelector('.ap-capsule'),target=root.querySelector('.ap-capsule-content');
   capsule.classList.toggle('is-active',Boolean(cfg().capsule&&(call||d.working||notice)));capsule.classList.toggle('is-ringing',Boolean(call?.status==='ringing'&&cfg().motion));
   const title=call?label(call.contactId):d.working?t('กำลังตอบ…','Replying…'):notice?.title||'',sub=call?(call.status==='ringing'?(call.direction==='incoming'?t('มีสายเรียกเข้า','Incoming call'):t('กำลังเรียก…','Calling…')):t('อยู่ในสาย','On a call')):notice?.text||'';
-  target.innerHTML=cfg().capsule?ico(call?'phone':d.working?'ellipsis':'message')+'<span><strong>'+esc(title)+'</strong><small>'+esc(sub.slice(0,45))+'</small></span>'+(call?.status==='connected'?'<span class="ap-wave"><i></i><i></i><i></i><i></i></span>':''):'';
-  outside.hidden=opened||!cfg().capsule||!cfg().notifications||!(notice||call);outside.innerHTML=b(ico(call?'phone':'message')+'<span><strong>'+esc(title)+'</strong><small>'+esc(sub.slice(0,70))+'</small></span>','capsule','','ap-outside-button');
+  setHTML(target,cfg().capsule?ico(call?'phone':d.working?'ellipsis':'message')+'<span><strong>'+esc(title)+'</strong><small>'+esc(sub.slice(0,45))+'</small></span>'+(call?.status==='connected'?'<span class="ap-wave"><i></i><i></i><i></i><i></i></span>':''):'');
+  hide(outside,!d.enabled||opened||!cfg().capsule||!cfg().notifications||!(notice||call));if(!outside.hidden)setHTML(outside,b(ico(call?'phone':'message')+'<span><strong>'+esc(title)+'</strong><small>'+esc(sub.slice(0,70))+'</small></span>','capsule','','ap-outside-button'));
   if(notice&&notice.id!==lastNotice){lastNotice=notice.id;if(cfg().sound)chime();}
  }
  function chime(){try{const C=window.AudioContext||window.webkitAudioContext,a=new C(),osc=a.createOscillator(),gain=a.createGain();osc.frequency.value=720;gain.gain.value=.025;osc.connect(gain);gain.connect(a.destination);osc.start();osc.stop(a.currentTime+.12);osc.onended=()=>a.close();}catch{}}
  function position(){
-  const vh=visualViewport?.height||innerHeight;root.style.setProperty('--ap-vh',vh+'px');
+  const viewport=window.visualViewport,vh=viewport?.height||innerHeight;setStyle(root,'--ap-vh',vh+'px');setStyle(root,'--ap-vw',(viewport?.width||innerWidth)+'px');setStyle(root,'--ap-vtop',(viewport?.offsetTop||0)+'px');setStyle(root,'--ap-vleft',(viewport?.offsetLeft||0)+'px');
   if(innerWidth<=650){device.style.left='';device.style.top='';return;}
-  if(drag)return;const w=device.offsetWidth||390,h=device.offsetHeight||844,x=cfg().position.x*Math.max(0,innerWidth-w-24),y=cfg().position.y*Math.max(0,innerHeight-h-48);device.style.left=Math.max(12,x)+'px';device.style.top=Math.max(28,y)+'px';
+  if(drag)return;const w=device.offsetWidth||390,h=device.offsetHeight||844,x=cfg().position.x*Math.max(0,innerWidth-w-24),y=cfg().position.y*Math.max(0,innerHeight-h-48);setStyle(device,'left',Math.max(12,x)+'px');setStyle(device,'top',Math.max(28,y)+'px');
  }
+ const isAtBottom=body=>body&&body.scrollHeight-body.scrollTop-body.clientHeight<48;
+ function growComposer(){const input=content.querySelector('[data-phone-draft]');if(input){const body=content.querySelector('.ap-chat-body'),pinned=isAtBottom(body);input.style.height='0';input.style.height=Math.min(120,Math.max(44,input.scrollHeight))+'px';if(pinned)body.scrollTop=body.scrollHeight;}}
  function toast(text){const node=root.querySelector('.ap-toast');node.textContent=text;node.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>node.hidden=true,3000);}
  async function run(fn){try{await fn();}catch(e){if(e.name==='AbortError')return;runtime.report(e);toast(e.message);}}
  async function handle(node){
   const a=node.dataset.phone,d=node.dataset;
+  if(a==='earlier-messages'){messageLimit+=80;render();return;}
   if(a==='close'){close();return;}if(a==='home'){history=[];view={app:'home'};closeSheet();render();return;}if(a==='back'){back();return;}if(a==='sheet-close'){closeSheet();return;}
   if(a==='app'){if(p().installed.includes(d.app))go(d.app);return;}
   if(a==='contact-voices'){const form=node.closest('form'),list=form.querySelector('[data-contact-voices]');list.hidden=!list.hidden;list.innerHTML=b(t('ใช้เสียงสำรอง','Use fallback voice'),'contact-voice-set',attr('value',''),'ap-menu-item')+get().voices.voices.map(v=>b(esc(v.name),'contact-voice-set',attr('value',v.id),'ap-menu-item')).join('')+(!get().voices.connected?hint(t('เชื่อม Voice Addon เพื่อเลือกเสียง','Connect Voice Addon to choose voices.')):'');return;}if(a==='contact-voice-set'){const form=node.closest('form');form.querySelector('[name=voiceId]').value=d.value;form.querySelector('[data-phone=contact-voices]').textContent=node.textContent;form.querySelector('[data-contact-voices]').hidden=true;return;}
@@ -260,9 +311,9 @@ export function mountPhoneUI(runtime){
  }
  root.addEventListener('click',e=>{const node=e.target.closest('[data-phone]');if(node)void run(()=>handle(node));else if(e.target===overlay)closeSheet();});
  root.addEventListener('keydown',e=>{if(e.key==='Escape'){if(sheet)closeSheet();else close();}if(['Enter',' '].includes(e.key)&&e.target.matches('.ap-message')){e.preventDefault();void run(()=>handle(e.target));}});
- root.addEventListener('submit',event=>{const node=event.target.closest('[data-phone-form]');if(!node)return;event.preventDefault();void run(async()=>{
+ root.addEventListener('submit',event=>{const node=event.target.closest('[data-phone-form]');if(!node)return;event.preventDefault();if(node.rfPhoneSubmitting)return;node.rfPhoneSubmitting=true;const submit=node.querySelector('[type=submit]');if(submit)submit.disabled=true;void run(async()=>{
   const data=new FormData(node),v=Object.fromEntries(data),kind=node.dataset.phoneForm;
-  if(kind==='message'){clearTimeout(draftTimer);await runtime.act({type:'message-send',threadId:node.dataset.thread,text:v.text,image:p().attachments[node.dataset.thread]||'',replyTo,mode:cfg().replyMode});localDrafts.delete(node.dataset.thread);replyTo='';render();return;}
+  if(kind==='message'){clearTimeout(draftTimer);const threadId=node.dataset.thread;await runtime.act({type:'message-send',threadId,text:v.text,image:p().attachments[threadId]||'',replyTo,mode:cfg().replyMode});const remaining=localDrafts.get(threadId);if(remaining===v.text)localDrafts.delete(threadId);else if(typeof remaining==='string')await runtime.act({type:'draft',threadId,text:remaining});replyTo='';render();return;}
   if(kind==='contact')await runtime.act({type:'contact-save',contact:{...v,id:node.dataset.id}});
   if(kind==='profile')await runtime.act({type:'profile-save',actor:node.dataset.actor,app:node.dataset.app,profile:{...v,private:data.has('private')}});
   if(kind==='post')await runtime.act({type:'post-save',id:node.dataset.id||undefined,app:node.dataset.app,actor:node.dataset.actor||'player',kind:node.dataset.kind,text:v.text,image:v.image});
@@ -283,10 +334,10 @@ export function mountPhoneUI(runtime){
    if(receipt.rolls)toast(receipt.rolls.join(' · ')+' — '+(receipt.won?t('ชนะ +','Won +')+receipt.payout:t('ไม่ชนะ','No win')));else toast(t('บันทึกรายการแล้ว','Transaction saved'));
   }
   closeSheet();render();
- }).finally(()=>{const submit=node.querySelector('[type=submit]');if(submit)submit.disabled=false;});});
+ }).finally(()=>{node.rfPhoneSubmitting=false;const submit=node.querySelector('[type=submit]');if(submit)submit.disabled=false;});});
  root.addEventListener('input',event=>{
   if(event.target.matches('[data-phone-search]')){const search=event.target.value.toLowerCase();for(const row of content.querySelectorAll('[data-searchable]'))row.hidden=!row.dataset.searchable.includes(search);}
-  if(event.target.matches('[data-phone-draft]')){const key=event.target.dataset.phoneDraft,text=event.target.value;localDrafts.set(key,text);clearTimeout(draftTimer);draftTimer=setTimeout(()=>void runtime.act({type:'draft',threadId:key,text}).catch(()=>{}),650);}
+  if(event.target.matches('[data-phone-draft]')){const key=event.target.dataset.phoneDraft,text=event.target.value;localDrafts.set(key,text);growComposer();clearTimeout(draftTimer);draftTimer=setTimeout(()=>void runtime.act({type:'draft',threadId:key,text}).catch(()=>{}),650);}
  });
  root.addEventListener('change',event=>{const input=event.target;if(input.matches('[data-phone-config]'))void run(()=>runtime.preferences({[input.dataset.phoneConfig]:input.checked}));
   if(input.matches('[data-phone-upload]'))void run(async()=>{const file=input.files[0];if(!file)return;if(!['image/png','image/jpeg','image/webp','image/gif'].includes(file.type)||file.size>12*1024*1024||file.type==='image/gif'&&file.size>500*1024)throw Error(t('ภาพไม่เกิน 12 MB หรือ GIF ไม่เกิน 500 KB','Use an image up to 12 MB or a GIF up to 500 KB'));let value;if(file.type==='image/gif')value=await new Promise((ok,no)=>{const reader=new FileReader();reader.onload=()=>ok(reader.result);reader.onerror=no;reader.readAsDataURL(file);});else{const bitmap=await createImageBitmap(file),max=input.dataset.phoneUpload==='avatar'?256:input.closest('form')?.dataset.phoneForm==='sticker'?512:1024,ratio=Math.min(1,max/Math.max(bitmap.width,bitmap.height)),canvas=document.createElement('canvas');canvas.width=Math.round(bitmap.width*ratio);canvas.height=Math.round(bitmap.height*ratio);canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();value=canvas.toDataURL('image/webp',.85);}if(!safeImage(value))throw Error('Unsupported image');const form=input.closest('form'),name=input.dataset.phoneUpload;form.querySelector('[name="'+name+'"]').value=value;const preview=form.querySelector('[data-preview="'+name+'"]');preview.src=value;preview.hidden=false;});
@@ -295,8 +346,8 @@ export function mountPhoneUI(runtime){
  root.addEventListener('pointermove',event=>{if(!drag||drag.id!==event.pointerId)return;event.preventDefault();device.style.left=Math.max(0,Math.min(innerWidth-device.offsetWidth,event.clientX-drag.x+drag.left))+'px';device.style.top=Math.max(20,Math.min(innerHeight-80,event.clientY-drag.y+drag.top))+'px';});
  root.addEventListener('pointerup',event=>{if(!drag||drag.id!==event.pointerId)return;const position={x:parseFloat(device.style.left)/Math.max(1,innerWidth-device.offsetWidth-24),y:parseFloat(device.style.top)/Math.max(1,innerHeight-device.offsetHeight-48)};drag=null;root.releasePointerCapture(event.pointerId);void runtime.preferences({position}).catch(runtime.report);});
  root.addEventListener('pointercancel',()=>drag=null);
- const resized=()=>position();window.addEventListener('resize',resized);visualViewport?.addEventListener('resize',resized);
- function open(app='home'){opened=true;if(app!==view.app)go(app);else render();device.hidden=false;}
- function close(){opened=false;device.hidden=true;closeSheet();activity();}
- return {root,render,open,close,go,reset(){clearTimeout(draftTimer);localDrafts.clear();history=[];view={app:'home'};replyTo='';selectedAccount='';selectedUnit='';close();},destroy(){clearTimeout(toastTimer);clearTimeout(draftTimer);window.removeEventListener('resize',resized);visualViewport?.removeEventListener('resize',resized);root.remove();}};
+ const resized=()=>{if(opened&&!viewportFrame)viewportFrame=requestAnimationFrame(()=>{viewportFrame=0;withSnapshot(()=>{const body=content.querySelector('.ap-chat-body'),pinned=isAtBottom(body);position();growComposer();if(pinned)body.scrollTop=body.scrollHeight;});});};window.addEventListener('resize',resized);window.visualViewport?.addEventListener('resize',resized);window.visualViewport?.addEventListener('scroll',resized);
+ function open(app='home'){if(!opened&&document.activeElement?.matches('input,textarea,[contenteditable=true]'))document.activeElement.blur();opened=true;if(app!==view.app)go(app);else render();device.hidden=false;}
+ function close(){if(root.contains(document.activeElement))document.activeElement.blur();opened=false;cancelAnimationFrame(viewportFrame);viewportFrame=0;device.hidden=true;closeSheet();activity();}
+ return {root,render,open,close,go,reset(){clearTimeout(draftTimer);localDrafts.clear();history=[];view={app:'home'};messageLimit=80;lastMarkup='';renderedRoute='';lastMessage='';replyTo='';selectedAccount='';selectedUnit='';close();},destroy(){clearTimeout(toastTimer);clearTimeout(draftTimer);cancelAnimationFrame(viewportFrame);window.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('scroll',resized);root.remove();}};
 }

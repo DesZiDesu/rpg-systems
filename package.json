@@ -1,6 +1,6 @@
 {
   "name": "tretaresia-rpg",
-  "version": "0.87.1",
+  "version": "0.87.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -96,6 +96,7 @@
     "test:phone": "node --test tests/smartphone.test.mjs",
     "test:phone:real": "node tests/phone-release.real.browser.mjs",
     "preview:phone": "node tests/build-phone-release-showcase.mjs",
-    "test:phone:story:real": "node tests/phone-story-sync.real.browser.mjs"
+    "test:phone:story:real": "node tests/phone-story-sync.real.browser.mjs",
+    "test:phone:layout:real": "node tests/phone-layout.real.browser.mjs"
   }
 }

@@ -1,10 +1,12 @@
 # RoleForge
 
+**Updated in 0.87.2:** Aster Phone keeps its composer and reading position stable, skips unchanged/hidden screen rebuilds, and loads long conversations in batches. Harbor Store has readable light/dark text, clearer actions and a larger mobile close control. [Details](docs/phone-mobile-v0.87.2.md).
+
 **Fixed in 0.87.1:** Phone events survive normal state-update cleanup, first incoming messages work before the player sends anything, and established aliases link to existing NPCs. Confirmed phone activity omitted by the model can be reconciled once from the latest scene. [Details](docs/phone-story-sync-v0.87.1.md).
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Public release: 0.87.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.87.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

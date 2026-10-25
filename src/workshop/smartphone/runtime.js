@@ -1,22 +1,22 @@
-import {linkPhoneContacts} from './identity.js?v=0.87.1';
-import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.87.1';
-import {createPhoneQueue} from './queue.js?v=0.87.1';
-import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.87.1';
-import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.87.1';
-import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData} from './ai.js?v=0.87.1';
-import {savePhoneChat} from './persistence.js?v=0.87.1';
-import {requestDataTask} from '../../task-generation.js?v=0.87.1';
-import {uiLanguage} from '../../ui-language.js?v=0.87.1';
-import {mountPhoneUI} from './ui.js?v=0.87.1';
+import {linkPhoneContacts} from './identity.js?v=0.87.2';
+import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.87.2';
+import {createPhoneQueue} from './queue.js?v=0.87.2';
+import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.87.2';
+import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.87.2';
+import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData} from './ai.js?v=0.87.2';
+import {savePhoneChat} from './persistence.js?v=0.87.2';
+import {requestDataTask} from '../../task-generation.js?v=0.87.2';
+import {uiLanguage} from '../../ui-language.js?v=0.87.2';
+import {mountPhoneUI} from './ui.js?v=0.87.2';
 
 export async function mountSmartphone({api,enabled,busy}){
- const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.87.1',import.meta.url);
+ const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.87.2',import.meta.url);
  await new Promise((ok,no)=>{style.onload=ok;style.onerror=no;document.head.append(style);});
  let phone=normalizePhone(),scope='',nonce=null,revision=null,flight=null,queue,disposed=false,epoch=0,voiceQueue=Promise.resolve(),speechSeen=new Set(),error='',working=false,lastNotification='',replyTimer,pendingMain=null,requestedReplies=new Set(),linking=false,deviceCache={},catchupChecked=false;
- const host=()=>SillyTavern.getContext(),context=()=>api.context(),config=()=>phoneConfig(api.phoneConfiguration?.()),state=()=>context().state;
+ const host=()=>SillyTavern.getContext(),context=()=>api.phoneContext?.()||api.context(),config=()=>phoneConfig(api.phoneConfiguration?.()),state=()=>context().state;
  const language=()=>config().language==='inherit'?uiLanguage():config().language;
  const knownNpcs=()=>[...new Map([...(api.phoneNpcReferences?.()||[]),...(state().npcs||[])].map(n=>[n.id,n])).values()];
- const ownsDevice=()=>{if(hasDevice(state(),config()))return true;const c=host(),last=c.chat.at(-1),name=c.name1||state().player?.name;if(deviceCache.chat!==c.chat||deviceCache.count!==c.chat.length||deviceCache.text!==last?.mes||deviceCache.name!==name)deviceCache={chat:c.chat,count:c.chat.length,text:last?.mes,name,owned:phoneOwnershipInStory(c.chat,name)};return deviceCache.owned;};
+ const ownsDevice=(current=state(),conf=config())=>{if(hasDevice(current,conf))return true;const c=host(),last=c.chat.at(-1),name=c.name1||current.player?.name;if(deviceCache.chat!==c.chat||deviceCache.count!==c.chat.length||deviceCache.text!==last?.mes||deviceCache.name!==name)deviceCache={chat:c.chat,count:c.chat.length,text:last?.mes,name,owned:phoneOwnershipInStory(c.chat,name)};return deviceCache.owned;};
  const active=()=>enabled()&&ownsDevice();
  const ticket=()=>({scope,nonce,epoch}),valid=t=>!disposed&&enabled()&&t.scope===context().key&&t.nonce===context().nonce&&t.epoch===epoch;
  let ui;
@@ -142,7 +142,7 @@ export async function mountSmartphone({api,enabled,busy}){
    const accountId=loginArcade(phone,action.username,action.pin);phone.sessions[accountId]=true;ui?.render();return accountId;
   });
  }
- const runtime={get:()=>({phone,config:config(),state:state(),enabled:enabled(),hasDevice:ownsDevice(),working,error,language:language(),voices:api.voice?.catalog?.()||{enabled:false,connected:false,voices:[]}}),
+ const runtime={get:()=>{const conf=config(),current=state();return {phone,config:conf,state:current,enabled:enabled(),hasDevice:ownsDevice(current,conf),working,error,language:conf.language==='inherit'?uiLanguage():conf.language,voices:api.voice?.catalog?.()||{enabled:false,connected:false,voices:[]}};},
   act,respond,preferences,financial,auth,replaySpeech,report,refresh,retryStory:()=>{const sync=phone.storySync,old=sync&&host().chat[sync.messageId],retry=old&&['failed','empty','interrupted'].includes(sync.status)&&phoneStorySource(old,sync.messageId,api.visible?.(old.mes))===sync.source;return recoverStory(retry?sync.messageId:host().chat.findLastIndex(m=>m&&!m.is_user&&!m.is_system),true);},world:()=>clone(phone),
   open:view=>{refresh();ui.open(view||'home');},close:()=>ui.close(),
   async syncNpcContacts(){for(const n of api.phoneNpcReferences?.()||[]){const c=contactFromNpc(n);if(c&&!phone.contacts.some(v=>v.npcId===c.npcId))await act({type:'contact-save',contact:c});}},

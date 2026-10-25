@@ -2,6 +2,8 @@
 
 Aster Phone 1.0.0 ships with RoleForge; update to 0.87.1 or later for the phone/story synchronization fixes. The parked Pokémon work remains separate.
 
+RoleForge 0.87.2 also improves the phone's rendering, mobile keyboard layout and Store readability. It preserves existing settings and phone data.
+
 ## Open and configure
 
 Install **Aster Phone** in Workshop, enable it for the selected character, and open **Configure**. Its floating shortcut and Wand Menu entry can each be enabled independently. Desktop: drag the status bar to move the phone. Mobile: the device fills the browser viewport. Close it using the top control; closing does not cancel a reply or hang up a call.
@@ -23,6 +25,10 @@ Removing a contact removes the saved address-book entry while keeping the NPC an
 Choose **Reply now** for an immediate background AI task, or **Next roleplay turn** to queue the message for the next normal main-chat response. You can change the default in Settings. Immediate sends made while another generation is active wait for it to finish. “Reply now” within a conversation targets that conversation.
 
 NPCs can answer with several bubbles. No synthetic player message is inserted in the main chat. Close the device and read the roleplay while a background task continues. An unsuccessful response leaves the request available to retry rather than fabricating a reply.
+
+The **Replies** control below the composer shows the current reply mode. **Sent · next story reply** means the message is queued intentionally; **Reply now** asks for its answer without waiting for another main-chat turn. Closing the phone dismisses its text focus and does not focus the main chat box.
+
+Long conversations initially display the latest 80 bubbles. Use **Load earlier messages** to reveal older batches; the full conversation remains saved. Incoming replies preserve your position when reading older messages and keep your current draft and cursor intact. Text typed while a preceding send is saving remains the next draft.
 
 The message menu supports reply, pin, edit your own text and delete. Conversation controls include pinning, archiving, deleting, mute and block. Gather adds groups with editable names and membership. Deleted content is removed from the phone's visible record; this is not a claim to erase information already present in prior model context.
 
