@@ -1,5 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {catalogIndex,newActionId,initialGame,transition,statsFor,STARTERS,REGIONS,ENCOUNTERS,effectiveness,evolutionOptions,JOURNAL,journalEvent,replay,narratedEncounters,worldPrompt} from '../src/workshop/pokemon/core.js';
+import {TERRAINS,resolveTerrain} from '../src/workshop/pokemon/terrains.js';
 const raw=JSON.parse(await readFile(new URL('../src/workshop/pokemon/data/catalog.json',import.meta.url)));const dex=catalogIndex(raw);
 let serial=0;const act=(s,type,p={})=>transition(s,{id:'action-'+(++serial),type,...p},dex),started=()=>act(initialGame(dex),'starter',{speciesId:1,region:'Kanto'});
 test('offline dex has every species and unique forms with honest image coverage',()=>{assert.equal(dex.bySpecies.size,1025);assert.equal(dex.byKey.size,raw.source.forms);assert.equal(new Set(dex.forms.map(f=>f.formId)).size,dex.forms.length);for(let n=1;n<=1025;n++)assert(dex.get(n),String(n));assert(dex.forms.length>1500);assert(dex.source.formsWithImage<dex.forms.length);assert(dex.get('gardevoir-mega').types.includes('fairy'));assert.notEqual(dex.get(282).key,dex.get('gardevoir-mega').key);});
@@ -24,3 +25,24 @@ test('plain HTTP mobile clients can create game actions without crypto.randomUUI
 test('an authored mid-level EXP value stays below the next level until battle XP is earned',()=>{const p=dex.get(1),threshold=dex.experience[p.growth][16],rules={initialParty:[{speciesId:1,level:15,exp:threshold-1}]};let s=initialGame(dex,rules);assert.equal(s.pokemon['initial-0'].exp,threshold-1);assert.equal(s.pokemon['initial-0'].level,15);s=transition(s,{id:'start',type:'starter',region:'Kanto',speciesId:4},dex,rules);s=act(s,'lead',{uid:'initial-0'});s=act(s,'encounter',{speciesId:129,level:5});s=act(s,'attack',{moveId:22});assert.equal(s.battle,null);assert.equal(s.pokemon['initial-0'].level,16);assert(s.logs.some(e=>e.key==='victory'&&e.leveled));});
 test('initial EXP cannot skip levels, including a level-100 boundary',()=>{const p=dex.get(1),rules={initialParty:[{speciesId:1,level:15,exp:1e9},{speciesId:1,level:100,exp:1e9}]},s=initialGame(dex,rules);assert.equal(s.pokemon['initial-0'].exp,dex.experience[p.growth][16]-1);assert.equal(s.pokemon['initial-1'].exp,dex.experience[p.growth][100]);});
 test('choosing a starter leads with it, and changing lead preserves party membership and identities',()=>{const rules={initialParty:[{speciesId:280,level:20}]};let s=transition(initialGame(dex,rules),{id:'new-starter',type:'starter',region:'Kanto',speciesId:4},dex,rules);assert.equal(s.party[0],'new-starter');const before=s.party.slice().sort();s=act(s,'lead',{uid:'initial-0'});assert.equal(s.party[0],'initial-0');assert.deepEqual(s.party.slice().sort(),before);s=act(s,'encounter',{speciesId:16,level:3});assert.throws(()=>act(s,'lead',{uid:'new-starter'}));});
+
+test('battle scenery follows named locations in Thai/English and accepts an explicit override',()=>{
+ for(const location of ['Cerulean Gym','ยิมเมืองฮานาดะ'])assert.equal(resolveTerrain('auto',{place:location}).id,'indoor-gym');
+ assert.equal(resolveTerrain('auto',{place:'ถ้ำใต้น้ำ'}).id,'underwater');
+ assert.equal(resolveTerrain('auto',{place:'ชายหาด'}).id,'sand');
+ assert.equal(resolveTerrain('auto',{place:'Pallet Town'}).id,'grass');
+ assert.equal(resolveTerrain('cave',{place:'Gym'}).id,'cave');
+ assert.equal(resolveTerrain('url(evil)',{place:'Gym'}).id,'indoor-gym');
+});
+test('scenery preferences are replayable without changing battle stats or granting a trainer encounter',()=>{
+ let s=act(started(),'encounter',{speciesId:16,level:3});const before=structuredClone(s);
+ s=act(s,'settings',{terrain:'indoor-gym'});assert.equal(s.settings.terrain,'indoor-gym');
+ assert.deepEqual(s.battle,before.battle);assert.deepEqual(s.pokemon,before.pokemon);assert.deepEqual(s.inventory,before.inventory);
+ assert.throws(()=>act(s,'settings',{terrain:'../other'}),/Unknown battle terrain/);
+ const m={mes:'A route.',extra:{},is_user:false};m.extra[JOURNAL]=[journalEvent({id:'arena',type:'settings',terrain:'cave'},m)];
+ assert.equal(replay([m],dex).settings.terrain,'cave');assert.equal(replay([],dex).settings.terrain,'auto');
+});
+test('every selectable original terrain has a local 240 × 112 game field',async()=>{
+ assert.equal(TERRAINS.length,20);assert.equal(new Set(TERRAINS.map(t=>t.id)).size,20);
+ for(const {id}of TERRAINS){const bytes=await readFile(new URL('../src/workshop/pokemon/assets/battle/firered-'+id+'.png',import.meta.url));assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.equal(bytes.readUInt32BE(16),240);assert.equal(bytes.readUInt32BE(20),112);}
+});

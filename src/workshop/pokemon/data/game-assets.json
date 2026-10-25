@@ -10,6 +10,128 @@
     ],
     "note": "Original game tilemap and palettes reconstructed; platforms are part of this image."
   },
+  "terrains": [
+    {
+      "id": "grass",
+      "folder": "grass",
+      "palette": "terrain",
+      "path": "assets/battle/firered-grass.png"
+    },
+    {
+      "id": "longgrass",
+      "folder": "longgrass",
+      "palette": "terrain",
+      "path": "assets/battle/firered-longgrass.png"
+    },
+    {
+      "id": "sand",
+      "folder": "sand",
+      "palette": "terrain",
+      "path": "assets/battle/firered-sand.png"
+    },
+    {
+      "id": "water",
+      "folder": "water",
+      "palette": "terrain",
+      "path": "assets/battle/firered-water.png"
+    },
+    {
+      "id": "pond",
+      "folder": "pond",
+      "palette": "terrain",
+      "path": "assets/battle/firered-pond.png"
+    },
+    {
+      "id": "underwater",
+      "folder": "underwater",
+      "palette": "terrain",
+      "path": "assets/battle/firered-underwater.png"
+    },
+    {
+      "id": "mountain",
+      "folder": "mountain",
+      "palette": "terrain",
+      "path": "assets/battle/firered-mountain.png"
+    },
+    {
+      "id": "cave",
+      "folder": "cave",
+      "palette": "terrain",
+      "path": "assets/battle/firered-cave.png"
+    },
+    {
+      "id": "building",
+      "folder": "building",
+      "palette": "terrain",
+      "path": "assets/battle/firered-building.png"
+    },
+    {
+      "id": "indoor-plain",
+      "folder": "indoor",
+      "palette": "plain",
+      "path": "assets/battle/firered-indoor-plain.png"
+    },
+    {
+      "id": "indoor-1",
+      "folder": "indoor",
+      "palette": "1",
+      "path": "assets/battle/firered-indoor-1.png"
+    },
+    {
+      "id": "indoor-2",
+      "folder": "indoor",
+      "palette": "2",
+      "path": "assets/battle/firered-indoor-2.png"
+    },
+    {
+      "id": "indoor-gym",
+      "folder": "indoor",
+      "palette": "gym",
+      "path": "assets/battle/firered-indoor-gym.png"
+    },
+    {
+      "id": "indoor-leader",
+      "folder": "indoor",
+      "palette": "leader",
+      "path": "assets/battle/firered-indoor-leader.png"
+    },
+    {
+      "id": "indoor-lorelei",
+      "folder": "indoor",
+      "palette": "lorelei",
+      "path": "assets/battle/firered-indoor-lorelei.png"
+    },
+    {
+      "id": "indoor-bruno",
+      "folder": "indoor",
+      "palette": "bruno",
+      "path": "assets/battle/firered-indoor-bruno.png"
+    },
+    {
+      "id": "indoor-agatha",
+      "folder": "indoor",
+      "palette": "agatha",
+      "path": "assets/battle/firered-indoor-agatha.png"
+    },
+    {
+      "id": "indoor-lance",
+      "folder": "indoor",
+      "palette": "lance",
+      "path": "assets/battle/firered-indoor-lance.png"
+    },
+    {
+      "id": "indoor-champion",
+      "folder": "indoor",
+      "palette": "champion",
+      "path": "assets/battle/firered-indoor-champion.png"
+    },
+    {
+      "id": "indoor-link",
+      "folder": "indoor",
+      "palette": "link",
+      "path": "assets/battle/firered-indoor-link.png"
+    }
+  ],
   "items": {
     "mirror": "PokeAPI/sprites",
     "commit": "97a7832d307311c0e1c6ea9035308bf80cc94f81",
@@ -27,8 +149,60 @@
   "rights": "Pok\u00e9mon assets belong to Nintendo / Game Freak / Creatures / The Pok\u00e9mon Company. These are community mirrors, not official hosting.",
   "sources": [
     {
-      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/grass/terrain.png",
-      "sha256": "42aac42dfdec2a1546b2d20d6ec6034bac9b15046a69a8d7417b8f175bb1c5e3"
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/fire-stone.png",
+      "sha256": "79b9f7aa7adf5f43465545cfb7b510789c90215b27680d91acaa0690c57f2507"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/great-ball.png",
+      "sha256": "4d0a614eebb4aef6b02a3620e4262f471b620cc8bc81cfeebeb3cbb995727ac6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/leaf-stone.png",
+      "sha256": "f7987d279723736d568ada3cece6936d441c61f3ccec401a7e236020bacd7f5e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/moon-stone.png",
+      "sha256": "44757f9cc107f23cc6775c93edc5b0eea429f2e08c5e547ee325c699d77c2742"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/poke-ball.png",
+      "sha256": "a4c7b9e8ff5727d10e6f679bcf16a963a95b2a36480d3bd9156d9808bdf54dff"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/potion.png",
+      "sha256": "db5a0fa2343c5761599d9efd4514a30125164ced094b55f760a763ed0c9c64d5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/thunder-stone.png",
+      "sha256": "74fa4c73cad9285a250f8f7e8e434409b3e89670adc6f30b419b709fce1bad10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/water-stone.png",
+      "sha256": "a213ec2d62b816073a9a78bf659b436de8e196df3b14437b3d768f466b3e9616"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/building/terrain.bin",
+      "sha256": "b3aa7db1dd6d4973b20f4934dc1215b7c442228414b145fe5de7014778d5aef0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/building/terrain.pal",
+      "sha256": "3e930d75074aa7792aa9da3daf9220dd4f01dd973b05990c9a5d96cef8ae5e3e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/building/terrain.png",
+      "sha256": "af7a79f684b7f656926ba7727f1b48e30af2bf196131a0805db6fdc37beb2d42"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/cave/terrain.bin",
+      "sha256": "4afb4e7d002688afa9893491698f9d7f58549539d1d004b08483f322180cbb88"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/cave/terrain.pal",
+      "sha256": "0a5552077b625dff4116a201958feeab18de276b5cca1a9f674a9d695023e94e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/cave/terrain.png",
+      "sha256": "f72dc9d51c65404c563ef2d10da3c0c61de361e7fd941100ab24a98e22779471"
     },
     {
       "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/grass/terrain.bin",
@@ -39,36 +213,132 @@
       "sha256": "c18d2c75d011e4a80d418981ba569a88461ce4001661d9a2ff54278fddf5d2c3"
     },
     {
-      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/poke-ball.png",
-      "sha256": "a4c7b9e8ff5727d10e6f679bcf16a963a95b2a36480d3bd9156d9808bdf54dff"
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/grass/terrain.png",
+      "sha256": "42aac42dfdec2a1546b2d20d6ec6034bac9b15046a69a8d7417b8f175bb1c5e3"
     },
     {
-      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/great-ball.png",
-      "sha256": "4d0a614eebb4aef6b02a3620e4262f471b620cc8bc81cfeebeb3cbb995727ac6"
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/1.pal",
+      "sha256": "7ea5ff1c044d15167129433781bba50583b68514bd695decdd8f2b27e84d26ad"
     },
     {
-      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/potion.png",
-      "sha256": "db5a0fa2343c5761599d9efd4514a30125164ced094b55f760a763ed0c9c64d5"
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/2.pal",
+      "sha256": "cf0d20eb56522d7186e30b74b6750080e6c0e183c3f1c0b5e758b797bcf4401f"
     },
     {
-      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/fire-stone.png",
-      "sha256": "79b9f7aa7adf5f43465545cfb7b510789c90215b27680d91acaa0690c57f2507"
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/agatha.pal",
+      "sha256": "6aef8c6a3308836b593034398a64325c4538636f18f7669a41f63a76d35f43b2"
     },
     {
-      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/water-stone.png",
-      "sha256": "a213ec2d62b816073a9a78bf659b436de8e196df3b14437b3d768f466b3e9616"
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/bruno.pal",
+      "sha256": "af8dc19e862391733ac365bf9a81bb63ae434ba8fe73d86d38959e5ba8ef17b9"
     },
     {
-      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/thunder-stone.png",
-      "sha256": "74fa4c73cad9285a250f8f7e8e434409b3e89670adc6f30b419b709fce1bad10"
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/champion.pal",
+      "sha256": "46f23e1c0a20eccf01ae51fb3dc55e68f031079cc2b46eb26c958ec8164de02c"
     },
     {
-      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/leaf-stone.png",
-      "sha256": "f7987d279723736d568ada3cece6936d441c61f3ccec401a7e236020bacd7f5e"
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/gym.pal",
+      "sha256": "67795e9f45509893d4995922d78aa092a8152e1d17b8bd5b0ba700bc7824a638"
     },
     {
-      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/items/moon-stone.png",
-      "sha256": "44757f9cc107f23cc6775c93edc5b0eea429f2e08c5e547ee325c699d77c2742"
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/lance.pal",
+      "sha256": "9860f720db9e25549748c5a56fb37386654b20c4fa4006d55e7b6c2e2b451483"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/leader.pal",
+      "sha256": "b5f122d0e3e707409de38f372b75571d0678503ee51ac971b9d59224d1eab00a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/link.pal",
+      "sha256": "0f457680a5ceecfd559d01b75bacefcdb23c8706962b7d749a87e652dffae053"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/lorelei.pal",
+      "sha256": "964be851a1d37826d4740d70a7dd9e19e1ee0921de98ec3ed83e60fcaa31f8bc"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/plain.pal",
+      "sha256": "4984e02e739647e2ef02bc43f05e5858d1d95cfc42361c0ad81e4ce26f8c89b4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/terrain.bin",
+      "sha256": "b3aa7db1dd6d4973b20f4934dc1215b7c442228414b145fe5de7014778d5aef0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/indoor/terrain.png",
+      "sha256": "f14b6d4e136a611193f1f644107f7227df7a0e7d6eeb1378d7cf8385928e5389"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/longgrass/terrain.bin",
+      "sha256": "71cba2ad6bfa08928f6b11062b85dc20515baf8f5ede70a2eba7c4ff58c73039"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/longgrass/terrain.pal",
+      "sha256": "d0868617d1e2000f56b6b82ea796d30fda12169942850355e1c66f9a150bf1aa"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/longgrass/terrain.png",
+      "sha256": "9fdae290a458cf04b8eb7320a062726c494b427934197ddb2df6e9000c56f60c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/mountain/terrain.bin",
+      "sha256": "cda112209df8e35c04d6446e3a91d5bd704be0294df3bc61b1c052cfa988aad9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/mountain/terrain.pal",
+      "sha256": "0b46b651bb860a014ae5c569c64a442fdc4c3c3928270903d38e0d2345e6fdc9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/mountain/terrain.png",
+      "sha256": "8ae4bd2eed26460f2cfdc7c7595cfbcb352bbb033603dc8c74aa18db0cefab6f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/pond/terrain.bin",
+      "sha256": "66dab23a8ad15e806940833879f0597097c56a99d14afe3d65e7bf3ebce63f36"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/pond/terrain.pal",
+      "sha256": "54a12fe3df0153d73262a236a44d1fdc1e3bf313f710f886d6706f5018891b00"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/pond/terrain.png",
+      "sha256": "c4d704315af5cc4710b797de25bf9f202e9b7fc8ed927085bb5fa1825756bea0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/sand/terrain.bin",
+      "sha256": "f9f7ec974de4431a9199858fd61149703e1aeca99e82021859c6b1e7efb26650"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/sand/terrain.pal",
+      "sha256": "ecbeada76c244364aa4414822afbedf5b2a07e0bf8e900526af843af6507e2d6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/sand/terrain.png",
+      "sha256": "f14dca79dbf94af22afbe42f3eb69e81a018eebb100fb80b25ec085d1fbff1fc"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/underwater/terrain.bin",
+      "sha256": "85fc7a51a8c4645e9174fff65df18959b6c63285707861682e664fbe3523f04a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/underwater/terrain.pal",
+      "sha256": "b6845e8a53dc0967d77ba9a5389dffc234666da9b8f06ea149711272f3141479"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/underwater/terrain.png",
+      "sha256": "21313fde76a4b5f1d38703f04129ccad220f7a6fde7af9893730d65049a1ccb2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/water/terrain.bin",
+      "sha256": "3c527aef8e4a1a7f66e95dff2a5dd0f21254af0ff8968d249f8a251d5594ab87"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/water/terrain.pal",
+      "sha256": "b1c1b775ef03400bbedf18baeb8346e1bedd246176f3e0ab791d70b08364b017"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/graphics/battle_terrain/water/terrain.png",
+      "sha256": "2384103b3270e43716a580edc822494ea7ed150d2d1e8b571cae75853a6f2f72"
     }
   ]
 }

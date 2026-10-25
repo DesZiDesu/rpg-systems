@@ -1,0 +1,865 @@
+{
+  "classificationSource": {
+    "name": "PokeAPI",
+    "repo": "https://github.com/PokeAPI/pokeapi",
+    "commit": "2bf639e5572812a67d2b94903fdcb9d095f5aeb2",
+    "species": 1025,
+    "forms": 1579,
+    "note": "PokeAPI snapshot; not a claim of unreleased or absent franchise content.",
+    "spritesCommit": "97a7832d307311c0e1c6ea9035308bf80cc94f81",
+    "formsWithImage": 1531,
+    "localArtwork": 135
+  },
+  "legendary": 71,
+  "mythical": 23,
+  "counting": "Unique species; alternate forms are not counted twice. Not an assertion of current-franchise completeness.",
+  "artwork": "Original Pokemon artwork mirrored by PokeAPI/sprites; not official hosting.",
+  "entries": [
+    {
+      "speciesId": 144,
+      "name": "Articuno",
+      "generation": 1,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/144.png",
+      "file": "144.png",
+      "sha256": "d85d2a2dd08e8f0d797298f9db4bab91a6b0ee6e03999333be55fc5cf09b3043"
+    },
+    {
+      "speciesId": 145,
+      "name": "Zapdos",
+      "generation": 1,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/145.png",
+      "file": "145.png",
+      "sha256": "6435d62ab354ac4bfc94eaf8dda48a4ea3cb24f5e64d48cab9dafd5194f458cc"
+    },
+    {
+      "speciesId": 146,
+      "name": "Moltres",
+      "generation": 1,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/146.png",
+      "file": "146.png",
+      "sha256": "f4d46f40e4fc984ebc5eccdaf11540dd1fdd0a756a629b7bb1da72777d5ff85a"
+    },
+    {
+      "speciesId": 150,
+      "name": "Mewtwo",
+      "generation": 1,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/150.png",
+      "file": "150.png",
+      "sha256": "d99adeb9b4523073ca218a6f472ea5b602b047ccd8af8dea6fa7ae051f80366a"
+    },
+    {
+      "speciesId": 151,
+      "name": "Mew",
+      "generation": 1,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/151.png",
+      "file": "151.png",
+      "sha256": "9991aee5181178b604b99aec636533b0c5a52a321ce246dd3b9c33243a342a64"
+    },
+    {
+      "speciesId": 243,
+      "name": "Raikou",
+      "generation": 2,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/243.png",
+      "file": "243.png",
+      "sha256": "3d7d4b163d74c2dcfba86d94e49ff0a6adc115b5ef90a830008081b50a9912bd"
+    },
+    {
+      "speciesId": 244,
+      "name": "Entei",
+      "generation": 2,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/244.png",
+      "file": "244.png",
+      "sha256": "b5e6bdd788e7e099fc464fea9a11db1063b40e28136446f90932078d62c35f09"
+    },
+    {
+      "speciesId": 245,
+      "name": "Suicune",
+      "generation": 2,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/245.png",
+      "file": "245.png",
+      "sha256": "e72657f300c9b1db690f61a08b0cafc3ccbbd31548a081b931adf0679bd9f8a6"
+    },
+    {
+      "speciesId": 249,
+      "name": "Lugia",
+      "generation": 2,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/249.png",
+      "file": "249.png",
+      "sha256": "6977890cdd83d4b542961be5bbe965c8ca92ccff843094be4840939c4f0674d6"
+    },
+    {
+      "speciesId": 250,
+      "name": "Ho-Oh",
+      "generation": 2,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/250.png",
+      "file": "250.png",
+      "sha256": "e5742142da852da5d1289f7848c12be3a66f792e32a8cd26466dd7bf319da0e7"
+    },
+    {
+      "speciesId": 251,
+      "name": "Celebi",
+      "generation": 2,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/251.png",
+      "file": "251.png",
+      "sha256": "31384fd45c2663c1e6ed94deeb8b16c7e2e0a5afb4eb8ea95fef175ab34308be"
+    },
+    {
+      "speciesId": 377,
+      "name": "Regirock",
+      "generation": 3,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/377.png",
+      "file": "377.png",
+      "sha256": "d896ee1fbc25a12c4794d02b6277a1d8512aba4a29b0ba38d94f6461bc2ca9b8"
+    },
+    {
+      "speciesId": 378,
+      "name": "Regice",
+      "generation": 3,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/378.png",
+      "file": "378.png",
+      "sha256": "678630852e2cc90aeb4ad92fdc94e21ffa085a3d202a31f48bc2d961122b5717"
+    },
+    {
+      "speciesId": 379,
+      "name": "Registeel",
+      "generation": 3,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/379.png",
+      "file": "379.png",
+      "sha256": "07e850f34161901093e3ca44a8c8228770528308f87d61ba48f5c7f92ab8c95a"
+    },
+    {
+      "speciesId": 380,
+      "name": "Latias",
+      "generation": 3,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/380.png",
+      "file": "380.png",
+      "sha256": "2c184ea362a6c65ee6fabe756067f97f62a99aa374a69075856a0c29768b4911"
+    },
+    {
+      "speciesId": 381,
+      "name": "Latios",
+      "generation": 3,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/381.png",
+      "file": "381.png",
+      "sha256": "36410fb32ec67d3e55b80cdf957cf2a9aa2c1d829bd2618d2cdc062b70b93add"
+    },
+    {
+      "speciesId": 382,
+      "name": "Kyogre",
+      "generation": 3,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/382.png",
+      "file": "382.png",
+      "sha256": "a24962e9bd96fb84e69872ed7e6f1982c08b4241df60c5f64a1c0cfa7a651878"
+    },
+    {
+      "speciesId": 383,
+      "name": "Groudon",
+      "generation": 3,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/383.png",
+      "file": "383.png",
+      "sha256": "bf6a4334d6a49af32396c9d155e867a1699439ff73c28bb6dad15dd4684b4461"
+    },
+    {
+      "speciesId": 384,
+      "name": "Rayquaza",
+      "generation": 3,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/384.png",
+      "file": "384.png",
+      "sha256": "52fdacd461e20343dc7fd127b062c23429dc63dfe558c94b9aea0dc7a27be939"
+    },
+    {
+      "speciesId": 385,
+      "name": "Jirachi",
+      "generation": 3,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/385.png",
+      "file": "385.png",
+      "sha256": "f44127b482aeab3472b124e64c08d4fd61f13a07a750ca4bb1a96bd2895f3422"
+    },
+    {
+      "speciesId": 386,
+      "name": "Deoxys",
+      "generation": 3,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/386.png",
+      "file": "386.png",
+      "sha256": "9957c0b49f1a1f5dbc084af586b6272a3ddfc54f479f1253cbc023e4cf09bd60"
+    },
+    {
+      "speciesId": 480,
+      "name": "Uxie",
+      "generation": 4,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/480.png",
+      "file": "480.png",
+      "sha256": "cab78c6b5d5d41cda8b74c7324c3ffe43087b518cef2ac8deb9e0febadd20d59"
+    },
+    {
+      "speciesId": 481,
+      "name": "Mesprit",
+      "generation": 4,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/481.png",
+      "file": "481.png",
+      "sha256": "3e23dea0804de2775c95e7e88247cd298953328a68e674632d85fd9a99ca1a6b"
+    },
+    {
+      "speciesId": 482,
+      "name": "Azelf",
+      "generation": 4,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/482.png",
+      "file": "482.png",
+      "sha256": "c6835c0bf3159160ee8ff55604b7e0ee00e7bf99ec40ecb5560ccb412fa73f34"
+    },
+    {
+      "speciesId": 483,
+      "name": "Dialga",
+      "generation": 4,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/483.png",
+      "file": "483.png",
+      "sha256": "34d234eef4714349ead88d0df85adcdb97195198f556a09e35dd7aac02d7918d"
+    },
+    {
+      "speciesId": 484,
+      "name": "Palkia",
+      "generation": 4,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/484.png",
+      "file": "484.png",
+      "sha256": "2c7827e8ecdf18194761404141b27ee6e50c6805b34d3cce2cabc9449e4b48e2"
+    },
+    {
+      "speciesId": 485,
+      "name": "Heatran",
+      "generation": 4,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/485.png",
+      "file": "485.png",
+      "sha256": "46a39ce0a782e218a0417ae9c6d359e14bc5d066b0ee0ce28be868932522a454"
+    },
+    {
+      "speciesId": 486,
+      "name": "Regigigas",
+      "generation": 4,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/486.png",
+      "file": "486.png",
+      "sha256": "1bd2cee31f5de6c64410983465bb1c47b8ec48c0c45c9c38fc28f58bac106286"
+    },
+    {
+      "speciesId": 487,
+      "name": "Giratina",
+      "generation": 4,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/487.png",
+      "file": "487.png",
+      "sha256": "a43e1563cf09e86f391a75b1de445b2eaef4773a956c39b8d9377048b02f82e2"
+    },
+    {
+      "speciesId": 488,
+      "name": "Cresselia",
+      "generation": 4,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/488.png",
+      "file": "488.png",
+      "sha256": "e2c3f093ae5674053f55d76d09e60e7390bc3cdd1abd2f9bae1a2b17ff8ed7d0"
+    },
+    {
+      "speciesId": 489,
+      "name": "Phione",
+      "generation": 4,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/489.png",
+      "file": "489.png",
+      "sha256": "0230d5a9428ab1dd9f0477e61b066d7d5965429c8f522889b4cfcfac488f5a30"
+    },
+    {
+      "speciesId": 490,
+      "name": "Manaphy",
+      "generation": 4,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/490.png",
+      "file": "490.png",
+      "sha256": "6329b52580a6baa5b20ed096f515b7b86251257c71019f48f59c3529a66ed59b"
+    },
+    {
+      "speciesId": 491,
+      "name": "Darkrai",
+      "generation": 4,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/491.png",
+      "file": "491.png",
+      "sha256": "79bb2618a2590871538b674bc8052b6587a479f6a09377b6378fbc4976437c84"
+    },
+    {
+      "speciesId": 492,
+      "name": "Shaymin",
+      "generation": 4,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/492.png",
+      "file": "492.png",
+      "sha256": "192ecc7767cba15ca1a06f355530a6a701bb724ee5f90005990c235a4de242f8"
+    },
+    {
+      "speciesId": 493,
+      "name": "Arceus",
+      "generation": 4,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/493.png",
+      "file": "493.png",
+      "sha256": "2c33a80a60316f3bb3aa611246543857e053a2728c94c0f67efa44b965d8bc31"
+    },
+    {
+      "speciesId": 494,
+      "name": "Victini",
+      "generation": 5,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/494.png",
+      "file": "494.png",
+      "sha256": "67cbd0d969f774d37c340b0965f622292f706fbb721d8db6f5f393f5f2cb9e64"
+    },
+    {
+      "speciesId": 638,
+      "name": "Cobalion",
+      "generation": 5,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/638.png",
+      "file": "638.png",
+      "sha256": "55393632938b441cf02fbc538bc9c3fcca3a10cf2e6dbf6ca31ada355ba2f9ee"
+    },
+    {
+      "speciesId": 639,
+      "name": "Terrakion",
+      "generation": 5,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/639.png",
+      "file": "639.png",
+      "sha256": "eb78e06204b5bff2fe0a890307b920d8969d1959f436a9574767284d47b04fcf"
+    },
+    {
+      "speciesId": 640,
+      "name": "Virizion",
+      "generation": 5,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/640.png",
+      "file": "640.png",
+      "sha256": "b799e77272958f3ee97da9fa56fc662ad6fe231df1bc2dafc7def0f318fad5b2"
+    },
+    {
+      "speciesId": 641,
+      "name": "Tornadus",
+      "generation": 5,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/641.png",
+      "file": "641.png",
+      "sha256": "7e6e719d01cc61f989e296f4cec0f543e886ba4f3cc4ca50ff8ecf223f9c5cc2"
+    },
+    {
+      "speciesId": 642,
+      "name": "Thundurus",
+      "generation": 5,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/642.png",
+      "file": "642.png",
+      "sha256": "16543f0765bfd48a4712af2a449d33157d03e84dfcc0986e9ac7bb6a9a4c1b4c"
+    },
+    {
+      "speciesId": 643,
+      "name": "Reshiram",
+      "generation": 5,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/643.png",
+      "file": "643.png",
+      "sha256": "a420e47a41e5b2b65f1ccd528cfc01e47d1c05eeef5bea7d06a7da26cd09f6fe"
+    },
+    {
+      "speciesId": 644,
+      "name": "Zekrom",
+      "generation": 5,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/644.png",
+      "file": "644.png",
+      "sha256": "de9c3fa59c8bd6a7903598b4737fecb410c78d0ee59617b4bf454dbeebd3dfe4"
+    },
+    {
+      "speciesId": 645,
+      "name": "Landorus",
+      "generation": 5,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/645.png",
+      "file": "645.png",
+      "sha256": "6016d0660db403e7baefd76a96c9e48bd51a4cbafd99318211dd17fb74e92324"
+    },
+    {
+      "speciesId": 646,
+      "name": "Kyurem",
+      "generation": 5,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/646.png",
+      "file": "646.png",
+      "sha256": "419015e5cb6b62f703d9d4a390d918e262d4ee90a7225b5124058b1b8aea91a7"
+    },
+    {
+      "speciesId": 647,
+      "name": "Keldeo",
+      "generation": 5,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/647.png",
+      "file": "647.png",
+      "sha256": "6c2f1405fa0dd41cb3bf725b732453549291af677379d34da34dcd51414fd1c8"
+    },
+    {
+      "speciesId": 648,
+      "name": "Meloetta",
+      "generation": 5,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/648.png",
+      "file": "648.png",
+      "sha256": "c87ecc732330924e05c2e531c15dd87d1fba61368c93f0cc5dc6d810bcf9c07a"
+    },
+    {
+      "speciesId": 649,
+      "name": "Genesect",
+      "generation": 5,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/649.png",
+      "file": "649.png",
+      "sha256": "7ea39dd909fa03ca5faf87174feaac651d3cec8c0d73f78a634eff708314b0f7"
+    },
+    {
+      "speciesId": 716,
+      "name": "Xerneas",
+      "generation": 6,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/716.png",
+      "file": "716.png",
+      "sha256": "a5d68ad804772e284ec0e32fb084383dd229af458c4fc2f86e2d5fb03e343553"
+    },
+    {
+      "speciesId": 717,
+      "name": "Yveltal",
+      "generation": 6,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/717.png",
+      "file": "717.png",
+      "sha256": "da87bb19271e82242bc33ec836c59b466de8a6734f4bc6eb4b8b1ec766a49793"
+    },
+    {
+      "speciesId": 718,
+      "name": "Zygarde",
+      "generation": 6,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/718.png",
+      "file": "718.png",
+      "sha256": "d9f91e73e7ab1048b78a51fd54d9c12e67785bae3b115bc16fb55c638d639288"
+    },
+    {
+      "speciesId": 719,
+      "name": "Diancie",
+      "generation": 6,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/719.png",
+      "file": "719.png",
+      "sha256": "098efcbc65f7b9e66373312b288cd3145f94937140c83287e4e145b6e92bf493"
+    },
+    {
+      "speciesId": 720,
+      "name": "Hoopa",
+      "generation": 6,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/720.png",
+      "file": "720.png",
+      "sha256": "05542935ad3acd91d5458a57204734088244d99bdc78ecfb1f336d815e184aa6"
+    },
+    {
+      "speciesId": 721,
+      "name": "Volcanion",
+      "generation": 6,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/721.png",
+      "file": "721.png",
+      "sha256": "f75f159016630dc21e4318af93f46f6df2af99fc94236c41cfa3274203fe5cd9"
+    },
+    {
+      "speciesId": 772,
+      "name": "Type: Null",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/772.png",
+      "file": "772.png",
+      "sha256": "3aadd36173e9fd8a616bdf56be3cb972ae3255c6d9792a26ec5b7d563fe76e0c"
+    },
+    {
+      "speciesId": 773,
+      "name": "Silvally",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/773.png",
+      "file": "773.png",
+      "sha256": "750e0c1cfc168a8cb9294f29214d5148bbe5c5c7622e474ab6ba6961638070c5"
+    },
+    {
+      "speciesId": 785,
+      "name": "Tapu Koko",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/785.png",
+      "file": "785.png",
+      "sha256": "0fbf6b58a557433d9af4afb1454b71182beac3d69fd426eaf13820a436d630af"
+    },
+    {
+      "speciesId": 786,
+      "name": "Tapu Lele",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/786.png",
+      "file": "786.png",
+      "sha256": "45c8866f0c0ca0e9e907da62cfefb645651296b55846e55bf80a31fd6042b9ae"
+    },
+    {
+      "speciesId": 787,
+      "name": "Tapu Bulu",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/787.png",
+      "file": "787.png",
+      "sha256": "3b818bada8780560e5d1ded2d7a40d4a9a4a1d9d54e8127829e632c88d3b3ec8"
+    },
+    {
+      "speciesId": 788,
+      "name": "Tapu Fini",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/788.png",
+      "file": "788.png",
+      "sha256": "0ae8ca960c462d3a4a36e771ce995d9ef06ae319e1e5f2fb6f19c6de203716f9"
+    },
+    {
+      "speciesId": 789,
+      "name": "Cosmog",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/789.png",
+      "file": "789.png",
+      "sha256": "f99320a1705500e57d386b9c56e1dc2f469b6650a35997c5f49665ecca39f0ff"
+    },
+    {
+      "speciesId": 790,
+      "name": "Cosmoem",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/790.png",
+      "file": "790.png",
+      "sha256": "e6cf3d5ba6d5f9b58e54877ab9e4046f91dabb9dac009f2bb0cc43e7fce34f17"
+    },
+    {
+      "speciesId": 791,
+      "name": "Solgaleo",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/791.png",
+      "file": "791.png",
+      "sha256": "c91563dd72cde89fbe89c4308f99d61921107360e6f465a97f71c3e3e7198a0e"
+    },
+    {
+      "speciesId": 792,
+      "name": "Lunala",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/792.png",
+      "file": "792.png",
+      "sha256": "717cdd8c57ec70dee65bf4fd1aebb2aca35bf228f698c6291f5de9e8b942e9fa"
+    },
+    {
+      "speciesId": 800,
+      "name": "Necrozma",
+      "generation": 7,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/800.png",
+      "file": "800.png",
+      "sha256": "30fe052d698c75e805c2050eb86b52224be2caf546ebe7c7759b83150cfd2219"
+    },
+    {
+      "speciesId": 801,
+      "name": "Magearna",
+      "generation": 7,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/801.png",
+      "file": "801.png",
+      "sha256": "43e99c61172cbb6a2dfaa9e5cd7c2c771efe92c1600e0cd28dd0e3f6931ae83e"
+    },
+    {
+      "speciesId": 802,
+      "name": "Marshadow",
+      "generation": 7,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/802.png",
+      "file": "802.png",
+      "sha256": "8d26613e43312a7a2cbafc57534a6289edd9262ebd61ea2cfcd0312fc1f0ca57"
+    },
+    {
+      "speciesId": 807,
+      "name": "Zeraora",
+      "generation": 7,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/807.png",
+      "file": "807.png",
+      "sha256": "d4ded364e83349ed9a0de698d37b30b33d25d892ad98a80a0816eca219e3ea1a"
+    },
+    {
+      "speciesId": 808,
+      "name": "Meltan",
+      "generation": 7,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/808.png",
+      "file": "808.png",
+      "sha256": "dd7e2efd3963f0b87445da595147e6754dd4009a1515363f8cc75c8ad5e80689"
+    },
+    {
+      "speciesId": 809,
+      "name": "Melmetal",
+      "generation": 7,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/809.png",
+      "file": "809.png",
+      "sha256": "4c723df363bcb70473c47fad26d8efdcf3ca628e8e196c67aeaa69e07fe57042"
+    },
+    {
+      "speciesId": 888,
+      "name": "Zacian",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/888.png",
+      "file": "888.png",
+      "sha256": "a8840e46fa40316df07d94e7127a8df29148646f870568a5d5a20e41c8b2d0da"
+    },
+    {
+      "speciesId": 889,
+      "name": "Zamazenta",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/889.png",
+      "file": "889.png",
+      "sha256": "1c4aa3fa7ed517eb0bcf75a3105d729a8524fb49da45bd3bbcde16b05ad8c56b"
+    },
+    {
+      "speciesId": 890,
+      "name": "Eternatus",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/890.png",
+      "file": "890.png",
+      "sha256": "657d0f2f2e233d6307e8262e19e6c0b89ab222547147ac741d11692306a77eef"
+    },
+    {
+      "speciesId": 891,
+      "name": "Kubfu",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/891.png",
+      "file": "891.png",
+      "sha256": "39edf2d44f29bcc882b172a1e0bc49667910a3cd925e083fb915cd1b71a7fcd8"
+    },
+    {
+      "speciesId": 892,
+      "name": "Urshifu",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/892.png",
+      "file": "892.png",
+      "sha256": "19f6d0a89f1334084cda568f5fb2e1d3ebc7f15487fcdcd04ce7105e91cdf76a"
+    },
+    {
+      "speciesId": 893,
+      "name": "Zarude",
+      "generation": 8,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/893.png",
+      "file": "893.png",
+      "sha256": "20f63f9b2716a9e575dce8c6fb216d886af43222289cf2b065d0015f50d9ef69"
+    },
+    {
+      "speciesId": 894,
+      "name": "Regieleki",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/894.png",
+      "file": "894.png",
+      "sha256": "9973ad0f458f4a297d6f40f3adad354a318ada3d4c90881f83fe3eb517d23b66"
+    },
+    {
+      "speciesId": 895,
+      "name": "Regidrago",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/895.png",
+      "file": "895.png",
+      "sha256": "ff3e2bd5ea383e8e0ee4ff771f53199fa8598301b7ec2dc03d791d770610fb53"
+    },
+    {
+      "speciesId": 896,
+      "name": "Glastrier",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/896.png",
+      "file": "896.png",
+      "sha256": "3205f7264b92a69c0d72a624422d561cdbc8e1206fd92ef0be5028c3eeb7d619"
+    },
+    {
+      "speciesId": 897,
+      "name": "Spectrier",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/897.png",
+      "file": "897.png",
+      "sha256": "e86449cf5723f5cca31d7c279fd8d1e3af272f76f5250009abf8c9ff9f9437cd"
+    },
+    {
+      "speciesId": 898,
+      "name": "Calyrex",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/898.png",
+      "file": "898.png",
+      "sha256": "f03e28294fed6c7f2e6d2b6520a8d4fe982366b5cdfa9d7207c20db33b8de132"
+    },
+    {
+      "speciesId": 905,
+      "name": "Enamorus",
+      "generation": 8,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/905.png",
+      "file": "905.png",
+      "sha256": "278667e0a004fbcd966afdaefcda0b6a9339c8aad273fb522eaefb7b5219eb9d"
+    },
+    {
+      "speciesId": 1001,
+      "name": "Wo-Chien",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1001.png",
+      "file": "1001.png",
+      "sha256": "c839a0ae0d5aea1b296696cffef39173f41f783dcf77a77d8e3cab0edf62db93"
+    },
+    {
+      "speciesId": 1002,
+      "name": "Chien-Pao",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1002.png",
+      "file": "1002.png",
+      "sha256": "4b45094d59ac3396330061a19ddfd868011de86485e69b144c4067c428b599e6"
+    },
+    {
+      "speciesId": 1003,
+      "name": "Ting-Lu",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1003.png",
+      "file": "1003.png",
+      "sha256": "b3c281f47d40fc33c4388ec38c55c21258393984dedf891992ac482f6df2ef97"
+    },
+    {
+      "speciesId": 1004,
+      "name": "Chi-Yu",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1004.png",
+      "file": "1004.png",
+      "sha256": "cf4ac0b620ca7d82631e2913e40f2923ff07f40b50ccde8f39affbc5f3da6b76"
+    },
+    {
+      "speciesId": 1007,
+      "name": "Koraidon",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1007.png",
+      "file": "1007.png",
+      "sha256": "21ad2b6f5dd2f046d3613f9fa0a4c26b7f5a45d1de7abfa4067c143429d04c6a"
+    },
+    {
+      "speciesId": 1008,
+      "name": "Miraidon",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1008.png",
+      "file": "1008.png",
+      "sha256": "ad6fa8d1db38f65b2725f7b777c43c290521cc20d8e92bda6ea5464d11078e6c"
+    },
+    {
+      "speciesId": 1014,
+      "name": "Okidogi",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1014.png",
+      "file": "1014.png",
+      "sha256": "4b066d61616b00afab168e77031d0d4b841b9da2981fdf388cbbb7652159566d"
+    },
+    {
+      "speciesId": 1015,
+      "name": "Munkidori",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1015.png",
+      "file": "1015.png",
+      "sha256": "ce412c9fcd2df51e785a90079291749601030d987473b39c3ecdbb238a75abce"
+    },
+    {
+      "speciesId": 1016,
+      "name": "Fezandipiti",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1016.png",
+      "file": "1016.png",
+      "sha256": "779bd8ae257b0af567122f126c591591f0695aa259ff4ce455499657b4466703"
+    },
+    {
+      "speciesId": 1017,
+      "name": "Ogerpon",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1017.png",
+      "file": "1017.png",
+      "sha256": "997271ed7e2c28221726d80618a12d26e2ff214a5837407c38f3d0f9f626291e"
+    },
+    {
+      "speciesId": 1024,
+      "name": "Terapagos",
+      "generation": 9,
+      "category": "legendary",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1024.png",
+      "file": "1024.png",
+      "sha256": "d3facc3362655145ee4f300f39d09fbce5ebcf5c0d309821c6ffd38c911399bc"
+    },
+    {
+      "speciesId": 1025,
+      "name": "Pecharunt",
+      "generation": 9,
+      "category": "mythical",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/97a7832d307311c0e1c6ea9035308bf80cc94f81/sprites/pokemon/other/official-artwork/1025.png",
+      "file": "1025.png",
+      "sha256": "d9293ebbf58c83884f81a33f01b00300d4c8e556666da83cb4241293042e98f1"
+    }
+  ]
+}

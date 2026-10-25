@@ -25,7 +25,7 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,ref
    return()=>{for(const [type,fn]of events)c.eventSource.removeListener(type,fn);};
   },
  };
- const ensurePokemon=()=>pokemon?Promise.resolve(pokemon):pokemonFlight||=(async()=>{const {mountPokemon}=await import('./pokemon/ui.js?v=pokemon-game-ui-3');const value=await mountPokemon({api,dock,enabled:()=>api.isAddonEnabled?.('pokemon')===true,busy});if(destroyed){value.destroy();throw Error('Workshop closed');}pokemon=value;return value;})().finally(()=>{pokemonFlight=null;});
+ const ensurePokemon=()=>pokemon?Promise.resolve(pokemon):pokemonFlight||=(async()=>{const {mountPokemon}=await import('./pokemon/ui.js?v=pokemon-game-ui-4');const value=await mountPokemon({api,dock,enabled:()=>api.isAddonEnabled?.('pokemon')===true,busy});if(destroyed){value.destroy();throw Error('Workshop closed');}pokemon=value;return value;})().finally(()=>{pokemonFlight=null;});
  const ensure=()=>{
   if(destroyed)return Promise.reject(Error('ปิด Workshop แล้ว'));
   if(app)return Promise.resolve(app);

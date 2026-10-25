@@ -36,7 +36,7 @@
 .pk-game-caret{display:block;width:0;height:0;flex-shrink:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #f2b82f}
 
 /* Original FireRed terrain includes the two floor bases. Sprites are local. */
-.rfpk .pk-arena{background:#dcf2d3 url('../src/workshop/pokemon/assets/battle/firered-grass.png') center/100% 100% no-repeat;image-rendering:pixelated}
+.rfpk .pk-arena{background:#dcf2d3 var(--pk-terrain,url('../src/workshop/pokemon/assets/battle/firered-grass.png')) center/100% 100% no-repeat;image-rendering:pixelated}
 .rfpk .pk-arena:before,.rfpk .pk-arena:after,.rfpk .pk-arena-clouds{display:none}
 .rfpk .pk-arena img{image-rendering:auto}
 .rfpk .pk-ball{width:40px;height:40px;border:0;border-radius:0;background:transparent url('../src/workshop/pokemon/assets/items/poke-ball.png') center/contain no-repeat;box-shadow:none;image-rendering:pixelated}
@@ -44,3 +44,5 @@
 .rfpk .pk-ball.small{width:30px;height:30px}.rfpk .pk-ball.tiny{width:17px;height:17px}
 .rfpk img.pk-item-sprite{width:48px;height:48px;flex-shrink:0;image-rendering:pixelated;object-fit:contain}
 .rfpk .pk-item-command>img.pk-item-sprite{width:32px;height:32px}
+
+.rfpk .pk-terrain-setting{display:flex;flex-direction:column;gap:10px;min-width:0}.rfpk .pk-terrain-setting select{width:100%;max-width:100%;min-height:44px;padding:10px 12px;border:1px solid #a7bdc9;border-radius:8px;background:#fff;color:#193d57;font:inherit;font-size:14px}

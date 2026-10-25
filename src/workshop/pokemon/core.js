@@ -1,3 +1,4 @@
+import {validTerrain} from './terrains.js?v=pokemon-game-ui-4';
 import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.6';
 // Pokémon preview: immutable, replayable game state. No network or host globals.
 export const JOURNAL='roleforge_pokemon_v1',PROMPT='roleforge_pokemon_world',ACTION_PROMPT='roleforge_pokemon_action';
@@ -17,7 +18,7 @@ export function experienceFor(dex,p,level){return dex.experience[p.growth]?.[lev
 export function learnedMoves(dex,p,level){return [...new Set(p.learnset.filter(([at,id])=>at<=level&&dex.moves[id]?.power>0&&dex.moves[id]?.pp>0).map(([,id])=>id))];}
 function creature(dex,key,level,uid){const p=dex.get(key);if(!p)throw Error('Unknown Pokémon');level=Math.floor(limit(level,1,100));const stats=statsFor(p,level),moves=learnedMoves(dex,p,level).slice(-4);if(!moves.length)moves.push(33);return {uid,key:p.key,nickname:'',level,exp:experienceFor(dex,p,level),hp:stats[0],stats,moves:moves.map(id=>({id,pp:dex.moves[id]?.pp||35})),friendship:70,shiny:false};}
 export function initialGame(dex,rules={}){
- const s={schema:1,started:rules.started===true,region:REGIONS.includes(rules.region)?rules.region:'Kanto',party:[],box:[],pokemon:{},seen:[],caught:[],inventory:{'poke-ball':10,'great-ball':3,potion:5,'fire-stone':1,'water-stone':1,'thunder-stone':1,'leaf-stone':1,'moon-stone':1},battle:null,encounters:0,wins:0,settings:{autoNarrate:false},logs:[],lastResult:null,pendingNarration:false};
+ const s={schema:1,started:rules.started===true,region:REGIONS.includes(rules.region)?rules.region:'Kanto',party:[],box:[],pokemon:{},seen:[],caught:[],inventory:{'poke-ball':10,'great-ball':3,potion:5,'fire-stone':1,'water-stone':1,'thunder-stone':1,'leaf-stone':1,'moon-stone':1},battle:null,encounters:0,wins:0,settings:{autoNarrate:false,terrain:'auto'},logs:[],lastResult:null,pendingNarration:false};
  for(const [i,p] of (rules.initialParty||[]).slice(0,6).entries()){const m=creature(dex,p.key||p.speciesId,p.level||5,'initial-'+i);if(Number.isFinite(p.exp))m.exp=Math.floor(limit(p.exp,m.exp,m.level===100?m.exp:experienceFor(dex,dex.get(m.key),m.level+1)-1));m.nickname=String(p.nickname||'').slice(0,36);s.party.push(m.uid);s.pokemon[m.uid]=m;s.seen.push(dex.get(m.key).speciesId);s.caught.push(dex.get(m.key).speciesId);}
  return s;
 }
@@ -66,7 +67,7 @@ export function transition(current,event,dex,rules={}){
  }else if(e.type==='lead'){assert(!s.battle&&s.party.includes(e.uid)&&s.pokemon[e.uid].hp>0,'Choose a healthy party member outside battle');s.party=[e.uid,...s.party.filter(id=>id!==e.uid)];log(s,'lead',{name:species(dex,s.pokemon[e.uid]).name});
  }else if(e.type==='nickname'){assert(s.pokemon[e.uid],'Unknown party member');s.pokemon[e.uid].nickname=String(e.name||'').trim().slice(0,36);
  }else if(e.type==='narrated'){s.pendingNarration=false;
- }else if(e.type==='settings'){if(REGIONS.includes(e.region))s.region=e.region;if(typeof e.autoNarrate==='boolean')s.settings.autoNarrate=e.autoNarrate;
+ }else if(e.type==='settings'){if(REGIONS.includes(e.region))s.region=e.region;if(typeof e.autoNarrate==='boolean')s.settings.autoNarrate=e.autoNarrate;if(e.terrain!==undefined){assert(validTerrain(e.terrain),'Unknown battle terrain');s.settings.terrain=e.terrain;}
  }else throw Error('Unsupported Pokémon action');if(!['settings','nickname','narrated'].includes(e.type))s.pendingNarration=true;return s;
 }
 export function journalEvent(event,m){const offset=String(m.mes||'').length;return {...event,swipe:m.swipe_id||0,offset,anchorHash:sha256(String(m.mes||''))};}
