@@ -98,3 +98,5 @@ test('an unresponsive Worker times out and is terminated',async()=>{
  assert.equal(p.launchers.deathNote,false);assert.equal(p.launchers.wand,true);assert.equal(p.launchers.floating,true);assert.deepEqual(p.enabled,['death-note']);
  assert.equal(normalizeProfile(p,'chat').launchers.deathNote,false);
  });
+
+test('addon creator preferences default on, persist independently and retain addon settings',()=>{const old=normalizeProfile({enabled:['death-note'],launchers:{x:.4},sage:{theme:'azure'}},'character');assert.deepEqual(old.characterCreation,{'death-note':true,pokemon:true});const changed=normalizeProfile({...old,characterCreation:{'death-note':false,pokemon:true,invalid:false}},'character');assert.deepEqual(changed.characterCreation,{'death-note':false,pokemon:true});assert.deepEqual(changed.enabled,['death-note']);assert.equal(changed.sage.theme,'azure');assert.equal(changed.launchers.x,.4);assert.deepEqual(normalizeProfile(JSON.parse(JSON.stringify(changed)),'another-chat').characterCreation,changed.characterCreation);assert.deepEqual(normalizeProfile(null,'fresh').characterCreation,{'death-note':true,pokemon:true});});

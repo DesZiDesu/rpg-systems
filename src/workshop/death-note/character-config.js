@@ -1,5 +1,5 @@
-import {actorKey,defaultDeathNoteSettings} from './actors.js?v=0.86.1';
-import {clockSeconds} from './lifespan.js?v=0.86.1';
+import {actorKey,defaultDeathNoteSettings} from './actors.js?v=0.86.2';
+import {clockSeconds} from './lifespan.js?v=0.86.2';
 
 // Only explicit author preferences are shared. Notebook ownership, bargains,
 // deaths, known faces and learned names stay in the selected chat's journal.

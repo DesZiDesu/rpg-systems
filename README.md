@@ -52,6 +52,8 @@ Workshop is a beta bundled catalog with Great Sage and Field Notes. Packages, pe
 
 ## Character Creation
 
+**New in 0.86.2:** Workshop addon settings include **Use addon character creation**. Turn it off to use the standard RoleForge creator while keeping the addon enabled. The preference is saved per character; switching preserves separate creator drafts and existing gameplay progress. [Guide](docs/character-creation-toggle-v0.86.2.md).
+
 **New in 0.86.1:** Deleting a prewritten first message until the chat is empty opens Character Creation. Saved drafts survive reloads, including SillyTavern restoring its greeting. With Death Note enabled, an ivory-paper character dossier replaces the standard creator, with identity, continuity, notebook possession and eye abilities. All creator choice fields now open a searchable, full-field choice sheet instead of native iOS selects. Existing presets remain intact. Pokémon creation stays in its separate preview and its addon is not included in this release. [Thai guide](docs/character-creation-v0.86.1.th.md).
 
 ## Scene and thought themes

@@ -1,4 +1,4 @@
-import {normalizeStoryRuntime,storyFlagKey} from './story-core.js?v=0.86.1';
+import {normalizeStoryRuntime,storyFlagKey} from './story-core.js?v=0.86.2';
 const safe=id=>typeof id==='string'&&!['constructor','prototype','__proto__'].includes(id)&&/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,119}$/u.test(id);
 const text=(v,n)=>typeof v==='string'?v.trim().slice(0,n):'';
 const escape=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
