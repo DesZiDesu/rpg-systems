@@ -229,7 +229,7 @@ export function mountPhoneUI(runtime){
   if(drag)return;const w=device.offsetWidth||390,h=device.offsetHeight||844,x=cfg().position.x*Math.max(0,innerWidth-w-24),y=cfg().position.y*Math.max(0,innerHeight-h-48);setStyle(device,'left',Math.max(12,x)+'px');setStyle(device,'top',Math.max(28,y)+'px');
  }
  const isAtBottom=body=>body&&body.scrollHeight-body.scrollTop-body.clientHeight<48;
- function growComposer(){const input=content.querySelector('[data-phone-draft]');if(input){const body=content.querySelector('.ap-chat-body'),pinned=isAtBottom(body);input.style.height='0';input.style.height=Math.min(120,Math.max(44,input.scrollHeight))+'px';if(pinned)body.scrollTop=body.scrollHeight;}}
+ function growComposer(){const input=content.querySelector('[data-phone-draft]');if(input){const body=content.querySelector('.ap-chat-body'),pinned=isAtBottom(body);input.style.height='0';const border=input.offsetHeight-input.clientHeight;input.style.height=Math.min(120,Math.max(44,input.scrollHeight+border))+'px';if(pinned)body.scrollTop=body.scrollHeight;}}
  function toast(text){const node=root.querySelector('.ap-toast');node.textContent=text;node.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>node.hidden=true,3000);}
  async function run(fn){try{await fn();}catch(e){if(e.name==='AbortError')return;runtime.report(e);toast(e.message);}}
  async function handle(node){

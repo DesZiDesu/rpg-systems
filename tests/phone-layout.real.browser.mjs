@@ -50,6 +50,7 @@ try{for(const mobile of [false,true]){
  await page.evaluate(()=>{RoleForgePhone.open('messages');});await phone.locator('[data-phone=conversation]').first().click();await page.evaluate(()=>RoleForgePhone.preferences({theme:'dark'}));
  const composer=phone.locator('[data-phone-form=message] textarea');await composer.fill('Yeah—my bad… anyway, it was nice talking with you. It was super fun.');await phone.locator('[data-phone-form=message] [type=submit]').click();await page.waitForFunction(()=>RoleForgePhone.world().pending.length===1);await shot('conversation');
  if(!baseline)assert.equal(await composer.evaluate(n=>getComputedStyle(n).resize),'none','Host styles must not add a resize handle to the auto-growing composer');
+ if(!baseline)assert(await composer.evaluate(n=>n.scrollHeight<=n.clientHeight+1),'An empty composer must not have a vertical scrollbar');
  await composer.fill('A draft that must survive updates.');
  const performanceResult=await page.evaluate(async()=>{
   // First paint the new local draft; the measured refreshes then have identical input.
