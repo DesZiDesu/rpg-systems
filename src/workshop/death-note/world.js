@@ -1,20 +1,20 @@
-import {characterConfigEvents,normalizeDeathNoteConfig} from './character-config.js?v=0.86.0';
-import {recoverNarratedPickup} from './pickup.js?v=0.86.0';
-import {applyCasebookEvent,casebookStoryEvent,casebookInstruction,worldEventKey} from './casebook.js?v=0.86.0';
-import {applyFragmentEvent,fragmentAction,fragmentStoryEvent,fragmentItem,writingMaterials,fragmentInstruction} from './fragments.js?v=0.86.0';
-import {applyPlayerLifespan,aiLifespanEvent,lifespanInstruction,clockSeconds} from './lifespan.js?v=0.86.0';
-import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.86.0';
-import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.86.0';
-import {localId} from '../core.js?v=0.86.0';
-import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.86.0';
-import {observedIdentities,identityBound,learnedName,nameDisclosure,seenFace} from './identity.js?v=0.86.0';
-import {faceKnowledge} from './faces.js?v=0.86.0';
-import {trueNameOf,trueNameSpellings,localizedNpcName} from './names.js?v=0.86.0';
-import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.86.0';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.86.0';
-import {notebookInScene} from './location.js?v=0.86.0';
-import {knowsName} from '../../name-knowledge.js?v=0.86.0';
-export {trueNameOf} from './names.js?v=0.86.0';
+import {characterConfigEvents,normalizeDeathNoteConfig} from './character-config.js?v=0.86.1';
+import {recoverNarratedPickup} from './pickup.js?v=0.86.1';
+import {applyCasebookEvent,casebookStoryEvent,casebookInstruction,worldEventKey} from './casebook.js?v=0.86.1';
+import {applyFragmentEvent,fragmentAction,fragmentStoryEvent,fragmentItem,writingMaterials,fragmentInstruction} from './fragments.js?v=0.86.1';
+import {applyPlayerLifespan,aiLifespanEvent,lifespanInstruction,clockSeconds} from './lifespan.js?v=0.86.1';
+import {applyNotebookEvent,notebookStoryEvent} from './notebook-events.js?v=0.86.1';
+import {actorKey,isShinigami,isHuman,cleanEyeSource,eyeAbility,loseFinalRights,syncPlayerEyes,defaultDeathNoteSettings,eyeSourceLabel} from './actors.js?v=0.86.1';
+import {localId} from '../core.js?v=0.86.1';
+import {eyeInsight,eyeLifeCost} from './eyes.js?v=0.86.1';
+import {observedIdentities,identityBound,learnedName,nameDisclosure,seenFace} from './identity.js?v=0.86.1';
+import {faceKnowledge} from './faces.js?v=0.86.1';
+import {trueNameOf,trueNameSpellings,localizedNpcName} from './names.js?v=0.86.1';
+import {openingBook,originalShinigamiEvents,greetingBooks} from './opening.js?v=0.86.1';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.86.1';
+import {notebookInScene} from './location.js?v=0.86.1';
+import {knowsName} from '../../name-knowledge.js?v=0.86.1';
+export {trueNameOf} from './names.js?v=0.86.1';
 // Chat-local notebook rules. Legacy journal keys remain readable after the preview. Canonical NPC records are never renamed.
 export const WORLD_EVENTS = 'roleforge_death_note_world_preview';
 export const WORLD_PROMPT = 'roleforge_death_note_world_preview';
@@ -126,7 +126,7 @@ function storyParser(state){
  return (message,playerAction='')=>{let row=storyCache.get(message);if(!row||row.source!==message.mes||row.user!==message.is_user||row.stamp!==stamp||row.playerAction!==playerAction){row={source:message.mes,user:message.is_user,stamp,playerAction,events:message.is_user?observedIdentities(message.mes,npcs,{playerAuthored:true}):storyEvents(message.mes,state,npcs,{playerAction})};storyCache.set(message,row);}return row.events;};
 }
 export function worldState(chat,state) {
- const w=emptyWorld(),rows=(chat||[]).flatMap(m=>m.is_user||m.is_system?[]:activeEvents(m)),recorded=new Set(rows.filter(e=>['register','discover'].includes(e.type)).map(e=>e.bookId));
+ const w=emptyWorld(),rows=[...(state.deathNoteRules?.creationEvents||[]),...(chat||[]).flatMap(m=>m.is_user||m.is_system?[]:activeEvents(m))],recorded=new Set(rows.filter(e=>['register','discover'].includes(e.type)).map(e=>e.bookId));
  w.settings=defaultDeathNoteSettings(state.deathNoteRules?.settings);
  for(const npc of state.npcs||[]){const name=priorPublicName(state,npc);if(name)w.priorNames[npc.id]=name;}
  if(state.deathNoteRules?.originalLifespans?.player)w.originalLifespans.player=state.deathNoteRules.originalLifespans.player;
@@ -134,7 +134,8 @@ export function worldState(chat,state) {
  // Older bundled cards already declare BB's congenital ability in his dossier.
  for(const n of state.npcs||[])if(!w.actorEyes[n.id]&&isHuman(n)&&(n.abilities||[]).some(a=>/^Congenital Shinigami Eyes/iu.test(a.name||'')))w.actorEyes[n.id]={source:'innate'};
  syncPlayerEyes(w);
- const greetingSeeds=greetingBooks(chat,state),greetingIds=new Set(greetingSeeds.map(b=>b.bookId||b.itemId)),configs=[...(Array.isArray(state.deathNoteRules?.books)?state.deathNoteRules.books:[]),...greetingSeeds];
+ for(const event of state.deathNoteRules?.creationEvents||[])applyEvent(w,event);
+ const greetingSeeds=greetingBooks(chat,state),greetingIds=new Set(greetingSeeds.map(b=>b.bookId||b.itemId)),configs=[...(Array.isArray(state.deathNoteRules?.books)?state.deathNoteRules.books:[]),...greetingSeeds].filter(b=>!state.deathNoteRules?.creationNoNotebook||b.ownerId!=='player'&&b.holderId!=='player');
  const opening=openingBook(chat,state,(state.inventory||[]).filter(notebookItem));if(opening){const config=configs.find(b=>(b.bookId||b.itemId)===opening.bookId);applyEvent(w,{...opening,shinigamiId:config?.originalShinigamiId||''});}
  for(const config of configs){const id=config.bookId||config.itemId;if(!safe(id)||recorded.has(id)&&!greetingIds.has(id))continue;const held=!greetingIds.has(id)&&(state.inventory||[]).some(i=>i.id===config.itemId&&notebookItem(i));if(!held&&!config.holderId&&!config.ownerId&&!config.location&&!config.knownToPlayer)continue;applyEvent(w,{type:'register',bookId:id,itemId:config.itemId||id,ownerId:config.ownerId|| (held?'player':''),holderId:config.holderId|| (held?'player':''),firstHumanOwnerId:config.firstHumanOwnerId||config.ownerId,shinigamiId:config.originalShinigamiId,currentShinigamiId:config.currentShinigamiId,attachedShinigamiId:config.attachedShinigamiId,knownToPlayer:config.knownToPlayer,ownerKnownToPlayer:config.ownerKnownToPlayer,location:config.location||(config.knownToPlayer&&!config.holderId?state.location?.place||'':'')});}
  for(const item of state.inventory||[])if(notebookItem(item)&&(!item.properties?.includes('roleforge:death-note:opening')||opening)&&safe(item.id)&&!recorded.has(item.id)&&!Object.values(w.books).some(b=>b.itemId===item.id))applyEvent(w,{type:'register',bookId:item.id,itemId:item.id,ownerId:'player',holderId:'player'});

@@ -50,6 +50,10 @@ Workshop is a beta bundled catalog with Great Sage and Field Notes. Packages, pe
 
 **New in 0.76.0:** open **Extensions → RoleForge → Windows above Chatbar** for Status, stat training, Inventory, Missions, H-Stats, skills/incantations and weapons. Layouts, coin icons, chant settings and contextual commerce/memory switches live on the same page. The tab strip scrolls independently of Minimize, and the all-windows picker reaches every panel. Weapon buttons continue the existing assistant reply without sending a User message or your unsent draft. [Thai setup and tests](docs/chatbar-windows-v0.76.0.th.md).
 
+## Character Creation
+
+**New in 0.86.1:** Deleting a prewritten first message until the chat is empty opens Character Creation. Saved drafts survive reloads, including SillyTavern restoring its greeting. With Death Note enabled, an ivory-paper character dossier replaces the standard creator, with identity, continuity, notebook possession and eye abilities. All creator choice fields now open a searchable, full-field choice sheet instead of native iOS selects. Existing presets remain intact. Pokémon creation stays in its separate preview and its addon is not included in this release. [Thai guide](docs/character-creation-v0.86.1.th.md).
+
 ## Scene and thought themes
 
 **New in 0.86.0:** Player `|thoughts|` and explicit NPC `<tr-thought name="NPC name or id">...</tr-thought>` use borderless, muted inner voices across all five themes, whether Dialogue frames are on or off. Three decorative dots animate gently; the Motion switch is available in every theme and respects Reduce Motion. Thoughts stay out of Voice, and AI instructions preserve private character knowledge. There is no separate thought switch: the existing NPC presentation and User-only UI switches control formatting. [Thai usage guide](docs/private-thoughts-v0.86.0.th.md) · [Visuals](docs/previews/thought-borderless/index.html).

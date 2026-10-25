@@ -73,7 +73,7 @@ try{
   await page.locator('#tretaresia-control-trigger').evaluate(n=>n.click());
   for(const preset of ['abyss','parchment','forge','verdant']){
     await page.locator('[data-ui-setting=themePreset]').selectOption(preset);
-    const expected=await page.evaluate(()=>{const c=window.host.extensionSettings.tretaresia_rpg;return {accent:c.accentColor,highlight:c.accentAltColor,text:c.inkColor,surface:c.surfaceColor}});
+    const expected=await page.evaluate(()=>{const value=key=>document.querySelector('[data-ui-setting='+key+']').value;return {accent:value('accentColor'),highlight:value('accentAltColor'),text:value('inkColor'),surface:value('surfaceColor')}});
     await f.locator('#trapp').evaluate((root,c)=>new Promise(resolve=>{const check=()=>{if(root.style.getPropertyValue('--gold')===c.accent)resolve();else requestAnimationFrame(check)};check()}),expected);
     const colors=await f.locator('#trapp').evaluate(root=>{const css=root.style;return {accent:css.getPropertyValue('--gold'),highlight:css.getPropertyValue('--gold2'),text:css.getPropertyValue('--txt'),surface:css.getPropertyValue('--bg')}});
     assert.deepEqual(colors,expected);
