@@ -1,6 +1,13 @@
 // Author-owned full-name translations. These are not player claims or model aliases.
 // A row applies only while its private canonical name matches the selected version.
 export const CANON_NAME_SPELLINGS = Object.freeze({
+  "dn-l": {"name":"L Lawliet","names":["แอล ลอว์ไลท์"]},
+  "dn-near": {"name":"Nate River","names":["เนท ริเวอร์"]},
+  "dn-mello": {"name":"Mihael Keehl","names":["มิฮาเอล เคห์ล"]},
+  "dn-matt": {"name":"Mail Jeevas","names":["แมตต์ จีวาส"]},
+  "dn-watari": {"name":"Quillsh Wammy","names":["ควิลช์ แวมมี่"]},
+  "dn-aiber": {"name":"Thierry Morello","names":["เธียร์รี โมเรลโล"]},
+  "dn-wedy": {"name":"Merrie Kenwood","names":["เมอร์รี เคนวูด"]},
   "dn-light-yagami": {
     "name": "Light Yagami",
     "names": [

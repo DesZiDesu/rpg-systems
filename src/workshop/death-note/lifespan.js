@@ -30,6 +30,19 @@ export function lifeDuration(seconds,language='th'){
  const hours=Math.floor(Math.max(0,seconds)%DAY/3600),minutes=Math.floor(Math.max(0,seconds)%3600/60);
  return years||days?[years?years+(th?' ปี':' yr'):'',days?days+(th?' วัน':' d'):''].filter(Boolean).join(' '):hours?hours+(th?' ชม.':' h')+' '+minutes+(th?' นาที':' min'):minutes+(th?' นาที':' min');
 }
+// A display choice never rewrites the authored deadline or bargain accounting.
+// Calendar-only dates have no implicit relationship to the story-day counter.
+export function lifespanDisplay(value,storyClock,language='th',format='story'){
+ const th=language!=='en',raw=value?.text||((value?.date||(value?.day?(th?'วันที่ ':'Day ')+value.day:''))+(value?.time?' · '+value.time:''));
+ if(!raw)return {text:'',detail:'',remainingSeconds:null};
+ const now=clockSeconds(storyClock||{day:0}),deadline=clockSeconds(value?.day?value:{day:0}),known=now!==null&&deadline!==null;
+ const remaining=known?Math.max(0,deadline-now):null;
+ const human=known?(th?'เหลือ ':'Remaining ')+lifeDuration(remaining,language):raw;
+ const current=now!==null?(th?'วันที่ ':'Day ')+storyClock.day+' · '+storyClock.time:'';
+ const detail=known?(th?'กำหนดเดิม: ':'Original deadline: ')+raw+'; '+(th?'นาฬิกาในเรื่อง: ':'Story clock: ')+current+'; '+(th?'เวลาที่เหลือ = กำหนดเดิม − เวลาในเรื่อง (365 วัน = 1 ปี)':'Remaining time = original deadline − story time (365 days = 1 year)'):
+  (th?'กำหนดเดิม: ':'Original deadline: ')+raw+'; '+(th?'ยังแปลงเป็นเวลาที่เหลือไม่ได้ เพราะไม่มีวันอ้างอิงในนาฬิกาเรื่อง':'Remaining time needs a matching story-day reference');
+ return {text:format==='human'?human:format==='both'&&known?human+' · '+raw:raw,detail,remainingSeconds:remaining};
+}
 export function playerLifespanInfo(w,state,language='th'){
  const now=clockSeconds(state.worldClock),deadline=playerLifeDeadline(w,state),natural=baseline(w,state),naturalSeconds=clockSeconds(natural?.day?natural:{day:0}),value=deadlineValue(deadline),th=language!=='en';
  const label=v=>v?(th?'วันที่ ':'Day ')+v.day+' · '+v.time:'—';

@@ -52,6 +52,8 @@ Workshop is a beta bundled catalog with Great Sage and Field Notes. Packages, pe
 
 ## Scene and thought themes
 
+**New in 0.86.0:** Player `|thoughts|` and explicit NPC `<tr-thought name="NPC name or id">...</tr-thought>` use borderless, muted inner voices across all five themes, whether Dialogue frames are on or off. Three decorative dots animate gently; the Motion switch is available in every theme and respects Reduce Motion. Thoughts stay out of Voice, and AI instructions preserve private character knowledge. There is no separate thought switch: the existing NPC presentation and User-only UI switches control formatting. [Thai usage guide](docs/private-thoughts-v0.86.0.th.md) · [Visuals](docs/previews/thought-borderless/index.html).
+
 **New in 0.75.0:** Live Scene Status and user Inner Thoughts follow all five chat themes. The duplicate player nameplate is removed, custom-stat values and units are separated, and training uses the standard dumbbell icon. Optional owned-weapon art now includes the approved Excalibur Morgan with a blade-only crimson aura. [Preview](docs/previews/scene-thought-review/index.html) · [Thai guide and test report](docs/scene-thought-v0.75.0.th.md).
 
 ## NPC icon updates for existing cards

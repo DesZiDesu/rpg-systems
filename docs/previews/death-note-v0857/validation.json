@@ -1,0 +1,112 @@
+{
+  "release": "0.85.7",
+  "deathNoteAddon": "0.4.1",
+  "unitTests": {
+    "pass": 1843,
+    "fail": 0
+  },
+  "host": "SillyTavern 1.19.0",
+  "native": {
+    "chromium": {
+      "version": "0.85.7",
+      "browser": "Chromium",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "immediateGrantedEyes": true,
+          "properNameRecovered": true,
+          "stableNpcId": true,
+          "allWorkshopAddons": true,
+          "newChatSettings": true,
+          "historyRemainsChatLocal": true,
+          "offChoiceAppliesToOldChat": true,
+          "roleforgeThemeAndToggles": true,
+          "otherCharacterIsolated": true,
+          "missingNpcGenerated": true,
+          "noSyntheticUser": true,
+          "unsentDraftPreserved": true,
+          "reloadPersisted": true,
+          "controlledModelCalls": 1,
+          "mobileTouchEmulation": false
+        },
+        {
+          "device": "mobile",
+          "immediateGrantedEyes": true,
+          "properNameRecovered": true,
+          "stableNpcId": true,
+          "allWorkshopAddons": true,
+          "newChatSettings": true,
+          "historyRemainsChatLocal": true,
+          "offChoiceAppliesToOldChat": true,
+          "roleforgeThemeAndToggles": true,
+          "otherCharacterIsolated": true,
+          "missingNpcGenerated": true,
+          "noSyntheticUser": true,
+          "unsentDraftPreserved": true,
+          "reloadPersisted": true,
+          "controlledModelCalls": 1,
+          "mobileTouchEmulation": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    },
+    "webkit": {
+      "version": "0.85.7",
+      "browser": "WebKit",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "liveVoice": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "immediateGrantedEyes": true,
+          "properNameRecovered": true,
+          "stableNpcId": true,
+          "allWorkshopAddons": true,
+          "newChatSettings": true,
+          "historyRemainsChatLocal": true,
+          "offChoiceAppliesToOldChat": true,
+          "roleforgeThemeAndToggles": true,
+          "otherCharacterIsolated": true,
+          "missingNpcGenerated": true,
+          "noSyntheticUser": true,
+          "unsentDraftPreserved": true,
+          "reloadPersisted": true,
+          "controlledModelCalls": 1,
+          "mobileTouchEmulation": false
+        },
+        {
+          "device": "mobile",
+          "immediateGrantedEyes": true,
+          "properNameRecovered": true,
+          "stableNpcId": true,
+          "allWorkshopAddons": true,
+          "newChatSettings": true,
+          "historyRemainsChatLocal": true,
+          "offChoiceAppliesToOldChat": true,
+          "roleforgeThemeAndToggles": true,
+          "otherCharacterIsolated": true,
+          "missingNpcGenerated": true,
+          "noSyntheticUser": true,
+          "unsentDraftPreserved": true,
+          "reloadPersisted": true,
+          "controlledModelCalls": 1,
+          "mobileTouchEmulation": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    }
+  },
+  "providerSmoke": {
+    "aliasesTested": 11,
+    "samplesPerModel": 1,
+    "fictionalFixtureOnly": true,
+    "apiKeyPersistedInRepository": false
+  },
+  "pokemonIncluded": false
+}

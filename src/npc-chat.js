@@ -1,23 +1,23 @@
-import {playerNpc,npcVisibilityRevision,appendPlayerNpcName} from './npc-visibility.js?v=0.85.6';
-import {createChatScrollKeeper} from './chat-scroll.js?v=0.85.6';
-import {customIconSource} from './custom-icons.js?v=0.85.6';
-import {renderStoryEvents} from './story-events-ui.js?v=0.85.6';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.85.6';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.85.6';
-import {renderSceneTracker} from './scene-tracker.js?v=0.85.6';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.85.6';
-import {renderGroupBoard} from './group-board-ui.js?v=0.85.6';
-import {uiText} from './ui-language.js?v=0.85.6';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.85.6';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.85.6';
-import { croppedPortrait } from './npc-portraits.js?v=0.85.6';
-import { effectiveNpc } from './npc-alternates.js?v=0.85.6';
-import {speechDisplayText} from './voice-core.js?v=0.85.6';
-import {parseUserMessage,renderUserBlocks} from './user-chat.js?v=0.85.6';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.85.6';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.85.6';
-import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.85.6';
-import {hostReplyGenerating} from './host-generation-state.js?v=0.85.6';
+import {playerNpc,npcVisibilityRevision,appendPlayerNpcName} from './npc-visibility.js?v=0.86.0';
+import {createChatScrollKeeper} from './chat-scroll.js?v=0.86.0';
+import {customIconSource} from './custom-icons.js?v=0.86.0';
+import {renderStoryEvents} from './story-events-ui.js?v=0.86.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.86.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.86.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.86.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.86.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.86.0';
+import {uiText,uiLanguage} from './ui-language.js?v=0.86.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.86.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.86.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.86.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.86.0';
+import {speechDisplayText} from './voice-core.js?v=0.86.0';
+import {parseUserMessage,renderUserBlocks,thoughtDots} from './user-chat.js?v=0.86.0';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.86.0';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.86.0';
+import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.86.0';
+import {hostReplyGenerating} from './host-generation-state.js?v=0.86.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -69,6 +69,13 @@ export function narrative(text,enabled=true,appearance={}) {
     }
     for (const part of ['mark','top','glow','end']) { const deco=element('span',`trpg-prose-${part}`);deco.setAttribute('aria-hidden','true');if(part==='mark')deco.append(icon('feather-pointed'));node.append(deco); }
     node.append(appendStoryText(element('span','trpg-prose-copy'),text)); return node;
+}
+export function npcThought(text){
+    const label=uiLanguage()==='th'?'พูดในใจ':'Inner thought',node=element('aside','trpg-npc-thought');
+    node.setAttribute('aria-label',label);
+    const heading=element('small','trpg-thought-label');heading.append(thoughtDots(),element('span','trpg-thought-caption',label));
+    node.append(heading,appendStoryText(element('p','trpg-thought-copy'),text));
+    return node;
 }
 export function speakerHeader(profile, open, appearance='roleforge') {
     const view=normalizeChatAppearance(typeof appearance==='string'?{theme:appearance}:appearance);
@@ -148,6 +155,10 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
         if (block.type === 'header') { startSpeaker(block.name || fallbackName || 'NPC'); continue; }
         if (block.type === 'narrative') { (section || root).append(narrative(block.text,view.narrative,view)); continue; }
         if (block.type === 'plain') { (section || root).append(appendStoryText(element('div', 'trpg-plain'),block.text)); continue; }
+        if (block.type === 'thought') {
+            const speaker=block.name?startSpeaker(block.name):(section||startSpeaker(fallbackName||'NPC'));
+            speaker.append(npcThought(block.text));continue;
+        }
         if (block.type === 'dialogue') {
             const speaker=startSpeaker(block.name || fallbackName || 'NPC');
             const body=dialogueFrame(speaker.rfEyeProfile||speaker.dataset.rfSpeakerName,view);
@@ -162,7 +173,7 @@ export function priorDialogueSpeaker(messages, id, lookup, visible) {
     const prior = messages?.[id - 1];
     if (!prior || prior.is_user || prior.is_system) return null;
     const blocks = parseStory(visible(prior.mes || ''));
-    const last = blocks?.findLast(block => block.type === 'dialogue' || block.type === 'header');
+    const last = blocks?.findLast(block => block.type === 'dialogue' || block.type === 'header' || block.type === 'thought'&&block.name);
     if (!last) return null;
     const name = last.name || prior.name || 'NPC';
     return resolveNpcSpeaker([...new Set(lookup.values())], name) || keyName(name);
@@ -277,8 +288,8 @@ function supportsStoryPresentation(nodes, source, blocks) {
     // Explicit story tags and simple bold/italic are our presentation protocol.
     // Links, tables, code, custom tags/attributes and regex widgets belong to the
     // host renderer. Do not try to reconstruct them from unsanitized model HTML.
-    if (/<(?!\/?(?:tr-(?:header|narrative|dialogue)|header|narrative|dialogue)\b)[a-z!][^>]*>/i.test(source)) return false;
-    const allowed=new Set(['P','BR','STRONG','EM','Q','TR-HEADER','TR-NARRATIVE','TR-DIALOGUE']);
+    if (/<(?!\/?(?:tr-(?:header|narrative|dialogue|thought)|header|narrative|dialogue|thought)\b)[a-z!][^>]*>/i.test(source)) return false;
+    const allowed=new Set(['P','BR','STRONG','EM','Q','TR-HEADER','TR-NARRATIVE','TR-DIALOGUE','TR-THOUGHT']);
     for (const node of nodes) {
         const descendants=node.nodeType===1?[node,...node.querySelectorAll('*')]:[];
         for (const child of descendants) {
@@ -319,10 +330,10 @@ export function createChatPresentation(api, open) {
     }
     function cloneContents(root) {
         root.dataset.roleforgeMount='story';
-        for(const body of root.querySelectorAll('.trpg-narrative,.trpg-dialogue,.trpg-plain,.trpg-user-thought')) {
-            const copy=body.querySelector('.trpg-prose-copy,.trpg-dialogue-copy')||body.querySelector('.trpg-user-thought > p')||body;
+        for(const body of root.querySelectorAll('.trpg-narrative,.trpg-dialogue,.trpg-plain,.trpg-user-thought,.trpg-npc-thought')) {
+            const copy=body.querySelector('.trpg-prose-copy,.trpg-dialogue-copy,.trpg-thought-copy')||body.querySelector('.trpg-user-thought > p')||body;
             const marker=element('span');marker.dataset.roleforgeStory=body.classList.contains('trpg-narrative')?'narrative'
-                :body.classList.contains('trpg-dialogue')?'dialogue':body.classList.contains('trpg-user-thought')?'thought':'plain';
+                :body.classList.contains('trpg-dialogue')?'dialogue':body.classList.contains('trpg-user-thought')||body.classList.contains('trpg-npc-thought')?'thought':'plain';
             marker.append(...copy.childNodes);copy.append(marker);copy.dataset.roleforgeNativeContent='';
         }
     }
@@ -440,7 +451,7 @@ export function createChatPresentation(api, open) {
             const blocks=preserveNativeChat?(supportsStoryPresentation(original,source,parsed)?parsed:null):parsed;
             const safeLegacyUpdate=old?.storyRoot&&old.source!==source&&!nativeNodes(host,old).length
                 &&supportsStoryPresentation(old.original,old.source,parseStory(old.source))
-                &&!/<(?!\/?(?:tr-(?:header|narrative|dialogue)|header|narrative|dialogue)\b)[a-z!][^>]*>/i.test(source);
+                &&!/<(?!\/?(?:tr-(?:header|narrative|dialogue|thought)|header|narrative|dialogue|thought)\b)[a-z!][^>]*>/i.test(source);
             const shared=effectiveMode==='shared'&&blocks&&!safeLegacyUpdate&&!supportsStoryPresentation(original,source,blocks);
             const scene=settings.showSceneTracker ? api.sceneForMessage?.(id,message) : null;
             const missionBoard=settings.enableMissionBoard ? api.missionBoardForMessage?.(id,message) : null;
@@ -491,7 +502,7 @@ export function createChatPresentation(api, open) {
             let sharedMount,disposeVoice;
             if(shared){
                 sharedMount=mountSharedStory({host,nodes:nativeNodes(host),blocks,fallbackName:message.name,previousSpeaker,voiceEnabled:Boolean(settings.enableVoiceAddon),language:settings.language,
-                    narrative:text=>narrative(text,view.narrative,view),dialogueEnabled:view.dialogue,
+                    narrative:text=>narrative(text,view.narrative,view),thought:()=>npcThought(''),dialogueEnabled:view.dialogue,
                     dialogue:name=>dialogueFrame(playerNpc(resolveNpcSpeaker([...new Set(lookup.values())],name))||name,view),textFor:block=>appendStoryText(element('span'),block.text).textContent,
                     header:(name,previous,colorOnly=false)=>{
                         const profile=resolveNpcSpeaker([...new Set(lookup.values())],name),key=profile||keyName(name),p=profile||{name};

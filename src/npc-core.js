@@ -1,6 +1,6 @@
-import {customIconSource} from './custom-icons.js?v=0.85.6';
-import {embeddedPortraitSource} from './embedded-portrait.js?v=0.85.6';
-import { MEDALLION_ROLES } from './npc-medallions.js?v=0.85.6';
+import {customIconSource} from './custom-icons.js?v=0.86.0';
+import {embeddedPortraitSource} from './embedded-portrait.js?v=0.86.0';
+import { MEDALLION_ROLES } from './npc-medallions.js?v=0.86.0';
 // Pure, allowlisted profile/import/chat helpers. No host or network access.
 export const FIELDS = {
  name:'ชื่อ',title:'ตำแหน่ง / ฉายา',occupation:'อาชีพ / บทบาท',race:'เผ่าพันธุ์',age:'อายุ',gender:'เพศ',
@@ -60,14 +60,17 @@ const NPC_ROLE_GROUPS = [
  ['occupation','servant','servant','maid','คนรับใช้','สาวใช้'],
  ['title','king','king','กษัตริย์','ราชา'],['title','queen','queen','ราชินี'],
  ['title','prince','prince','เจ้าชาย'],['title','princess','princess','เจ้าหญิง'],
- ['title','captain','captain','กัปตัน'],['title','stranger','stranger','unknown npc','npc','unknown character','ชายแปลกหน้า','หญิงแปลกหน้า','คนแปลกหน้า','นักเดินทาง'],
+ ['title','captain','captain','กัปตัน'],['title','stranger','stranger','unknown npc','npc','unknown character','ชายแปลกหน้า','หญิงแปลกหน้า','คนแปลกหน้า','นักเดินทาง','คนเดินถนน','ชายวัยกลางคน','หญิงวัยกลางคน','ผู้สัญจร','passerby','passer-by','pedestrian'],
 ];
 export function npcRole(value) {
  const label=keyName(value).replace(/[’]/g,"'").replace(/^(?:the|my|your|our|player's|the player's|{{user}}'s)\s+/, '').replace(/^(?:พ่อ|แม่)ของ(?:ฉัน|ผม|ผู้เล่น|คุณ)$/u,m=>m.startsWith('พ่อ')?'พ่อ':'แม่');
+
  const group=NPC_ROLE_GROUPS.find(([, , ...labels])=>labels.includes(label));
- return group?{field:group[0],key:group[1]}:null;
+ if(group)return {field:group[0],key:group[1]};
+ if(/^(?:เจ้าของ(?:ร้าน|โรง|คาเฟ่|บาร์)|พนักงาน(?:ร้าน|บริษัท|ต้อนรับ)|ยาม(?:เฝ้า|รักษา)|คนขาย(?:ของ|อาหาร)|shopkeeper|convenience store (?:owner|clerk))(?:[^\n]{0,60})$/iu.test(label))return {field:'occupation',key:label};
+ return null;
 }
-export const usableNpcName = value => typeof value==='string' && usable(value) && !npcRole(value);
+export const usableNpcName = value => typeof value==='string' && usable(value) && !/^(?:\?+|ไม่ทราบชื่อ|ไม่รู้ชื่อ|unnamed|unknown name)$/iu.test(value.trim()) && !npcRole(value);
 export const NPC_FIELD_INSTRUCTIONS = `NPC IDENTITY AND FIELD RULES: name is ONLY the person's proper name, never a role, profession, kinship term or placeholder. Father/พ่อ belongs in relationship; Innkeeper/เจ้าของโรงเตี๊ยม and Gate Keeper/ยามเฝ้าประตู belong in occupation; rank/honorific/epithet belongs in title. Resolve references from the character card, lore, story and existing NPC index to the established proper name and stable id. Do not rename known people or create duplicate dossiers for their roles. For a genuinely new fictional NPC whose name is not established or deliberately concealed, create a suitable proper name ONCE in the same reply and use it consistently in dialogue and the NPC upsert. For intentionally anonymous characters, keep the descriptive label in prose and omit the named dossier until identity is established. When correcting an old role-named dossier, use its existing id and put the role in the correct field. aliases are alternate personal names, not generic shared professions. Keep appearance, personality, background, occupation and relationship in their own fields. Age/gender/race must follow established facts; omit unknown facts rather than copying a role into them. COMPACT HEADER LABELS: title and occupation (the two labels above the name), race, relationship and faction (the labels below it) must each be a brief noun phrase, ideally 1-3 words or a similarly short Thai label, never a descriptive sentence. Prefer at most 24 characters for title, occupation, race and relationship, and 32 for faction; preserve an established proper faction name if it needs more space. Examples: title/occupation: หัวหน้าสาวใช้, Priestess; race: มนุษย์; relationship: หัวหน้าสาวใช้, คนแปลกหน้า; faction: ตระกูลเอ็นแกรม. Do not append duties, personality, branch descriptions, backstory or bilingual translations to these labels. Keep title and occupation short individually; do not repeat the same role in expanded wording across both. Put duties and background in background or notes, and detailed relationship context in relationshipState. When emitting these fields in future NPC updates, condense existing verbose labels without changing their meaning or established affiliation.`;
 
 // A bad AI name may not overwrite an established one. A new unnamed dossier
@@ -127,13 +130,13 @@ export function completeDraft(base, generated) {
 }
 export function parseStory(source) {
  const text=String(source||'');
- if(!/<tr-(?:header|narrative|dialogue)\b/i.test(text)||text.length>300000)return null;
+ if(!/<tr-(?:header|narrative|dialogue|thought)\b/i.test(text)||text.length>300000)return null;
  // Tokenize boundaries instead of matching nested blocks with one regex.
  // A new opener ends the previous block; a mismatched closer cannot swallow it.
- const tags=/<(\/?)(?:tr-)?(header|narrative|dialogue)\b([^>]*)>/gi;
+ const tags=/<(\/?)(?:tr-)?(header|narrative|dialogue|thought)\b([^>]*)>/gi;
  // Code/examples and tag attributes can contain literal protocol strings.
  // Leave them to the native Markdown/Regex renderer, not the NPC/Voice parser.
- const protectedPattern=/```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]*`|<(pre|code|script|style|custom-style)\b[^>]*>[\s\S]*?<\/\1\s*>|<!--[\s\S]*?(?:-->|$)|<(?!\/?(?:tr-(?:header|narrative|dialogue)|header|narrative|dialogue)\b)\/?[\w:-]+\b(?:[^"'<>]|"[^"]*"|'[^']*')*>/gi;
+ const protectedPattern=/```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]*`|<(pre|code|script|style|custom-style)\b[^>]*>[\s\S]*?<\/\1\s*>|<!--[\s\S]*?(?:-->|$)|<(?!\/?(?:tr-(?:header|narrative|dialogue|thought)|header|narrative|dialogue|thought)\b)\/?[\w:-]+\b(?:[^"'<>]|"[^"]*"|'[^']*')*>/gi;
  const protectedRanges=[...text.matchAll(protectedPattern)].map(match=>[match.index,match.index+match[0].length]);
  const blocks=[];let active={type:'plain'},cursor=0,match,protectedIndex=0,found=false;
  const append=raw=>{
@@ -142,6 +145,8 @@ export function parseStory(source) {
   blocks.push({...active,text:body});
  };
  while((match=tags.exec(text))&&blocks.length<150){
+  // Bare <thought> is not our fictional NPC protocol or a provider reasoning UI.
+  if(match[2].toLowerCase()==='thought'&&!/^<\/?tr-thought\b/iu.test(match[0]))continue;
   while(protectedRanges[protectedIndex]?.[1]<=match.index)protectedIndex++;
   if(protectedRanges[protectedIndex]&&protectedRanges[protectedIndex][0]<=match.index)continue;
   found=true;
@@ -274,10 +279,13 @@ export function retainManualNpcEdits(history, before, after) {
   }
  }
 }
+export const PRIVATE_THOUGHT_INSTRUCTIONS = `ROLEFORGE PRIVATE THOUGHTS: User text between |single pipes| outside spoken quotations, code and tables is unspoken fictional inner monologue, never audible dialogue or a completed physical action. The narrator/model may read it to maintain the story, but NPCs cannot hear, quote, answer or learn its exact contents. Characters can react only to established observable words, actions, expressions or other evidence; do not invent a visible tell solely to expose a private thought. An exception requires an already established, currently applicable mind-reading/telepathy ability and its actual limits; the delimiter or UI never grants that ability. NPC inner monologue is likewise private to that NPC: showing it to the reader teaches neither the player character nor other NPCs. Never copy one person's private monologue into another actor's knowledge, memories or diary. An NPC's own authored thoughts may inform their own diary under existing tracking rules. A thought is not consent to a purchase, transfer, notebook action or any other gameplay action. Do not invent the player's thoughts or speech. These knowledge boundaries apply whether presentation frames are on or off. Fictional character monologue is unrelated to provider/model reasoning: never expose, copy or disguise hidden model analysis, planning or chain-of-thought as character thoughts.`;
 export const CHAT_INSTRUCTIONS = `ROLEFORGE CHAT PRESENTATION: Write the visible story as plain text inside these blocks, in story order:
 <tr-header name="Exact NPC Name"/> Starts this character's turn and displays their header once, even if narration comes next.
 <tr-narrative>Third-person scene/action narration only.</tr-narrative>
 <tr-dialogue name="Exact NPC Name">Only words spoken by this character, without quotation marks.</tr-dialogue>
+<tr-thought name="Exact NPC Name">Only this NPC's fictional, unspoken inner monologue.</tr-thought>
+For NPC thoughts use tr-thought as a separate block, never nested inside narrative/dialogue. Keep ordinary actions and descriptions in tr-narrative; *italic text* alone is not a thought marker. Use an established NPC name or stable NPC id as required by the active card, not the player's name. The UI supplies the thought label; omit literal 'Thought:' labels and do not use the player's |pipes| notation in NPC output. Example: <tr-header name="Aoi"/><tr-narrative>She notices you hesitate.</tr-narrative><tr-thought name="Aoi">He seems worried, but I do not know why.</tr-thought><tr-dialogue name="Aoi">Is something wrong?</tr-dialogue>. Include thoughts only when they serve the scene, not in every turn, and never use them to invent knowledge of the player's private thoughts.
 Choose the natural opening: start with a character's tr-header then narration or dialogue, OR start with scene narration and show the first tr-header later. Do not default to opening with narration. After a header, alternate narration and dialogue freely, including multiple separate dialogue blocks for the SAME character; keep all of that character's narration and speech under one header until a different character begins. Start the next character with a new tr-header. A dialogue block can also introduce its speaker without a prior header, for compatibility. Do not repeat a header for the same uninterrupted character turn. Separate narrative blocks stay separate when the pacing calls for separate boxes; do not force one dialogue box per character. Include only blocks that add to the scene, with no empty filler.
 Do not emit HTML, Markdown fences, thought labels or role metadata inside blocks. Do not invent portrait URLs.
  Never nest blocks or mix opening/closing tag types. TRACKER DATA: Write the complete story first, then append ONE closed tretaresia_patch comment containing sceneTracker and all applicable event data/ops, always outside presentation tags. The comment is required machine data and is permitted alongside the story blocks; do not put it only in private reasoning. ${NPC_FIELD_INSTRUCTIONS} The dialogue name and NPC name must be the actual person's name; title is a separate role or epithet and must never replace name. Set met:true only when the player has actually met the person; a mere lore mention is not an encounter. A newly relevant named NPC must be upserted into npcs in this SAME reply with name,title,occupation,race,age,gender,faction,relationship,relationshipState,location,activity,appearance,personality,background,goals,speechStyle,notes and identityColor (#RRGGBB). Populate supported fictional profile details consistently with the chat and user input; do not contradict canon. Never invent player decisions or raise combat stats without story evidence. Preserve IDs and existing facts. No separate AI call is needed. Hostile NPCs may be stored in NPC Management with isHostile:true; social rosters still only accept friendly NPCs.`;

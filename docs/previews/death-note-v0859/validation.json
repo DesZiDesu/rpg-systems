@@ -1,0 +1,113 @@
+{
+  "version": "0.85.9",
+  "addon": "0.4.3",
+  "unitTests": 1857,
+  "syntax": "passed",
+  "native": {
+    "chromium": {
+      "version": "0.85.9",
+      "browser": "Chromium",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "themes": [
+            "roleforge",
+            "folio",
+            "chapter",
+            "codex",
+            "aincrad"
+          ],
+          "trueNamesWithoutEyes": true,
+          "thaiEnglishIndependentOfUI": true,
+          "noLifespanGranted": true,
+          "npcManagement": true,
+          "reversibleKnowledge": true,
+          "reloadPersisted": true,
+          "newChatPreference": true,
+          "noModelCalls": true,
+          "noHorizontalOverflow": true,
+          "touchEmulation": false
+        },
+        {
+          "device": "mobile",
+          "themes": [
+            "roleforge",
+            "folio",
+            "chapter",
+            "codex",
+            "aincrad"
+          ],
+          "trueNamesWithoutEyes": true,
+          "thaiEnglishIndependentOfUI": true,
+          "noLifespanGranted": true,
+          "npcManagement": true,
+          "reversibleKnowledge": true,
+          "reloadPersisted": true,
+          "newChatPreference": true,
+          "noModelCalls": true,
+          "noHorizontalOverflow": true,
+          "touchEmulation": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    },
+    "webkit": {
+      "version": "0.85.9",
+      "browser": "WebKit",
+      "host": "SillyTavern 1.19.0",
+      "liveModel": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "themes": [
+            "roleforge",
+            "folio",
+            "chapter",
+            "codex",
+            "aincrad"
+          ],
+          "trueNamesWithoutEyes": true,
+          "thaiEnglishIndependentOfUI": true,
+          "noLifespanGranted": true,
+          "npcManagement": true,
+          "reversibleKnowledge": true,
+          "reloadPersisted": true,
+          "newChatPreference": true,
+          "noModelCalls": true,
+          "noHorizontalOverflow": true,
+          "touchEmulation": false
+        },
+        {
+          "device": "mobile",
+          "themes": [
+            "roleforge",
+            "folio",
+            "chapter",
+            "codex",
+            "aincrad"
+          ],
+          "trueNamesWithoutEyes": true,
+          "thaiEnglishIndependentOfUI": true,
+          "noLifespanGranted": true,
+          "npcManagement": true,
+          "reversibleKnowledge": true,
+          "reloadPersisted": true,
+          "newChatPreference": true,
+          "noModelCalls": true,
+          "noHorizontalOverflow": true,
+          "touchEmulation": true
+        }
+      ],
+      "errors": [],
+      "pass": true
+    }
+  },
+  "liveModel": false,
+  "otherPreviewsExcluded": [
+    "Pokemon",
+    "Smartphone"
+  ]
+}

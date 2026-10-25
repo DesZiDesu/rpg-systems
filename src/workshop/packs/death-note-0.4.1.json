@@ -1,0 +1,33 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.85.7",
+  "id": "death-note",
+  "kind": "system",
+  "name": "Death Note",
+  "version": "0.4.1",
+  "capabilities": [
+    "read-inventory",
+    "read-known-npcs",
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-notebook-inventory"
+  ],
+  "notes": [
+    {
+      "id": "notebook",
+      "title": "สมุดจากโลกของยมทูต",
+      "text": "สมุดกระดาษว่างที่แตะเขียน ย้าย และปรับขนาดได้ ใช้เหนือ chatbar พร้อมใบหน้าจากโรล ชื่อจริงและอายุขัยจากดวงตา กติกาไทย/อังกฤษ 71 หน้า และกฎปลอมที่ไม่เปลี่ยนอำนาจจริง"
+    },
+    {
+      "id": "actors-books",
+      "title": "Notebook owners and eye origins",
+      "text": "Notebook IDs remain stable. Original Shinigami, current Shinigami owner, attendant, human rights owner and physical holder are separate. Player and NPC eyes may be innate, granted, roleplay-established or paid by a bargain. Non-bargain eyes require no notebook and no half-life payment. NPC knowledge never becomes player knowledge automatically."
+    },
+    {
+      "id": "character-settings",
+      "title": "Character settings and immediate eye identity",
+      "text": "Workshop preferences follow the character across chats. Granted eye abilities apply immediately; explicit visible true names repair role-labelled NPC dossiers. Notebook ownership, paid bargains, deaths and journals remain local to their chat and Branch."
+    }
+  ]
+}

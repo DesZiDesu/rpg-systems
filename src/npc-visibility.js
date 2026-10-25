@@ -1,4 +1,4 @@
-import {uiLanguage} from './ui-language.js?v=0.85.6';
+import {uiLanguage} from './ui-language.js?v=0.86.0';
 // Optional player-view policy. It never changes archive records or stable IDs.
 let provider=null,revision=0;
 export const npcVisibilityRevision=()=>revision;
@@ -19,7 +19,7 @@ export const filterNpcStoryOps=(ops,context)=>storyGuard?storyGuard(ops,context)
 export function appendPlayerNpcName(node,profile,slot='npc'){
  node.textContent=profile.name||'???';const sight=profile._rfNameSight;if(!sight||profile._rfEyeDisplay?.[slot]===false)return node;node.style.setProperty('--rf-eye-color',profile._rfEyeDisplay?.color||'#e78287');node.classList.add('rf-npc-eye-identity');
  if(sight.trueName&&sight.trueName!==profile.name){const real=node.ownerDocument.createElement('span');real.className='rf-npc-true-name';real.textContent=' ('+sight.trueName+')';node.append(real);}else {const real=node.ownerDocument.createElement('span');real.className='rf-npc-true-name';real.textContent=profile.name||sight.trueName;node.replaceChildren(real);}
- if(sight.lifespan&&profile._rfEyeDisplay?.lifespan!==false){const life=node.ownerDocument.createElement('small');life.className='rf-npc-original-lifespan';life.textContent=sight.lifespan;life.title=sight.lifespanSource==='simulation'?(uiLanguage()==='th'?'อายุขัยจำลองเกมที่บันทึกไว้ ไม่ใช่ข้อมูลต้นฉบับ':'Saved simulated game lifespan, not canon'):uiLanguage()==='th'?'อายุขัยเดิมที่ดวงตามองเห็น':'Original natural lifespan';node.append(life);}
+ if(sight.lifespan&&profile._rfEyeDisplay?.lifespan!==false){const life=node.ownerDocument.createElement('small');life.className='rf-npc-original-lifespan';life.textContent=sight.lifespan;life.title=sight.lifespanDetail||(sight.lifespanSource==='simulation'?(uiLanguage()==='th'?'อายุขัยจำลองเกมที่บันทึกไว้ ไม่ใช่ข้อมูลต้นฉบับ':'Saved simulated game lifespan, not canon'):uiLanguage()==='th'?'อายุขัยเดิมที่ดวงตามองเห็น':'Original natural lifespan');if(sight.lifespanSource==='simulation'&&sight.lifespanDetail)life.title+=(uiLanguage()==='th'?'; อายุขัยจำลองเกม':'; Simulated game lifespan');node.append(life);}
  return node;
 }
 

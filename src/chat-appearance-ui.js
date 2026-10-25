@@ -1,5 +1,5 @@
-import {CHAT_THEMES,CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.85.6';
-import {element,renderStoryBlocks} from './npc-chat.js?v=0.85.6';
+import {CHAT_THEMES,CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.86.0';
+import {element,renderStoryBlocks} from './npc-chat.js?v=0.86.0';
 
 // Native SillyTavern controls; the expandable sample uses the real renderer.
 export function mountChatAppearanceControls(parent,api) {
@@ -30,7 +30,7 @@ export function mountChatAppearanceControls(parent,api) {
         const selected=CHAT_THEMES.find(item=>item.key===view.theme);
         texts.get('chatTheme').textContent=t('Chat design','ดีไซน์ในแชท');description.textContent=t(selected.description,selected.descriptionTh);
         texts.get('chatHeaderBadgeMode').textContent=t('Header badge','ป้ายข้อมูล Header');
-        texts.get('chatEffects').textContent=t('Design motion effects','ลูกเล่นการเคลื่อนไหวของดีไซน์');effectsRow.hidden=view.theme!=='aincrad';
+        texts.get('chatEffects').textContent=t('Design motion effects','ลูกเล่นการเคลื่อนไหวของดีไซน์');effectsRow.hidden=false;
         texts.get('chatNpcVitals').textContent=t('Aincrad · NPC HP / Lv','Aincrad · HP / Lv ของ NPC');vitalsRow.hidden=vitalsHelp.hidden=view.theme!=='aincrad';
         vitalsHelp.textContent=t('Reads NPC stats.hp and stats.level. Missing values are hidden; HP 0 is shown. The underline is decorative, not a health percentage. Entrance motion is brief, skips streaming updates and respects Reduce Motion.','อ่าน stats.hp และ stats.level ของ NPC ซ่อนค่าที่ไม่มีข้อมูลและแสดง HP 0 เส้นใต้เป็นของตกแต่ง ไม่ใช่เปอร์เซ็นต์เลือด ลูกเล่นเข้าแชทเป็นภาพเคลื่อนไหวสั้น ไม่เล่นซ้ำระหว่างสตรีม และรองรับ Reduce Motion');
         for(const [value,labels]of [['occupation',['Occupation + NPC rank','อาชีพ + ระดับ NPC']],['ability',['Selected skill + mastery','สกิลที่เลือก + ขั้นความเชี่ยวชาญ']],['off',['Hide badge','ซ่อนป้ายข้อมูล']]])badgeOptions.get(value).textContent=t(...labels);
@@ -40,7 +40,7 @@ export function mountChatAppearanceControls(parent,api) {
         const choices=[...new Set((api.state?.().npcs||[]).flatMap(npc=>(npc.abilities||[]).flatMap(skill=>[skill.name,skill.category])).filter(value=>typeof value==='string'&&value.trim()))].sort();
         if(JSON.stringify(choices)!==suggestions.dataset.choices){suggestions.dataset.choices=JSON.stringify(choices);suggestions.replaceChildren(...choices.map(value=>{const option=element('option');option.value=value;return option;}));}
         for(const [key,label] of [['showChatHeader',['Header · character nameplate','Header · ป้ายตัวละคร']],['showChatDialogue',['Dialogue · speech frame','Dialogue · กรอบบทพูด']],['showChatNarrative',['Narrative · narration frame','Narrative · กรอบบรรยาย']]])texts.get(key).textContent=t(...label);
-        help.textContent=t('Enable Header, Dialogue and Narrative independently. Saved for this chat. Without a frame, speech appears as "text" in the speaker’s character color and narration in italics; Header becomes a plain speaker name. Header and Narrative have no background. Regex/MVU widgets keep their own design.','เปิด/ปิด Header, Dialogue และ Narrative ได้อิสระ จำค่าแยกแชท เมื่อปิดกรอบ บทพูดแสดงเป็น "text" ด้วยสีประจำตัวผู้พูด และคำบรรยายเป็นตัวเอียงโดยไม่มีดอกจัน ส่วน Header เหลือชื่อผู้พูดธรรมดา Header กับ Narrative ไม่มีพื้นหลัง UI ของ Regex/MVU ใช้หน้าตาของตัวเอง');
+        help.textContent=t('Enable Header, Dialogue and Narrative independently. Saved for this chat. Without a frame, speech appears as "text" in the speaker’s character color and narration in italics; Header becomes a plain speaker name. Header and Narrative have no background. Player |thoughts| remain unspoken. Player and NPC inner thoughts are always borderless, independently of Dialogue frames, and are never voiced; ordinary narrative italics stay narration. Regex/MVU widgets keep their own design.','เปิด/ปิด Header, Dialogue และ Narrative ได้อิสระ จำค่าแยกแชท เมื่อปิดกรอบ บทพูดแสดงเป็น "text" ด้วยสีประจำตัวผู้พูด และคำบรรยายเป็นตัวเอียงโดยไม่มีดอกจัน ส่วน Header เหลือชื่อผู้พูดธรรมดา Header กับ Narrative ไม่มีพื้นหลัง ผู้เล่นใช้ |พูดในใจ| ได้ตามเดิม ความคิดผู้เล่นและ NPC ไม่มีกรอบเสมอ ไม่ขึ้นกับสวิตช์ Dialogue และไม่ถูกพากย์ ตัวเอียงในบรรยายทั่วไปคงเดิม UI ของ Regex/MVU ใช้หน้าตาของตัวเอง');
         summary.textContent=`${t('Preview','ดูตัวอย่าง')} · ${selected.name}`;gallery.textContent=t('PC / mobile preview ↗','พรีวิว PC / มือถือ ↗');
         if(!busy)for(const [key,input] of controls)if(input.type==='checkbox')input.checked=view[CHAT_APPEARANCE_KEYS[key]];else input.value=view[CHAT_APPEARANCE_KEYS[key]];
         const signature=JSON.stringify([view,settings.language]);

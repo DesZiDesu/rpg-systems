@@ -1,0 +1,45 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "prototype": true,
+  "liveAI": false,
+  "animationCycleSeconds": 2.2,
+  "durationSeconds": 7.2,
+  "devices": [
+    {
+      "device": "desktop",
+      "sourceViewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "output": {
+        "width": 1920,
+        "height": 1080
+      },
+      "durationSeconds": 7.2,
+      "cycles": 3,
+      "decorativeDotsOnly": true,
+      "textStationary": true,
+      "noModelCalls": true,
+      "touchEmulation": false
+    },
+    {
+      "device": "mobile",
+      "sourceViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "output": {
+        "width": 1170,
+        "height": 2532
+      },
+      "durationSeconds": 7.2,
+      "cycles": 3,
+      "decorativeDotsOnly": true,
+      "textStationary": true,
+      "noModelCalls": true,
+      "touchEmulation": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}
