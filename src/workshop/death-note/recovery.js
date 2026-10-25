@@ -1,8 +1,8 @@
-import {ledger,replyAnchor,anchorActive,parseResults,storySeconds,visibleText} from './core.js?v=0.85.9';
-import {PAPER,readPaper} from './paper.js?v=0.85.9';
-import {stageWrittenPaper} from './deferred.js?v=0.85.9';
-import {worldState,canWrite} from './world.js?v=0.85.9';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.85.9';
+import {ledger,replyAnchor,anchorActive,parseResults,storySeconds,visibleText} from './core.js?v=0.86.0';
+import {PAPER,readPaper} from './paper.js?v=0.86.0';
+import {stageWrittenPaper} from './deferred.js?v=0.86.0';
+import {worldState,canWrite} from './world.js?v=0.86.0';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.86.0';
 
 // Older builds saved ink before Send without creating a request. Repair only
 // ink anchored to that real User turn and a verified outcome in its reply.
