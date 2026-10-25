@@ -32,7 +32,7 @@
         "version": 1,
         "initialState": {
           "player": {
-            "name": "{{user}}",
+            "name": "Mael",
             "age": "25"
           },
           "inventory": [
