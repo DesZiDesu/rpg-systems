@@ -1,4 +1,4 @@
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.87.0';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.87.1';
 
 export const PHONE_FIELD='roleforge_smartphone';
 export const PHONE_PROMPT='roleforge_smartphone_context';
@@ -50,7 +50,7 @@ export function blankPhone(){return{
  posts:[],relationships:[],stickers:[],photos:[],notes:[],news:[],notifications:[],
  installed:['phone','messages','contacts','wallet','store','browser','stickers','photos','notes','maps','settings'],
  browser:{tabs:[{id:'start',url:'drift://start'}],activeTab:'start',history:[],bookmarks:[]},
- accounts:[],ledger:[],receipts:[],processed:[],deletedThreads:[],sessions:{},deviceName:'Aster One',
+ accounts:[],ledger:[],receipts:[],processed:[],deletedThreads:[],sessions:{},storySync:null,deviceName:'Aster One',
 };}
 export function normalizePhone(raw){
  const d=blankPhone();if(!raw||raw.schema!==1)return d;
@@ -58,6 +58,7 @@ export function normalizePhone(raw){
  d.revision=Number.isSafeInteger(raw.revision)?raw.revision:0;d.deviceName=clean(raw.deviceName,80)||'Aster One';
  for(const k of ['profiles','drafts','attachments'])if(raw[k]&&typeof raw[k]==='object'&&!Array.isArray(raw[k]))d[k]=JSON.parse(JSON.stringify(raw[k]),(k,v)=>['__proto__','constructor','prototype'].includes(k)?undefined:v);
  if(raw.browser&&Array.isArray(raw.browser.tabs))d.browser=clone(raw.browser);
+ if(raw.storySync&&typeof raw.storySync==='object')d.storySync={source:clean(raw.storySync.source,180),messageId:Number(raw.storySync.messageId),status:raw.storySync.status==='working'?'interrupted':clean(raw.storySync.status,30),error:clean(raw.storySync.error,500)};
  if(Array.isArray(raw.installed))d.installed=[...new Set([...APPS.filter(a=>a.builtIn).map(a=>a.id),...raw.installed.filter(a=>SOCIAL_APPS.includes(a))])];
  // Authentication is session-only; it never survives reload, export or branch.
  d.sessions={};return d;

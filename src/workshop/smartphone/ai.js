@@ -1,5 +1,6 @@
-import {clean,clone,fingerprint,publicProfile,contactLabel} from './model.js?v=0.87.0';
-import {applyIncoming} from './engine.js?v=0.87.0';
+import {clean,clone,fingerprint,publicProfile,contactLabel} from './model.js?v=0.87.1';
+import {applyIncoming} from './engine.js?v=0.87.1';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.87.1';
 
 export function parsePhoneReply(raw){
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))return raw;
@@ -21,19 +22,19 @@ const rules=[
  'A photo attachment is described by its user caption; do not claim pixel-level vision. You may send photoId only for a supplied photo already shared with that sender. Do not invent image URLs or access the private gallery.',
  'No user speech/actions, world-state patches, item grants, money or gambling wins. Wallet actions are already settled by the engine; never debit or reward twice.',
 ].join('\n');
-export function phoneTask(phone,state,config,requests,{kind='reply',language='en',contacts=[]}={}){
- const actors=[...new Set(requests.flatMap(r=>phone.threads.find(t=>t.id===r.threadId)?.members.filter(v=>v!=='player')||[r.contactId]))];
+export function phoneTask(phone,state,config,requests,{kind='reply',language='en',contacts=[],actors:storyActors=[],story=null}={}){
+ const actors=[...new Set([...storyActors,...requests.flatMap(r=>phone.threads.find(t=>t.id===r.threadId)?.members.filter(v=>v!=='player')||[r.contactId])])];
  const references=actors.map(actor=>{
   const c=phone.contacts.find(c=>c.id===actor);if(!c||c.blocked)return null;
   const npc=contacts.find(n=>n.id===c.npcId)||(state.npcs||[]).find(n=>n.id===c.npcId);
   return {contactId:c.id,npcId:c.npcId||'',savedLabel:c.label,number:c.number,notes:c.notes,needsNpc:!c.npcId,
-   character:npc?{name:npc.name,occupation:npc.occupation,description:npc.description,personality:npc.personality,relationship:npc.relationship}:null,
+   character:npc?{name:npc.name,aliases:npc.aliases,occupation:npc.occupation,description:npc.background||npc.description,personality:npc.personality,relationship:npc.relationship}:null,
    appProfiles:visibleApps(phone.profiles[c.id]),
    messages:phone.messages.filter(m=>!m.deleted&&phone.threads.some(t=>t.id===m.threadId&&t.members.includes(c.id))).slice(-24).map(m=>({id:m.id,threadId:m.threadId,from:m.from,text:m.text,stickerId:m.stickerId,photo:m.image?{id:phone.photos.find(v=>v.image===m.image)?.id,caption:phone.photos.find(v=>v.image===m.image)?.caption||'Photo attachment'}:undefined})),
    sharedPhotos:phone.photos.filter(p=>p.sharedWith?.includes(c.id)).map(p=>({id:p.id,caption:p.caption})),activeCall:phone.calls.find(v=>v.contactId===c.id&&v.status==='connected')||null};
  }).filter(Boolean);
- return {systemPrompt:'You are the in-world phone narrator for RoleForge. Return one JSON object, no main-chat prose and no user message. Speak '+(language==='th'?'Thai':'English')+'. Schema: '+PHONE_SCHEMA+'\n'+rules,
-  prompt:'ROLEFORGE_PHONE_TASK\n'+JSON.stringify({kind,requests,references,scene:{location:state.location,clock:state.worldClock,player:state.player?.name},
+ return {systemPrompt:'You are the in-world phone narrator for RoleForge. Return one JSON object, no main-chat prose and no user message. Speak '+(language==='th'?'Thai':'English')+'. Schema: '+PHONE_SCHEMA+'\n'+rules+(kind==='story-repair'?'\nRecover only phone activity already completed in the supplied scene. Use the preceding user turn as context, never create user actions. Copy explicitly sent message text exactly. If the scene confirms an NPC sent messages but omits their words, compose 1–6 brief NPC bubbles consistent with that completed action. Thinking about a message, typing a draft, future plans, quotations and hypothetical actions do not count as sending. Do not disclose the canonical identity behind a saved alias. Return empty events when nothing qualifies. This is a one-time reconciliation, not a new scene.':''),
+  prompt:'ROLEFORGE_PHONE_TASK\n'+JSON.stringify({kind,requests,references,story,playerProfiles:visibleApps(phone.profiles.player),scene:{location:state.location,clock:state.worldClock,player:publicProfile(phone,'player','messages',state.player?.name).displayName},
    stickers:phone.stickers.filter(s=>s.npcAllowed).map(s=>({id:s.id,name:s.name,useWhen:s.cue})),
    permissions:{messages:config.incomingMessages,calls:config.incomingCalls,social:config.socialActivity,offscreen:config.offscreenActivity},
    publicPosts:phone.posts.filter(v=>!v.deleted&&!publicProfile(phone,v.actor,v.app).private).slice(-8).map(v=>({actor:v.actor,app:v.app,text:v.text}))}),responseLength:3500,trimNames:false};
@@ -52,7 +53,7 @@ export function storyPhoneData(message){
  return [...String(message?.mes||'').matchAll(/<rf-phone>([\s\S]*?)<\/rf-phone>/giu)].map(m=>{try{return parsePhoneReply(m[1]);}catch{return null;}}).filter(Boolean);
 }
 export function mergePhoneReply(current,state,raw,config,{requests=[],source='',time={},storyText=''}={}){
- const data=parsePhoneReply(raw),pending=new Map(requests.map(r=>[r.id,r])),phone=clone(current),rpg=clone(state);
+ const data=parsePhoneReply(raw),pending=new Map(requests.map(r=>[r.id,r])),rpg=clone(state),phone=clone(linkPhoneContacts(current,rpg.npcs||[]));
  const visibleStory=String(storyText).replace(/<rf-phone>[\s\S]*?<\/rf-phone>/giu,'');
  for(const event of Array.isArray(data.events)?data.events:[])if(event.type==='contact-share'){
   const npc=rpg.npcs.find(n=>n.id===event.actorId),number=clean(event.number,50),name=clean(event.displayName,100);
@@ -63,13 +64,18 @@ export function mergePhoneReply(current,state,raw,config,{requests=[],source='',
   if(npc&&publicName)phone.contacts.push({id:row.contactId,npcId:npc.id,name:npc.name,label:publicName,number:'',avatar:'',blocked:false,muted:false,source:'public',notes:'Public social profile',created:false});
  }
  const relevant=new Set(requests.flatMap(r=>phone.threads.find(t=>t.id===r.threadId)?.members.filter(v=>v!=='player')||[r.contactId])),completed=new Set(),created=[];
+ // A first incoming message has no player request. Validate its permissions and
+ // destination before accepting a profile for that existing contact.
+ for(const event of Array.isArray(data.events)?data.events:[])if(!event.requestId&&phone.contacts.some(c=>c.id===event.contactId&&!c.blocked)&&applyIncoming(phone,event,{time,config,source}).revision!==phone.revision)relevant.add(event.contactId);
  for(const row of (Array.isArray(data.profiles)?data.profiles:[]).slice(0,12)){
   const c=phone.contacts.find(c=>c.id===row.contactId&&!c.blocked);if(!c||!relevant.has(c.id)&&!(row.source==='public'&&config.socialActivity&&c.source==='public'))continue;
+  const known=!c.npcId&&(phoneNpcForContact(c,rpg.npcs)||rpg.npcs.find(n=>n.id===row.npcId));
+  if(known){c.npcId=known.id;c.name=known.name;c.created=false;}
   if(!c.npcId&&row.npc&&clean(row.npc.name,120)){
    const existing=rpg.npcs.find(n=>n.name?.normalize('NFKC').toLowerCase()===row.npc.name.trim().normalize('NFKC').toLowerCase());
    const npcId=existing?.id||'phone-npc-'+c.id;
    if(!rpg.npcs.some(n=>n.id===npcId))rpg.npcs.push({id:npcId,name:clean(row.npc.name,120),race:'Human',occupation:clean(row.npc.occupation,120)||'Phone contact',background:clean(row.npc.description,2000),personality:clean(row.npc.personality,2000),relationship:'Phone contact',met:false,enabled:true,lifeMode:'Active',notes:'Created through phone contact '+c.number,stats:{hp:100,maxHp:100},themeColor:'#8aab9c'});
-   c.npcId=npcId;c.name=clean(row.npc.name,120);c.created=true;created.push(npcId);
+   c.npcId=npcId;c.name=clean(row.npc.name,120);c.created=!existing;if(!existing)created.push(npcId);
   }
   phone.profiles[c.id]||={};
   for(const app of ['messages','gather','lumen','murmur'])if(row.apps?.[app]&&!phone.profiles[c.id][app]?.locked){

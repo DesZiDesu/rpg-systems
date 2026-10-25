@@ -1,12 +1,12 @@
 # Aster One — using the phone
 
-Aster Phone 1.0.0 ships with RoleForge 0.87.0 on main. The parked Pokémon work remains separate.
+Aster Phone 1.0.0 ships with RoleForge; update to 0.87.1 or later for the phone/story synchronization fixes. The parked Pokémon work remains separate.
 
 ## Open and configure
 
 Install **Aster Phone** in Workshop, enable it for the selected character, and open **Configure**. Its floating shortcut and Wand Menu entry can each be enabled independently. Desktop: drag the status bar to move the phone. Mobile: the device fills the browser viewport. Close it using the top control; closing does not cancel a reply or hang up a call.
 
-By default the character must have a smartphone in RoleForge inventory. A modern phone can also be assumed through **Assume a phone** in settings. This is useful for a card whose opening already gives the player one. The demo card includes an Aster One Smartphone.
+By default the character must have a smartphone in RoleForge inventory or explicitly established possession in the roleplay (for example, using “my Aster”). A modern phone can also be assumed through **Assume a phone** in settings. This is useful for a card whose opening already gives the player one. The demo card includes an Aster One Smartphone.
 
 Settings are shared across the character's chats. Contacts, messages, photos, posts, accounts, balances and calls belong to the current chat and its timeline. Branching restores the state captured at that message; future phone activity should not appear in the earlier branch. Login sessions are local runtime state and must be renewed after a reload.
 
@@ -42,7 +42,7 @@ Text calls work without Voice Addon. For spoken NPC replies, connect the existin
 
 ## NPC activity and the activity capsule
 
-Incoming messages, calls and social actions have separate permissions. Offscreen activity is separately configurable. The normal roleplay response can record a grounded NPC phone action; the addon validates the event, permissions and contact state before applying it. There is no unattended background model polling.
+Incoming messages, calls and social actions have separate permissions. Offscreen activity is separately configurable. The normal roleplay response can record a grounded NPC phone action; the addon validates the event, permissions and contact state before applying it. There is no unattended background model polling. If a completed scene confirms an incoming message but its event record is missing, the addon can make one background data request to reconcile that scene. It excludes private thoughts and unsent drafts. Legacy chats with an empty phone inbox check their latest completed scene once; failed or interrupted synchronization is retryable through the error notice or Settings → Check for missing recent messages. It does not replay the whole chat or invent a player message.
 
 The activity capsule changes for ringing calls, active calls, messages and background replies. Motion, notification sound and the capsule itself are configurable. Notifications can be inspected without accepting a call. Quiet mode and block rules continue to apply.
 
@@ -70,6 +70,6 @@ Photos stores uploaded images; Notes keeps editable notes. Maps lists known Role
 
 ## Installation
 
-Update RoleForge to **0.87.0 or later** through SillyTavern's extension updater, then reload SillyTavern. Open Workshop, install **Aster Phone**, enable it for the selected character and open **Configure**. Import the optional demo card through the normal character importer if you want a modern-city starting point.
+Update RoleForge to **0.87.1 or later** through SillyTavern's extension updater, then reload SillyTavern. Open Workshop, install **Aster Phone**, enable it for the selected character and open **Configure**. Import the optional demo card through the normal character importer if you want a modern-city starting point.
 
 The small Workshop package describes addon data; the native implementation ships with RoleForge. Installing only the phone package on an older runtime cannot add its code. Existing phone preview chats and character preferences are retained by the released runtime. Disabling the addon hides its UI without deleting saved phone data.

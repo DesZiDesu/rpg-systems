@@ -1,5 +1,5 @@
-import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.87.0';
-import {currencyScheme} from '../../currency-config.js?v=0.87.0';
+import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.87.1';
+import {currencyScheme} from '../../currency-config.js?v=0.87.1';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ico=(name)=>'<i class="fa-solid fa-'+name+'" aria-hidden="true"></i>';
@@ -148,7 +148,7 @@ export function mountPhoneUI(runtime){
    '<h3 class="ap-section-label">'+t('NPC เริ่มโต้ตอบเอง','NPC-initiated activity')+'</h3>'+toggle('incomingMessages','อนุญาตข้อความก่อน','Allow messages first')+toggle('incomingCalls','อนุญาตโทรเข้าก่อน','Allow incoming calls')+toggle('socialActivity','โพสต์ ติดตาม และเลิกติดตาม','Posts, follows and unfollows')+toggle('offscreenActivity','อนุญาตฉากนอกสายตาที่เรื่องรองรับ','Allow story-grounded offscreen activity')+
    '<h3 class="ap-section-label">'+t('สายและเสียง','Calls & voice')+'</h3>'+row(t('อ่านคำพูดจาก','Call speech sources'),conf.callInput||'both','config-choice',attr('key','callInput'))+toggle('voiceAuto','อ่านเสียง NPC ในสายอัตโนมัติ','Read NPC call speech automatically')+row(t('เสียงสำรอง','Fallback voice'),get().voices.voices.find(v=>v.id===conf.voiceFallback)?.name||t('ยังไม่ได้เลือก','Not selected'),'voice-picker')+
    hint(get().voices.enabled&&get().voices.connected?t('Voice Addon เชื่อมต่อแล้ว เลือกเสียงต่อรายชื่อได้','Voice Addon connected. Individual voices can be assigned in Contacts.'):t('ยังโทรด้วยข้อความได้ เปิดและเชื่อม Voice Addon หากต้องการเสียง','Text calls work without Voice. Enable and connect Voice Addon for audio.'))+
-   '<h3 class="ap-section-label">'+t('อุปกรณ์และทางลัด','Device & shortcuts')+'</h3>'+toggle('requireDevice','ต้องมีโทรศัพท์ในกระเป๋า','Require a phone in inventory')+toggle('assumeDevice','กำหนดให้ตัวละครมีโทรศัพท์แล้ว','Assume this character has a phone')+toggle('floating','ปุ่มลอย','Floating shortcut')+toggle('wand','Wand Menu','Wand Menu')+row(t('ตั้งค่า Wallet','Configure wallet'),amountUnit().name,'wallet-config')+row(t('จัดการแอป','Manage apps'),'Harbor Store','app',attr('app','store'))+hint(t('การตั้งค่าจำตามการ์ด ข้อมูลโทรศัพท์แยกตามแชทและ Branch','Settings belong to this character. Phone progress follows the chat and branch.')));
+   '<h3 class="ap-section-label">'+t('อุปกรณ์และทางลัด','Device & shortcuts')+'</h3>'+toggle('requireDevice','ต้องมีโทรศัพท์ในเรื่องหรือกระเป๋า','Require a phone in the story or inventory')+toggle('assumeDevice','กำหนดให้ตัวละครมีโทรศัพท์แล้ว','Assume this character has a phone')+toggle('floating','ปุ่มลอย','Floating shortcut')+toggle('wand','Wand Menu','Wand Menu')+row(t('ตั้งค่า Wallet','Configure wallet'),amountUnit().name,'wallet-config')+row(t('จัดการแอป','Manage apps'),'Harbor Store','app',attr('app','store'))+row(t('ตรวจข้อความล่าสุดที่อาจตกหล่น','Check for missing recent messages'),t('อ่านเหตุการณ์โทรศัพท์จากโรลล่าสุด','Check the latest phone activity in the story'),'sync-story')+hint(t('การตั้งค่าจำตามการ์ด ข้อมูลโทรศัพท์แยกตามแชทและ Branch','Settings belong to this character. Phone progress follows the chat and branch.')));
  }
  function notifications(){return wrap(t('การแจ้งเตือน','Notifications'),p().notifications.slice().reverse().map(n=>row(n.title,n.text,'notification',attr('id',n.id),ico(n.type==='call'?'phone':'bell'),n.read?'':'●')).join(''),b(t('อ่านทั้งหมด','Read all'),'notifications-read','','ap-text-button'));}
  function render(){
@@ -162,7 +162,7 @@ export function mountPhoneUI(runtime){
   else switch(view.app){
    case 'home':body=home();break;case 'contacts':body=contacts();break;case 'contact':body=contactPage();break;case 'messages':case 'gather':body=threads(view.app);break;case 'conversation':body=conversation();break;case 'phone':body=calls();break;case 'call':body=callPage();break;case 'lumen':case 'murmur':body=social(view.app);break;case 'profile':body=profilePage();break;case 'store':body=store();break;case 'wallet':body=wallet();break;case 'browser':body=browser();break;case 'stickers':body=stickers();break;case 'photos':body=photos();break;case 'notes':body=notes();break;case 'maps':body=maps();break;case 'notifications':body=notifications();break;case 'settings':body=settings();break;default:body=home();
   }
-  const error=d.error?'<div class="ap-error" role="alert">'+esc(d.error)+'</div>':'';content.innerHTML=error+body;
+  const sync=d.phone.storySync,retry=sync&&['failed','empty','interrupted'].includes(sync.status),detail=d.error||(retry?(sync.error||t('การซิงก์ข้อความก่อนหน้าหยุดไป ลองอีกครั้งได้','The previous message sync was interrupted. You can retry.')):'');const error=detail?'<div class="ap-error" role="alert">'+esc(detail)+(retry?b(t('ลองซิงก์ข้อความอีกครั้ง','Retry message sync'),'sync-story','','ap-text-button'):'')+'</div>':'';content.innerHTML=error+body;
   const scroll=content.querySelector('.ap-body');if(scroll)scroll.scrollTop=view.app==='conversation'?scroll.scrollHeight:oldScroll;
   if(focusInfo){const input=content.querySelector('[name="'+CSS.escape(focusInfo.name)+'"]');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(focusInfo.start,focusInfo.end);}catch{}}}
  }
@@ -206,6 +206,7 @@ export function mountPhoneUI(runtime){
   if(a==='message-pin'||a==='message-delete'){await runtime.act({type:a,id:d.id});closeSheet();return;}
   if(a==='message-edit'){const m=p().messages.find(v=>v.id===d.id);openSheet(t('แก้ไขข้อความ','Edit message'),form('message-edit',area(t('ข้อความ','Message'),'text',m.text),t('บันทึก','Save'),attr('id',m.id)));return;}
   if(a==='reply-mode'){openSheet(t('ส่งแล้วให้ตอบแบบไหน?','When should the reply arrive?'),b(t('ตอบทันที · ขอ AI เพิ่มหนึ่งครั้ง','Reply now · one extra AI request'),'set-config',attr('key','replyMode')+' '+attr('value','immediate'),'ap-menu-item')+b(t('รอคำตอบในโรลถัดไป','Wait for the next story reply'),'set-config',attr('key','replyMode')+' '+attr('value','deferred'),'ap-menu-item'));return;}
+  if(a==='sync-story'){await runtime.retryStory();return;}
   if(a==='respond'){await runtime.respond(view.app==='conversation'?{threadId:view.id}:view.app==='call'?{callId:view.id}:{});return;}
   if(a==='call'){const callId=await runtime.act({type:'call-start',contactId:d.id,mode:cfg().replyMode});go('call',{id:callId});return;}
   if(a==='call-open'){go('call',{id:d.id});return;}

@@ -1,3 +1,4 @@
+import {phoneStorySource} from '../src/workshop/smartphone/story.js';
 import * as forgeAddons from '../src/forge-addons.js';
 import * as characterSettings from '../src/character-settings.js';
 import {filterNpcStoryOps} from '../src/npc-visibility.js';
@@ -3400,4 +3401,13 @@ test('addon registration reuses existing notebooks, honors an explicit no-notebo
  const own=host.applyForgeProfile(make(),{variant:'death-note',fields:{fName:'Ari'},addon:{notebook:'owned',reuseNotebook:true}});assert.equal(own.inventory.filter(forgeAddons.creationNotebookItem).length,1);assert.equal(own.inventory.find(i=>forgeAddons.creationNotebookItem(i)).id,'authored-notebook');
  const none=host.applyForgeProfile(make(),{variant:'death-note',fields:{fName:'Ari'},addon:{notebook:'none'}});assert(!none.inventory.some(forgeAddons.creationNotebookItem));assert(none.inventory.some(i=>i.id==='phone'));
  const other=make();other.inventory.push({id:'forge-item-death-note',name:'Death Note',quantity:1,properties:['roleforge:addon:death-note']});host.applyForgeProfile(other,{fields:{fName:'Ari'}});assert(other.inventory.some(i=>i.id==='forge-item-death-note'));
+});
+
+test('a combined RoleForge patch and phone event survives cleanup on every stored message surface',()=>{
+ const story='<tr-narrative>Cassandra sends you a message.</tr-narrative>',block='<rf-phone>'+JSON.stringify({events:[{type:'message',contactId:'cass',text:'Made it home?'}]})+'</rf-phone>',patch='<!--tretaresia_patch:'+JSON.stringify({ops:[['set','worldClock.time','19:30']]})+'-->';
+ const raw=story+patch+block,message={mes:raw,swipes:[raw],swipe_id:0,extra:{display_text:raw}};
+ const source=phoneStorySource(message,7,host.extractStatePatch(raw).visible);const result=host.cleanInlinePatchSurfaces(message);assert.equal(phoneStorySource(message,7,result.visible),source);assert.equal(result.visible,story);assert.equal(result.patch.ops[0][2],'19:30');assert.equal(result.stored,message.mes);
+ for(const text of[message.mes,message.swipes[0],message.extra.display_text]){assert(text.includes(block));assert(!text.includes('tretaresia_patch'));assert.equal(host.extractStatePatch(text).visible,story);}
+ assert.equal(host.extractStatePatch(message.mes,{keepPhone:true}).visible,message.mes);
+ host.cleanInlinePatchSurfaces(message);assert.equal((message.mes.match(/<rf-phone>/gu)||[]).length,1);
 });

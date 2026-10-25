@@ -1,3 +1,5 @@
+import {linkPhoneContacts,phoneNpcForContact} from '../src/workshop/smartphone/identity.js';
+import {phoneSceneSignal,phoneOwnershipInStory,phoneStorySource} from '../src/workshop/smartphone/story.js';
 import test from 'node:test';
 import {createPhoneQueue} from '../src/workshop/smartphone/queue.js';
 import assert from 'node:assert/strict';
@@ -121,3 +123,32 @@ test('attachment drafts survive closing/reloading and are removed after a succes
 
 test('a queued contact edit cannot run under another chat after a pending save',async()=>{let owner='A',release;const errors=[],queue=createPhoneQueue({capture:()=>owner,valid:t=>t===owner,onError:e=>errors.push(e)}),block=new Promise(ok=>release=ok);const first=queue.run(()=>block);let changed=false;const old=queue.run(()=>changed=true);await new Promise(setImmediate);owner='B';release();await first.catch(()=>{});await assert.rejects(old,/chat changed/);assert(!changed);assert.equal(errors.length,0);});
 test('a new scope can reset its queue without adopting actions from the old scope',async()=>{let owner='A',release;const queue=createPhoneQueue({capture:()=>owner,valid:t=>t===owner});const pending=queue.run(()=>new Promise(ok=>release=ok));await new Promise(setImmediate);owner='B';queue.reset();assert.equal(await queue.run(()=> 'new chat'),'new chat');release();await pending;});
+
+test('an NPC can initiate a first message to a custom contact without a prior player request',()=>{
+ const {p,contact}=setup(false);const result=mergePhoneReply(p,state(),{profiles:[{contactId:contact.id,npc:{name:'Aoi Sato'},apps:{messages:{displayName:'Aoi'}}}],events:[{type:'message',contactId:contact.id,text:'Made it home?'}]},config,{source:'story-first'});
+ assert.equal(result.phone.messages.length,1);assert.equal(result.state.npcs.length,1);assert.equal(result.phone.contacts[0].npcId,result.state.npcs[0].id);assert.equal(result.phone.pending.length,0);
+ const denied=mergePhoneReply(p,state(),{profiles:[{contactId:contact.id,npc:{name:'Aoi Sato'}}],events:[{type:'message',contactId:contact.id,text:'No permission'}]},{...config,incomingMessages:false},{source:'story-denied'});assert.equal(denied.phone.messages.length,0);assert.equal(denied.state.npcs.length,0);
+});
+
+test('explicit undercover aliases link a saved contact to one existing NPC without renaming its public label',()=>{
+ const {p}=setup(false);p.contacts[0].label='Cassandra';const npc={id:'x-extreme',name:'X-Extreme',relationship:'Date Partner (Alias: Cassandra)',notes:'Using alias Cassandra with fabricated abilities.'};
+ const linked=linkPhoneContacts(p,[npc]);assert.equal(linked.contacts[0].npcId,npc.id);assert.equal(linked.contacts[0].label,'Cassandra');assert.equal(linkPhoneContacts(linked,[npc]),linked);assert(!p.contacts[0].npcId);
+ assert.equal(phoneNpcForContact(p.contacts[0],[{id:'unrelated',name:'Someone',background:'A friend called Cassandra'}]),null);
+ assert.equal(phoneNpcForContact(p.contacts[0],[npc,{id:'other',name:'Other',aliases:['Cassandra']}]),null);
+ const result=mergePhoneReply(p,{...state(),npcs:[npc]},{events:[{type:'message',contactId:p.contacts[0].id,text:'Made it home?'}]},config,{source:'alias-first'});assert.equal(result.phone.messages.length,1);assert.equal(result.state.npcs.length,1);assert.equal(result.phone.contacts[0].name,'X-Extreme');assert.equal(result.phone.contacts[0].label,'Cassandra');
+});
+test('confirmed phone activity in the story is recoverable, while private thoughts, drafts and unrelated senders are excluded',()=>{
+ const {p,contact}=setup();p.contacts[0].label='Cassandra';const s=state(),message={mes:'<tr-header name="Cassandra"/><tr-thought>What should I text first?</tr-thought><tr-narrative>Cassandra taps out a sequence of messages. The transmission chimes.</tr-narrative>'},user={mes:'Aster notified me of a new message from Cassandra.'};
+ assert.deepEqual(phoneSceneSignal(p,s,message,user,config).actors,[contact.id]);
+ for(const mes of ['<tr-thought>Cassandra sent a text.</tr-thought>','<tr-narrative>Cassandra did not send a message.</tr-narrative>','<tr-narrative>Cassandra wants to send a message.</tr-narrative>','<tr-narrative>Someone else sent a text.</tr-narrative>'])assert.equal(phoneSceneSignal(p,s,{mes},{mes:'I get home.'},config),null,mes);
+ assert.equal(phoneSceneSignal(p,s,message,user,{...config,incomingMessages:false}),null);p.contacts[0].blocked=true;assert.equal(phoneSceneSignal(p,s,message,user,config),null);
+});
+test('Thai phone message completion is recognized without treating an unsent draft as a delivery',()=>{
+ const {p,contact}=setup();p.contacts[0].label='แคสซานดรา';assert(phoneSceneSignal(p,state(),{mes:'แคสซานดราส่งข้อความมาแล้ว โทรศัพท์ของคุณแจ้งเตือน'},{mes:''},config));assert.equal(phoneSceneSignal(p,state(),{mes:'แคสซานดรายังไม่ได้ส่งข้อความ แค่คิดว่าจะพิมพ์อะไร'},{mes:''},config),null);
+});
+test('the player using their own Aster is possession evidence without a synthetic inventory item',()=>{
+ assert(phoneOwnershipInStory([{is_user:true,mes:'I have a thousand reels on my Aster.'}]));assert(phoneOwnershipInStory([{is_user:true,mes:'Aster notified me of a new message.'}]));assert(!phoneOwnershipInStory([{is_user:false,mes:'Cassandra looks at her phone.'}]));assert(!phoneOwnershipInStory([{is_user:true,mes:'|I wish I had my phone.|'}]));assert(!phoneOwnershipInStory([{is_user:true,mes:'I check my phone.'},{is_user:true,mes:'I lost my phone.'}]));
+});
+test('phone story sync attempts survive reload as retryable interruptions without auth sessions',()=>{
+ const p=blankPhone();p.storySync={source:'story:one',messageId:5,status:'working',error:''};p.processed.push('story:one:repair');const reloaded=normalizePhone(p);assert.equal(reloaded.storySync.status,'interrupted');assert(reloaded.processed.includes('story:one:repair'));assert.deepEqual(reloaded.sessions,{});
+});
