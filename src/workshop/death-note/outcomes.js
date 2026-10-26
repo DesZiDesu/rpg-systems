@@ -1,4 +1,4 @@
-import {identityText,containsIdentity} from './identity.js?v=0.88.6';
+import {identityText,containsIdentity} from './identity.js?v=0.88.7';
 const thaiDigits={ศูนย์:0,หนึ่ง:1,เอ็ด:1,สอง:2,ยี่:2,สาม:3,สี่:4,ห้า:5,หก:6,เจ็ด:7,แปด:8,เก้า:9};
 function number(value){
  const s=value.trim().toLocaleLowerCase();if(/^\d+$/u.test(s))return Number(s);

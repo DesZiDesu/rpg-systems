@@ -1,5 +1,5 @@
-import { H_FIELD_MAP, updateHStat } from "./h-stats.js?v=0.88.6";
-import { parseStory } from "./npc-core.js?v=0.88.6";
+import { H_FIELD_MAP, updateHStat } from "./h-stats.js?v=0.88.7";
+import { parseStory } from "./npc-core.js?v=0.88.7";
 
 const object = (v) => v && typeof v === "object" && !Array.isArray(v);
 const clean = (v, max = 180) =>
@@ -571,15 +571,15 @@ const hypothetical =
 const trustWithdrawal = /\b(?:no longer trust\w*|(?:lost|lack(?:s|ed|ing)?)\s+(?:(?:his|her|their|any|all)\s+)?trust|(?:does|do|did) not trust|doesn['’]t trust|don['’]t trust|didn['’]t trust|no trust)\b|ไม่(?:เชื่อใจ|เชื่อมั่น|ไว้ใจ|ไว้วางใจ)|(?:ไม่มี|ขาด|หมด|สูญเสีย)(?:ความ)?(?:เชื่อใจ|เชื่อมั่น|ไว้ใจ|ไว้วางใจ)/iu;
 const actualPatterns = {
   support:
-    /\b(?:help(?:s|ed|ing)?|care(?:s|d)?|caring|support(?:s|ed|ing)?|comfort(?:s|ed|ing)?|protect(?:s|ed|ing)?|rescu(?:e|es|ed|ing)|trust(?:s|ed|ing)?|reassur(?:e|es|ed|ing)|listen(?:s|ed|ing)?)\b|ช่วย|ดูแล|ปลอบ|ปกป้อง|รับฟัง|เปิดใจ|เชื่อใจ|เชื่อมั่น|ไว้ใจ|ไว้วางใจ|วางใจ|อุ่นใจ|ให้กำลังใจ|เคียงข้าง/iu,
+    /\b(?:help(?:s|ed|ing)?|grateful|thankful|relax(?:es|ed)? (?:around|with)|lower(?:s|ed)? (?:her|his|their) guard|confid(?:e|es|ed)|open(?:s|ed)? up|care(?:s|d)?|caring|support(?:s|ed|ing)?|comfort(?:s|ed|ing)?|protect(?:s|ed|ing)?|rescu(?:e|es|ed|ing)|trust(?:s|ed|ing)?|reassur(?:e|es|ed|ing)|listen(?:s|ed|ing)?)\b|ช่วย|ดูแล|ปลอบ|ปกป้อง|รับฟัง|เปิดใจ|เชื่อใจ|เชื่อมั่น|ไว้ใจ|ไว้วางใจ|วางใจ|อุ่นใจ|ให้กำลังใจ|เคียงข้าง/iu,
   romance:
-    /\b(?:love(?:s|d)?|loving|attract(?:s|ed|ion)?|feel(?:s|ing|ings)?|felt|fond|interest(?:s|ed)?|confess(?:es|ed|ing)?|affection|desire(?:s|d)?|long(?:s|ed|ing)? for)\b|รัก|ชอบ|หวั่นไหว|สนใจ|รู้สึก|สารภาพ|ผูกพัน|หลงใหล|เสน่หา|คิดถึง|ตกหลุมรัก|หลงรัก/iu,
-  promise: /kept|honou?r|fulfill|promise|รักษา.*(?:สัญญา|คำพูด)|ทำตาม.*(?:สัญญา|คำพูด|คำมั่น)|คำมั่น/iu,
+    /\b(?:flirt(?:s|ed|ing)?|blush(?:es|ed|ing)?|crush on|drawn to|love(?:s|d)?|loving|attract(?:s|ed|ion)?|feel(?:s|ing|ings)?|felt|fond|interest(?:s|ed)?|confess(?:es|ed|ing)?|affection|desire(?:s|d)?|long(?:s|ed|ing)? for)\b|รัก|ชอบ|หวั่นไหว|สนใจ|รู้สึก|สารภาพ|ผูกพัน|เขิน|หน้าแดง|หยอกล้ออย่างเสน่หา|หลงใหล|เสน่หา|คิดถึง|ตกหลุมรัก|หลงรัก/iu,
+  promise: /stayed faithful|kept|honou?r|fulfill|promise|รักษา.*(?:สัญญา|คำพูด)|ทำตาม.*(?:สัญญา|คำพูด|คำมั่น)|คำมั่น/iu,
   discovery:
     /discover|learn(?:ed|s)?|witness|found out|realiz|รู้ความจริง|พบความจริง|เห็นกับตา|จับได้|รู้ว่า/iu,
   history: /birth|pregnan|parent|คลอด|ตั้งครรภ์|ท้อง|พ่อของ/iu,
   conflict:
-    /argu|conflict|distrust|disappoint|hurt|distance|ทะเลาะ|ขัดแย้ง|ผิดหวัง|ไม่ไว้ใจ|ห่างเหิน|เสียใจ/iu,
+    /argu|conflict|distrust|disappoint|hurt|distance|no longer (?:attracted|interested|love)|lost interest|stopped loving|lost feelings|หมดรัก|เลิกรัก|เลิกสนใจ|หมดความสนใจ|ทะเลาะ|ขัดแย้ง|ผิดหวัง|ไม่ไว้ใจ|ห่างเหิน|เสียใจ/iu,
   betrayal:
     /betray|affair|broke.*(?:promise|exclusiv)|cheat|นอกใจ|ทรยศ|ผิดคำมั่น|ผิดคำสัญญา|ละเมิด.*(?:ข้อตกลง|คำมั่น)/iu,
   intimacy:
@@ -628,7 +628,7 @@ function relationshipEvidence(
   actorId,
   targetId,
   people,
-  { story, user, userName, participants },
+  { story, user, userName, participants, exchanges = [] },
 ) {
   const quote = normalizeQuote(evidence);
   participants = Array.isArray(participants) ? participants : [];
@@ -649,19 +649,27 @@ function relationshipEvidence(
     return matches.length === 1 ? matches[0] : "";
   };
   const blocks = [];
+  for(const row of exchanges){
+    if(!people.has(row?.speakerId)||!normalizeQuote(story).includes(normalizeQuote(row.text)))continue;
+    blocks.push({text:row.text,speaker:row.speakerId,dialogue:true,addressee:people.has(row.targetId)?row.targetId:''});
+  }
   for (const [source, own] of [
     [String(story || ""), false],
     [String(user || ""), true],
   ]) {
+    let headerSpeaker='';
     for (const block of parseStory(source) || [
       { type: "plain", text: source },
     ]) {
-      if (block.type === "header") continue;
-      const dialogue = block.type === "dialogue";
+      if (block.type === "header") {headerSpeaker=speakerId(block.name);continue;}
+      const dialogue = ["dialogue","thought"].includes(block.type);
       blocks.push({
         text: block.text,
         speaker: own ? "player" : dialogue ? speakerId(block.name) : "",
         dialogue,
+        thought:block.type==="thought"||own&&/^\s*\|[\s\S]*\|\s*$/u.test(block.text),
+        addressee:own&&participants.length===1?participants[0]:'',
+        narratorActor:!own&&participants.length===1&&participants[0]===headerSpeaker?headerSpeaker:'',
       });
     }
   }
@@ -670,6 +678,7 @@ function relationshipEvidence(
   for (const block of blocks) {
     if (/^\s*(?:\(\(|\[OOC\b|OOC\s*:)/iu.test(normalizeQuote(block.text)))
       continue;
+    if(block.thought&&!["support","romance","conflict","values","discovery"].includes(kind))continue;
     let pairEstablished = false;
     for (const clause of evidenceClauses(block.text)) {
       const fact = normalizeQuote(clause.text);
@@ -693,6 +702,8 @@ function relationshipEvidence(
         sharedPair ||
         mentions(person(id), fact, false) ||
         (block.speaker === id && firstPerson.test(fact)) ||
+        (block.narratorActor === id && /^\s*[*“"'\s]*(?:she\b|he\b|they\b|เธอ|เขา|หล่อน)/iu.test(fact)) ||
+        (block.addressee === id && /\byou(?:r|rs|rself)?\b|คุณ|เธอ|นาย/iu.test(fact)) ||
         (id === "player" &&
           mentions(player, fact, true) &&
           (!block.dialogue ||
@@ -889,6 +900,7 @@ export function applyRelationshipEvents(
     user = "",
     userName = state.player?.name,
     participants = [],
+    exchanges = [],
     source = "",
     at = new Date().toISOString(),
   } = {},
@@ -972,7 +984,7 @@ export function applyRelationshipEvents(
       actorId,
       targetId,
       people,
-      { story, user, userName, participants },
+      { story, user, userName, participants, exchanges },
     );
     if (!confirmed.quote) {
       reject(confirmed.code);
@@ -1066,8 +1078,8 @@ export function applyRelationshipEvents(
         (metric === "corruption" && kind !== "values") ||
         (metric !== "corruption" && kind === "values") ||
         (metric === "love" &&
-          ["intimacy", "conflict", "betrayal", "values"].includes(kind)) ||
-        (metric === "interest" && kind !== "romance") ||
+          (["intimacy", "betrayal", "values"].includes(kind)||kind === "conflict"&&request>0)) ||
+        (metric === "interest" && kind !== "romance" && !(["conflict","discovery","separate"].includes(kind)&&request<0)) ||
         ["intimacy", "history"].includes(kind) ||
         (kind === "betrayal" && metric !== "commitment")
       )
@@ -1081,12 +1093,12 @@ export function applyRelationshipEvents(
           major ? config.majorGain : config.sceneGain,
         );
       if (positive) {
-        delta = Math.floor(delta / (repeat + 1));
+        delta = Math.round(delta / (repeat + 1) * 10) / 10;
         if (
           metric === "corruption" ||
           (exclusive && ["love", "interest"].includes(metric))
         )
-          delta = Math.round(delta * (1 - profile.resistance / 100));
+          delta = Math.round(delta * (1 - profile.resistance / 100) * 10) / 10;
         delta = Math.min(available, delta);
       } else if (
         !["conflict", "discovery", "betrayal", "separate", "values"].includes(
@@ -1272,7 +1284,7 @@ export function applyRelationshipEvents(
       targetId: targetId || "",
       kind,
       evidence: quote,
-      reason: "",
+      reason: Object.keys(e.changes||{}).length&&!Object.keys(deltas).length&&!milestone ? budget.spent>=limit?"scene_limit":"score_limit" : "",
       changes: deltas,
       at,
       source: clean(key, 200),

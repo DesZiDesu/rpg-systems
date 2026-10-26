@@ -1,19 +1,20 @@
-import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.6';
-import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.88.6';
-import {createPhoneQueue} from './queue.js?v=0.88.6';
-import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.88.6';
-import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.88.6';
-import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData,parsePhoneReply} from './ai.js?v=0.88.6';
-import {savePhoneChat} from './persistence.js?v=0.88.6';
-import {requestDataTask} from '../../task-generation.js?v=0.88.6';
-import {uiLanguage} from '../../ui-language.js?v=0.88.6';
-import {mountPhoneUI} from './ui.js?v=0.88.6';
-import {advancePhoneClock,phoneActionMinutes} from './clock.js?v=0.88.6';
+import {applyPhoneRelationships,phoneRelationshipRows,recoverPhoneRelationships} from './relationships.js?v=0.88.7';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.7';
+import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.88.7';
+import {createPhoneQueue} from './queue.js?v=0.88.7';
+import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.88.7';
+import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.88.7';
+import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData,parsePhoneReply} from './ai.js?v=0.88.7';
+import {savePhoneChat} from './persistence.js?v=0.88.7';
+import {requestDataTask} from '../../task-generation.js?v=0.88.7';
+import {uiLanguage} from '../../ui-language.js?v=0.88.7';
+import {mountPhoneUI} from './ui.js?v=0.88.7';
+import {advancePhoneClock,phoneActionMinutes} from './clock.js?v=0.88.7';
 
 export async function mountSmartphone({api,enabled,busy}){
- const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.88.6',import.meta.url);
+ const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.88.7',import.meta.url);
  await new Promise((ok,no)=>{style.onload=ok;style.onerror=no;document.head.append(style);});
- let phone=normalizePhone(),scope='',nonce=null,revision=null,flight=null,queue,disposed=false,epoch=0,voiceQueue=Promise.resolve(),speechSeen=new Set(),error='',working=false,lastNotification='',replyTimer,pendingMain=null,requestedReplies=new Set(),linking=false,deviceCache={},catchupChecked=false;
+ let phone=normalizePhone(),scope='',nonce=null,revision=null,flight=null,queue,disposed=false,epoch=0,voiceQueue=Promise.resolve(),speechSeen=new Set(),error='',working=false,lastNotification='',replyTimer,pendingMain=null,requestedReplies=new Set(),linking=false,deviceCache={},catchupChecked=false,relationshipRecovery=false;
  const host=()=>SillyTavern.getContext(),context=()=>api.phoneContext?.()||api.context(),config=()=>phoneConfig(api.phoneConfiguration?.()),state=()=>context().state;
  const language=()=>config().language==='inherit'?uiLanguage():config().language;
  const knownNpcs=()=>[...new Map([...(api.phoneNpcReferences?.()||[]),...(state().npcs||[])].map(n=>[n.id,n])).values()];
@@ -27,6 +28,14 @@ export async function mountSmartphone({api,enabled,busy}){
   if(changed){catchupChecked=false;deviceCache={};scope=c.key;nonce=c.nonce;epoch++;working=false;flight=null;error='';queue?.reset();requestedReplies.clear();pendingMain=null;clearTimeout(replyTimer);phone=normalizePhone(host().chatMetadata?.[PHONE_FIELD]);revision=host().chatMetadata?.[PHONE_FIELD];speechSeen=new Set(phone.calls.flatMap(c=>c.transcript.map(r=>r.id)));api.voice?.stop?.('smartphone');ui?.reset();lastNotification=phone.notifications.at(-1)?.id||'';}
   else if(revision!==host().chatMetadata?.[PHONE_FIELD]){const next=normalizePhone(host().chatMetadata?.[PHONE_FIELD]);if(next.revision<phone.revision){epoch++;queue?.reset();ui?.reset();flight=null;working=false;}phone=next;revision=host().chatMetadata?.[PHONE_FIELD];}
   if(enabled()&&!linking&&linkPhoneContacts(phone,knownNpcs())!==phone){linking=true;void serial(async()=>{const next=linkPhoneContacts(phone,knownNpcs());if(next!==phone)await save(next);}).catch(report).finally(()=>linking=false);}
+  if(enabled()&&!relationshipRecovery&&!busy()&&api.relationshipTrackingEnabled?.()!==false&&phone.relationshipRoutingVersion!==1){
+   relationshipRecovery=true;const authority=ticket();
+   void serial(async()=>{
+    if(phone.relationshipRoutingVersion===1)return;
+    await api.preparePhoneNpcs?.([...new Set(phone.contacts.map(c=>c.npcId).filter(Boolean))]);if(!valid(authority))return;
+    const repaired=recoverPhoneRelationships(phone,state());await save(repaired.phone,repaired.state);
+   }).catch(report).finally(()=>{relationshipRecovery=false;});
+  }
   if(!catchupChecked&&enabled()&&host().chatMetadata?.[PHONE_FIELD]){
    catchupChecked=true;
    if(phone.incomingRoutingVersion===0){
@@ -66,7 +75,7 @@ export async function mountSmartphone({api,enabled,busy}){
    if(!ownsDevice())throw Error('Your character needs a phone, or enable “Assume a phone” in Workshop settings.');
    const current=state(),next=advancePhoneClock(current,phoneActionMinutes(action)),linked=linkPhoneContacts(phone,knownNpcs());
    const row=changePhone(linked,action,{time:storyTime(next),playerName:current.player?.name});
-   if(row.phone!==linked)await save(linkPhoneContacts(row.phone,knownNpcs()),next);return row.result;
+   if(row.phone!==linked){const changed=linkPhoneContacts(row.phone,knownNpcs()),assessed=applyPhoneRelationships(next,changed,phoneRelationshipRows(changed,linked),{enabled:api.relationshipTrackingEnabled?.()!==false});if(assessed.checks.length)changed.relationshipSync={checkedAt:assessed.checkedAt,checks:assessed.checks.slice(-24)};await save(changed,assessed.state);}return row.result;
   });
   if((['message-send','call-start','call-speech'].includes(action.type)||action.type==='call-state'&&action.status==='connected')&&(action.mode||config().replyMode)==='immediate')void respond(action.type==='message-send'?{threadId:action.threadId}:{callId:action.callId||result}).catch(report);
   if(action.type==='call-state'&&['ended','declined','missed'].includes(action.status))api.voice?.stop?.('smartphone');
@@ -81,12 +90,12 @@ export async function mountSmartphone({api,enabled,busy}){
   flight=(async()=>{
    await api.preparePhoneNpcs?.(phone.contacts.filter(c=>requests.some(r=>r.contactId===c.id||phone.threads.find(t=>t.id===r.threadId)?.members.includes(c.id))).map(c=>c.npcId).filter(Boolean));if(!valid(t))return;
    await serial(async()=>{const linked=linkPhoneContacts(phone,knownNpcs());if(linked!==phone)await save(linked);});if(!valid(t))return;
-   const args=phoneTask(phone,state(),config(),requests,{language:language(),contacts:api.phoneNpcReferences?.()||[]});
+   const args=phoneTask(phone,state(),config(),requests,{language:language(),contacts:api.phoneNpcReferences?.()||[],trackRelationships:api.relationshipTrackingEnabled?.()!==false});
    const raw=await requestDataTask(host(),args,{quietPrompt:args.prompt,skipWIAN:true,removeReasoning:true},{task:'Phone reply'});
    if(!valid(t))return;await prepareReplyNpcs([parsePhoneReply(raw)]);if(!valid(t))return;
    await serial(async()=>{
     const still=requests.filter(r=>phone.pending.some(q=>q.id===r.id));if(!still.length)return;
-    const result=mergePhoneReply(phone,state(),raw,config(),{requests:still,source:'task:'+requests.map(r=>r.id).join(','),time:storyTime(state()),advanceTime:true});await save(result.phone,result.state);
+    const result=mergePhoneReply(phone,state(),raw,config(),{requests:still,source:'task:'+requests.map(r=>r.id).join(','),time:storyTime(state()),advanceTime:true,trackRelationships:api.relationshipTrackingEnabled?.()!==false});await save(result.phone,result.state);
    });
   })().catch(e=>{if(valid(t))report(e);}).finally(()=>{if(valid(t)){working=false;flight=null;ui?.render();if(pendingMain!==null)finishMain();flushReplies();}});
   return flight;
@@ -111,9 +120,9 @@ export async function mountSmartphone({api,enabled,busy}){
   await serial(async()=>{
    if(phone.processed.includes(source))return;
    let next=linkPhoneContacts(phone,knownNpcs()),rpg=state();
-   for(const block of data){const merged=mergePhoneReply(next,rpg,block,config(),{requests:next.pending,source,time:storyTime(state()),storyText:message.mes});next=merged.phone;rpg=merged.state;unresolved||=merged.unresolved;}
+   for(const block of data){const merged=mergePhoneReply(next,rpg,block,config(),{requests:next.pending,source,time:storyTime(state()),storyText:message.mes,trackRelationships:api.relationshipTrackingEnabled?.()!==false,relationshipSource:api.relationshipSource?.(Number(messageId))||''});next=merged.phone;rpg=merged.state;unresolved||=merged.unresolved;}
    const call=next.calls.find(v=>v.status==='connected'),contact=call&&next.contacts.find(v=>v.id===call.contactId);
-   if(call&&contact&&['both','main'].includes(config().callInput)&&!data.some(block=>block.events?.some(e=>e.type==='call-speech'&&e.callId===call.id))){const text=callSpeech(message,contact,false);if(text&&!call.transcript.some(r=>r.source===source)){next=changePhone(next,{type:'call-speech',callId:call.id,from:contact.id,text,source},{time:storyTime(state())}).phone;}}
+   if(call&&contact&&['both','main'].includes(config().callInput)&&!data.some(block=>block.events?.some(e=>e.type==='call-speech'&&e.callId===call.id))){const text=callSpeech(message,contact,false);if(text&&!call.transcript.some(r=>r.source===source)){const previous=next;next=changePhone(next,{type:'call-speech',callId:call.id,from:contact.id,text,source},{time:storyTime(state())}).phone;const assessed=applyPhoneRelationships(rpg,next,phoneRelationshipRows(next,previous),{enabled:api.relationshipTrackingEnabled?.()!==false,source:api.relationshipSource?.(Number(messageId))||''});rpg=assessed.state;if(assessed.checks.length)next.relationshipSync={checkedAt:assessed.checkedAt,checks:assessed.checks.slice(-24)};}}
    if(data.length||next!==phone){next=clone(next);if(data.length&&!unresolved)next.processed.push(source);await save(next,rpg);}
   });
   if(valid(authority)&&(!data.length||unresolved))await recoverStory(Number(messageId));
@@ -134,7 +143,7 @@ export async function mountSmartphone({api,enabled,busy}){
    const args=phoneTask(phone,state(),config(),[],{kind:'story-repair',actors:signal.actors,story:signal.story,language:language(),contacts:knownNpcs()});
    const raw=await requestDataTask(host(),args,{quietPrompt:args.prompt,skipWIAN:true,removeReasoning:true},{task:'Phone story sync'});if(!same())return;await prepareReplyNpcs([parsePhoneReply(raw)]);if(!same())return;
    await serial(async()=>{
-    const result=mergePhoneReply(phone,state(),raw,config(),{source,time:storyTime(state()),storyText:message.mes});
+    const result=mergePhoneReply(phone,state(),raw,config(),{source,time:storyTime(state()),storyText:message.mes,trackRelationships:api.relationshipTrackingEnabled?.()!==false,relationshipSource:api.relationshipSource?.(Number(messageId))||''});
     const delivered=result.phone.messages.length>phone.messages.length||result.phone.calls.length>phone.calls.length||result.phone.posts.length>phone.posts.length;
     const detail=delivered?'':language()==='th'?'AI ยังไม่ได้ส่งข้อมูลข้อความที่ยืนยันแล้ว ลองซิงก์อีกครั้งได้':'The AI did not provide the confirmed phone messages. You can retry the sync.';
     result.phone.storySync={source,messageId,status:delivered?'done':'empty',error:detail};if(delivered)result.phone.processed.push(source);await save(result.phone,result.state);error=detail;ui?.render();

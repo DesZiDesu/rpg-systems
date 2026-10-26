@@ -201,7 +201,7 @@
       "kind": "system",
       "color": "sage",
       "subtitle": "A little world, inside your world",
-      "minimumRoleForge": "0.88.6",
+      "minimumRoleForge": "0.88.7",
       "author": "RoleForge",
       "description": "สมาร์ทโฟนในโลกของโรล พร้อมข้อความ โทรศัพท์ รายชื่อ โปรไฟล์ แอปโซเชียล เบราว์เซอร์ และ Wallet ที่ใช้ค่าเงิน RoleForge",
       "features": [
@@ -309,6 +309,17 @@
           "changes": [
             "Teach main-chat and phone AI the Aster brand, handset model, app names, purposes and installation status",
             "Label Messages/Gather channels and share bounded public social activity without private or blocked posts"
+          ]
+        },
+        {
+          "version": "1.1.7",
+          "path": "packs/smartphone-1.1.7.json",
+          "bytes": 1959,
+          "sha256": "f5442b44d395a9e582a5183f9b4a3101d545173a057831d6858ece6f2610ed95",
+          "changes": [
+            "Connect delivered phone dialogue to the shared H-Stats relationship engine",
+            "Recover confirmed prose changes and retained legacy phone messages without extra model requests",
+            "Expose tracking status and limits; preserve branch undo and manual pair edits"
           ]
         }
       ]

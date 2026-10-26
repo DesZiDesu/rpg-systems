@@ -1,10 +1,12 @@
-import {incomingContactId,routeIncomingPhoneData} from './incoming.js?v=0.88.6';
-import {usableNpcName} from '../../npc-core.js?v=0.88.6';
-import {clean,clone,fingerprint,publicProfile,contactLabel,storyTime} from './model.js?v=0.88.6';
-import {advancePhoneClock,phoneReplyMinutes} from './clock.js?v=0.88.6';
-import {applyIncoming} from './engine.js?v=0.88.6';
-import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.6';
-import {PHONE_WORLD_KNOWLEDGE,phoneEnvironment,phoneAppChannel,publicPhonePosts} from './context.js?v=0.88.6';
+import {PHONE_RELATIONSHIP_INSTRUCTIONS,phoneRelationshipReference,applyPhoneRelationships,phoneRelationshipRows} from './relationships.js?v=0.88.7';
+import {RELATIONSHIP_INSTRUCTIONS} from '../../relationship-core.js?v=0.88.7';
+import {incomingContactId,routeIncomingPhoneData} from './incoming.js?v=0.88.7';
+import {usableNpcName} from '../../npc-core.js?v=0.88.7';
+import {clean,clone,fingerprint,publicProfile,contactLabel,storyTime} from './model.js?v=0.88.7';
+import {advancePhoneClock,phoneReplyMinutes} from './clock.js?v=0.88.7';
+import {applyIncoming} from './engine.js?v=0.88.7';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.7';
+import {PHONE_WORLD_KNOWLEDGE,phoneEnvironment,phoneAppChannel,publicPhonePosts} from './context.js?v=0.88.7';
 
 export function parsePhoneReply(raw){
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))return raw;
@@ -13,7 +15,7 @@ export function parsePhoneReply(raw){
  let parsed;try{parsed=JSON.parse(block);}catch{throw Error('The phone response was not valid JSON. Your sent message is saved; retry the reply.');}
  if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw Error('The phone response must be a JSON object');return parsed;
 }
-export const PHONE_SCHEMA='{"profiles":[{"contactId":"id","source":"incoming|public","npcId":"existing NPC id or empty","displayName":"public caller/account name","number":"only if established","npc":{"name":"","occupation":"","personality":"","description":""},"apps":{"messages":{"displayName":"","handle":"","bio":"","status":""},"gather":{},"lumen":{},"murmur":{}}}],"events":[{"type":"message|call-result|call-speech|call|post|follow|unfollow","contactId":"","actorId":"existing NPC id when available","displayName":"public sender name for a new contact","requestId":"","threadId":"","callId":"","text":"","elapsedMinutes":1,"stickerId":"","app":"messages|gather|lumen|murmur","status":"connected|declined|missed","kind":"post|story"}],"news":[{"id":"","title":"","body":"","source":""}]}';
+export const PHONE_SCHEMA='{"relationshipEvents":[{"actorId":"stable NPC id","targetId":"player or stable NPC id","kind":"support|romance|promise|conflict|establish|separate|values|repair|discovery","evidence":"exact delivered line","changes":{"trust":1}}],"profiles":[{"contactId":"id","source":"incoming|public","npcId":"existing NPC id or empty","displayName":"public caller/account name","number":"only if established","npc":{"name":"","occupation":"","personality":"","description":""},"apps":{"messages":{"displayName":"","handle":"","bio":"","status":""},"gather":{},"lumen":{},"murmur":{}}}],"events":[{"type":"message|call-result|call-speech|call|post|follow|unfollow","contactId":"","actorId":"existing NPC id when available","displayName":"public sender name for a new contact","requestId":"","threadId":"","callId":"","text":"","elapsedMinutes":1,"stickerId":"","app":"messages|gather|lumen|murmur","status":"connected|declined|missed","kind":"post|story"}],"news":[{"id":"","title":"","body":"","source":""}]}';
 const visibleApps=profiles=>Object.fromEntries(Object.entries(profiles||{}).map(([app,p])=>[app,{displayName:p.displayName,handle:p.handle,bio:p.bio,status:p.status,private:p.private===true}]));
 const rules=[
  PHONE_WORLD_KNOWLEDGE,
@@ -30,7 +32,7 @@ const rules=[
  'For standalone phone replies, each message/call speech/call result may supply elapsedMinutes: a positive integer. Usually 1 minute for a quick bubble, 2–3 for reading/composing a longer message, up to 10 only for a grounded delay. Multiple bubbles share one continuous exchange; keep total elapsed time modest (maximum 30 minutes). The engine has already advanced time for each player send. Never jump to a future appointment merely because someone mentions it, and do not treat words such as sleep, travel or tomorrow in dialogue as completed actions. Main-chat events and story-repair recover the time already established by that scene and must not advance it again.',
  'No user speech/actions, world-state patches, item grants, money or gambling wins. Wallet actions are already settled by the engine; never debit or reward twice.',
 ].join('\n');
-export function phoneTask(phone,state,config,requests,{kind='reply',language='en',contacts=[],actors:storyActors=[],story=null}={}){
+export function phoneTask(phone,state,config,requests,{kind='reply',language='en',contacts=[],actors:storyActors=[],story=null,trackRelationships=true}={}){
  const actors=[...new Set([...storyActors,...requests.flatMap(r=>phone.threads.find(t=>t.id===r.threadId)?.members.filter(v=>v!=='player')||[r.contactId])])];
  const references=actors.map(actor=>{
   const candidate=contacts.find(n=>incomingContactId(n.id)===actor)||(state.npcs||[]).find(n=>incomingContactId(n.id)===actor);
@@ -42,8 +44,8 @@ export function phoneTask(phone,state,config,requests,{kind='reply',language='en
    messages:phone.messages.filter(m=>!m.deleted&&phone.threads.some(t=>t.id===m.threadId&&t.members.includes(c.id))).slice(-24).map(m=>({id:m.id,threadId:m.threadId,...phoneAppChannel(phone,m.threadId),from:m.from,text:m.text,time:m.time,stickerId:m.stickerId,photo:m.image?{id:phone.photos.find(v=>v.image===m.image)?.id,caption:phone.photos.find(v=>v.image===m.image)?.caption||'Photo attachment'}:undefined})),
    sharedPhotos:phone.photos.filter(p=>p.sharedWith?.includes(c.id)).map(p=>({id:p.id,caption:p.caption})),activeCall:phone.calls.find(v=>v.contactId===c.id&&v.status==='connected')||null};
  }).filter(Boolean);
- return {systemPrompt:'You are the in-world phone narrator for RoleForge. Return one JSON object, no main-chat prose and no user message. Speak '+(language==='th'?'Thai':'English')+'. Schema: '+PHONE_SCHEMA+'\n'+rules+(kind==='story-repair'?'\nRecover only phone activity already completed in the supplied scene. Use the preceding user turn as context, never create user actions. Copy explicitly sent message text exactly. If the scene confirms an NPC sent messages but omits their words, compose 1–6 brief NPC bubbles consistent with that completed action. Thinking about a message, typing a draft, future plans, quotations and hypothetical actions do not count as sending. Do not disclose the canonical identity behind a saved alias. Return empty events when nothing qualifies. Do not replay phone actions or message text already recorded in the supplied recent conversations. This is a one-time reconciliation, not a new scene.':''),
-  prompt:'ROLEFORGE_PHONE_TASK\n'+JSON.stringify({kind,environment:phoneEnvironment(phone),requests:requests.map(r=>({...r,...phoneAppChannel(phone,r.threadId)})),references,story,playerProfiles:visibleApps(phone.profiles.player),scene:{location:state.location,clock:state.worldClock,player:publicProfile(phone,'player','messages',state.player?.name).displayName},
+ return {systemPrompt:'You are the in-world phone narrator for RoleForge. Return one JSON object, no main-chat prose and no user message. Speak '+(language==='th'?'Thai':'English')+'. Schema: '+PHONE_SCHEMA+'\n'+rules+'\n'+PHONE_RELATIONSHIP_INSTRUCTIONS+'\n'+RELATIONSHIP_INSTRUCTIONS+(kind==='story-repair'?'\nRecover only phone activity already completed in the supplied scene. Use the preceding user turn as context, never create user actions. Copy explicitly sent message text exactly. If the scene confirms an NPC sent messages but omits their words, compose 1–6 brief NPC bubbles consistent with that completed action. Thinking about a message, typing a draft, future plans, quotations and hypothetical actions do not count as sending. Do not disclose the canonical identity behind a saved alias. Return empty events when nothing qualifies. Do not replay phone actions or message text already recorded in the supplied recent conversations. This is a one-time reconciliation, not a new scene.':''),
+  prompt:'ROLEFORGE_PHONE_TASK\n'+JSON.stringify({kind,relationshipTrackingEnabled:trackRelationships,relationships:phoneRelationshipReference(phone,state),environment:phoneEnvironment(phone),requests:requests.map(r=>({...r,...phoneAppChannel(phone,r.threadId)})),references,story,playerProfiles:visibleApps(phone.profiles.player),scene:{location:state.location,clock:state.worldClock,player:publicProfile(phone,'player','messages',state.player?.name).displayName},
    stickers:phone.stickers.filter(s=>s.npcAllowed).map(s=>({id:s.id,name:s.name,useWhen:s.cue})),
    permissions:{messages:config.incomingMessages,calls:config.incomingCalls,social:config.socialActivity,offscreen:config.offscreenActivity},
    publicPosts:publicPhonePosts(phone)}),responseLength:3500,trimNames:false};
@@ -61,7 +63,7 @@ export function phoneWorldPrompt(phone,state,config){
 export function storyPhoneData(message){
  return [...String(message?.mes||'').matchAll(/<rf-phone>([\s\S]*?)<\/rf-phone>/giu)].map(m=>{try{return parsePhoneReply(m[1]);}catch{return null;}}).filter(Boolean);
 }
-export function mergePhoneReply(current,state,raw,config,{requests=[],source='',time={},storyText='',advanceTime=false}={}){
+export function mergePhoneReply(current,state,raw,config,{requests=[],source='',time={},storyText='',advanceTime=false,relationshipSource='',trackRelationships=true}={}){
  let data=parsePhoneReply(raw),rpg=clone(state);const incomingEvents=Array.isArray(data.events)?data.events:[];const pending=new Map(requests.map(r=>[r.id,r])),phone=clone(linkPhoneContacts(current,rpg.npcs||[]));
  const visibleStory=String(storyText).replace(/<rf-phone>[\s\S]*?<\/rf-phone>/giu,'');
  for(const event of Array.isArray(data.events)?data.events:[])if(event.type==='contact-share'){
@@ -113,5 +115,7 @@ export function mergePhoneReply(current,state,raw,config,{requests=[],source='',
  }
  next.pending=next.pending.filter(r=>!completed.has(r.id));next.incomingRoutingVersion=1;next.revision++;
  const unresolved=incomingEvents.some(e=>['message','call'].includes(e?.type)&&!e.requestId&&(e.type==='message'?config.incomingMessages:config.incomingCalls)&&!next.contacts.some(c=>(c.id===e.contactId||e.actorId&&c.npcId===e.actorId)&&(c.npcId||c.source==='incoming')))&&!next.messages.slice(current.messages.length).length&&!next.calls.slice(current.calls.length).length;
+ const assessed=applyPhoneRelationships(rpg,next,phoneRelationshipRows(next,current),{events:data.relationshipEvents,source:relationshipSource,enabled:trackRelationships});rpg=assessed.state;
+ if(assessed.checks.length)next.relationshipSync={checkedAt:assessed.checkedAt,checks:assessed.checks.slice(-24)};
  return {phone:next,state:rpg,created,completed:[...completed],unresolved};
 }

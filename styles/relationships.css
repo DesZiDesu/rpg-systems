@@ -564,3 +564,5 @@
 .rf-relationships[data-relationship-panel="main"] .rf-rel-history article { border-bottom-color: var(--tretaresia-line-soft,#3b3322); }
 .rf-relationships[data-relationship-panel="main"] .rf-rel-history article > span { color: var(--rel-accent); }
 .rf-relationships[data-relationship-panel="main"] .rf-rel-form > button[type="submit"] { color: #17130b; }
+
+.rf-rel-audit{font-size:12px;line-height:1.65;color:var(--rf-rel-muted,#a7a39a);margin:12px 0;overflow-wrap:anywhere}

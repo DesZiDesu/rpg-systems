@@ -1,7 +1,7 @@
-import {clean,key,fingerprint} from './model.js?v=0.88.6';
-import {phoneNpcForContact} from './identity.js?v=0.88.6';
-import {applyIncoming} from './engine.js?v=0.88.6';
-import {playerNpc} from '../../npc-visibility.js?v=0.88.6';
+import {clean,key,fingerprint} from './model.js?v=0.88.7';
+import {phoneNpcForContact} from './identity.js?v=0.88.7';
+import {applyIncoming} from './engine.js?v=0.88.7';
+import {playerNpc} from '../../npc-visibility.js?v=0.88.7';
 
 export function incomingContactId(npcId){
  const value='npc-'+npcId;return key(value)?value:'npc-'+fingerprint(String(npcId)).slice(0,24);

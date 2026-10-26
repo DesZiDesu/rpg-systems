@@ -1,4 +1,4 @@
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.88.6';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.88.7';
 
 export const PHONE_FIELD='roleforge_smartphone';
 export const PHONE_PROMPT='roleforge_smartphone_context';
@@ -46,7 +46,7 @@ export function phoneConfig(raw={}){
  return d;
 }
 export function blankPhone(){return{
- schema:1,revision:0,incomingRoutingVersion:1,contacts:[],profiles:{player:{}},threads:[],messages:[],drafts:{},attachments:{},pending:[],calls:[],
+ schema:1,revision:0,incomingRoutingVersion:1,relationshipRoutingVersion:1,contacts:[],profiles:{player:{}},threads:[],messages:[],drafts:{},attachments:{},pending:[],calls:[],
  posts:[],relationships:[],stickers:[],photos:[],notes:[],news:[],notifications:[],
  installed:['phone','messages','contacts','wallet','store','browser','stickers','photos','notes','maps','settings'],
  browser:{tabs:[{id:'start',url:'drift://start'}],activeTab:'start',history:[],bookmarks:[]},
@@ -55,6 +55,7 @@ export function blankPhone(){return{
 export function normalizePhone(raw){
  const d=blankPhone();if(!raw||raw.schema!==1)return d;
  for(const k of ['contacts','threads','messages','pending','calls','posts','relationships','stickers','photos','notes','news','notifications','accounts','ledger','receipts','processed','deletedThreads'])if(Array.isArray(raw[k]))d[k]=clone(raw[k]);
+ d.relationshipRoutingVersion=raw.relationshipRoutingVersion===1?1:0;if(raw.relationshipSync&&typeof raw.relationshipSync==='object')d.relationshipSync={checkedAt:clean(raw.relationshipSync.checkedAt,60),recovered:raw.relationshipSync.recovered===true,checks:Array.isArray(raw.relationshipSync.checks)?clone(raw.relationshipSync.checks).slice(-24):[]};
  d.incomingRoutingVersion=raw.incomingRoutingVersion===1?1:0;d.revision=Number.isSafeInteger(raw.revision)?raw.revision:0;d.deviceName=clean(raw.deviceName,80)||'Aster One';
  for(const k of ['profiles','drafts','attachments'])if(raw[k]&&typeof raw[k]==='object'&&!Array.isArray(raw[k]))d[k]=JSON.parse(JSON.stringify(raw[k]),(k,v)=>['__proto__','constructor','prototype'].includes(k)?undefined:v);
  if(raw.browser&&Array.isArray(raw.browser.tabs))d.browser=clone(raw.browser);
