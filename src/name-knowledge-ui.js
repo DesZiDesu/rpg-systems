@@ -1,4 +1,4 @@
-import {normalizeKnownNames} from './name-knowledge.js?v=0.88.5';
+import {normalizeKnownNames} from './name-knowledge.js?v=0.88.6';
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // A record view inside NPC Management; it never creates another dialog.
 export function createNameKnowledgePanel(root,{language=()=> 'en',scope,targets,read,save,busy=()=>false,onBusy=()=>{}}){

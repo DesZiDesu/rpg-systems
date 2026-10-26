@@ -1,5 +1,5 @@
-import { H_FIELD_MAP, updateHStat } from "./h-stats.js?v=0.88.5";
-import { parseStory } from "./npc-core.js?v=0.88.5";
+import { H_FIELD_MAP, updateHStat } from "./h-stats.js?v=0.88.6";
+import { parseStory } from "./npc-core.js?v=0.88.6";
 
 const object = (v) => v && typeof v === "object" && !Array.isArray(v);
 const clean = (v, max = 180) =>

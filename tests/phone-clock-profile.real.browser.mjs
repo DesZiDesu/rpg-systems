@@ -20,7 +20,7 @@ try{for(const mobile of [false,true]){
  await context.route('**/api/backends/chat-completions/generate',async route=>{
   const input=route.request().postDataJSON(),texts=(input.messages||[]).flatMap(m=>typeof m.content==='string'?[m.content]:Array.isArray(m.content)?m.content.filter(p=>p.type==='text').map(p=>p.text):[]),task=texts.find(t=>t.startsWith('ROLEFORGE_PHONE_TASK\n'));
   let content='<tr-header name="Riley"/><tr-narrative>Riley remembers your phone conversation and the plans for tonight.</tr-narrative>';
-  if(task){taskCalls++;const data=JSON.parse(task.slice('ROLEFORGE_PHONE_TASK\n'.length));content=JSON.stringify({events:data.requests.flatMap(r=>[{type:'message',requestId:r.id,contactId:r.contactId,threadId:r.threadId,text:'Tonight at 10 PM works for me.',elapsedMinutes:1},{type:'message',requestId:r.id,contactId:r.contactId,threadId:r.threadId,text:'Pick me up at 9:45. See you then!',elapsedMinutes:2}])});}
+  if(task){taskCalls++;const data=JSON.parse(task.slice('ROLEFORGE_PHONE_TASK\n'.length));assert.equal(data.environment.device.brand,'Aster');assert(data.environment.apps.some(a=>a.name==='Gather'));assert.equal(data.requests[0].appName,'Messages');content=JSON.stringify({events:data.requests.flatMap(r=>[{type:'message',requestId:r.id,contactId:r.contactId,threadId:r.threadId,text:'Tonight at 10 PM works for me.',elapsedMinutes:1},{type:'message',requestId:r.id,contactId:r.contactId,threadId:r.threadId,text:'Pick me up at 9:45. See you then!',elapsedMinutes:2}])});}
   else if(texts.some(t=>t.includes('fictional INITIAL H-Stats'))){bodyCalls++;await bodyGate;content=JSON.stringify({hStats:{mouthState:'',favoritePosition:'A comfortable position',birthCount:0}});}
   else mainPrompt=texts.join('\n');
   await route.fulfill({json:{choices:[{message:{role:'assistant',content},finish_reason:'stop'}]}});
@@ -61,7 +61,7 @@ try{for(const mobile of [false,true]){
  await page.evaluate(()=>RoleForgePhone.preferences({language:'th',theme:'dark'}));await page.screenshot({path:out+'/'+device+'-settings-th-dark.png'});assert.doesNotMatch(await phone.locator('.ap-body').innerText(),/Appearance & replies|Allow incoming calls|deferred|inherit/);
  await page.evaluate(()=>RoleForgePhone.close());
  await page.evaluate(async()=>{const box=document.getElementById('send_textarea');box.value='I check the time after our phone conversation.';await(await import('/script.js')).Generate('normal');});
- await page.waitForFunction(()=>!document.querySelector('#send_but')?.hidden);assert.match(mainPrompt,/15:28|15:29|15:31/);assert.match(mainPrompt,/Pick me up at 9:45/);assert((await clock())>='15:28');
+ await page.waitForFunction(()=>!document.querySelector('#send_but')?.hidden);assert.match(mainPrompt,/15:28|15:29|15:31/);assert.match(mainPrompt,/Pick me up at 9:45/);assert.match(mainPrompt,/Aster is the in-world phone hardware brand/);for(const app of ['Harbor Store','Gather','Lumen','Murmur','Drift'])assert(mainPrompt.includes(app));assert((await clock())>='15:28');
 
  // Phone-only elapsed time belongs to the active main-chat variant, like wallet progress.
  await page.waitForTimeout(350);

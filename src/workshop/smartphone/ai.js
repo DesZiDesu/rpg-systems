@@ -1,9 +1,10 @@
-import {incomingContactId,routeIncomingPhoneData} from './incoming.js?v=0.88.5';
-import {usableNpcName} from '../../npc-core.js?v=0.88.5';
-import {clean,clone,fingerprint,publicProfile,contactLabel,storyTime} from './model.js?v=0.88.5';
-import {advancePhoneClock,phoneReplyMinutes} from './clock.js?v=0.88.5';
-import {applyIncoming} from './engine.js?v=0.88.5';
-import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.5';
+import {incomingContactId,routeIncomingPhoneData} from './incoming.js?v=0.88.6';
+import {usableNpcName} from '../../npc-core.js?v=0.88.6';
+import {clean,clone,fingerprint,publicProfile,contactLabel,storyTime} from './model.js?v=0.88.6';
+import {advancePhoneClock,phoneReplyMinutes} from './clock.js?v=0.88.6';
+import {applyIncoming} from './engine.js?v=0.88.6';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.6';
+import {PHONE_WORLD_KNOWLEDGE,phoneEnvironment,phoneAppChannel,publicPhonePosts} from './context.js?v=0.88.6';
 
 export function parsePhoneReply(raw){
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))return raw;
@@ -15,6 +16,7 @@ export function parsePhoneReply(raw){
 export const PHONE_SCHEMA='{"profiles":[{"contactId":"id","source":"incoming|public","npcId":"existing NPC id or empty","displayName":"public caller/account name","number":"only if established","npc":{"name":"","occupation":"","personality":"","description":""},"apps":{"messages":{"displayName":"","handle":"","bio":"","status":""},"gather":{},"lumen":{},"murmur":{}}}],"events":[{"type":"message|call-result|call-speech|call|post|follow|unfollow","contactId":"","actorId":"existing NPC id when available","displayName":"public sender name for a new contact","requestId":"","threadId":"","callId":"","text":"","elapsedMinutes":1,"stickerId":"","app":"messages|gather|lumen|murmur","status":"connected|declined|missed","kind":"post|story"}],"news":[{"id":"","title":"","body":"","source":""}]}';
 const visibleApps=profiles=>Object.fromEntries(Object.entries(profiles||{}).map(([app,p])=>[app,{displayName:p.displayName,handle:p.handle,bio:p.bio,status:p.status,private:p.private===true}]));
 const rules=[
+ PHONE_WORLD_KNOWLEDGE,
  'Use exact supplied IDs for known entities; choose one stable contactId for a genuinely new sender. For a pending request, include its requestId and target threadId/callId. Reply with 1–6 separate message events when natural, not a single combined bubble. Someone may be busy, miss or decline a call.',
  'A phone can receive its FIRST message or call even with an empty contact list. For an existing NPC, emit the incoming event with actorId equal to its stable NPC id; use its supplied contactId when one exists. The engine creates its contact and conversation. For a new sender, include profiles:[{source:incoming,contactId,npc:{name,occupation,personality,description},apps:{messages:{displayName,handle}}}] and the matching event. Reuse a known identity and its aliases. An anonymous sender can use an explicit contactId and public displayName without revealing a true name. Contact creation is engine bookkeeping, never an invented player action. A first message omits threadId; the engine creates it. Do not require the player to save a contact or exchange numbers first when an incoming channel is already established. Only use phone numbers actually established in the roleplay; otherwise leave number empty.',
  'Only contacts marked needsNpc or genuinely new incoming senders get a new NPC profile. Reuse existing identities. A new custom contact needs a complete npc profile before it can answer. Group replies come only from members of that thread.',
@@ -37,14 +39,14 @@ export function phoneTask(phone,state,config,requests,{kind='reply',language='en
   return {contactId:c.id,npcId:c.npcId||'',savedLabel:c.label,number:c.number,notes:c.notes,needsNpc:!c.npcId,
    character:npc?{name:npc.name,aliases:npc.aliases,occupation:npc.occupation,description:npc.background||npc.description,personality:npc.personality,relationship:npc.relationship}:null,
    appProfiles:visibleApps(phone.profiles[c.id]),
-   messages:phone.messages.filter(m=>!m.deleted&&phone.threads.some(t=>t.id===m.threadId&&t.members.includes(c.id))).slice(-24).map(m=>({id:m.id,threadId:m.threadId,from:m.from,text:m.text,time:m.time,stickerId:m.stickerId,photo:m.image?{id:phone.photos.find(v=>v.image===m.image)?.id,caption:phone.photos.find(v=>v.image===m.image)?.caption||'Photo attachment'}:undefined})),
+   messages:phone.messages.filter(m=>!m.deleted&&phone.threads.some(t=>t.id===m.threadId&&t.members.includes(c.id))).slice(-24).map(m=>({id:m.id,threadId:m.threadId,...phoneAppChannel(phone,m.threadId),from:m.from,text:m.text,time:m.time,stickerId:m.stickerId,photo:m.image?{id:phone.photos.find(v=>v.image===m.image)?.id,caption:phone.photos.find(v=>v.image===m.image)?.caption||'Photo attachment'}:undefined})),
    sharedPhotos:phone.photos.filter(p=>p.sharedWith?.includes(c.id)).map(p=>({id:p.id,caption:p.caption})),activeCall:phone.calls.find(v=>v.contactId===c.id&&v.status==='connected')||null};
  }).filter(Boolean);
  return {systemPrompt:'You are the in-world phone narrator for RoleForge. Return one JSON object, no main-chat prose and no user message. Speak '+(language==='th'?'Thai':'English')+'. Schema: '+PHONE_SCHEMA+'\n'+rules+(kind==='story-repair'?'\nRecover only phone activity already completed in the supplied scene. Use the preceding user turn as context, never create user actions. Copy explicitly sent message text exactly. If the scene confirms an NPC sent messages but omits their words, compose 1–6 brief NPC bubbles consistent with that completed action. Thinking about a message, typing a draft, future plans, quotations and hypothetical actions do not count as sending. Do not disclose the canonical identity behind a saved alias. Return empty events when nothing qualifies. Do not replay phone actions or message text already recorded in the supplied recent conversations. This is a one-time reconciliation, not a new scene.':''),
-  prompt:'ROLEFORGE_PHONE_TASK\n'+JSON.stringify({kind,requests,references,story,playerProfiles:visibleApps(phone.profiles.player),scene:{location:state.location,clock:state.worldClock,player:publicProfile(phone,'player','messages',state.player?.name).displayName},
+  prompt:'ROLEFORGE_PHONE_TASK\n'+JSON.stringify({kind,environment:phoneEnvironment(phone),requests:requests.map(r=>({...r,...phoneAppChannel(phone,r.threadId)})),references,story,playerProfiles:visibleApps(phone.profiles.player),scene:{location:state.location,clock:state.worldClock,player:publicProfile(phone,'player','messages',state.player?.name).displayName},
    stickers:phone.stickers.filter(s=>s.npcAllowed).map(s=>({id:s.id,name:s.name,useWhen:s.cue})),
    permissions:{messages:config.incomingMessages,calls:config.incomingCalls,social:config.socialActivity,offscreen:config.offscreenActivity},
-   publicPosts:phone.posts.filter(v=>!v.deleted&&!publicProfile(phone,v.actor,v.app).private).slice(-8).map(v=>({actor:v.actor,app:v.app,text:v.text}))}),responseLength:3500,trimNames:false};
+   publicPosts:publicPhonePosts(phone)}),responseLength:3500,trimNames:false};
 }
 export function phoneWorldPrompt(phone,state,config){
  const pending=phone.pending.filter(q=>q.status==='pending'),call=phone.calls.find(c=>c.status==='connected');
@@ -52,7 +54,7 @@ export function phoneWorldPrompt(phone,state,config){
  return '[ASTER PHONE · PRIVATE ENGINE CONTEXT]\n'+rules+
   '\nIf resolving pending requests or appropriate phone/social activity in this scene, append one hidden <rf-phone>JSON</rf-phone> block using this schema: '+PHONE_SCHEMA+
   '\nThe shared clock and timestamped recent messages include phone-only exchanges. Continue from this current time; do not reset it to the last main-chat timestamp. NPCs remember their own phone conversation and established arrangements. Main prose may acknowledge notifications, but must also emit their event records. Different NPCs must not learn private content from this context. Only confirmed in-world news belongs in news. Return no phone block when nothing happened.\n'+
-  JSON.stringify({clock:state.worldClock,recentMessages:phone.messages.filter(m=>!m.deleted).slice(-12).map(m=>({threadId:m.threadId,from:m.from,text:clean(m.text,1200),time:m.time})),availableNpcs:(state.npcs||[]).filter(n=>!phone.contacts.some(c=>c.npcId===n.id&&c.blocked)).slice(0,32).map(n=>({npcId:n.id,contactId:phone.contacts.find(c=>c.npcId===n.id)?.id||incomingContactId(n.id),name:n.name,aliases:n.aliases})),pending,playerName:state.player?.name,playerProfiles:visibleApps(phone.profiles.player),activeCall:call?{id:call.id,contactId:call.contactId,muted:call.muted,transcript:call.transcript.slice(-12)}:null,contacts,installed:phone.installed,
+  JSON.stringify({environment:phoneEnvironment(phone),publicPosts:publicPhonePosts(phone),clock:state.worldClock,recentMessages:phone.messages.filter(m=>!m.deleted).slice(-12).map(m=>({threadId:m.threadId,...phoneAppChannel(phone,m.threadId),from:m.from,text:clean(m.text,1200),time:m.time})),availableNpcs:(state.npcs||[]).filter(n=>!phone.contacts.some(c=>c.npcId===n.id&&c.blocked)).slice(0,32).map(n=>({npcId:n.id,contactId:phone.contacts.find(c=>c.npcId===n.id)?.id||incomingContactId(n.id),name:n.name,aliases:n.aliases})),pending,playerName:state.player?.name,playerProfiles:visibleApps(phone.profiles.player),activeCall:call?{id:call.id,contactId:call.contactId,muted:call.muted,transcript:call.transcript.slice(-12)}:null,contacts,installed:phone.installed,
    permissions:{incomingMessages:config.incomingMessages,incomingCalls:config.incomingCalls,socialActivity:config.socialActivity,offscreenActivity:config.offscreenActivity,maxEvents:config.maxEvents},
    stickers:phone.stickers.filter(s=>s.npcAllowed).map(s=>({id:s.id,name:s.name,cue:s.cue})),sharedPhotos:phone.photos.filter(p=>p.sharedWith?.length).map(p=>({id:p.id,caption:p.caption,sharedWith:p.sharedWith})),recentMoneyReceipts:phone.ledger.slice(-4)});
 }

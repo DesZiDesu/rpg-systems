@@ -1,9 +1,9 @@
-import {localId} from '../core.js?v=0.88.5';
-import {visibleText,anchorActive} from './core.js?v=0.88.5';
-import {trueNameSpellings} from './names.js?v=0.88.5';
-import {faceKnowledge} from './faces.js?v=0.88.5';
-import {PAPER_LIMITS} from './limits.js?v=0.88.5';
-export {PAPER_LIMITS} from './limits.js?v=0.88.5';
+import {localId} from '../core.js?v=0.88.6';
+import {visibleText,anchorActive} from './core.js?v=0.88.6';
+import {trueNameSpellings} from './names.js?v=0.88.6';
+import {faceKnowledge} from './faces.js?v=0.88.6';
+import {PAPER_LIMITS} from './limits.js?v=0.88.6';
+export {PAPER_LIMITS} from './limits.js?v=0.88.6';
 
 export const PAPER='roleforge_death_note_paper';
 const safe=id=>typeof id==='string'&&id.length>0&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
