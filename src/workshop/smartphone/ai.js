@@ -1,8 +1,8 @@
-import {incomingContactId,routeIncomingPhoneData} from './incoming.js?v=0.88.3';
-import {usableNpcName} from '../../npc-core.js?v=0.88.3';
-import {clean,clone,fingerprint,publicProfile,contactLabel} from './model.js?v=0.88.3';
-import {applyIncoming} from './engine.js?v=0.88.3';
-import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.3';
+import {incomingContactId,routeIncomingPhoneData} from './incoming.js?v=0.88.4';
+import {usableNpcName} from '../../npc-core.js?v=0.88.4';
+import {clean,clone,fingerprint,publicProfile,contactLabel} from './model.js?v=0.88.4';
+import {applyIncoming} from './engine.js?v=0.88.4';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.4';
 
 export function parsePhoneReply(raw){
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))return raw;

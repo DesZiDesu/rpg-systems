@@ -265,3 +265,14 @@
 #rf-aster-phone[data-compact=true] .ap-dock{padding:9px 8px}
 #rf-aster-phone[data-compact=true] .ap-dock .ap-app-icon{width:52px;height:52px}
 #rf-aster-phone[data-compact=true] .ap-home-space{min-height:3px}
+
+/* Call actions keep the touch target, circular glyph and caption in separate rows. */
+#rf-aster-phone .ap-call-buttons{gap:clamp(12px,5vw,28px);align-items:flex-start}
+#rf-aster-phone .ap-call-buttons .ap-call-control{display:flex;flex-direction:column;align-items:center;gap:11px;flex:0 1 92px;width:92px;min-width:0;height:auto;min-height:92px;padding:4px 0;border-radius:14px;background:transparent!important;color:var(--ap-text)!important;font-size:13px;line-height:1.3}
+#rf-aster-phone .ap-call-control-icon{display:grid;place-items:center;width:58px;height:58px;flex-shrink:0;border-radius:50%;background:var(--ap-soft);font-size:23px;transition:transform .16s ease,background-color .16s ease}
+#rf-aster-phone .ap-call-control-label{display:block;max-width:100%;font-size:13px;font-weight:500;line-height:1.4;text-align:center;overflow-wrap:anywhere}
+#rf-aster-phone .ap-call-control.ap-end .ap-call-control-icon{background:#df4851;color:#fff}
+#rf-aster-phone .ap-call-control.ap-accept .ap-call-control-icon{background:#288762;color:#fff}
+#rf-aster-phone .ap-call-toggle[aria-pressed=true] .ap-call-control-icon{background:var(--ap-accent);color:var(--ap-on-accent)}
+#rf-aster-phone .ap-call-control:active .ap-call-control-icon{transform:scale(.94)}
+#rf-aster-phone[data-motion=false] .ap-call-control-icon{transition:none}

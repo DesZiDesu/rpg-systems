@@ -1,6 +1,6 @@
-import {phoneIcon as ico} from './icons.js?v=0.88.3';
-import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.88.3';
-import {currencyScheme} from '../../currency-config.js?v=0.88.3';
+import {phoneIcon as ico} from './icons.js?v=0.88.4';
+import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.88.4';
+import {currencyScheme} from '../../currency-config.js?v=0.88.4';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const b=(text,action,data='',cls='')=>'<button type="button" class="'+cls+'" data-phone="'+action+'" '+data+'>'+text+'</button>';
@@ -90,10 +90,11 @@ export function mountPhoneUI(runtime){
  function callPage(){
   const call=p().calls.find(c=>c.id===view.id);if(!call)return calls();
   const c=contact(call.contactId),isLive=['ringing','connected'].includes(call.status),incoming=call.direction==='incoming'&&call.status==='ringing',connected=call.status==='connected';
+  const control=(icon,label,action,data,cls='')=>b('<span class="ap-call-control-icon">'+ico(icon)+'</span><span class="ap-call-control-label">'+esc(label)+'</span>',action,data,'ap-call-control '+cls);
   return head(t('สายโทรศัพท์','Call'),b(ico('minus'),'close','','ap-icon-button'),t('ปิดหน้าจอได้โดยไม่วางสาย','Closing the phone keeps this call'))+
    '<main class="ap-body ap-call-body"><div class="ap-call-hero '+(call.status==='ringing'?'is-ringing':connected?'is-connected':'')+'">'+avatar(call.contactId,'messages',true)+'<h1>'+esc(label(call.contactId))+'</h1><p>'+esc(c?.number||'')+'</p><strong>'+esc({ringing:t('กำลังเรียก…','Ringing…'),connected:t('อยู่ในสาย','Connected'),missed:t('ไม่ได้รับสาย','No answer'),declined:t('ปฏิเสธสาย','Declined'),ended:t('จบสาย','Call ended')}[call.status])+'</strong><span class="ap-call-mode">'+ico(cfg().voiceAuto&&get().voices.connected?'volume-high':'message')+' '+(cfg().voiceAuto&&get().voices.connected?t('เปิดเสียงในสาย','Voice enabled'):t('สายสนทนาแบบข้อความ','Text call'))+'</span></div>'+
-   (incoming?'<div class="ap-call-buttons">'+b(ico('phone')+' '+t('รับสาย','Accept'),'call-state',attr('id',call.id)+' '+attr('status','connected'),'ap-accept')+b(ico('phone-slash')+' '+t('ปฏิเสธ','Decline'),'call-state',attr('id',call.id)+' '+attr('status','declined'),'ap-end')+'</div>':'')+
-   (isLive&&!incoming?'<div class="ap-call-buttons">'+b(ico(call.muted?'microphone-slash':'microphone'), 'call-mute',attr('id',call.id)+' aria-pressed="'+call.muted+'"','ap-call-toggle')+b(ico('volume-high'),'call-speaker',attr('id',call.id)+' aria-pressed="'+call.speaker+'"','ap-call-toggle')+b(ico('phone-slash'),'call-state',attr('id',call.id)+' '+attr('status','ended'),'ap-end')+'</div>':'')+
+   (incoming?'<div class="ap-call-buttons">'+control('phone-slash',t('ปฏิเสธ','Decline'),'call-state',attr('id',call.id)+' '+attr('status','declined'),'ap-end')+control('phone',t('รับสาย','Accept'),'call-state',attr('id',call.id)+' '+attr('status','connected'),'ap-accept')+'</div>':'')+
+   (isLive&&!incoming?'<div class="ap-call-buttons">'+control(call.muted?'microphone-slash':'microphone',t('ปิดไมค์','Mute'),'call-mute',attr('id',call.id)+' aria-pressed="'+call.muted+'"','ap-call-toggle')+control('volume-high',t('ลำโพง','Speaker'),'call-speaker',attr('id',call.id)+' aria-pressed="'+call.speaker+'"','ap-call-toggle')+control('phone-slash',t('วางสาย','End'),'call-state',attr('id',call.id)+' '+attr('status','ended'),'ap-end')+'</div>':'')+
    '<div class="ap-call-transcript">'+call.transcript.map(r=>'<article class="'+(r.from==='player'?'is-player':'')+'"><small>'+esc(r.from==='player'?t('คุณ','You'):displayName(call.contactId,'messages'))+'</small><p>'+esc(r.text)+'</p>'+(r.from!=='player'?b(ico('play')+' '+t('ฟังอีกครั้ง','Replay'),'speech-replay',attr('call',call.id)+' '+attr('id',r.id),'ap-text-button'):'')+'</article>').join('')+'</div>'+
    (connected?hint(t('พิมพ์ในสาย หรือพูดผ่านข้อความในแชทหลัก ความคิดในใจไม่ถูกส่ง','Type here or speak through the main chat. Inner thoughts are not transmitted.'))+form('call-speech',area(t('พูดในสาย','Say on the call'),'text','',2),t('ส่งคำพูด','Speak'),attr('id',call.id)):'')+
    (p().pending.some(q=>q.callId===call.id)?b(get().working?t('กำลังรอ…','Waiting…'):t('ขอคำตอบในสาย','Continue call'),'respond','','ap-secondary ap-wide'):'')+'</main>';

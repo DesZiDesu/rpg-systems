@@ -1,16 +1,16 @@
-import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.3';
-import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.88.3';
-import {createPhoneQueue} from './queue.js?v=0.88.3';
-import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.88.3';
-import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.88.3';
-import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData,parsePhoneReply} from './ai.js?v=0.88.3';
-import {savePhoneChat} from './persistence.js?v=0.88.3';
-import {requestDataTask} from '../../task-generation.js?v=0.88.3';
-import {uiLanguage} from '../../ui-language.js?v=0.88.3';
-import {mountPhoneUI} from './ui.js?v=0.88.3';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.4';
+import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.88.4';
+import {createPhoneQueue} from './queue.js?v=0.88.4';
+import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.88.4';
+import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.88.4';
+import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData,parsePhoneReply} from './ai.js?v=0.88.4';
+import {savePhoneChat} from './persistence.js?v=0.88.4';
+import {requestDataTask} from '../../task-generation.js?v=0.88.4';
+import {uiLanguage} from '../../ui-language.js?v=0.88.4';
+import {mountPhoneUI} from './ui.js?v=0.88.4';
 
 export async function mountSmartphone({api,enabled,busy}){
- const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.88.3',import.meta.url);
+ const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.88.4',import.meta.url);
  await new Promise((ok,no)=>{style.onload=ok;style.onerror=no;document.head.append(style);});
  let phone=normalizePhone(),scope='',nonce=null,revision=null,flight=null,queue,disposed=false,epoch=0,voiceQueue=Promise.resolve(),speechSeen=new Set(),error='',working=false,lastNotification='',replyTimer,pendingMain=null,requestedReplies=new Set(),linking=false,deviceCache={},catchupChecked=false;
  const host=()=>SillyTavern.getContext(),context=()=>api.phoneContext?.()||api.context(),config=()=>phoneConfig(api.phoneConfiguration?.()),state=()=>context().state;
