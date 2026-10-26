@@ -1,16 +1,16 @@
-import {linkPhoneContacts} from './identity.js?v=0.88.2';
-import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.88.2';
-import {createPhoneQueue} from './queue.js?v=0.88.2';
-import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.88.2';
-import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.88.2';
-import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData} from './ai.js?v=0.88.2';
-import {savePhoneChat} from './persistence.js?v=0.88.2';
-import {requestDataTask} from '../../task-generation.js?v=0.88.2';
-import {uiLanguage} from '../../ui-language.js?v=0.88.2';
-import {mountPhoneUI} from './ui.js?v=0.88.2';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.3';
+import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.88.3';
+import {createPhoneQueue} from './queue.js?v=0.88.3';
+import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.88.3';
+import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.88.3';
+import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData,parsePhoneReply} from './ai.js?v=0.88.3';
+import {savePhoneChat} from './persistence.js?v=0.88.3';
+import {requestDataTask} from '../../task-generation.js?v=0.88.3';
+import {uiLanguage} from '../../ui-language.js?v=0.88.3';
+import {mountPhoneUI} from './ui.js?v=0.88.3';
 
 export async function mountSmartphone({api,enabled,busy}){
- const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.88.2',import.meta.url);
+ const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.88.3',import.meta.url);
  await new Promise((ok,no)=>{style.onload=ok;style.onerror=no;document.head.append(style);});
  let phone=normalizePhone(),scope='',nonce=null,revision=null,flight=null,queue,disposed=false,epoch=0,voiceQueue=Promise.resolve(),speechSeen=new Set(),error='',working=false,lastNotification='',replyTimer,pendingMain=null,requestedReplies=new Set(),linking=false,deviceCache={},catchupChecked=false;
  const host=()=>SillyTavern.getContext(),context=()=>api.phoneContext?.()||api.context(),config=()=>phoneConfig(api.phoneConfiguration?.()),state=()=>context().state;
@@ -26,7 +26,24 @@ export async function mountSmartphone({api,enabled,busy}){
   if(changed){catchupChecked=false;deviceCache={};scope=c.key;nonce=c.nonce;epoch++;working=false;flight=null;error='';queue?.reset();requestedReplies.clear();pendingMain=null;clearTimeout(replyTimer);phone=normalizePhone(host().chatMetadata?.[PHONE_FIELD]);revision=host().chatMetadata?.[PHONE_FIELD];speechSeen=new Set(phone.calls.flatMap(c=>c.transcript.map(r=>r.id)));api.voice?.stop?.('smartphone');ui?.reset();lastNotification=phone.notifications.at(-1)?.id||'';}
   else if(revision!==host().chatMetadata?.[PHONE_FIELD]){const next=normalizePhone(host().chatMetadata?.[PHONE_FIELD]);if(next.revision<phone.revision){epoch++;queue?.reset();ui?.reset();flight=null;working=false;}phone=next;revision=host().chatMetadata?.[PHONE_FIELD];}
   if(enabled()&&!linking&&linkPhoneContacts(phone,knownNpcs())!==phone){linking=true;void serial(async()=>{const next=linkPhoneContacts(phone,knownNpcs());if(next!==phone)await save(next);}).catch(report).finally(()=>linking=false);}
-  if(!catchupChecked&&enabled()&&host().chatMetadata?.[PHONE_FIELD]){catchupChecked=true;if(!phone.processed.length&&!phone.messages.length&&!phone.calls.length&&!phone.posts.length){const i=host().chat.findLastIndex(m=>m&&!m.is_user&&!m.is_system);if(i>0&&host().chat.at(-1)===host().chat[i]){pendingMain=i;finishMain();}}}
+  if(!catchupChecked&&enabled()&&host().chatMetadata?.[PHONE_FIELD]){
+   catchupChecked=true;
+   if(phone.incomingRoutingVersion===0){
+    // Older builds acknowledged unroutable first messages. Retry only the last
+    // completed reply of an empty phone, once per saved migration.
+    void serial(async()=>{
+     if(phone.incomingRoutingVersion!==0)return;
+     const next=clone(phone),c=host(),i=c.chat.findLastIndex(m=>m&&!m.is_user&&!m.is_system),message=c.chat[i];let retry=false;
+     if(active()&&!busy()&&!phone.contacts.length&&!phone.messages.length&&!phone.calls.length&&!phone.posts.length&&i>0&&c.chat.at(-1)===message){
+      const user=c.chat.slice(0,i).findLast(m=>m?.is_user&&!m.is_system),signal=phoneSceneSignal(phone,{...state(),npcs:knownNpcs()},message,user,config());
+      retry=Boolean(signal||storyPhoneData(message).some(b=>b.events?.some(e=>['message','call'].includes(e?.type))));
+      if(retry){const source=phoneStorySource(message,i,api.visible?.(message.mes));next.processed=next.processed.filter(v=>v!==source&&v!==source+':repair');next.storySync=null;}
+     }
+     next.incomingRoutingVersion=1;next.revision++;await save(next);
+     if(retry&&c.chat[i]===message){pendingMain=i;finishMain();}
+    }).catch(report);
+   }else if(!phone.processed.length&&!phone.messages.length&&!phone.calls.length&&!phone.posts.length){const i=host().chat.findLastIndex(m=>m&&!m.is_user&&!m.is_system);if(i>0&&host().chat.at(-1)===host().chat[i]){pendingMain=i;finishMain();}}
+  }
   if(!enabled()){epoch++;working=false;flight=null;requestedReplies.clear();api.voice?.stop?.('smartphone');ui?.close();}
   prompt();ui?.render();
  }
@@ -63,7 +80,7 @@ export async function mountSmartphone({api,enabled,busy}){
    await serial(async()=>{const linked=linkPhoneContacts(phone,knownNpcs());if(linked!==phone)await save(linked);});if(!valid(t))return;
    const args=phoneTask(phone,state(),config(),requests,{language:language(),contacts:api.phoneNpcReferences?.()||[]});
    const raw=await requestDataTask(host(),args,{quietPrompt:args.prompt,skipWIAN:true,removeReasoning:true},{task:'Phone reply'});
-   if(!valid(t))return;
+   if(!valid(t))return;await prepareReplyNpcs([parsePhoneReply(raw)]);if(!valid(t))return;
    await serial(async()=>{
     const still=requests.filter(r=>phone.pending.some(q=>q.id===r.id));if(!still.length)return;
     const result=mergePhoneReply(phone,state(),raw,config(),{requests:still,source:'task:'+requests.map(r=>r.id).join(','),time:storyTime(state())});await save(result.phone,result.state);
@@ -72,36 +89,47 @@ export async function mountSmartphone({api,enabled,busy}){
   return flight;
  }
  function flushReplies(){if(disposed||!enabled()||busy()||flight||!requestedReplies.size)return;const ids=[...requestedReplies];requestedReplies.clear();if(ids.some(id=>phone.pending.some(q=>q.id===id)))void respond({ids}).catch(report);}
+ async function prepareReplyNpcs(blocks){
+  const known=knownNpcs(),ids=[];
+  for(const data of blocks){
+   for(const row of Array.isArray(data.profiles)?data.profiles:[]){if(!row||typeof row!=='object')continue;const npc=phoneNpcForContact({npcId:row.npcId,label:row.npc?.name||row.displayName||''},known)||phoneNpcForContact({label:row.npc?.name||row.displayName||''},known);if(npc)ids.push(npc.id);else if(row.npcId)ids.push(row.npcId);}
+   for(const event of Array.isArray(data.events)?data.events:[])if(event?.actorId||event?.npcId)ids.push(event.actorId||event.npcId);
+  }
+  if(ids.length)await api.preparePhoneNpcs?.([...new Set(ids)]);
+ }
  async function incoming(messageId){
   if(!active())return;const authority=ticket();
   const c=host(),message=c.chat[Number(messageId)];if(!message||message.is_user||message.is_system)return;
-  await api.preparePhoneNpcs?.([...new Set(storyPhoneData(message).flatMap(b=>[...(b.profiles||[]).map(r=>r.npcId),...(b.events||[]).map(e=>e.actorId)]).filter(Boolean))]);
+  await api.awaitReplyState?.(Number(messageId));if(!valid(authority)||c.chat[Number(messageId)]!==message)return;
+  await prepareReplyNpcs(storyPhoneData(message));
   if(!valid(authority)||c.chat[Number(messageId)]!==message)return;
-  const source=phoneStorySource(message,Number(messageId),api.visible?.(message.mes)),data=storyPhoneData(message);
+  const source=phoneStorySource(message,Number(messageId),api.visible?.(message.mes)),data=storyPhoneData(message);let unresolved=false;
   if(phone.processed.includes(source))return;
   await serial(async()=>{
    if(phone.processed.includes(source))return;
    let next=linkPhoneContacts(phone,knownNpcs()),rpg=state();
-   for(const block of data){const merged=mergePhoneReply(next,rpg,block,config(),{requests:next.pending,source,time:storyTime(state()),storyText:message.mes});next=merged.phone;rpg=merged.state;}
+   for(const block of data){const merged=mergePhoneReply(next,rpg,block,config(),{requests:next.pending,source,time:storyTime(state()),storyText:message.mes});next=merged.phone;rpg=merged.state;unresolved||=merged.unresolved;}
    const call=next.calls.find(v=>v.status==='connected'),contact=call&&next.contacts.find(v=>v.id===call.contactId);
    if(call&&contact&&['both','main'].includes(config().callInput)&&!data.some(block=>block.events?.some(e=>e.type==='call-speech'&&e.callId===call.id))){const text=callSpeech(message,contact,false);if(text&&!call.transcript.some(r=>r.source===source)){next=changePhone(next,{type:'call-speech',callId:call.id,from:contact.id,text,source},{time:storyTime(state())}).phone;}}
-   if(data.length||next!==phone){next=clone(next);if(data.length)next.processed.push(source);await save(next,rpg);}
+   if(data.length||next!==phone){next=clone(next);if(data.length&&!unresolved)next.processed.push(source);await save(next,rpg);}
   });
-  if(valid(authority)&&!data.length)await recoverStory(Number(messageId));
+  if(valid(authority)&&(!data.length||unresolved))await recoverStory(Number(messageId));
  }
  async function recoverStory(messageId,manual=false){
   if(!active()||!Number.isInteger(messageId)||messageId<1)return;
   const message=host().chat[messageId];if(!message||message.is_user||message.is_system)return;
   const source=phoneStorySource(message,messageId,api.visible?.(message.mes)),attempt=source+':repair';
-  if(phone.processed.includes(source)||!manual&&phone.processed.includes(attempt))return;
-  const user=host().chat.slice(0,messageId).findLast(m=>m?.is_user&&!m.is_system),signal=phoneSceneSignal(phone,state(),{...message,mes:api.visible?.(message.mes)??message.mes},user?{...user,mes:api.visible?.(user.mes)??user.mes}:null,config());if(!signal)return;
+  const retryEmpty=manual&&!phone.contacts.length&&!phone.messages.length&&!phone.calls.length;
+  if(phone.processed.includes(source)&&!retryEmpty||!manual&&phone.processed.includes(attempt))return;
+  const user=host().chat.slice(0,messageId).findLast(m=>m?.is_user&&!m.is_system),signal=phoneSceneSignal(phone,{...state(),npcs:knownNpcs()},{...message,mes:api.visible?.(message.mes)??message.mes},user?{...user,mes:api.visible?.(user.mes)??user.mes}:null,config());if(!signal)return;
   if(flight||busy()){if(!manual)pendingMain=messageId;else throw Error(language()==='th'?'รอคำตอบปัจจุบันให้จบก่อน':'Wait for the current reply to finish');return;}
   const t=ticket(),same=()=>valid(t)&&host().chat[messageId]===message&&phoneStorySource(message,messageId,api.visible?.(message.mes))===source;
   working=true;error='';ui?.render();
   flight=(async()=>{
-   await serial(async()=>{const next=clone(linkPhoneContacts(phone,knownNpcs()));if(!next.processed.includes(attempt))next.processed.push(attempt);next.storySync={source,messageId,status:'working',error:''};next.revision++;await save(next);});if(!same())return;
+   if(signal.npcIds?.length)await api.preparePhoneNpcs?.(signal.npcIds);if(!same())return;
+   await serial(async()=>{const next=clone(linkPhoneContacts(phone,knownNpcs()));if(retryEmpty)next.processed=next.processed.filter(v=>v!==source);if(!next.processed.includes(attempt))next.processed.push(attempt);next.storySync={source,messageId,status:'working',error:''};next.revision++;await save(next);});if(!same())return;
    const args=phoneTask(phone,state(),config(),[],{kind:'story-repair',actors:signal.actors,story:signal.story,language:language(),contacts:knownNpcs()});
-   const raw=await requestDataTask(host(),args,{quietPrompt:args.prompt,skipWIAN:true,removeReasoning:true},{task:'Phone story sync'});if(!same())return;
+   const raw=await requestDataTask(host(),args,{quietPrompt:args.prompt,skipWIAN:true,removeReasoning:true},{task:'Phone story sync'});if(!same())return;await prepareReplyNpcs([parsePhoneReply(raw)]);if(!same())return;
    await serial(async()=>{
     const result=mergePhoneReply(phone,state(),raw,config(),{source,time:storyTime(state()),storyText:message.mes});
     const delivered=result.phone.messages.length>phone.messages.length||result.phone.calls.length>phone.calls.length||result.phone.posts.length>phone.posts.length;

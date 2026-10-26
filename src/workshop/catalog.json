@@ -201,7 +201,7 @@
       "kind": "system",
       "color": "sage",
       "subtitle": "A little world, inside your world",
-      "minimumRoleForge": "0.88.2",
+      "minimumRoleForge": "0.88.3",
       "author": "RoleForge",
       "description": "สมาร์ทโฟนในโลกของโรล พร้อมข้อความ โทรศัพท์ รายชื่อ โปรไฟล์ แอปโซเชียล เบราว์เซอร์ และ Wallet ที่ใช้ค่าเงิน RoleForge",
       "features": [
@@ -267,6 +267,17 @@
           "changes": [
             "Keep manually saved app profiles during regeneration, swipes and reply deletion",
             "Use the active persona instead of the default Adventurer name across RoleForge and phone context"
+          ]
+        },
+        {
+          "version": "1.1.3",
+          "path": "packs/smartphone-1.1.3.json",
+          "bytes": 1025,
+          "sha256": "e12073920149878c9b56c852aa74b35811a17aa59e805cbbdc7a2c8648f0a6b8",
+          "changes": [
+            "Receive first messages and calls without a pre-existing contact",
+            "Create new sender contacts and recover completed phone activity from English/Thai narration",
+            "Repair legacy empty phones whose first delivery was incorrectly acknowledged"
           ]
         }
       ]

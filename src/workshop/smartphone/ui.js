@@ -1,6 +1,6 @@
-import {phoneIcon as ico} from './icons.js?v=0.88.2';
-import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.88.2';
-import {currencyScheme} from '../../currency-config.js?v=0.88.2';
+import {phoneIcon as ico} from './icons.js?v=0.88.3';
+import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.88.3';
+import {currencyScheme} from '../../currency-config.js?v=0.88.3';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const b=(text,action,data='',cls='')=>'<button type="button" class="'+cls+'" data-phone="'+action+'" '+data+'>'+text+'</button>';
@@ -58,7 +58,7 @@ export function mountPhoneUI(runtime){
  }
  function editContact(contactId){
   const c=contact(contactId)||{};
-  openSheet(t('บันทึกผู้ติดต่อ','Save contact'),form('contact',field(t('ชื่อที่คุณบันทึก','Saved contact name'),'label',c.label||'','text','required maxlength="100"')+field(t('เบอร์ในโลกของโรล','In-world phone number'),'number',c.number||'','tel','required maxlength="50"')+media(t('รูปผู้ติดต่อ','Contact photo'),'avatar',c.avatar)+area(t('บทบาท บุคลิก และบันทึก','Role, personality and notes'),'notes',c.notes||'')+'<div class="ap-field"><span>'+t('เสียงในสายของผู้ติดต่อนี้','Contact call voice')+'</span><input type="hidden" name="voiceId" value="'+esc(c.voiceId||'')+'">'+b(esc(get().voices.voices.find(v=>v.id===c.voiceId)?.name||t('ใช้เสียงสำรอง','Use fallback voice')),'contact-voices','','ap-secondary')+'<div data-contact-voices hidden></div></div>'+hint(t('ยังไม่สร้าง NPC จนกว่าคุณจะส่งข้อความหรือโทรหา','A custom NPC is created on your first message or call.')),t('บันทึกรายชื่อ','Save contact'),attr('id',contactId||'')));
+  openSheet(t('บันทึกผู้ติดต่อ','Save contact'),form('contact',field(t('ชื่อที่คุณบันทึก','Saved contact name'),'label',c.label||'','text','required maxlength="100"')+field(t('เบอร์ในโลกของโรล','In-world phone number'),'number',c.number||'','tel',(c.source==='incoming'||c.channels?'':'required ' )+'maxlength="50"')+media(t('รูปผู้ติดต่อ','Contact photo'),'avatar',c.avatar)+area(t('บทบาท บุคลิก และบันทึก','Role, personality and notes'),'notes',c.notes||'')+'<div class="ap-field"><span>'+t('เสียงในสายของผู้ติดต่อนี้','Contact call voice')+'</span><input type="hidden" name="voiceId" value="'+esc(c.voiceId||'')+'">'+b(esc(get().voices.voices.find(v=>v.id===c.voiceId)?.name||t('ใช้เสียงสำรอง','Use fallback voice')),'contact-voices','','ap-secondary')+'<div data-contact-voices hidden></div></div>'+hint(t('ยังไม่สร้าง NPC จนกว่าคุณจะส่งข้อความหรือโทรหา','A custom NPC is created on your first message or call.')),t('บันทึกรายชื่อ','Save contact'),attr('id',contactId||'')));
  }
  function threads(app='messages'){
   const summaries=new Map();p().messages.forEach((m,index)=>{if(m.deleted)return;let summary=summaries.get(m.threadId);if(!summary)summaries.set(m.threadId,summary={last:null,unread:0,position:-1});summary.last=m;summary.position=index;if(m.from!=='player'&&!m.read)summary.unread++;});

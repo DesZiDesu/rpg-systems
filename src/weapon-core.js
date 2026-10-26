@@ -1,5 +1,5 @@
-import {WEAPON_CATEGORIES,WEAPON_CATEGORY_IDS,weaponCategory,namedWeaponModel,SPECIAL_WEAPON_MODELS,weaponModelUrl} from './weapon-catalog.js?v=0.88.2';
-import {evidenceText,interactionEvidence} from './interaction-evidence.js?v=0.88.2';
+import {WEAPON_CATEGORIES,WEAPON_CATEGORY_IDS,weaponCategory,namedWeaponModel,SPECIAL_WEAPON_MODELS,weaponModelUrl} from './weapon-catalog.js?v=0.88.3';
+import {evidenceText,interactionEvidence} from './interaction-evidence.js?v=0.88.3';
 
 const clean=(v,n=160)=>typeof v==='string'?v.trim().slice(0,n):'';
 const object=v=>v&&typeof v==='object'&&!Array.isArray(v);

@@ -1,6 +1,6 @@
-import {clone,id,clean,key,safeImage,contactLabel,publicProfile,SOCIAL_APPS,APPS,fingerprint,plainSpeech} from './model.js?v=0.88.2';
-import {currencyScheme,currencyValue} from '../../currency-config.js?v=0.88.2';
-import {applyMoneyTransfer,quoteWalletDebit} from '../../money-transfer.js?v=0.88.2';
+import {clone,id,clean,key,safeImage,contactLabel,publicProfile,SOCIAL_APPS,APPS,fingerprint,plainSpeech} from './model.js?v=0.88.3';
+import {currencyScheme,currencyValue} from '../../currency-config.js?v=0.88.3';
+import {applyMoneyTransfer,quoteWalletDebit} from '../../money-transfer.js?v=0.88.3';
 
 const requireValue=(v,m)=>{if(!v)throw Error(m);return v;};
 const whole=n=>Number.isSafeInteger(n)&&n>0&&n<=999999999;
@@ -18,8 +18,8 @@ export function changePhone(current,action,{time={},playerName='You'}={}){
  let result;
  if(type==='contact-save'){
   const c=action.contact||{},old=p.contacts.find(n=>n.id===c.id)||p.contacts.find(n=>n.saved===false&&n.number===clean(c.number,50));
-  requireValue(clean(c.label,100)&&clean(c.number,50),'Enter a contact name and phone number');
-  if(p.contacts.some(n=>n.id!==old?.id&&n.number===clean(c.number,50)))throw Error('That phone number is already in Contacts');
+  requireValue(clean(c.label,100)&&(clean(c.number,50)||old?.source==='incoming'||old?.channels),'Enter a contact name and phone number');
+  if(clean(c.number,50)&&p.contacts.some(n=>n.id!==old?.id&&n.number===clean(c.number,50)))throw Error('That phone number is already in Contacts');
   const next={...old,id:old?.id||id(),label:clean(c.label,100),name:clean(c.name||old?.name,100),number:clean(c.number,50),avatar:safeImage(c.avatar),notes:clean(c.notes,2000),blocked:old?.blocked===true,muted:old?.muted===true,npcId:(key(c.npcId)?c.npcId:old?.npcId||''),created:old?.created===true,source:old?.source||'custom',saved:true,voiceId:clean(c.voiceId,160)};
   if(old)Object.assign(old,next);else p.contacts.push(next);result=next.id;
  }else if(type==='contact-flag'){
@@ -35,7 +35,7 @@ export function changePhone(current,action,{time={},playerName='You'}={}){
   const data=action.profile||{},next={displayName:clean(data.displayName,80),handle:clean(data.handle,48),bio:clean(data.bio,800),avatar:safeImage(data.avatar),banner:safeImage(data.banner),status:clean(data.status,160),private:data.private===true,locked:true,voiceId:clean(data.voiceId,160)};
   requireValue(next.displayName,'Enter a display name');p.profiles[action.actor]||={};p.profiles[action.actor][action.app]=next;
  }else if(type==='thread-open'){
-  requireValue(actorAllowed(p,action.contactId),'Contact is missing or blocked');requireValue(action.app==='gather'||p.contacts.find(c=>c.id===action.contactId)?.number,'This contact has not shared a phone number');result=threadFor(p,action.contactId,action.app||'messages').id;
+  requireValue(actorAllowed(p,action.contactId),'Contact is missing or blocked');requireValue(action.app==='gather'||p.contacts.some(c=>c.id===action.contactId&&(c.number||c.channels?.[action.app||'messages'])),'This contact has not shared a phone number');result=threadFor(p,action.contactId,action.app||'messages').id;
  }else if(type==='group-save'){
   requireValue(p.installed.includes('gather'),'Install Gather first');
   const members=[...new Set(['player',...(action.members||[])])];requireValue(members.length>=3&&members.slice(1).every(c=>actorAllowed(p,c)),'Choose at least two available contacts');
@@ -66,7 +66,7 @@ export function changePhone(current,action,{time={},playerName='You'}={}){
  }else if(type==='draft'){p.drafts[action.threadId]=clean(action.text,6000);
  }else if(type==='call-start'){
   requireValue(actorAllowed(p,action.contactId),'Contact is missing or blocked');
-  requireValue(p.contacts.find(c=>c.id===action.contactId)?.number,'This contact has not shared a phone number');
+  requireValue(p.contacts.some(c=>c.id===action.contactId&&(c.number||c.channels?.calls)),'This contact has not shared a phone number');
   requireValue(!p.calls.some(c=>['ringing','connected'].includes(c.status)),'End the current call first');
   const call={id:id(),contactId:action.contactId,direction:'outgoing',status:'ringing',transcript:[],muted:false,speaker:false,time:now};
   p.calls.push(call);p.pending.push({id:id(),type:'call',callId:call.id,contactId:call.contactId,mode:action.mode||'immediate',status:'pending',time:now});result=call.id;

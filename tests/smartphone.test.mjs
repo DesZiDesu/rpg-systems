@@ -173,3 +173,46 @@ test('timeline restoration retains manual profiles without retaining story effec
 test('AI-generated profiles remain reversible, and unchanged manual profiles do not churn snapshots',async()=>{
  const {retainPhoneProfileEdits}=await import('../src/workshop/smartphone/model.js');const {p,contact}=setup();const automatic=structuredClone(p);automatic.profiles[contact.id]={messages:{displayName:'AI profile'}};assert.equal(retainPhoneProfileEdits(p,automatic),p);const edited=changePhone(p,{type:'profile-save',actor:'player',app:'messages',profile:{displayName:'My name'}}).phone;assert.equal(retainPhoneProfileEdits(edited,edited),edited);
 });
+
+test('an empty phone accepts a first message from a known NPC, creates one reusable contact/thread and supports replies',()=>{
+ const s=state();s.npcs=[{id:'mina',name:'Mina Arai',phone:''}];const raw={events:[{type:'message',actorId:'mina',threadId:'model-invented-thread',text:'I found your book.'}]};
+ const first=mergePhoneReply(blankPhone(),s,raw,config,{source:'first-incoming'});assert.equal(first.phone.contacts.length,1);assert.equal(first.phone.contacts[0].npcId,'mina');assert.equal(first.phone.contacts[0].number,'');assert.equal(first.phone.messages.length,1);assert.equal(first.phone.threads.length,1);assert.equal(first.state.npcs.length,1);
+ const opened=changePhone(first.phone,{type:'thread-open',contactId:first.phone.contacts[0].id});assert.equal(opened.result,first.phone.threads[0].id);const sent=changePhone(opened.phone,{type:'message-send',threadId:opened.result,text:'Thanks!'});assert.equal(sent.phone.messages.length,2);
+ const twice=mergePhoneReply(first.phone,first.state,raw,config,{source:'first-incoming'});assert.equal(twice.phone.contacts.length,1);assert.equal(twice.phone.messages.length,1);
+ const edited=changePhone(first.phone,{type:'contact-save',contact:{id:first.phone.contacts[0].id,label:'Mina · bookstore',number:''}});assert.equal(edited.phone.contacts[0].label,'Mina · bookstore');assert(edited.phone.contacts[0].channels.messages);
+});
+test('a new named incoming sender can create its NPC and contact in the same reply without a saved number',()=>{
+ const raw={profiles:[{source:'incoming',contactId:'new-mina',npcId:'mina',npc:{name:'Mina Arai',occupation:'Librarian',personality:'Patient',description:'A town librarian.'},apps:{messages:{displayName:'Mina · library',handle:'mina.books'}}}],events:[{type:'message',contactId:'new-mina',actorId:'mina',text:'Your book is ready.'}]};
+ const result=mergePhoneReply(blankPhone(),state(),raw,config,{source:'new-sender'});assert.equal(result.created.length,1);assert.equal(result.state.npcs.length,1);assert.equal(result.phone.contacts.length,1);assert.equal(result.phone.contacts[0].npcId,'mina');assert.equal(result.phone.contacts[0].label,'Mina · library');assert.equal(result.phone.messages.length,1);assert.equal(result.phone.profiles['new-mina'].messages.handle,'mina.books');
+});
+test('anonymous incoming accounts can receive messages without revealing or inventing a real name',()=>{
+ const result=mergePhoneReply(blankPhone(),state(),{events:[{type:'message',contactId:'unknown-account',displayName:'Unknown sender',text:'Meet me by the station.'}]},config,{source:'anonymous'});assert.equal(result.state.npcs.length,0);assert.equal(result.phone.contacts[0].label,'Unknown sender');assert.equal(result.phone.messages.length,1);const task=JSON.parse(phoneTask(result.phone,result.state,config,[],{actors:['unknown-account']}).prompt.split('\n')[1]);assert.equal(task.references[0].needsNpc,true);
+});
+test('first incoming calls create a callable contact only when incoming calls are enabled',()=>{
+ const s=state();s.npcs=[{id:'mina',name:'Mina'}];const raw={events:[{type:'call',actorId:'mina'}]};const denied=mergePhoneReply(blankPhone(),s,raw,config);assert.equal(denied.phone.contacts.length,0);assert.equal(denied.phone.calls.length,0);
+ let next=mergePhoneReply(blankPhone(),s,raw,{...config,incomingCalls:true},{source:'first-call'}).phone;assert.equal(next.calls[0].status,'ringing');assert(next.contacts[0].channels.calls);next=changePhone(next,{type:'call-state',callId:next.calls[0].id,status:'declined'}).phone;const callback=changePhone(next,{type:'call-start',contactId:next.contacts[0].id});assert.equal(callback.phone.calls.length,2);
+});
+test('permissions, blocked identities, unknown targets and empty events cannot create phantom contacts',()=>{
+ const s=state();s.npcs=[{id:'mina',name:'Mina Arai',aliases:['Bookworm']}];const raw={profiles:[{source:'incoming',contactId:'new-id',npc:{name:'Bookworm'},apps:{messages:{displayName:'A different public label'}}}],events:[{type:'message',contactId:'new-id',text:'Hi'}]};
+ const blocked=changePhone(blankPhone(),{type:'contact-save',contact:{label:'Mina',number:'123',npcId:'mina'}}).phone;blocked.contacts[0].blocked=true;const denied=mergePhoneReply(blocked,s,raw,config);assert.equal(denied.phone.contacts.length,1);assert.equal(denied.phone.messages.length,0);
+ for(const data of [{events:[{type:'message',actorId:'mina',text:''}]},{profiles:raw.profiles,events:[]},{events:[{type:'message',actorId:'not-a-real-id',text:'No sender'}]},{events:[{type:'message',actorId:'mina',text:'Hi',offscreen:true}]}]){const r=mergePhoneReply(blankPhone(),s,data,config);assert.equal(r.phone.contacts.length,0);assert.equal(r.phone.messages.length,0);}
+ assert.equal(mergePhoneReply(blankPhone(),s,{events:[{type:'message',actorId:'mina',text:'Hi'}]},{...config,incomingMessages:false}).phone.contacts.length,0);
+});
+test('prose recovery finds a known NPC without a contact, a named new sender, and calls independently of message permission',()=>{
+ const s=state();s.npcs=[{id:'mina',name:'Mina Arai'}];let signal=phoneSceneSignal(blankPhone(),s,{mes:'Mina Arai sent you a message. Your phone lights up.'},{mes:'Please text me.'},config);assert.deepEqual(signal.actors,['npc-mina']);assert.deepEqual(signal.npcIds,['mina']);
+ const task=JSON.parse(phoneTask(blankPhone(),s,config,[],{kind:'story-repair',actors:signal.actors,contacts:s.npcs,story:signal.story}).prompt.split('\n')[1]);assert.equal(task.references[0].npcId,'mina');assert.equal(task.references[0].number,'');
+ assert(phoneSceneSignal(blankPhone(),state(),{mes:'<tr-header name="Mina"/><tr-narrative>Mina sends you a text.</tr-narrative>'},{mes:''},config));
+ assert(phoneSceneSignal(blankPhone(),s,{mes:'Mina Arai calls you. Your phone rings.'},{mes:''},{...config,incomingMessages:false,incomingCalls:true}));
+ assert(phoneSceneSignal(blankPhone(),s,{mes:'มินะกดโทรหาคุณ โทรศัพท์ของคุณดังขึ้น'},{mes:''},{...config,incomingMessages:false,incomingCalls:true}));
+ assert(phoneSceneSignal(blankPhone(),s,{mes:'Mina Arai hits send on her phone.'},{mes:''},config));assert(phoneSceneSignal(blankPhone(),s,{mes:'Your phone buzzes with a message from Mina Arai.'},{mes:''},config));assert(phoneSceneSignal(blankPhone(),s,{mes:'Mina Arai is calling you.'},{mes:''},{...config,incomingCalls:true}));
+ assert.equal(phoneSceneSignal(blankPhone(),s,{mes:'Mina Arai wants to send you a message.'},{mes:'Please text me.'},config),null);assert.equal(phoneSceneSignal(blankPhone(),s,{mes:'Mina Arai is going to call you later.'},{mes:'Call me please.'},{...config,incomingCalls:true}),null);
+});
+
+test('first-contact routing distinguishes legacy metadata and persists its migration marker',()=>{
+ assert.equal(blankPhone().incomingRoutingVersion,1);assert.equal(normalizePhone({schema:1}).incomingRoutingVersion,0);assert.equal(normalizePhone(blankPhone()).incomingRoutingVersion,1);
+});
+test('automatic caller labels respect the active NPC identity projection',async()=>{
+ const {readFile}=await import('node:fs/promises'),release=JSON.parse(await readFile(new URL('../manifest.json',import.meta.url),'utf8')).version;
+ const {setNpcVisibilityProvider}=await import('../src/npc-visibility.js?v='+release);setNpcVisibilityProvider(()=>({name:'???'}));
+ try{const s=state();s.npcs=[{id:'secret-npc',name:'Secret True Name'}];const r=mergePhoneReply(blankPhone(),s,{events:[{type:'message',actorId:'secret-npc',text:'Hello.'}]},config);assert.equal(r.phone.messages.length,1);assert.equal(r.phone.contacts[0].label,'???');assert.doesNotMatch(JSON.stringify(r.phone.contacts),/Secret True Name/);assert.equal(r.state.npcs[0].name,'Secret True Name');}finally{setNpcVisibilityProvider(null);}
+});

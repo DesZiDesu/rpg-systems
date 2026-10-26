@@ -1,5 +1,7 @@
 # RoleForge
 
+**Fixed in 0.88.3 / Aster Phone 1.1.3:** NPCs can initiate messages and calls to an empty address book. Aster creates the incoming contact/conversation, accepts reply channels without invented numbers and recovers completed phone activity from narration. [Details](docs/aster-first-contact-v0.88.3.md).
+
 **Fixed in 0.88.2 / Aster Phone 1.1.2:** Use the active persona throughout player state when Character Creation is skipped. Manually saved app profiles survive reply regeneration, swipes and reply deletion. NPC creation also accepts up to six labeled reference images. [Details](docs/player-phone-profile-v0.88.2.md).
 
 **Updated in 0.88.1 / Aster Phone 1.1.1:** Native-style typography, real variable font weights for English and Thai, consistent Lucide controls, quieter app surfaces and borderless reply timing. [Design and validation details](docs/aster-v0.88.1.md).
@@ -12,7 +14,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Public release: 0.88.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.88.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

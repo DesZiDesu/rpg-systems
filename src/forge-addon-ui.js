@@ -1,5 +1,5 @@
-import {mountForgeChoices} from './forge-choices.js?v=0.88.2';
-import {CREATION_REGIONS,CREATION_STARTERS,normalizeForgeAddon} from './forge-addons.js?v=0.88.2';
+import {mountForgeChoices} from './forge-choices.js?v=0.88.3';
+import {CREATION_REGIONS,CREATION_STARTERS,normalizeForgeAddon} from './forge-addons.js?v=0.88.3';
 const root=document.getElementById('trapp'),content=document.getElementById('forge-content'),variant=new URL(location.href).searchParams.get('variant')||'choose';
 let language='th',step=0,pending=false,error='',available=['death-note','pokemon'],eyeSource='none',hydrated=false;
 let profile={version:2,variant,fields:{fName:'',fGender:'',fAge:'',fRace:'Human',fProf:'',fCont:variant==='death-note'?'Japan':'Kanto'},addon:normalizeForgeAddon({},variant),originEnabled:false,power:[],ab:[],it:[],cf:[]};

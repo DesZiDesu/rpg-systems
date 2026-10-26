@@ -1,6 +1,6 @@
 # Aster Phone feature coverage
 
-Release: RoleForge 0.88.2 / Aster Phone 1.1.2. The app artwork uses flat, minimalist original glyphs throughout the home screen, dock and store. Local Lucide SVG controls share one stroke system. Typography uses installed Apple system fonts or bundled Inter and Noto Sans Thai variable fonts. Reply timing is borderless text below the composer.
+Release: RoleForge 0.88.3 / Aster Phone 1.1.3. The app artwork uses flat, minimalist original glyphs throughout the home screen, dock and store. Local Lucide SVG controls share one stroke system. Typography uses installed Apple system fonts or bundled Inter and Noto Sans Thai variable fonts. Reply timing is borderless text below the composer.
 
 | Area | Implemented behavior |
 | --- | --- |
