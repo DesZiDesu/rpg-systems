@@ -37,7 +37,7 @@ try{for(const mobile of [false,true]){
   const c=SillyTavern.getContext(),world=p.world();world.messages=['You better be back home in one piece.',"Today wasn’t completely terrible, I guess.","Don’t make me wait forever next time."].map((text,i)=>({id:'layout-'+i,threadId:thread,from:id,text,time:{day:1,time:'19:30'},read:true}));world.revision++;c.chatMetadata.roleforge_smartphone=world;await c.saveMetadata();p.refresh();p.open('store');return {id,thread};
  });
  const phone=page.locator('#rf-aster-phone');
- const shot=async name=>{await page.evaluate(()=>{toastr.remove();for(const node of document.querySelectorAll('.tretaresia-event-toast'))node.remove();});await page.screenshot({path:out+'/'+device+'-'+name+'.png'});};
+ const shot=async name=>{await page.evaluate(()=>document.fonts.ready);await page.evaluate(()=>{toastr.remove();for(const node of document.querySelectorAll('.tretaresia-event-toast'))node.remove();});await page.screenshot({path:out+'/'+device+'-'+name+'.png'});};
  const colors=async()=>phone.locator('.ap-store-hero').evaluate(n=>{
   const rgb=s=>s.match(/[\d.]+/g).slice(0,3).map(Number),lum=s=>rgb(s).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((v,c,i)=>v+c*[.2126,.7152,.0722][i],0);
   const fg=getComputedStyle(n.querySelector('h1')).color,bg=getComputedStyle(n).backgroundImage.match(/rgb\([^)]*\)/g)||[];
@@ -58,6 +58,7 @@ try{for(const mobile of [false,true]){
  }
  await phone.locator('[data-phone=conversation]').first().click();await page.evaluate(()=>RoleForgePhone.preferences({theme:'dark'}));
  const composer=phone.locator('[data-phone-form=message] textarea');await composer.fill('Yeah—my bad… anyway, it was nice talking with you. It was super fun.');await phone.locator('[data-phone-form=message] [type=submit]').click();await page.waitForFunction(()=>RoleForgePhone.world().pending.length===1);await shot('conversation');
+ if(!baseline){const mode=await phone.locator('.ap-send-mode [data-phone=reply-mode]').evaluate(n=>{const s=getComputedStyle(n);return {background:s.backgroundColor,border:s.borderTopWidth,shadow:s.boxShadow,radius:s.borderRadius};});assert.equal(mode.background,'rgba(0, 0, 0, 0)');assert.equal(mode.border,'0px');assert.equal(mode.shadow,'none');assert.equal(mode.radius,'0px');assert(await page.evaluate(async()=>{await document.fonts.load('600 16px "Aster UI"');return document.fonts.check('600 16px "Aster UI"');}));}
  if(!baseline)assert.equal(await composer.evaluate(n=>getComputedStyle(n).resize),'none','Host styles must not add a resize handle to the auto-growing composer');
  if(!baseline)assert(await composer.evaluate(n=>n.scrollHeight<=n.clientHeight+1),'An empty composer must not have a vertical scrollbar');
  await composer.fill('A draft that must survive updates.');
@@ -121,6 +122,11 @@ try{for(const mobile of [false,true]){
   await page.evaluate(()=>RoleForgePhone.preferences({motion:true}));assert.match(await phone.locator('.ap-call-hero .ap-avatar').evaluate(n=>getComputedStyle(n).animationName),/ap-connected/);
   if(mobile){await page.evaluate(()=>{Object.defineProperty(visualViewport,'height',{configurable:true,value:750});RoleForgePhone.open('home');visualViewport.dispatchEvent(new Event('resize'));});await page.waitForTimeout(80);assert(await phone.evaluate(root=>root.querySelector('.ap-dock').getBoundingClientRect().bottom<=root.querySelector('.ap-home-indicator').getBoundingClientRect().top),'Home dock fits a smaller visual viewport even when the layout viewport stays tall');await page.evaluate(()=>{delete visualViewport.height;visualViewport.dispatchEvent(new Event('resize'));});}
 
+ }
+ if(!baseline){
+  await page.evaluate(async ({id,thread})=>{const p=RoleForgePhone;await p.preferences({language:'th',theme:'dark',motion:false});const c=SillyTavern.getContext(),w=p.world();w.calls=[];w.pending=[];w.notifications=[];w.drafts={};w.messages=['ถึงบ้านแล้วใช่ไหม วันนี้ฝนตกหนัก เดินทางดี ๆ นะ','ถึงบ้านแล้ว ขอบคุณที่เป็นห่วงนะ พรุ่งนี้เจอกันที่ร้านเดิมได้เลย','ได้เลย ไว้เจอกันพรุ่งนี้นะ 😊'].map((text,i)=>({id:'thai-'+i,threadId:thread,from:i===1?'player':id,text,time:{day:1,time:'19:30'},read:true}));w.revision++;c.chatMetadata.roleforge_smartphone=w;await c.saveMetadata();p.refresh();p.open('messages');await document.fonts.load('600 16px "Aster Thai"','ภาษาไทย');},fixture);
+  await phone.locator('[data-phone=conversation]').first().click();await shot('thai-conversation');
+  assert(await page.evaluate(()=>document.fonts.check('600 16px "Aster Thai"','ภาษาไทย')),'The local variable Thai font loads');
  }
  report.devices.push({device,darkContrast,lightContrast,unchanged:performanceResult,draftStable,nextDraftDuringSave:!baseline,doubleSubmitGuard:!baseline,focusAfterClose,hidden,mountedMessages:mounted,historyMessages:1000,scrollResult,pass:true});
  await context.close();context=null;console.log('PASS',device,JSON.stringify(report.devices.at(-1)));

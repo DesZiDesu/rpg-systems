@@ -1,5 +1,7 @@
 # RoleForge
 
+**Updated in 0.88.1 / Aster Phone 1.1.1:** Native-style typography, real variable font weights for English and Thai, consistent Lucide controls, quieter app surfaces and borderless reply timing. [Design and validation details](docs/aster-v0.88.1.md).
+
 **New in 0.88.0 / Aster Phone 1.1.0:** Aster and wallet progress restore together when switching swipes, editing or deleting replies. Messages gains search and unread/archive filters, with refined app layouts, service colors and motion throughout the phone. [Release and design details](docs/aster-v0.88.0.md).
 
 **Updated in 0.87.2:** Aster Phone keeps its composer and reading position stable, skips unchanged/hidden screen rebuilds, and loads long conversations in batches. Harbor Store has readable light/dark text, clearer actions and a larger mobile close control. [Details](docs/phone-mobile-v0.87.2.md).
@@ -8,7 +10,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Public release: 0.88.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.88.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

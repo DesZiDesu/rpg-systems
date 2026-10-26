@@ -18,7 +18,7 @@ async function ready(){
  await Promise.race([done(),page.locator('dialog.popup').filter({hasText:'Welcome to SillyTavern!'}).locator('.popup-button-ok').click({timeout:120000}).then(done)]);
 }
 async function step(name,title,text,fn){
- if(fn)await fn();await page.waitForTimeout(250);await page.evaluate(()=>toastr.remove());
+ if(fn)await fn();await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(250);await page.evaluate(()=>toastr.remove());
  await page.screenshot({path:out+'/'+device+'-'+name+'.png'});
  steps.push({name,title,text,t:(Date.now()-started)/1000});console.log('STEP',device,name);if(record)await page.waitForTimeout(8000);
  const overflow=await phone().locator('.ap-device').evaluate(n=>n.scrollWidth>n.clientWidth+1);assert(!overflow,'phone width overflow '+name);

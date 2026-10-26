@@ -1,5 +1,5 @@
 // Keep this entry small and stable: every page load resolves the installed release afresh.
-import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.88.0';
+import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.88.1';
 const root = new URL('./', import.meta.url);
 export function releaseUrl(file, version) {
     if (!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.-]+)?$/i.test(version)) throw Error('Invalid RoleForge release');

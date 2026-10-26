@@ -1,6 +1,6 @@
 # Aster One — using the phone
 
-Aster Phone 1.1.0 ships with RoleForge 0.88.0. Update RoleForge and reload for coordinated phone/wallet timeline restoration, the refreshed layouts and Messages search/filter controls. Workshop offers the 1.1.0 package update. The parked Pokémon work remains separate.
+Aster Phone 1.1.1 ships with RoleForge 0.88.1. Update RoleForge and reload for coordinated phone/wallet timeline restoration, the refreshed layouts and Messages search/filter controls. Workshop offers the 1.1.1 package update, including the typography and surface revision. Reply timing is plain text with a chevron below the composer; tap it to change the mode. The parked Pokémon work remains separate.
 
 RoleForge 0.87.2 also improves the phone's rendering, mobile keyboard layout and Store readability. It preserves existing settings and phone data.
 

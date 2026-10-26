@@ -1,5 +1,5 @@
-import {appendPlayerNpcName} from './npc-visibility.js?v=0.88.0';
-import {usable,keyName} from './npc-core.js?v=0.88.0';
+import {appendPlayerNpcName} from './npc-visibility.js?v=0.88.1';
+import {usable,keyName} from './npc-core.js?v=0.88.1';
 const fact=value=>typeof value==='string'&&usable(value);
 export const illustratedChatTheme=theme=>['chapter','codex','aincrad'].includes(theme);
 

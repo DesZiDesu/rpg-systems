@@ -1,5 +1,5 @@
-import {isCurrencyId,currencyKeys,currencyValues,currencyScheme} from './currency-config.js?v=0.88.0';
-import {itemSaleBlocked} from './commerce-rights.js?v=0.88.0';
+import {isCurrencyId,currencyKeys,currencyValues,currencyScheme} from './currency-config.js?v=0.88.1';
+import {itemSaleBlocked} from './commerce-rights.js?v=0.88.1';
 // Player-owned marketplace listings and NPC offer negotiation.
 // All item and currency changes are local, explicit UI actions; story patches
 // never get to create or settle a marketplace transaction.

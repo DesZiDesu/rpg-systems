@@ -1,6 +1,6 @@
-import {clean,clone,fingerprint,publicProfile,contactLabel} from './model.js?v=0.88.0';
-import {applyIncoming} from './engine.js?v=0.88.0';
-import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.0';
+import {clean,clone,fingerprint,publicProfile,contactLabel} from './model.js?v=0.88.1';
+import {applyIncoming} from './engine.js?v=0.88.1';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.1';
 
 export function parsePhoneReply(raw){
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))return raw;
