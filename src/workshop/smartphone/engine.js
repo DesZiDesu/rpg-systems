@@ -1,6 +1,6 @@
-import {clone,id,clean,key,safeImage,contactLabel,publicProfile,SOCIAL_APPS,APPS,fingerprint,plainSpeech} from './model.js?v=0.87.2';
-import {currencyScheme,currencyValue} from '../../currency-config.js?v=0.87.2';
-import {applyMoneyTransfer,quoteWalletDebit} from '../../money-transfer.js?v=0.87.2';
+import {clone,id,clean,key,safeImage,contactLabel,publicProfile,SOCIAL_APPS,APPS,fingerprint,plainSpeech} from './model.js?v=0.88.0';
+import {currencyScheme,currencyValue} from '../../currency-config.js?v=0.88.0';
+import {applyMoneyTransfer,quoteWalletDebit} from '../../money-transfer.js?v=0.88.0';
 
 const requireValue=(v,m)=>{if(!v)throw Error(m);return v;};
 const whole=n=>Number.isSafeInteger(n)&&n>0&&n<=999999999;
@@ -20,7 +20,7 @@ export function changePhone(current,action,{time={},playerName='You'}={}){
   const c=action.contact||{},old=p.contacts.find(n=>n.id===c.id)||p.contacts.find(n=>n.saved===false&&n.number===clean(c.number,50));
   requireValue(clean(c.label,100)&&clean(c.number,50),'Enter a contact name and phone number');
   if(p.contacts.some(n=>n.id!==old?.id&&n.number===clean(c.number,50)))throw Error('That phone number is already in Contacts');
-  const next={...old,id:old?.id||id(),label:clean(c.label,100),name:clean(c.name||old?.name,100),number:clean(c.number,50),avatar:safeImage(c.avatar),notes:clean(c.notes,2000),blocked:old?.blocked===true,muted:old?.muted===true,npcId:old?.npcId||(key(c.npcId)?c.npcId:''),created:old?.created===true,source:old?.source||'custom',saved:true,voiceId:clean(c.voiceId,160)};
+  const next={...old,id:old?.id||id(),label:clean(c.label,100),name:clean(c.name||old?.name,100),number:clean(c.number,50),avatar:safeImage(c.avatar),notes:clean(c.notes,2000),blocked:old?.blocked===true,muted:old?.muted===true,npcId:(key(c.npcId)?c.npcId:old?.npcId||''),created:old?.created===true,source:old?.source||'custom',saved:true,voiceId:clean(c.voiceId,160)};
   if(old)Object.assign(old,next);else p.contacts.push(next);result=next.id;
  }else if(type==='contact-flag'){
   const c=requireValue(p.contacts.find(c=>c.id===action.contactId),'Contact not found');
@@ -58,7 +58,7 @@ export function changePhone(current,action,{time={},playerName='You'}={}){
  }else if(type==='thread-flag'){
   const t=requireValue(p.threads.find(t=>t.id===action.id),'Conversation not found');requireValue(['pinned','archived'].includes(action.field),'Unknown conversation setting');t[action.field]=!t[action.field];
  }else if(type==='thread-delete'){
-  const t=requireValue(p.threads.find(t=>t.id===action.id),'Conversation not found');t.deleted=true;p.messages=p.messages.filter(m=>m.threadId!==t.id);p.pending=p.pending.filter(q=>q.threadId!==t.id);delete p.drafts[t.id];delete p.attachments[t.id];p.deletedThreads.push(t.id);
+  const t=requireValue(p.threads.find(t=>t.id===action.id),'Conversation not found');t.deleted=true;p.messages=p.messages.filter(m=>m.threadId!==t.id);p.pending=p.pending.filter(q=>q.threadId!==t.id);delete p.drafts[t.id];delete p.attachments[t.id];p.deletedThreads.push(t.id);p.notifications=p.notifications.filter(n=>n.target!==t.id);
  }else if(type==='read'){
   for(const m of p.messages)if(m.threadId===action.threadId)m.read=true;
   for(const n of p.notifications)if(n.target===action.threadId||action.all)n.read=true;
@@ -120,7 +120,7 @@ export function changePhone(current,action,{time={},playerName='You'}={}){
  }else if(type==='browser-close-tab'){p.browser.tabs=p.browser.tabs.filter(t=>t.id!==action.id);if(!p.browser.tabs.length)p.browser.tabs=[{id:id(),url:'drift://start'}];if(!p.browser.tabs.some(t=>t.id===p.browser.activeTab))p.browser.activeTab=p.browser.tabs[0].id;
  }else if(type==='browser-bookmark'){const url=clean(action.url,300);if(p.browser.bookmarks.includes(url))p.browser.bookmarks=p.browser.bookmarks.filter(v=>v!==url);else p.browser.bookmarks.push(url);
  }else if(type==='browser-clear-history'){p.browser.history=[];
- }else if(type==='notification-read'){for(const n of p.notifications)if(n.id===action.id||action.all)n.read=true;
+ }else if(type==='notification-read'){for(const n of p.notifications)if(n.id===action.id||action.all){n.read=true;if(action.id&&n.type==='message')for(const m of p.messages)if(m.threadId===n.target)m.read=true;}
  }else throw Error('Unknown phone action');
  p.revision++;requireValue(JSON.stringify(p).length<12*1024*1024,'Phone storage is full. Remove unused photos or stickers before saving.');
  return {phone:p,result};

@@ -152,3 +152,12 @@ test('the player using their own Aster is possession evidence without a syntheti
 test('phone story sync attempts survive reload as retryable interruptions without auth sessions',()=>{
  const p=blankPhone();p.storySync={source:'story:one',messageId:5,status:'working',error:''};p.processed.push('story:one:repair');const reloaded=normalizePhone(p);assert.equal(reloaded.storySync.status,'interrupted');assert(reloaded.processed.includes('story:one:repair'));assert.deepEqual(reloaded.sessions,{});
 });
+
+test('editing a contact can replace its existing NPC link',()=>{
+ const {p,contact}=setup(true);const next=changePhone(p,{type:'contact-save',contact:{...contact,npcId:'another-npc'}}).phone;assert.equal(next.contacts[0].npcId,'another-npc');assert.equal(p.contacts[0].npcId,'aoi');
+});
+test('deleting a conversation clears its notifications and opening a message notification reads its thread',()=>{
+ const {p,contact,thread}=setup(true);const received=applyIncoming(p,{type:'message',contactId:contact.id,threadId:thread.id,text:'Hello'},{config,time,source:'notice-test'});
+ const read=changePhone(received,{type:'notification-read',id:received.notifications[0].id}).phone;assert(read.messages.every(m=>m.read));
+ const deleted=changePhone(received,{type:'thread-delete',id:thread.id}).phone;assert.equal(deleted.messages.length,0);assert.equal(deleted.notifications.length,0);
+});

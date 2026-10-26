@@ -1,6 +1,6 @@
 # Aster Phone feature coverage
 
-Release: RoleForge 0.87.0 / Aster Phone 1.0.0. The icon set uses flat, minimalist original glyphs and restrained app colors throughout the home screen, dock and store.
+Release: RoleForge 0.88.0 / Aster Phone 1.1.0. The icon set uses flat, minimalist original glyphs and restrained app colors throughout the home screen, dock and store.
 
 | Area | Implemented behavior |
 | --- | --- |

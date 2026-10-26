@@ -1,16 +1,16 @@
-import {linkPhoneContacts} from './identity.js?v=0.87.2';
-import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.87.2';
-import {createPhoneQueue} from './queue.js?v=0.87.2';
-import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.87.2';
-import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.87.2';
-import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData} from './ai.js?v=0.87.2';
-import {savePhoneChat} from './persistence.js?v=0.87.2';
-import {requestDataTask} from '../../task-generation.js?v=0.87.2';
-import {uiLanguage} from '../../ui-language.js?v=0.87.2';
-import {mountPhoneUI} from './ui.js?v=0.87.2';
+import {linkPhoneContacts} from './identity.js?v=0.88.0';
+import {phoneSceneSignal,phoneStorySource,phoneOwnershipInStory} from './story.js?v=0.88.0';
+import {createPhoneQueue} from './queue.js?v=0.88.0';
+import {PHONE_FIELD,PHONE_PROMPT,normalizePhone,phoneConfig,clone,id,storyTime,hasDevice,callSpeech,fingerprint,contactFromNpc,publicProfile} from './model.js?v=0.88.0';
+import {changePhone,phoneFinancial,registerArcade,loginArcade} from './engine.js?v=0.88.0';
+import {phoneTask,phoneWorldPrompt,mergePhoneReply,storyPhoneData} from './ai.js?v=0.88.0';
+import {savePhoneChat} from './persistence.js?v=0.88.0';
+import {requestDataTask} from '../../task-generation.js?v=0.88.0';
+import {uiLanguage} from '../../ui-language.js?v=0.88.0';
+import {mountPhoneUI} from './ui.js?v=0.88.0';
 
 export async function mountSmartphone({api,enabled,busy}){
- const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.87.2',import.meta.url);
+ const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/smartphone.css?v=0.88.0',import.meta.url);
  await new Promise((ok,no)=>{style.onload=ok;style.onerror=no;document.head.append(style);});
  let phone=normalizePhone(),scope='',nonce=null,revision=null,flight=null,queue,disposed=false,epoch=0,voiceQueue=Promise.resolve(),speechSeen=new Set(),error='',working=false,lastNotification='',replyTimer,pendingMain=null,requestedReplies=new Set(),linking=false,deviceCache={},catchupChecked=false;
  const host=()=>SillyTavern.getContext(),context=()=>api.phoneContext?.()||api.context(),config=()=>phoneConfig(api.phoneConfiguration?.()),state=()=>context().state;
@@ -32,9 +32,9 @@ export async function mountSmartphone({api,enabled,busy}){
  }
  async function save(next,rpg){
   const t=ticket(),c=host(),old=c.chatMetadata[PHONE_FIELD];if(!valid(t))throw Error('The chat changed before saving');
-  const saved=clone(next);delete saved.sessions;
+  const saved=clone(next);delete saved.sessions;if(JSON.stringify(saved).length>12*1024*1024)throw Error('Phone storage is full. Remove unused photos or stickers before saving.');
   try{
-   const ok=await api.commitState(rpg||state(),'smartphone',{prepareSave:()=>{if(!valid(t))throw Error('The chat changed before saving');c.chatMetadata[PHONE_FIELD]=saved;},saveMetadataOverride:()=>savePhoneChat(c)});
+   const ok=await api.commitState(rpg||state(),'smartphone',{guard:()=>valid(t),prepareSave:()=>{if(!valid(t))throw Error('The chat changed before saving');c.chatMetadata[PHONE_FIELD]=saved;},saveMetadataOverride:()=>savePhoneChat(c)});
    if(!ok)throw Error('Phone changes were not saved. Wait for the current action, then retry.');
    if(!valid(t))return false;phone=next;revision=saved;error='';prompt();ui?.render();playNewSpeech();return true;
   }catch(e){if(c.chatMetadata[PHONE_FIELD]===saved){if(old===undefined)delete c.chatMetadata[PHONE_FIELD];else c.chatMetadata[PHONE_FIELD]=old;}throw e;}
@@ -43,6 +43,8 @@ export async function mountSmartphone({api,enabled,busy}){
  async function act(action){
   if(config().voiceAuto&&(['call-start','call-speech'].includes(action.type)||action.type==='call-state'&&action.status==='connected'))api.voice?.activate?.();
   const result=await serial(async()=>{
+   if(action.type==='draft'&&(phone.drafts[action.threadId]||'')===String(action.text||'').trim())return;
+   if(action.type==='read'&&!phone.messages.some(m=>m.threadId===action.threadId&&!m.read)&&!phone.notifications.some(n=>(n.target===action.threadId||action.all)&&!n.read))return;
    if(!ownsDevice())throw Error('Your character needs a phone, or enable “Assume a phone” in Workshop settings.');
    const row=changePhone(linkPhoneContacts(phone,knownNpcs()),action,{time:storyTime(state()),playerName:state().player?.name});await save(linkPhoneContacts(row.phone,knownNpcs()));return row.result;
   });
@@ -150,7 +152,8 @@ export async function mountSmartphone({api,enabled,busy}){
   destroy(){disposed=true;epoch++;clearTimeout(replyTimer);api.voice?.stop?.('smartphone');for(const [type,fn]of subscriptions)host().eventSource.removeListener(type,fn);document.removeEventListener('tretaresia-rpg:continuity-captured',refresh);host().setExtensionPrompt(PHONE_PROMPT,'',1,1,false,0);ui.destroy();style.remove();if(globalThis.RoleForgePhone===runtime)delete globalThis.RoleForgePhone;}
  };
  queue=createPhoneQueue({capture:ticket,valid,before:refresh,onError:report});ui=mountPhoneUI(runtime);const subscriptions=[],on=(name,fn)=>{const type=host().eventTypes[name];if(type){host().eventSource.on(type,fn);subscriptions.push([type,fn]);}};
- on('CHAT_CHANGED',()=>refresh());const timelineChanged=()=>{deviceCache={};epoch++;flight=null;working=false;pendingMain=null;requestedReplies.clear();clearTimeout(replyTimer);queue.reset();ui.reset();api.voice?.stop?.('smartphone');setTimeout(refresh,150);};on('MESSAGE_DELETED',timelineChanged);on('MESSAGE_SWIPED',timelineChanged);on('MESSAGE_EDITED',timelineChanged);
+ on('CHAT_CHANGED',()=>refresh());const timelineChanged=(messageId,waitForReply=false)=>{deviceCache={};epoch++;flight=null;working=false;pendingMain=null;requestedReplies.clear();clearTimeout(replyTimer);queue.reset();ui.reset();api.voice?.stop?.('smartphone');void (async()=>{await api.awaitTimeline?.();if(disposed)return;refresh();const i=host().chat.findLastIndex(m=>m&&!m.is_user&&!m.is_system);if(!waitForReply&&i===host().chat.length-1&&i>=0){pendingMain=i;finishMain();}})().catch(report);};on('MESSAGE_DELETED',i=>timelineChanged(i));on('MESSAGE_SWIPED',i=>timelineChanged(i));on('MESSAGE_EDITED',i=>timelineChanged(i));
+ on('GENERATION_STARTED',type=>{if(/regenerat|swipe/i.test(typeof type==='string'?type:JSON.stringify(type||'')))timelineChanged(undefined,true);});
  on('USER_MESSAGE_RENDERED',i=>{void userSpeech(i).catch(report);});
  const finishMain=()=>{clearTimeout(replyTimer);replyTimer=setTimeout(async()=>{refresh();if(busy()||flight)return;const i=pendingMain;pendingMain=null;if(i!==null)await incoming(i).catch(report);flushReplies();},150);};
  on('MESSAGE_RECEIVED',(i,type)=>{if(['quiet','impersonate'].includes(type))return;if(Number.isInteger(Number(i))&&host().chat[Number(i)]&&!host().chat[Number(i)].is_user){pendingMain=Number(i);finishMain();}});

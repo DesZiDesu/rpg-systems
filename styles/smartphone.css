@@ -53,3 +53,118 @@
  #rf-aster-phone .ap-store-card{grid-template-columns:50px minmax(0,1fr)70px;gap:12px}
  #rf-aster-phone .ap-store-card .ap-app-icon{width:50px;height:50px}
 }
+
+/* Aster: shared native surfaces, with restrained identities for each service. */
+#rf-aster-phone{--ap-radius:20px;--ap-ease:cubic-bezier(.2,.75,.25,1)}
+#rf-aster-phone[data-service=lumen]{--ap-accent:#a24e61}
+#rf-aster-phone[data-service=murmur]{--ap-accent:#7151a8}
+#rf-aster-phone[data-service=browser]{--ap-accent:#356c9b}
+#rf-aster-phone[data-service=wallet]{--ap-accent:#286c73}
+#rf-aster-phone[data-theme=dark][data-service=lumen]{--ap-accent:#efa7ae}
+#rf-aster-phone[data-theme=dark][data-service=murmur]{--ap-accent:#c2b1ef}
+#rf-aster-phone[data-theme=dark][data-service=browser]{--ap-accent:#9dbfe8}
+#rf-aster-phone[data-theme=dark][data-service=wallet]{--ap-accent:#97d4ce}
+#rf-aster-phone .ap-screen{box-shadow:inset 0 0 0 1px #ffffff0a}
+#rf-aster-phone .ap-app-header{padding:8px 12px 12px;min-height:66px;gap:5px;background:var(--ap-bg)}
+#rf-aster-phone .ap-app-header h1{font-size:20px;letter-spacing:-.45px;line-height:1.3}
+#rf-aster-phone .ap-app-header small{font-size:11px;margin-top:3px}
+#rf-aster-phone .ap-header-tools{gap:2px}
+#rf-aster-phone .ap-header-tools .ap-icon-button{min-width:38px;font-size:15px;border-radius:50%}
+#rf-aster-phone .ap-inbox-intro{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:27px 2px 22px}
+#rf-aster-phone .ap-inbox-intro small{font-size:9px;letter-spacing:1.6px;color:var(--ap-muted)}
+#rf-aster-phone .ap-inbox-intro h2{font-size:26px;letter-spacing:-.7px;font-weight:500;margin-top:6px}
+#rf-aster-phone .ap-inbox-intro .ap-avatar{height:42px;width:42px;border:2px solid var(--ap-card);box-shadow:0 0 0 1px var(--ap-line)}
+#rf-aster-phone .ap-thread-filters{display:flex;gap:7px;margin-bottom:17px}
+#rf-aster-phone .ap-thread-filters button{padding:8px 15px;min-height:38px;border-radius:22px;color:var(--ap-muted);font-size:12px}
+#rf-aster-phone .ap-thread-filters button[aria-pressed=true]{color:var(--ap-text);background:var(--ap-card);box-shadow:0 0 0 1px var(--ap-line)}
+#rf-aster-phone .ap-thread-filters+.ap-search{margin:0 0 9px}
+#rf-aster-phone .ap-list-row .ap-thread-meta{flex:0 0 auto;align-items:flex-end;gap:8px;min-width:32px;align-self:stretch;justify-content:center}
+#rf-aster-phone .ap-thread-meta small{font-size:10px}
+#rf-aster-phone .ap-thread-meta>i{color:var(--ap-muted);font-size:10px}
+#rf-aster-phone .ap-call-mode{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--ap-muted);margin-top:16px}
+#rf-aster-phone .ap-list-row{gap:13px;min-height:83px;padding:15px 2px!important}
+#rf-aster-phone .ap-list-row strong{font-size:15px;letter-spacing:-.15px}
+#rf-aster-phone .ap-list-row small{font-size:12px;line-height:1.65}
+#rf-aster-phone .ap-avatar{background:linear-gradient(145deg,#91b6a8,#527e72);font-family:AsterLatin,Aster,system-ui}
+#rf-aster-phone .ap-count{min-width:21px;height:21px;padding:1px 6px;display:grid;place-items:center;font-size:10px}
+#rf-aster-phone .ap-body{padding-left:20px;padding-right:20px}
+#rf-aster-phone .ap-chat-body{padding:22px 15px 16px;background:linear-gradient(165deg,#eaf1e9,#f7f6f2 65%)}
+#rf-aster-phone[data-theme=dark] .ap-chat-body{background:linear-gradient(165deg,#1c2c27,#18221f 70%)}
+#rf-aster-phone .ap-message{border:1px solid #527c6810;border-radius:20px 20px 20px 7px;padding:11px 14px 9px;margin-bottom:12px;max-width:88%}
+#rf-aster-phone .ap-message.is-outgoing{border-radius:20px 20px 7px 20px;background:#dbece2;border-color:#729d7e15}
+#rf-aster-phone[data-theme=dark] .ap-message.is-outgoing{background:#345c4d;border-color:#80b49d18}
+#rf-aster-phone .ap-message p{line-height:1.7}
+#rf-aster-phone .ap-message footer{font-size:10px;margin-top:5px;letter-spacing:.1px}
+#rf-aster-phone .ap-message blockquote{border-radius:9px;padding:7px 10px;font-size:12px}
+#rf-aster-phone .ap-compose{padding:10px 12px 0}
+#rf-aster-phone .ap-compose textarea{background:var(--ap-card);border-color:var(--ap-line)}
+#rf-aster-phone :is(input,textarea)::placeholder{color:var(--ap-muted);opacity:.8}
+#rf-aster-phone .ap-conversation-status{border-top:1px solid var(--ap-line);min-height:42px;font-size:11px}
+#rf-aster-phone .ap-send-mode button{font-size:11px!important;min-height:38px;padding:6px 12px!important}
+#rf-aster-phone .ap-send{box-shadow:0 3px 10px #203d2718}
+#rf-aster-phone .ap-sheet{background:#07191280;backdrop-filter:blur(6px)}
+#rf-aster-phone .ap-sheet-card{border-radius:28px 28px 0 0;border:1px solid var(--ap-line);border-bottom:0;box-shadow:0 -16px 50px #0002}
+#rf-aster-phone .ap-sheet-card>header{padding:18px 20px 14px}
+#rf-aster-phone .ap-sheet-card h2{font-size:19px!important;letter-spacing:-.4px}
+#rf-aster-phone .ap-sheet-body{padding-top:22px}
+#rf-aster-phone .ap-field{font-size:12px;gap:8px;margin-bottom:19px}
+#rf-aster-phone .ap-menu-item{min-height:54px;font-size:14px}
+#rf-aster-phone .ap-card{border-radius:20px;padding:20px}
+#rf-aster-phone .ap-post{border-radius:22px;margin-bottom:22px;box-shadow:0 5px 18px #18352506}
+#rf-aster-phone .ap-post>header{padding:15px 14px 11px}
+#rf-aster-phone .ap-post-author strong{font-size:14px}
+#rf-aster-phone .ap-post-author small{font-size:10px;margin-top:2px}
+#rf-aster-phone .ap-post>p{padding:1px 17px 9px;font-size:15px;line-height:1.8}
+#rf-aster-phone .ap-post-actions{padding:5px 17px 9px;gap:18px}
+#rf-aster-phone .ap-post-actions button{min-height:44px;font-size:14px}
+#rf-aster-phone .ap-social-welcome{padding:25px 0 23px}
+#rf-aster-phone .ap-stories{padding-bottom:24px;gap:17px}
+#rf-aster-phone .ap-profile-stats{gap:27px}
+#rf-aster-phone .ap-profile-stats span{font-size:11px}
+#rf-aster-phone .ap-profile-stats b{font-size:20px;font-weight:500;color:var(--ap-text)}
+#rf-aster-phone .ap-call-hero{padding:39px 0 25px}
+#rf-aster-phone .ap-call-hero .ap-avatar{width:104px;height:104px;box-shadow:0 0 0 8px #87ad9410,0 0 0 20px #87ad9406}
+#rf-aster-phone .ap-call-hero h1{font-size:30px;letter-spacing:-.8px;margin-top:25px}
+#rf-aster-phone .ap-call-hero strong{font-size:13px;color:var(--ap-accent)}
+#rf-aster-phone .ap-call-buttons{gap:26px}
+#rf-aster-phone .ap-call-buttons button{height:58px;min-width:58px;border:1px solid var(--ap-line)}
+#rf-aster-phone .ap-call-transcript article{padding:16px 18px;border:1px solid var(--ap-line);border-radius:19px}
+#rf-aster-phone .ap-call-transcript small{font-size:11px}
+#rf-aster-phone .ap-call-transcript p{font-size:15px;line-height:1.8}
+#rf-aster-phone .ap-wallet-card{border-radius:24px;padding:26px;background:radial-gradient(ellipse at 100% 0,#5a9183,#244b46 70%)}
+#rf-aster-phone .ap-wallet-card h1{font-size:38px!important;letter-spacing:-1px}
+#rf-aster-phone .ap-ledger{padding:17px 0}
+#rf-aster-phone .ap-ledger strong{font-size:13px}
+#rf-aster-phone .ap-ledger small{font-size:11px;margin-top:4px}
+#rf-aster-phone .ap-browser-tabs{padding:8px 12px;gap:5px}
+#rf-aster-phone .ap-browser-tabs button:not(.ap-tab-close){font-size:11px;min-height:34px}
+#rf-aster-phone .ap-browser-bar{padding:11px 14px;gap:9px}
+#rf-aster-phone .ap-photo-grid{gap:10px}
+#rf-aster-phone .ap-photo-grid button{border-radius:16px}
+#rf-aster-phone .ap-photo-grid span{font-size:12px;background:linear-gradient(transparent,#12201ed9);padding-top:27px}
+#rf-aster-phone .ap-sticker-grid button{border-radius:20px;padding:18px 12px!important}
+#rf-aster-phone .ap-device-name h2{font-size:30px!important;letter-spacing:-.7px}
+#rf-aster-phone .ap-setting{min-height:70px;font-size:13px}
+#rf-aster-phone .ap-widget,#rf-aster-phone .ap-dock{backdrop-filter:none}
+#rf-aster-phone .ap-widget{background:#f9fcf1c9!important;border:1px solid #ffffff50}
+#rf-aster-phone[data-theme=dark] .ap-widget{background:#425950b8!important;border-color:#ffffff0d}
+#rf-aster-phone[data-motion=true] button{transition:background-color .16s,color .16s,transform .16s var(--ap-ease)}
+#rf-aster-phone[data-motion=true] button:active{transform:scale(.97)}
+#rf-aster-phone[data-motion=true] .ap-call-hero.is-connected .ap-avatar{animation:ap-connected 3s ease-in-out infinite}
+@keyframes ap-connected{50%{box-shadow:0 0 0 12px #87ad9415,0 0 0 26px #87ad9405}}
+@media(max-width:650px){
+ #rf-aster-phone .ap-header-tools .ap-icon-button{min-width:40px;min-height:44px}
+ #rf-aster-phone .ap-sheet{backdrop-filter:none}
+ #rf-aster-phone .ap-app-header{padding-left:10px;padding-right:10px}
+}
+#rf-aster-phone[data-compact=true] .ap-home-intro{padding:5px 5px 10px}
+#rf-aster-phone[data-compact=true] .ap-home-intro h1{font-size:45px}
+#rf-aster-phone[data-compact=true] .ap-home-intro>small{display:none}
+#rf-aster-phone[data-compact=true] .ap-widget{min-height:71px;padding:12px!important;gap:4px}
+#rf-aster-phone[data-compact=true] .ap-widgets{margin-bottom:15px}
+#rf-aster-phone[data-compact=true] .ap-home-grid{gap:12px 4px}
+#rf-aster-phone[data-compact=true] .ap-app-icon{width:53px;height:53px}
+#rf-aster-phone[data-compact=true] .ap-home-dots{padding:7px}
+#rf-aster-phone[data-compact=true] .ap-dock{padding:9px 8px}
+#rf-aster-phone[data-compact=true] .ap-dock .ap-app-icon{width:52px;height:52px}
+#rf-aster-phone[data-compact=true] .ap-home-space{min-height:3px}

@@ -47,7 +47,16 @@ try{for(const mobile of [false,true]){
  if(!baseline)assert(darkContrast.contrast.length&&Math.min(...darkContrast.contrast)>=4.5,'Store banner is readable in dark mode');
  await page.evaluate(()=>RoleForgePhone.preferences({theme:'light'}));const lightContrast=await colors();await shot('store-light');
  if(!baseline)assert(Math.min(...lightContrast.contrast)>=4.5);
- await page.evaluate(()=>{RoleForgePhone.open('messages');});await phone.locator('[data-phone=conversation]').first().click();await page.evaluate(()=>RoleForgePhone.preferences({theme:'dark'}));
+ await page.evaluate(()=>{RoleForgePhone.open('messages');});
+ if(!baseline){
+  assert.equal(await phone.locator('.ap-app-identity .ap-app-icon').count(),0,'Messages does not repeat its app icon above the list');await shot('inbox');
+  await phone.locator('[data-phone=thread-filter][data-value=unread]').click();assert.equal(await phone.locator('[data-phone=conversation]').count(),0);await phone.locator('[data-phone=thread-filter][data-value=all]').click();
+  const search=phone.locator('[data-phone-search]');await search.fill('Cassandra');
+  await page.evaluate(id=>RoleForgePhone.act({type:'thread-flag',id,field:'archived'}),fixture.thread);assert.equal(await search.inputValue(),'Cassandra');assert.equal(await phone.locator('[data-phone=conversation]').count(),0);
+  await phone.locator('[data-phone=thread-filter][data-value=archived]').click();assert.equal(await phone.locator('[data-phone=conversation]').count(),1);
+  await page.evaluate(id=>RoleForgePhone.act({type:'thread-flag',id,field:'archived'}),fixture.thread);await phone.locator('[data-phone=thread-filter][data-value=all]').click();
+ }
+ await phone.locator('[data-phone=conversation]').first().click();await page.evaluate(()=>RoleForgePhone.preferences({theme:'dark'}));
  const composer=phone.locator('[data-phone-form=message] textarea');await composer.fill('Yeah—my bad… anyway, it was nice talking with you. It was super fun.');await phone.locator('[data-phone-form=message] [type=submit]').click();await page.waitForFunction(()=>RoleForgePhone.world().pending.length===1);await shot('conversation');
  if(!baseline)assert.equal(await composer.evaluate(n=>getComputedStyle(n).resize),'none','Host styles must not add a resize handle to the auto-growing composer');
  if(!baseline)assert(await composer.evaluate(n=>n.scrollHeight<=n.clientHeight+1),'An empty composer must not have a vertical scrollbar');
@@ -102,6 +111,16 @@ try{for(const mobile of [false,true]){
   await page.evaluate(()=>{delete visualViewport.height;delete visualViewport.offsetTop;visualViewport.dispatchEvent(new Event('resize'));});await page.waitForTimeout(100);
   if(!baseline)for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});await page.waitForTimeout(60);const fits=await phone.locator('.ap-device').evaluate(n=>n.scrollWidth<=n.clientWidth+1);assert(fits,'Fits mobile width '+width);const close=await phone.locator('[data-phone=close]').filter({visible:true}).first().boundingBox();assert(close.width>=44&&close.height>=44);}
   await page.setViewportSize({width:390,height:844});
+ }
+ if(!baseline){
+  await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(async id=>{await RoleForgePhone.preferences({motion:true});const callId=await RoleForgePhone.act({type:'call-start',contactId:id,mode:'deferred'});await RoleForgePhone.act({type:'call-state',callId,status:'connected',mode:'deferred'});RoleForgePhone.open('phone');},fixture.id);
+  await phone.locator('[data-phone=call-open]').first().click();
+  assert.equal(await phone.locator('.ap-call-hero .ap-avatar').evaluate(n=>getComputedStyle(n).animationName),'none','System reduced motion disables the connected-call effect');
+  await page.emulateMedia({reducedMotion:'no-preference'});await page.evaluate(()=>RoleForgePhone.preferences({motion:false}));
+  assert.equal(await phone.locator('.ap-call-hero .ap-avatar').evaluate(n=>getComputedStyle(n).animationName),'none','Phone motion setting independently disables effects');
+  await page.evaluate(()=>RoleForgePhone.preferences({motion:true}));assert.match(await phone.locator('.ap-call-hero .ap-avatar').evaluate(n=>getComputedStyle(n).animationName),/ap-connected/);
+  if(mobile){await page.evaluate(()=>{Object.defineProperty(visualViewport,'height',{configurable:true,value:750});RoleForgePhone.open('home');visualViewport.dispatchEvent(new Event('resize'));});await page.waitForTimeout(80);assert(await phone.evaluate(root=>root.querySelector('.ap-dock').getBoundingClientRect().bottom<=root.querySelector('.ap-home-indicator').getBoundingClientRect().top),'Home dock fits a smaller visual viewport even when the layout viewport stays tall');await page.evaluate(()=>{delete visualViewport.height;visualViewport.dispatchEvent(new Event('resize'));});}
+
  }
  report.devices.push({device,darkContrast,lightContrast,unchanged:performanceResult,draftStable,nextDraftDuringSave:!baseline,doubleSubmitGuard:!baseline,focusAfterClose,hidden,mountedMessages:mounted,historyMessages:1000,scrollResult,pass:true});
  await context.close();context=null;console.log('PASS',device,JSON.stringify(report.devices.at(-1)));

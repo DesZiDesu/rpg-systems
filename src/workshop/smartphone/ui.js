@@ -1,5 +1,5 @@
-import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.87.2';
-import {currencyScheme} from '../../currency-config.js?v=0.87.2';
+import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.88.0';
+import {currencyScheme} from '../../currency-config.js?v=0.88.0';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ico=(name)=>'<i class="fa-solid fa-'+name+'" aria-hidden="true"></i>';
@@ -13,7 +13,7 @@ const appIcon=id=>{const a=APPS.find(v=>v.id===id)||APPS[0];return '<span class=
 const asset=name=>new URL('./assets/'+name,import.meta.url).pathname;
 
 export function mountPhoneUI(runtime){
- let view={app:'home'},history=[],opened=false,sheet=null,drag=null,localDrafts=new Map(),draftTimer,replyTo='',selectedUnit='',selectedAccount='',lastNotice='',toastTimer;
+ let view={app:'home'},history=[],opened=false,sheet=null,drag=null,localDrafts=new Map(),searches=new Map(),draftTimer,replyTo='',selectedUnit='',selectedAccount='',lastNotice='',toastTimer;
  let snapshot=null,lastMarkup='',renderedRoute='',messageLimit=80,lastMessage='',viewportFrame=0;
  const root=document.createElement('section');root.id='rf-aster-phone';
  root.innerHTML='<div class="ap-outside-capsule" hidden></div><section class="ap-device" role="dialog" aria-label="Aster One" hidden><div class="ap-screen"><header class="ap-status" data-phone-drag><span class="ap-time">--:--</span><button type="button" class="ap-capsule" data-phone="capsule" aria-label="Phone activity"><span class="ap-camera"></span><span class="ap-capsule-content"></span></button><span class="ap-status-symbols">'+ico('signal')+ico('wifi')+ico('battery-three-quarters')+'</span>'+b(ico('xmark'),'close','aria-label="Close phone"','ap-mobile-close ap-icon-button')+'</header><div class="ap-content"></div><button type="button" class="ap-home-indicator" data-phone="home" aria-label="Home"><span></span></button><div class="ap-toast" role="status" hidden></div><div class="ap-sheet" hidden></div></div><div class="ap-device-tools"><small>A S T E R · O N E</small>'+b(ico('xmark'),'close','aria-label="Close phone"','ap-tool')+'</div></section>';
@@ -61,10 +61,11 @@ export function mountPhoneUI(runtime){
   openSheet(t('บันทึกผู้ติดต่อ','Save contact'),form('contact',field(t('ชื่อที่คุณบันทึก','Saved contact name'),'label',c.label||'','text','required maxlength="100"')+field(t('เบอร์ในโลกของโรล','In-world phone number'),'number',c.number||'','tel','required maxlength="50"')+media(t('รูปผู้ติดต่อ','Contact photo'),'avatar',c.avatar)+area(t('บทบาท บุคลิก และบันทึก','Role, personality and notes'),'notes',c.notes||'')+'<div class="ap-field"><span>'+t('เสียงในสายของผู้ติดต่อนี้','Contact call voice')+'</span><input type="hidden" name="voiceId" value="'+esc(c.voiceId||'')+'">'+b(esc(get().voices.voices.find(v=>v.id===c.voiceId)?.name||t('ใช้เสียงสำรอง','Use fallback voice')),'contact-voices','','ap-secondary')+'<div data-contact-voices hidden></div></div>'+hint(t('ยังไม่สร้าง NPC จนกว่าคุณจะส่งข้อความหรือโทรหา','A custom NPC is created on your first message or call.')),t('บันทึกรายชื่อ','Save contact'),attr('id',contactId||'')));
  }
  function threads(app='messages'){
-  const list=p().threads.filter(t=>t.app===app&&!t.deleted),title=app==='gather'?'Gather':t('ข้อความ','Messages');
-  return wrap(title,'<div class="ap-app-identity">'+appIcon(app)+'<div><strong>'+title+'</strong><small>'+t('ใกล้กัน แม้อยู่คนละฉาก','Close, even from another scene')+'</small></div>'+b(ico('user'),'profile',attr('actor','player')+' '+attr('app',app),'ap-icon-button')+'</div>'+list.sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)).map(thread=>{
-   const messages=p().messages.filter(m=>m.threadId===thread.id&&!m.deleted),last=messages.at(-1),unread=messages.filter(m=>m.from!=='player'&&!m.read).length,target=thread.members.find(v=>v!=='player');
-   return row((thread.pinned?'⌖ ':'')+(thread.title||label(target)),(thread.archived?t('เก็บถาวร · ','Archived · '):'')+(last?.text||t('เริ่มบทสนทนา','Start a conversation')),'conversation',attr('id',thread.id),avatar(target,app),unread?'<b class="ap-count">'+unread+'</b>':ico('chevron-right'));
+  const summaries=new Map();p().messages.forEach((m,index)=>{if(m.deleted)return;let summary=summaries.get(m.threadId);if(!summary)summaries.set(m.threadId,summary={last:null,unread:0,position:-1});summary.last=m;summary.position=index;if(m.from!=='player'&&!m.read)summary.unread++;});
+  const filter=view.filter||'all',list=p().threads.filter(t=>t.app===app&&!t.deleted&&(filter==='archived'?t.archived:!t.archived)&&(filter!=='unread'||summaries.get(t.id)?.unread)),title=app==='gather'?'Gather':t('ข้อความ','Messages');
+  return wrap(title,'<div class="ap-inbox-intro"><div><small>'+t('บทสนทนาส่วนตัว','YOUR CONVERSATIONS')+'</small><h2>'+t('ใกล้กันอีกนิด','A little closer.')+'</h2></div>'+b(avatar('player',app),'profile',attr('actor','player')+' '+attr('app',app)+' aria-label="'+t('โปรไฟล์ของฉัน','My profile')+'"','ap-profile-button')+'</div><div class="ap-thread-filters">'+[['all',t('ทั้งหมด','All')],['unread',t('ยังไม่อ่าน','Unread')],['archived',t('เก็บถาวร','Archived')]].map(([value,label])=>b(label,'thread-filter',attr('value',value)+' aria-pressed="'+(filter===value)+'"')).join('')+'</div><div class="ap-search">'+ico('magnifying-glass')+'<input data-phone-search aria-label="'+t('ค้นหาบทสนทนา','Search conversations')+'" placeholder="'+t('ค้นหาบทสนทนา','Search conversations')+'"></div>'+list.sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||(summaries.get(b.id)?.position??-1)-(summaries.get(a.id)?.position??-1)).map(thread=>{
+   const summary=summaries.get(thread.id)||{},last=summary.last,unread=summary.unread,target=thread.members.find(v=>v!=='player'),name=thread.title||label(target);
+   return '<div data-searchable="'+esc((name+' '+(last?.text||'')).toLowerCase())+'">'+row((thread.pinned?'⌖ ':'')+name,last?.text||t('เริ่มบทสนทนา','Start a conversation'),'conversation',attr('id',thread.id),avatar(target,app),'<span class="ap-thread-meta"><small>'+esc(last?.time?.time||'')+'</small>'+(unread?'<b class="ap-count">'+unread+'</b>':ico('chevron-right'))+'</span>')+'</div>';
   }).join('')+(!list.length?empty(t('พื้นที่สำหรับบทสนทนา','Room for a conversation'),t('เลือกผู้ติดต่อ หรือสร้างแชทใหม่','Choose a contact or start a new conversation.')):''),b(ico('square-pen'),'new-thread',attr('app',app),'ap-icon-button')+(app==='gather'?b(ico('users'),'group-edit','','ap-icon-button'):''));
  }
  function conversation(){
@@ -90,7 +91,7 @@ export function mountPhoneUI(runtime){
   const call=p().calls.find(c=>c.id===view.id);if(!call)return calls();
   const c=contact(call.contactId),isLive=['ringing','connected'].includes(call.status),incoming=call.direction==='incoming'&&call.status==='ringing',connected=call.status==='connected';
   return head(t('สายโทรศัพท์','Call'),b(ico('minus'),'close','','ap-icon-button'),t('ปิดหน้าจอได้โดยไม่วางสาย','Closing the phone keeps this call'))+
-   '<main class="ap-body ap-call-body"><div class="ap-call-hero '+(call.status==='ringing'?'is-ringing':'')+'">'+avatar(call.contactId,'messages',true)+'<h1>'+esc(label(call.contactId))+'</h1><p>'+esc(c?.number||'')+'</p><strong>'+esc({ringing:t('กำลังเรียก…','Ringing…'),connected:t('อยู่ในสาย','Connected'),missed:t('ไม่ได้รับสาย','No answer'),declined:t('ปฏิเสธสาย','Declined'),ended:t('จบสาย','Call ended')}[call.status])+'</strong></div>'+
+   '<main class="ap-body ap-call-body"><div class="ap-call-hero '+(call.status==='ringing'?'is-ringing':connected?'is-connected':'')+'">'+avatar(call.contactId,'messages',true)+'<h1>'+esc(label(call.contactId))+'</h1><p>'+esc(c?.number||'')+'</p><strong>'+esc({ringing:t('กำลังเรียก…','Ringing…'),connected:t('อยู่ในสาย','Connected'),missed:t('ไม่ได้รับสาย','No answer'),declined:t('ปฏิเสธสาย','Declined'),ended:t('จบสาย','Call ended')}[call.status])+'</strong><span class="ap-call-mode">'+ico(cfg().voiceAuto&&get().voices.connected?'volume-high':'message')+' '+(cfg().voiceAuto&&get().voices.connected?t('เปิดเสียงในสาย','Voice enabled'):t('สายสนทนาแบบข้อความ','Text call'))+'</span></div>'+
    (incoming?'<div class="ap-call-buttons">'+b(ico('phone')+' '+t('รับสาย','Accept'),'call-state',attr('id',call.id)+' '+attr('status','connected'),'ap-accept')+b(ico('phone-slash')+' '+t('ปฏิเสธ','Decline'),'call-state',attr('id',call.id)+' '+attr('status','declined'),'ap-end')+'</div>':'')+
    (isLive&&!incoming?'<div class="ap-call-buttons">'+b(ico(call.muted?'microphone-slash':'microphone'), 'call-mute',attr('id',call.id)+' aria-pressed="'+call.muted+'"','ap-call-toggle')+b(ico('volume-high'),'call-speaker',attr('id',call.id)+' aria-pressed="'+call.speaker+'"','ap-call-toggle')+b(ico('phone-slash'),'call-state',attr('id',call.id)+' '+attr('status','ended'),'ap-end')+'</div>':'')+
    '<div class="ap-call-transcript">'+call.transcript.map(r=>'<article class="'+(r.from==='player'?'is-player':'')+'"><small>'+esc(r.from==='player'?t('คุณ','You'):displayName(call.contactId,'messages'))+'</small><p>'+esc(r.text)+'</p>'+(r.from!=='player'?b(ico('play')+' '+t('ฟังอีกครั้ง','Replay'),'speech-replay',attr('call',call.id)+' '+attr('id',r.id),'ap-text-button'):'')+'</article>').join('')+'</div>'+
@@ -168,7 +169,7 @@ export function mountPhoneUI(runtime){
  function draw(d){
   if(!d.enabled){close();outside.hidden=true;return;}
   const conf=d.config;
-  const attributes={theme:conf.theme==='system'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):conf.theme,wallpaper:conf.wallpaper,motion:String(conf.motion),app:view.app};
+  const attributes={theme:conf.theme==='system'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):conf.theme,wallpaper:conf.wallpaper,motion:String(conf.motion),app:view.app,service:view.app==='conversation'?(p().threads.find(t=>t.id===view.id)?.app||'messages'):view.app};
   for(const [key,value]of Object.entries(attributes))if(root.dataset[key]!==value)root.dataset[key]=value;hide(device,!opened);
   const clock=d.state.worldClock?.time||'--:--',time=root.querySelector('.ap-time');if(time.textContent!==clock)time.textContent=clock;
   activity();
@@ -188,7 +189,7 @@ export function mountPhoneUI(runtime){
   const anchor=sameRoute&&view.app==='conversation'&&!atBottom?[...oldBody.querySelectorAll('.ap-message')].find(n=>n.getBoundingClientRect().bottom>oldBody.getBoundingClientRect().top):null;
   const anchorId=anchor?.dataset.id,anchorTop=anchor?.getBoundingClientRect().top;
   const latest=view.app==='conversation'?p().messages.findLast(m=>m.threadId===view.id):null,sent=latest?.from==='player'&&latest.id!==lastMessage;
-  const focus=content.querySelector(':focus'),focusInfo=focus?.name?{name:focus.name,start:focus.selectionStart,end:focus.selectionEnd}:null;
+  const focus=content.querySelector(':focus'),focusInfo=focus&&(focus.name||focus.hasAttribute('data-phone-search'))?{name:focus.hasAttribute('data-phone-search')?'__search__':focus.name,start:focus.selectionStart,end:focus.selectionEnd}:null;
   if(sameRoute&&view.app==='conversation'&&content.querySelector('.ap-compose')&&d.hasDevice){
    // Keep the form and its textarea mounted through saves, incoming bubbles and typing.
    const template=document.createElement('template');template.innerHTML=markup;
@@ -203,14 +204,16 @@ export function mountPhoneUI(runtime){
    for(const node of content.querySelectorAll('.ap-compose-row button')){const nextButton=template.content.querySelector(node.type==='submit'?'.ap-compose-row [type=submit]':'[data-phone="'+node.dataset.phone+'"]');node.setAttribute('aria-label',nextButton.getAttribute('aria-label'));}
   }else{
    content.innerHTML=markup;
-   if(sameRoute&&focusInfo){const input=content.querySelector('[name="'+CSS.escape(focusInfo.name)+'"]');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(focusInfo.start,focusInfo.end);}catch{}}}
+   if(sameRoute&&focusInfo){const input=content.querySelector(focusInfo.name==='__search__'?'[data-phone-search]':'[name="'+CSS.escape(focusInfo.name)+'"]');if(input){if(focusInfo.name==='__search__')input.value=searches.get(JSON.stringify(view))||'';input.focus({preventScroll:true});try{input.setSelectionRange(focusInfo.start,focusInfo.end);}catch{}}}
   }
+  const search=content.querySelector('[data-phone-search]');if(search){const query=searches.get(JSON.stringify(view))||'';if(search.value!==query)search.value=query;for(const row of content.querySelectorAll('[data-searchable]'))row.hidden=!row.dataset.searchable.includes(search.value.toLowerCase());}
   const scroll=content.querySelector('.ap-body');if(scroll){
    if(view.app==='conversation'){
     if(!sameRoute||atBottom||sent)scroll.scrollTop=scroll.scrollHeight;
     else{scroll.scrollTop=oldTop;const nextAnchor=anchorId&&[...scroll.querySelectorAll('.ap-message')].find(n=>n.dataset.id===anchorId);if(nextAnchor)scroll.scrollTop+=nextAnchor.getBoundingClientRect().top-anchorTop;}
    }else scroll.scrollTop=sameRoute?oldTop:0;
   }
+  if(conf.motion&&!matchMedia('(prefers-reduced-motion:reduce)').matches){if(!sameRoute)content.animate?.([{opacity:.35,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],{duration:190,easing:'ease-out'});else if(atBottom&&latest?.id&&latest.id!==lastMessage){const bubble=[...content.querySelectorAll('.ap-message')].find(n=>n.dataset.id===latest.id);bubble?.animate?.([{opacity:0,transform:'translateY(6px) scale(.985)'},{opacity:1,transform:'none'}],{duration:210,easing:'ease-out'});}}
   lastMarkup=markup;renderedRoute=route;lastMessage=latest?.id||'';growComposer();
  }
  function activity(){return withSnapshot(drawActivity);}
@@ -225,6 +228,7 @@ export function mountPhoneUI(runtime){
  function chime(){try{const C=window.AudioContext||window.webkitAudioContext,a=new C(),osc=a.createOscillator(),gain=a.createGain();osc.frequency.value=720;gain.gain.value=.025;osc.connect(gain);gain.connect(a.destination);osc.start();osc.stop(a.currentTime+.12);osc.onended=()=>a.close();}catch{}}
  function position(){
   const viewport=window.visualViewport,vh=viewport?.height||innerHeight;setStyle(root,'--ap-vh',vh+'px');setStyle(root,'--ap-vw',(viewport?.width||innerWidth)+'px');setStyle(root,'--ap-vtop',(viewport?.offsetTop||0)+'px');setStyle(root,'--ap-vleft',(viewport?.offsetLeft||0)+'px');
+  const compact=String((device.offsetHeight||vh)<=750);if(root.dataset.compact!==compact)root.dataset.compact=compact;
   if(innerWidth<=650){device.style.left='';device.style.top='';return;}
   if(drag)return;const w=device.offsetWidth||390,h=device.offsetHeight||844,x=cfg().position.x*Math.max(0,innerWidth-w-24),y=cfg().position.y*Math.max(0,innerHeight-h-48);setStyle(device,'left',Math.max(12,x)+'px');setStyle(device,'top',Math.max(28,y)+'px');
  }
@@ -234,6 +238,7 @@ export function mountPhoneUI(runtime){
  async function run(fn){try{await fn();}catch(e){if(e.name==='AbortError')return;runtime.report(e);toast(e.message);}}
  async function handle(node){
   const a=node.dataset.phone,d=node.dataset;
+  if(a==='thread-filter'){view={...view,filter:d.value};render();return;}
   if(a==='earlier-messages'){messageLimit+=80;render();return;}
   if(a==='close'){close();return;}if(a==='home'){history=[];view={app:'home'};closeSheet();render();return;}if(a==='back'){back();return;}if(a==='sheet-close'){closeSheet();return;}
   if(a==='app'){if(p().installed.includes(d.app))go(d.app);return;}
@@ -336,7 +341,7 @@ export function mountPhoneUI(runtime){
   closeSheet();render();
  }).finally(()=>{node.rfPhoneSubmitting=false;const submit=node.querySelector('[type=submit]');if(submit)submit.disabled=false;});});
  root.addEventListener('input',event=>{
-  if(event.target.matches('[data-phone-search]')){const search=event.target.value.toLowerCase();for(const row of content.querySelectorAll('[data-searchable]'))row.hidden=!row.dataset.searchable.includes(search);}
+  if(event.target.matches('[data-phone-search]')){const search=event.target.value.toLowerCase();searches.set(JSON.stringify(view),event.target.value);for(const row of content.querySelectorAll('[data-searchable]'))row.hidden=!row.dataset.searchable.includes(search);}
   if(event.target.matches('[data-phone-draft]')){const key=event.target.dataset.phoneDraft,text=event.target.value;localDrafts.set(key,text);growComposer();clearTimeout(draftTimer);draftTimer=setTimeout(()=>void runtime.act({type:'draft',threadId:key,text}).catch(()=>{}),650);}
  });
  root.addEventListener('change',event=>{const input=event.target;if(input.matches('[data-phone-config]'))void run(()=>runtime.preferences({[input.dataset.phoneConfig]:input.checked}));
@@ -349,5 +354,5 @@ export function mountPhoneUI(runtime){
  const resized=()=>{if(opened&&!viewportFrame)viewportFrame=requestAnimationFrame(()=>{viewportFrame=0;withSnapshot(()=>{const body=content.querySelector('.ap-chat-body'),pinned=isAtBottom(body);position();growComposer();if(pinned)body.scrollTop=body.scrollHeight;});});};window.addEventListener('resize',resized);window.visualViewport?.addEventListener('resize',resized);window.visualViewport?.addEventListener('scroll',resized);
  function open(app='home'){if(!opened&&document.activeElement?.matches('input,textarea,[contenteditable=true]'))document.activeElement.blur();opened=true;if(app!==view.app)go(app);else render();device.hidden=false;}
  function close(){if(root.contains(document.activeElement))document.activeElement.blur();opened=false;cancelAnimationFrame(viewportFrame);viewportFrame=0;device.hidden=true;closeSheet();activity();}
- return {root,render,open,close,go,reset(){clearTimeout(draftTimer);localDrafts.clear();history=[];view={app:'home'};messageLimit=80;lastMarkup='';renderedRoute='';lastMessage='';replyTo='';selectedAccount='';selectedUnit='';close();},destroy(){clearTimeout(toastTimer);clearTimeout(draftTimer);cancelAnimationFrame(viewportFrame);window.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('scroll',resized);root.remove();}};
+ return {root,render,open,close,go,reset(){clearTimeout(draftTimer);localDrafts.clear();searches.clear();history=[];view={app:'home'};messageLimit=80;lastMarkup='';renderedRoute='';lastMessage='';replyTo='';selectedAccount='';selectedUnit='';close();},destroy(){clearTimeout(toastTimer);clearTimeout(draftTimer);cancelAnimationFrame(viewportFrame);window.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('scroll',resized);root.remove();}};
 }
