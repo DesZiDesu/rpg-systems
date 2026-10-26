@@ -1,5 +1,7 @@
 # RoleForge
 
+**Fixed in 0.88.5 / Aster Phone 1.1.5:** Phone conversations advance the shared story clock. Settings use proper sliding switches, body-profile filling works with loading feedback, and affected controls follow the selected language. [Details](docs/aster-clock-profile-v0.88.5.md).
+
 **Fixed in 0.88.4 / Aster Phone 1.1.4:** Call labels sit below their circular controls without overflowing. Incoming and active-call actions support English and Thai. [Details](docs/aster-call-controls-v0.88.4.md).
 
 **Fixed in 0.88.3 / Aster Phone 1.1.3:** NPCs can initiate messages and calls to an empty address book. Aster creates the incoming contact/conversation, accepts reply channels without invented numbers and recovers completed phone activity from narration. [Details](docs/aster-first-contact-v0.88.3.md).
@@ -16,7 +18,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Public release: 0.88.4** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.88.5** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

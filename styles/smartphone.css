@@ -276,3 +276,15 @@
 #rf-aster-phone .ap-call-toggle[aria-pressed=true] .ap-call-control-icon{background:var(--ap-accent);color:var(--ap-on-accent)}
 #rf-aster-phone .ap-call-control:active .ap-call-control-icon{transform:scale(.94)}
 #rf-aster-phone[data-motion=false] .ap-call-control-icon{transition:none}
+/* A separate visual track isolates switches from host checkbox checkmark skins. */
+#rf-aster-phone[popover]{margin:0;padding:0;border:0;background:transparent;max-width:none;max-height:none;width:auto;height:auto;overflow:visible}
+#rf-aster-phone .ap-setting>.ap-switch{position:relative;display:inline-flex;align-items:center;justify-content:center;width:52px;min-width:52px;height:44px;flex-shrink:0;max-width:none;cursor:pointer}
+#rf-aster-phone .ap-switch input[type=checkbox]{position:absolute;inset:0;width:100%!important;height:100%!important;min-height:44px!important;margin:0!important;padding:0!important;opacity:0!important;z-index:2;cursor:pointer;transform:none!important}
+#rf-aster-phone .ap-switch-track{position:relative;display:block;width:50px;height:30px;border-radius:999px;background:color-mix(in srgb,var(--ap-muted) 28%,var(--ap-bg));box-shadow:inset 0 0 0 1px #00000009;transition:background-color .22s ease,box-shadow .22s ease;pointer-events:none}
+#rf-aster-phone .ap-switch-thumb{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#fff,#f8f9fb);box-shadow:0 1px 3px #00000024,0 3px 6px #0000000d,inset 0 0 0 .5px #ffffffb3;transition:transform .24s cubic-bezier(.22,.8,.3,1),width .16s ease}
+#rf-aster-phone .ap-switch input:checked+.ap-switch-track{background:var(--ap-accent);box-shadow:inset 0 0 0 1px #0000000a}
+#rf-aster-phone .ap-switch input:checked+.ap-switch-track .ap-switch-thumb{transform:translateX(20px)}
+#rf-aster-phone .ap-switch input:focus-visible+.ap-switch-track{outline:2px solid var(--ap-accent);outline-offset:4px}
+#rf-aster-phone .ap-switch input:active+.ap-switch-track .ap-switch-thumb{width:29px}
+#rf-aster-phone .ap-switch input:checked:active+.ap-switch-track .ap-switch-thumb{transform:translateX(17px)}
+#rf-aster-phone .ap-switch input:disabled+.ap-switch-track{opacity:.45}

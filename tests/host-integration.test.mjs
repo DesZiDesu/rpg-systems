@@ -1009,7 +1009,7 @@ test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in 
   assert.match(panel.innerHTML,/data-npc-portrait="rin"/);
   assert.match(panel.innerHTML,/tretaresia-h-photo/);
   assert.match(panel.innerHTML,/data-main-relationships/);
-  assert.match(panel.innerHTML,/ยังไม่ทราบ/);
+  assert.match(panel.innerHTML,/Unknown/);
   assert.equal(context.chatMetadata.tretaresia_rpg_selected_hstats_npc,'rin');
   const updated=host.applyStatePatch(base,{ops:[['set','npcHStats',{npcId:'rin',field:'loyaltyHearts',value:4}]]});
   host.renderHStats(panel,updated.next);
@@ -1260,7 +1260,7 @@ test('generated H-Stats fill every missing field and confirmed values replace ge
   assert.equal(calls,1);assert.equal(writes,1);assert.equal(host.hStatsMissingFields(entry).length,0);
   assert.equal(entry.hStats.mouthQuality,'Confirmed by story');assert.equal(entry.hStats.oralSexCount,2);
   assert.equal(entry.hStats.favoritePosition,'Story-consistent preference');
-  assert.equal(entry.hStats.penisQuality,'ไม่มีอวัยวะส่วนนี้');
+  assert.equal(entry.hStats.penisQuality,'No anatomy of this type');
   assert.ok(entry.hStatsGenerated.includes('favoritePosition'));assert.ok(!entry.hStatsGenerated.includes('mouthQuality'));
   assert.equal(Object.hasOwn(entry.hStats,'condition'),false);
   const changed=host.applyStatePatch(host.getState(),{ops:[
@@ -1271,7 +1271,7 @@ test('generated H-Stats fill every missing field and confirmed values replace ge
   assert.ok(!changed.hStatsGenerated.includes('favoritePosition'));
   assert.ok(!changed.hStatsGenerated.includes('analSexCount'));
   const panel={innerHTML:''};host.chooseHStatsNpc('kohaku',host.getState());host.renderHStats(panel,host.getState());
-  assert.match(panel.innerHTML,/ค่าเริ่มต้น AI/);
+  assert.match(panel.innerHTML,/AI baseline/);
  }finally{context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.getElement;}
 });
 
@@ -1290,6 +1290,22 @@ test('H-Stats use a complete neutral baseline when the profile model is unavaila
   assert.equal(entry.hStats.pregnant,false);
   assert.equal(entry.hStats.analSexCount,0);
  }finally{context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.getElement;}
+});
+
+test('the body-profile fill click starts one job, shows loading, respects Thai and removes the completed action',async()=>{
+ const saved={metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,getElement:sandbox.document.getElementById,language:host.getGlobalSettings().language};
+ let release,calls=0;const pending=new Promise(resolve=>release=resolve);
+ try{
+  host.getGlobalSettings().language='th';uiLanguage.setUiLanguageProvider(()=> 'th');
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'fill-click',name:'Riley',gender:'Female',met:true,hStats:{mouthQuality:'Established trait',oralSexCount:2}})];context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};context.saveMetadata=async()=>{};
+  sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  context.generateQuietPrompt=async({quietPrompt})=>{calls++;assert.match(quietPrompt,/Write text values in Thai only/);await pending;return '{"hStats":{"mouthState":""}}';};
+  host.chooseHStatsNpc('fill-click',host.getState());const button={dataset:{action:'retry-hstats-baseline',id:'fill-click'}},event={target:{closest:()=>button}};
+  const job=host.onPanelClick(event);await new Promise(resolve=>setTimeout(resolve,0));await host.onPanelClick(event);
+  const panel={innerHTML:''};host.renderHStats(panel,host.getState());assert.match(panel.innerHTML,/aria-busy="true" disabled/);assert.match(panel.innerHTML,/กำลังเติมโปรไฟล์ร่างกาย/);assert.doesNotMatch(panel.innerHTML,/Fill missing body profile/);assert.equal(calls,1);
+  release();await job;const npc=host.getState().npcs[0];assert.equal(host.hStatsMissingFields(npc).length,0);assert.equal(npc.hStats.mouthQuality,'Established trait');assert.equal(npc.hStats.oralSexCount,2);assert.equal(npc.hStats.mouthState,'ปกติ');
+  host.renderHStats(panel,host.getState());assert.doesNotMatch(panel.innerHTML,/data-action="retry-hstats-baseline"/);
+ }finally{release();context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.getElement;host.getGlobalSettings().language=saved.language;uiLanguage.setUiLanguageProvider(()=> 'en');}
 });
 test('same-turn patches update NPC relationships, skills and H-Stats without resetting other values',()=>{
  const base=host.defaultState();base.npcs=[host.npcProfile({id:'a',name:'Aria',met:true,trust:10,
