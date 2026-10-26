@@ -201,7 +201,7 @@
       "kind": "system",
       "color": "sage",
       "subtitle": "A little world, inside your world",
-      "minimumRoleForge": "0.88.1",
+      "minimumRoleForge": "0.88.2",
       "author": "RoleForge",
       "description": "สมาร์ทโฟนในโลกของโรล พร้อมข้อความ โทรศัพท์ รายชื่อ โปรไฟล์ แอปโซเชียล เบราว์เซอร์ และ Wallet ที่ใช้ค่าเงิน RoleForge",
       "features": [
@@ -257,6 +257,16 @@
           "changes": [
             "Native typography with real font weights, locally bundled Lucide controls",
             "Borderless reply timing and quieter app layouts in English and Thai"
+          ]
+        },
+        {
+          "version": "1.1.2",
+          "path": "packs/smartphone-1.1.2.json",
+          "bytes": 947,
+          "sha256": "018f75432f75d8c03b0a2acb565a1bf34dd7f8413b26e4ea546861b219fdd8aa",
+          "changes": [
+            "Keep manually saved app profiles during regeneration, swipes and reply deletion",
+            "Use the active persona instead of the default Adventurer name across RoleForge and phone context"
           ]
         }
       ]

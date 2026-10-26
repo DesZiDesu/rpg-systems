@@ -1,0 +1,26 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.88.2",
+  "id": "smartphone",
+  "kind": "system",
+  "name": "Aster Phone",
+  "version": "1.1.2",
+  "capabilities": [
+    "read-scene",
+    "read-stats",
+    "read-inventory",
+    "read-known-npcs",
+    "phone-messages",
+    "phone-social",
+    "phone-wallet",
+    "voice-on-request"
+  ],
+  "notes": [
+    {
+      "id": "aster",
+      "title": "Aster One",
+      "text": "In-world smartphone with messaging, calls, social apps, browser and shared RoleForge wallet. Player-saved and manually edited NPC app profiles are authoritative configuration: never rename or rewrite them. Profile edits survive reply regeneration, swipes and reply deletion; story messages, posts, calls and money still follow the selected timeline. Do not settle phone transactions twice. Use the active persona as the player identity unless a custom RoleForge name is configured."
+    }
+  ]
+}

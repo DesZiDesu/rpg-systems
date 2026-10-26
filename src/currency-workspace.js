@@ -1,7 +1,7 @@
-import {mountColorControls} from './color-controls.js?v=0.88.1';
-import {MONEY_ICON_SETS,MONEY_ICON_SHAPES,currencyScheme,currencyValue,validateCurrencyScheme,reconfigureCurrencyWallet} from './currency-config.js?v=0.88.1';
-import {commerceIconMarkup} from './commerce-icons.js?v=0.88.1';
-import {validateCurrencyPreset,importWorldPreset,PRESET_FILE_LIMIT,currentCurrencyPreset} from './world-presets.js?v=0.88.1';
+import {mountColorControls} from './color-controls.js?v=0.88.2';
+import {MONEY_ICON_SETS,MONEY_ICON_SHAPES,currencyScheme,currencyValue,validateCurrencyScheme,reconfigureCurrencyWallet} from './currency-config.js?v=0.88.2';
+import {commerceIconMarkup} from './commerce-icons.js?v=0.88.2';
+import {validateCurrencyPreset,importWorldPreset,PRESET_FILE_LIMIT,currentCurrencyPreset} from './world-presets.js?v=0.88.2';
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PAGE_SIZE=10;
 export function mountCurrencyWorkspace({root,state,context,save,language=()=> 'en',notify=()=>{},coinStyle=()=> 'stack'}){

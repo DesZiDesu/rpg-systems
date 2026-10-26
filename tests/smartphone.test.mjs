@@ -161,3 +161,15 @@ test('deleting a conversation clears its notifications and opening a message not
  const read=changePhone(received,{type:'notification-read',id:received.notifications[0].id}).phone;assert(read.messages.every(m=>m.read));
  const deleted=changePhone(received,{type:'thread-delete',id:thread.id}).phone;assert.equal(deleted.messages.length,0);assert.equal(deleted.notifications.length,0);
 });
+
+test('timeline restoration retains manual profiles without retaining story effects or resurrecting contacts',async()=>{
+ const {retainPhoneProfileEdits}=await import('../src/workshop/smartphone/model.js');const {p,contact}=setup();
+ let current=changePhone(p,{type:'profile-save',actor:'player',app:'messages',profile:{displayName:'My edited name',handle:'my.handle',bio:'My bio',private:true,avatar:png,banner:png}}).phone;
+ current=changePhone(current,{type:'profile-save',actor:contact.id,app:'murmur',profile:{displayName:'Edited NPC'}}).phone;
+ current.messages.push({id:'future-message',text:'Future story'});current.posts.push({id:'future-post',text:'Future post'});
+ const restored=retainPhoneProfileEdits(p,current);assert.equal(restored.profiles.player.messages.displayName,'My edited name');assert.equal(restored.profiles.player.messages.avatar,png);assert.equal(restored.profiles.player.messages.banner,png);assert.equal(restored.profiles.player.messages.private,true);assert.equal(restored.profiles[contact.id].murmur.displayName,'Edited NPC');assert.equal(restored.messages.length,0);assert.equal(restored.posts.length,0);
+ const absent=retainPhoneProfileEdits(blankPhone(),current);assert.equal(absent.profiles[contact.id],undefined);assert.equal(absent.contacts.length,0);assert.equal(absent.profiles.player.messages.handle,'my.handle');assert.equal(p.profiles.player.messages,undefined);
+});
+test('AI-generated profiles remain reversible, and unchanged manual profiles do not churn snapshots',async()=>{
+ const {retainPhoneProfileEdits}=await import('../src/workshop/smartphone/model.js');const {p,contact}=setup();const automatic=structuredClone(p);automatic.profiles[contact.id]={messages:{displayName:'AI profile'}};assert.equal(retainPhoneProfileEdits(p,automatic),p);const edited=changePhone(p,{type:'profile-save',actor:'player',app:'messages',profile:{displayName:'My name'}}).phone;assert.equal(retainPhoneProfileEdits(edited,edited),edited);
+});

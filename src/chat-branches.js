@@ -1,6 +1,6 @@
 // A portable state baseline plus structural deltas. Reference libraries and
 // world-pack payloads never enter this journal; callers supply packed chat state.
-import {sha256} from './vendor/js-sha256/index.js?v=0.88.1';
+import {sha256} from './vendor/js-sha256/index.js?v=0.88.2';
 
 export const BRANCH_HISTORY_KEY='tretaresia_rpg_branch_history';
 export const BRANCH_STATUS_KEY='tretaresia_rpg_branch_restore';

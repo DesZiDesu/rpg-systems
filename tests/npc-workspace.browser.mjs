@@ -95,6 +95,18 @@ try{
  await page.waitForFunction(()=>!document.querySelector('fieldset').disabled);
  await page.locator('[data-reference-preview] img').waitFor();
  assert.equal(await page.locator('[data-reference-preview] img').count(),1);
+ // Reference batches append; removing one preserves the rest and its label.
+ const referenceFile=name=>({name,mimeType:'image/png',buffer:Buffer.from(image,'base64')});
+ await page.locator('[data-npc-reference]').setInputFiles([referenceFile('casual.png'),referenceFile('battle.png')]);await page.waitForFunction(()=>!document.querySelector('fieldset').disabled);
+ assert.equal(await page.locator('[data-reference-preview] img').count(),3);await page.locator('[data-reference-label="2"]').fill('Battle armor');
+ await page.locator('[data-reference-remove="1"]').click();assert.equal(await page.locator('[data-reference-label="1"]').inputValue(),'Battle armor');
+ const beforeMultiple=(await page.evaluate(()=>counts())).requests;await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>document.querySelector('[name=appearance]').value.includes('[2: Battle armor]')&&!document.querySelector('fieldset').disabled);
+ assert.equal((await page.evaluate(()=>counts())).requests,beforeMultiple+3);assert.match(await page.locator('[name=appearance]').inputValue(),/\[1\][\s\S]*\[2: Battle armor\]/);assert.equal(await page.locator('[data-reference-preview] img').count(),2);
+ await page.locator('[data-npc-reference]').setInputFiles([referenceFile('a.png'),referenceFile('b.png'),referenceFile('c.png'),referenceFile('d.png')]);await page.waitForFunction(()=>!document.querySelector('fieldset').disabled);assert.equal(await page.locator('[data-reference-preview] img').count(),6);
+ await page.locator('[data-npc-reference]').setInputFiles(referenceFile('overflow.png'));assert.equal(await page.locator('[data-reference-preview] img').count(),6);assert.match(await page.locator('[role=status]').textContent(),/6/);
+ // Restore one reference for the existing image-failure and saved-portrait checks.
+ for(let i=5;i>0;i--)await page.locator('[data-reference-remove="'+i+'"]').click();
+ await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>document.querySelector('[name=appearance]').value==='Short dark hair, brown eyes, and a green cloak.');
  await page.evaluate(()=>window.imageUnavailable=true);await page.locator('[data-generate-npc]').click();await page.waitForFunction(()=>document.querySelector('[role=status]').textContent.includes('AI อ่านภาพไม่ได้'));
  assert.equal(await page.locator('[name=appearance]').inputValue(),'Short dark hair, brown eyes, and a green cloak.', 'Do not append the biography model\'s invented appearance');
  await page.evaluate(()=>window.imageUnavailable=false);

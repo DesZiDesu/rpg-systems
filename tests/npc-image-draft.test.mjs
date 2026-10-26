@@ -19,10 +19,10 @@ function setup({image=true,enabled=true,available=true,retry=false,replies=null,
   async generateQuietPrompt(options){calls.push(options);return available?observed:'IMAGE_UNAVAILABLE';},
   async generateRaw(options){calls.push(options);if(replies)return replies[Math.min(attempts++,replies.length-1)];if(retry&&attempts++===0)return '{';return JSON.stringify({name:'Lysa',appearance:'Long red hair, blue eyes and golden armor.',background:'A healer'});},
  };
- const env={...i18n,...core,...vision,Blob,btoa,Uint8Array,console,busy:false,referenceBlob:null,photoBlob:image?new Blob(['image'],{type:'image/webp'}):null,
+ const env={...i18n,...core,...vision,Blob,btoa,Uint8Array,console,busy:false,references:[],photoBlob:image?new Blob(['image'],{type:'image/webp'}):null,
   form:{querySelector:()=>checkbox,elements:{namedItem:key=>{if(!fields.has(key))fields.set(key,{value:draft[key]||''});return fields.get(key);}}},
   brief:'A healer',draftId:'',editAlternateId:'',recordBase:{},changed:new Set(),token:1,base:{},dirty:false,
-  values:()=>({...draft}),lock(){},say(message){env.status=message;},confirm:()=>true,valid:()=>true,
+  alternateText:(en,th,values=[])=>i18n.uiText(en,values),values:()=>({...draft}),lock(){},say(message){env.status=message;},confirm:()=>true,valid:()=>true,
   preparePortrait:async blob=>blob,buildForm(value){result=value;},editor:{async set(){}},async preview(){},
   api:{context:()=>context,supportsPortraitVision:()=>true,recordRequest(){},parseJson:JSON.parse,visible:x=>x,lorePrompt:()=>''},
  };
@@ -81,4 +81,23 @@ test('fill-missing retries malformed JSON and keeps valid supplied names',async(
  const h=setup({image:false,enabled:false,replies:['{',JSON.stringify({name:'Innkeeper',background:'Farmer'})]});
  await h.env.run('missing');assert.equal(h.calls.length,2);assert.equal(h.fields.has('name'),false);
  assert.equal(h.fields.get('occupation').value,'Innkeeper');
+});
+
+test('multiple references read every image, retain distinct looks and never persist image bytes in the generated draft',async()=>{
+ const h=setup({image:false});h.env.references=[{blob:new Blob(['casual'],{type:'image/webp'}),label:'Casual'},{blob:new Blob(['battle'],{type:'image/webp'}),label:'Battle'}];
+ let index=0;h.env.api.context().generateQuietPrompt=async options=>{h.calls.push(options);return ['Black hair and a green shirt.','Black hair and silver armor.'][index++];};
+ await h.env.run('description');assert.equal(h.calls.length,3);assert.notEqual(h.calls[0].quietImage,h.calls[1].quietImage);assert.match(h.result().appearance,/Casual.*green shirt[\s\S]*Battle.*silver armor/);assert.match(h.calls[2].prompt,/separate looks of ONE NPC/);assert.doesNotMatch(JSON.stringify(h.result()),/data:image|base64/);
+});
+test('a failed later reference leaves the entire draft unchanged',async()=>{
+ const h=setup({image:false});h.env.references=[{blob:new Blob(['one'],{type:'image/webp'})},{blob:new Blob(['two'],{type:'image/webp'})}];let count=0;
+ h.env.api.context().generateQuietPrompt=async options=>{h.calls.push(options);return count++?'IMAGE_UNAVAILABLE':'Black hair and a green shirt.';};
+ await h.env.run('description');assert.equal(h.calls.length,2);assert.equal(h.result(),undefined);assert.match(h.env.status,/AI อ่านภาพไม่ได้/);
+});
+test('leaving the editor after an image reply stops remaining reference requests and draft replacement',async()=>{
+ const h=setup({image:false});h.env.references=[{blob:new Blob(['one'],{type:'image/webp'})},{blob:new Blob(['two'],{type:'image/webp'})}];let valid=true;h.env.valid=()=>valid;
+ h.env.api.context().generateQuietPrompt=async options=>{h.calls.push(options);valid=false;return 'Black hair and a green shirt.';};
+ await h.env.run('description');assert.equal(h.calls.length,1);assert.equal(h.result(),undefined);
+});
+test('image reading can be disabled even when several reference images are attached',async()=>{
+ const h=setup({image:false,enabled:false});h.env.references=[{blob:new Blob(['one'],{type:'image/webp'})},{blob:new Blob(['two'],{type:'image/webp'})}];await h.env.run('description');assert.equal(h.calls.length,1);assert.equal(h.calls[0].quietImage,undefined);
 });

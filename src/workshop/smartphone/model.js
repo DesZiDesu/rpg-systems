@@ -1,4 +1,4 @@
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.88.1';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.88.2';
 
 export const PHONE_FIELD='roleforge_smartphone';
 export const PHONE_PROMPT='roleforge_smartphone_context';
@@ -85,4 +85,23 @@ export function callSpeech(message,contact,isUser=false){
  if(isUser)return plainSpeech(text);
  const aliases=[contact.npcId,contact.name,contact.label].filter(Boolean).map(v=>v.toLocaleLowerCase());
  return [...text.matchAll(/<tr-dialogue\b[^>]*name=["']([^"']+)["'][^>]*>([\s\S]*?)<\/tr-dialogue>/giu)].filter(m=>aliases.includes(m[1].trim().toLocaleLowerCase())).map(m=>plainSpeech(m[2])).filter(Boolean).join('\n');
+}
+
+// Profile edits are deliberate configuration, unlike AI-created profiles and
+// reversible messages/posts. Retain edits only for actors present at the target
+// point (plus the player); this must never resurrect a future contact.
+export function retainPhoneProfileEdits(target,current){
+ let result=target;
+ const actors=new Set(['player',...(target?.contacts||[]).map(c=>c.id)]);
+ for(const [actor,apps]of Object.entries(current?.profiles||{})){
+  if(!key(actor)||!actors.has(actor)||!apps||typeof apps!=='object')continue;
+  for(const app of ['messages',...SOCIAL_APPS]){
+   const profile=apps[app];if(!profile||profile.locked!==true)continue;
+   if(JSON.stringify(profile)===JSON.stringify(result?.profiles?.[actor]?.[app]))continue;
+   if(result===target)result=normalizePhone(target);
+   result.profiles||={};result.profiles[actor]||={};result.profiles[actor][app]=clone(profile);
+  }
+ }
+ if(result!==target)result.revision=(Number.isSafeInteger(target?.revision)?target.revision:0)+1;
+ return result;
 }

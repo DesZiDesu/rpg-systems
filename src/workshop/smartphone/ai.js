@@ -1,6 +1,6 @@
-import {clean,clone,fingerprint,publicProfile,contactLabel} from './model.js?v=0.88.1';
-import {applyIncoming} from './engine.js?v=0.88.1';
-import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.1';
+import {clean,clone,fingerprint,publicProfile,contactLabel} from './model.js?v=0.88.2';
+import {applyIncoming} from './engine.js?v=0.88.2';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.88.2';
 
 export function parsePhoneReply(raw){
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))return raw;
@@ -20,6 +20,7 @@ const rules=[
  'Proactive messages, calls, posts and follows need explicit scene grounds and enabled permissions. Do not invent unseen offscreen actions unless allowed. No automatic polling. Respect blocked contacts and installed apps.',
  'For a known NPC with no saved phone contact, a public social profile can use profiles:[{source:public,npcId,contactId:social-NPC_ID,apps:{lumen:{displayName,handle},murmur:{displayName,handle}}}]. Reuse existing NPC IDs; public account names do not reveal a secret identity. To register a number explicitly shared in the visible scene, use an event {type:contact-share,actorId,displayName,number}; both number and displayName must appear in visible prose.',
  'A photo attachment is described by its user caption; do not claim pixel-level vision. You may send photoId only for a supplied photo already shared with that sender. Do not invent image URLs or access the private gallery.',
+ 'Player-saved app profiles are authoritative configuration. Never rename or rewrite them. Use the player profile for the app involved when addressing that account; a handle does not change their canonical persona identity.',
  'No user speech/actions, world-state patches, item grants, money or gambling wins. Wallet actions are already settled by the engine; never debit or reward twice.',
 ].join('\n');
 export function phoneTask(phone,state,config,requests,{kind='reply',language='en',contacts=[],actors:storyActors=[],story=null}={}){
@@ -45,7 +46,7 @@ export function phoneWorldPrompt(phone,state,config){
  return '[ASTER PHONE · PRIVATE ENGINE CONTEXT]\n'+rules+
   '\nIf resolving pending requests or appropriate phone/social activity in this scene, append one hidden <rf-phone>JSON</rf-phone> block using this schema: '+PHONE_SCHEMA+
   '\nMain prose may acknowledge notifications, but must also emit their event records. Different NPCs must not learn private content from this context. Only confirmed in-world news belongs in news. Return no phone block when nothing happened.\n'+
-  JSON.stringify({pending,activeCall:call?{id:call.id,contactId:call.contactId,muted:call.muted,transcript:call.transcript.slice(-12)}:null,contacts,installed:phone.installed,
+  JSON.stringify({pending,playerName:state.player?.name,playerProfiles:visibleApps(phone.profiles.player),activeCall:call?{id:call.id,contactId:call.contactId,muted:call.muted,transcript:call.transcript.slice(-12)}:null,contacts,installed:phone.installed,
    permissions:{incomingMessages:config.incomingMessages,incomingCalls:config.incomingCalls,socialActivity:config.socialActivity,offscreenActivity:config.offscreenActivity,maxEvents:config.maxEvents},
    stickers:phone.stickers.filter(s=>s.npcAllowed).map(s=>({id:s.id,name:s.name,cue:s.cue})),sharedPhotos:phone.photos.filter(p=>p.sharedWith?.length).map(p=>({id:p.id,caption:p.caption,sharedWith:p.sharedWith})),recentMoneyReceipts:phone.ledger.slice(-4)});
 }

@@ -1,5 +1,5 @@
-import {uiText} from './ui-language.js?v=0.88.1';
-import {element} from './npc-chat.js?v=0.88.1';
+import {uiText} from './ui-language.js?v=0.88.2';
+import {element} from './npc-chat.js?v=0.88.2';
 
 const enabledByDefault = item => item.enabled !== false;
 const normalize = value => String(value || '').normalize('NFKC').toLocaleLowerCase().trim();
