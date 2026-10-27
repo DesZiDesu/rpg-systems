@@ -1,13 +1,13 @@
-import {isKeitai,KEITAI_INSTRUCTIONS,mailAddress,phoneRequestAvailable} from './handset.js?v=0.89.1';
-import {PHONE_RELATIONSHIP_INSTRUCTIONS,phoneRelationshipReference,applyPhoneRelationships,phoneRelationshipRows} from './relationships.js?v=0.89.1';
-import {RELATIONSHIP_INSTRUCTIONS} from '../../relationship-core.js?v=0.89.1';
-import {incomingContactId,routeIncomingPhoneData} from './incoming.js?v=0.89.1';
-import {usableNpcName} from '../../npc-core.js?v=0.89.1';
-import {clean,clone,fingerprint,publicProfile,contactLabel,storyTime} from './model.js?v=0.89.1';
-import {advancePhoneClock,phoneReplyMinutes} from './clock.js?v=0.89.1';
-import {applyIncoming} from './engine.js?v=0.89.1';
-import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.89.1';
-import {PHONE_WORLD_KNOWLEDGE,phoneEnvironment,phoneAppChannel,publicPhonePosts} from './context.js?v=0.89.1';
+import {isKeitai,KEITAI_INSTRUCTIONS,mailAddress,phoneRequestAvailable} from './handset.js?v=0.89.2';
+import {PHONE_RELATIONSHIP_INSTRUCTIONS,phoneRelationshipReference,applyPhoneRelationships,phoneRelationshipRows} from './relationships.js?v=0.89.2';
+import {RELATIONSHIP_INSTRUCTIONS} from '../../relationship-core.js?v=0.89.2';
+import {incomingContactId,routeIncomingPhoneData} from './incoming.js?v=0.89.2';
+import {usableNpcName} from '../../npc-core.js?v=0.89.2';
+import {clean,clone,fingerprint,publicProfile,contactLabel,storyTime} from './model.js?v=0.89.2';
+import {advancePhoneClock,phoneReplyMinutes} from './clock.js?v=0.89.2';
+import {applyIncoming} from './engine.js?v=0.89.2';
+import {linkPhoneContacts,phoneNpcForContact} from './identity.js?v=0.89.2';
+import {PHONE_WORLD_KNOWLEDGE,phoneEnvironment,phoneAppChannel,publicPhonePosts} from './context.js?v=0.89.2';
 
 export function parsePhoneReply(raw){
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))return raw;

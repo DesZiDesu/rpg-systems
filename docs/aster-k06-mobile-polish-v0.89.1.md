@@ -1,5 +1,7 @@
 # Aster K06 mobile layout repair — RoleForge 0.89.1 / Aster Phone 1.2.1
 
+> Superseded by [0.89.2](aster-k06-handset-fit-v0.89.2.md): the requested mobile layout shows the complete handset, fitted to the screen. The fullscreen LCD-only design below was an incorrect interpretation. Its scrolling, picker and form fixes remain.
+
 The K06 now presents its LCD interface across the available mobile viewport. The physical handset, hinge, keypad and surrounding backdrop remain on desktop. Mobile has persistent Menu, Settings, fold/open and Close controls, plus the three LCD soft keys.
 
 ## Why the previous layout was difficult to use

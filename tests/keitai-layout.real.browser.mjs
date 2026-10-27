@@ -3,7 +3,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 const {chromium,webkit}=createRequire(import.meta.url)(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright');
 const mobile=process.env.PHONE_DEVICE!=='desktop',web=process.env.PHONE_BROWSER==='webkit';
-const base=process.env.ST_REAL_URL||'http://127.0.0.1:18350',out=process.env.PHONE_ARTIFACTS||'/workspace/artifacts/aster-k06-polish/'+(web?'webkit':mobile?'mobile':'desktop');
+const base=process.env.ST_REAL_URL||'http://127.0.0.1:18350',out=process.env.PHONE_ARTIFACTS||'/workspace/artifacts/aster-k06-handset-fit/'+(web?'webkit':mobile?'mobile':'desktop');
 await mkdir(out,{recursive:true});
 const browser=await(web?webkit.launch({headless:true}):chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']}));
 const viewport=mobile?{width:390,height:844}:{width:1920,height:1080};
@@ -17,7 +17,7 @@ const root=()=>page.locator('#rf-aster-keitai'),screen=()=>root().locator('#k06-
 async function idle(){await page.waitForFunction(()=>document.querySelector('#rf-aster-keitai')?.getAttribute('aria-busy')!=='true');}
 async function click(selector){const n=root().locator(selector).first();mobile?await n.tap():await n.click();await idle();}
 async function open(app){await page.evaluate(app=>RoleForgePhone.open(app),app);await page.waitForTimeout(80);}
-async function snap(name){await page.evaluate(()=>document.fonts.ready);await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));if(mobile){const v=await page.evaluate(()=>({top:visualViewport.offsetTop,height:visualViewport.height})),b=await root().locator('.k06-window').boundingBox();metrics[name]={visual:v,window:b};assert(Math.abs(b.y-v.top)<2,'Phone header moved outside the visual viewport');assert(Math.abs(b.height-v.height)<2,'Phone height does not follow the visual viewport');}await page.screenshot({path:out+'/'+name+'.png'});}
+async function snap(name){await page.evaluate(()=>globalThis.toastr?.remove());await page.evaluate(()=>document.fonts.ready);await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));if(mobile){const v=await page.evaluate(()=>({top:visualViewport.offsetTop,height:visualViewport.height})),b=await root().locator('.k06-window').boundingBox();metrics[name]={visual:v,window:b};assert(Math.abs(b.y-v.top)<2,'Phone header moved outside the visual viewport');assert(Math.abs(b.height-v.height)<2,'Phone height does not follow the visual viewport');}await page.screenshot({path:out+'/'+name+'.png'});}
 async function swipe(){
  const b=await screen().boundingBox();
  if(mobile&&!web){const cdp=await context.newCDPSession(page),x=b.x+b.width*.8,y=b.y+b.height-30;
@@ -41,8 +41,8 @@ try{
  await page.evaluate(async()=>{await RoleForgePhone.preferences({deviceType:'keitai',language:'en',sound:false,motion:false});RoleForgePhone.open('home');});
  await root().locator('.k06-window').waitFor({state:'visible'});await snap('01-home');
  const box=await root().locator('.k06-window').boundingBox(),lcd=await root().locator('.lcd').boundingBox();metrics.initial={box,lcd};
- if(mobile){assert.equal(box.x,0);assert.equal(box.y,0);assert.equal(box.width,390);assert.equal(box.height,844);assert.equal(lcd.width,390);assert(lcd.height>750);assert(await root().locator('.keypad-shell').isHidden());await click('.k06-titlebar [data-k06=menu]');}else{assert(await root().locator('.keypad-shell').isVisible());await click('[data-key=ok]');}
- assert.equal(await root().locator('.menu-app').count(),9);await snap('02-menu');checks.fullscreenOrHardware=true;
+ if(mobile){assert.equal(box.x,0);assert.equal(box.y,0);assert.equal(box.width,390);assert.equal(box.height,844);assert(lcd.width<350);assert(await root().locator('.keypad-shell').isVisible());const hardware=await root().locator('.handset').boundingBox();assert(hardware.y>=0&&hardware.y+hardware.height<=844);assert(hardware.x>=0&&hardware.x+hardware.width<=390);}else assert(await root().locator('.keypad-shell').isVisible());await click('[data-key=ok]');
+ assert.equal(await root().locator('.menu-app').count(),9);await snap('02-menu');checks.completeHandsetFits=true;
  await open('settings');await snap('03-settings-top');
  const before=await screen().evaluate(n=>n.scrollTop);await swipe();const after=await screen().evaluate(n=>n.scrollTop);assert(after>before+50);metrics.settingsScroll={before,after};checks.scrolling=true;metrics.scrollInput=web&&mobile?'DOM scroll (WebKit automation limitation)':mobile?'Native CDP touch swipe':'Native mouse wheel';
  // A setting near the bottom must open a picker in the visible LCD, not at the page's scroll origin.
@@ -63,11 +63,11 @@ try{
  }else{await swipe();await click('#k06-contact [type=submit]');}
  assert.equal(await page.evaluate(()=>RoleForgePhone.world().contacts.find(c=>c.label==='Misaki · Photographer')?.notes),'Meet near the station. สถานีริมอ่าว');checks.contactSave=true;await snap('08-contact-saved');
  await open('settings');await click('[data-k06=choose-option][data-key=language]');await click('[data-k06=pick-option][data-key=language][data-value=th]');assert.match(await screen().innerText(),/ตั้งค่าเครื่อง/);await snap('09-thai-settings');checks.bilingual=true;
- await open('settings');await click('[data-k06=choose-option][data-key=language]');await open('home');assert.equal(await root().locator('#k06-lcd-picker').count(),0);checks.pickerDismissOnNavigation=true;await click(mobile?'.k06-titlebar [data-k06=fold]':'#k06-fold');assert(await root().locator('.handset.closed').count());await snap('10-closed-display');await click('#k06-open-lid');assert.equal(await root().locator('.handset.closed').count(),0);checks.fold=true;
+ await open('settings');await click('[data-k06=choose-option][data-key=language]');await open('home');assert.equal(await root().locator('#k06-lcd-picker').count(),0);checks.pickerDismissOnNavigation=true;await click('#k06-fold');assert(await root().locator('.handset.closed').count());await snap('10-closed-display');await click('#k06-open-lid');assert.equal(await root().locator('.handset.closed').count(),0);checks.fold=true;
  if(mobile){
   for(const size of [{width:320,height:568},{width:430,height:932},{width:844,height:390}]){
    await page.setViewportSize(size);await open('contact-edit');await root().locator('[name=label]').fill('Viewport '+size.width);await root().locator('[name=notes]').fill('Scroll to save');await root().locator('[name=notes]').blur();await swipe();await root().locator('#k06-contact [type=submit]').scrollIntoViewIfNeeded();await click('#k06-contact [type=submit]');
-   const b=await root().locator('.lcd').boundingBox();assert.equal(Math.round(b.width),size.width);assert(await root().locator('.keypad-shell').isHidden());if(size.width===844){const bar=await root().locator('.k06-titlebar').boundingBox();await page.mouse.move(bar.x+35,bar.y+25);await page.mouse.down();await page.mouse.move(bar.x+140,bar.y+65,{steps:4});await page.mouse.up();const win=await root().locator('.k06-window').boundingBox();assert.equal(win.x,0);assert.equal(win.y,0);}await snap('11-viewport-'+size.width);
+   const b=await root().locator('.lcd').boundingBox();assert(b.width<size.width);assert(await root().locator('.keypad-shell').isVisible());const hardware=await root().locator('.handset').boundingBox();assert(hardware.y>=0&&hardware.y+hardware.height<=size.height);assert(hardware.x>=0&&hardware.x+hardware.width<=size.width);if(size.width===844){const bar=await root().locator('.k06-titlebar').boundingBox();await page.mouse.move(bar.x+35,bar.y+25);await page.mouse.down();await page.mouse.move(bar.x+140,bar.y+65,{steps:4});await page.mouse.up();const win=await root().locator('.k06-window').boundingBox();assert.equal(win.x,0);assert.equal(win.y,0);}await snap('11-viewport-'+size.width);
   }await page.setViewportSize(viewport);checks.smallLargeLandscape=true;
  }
  await open('home');await click('[data-k06=close]');assert(await root().locator('.k06-window').isHidden());checks.close=true;

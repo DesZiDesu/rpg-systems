@@ -1,6 +1,6 @@
-import {KEITAI_SHELL} from './shell.js?v=0.89.1';
-import {contactLabel,safeImage,clean} from '../model.js?v=0.89.1';
-import {smsParts,mailAddress} from '../handset.js?v=0.89.1';
+import {KEITAI_SHELL} from './shell.js?v=0.89.2';
+import {contactLabel,safeImage,clean} from '../model.js?v=0.89.2';
+import {smsParts,mailAddress} from '../handset.js?v=0.89.2';
 
 const esc=value=>String(value??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const artwork=name=>new URL('./assets/'+name+'.svg',import.meta.url).href;
@@ -82,10 +82,11 @@ export function mountKeitaiUI(runtime){
   root.style.setProperty('--k06-vh',vh+'px');root.style.setProperty('--k06-vw',vw+'px');
   root.style.setProperty('--k06-vtop',(visual?.offsetTop||0)+'px');root.style.setProperty('--k06-vleft',(visual?.offsetLeft||0)+'px');
   if(mobile){
-   anchor.style.transform='none';anchor.style.height='';win.style.left='';win.style.top='';
+   const scale=Math.max(.12,Math.min(1.15,(vw-48)/354,(vh-104)/754));
+   anchor.style.transform=`scale(${scale})`;anchor.style.height=754*scale+'px';win.style.left='';win.style.top='';
    // Keep the active field above the soft keys after the visual viewport changes.
    // Scroll only this phone page; never the main chat or the document behind it.
-   if(field&&screen.contains(field)){const r=field.getBoundingClientRect(),bounds=screen.getBoundingClientRect(),top=bounds.top+42,bottom=bounds.bottom-12;if(r.bottom>bottom)screen.scrollTop+=r.bottom-bottom;else if(r.top<top)screen.scrollTop+=r.top-top;}
+   if(field&&screen.contains(field)){const r=field.getBoundingClientRect(),bounds=screen.getBoundingClientRect(),top=bounds.top+32*scale,bottom=bounds.bottom-8*scale;if(r.bottom>bottom)screen.scrollTop+=(r.bottom-bottom)/scale;else if(r.top<top)screen.scrollTop+=(r.top-top)/scale;}
    return;
   }
   const scale=focused?Math.min(1.25,(vw-12)/330):Math.min(1.02,380/330,(vh-90)/754);

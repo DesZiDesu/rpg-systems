@@ -1,4 +1,4 @@
-import {uiText} from './ui-language.js?v=0.89.1';
+import {uiText} from './ui-language.js?v=0.89.2';
 
 // Storage capacity is user-owned and independent of enabled state/AI context.
 // Zero means unlimited. Changing a limit never truncates an existing archive.
