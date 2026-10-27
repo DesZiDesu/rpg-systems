@@ -5,7 +5,7 @@ export function phoneMessageMinutes(text){
 }
 export function phoneActionMinutes(action){
  if(action.type==='message-send'||action.type==='call-speech'&&(!action.from||action.from==='player'))return phoneMessageMinutes(action.text);
- return action.type==='call-start'?1:0;
+ return ['call-start','camera-capture','browser-query'].includes(action.type)?1:0;
 }
 export function phoneReplyMinutes(event){
  if(!['message','call-speech','call-result'].includes(event.type))return 0;

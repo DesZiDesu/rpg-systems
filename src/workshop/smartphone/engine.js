@@ -1,26 +1,30 @@
-import {clone,id,clean,key,safeImage,contactLabel,publicProfile,SOCIAL_APPS,APPS,fingerprint,plainSpeech} from './model.js?v=0.88.7';
-import {currencyScheme,currencyValue} from '../../currency-config.js?v=0.88.7';
-import {applyMoneyTransfer,quoteWalletDebit} from '../../money-transfer.js?v=0.88.7';
+import {keitaiAction,messageChannel,mailAddress,isKeitai} from './handset.js?v=0.89.0';
+import {clone,id,clean,key,safeImage,contactLabel,publicProfile,SOCIAL_APPS,APPS,fingerprint,plainSpeech} from './model.js?v=0.89.0';
+import {currencyScheme,currencyValue} from '../../currency-config.js?v=0.89.0';
+import {applyMoneyTransfer,quoteWalletDebit} from '../../money-transfer.js?v=0.89.0';
 
 const requireValue=(v,m)=>{if(!v)throw Error(m);return v;};
 const whole=n=>Number.isSafeInteger(n)&&n>0&&n<=999999999;
-export function threadFor(phone,contactId,app='messages'){
- let t=phone.threads.find(t=>t.app===app&&t.members.length===2&&t.members.includes(contactId)&&!t.deleted);
- if(!t){t={id:id(),app,title:'',members:['player',contactId],pinned:false,archived:false,deleted:false};phone.threads.push(t);}
+export function threadFor(phone,contactId,app='messages',channel=''){
+ let t=phone.threads.find(t=>t.app===app&&messageChannel(t.channel)===channel&&t.members.length===2&&t.members.includes(contactId)&&!t.deleted);
+ if(!t){t={id:id(),app,...(channel?{channel}:{}),title:channel?`${channel==='mail'?'Mail':'SMS'} · ${contactLabel(phone.contacts.find(c=>c.id===contactId))}`:'',members:['player',contactId],pinned:false,archived:false,deleted:false};phone.threads.push(t);}
  return t;
 }
 export function notification(phone,type,title,text,target,time){
  const row={id:id(),type,title:clean(title,120),text:clean(text,300),target,time,read:false};phone.notifications.push(row);return row;
 }
 function actorAllowed(phone,contactId){const c=phone.contacts.find(c=>c.id===contactId);return c&&!c.blocked;}
-export function changePhone(current,action,{time={},playerName='You'}={}){
+export function changePhone(current,action,{time={},playerName='You',location={}}={}){
+ const special=keitaiAction(current,action,{time,location});if(special)return special;
  const p=clone(current),type=action.type,now={...time};
  let result;
  if(type==='contact-save'){
   const c=action.contact||{},old=p.contacts.find(n=>n.id===c.id)||p.contacts.find(n=>n.saved===false&&n.number===clean(c.number,50));
-  requireValue(clean(c.label,100)&&(clean(c.number,50)||old?.source==='incoming'||old?.channels),'Enter a contact name and phone number');
+  requireValue(clean(c.label,100)&&(clean(c.number,50)||mailAddress(c.email)||old?.source==='incoming'||old?.channels),'Enter a contact name and phone number');
   if(clean(c.number,50)&&p.contacts.some(n=>n.id!==old?.id&&n.number===clean(c.number,50)))throw Error('That phone number is already in Contacts');
-  const next={...old,id:old?.id||id(),label:clean(c.label,100),name:clean(c.name||old?.name,100),number:clean(c.number,50),avatar:safeImage(c.avatar),notes:clean(c.notes,2000),blocked:old?.blocked===true,muted:old?.muted===true,npcId:(key(c.npcId)?c.npcId:old?.npcId||''),created:old?.created===true,source:old?.source||'custom',saved:true,voiceId:clean(c.voiceId,160)};
+  if(mailAddress(c.email)&&p.contacts.some(n=>n.id!==old?.id&&n.email?.toLocaleLowerCase()===c.email.toLocaleLowerCase()))throw Error('That email address is already in Contacts');
+  if(c.email&&!mailAddress(c.email))throw Error('Enter a valid mobile email address');
+  const next={...old,id:old?.id||id(),label:clean(c.label,100),name:clean(c.name||old?.name,100),number:clean(c.number,50),email:mailAddress(c.email===undefined?old?.email:c.email),avatar:safeImage(c.avatar===undefined?old?.avatar:c.avatar),notes:clean(c.notes,2000),blocked:old?.blocked===true,muted:old?.muted===true,npcId:(key(c.npcId)?c.npcId:old?.npcId||''),created:old?.created===true,source:old?.source||'custom',saved:true,voiceId:clean(c.voiceId===undefined?old?.voiceId:c.voiceId,160)};
   if(old)Object.assign(old,next);else p.contacts.push(next);result=next.id;
  }else if(type==='contact-flag'){
   const c=requireValue(p.contacts.find(c=>c.id===action.contactId),'Contact not found');
@@ -35,7 +39,7 @@ export function changePhone(current,action,{time={},playerName='You'}={}){
   const data=action.profile||{},next={displayName:clean(data.displayName,80),handle:clean(data.handle,48),bio:clean(data.bio,800),avatar:safeImage(data.avatar),banner:safeImage(data.banner),status:clean(data.status,160),private:data.private===true,locked:true,voiceId:clean(data.voiceId,160)};
   requireValue(next.displayName,'Enter a display name');p.profiles[action.actor]||={};p.profiles[action.actor][action.app]=next;
  }else if(type==='thread-open'){
-  requireValue(actorAllowed(p,action.contactId),'Contact is missing or blocked');requireValue(action.app==='gather'||p.contacts.some(c=>c.id===action.contactId&&(c.number||c.channels?.[action.app||'messages'])),'This contact has not shared a phone number');result=threadFor(p,action.contactId,action.app||'messages').id;
+  requireValue(actorAllowed(p,action.contactId),'Contact is missing or blocked');const channel=messageChannel(action.channel);requireValue(action.app==='gather'||p.contacts.some(c=>c.id===action.contactId&&(channel==='mail'?(mailAddress(c.email)||c.channels?.mail):(c.number||c.channels?.[action.app||'messages']))),'This contact has not shared the requested contact channel');result=threadFor(p,action.contactId,action.app||'messages',channel).id;
  }else if(type==='group-save'){
   requireValue(p.installed.includes('gather'),'Install Gather first');
   const members=[...new Set(['player',...(action.members||[])])];requireValue(members.length>=3&&members.slice(1).every(c=>actorAllowed(p,c)),'Choose at least two available contacts');
@@ -45,16 +49,16 @@ export function changePhone(current,action,{time={},playerName='You'}={}){
   const thread=requireValue(p.threads.find(t=>t.id===action.threadId&&!t.deleted),'Conversation not found');
   requireValue(thread.members.some(c=>c!=='player'&&actorAllowed(p,c)),'No available contact in this conversation');
   const sticker=action.stickerId?p.stickers.find(s=>s.id===action.stickerId):null;
-  const attachment=safeImage(action.image);requireValue(clean(action.text,6000)||sticker||attachment,'Write a message, choose a photo or a sticker');
-  const row={id:action.id||id(),threadId:thread.id,from:'player',text:clean(action.text,6000),stickerId:sticker?.id||'',image:attachment,replyTo:clean(action.replyTo,160),pinned:false,deleted:false,status:'sent',time:now};
+  const photo=action.photoId?p.photos.find(v=>v.id===action.photoId):null,attachment=safeImage(action.image||photo?.image);requireValue(clean(action.text,6000)||sticker||attachment||photo,'Write a message, choose a photo or a sticker');
+  const row={id:action.id||id(),threadId:thread.id,from:'player',text:clean(action.text,6000),...(thread.channel?{channel:thread.channel,subject:thread.channel==='mail'?clean(action.subject,180):''}:{}),...(photo?{photoId:photo.id}:{}),stickerId:sticker?.id||'',image:attachment,replyTo:clean(action.replyTo,160),pinned:false,deleted:false,status:'sent',time:now};
   if(p.messages.some(m=>m.id===row.id))return {phone:current,result:row.id};
-  p.messages.push(row);thread.archived=false;if(!sticker){p.drafts[thread.id]='';delete p.attachments[thread.id];}if(attachment){const photo=p.photos.find(v=>v.image===attachment);if(photo)photo.sharedWith=[...new Set([...photo.sharedWith||[],...thread.members.filter(m=>m!=='player')])];}
-  p.pending.push({id:id(),type:'message',threadId:thread.id,contactId:thread.members.find(c=>c!=='player'),messageId:row.id,mode:action.mode||'deferred',status:'pending',time:now});
-  result=row.id;
+  p.messages.push(row);thread.archived=false;if(!sticker){p.drafts[thread.id]='';delete p.attachments[thread.id];}if(photo)photo.sharedWith=[...new Set([...photo.sharedWith||[],...thread.members.filter(m=>m!=='player')])];if(attachment){const photo=p.photos.find(v=>v.image===attachment);if(photo)photo.sharedWith=[...new Set([...photo.sharedWith||[],...thread.members.filter(m=>m!=='player')])];}
+  p.pending.push({id:id(),type:'message',threadId:thread.id,contactId:thread.members.find(c=>c!=='player'),messageId:row.id,mode:action.mode||'deferred',status:'pending',time:now,...(thread.channel?{channel:thread.channel,subject:row.subject}:{} )});
+  if(thread.channel)p.keitaiDraft=null;result=row.id;
  }else if(type==='message-edit'){
   const row=requireValue(p.messages.find(m=>m.id===action.id&&m.from==='player'&&!m.deleted),'Only your own messages can be edited');requireValue(clean(action.text,6000),'Write a message');row.text=clean(action.text,6000);row.edited=true;
  }else if(type==='message-delete'||type==='message-pin'){
-  const row=requireValue(p.messages.find(m=>m.id===action.id),'Message not found');if(type==='message-delete'){row.deleted=true;row.text='';row.stickerId='';row.image='';p.pending=p.pending.filter(q=>q.messageId!==row.id);}else row.pinned=!row.pinned;
+  const row=requireValue(p.messages.find(m=>m.id===action.id),'Message not found');if(type==='message-delete'){row.deleted=true;row.text='';row.stickerId='';row.image='';row.photoId='';p.pending=p.pending.filter(q=>q.messageId!==row.id);}else row.pinned=!row.pinned;
  }else if(type==='thread-flag'){
   const t=requireValue(p.threads.find(t=>t.id===action.id),'Conversation not found');requireValue(['pinned','archived'].includes(action.field),'Unknown conversation setting');t[action.field]=!t[action.field];
  }else if(type==='thread-delete'){
@@ -132,13 +136,14 @@ export function applyIncoming(current,event,{time={},config,source=''}={}){
  const c=p.contacts.find(c=>c.id===event.contactId||c.npcId&&c.npcId===event.actorId);
  if(!c||c.blocked||event.offscreen&&!config.offscreenActivity)return p;
  const text=event.type==='call-speech'?plainSpeech(event.text):clean(event.text,6000),author=contactLabel(c);
+ if(isKeitai(config)&&(['post','follow','unfollow'].includes(event.type)||event.app==='gather'))return p;
  if(event.type==='message'){
   if(!config.incomingMessages&&!event.requestId)return p;
-  const t=event.threadId?p.threads.find(t=>t.id===event.threadId&&!t.deleted&&t.members.includes(c.id)):threadFor(p,c.id,event.app==='gather'?'gather':'messages');
+  const t=event.threadId?p.threads.find(t=>t.id===event.threadId&&!t.deleted&&t.members.includes(c.id)):threadFor(p,c.id,event.app==='gather'?'gather':'messages',messageChannel(event.channel,isKeitai(config)?'sms':''));
   if(!t||!['messages','gather'].includes(t.app)||!p.installed.includes(t.app))return p;
   const sticker=p.stickers.find(s=>s.id===event.stickerId&&s.npcAllowed);
   const photo=event.photoId?p.photos.find(s=>s.id===event.photoId&&s.sharedWith?.includes(c.id)):null;if(!text&&!sticker&&!photo)return p;
-  const m={id:id(),threadId:t.id,from:c.id,text,stickerId:sticker?.id||'',image:photo?.image||'',pinned:false,deleted:false,read:false,time};p.messages.push(m);t.archived=false;if(photo)photo.sharedWith=[...new Set([...photo.sharedWith,...t.members.filter(v=>v!=='player')])];
+  const m={id:id(),threadId:t.id,from:c.id,text,...(t.channel?{channel:t.channel,subject:t.channel==='mail'?clean(event.subject,180):''}:{}),...(photo?{photoId:photo.id}:{}),stickerId:sticker?.id||'',image:photo?.image||'',pinned:false,deleted:false,read:false,time};p.messages.push(m);t.archived=false;if(photo)photo.sharedWith=[...new Set([...photo.sharedWith,...t.members.filter(v=>v!=='player')])];
   if(!c.muted)notification(p,'message',author,text||sticker?.name||'Photo',t.id,time);
  }else if(event.type==='call'){
   if(!config.incomingCalls||p.calls.some(v=>['connected','ringing'].includes(v.status)))return p;

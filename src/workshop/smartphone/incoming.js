@@ -1,7 +1,8 @@
-import {clean,key,fingerprint} from './model.js?v=0.88.7';
-import {phoneNpcForContact} from './identity.js?v=0.88.7';
-import {applyIncoming} from './engine.js?v=0.88.7';
-import {playerNpc} from '../../npc-visibility.js?v=0.88.7';
+import {mailAddress} from './handset.js?v=0.89.0';
+import {clean,key,fingerprint} from './model.js?v=0.89.0';
+import {phoneNpcForContact} from './identity.js?v=0.89.0';
+import {applyIncoming} from './engine.js?v=0.89.0';
+import {playerNpc} from '../../npc-visibility.js?v=0.89.0';
 
 export function incomingContactId(npcId){
  const value='npc-'+npcId;return key(value)?value:'npc-'+fingerprint(String(npcId)).slice(0,24);
@@ -34,14 +35,14 @@ export function routeIncomingPhoneData(phone,state,data,config,{time={},source='
    if(!npc&&!row&&!clean(event.displayName,100))return null;
    const contactId=npc?incomingContactId(npc.id):key(event.contactId)&&event.contactId!=='player'?event.contactId:'incoming-'+fingerprint(label+'|'+number).slice(0,24);
    if(contactId==='player'||phone.contacts.some(c=>c.id===contactId))return null;
-   contact={id:contactId,npcId:npc?.id||'',name:label||'Unknown sender',label:label||'Unknown sender',number,avatar:'',blocked:false,muted:false,source:'incoming',saved:true,created:false,notes:''};
+   contact={id:contactId,npcId:npc?.id||'',name:label||'Unknown sender',label:label||'Unknown sender',number,email:mailAddress(row?.email||event.email||npc?.email),avatar:'',blocked:false,muted:false,source:'incoming',saved:true,created:false,notes:''};
   }
   if(key(event.contactId))aliases.set(event.contactId,contact.id);
   event.contactId=contact.id;
   // The model cannot know a new thread's generated ID. Use the engine's direct
   // conversation, retaining validation for real, deleted and requested threads.
   if(proactive&&event.type==='message'&&event.threadId&&!phone.threads.some(t=>t.id===event.threadId)&&!phone.deletedThreads.includes(event.threadId))event.threadId='';
-  const existing=phone.contacts.find(c=>c.id===contact.id),channel=event.type==='message'?(event.app==='gather'?'gather':'messages'):event.type==='call'?'calls':'';
+  const existing=phone.contacts.find(c=>c.id===contact.id),channel=event.type==='message'?(event.app==='gather'?'gather':event.channel==='mail'?'mail':'messages'):event.type==='call'?'calls':'';
   if(proactive&&(!existing||channel&&!contact.number&&!contact.channels?.[channel])){
    const candidate=existing?phone:{...phone,contacts:[...phone.contacts,contact]};
    if(applyIncoming(candidate,event,{time,config,source}).revision!==candidate.revision){

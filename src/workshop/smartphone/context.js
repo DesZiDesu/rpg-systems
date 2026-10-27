@@ -1,4 +1,5 @@
-import {APPS,clean,contactLabel,publicProfile} from './model.js?v=0.88.7';
+import {isKeitai,KEITAI_INSTRUCTIONS} from './handset.js?v=0.89.0';
+import {APPS,clean,contactLabel,publicProfile} from './model.js?v=0.89.0';
 
 const purposes={
  phone:'Calls: incoming/outgoing calls and text call dialogue; optional Voice Addon speech.',
@@ -18,13 +19,14 @@ const purposes={
 };
 export const PHONE_WORLD_KNOWLEDGE='Aster is the in-world phone hardware brand; Aster One is the current handset model. It is a smartphone, not a messaging app named Aster. NPCs can naturally refer to its actual app/platform names when appropriate: “message me on Gather”, “post it on Lumen”, “check Murmur”, “open Drift”, or “get it from Harbor Store”. Keep these brand names in both Thai and English dialogue; generic app labels may follow the conversation language. Use the catalog mapping for hidden event app IDs; never put UI actions or internal IDs into spoken dialogue. Installed means installed on the player’s handset, not whether a platform exists elsewhere. NPCs may suggest an uninstalled app, but cannot deliver app events through it until installed. Do not substitute real-world brands/apps unless the story separately establishes them. Catalog knowledge does not grant access to a phone screen, private messages, notes, gallery, account credentials or other NPCs’ conversations. Use recorded activity, profiles and confirmed scenes; never invent player taps, posts, follows or installations just because an app supports them.';
 
-export function phoneEnvironment(phone){
+export function phoneEnvironment(phone,config={}){
+ if(isKeitai(config))return {device:{brand:'Aster',model:'Aster K06',type:'flip phone / keitai',capabilities:['calls','sms','mobile-mail','photo-journal','camera','mobile-web','notes','alarms','melodies'],instructions:KEITAI_INSTRUCTIONS},apps:[['phone','Calls'],['sms','SMS'],['mail','Mobile Mail'],['contacts','Contacts'],['photos','Photo Album'],['browser','Mobile Portal'],['notes','Notes'],['alarms','Alarms'],['settings','Settings']].map(([id,name])=>({id,name,installed:true})),sites:[{name:'In-world news, weather and travel',url:'aster://portal',insideApp:'browser'}]};
  return {device:{brand:'Aster',model:'Aster One',type:'smartphone'},apps:APPS.map(a=>({id:a.id,name:a.name,thaiName:a.th,purpose:purposes[a.id],installed:phone.installed.includes(a.id)})),sites:[{name:'World news',url:'drift://news',insideApp:'browser'},{name:'Night Arcade',url:'drift://night-arcade',insideApp:'browser',purpose:'Fictional registered accounts, deposits/withdrawals and games; the engine settles outcomes.'}]};
 }
 
 export function phoneAppChannel(phone,threadId){
  const thread=phone.threads.find(t=>t.id===threadId&&!t.deleted),app=APPS.find(a=>a.id===thread?.app);
- return app?{app:app.id,appName:app.name}:{};
+ return app?{app:app.id,appName:thread.channel==='mail'?'Mobile Mail':thread.channel==='sms'?'SMS':app.name,...(thread.channel?{channel:thread.channel}: {})}:{};
 }
 
 // Public activity is bounded and excludes blocked/deleted/private records.

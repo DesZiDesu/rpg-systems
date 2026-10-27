@@ -1,7 +1,7 @@
 // Compose with the host's already formatted DOM. Never run regex per block or
 // recreate another extension's card with innerHTML/clones.
-import {parseUserMessage} from './user-chat.js?v=0.88.7';
-import {cleanChatProse} from './foreign-chat.js?v=0.88.7';
+import {parseUserMessage} from './user-chat.js?v=0.89.0';
+import {cleanChatProse} from './foreign-chat.js?v=0.89.0';
 export function chatPresentationMode(settings = {}) {
     return ['shared','native','roleforge'].includes(settings.chatRegexMode)
         ? settings.chatRegexMode : settings.preserveNativeChat === true ? 'native' : 'shared';

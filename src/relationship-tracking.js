@@ -1,5 +1,5 @@
-import {applyRelationshipEvents,relationshipPeople} from './relationship-core.js?v=0.88.7';
-import {parseStory} from './npc-core.js?v=0.88.7';
+import {applyRelationshipEvents,relationshipPeople} from './relationship-core.js?v=0.89.0';
+import {parseStory} from './npc-core.js?v=0.89.0';
 
 const key=v=>String(v||'').normalize('NFKC').toLocaleLowerCase().trim();
 const aliases=(p,id,userName)=>[p?.name,...p?.aliases||[],...(id==='player'?[userName,...String(userName||'').split(/\s*[\/|]\s*/u)]:[])].filter(v=>typeof v==='string'&&v.trim());

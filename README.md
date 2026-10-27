@@ -1,5 +1,7 @@
 # RoleForge
 
+**New in 0.89.0 / Aster Phone 1.2.0:** Aster Phone **1.2.0** adds **Aster K06**, a Japanese-style flip handset selectable in Workshop settings alongside Aster One. It shares contacts, phone history, the story clock, relationships and branch undo, with SMS/mobile mail, an outer display, physical keys, a photo journal, an in-world portal and scene alarms. It imposes no story year. [First-release guide and validation](docs/aster-k06-first-release-v0.89.0.md).
+
 **Fixed in 0.88.7 / Aster Phone 1.1.7:** Repair automatic H-Stats relationship updates in main chat and phone conversations, recover clear missing events and retained phone history, and show tracking status in Records. [Investigation and before/after report](docs/hstats-automatic-tracking-v0.88.7.md).
 
 **Updated in 0.88.6 / Aster Phone 1.1.6:** Main-chat and phone AI receive the Aster brand/model, actual app names, installation status and recorded public social activity. [Details](docs/aster-app-context-v0.88.6.md).
@@ -22,7 +24,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Public release: 0.88.7** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.89.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

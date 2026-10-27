@@ -1,6 +1,6 @@
-import {incomingContactId} from './incoming.js?v=0.88.7';
-import {fingerprint} from './model.js?v=0.88.7';
-import {phoneNpcNames} from './identity.js?v=0.88.7';
+import {incomingContactId} from './incoming.js?v=0.89.0';
+import {fingerprint} from './model.js?v=0.89.0';
+import {phoneNpcNames} from './identity.js?v=0.89.0';
 
 export function phoneSceneText(value){
  return String(value||'').replace(/<(?:think|thinking|planning|tr-thought)\b[^>]*>[\s\S]*?<\/(?:think|thinking|planning|tr-thought)>/giu,'').replace(/\|[^|]*\|/gu,'').replace(/<rf-phone>[\s\S]*?<\/rf-phone>/giu,'').trim();
@@ -18,14 +18,14 @@ export function phoneSceneSignal(phone,state,message,user,config){
   let messages=false,calls=false;
   for(const part of text.split(/[.!?\n。]+/u)){
    if(/\b(?:did(?:n['’]t| not)|has(?:n['’]t| not)|never|not yet|without|wants? to|plans? to|going to|will|would|could|should|might)\b[^.!?\n]{0,60}\b(?:send|sent|text|message|call|ring)|(?:ยังไม่ได้|ยังไม่|ไม่ได้|คิดจะ|อยากจะ|วางแผนจะ|กำลังจะ)[^\n]{0,40}(?:ส่ง|โทร)/iu.test(part))continue;
-   messages||=/\b(?:hits?|hit|press(?:es|ed)?|taps?|tapped)\s+(?:the\s+)?send\b|\b(?:phone|aster|screen)\b[^.!?\n]{0,50}\b(?:buzzes?|buzzed|vibrates?|vibrated|lights? up|lit up)\b[^.!?\n]{0,70}\b(?:messages?|texts?|notifications?)\b|(?:มือถือ|โทรศัพท์)[^\n]{0,40}(?:สั่น|ดังแจ้งเตือน)[^\n]{0,40}ข้อความ|\b(?:sent|texted|messaged)\b|\b(?:sends|texts|messages)\b[^.!?\n]{0,80}\b(?:message|text|phone|him|her|you|me)\b|\b(?:transmission|notification)\s+chimes?\b|\b(?:notified|notifies|received|receives)\b[^.!?\n]{0,100}\b(?:messages?|texts?)\b|\b(?:messages?|texts?)\b[^.!?\n]{0,60}\b(?:arrives?|arrived|pops? up|appears?|appeared)\b|(?:ส่งข้อความ(?:มา|ไป|หา|แล้ว)|ส่งแชท(?:มา|ไป|แล้ว)|ข้อความ(?:ใหม่|จาก)[^\n]{0,50}(?:แจ้งเตือน|เด้ง|เข้ามา)|แจ้งเตือน[^\n]{0,60}ข้อความ)/iu.test(part);
+   messages||=/\b(?:hits?|hit|press(?:es|ed)?|taps?|tapped)\s+(?:the\s+)?send\b|\b(?:phone|aster|screen)\b[^.!?\n]{0,50}\b(?:buzzes?|buzzed|vibrates?|vibrated|lights? up|lit up)\b[^.!?\n]{0,70}\b(?:messages?|texts?|notifications?)\b|(?:มือถือ|โทรศัพท์)[^\n]{0,40}(?:สั่น|ดังแจ้งเตือน)[^\n]{0,40}ข้อความ|\b(?:sent|texted|messaged)\b|\b(?:sends|texts|messages)\b[^.!?\n]{0,80}\b(?:message|text|phone|him|her|you|me)\b|\b(?:transmission|notification)\s+chimes?\b|\b(?:notified|notifies|received|receives)\b[^.!?\n]{0,100}\b(?:messages?|texts?|emails?|mail)\b|\b(?:messages?|texts?|emails?|mail)\b[^.!?\n]{0,60}\b(?:arrives?|arrived|pops? up|appears?|appeared)\b|(?:ส่ง(?:ข้อความ|เมล|อีเมล|SMS)(?:มา|ไป|หา|แล้ว)|ส่งแชท(?:มา|ไป|แล้ว)|(?:ข้อความ|เมล|อีเมล)(?:ใหม่|จาก)[^\n]{0,50}(?:แจ้งเตือน|เด้ง|เข้ามา)|แจ้งเตือน[^\n]{0,60}ข้อความ)/iu.test(part);
    calls||=/\b(?:called|calls|is calling)\s+(?:you|me)\b|\b(?:your|my|the)\s+(?:phone|aster)\b[^.!?\n]{0,50}\b(?:rings?|rang|ringing|incoming call)\b|\bincoming call\b|(?:โทรเข้ามา|โทรมาแล้ว|กดโทรหา|โทรหา(?:คุณ|ฉัน|ผม|เรา)|สายเรียกเข้า|โทรศัพท์[^\n]{0,35}(?:ดังขึ้น|ดังมา|มีสาย))/iu.test(part);
   }
   return {messages,calls};
  };
- const sent=completed(prose),received=/\b(?:received|notified|got a (?:text|message)|my phone)\b|ได้รับข้อความ|มีสายเข้า|โทรศัพท์ของ(?:ฉัน|ผม|เรา)/iu.test(preceding)?completed(preceding):{};
+ const sent=completed(prose),received=/\b(?:received|notified|got a (?:text|message)|my phone)\b|ได้รับ(?:ข้อความ|เมล|อีเมล)|มีสายเข้า|โทรศัพท์ของ(?:ฉัน|ผม|เรา)/iu.test(preceding)?completed(preceding):{};
  const eligible=config.incomingMessages&&(sent.messages||received.messages)||config.incomingCalls&&(sent.calls||received.calls);
- const hasPhone=/\b(?:phone|smartphone|aster|texts?|messages?|transmission|notification|calls?|calling|ringing)\b|โทรศัพท์|ข้อความ|แชท|แจ้งเตือน|โทรเข้า|โทรหา|สายเรียกเข้า/iu.test(prose);
+ const hasPhone=/\b(?:phone|smartphone|aster|texts?|messages?|emails?|mail|transmission|notification|calls?|calling|ringing)\b|โทรศัพท์|ข้อความ|เมล|อีเมล|SMS|แชท|แจ้งเตือน|โทรเข้า|โทรหา|สายเรียกเข้า/iu.test(prose);
  if(!hasPhone||!eligible)return null;
  const actors=[],npcIds=[];
  const matched=c=>{const npc=(state.npcs||[]).find(n=>n.id===c.npcId);return [c.label,c.name,...(npc?phoneNpcNames(npc):[])].some(name=>mentions(context,name));};
@@ -42,7 +42,7 @@ export function phoneSceneSignal(phone,state,message,user,config){
 }
 export function phoneOwnershipInStory(chat,playerName=''){
  let owned=false;
- const device='(?:Aster(?: One)?|(?:smart|mobile |cell)?phone|โทรศัพท์(?:มือถือ)?|สมาร์ทโฟน)';
+ const device='(?:Aster(?: One| K06)?|(?:smart|mobile |cell|flip )?phone|keitai|มือถือฝาพับ|โทรศัพท์(?:มือถือ)?|สมาร์ทโฟน)';
  for(const message of chat||[]){
   if(message?.is_system||!message?.mes)continue;const text=phoneSceneText(message.mes).replace(/<[^>]+>/gu,' ');
   const owner=message.is_user?'(?:my|our)':'your';

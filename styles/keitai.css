@@ -1,0 +1,377 @@
+@font-face{font-family:K06Inter;src:url(../src/workshop/smartphone/assets/inter-variable.woff2)}
+@font-face{font-family:K06Thai;src:url(../src/workshop/smartphone/assets/noto-sans-thai.woff2)}
+@font-face{font-family:K06ThaiSerif;src:url(../assets/chat-fonts/noto-serif-thai.woff2)}
+#rf-aster-keitai{--paper:#e9e8e3;--ink:#253d3e;--muted:#7b8580;--accent:#385b5c;--line:#c9ceca;--lcd:#eef1ec;--blue:#274e65;--display-font:K06Inter,K06Thai,sans-serif}
+#rf-aster-keitai *{box-sizing:border-box}
+#rf-aster-keitai{margin:0;background:var(--paper);color:var(--ink);font-family:K06Inter,K06Thai,sans-serif;font-size:15px;-webkit-font-smoothing:antialiased}
+#rf-aster-keitai button,#rf-aster-keitai input,#rf-aster-keitai textarea,#rf-aster-keitai select{font:inherit}
+#rf-aster-keitai button{cursor:pointer;color:inherit}
+#rf-aster-keitai button:focus-visible,#rf-aster-keitai a:focus-visible{outline:2px solid #6b9db4;outline-offset:3px}
+#rf-aster-keitai button{-webkit-tap-highlight-color:transparent}
+#rf-aster-keitai button:disabled{cursor:default;opacity:.45}
+#rf-aster-keitai button svg,#rf-aster-keitai svg.icon{width:21px;height:21px;stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#rf-aster-keitai .symbols{position:absolute;width:0;height:0;overflow:hidden}
+#rf-aster-keitai [hidden]{display:none!important}
+#rf-aster-keitai .site-header{height:94px;display:flex;align-items:center;justify-content:space-between;margin:0 4.2vw;border-bottom:1px solid var(--line)}
+#rf-aster-keitai .wordmark{font-size:29px;letter-spacing:6px;font-weight:550;text-decoration:none;color:var(--ink)}
+#rf-aster-keitai .wordmark span{font-size:11px;letter-spacing:1px;margin-left:13px;vertical-align:middle}
+#rf-aster-keitai .edition{font-size:11px;letter-spacing:2px;color:var(--muted)}
+#rf-aster-keitai .site-controls{display:flex;gap:13px}
+#rf-aster-keitai .site-controls button{width:32px;height:32px;border:1px solid #c2c9c3;border-radius:50%;background:transparent;font-size:11px}
+#rf-aster-keitai .studio{display:grid;grid-template-columns:1fr minmax(430px,1.3fr) 1fr;align-items:center;gap:3vw;max-width:1640px;margin:auto;min-height:calc(100svh - 165px);padding:34px 65px}
+#rf-aster-keitai .eyebrow{font-size:10px;letter-spacing:2.3px;font-weight:600;margin:0 0 27px}
+#rf-aster-keitai .editorial h1{font:500 clamp(40px,3.7vw,67px)/1.35 K06ThaiSerif,serif;letter-spacing:-1.9px;margin:0}
+#rf-aster-keitai .editorial h1 span{display:block;font:400 16px/1.6 K06Inter,serif;letter-spacing:3px;margin-top:24px}
+#rf-aster-keitai .intro{font-size:14px;line-height:1.9;color:#71817b;margin:30px 0}
+#rf-aster-keitai .spec-line{display:flex;gap:10px;align-items:center;font-size:9px;letter-spacing:1.4px;margin-top:36px}
+#rf-aster-keitai .spec-line i{width:22px;height:1px;background:#9eaba5}
+#rf-aster-keitai .swatches{display:flex;gap:13px;margin-top:17px}
+#rf-aster-keitai .swatch{width:21px;height:21px;border:3px solid var(--paper);outline:1px solid transparent;border-radius:50%}
+#rf-aster-keitai .swatch.active{outline-color:#788d83}
+#rf-aster-keitai .swatch.silver{background:linear-gradient(135deg,#fff,#9ea5a8)}
+#rf-aster-keitai .swatch.ink{background:linear-gradient(135deg,#6b7176,#121f28)}
+#rf-aster-keitai .swatch.sakura{background:linear-gradient(135deg,#fff2ef,#c4a1a2)}
+#rf-aster-keitai .feature-note{margin-top:60px;max-width:290px}
+#rf-aster-keitai .note-number{font-size:10px;letter-spacing:1.7px;color:#8b9790}
+#rf-aster-keitai .feature-note h2{font-size:18px;font-weight:500;margin:11px 0}
+#rf-aster-keitai .feature-note p{font-size:13px;color:#74837b;line-height:1.9;min-height:74px}
+#rf-aster-keitai .device-stage{position:relative;display:flex;align-items:center;flex-direction:column;justify-content:center;min-width:0;isolation:isolate}
+#rf-aster-keitai .phone-anchor{width:330px;height:754px;position:relative}
+#rf-aster-keitai .handset{--metal-1:#faf9f5;--metal-2:#ccd0ce;--metal-3:#9ca5a6;--key-1:#f0f2ef;--key-2:#bcc4c5;--key-ink:#44616d;position:relative;width:330px;height:754px;filter:drop-shadow(17px 22px 16px #32464a28);transition:transform .65s cubic-bezier(.2,.8,.2,1);touch-action:pan-y}
+#rf-aster-keitai .handset[data-case=ink]{--metal-1:#8b9496;--metal-2:#38454b;--metal-3:#16252b;--key-1:#66767d;--key-2:#233b48;--key-ink:#d4e8f1}
+#rf-aster-keitai .handset[data-case=sakura]{--metal-1:#fff6f1;--metal-2:#dfccc8;--metal-3:#b59fa0;--key-1:#fff1ee;--key-2:#d0b9bb;--key-ink:#745863}
+#rf-aster-keitai .lid{position:absolute;top:0;left:0;width:330px;height:382px;z-index:3;transform-style:preserve-3d;transform-origin:50% 100%;transition:transform .85s cubic-bezier(.3,.05,.15,1)}
+#rf-aster-keitai .lid-inside,#rf-aster-keitai .lid-outside{position:absolute;inset:0;border-radius:29px 29px 18px 18px;backface-visibility:hidden}
+#rf-aster-keitai .lid-inside{padding:0 14px;background:linear-gradient(105deg,#f9faf5 0%,var(--metal-2) 2%,var(--metal-1) 6%,var(--metal-2) 55%,var(--metal-1) 96%,var(--metal-3) 99%);border:1px solid #8a9697;box-shadow:inset 0 1px 1px #fff,inset 0 -3px 5px #55616c4d,2px 0 1px #9aa7a6,-2px 0 1px #e7e9e4}
+#rf-aster-keitai .earpiece{height:8px;position:absolute;top:17px;left:121px;display:flex;gap:3px;cursor:grab;touch-action:none;padding:4px 12px;box-sizing:content-box}
+#rf-aster-keitai .earpiece i{height:3px;width:10px;background:#596466;border-radius:2px;box-shadow:0 1px #fff}
+#rf-aster-keitai .lens{position:absolute;right:39px;top:23px;width:11px;height:11px;border-radius:50%;background:#9aa4a2;padding:3px;box-shadow:0 0 0 1px #dfe5df}
+#rf-aster-keitai .lens i{display:block;width:5px;height:5px;background:#35516a;border-radius:50%}
+#rf-aster-keitai .lcd-mark{display:block;text-align:center;font-size:6px;letter-spacing:1.8px;color:#7a8585;margin-top:43px}
+#rf-aster-keitai .screen-frame{background:#1d2c32;margin-top:11px;padding:15px 11px 13px;border-radius:8px;box-shadow:0 1px 1px #fff,0 0 0 1px #7c8787,inset 0 1px 6px #0009}
+#rf-aster-keitai .lcd{position:relative;display:flex;flex-direction:column;background:var(--lcd);height:264px;color:#243f50;overflow:hidden;box-shadow:0 0 0 1px #0b1d28;isolation:isolate;font:12px/1.55 var(--display-font)}
+#rf-aster-keitai .lcd:after{content:"";position:absolute;pointer-events:none;inset:0;z-index:8;background:repeating-linear-gradient(0deg,#fff0 0 2px,#27445b04 2px 3px);box-shadow:inset 0 1px 3px #16283933}
+#rf-aster-keitai .status-bar{height:21px;padding:2px 6px;display:flex;justify-content:space-between;align-items:center;background:#dae6e8;font-size:9px;position:relative;z-index:2;border-bottom:1px solid #a8bcc6}
+#rf-aster-keitai .status-bar>span{display:flex;align-items:center;gap:4px}
+#rf-aster-keitai .status-bar svg{width:19px;height:12px;stroke:currentColor;stroke-width:1.7;fill:none}
+#rf-aster-keitai .status-bar b{font-weight:550;font-size:10px}
+#rf-aster-keitai .status-bar .network svg{width:14px;height:12px}
+#rf-aster-keitai .softkeys{height:24px;display:flex;background:#d8e4e8;border-top:1px solid #9aaeb8;z-index:3;flex-shrink:0}
+#rf-aster-keitai .softkeys button{flex:1;min-width:0;border:0;border-right:1px solid #b2c3c9;background:linear-gradient(#eef3f2,#c6d7df);font-size:9px;font-weight:550;padding:3px 0}
+#rf-aster-keitai .softkeys button:last-child{border:0}
+#rf-aster-keitai .inner-brand{text-align:center;font-size:9px;color:#5d6d71;letter-spacing:4px;margin-top:14px;text-shadow:0 1px #fff}
+#rf-aster-keitai .hinge{position:absolute;top:374px;left:2px;width:326px;height:27px;z-index:5;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(#d5dcd9,#96a4a5 28%,#e0e5e0 50%,#a8b3b1 75%,#6e8084);border:1px solid #778b8d;border-radius:8px;box-shadow:0 2px 2px #2038414a}
+#rf-aster-keitai .hinge>i{height:24px;width:34px;border-left:1px solid #899898;border-right:1px solid #e8ece5;background:linear-gradient(#e6e9e2,#9baba9,#dce1dc)}
+#rf-aster-keitai .hinge>i:first-child{margin-left:14px}
+#rf-aster-keitai .hinge>i:last-child{margin-right:14px}
+#rf-aster-keitai .hinge button{width:150px;height:23px;background:transparent;border:0}
+#rf-aster-keitai .keypad-shell{position:absolute;top:387px;left:0;width:330px;height:367px;padding:12px 24px 19px;background:linear-gradient(100deg,var(--metal-3),var(--metal-1) 4%,var(--metal-2) 48%,var(--metal-1) 96%,var(--metal-3));border:1px solid #89999a;border-radius:15px 15px 30px 30px;box-shadow:inset 0 1px #fafff5,inset 0 -5px 4px #5b747655,1px 0 1px #9ba7a5,-2px 0 1px #cbd4cf}
+#rf-aster-keitai .control-row{position:relative;display:flex;height:87px;justify-content:space-between;align-items:center}
+#rf-aster-keitai .control-row>button{width:68px;height:28px;border-radius:8px 8px 12px 12px;border:1px solid #9caaab;border-bottom:2px solid #859799;background:linear-gradient(160deg,var(--key-1),var(--key-2));box-shadow:inset 0 1px #fff;display:grid;place-content:center;color:var(--key-ink)}
+#rf-aster-keitai .control-row>button svg{width:20px;height:16px;filter:drop-shadow(0 0 2px #d7f9ff)}
+#rf-aster-keitai .dpad{position:absolute;top:5px;left:95px;height:78px;width:90px;border-radius:27px;background:linear-gradient(145deg,#fff,#9eaeb2,#e2e9e3);box-shadow:0 0 0 1px #8e9fa1,0 2px 3px #263a3e42;display:grid;grid-template-columns:27px 36px 27px;grid-template-rows:22px 34px 22px;overflow:hidden}
+#rf-aster-keitai .dpad button{border:0;background:transparent;font-size:11px;color:#537285;padding:0}
+#rf-aster-keitai .dpad .up{grid-area:1/2}
+#rf-aster-keitai .dpad .left{grid-area:2/1}
+#rf-aster-keitai .dpad .ok{grid-area:2/2;background:linear-gradient(150deg,#d8e9e9,#8ca1a9);border:1px solid #98acb2;border-radius:9px;font-size:9px;box-shadow:inset 0 1px 2px #fff8;color:#3a5a68}
+#rf-aster-keitai .dpad .right{grid-area:2/3}
+#rf-aster-keitai .dpad .down{grid-area:3/2}
+#rf-aster-keitai .call-row{display:flex;justify-content:space-between;margin:4px 0 10px;gap:15px}
+#rf-aster-keitai .call-row button{width:82px;height:27px;background:linear-gradient(150deg,var(--key-1),var(--key-2));border:1px solid #a0aeae;border-radius:9px;box-shadow:0 1px 1px #75868c,inset 0 1px #fff;font-size:8px;color:#667c80;display:grid;place-content:center}
+#rf-aster-keitai .call-row button svg{width:17px;height:15px;stroke-width:2.2}
+#rf-aster-keitai .call-row button:first-child{color:#46756c}
+#rf-aster-keitai .call-row button:last-child{color:#a46c6d}
+#rf-aster-keitai .call-row button:last-child svg{transform:rotate(133deg)}
+#rf-aster-keitai .number-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px 13px}
+#rf-aster-keitai .number-grid button{height:39px;padding:1px 7px;background:linear-gradient(150deg,var(--key-1),var(--key-2));border:1px solid #9cacae;border-bottom:2px solid #869b9e;border-radius:7px 7px 13px 13px;box-shadow:inset 0 1px 1px #fff,0 1px 1px #425a6433;position:relative;display:flex;align-items:center;gap:7px;color:var(--key-ink);text-shadow:0 0 4px #c9f6ff}
+#rf-aster-keitai .number-grid button b{font:400 21px/1 K06Inter,sans-serif}
+#rf-aster-keitai .number-grid button span{font-size:7px;line-height:1.3;letter-spacing:.7px;text-align:left;white-space:pre-line}
+#rf-aster-keitai .handset button.pressed,#rf-aster-keitai .number-grid button:active,#rf-aster-keitai .dpad button:active,#rf-aster-keitai .call-row button:active{filter:brightness(.9);box-shadow:inset 0 1px 4px #3d586a55}
+#rf-aster-keitai .lower-label{font-size:5px;letter-spacing:1px;color:#7e9090;display:flex;justify-content:space-between;margin-top:12px}
+#rf-aster-keitai .speaker-grill{position:absolute;width:44px;height:3px;bottom:9px;left:143px;background:repeating-linear-gradient(90deg,#7f9394 0 2px,transparent 2px 4px);border-radius:3px}
+#rf-aster-keitai .charm{position:absolute;right:-21px;top:395px;width:20px;height:130px;pointer-events:none;transform-origin:top;animation:k06-charm 7s ease-in-out infinite}
+#rf-aster-keitai .charm>div{width:16px;height:92px;border:2px solid #a7bfc2;border-radius:50%;transform:rotate(-4deg)}
+#rf-aster-keitai .charm>span{display:grid;place-items:center;width:24px;height:31px;background:#cddcdb;border:1px solid #95adad;color:#5c7676;border-radius:5px;font-size:13px;box-shadow:2px 3px 3px #294c3c22}
+#rf-aster-keitai .phone-shadow{position:absolute;bottom:23px;width:280px;height:20px;background:#33505840;filter:blur(20px);border-radius:50%;z-index:-1}
+#rf-aster-keitai .hardware-actions{display:flex;gap:15px;align-items:center;font-size:10px;margin-top:20px;color:#7c8e84}
+#rf-aster-keitai .hardware-actions button{padding:6px 0;background:none;border:0;font-size:11px}
+#rf-aster-keitai .scene-panel{max-width:292px;width:100%;justify-self:end}
+#rf-aster-keitai .scene-heading{display:flex;align-items:center;gap:9px;font-size:10px;letter-spacing:1.5px}
+#rf-aster-keitai .scene-heading strong{margin-left:auto;font-size:13px;letter-spacing:.4px;font-weight:450}
+#rf-aster-keitai .tiny-dot{height:5px;width:5px;background:#678c7c;border-radius:50%;box-shadow:0 0 0 3px #678c7c18}
+#rf-aster-keitai .scene-location{font-size:16px;line-height:1.9;margin-top:30px}
+#rf-aster-keitai .scene-location span{font-size:12px;color:#829087}
+#rf-aster-keitai .scene-divider{height:1px;background:#c7ceca;margin:25px 0}
+#rf-aster-keitai .scene-panel article{border-left:1px solid #afbeb5;margin:0 0 20px;padding-left:16px;animation:k06-reveal .4s}
+#rf-aster-keitai .scene-panel article>span{font-size:10px;color:#7b8c80}
+#rf-aster-keitai .scene-panel article>p{font-size:13px;line-height:1.9;margin:8px 0;color:#526c61}
+#rf-aster-keitai .context-tag{margin-top:40px}
+#rf-aster-keitai .context-tag>span{font-size:8px;letter-spacing:1.8px;color:#8b9a8f}
+#rf-aster-keitai .context-tag>p{font-size:10px;color:#8b978d;margin-top:10px}
+#rf-aster-keitai .site-footer{display:flex;align-items:center;justify-content:space-between;height:71px;border-top:1px solid var(--line);margin:0 4.2vw;font-size:9px;letter-spacing:1.3px;color:#7c8982}
+#rf-aster-keitai .site-footer>p{font-size:8px;letter-spacing:1.7px}
+#rf-aster-keitai .site-footer button{border:0;background:none;font-size:10px;letter-spacing:0;color:#6a8071}
+#rf-aster-keitai .lid-outside{border:1px solid #94a1a1;background:linear-gradient(100deg,var(--metal-3),var(--metal-1) 5%,var(--metal-2) 52%,var(--metal-1) 95%,var(--metal-3));transform:rotateX(180deg);display:flex;align-items:center;flex-direction:column;padding:0;box-shadow:inset 0 1px 2px #fff,inset 0 -4px 6px #78908f;cursor:pointer}
+#rf-aster-keitai .outside-brand{margin-top:31px;font-size:13px;letter-spacing:5px;color:#688083}
+#rf-aster-keitai .outer-camera{display:block;width:31px;height:31px;border-radius:50%;background:linear-gradient(140deg,#405459,#c4d1ce);box-shadow:0 0 0 2px #96a9a8;margin-top:27px;padding:5px}
+#rf-aster-keitai .outer-camera i{display:block;background:radial-gradient(circle at 40% 35%,#608aaf,#1c2e41 40%,#091923 65%);border:2px solid #52636b;width:21px;height:21px;border-radius:50%}
+#rf-aster-keitai .outside-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#183744;width:156px;height:109px;margin-top:24px;color:#c7dddc;border:6px solid #a6b8b8;border-radius:8px;box-shadow:0 0 0 1px #b7c5c2,inset 0 0 7px #071a23}
+#rf-aster-keitai .outer-date{font-size:7px;letter-spacing:.5px}
+#rf-aster-keitai .outside-screen strong{font-size:32px;letter-spacing:-1px;font-weight:400;margin:4px 0}
+#rf-aster-keitai .outside-screen>span:last-child{font-size:9px}
+#rf-aster-keitai .outer-led{height:4px;width:27px;border-radius:4px;background:#8b9f99;margin-top:24px}
+#rf-aster-keitai .has-notice .outer-led{animation:k06-led 1.2s infinite}
+#rf-aster-keitai .outside-model{font-size:16px;letter-spacing:3px;margin-top:33px;color:#738a8c}
+#rf-aster-keitai .outside-model small{display:block;font-size:6px;letter-spacing:1.5px;margin-top:9px}
+#rf-aster-keitai .handset.closed .lid{transform:perspective(1500px) rotateX(-180deg)}
+#rf-aster-keitai .handset.closed{transform:translateY(-185px)}
+#rf-aster-keitai .handset.closed .charm{z-index:-1}
+#rf-aster-keitai .handset.closed .keypad-shell{filter:brightness(.95)}
+#rf-aster-keitai #k06-screen{position:relative;flex:1;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:#8aa1ac #e2e9e8}
+#rf-aster-keitai #k06-screen h2{font-size:12px;line-height:1.4;margin:0;font-weight:600}
+#rf-aster-keitai .page-heading{display:flex;align-items:center;gap:6px;min-height:28px;padding:5px 8px;background:linear-gradient(#dae7eb,#b6ced9);border-bottom:1px solid #94adbb;position:sticky;top:0;z-index:2;color:#23495f}
+#rf-aster-keitai .page-heading .icon{width:15px;height:15px}
+#rf-aster-keitai .page-heading small{margin-left:auto;font-size:8px;font-weight:400}
+#rf-aster-keitai .wallpaper{height:100%;background:#396273 url(../src/workshop/smartphone/keitai/assets/crossing.svg) center 47%/cover;color:#f5f4e6;position:relative}
+#rf-aster-keitai .wallpaper:after{content:"";position:absolute;inset:0;background:linear-gradient(#0b293450,transparent 40%,#0c263c65);pointer-events:none}
+#rf-aster-keitai .home-clock{position:relative;z-index:1;text-align:center;padding-top:18px;text-shadow:0 1px 3px #193849}
+#rf-aster-keitai .home-clock time{font-size:47px;letter-spacing:-2px;line-height:1.2;font-weight:350}
+#rf-aster-keitai .home-clock p{font-size:10px;letter-spacing:1px;margin:2px}
+#rf-aster-keitai .home-jp{position:absolute;z-index:1;bottom:31px;left:12px;font-size:13px;letter-spacing:1px}
+#rf-aster-keitai .home-notification{position:absolute;bottom:7px;left:8px;right:8px;z-index:1;background:#18384c9c;border:1px solid #b5ced56b;padding:3px 7px;display:flex;align-items:center;font-size:9px;gap:6px}
+#rf-aster-keitai .home-notification .icon{width:12px;height:12px}
+#rf-aster-keitai .home-notification button{color:inherit;font:inherit;border:0;background:none;padding:0;text-align:left}
+#rf-aster-keitai .menu-grid{display:grid;grid-template-columns:repeat(3,1fr);padding:8px 5px 4px;gap:4px;background:linear-gradient(#f7f7ed,#dbe6e9);min-height:100%}
+#rf-aster-keitai .menu-app{border:1px solid transparent;padding:4px 1px 3px;min-height:54px;background:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;font-size:9px;position:relative}
+#rf-aster-keitai .menu-app svg{width:26px;height:26px;stroke-width:1.3;filter:drop-shadow(0 1px #fff)}
+#rf-aster-keitai .menu-app span.icon-well{display:grid;place-items:center;width:37px;height:31px;border-radius:6px;background:linear-gradient(145deg,#e6edf2,#c3d8e1);border:1px solid #a6becb;box-shadow:inset 0 1px #fff,0 1px 1px #5a7f8619;color:#3a6b87}
+#rf-aster-keitai .menu-app:nth-child(3n+2) .icon-well{color:#976c50;background:linear-gradient(145deg,#f1e9d7,#e0c8a5);border-color:#cab999}
+#rf-aster-keitai .menu-app:nth-child(3n+3) .icon-well{color:#5d7e67;background:linear-gradient(145deg,#eaf0df,#c4d4bd);border-color:#aebda2}
+#rf-aster-keitai .menu-app.selected,#rf-aster-keitai .menu-app:focus-visible{background:linear-gradient(#c9e7ed,#9cc2d4);border:1px solid #6e9fb5;outline:0}
+#rf-aster-keitai .list-row{display:flex;align-items:center;gap:8px;width:100%;min-height:35px;padding:6px 8px;border:0;border-bottom:1px solid #ccd8da;background:#eef3ef;text-align:left;font-size:11px;color:#294958}
+#rf-aster-keitai .list-row:nth-child(2n){background:#e7eeeb}
+#rf-aster-keitai .list-row.selected{background:#c5e0e9;box-shadow:inset 3px 0 #497d96}
+#rf-aster-keitai .list-row .icon{height:20px;width:20px;flex-shrink:0}
+#rf-aster-keitai .list-row>span{min-width:0;flex:1}
+#rf-aster-keitai .list-row strong{display:block;font-weight:550;font-size:11px}
+#rf-aster-keitai .list-row small{display:block;font-size:9px;color:#6b8290;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+#rf-aster-keitai .list-row>.chevron{width:10px;opacity:.6;flex:0 0 10px}
+#rf-aster-keitai .list-row b.count{font-size:9px;min-width:15px;font-weight:500}
+#rf-aster-keitai .list-row time{font-size:8px;color:#5a7684}
+#rf-aster-keitai .mail-type{font-size:8px;padding:1px 3px;border:1px solid #a1bac6;color:#6a8795}
+#rf-aster-keitai .detail{padding:8px;font-size:11px;line-height:1.65}
+#rf-aster-keitai .detail p{margin:7px 0}
+#rf-aster-keitai .detail .meta{font-size:9px;border-bottom:1px solid #becdd1;margin-bottom:8px;padding-bottom:7px;color:#65808e;line-height:1.65}
+#rf-aster-keitai .detail .meta strong{color:#304f5b;font-weight:500}
+#rf-aster-keitai .attachment{display:block;width:100%;padding:0;margin:8px 0;border:1px solid #a4bbc5;background:#d9e6e8;text-align:left}
+#rf-aster-keitai .attachment img{width:100%;height:88px;object-fit:cover;display:block}
+#rf-aster-keitai .attachment small{display:block;padding:3px 5px;font-size:8px}
+#rf-aster-keitai .lcd .primary,#rf-aster-keitai .lcd .secondary{border:1px solid #8eaebd;background:linear-gradient(#e5f0f2,#bed6df);padding:5px 8px;font-size:10px;color:#254b61;min-height:27px}
+#rf-aster-keitai .lcd .secondary{background:#e7eeeb;border-color:#b4c5ca}
+#rf-aster-keitai .lcd .actions{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+#rf-aster-keitai .lcd .actions>*{flex:1}
+#rf-aster-keitai .lcd input,#rf-aster-keitai .lcd textarea,#rf-aster-keitai .lcd select{width:100%;border:1px solid #adc0c7;border-radius:0;background:#f9fcf4;padding:5px;color:#284a5b;font-size:11px;outline:none}
+#rf-aster-keitai .lcd input:focus,#rf-aster-keitai .lcd textarea:focus{border-color:#467d9c;background:#fffef0}
+#rf-aster-keitai .lcd label{display:block;font-size:9px;color:#6f8791;margin:0 0 5px}
+#rf-aster-keitai .lcd textarea{min-height:69px;resize:vertical;line-height:1.6}
+#rf-aster-keitai .lcd form{padding:7px}
+#rf-aster-keitai .lcd form>label{margin-bottom:6px}
+#rf-aster-keitai .compose-count{text-align:right;font-size:8px;color:#778e96;margin:4px 0}
+#rf-aster-keitai .checkline{display:flex!important;align-items:center;justify-content:space-between;border-bottom:1px solid #d2dfdc;padding:6px 2px!important;font-size:10px!important;margin:0!important;min-height:31px}
+#rf-aster-keitai .checkline input{appearance:none;width:22px;height:13px;background:#becdcd;border:1px solid #a3b9be;position:relative;border-radius:7px;margin:0;padding:0}
+#rf-aster-keitai .checkline input:before{content:"";position:absolute;width:9px;height:9px;left:1px;top:1px;background:#f7faf3;border-radius:50%;box-shadow:0 1px 1px #48647755;transition:transform .2s}
+#rf-aster-keitai .checkline input:checked{background:#477f95;border-color:#477f95}
+#rf-aster-keitai .checkline input:checked:before{transform:translateX(9px)}
+#rf-aster-keitai .lcd .fine{font-size:8px;color:#758b91}
+#rf-aster-keitai .call-view{display:flex;min-height:100%;align-items:center;flex-direction:column;padding:11px 8px;background:radial-gradient(ellipse at top,#e5f1f0,#a9c4d0);text-align:center}
+#rf-aster-keitai .call-view .caller-symbol{width:35px;height:35px;border:1px solid #82a6b7;color:#537a8d;border-radius:50%;display:grid;place-items:center;background:#f4f8e985;margin:4px}
+#rf-aster-keitai .caller-symbol .icon{width:20px;height:20px}
+#rf-aster-keitai .incoming .caller-symbol{animation:k06-ring 1s ease-in-out infinite}
+#rf-aster-keitai .call-view h2{font-size:19px!important;margin:4px 0!important;letter-spacing:-.6px}
+#rf-aster-keitai .call-view small{font-size:9px;color:#5e7e8b}
+#rf-aster-keitai .call-view .call-status{font-size:9px;letter-spacing:1px;margin:9px 0;color:#4b7b8b}
+#rf-aster-keitai .call-buttons{display:flex;gap:10px;margin-top:12px}
+#rf-aster-keitai .call-buttons button{border:1px solid #658d91;background:linear-gradient(#eaf4e8,#a9c7b3);padding:6px 16px;font-size:10px}
+#rf-aster-keitai .call-buttons .decline{background:linear-gradient(#f6e9e0,#d7b9b5);border-color:#b99a96}
+#rf-aster-keitai .call-transcript{background:#f3f7e8a3;width:100%;padding:7px;margin-top:7px;font-size:11px;border-top:1px solid #aec6c9;text-align:left;line-height:1.7}
+#rf-aster-keitai .call-transcript strong{font-size:8px;display:block;color:#6e8792}
+#rf-aster-keitai .call-transcript p{margin:3px 0}
+#rf-aster-keitai .dial-number{font-size:22px;letter-spacing:1px;word-break:break-all;min-height:44px;padding:14px 8px;color:#3a5b6c}
+#rf-aster-keitai .dial-hint{font-size:10px;color:#758993;padding:8px}
+#rf-aster-keitai .contact-initial{width:29px;height:29px;display:grid;place-items:center;background:#d1e0e4;border:1px solid #b0c5cd;font-size:15px;color:#598096;flex:0 0 29px}
+#rf-aster-keitai .contact-summary{text-align:center;padding:7px}
+#rf-aster-keitai .contact-summary .contact-initial{margin:auto;width:40px;height:40px;font-size:22px}
+#rf-aster-keitai .contact-summary h2{font-size:16px!important;margin:5px 0!important}
+#rf-aster-keitai .contact-summary p{margin:4px;font-size:10px;color:#67828c}
+#rf-aster-keitai .contact-summary small{font-size:9px}
+#rf-aster-keitai .gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:6px}
+#rf-aster-keitai .gallery button{padding:0;background:#dce8e8;border:1px solid #b1c5cc;font-size:9px;text-align:left}
+#rf-aster-keitai .gallery img{display:block;width:100%;height:73px;object-fit:cover}
+#rf-aster-keitai .gallery span{display:block;padding:3px}
+#rf-aster-keitai .full-photo{padding:7px}
+#rf-aster-keitai .full-photo img{width:100%;height:137px;object-fit:cover;border:1px solid #8fabbb}
+#rf-aster-keitai .camera-view{background:#102b39;position:relative;min-height:100%;color:#edf5e9}
+#rf-aster-keitai .camera-view img{width:100%;height:176px;object-fit:cover;display:block;opacity:.85}
+#rf-aster-keitai .camera-frame{position:absolute;top:20px;left:19px;right:19px;height:122px;border:1px solid #eef4df99;clip-path:polygon(0 0,15% 0,15% 3%,3% 3%,3% 16%,0 16%,0 0,100% 0,100% 16%,97% 16%,97% 3%,85% 3%,85% 0,100% 0,100% 100%,85% 100%,85% 97%,97% 97%,97% 84%,100% 84%,100% 100%,0 100%,0 84%,3% 84%,3% 97%,15% 97%,15% 100%,0 100%)}
+#rf-aster-keitai .camera-top{position:absolute;top:5px;left:8px;font-size:8px;letter-spacing:.8px}
+#rf-aster-keitai .camera-bottom{display:flex;align-items:center;justify-content:space-between;position:absolute;bottom:7px;left:9px;right:9px;font-size:8px}
+#rf-aster-keitai .camera-bottom button{height:25px;width:25px;border:2px solid #d2e6e2;border-radius:50%;background:#b7cdd0;box-shadow:inset 0 0 0 3px #2d4b5b}
+#rf-aster-keitai .flash{animation:k06-flash .45s}
+#rf-aster-keitai .wap-heading{display:flex;align-items:center;gap:4px;background:#d4e3e6;padding:4px 7px;font-size:8px;border-bottom:1px solid #afc6cf;color:#76909a}
+#rf-aster-keitai .wap-heading svg{height:10px;width:10px}
+#rf-aster-keitai .wap{font-size:10px;padding:6px;background:#f6f8ed;min-height:100%;color:#3a596b}
+#rf-aster-keitai .wap h2{font-size:13px!important;padding-bottom:5px;border-bottom:2px solid #6d939d;margin-bottom:7px!important}
+#rf-aster-keitai .wap a,#rf-aster-keitai .wap button.link{color:#356888;text-decoration:underline;cursor:pointer;border:0;background:none;font-size:11px;padding:3px 0;display:block;text-align:left}
+#rf-aster-keitai .wap p{line-height:1.7;margin:6px 0}
+#rf-aster-keitai .wap small{font-size:8px;color:#8a9d9c}
+#rf-aster-keitai .wap table{border-collapse:collapse;width:100%;font-size:10px}
+#rf-aster-keitai .wap td,#rf-aster-keitai .wap th{border-bottom:1px solid #d4dfdc;padding:4px 2px;text-align:left}
+#rf-aster-keitai .weather{font-size:40px;line-height:1.2;color:#7e9a8b;text-align:center;margin:9px 0}
+#rf-aster-keitai .lcd .section-label{padding:5px 8px;font-size:8px;letter-spacing:.7px;background:#dce6e7;color:#70909e;border-bottom:1px solid #c3d3d7}
+#rf-aster-keitai .tone-player{padding:10px;text-align:center}
+#rf-aster-keitai .tone-player>.icon{width:40px;height:40px;color:#6892a0;margin:8px}
+#rf-aster-keitai .tone-player h2{font-size:14px!important}
+#rf-aster-keitai .tone-player p{font-size:9px;color:#6d8793}
+#rf-aster-keitai .tone-player progress{width:100%;height:4px;accent-color:#769da8;margin-top:12px}
+#rf-aster-keitai .tone-player .actions{justify-content:center;margin-top:15px}
+#rf-aster-keitai .notes-list{padding:7px}
+#rf-aster-keitai .saved-banner{font-size:9px;color:#537c73;padding:6px;background:#dfebe0;border:1px solid #b9cebf;margin:6px 0}
+#rf-aster-keitai .lcd .empty{padding:27px 12px;text-align:center;font-size:11px;color:#81969b}
+#rf-aster-keitai .lcd .empty .icon{display:block;margin:0 auto 8px;width:30px;height:30px}
+#rf-aster-keitai .settings-section{font-size:8px;letter-spacing:1px;background:#d8e4e5;padding:4px 7px;color:#668593}
+#rf-aster-keitai .setting-item{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:7px;border:0;border-bottom:1px solid #c8d8da;background:transparent;width:100%;font-size:10px;text-align:left}
+#rf-aster-keitai .setting-item strong{font-size:9px;font-weight:400;color:#668c9a}
+#rf-aster-keitai .setting-item select{width:96px;padding:2px;font-size:9px}
+#rf-aster-keitai .lcd .photo-upload{display:block;border:1px dashed #a4bbc4;text-align:center;padding:6px;margin-top:6px;font-size:9px;cursor:pointer}
+#rf-aster-keitai .lcd .photo-upload input{display:none}
+#rf-aster-keitai .toast{position:absolute;left:8px;right:8px;bottom:30px;padding:7px 8px;background:#f3f8e8;border:1px solid #819fae;z-index:10;box-shadow:0 3px 7px #1a3a4733;font-size:10px;animation:k06-reveal .2s;color:#355263}
+#rf-aster-keitai .help-overlay{position:fixed;inset:0;background:#233c3c7a;backdrop-filter:blur(7px);display:grid;place-items:center;z-index:40;padding:22px}
+#rf-aster-keitai .help-overlay article{width:min(440px,100%);position:relative;background:#efefe8;padding:38px;box-shadow:0 20px 70px #18332a33}
+#rf-aster-keitai .help-overlay h2{font:500 26px K06ThaiSerif,serif;margin:0 0 25px}
+#rf-aster-keitai .help-overlay p:not(.eyebrow){font-size:13px;line-height:1.9;color:#6e8075}
+#rf-aster-keitai .help-overlay article>button:first-child{position:absolute;right:17px;top:12px;background:none;border:0;font-size:25px}
+#rf-aster-keitai .help-overlay .primary{background:#345b52;color:#f2f2de;border:0;padding:11px 20px;font-size:13px;margin-top:15px}
+#rf-aster-keitai .caption{position:fixed;bottom:0;left:0;right:0;z-index:50;background:#e9e8e3f5;padding:20px 5vw 25px;border-top:1px solid #bac7be;text-align:center;min-height:135px;box-shadow:0 -20px 40px #e9e8e34a}
+#rf-aster-keitai .caption>span{font-size:11px;letter-spacing:3px;color:#7b9080;display:block;margin-bottom:7px}
+#rf-aster-keitai .caption h2{font-size:30px;line-height:1.4;font-weight:600;margin:0 0 5px;color:#27493f}
+#rf-aster-keitai .caption p{font-size:21px;line-height:1.65;margin:0;color:#526e60}
+#rf-aster-keitai .recording .studio{padding-bottom:145px}
+#rf-aster-keitai .recording .site-footer{visibility:hidden}
+#rf-aster-keitai .recording .phone-anchor{transform:scale(.93);transform-origin:50% 0;height:701px}
+#rf-aster-keitai .recording .hardware-actions{margin-top:8px}
+#rf-aster-keitai .recording .feature-note{margin-top:35px}
+#rf-aster-keitai .no-motion *{animation:none!important;transition:none!important}
+@keyframes k06-reveal{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes k06-led{0%,100%{background:#738f91;box-shadow:0 0 0 #e5ba6b}40%{background:#f2c678;box-shadow:0 0 9px #f2c678}}
+@keyframes k06-ring{0%,100%{transform:rotate(0)}20%{transform:rotate(-13deg)}40%{transform:rotate(13deg)}60%{transform:rotate(-9deg)}}
+@keyframes k06-charm{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(4deg)}}
+@keyframes k06-flash{0%{filter:brightness(1)}20%{filter:brightness(5)}100%{filter:brightness(1)}}
+@media(min-width:1700px){#rf-aster-keitai .studio{grid-template-columns:1fr 1.35fr 1fr;gap:80px}
+#rf-aster-keitai .phone-anchor{transform:scale(1.04);height:784px}
+#rf-aster-keitai .hardware-actions{margin-top:23px}
+#rf-aster-keitai .recording .phone-anchor{transform:scale(.97);height:732px}
+#rf-aster-keitai .editorial{margin-left:10px}
+#rf-aster-keitai .scene-panel{max-width:310px}
+#rf-aster-keitai .editorial .intro{font-size:16px}
+#rf-aster-keitai .feature-note p{font-size:15px}
+#rf-aster-keitai .scene-panel article p{font-size:15px}
+}
+@media(max-height:920px) and (min-width:801px){#rf-aster-keitai .site-header{height:72px}
+#rf-aster-keitai .studio{padding-top:24px;padding-bottom:18px}
+#rf-aster-keitai .phone-anchor{transform:scale(.82);transform-origin:50% 0;height:620px}
+#rf-aster-keitai .feature-note{margin-top:30px}
+#rf-aster-keitai .hardware-actions{margin-top:8px}
+#rf-aster-keitai .site-footer{height:50px}
+#rf-aster-keitai .recording .phone-anchor{transform:scale(.73);height:550px}
+#rf-aster-keitai .recording .studio{padding-bottom:135px}
+}
+@media(max-width:1100px){#rf-aster-keitai .studio{grid-template-columns:1fr 1.35fr;padding:30px 35px;gap:25px}
+#rf-aster-keitai .scene-panel{display:none}
+#rf-aster-keitai .editorial h1{font-size:48px}
+#rf-aster-keitai .feature-note{margin-top:35px}
+#rf-aster-keitai .site-footer p{display:none}
+#rf-aster-keitai .site-header .edition{display:none}
+}
+@media(max-width:800px){#rf-aster-keitai{background:#e7e8e3}
+#rf-aster-keitai .site-header{height:51px;margin:0 20px}
+#rf-aster-keitai .wordmark{font-size:20px;letter-spacing:4px}
+#rf-aster-keitai .wordmark span{font-size:8px;letter-spacing:0;margin-left:8px}
+#rf-aster-keitai .site-controls{gap:8px}
+#rf-aster-keitai .site-controls button{width:27px;height:27px;font-size:9px}
+#rf-aster-keitai .editorial,#rf-aster-keitai .scene-panel,#rf-aster-keitai .site-footer{display:none}
+#rf-aster-keitai .studio{display:flex;justify-content:center;align-items:flex-start;min-height:calc(100svh - 51px);padding:17px 0 8px}
+#rf-aster-keitai .device-stage{width:100%}
+#rf-aster-keitai .phone-anchor{width:330px;height:754px;transform-origin:50% 0;transform:scale(var(--phone-scale, .93));height:calc(754px * var(--phone-scale, .93))}
+#rf-aster-keitai .hardware-actions{margin-top:7px;font-size:9px;gap:16px}
+#rf-aster-keitai .hardware-actions button{font-size:11px;min-height:30px;padding:0}
+#rf-aster-keitai .phone-shadow{bottom:30px}
+#rf-aster-keitai .handset.closed{transform:translateY(-160px)}
+#rf-aster-keitai .handset.closed .lid{transform:perspective(1500px) rotateX(-180deg)}
+#rf-aster-keitai .caption{min-height:109px;padding:10px 17px 14px}
+#rf-aster-keitai .caption>span{font-size:8px;margin-bottom:4px;letter-spacing:1.8px}
+#rf-aster-keitai .caption h2{font-size:20px;line-height:1.5;margin-bottom:2px}
+#rf-aster-keitai .caption p{font-size:14px;line-height:1.65}
+#rf-aster-keitai .recording .studio{padding:13px 0 115px;min-height:calc(100svh - 51px)}
+#rf-aster-keitai .recording .phone-anchor{transform:scale(var(--record-scale,.78));height:calc(754px * var(--record-scale,.78))}
+#rf-aster-keitai .recording .hardware-actions{margin-top:5px}
+#rf-aster-keitai .recording .hardware-actions button{font-size:10px}
+#rf-aster-keitai .help-overlay article{padding:28px}
+#rf-aster-keitai .help-overlay h2{font-size:23px}
+}
+@media(prefers-reduced-motion:reduce){#rf-aster-keitai *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+#rf-aster-keitai .recording .caption h2{font-size:40px}
+#rf-aster-keitai .recording .caption p{font-size:29px}
+#rf-aster-keitai .detail-focus .phone-anchor{transform:scale(1.55);height:735px;transform-origin:50% 0}
+#rf-aster-keitai .detail-focus .device-stage{height:770px;overflow:hidden;padding-top:16px;margin-inline:-30px}
+#rf-aster-keitai .detail-focus .hardware-actions{display:none}
+#rf-aster-keitai .phone-anchor{transition:transform .6s cubic-bezier(.2,.8,.2,1),height .6s}
+#rf-aster-keitai .detail-focus .handset{filter:drop-shadow(10px 12px 10px #32464a25)}
+#rf-aster-keitai .lcd-select{width:100%;min-height:25px;background:#f6faef;border:1px solid #adc0c7;display:flex;justify-content:space-between;align-items:center;text-align:left;padding:4px 6px;font-size:10px;gap:4px}
+#rf-aster-keitai .lcd-select:after{content:'▾';font-size:9px;color:#60889b}
+#rf-aster-keitai .lcd label select[hidden]{display:none}
+#rf-aster-keitai #k06-lcd-picker{position:absolute;inset:0;z-index:20;background:#eef3ef;overflow:auto;box-shadow:inset 0 0 0 1px #8aa7b8}
+#rf-aster-keitai #k06-lcd-picker .list-row{font-size:11px;min-height:36px;justify-content:space-between}
+#rf-aster-keitai #k06-lcd-picker .list-row .icon{width:14px;height:14px}
+@media(max-width:800px){#rf-aster-keitai .recording .caption h2{font-size:21px}
+#rf-aster-keitai .recording .caption p{font-size:16px}
+#rf-aster-keitai .detail-focus .phone-anchor,#rf-aster-keitai .recording.detail-focus .phone-anchor{transform:scale(1.13);height:620px;transform-origin:50% 0}
+#rf-aster-keitai .detail-focus .device-stage{height:calc(100svh - 180px);overflow:hidden;padding-top:0;margin-inline:0}
+#rf-aster-keitai .detail-focus .studio{overflow:hidden}
+#rf-aster-keitai .detail-focus .hardware-actions{display:none}
+}
+/* SillyTavern host isolation and responsive floating shell. */
+#rf-aster-keitai{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;overflow:visible!important;pointer-events:none;z-index:2147482000;color:#253d3e;font:15px/1.55 K06Inter,K06Thai,sans-serif;text-shadow:none;box-shadow:none!important}
+#rf-aster-keitai *,#rf-aster-keitai *:before,#rf-aster-keitai *:after{box-sizing:border-box}
+#rf-aster-keitai button,#rf-aster-keitai input,#rf-aster-keitai textarea{font-family:K06Inter,K06Thai,sans-serif;text-shadow:none;letter-spacing:normal}
+#rf-aster-keitai [hidden]{display:none!important}
+#rf-aster-keitai .k06-window{pointer-events:auto;position:fixed;width:400px;max-height:calc(100vh - 12px);padding:0 15px 7px;filter:drop-shadow(0 15px 20px #0004);overflow:hidden;isolation:isolate}
+#rf-aster-keitai .k06-titlebar{height:33px;display:flex;align-items:center;justify-content:space-between;width:330px;max-width:100%;margin:0 auto 8px;padding:0 10px;background:#e7e9e0e8;color:#57766b;cursor:grab;border:1px solid #bbc9c0;border-radius:5px;backdrop-filter:blur(8px)}
+#rf-aster-keitai .k06-titlebar>span{font-size:10px;letter-spacing:3px}#rf-aster-keitai .k06-titlebar b{font-weight:400;font-size:8px;letter-spacing:1px;margin-left:7px}
+#rf-aster-keitai .k06-titlebar>div{display:flex;gap:8px}#rf-aster-keitai .k06-titlebar button{height:30px;width:28px;display:grid;place-items:center;background:none;border:0;color:#496b60;font-size:19px;padding:0;box-shadow:none}
+#rf-aster-keitai .device-stage{width:100%;height:auto;min-height:0;margin:0;padding:0;overflow:visible}
+#rf-aster-keitai .phone-anchor{width:330px;flex:0 0 auto;transform-origin:50% 0;transition:transform .2s,height .2s}
+#rf-aster-keitai .handset{width:330px;height:754px}.k06-window .handset .earpiece{cursor:grab}
+#rf-aster-keitai .hardware-actions{margin-top:1px;height:28px;gap:20px;color:#e9efe4;text-shadow:0 1px 3px #163025;pointer-events:auto}
+#rf-aster-keitai .hardware-actions button{min-height:28px;color:inherit;font-size:11px;padding:0 4px;text-shadow:inherit;box-shadow:none}
+#rf-aster-keitai .softkeys button{cursor:pointer;font-size:9px;min-height:0;border-radius:0;box-shadow:none}
+#rf-aster-keitai .lcd select,#rf-aster-keitai .lcd input,#rf-aster-keitai .lcd textarea{box-shadow:none;color:#284a5b;background:#f9fcf4;font-size:11px}
+#rf-aster-keitai .lcd .list-row{box-shadow:none;border-radius:0;white-space:normal;line-height:1.5}
+#rf-aster-keitai .lcd .primary,#rf-aster-keitai .lcd .secondary{border-radius:0;box-shadow:none;line-height:1.4;font-size:10px;min-width:0}
+#rf-aster-keitai .lcd .checkline{padding:6px 3px!important;font-size:10px!important;line-height:1.5}
+#rf-aster-keitai .lcd .checkline input{flex:0 0 22px;height:13px;width:22px}
+#rf-aster-keitai .lcd form{margin:0;padding:7px}#rf-aster-keitai .lcd .detail form{padding:7px 0}
+#rf-aster-keitai .lcd input[type=hidden]{display:none}
+#rf-aster-keitai .k06-error{font-size:10px;line-height:1.5;padding:5px 7px;background:#f1d7cc;color:#79514a;border-bottom:1px solid #ccaaa0;overflow-wrap:anywhere}
+#rf-aster-keitai .k06-working{font-size:9px;padding:4px 6px;background:#e5ebdb;color:#5b7966;border-bottom:1px solid #c5d4c3}
+#rf-aster-keitai .call-view{height:auto;min-height:100%}#rf-aster-keitai .call-view form{width:100%;text-align:left}#rf-aster-keitai .call-view textarea{min-height:48px}
+#rf-aster-keitai .call-transcript{overflow-wrap:anywhere}#rf-aster-keitai .camera-view{height:100%;min-height:210px}
+#rf-aster-keitai .camera-view>img{height:100%;object-fit:cover}#rf-aster-keitai .k06-camera-empty{height:100%;padding:42px 17px 25px;text-align:center;font-size:11px;background:linear-gradient(#2c4e59,#192d39);color:#dbe8de}#rf-aster-keitai .k06-camera-empty .icon{width:40px;height:40px}#rf-aster-keitai .k06-camera-empty p{margin:8px 0}#rf-aster-keitai .k06-camera-empty small{font-size:8px;color:#92adb0}
+#rf-aster-keitai .k06-scene-photo{min-height:73px;padding:12px 7px;display:grid;place-items:center;background:linear-gradient(#e0e9e5,#b6ced1);color:#62828d;text-align:center;font-size:9px}#rf-aster-keitai .k06-scene-photo .icon{width:30px;height:30px}
+#rf-aster-keitai .has-notice .outer-led{background:#e2b76d}.no-motion #rf-aster-keitai .outer-led{background:#e2b76d}
+#rf-aster-keitai .k06-outside{position:fixed;pointer-events:auto;right:20px;top:70px;max-width:290px;background:#e4e8df;color:#365c54;border:1px solid #9fb4a9;border-radius:5px;box-shadow:0 10px 20px #001e1230;display:flex;align-items:center;gap:10px;padding:11px 15px;text-align:left;cursor:pointer}
+#rf-aster-keitai .k06-outside .icon{width:22px;height:22px}#rf-aster-keitai .k06-outside span{display:flex;flex-direction:column;gap:3px}#rf-aster-keitai .k06-outside strong{font-size:13px;font-weight:500}#rf-aster-keitai .k06-outside small{font-size:10px;color:#779187}
+#rf-aster-keitai.detail-focus .device-stage{height:calc(var(--k06-vh,100vh) - 80px);overflow:hidden;padding:0;margin:0}#rf-aster-keitai.detail-focus .hardware-actions{display:none}
+#rf-aster-keitai.k06-typing .keypad-shell,#rf-aster-keitai.k06-typing .hinge,#rf-aster-keitai.k06-typing .charm{display:none}
+#rf-aster-keitai.k06-typing .handset{height:382px}#rf-aster-keitai.k06-typing .device-stage{height:auto;overflow:visible}#rf-aster-keitai.k06-typing .hardware-actions{display:none}
+@media(max-width:650px){#rf-aster-keitai .k06-window{width:100%;height:var(--k06-vh,100svh);max-height:none;top:var(--k06-vtop,0px);left:0;right:0;padding:7px 0 8px;background:#e7e8e3;filter:none}#rf-aster-keitai .k06-titlebar{height:33px;width:calc(100% - 32px);margin:0 16px 7px;background:transparent;border:0;border-bottom:1px solid #bdcbc2;border-radius:0;padding:0 3px;backdrop-filter:none}#rf-aster-keitai .k06-titlebar button{min-width:30px;height:31px}#rf-aster-keitai .hardware-actions{height:27px;margin-top:2px;color:#748d7f;text-shadow:none}#rf-aster-keitai .handset.closed{transform:translateY(-160px)}#rf-aster-keitai .k06-outside{top:65px;right:10px;max-width:calc(100% - 20px)}#rf-aster-keitai.detail-focus .device-stage{height:calc(var(--k06-vh,100svh) - 53px)}#rf-aster-keitai.k06-typing .phone-anchor{transition:none}#rf-aster-keitai .k06-working{font-size:9px}}
