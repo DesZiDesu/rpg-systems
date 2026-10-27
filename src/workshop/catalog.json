@@ -201,7 +201,7 @@
       "kind": "system",
       "color": "sage",
       "subtitle": "Aster One / Aster K06",
-      "minimumRoleForge": "0.89.0",
+      "minimumRoleForge": "0.89.1",
       "author": "RoleForge",
       "description": "โทรศัพท์ในโลกของโรล เลือก Aster One สมาร์ทโฟน หรือ Aster K06 มือถือฝาพับญี่ปุ่น ใช้รายชื่อ ประวัติ NPC และเวลาโลกชุดเดียวกัน ไม่บังคับปีของเนื้อเรื่อง",
       "features": [
@@ -331,6 +331,17 @@
             "First Aster K06 flip-phone release, selectable per character without imposing a story year",
             "Shared contacts, mail/SMS, calls, Voice, scene clock, relationships and reversible phone state",
             "Physical keypad, folding lid, outer display, photo journal, mobile portal, notes and scene alarms"
+          ]
+        },
+        {
+          "version": "1.2.1",
+          "path": "packs/smartphone-1.2.1.json",
+          "bytes": 1577,
+          "sha256": "8b071e8376222eb3027f852ae32d43a0f45b5fb81d8a81bfe6fbd519358038da",
+          "changes": [
+            "Fullscreen K06 LCD on touch phones, with accessible navigation and larger text instead of a scaled hardware frame",
+            "Fix visible option pickers after scrolling, keyboard viewport field visibility and contact form saving",
+            "Preserve desktop handset controls; isolate switch styling and respect reduced motion"
           ]
         }
       ]

@@ -1,6 +1,6 @@
-import {WEAPON_CATEGORIES,weaponCategory,weaponModelUrl,SPECIAL_WEAPON_MODELS} from './weapon-catalog.js?v=0.89.0';
-import {normalizeWeaponMetadata,normalizeAmmoMetadata,ownedWeaponViews,configureWeapon,equipWeapon,validateWeaponPreset,prepareWeaponImage,weaponImageSource} from './weapon-core.js?v=0.89.0';
-import {createWeaponArt} from './weapon-art.js?v=0.89.0';
+import {WEAPON_CATEGORIES,weaponCategory,weaponModelUrl,SPECIAL_WEAPON_MODELS} from './weapon-catalog.js?v=0.89.1';
+import {normalizeWeaponMetadata,normalizeAmmoMetadata,ownedWeaponViews,configureWeapon,equipWeapon,validateWeaponPreset,prepareWeaponImage,weaponImageSource} from './weapon-core.js?v=0.89.1';
+import {createWeaponArt} from './weapon-art.js?v=0.89.1';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function createWeaponManager({document:doc=globalThis.document,state,preset,scope,language=()=> 'en',busy=()=>false,save}={}){

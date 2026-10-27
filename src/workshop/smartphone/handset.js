@@ -1,4 +1,4 @@
-import {clean,clone,id,safeImage} from './model.js?v=0.89.0';
+import {clean,clone,id,safeImage} from './model.js?v=0.89.1';
 
 export const isKeitai=config=>config?.deviceType==='keitai';
 export const phoneRequestAvailable=(phone,request,config)=>!isKeitai(config)||!phone.threads.some(t=>t.id===request.threadId&&t.app==='gather');
