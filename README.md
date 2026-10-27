@@ -1,5 +1,7 @@
 # RoleForge
 
+**Fixed in 0.89.3 / Aster Phone 1.2.3:** K06 uses a bare close button instead of a title bar. Removed decorative lettering clipped above the hinge; the complete handset and scrolling fixes remain. [Details](docs/aster-k06-clean-controls-v0.89.3.md).
+
 **Fixed in 0.89.2 / Aster Phone 1.2.2:** Mobile K06 shows the **complete flip phone**, including its frame, hinge and keypad, fitted to the viewport over a transparent background. Settings/contact scrolling and visible option pickers remain fixed. [Layout correction and validation](docs/aster-k06-handset-fit-v0.89.2.md).
 
 **New in 0.89.0 / Aster Phone 1.2.0:** Aster Phone **1.2.0** adds **Aster K06**, a Japanese-style flip handset selectable in Workshop settings alongside Aster One. It shares contacts, phone history, the story clock, relationships and branch undo, with SMS/mobile mail, an outer display, physical keys, a photo journal, an in-world portal and scene alarms. It imposes no story year. [First-release guide and validation](docs/aster-k06-first-release-v0.89.0.md).
@@ -26,7 +28,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Public release: 0.89.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Public release: 0.89.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

@@ -201,7 +201,7 @@
       "kind": "system",
       "color": "sage",
       "subtitle": "Aster One / Aster K06",
-      "minimumRoleForge": "0.89.2",
+      "minimumRoleForge": "0.89.3",
       "author": "RoleForge",
       "description": "โทรศัพท์ในโลกของโรล เลือก Aster One สมาร์ทโฟน หรือ Aster K06 มือถือฝาพับญี่ปุ่น ใช้รายชื่อ ประวัติ NPC และเวลาโลกชุดเดียวกัน ไม่บังคับปีของเนื้อเรื่อง",
       "features": [
@@ -353,6 +353,17 @@
             "Restore the complete K06 handset on mobile, including frame, hinge and physical keypad, fitted to the available viewport",
             "Keep the background transparent and preserve Settings/contact scrolling, visible pickers and form save fixes",
             "Retain the full handset when typing, with focused fields kept visible inside the LCD"
+          ]
+        },
+        {
+          "version": "1.2.3",
+          "path": "packs/smartphone-1.2.3.json",
+          "bytes": 1577,
+          "sha256": "26216ac59fbf51f16e055b44f49f698b8ddc783b12e70dcbf72a357fd232587e",
+          "changes": [
+            "Remove the K06 title bar; keep only a borderless close button on desktop and mobile",
+            "Remove decorative inner branding that was clipped above the hinge",
+            "Keep the complete handset, LCD scrolling and contact editing; desktop dragging uses the earpiece"
           ]
         }
       ]

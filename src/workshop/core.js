@@ -1,6 +1,6 @@
-import {phoneConfig} from './smartphone/model.js?v=0.89.2';
-import {normalizeDeathNoteConfig} from './death-note/character-config.js?v=0.89.2';
-import {sha256} from '../vendor/js-sha256/index.js?v=0.89.2';
+import {phoneConfig} from './smartphone/model.js?v=0.89.3';
+import {normalizeDeathNoteConfig} from './death-note/character-config.js?v=0.89.3';
+import {sha256} from '../vendor/js-sha256/index.js?v=0.89.3';
 export const FORMAT='roleforge-workshop-addon';
 export const addonIds=['great-sage','field-notes','death-note','smartphone'];
 export const localId=()=>globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -53,7 +53,7 @@ export function validateCatalog(raw){
  }
  return raw;
 }
-export function validatePackage(raw,host='0.89.2'){
+export function validatePackage(raw,host='0.89.3'){
  if(!raw||![FORMAT,'roleforge-workshop-addon-preview'].includes(raw.format)||raw.schema!==1||!addonIds.includes(raw.id))throw Error('ไม่รองรับแพ็กนี้');
  version(raw.version);version(raw.minimumRoleForge);
  if(compare(host,raw.minimumRoleForge)<0)throw Error(`ต้องใช้ RoleForge ${raw.minimumRoleForge} ขึ้นไป`);

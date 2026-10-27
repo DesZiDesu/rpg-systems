@@ -1,0 +1,26 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.89.3",
+  "id": "smartphone",
+  "kind": "system",
+  "name": "Aster Phone",
+  "version": "1.2.3",
+  "capabilities": [
+    "read-scene",
+    "read-stats",
+    "read-inventory",
+    "read-known-npcs",
+    "phone-messages",
+    "phone-social",
+    "phone-wallet",
+    "voice-on-request"
+  ],
+  "notes": [
+    {
+      "id": "aster",
+      "title": "Aster One / Aster K06",
+      "text": "Aster is the hardware brand. The selected character configuration chooses either Aster One smartphone or Aster K06 Japanese-style flip phone. Device choice does not impose any year or era on the roleplay. Use the supplied handset capabilities and channel names. K06 supports calls, SMS, mobile email, photos, a camera scene journal, an in-world portal, notes and scene alarms; smartphone app history is preserved but its apps cannot deliver to this handset. Both modes share one phone state, NPC identity references, story clock and relationship graph. Contact labels and mail addresses are user-editable. The AI must emit confirmed message/call events, honor pending request IDs, privacy, blocked contacts and incoming permissions. A closed lid or hidden window does not power off the phone or cancel generation. Phone and RPG changes save atomically and follow swipes, deletion and branches; never replay gains or debit twice. Optional call voice uses the existing Voice Addon. Photo scene captions do not imply pixel vision; portal pages are fictional world information, not live Internet access."
+    }
+  ]
+}

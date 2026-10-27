@@ -1,5 +1,5 @@
-import {sha256} from './vendor/js-sha256/index.js?v=0.89.2';
-import {STORY_CONTRACTS_KEY,STORY_FILE_LIMIT,validateStoryPack,validateStoryEntry,emptyStoryPack,storyCatalog,storySummary,storyContractId,storyInstanceId,normalizeStoryRuntime,storyEligibility,startStory,finishStory,storyObjectivesReady,applyStoryEvents,validStoryEvidence,storyRewardOperations,markStoryReward,storyPrompt} from './story-core.js?v=0.89.2';
+import {sha256} from './vendor/js-sha256/index.js?v=0.89.3';
+import {STORY_CONTRACTS_KEY,STORY_FILE_LIMIT,validateStoryPack,validateStoryEntry,emptyStoryPack,storyCatalog,storySummary,storyContractId,storyInstanceId,normalizeStoryRuntime,storyEligibility,startStory,finishStory,storyObjectivesReady,applyStoryEvents,validStoryEvidence,storyRewardOperations,markStoryReward,storyPrompt} from './story-core.js?v=0.89.3';
 
 const clone=structuredClone,headers=pack=>{const {entries,...meta}=pack;return meta;};
 export function createStoryRuntime(api){

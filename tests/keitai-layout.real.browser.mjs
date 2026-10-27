@@ -3,7 +3,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 const {chromium,webkit}=createRequire(import.meta.url)(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright');
 const mobile=process.env.PHONE_DEVICE!=='desktop',web=process.env.PHONE_BROWSER==='webkit';
-const base=process.env.ST_REAL_URL||'http://127.0.0.1:18350',out=process.env.PHONE_ARTIFACTS||'/workspace/artifacts/aster-k06-handset-fit/'+(web?'webkit':mobile?'mobile':'desktop');
+const base=process.env.ST_REAL_URL||'http://127.0.0.1:18350',out=process.env.PHONE_ARTIFACTS||'/workspace/artifacts/aster-k06-clean-controls/'+(web?'webkit':mobile?'mobile':'desktop');
 await mkdir(out,{recursive:true});
 const browser=await(web?webkit.launch({headless:true}):chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']}));
 const viewport=mobile?{width:390,height:844}:{width:1920,height:1080};
@@ -39,8 +39,8 @@ try{
  });
  await page.waitForFunction(()=>globalThis.RoleForgePhone?.get().enabled);
  await page.evaluate(async()=>{await RoleForgePhone.preferences({deviceType:'keitai',language:'en',sound:false,motion:false});RoleForgePhone.open('home');});
- await root().locator('.k06-window').waitFor({state:'visible'});await snap('01-home');
- const box=await root().locator('.k06-window').boundingBox(),lcd=await root().locator('.lcd').boundingBox();metrics.initial={box,lcd};
+ await root().locator('.k06-window').waitFor({state:'visible'});assert.equal(await root().locator('.k06-titlebar button:visible').count(),1);assert(await root().locator('.k06-titlebar [data-k06=close]').isVisible());assert.equal(await root().locator('.k06-titlebar').evaluate(n=>getComputedStyle(n).backgroundColor),'rgba(0, 0, 0, 0)');assert.equal(await root().locator('.inner-brand').count(),0);checks.bareCloseOnly=true;await snap('01-home');
+ const box=await root().locator('.k06-window').boundingBox(),lcd=await root().locator('.lcd').boundingBox();metrics.initial={box,lcd};if(!mobile){const e=await root().locator('.earpiece').boundingBox();await page.mouse.move(e.x+20,e.y+5);await page.mouse.down();await page.mouse.move(e.x-140,e.y+20,{steps:8});await page.mouse.up();await idle();const moved=await root().locator('.k06-window').boundingBox();assert(moved.x<box.x-100);checks.earpieceDrag=true;}
  if(mobile){assert.equal(box.x,0);assert.equal(box.y,0);assert.equal(box.width,390);assert.equal(box.height,844);assert(lcd.width<350);assert(await root().locator('.keypad-shell').isVisible());const hardware=await root().locator('.handset').boundingBox();assert(hardware.y>=0&&hardware.y+hardware.height<=844);assert(hardware.x>=0&&hardware.x+hardware.width<=390);}else assert(await root().locator('.keypad-shell').isVisible());await click('[data-key=ok]');
  assert.equal(await root().locator('.menu-app').count(),9);await snap('02-menu');checks.completeHandsetFits=true;
  await open('settings');await snap('03-settings-top');

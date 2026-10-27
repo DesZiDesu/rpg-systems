@@ -59,7 +59,6 @@
 #rf-aster-keitai .softkeys{height:24px;display:flex;background:#d8e4e8;border-top:1px solid #9aaeb8;z-index:3;flex-shrink:0}
 #rf-aster-keitai .softkeys button{flex:1;min-width:0;border:0;border-right:1px solid #b2c3c9;background:linear-gradient(#eef3f2,#c6d7df);font-size:9px;font-weight:550;padding:3px 0}
 #rf-aster-keitai .softkeys button:last-child{border:0}
-#rf-aster-keitai .inner-brand{text-align:center;font-size:9px;color:#5d6d71;letter-spacing:4px;margin-top:14px;text-shadow:0 1px #fff}
 #rf-aster-keitai .hinge{position:absolute;top:374px;left:2px;width:326px;height:27px;z-index:5;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(#d5dcd9,#96a4a5 28%,#e0e5e0 50%,#a8b3b1 75%,#6e8084);border:1px solid #778b8d;border-radius:8px;box-shadow:0 2px 2px #2038414a}
 #rf-aster-keitai .hinge>i{height:24px;width:34px;border-left:1px solid #899898;border-right:1px solid #e8ece5;background:linear-gradient(#e6e9e2,#9baba9,#dce1dc)}
 #rf-aster-keitai .hinge>i:first-child{margin-left:14px}
@@ -346,9 +345,13 @@
 #rf-aster-keitai button,#rf-aster-keitai input,#rf-aster-keitai textarea{font-family:K06Inter,K06Thai,sans-serif;text-shadow:none;letter-spacing:normal}
 #rf-aster-keitai [hidden]{display:none!important}
 #rf-aster-keitai .k06-window{pointer-events:auto;position:fixed;width:400px;max-height:calc(100vh - 12px);padding:0 15px 7px;filter:drop-shadow(0 15px 20px #0004);overflow:hidden;isolation:isolate}
-#rf-aster-keitai .k06-titlebar{height:33px;display:flex;align-items:center;justify-content:space-between;width:330px;max-width:100%;margin:0 auto 8px;padding:0 10px;background:#e7e9e0e8;color:#57766b;cursor:grab;border:1px solid #bbc9c0;border-radius:5px;backdrop-filter:blur(8px)}
-#rf-aster-keitai .k06-titlebar>span{font-size:10px;letter-spacing:3px}#rf-aster-keitai .k06-titlebar b{font-weight:400;font-size:8px;letter-spacing:1px;margin-left:7px}
-#rf-aster-keitai .k06-titlebar>div{display:flex;gap:8px}#rf-aster-keitai .k06-titlebar button{height:30px;width:28px;display:grid;place-items:center;background:none;border:0;color:#496b60;font-size:19px;padding:0;box-shadow:none}
+#rf-aster-keitai .k06-titlebar{height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;width:330px;max-width:100%;margin:0 auto 0;padding:0;background:transparent;color:#e9efe4;cursor:default;border:0;border-radius:0;backdrop-filter:none}
+#rf-aster-keitai .k06-titlebar>span{display:none}
+#rf-aster-keitai .k06-titlebar>div{display:flex;justify-content:flex-end}
+#rf-aster-keitai .k06-titlebar button{display:none;background:none;border:0;box-shadow:none}
+#rf-aster-keitai .k06-titlebar button[data-k06=close]{display:grid;place-items:center;min-height:44px;min-width:44px;height:44px;width:44px;margin:0;padding:0;color:#e9efe4;font-size:25px;line-height:1;text-shadow:0 1px 4px #071514;touch-action:manipulation}
+#rf-aster-keitai .k06-titlebar button[data-k06=close]:hover{color:#fff}
+
 #rf-aster-keitai .device-stage{width:100%;height:auto;min-height:0;margin:0;padding:0;overflow:visible}
 #rf-aster-keitai .phone-anchor{width:330px;flex:0 0 auto;transform-origin:50% 0;transition:transform .2s,height .2s}
 #rf-aster-keitai .handset{width:330px;height:754px}.k06-window .handset .earpiece{cursor:grab}
@@ -385,10 +388,8 @@
 /* Mobile presents the same complete handset as desktop, fitted to the viewport. */
 @media(max-width:650px),(hover:none) and (pointer:coarse) and (max-width:1000px){
  #rf-aster-keitai .k06-window{display:flex;flex-direction:column;align-items:center;width:var(--k06-vw,100%);height:var(--k06-vh,100dvh);min-height:0;max-height:none;top:var(--k06-vtop,0px);left:var(--k06-vleft,0px);right:auto;padding:8px max(12px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));background:transparent;filter:none;overflow:hidden}
- #rf-aster-keitai .k06-titlebar{flex-shrink:0;width:min(354px,100%);height:33px;min-height:33px;margin:0 0 8px;padding:0 10px;border:1px solid #bbc9c0;border-radius:5px;background:#e7e9e0e8;cursor:default}
- #rf-aster-keitai .k06-titlebar>div{gap:8px}
- #rf-aster-keitai .k06-titlebar .k06-mobile-control{display:none}
- #rf-aster-keitai .k06-titlebar [data-k06=zoom]{display:none}
+ #rf-aster-keitai .k06-titlebar{width:min(354px,100%);height:44px;min-height:44px;margin:0;padding:0;background:transparent;border:0;border-radius:0}
+
  #rf-aster-keitai .device-stage,#rf-aster-keitai.detail-focus .device-stage,#rf-aster-keitai.k06-typing .device-stage{display:flex;flex:1;min-height:0;width:100%;height:auto;justify-content:center;overflow:visible;padding:0;margin:0}
  #rf-aster-keitai .phone-anchor,#rf-aster-keitai.k06-typing .phone-anchor{width:330px;flex:0 0 auto;transition:none;transform-origin:50% 0}
  #rf-aster-keitai .handset,#rf-aster-keitai.k06-typing .handset{width:330px;height:754px}

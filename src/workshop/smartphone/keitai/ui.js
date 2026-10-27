@@ -1,6 +1,6 @@
-import {KEITAI_SHELL} from './shell.js?v=0.89.2';
-import {contactLabel,safeImage,clean} from '../model.js?v=0.89.2';
-import {smsParts,mailAddress} from '../handset.js?v=0.89.2';
+import {KEITAI_SHELL} from './shell.js?v=0.89.3';
+import {contactLabel,safeImage,clean} from '../model.js?v=0.89.3';
+import {smsParts,mailAddress} from '../handset.js?v=0.89.3';
 
 const esc=value=>String(value??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const artwork=name=>new URL('./assets/'+name+'.svg',import.meta.url).href;
@@ -167,7 +167,7 @@ export function mountKeitaiUI(runtime){
  $('#k06-soft-center').onclick=()=>void run(()=>key('ok'));$('#k06-soft-right').onclick=()=>void run(()=>{if(view.app==='home')go('contacts');else if(view.app==='mail'||view.app==='sms'){view={...view,folder:view.folder==='out'?'in':'out'};lastMarkup='';render();}else if(view.app==='compose'&&draft?.channel==='mail')return handle('attach');else back();});
  function keyboard(e){if(!opened||e.defaultPrevented||e.target.closest('input,textarea,[contenteditable=true]'))return;const value=({ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Backspace:'back',Escape:'back'})[e.key]||(/^[0-9*#]$/u.test(e.key)?e.key:'');if(value){e.preventDefault();void run(()=>key(value));}}
  document.addEventListener('keydown',keyboard);
- root.addEventListener('pointerdown',e=>{if(mobileLayout()||e.button||!e.target.closest('.earpiece,.k06-titlebar')||e.target.closest('button'))return;const r=win.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top};root.setPointerCapture(e.pointerId);});
+ root.addEventListener('pointerdown',e=>{if(mobileLayout()||e.button||!e.target.closest('.earpiece')||e.target.closest('button'))return;const r=win.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top};root.setPointerCapture(e.pointerId);});
  root.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;win.style.left=Math.max(0,Math.min(innerWidth-win.offsetWidth,e.clientX-drag.x+drag.left))+'px';win.style.top=Math.max(0,Math.min(innerHeight-50,e.clientY-drag.y+drag.top))+'px';});
  root.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;drag=null;root.releasePointerCapture(e.pointerId);void run(()=>runtime.preferences({position:{x:parseFloat(win.style.left)/Math.max(1,innerWidth-400-12),y:parseFloat(win.style.top)/Math.max(1,innerHeight-win.offsetHeight-12)}}));});root.addEventListener('pointercancel',()=>drag=null);
  const resized=()=>{if(!dead&&!frame&&opened)frame=requestAnimationFrame(()=>{frame=0;position();});};window.addEventListener('resize',resized);window.visualViewport?.addEventListener('resize',resized);window.visualViewport?.addEventListener('scroll',resized);root.addEventListener('focusin',resized);root.addEventListener('focusout',()=>setTimeout(resized,0));
