@@ -10,7 +10,7 @@
 - Mobile sizes 320 × 568, 390 × 844, 430 × 932 and 844 × 390: no horizontal overflow in the equipment screen. Missing artwork falls back without breaking the page.
 - A synthetic **2,000-message** ST conversation: unchanged refresh processes zero replay rows; an appended message processes one. Only 16 checkpoints are retained. Editing/deleting the synthetic suffix returns exactly to the original game state.
 - Character narration/scenery preferences survive a new chat while party/progression reset for the new chat.
-- The actual extracted installer ZIP runs in a separate ST profile and passes the long-chat, artwork, viewport and character-preference checks.
+- The actual extracted installer ZIP runs in a separate ST profile and passes the complete desktop/mobile gameplay/narration/reload/branch flow, plus long-chat, artwork, viewport and character-preference checks.
 
 Timing is environment-dependent: the source-profile performance run initially took about 57 ms; ten unchanged refreshes took about 177 ms total. See the delivered machine-readable reports for each run's measurements.
 
