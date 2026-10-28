@@ -26,7 +26,7 @@ import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfi
 import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.90.0';
 import {npcReferenceProfiles} from './src/npc-core.js?v=0.90.0';
 import {createArchiveRevisionCache,searchNpcArchive,resolveIndexedNpc,npcArchiveSummary,loreArchiveSummary} from './src/archive-cache.js?v=0.90.0';
-import {inheritNpcBaselines,preserveNpcCanon} from './src/sparse-npc-state.js?v=0.90.0';
+import {inheritNpcBaselines,preserveNpcCanon} from './src/sparse-npc-state.js?v=0.90.2';
 import {createWorldPackClient,characterWorldRef,mountWorldPackControls} from './src/world-pack-client.js?v=0.90.0';
 import {mountNpcIconUpdate} from './src/npc-icon-update-ui.js?v=0.90.0';
 import {ICON_PACKS_FIELD,availableIconPacks} from './src/icon-packs.js?v=0.90.0';
@@ -103,7 +103,7 @@ import { identity as npcIdentity, CHAT_INSTRUCTIONS, PRIVATE_THOUGHT_INSTRUCTION
 import { createNpcWorkspace } from './src/npc-workspace.js?v=0.90.1';
 import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.90.0';
 import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.90.0';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.90.0';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.90.2';
 import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.90.0';
 import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.90.0';
 import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat, retainHStatsEdits } from './src/h-stats.js?v=0.90.0';
@@ -11849,7 +11849,7 @@ async function initialize() {
         });
         workshopReady={async prepareGeneration(type){try{await mountingWorkshop;}catch{return;}return nativeWorkshop.prepareGeneration(type);},then(resolve,reject){return mountingWorkshop.then(()=>nativeWorkshop.ready()).then(resolve,reject);}};
         mountingWorkshop.catch(error=>console.warn('[RoleForge] Workshop unavailable',error));
-        console.info(`[RoleForge] Role-play interface v${globalThis.TretaresiaRelease||'0.90.1'} loaded.`);
+        console.info(`[RoleForge] Role-play interface v${globalThis.TretaresiaRelease||'0.90.2'} loaded.`);
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

@@ -1,6 +1,6 @@
 # Pokémon RPG — world card editions
 
-Import one **PNG** into SillyTavern: each contains the supplied cover, character data and a compressed RoleForge World Pack. The matching JSON files contain the same roleplay data without a card portrait. Update RoleForge to **0.90.1** and install Pokémon **1.0.0** in Workshop.
+Import one **PNG** into SillyTavern: each contains the supplied cover, character data and a compressed RoleForge World Pack. The matching JSON files contain the same roleplay data without a card portrait. Update RoleForge to **0.90.2** and install Pokémon **1.0.0** in Workshop.
 
 | Edition | Language | Opening |
 | --- | --- | --- |

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createArchiveCatalog} from '../src/archive-cache.js';
 import {hydrateSparseNpcs,packSparseNpcs,inheritNpcBaselines,sparseNpcScope} from '../src/sparse-npc-state.js';
+import {resolveNpcSpeaker} from '../src/npc-core.js';
 
 const owner='card:world.png';
 const person=(id,overrides={})=>({id,name:`Person ${id}`,enabled:true,met:false,identityColor:'#aa1122',
@@ -9,6 +10,15 @@ const person=(id,overrides={})=>({id,name:`Person ${id}`,enabled:true,met:false,
     activeAlternateId:'a',alternateProfiles:[{id:'a',label:'Current',fields:{stats:{hp:200},background:'Current period'}},
         {id:'b',label:'Other era',fields:{background:'Historical facts '.repeat(200),stats:{hp:300}},identityColor:'#33aa44'}],...overrides});
 const state=()=>({player:{name:'Player'},npcs:[],contacts:[],npcScopes:{}});
+
+test('a local translated name and archive name sharing a stable ID do not create two speakers',()=>{
+    const catalog=createArchiveCatalog([person('oak',{name:'Professor Oak',aliases:['ศาสตราจารย์โอ๊ก']})],{owner});
+    const local={id:'oak',name:'ศาสตราจารย์โอ๊ก',npcScope:'chat',met:true,identityColor:'#e39f83',roleIconImage:'data:image/png;base64,example'};
+    const current=hydrateSparseNpcs({...state(),npcs:[local]},catalog,owner,{activeIds:['oak']});
+    assert.equal(current.npcs.length,1);assert.equal(current.npcs[0].name,local.name);
+    assert.equal(resolveNpcSpeaker(current.npcs,local.name)?.identityColor,local.identityColor);
+    assert.deepEqual(packSparseNpcs(current,catalog,owner).npcScopes.hidden,[]);
+});
 
 test('sparse working state loads one of 800 dossiers; checkpoints never copy historical versions or the full index',()=>{
     const source=Array.from({length:800},(_,i)=>person(String(i))),catalog=createArchiveCatalog(source,{owner});

@@ -1,6 +1,6 @@
 # Pokémon First Release — install and play
 
-RoleForge 0.90.1 and Pokémon 1.0.0 are available on `main`. Existing Aster, Death Note and RoleForge features are included. No preview branch is required.
+RoleForge 0.90.2 and Pokémon 1.0.0 are available on `main`. Existing Aster, Death Note and RoleForge features are included. No preview branch is required.
 
 ## Install with SillyTavern
 

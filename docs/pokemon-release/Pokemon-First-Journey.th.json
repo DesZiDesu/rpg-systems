@@ -25,7 +25,7 @@
     ],
     "creator": "RoleForge",
     "character_version": "1.2.0",
-    "creator_notes": "Red Sunken Sun · ภาษาไทย\n\nSix alternative openings (default + five swipes). The sixth features the edition’s original trainer in a cutaway.\n\nRequires RoleForge 0.90.1 or later and Pokémon 1.0.0. Import this ONE PNG or JSON card; its source-labelled NPC and Lore archive is embedded. Enable Pokémon in Workshop. All characters have distinct presentation colors and an embedded Poké Ball role icon. Search NPC Management and Lore Management by name or series, such as Ruby. Canon/game/anime versions remain source references, not automatic encounters. The wallet starts at 3,000 Poké Dollars (₽) and can be edited. Gazette and Alfmorii are original NPCs. Their original legendary Pokémon are narrative references only until the user provides final data and the addon is extended. Cover art supplied by the user; Pokémon and game sprite icon belong to their respective owners.\n\nต้องใช้ RoleForge 0.90.1 ขึ้นไป เปิด Pokémon ใน Workshop นำเข้า PNG หรือ JSON เพียงไฟล์เดียว การ์ดมีคลังตัวละครและ Lore แยกตามภาค ค้น Ruby หรือชื่อภาคใน NPC / Lore Management ได้ เริ่มด้วย Poké Dollar 3,000 ₽ แก้ไขเองได้ กาเซตต์และอัลฟ์โมรีเป็นตัวละครต้นฉบับของผู้ใช้ ส่วนโปเกมอนในตำนานยังไม่มีชื่อ ธาตุ สเตตัส หรือความสามารถที่กำหนด และยังไม่ได้เพิ่มลงฐานข้อมูล Addon\nฉากเปิดมีหกแบบ สลับด้วยลูกศร swipe ของ SillyTavern;",
+    "creator_notes": "Red Sunken Sun · ภาษาไทย\n\nSix alternative openings (default + five swipes). The sixth features the edition’s original trainer in a cutaway.\n\nRequires RoleForge 0.90.2 or later and Pokémon 1.0.0. Import this ONE PNG or JSON card; its source-labelled NPC and Lore archive is embedded. Enable Pokémon in Workshop. All characters have distinct presentation colors and an embedded Poké Ball role icon. Search NPC Management and Lore Management by name or series, such as Ruby. Canon/game/anime versions remain source references, not automatic encounters. The wallet starts at 3,000 Poké Dollars (₽) and can be edited. Gazette and Alfmorii are original NPCs. Their original legendary Pokémon are narrative references only until the user provides final data and the addon is extended. Cover art supplied by the user; Pokémon and game sprite icon belong to their respective owners.\n\nต้องใช้ RoleForge 0.90.2 ขึ้นไป เปิด Pokémon ใน Workshop นำเข้า PNG หรือ JSON เพียงไฟล์เดียว การ์ดมีคลังตัวละครและ Lore แยกตามภาค ค้น Ruby หรือชื่อภาคใน NPC / Lore Management ได้ เริ่มด้วย Poké Dollar 3,000 ₽ แก้ไขเองได้ กาเซตต์และอัลฟ์โมรีเป็นตัวละครต้นฉบับของผู้ใช้ ส่วนโปเกมอนในตำนานยังไม่มีชื่อ ธาตุ สเตตัส หรือความสามารถที่กำหนด และยังไม่ได้เพิ่มลงฐานข้อมูล Addon\nฉากเปิดมีหกแบบ สลับด้วยลูกศร swipe ของ SillyTavern;",
     "extensions": {
       "roleforge_workshop": {
         "format": "roleforge-workshop-card-defaults",
@@ -64,7 +64,7 @@
               "occupation": "ศาสตราจารย์โปเกมอน",
               "met": true,
               "location": "Pallet Town Pokémon Lab",
-              "race": "Human",
+              "race": "มนุษย์",
               "identityColor": "#e39f83",
               "personality": "Patient, observant and curious; invites questions without choosing the player’s path.",
               "aliases": [
@@ -74,7 +74,8 @@
               ],
               "roleIcon": "book",
               "roleIconImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeBAMAAADJHrORAAAAIVBMVEX///8xMTH/lDqcSjr/1jr////eWjpKUlKlpcV7e4TezvdcMgHRAAAAAXRSTlMAQObYZgAAAKRJREFUeNq1kCsOwkAURc9MWwnp4IpqikQQdjAksIAmsCgUS2AbLAGBAIdq6kgwU0kIQxDzCaK217zcd94vD4aVcEGBASB1VuETCYAogJF9ARJAVcCnxnsxUSWQ5YH/SQLqa1qAOvImbuqrdzdprt6nebZjjdWhayPabXfTb8+fpbVCaXkM88azBOQi3n9mVU2L+ynwx1JBc4icy9yYfdf3j6H1A1dtIOSJP236AAAAAElFTkSuQmCC",
-              "enabled": true
+              "enabled": true,
+              "relationship": "คนรู้จัก"
             }
           ],
           "worldClock": {

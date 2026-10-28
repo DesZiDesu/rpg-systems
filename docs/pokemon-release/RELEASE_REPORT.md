@@ -1,10 +1,10 @@
 # Pokémon 1.0.0 release report
 
-## Card and RoleForge update — 0.90.1
+## Card and RoleForge update — 0.90.1–0.90.2
 
 The three Pokémon cards now use the supplied covers and each embeds a searchable game/animation reference archive, two original trainer profiles and their unnamed companion references. Each named language edition has six alternative RoleForge-formatted openings; Sun & Dawn has no first message. A configurable RoleForge wallet starts a new adventure with ₽3,000. See [the card guide](CARDS.md) for source coverage, edit/export instructions and limitations. The Pokémon addon remains **1.0.0**: the two original legendary species have not yet been added to its engine.
 
-RoleForge 0.90.1 adds searching NPC archive records by source and version without exposing names hidden by Death Note. Tests of the updated cards are listed in [QA.md](QA.md).
+RoleForge 0.90.1 adds searching NPC archive records by source and version without exposing names hidden by Death Note. RoleForge 0.90.2 avoids duplicating a chat NPC and archive NPC with the same stable ID under translated names. Tests of the updated cards are listed in [QA.md](QA.md).
 
 ## Original first release
 

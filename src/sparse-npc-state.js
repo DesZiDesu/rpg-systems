@@ -1,6 +1,6 @@
 // Chat state holds selected dossiers and field deltas. Canon and historical
 // versions stay in a reference catalog, outside serialized state/checkpoints.
-import {pruneNpcReferences} from './npc-scopes.js?v=0.90.0';
+import {pruneNpcReferences} from './npc-scopes.js?v=0.90.2';
 const UNSAFE=new Set(['__proto__','constructor','prototype']);
 const RESERVED=new Set([...UNSAFE,'id','npcScope','npcOwner']);
 const baselineReferences=new WeakMap(),arrayIndexes=new WeakMap();
@@ -188,10 +188,13 @@ export function hydrateSparseNpcs(state,library,owner='',{activeIds}={}) {
     const retired=previousIds.filter(id=>changed||state.npcScopes?.owner!==owner||!catalog.has(id));
     const result=pruneNpcReferences(cloneStateWithoutNpcs(state),[...retired,...scope.hidden]);
     const local=(state.npcs||[]).filter(p=>p.npcScope!=='character').map(p=>({...copy(p),npcScope:'chat',npcOwner:''}));
-    const selected=ids(activeIds??scope.activeIds),hidden=new Set(scope.hidden),localNames=new Set(local.map(p=>String(p.name).normalize('NFKC').toLocaleLowerCase())),references=new Map();
+    const selected=ids(activeIds??scope.activeIds),hidden=new Set(scope.hidden),localIds=new Set(local.map(p=>p.id)),localNames=new Set(local.map(p=>String(p.name).normalize('NFKC').toLocaleLowerCase())),references=new Map();
     const shared=[];
     for(const id of selected){
-        if(hidden.has(id))continue;
+        // A chat dossier may use a localized name for the same stable archive
+        // identity. Keep that one record instead of presenting both names as
+        // separate people and making speaker resolution ambiguous.
+        if(hidden.has(id)||localIds.has(id))continue;
         const base=catalog.get(id);if(!base||localNames.has(String(base.name).normalize('NFKC').toLocaleLowerCase()))continue;
         const delta=rebaseDelta(scope.overrides[id],scope.bases[id],base);
         const npc=runtimeNpcDossier(base,delta,owner);
