@@ -1,8 +1,10 @@
 # RoleForge
 
-**Pokémon First Release — 1.0.0 / RoleForge 0.90.0.** Available on `main`: the Pokémon adventure addon, character creation, supported abilities/held items/weather, shared inventory, trade-back evolution and optimized replay. Update RoleForge, then install Pokémon 1.0.0 in Workshop. [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
+**Pokémon First Release — 1.0.0 / RoleForge 0.90.1.** Available on `main`: the Pokémon adventure addon, character creation, supported abilities/held items/weather, shared inventory, trade-back evolution and optimized replay. Update RoleForge, then install Pokémon 1.0.0 in Workshop. [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
 
-**Pokémon cards:** [Sunken Red Sun · ไทย](docs/pokemon-release/Pokemon-Sunken-Red-Sun.th.png), [Dawn Midnights · English](docs/pokemon-release/Pokemon-Dawn-Midnights.en.png), and [Sun & Dawn · Character Creation](docs/pokemon-release/Pokemon-Sun-and-Dawn.png). Each PNG includes its own cover and embedded card data. The language editions have five formatted, open-ended greetings each; Sun & Dawn has no first message. [Card guide](docs/pokemon-release/CARDS.md).
+**Pokémon world cards:** [Red Sunken Sun · ไทย](docs/pokemon-release/Pokemon-Sunken-Red-Sun.th.png), [Dawn Midnights · English](docs/pokemon-release/Pokemon-Dawn-Midnights.en.png), and [Sun & Dawn · Character Creation](docs/pokemon-release/Pokemon-Sun-and-Dawn.png). Each embeds a searchable game/anime reference library, original trainer profiles and ₽3,000 starting currency. The language editions have six formatted greetings each; Sun & Dawn has no first message. [Card guide and coverage](docs/pokemon-release/CARDS.md).
+
+**New in 0.90.1:** NPC Management can find archive records by their source series and alternate-profile labels. Search operates on the same player-visible names and context used by the archive, preserving Death Note's hidden-name rules.
 
 **Fixed in 0.89.3 / Aster Phone 1.2.3:** K06 uses a bare close button instead of a title bar. Removed decorative lettering clipped above the hinge; the complete handset and scrolling fixes remain. [Details](docs/aster-k06-clean-controls-v0.89.3.md).
 
@@ -32,7 +34,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Release build: 0.90.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Release build: 0.90.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

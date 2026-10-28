@@ -1,53 +1,38 @@
-# Pokémon RPG — three editions
+# Pokémon RPG — world card editions
 
-Import a **PNG card** into SillyTavern to get its cover and embedded character data together. Each has an original generated cover in a minimalist flat-color style with stepped pixel details. The JSON alternatives contain the same roleplay data and do not include a portrait.
+Import one **PNG** into SillyTavern: each contains the supplied cover, character data and a compressed RoleForge World Pack. The matching JSON files contain the same roleplay data without a card portrait. Update RoleForge to **0.90.1** and install Pokémon **1.0.0** in Workshop.
 
 | Edition | Language | Opening |
 | --- | --- | --- |
-| [Sunken Red Sun](Pokemon-Sunken-Red-Sun.th.png) | Thai | Five open-ended scenes at Oak’s laboratory near sunset |
-| [Dawn Midnights](Pokemon-Dawn-Midnights.en.png) | English | Five open-ended scenes at Oak’s laboratory before sunrise |
-| [Sun & Dawn](Pokemon-Sun-and-Dawn.png) | Follows your creation/settings language | No first message; opens Pokémon Character Creation |
+| [Red Sunken Sun](Pokemon-Sunken-Red-Sun.th.png) | Thai | Six RoleForge-formatted openings |
+| [Dawn Midnights](Pokemon-Dawn-Midnights.en.png) | English | Six RoleForge-formatted openings |
+| [Sun & Dawn](Pokemon-Sun-and-Dawn.png) | Your chosen creation/settings language | No first message; opens Pokémon Character Creation |
 
-Update RoleForge on `main`. The card enables Pokémon in Workshop and can install its pack when it is missing. No external Pokémon account is required. Your normal ST API is needed when you ask for new narration or finish Character Creation.
+Use SillyTavern's greeting arrows before sending a message to select any of the six openings. Each uses RoleForge header, narrative and dialogue blocks. The sixth is an optional introductory cutaway: Gazette appears in Red Sunken Sun and Alfmorii in Dawn Midnights, followed by a scene at Oak's laboratory. The cutaway does not automatically make the player meet them. The player chooses what to do, and is not assigned a partner or dialogue.
 
-## Choose an opening
+The named editions start with five Poké Balls and two Potions. Sun & Dawn starts with no greeting, party or items and lets Pokémon Character Creation choose the opening, partner and kit. The addon creator can be toggled in Workshop. Your usual SillyTavern API generates new narration.
 
-The default opening plus four alternate greetings makes **five per language**. Use SillyTavern’s greeting swipe arrows to choose before sending your first message. Each scene uses `tr-header`, `tr-narrative` and `tr-dialogue`; it follows your RoleForge chat design and visibility settings.
+## World archive
 
-Sunken Red Sun:
+Each card contains **3,415 indexed character and Pokémon references**, **798 alternate profiles**, and **186 grouped lore entries**. The snapshot draws on game and animation source lists and is searchable by series: search `Ruby` in NPC Management or `[Ruby]` in Lore Management. It includes core world summaries and source-group lists. Many minor entries are deliberately brief: this is a broad reference index, not a claim that every character, episode, full biography or game mechanic in the franchise has been catalogued. Some source lists group characters by the title in which they first appeared. Later or unreleased titles are identified as such.
 
-1. คู่หูก่อนตะวันลับ — meet the starters or discuss your route.
-2. จดหมายจากชายฝั่ง — investigate an unopened letter, or follow your own reason for visiting.
-3. เสียงเรียกจากเส้นทางแรก — listen to a field recording and choose what to ask next.
-4. ประกาศที่ยังไม่มีชื่อ — consider an optional field walk, or travel independently.
-5. การเดินทางที่ยังไม่มีคำตอบ — define your own goal beyond collecting badges.
+Every reference has a distinct color and a Poké Ball PNG icon. Gazette and Alfmorii have editable original profiles and portraits based on the user-supplied covers. Their unnamed legendary companions have separate **narrative references** only. No unapproved species name, type, stats, moves or abilities have been invented or added to the Pokémon addon. A playable custom species can be added later once its artwork and details are supplied.
 
-Dawn Midnights:
+All three cards use the regular RoleForge currency ledger, configured as **Poké Dollars (₽)** with a starting balance of **₽3,000**. The currency scheme and amount can be edited through RoleForge. No conversion to other Pokémon currencies is assumed.
 
-1. A partner before sunrise.
-2. The signal that stayed awake.
-3. An unfinished field notebook.
-4. A place on the noticeboard.
-5. A journey without a title.
+The embedded library installs automatically in the browser when the card is opened; first import takes longer than subsequent opens. NPC and lore records are editable in management. If you edit the library and want the changes to travel with the card, use RoleForge's World Pack **Update embedded archive** or **Export self-contained card** before exporting.
 
-These are alternative beginnings, not consecutive missions. The player is not assigned dialogue, a profession, a partner, a completed quest or an obligation. Objects described on a desk are not automatically awarded. The normal kit is Poké Ball ×5 and Potion ×2; choosing a partner happens through Journey or Character Creation.
+## Sources and files
 
-## Sun & Dawn
+The frozen source index and original summaries are in `cards/pokemon-rpg/data/`. Game names/groups draw on [Bulbapedia's game character list](https://bulbapedia.bulbagarden.net/wiki/Game_characters), animation names/groups on [its animated character index](https://bulbapedia.bulbagarden.net/wiki/List_of_animated_series_characters), and an additional [character index](https://tltcg.com/characters); the summaries are not copied biographies. Pokémon and its character artwork belong to their respective rights holders. The Poké Ball sprite is bundled from the game's sprite collection mirrored by PokeAPI; see [asset credits](../../src/workshop/pokemon/CREDITS.md). All three cover images were supplied by the user. Edition names and the two original trainers are not official Pokémon releases.
 
-This card intentionally contains an empty `first_mes` and no alternate greetings. It also starts without a party, items or seeded NPC encounters. Open a new chat with Pokémon enabled and **Workshop → Pokémon → Use addon character creation** on. Register your identity, region, partner/no-partner choice, kit, goal and opening scene. The creator’s saved choices set the initial game; then the AI writes the first scene in RoleForge format.
+The historical filenames `Pokemon-Sunken-Red-Sun.th.*` and `Pokemon-First-Journey.th/en.json` remain compatible with existing links. Import just one PNG or its corresponding JSON, not both. [Four NovelAI V5 design prompts](../../cards/pokemon-rpg/NovelAI-5-Pokemon-Prompts.md) are provided for the two original legendary designs.
 
-The card does not force Oak’s laboratory or a fixed player background. You may use Thai or English. Turning the addon creator off uses the ordinary RoleForge creator instead; your saved character preference takes precedence over a card default.
-
-## Files and artwork
-
-The `Pokemon-First-Journey.th.json` and `.en.json` paths remain aliases for the two named language editions. Use one edition per imported character; you do not need to import both the PNG and matching JSON.
-
-Art is original AI-generated Pokémon fan art, not official game artwork. Edition titles are custom card names, not official games or separate canon regions. Covers do not establish which Pokémon the player owns.
-
-Validate PNG metadata and all ten formatted openings:
+To rebuild or validate:
 
 ```sh
+node cards/pokemon-rpg/tools/build-world.mjs
 node tools/build-pokemon-edition-cards.mjs --check
 ```
 
-After editing JSON, running the builder without `--check` rewrites the embedded card metadata while keeping the existing PNG’s image data unchanged. Initial cover input can be supplied using `--art-dir`. Browser verification imports all three PNGs, swipes all ten authored openings on desktop/mobile, and completes the blank card’s creator with a controlled local model response.
+The frozen source snapshot makes the rebuild independent of network access. The checker validates embedded metadata, image integrity and all twelve formatted openings. Browser tests require a disposable SillyTavern profile.

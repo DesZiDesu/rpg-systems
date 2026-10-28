@@ -22,6 +22,15 @@ import {mountNpcCapacityControls} from './npc-capacity-ui.js?v=0.90.0';
 import {createNameKnowledgePanel} from './name-knowledge-ui.js?v=0.90.0';
 
 const LONG_FIELDS=new Set(['appearance','personality','background','goals','speechStyle','notes','children','relationshipState']);
+
+// Series and alternate-dossier labels are reference metadata, not NPC aliases.
+// Search them without teaching the identity matcher that every member of a
+// series has the same name. The caller passes the already-redacted player view.
+export function npcArchiveSearchText(n={}) {
+    return [n.name,n._rfNameSight?.trueName,n.occupation,n.faction,...(n.aliases||[]),
+        ...(n.context||[]),...(n.versions||[]).flatMap(v=>[v.label,...(v.context||[])])]
+        .filter(value=>typeof value==='string').join(' ');
+}
 const clone=value=>JSON.parse(JSON.stringify(value));
 const uuid=()=>globalThis.crypto?.randomUUID?.()||`npc-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -30,7 +39,7 @@ export function createNpcWorkspace(api) {
     let brief='',references=[],viewportFrame=0,unobscuredHeight=0,lore,tab='npc',presentationStatus=null,presentationSettingsGroup=null,formattingModeLabel=null,formattingModeHelp=null,userPresentationLabel=null,userPresentationHelp=null;
     const presentationSubscriptions=[];
     let appearanceControls=null,nameKnowledge=null;
-    const archiveBrowser=createArchiveBrowser({searchText:n=>`${n.name} ${n._rfNameSight?.trueName||''} ${n.occupation} ${n.faction} ${(n.aliases||[]).join(' ')}`,normalizeQuery:keyName});
+    const archiveBrowser=createArchiveBrowser({searchText:npcArchiveSearchText,normalizeQuery:keyName});
     let archiveTools=null,archiveUndo=[],archiveOptions=null,capacityControls=null;
     const archiveRecords=(all=api.listScope(scope))=>all.map(n=>playerNpc(n._archiveSummary?n:effectiveNpc(n))).sort((a,b)=>a.name.localeCompare(b.name));
     function resetArchive(){archiveBrowser.reset();archiveUndo=[];if(dialog){dialog.querySelector('[data-search]').value='';const scroller=dialog.querySelector('.trpg-browser .trpg-archive-scroll');if(scroller)scroller.scrollTop=0;}}
