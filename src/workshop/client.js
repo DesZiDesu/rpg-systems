@@ -1,7 +1,7 @@
-import {LIMIT} from './core.js?v=0.90.6';
+import {LIMIT} from './core.js?v=0.90.7';
 
 export function createStore({timeout=60000}={}){
- const worker=new Worker(new URL('./worker.js?v=0.90.6',import.meta.url),{type:'module'}),pending=new Map();let serial=0,failure;
+ const worker=new Worker(new URL('./worker.js?v=0.90.7',import.meta.url),{type:'module'}),pending=new Map();let serial=0,failure;
  const close=error=>{
   failure=error;worker.terminate();
   for(const p of pending.values()){clearTimeout(p.timer);p.reject(error);}

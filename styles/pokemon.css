@@ -112,3 +112,80 @@
 .pkm-attack .pk-ally-art{animation:pk-inline-lunge .65s both}
 @keyframes pk-inline-lunge{0%,100%{translate:0 0}45%{translate:12% -8%}}
 .rfpk .pk-hp-percent{font-size:10px;opacity:.72;font-weight:600}.rfpk .pk-battle-meta{font-size:10px;line-height:1.2;opacity:.8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:700px){.rfpk .pk-battle-meta,.rfpk .pk-hp-percent{font-size:8px}}
+/* Keep the entire ball and its trajectory in the clear central lane between both HP panels. */
+.pkm-inline-ball{left:44%;top:59%;width:12%;height:20%;animation:pk-inline-safe-throw .8s both,pk-inline-shake .45s .85s 4}
+.pkm-escaped .pkm-inline-ball{animation:pk-inline-safe-throw .8s both,pk-inline-shake .45s .85s 4,pk-inline-vanish .1s 2.4s forwards}
+.pkm-inline-sparks{left:45%;top:42%}
+@keyframes pk-inline-safe-throw{0%{left:12%;top:74%;transform:scale(.4) rotate(0)}40%{left:44%;top:43%;transform:scale(1.1) rotate(430deg)}100%{left:44%;top:59%;transform:rotate(1080deg)}}
+
+/* Trainer Archive: an independent game interface, with its own navigation and panels. */
+@font-face{font-family:PKArchive;src:url('../src/workshop/smartphone/assets/inter-variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:PKArchiveThai;src:url('../src/workshop/smartphone/assets/noto-sans-thai.woff2') format('woff2');font-weight:400 700;font-display:swap}
+.rfpk[data-pk-theme=classic-dark]{--pk-bg:#111820;--pk-panel:#202b32;--pk-line:#647d78;--pk-text:#f2eee1;--pk-muted:#b9cac0;--pk-gold:#eed08d;--pk-green:#80d5a4;font-family:PKArchive,PKArchiveThai,system-ui,sans-serif;background:#111820;color:#f2eee1}
+#roleforge-pokemon[data-pk-theme=classic-dark]{border:1px solid #a6bc9d;border-radius:4px;box-shadow:0 0 0 5px #172b29,0 0 0 6px #9aab8e,0 28px 85px #000b}
+.rfpk[data-pk-theme=classic-dark] .pk-shell{background:linear-gradient(115deg,#101c24,#15262b 56%,#1b2229)}
+.rfpk[data-pk-theme=classic-dark] .pk-header{position:relative;min-height:74px;padding:12px 28px;background:linear-gradient(115deg,#edf2df 0%,#c7d9c1 65%,#a9c9b0 100%);color:#172822;border:0;border-bottom:5px solid #31614d;box-shadow:0 2px 0 #d3b879}
+.rfpk[data-pk-theme=classic-dark] .pk-header:after{content:'';position:absolute;right:150px;top:0;bottom:0;width:15%;background:repeating-linear-gradient(115deg,transparent 0 12px,#3b745a22 13px 15px);clip-path:polygon(20% 0,100% 0,80% 100%,0 100%);pointer-events:none}
+.rfpk[data-pk-theme=classic-dark] .pk-wordmark small{font-size:10px;letter-spacing:.19em;color:#4a6358;font-weight:800}
+.rfpk[data-pk-theme=classic-dark] .pk-wordmark strong{font-size:28px;color:#162d27;letter-spacing:-.04em;-webkit-text-stroke:0;filter:none}
+.rfpk[data-pk-theme=classic-dark] .pk-power-lens{border-color:#244e3d;background:radial-gradient(circle at 35% 25%,#faffec,#82cea3 32%,#2b8160 68%,#184533);box-shadow:0 0 0 3px #f3f3e2,0 0 0 5px #536f59}
+.rfpk[data-pk-theme=classic-dark] .pk-preview-tag{border-color:#547463;color:#294b39;border-radius:2px}
+.rfpk[data-pk-theme=classic-dark] .pk-header .pk-icon{background:#edf4e6;color:#264b3c;border-color:#91af96;box-shadow:0 2px #678979;border-radius:3px}
+.rfpk[data-pk-theme=classic-dark] .pk-layout{display:flex;flex-direction:column;min-height:0}
+.rfpk[data-pk-theme=classic-dark] .pk-nav{flex:none;display:flex;flex-direction:row;gap:4px;align-items:stretch;justify-content:flex-start;padding:8px 25px;background:#0d1719;border:0;border-bottom:1px solid #678b71;box-shadow:inset 0 -4px #152c26}
+.rfpk[data-pk-theme=classic-dark] .pk-nav button{position:relative;flex:0 1 auto;min-width:100px;min-height:42px;padding:9px 15px;border:1px solid transparent;border-radius:3px;background:transparent;color:#9faea4;font-size:12px;font-weight:700;letter-spacing:.03em;box-shadow:none}
+.rfpk[data-pk-theme=classic-dark] .pk-nav button[aria-current=page]{color:#f8fae9;border:1px solid #8abe92;background:linear-gradient(115deg,#315945,#254639);box-shadow:inset 0 -3px #dfc37c,0 3px 14px #0005}
+.rfpk[data-pk-theme=classic-dark] .pk-nav button>.fa-solid{font-size:14px;color:#b7d9b3}.rfpk[data-pk-theme=classic-dark] .pk-nav-footer{display:none}
+.rfpk[data-pk-theme=classic-dark] .pk-main{flex:1;padding:25px 34px 38px;background-color:#162027;background-image:linear-gradient(120deg,#162b2bcc,transparent 62%),repeating-linear-gradient(135deg,#ffffff05 0 1px,transparent 1px 11px);scrollbar-color:#79ae8e #1b2a2b}
+.pk-atlas-strip{display:flex;align-items:center;gap:11px;padding:9px 12px;margin-bottom:22px;border:1px solid #577d6b;border-left:4px solid #debf77;background:linear-gradient(90deg,#29483d,#1c2a2d);color:#cfe4cc;font-size:10px;font-weight:800;letter-spacing:.14em}
+.pk-atlas-mark{width:14px;height:14px;border:2px solid #d5c58b;border-radius:50%;position:relative}.pk-atlas-mark:after{content:'';position:absolute;left:-2px;right:-2px;top:5px;border-top:2px solid #d5c58b}
+.pk-atlas-strip strong{color:#f7e6b7;margin-left:4px}.pk-atlas-count{margin-left:auto;color:#a7c4ae;white-space:nowrap}
+.rfpk[data-pk-theme=classic-dark] :is(.pk-section-head h1,.pk-hero-copy h2,.pk-detail-copy h1){font-weight:800;letter-spacing:-.045em;color:#fbf6e6}
+.rfpk[data-pk-theme=classic-dark] .pk-eyebrow{color:#b6d4af;letter-spacing:.17em;font-weight:800}
+.rfpk[data-pk-theme=classic-dark] :is(.pk-journey-hero,.pk-mon-card,.pk-setting,.pk-settings-section,.pk-training-current article,.pk-training-list article,.pk-training-choice,.pk-editor-section,.pk-center-team article,.pk-medicine-card,.pk-import-row,.pk-specimen,.pk-service-card,.pk-empty,.pk-dex-card,.pk-equipment-card,.pk-release-guide){position:relative;background:linear-gradient(135deg,#2a3d3a,#1b292d 80%);color:#f6f2e5;border:1px solid #738c7c;border-radius:2px;box-shadow:inset 0 1px #d1e3c438,0 4px 0 #0a1518,0 8px 18px #050c0d55}
+.rfpk[data-pk-theme=classic-dark] .pk-journey-hero{overflow:hidden;border-left:4px solid #d5bb7d;background:radial-gradient(ellipse at 76% 35%,#6c98745c,transparent 40%),linear-gradient(125deg,#304a40,#1b2b2f 70%)}
+.rfpk[data-pk-theme=classic-dark] .pk-journey-hero:after{content:'';position:absolute;width:280px;height:280px;right:-8%;top:-35%;border:1px solid #d9deb063;border-radius:50%;box-shadow:0 0 0 22px #dbe4c006,0 0 0 24px #c4d7b824;pointer-events:none}
+.rfpk[data-pk-theme=classic-dark] .pk-hero-art{position:relative;z-index:1;filter:drop-shadow(0 10px 9px #0007);animation:pk-atlas-arrive .7s both}
+.rfpk[data-pk-theme=classic-dark] .pk-trainer-metrics>div{background:#172b2b;color:#f8f2df;border:1px solid #668b75;border-top:3px solid #cbb77f;border-radius:2px;box-shadow:0 3px #091511}
+.rfpk[data-pk-theme=classic-dark] .pk-trainer-metrics strong{color:#f4d990}.rfpk[data-pk-theme=classic-dark] .pk-trainer-metrics span{color:#bfd4bd}
+.rfpk[data-pk-theme=classic-dark] :is(button,input,select,textarea){font-family:PKArchive,PKArchiveThai,system-ui,sans-serif;border-radius:2px}
+.rfpk[data-pk-theme=classic-dark] button{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease,border-color .18s ease}
+.rfpk[data-pk-theme=classic-dark] button:hover:not(:disabled){filter:brightness(1.15);border-color:#d6e9c8;box-shadow:0 0 0 2px #b2dbac33,0 5px 14px #0004}
+.rfpk[data-pk-theme=classic-dark] button:active:not(:disabled){transform:translateY(2px) scale(.98)}
+.rfpk[data-pk-theme=classic-dark] :is(button.pk-primary,button[aria-pressed=true]){background:linear-gradient(120deg,#407d56,#24563e);color:#fff;border:1px solid #b2d6ac;box-shadow:inset 0 1px #d5f4c866,0 3px #102e20}
+.rfpk[data-pk-theme=classic-dark] .pk-location{background:#cbdac1;color:#203f2e;border:1px solid #eff4dd;border-radius:2px;padding:5px 12px;font-weight:750}
+.rfpk[data-pk-theme=classic-dark] .pk-battle-heading{padding:0 2px 10px;color:#d8ebd2;letter-spacing:.06em}
+.rfpk[data-pk-theme=classic-dark] .pk-arena{border:3px solid #a8c7a3;border-radius:1px;box-shadow:0 0 0 2px #1a3d2b,0 0 0 4px #5b8064,0 10px 25px #0008}
+.rfpk[data-pk-theme=classic-dark] .pk-battle-status{background:linear-gradient(120deg,#21372eF2,#111e20F2);color:#fff9e9;border:1px solid #b6d6a7;border-left:4px solid #e6cd82;border-radius:1px;box-shadow:4px 4px 0 #0b1b17a8,inset 0 1px #ffffff24}
+.rfpk[data-pk-theme=classic-dark] .pk-battle-status h2{font-weight:800;letter-spacing:-.025em}.rfpk[data-pk-theme=classic-dark] .pk-battle-status small{color:#d6e9cc}
+.rfpk[data-pk-theme=classic-dark] .pk-track{background:#30403d;border:1px solid #779285;border-radius:0;overflow:hidden}.rfpk[data-pk-theme=classic-dark] .pk-track i{background:linear-gradient(90deg,#52b979,#b4eaa2);border-radius:0}
+.rfpk[data-pk-theme=classic-dark] .pk-battle-console{margin-top:8px;padding:13px;background:linear-gradient(120deg,#22352f,#152328);border:1px solid #85a28a;border-radius:2px;box-shadow:0 5px #0b1514}
+.rfpk[data-pk-theme=classic-dark] .pk-battle-message{background:#101b1ddd;border:1px solid #8ca594;border-left:4px solid #d8bd7b;border-radius:1px;color:#f9f6e8;box-shadow:inset 0 0 18px #0003}
+.rfpk[data-pk-theme=classic-dark] .pk-command-grid{gap:8px}
+.rfpk[data-pk-theme=classic-dark] :is(.pk-command.fight,.pk-command.bag,.pk-command.party,.pk-command.run){position:relative;overflow:hidden;min-height:54px;color:#f8f7e9;border:1px solid #789989;border-left:4px solid #aacdb1;border-radius:2px;background:linear-gradient(105deg,#3c5950,#233d37);box-shadow:inset 0 1px #e9fff031,0 3px #0e1b18;font-weight:800;letter-spacing:.04em}
+.rfpk[data-pk-theme=classic-dark] .pk-command.fight{border-left-color:#ee9787;background:linear-gradient(105deg,#754c48,#473633)}.rfpk[data-pk-theme=classic-dark] .pk-command.bag{border-left-color:#e7cf87;background:linear-gradient(105deg,#6a6041,#3c3e31)}.rfpk[data-pk-theme=classic-dark] .pk-command.party{border-left-color:#a7dfb0}.rfpk[data-pk-theme=classic-dark] .pk-command.run{border-left-color:#96c8d0;background:linear-gradient(105deg,#406064,#293e45)}
+.rfpk[data-pk-theme=classic-dark] :is(.pk-move,.pk-item-command,.pk-battle-party-member){background:linear-gradient(110deg,#3b514a,#263b37);color:#faf8eb;border:1px solid #83a78b;border-radius:2px;box-shadow:0 2px #0a1713}
+.rfpk[data-pk-theme=classic-dark] .pk-setting{padding:18px;margin:8px 0}.rfpk[data-pk-theme=classic-dark] .pk-setting p{color:#d3e0cf}
+@keyframes pk-atlas-arrive{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+@media(max-width:700px){
+ #roleforge-pokemon[data-pk-theme=classic-dark]{border:0;box-shadow:none}
+ .rfpk[data-pk-theme=classic-dark] .pk-header{min-height:66px;padding:9px 14px;padding-top:max(9px,env(safe-area-inset-top))}
+ .rfpk[data-pk-theme=classic-dark] .pk-header:after{right:110px;width:14%}.rfpk[data-pk-theme=classic-dark] .pk-wordmark strong{font-size:23px}.rfpk[data-pk-theme=classic-dark] .pk-wordmark small{font-size:8px}
+ .rfpk[data-pk-theme=classic-dark] .pk-layout{flex-direction:column-reverse}.rfpk[data-pk-theme=classic-dark] .pk-main{padding:14px 14px 22px}
+ .rfpk[data-pk-theme=classic-dark] .pk-nav{gap:2px;padding:5px 5px max(5px,env(safe-area-inset-bottom));border-top:1px solid #8dab8a;border-bottom:0;background:#101c1d}
+ .rfpk[data-pk-theme=classic-dark] .pk-nav button{flex:1;min-width:0;min-height:54px;padding:7px 1px;font-size:10px;gap:4px;letter-spacing:0}
+ .rfpk[data-pk-theme=classic-dark] .pk-nav button[aria-current=page]{box-shadow:inset 0 -3px #dfc37c}
+ .pk-atlas-strip{margin-bottom:16px;padding:8px 9px;gap:8px;font-size:9px;letter-spacing:.08em}.pk-atlas-count{font-size:8px}
+ .rfpk[data-pk-theme=classic-dark] .pk-battle-console{padding:8px}.rfpk[data-pk-theme=classic-dark] :is(.pk-command.fight,.pk-command.bag,.pk-command.party,.pk-command.run){min-height:44px;font-size:13px}
+ .rfpk[data-pk-theme=classic-dark] .pk-battle-status{border-left-width:3px}.rfpk[data-pk-theme=classic-dark] .pk-arena{border-width:2px}
+}
+@media(prefers-reduced-motion:reduce){.rfpk[data-pk-theme=classic-dark] *{animation:none!important;transition:none!important}}
+/* During a capture, clear the field until the actual outcome is revealed. */
+.pkm-caught .pk-battle-status,.pkm-escaped .pk-battle-status{animation:pk-capture-hud 3s both;pointer-events:none}
+@keyframes pk-capture-hud{0%,78%{opacity:0}90%,100%{opacity:1}}
+@media(min-width:701px){.rfpk[data-pk-theme=classic-dark] :is(.pk-battle-heading,.pk-arena,.pk-battle-console,.pk-battle-footer){width:100%;max-width:760px;margin-left:auto;margin-right:auto}}
+.rfpk[data-pk-theme=classic-dark] .pk-nav button[aria-current=page]{overflow:hidden}
+.rfpk[data-pk-theme=classic-dark] .pk-nav button[aria-current=page]:after{content:'';position:absolute;inset:-40% auto -40% -38%;width:30%;background:linear-gradient(90deg,transparent,#e4ffde38,transparent);transform:skewX(-20deg);pointer-events:none;animation:pk-archive-glint 7s ease-in-out infinite}
+@keyframes pk-archive-glint{0%,68%{left:-38%}90%,100%{left:120%}}
+.pkm-caught~.pk-battle-console,.pkm-escaped~.pk-battle-console,.pkm-caught~.pk-battle-footer,.pkm-escaped~.pk-battle-footer{animation:pk-capture-hud 3s both;pointer-events:none}
+@media(max-width:700px){.rfpk[data-pk-theme=classic-dark] .pk-battle-status small,.rfpk[data-pk-theme=classic-dark] .pk-battle-meta,.rfpk[data-pk-theme=classic-dark] .pk-hp-percent{font-size:10px}.rfpk[data-pk-theme=classic-dark] .pk-battle-status h2{font-size:clamp(12px,3.5vw,16px)}}
