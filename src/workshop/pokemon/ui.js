@@ -28,7 +28,7 @@ export async function mountPokemon({api,dock,enabled,busy=()=>false}){
  const dex=await data(),style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../../styles/pokemon.css?v=0.90.0',import.meta.url);const styled=new Promise((ok,fail)=>{style.onload=ok;style.onerror=()=>fail(Error('Pokémon styles unavailable'));});document.head.append(style);await styled;
  const root=document.createElement('dialog');root.className='rfpk';root.id='roleforge-pokemon';root.setAttribute('aria-label','Pokémon');document.body.append(root);
  const panel=document.createElement('section');panel.className='rfpk pk-dock';panel.id='roleforge-pokemon-dock';panel.setAttribute('aria-label','Pokémon above chatbar');
- const motionStyle=document.createElement('link');motionStyle.rel='stylesheet';motionStyle.href=new URL('../../../styles/pokemon-motion.css?v=0.90.4',import.meta.url);document.head.append(motionStyle);
+ const motionStyle=document.createElement('link');motionStyle.rel='stylesheet';motionStyle.href=new URL('../../../styles/pokemon-motion.css?v=0.90.5',import.meta.url);document.head.append(motionStyle);
  let game,scope='',nonce=null,view='adventure',previousView='dex',selected='gardevoir',selectedUid='',region='Kanto',query='',type='',generation=0,dexPage=0,showForms=false,notice='',working=false,disposed=false,mutating=false,dockVisible=true,cacheStamp='',pendingNarration=false,battlePane='commands',dexFilters=false,nicknameEditing=false,potionPicker=false,bagSearch='',bagCatalogue=false,bagPage=0,medicine='',medicineTarget='',stockStamp='';
  const replayCache=createPokemonReplay(dex);let lastMarkup='',renderRoute='';
  const context=()=>api.context(),rules=()=>({engineVersion:3,...context().pokemonRules});

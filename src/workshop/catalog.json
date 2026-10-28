@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.4",
+      "minimumRoleForge": "0.90.5",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -462,6 +462,15 @@
           "changes": [
             "Portrait mobile battle scenes designed separately from desktop",
             "Player companion presence and battle opponent results synchronize with the story"
+          ]
+        },
+        {
+          "version": "1.2.1",
+          "path": "packs/pokemon-1.2.1.json",
+          "bytes": 1446,
+          "sha256": "ea6341ea32dadcc72e42d4f9c7a5f270d1758a8976747fe765ed2732ff6511f7",
+          "changes": [
+            "Mobile battle cinematic uses a centered landscape 16:9 frame"
           ]
         }
       ]
