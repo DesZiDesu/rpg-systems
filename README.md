@@ -1,6 +1,36 @@
 # RoleForge
 
-**Public release: 0.84.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Pokémon First Release — 1.0.0 / RoleForge 0.90.0.** This release branch includes the full Pokémon adventure addon, character creation, supported abilities/held items/weather, shared inventory, trade-back evolution and optimized replay. [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
+
+**Fixed in 0.89.3 / Aster Phone 1.2.3:** K06 uses a bare close button instead of a title bar. Removed decorative lettering clipped above the hinge; the complete handset and scrolling fixes remain. [Details](docs/aster-k06-clean-controls-v0.89.3.md).
+
+**Fixed in 0.89.2 / Aster Phone 1.2.2:** Mobile K06 shows the **complete flip phone**, including its frame, hinge and keypad, fitted to the viewport over a transparent background. Settings/contact scrolling and visible option pickers remain fixed. [Layout correction and validation](docs/aster-k06-handset-fit-v0.89.2.md).
+
+**New in 0.89.0 / Aster Phone 1.2.0:** Aster Phone **1.2.0** adds **Aster K06**, a Japanese-style flip handset selectable in Workshop settings alongside Aster One. It shares contacts, phone history, the story clock, relationships and branch undo, with SMS/mobile mail, an outer display, physical keys, a photo journal, an in-world portal and scene alarms. It imposes no story year. [First-release guide and validation](docs/aster-k06-first-release-v0.89.0.md).
+
+**Fixed in 0.88.7 / Aster Phone 1.1.7:** Repair automatic H-Stats relationship updates in main chat and phone conversations, recover clear missing events and retained phone history, and show tracking status in Records. [Investigation and before/after report](docs/hstats-automatic-tracking-v0.88.7.md).
+
+**Updated in 0.88.6 / Aster Phone 1.1.6:** Main-chat and phone AI receive the Aster brand/model, actual app names, installation status and recorded public social activity. [Details](docs/aster-app-context-v0.88.6.md).
+
+**Fixed in 0.88.5 / Aster Phone 1.1.5:** Phone conversations advance the shared story clock. Settings use proper sliding switches, body-profile filling works with loading feedback, and affected controls follow the selected language. [Details](docs/aster-clock-profile-v0.88.5.md).
+
+**Fixed in 0.88.4 / Aster Phone 1.1.4:** Call labels sit below their circular controls without overflowing. Incoming and active-call actions support English and Thai. [Details](docs/aster-call-controls-v0.88.4.md).
+
+**Fixed in 0.88.3 / Aster Phone 1.1.3:** NPCs can initiate messages and calls to an empty address book. Aster creates the incoming contact/conversation, accepts reply channels without invented numbers and recovers completed phone activity from narration. [Details](docs/aster-first-contact-v0.88.3.md).
+
+**Fixed in 0.88.2 / Aster Phone 1.1.2:** Use the active persona throughout player state when Character Creation is skipped. Manually saved app profiles survive reply regeneration, swipes and reply deletion. NPC creation also accepts up to six labeled reference images. [Details](docs/player-phone-profile-v0.88.2.md).
+
+**Updated in 0.88.1 / Aster Phone 1.1.1:** Native-style typography, real variable font weights for English and Thai, consistent Lucide controls, quieter app surfaces and borderless reply timing. [Design and validation details](docs/aster-v0.88.1.md).
+
+**New in 0.88.0 / Aster Phone 1.1.0:** Aster and wallet progress restore together when switching swipes, editing or deleting replies. Messages gains search and unread/archive filters, with refined app layouts, service colors and motion throughout the phone. [Release and design details](docs/aster-v0.88.0.md).
+
+**Updated in 0.87.2:** Aster Phone keeps its composer and reading position stable, skips unchanged/hidden screen rebuilds, and loads long conversations in batches. Harbor Store has readable light/dark text, clearer actions and a larger mobile close control. [Details](docs/phone-mobile-v0.87.2.md).
+
+**Fixed in 0.87.1:** Phone events survive normal state-update cleanup, first incoming messages work before the player sends anything, and established aliases link to existing NPCs. Confirmed phone activity omitted by the model can be reconciled once from the latest scene. [Details](docs/phone-story-sync-v0.87.1.md).
+
+**New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
+
+**Release build: 0.90.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 
@@ -49,6 +79,12 @@ Workshop is a beta bundled catalog with Great Sage and Field Notes. Packages, pe
 ## One place for chatbar windows
 
 **New in 0.76.0:** open **Extensions → RoleForge → Windows above Chatbar** for Status, stat training, Inventory, Missions, H-Stats, skills/incantations and weapons. Layouts, coin icons, chant settings and contextual commerce/memory switches live on the same page. The tab strip scrolls independently of Minimize, and the all-windows picker reaches every panel. Weapon buttons continue the existing assistant reply without sending a User message or your unsent draft. [Thai setup and tests](docs/chatbar-windows-v0.76.0.th.md).
+
+## Character Creation
+
+**New in 0.86.2:** Workshop addon settings include **Use addon character creation**. Turn it off to use the standard RoleForge creator while keeping the addon enabled. The preference is saved per character; switching preserves separate creator drafts and existing gameplay progress. [Guide](docs/character-creation-toggle-v0.86.2.md).
+
+**New in 0.86.1:** Deleting a prewritten first message until the chat is empty opens Character Creation. Saved drafts survive reloads, including SillyTavern restoring its greeting. With Death Note enabled, an ivory-paper character dossier replaces the standard creator, with identity, continuity, notebook possession and eye abilities. All creator choice fields now open a searchable, full-field choice sheet instead of native iOS selects. Existing presets remain intact. Pokémon creation stays in its separate preview and its addon is not included in this release. [Thai guide](docs/character-creation-v0.86.1.th.md).
 
 ## Scene and thought themes
 

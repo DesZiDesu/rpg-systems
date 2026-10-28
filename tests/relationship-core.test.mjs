@@ -198,7 +198,7 @@ test("Love cannot skip openness and mutual milestones; an existing imported valu
     }),
     "next",
   ).next;
-  assert.equal(relationshipLink(s, "mira", "kai").love, 21);
+  assert.equal(relationshipLink(s, "mira", "kai").love, 21.5);
   const c = run(
     couple(),
     event({

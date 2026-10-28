@@ -195,6 +195,180 @@
       ]
     },
     {
+      "id": "smartphone",
+      "name": "Aster Phone",
+      "world": "Modern worlds",
+      "kind": "system",
+      "color": "sage",
+      "subtitle": "Aster One / Aster K06",
+      "minimumRoleForge": "0.89.3",
+      "author": "RoleForge",
+      "description": "โทรศัพท์ในโลกของโรล เลือก Aster One สมาร์ทโฟน หรือ Aster K06 มือถือฝาพับญี่ปุ่น ใช้รายชื่อ ประวัติ NPC และเวลาโลกชุดเดียวกัน ไม่บังคับปีของเนื้อเรื่อง",
+      "features": [
+        "เลือก Aster One / Aster K06 ต่อการ์ด ไม่จำกัดปีของโรล",
+        "มือถือฝาพับพร้อม SMS เมลแนบภาพ จอนอก และปุ่มกดจริง",
+        "โทรศัพท์และ Voice Addon ใช้คิวตอบเบื้องหลังร่วมกับแชทหลัก",
+        "ข้อมูลตามแชท/Branch ย้อนตามสไวป์และการลบข้อความ"
+      ],
+      "permissions": [
+        [
+          "อ่านฉากและรายชื่อ",
+          "ใช้เฉพาะบริบทของการ์ดและแชทนี้"
+        ],
+        [
+          "ตอบข้อความเมื่อเลือก",
+          "ใช้ AI เดิมของ SillyTavern"
+        ],
+        [
+          "เงินในโลกของโรล",
+          "ใช้กระเป๋าเงินและค่าเงินที่ตั้งไว้"
+        ],
+        [
+          "เสียงในสายเมื่อเลือกเปิด",
+          "ใช้ Voice Addon เดิม ไม่เก็บ API key"
+        ]
+      ],
+      "releases": [
+        {
+          "version": "1.0.0",
+          "path": "packs/smartphone-1.0.0.json",
+          "sha256": "0923ded2fa19df7df27e7ed9c3f9824c50d0d70aa502a6cade92f03ca7c29676",
+          "bytes": 638,
+          "changes": [
+            "Initial Aster Phone release preview"
+          ]
+        },
+        {
+          "version": "1.1.0",
+          "path": "packs/smartphone-1.1.0.json",
+          "sha256": "7bb53a047f86fb5b63eabfa96440f5752559a304b2b4bcecd5a18e693d10afff",
+          "bytes": 744,
+          "changes": [
+            "Restore Aster and wallet together on swipe, edit and deletion",
+            "Messages search, unread/archive filters and refined app layouts",
+            "Improved motion, calls, notification cleanup and contact relinking"
+          ]
+        },
+        {
+          "version": "1.1.1",
+          "path": "packs/smartphone-1.1.1.json",
+          "bytes": 826,
+          "sha256": "29068e8e595047dbac0373899cea6de9b0a2ef2fc1f22111bc0a791b57395f08",
+          "changes": [
+            "Native typography with real font weights, locally bundled Lucide controls",
+            "Borderless reply timing and quieter app layouts in English and Thai"
+          ]
+        },
+        {
+          "version": "1.1.2",
+          "path": "packs/smartphone-1.1.2.json",
+          "bytes": 947,
+          "sha256": "018f75432f75d8c03b0a2acb565a1bf34dd7f8413b26e4ea546861b219fdd8aa",
+          "changes": [
+            "Keep manually saved app profiles during regeneration, swipes and reply deletion",
+            "Use the active persona instead of the default Adventurer name across RoleForge and phone context"
+          ]
+        },
+        {
+          "version": "1.1.3",
+          "path": "packs/smartphone-1.1.3.json",
+          "bytes": 1025,
+          "sha256": "e12073920149878c9b56c852aa74b35811a17aa59e805cbbdc7a2c8648f0a6b8",
+          "changes": [
+            "Receive first messages and calls without a pre-existing contact",
+            "Create new sender contacts and recover completed phone activity from English/Thai narration",
+            "Repair legacy empty phones whose first delivery was incorrectly acknowledged"
+          ]
+        },
+        {
+          "version": "1.1.4",
+          "path": "packs/smartphone-1.1.4.json",
+          "bytes": 1025,
+          "sha256": "ef8253d18584c6254af6cf5a146a199229613b2b210b24c435a292f770e9d9d5",
+          "changes": [
+            "Separate incoming call labels from circular controls to prevent overlapping text",
+            "Readable English and Thai call controls with labeled mute, speaker and end actions"
+          ]
+        },
+        {
+          "version": "1.1.5",
+          "path": "packs/smartphone-1.1.5.json",
+          "bytes": 1299,
+          "sha256": "465db2d36b407ae672bed7d400c24c808b511618b6ff405b5c92319692f8c6d9",
+          "changes": [
+            "Advance the shared story clock during phone conversations with bounded context-sensitive reply timing",
+            "Native switch tracks and handles, localized settings values and stable mobile overlay positioning",
+            "Repair the H-Stats body-profile fill action and use the selected interface language"
+          ]
+        },
+        {
+          "version": "1.1.6",
+          "path": "packs/smartphone-1.1.6.json",
+          "bytes": 1589,
+          "sha256": "4fd2cc8271d8539dae469a1f5a76a08f3c6c8e6a4c1b76ff8478b56becd30ab8",
+          "changes": [
+            "Teach main-chat and phone AI the Aster brand, handset model, app names, purposes and installation status",
+            "Label Messages/Gather channels and share bounded public social activity without private or blocked posts"
+          ]
+        },
+        {
+          "version": "1.1.7",
+          "path": "packs/smartphone-1.1.7.json",
+          "bytes": 1959,
+          "sha256": "f5442b44d395a9e582a5183f9b4a3101d545173a057831d6858ece6f2610ed95",
+          "changes": [
+            "Connect delivered phone dialogue to the shared H-Stats relationship engine",
+            "Recover confirmed prose changes and retained legacy phone messages without extra model requests",
+            "Expose tracking status and limits; preserve branch undo and manual pair edits"
+          ]
+        },
+        {
+          "version": "1.2.0",
+          "path": "packs/smartphone-1.2.0.json",
+          "bytes": 1577,
+          "sha256": "32ce28205a574e90eb0f642ad6c6ba1e72ef71e4e078e0ea36a9c56914727442",
+          "changes": [
+            "First Aster K06 flip-phone release, selectable per character without imposing a story year",
+            "Shared contacts, mail/SMS, calls, Voice, scene clock, relationships and reversible phone state",
+            "Physical keypad, folding lid, outer display, photo journal, mobile portal, notes and scene alarms"
+          ]
+        },
+        {
+          "version": "1.2.1",
+          "path": "packs/smartphone-1.2.1.json",
+          "bytes": 1577,
+          "sha256": "8b071e8376222eb3027f852ae32d43a0f45b5fb81d8a81bfe6fbd519358038da",
+          "changes": [
+            "Fullscreen K06 LCD on touch phones, with accessible navigation and larger text instead of a scaled hardware frame",
+            "Fix visible option pickers after scrolling, keyboard viewport field visibility and contact form saving",
+            "Preserve desktop handset controls; isolate switch styling and respect reduced motion"
+          ]
+        },
+        {
+          "version": "1.2.2",
+          "path": "packs/smartphone-1.2.2.json",
+          "bytes": 1577,
+          "sha256": "66ea4b13d3cdc5840c6b239904d8f0d32430457693e412d25fb7c43bbb937559",
+          "changes": [
+            "Restore the complete K06 handset on mobile, including frame, hinge and physical keypad, fitted to the available viewport",
+            "Keep the background transparent and preserve Settings/contact scrolling, visible pickers and form save fixes",
+            "Retain the full handset when typing, with focused fields kept visible inside the LCD"
+          ]
+        },
+        {
+          "version": "1.2.3",
+          "path": "packs/smartphone-1.2.3.json",
+          "bytes": 1577,
+          "sha256": "26216ac59fbf51f16e055b44f49f698b8ddc783b12e70dcbf72a357fd232587e",
+          "changes": [
+            "Remove the K06 title bar; keep only a borderless close button on desktop and mobile",
+            "Remove decorative inner branding that was clipped above the hinge",
+            "Keep the complete handset, LCD scrolling and contact editing; desktop dragging uses the earpiece"
+          ]
+        }
+      ]
+    },
+    {
       "id": "pokemon",
       "name": "Pokémon",
       "subtitle": "เพื่อนร่วมทางในทุกบทของการผจญภัย",
@@ -202,18 +376,18 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.86.0",
-      "author": "RoleForge · Fan-made preview",
+      "minimumRoleForge": "0.90.0",
+      "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
       "features": [
-        "1,025 สายพันธุ์ พร้อม IV / EV / Nature / เพศรายตัว",
+        "1,025 สายพันธุ์ พร้อม Ability และค่าสเตตัสรายตัว",
         "ไอเทมอ้างอิง 2,222 รายการ พร้อมบอล ยา และคลังร่วม",
         "ฝึกท่า Center Trainer ยิม Kanto 8 แห่ง และภารกิจหายาก",
         "Sandbox ผู้เล่นควบคุม พร้อมบันทึกตามแชทและ Branch"
       ],
       "featuresEn": [
-        "1,025 species with individual IVs, EVs, Nature and gender",
+        "1,025 species with individual abilities, IVs, EVs, Nature and gender",
         "2,222-item catalogue; functional balls, medicines and shared stock",
         "Move training, Centers, trainers, eight Kanto Gyms and rare quests",
         "Player-controlled Sandbox and branch-aware progress"
@@ -253,6 +427,17 @@
             "ไอเทมอ้างอิง 2,222 รายการ พร้อมบอล ยา และคลังร่วม",
             "ฝึกท่า Center Trainer ยิม Kanto 8 แห่ง และภารกิจหายาก",
             "Sandbox ผู้เล่นควบคุม พร้อมบันทึกตามแชทและ Branch"
+          ]
+        },
+        {
+          "version": "1.0.0",
+          "path": "packs/pokemon-1.0.0.json",
+          "bytes": 1026,
+          "sha256": "fa290c6acc877fb87b4e25b9eaf658b2aeba339bfd7d1c296296f77fec549704",
+          "changes": [
+            "First release on current RoleForge with exact starter/kit creation and character settings",
+            "Supported ability, held-item and weather effects; trade-back evolution and equipment services",
+            "Localized story receipts, bounded replay checkpoints, artwork fallback and explicit supported-feature guide"
           ]
         }
       ]

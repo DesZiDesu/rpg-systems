@@ -1,8 +1,8 @@
-import {currencyScheme,currencyValue,splitCurrencyValue} from './currency-config.js?v=0.86.0';
-import {debitWallet} from './commerce-currency.js?v=0.86.0';
-import {auctionFundsValid,auctionReserved} from './auction-core.js?v=0.86.0';
-import {commerceFundsValid} from './commerce-engine.js?v=0.86.0';
-import {currentItemNpcs} from './item-core.js?v=0.86.0';
+import {currencyScheme,currencyValue,splitCurrencyValue} from './currency-config.js?v=0.90.0';
+import {debitWallet} from './commerce-currency.js?v=0.90.0';
+import {auctionFundsValid,auctionReserved} from './auction-core.js?v=0.90.0';
+import {commerceFundsValid} from './commerce-engine.js?v=0.90.0';
+import {currentItemNpcs} from './item-core.js?v=0.90.0';
 
 const clean=(v,n=180)=>typeof v==='string'?v.trim().slice(0,n):'';
 export function normalizeMoneyTransfers(raw){
@@ -28,6 +28,11 @@ function payment(state,amount,unit){
  }
  if(!auctionFundsValid(next,state)||!commerceFundsValid(next,state))return{error:'reserved'};
  return{wallet};
+}
+// Phone escrow shares exact change and the existing reserved-fund checks.
+export function quoteWalletDebit(state,amount,unit){
+ if(!Number.isSafeInteger(amount)||amount<=0||amount>999999999||!currencyScheme(state.progression?.currency).units.some(u=>u.id===unit))return {error:'amount'};
+ return payment(state,amount,unit);
 }
 export function transferableAmount(state,unit){
  const wallet=state.progression?.currency,definition=currencyScheme(wallet).units.find(u=>u.id===unit),value=currencyValue(wallet);

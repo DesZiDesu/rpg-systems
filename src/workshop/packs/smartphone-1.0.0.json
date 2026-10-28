@@ -1,0 +1,26 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.87.0",
+  "id": "smartphone",
+  "kind": "system",
+  "name": "Aster Phone",
+  "version": "1.0.0",
+  "capabilities": [
+    "read-scene",
+    "read-stats",
+    "read-inventory",
+    "read-known-npcs",
+    "phone-messages",
+    "phone-social",
+    "phone-wallet",
+    "voice-on-request"
+  ],
+  "notes": [
+    {
+      "id": "aster",
+      "title": "Aster One",
+      "text": "In-world smartphone with contacts, messaging, calls, social apps, Drift browser and a RoleForge wallet. Phone transactions are already settled; never debit or reward twice."
+    }
+  ]
+}

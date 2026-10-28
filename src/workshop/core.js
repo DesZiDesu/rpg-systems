@@ -1,7 +1,8 @@
-import {normalizeDeathNoteConfig} from './death-note/character-config.js?v=0.86.0';
-import {sha256} from '../vendor/js-sha256/index.js?v=0.86.0';
+import {phoneConfig} from './smartphone/model.js?v=0.90.0';
+import {normalizeDeathNoteConfig} from './death-note/character-config.js?v=0.90.0';
+import {sha256} from '../vendor/js-sha256/index.js?v=0.90.0';
 export const FORMAT='roleforge-workshop-addon';
-export const addonIds=['great-sage','field-notes','death-note','pokemon'];
+export const addonIds=['great-sage','field-notes','death-note','smartphone','pokemon'];
 export const localId=()=>globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export async function hashBytes(bytes){
  if(globalThis.crypto?.subtle){const result=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(result)].map(n=>n.toString(16).padStart(2,'0')).join('');}
@@ -30,7 +31,7 @@ export function cardAddonDefaults(raw){
 }
 export const SAGE='great-sage';
 export const SCOPES=['scene','stats','inventory','skills'];
-const allowed=new Set(['sage-panel','read-scene','read-stats','read-inventory','read-skills','analysis-on-request','local-follow-up','read-notes','voice-on-request','read-known-npcs','continue-scene-on-request','manage-notebook-inventory','manage-pokemon-party']);
+const allowed=new Set(['sage-panel','read-scene','read-stats','read-inventory','read-skills','analysis-on-request','local-follow-up','read-notes','voice-on-request','read-known-npcs','continue-scene-on-request','manage-notebook-inventory','phone-messages','phone-social','phone-wallet','manage-pokemon-party']);
 export const copy=value=>structuredClone(value);
 export const clean=(value,max=4000)=>typeof value==='string'?value.trim().slice(0,max):'';
 export function version(value){if(!/^\d+\.\d+\.\d+$/.test(value||''))throw Error('รูปแบบเวอร์ชันไม่ถูกต้อง');return value.split('.').map(Number);}
@@ -52,7 +53,7 @@ export function validateCatalog(raw){
  }
  return raw;
 }
-export function validatePackage(raw,host='0.86.0'){
+export function validatePackage(raw,host='0.90.0'){
  if(!raw||![FORMAT,'roleforge-workshop-addon-preview'].includes(raw.format)||raw.schema!==1||!addonIds.includes(raw.id))throw Error('ไม่รองรับแพ็กนี้');
  version(raw.version);version(raw.minimumRoleForge);
  if(compare(host,raw.minimumRoleForge)<0)throw Error(`ต้องใช้ RoleForge ${raw.minimumRoleForge} ขึ้นไป`);
@@ -62,9 +63,12 @@ export function validatePackage(raw,host='0.86.0'){
  const notes=raw.notes.map(n=>{if(!clean(n.id,80)||!clean(n.title,140)||!clean(n.text,10000))throw Error('บันทึกในแพ็กไม่ครบ');return{id:clean(n.id,80),title:clean(n.title,140),text:clean(n.text,10000)};});
  return{format:FORMAT,schema:1,id:raw.id,kind:raw.kind,version:raw.version,minimumRoleForge:raw.minimumRoleForge,name:clean(raw.name,80),capabilities:[...new Set(raw.capabilities)],notes,installedAt:Date.now()};
 }
-export function defaultProfile(key){return{key,enabled:[],launchers:{floating:true,wand:true,deathNote:true,pokemon:true,x:1,y:.72},sage:{showPanel:true,followReplies:false,tone:'calm',motion:true,theme:'prismatic',voiceId:'',voiceAuto:false,sources:Object.fromEntries(SCOPES.map(k=>[k,true]))},history:[]};}
+export function defaultProfile(key){return{key,enabled:[],phone:phoneConfig(),pokemon:{},characterCreation:{'death-note':true,pokemon:true},launchers:{floating:true,wand:true,deathNote:true,pokemon:true,x:1,y:.72},sage:{showPanel:true,followReplies:false,tone:'calm',motion:true,theme:'prismatic',voiceId:'',voiceAuto:false,sources:Object.fromEntries(SCOPES.map(k=>[k,true]))},history:[]};}
 export function normalizeProfile(raw,key){
  const p=defaultProfile(key);if(!raw)return p;
+ p.phone=phoneConfig(raw.phone);
+ p.pokemon={...(typeof raw.pokemon?.autoNarrate==='boolean'?{autoNarrate:raw.pokemon.autoNarrate}:{}),...(typeof raw.pokemon?.terrain==='string'&&/^(auto|grass|longgrass|sand|water|pond|underwater|mountain|cave|building|indoor-(?:1|2|gym|leader|lance|champion|bruno|agatha|lorelei|plain|link))$/.test(raw.pokemon.terrain)?{terrain:raw.pokemon.terrain}:{})};
+ p.characterCreation=Object.fromEntries(['death-note','pokemon'].map(id=>[id,raw.characterCreation?.[id]!==false]));
  p.deathNote=normalizeDeathNoteConfig(raw.deathNote);p.updatedAt=Number.isFinite(raw.updatedAt)?raw.updatedAt:0;
  p.enabled=Array.isArray(raw.enabled)?[...new Set(raw.enabled.filter(x=>addonIds.includes(x)))]:[];
  p.launchers={pokemon:raw.launchers?.pokemon!==false,deathNote:raw.launchers?.deathNote!==false,floating:raw.launchers?.floating!==false,wand:raw.launchers?.wand!==false,x:Number.isFinite(raw.launchers?.x)?Math.min(1,Math.max(0,raw.launchers.x)):1,y:Number.isFinite(raw.launchers?.y)?Math.min(1,Math.max(0,raw.launchers.y)):.72};

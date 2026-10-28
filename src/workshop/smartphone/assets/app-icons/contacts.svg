@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><title>Contacts</title><defs><linearGradient id="porcelain" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9edf1"/></linearGradient><linearGradient id="silver" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="#f2f5f8"/><stop offset="1" stop-color="#8995a3"/></linearGradient><linearGradient id="paper" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="#fffef8"/><stop offset="1" stop-color="#e8e4d7"/></linearGradient><linearGradient id="gold" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="#ffe4a0"/><stop offset="1" stop-color="#c88d36"/></linearGradient>
+<radialGradient id="sheen" cx=".25" cy="0" r="1"><stop stop-color="#fff" stop-opacity=".3"/><stop offset=".65" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<filter id="lift" x="-40%" y="-40%" width="180%" height="190%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#061927" flood-opacity=".22"/></filter>
+<filter id="soft" x="-35%" y="-35%" width="170%" height="180%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="1.5" stdDeviation="1" flood-color="#10283c" flood-opacity=".22"/></filter><linearGradient id="ivory" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="#eee1c9"/><stop offset="1" stop-color="#c6ac87"/></linearGradient><linearGradient id="book" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="#797b8b"/><stop offset="1" stop-color="#424b63"/></linearGradient><linearGradient id="profile" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="#fff0d9"/><stop offset="1" stop-color="#d7bb93"/></linearGradient><clipPath id="tile"><rect width="128" height="128" rx="29"/></clipPath></defs><g clip-path="url(#tile)"><rect width="128" height="128" fill="url(#ivory)"/>
+ <g filter="url(#lift)"><rect x="30" y="23" width="71" height="87" rx="8" fill="#6a5643"/>
+ <rect x="34" y="19" width="66" height="86" rx="6" fill="#d9c8aa"/>
+ <path d="M98 33h8v16h-8Z" fill="#d9a666"/><path d="M98 53h8v16h-8Z" fill="#91aaa1"/><path d="M98 73h8v16h-8Z" fill="#bba6a1"/>
+ <rect x="26" y="17" width="71" height="88" rx="7" fill="url(#book)"/>
+ <path d="M37 18v86" stroke="#333a4d" stroke-width="2"/>
+ <path d="M40 19v82" stroke="#a5a8b2" stroke-opacity=".4" stroke-width="1"/>
+ <circle cx="67" cy="46" r="13" fill="url(#profile)"/>
+ <path d="M45 83v-5c0-12 9-19 22-19s22 7 22 19v5Z" fill="url(#profile)"/>
+ <path d="M47 91h39" stroke="#e3c7a1" stroke-width="1.5" opacity=".6"/>
+ <path d="M24 33h9m-9 18h9m-9 18h9m-9 18h9" stroke="#f3e5cf" stroke-width="3" stroke-linecap="round"/>
+ </g><rect width="128" height="128" fill="url(#sheen)" pointer-events="none"/><rect x=".75" y=".75" width="126.5" height="126.5" rx="28.25" fill="none" stroke="#fff" stroke-opacity=".32" stroke-width="1.5"/></g></svg>

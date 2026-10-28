@@ -7,7 +7,7 @@ import {
   relationshipProfile,
   relationshipRanking,
   relationshipPreset,
-} from "./relationship-core.js?v=0.86.0";
+} from "./relationship-core.js?v=0.90.0";
 const esc = (v) =>
   String(v ?? "").replace(
     /[&<>"']/gu,
@@ -29,6 +29,7 @@ export function createRelationshipPanel({
   variant = "dock",
   layout = "standard",
   selectionChanged = () => {},
+  tracking = () => ({enabled:true}),
 } = {}) {
   const root = doc.createElement("section");
   root.className = "rf-relationships";
@@ -182,13 +183,16 @@ export function createRelationshipPanel({
       )}</fieldset><label><span>${esc(t("เหตุผลการแก้ไข", "Reason"))}</span><input name="reason" maxlength="500" value="" placeholder="${esc(t("ปรับตามเนื้อเรื่องหรือข้อมูลการ์ด", "Story or card correction"))}"></label><button type="submit" ${saving || busy() ? "disabled" : ""}>${esc(t("บันทึกคู่นี้", "Save pair"))}</button></form>`;
   }
   function history() {
+    const health=tracking({actorId:actor,targetId:target}),enabled=health.enabled!==false&&state.relationships?.config?.enabled!==false;
+    const reasons={updated:t('อัปเดตค่าจากเหตุการณ์ที่ยืนยันแล้ว','Updated from a confirmed event'),already_recorded:t('บันทึกเหตุการณ์นี้แล้ว ไม่เพิ่มซ้ำ','This event is already recorded'),score_limit:t('บันทึกเหตุการณ์แล้ว ค่ายังอยู่ภายใต้ขีดจำกัดการพัฒนาหรือขั้นความสัมพันธ์','Event recorded; pacing or milestone limits prevent a score change'),scene_limit:t('ถึงขีดจำกัดการเพิ่มค่าในฉากนี้แล้ว','Current scene gain limit reached'),no_confirmed_change:t('ตรวจแล้ว ยังไม่มีการเปลี่ยนความรู้สึกที่ยืนยันได้','Checked; no confirmed emotional change'),disabled:t('ปิดการติดตามอัตโนมัติอยู่','Automatic tracking is off')};
+    const audit=`<p class="rf-rel-audit" data-relationship-tracking="${enabled?'on':'off'}">${esc(enabled?t('การติดตามอัตโนมัติ: เปิด','Automatic tracking: on'):reasons.disabled)}${health.check?' · '+esc(reasons[health.check.reason]||health.check.reason):''}</p>`;
     const list = (state.relationships?.history || [])
       .filter((v) => v.actorId === actor || v.targetId === actor)
       .slice()
       .reverse();
     const total = Math.max(1, Math.ceil(list.length / 5));
     page = Math.min(page, total - 1);
-    return `<div class="rf-rel-history">${
+    return `${audit}<div class="rf-rel-history">${
       list
         .slice(page * 5, page * 5 + 5)
         .map(
@@ -200,7 +204,7 @@ export function createRelationshipPanel({
                     `${esc(metrics()[k] || (k === "encounters" && t("เหตุการณ์", "Encounter")) || t("การเปลี่ยนหลักยึด", "Corruption"))} ${n > 0 ? "+" : ""}${fmt(n)}`,
                 )
                 .join(" · ") || esc(t("บันทึกสถานะ", "Status recorded"))
-            }</span></article>`,
+            }</span>${reasons[v.reason]?`<small>${esc(reasons[v.reason])}</small>`:''}</article>`,
         )
         .join("") ||
       `<p class="rf-rel-empty">${esc(t("ยังไม่มีเหตุการณ์ของตัวละครนี้", "No events for this character yet."))}</p>`

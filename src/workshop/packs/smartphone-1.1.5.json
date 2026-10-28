@@ -1,0 +1,26 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.88.5",
+  "id": "smartphone",
+  "kind": "system",
+  "name": "Aster Phone",
+  "version": "1.1.5",
+  "capabilities": [
+    "read-scene",
+    "read-stats",
+    "read-inventory",
+    "read-known-npcs",
+    "phone-messages",
+    "phone-social",
+    "phone-wallet",
+    "voice-on-request"
+  ],
+  "notes": [
+    {
+      "id": "aster",
+      "title": "Aster One",
+      "text": "Aster receives first messages, calls and social activity even without saved contacts. Reuse known NPC IDs; incoming events create the sender contact and conversation. New senders may include an incoming profile or public caller name; do not invent established phone numbers. Incoming permissions, blocked contacts and app installation still apply. Confirm actual delivery/call initiation in the story and emit rf-phone events. Player-saved profiles are authoritative. Phone story effects and wallet progress remain reversible; never settle transactions twice. Standalone phone sends and replies advance the shared RoleForge world clock; use modest elapsedMinutes on reply events, never jump to future appointments merely mentioned in conversation. Main-chat events and historical recovery keep the scene time without adding it again."
+    }
+  ]
+}

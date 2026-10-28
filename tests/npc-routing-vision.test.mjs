@@ -50,3 +50,9 @@ test('full Character archives retain new NPCs in Chat rather than dropping them'
  const r=routeNewStoryNpcs({npcs:[{id:'new',name:'New',npcScope:'chat'}]},{npcs:[]},library,'card:a','character',{entryLimit:200});
  assert.equal(r.overflow,1);assert.equal(r.library.length,200);assert.equal(r.state.npcs[0].npcScope,'chat');
 });
+
+test('all six reference looks survive the existing appearance field limit',async()=>{
+ const {combineReferenceDescriptions,MAX_NPC_REFERENCES}=await import('../src/npc-generation.js');
+ const references=Array.from({length:MAX_NPC_REFERENCES},(_,i)=>({label:'Look '+(i+1),description:'Distinct outfit '+i+'. '+'Visible clothing. '.repeat(40)}));
+ const text=combineReferenceDescriptions(references);assert(text.length<=1000);for(let i=1;i<=6;i++)assert(text.includes(`[${i}: Look ${i}]`));assert.throws(()=>combineReferenceDescriptions([...references,references[0]]),/Too many/);
+});

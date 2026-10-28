@@ -1,3 +1,7 @@
+import * as relationshipTracking from '../src/relationship-tracking.js';
+import {retainPhoneProfileEdits} from '../src/workshop/smartphone/model.js';
+import {phoneStorySource} from '../src/workshop/smartphone/story.js';
+import * as forgeAddons from '../src/forge-addons.js';
 import * as characterSettings from '../src/character-settings.js';
 import {filterNpcStoryOps} from '../src/npc-visibility.js';
 import * as relationshipCore from '../src/relationship-core.js';
@@ -81,12 +85,12 @@ import {repairedBooks,repairUser,catalogQuote,bundleQuote,bookNames} from './fix
 
 // Evaluate the real host integration without startup or network. No reimplementation of its parser.
 const context={extensionSettings:{tretaresia_rpg:{enableMissionBoard:true,enableAuctions:true,enableStoryMemory:true,enableStoryAgenda:true,enableQuestObjectives:true,enableMemorySummaries:true,eventNotifications:true}},chatMetadata:{},chat:[{is_user:true,mes:'Hello'}],getCurrentChatId:()=> 'test-chat',getRequestHeaders:()=>({'Content-Type':'application/json'}),fetch:async()=>({ok:true,status:200}),setExtensionPrompt:(...args)=>{context.lastPrompt=args;},saveSettingsDebounced(){}};
-const sandbox={...characterSettings,filterNpcStoryOps,...weaponContinuation,...weaponCore,...taskGeneration,...itemLearning,...itemDefinition,...itemEffects,...lootDiscovery,...commerceRights,renderRightsInventory,commerceIconMarkup,readCommercePrices,...mainChatSystems,normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,...commerceEngine,auctionAvailable:commerceEngine.commerceAvailable,auctionFundsValid:commerceEngine.commerceFundsValid,createCommerceRuntime,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,...locationList,...sceneCompletion,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,retainHStatsEdits,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,PRIVATE_THOUGHT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
+const sandbox={...relationshipTracking,retainPhoneProfileEdits,...characterSettings,filterNpcStoryOps,...weaponContinuation,...weaponCore,...taskGeneration,...itemLearning,...itemDefinition,...itemEffects,...lootDiscovery,...commerceRights,renderRightsInventory,commerceIconMarkup,readCommercePrices,...mainChatSystems,normalizeMemoryStrategy:memory.normalizeMemoryStrategy,normalizeMemoryOutputTokens:memory.normalizeMemoryOutputTokens,memorySummaryNativeGenerationActive,hostReplyGenerating,loadHostGenerationModule,normalizeModuleNavigationMode,...npcAlternates,...auctionCore,auctionErrorText,...marketplaceCore,...marketplaceEvents,...commerceEngine,auctionAvailable:commerceEngine.commerceAvailable,auctionFundsValid:commerceEngine.commerceFundsValid,createCommerceRuntime,renderMarketplacePanel,...missionBoard,...groupBoard,...masteryTraining,growthInventoryNotifications,...storyMemory,...storyAgenda,...questObjectives,...storyWorkspace,...locationMemory,...locationList,...sceneCompletion,questRewardGuard,normalizeQuestRewardReceipts,...uiLanguage,...powers,...forgePresets,mountPowerWorkspace(){},mountForgeWorkspace(){},...scopes,...lore,...archive,fetch:async()=>({ok:true,status:200}),sceneSnapshot,sceneTrackerOperations,missingSceneFields,expandScene,normalizeNarrativeLocation,narrativeLocationLabel,normalizeAdultSettings,writingPreferencePrompt,allowedDiaryOps,diaryRates,householdOffers,groupOffers,confirmedGroupMembership,establishedGroupOperations,groupMembershipEnded,H_FIELDS,H_FIELD_MAP,hStats,updateHStat,retainHStatsEdits,console,structuredClone,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,npcIdentity:identity,CHAT_INSTRUCTIONS,PRIVATE_THOUGHT_INSTRUCTIONS,ATTRIBUTE_INSTRUCTIONS,npcAttributeDefaults,resolveNpc,resolveNpcSpeaker,keyName,parseStory,retainManualNpcEdits,npcRole,usableNpcName,NPC_FIELD_INSTRUCTIONS,
     createNpcWorkspace(){},showApiRequestNotice:(kind,reason,language)=>showApiRequestNotice(kind,reason,language,sandbox.toastr),...powerMastery,...incantationCore,...itemCore,...voiceCore,SillyTavern:{getContext:()=>context,libs:{}},document:{readyState:'loading',addEventListener(){},getElementById(){return null;},querySelector(){return null;},querySelectorAll(){return[];}},localStorage:{getItem(){return null;},setItem(){}},globalThis:null};
 sandbox.globalThis=sandbox;
-Object.assign(sandbox,relationshipCore,nameKnowledge,moneyTransfer,storyCore,powerDashboardUi,hostPolicy,worldPresets,npcCapacity,archiveCache,sparseNpcs,worldPackClient,worldPackCore,chatThemes,playerConsequences,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet,npcReferenceProfiles});
+Object.assign(sandbox,forgeAddons,relationshipCore,nameKnowledge,moneyTransfer,storyCore,powerDashboardUi,hostPolicy,worldPresets,npcCapacity,archiveCache,sparseNpcs,worldPackClient,worldPackCore,chatThemes,playerConsequences,forgeOpening,statTraining,currencyConfig,foreignChat,{walletValue,debitWallet,npcReferenceProfiles});
 const source=readFileSync(new URL('../index.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replace(/^export .*;$/gm,'');
- vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantVariantKey,assistantTurnKey,scheduleAssistantPatch,cleanInlinePatchSurfaces,assistantPatchTimers,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
+ vm.createContext(sandbox);vm.runInContext(`${source}\n globalThis.testHost={applyPersonaPlayerName,bootstrapPlayerIdentityFromChat,catchUpPlayerIdentity,persistState,systemStatusForMessage,initializeCommerce,commerceRuntime:()=>commerceRuntime,writeContinuitySnapshot,copyContinuityMedia,activeContinuityKey,changeOptionalSystem,renderPanel,auctionForMessage,rememberAuctionOffer,missionBoardForMessage,acceptBoardMission,rememberMissionBoard,eventNotificationEnabled,portableState,aiState,storyAgendaAlerts,storyAgendaNotice,manualSyncHistoricalOperations,onSubmit,onPanelClick,renderQuestCard,getPowerPreset,powerPresetOwner,statePrompt,liveReplyPreview,setLiveGeneration(value){liveGeneration=value;},markCompleted(message){completedAssistantMessages.add(message);},npcProfile,normalize,defaultState,applyStatePatch,extractStatePatch,confirmedLocationMemory,getSettings,updatePrompt,roleplayState,friendlyNpcs,metFriendlyNpcs,getState,characterNpcLibrary,storedNpcState,persistNpcScope,requestUsage,recordExtensionRequest,routeStoryNpcState,registerStorySpeakers,activeCharacterLore,activeLorePrompt,persistCharacterLore,parseJson,synchronizeWorldState,advanceActiveTravelFromUserMessage,travelProgress,rememberScene,sceneForMessage,socialEventsForMessage,storyEventsForMessage,diaryForMessage,answerHouseholdOffer,answerGroupOffer,renderGroups,renderHousehold,onInterfaceSettingChange,processAssistantPatch,assistantVariantKey,assistantTurnKey,scheduleAssistantPatch,cleanInlinePatchSurfaces,assistantPatchTimers,assistantCheckpoint,saveCurrentChatMetadata,replaceAssistantTurnState,analyzeChat,manualSyncMarkers,manualSyncSelection,manualSyncHistory,renderScene,trackedStateSnapshot,appendStateAudit,renderHStats,chooseHStatsNpc,removeHStatsNpc,visibleHStatsNpcs,getHStatsLayout,setHStatsLayout,toggleHStatsManage,requestHideHStatsNpc,cancelHideHStatsNpc,confirmHideHStatsNpc,undoHideHStatsNpc,hStatsFormValues,hStatsMissingFields,completeHStatsBaseline,catchUpGroupMemberships,confirmedSocialOperations,npcProgressionCandidates,npcProgressionOperations,parseRegistrationMessage,forgeEligible,forgeDraft,applyForgeProfile,startForgeOpening,forgeSession,completeSceneLocations};`,sandbox);
 vm.runInContext('Object.assign(globalThis.testHost,{prepareActiveForgeOpeningRequest,forgeOpeningPrompt,persistUserConfig,shortHash,getForgePreset,activeLoreOptions,saveCharacterPackSetup,saveChatPresetComponents,currentWorldPreset,defaultWorldPreset,getGlobalSettings,changeWorldSetting,initializeChatPresets,queueAssistantTurnReplacement,bindCheckbox})',sandbox);
 const host=sandbox.testHost;
 Object.assign(sandbox,chatBranches);
@@ -1006,7 +1010,7 @@ test('H-Stats shows a met NPC instead of the player and keeps the chosen NPC in 
   assert.match(panel.innerHTML,/data-npc-portrait="rin"/);
   assert.match(panel.innerHTML,/tretaresia-h-photo/);
   assert.match(panel.innerHTML,/data-main-relationships/);
-  assert.match(panel.innerHTML,/ยังไม่ทราบ/);
+  assert.match(panel.innerHTML,/Unknown/);
   assert.equal(context.chatMetadata.tretaresia_rpg_selected_hstats_npc,'rin');
   const updated=host.applyStatePatch(base,{ops:[['set','npcHStats',{npcId:'rin',field:'loyaltyHearts',value:4}]]});
   host.renderHStats(panel,updated.next);
@@ -1257,7 +1261,7 @@ test('generated H-Stats fill every missing field and confirmed values replace ge
   assert.equal(calls,1);assert.equal(writes,1);assert.equal(host.hStatsMissingFields(entry).length,0);
   assert.equal(entry.hStats.mouthQuality,'Confirmed by story');assert.equal(entry.hStats.oralSexCount,2);
   assert.equal(entry.hStats.favoritePosition,'Story-consistent preference');
-  assert.equal(entry.hStats.penisQuality,'ไม่มีอวัยวะส่วนนี้');
+  assert.equal(entry.hStats.penisQuality,'No anatomy of this type');
   assert.ok(entry.hStatsGenerated.includes('favoritePosition'));assert.ok(!entry.hStatsGenerated.includes('mouthQuality'));
   assert.equal(Object.hasOwn(entry.hStats,'condition'),false);
   const changed=host.applyStatePatch(host.getState(),{ops:[
@@ -1268,7 +1272,7 @@ test('generated H-Stats fill every missing field and confirmed values replace ge
   assert.ok(!changed.hStatsGenerated.includes('favoritePosition'));
   assert.ok(!changed.hStatsGenerated.includes('analSexCount'));
   const panel={innerHTML:''};host.chooseHStatsNpc('kohaku',host.getState());host.renderHStats(panel,host.getState());
-  assert.match(panel.innerHTML,/ค่าเริ่มต้น AI/);
+  assert.match(panel.innerHTML,/AI baseline/);
  }finally{context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.getElement;}
 });
 
@@ -1287,6 +1291,22 @@ test('H-Stats use a complete neutral baseline when the profile model is unavaila
   assert.equal(entry.hStats.pregnant,false);
   assert.equal(entry.hStats.analSexCount,0);
  }finally{context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.getElement;}
+});
+
+test('the body-profile fill click starts one job, shows loading, respects Thai and removes the completed action',async()=>{
+ const saved={metadata:context.chatMetadata,generate:context.generateQuietPrompt,save:context.saveMetadata,getElement:sandbox.document.getElementById,language:host.getGlobalSettings().language};
+ let release,calls=0;const pending=new Promise(resolve=>release=resolve);
+ try{
+  host.getGlobalSettings().language='th';uiLanguage.setUiLanguageProvider(()=> 'th');
+  const state=host.defaultState();state.npcs=[host.npcProfile({id:'fill-click',name:'Riley',gender:'Female',met:true,hStats:{mouthQuality:'Established trait',oralSexCount:2}})];context.chatMetadata={tretaresia_rpg_state:host.storedNpcState(state)};context.saveMetadata=async()=>{};
+  sandbox.document.getElementById=id=>id==='tretaresia-travel-tracker'?{hidden:true}:null;
+  context.generateQuietPrompt=async({quietPrompt})=>{calls++;assert.match(quietPrompt,/Write text values in Thai only/);await pending;return '{"hStats":{"mouthState":""}}';};
+  host.chooseHStatsNpc('fill-click',host.getState());const button={dataset:{action:'retry-hstats-baseline',id:'fill-click'}},event={target:{closest:()=>button}};
+  const job=host.onPanelClick(event);await new Promise(resolve=>setTimeout(resolve,0));await host.onPanelClick(event);
+  const panel={innerHTML:''};host.renderHStats(panel,host.getState());assert.match(panel.innerHTML,/aria-busy="true" disabled/);assert.match(panel.innerHTML,/กำลังเติมโปรไฟล์ร่างกาย/);assert.doesNotMatch(panel.innerHTML,/Fill missing body profile/);assert.equal(calls,1);
+  release();await job;const npc=host.getState().npcs[0];assert.equal(host.hStatsMissingFields(npc).length,0);assert.equal(npc.hStats.mouthQuality,'Established trait');assert.equal(npc.hStats.oralSexCount,2);assert.equal(npc.hStats.mouthState,'ปกติ');
+  host.renderHStats(panel,host.getState());assert.doesNotMatch(panel.innerHTML,/data-action="retry-hstats-baseline"/);
+ }finally{release();context.chatMetadata=saved.metadata;context.generateQuietPrompt=saved.generate;context.saveMetadata=saved.save;sandbox.document.getElementById=saved.getElement;host.getGlobalSettings().language=saved.language;uiLanguage.setUiLanguageProvider(()=> 'en');}
 });
 test('same-turn patches update NPC relationships, skills and H-Stats without resetting other values',()=>{
  const base=host.defaultState();base.npcs=[host.npcProfile({id:'a',name:'Aria',met:true,trust:10,
@@ -3392,4 +3412,31 @@ test('a recovered backup acknowledges its exact retained protocol reply without 
 test('private thought rules remain in the actual AI prompt when presentation frames are off',()=>{
  const prior={settings:context.extensionSettings,metadata:context.chatMetadata};
  try{context.chatMetadata={};context.extensionSettings={tretaresia_rpg:{chatPresentation:true,showChatHeader:false,showChatDialogue:false,showChatNarrative:false,userChatPresentation:true}};const prompt=host.statePrompt(host.defaultState(),{includeState:false,track:false});assert.match(prompt,/ROLEFORGE PRIVATE THOUGHTS/);assert.match(prompt,/<tr-thought name=/);assert.match(prompt,/NPCs cannot hear, quote, answer or learn/);assert.match(prompt,/already established, currently applicable mind-reading/);assert.match(prompt,/not consent to a purchase/);assert.match(prompt,/never expose, copy or disguise hidden model analysis/);context.extensionSettings.tretaresia_rpg.chatPresentation=false;const plain=host.statePrompt(host.defaultState(),{includeState:false,track:false});assert.match(plain,/ROLEFORGE PRIVATE THOUGHTS/);assert.doesNotMatch(plain,/<tr-thought/);}finally{context.extensionSettings=prior.settings;context.chatMetadata=prior.metadata;}
+});
+
+test('addon registration reuses existing notebooks, honors an explicit no-notebook start and retains inactive addon possessions',()=>{
+ const make=()=>{const state=host.defaultState();state.inventory=[{id:'authored-notebook',name:'Death Note',category:'Notebook',quantity:1,properties:['roleforge:addon:death-note']},{id:'phone',name:'Phone',quantity:1,properties:[]}];return state;};
+ const own=host.applyForgeProfile(make(),{variant:'death-note',fields:{fName:'Ari'},addon:{notebook:'owned',reuseNotebook:true}});assert.equal(own.inventory.filter(forgeAddons.creationNotebookItem).length,1);assert.equal(own.inventory.find(i=>forgeAddons.creationNotebookItem(i)).id,'authored-notebook');
+ const none=host.applyForgeProfile(make(),{variant:'death-note',fields:{fName:'Ari'},addon:{notebook:'none'}});assert(!none.inventory.some(forgeAddons.creationNotebookItem));assert(none.inventory.some(i=>i.id==='phone'));
+ const other=make();other.inventory.push({id:'forge-item-death-note',name:'Death Note',quantity:1,properties:['roleforge:addon:death-note']});host.applyForgeProfile(other,{fields:{fName:'Ari'}});assert(other.inventory.some(i=>i.id==='forge-item-death-note'));
+});
+
+test('a combined RoleForge patch and phone event survives cleanup on every stored message surface',()=>{
+ const story='<tr-narrative>Cassandra sends you a message.</tr-narrative>',block='<rf-phone>'+JSON.stringify({events:[{type:'message',contactId:'cass',text:'Made it home?'}]})+'</rf-phone>',patch='<!--tretaresia_patch:'+JSON.stringify({ops:[['set','worldClock.time','19:30']]})+'-->';
+ const raw=story+patch+block,message={mes:raw,swipes:[raw],swipe_id:0,extra:{display_text:raw}};
+ const source=phoneStorySource(message,7,host.extractStatePatch(raw).visible);const result=host.cleanInlinePatchSurfaces(message);assert.equal(phoneStorySource(message,7,result.visible),source);assert.equal(result.visible,story);assert.equal(result.patch.ops[0][2],'19:30');assert.equal(result.stored,message.mes);
+ for(const text of[message.mes,message.swipes[0],message.extra.display_text]){assert(text.includes(block));assert(!text.includes('tretaresia_patch'));assert.equal(host.extractStatePatch(text).visible,story);}
+ assert.equal(host.extractStatePatch(message.mes,{keepPhone:true}).visible,message.mes);
+ host.cleanInlinePatchSurfaces(message);assert.equal((message.mes.match(/<rf-phone>/gu)||[]).length,1);
+});
+
+
+test('an existing greeting uses the active persona throughout shared state without completing character creation',()=>{
+ const priorName=context.name1,priorMetadata=context.chatMetadata;try{context.name1='Mael Persona';context.chatMetadata={};const state=host.getState();assert.equal(state.player.name,'Mael Persona');assert.equal(state.onboarding.personaName,'Mael Persona');assert.equal(state.onboarding.identitySeeded,false);assert.equal(host.defaultState().player.name,'Adventurer');}finally{context.name1=priorName;context.chatMetadata=priorMetadata;}
+});
+test('persona fallback repairs legacy placeholders, follows its own seeded name, and preserves explicit names',()=>{
+ const state=host.defaultState();state.onboarding.identitySeeded=true;host.applyPersonaPlayerName(state,{name1:'Aria'});assert.equal(state.player.name,'Aria');host.applyPersonaPlayerName(state,{name1:'Rin'});assert.equal(state.player.name,'Rin');state.player.name='Chosen Name';host.applyPersonaPlayerName(state,{name1:'Other Persona'});assert.equal(state.player.name,'Chosen Name');
+});
+test('explicit player registration overrides a persona fallback without retaining a persona binding',()=>{
+ const state=host.applyPersonaPlayerName(host.defaultState(),{name1:'Persona'});const next=host.bootstrapPlayerIdentityFromChat(state,{chat:[{is_user:true,mes:'Identity\nCharacter Name: Aria Vale\nGender: Female\nRace: Elf\nTitle: Knight'}]});assert.equal(next.player.name,'Aria Vale');assert.equal(next.onboarding.personaName,'');assert.equal(next.onboarding.identitySeeded,true);
 });

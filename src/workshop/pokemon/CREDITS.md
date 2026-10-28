@@ -11,3 +11,5 @@ Fan-made RoleForge addon preview. No affiliation with Nintendo, Game Freak or Th
 Legendary/Mythical portrait reference: 94 unique species, based on the bundled PokeAPI flags. Original Pokémon artwork is mirrored by the pinned PokeAPI/sprites repository; image URLs and SHA-256 hashes are recorded in `docs/pokemon-preview/reference-art.json`.
 
 Expansion 0.2.0: item catalogue (2,223 records), training, gender ratios, EV yields, move metadata, machines and regional Pokédex memberships use the same pinned PokeAPI commit. Rebuild with `tools/build-pokemon-expansion-data.py`. Game sprite bundle now includes 59 items. Four local original Shiny portraits and their checksums are listed in `data/shiny-art.json`; other exact Shiny images load on demand from the pinned mirror.
+
+First-release contact, punch, bite, sound and powder move flags come from `move_flag_map.csv` and `move_flags.csv` at the same pinned PokeAPI commit `2bf639e5572812a67d2b94903fdcb9d095f5aeb2`, under the bundled PokeAPI license. `move-flags.js` stores only these derived identifier sets.
