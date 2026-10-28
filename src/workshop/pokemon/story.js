@@ -30,5 +30,17 @@ export function parsePokemonStory(source,dex){
   if(e.type!=='encounter'||!/ปรากฏ|พบ|เจอ|โผล่|wild|appear|encounter/iu.test(proof)||modern&&!/ตรงหน้า|ข้างคุณ|คุณพบ|คุณเจอ|ต่อหน้าคุณ|\byou\b|\byour\b/iu.test(proof)){reject('not-a-player-encounter');continue;}
   events.push({...common,type:'encounter',key:p.key,level:Math.max(1,Math.min(100,Number(e.level)||1)),place:String(e.place||''),context:{place:String(e.place||'')}});
  }
- }return{events,rejected};
+ }
+ // Recover only an unambiguous present-tense wild encounter if the model omitted metadata.
+ // No guessing from dialogue, future plans, NPC scenes, or unnamed species.
+ if(!events.some(e=>e.type==='encounter')){
+  const sentences=visible.split(/(?<=[.!?。])\s+/u);
+  for(const sentence of sentences){
+   if(sentence.length>300||negative.test(sentence)||/["“”]/u.test(sentence))continue;
+   const hit=sentence.match(/\b(?:a |the )?wild ([a-z][a-z0-9 .'-]{1,35}?) (?:appears|emerges|shows up) (?:in front of|beside|near|before) you\b/iu)||sentence.match(/\byou (?:encounter|meet|see|spot) (?:a |the )wild ([a-z][a-z0-9 .'-]{1,35}?)(?:[.!?]|$)/iu);
+   if(!hit)continue;const name=hit[1].trim().toLocaleLowerCase(),matches=[...dex.bySpecies.values()].filter(p=>p.name.toLocaleLowerCase()===name);
+   if(matches.length===1){const p=matches[0];events.push({id:'natural-'+sha256(sentence).slice(0,24),source:'story',engine:3,offset:raw.length,type:'encounter',key:p.key,level:3,place:'',context:{place:''}});break;}
+  }
+ }
+ return{events,rejected};
 }

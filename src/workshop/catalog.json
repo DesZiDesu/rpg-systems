@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.3",
+      "minimumRoleForge": "0.90.4",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -385,14 +385,16 @@
         "ไอเทมอ้างอิง 2,222 รายการ พร้อมบอล ยา และคลังร่วม",
         "ฝึกท่า Center Trainer ยิม Kanto 8 แห่ง และภารกิจหายาก",
         "Sandbox ผู้เล่นควบคุม พร้อมบันทึกตามแชทและ Branch",
-        "ฉากเริ่มสู้ จับสำเร็จ/พลาด และผลการต่อสู้ พร้อมปุ่มข้าม"
+        "ฉากเริ่มสู้ จับสำเร็จ/พลาด และผลการต่อสู้ พร้อมปุ่มข้าม",
+        "เรียกคู่หูในเรื่องและบันทึกผลต่อสู้ให้แชทรับรู้"
       ],
       "featuresEn": [
         "1,025 species with individual abilities, IVs, EVs, Nature and gender",
         "2,222-item catalogue; functional balls, medicines and shared stock",
         "Move training, Centers, trainers, eight Kanto Gyms and rare quests",
         "Player-controlled Sandbox and branch-aware progress",
-        "Skippable encounter, capture and battle-result animations"
+        "Skippable encounter, capture and battle-result animations",
+        "Story-aware companion presence and battle results"
       ],
       "permissions": [
         [
@@ -450,6 +452,16 @@
           "changes": [
             "Battle motion for saved encounters, captures and battle outcomes",
             "Skip animations or disable them per character; reduced-motion preference is respected"
+          ]
+        },
+        {
+          "version": "1.2.0",
+          "path": "packs/pokemon-1.2.0.json",
+          "bytes": 1395,
+          "sha256": "fa5d52a63840ff3a464abf327983e7d3fc67374ba408209225c27d95fba87c0e",
+          "changes": [
+            "Portrait mobile battle scenes designed separately from desktop",
+            "Player companion presence and battle opponent results synchronize with the story"
           ]
         }
       ]

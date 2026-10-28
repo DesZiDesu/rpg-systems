@@ -30,6 +30,7 @@ export function mountPokemonMotion({resolveImage,resolveTerrain,language}){
   const background=document.createElement('div');background.className='pkm-field';stage.append(background);
   const label=document.createElement('div');label.className='pkm-header';label.textContent=({encounter:th?'การเผชิญหน้า':'ENCOUNTER',caught:th?'จับสำเร็จ':'CAUGHT',escaped:th?'หลุดจากบอล':'BROKE FREE',victory:th?'ชนะการต่อสู้':'VICTORY',defeat:th?'พ่ายแพ้':'DEFEAT',run:th?'ออกจากการต่อสู้':'ESCAPED'})[item.kind];stage.append(label);
   stage.append(pokemon(ally,'pkm-ally'),pokemon(foe,'pkm-foe'));
+  const caption=document.createElement('div');caption.className='pkm-caption';const foeName=foe?.nickname||foe?.key?.replaceAll('-',' ')||'Pokémon',allyName=ally?.nickname||ally?.key?.replaceAll('-',' ')||'Pokémon';caption.innerHTML='<span class="pkm-caption-kicker"></span><strong></strong><small></small>';caption.querySelector('span').textContent=th?'การต่อสู้โปเกมอน':'POKÉMON BATTLE';caption.querySelector('strong').textContent=foeName;caption.querySelector('small').textContent=(th?'คู่หู: ':'PARTNER: ')+allyName;stage.append(caption);
   const flash=document.createElement('div');flash.className='pkm-flash';stage.append(flash);
   if(item.kind==='caught'||item.kind==='escaped'){
    const ball=document.createElement('img');ball.className='pkm-ball';ball.alt='';ball.src=new URL('assets/items/'+(item.ball||'poke-ball')+'.png',import.meta.url).href;ball.onerror=()=>{ball.src=new URL('assets/items/poke-ball.png',import.meta.url).href;ball.onerror=null;};stage.append(ball);

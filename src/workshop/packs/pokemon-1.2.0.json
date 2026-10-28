@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.4",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.2.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure — Battle motion",
+      "text": "An adventure-focused singles engine with individual IV/EV/Nature/gender and stable seeded abilities. Supported ability, held-item and weather effects are resolved locally. One shared item stock, validated localized story receipts, Pokémon Centers, level/TM/Tutor training, trainer teams, eight Kanto Gyms, rare quests, trade-back and common conditional evolution, player-only Sandbox, and branch-aware progress. Starter and kit creation choices are authoritative. Reference-only abilities/items and unsupported moves must never be assigned invented effects. Battle transformations, PvP and breeding are outside this release. Battle animations show saved encounter, capture success/failure and battle outcomes, with skip and a per-character setting; reduced motion skips animation. Portrait battle animations are composed separately for mobile. Sending out and recalling a named party Pokémon in the story updates the scene; wild encounter proposals and battle results sync with the main chat."
+    }
+  ]
+}

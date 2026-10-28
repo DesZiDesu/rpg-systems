@@ -1,0 +1,9 @@
+# Pokémon 1.2.0: portrait motion and story synchronization
+
+The mobile encounter, capture and result sequences use a separate portrait composition with an undistorted landscape field. The desktop layout is unchanged. Motion can still be skipped or disabled, and respects reduced motion.
+
+A named party Pokémon can be sent out or recalled using its party card, or by explicit player narration such as “I send out Pikachu” or “ฉันเรียกพิคาชูออกมา” when that is the Pokémon's saved nickname. The recognizer requires a unique species name or nickname and an explicit action; it does not infer a match for ambiguous names, thoughts, or hypothetical actions. When an encounter starts, the currently out, healthy party member enters battle. The current scene companion, battle and recent resolved results are provided to the model before main-chat generation. The opponent is recorded with victories and defeats.
+
+Story encounters use the existing evidence-checked event protocol, including Thai display names. A narrow English fallback handles an unambiguous present-tense wild encounter when the model omits the event. A model may still omit or misidentify an event; ambiguous narration and NPC-only cutaways should not automatically start fights. Manual Explore and trainer challenges remain available. AI replies and Pokémon battles do not autonomously control each other: the game engine determines battle outcomes and the model receives those facts for subsequent narration. Continue story and auto-narrate remain available.
+
+Presence and events are derived from the current chat branch; editing, swiping or deleting their source messages recomputes them. Replaying an existing chat with newly recognized send-outs can change which party member enters a subsequently replayed battle. Automated browser verification uses a disposable SillyTavern profile and emulated phone viewport, without a live model or physical iPhone.
