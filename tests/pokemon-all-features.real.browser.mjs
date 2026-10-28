@@ -1,3 +1,4 @@
+// Gameplay checks use reduced motion; pokemon-motion verifies playback separately.
 // Native SillyTavern UI integration and unhurried showcase recording.
 // All game outcomes use the real reducer. The model reply is controlled SSE.
 import assert from 'node:assert/strict';import {readFile,mkdir,writeFile} from 'node:fs/promises';import {createRequire} from 'node:module';
@@ -27,7 +28,7 @@ try{
   // Capture CSS viewport size: Playwright pads rather than upscales a larger video canvas.
   // Encoder scales the complete viewport and reserves captions inside the final screen.
   const width=mobile?390:1600,height=mobile?706:720,recordWidth=mobile?390:1600,recordHeight=mobile?706:720;
-  ctx=await browser.newContext({viewport:{width,height},hasTouch:mobile,isMobile:mobile,deviceScaleFactor:mobile?3:1,...record?{recordVideo:{dir:out+'/raw',size:{width:recordWidth,height:recordHeight}}}:{}});
+  ctx=await browser.newContext({reducedMotion:'reduce',viewport:{width,height},hasTouch:mobile,isMobile:mobile,deviceScaleFactor:mobile?3:1,...record?{recordVideo:{dir:out+'/raw',size:{width:recordWidth,height:recordHeight}}}:{}});
   await ctx.route('**/api/horde/**',r=>r.fulfill({json:[]}));await ctx.route('**/api/tokenizers/openai/count?*',r=>r.fulfill({json:{token_count:1300}}));
   let calls=0,encounterId=16,encounterLevel=4;const requests=[];
   await ctx.route('**/api/backends/chat-completions/generate',async route=>{calls++;const body=route.request().postDataJSON(),payload=JSON.stringify(body.messages||[]),hasAction=payload.includes('Continue this assistant message from the resolved Pokémon events');requests.push({hasGame:payload.includes('ROLEFORGE POKEMON ADDON'),hasAction,hasDraft:payload.includes('UNSENT PLAYER DRAFT')});const name=sourceDex.forms.find(f=>f.default&&f.speciesId===encounterId).name,quote=name+' ป่าตัวหนึ่งโผล่ออกมาจากพุ่มไม้ตรงหน้าคุณ',text=hasAction?'<tr-narrative>เพื่อนร่วมทีมของคุณตอบรับอย่างมั่นใจ ผลของการลงมือครั้งนี้ปรากฏชัดเจน ก่อนที่ความสงบจะกลับมาบนเส้นทาง คุณยังมีเวลาเลือกว่าจะทำสิ่งใดต่อ</tr-narrative>':'<tr-narrative>'+quote+' มันหยุดมองทีมของคุณอย่างระมัดระวัง</tr-narrative><!--roleforge_pokemon:'+JSON.stringify({events:[{type:'encounter',speciesId:encounterId,level:encounterLevel,evidence:quote}]})+'-->';if(hasAction)await new Promise(r=>setTimeout(r,1600));await route.fulfill({contentType:'text/event-stream',body:'data: '+JSON.stringify({choices:[{index:0,delta:{content:'\n'+text},finish_reason:null}]})+'\n\ndata: [DONE]\n\n'});});

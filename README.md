@@ -1,6 +1,6 @@
 # RoleForge
 
-**Pokémon First Release — 1.0.0 / RoleForge 0.90.2.** Available on `main`: the Pokémon adventure addon, character creation, supported abilities/held items/weather, shared inventory, trade-back evolution and optimized replay. Update RoleForge, then install Pokémon 1.0.0 in Workshop. [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
+**Pokémon — 1.1.0 / RoleForge 0.90.3.** Update RoleForge and Pokémon in Workshop for skippable encounter, capture and battle-result animations. Motion follows saved game outcomes, supports desktop/mobile, and can be disabled per character. [Motion details](docs/pokemon-motion-v0.90.3.md) · [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
 
 **Pokémon world cards:** [Red Sunken Sun · ไทย](docs/pokemon-release/Pokemon-Sunken-Red-Sun.th.png), [Dawn Midnights · English](docs/pokemon-release/Pokemon-Dawn-Midnights.en.png), and [Sun & Dawn · Character Creation](docs/pokemon-release/Pokemon-Sun-and-Dawn.png). Each embeds a searchable game/anime reference library, original trainer profiles and ₽3,000 starting currency. The language editions have six formatted greetings each; Sun & Dawn has no first message. [Card guide and coverage](docs/pokemon-release/CARDS.md).
 
@@ -36,7 +36,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Release build: 0.90.2** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Release build: 0.90.3** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

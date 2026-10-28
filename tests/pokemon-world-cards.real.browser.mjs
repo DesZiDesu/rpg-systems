@@ -1,3 +1,4 @@
+// Gameplay checks use reduced motion; pokemon-motion verifies playback separately.
 // Test the shipped PNG cards in a disposable real SillyTavern profile. No model call.
 import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
@@ -16,7 +17,7 @@ async function importCard(entry){
 }
 try{
  for(const mobile of [false,true]){
-  device=mobile?'mobile':'desktop';context=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1600,height:1000},isMobile:mobile,hasTouch:mobile});await context.addInitScript(()=>{window.__pkTraffic=[];const post=Worker.prototype.postMessage;Worker.prototype.postMessage=function(message,...rest){if(message?.action==='import'&&message.payload?.inline)window.__pkTraffic.push('inline');return post.call(this,message,...rest);};});page=await context.newPage();page.setDefaultTimeout(45000);
+  device=mobile?'mobile':'desktop';context=await browser.newContext({reducedMotion:'reduce',viewport:mobile?{width:390,height:844}:{width:1600,height:1000},isMobile:mobile,hasTouch:mobile});await context.addInitScript(()=>{window.__pkTraffic=[];const post=Worker.prototype.postMessage;Worker.prototype.postMessage=function(message,...rest){if(message?.action==='import'&&message.payload?.inline)window.__pkTraffic.push('inline');return post.call(this,message,...rest);};});page=await context.newPage();page.setDefaultTimeout(45000);
   page.on('pageerror',e=>{if(!e.message.includes('ResizeObserver loop'))report.errors.push({device,error:e.message});});page.on('request',r=>{if(/\/api\/.*\/generate(?:\?|$)/u.test(r.url()))report.providerCalls.push(r.url());});
   await context.route('**/api/horde/**',r=>r.fulfill({json:[]}));await page.goto(base);await page.waitForFunction(()=>globalThis.RoleForgeWorkshop&&document.getElementById('tretaresia-npc-wand-launcher')?.onclick&&SillyTavern.getContext().eventSource.autoFireLastArgs?.has(SillyTavern.getContext().eventTypes.APP_READY),null,{timeout:120000});
   await page.selectOption('#tretaresia-rpg-language',mobile?'th':'en',{force:true});const entry=entries.find(e=>e.language===(mobile?'th':'en'));const avatar=await importCard(entry);

@@ -11844,12 +11844,12 @@ async function initialize() {
         });
         // Workshop is optional: storage/style failures must not interrupt RoleForge.
         let nativeWorkshop;
-        const mountingWorkshop=import('./src/workshop/native.js?v=0.90.0').then(({mountNativeWorkshop})=>{
+        const mountingWorkshop=import('./src/workshop/native.js?v=0.90.3').then(({mountNativeWorkshop})=>{
             nativeWorkshop=mountNativeWorkshop({visible:value=>extractStatePatch(value).visible,creationChanged:value=>{forgeAddonContext=value;refreshCharacterForge();},dock:composerDock,state:getState,npcReferences:()=>characterNpcCatalog().summaries,prepareNpcs:async ids=>{const ticket=referenceTicket(),catalog=characterNpcCatalog(ticket.owner),selected=ids.filter(id=>catalog.has(id));if(catalog.external)await catalog.load([...new Set([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected])],{pin:true});else{catalog.pin?.([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected]);catalog.getMany(selected);}if(!referenceTicketValid(ticket))throw Error('The chat changed while loading notebook identities.');},awaitTimeline:()=>assistantRollbackQueue,awaitReplyState:id=>processAssistantPatch(id),relationshipTrackingEnabled:()=>getSettings().autoTrack,relationshipSource:id=>assistantTurnKey(id)+'|'+assistantVariantKey(SillyTavern.getContext().chat[id]),commitState:(next,source='death-note',options={})=>source==='smartphone'?commitPhoneState(next,options):persistState(next,source,{saveBeforeRender:true,...options}),refreshHost:()=>{npcWorkspace?.refresh();renderAll();updatePrompt();},owner:()=>characterOwner(SillyTavern.getContext())?.key,busy:mainReplyGenerating,voice:{catalog:()=>voiceAddons.addonVoices(),activity:()=>voiceAddons.addonActivity(),activate:()=>voiceAddons.activateAddon(),speak:(...args)=>voiceAddons.speakAddon(...args),stop:(...args)=>voiceAddons.stopAddon(...args),forNpc:npc=>voiceAddons.addonNpcVoice(npc),setup:()=>{if(!voiceAddons.open())openWorldSettings('optional');}}});
         });
         workshopReady={async prepareGeneration(type){try{await mountingWorkshop;}catch{return;}return nativeWorkshop.prepareGeneration(type);},then(resolve,reject){return mountingWorkshop.then(()=>nativeWorkshop.ready()).then(resolve,reject);}};
         mountingWorkshop.catch(error=>console.warn('[RoleForge] Workshop unavailable',error));
-        console.info(`[RoleForge] Role-play interface v${globalThis.TretaresiaRelease||'0.90.2'} loaded.`);
+        console.info(`[RoleForge] Role-play interface v${globalThis.TretaresiaRelease||'0.90.3'} loaded.`);
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

@@ -67,7 +67,7 @@ export function defaultProfile(key){return{key,enabled:[],phone:phoneConfig(),po
 export function normalizeProfile(raw,key){
  const p=defaultProfile(key);if(!raw)return p;
  p.phone=phoneConfig(raw.phone);
- p.pokemon={...(typeof raw.pokemon?.autoNarrate==='boolean'?{autoNarrate:raw.pokemon.autoNarrate}:{}),...(typeof raw.pokemon?.terrain==='string'&&/^(auto|grass|longgrass|sand|water|pond|underwater|mountain|cave|building|indoor-(?:1|2|gym|leader|lance|champion|bruno|agatha|lorelei|plain|link))$/.test(raw.pokemon.terrain)?{terrain:raw.pokemon.terrain}:{})};
+ p.pokemon={...(typeof raw.pokemon?.motion==='boolean'?{motion:raw.pokemon.motion}:{}),...(typeof raw.pokemon?.autoNarrate==='boolean'?{autoNarrate:raw.pokemon.autoNarrate}:{}),...(typeof raw.pokemon?.terrain==='string'&&/^(auto|grass|longgrass|sand|water|pond|underwater|mountain|cave|building|indoor-(?:1|2|gym|leader|lance|champion|bruno|agatha|lorelei|plain|link))$/.test(raw.pokemon.terrain)?{terrain:raw.pokemon.terrain}:{})};
  p.characterCreation=Object.fromEntries(['death-note','pokemon'].map(id=>[id,raw.characterCreation?.[id]!==false]));
  p.deathNote=normalizeDeathNoteConfig(raw.deathNote);p.updatedAt=Number.isFinite(raw.updatedAt)?raw.updatedAt:0;
  p.enabled=Array.isArray(raw.enabled)?[...new Set(raw.enabled.filter(x=>addonIds.includes(x)))]:[];

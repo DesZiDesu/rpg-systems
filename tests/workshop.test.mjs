@@ -31,11 +31,12 @@ test('missing output is rejected and history is bounded before persistence',()=>
 
 test('bundled releases match their catalog hashes and byte counts',async()=>{
  const catalog=validateCatalog(JSON.parse(await readFile(new URL('../src/workshop/catalog.json',import.meta.url))));
+ const host=JSON.parse(await readFile(new URL('../manifest.json',import.meta.url))).version;
  assert.deepEqual(catalog.addons.map(a=>a.id),['great-sage','field-notes','death-note','smartphone','pokemon']);
  for(const addon of catalog.addons)for(const release of addon.releases){
   const bytes=await readFile(new URL('../src/workshop/'+release.path,import.meta.url));
   assert.equal(bytes.byteLength,release.bytes);assert.equal(await hashBytes(bytes),release.sha256);
-  const pack=validatePackage(JSON.parse(bytes));assert.equal(pack.id,addon.id);assert.equal(pack.version,release.version);
+  const pack=validatePackage(JSON.parse(bytes),host);assert.equal(pack.id,addon.id);assert.equal(pack.version,release.version);
  }
  const bad=structuredClone(catalog);bad.addons[0].releases[0].path='../other.json';assert.throws(()=>validateCatalog(bad),/ดาวน์โหลด/);
  const unordered=structuredClone(catalog);unordered.addons[0].releases.reverse();assert.throws(()=>validateCatalog(unordered),/ลำดับรุ่น/);

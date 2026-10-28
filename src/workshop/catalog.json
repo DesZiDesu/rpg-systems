@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.0",
+      "minimumRoleForge": "0.90.3",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -384,13 +384,15 @@
         "1,025 สายพันธุ์ พร้อม Ability และค่าสเตตัสรายตัว",
         "ไอเทมอ้างอิง 2,222 รายการ พร้อมบอล ยา และคลังร่วม",
         "ฝึกท่า Center Trainer ยิม Kanto 8 แห่ง และภารกิจหายาก",
-        "Sandbox ผู้เล่นควบคุม พร้อมบันทึกตามแชทและ Branch"
+        "Sandbox ผู้เล่นควบคุม พร้อมบันทึกตามแชทและ Branch",
+        "ฉากเริ่มสู้ จับสำเร็จ/พลาด และผลการต่อสู้ พร้อมปุ่มข้าม"
       ],
       "featuresEn": [
         "1,025 species with individual abilities, IVs, EVs, Nature and gender",
         "2,222-item catalogue; functional balls, medicines and shared stock",
         "Move training, Centers, trainers, eight Kanto Gyms and rare quests",
-        "Player-controlled Sandbox and branch-aware progress"
+        "Player-controlled Sandbox and branch-aware progress",
+        "Skippable encounter, capture and battle-result animations"
       ],
       "permissions": [
         [
@@ -438,6 +440,16 @@
             "First release on current RoleForge with exact starter/kit creation and character settings",
             "Supported ability, held-item and weather effects; trade-back evolution and equipment services",
             "Localized story receipts, bounded replay checkpoints, artwork fallback and explicit supported-feature guide"
+          ]
+        },
+        {
+          "version": "1.1.0",
+          "path": "packs/pokemon-1.1.0.json",
+          "bytes": 1182,
+          "sha256": "aabc10f6daa084ae58be866552040987b8f70ad70c95866e8c82451897ec1609",
+          "changes": [
+            "Battle motion for saved encounters, captures and battle outcomes",
+            "Skip animations or disable them per character; reduced-motion preference is respected"
           ]
         }
       ]
