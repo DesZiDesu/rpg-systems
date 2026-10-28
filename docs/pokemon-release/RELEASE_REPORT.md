@@ -1,6 +1,6 @@
 # Pokémon 1.0.0 release report
 
-This release is on `release/pokemon-first`, with RoleForge 0.90.0. Stable `main` remains unchanged. It combines the parked Pokémon preview with the existing RoleForge 0.89.3 changes, including the current Aster K06 fixes.
+Pokémon 1.0.0 is available on `main`, with RoleForge 0.90.0. It was verified on `release/pokemon-first` before promotion. It combines the parked Pokémon preview with the existing RoleForge 0.89.3 changes, including the current Aster K06 fixes.
 
 ## Changes made for the first release
 

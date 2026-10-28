@@ -1,11 +1,11 @@
 # Pokémon First Release — install and play
 
-This build combines RoleForge 0.90.0 and Pokémon 1.0.0 on `release/pokemon-first`. The stable `main` branch is unchanged while the release is tried in SillyTavern. Existing Aster, Death Note and RoleForge features are included.
+RoleForge 0.90.0 and Pokémon 1.0.0 are available on `main`. Existing Aster, Death Note and RoleForge features are included. No preview branch is required.
 
 ## Install with SillyTavern
 
-1. Back up your SillyTavern user data. If RoleForge is already installed, open Extensions → Manage extensions → RoleForge → branch selector and choose `release/pokemon-first`, then reload.
-2. For a fresh installation: Extensions → Install extension. Repository: `https://github.com/DesZiDesu/rpg-systems`. Enter `release/pokemon-first` in the branch field. Reload SillyTavern. Install only one active copy of RoleForge.
+1. Back up your SillyTavern user data. If RoleForge is already installed, open Extensions → Manage extensions → RoleForge → Update, then reload. If you previously selected a preview/release branch, switch to `main` before updating.
+2. For a fresh installation: Extensions → Install extension. Repository: `https://github.com/DesZiDesu/rpg-systems`. Use the default branch (`main`). Reload SillyTavern. Install only one active copy of RoleForge.
 3. Open RoleForge → Workshop → Pokémon → Install/Update **1.0.0**. Enable it for your character.
 4. Import `Pokemon-First-Journey.en.json` (or `.th.json`) and open Pokémon → Journey. Select a starter. Configure your usual SillyTavern chat-completion API for narration.
 5. Optional: Workshop → Pokémon → character-creation toggle. A blank chat, or deleting the original first greeting, can open the Pokémon creator. Its chosen partner and kit replace the authored defaults; no kit stays empty.
@@ -30,4 +30,4 @@ Addon enablement, launchers, character-creation choice, automatic narration and 
 
 The addon does not require an external Pokémon server. Bundled data and selected artwork work locally; additional species/form images may load from public sprite mirrors. Unavailable images fall back to an icon. Your normal SillyTavern API is used for story narration.
 
-To return to stable RoleForge, switch back to `main` and reload. Pokémon's UI will be unavailable there until it is promoted; keep your chats and backups to retain their Pokémon journals.
+To stop using Pokémon for a character, disable it in Workshop. Its UI and generation instructions are disabled while the saved Pokémon journals remain in your chats.

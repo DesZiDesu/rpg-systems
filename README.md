@@ -1,6 +1,6 @@
 # RoleForge
 
-**Pokémon First Release — 1.0.0 / RoleForge 0.90.0.** This release branch includes the full Pokémon adventure addon, character creation, supported abilities/held items/weather, shared inventory, trade-back evolution and optimized replay. [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
+**Pokémon First Release — 1.0.0 / RoleForge 0.90.0.** Available on `main`: the Pokémon adventure addon, character creation, supported abilities/held items/weather, shared inventory, trade-back evolution and optimized replay. Update RoleForge, then install Pokémon 1.0.0 in Workshop. [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
 
 **Fixed in 0.89.3 / Aster Phone 1.2.3:** K06 uses a bare close button instead of a title bar. Removed decorative lettering clipped above the hinge; the complete handset and scrolling fixes remain. [Details](docs/aster-k06-clean-controls-v0.89.3.md).
 
