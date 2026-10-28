@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.8",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.4.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure — Battle motion",
+      "text": "Aperture is a separate desktop and mobile interface with a field, command station and party roster. Captures hide only the HP panels. Commands remain visible and are locked until the animation finishes. The ball lands on the opposing terrain base. The original interface remains selectable."
+    }
+  ]
+}

@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.7",
+      "minimumRoleForge": "0.90.8",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -491,6 +491,16 @@
           "changes": [
             "Trainer Archive is a redesigned dark interface for desktop and mobile",
             "Unobstructed capture motion with no overlay labels or visible skip button"
+          ]
+        },
+        {
+          "version": "1.4.0",
+          "path": "packs/pokemon-1.4.0.json",
+          "bytes": 691,
+          "sha256": "8f3f919ed456f0f7f8b95e33bbca27aaccff9a3130120942671472d079c9050b",
+          "changes": [
+            "Aperture interface with independent field, command station and party roster",
+            "Captures hide HP only, lock visible commands, and land on the opposing base"
           ]
         }
       ]
