@@ -17,10 +17,12 @@ test('encounter, victory, defeat and run use state transitions',()=>{
  assert.equal(motionSequence(before,{...before,battle:null,wins:1,logs:[{key:'victory'}]},{type:'attack'})[0].kind,'victory');
  assert.equal(motionSequence(before,{...before,battle:null,logs:[{key:'defeat'}]},{type:'attack'})[0].kind,'defeat');
  assert.equal(motionSequence(before,{...before,battle:null,logs:[{key:'run'}]},{type:'run'})[0].kind,'run');
- assert.deepEqual(motionSequence(before,before,{type:'attack'}),[]);
+ assert.equal(motionSequence(before,before,{type:'attack'})[0].kind,'attack');
 });
 test('battle motion preference survives Workshop profile normalization',()=>{
  assert.equal(normalizeProfile({pokemon:{motion:false}},'card').pokemon.motion,false);
  assert.equal(normalizeProfile({pokemon:{motion:true}},'card').pokemon.motion,true);
  assert.equal(normalizeProfile({pokemon:{}},'card').pokemon.motion,undefined);
 });
+test('theme and menu sound persist as character preferences',()=>{const p=normalizeProfile({pokemon:{theme:'classic-dark',sound:false}},'card').pokemon;assert.equal(p.theme,'classic-dark');assert.equal(p.sound,false);assert.equal(normalizeProfile({pokemon:{theme:'unknown'}},'card').pokemon.theme,undefined);});
+test('switch animation follows the committed active party member',()=>{const after={...before,battle:{...battle,activeUid:'other'}};assert.equal(motionSequence(before,after,{type:'switch'})[0].kind,'switch');assert.deepEqual(motionSequence(before,before,{type:'switch'}),[]);});

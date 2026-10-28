@@ -13,31 +13,20 @@ export function motionSequence(before,after,event){
   else if(last==='victory'||last==='trainer-victory'||after.wins>before.wins)result.push({kind:'victory',battle:start});
   else if(last==='defeat'||event.type==='forfeit')result.push({kind:'defeat',battle:start});
  }
+ if(start&&end&&event.type==='attack')result.push({kind:'attack',battle:end});
+ if(start&&end&&event.type==='switch'&&start.activeUid!==end.activeUid)result.push({kind:'switch',battle:end});
  if(start&&!end&&event.type==='catch'&&!after.pokemon?.[event.id]&&after.logs?.some((v,i)=>i>=Math.max(0,after.logs.length-5)&&v.key==='defeat'))result.push({kind:'defeat',battle:start});
  return result;
 }
-export function mountPokemonMotion({resolveImage,resolveTerrain,language}){
- const root=document.createElement('dialog');root.className='pkm-motion';root.setAttribute('aria-label','Pokémon battle animation');document.body.append(root);
- let timer=0,queue=[],done=null,generation=0;
- function clear(){clearTimeout(timer);timer=0;queue=[];generation++;if(root.open)root.close();root.replaceChildren();if(done){const resolve=done;done=null;resolve();}}
- root.addEventListener('cancel',event=>{event.preventDefault();clear();});
- root.addEventListener('click',event=>{if(event.target.closest('[data-pkm-skip]'))clear();});
- function safeImage(mon){if(!mon)return '';try{return resolveImage(mon)||'';}catch{return '';}}
- function pokemon(mon,cls){const frame=document.createElement('div');frame.className='pkm-mon '+cls;const src=safeImage(mon);if(src){const img=document.createElement('img');img.src=src;img.alt='';img.decoding='async';img.onerror=()=>{img.remove();frame.classList.add('pkm-missing');};frame.append(img);}else frame.classList.add('pkm-missing');return frame;}
- function next(own){if(own!==generation)return;const item=queue.shift();if(!item){clear();return;}
-  const battle=item.battle,ally=item.ally,foe=battle?.wild,th=language()==='th';root.replaceChildren();const stage=document.createElement('div');stage.className='pkm-stage pkm-'+item.kind;stage.dataset.pkmKind=item.kind;
-  const terrain=resolveTerrain();if(terrain)stage.style.setProperty('--pkm-terrain',`url("${terrain}")`);
-  const background=document.createElement('div');background.className='pkm-field';stage.append(background);
-  const label=document.createElement('div');label.className='pkm-header';label.textContent=({encounter:th?'การเผชิญหน้า':'ENCOUNTER',caught:th?'จับสำเร็จ':'CAUGHT',escaped:th?'หลุดจากบอล':'BROKE FREE',victory:th?'ชนะการต่อสู้':'VICTORY',defeat:th?'พ่ายแพ้':'DEFEAT',run:th?'ออกจากการต่อสู้':'ESCAPED'})[item.kind];stage.append(label);
-  stage.append(pokemon(ally,'pkm-ally'),pokemon(foe,'pkm-foe'));
-  const caption=document.createElement('div');caption.className='pkm-caption';const foeName=foe?.nickname||foe?.key?.replaceAll('-',' ')||'Pokémon',allyName=ally?.nickname||ally?.key?.replaceAll('-',' ')||'Pokémon';caption.innerHTML='<span class="pkm-caption-kicker"></span><strong></strong><small></small>';caption.querySelector('span').textContent=th?'การต่อสู้โปเกมอน':'POKÉMON BATTLE';caption.querySelector('strong').textContent=foeName;caption.querySelector('small').textContent=(th?'คู่หู: ':'PARTNER: ')+allyName;stage.append(caption);
-  const flash=document.createElement('div');flash.className='pkm-flash';stage.append(flash);
-  if(item.kind==='caught'||item.kind==='escaped'){
-   const ball=document.createElement('img');ball.className='pkm-ball';ball.alt='';ball.src=new URL('assets/items/'+(item.ball||'poke-ball')+'.png',import.meta.url).href;ball.onerror=()=>{ball.src=new URL('assets/items/poke-ball.png',import.meta.url).href;ball.onerror=null;};stage.append(ball);
-   const sparks=document.createElement('div');sparks.className='pkm-sparks';sparks.setAttribute('aria-hidden','true');sparks.textContent='✦  ✧  ✦';stage.append(sparks);
-  }
-  const skip=document.createElement('button');skip.type='button';skip.className='pkm-skip';skip.dataset.pkmSkip='';skip.textContent=th?'ข้าม':'Skip';stage.append(skip);root.append(stage);
-  timer=setTimeout(()=>next(own),item.kind==='caught'||item.kind==='escaped'?4700:2300);
+export function mountPokemonMotion({arena,language}){
+ let timer=0,queue=[],done=null,generation=0,stage=null,controls=null;
+ function clear(){clearTimeout(timer);timer=0;queue=[];generation++;if(stage){stage.classList.remove('pkm-inline','pkm-encounter','pkm-caught','pkm-escaped','pkm-victory','pkm-defeat','pkm-run','pkm-switch','pkm-attack');stage.removeAttribute('data-pkm-kind');}controls?.remove();stage=null;controls=null;if(done){const resolve=done;done=null;resolve();}}
+ function next(own){if(own!==generation)return;const item=queue.shift();if(!item){clear();return;}stage=arena();if(!stage){clear();return;}stage.classList.add('pkm-inline','pkm-'+item.kind);stage.dataset.pkmKind=item.kind;
+  const th=language()==='th',container=document.createElement('div');controls=container;container.className='pkm-inline-controls';
+  const label=document.createElement('span');label.className='pkm-inline-label';label.textContent=({encounter:th?'พบโปเกมอน':'ENCOUNTER',caught:th?'จับสำเร็จ':'CAUGHT',escaped:th?'หลุดจากบอล':'BROKE FREE',victory:th?'ชนะการต่อสู้':'VICTORY',defeat:th?'พ่ายแพ้':'DEFEAT',run:th?'หนีสำเร็จ':'ESCAPED',switch:th?'เปลี่ยนโปเกมอน':'SWITCH',attack:th?'ใช้ท่า':'MOVE'})[item.kind];container.append(label);
+  const skip=document.createElement('button');skip.type='button';skip.className='pkm-inline-skip';skip.textContent=th?'ข้าม':'Skip';skip.addEventListener('click',clear);container.append(skip);
+  if(item.kind==='caught'||item.kind==='escaped'){const ball=document.createElement('img');ball.className='pkm-inline-ball';ball.alt='';ball.src=new URL('assets/items/'+(item.ball||'poke-ball')+'.png',import.meta.url).href;ball.onerror=()=>{ball.onerror=null;ball.src=new URL('assets/items/poke-ball.png',import.meta.url).href;};container.append(ball);const sparks=document.createElement('span');sparks.className='pkm-inline-sparks';sparks.textContent='✦ ✧ ✦';container.append(sparks);}
+  stage.append(container);timer=setTimeout(()=>{stage?.classList.remove('pkm-'+item.kind);controls?.remove();controls=null;next(own);},item.kind==='caught'||item.kind==='escaped'?3000:1900);
  }
- return {play(items){if(!items.length||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return Promise.resolve();clear();queue=items;const own=generation;return new Promise(resolve=>{done=resolve;try{root.showModal();next(own);}catch{clear();}});},cancel:clear,destroy(){clear();root.remove();},element:root};
+ return {play(items){if(!items.length||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return Promise.resolve();clear();queue=items;const own=generation;return new Promise(resolve=>{done=resolve;next(own);});},cancel:clear,destroy:clear};
 }

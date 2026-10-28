@@ -62,3 +62,53 @@
 @media(max-width:650px){.rfpk .pk-equipment-card,.rfpk .pk-release-guide{padding:18px}.rfpk .pk-equipment-card form{display:block}.rfpk .pk-equipment-card form button{margin-top:14px;width:100%}}
 
 .rfpk .pk-equipment-card select{background:#f7fafc;color:#284f68;border:1px solid #adc6d7;border-radius:7px;box-sizing:border-box;width:100%}.rfpk .pk-held-empty{margin:20px 0;padding:14px 16px;background:#f2f7fb;border-left:3px solid #7eabc9;color:#5d7990;font-size:14px}
+
+/* Battle motion plays on the same arena and artwork used by the commands. */
+.rfpk .pk-arena{height:auto;aspect-ratio:16 / 9;container-type:inline-size}
+.rfpk .pk-foe-art{width:35%;height:62%;right:5%;top:5%}
+.rfpk .pk-ally-art{width:39%;height:68%;left:2%;bottom:-3%}
+.rfpk .pk-battle-status{width:min(39%,230px);box-sizing:border-box}
+.pkm-inline-controls{position:absolute;inset:0;z-index:8;pointer-events:none}
+.pkm-inline-label{position:absolute;top:4%;left:50%;transform:translateX(-50%);padding:4px 9px;background:#172f39dd;color:white;border:1px solid #fff9;border-radius:4px;font-size:clamp(9px,2.5cqw,13px);font-weight:800;white-space:nowrap}
+.rfpk .pkm-inline-skip{position:absolute;right:1%;top:1%;pointer-events:auto;min-height:32px;padding:4px 9px;font-size:11px;border-radius:4px;background:#172f39e8;color:#fff;border:1px solid #fff8}
+.pkm-inline-ball{position:absolute;z-index:9;width:12%;height:20%;object-fit:contain;image-rendering:pixelated;left:72%;top:64%;filter:drop-shadow(0 5px 4px #173c347a);animation:pk-inline-throw .8s both,pk-inline-shake .45s .85s 4}
+.pkm-inline-sparks{position:absolute;left:70%;top:48%;font-size:clamp(20px,7cqw,42px);color:#fff6a1;text-shadow:0 0 12px #fff,0 0 22px #ffdb4b;opacity:0}
+.pkm-caught .pkm-inline-sparks{animation:pk-inline-stars .6s 2.4s both}
+.pkm-caught .pk-foe-art,.pkm-escaped .pk-foe-art{animation:pk-inline-capture .5s .6s both}
+.pkm-escaped .pk-foe-art{animation:pk-inline-capture .5s .6s both,pk-inline-release .4s 2.4s forwards}
+.pkm-escaped .pkm-inline-ball{animation:pk-inline-throw .8s both,pk-inline-shake .45s .85s 4,pk-inline-vanish .1s 2.4s forwards}
+.pkm-encounter .pk-foe-art{animation:pk-inline-enter .7s both}.pkm-switch .pk-ally-art{animation:pk-inline-enter .7s both}
+.pkm-victory .pk-foe-art,.pkm-defeat .pk-ally-art,.pkm-run .pk-ally-art{animation:pk-inline-exit .7s .15s forwards}
+@keyframes pk-inline-throw{from{left:13%;top:80%;transform:scale(.4) rotate(0)}60%{left:50%;top:5%;transform:scale(1.1) rotate(500deg)}to{left:72%;top:64%;transform:rotate(1080deg)}}
+@keyframes pk-inline-shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-22deg)}75%{transform:rotate(22deg)}}
+@keyframes pk-inline-capture{to{opacity:0;filter:brightness(3);transform:scale(.05)}}@keyframes pk-inline-release{from{opacity:0;transform:scale(.05)}to{opacity:1;transform:none}}
+@keyframes pk-inline-stars{50%{opacity:1;transform:scale(1.4)}to{opacity:0;transform:scale(2)}}@keyframes pk-inline-vanish{to{opacity:0}}
+@keyframes pk-inline-enter{from{opacity:0;translate:50px 0}to{opacity:1;translate:0}}@keyframes pk-inline-exit{to{opacity:0;translate:0 40px}}
+@media(max-width:700px){.rfpk .pk-battle-status{width:39%;padding:5px 7px}.rfpk .pk-battle-status h2{font-size:clamp(11px,3.2vw,16px)}.rfpk .pk-battle-status small{font-size:9px}.rfpk .pk-battle-status .pk-hp{margin-top:4px}.rfpk .pk-battle-status .pk-types{margin-top:3px}.rfpk .pk-party-balls{margin-top:3px}.rfpk .pk-ball.tiny{width:12px;height:12px}}
+@media(prefers-reduced-motion:reduce){.rfpk .pk-arena *{animation:none!important}}
+.rfpk .pk-arena.pkm-inline~.pk-battle-console{pointer-events:none;opacity:.72}
+.rfpk button{transition:transform .16s cubic-bezier(.2,.8,.2,1),filter .16s,box-shadow .16s,background .16s}
+.rfpk button:active:not(:disabled){transform:translateY(2px) scale(.97);filter:brightness(.93)}
+.pk-theme-choices{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.rfpk .pk-theme-choices button[aria-pressed=true]{background:#1b785d;color:white;border-color:#7bd5a5}
+.rfpk[data-pk-theme=classic-dark]{--pk-bg:#201f24;--pk-panel:#302f35;--pk-card:#302f35;--pk-soft:#38373d;--pk-line:#626168;--pk-text:#f3f1e9;--pk-muted:#c3c0bb;--pk-gold:#9ee5b3;--pk-green:#72c493;color-scheme:dark}
+.rfpk[data-pk-theme=classic-dark] .pk-header{background:#24242a;border-color:#73bd8f;box-shadow:inset 0 3px #7bcf9d}
+.rfpk[data-pk-theme=classic-dark] .pk-wordmark strong{color:#f4f1de;-webkit-text-stroke:0;filter:none}
+.rfpk[data-pk-theme=classic-dark] .pk-nav{background:#19191d;border-color:#5b5b60}
+.rfpk[data-pk-theme=classic-dark] .pk-nav button[aria-current=page]{background:#454449;border-color:#a0d5ad;color:#fff;box-shadow:inset 4px 0 #84d3a0}
+.rfpk[data-pk-theme=classic-dark] .pk-main{background-color:#242327;background-image:linear-gradient(130deg,#ffffff08,transparent 45%)}
+.rfpk[data-pk-theme=classic-dark] :is(.pk-journey-hero,.pk-mon-card,.pk-setting,.pk-settings-section,.pk-training-current article,.pk-training-list article,.pk-training-choice,.pk-editor-section,.pk-center-team article,.pk-medicine-card,.pk-import-row,.pk-specimen,.pk-service-card,.pk-battle-console,.pk-battle-message,.pk-bag-toolbar,.pk-empty,.pk-dex-card){background:#343339;color:#f5f3ed;border-color:#77757a;box-shadow:none}
+.rfpk[data-pk-theme=classic-dark] :is(.pk-section-head,.pk-main h1,.pk-main h2,.pk-main h3,.pk-main strong,.pk-eyebrow,.pk-main p,.pk-main small){color:inherit}
+.rfpk[data-pk-theme=classic-dark] :is(button,input,select,textarea){background-color:#45444a;color:#f7f5ec;border-color:#77757a;border-radius:3px}
+.rfpk[data-pk-theme=classic-dark] button:hover{background:#55545a;border-color:#8bd0a1}
+.rfpk[data-pk-theme=classic-dark] :is(button.pk-primary,button[aria-pressed=true]){background:#3b7655;color:#fff;border-color:#9ce1b0}
+.rfpk[data-pk-theme=classic-dark] .pk-battle-status{background:#242329ed;color:#fff;border-color:#a6cca9;border-radius:3px;box-shadow:3px 3px #1515158c}
+.rfpk[data-pk-theme=classic-dark] .pk-battle-status small{color:#ddd}
+.rfpk[data-pk-theme=classic-dark] :is(.pk-command.fight,.pk-command.bag,.pk-command.party,.pk-command.run){background:#414047;color:#fff;border-color:#89888e;box-shadow:2px 3px #111}
+.rfpk[data-pk-theme=classic-dark] .pk-command.fight{border-left:5px solid #e16f6d}.rfpk[data-pk-theme=classic-dark] .pk-command.party{border-left:5px solid #81cc9a}.rfpk[data-pk-theme=classic-dark] .pk-command.bag{border-left:5px solid #d6c16c}.rfpk[data-pk-theme=classic-dark] .pk-command.run{border-left:5px solid #77add5}
+.rfpk[data-pk-theme=classic-dark] .pk-terrain-setting select{background:#45444a;color:#fff;border-color:#77757a}
+@media(prefers-reduced-motion:reduce){.rfpk button{transition:none!important}.rfpk button:active:not(:disabled){transform:none}}
+.rfpk .pk-battle-party{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.rfpk button.pk-battle-party-member{justify-content:flex-start;gap:8px;padding:7px;text-align:left;min-height:58px}.pk-battle-party-member img{width:44px;height:44px}.pk-battle-party-member span{display:flex;flex-direction:column;min-width:0}.pk-battle-party-member strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pk-battle-party-member small{font-size:11px;color:var(--pk-muted)}
+.pkm-attack .pk-ally-art{animation:pk-inline-lunge .65s both}
+@keyframes pk-inline-lunge{0%,100%{translate:0 0}45%{translate:12% -8%}}
+.rfpk .pk-hp-percent{font-size:10px;opacity:.72;font-weight:600}.rfpk .pk-battle-meta{font-size:10px;line-height:1.2;opacity:.8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:700px){.rfpk .pk-battle-meta,.rfpk .pk-hp-percent{font-size:8px}}
