@@ -1,0 +1,9 @@
+{
+  "format": "roleforge-pokemon-editions",
+  "version": 1,
+  "cards": [
+    {"id":"sunken-red-sun","edition":"Sunken Red Sun","language":"th","json":"Pokemon-Sunken-Red-Sun.th.json","png":"Pokemon-Sunken-Red-Sun.th.png","art":"sunken-red-sun.png","greetings":5},
+    {"id":"dawn-midnights","edition":"Dawn Midnights","language":"en","json":"Pokemon-Dawn-Midnights.en.json","png":"Pokemon-Dawn-Midnights.en.png","art":"dawn-midnights.png","greetings":5},
+    {"id":"sun-and-dawn","edition":"Sun & Dawn","language":"auto","json":"Pokemon-Sun-and-Dawn.json","png":"Pokemon-Sun-and-Dawn.png","art":"sun-and-dawn.png","greetings":0}
+  ]
+}

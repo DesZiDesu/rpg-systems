@@ -7,8 +7,8 @@ RoleForge 0.90.0 and Pokémon 1.0.0 are available on `main`. Existing Aster, Dea
 1. Back up your SillyTavern user data. If RoleForge is already installed, open Extensions → Manage extensions → RoleForge → Update, then reload. If you previously selected a preview/release branch, switch to `main` before updating.
 2. For a fresh installation: Extensions → Install extension. Repository: `https://github.com/DesZiDesu/rpg-systems`. Use the default branch (`main`). Reload SillyTavern. Install only one active copy of RoleForge.
 3. Open RoleForge → Workshop → Pokémon → Install/Update **1.0.0**. Enable it for your character.
-4. Import `Pokemon-First-Journey.en.json` (or `.th.json`) and open Pokémon → Journey. Select a starter. Configure your usual SillyTavern chat-completion API for narration.
-5. Optional: Workshop → Pokémon → character-creation toggle. A blank chat, or deleting the original first greeting, can open the Pokémon creator. Its chosen partner and kit replace the authored defaults; no kit stays empty.
+4. Import a PNG card: **Sunken Red Sun** (Thai), **Dawn Midnights** (English), or **Sun & Dawn** (Character Creation). PNGs include the cover and character data together; [download choices and all openings](CARDS.md). The two language editions have five RoleForge-formatted greetings each. Open Pokémon → Journey to choose a starter, and configure your usual SillyTavern chat-completion API for narration.
+5. Sun & Dawn has no first message and opens Pokémon Character Creation. Leave Workshop → Pokémon → **Use addon character creation** on. A blank chat, or deleting an authored first greeting, can open the creator. Its chosen partner and kit replace the authored defaults; no kit stays empty.
 
 ## Downloaded ZIP
 

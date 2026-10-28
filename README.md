@@ -2,6 +2,8 @@
 
 **Pokémon First Release — 1.0.0 / RoleForge 0.90.0.** Available on `main`: the Pokémon adventure addon, character creation, supported abilities/held items/weather, shared inventory, trade-back evolution and optimized replay. Update RoleForge, then install Pokémon 1.0.0 in Workshop. [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
 
+**Pokémon cards:** [Sunken Red Sun · ไทย](docs/pokemon-release/Pokemon-Sunken-Red-Sun.th.png), [Dawn Midnights · English](docs/pokemon-release/Pokemon-Dawn-Midnights.en.png), and [Sun & Dawn · Character Creation](docs/pokemon-release/Pokemon-Sun-and-Dawn.png). Each PNG includes its own cover and embedded card data. The language editions have five formatted, open-ended greetings each; Sun & Dawn has no first message. [Card guide](docs/pokemon-release/CARDS.md).
+
 **Fixed in 0.89.3 / Aster Phone 1.2.3:** K06 uses a bare close button instead of a title bar. Removed decorative lettering clipped above the hinge; the complete handset and scrolling fixes remain. [Details](docs/aster-k06-clean-controls-v0.89.3.md).
 
 **Fixed in 0.89.2 / Aster Phone 1.2.2:** Mobile K06 shows the **complete flip phone**, including its frame, hinge and keypad, fitted to the viewport over a transparent background. Settings/contact scrolling and visible option pickers remain fixed. [Layout correction and validation](docs/aster-k06-handset-fit-v0.89.2.md).

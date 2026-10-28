@@ -11,6 +11,7 @@
 - A synthetic **2,000-message** ST conversation: unchanged refresh processes zero replay rows; an appended message processes one. Only 16 checkpoints are retained. Editing/deleting the synthetic suffix returns exactly to the original game state.
 - Character narration/scenery preferences survive a new chat while party/progression reset for the new chat.
 - The actual extracted installer ZIP runs in a separate ST profile and passes the complete desktop/mobile gameplay/narration/reload/branch flow, plus long-chat, artwork, viewport and character-preference checks.
+- Card editions: desktop/mobile import all three PNG cards, retain the embedded data and portraits, render all ten authored openings with RoleForge blocks through native greeting swipes, and complete Sun & Dawn's blank-chat Pokémon creator with the selected region, partner and exact kit. The creator response is controlled, not a live-model test. `node tools/build-pokemon-edition-cards.mjs --check` verifies PNG CRCs, embedded JSON and the opening structure. Packaging separately checks that image data remains unchanged.
 
 Timing is environment-dependent: the source-profile performance run initially took about 57 ms; ten unchanged refreshes took about 177 ms total. See the delivered machine-readable reports for each run's measurements.
 
