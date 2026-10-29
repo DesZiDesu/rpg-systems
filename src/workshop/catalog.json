@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.10",
+      "minimumRoleForge": "0.90.11",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -523,6 +523,17 @@
             "Genuine back-facing player sprites and front-facing opponents, with paired GIF/WebP animations",
             "Exact static front/back fallbacks for all 1,025 base species; Shiny and female variant selection",
             "Lazy sprite loading, graceful image failures and real GIF stopping with Motion off or reduced motion"
+          ]
+        },
+        {
+          "version": "1.6.1",
+          "path": "packs/pokemon-1.6.1.json",
+          "bytes": 928,
+          "sha256": "835dbb0e36aee76e0bb5004fa7babbbbafe886496ff94fa8efcf82409bed09e1",
+          "changes": [
+            "16:9 desktop window, grouped settings and Poké Ball headers in both Dossier themes",
+            "Square composer companion with separated move/action rows and readable HP controls",
+            "Automatically open the full window for new saved battles; preserve manual closing, draft text and history navigation"
           ]
         }
       ]

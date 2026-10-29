@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.11",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.6.1",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure — Unified Dossier interface and battle opening",
+      "text": "Desktop windows use a 16:9 shell with a 16:9 battle field, side party roster and commands below. Original and Aperture share Poké Ball header branding and grouped settings. The composer companion now uses the same square-frame system with separated move and action rows. New saved battles open the full window automatically, including when Motion is off; ordinary replies and restored history do not force it open. Long names wrap inside detail pages and review confirmations stay in page flow."
+    }
+  ]
+}

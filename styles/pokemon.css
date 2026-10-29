@@ -557,3 +557,88 @@
 @media(min-width:701px){
  #roleforge-pokemon[data-pk-layout=dossier] .pk-field-roster>div>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 }
+
+/* Composer companion: the dock is outside the modal and needs the same frame system. */
+#roleforge-pokemon-dock{--pk-bg:#edf3f8;--pk-panel:#f7fafc;--pk-soft:#e7f0f7;--pk-line:#b9ccdd;--pk-text:#1b354b;--pk-muted:#536d83;--pk-gold:#176cae;--pk-frame:#8faabd;position:relative;max-width:100%;margin:0;border:1px solid var(--pk-frame);background:var(--pk-panel);color:var(--pk-text);box-shadow:inset 0 0 0 3px #7d9bb00b;font-size:13px}
+#roleforge-pokemon-dock,#roleforge-pokemon-dock *{border-radius:0!important}
+#roleforge-pokemon-dock[data-pk-theme=classic-dark]{--pk-bg:#101a2b;--pk-panel:#142035;--pk-soft:#1b2b42;--pk-line:#344960;--pk-text:#e5edfa;--pk-muted:#a1b3cd;--pk-gold:#a9c5fa;--pk-frame:#7084a3;color-scheme:dark}
+#roleforge-pokemon-dock .pk-dock-header{min-height:46px;padding:6px 10px;background:linear-gradient(#ef5660,#dc3d4b);border:0;border-bottom:1px solid #ae3342;box-shadow:inset 0 1px #ffffff38;color:#fff}
+#roleforge-pokemon-dock[data-pk-theme=classic-dark] .pk-dock-header{background:#101a2b;border-bottom-color:var(--pk-line);color:#e3edff;box-shadow:inset 0 1px #ffffff12}
+#roleforge-pokemon-dock .pk-brand-emblem{display:grid;place-items:center;width:25px;height:25px}
+#roleforge-pokemon-dock .pk-brand-emblem .pk-party-symbol{width:24px;height:24px}
+#roleforge-pokemon-dock .pk-dock-mode{font-size:12px;font-weight:600;letter-spacing:.015em;opacity:.9}
+#roleforge-pokemon-dock .pk-dock-header>div{gap:10px}
+#roleforge-pokemon-dock .pk-dock-header>div:last-child{gap:2px}
+#roleforge-pokemon-dock .pk-dock-header button.pk-icon{width:32px;min-height:32px;padding:6px;border:0;background:transparent;box-shadow:none;color:inherit}
+#roleforge-pokemon-dock .pk-dock-header button.pk-icon:hover{background:#ffffff18}
+#roleforge-pokemon-dock .pk-dock-header button.pk-icon:is(:before,:after){display:none}
+#roleforge-pokemon-dock .pk-dock-header .fa-solid{font-size:13px}
+#roleforge-pokemon-dock .pk-dock-body{display:grid;gap:12px;min-width:0;padding:14px}
+#roleforge-pokemon-dock :is(.pk-dock-battle,.pk-dock-lead,.pk-dock-empty,.pk-dock-moves,.pk-dock-actions,.pk-dock-result){margin:0;min-width:0}
+#roleforge-pokemon-dock .pk-dock-battle{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:0}
+#roleforge-pokemon-dock .pk-dock-mon{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:9px;width:100%;max-width:none}
+#roleforge-pokemon-dock .pk-dock-mon>img{width:42px;height:58px;object-fit:contain;flex:none}
+#roleforge-pokemon-dock .pk-dock-mon>div>strong{font-size:14px;font-weight:700;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#roleforge-pokemon-dock .pk-dock-mon>div>small{font-size:10px;line-height:1.4;color:var(--pk-muted);margin:2px 0 8px}
+#roleforge-pokemon-dock .pk-hp>div{gap:4px;align-items:baseline;margin:0 0 4px}
+#roleforge-pokemon-dock .pk-hp>div>span{font-size:10px;color:#23845d;white-space:nowrap}
+#roleforge-pokemon-dock[data-pk-theme=classic-dark] .pk-hp>div>span{color:#92dcc2}
+#roleforge-pokemon-dock .pk-hp strong{font-size:11px;line-height:1.3;color:var(--pk-text);white-space:nowrap}
+#roleforge-pokemon-dock .pk-hp strong small{font-size:9px;color:var(--pk-muted);font-weight:450}
+#roleforge-pokemon-dock .pk-hp-percent{display:none}
+#roleforge-pokemon-dock .pk-track{height:5px;box-shadow:none;background:var(--pk-line)}
+#roleforge-pokemon-dock .pk-dock-moves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:0;gap:8px}
+#roleforge-pokemon-dock button.pk-move{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:62px;padding:10px;border:1px solid color-mix(in srgb,var(--pk-move-color) 38%,var(--pk-line));background:linear-gradient(110deg,color-mix(in srgb,var(--pk-move-color) 6%,var(--pk-panel)),var(--pk-panel));box-shadow:none;color:var(--pk-text);transform:none;min-width:0}
+#roleforge-pokemon-dock button.pk-move:hover{border-color:var(--pk-move-color);background:var(--pk-soft)}
+#roleforge-pokemon-dock button.pk-move>span:first-child{display:grid;gap:5px;min-width:0}
+#roleforge-pokemon-dock button.pk-move strong{font-size:12px;line-height:1.4;overflow-wrap:anywhere;font-weight:650;color:var(--pk-text)}
+#roleforge-pokemon-dock button.pk-move>span:first-child>small{display:flex;align-items:center;gap:5px}
+#roleforge-pokemon-dock .pk-type{padding:2px 5px;font-size:8px;box-shadow:none}
+#roleforge-pokemon-dock .pk-move-pp{display:grid;gap:1px;flex:none;font-size:13px;line-height:1.4;font-weight:650;color:var(--pk-text);text-align:right;white-space:nowrap}
+#roleforge-pokemon-dock .pk-move-pp small{display:block;font-size:9px;font-weight:400;color:var(--pk-muted)}
+#roleforge-pokemon-dock .pk-dock-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 0 0;border-top:1px solid var(--pk-line)}
+#roleforge-pokemon-dock .pk-dock-actions>button{min-height:42px;padding:8px 12px;flex:1;min-width:0;font-size:12px;line-height:1.4;box-shadow:none;gap:8px;white-space:normal}
+#roleforge-pokemon-dock .pk-dock-actions>button.pk-quiet{background:var(--pk-soft);border:1px solid var(--pk-line);color:var(--pk-text)}
+#roleforge-pokemon-dock .pk-dock-actions>button.pk-primary{background:#2377bb;border:1px solid #1767aa;color:#fff}
+#roleforge-pokemon-dock[data-pk-theme=classic-dark] .pk-dock-actions>button.pk-primary{background:#293f61;border-color:#6b8cb4;color:#e3edff}
+#roleforge-pokemon-dock .pk-dock-actions>button.pk-link{background:transparent;border:0;color:var(--pk-gold)}
+#roleforge-pokemon-dock .pk-dock-actions .pk-item-sprite{width:19px;height:19px;object-fit:contain;flex:none}
+#roleforge-pokemon-dock .pk-dock-lead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:0}
+#roleforge-pokemon-dock .pk-dock-lead>button{min-height:44px;padding:10px 13px;font-size:12px;box-shadow:none;align-self:center}
+#roleforge-pokemon-dock .pk-dock-empty{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:0;align-items:center;font-size:12px;line-height:1.6}
+#roleforge-pokemon-dock .pk-dock-empty>button{min-height:44px;padding:10px 12px;box-shadow:none;font-size:12px}
+#roleforge-pokemon-dock .pk-dock-result{padding:0;color:var(--pk-muted);font-size:11px;line-height:1.7;overflow-wrap:anywhere}
+#roleforge-pokemon-dock .pk-dock-result:empty{display:none}
+@media(max-width:380px){
+ #roleforge-pokemon-dock .pk-dock-body{padding:11px;gap:11px}
+ #roleforge-pokemon-dock .pk-dock-battle{gap:12px}
+ #roleforge-pokemon-dock .pk-dock-mon{grid-template-columns:32px minmax(0,1fr);gap:7px}
+ #roleforge-pokemon-dock .pk-dock-mon>img{width:32px;height:48px}
+ #roleforge-pokemon-dock .pk-dock-mon>div>strong{font-size:13px}
+ #roleforge-pokemon-dock .pk-dock-actions>button{padding:9px 8px;font-size:11px}
+ #roleforge-pokemon-dock .pk-dock-moves{grid-template-columns:minmax(0,1fr)}
+}
+
+#roleforge-pokemon-dock .pk-dock-moves>button:only-child{grid-column:1/-1}
+/* Supported long nicknames must wrap within the detail and service grids. */
+#roleforge-pokemon :is(.pk-detail-copy h1,.pk-mon-open h2,.pk-center-team h2,.pk-hero-copy h2,.pk-spawn-preview h3,.pk-training-choice h2){overflow-wrap:anywhere;max-width:100%}
+/* Confirmation belongs to the page flow instead of covering other actions. */
+#roleforge-pokemon .pk-confirm{position:relative;bottom:auto;z-index:auto;margin:18px 0 0;border:3px double var(--pk-gold);background:var(--pk-panel);box-shadow:none}
+#roleforge-pokemon .pk-confirm h2{font-size:17px}
+#roleforge-pokemon .pk-confirm p{font-size:13px;line-height:1.7;color:var(--pk-muted)}
+#roleforge-pokemon .pk-confirm>div{flex-wrap:wrap}
+#roleforge-pokemon .pk-owner-choice>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+/* Long battle submenus scroll within their command lane, preserving the field. */
+@media(min-width:901px){
+ #roleforge-pokemon[data-pk-layout=dossier] .pk-command-pane{max-height:clamp(160px,25dvh,220px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:2px 6px 2px 2px}
+}
+#roleforge-pokemon button.pk-owner-choice{overflow-wrap:anywhere;white-space:normal}
+#roleforge-pokemon .pk-section-head>div{min-width:0;max-width:100%}
+#roleforge-pokemon .pk-section-head h1{overflow-wrap:anywhere}
+@media(max-width:380px){
+ #roleforge-pokemon .pk-section-head{flex-wrap:wrap;align-items:flex-start;gap:8px}
+ #roleforge-pokemon .pk-section-head>div{flex-basis:100%}
+ #roleforge-pokemon .pk-section-head h1{font-size:27px}
+ #roleforge-pokemon .pk-counter{display:flex;align-items:baseline;gap:6px;font-size:23px}
+}
+#roleforge-pokemon :is(.pk-equipment-card h2,.pk-battle-party-member strong){overflow-wrap:anywhere;max-width:100%}
