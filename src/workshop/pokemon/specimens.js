@@ -7,9 +7,9 @@ export function traitsFor(p,seed,modern=true){
  return{ivs:Array.from({length:6},()=>modern?Math.floor(rng()*32):31),evs:[0,0,0,0,0,0],nature:modern?NATURES[Math.floor(rng()*25)]:'Hardy',gender:!modern||rate===undefined?'unknown':rate===-1?'genderless':rng()<rate/8?'female':'male',seed:String(seed),legacy:!modern};
 }
 export function specimenStats(p,m){
- if(!m.traits)return p.stats.map((n,i)=>Math.floor((2*n+31)*m.level/100)+(i===0?m.level+10:5));
+ if(!m.traits)return p.stats.map((n,i)=>Math.floor((Math.floor((2*n+31)*m.level/100)+(i===0?m.level+10:5))*(i===0&&m.dynamax?m.dynamax.multiplier:1)));
  const values=p.stats.map((base,i)=>{const v=Math.floor((2*base+m.traits.ivs[i]+Math.floor(m.traits.evs[i]/4))*m.level/100);return i===0?(p.speciesId===292&&!m.traits.legacy?1:v+m.level+10):Math.floor((v+5)*natureFactor(m.traits.nature,i));});
- return values.map((v,i)=>m.statOverrides?.[i]??v);
+ return values.map((v,i)=>Math.floor((m.statOverrides?.[i]??v)*(i===0&&m.dynamax?m.dynamax.multiplier:1)));
 }
 export function refreshStats(p,m){const old=m.stats?.[0]||1,damage=Math.max(0,old-m.hp),fainted=m.hp===0;m.stats=specimenStats(p,m);m.hp=fainted?0:Math.max(1,Math.min(m.stats[0],m.stats[0]-damage));}
 export function validateTraits(traits){

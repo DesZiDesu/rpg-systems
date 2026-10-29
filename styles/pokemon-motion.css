@@ -44,3 +44,13 @@
  @keyframes pkm-result-landscape{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
  @keyframes pkm-throw{0%{opacity:1;left:12%;top:80%;transform:scale(.3) rotate(-70deg)}60%{opacity:1;left:52%;top:10%;transform:scale(1.2) rotate(500deg)}100%{opacity:1;left:72%;top:64%;transform:scale(1) rotate(1080deg)}}
 }
+/* Transformation plays in the same field, without a title card or a separate modal. */
+.rfpk .pkm-transform-ring{position:absolute;left:25%;top:65%;width:26%;aspect-ratio:1;border:2px solid #d7bdff;border-radius:50%;box-shadow:0 0 18px #ad78ff,inset 0 0 20px #ad78ff80;transform:translate(-50%,-50%);animation:pkm-power-ring 1.75s ease-out both}
+.rfpk .pkm-transform-particles{position:absolute;left:25%;top:65%;width:5px;height:5px;background:#faf0ff;box-shadow:-28px -20px #d5aaff,25px -40px #fff,42px 10px #c4f7ff,-36px 28px #c4f7ff,4px -55px #fff;animation:pkm-power-particles 1.75s ease-out both}
+.rfpk .pkm-transform .pk-ally-art{animation:pkm-power-sprite 1.75s ease-in-out both}
+.rfpk .pkm-transform[data-pkm-system=dynamax] .pkm-transform-ring,.rfpk .pkm-transform[data-pkm-system=gigantamax] .pkm-transform-ring{border-color:#ff82bd;box-shadow:0 0 22px #ff388e,inset 0 0 20px #ff388e80}
+.rfpk .pkm-transform[data-pkm-system=tera] .pkm-transform-ring{border-color:#a9f5ff;box-shadow:0 0 22px #58cfff,inset 0 0 20px #58cfff80}
+@keyframes pkm-power-ring{0%{opacity:0;scale:.2;rotate:0deg}20%{opacity:1}65%{scale:1.2;rotate:90deg}100%{opacity:0;scale:1.7;rotate:180deg}}
+@keyframes pkm-power-particles{0%{opacity:0;transform:scale(.3)}25%{opacity:1}100%{opacity:0;transform:scale(2.4) translateY(-18px)}}
+@keyframes pkm-power-sprite{0%,100%{filter:none}35%{filter:brightness(2.5) drop-shadow(0 0 12px #dfb8ff)}65%{filter:brightness(1.4) drop-shadow(0 0 6px #dfb8ff)}}
+@media(prefers-reduced-motion:reduce){.rfpk .pkm-transform :is(.pkm-transform-ring,.pkm-transform-particles,.pk-ally-art){animation:none!important}}

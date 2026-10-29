@@ -1,6 +1,6 @@
-import {traitsFor,validateTraits,refreshStats} from './specimens.js?v=0.90.0';
-import {supportedMove} from './battle-rules.js?v=0.90.0';
-import {itemEffect,machineOptions} from './items.js?v=0.90.0';
+import {traitsFor,validateTraits,refreshStats} from './specimens.js?v=0.90.15';
+import {supportedMove} from './battle-rules.js?v=0.90.15';
+import {itemEffect,machineOptions} from './items.js?v=0.90.15';
 const check=(ok,msg)=>{if(!ok)throw Error(msg);};
 export function trainingChoices(s,dex,uid){const m=s.pokemon[uid],p=m&&dex.get(m.key);if(!p)return[];const data=dex.training?.[p.pokemonId]||{level:p.learnset,machine:[],tutor:[]},rows=new Map();for(const [level,id]of data.level||[])if(level<=m.level)rows.set(id,{id,method:'level',level});for(const id of data.tutor||[])if(!rows.has(id))rows.set(id,{id,method:'tutor'});for(const id of data.machine||[])if(!rows.has(id))rows.set(id,{id,method:'machine'});return[...rows.values()].filter(v=>dex.moves[v.id]).map(v=>({...v,move:dex.moves[v.id],supported:supportedMove(dex,v.id),known:m.moves.some(slot=>slot.id===v.id),machines:machineOptions(dex,p,v.id)})).sort((a,b)=>a.move.name.localeCompare(b.move.name));}
 export function expansionAction(s,e,dex,{create,log}){
@@ -24,7 +24,7 @@ export function expansionAction(s,e,dex,{create,log}){
  if(!e.type?.startsWith('cheat-'))return false;
  check(s.settings.sandbox&&e.source==='user','Enable Sandbox yourself before using cheats');check(!s.battle,'Finish the encounter before editing the world');
  if(e.type==='cheat-spawn'){
-  const p=dex.get(e.key||e.speciesId);check(p&&!p.battleOnly,'Choose a supported permanent form; battle transformations are not simulated');const m=create(dex,p.key,e.level,e.id,true);if(e.nickname)m.nickname=String(e.nickname).slice(0,36);m.shiny=e.shiny===true;m.cheated=true;s.pokemon[m.uid]=m;
+  const p=dex.get(e.key||e.speciesId);check(p&&!p.battleOnly,'Choose a permanent base form; use Fight → Special power for battle transformations');const m=create(dex,p.key,e.level,e.id,true);if(e.nickname)m.nickname=String(e.nickname).slice(0,36);m.shiny=e.shiny===true;m.cheated=true;s.pokemon[m.uid]=m;
   const destination=e.destination==='party'&&s.party.length<6?s.party:s.box;destination.push(m.uid);if(destination===s.party)s.started=true;for(const arr of[s.seen,s.caught])if(!arr.includes(p.speciesId))arr.push(p.speciesId);log(s,'cheat-spawn',{name:p.name,storage:destination===s.party?'party':'box'});
  }else if(e.type==='cheat-item'){
   check(dex.items?.has(e.item)&&Number.isInteger(e.quantity)&&e.quantity>=0&&e.quantity<=99999,'Choose an item and a quantity from 0 to 99999');s.inventory[e.item]=e.quantity;log(s,'cheat-item',{name:dex.items.get(e.item).name,quantity:e.quantity});

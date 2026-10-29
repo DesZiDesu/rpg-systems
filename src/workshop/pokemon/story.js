@@ -1,5 +1,6 @@
-import {normalizeWeather} from './mechanics.js?v=0.90.0';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.90.0';
+import {TRANSFORMATION_SYSTEMS,TERA_TYPES,megaForms} from './transformations.js?v=0.90.15';
+import {normalizeWeather} from './mechanics.js?v=0.90.15';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.90.15';
 const regions=['Kanto','Johto','Hoenn','Sinnoh','Unova','Kalos','Alola','Galar','Paldea'];
 const known=(proof,canonical,e)=>proof.toLocaleLowerCase().includes(canonical.toLocaleLowerCase())||typeof e.displayName==='string'&&e.displayName.length>=2&&e.displayName.length<=100&&/[\u0e00-\u0e7f]/u.test(e.displayName)&&proof.includes(e.displayName);
 const negative=/ไม่พบ|ไม่ได้รับ|สมมติ|\b(?:not|would|could|if|might|will)\b|กำลังจะ|จะได้รับ/iu;
@@ -14,7 +15,7 @@ export function parsePokemonStory(source,dex){
  if(!data||typeof data!=='object'){rejected.push('invalid-schema');continue;}
  for(const[i,e]of(Array.isArray(data.events)?data.events:[]).slice(0,8).entries()){
   if(!e||typeof e!=='object'||Array.isArray(e)){rejected.push('invalid-event');continue;}
-  let proof=String(e.evidence||'').trim().replace(/\s+/gu,' ');const modern=Number(data.version)>=2,version=Number(data.version)>=3?3:modern?2:1;
+  let proof=String(e.evidence||'').trim().replace(/\s+/gu,' ');const modern=Number(data.version)>=2,version=Number(data.version)>=4?4:Number(data.version)>=3?3:modern?2:1;
   const reject=reason=>rejected.push(reason);if(e.type==='item'&&modern&&!visible.includes(proof)){const recovered=recoverReceipt(visible,e,dex);if(recovered)proof=recovered;}
   if(proof.length<8||proof.length>600||!visible.includes(proof)){reject('missing-visible-evidence');continue;}
   if(/ไม่พบ|ไม่ได้รับ|สมมติ|\b(?:not|would|could|if|might)\b|กำลังจะ|จะได้รับ/iu.test(proof)){reject('hypothetical-or-negative');continue;}
@@ -28,9 +29,19 @@ export function parsePokemonStory(source,dex){
   if(e.type==='trainer'&&version>=3){
    const name=String(e.name||'').trim(),place=String(e.place||'').trim(),team=e.team;
    if(name.length<2||name.length>80||!proof.includes(name)||!/คุณ|ผู้เล่น|\byou\b|\byour\b/iu.test(proof)||!/ท้า|ประลอง|ต่อสู้|challenge|battle/iu.test(proof)||!place||place.length>160||!proof.includes(place)||!Array.isArray(team)||team.length<1||team.length>6){reject('unproven-trainer');continue;}
-   const resolved=team.map(mon=>{const p=dex.get(mon?.key||mon?.speciesId),level=Number(mon?.level);return p&&!p.battleOnly&&Number.isInteger(level)&&level>=1&&level<=100&&known(proof,p.name,mon)?{key:p.key,level}:null;});
+   const equipment={};let badEquipment=false;if(e.equipment!==undefined){if(!e.equipment||typeof e.equipment!=='object'||Array.isArray(e.equipment)||Object.keys(e.equipment).length>8)badEquipment=true;else for(const[id,n]of Object.entries(e.equipment)){const item=dex.items.get(id);if(!item||!Number.isInteger(n)||n<1||n>10||!proof.toLowerCase().includes(item.name.toLowerCase())){badEquipment=true;break;}equipment[id]=n;}}
+   if(badEquipment){reject('unproven-trainer-equipment');continue;}
+   const resolved=team.map(mon=>{const p=dex.get(mon?.key||mon?.speciesId),level=Number(mon?.level);if(!p||p.battleOnly||!Number.isInteger(level)||level<1||level>100||!known(proof,p.name,mon))return null;const entry={key:p.key,level};
+    if(mon.heldItem!==undefined){const item=dex.items.get(mon.heldItem);if(!item||!proof.toLowerCase().includes(item.name.toLowerCase()))return null;entry.heldItem=item.id;}
+    if(mon.teraType!==undefined){if(!TERA_TYPES.includes(mon.teraType)||!proof.toLowerCase().includes(mon.teraType))return null;entry.teraType=mon.teraType;}
+    if(mon.transform!==undefined){if(version<4||!mon.transform||!['mega','primal','ultra','dynamax','gigantamax','tera','zmove'].includes(mon.transform.kind))return null;const kind=mon.transform.kind,key=String(mon.transform.key||'');
+     const form=dex.get(key);if(['mega','primal','ultra','gigantamax'].includes(kind)){if(!form||form.speciesId!==p.speciesId||!form.form||!proof.toLowerCase().includes(form.form.toLowerCase()))return null;if(kind==='mega'&&!megaForms(dex,{key:p.key}).some(f=>f.key===key))return null;}
+     else if(!proof.toLowerCase().includes(({tera:'tera',zmove:'z-move',dynamax:'dynamax'})[kind]))return null;
+     entry.transform={kind,...key?{key}:{}};
+    }return entry;
+   });
    if(resolved.some(x=>!x)){reject('unproven-trainer-team');continue;}
-   events.push({...common,type:'trainer-offer',trainerKey:'npc-'+sha256(name.toLocaleLowerCase()).slice(0,20),name,place,team:resolved});continue;
+   events.push({...common,type:'trainer-offer',trainerKey:'npc-'+sha256(name.toLocaleLowerCase()).slice(0,20),name,place,team:resolved,equipment});continue;
   }
   const p=dex.get(e.key||e.speciesId);if(!p||!known(proof,p.name,e)){reject('unproven-species');continue;}
   if(e.type==='quest'&&modern){const place=String(e.place||'').trim();if(!(p.legendary||p.mythical)||place.length<2||place.length>160||!proof.includes(place)||!/quest|mission|task|ภารกิจ|มอบหมาย/iu.test(proof)){reject('unproven-quest');continue;}events.push({...common,type:'quest-offer',speciesId:p.speciesId,place,region:regions.includes(e.region)?e.region:undefined,wins:Math.max(0,Math.min(20,Number(e.wins)||0))});continue;}

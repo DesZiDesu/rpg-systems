@@ -1,0 +1,542 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "browser": "Chromium",
+  "mobileEmulation": true,
+  "liveModel": false,
+  "devices": [
+    {
+      "device": "mobile",
+      "avatar": "Transformation QA mobile 1793282190405.png",
+      "matrix": [
+        {
+          "theme": "classic-dark",
+          "view": "adventure",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "team",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "dex",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "storage",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "bag",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "settings",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "services",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "center",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "training",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "trainers",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "quests",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "sandbox",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "bridge",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "equipment",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "coverage",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "transformations",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "pokemon-forms",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "adventure",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "team",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "dex",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "storage",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "bag",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "settings",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "services",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "center",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "training",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "trainers",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "quests",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "sandbox",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "bridge",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "equipment",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "coverage",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "transformations",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "pokemon-forms",
+          "client": 368,
+          "scroll": 368,
+          "overflow": []
+        }
+      ],
+      "searchMeasurements": [
+        {
+          "theme": "classic-dark",
+          "keystrokes": 10,
+          "maxInputHandlerMs": 0.10000002384185791
+        },
+        {
+          "theme": "original",
+          "keystrokes": 10,
+          "maxInputHandlerMs": 0
+        }
+      ],
+      "stableSearchInput": true,
+      "keyboardLayout": true,
+      "mega": true,
+      "tera": true,
+      "dynamax": true,
+      "gigantamax": true,
+      "fusion": true,
+      "reload": true,
+      "swipe": true,
+      "deletion": true
+    },
+    {
+      "device": "desktop",
+      "avatar": "Transformation QA desktop 1793282296781.png",
+      "matrix": [
+        {
+          "theme": "classic-dark",
+          "view": "adventure",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "team",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "dex",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "storage",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "bag",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "settings",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "services",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "center",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "training",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "trainers",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "quests",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "sandbox",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "bridge",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "equipment",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "coverage",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "transformations",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "classic-dark",
+          "view": "pokemon-forms",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "adventure",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "team",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "dex",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "storage",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "bag",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "settings",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "services",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "center",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "training",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "trainers",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "quests",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "sandbox",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "bridge",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "equipment",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "coverage",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "transformations",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        },
+        {
+          "theme": "original",
+          "view": "pokemon-forms",
+          "client": 1530,
+          "scroll": 1530,
+          "overflow": []
+        }
+      ],
+      "searchMeasurements": [
+        {
+          "theme": "classic-dark",
+          "keystrokes": 10,
+          "maxInputHandlerMs": 0.09999999403953552
+        },
+        {
+          "theme": "original",
+          "keystrokes": 10,
+          "maxInputHandlerMs": 0
+        }
+      ],
+      "stableSearchInput": true,
+      "keyboardLayout": true,
+      "mega": true,
+      "tera": true,
+      "dynamax": true,
+      "gigantamax": true,
+      "fusion": true,
+      "reload": true,
+      "swipe": true,
+      "deletion": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

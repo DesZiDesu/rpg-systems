@@ -2,7 +2,7 @@
 
 | Area | First release |
 | --- | --- |
-| Data | Pinned Gen 1–9 snapshot: 1,025 species, 1,579 form entries. Browsing a form does not unlock its battle transformation. |
+| Data | Pinned Gen 1–9 snapshot: 1,025 species, 1,579 form entries. Transformation systems are enabled by default; species, equipment and configurable battle rules govern activation. |
 | Individuals | Seeded IVs, EVs, Nature, gender, Shiny state and one natural ability. New character registrations have distinct seeds. Legacy stats are preserved. |
 | Combat | Adventure-focused singles: damage, type matchups, priority/speed order, PP, basic status/stat changes and supported move effects. Known unsupported special moves are locked. |
 | Abilities | Explicit supported set shown in Services → Guide; includes starter boosts, immunities/absorption, Intimidate, Trace, stat and damage modifiers, status protection, contact effects, switching and weather abilities. Other named abilities remain reference-only. |
@@ -23,7 +23,7 @@
 
 ## Later releases
 
-Mega Evolution, Terastallization, Dynamax/Gigantamax, breeding, PvP, general NPC-for-Pokémon trading, complete specialized/form evolution, every ability and every competitive move interaction are not simulated in this release. Trade-back evolution is a Center/Link Club service, not a multiplayer trade network. The guide and disabled controls expose these limits.
+Mega, Primal Reversion, Ultra Burst, Dynamax/Gigantamax, Terastallization/Stellar, Z-Moves, fusion and supported reversible/ability forms are available as of 1.7.0. All are enabled by default, with equipment and mixed-system rules configurable. Breeding, PvP, doubles, general NPC-for-Pokémon trading, complete specialized evolution, every ability and every competitive move interaction are not simulated. G-Max Gold Rush does not pay currency; Furfrou trim expiry and time-based reversion outside battles are not simulated. Trade-back evolution is a Center/Link Club service, not a multiplayer trade network. The guide and disabled controls expose these limits.
 
 ## Story event example
 

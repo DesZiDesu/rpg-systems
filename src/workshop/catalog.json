@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.14",
+      "minimumRoleForge": "0.90.15",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -567,6 +567,18 @@
             "Animated Sprite portraits across every Pokémon menu, companion panel and addon character creator; Motion off/reduced motion use static files",
             "Character-owned button volume from 0–100%",
             "Mix with other media via Web Audio and supported ambient sessions; no media fallback in mixing mode"
+          ]
+        },
+        {
+          "version": "1.7.0",
+          "path": "packs/pokemon-1.7.0.json",
+          "bytes": 1007,
+          "sha256": "d5b70a41555834fdd6cd1f451b815c3f5aa8ea8d096e5d36552b433da5a544cc",
+          "changes": [
+            "All transformation systems enabled by default, with configurable equipment, per-system budgets and Trainer use",
+            "97 Mega and 34 Gigantamax forms, Primal, Ultra, Tera/Stellar, Z-Moves, six fusion routes and species-specific forms",
+            "Atomic transformation and attack, real battle effects, individual-safe reversion, main-chat context and swipe/delete/reload replay",
+            "Incremental Pokédex search without rebuilding the input, mobile overflow fixes and legible dark-theme evolution cards"
           ]
         }
       ]

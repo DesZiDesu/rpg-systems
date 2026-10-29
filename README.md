@@ -1,6 +1,6 @@
 # RoleForge
 
-**Pokémon — 1.6.4 / RoleForge 0.90.14.** Sprite portraits animate throughout menus, companion panels and character creation; Animations off and reduced motion use static files. Button volume is adjustable from 0–100%, with a media mixing mode that avoids media-player fallback. [Changes, playback limits and captures](docs/pokemon-menu-motion-v0.90.14.th.md).
+**Pokémon — 1.7.0 / RoleForge 0.90.15.** Mega, Primal, Ultra Burst, Dynamax/Gigantamax, Tera/Stellar, Z-Moves, fusion and species forms are enabled by default, with player-configurable rules. Includes 97 Mega forms, 34 Gigantamax forms, saved battle transformations and a responsive Pokédex with incremental search. [Usage, fixes and validation](docs/pokemon-transformations-v0.90.15.th.md).
 
 **Unified Pokémon interface.** A 16:9 desktop window, grouped settings and square Dossier composer panels in both themes. New battles open the full window automatically, even with Motion off, while ordinary replies and history navigation respect manual closing. [UI investigation, page audit and captures](docs/pokemon-ui-v0.90.11.th.md).
 

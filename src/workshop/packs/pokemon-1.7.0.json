@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.15",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.7.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure — transformations and responsive Pokédex",
+      "text": "All transformation systems are enabled by default: Mega, Primal, Ultra Burst, Dynamax/Gigantamax, Terastallization/Stellar, Z-Moves, fusion and species-specific forms. Configure equipment, mixed-system allowances and Trainer use in Settings. Transform alongside an attack; original individual data is retained on reversion. Fusion uses an actually owned partner and can be reversed. Includes indexed 97 Mega and 34 Gigantamax forms, shared item equipment, main-chat context, replayable branch history, responsive Pokédex cards and incremental search that preserves typing focus."
+    }
+  ]
+}
