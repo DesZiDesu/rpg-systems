@@ -2,7 +2,7 @@ import {reconcileRelationshipTurn} from './src/relationship-tracking.js?v=0.90.0
 import {retainPhoneProfileEdits} from './src/workshop/smartphone/model.js?v=0.90.0';
 import {characterPreset,saveCharacterPreset,characterPreference,saveCharacterPreference} from './src/character-settings.js?v=0.90.0';
 import {mountColorControls} from './src/color-controls.js?v=0.90.0';
-import {filterNpcStoryOps} from './src/npc-visibility.js?v=0.90.12';
+import {filterNpcStoryOps} from './src/npc-visibility.js?v=0.90.13';
 import {embeddedPortraitBlob} from './src/embedded-portrait.js?v=0.90.0';
 import {normalizeRelationships,relationshipPreset,applyRelationshipPreset,editRelationship,relationshipPromptReference,relationshipEventNpcIds,applyRelationshipEvents,filterRelationshipBodyOperations,retainRelationshipEdits,LEGACY_BOND_FIELDS,RELATIONSHIP_INSTRUCTIONS} from './src/relationship-core.js?v=0.90.0';
 import {createRelationshipPanel} from './src/relationship-ui.js?v=0.90.0';
@@ -23,8 +23,8 @@ import {createStoryManager} from './src/story-manager.js?v=0.90.0';
 import {mountCardCampaign} from './src/card-campaign.js?v=0.90.0';
 import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.90.0';
 import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.90.0';
-import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.90.12';
-import {npcReferenceProfiles} from './src/npc-core.js?v=0.90.12';
+import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.90.13';
+import {npcReferenceProfiles} from './src/npc-core.js?v=0.90.13';
 import {createArchiveRevisionCache,searchNpcArchive,resolveIndexedNpc,npcArchiveSummary,loreArchiveSummary} from './src/archive-cache.js?v=0.90.0';
 import {inheritNpcBaselines,preserveNpcCanon} from './src/sparse-npc-state.js?v=0.90.2';
 import {createWorldPackClient,characterWorldRef,mountWorldPackControls} from './src/world-pack-client.js?v=0.90.0';
@@ -99,11 +99,11 @@ import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.
 import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.90.0';
 import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.90.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, PRIVATE_THOUGHT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.90.12';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.90.12';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.90.12';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.90.12';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.90.12';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, PRIVATE_THOUGHT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.90.13';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.90.13';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.90.13';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.90.13';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.90.13';
 import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.90.0';
 import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.90.0';
 import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat, retainHStatsEdits } from './src/h-stats.js?v=0.90.0';
@@ -4419,7 +4419,7 @@ function forgeCard() { return document.getElementById('tretaresia-character-forg
 
 function sendForgeMessage(type, data = {}, extra = {}) {
     const frame = forgeCard()?.querySelector('iframe');
-    if (frame?.contentWindow) frame.contentWindow.postMessage({source:'tretaresia-rpg-forge',type,data,...extra,themeConfig:{accent:getSettings().accentColor,highlight:getSettings().accentAltColor,text:getSettings().inkColor,surface:getSettings().surfaceColor},uiLanguage:getSettings().language,powerConfig:{mode:getPowerPreset().mode,choices:powerPresetChoices()},forgeConfig:{mode:getForgePreset().mode,...activeForgeChoices(getForgePreset())},creationConfig:{variant:forgeCard()?.dataset.variant||'roleforge',available:forgeAddonContext.enabled,eyeSource:forgeAddonContext.deathNote?.actors?.player?.source||'none'}}, location.origin);
+    if (frame?.contentWindow) frame.contentWindow.postMessage({source:'tretaresia-rpg-forge',type,data,...extra,themeConfig:{accent:getSettings().accentColor,highlight:getSettings().accentAltColor,text:getSettings().inkColor,surface:getSettings().surfaceColor},uiLanguage:getSettings().language,powerConfig:{mode:getPowerPreset().mode,choices:powerPresetChoices()},forgeConfig:{mode:getForgePreset().mode,...activeForgeChoices(getForgePreset())},creationConfig:{variant:forgeCard()?.dataset.variant||'roleforge',available:forgeAddonContext.enabled,eyeSource:forgeAddonContext.deathNote?.actors?.player?.source||'none',pokemonArtStyle:forgeAddonContext.pokemon?.artStyle||'artwork'}}, location.origin);
 }
 
 function refreshCharacterForge() {
@@ -4446,11 +4446,12 @@ function refreshCharacterForge() {
         card.dataset.chatId = String(context.getCurrentChatId());card.dataset.variant=variant;
         card.setAttribute('aria-label',variant==='roleforge'?uiText("RoleForge character creation"):variant==='death-note'?'Death Note character creation':variant==='pokemon'?'Pokémon trainer creation':'Choose your character creator');
         const frame = document.createElement('iframe');
-        frame.title = variant==='roleforge'?uiText("RoleForge Character Forge"):variant==='pokemon'?'Pokémon · Trainer Registration':variant==='death-note'?'Death Note · Character Record':'Choose your world'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/${variant==='roleforge'?'character-creation':'addon-character-creation'}.html?v=0.90.0&variant=${variant}`;
+        frame.title = variant==='roleforge'?uiText("RoleForge Character Forge"):variant==='pokemon'?'Pokémon · Trainer Registration':variant==='death-note'?'Death Note · Character Record':'Choose your world'; frame.src = `/scripts/extensions/${EXTENSION_FOLDER}/templates/${variant==='roleforge'?'character-creation':'addon-character-creation'}.html?v=0.90.13&variant=${variant}`;
         frame.addEventListener('load', () => { if (forgeCard() === card&&variant==='roleforge') sendForgeMessage('hydrate', forgeSession(context)?.draft || {}); });
         card.append(frame); chat.append(card); fitForgeToChat(card, chat);
     }
     card.hidden = Boolean(openingGeneration?.metadata === context.chatMetadata && openingGeneration.started);
+    if (variant === 'pokemon') sendForgeMessage('configure',{});
     if (session?.error) sendForgeMessage('status',{}, {message:session.error,working:false});
 }
 
@@ -11844,12 +11845,12 @@ async function initialize() {
         });
         // Workshop is optional: storage/style failures must not interrupt RoleForge.
         let nativeWorkshop;
-        const mountingWorkshop=import('./src/workshop/native.js?v=0.90.12').then(({mountNativeWorkshop})=>{
+        const mountingWorkshop=import('./src/workshop/native.js?v=0.90.13').then(({mountNativeWorkshop})=>{
             nativeWorkshop=mountNativeWorkshop({visible:value=>extractStatePatch(value).visible,creationChanged:value=>{forgeAddonContext=value;refreshCharacterForge();},dock:composerDock,state:getState,npcReferences:()=>characterNpcCatalog().summaries,prepareNpcs:async ids=>{const ticket=referenceTicket(),catalog=characterNpcCatalog(ticket.owner),selected=ids.filter(id=>catalog.has(id));if(catalog.external)await catalog.load([...new Set([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected])],{pin:true});else{catalog.pin?.([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected]);catalog.getMany(selected);}if(!referenceTicketValid(ticket))throw Error('The chat changed while loading notebook identities.');},awaitTimeline:()=>assistantRollbackQueue,awaitReplyState:id=>processAssistantPatch(id),relationshipTrackingEnabled:()=>getSettings().autoTrack,relationshipSource:id=>assistantTurnKey(id)+'|'+assistantVariantKey(SillyTavern.getContext().chat[id]),commitState:(next,source='death-note',options={})=>source==='smartphone'?commitPhoneState(next,options):persistState(next,source,{saveBeforeRender:true,...options}),refreshHost:()=>{npcWorkspace?.refresh();renderAll();updatePrompt();},owner:()=>characterOwner(SillyTavern.getContext())?.key,busy:mainReplyGenerating,voice:{catalog:()=>voiceAddons.addonVoices(),activity:()=>voiceAddons.addonActivity(),activate:()=>voiceAddons.activateAddon(),speak:(...args)=>voiceAddons.speakAddon(...args),stop:(...args)=>voiceAddons.stopAddon(...args),forNpc:npc=>voiceAddons.addonNpcVoice(npc),setup:()=>{if(!voiceAddons.open())openWorldSettings('optional');}}});
         });
         workshopReady={async prepareGeneration(type){try{await mountingWorkshop;}catch{return;}return nativeWorkshop.prepareGeneration(type);},then(resolve,reject){return mountingWorkshop.then(()=>nativeWorkshop.ready()).then(resolve,reject);}};
         mountingWorkshop.catch(error=>console.warn('[RoleForge] Workshop unavailable',error));
-        console.info(`[RoleForge] Role-play interface v${globalThis.TretaresiaRelease||'0.90.12'} loaded.`);
+        console.info(`[RoleForge] Role-play interface v${globalThis.TretaresiaRelease||'0.90.13'} loaded.`);
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

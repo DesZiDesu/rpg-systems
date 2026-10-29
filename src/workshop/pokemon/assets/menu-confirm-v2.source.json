@@ -1,0 +1,8 @@
+{
+  "source": "User-provided replacement button sound",
+  "sourceFilename": "Pokemon_A_Button__Sound_Effect_HD.m4a",
+  "sourceSha256": "ed56a54a3b39f3059643f116d5a7158bce277011557623448e0f8451919ba9c7",
+  "output": "menu-confirm-v2.wav",
+  "processing": "Trim source to 0.040–0.780 seconds; 2ms fade-in and 25ms fade-out; mono 44,100 Hz 16-bit PCM WAV.",
+  "purpose": "Remove leading silence and avoid compressed playback startup per button press."
+}

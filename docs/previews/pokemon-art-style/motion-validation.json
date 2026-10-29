@@ -1,0 +1,33 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "mobileEmulation": true,
+  "liveModel": false,
+  "devices": [
+    {
+      "device": "desktop",
+      "encounter": true,
+      "captureFailure": true,
+      "masterBallSuccess": true,
+      "battleEnd": true,
+      "skip": true,
+      "settingPersists": true,
+      "failedSaveNoAnimation": true,
+      "swipeCancels": true,
+      "reducedMotion": true
+    },
+    {
+      "device": "mobile",
+      "encounter": true,
+      "captureFailure": true,
+      "masterBallSuccess": true,
+      "battleEnd": true,
+      "skip": true,
+      "settingPersists": true,
+      "failedSaveNoAnimation": true,
+      "swipeCancels": true,
+      "reducedMotion": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

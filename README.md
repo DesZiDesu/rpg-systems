@@ -1,6 +1,6 @@
 # RoleForge
 
-**Pokémon — 1.6.2 / RoleForge 0.90.12.** Choose Artwork or static front Sprite images in Settings → Appearance for the Pokédex list, details and forms. The preference belongs to the character and survives new chats and reloads. [Image preference and captures](docs/pokemon-dex-images-v0.90.12.th.md).
+**Pokémon — 1.6.3 / RoleForge 0.90.13.** One Artwork/Sprite choice now changes portraits across all Pokémon menus, including starters, party, details, storage, Pokédex, service/battle pickers, companion panels and addon character creation/review, keeping existing character preferences. Training and Nickname controls have separate spacing. The replacement button sample is trimmed and prepared before clicks. [Changes, validation and captures](docs/pokemon-art-style-v0.90.13.th.md).
 
 **Unified Pokémon interface.** A 16:9 desktop window, grouped settings and square Dossier composer panels in both themes. New battles open the full window automatically, even with Motion off, while ordinary replies and history navigation respect manual closing. [UI investigation, page audit and captures](docs/pokemon-ui-v0.90.11.th.md).
 

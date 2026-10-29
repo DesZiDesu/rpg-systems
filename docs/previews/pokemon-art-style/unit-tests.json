@@ -1,0 +1,21 @@
+{
+  "suites": [
+    {
+      "command": "node --test tests/pokemon*.test.mjs tests/workshop.test.mjs tests/media-loader.test.mjs tests/host-integration.test.mjs",
+      "tests": 375,
+      "passed": 375,
+      "failed": 0
+    },
+    {
+      "command": "node --test tests/forge-addons.test.mjs tests/forge-opening.test.mjs",
+      "tests": 25,
+      "passed": 25,
+      "failed": 0
+    }
+  ],
+  "total": 400,
+  "passed": 400,
+  "failed": 0,
+  "syntaxCommand": "npm run check",
+  "syntaxPassed": true
+}

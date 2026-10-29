@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.13",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.6.3",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure — shared art style and prompt menu feedback",
+      "text": "Choose Artwork or Sprite in Pokémon Settings → Appearance → Pokémon art style. The existing character preference applies to all Pokémon menu portraits: starter choices, party and owned/reference details, storage, Pokédex/forms, journey, service and Sandbox pickers, quests, battle menus, companion panels and addon character creation/review. Owned images preserve Shiny/gender/form selection; the battle field keeps its directional actors. Training and Nickname controls have separate spacing. The replacement user-provided menu sample is trimmed and decoded ahead of clicks, with browser fallback."
+    }
+  ]
+}

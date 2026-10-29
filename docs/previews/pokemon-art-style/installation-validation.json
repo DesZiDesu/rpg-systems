@@ -1,0 +1,30 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "devices": [
+    {
+      "device": "desktop",
+      "language": "en",
+      "cardImport": true,
+      "workshop100": true,
+      "emptyInitialParty": true,
+      "exactKit": true,
+      "oneStarter": true,
+      "naturalAbility": true,
+      "noSandbox": true
+    },
+    {
+      "device": "mobile",
+      "language": "th",
+      "cardImport": true,
+      "workshop100": true,
+      "emptyInitialParty": true,
+      "exactKit": true,
+      "oneStarter": true,
+      "naturalAbility": true,
+      "noSandbox": true
+    }
+  ],
+  "errors": [],
+  "liveModel": false,
+  "pass": true
+}
