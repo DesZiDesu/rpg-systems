@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.9",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.5.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure — Dossier fields & trainer challenges",
+      "text": "Original and Aperture share a detailed square Dossier interface. Desktop battles use a full-width 16:9 field above the command station; mobile keeps its 16:9 field and touch commands. All 20 fields separate animated backgrounds and complete standing bases. Compact HP plates keep Pokémon visible. Story-backed NPC trainer challenges require player acceptance and support teams of one to six with opponent party balls. Captures hide HP only and lock visible commands until motion ends."
+    }
+  ]
+}

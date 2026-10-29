@@ -25,6 +25,13 @@ export function parsePokemonStory(source,dex){
    if(version>=3&&!(typeof e.receipt==='string'&&e.receipt.trim()&&e.receipt.length<=120)){reject('missing-receipt-id');continue;}
    events.push({...common,type:'grant-item',item:item.id,quantity,receipt:typeof e.receipt==='string'&&e.receipt.length<=120?'id:'+e.receipt:'proof:'+sha256(item.id+':'+quantity+':'+proof)});continue;
   }
+  if(e.type==='trainer'&&version>=3){
+   const name=String(e.name||'').trim(),place=String(e.place||'').trim(),team=e.team;
+   if(name.length<2||name.length>80||!proof.includes(name)||!/คุณ|ผู้เล่น|\byou\b|\byour\b/iu.test(proof)||!/ท้า|ประลอง|ต่อสู้|challenge|battle/iu.test(proof)||!place||place.length>160||!proof.includes(place)||!Array.isArray(team)||team.length<1||team.length>6){reject('unproven-trainer');continue;}
+   const resolved=team.map(mon=>{const p=dex.get(mon?.key||mon?.speciesId),level=Number(mon?.level);return p&&!p.battleOnly&&Number.isInteger(level)&&level>=1&&level<=100&&known(proof,p.name,mon)?{key:p.key,level}:null;});
+   if(resolved.some(x=>!x)){reject('unproven-trainer-team');continue;}
+   events.push({...common,type:'trainer-offer',trainerKey:'npc-'+sha256(name.toLocaleLowerCase()).slice(0,20),name,place,team:resolved});continue;
+  }
   const p=dex.get(e.key||e.speciesId);if(!p||!known(proof,p.name,e)){reject('unproven-species');continue;}
   if(e.type==='quest'&&modern){const place=String(e.place||'').trim();if(!(p.legendary||p.mythical)||place.length<2||place.length>160||!proof.includes(place)||!/quest|mission|task|ภารกิจ|มอบหมาย/iu.test(proof)){reject('unproven-quest');continue;}events.push({...common,type:'quest-offer',speciesId:p.speciesId,place,region:regions.includes(e.region)?e.region:undefined,wins:Math.max(0,Math.min(20,Number(e.wins)||0))});continue;}
   if(e.type!=='encounter'||!/ปรากฏ|พบ|เจอ|โผล่|wild|appear|encounter/iu.test(proof)||modern&&!/ตรงหน้า|ข้างคุณ|คุณพบ|คุณเจอ|ต่อหน้าคุณ|\byou\b|\byour\b/iu.test(proof)){reject('not-a-player-encounter');continue;}

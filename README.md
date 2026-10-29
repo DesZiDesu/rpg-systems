@@ -1,6 +1,6 @@
 # RoleForge
 
-**Pokémon — 1.4.0 / RoleForge 0.90.8.** Aperture adds a separate field and command-station layout for desktop and mobile. Captures hide HP overlays while visible commands remain locked; the ball lands on the opposing base. Choose Aperture or Original in Pokémon settings. [Aperture details](docs/pokemon-aperture-v0.90.8.md) · [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
+**Pokémon — 1.5.0 / RoleForge 0.90.9.** Original and Aperture now share detailed square Dossier frames. Desktop battles fill the content width, with commands below; mobile keeps its 16:9 field. Twenty fields have separate animated backgrounds and complete bases, compact HP plates and story-backed NPC trainer challenges. [Dossier release](docs/pokemon-dossier-v0.90.9.md) · [Install and play](docs/pokemon-release/INSTALL.md) · [Features and limits](docs/pokemon-release/FEATURES.md).
 
 **Pokémon world cards:** [Red Sunken Sun · ไทย](docs/pokemon-release/Pokemon-Sunken-Red-Sun.th.png), [Dawn Midnights · English](docs/pokemon-release/Pokemon-Dawn-Midnights.en.png), and [Sun & Dawn · Character Creation](docs/pokemon-release/Pokemon-Sun-and-Dawn.png). Each embeds a searchable game/anime reference library, original trainer profiles and ₽3,000 starting currency. The language editions have six formatted greetings each; Sun & Dawn has no first message. [Card guide and coverage](docs/pokemon-release/CARDS.md).
 
@@ -36,7 +36,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Release build: 0.90.8** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Release build: 0.90.9** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

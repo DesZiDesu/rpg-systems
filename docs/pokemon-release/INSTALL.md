@@ -1,12 +1,12 @@
 # Pokémon First Release — install and play
 
-RoleForge 0.90.3 and Pokémon 1.1.0 are available on `main`. Existing Aster, Death Note and RoleForge features are included. No preview branch is required.
+RoleForge 0.90.9 and Pokémon 1.5.0 are available on `main`. Existing Aster, Death Note and RoleForge features are included. No preview branch is required.
 
 ## Install with SillyTavern
 
 1. Back up your SillyTavern user data. If RoleForge is already installed, open Extensions → Manage extensions → RoleForge → Update, then reload. If you previously selected a preview/release branch, switch to `main` before updating.
 2. For a fresh installation: Extensions → Install extension. Repository: `https://github.com/DesZiDesu/rpg-systems`. Use the default branch (`main`). Reload SillyTavern. Install only one active copy of RoleForge.
-3. Open RoleForge → Workshop → Pokémon → Install/Update **1.1.0**. Enable it for your character.
+3. Open RoleForge → Workshop → Pokémon → Install/Update **1.5.0**. Enable it for your character.
 4. Import a PNG card: **Red Sunken Sun** (Thai), **Dawn Midnights** (English), or **Sun & Dawn** (Character Creation). PNGs include the cover, character data and compressed World Pack together; [download choices, reference coverage and openings](CARDS.md). The two language editions have six RoleForge-formatted greetings each. The library installs in the browser when the card first opens. Open Pokémon → Journey to choose a starter, and configure your usual SillyTavern chat-completion API for narration.
 5. Sun & Dawn has no first message and opens Pokémon Character Creation. Leave Workshop → Pokémon → **Use addon character creation** on. A blank chat, or deleting an authored first greeting, can open the creator. Its chosen partner and kit replace the authored defaults; no kit stays empty.
 
@@ -14,7 +14,7 @@ RoleForge 0.90.3 and Pokémon 1.1.0 are available on `main`. Existing Aster, Dea
 
 The source ZIP contains one top-level `rpg-systems` directory. With SillyTavern stopped, use it as the extension folder under `data/default-user/extensions/`. Move an existing RoleForge folder outside the extensions directory first; avoid running two copies. ZIP installations do not provide Git branch switching. The separate review ZIP contains videos, screenshots and documentation only; it is not the addon installer.
 
-Battle animations can be disabled in Pokémon Settings. They follow saved results, offer a Skip button and respect reduced motion. [Details](../pokemon-motion-v0.90.3.md).
+Original and Aperture use square Dossier frames. The desktop field spans the content width above its commands. Mobile keeps a 16:9 field. Battle and field animations can be disabled in Pokémon Settings, follow saved results and respect reduced motion. Escape skips battle motion. [Details](../pokemon-dossier-v0.90.9.md).
 
 ## Play
 
@@ -23,7 +23,7 @@ Battle animations can be disabled in Pokémon Settings. They follow saved result
 - **Services → Abilities & held items:** give one owned item, take it back or reveal a legacy companion's natural ability. Supported effects are labelled.
 - **Bag:** use medicine or balls. Reference-only items are labelled. Held items move out of the bag rather than being copied.
 - **Centers / Training:** reach the appropriate place in the roleplay. Learn eligible moves, choose a slot, then confirm. Compatible TM items are consumed once.
-- **Trainers / Gyms:** Kanto has eight functional Gyms. Visit the matching Gym before challenging its leader.
+- **Trainers / Gyms:** Kanto has eight functional Gyms. Visit the matching Gym before challenging its leader. Story NPCs can offer a battle when visible narration establishes their location and team. Review and accept in Services → Trainers. Opponent party balls track their one-to-six-member team; trainer Pokémon cannot be caught.
 - **Rare quests:** accept the offer yourself, meet its wins/region/destination requirements, then initiate the encounter.
 - **Evolution:** eligible level, stone, gender, friendship, time, move, party and held-item conditions are checked. Trade-back evolution requires a Center or Link Club. Specialized location/form/other unsupported conditions stay locked.
 - **Sandbox:** explicitly enable it yourself to create Pokémon, adjust individual values or set stock. AI cannot enable it or perform cheats for you.

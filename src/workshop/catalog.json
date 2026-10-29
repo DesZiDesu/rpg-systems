@@ -376,24 +376,24 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.8",
+      "minimumRoleForge": "0.90.9",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
       "features": [
         "1,025 สายพันธุ์ พร้อม Ability และค่าสเตตัสรายตัว",
         "ไอเทมอ้างอิง 2,222 รายการ พร้อมบอล ยา และคลังร่วม",
-        "ฝึกท่า Center Trainer ยิม Kanto 8 แห่ง และภารกิจหายาก",
+        "ฝึกท่า Center ยิม Kanto และรับคำท้าจาก Trainer ในโรล",
         "Sandbox ผู้เล่นควบคุม พร้อมบันทึกตามแชทและ Branch",
-        "ฉากเริ่มสู้ จับสำเร็จ/พลาด และผลการต่อสู้ พร้อมปุ่มข้าม",
+        "Dossier สองธีม สนาม 16:9 ฐานและฉากหลังเคลื่อนไหวแยกกัน",
         "เรียกคู่หูในเรื่องและบันทึกผลต่อสู้ให้แชทรับรู้"
       ],
       "featuresEn": [
         "1,025 species with individual abilities, IVs, EVs, Nature and gender",
         "2,222-item catalogue; functional balls, medicines and shared stock",
-        "Move training, Centers, trainers, eight Kanto Gyms and rare quests",
+        "Move training, Centers, Kanto Gyms and accepted NPC trainer challenges",
         "Player-controlled Sandbox and branch-aware progress",
-        "Skippable encounter, capture and battle-result animations",
+        "Two Dossier palettes with 16:9 battles and separately animated field layers",
         "Story-aware companion presence and battle results"
       ],
       "permissions": [
@@ -501,6 +501,17 @@
           "changes": [
             "Aperture interface with independent field, command station and party roster",
             "Captures hide HP only, lock visible commands, and land on the opposing base"
+          ]
+        },
+        {
+          "version": "1.5.0",
+          "path": "packs/pokemon-1.5.0.json",
+          "bytes": 908,
+          "sha256": "82559134ac3c78a6b05ee536f324fce1560a9d8bab665eacd874a784f8cfebb5",
+          "changes": [
+            "Dossier square frames in Original and Aperture; full-width desktop field with commands below",
+            "20 independently animated backgrounds and complete bases with unobstructed compact HP",
+            "Accept story-backed NPC trainer challenges with teams of up to six and opponent party balls"
           ]
         }
       ]

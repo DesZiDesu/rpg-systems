@@ -1,0 +1,145 @@
+{
+  "method": "Clean-edge row-band reconstruction and full-width transparent foreground extraction from pinned FireRed assets; complete same-terrain opponent plate reused for clipped player plate",
+  "fields": [
+    {
+      "id": "building",
+      "source": "firered-building.png",
+      "background": "layers/building-background.png",
+      "ally": "layers/building-ally.png",
+      "foe": "layers/building-foe.png"
+    },
+    {
+      "id": "cave",
+      "source": "firered-cave.png",
+      "background": "layers/cave-background.png",
+      "ally": "layers/cave-ally.png",
+      "foe": "layers/cave-foe.png"
+    },
+    {
+      "id": "grass",
+      "source": "firered-grass.png",
+      "background": "layers/grass-background.png",
+      "ally": "layers/grass-ally.png",
+      "foe": "layers/grass-foe.png"
+    },
+    {
+      "id": "indoor-1",
+      "source": "firered-indoor-1.png",
+      "background": "layers/indoor-1-background.png",
+      "ally": "layers/indoor-1-ally.png",
+      "foe": "layers/indoor-1-foe.png"
+    },
+    {
+      "id": "indoor-2",
+      "source": "firered-indoor-2.png",
+      "background": "layers/indoor-2-background.png",
+      "ally": "layers/indoor-2-ally.png",
+      "foe": "layers/indoor-2-foe.png"
+    },
+    {
+      "id": "indoor-agatha",
+      "source": "firered-indoor-agatha.png",
+      "background": "layers/indoor-agatha-background.png",
+      "ally": "layers/indoor-agatha-ally.png",
+      "foe": "layers/indoor-agatha-foe.png"
+    },
+    {
+      "id": "indoor-bruno",
+      "source": "firered-indoor-bruno.png",
+      "background": "layers/indoor-bruno-background.png",
+      "ally": "layers/indoor-bruno-ally.png",
+      "foe": "layers/indoor-bruno-foe.png"
+    },
+    {
+      "id": "indoor-champion",
+      "source": "firered-indoor-champion.png",
+      "background": "layers/indoor-champion-background.png",
+      "ally": "layers/indoor-champion-ally.png",
+      "foe": "layers/indoor-champion-foe.png"
+    },
+    {
+      "id": "indoor-gym",
+      "source": "firered-indoor-gym.png",
+      "background": "layers/indoor-gym-background.png",
+      "ally": "layers/indoor-gym-ally.png",
+      "foe": "layers/indoor-gym-foe.png"
+    },
+    {
+      "id": "indoor-lance",
+      "source": "firered-indoor-lance.png",
+      "background": "layers/indoor-lance-background.png",
+      "ally": "layers/indoor-lance-ally.png",
+      "foe": "layers/indoor-lance-foe.png"
+    },
+    {
+      "id": "indoor-leader",
+      "source": "firered-indoor-leader.png",
+      "background": "layers/indoor-leader-background.png",
+      "ally": "layers/indoor-leader-ally.png",
+      "foe": "layers/indoor-leader-foe.png"
+    },
+    {
+      "id": "indoor-link",
+      "source": "firered-indoor-link.png",
+      "background": "layers/indoor-link-background.png",
+      "ally": "layers/indoor-link-ally.png",
+      "foe": "layers/indoor-link-foe.png"
+    },
+    {
+      "id": "indoor-lorelei",
+      "source": "firered-indoor-lorelei.png",
+      "background": "layers/indoor-lorelei-background.png",
+      "ally": "layers/indoor-lorelei-ally.png",
+      "foe": "layers/indoor-lorelei-foe.png"
+    },
+    {
+      "id": "indoor-plain",
+      "source": "firered-indoor-plain.png",
+      "background": "layers/indoor-plain-background.png",
+      "ally": "layers/indoor-plain-ally.png",
+      "foe": "layers/indoor-plain-foe.png"
+    },
+    {
+      "id": "longgrass",
+      "source": "firered-longgrass.png",
+      "background": "layers/longgrass-background.png",
+      "ally": "layers/longgrass-ally.png",
+      "foe": "layers/longgrass-foe.png"
+    },
+    {
+      "id": "mountain",
+      "source": "firered-mountain.png",
+      "background": "layers/mountain-background.png",
+      "ally": "layers/mountain-ally.png",
+      "foe": "layers/mountain-foe.png"
+    },
+    {
+      "id": "pond",
+      "source": "firered-pond.png",
+      "background": "layers/pond-background.png",
+      "ally": "layers/pond-ally.png",
+      "foe": "layers/pond-foe.png"
+    },
+    {
+      "id": "sand",
+      "source": "firered-sand.png",
+      "background": "layers/sand-background.png",
+      "ally": "layers/sand-ally.png",
+      "foe": "layers/sand-foe.png"
+    },
+    {
+      "id": "underwater",
+      "source": "firered-underwater.png",
+      "background": "layers/underwater-background.png",
+      "ally": "layers/underwater-ally.png",
+      "foe": "layers/underwater-foe.png"
+    },
+    {
+      "id": "water",
+      "source": "firered-water.png",
+      "background": "layers/water-background.png",
+      "ally": "layers/water-ally.png",
+      "foe": "layers/water-foe.png"
+    }
+  ]
+}
