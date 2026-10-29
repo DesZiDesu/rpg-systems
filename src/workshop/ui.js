@@ -1,6 +1,6 @@
 import {uiLanguage} from '../ui-language.js?v=0.90.0';
-import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog,releaseDownloadUrl,cardAddonDefaults} from './core.js?v=0.90.9';
-import {createStore,downloadPack} from './client.js?v=0.90.9';
+import {SAGE,SCOPES,copy,compare,collectFacts,analysisPrompt,validateAnalysis,normalizeProfile,LIMIT,localId,validateCatalog,releaseDownloadUrl,cardAddonDefaults} from './core.js?v=0.90.10';
+import {createStore,downloadPack} from './client.js?v=0.90.10';
 import {createSageScene} from './scene.js?v=0.90.0';
 import {createAddonLaunchers} from './launchers.js?v=0.90.0';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

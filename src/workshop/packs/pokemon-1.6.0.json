@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.10",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.6.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure — Animated front/back battle sprites",
+      "text": "Players use genuine rear-view sprites and opponents use front views. Prefer matching pixel GIF pairs, then model GIF pairs or newer game WebP pairs, then exact static sprites with subtle idle motion. Motion off and reduced motion replace animated files with static images. The pinned index covers paired animations for all 1,025 base species and 1,570 of 1,579 form entries, plus static front/back pairs for all 1,579 entries. Failed images show a placeholder while battle remains usable. Shiny and available female variants keep their identity. Existing artwork stays preferred outside battle; missing images use an exact static front sprite."
+    }
+  ]
+}

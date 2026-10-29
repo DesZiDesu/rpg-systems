@@ -2,7 +2,7 @@ import {reconcileRelationshipTurn} from './src/relationship-tracking.js?v=0.90.0
 import {retainPhoneProfileEdits} from './src/workshop/smartphone/model.js?v=0.90.0';
 import {characterPreset,saveCharacterPreset,characterPreference,saveCharacterPreference} from './src/character-settings.js?v=0.90.0';
 import {mountColorControls} from './src/color-controls.js?v=0.90.0';
-import {filterNpcStoryOps} from './src/npc-visibility.js?v=0.90.9';
+import {filterNpcStoryOps} from './src/npc-visibility.js?v=0.90.10';
 import {embeddedPortraitBlob} from './src/embedded-portrait.js?v=0.90.0';
 import {normalizeRelationships,relationshipPreset,applyRelationshipPreset,editRelationship,relationshipPromptReference,relationshipEventNpcIds,applyRelationshipEvents,filterRelationshipBodyOperations,retainRelationshipEdits,LEGACY_BOND_FIELDS,RELATIONSHIP_INSTRUCTIONS} from './src/relationship-core.js?v=0.90.0';
 import {createRelationshipPanel} from './src/relationship-ui.js?v=0.90.0';
@@ -23,8 +23,8 @@ import {createStoryManager} from './src/story-manager.js?v=0.90.0';
 import {mountCardCampaign} from './src/card-campaign.js?v=0.90.0';
 import {isBlockedHost,showHostBlocked} from './src/host-policy.js?v=0.90.0';
 import {CHAT_PRESET_KEY,PRESET_LIBRARY_KEY,WORLD_SYSTEM_KEYS,validatePresetConfig,readChatPreset,applyPresetState,currentCurrencyPreset,presetLibrary,saveLibraryPreset} from './src/world-presets.js?v=0.90.0';
-import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.90.9';
-import {npcReferenceProfiles} from './src/npc-core.js?v=0.90.9';
+import {npcEntryLimit,validateNpcOptions,hasNpcCapacity,assertNpcCapacity} from './src/npc-capacity.js?v=0.90.10';
+import {npcReferenceProfiles} from './src/npc-core.js?v=0.90.10';
 import {createArchiveRevisionCache,searchNpcArchive,resolveIndexedNpc,npcArchiveSummary,loreArchiveSummary} from './src/archive-cache.js?v=0.90.0';
 import {inheritNpcBaselines,preserveNpcCanon} from './src/sparse-npc-state.js?v=0.90.2';
 import {createWorldPackClient,characterWorldRef,mountWorldPackControls} from './src/world-pack-client.js?v=0.90.0';
@@ -99,11 +99,11 @@ import { createMemoryComposerStatus } from './src/memory-composer-status.js?v=0.
 import { mountModuleNavigation, normalizeModuleNavigationMode } from './src/module-navigation.js?v=0.90.0';
 import { hostReplyGenerating, loadHostGenerationModule } from './src/host-generation-state.js?v=0.90.0';
 /* global SillyTavern, toastr */
-import { identity as npcIdentity, CHAT_INSTRUCTIONS, PRIVATE_THOUGHT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.90.9';
-import { createNpcWorkspace } from './src/npc-workspace.js?v=0.90.9';
-import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.90.9';
-import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.90.9';
-import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.90.9';
+import { identity as npcIdentity, CHAT_INSTRUCTIONS, PRIVATE_THOUGHT_INSTRUCTIONS, ATTRIBUTE_INSTRUCTIONS, npcAttributeDefaults, resolveNpc, resolveNpcSpeaker, keyName, parseStory, retainManualNpcEdits, npcRole, usableNpcName, NPC_FIELD_INSTRUCTIONS } from './src/npc-core.js?v=0.90.10';
+import { createNpcWorkspace } from './src/npc-workspace.js?v=0.90.10';
+import { normalizeNpcAlternates, effectiveNpc, updateNpcAlternate, alternatePortraitRecord, alternatePromptContext, enumerateNpcPortraits, NPC_ALTERNATE_INSTRUCTIONS } from './src/npc-alternates.js?v=0.90.10';
+import { uploadPortrait, readServerPortrait } from './src/npc-media.js?v=0.90.10';
+import { characterOwner, scopeEnvelope, hydrateScopedNpcs, packScopedNpcs, withoutChatNpcContinuity, completeNpcContinuity, restoreCompleteNpcContinuity, scopedPortraitKey, routeNewStoryNpcs, pruneNpcReferences, retainNpcDeletions } from './src/npc-scopes.js?v=0.90.10';
 import { readCharacterArchive, writeCharacterArchive, migrateCharacterArchives, readCharacterPack, characterDefaultSettings, writeCharacterPack, characterArchiveBusy } from './src/character-archive.js?v=0.90.0';
 import { normalizeAdultSettings, writingPreferencePrompt } from './src/nsfw-enhance.js?v=0.90.0';
 import { H_FIELDS, H_FIELD_MAP, hStats, updateHStat, retainHStatsEdits } from './src/h-stats.js?v=0.90.0';
@@ -11844,12 +11844,12 @@ async function initialize() {
         });
         // Workshop is optional: storage/style failures must not interrupt RoleForge.
         let nativeWorkshop;
-        const mountingWorkshop=import('./src/workshop/native.js?v=0.90.9').then(({mountNativeWorkshop})=>{
+        const mountingWorkshop=import('./src/workshop/native.js?v=0.90.10').then(({mountNativeWorkshop})=>{
             nativeWorkshop=mountNativeWorkshop({visible:value=>extractStatePatch(value).visible,creationChanged:value=>{forgeAddonContext=value;refreshCharacterForge();},dock:composerDock,state:getState,npcReferences:()=>characterNpcCatalog().summaries,prepareNpcs:async ids=>{const ticket=referenceTicket(),catalog=characterNpcCatalog(ticket.owner),selected=ids.filter(id=>catalog.has(id));if(catalog.external)await catalog.load([...new Set([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected])],{pin:true});else{catalog.pin?.([...selectedStateNpcIds(ticket.context,ticket.metadata[METADATA_KEY]||{}),...selected]);catalog.getMany(selected);}if(!referenceTicketValid(ticket))throw Error('The chat changed while loading notebook identities.');},awaitTimeline:()=>assistantRollbackQueue,awaitReplyState:id=>processAssistantPatch(id),relationshipTrackingEnabled:()=>getSettings().autoTrack,relationshipSource:id=>assistantTurnKey(id)+'|'+assistantVariantKey(SillyTavern.getContext().chat[id]),commitState:(next,source='death-note',options={})=>source==='smartphone'?commitPhoneState(next,options):persistState(next,source,{saveBeforeRender:true,...options}),refreshHost:()=>{npcWorkspace?.refresh();renderAll();updatePrompt();},owner:()=>characterOwner(SillyTavern.getContext())?.key,busy:mainReplyGenerating,voice:{catalog:()=>voiceAddons.addonVoices(),activity:()=>voiceAddons.addonActivity(),activate:()=>voiceAddons.activateAddon(),speak:(...args)=>voiceAddons.speakAddon(...args),stop:(...args)=>voiceAddons.stopAddon(...args),forNpc:npc=>voiceAddons.addonNpcVoice(npc),setup:()=>{if(!voiceAddons.open())openWorldSettings('optional');}}});
         });
         workshopReady={async prepareGeneration(type){try{await mountingWorkshop;}catch{return;}return nativeWorkshop.prepareGeneration(type);},then(resolve,reject){return mountingWorkshop.then(()=>nativeWorkshop.ready()).then(resolve,reject);}};
         mountingWorkshop.catch(error=>console.warn('[RoleForge] Workshop unavailable',error));
-        console.info(`[RoleForge] Role-play interface v${globalThis.TretaresiaRelease||'0.90.9'} loaded.`);
+        console.info(`[RoleForge] Role-play interface v${globalThis.TretaresiaRelease||'0.90.10'} loaded.`);
     } catch (error) {
         initialized = false;
         console.error('[RoleForge] Failed to initialize.', error);

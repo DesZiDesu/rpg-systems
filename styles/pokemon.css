@@ -409,3 +409,15 @@
  #roleforge-pokemon[data-pk-layout=dossier] .pk-battle-message{padding:10px 12px}
  #roleforge-pokemon[data-pk-layout=dossier] .pk-battle-message>p{font-size:12px;line-height:1.6}
 }
+/* True front/back battle sprites. Portraits in the Pokédex keep their artwork. */
+.rfpk .pk-platform .pk-ally-art{transform:none}
+.rfpk .pk-platform img.pk-battle-sprite{max-width:none;max-height:none;min-height:0;object-fit:contain;image-rendering:pixelated}
+.rfpk .pk-platform img.pk-battle-sprite[data-pk-sprite-format=model]{image-rendering:auto}
+.rfpk .pk-platform img.pk-battle-sprite[data-pk-sprite-format=static]{animation:pk-sprite-breathe 3.8s ease-in-out infinite}
+@keyframes pk-sprite-breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.985)}}
+.rfpk[data-pk-field-motion=off] .pk-platform img.pk-battle-sprite{animation:none}
+.rfpk .pk-battle-sprite-missing{position:absolute;inset:0;display:grid;place-items:center;min-height:0;opacity:.55}
+.rfpk .pk-battle-sprite-missing .pk-party-symbol{width:42px;height:42px}
+@media(prefers-reduced-motion:reduce){.rfpk .pk-platform img.pk-battle-sprite{animation:none!important}}
+.rfpk .pk-field-roster .pk-art-missing{min-height:0;width:25px;height:25px}
+.rfpk .pk-field-roster .pk-art-missing i{font-size:20px}

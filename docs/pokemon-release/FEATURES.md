@@ -16,6 +16,7 @@
 | Recovery | Safe repair of literal JSON string line breaks and clearly proven player item handovers. Plans, offers, missing evidence and NPC-only encounters are rejected. |
 | Persistence | Message-owned journals follow swipes, edits, deletion and branches. Character creation and settings use the current RoleForge integration. |
 | Performance | Reference-based change detection, bounded replay checkpoints, suffix invalidation and unchanged-markup reuse. Browsing uses pagination and lazy images. |
+| Battle images | Genuine player back views and opponent front views; paired pixel/model GIFs and game WebP animations, static pairs for all 1,579 form entries, exact-form/Shiny/female selection, and graceful placeholders. Motion off/reduced motion stop GIF/WebP too. [Coverage](../pokemon-facing-v0.90.10.md). |
 | UI | Square Dossier frames for Original and Aperture, full-width desktop field above its commands, mobile 16:9 field, 20 separate animated background/base layers, compact HP plates, above-chatbar dock, Workshop configuration, TH/EN, equipment and a supported-feature guide. |
 
 ## Later releases

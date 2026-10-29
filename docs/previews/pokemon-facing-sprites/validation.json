@@ -1,0 +1,1448 @@
+{
+  "release": {
+    "roleforge": "0.90.10",
+    "pokemon": "1.6.0"
+  },
+  "host": "SillyTavern 1.19.0",
+  "physicalIPhone": false,
+  "liveModel": false,
+  "coverage": {
+    "species": {
+      "total": 1025,
+      "pixelPairs": 818,
+      "modelPairs": 1011,
+      "webpPairs": 14,
+      "animatedPairs": 1025,
+      "staticPairs": 1025,
+      "frontAvailable": 1025,
+      "backAvailable": 1025
+    },
+    "forms": {
+      "total": 1579,
+      "pixelPairs": 1066,
+      "modelPairs": 1427,
+      "webpPairs": 134,
+      "animatedPairs": 1570,
+      "staticPairs": 1579,
+      "frontAvailable": 1579,
+      "backAvailable": 1579
+    }
+  },
+  "unitHostTests": 370,
+  "checks": {
+    "sprites": {
+      "host": "SillyTavern 1.19.0",
+      "mobileEmulation": true,
+      "liveModel": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "begin": 35.39,
+          "end": 89.411,
+          "video": "/workspace/artifacts/pokemon-facing-release/raw/page@490469f1cdb41c4eaecf037e43e46a3e.webm",
+          "gifFallback": true,
+          "reducedMotion": true,
+          "shinyFemale": true,
+          "exactForm": true
+        },
+        {
+          "device": "mobile",
+          "begin": 14.046,
+          "end": 47.793,
+          "video": "/workspace/artifacts/pokemon-facing-release/raw/page@e53bd12144329ba6a01c328b56703bfd.webm",
+          "gifFallback": true,
+          "reducedMotion": true,
+          "shinyFemale": true,
+          "exactForm": true
+        }
+      ],
+      "errors": [],
+      "checks": [
+        {
+          "device": "desktop",
+          "label": "original-pixel",
+          "format": "pixel",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "original-model",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "original-static",
+          "format": "static",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "original-unown-b",
+          "format": "pixel",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "original-flabebe-yellow",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "original-koraidon-gliding",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-pixel",
+          "format": "pixel",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-model",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-static",
+          "format": "static",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-unown-b",
+          "format": "pixel",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-flabebe-yellow",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-koraidon-gliding",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "original-pixel",
+          "format": "pixel",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "original-model",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "original-static",
+          "format": "static",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "original-unown-b",
+          "format": "pixel",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "original-flabebe-yellow",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "original-koraidon-gliding",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-pixel",
+          "format": "pixel",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-model",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-static",
+          "format": "static",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-unown-b",
+          "format": "pixel",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-flabebe-yellow",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-koraidon-gliding",
+          "format": "model",
+          "correctFacing": true,
+          "noFlip": true,
+          "missing": 0
+        }
+      ],
+      "pass": true
+    },
+    "layout": {
+      "host": "SillyTavern 1.19.0",
+      "mobileEmulation": true,
+      "liveModel": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "begin": 60.484,
+          "end": 90.363,
+          "video": "/workspace/artifacts/pokemon-facing-release/final-layout/raw/page@20f7887a68bb7bc280da94ec283cd988.webm",
+          "capture": true,
+          "independentLoops": true,
+          "motionToggle": true
+        },
+        {
+          "device": "mobile",
+          "begin": 69.616,
+          "end": 96.778,
+          "video": "/workspace/artifacts/pokemon-facing-release/final-layout/raw/page@0a378d3ec54bb6a0b00be016e5edc615.webm",
+          "capture": true,
+          "independentLoops": true,
+          "motionToggle": true
+        }
+      ],
+      "errors": [],
+      "checks": [
+        {
+          "device": "desktop",
+          "label": "original-width-320",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-width-360",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-width-390",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-width-430",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-width-768",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-width-1280",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-width-1600",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-grass",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-longgrass",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-sand",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-water",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-pond",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-underwater",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-mountain",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-cave",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-building",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-plain",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-1",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-2",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-gym",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-leader",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-lorelei",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-bruno",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-agatha",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-lance",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-champion",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "original-indoor-link",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-width-320",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-width-360",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-width-390",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-width-430",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-width-768",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-width-1280",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-width-1600",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-grass",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-longgrass",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-sand",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-water",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-pond",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-underwater",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-mountain",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-cave",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-building",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-plain",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-1",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-2",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-gym",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-leader",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-lorelei",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-bruno",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-agatha",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-lance",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-champion",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "desktop",
+          "label": "classic-dark-indoor-link",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-width-320",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-width-360",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-width-390",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-width-430",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-width-768",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-width-1280",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-width-1600",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-grass",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-longgrass",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-sand",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-water",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-pond",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-underwater",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-mountain",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-cave",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-building",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-plain",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-1",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-2",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-gym",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-leader",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-lorelei",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-bruno",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-agatha",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-lance",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-champion",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "original-indoor-link",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-width-320",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-width-360",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-width-390",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-width-430",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-width-768",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-width-1280",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-width-1600",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-grass",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-longgrass",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-sand",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-water",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-pond",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-underwater",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-mountain",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-cave",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-building",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-plain",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-1",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-2",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-gym",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-leader",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-lorelei",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-bruno",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-agatha",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-lance",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-champion",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        },
+        {
+          "device": "mobile",
+          "label": "classic-dark-indoor-link",
+          "ratio": 1.7777777777777777,
+          "basesInside": true,
+          "noHpOverlap": true,
+          "fullWidth": true,
+          "commandsBelow": true,
+          "team": 6
+        }
+      ],
+      "pass": true
+    },
+    "motion": {
+      "host": "SillyTavern 1.19.0",
+      "mobileEmulation": true,
+      "liveModel": false,
+      "devices": [
+        {
+          "device": "desktop",
+          "encounter": true,
+          "captureFailure": true,
+          "masterBallSuccess": true,
+          "battleEnd": true,
+          "skip": true,
+          "settingPersists": true,
+          "failedSaveNoAnimation": true,
+          "swipeCancels": true,
+          "reducedMotion": true,
+          "videoStart": 24.026,
+          "videoMiddleEnd": 34.024,
+          "videoEndStart": 37.902,
+          "videoEnd": 54.347,
+          "size": {
+            "width": 1043,
+            "height": 586.6875
+          },
+          "video": "/workspace/artifacts/pokemon-facing-release/motion-final/raw/page@1ae7b7aed935993f8906b9f0280007c1.webm"
+        },
+        {
+          "device": "mobile",
+          "encounter": true,
+          "captureFailure": true,
+          "masterBallSuccess": true,
+          "battleEnd": true,
+          "skip": true,
+          "settingPersists": true,
+          "failedSaveNoAnimation": true,
+          "swipeCancels": true,
+          "reducedMotion": true,
+          "videoStart": 43.206,
+          "videoMiddleEnd": 56.278,
+          "videoEndStart": 62.707,
+          "videoEnd": 75.991,
+          "size": {
+            "width": 346,
+            "height": 194.625
+          },
+          "video": "/workspace/artifacts/pokemon-facing-release/motion-final/raw/page@9780282b5f895654443d82c9ed052757.webm"
+        }
+      ],
+      "errors": [],
+      "pass": true
+    },
+    "install": {
+      "host": "SillyTavern 1.19.0",
+      "devices": [
+        {
+          "device": "desktop",
+          "language": "en",
+          "cardImport": true,
+          "workshop100": true,
+          "emptyInitialParty": true,
+          "exactKit": true,
+          "oneStarter": true,
+          "naturalAbility": true,
+          "noSandbox": true
+        },
+        {
+          "device": "mobile",
+          "language": "th",
+          "cardImport": true,
+          "workshop100": true,
+          "emptyInitialParty": true,
+          "exactKit": true,
+          "oneStarter": true,
+          "naturalAbility": true,
+          "noSandbox": true
+        }
+      ],
+      "errors": [],
+      "liveModel": false,
+      "pass": true
+    }
+  },
+  "pass": true
+}
