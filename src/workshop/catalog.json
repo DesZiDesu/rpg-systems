@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.13",
+      "minimumRoleForge": "0.90.14",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -556,6 +556,17 @@
             "Artwork/Sprite selection applies across all Pokémon menus, starters, battle pickers and addon character creation/review, retaining existing character preferences",
             "Separate training and nickname controls, with responsive editor spacing",
             "New user-provided menu sound with trimmed onset, predecoded playback and browser fallback"
+          ]
+        },
+        {
+          "version": "1.6.4",
+          "path": "packs/pokemon-1.6.4.json",
+          "bytes": 948,
+          "sha256": "65bc6fbc1a5b6b4f51bec049ea14fa7cf17b56be41d1af38abb6b29bc353e736",
+          "changes": [
+            "Animated Sprite portraits across every Pokémon menu, companion panel and addon character creator; Motion off/reduced motion use static files",
+            "Character-owned button volume from 0–100%",
+            "Mix with other media via Web Audio and supported ambient sessions; no media fallback in mixing mode"
           ]
         }
       ]

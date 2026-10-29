@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.14",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.6.4",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure — animated companions and media-friendly sound",
+      "text": "Sprite portraits animate throughout menus, companion panels and character creation when Animations is on. Turning it off or enabling reduced motion uses static files; forms without animation use a subtle idle with the exact static image. Button volume is configurable from 0 to 100%. Mix with other media uses Web Audio and supported ambient sessions, avoiding media playback fallback; unsupported iOS mixing stays silent rather than taking video focus. Character-owned preferences persist across chats and reloads."
+    }
+  ]
+}

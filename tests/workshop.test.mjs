@@ -110,3 +110,14 @@ test('Pokédex image mode persists with character preferences and keeps legacy d
  assert.equal(normalizeProfile({pokemon:{dexImageMode:'unexpected'}},'character').pokemon.dexImageMode,undefined);
  assert.equal(normalizeProfile({pokemon:{sound:false}},'legacy').pokemon.dexImageMode,undefined);
 });
+
+
+test('Pokémon volume and media mixing stay character-owned with safe defaults',()=>{
+ const p=normalizeProfile({pokemon:{soundVolume:.72,soundMix:false,motion:false,dexImageMode:'sprite'}},'card').pokemon;
+ assert.equal(p.soundVolume,.72);assert.equal(p.soundMix,false);assert.equal(p.motion,false);assert.equal(p.dexImageMode,'sprite');
+ assert.equal(normalizeProfile({pokemon:{soundVolume:-2}},'card').pokemon.soundVolume,0);
+ assert.equal(normalizeProfile({pokemon:{soundVolume:9}},'card').pokemon.soundVolume,1);
+ assert.equal(normalizeProfile({pokemon:{soundVolume:'loud',soundMix:'false'}},'card').pokemon.soundVolume,undefined);
+ assert.equal(normalizeProfile({pokemon:{soundVolume:'loud',soundMix:'false'}},'card').pokemon.soundMix,undefined);
+ const restored=normalizeProfile(JSON.parse(JSON.stringify({pokemon:p})),'card');assert.deepEqual(restored.pokemon,p);
+});

@@ -1,6 +1,6 @@
 import {CREATION_RECORD,registrationRules} from '../forge-addons.js?v=0.90.0';
 import {npcCanonContext} from '../npc-generation.js?v=0.90.0';
-import {mountWorkshop,icon} from './ui.js?v=0.90.13';
+import {mountWorkshop,icon} from './ui.js?v=0.90.14';
 import {requestDataTask} from '../task-generation.js?v=0.90.0';
 import {mountDeathNote} from './death-note/ui.js?v=0.90.0';
 import {readCharacterExtension} from '../character-archive.js?v=0.90.0';
@@ -21,7 +21,7 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,awa
   async openAddon(id,view){if(id==='pokemon')return (await ensurePokemon()).open(view||'adventure');if(id==='smartphone'){return (await ensurePhone()).open(view||'home');}if(id!=='death-note')return false;deathNote||=mountDeathNote({api,dock,enabled:()=>api.isAddonEnabled?.('death-note')===true,busy});return deathNote.open();},
   deathNoteSettings(selection){return deathNote?.settingsMarkup(selection)||'';},
   async configureDeathNote(form){if(!deathNote)throw Error('Enable Death Note first');return deathNote.configure(form);},
-  refreshAddons(){if(api.isAddonEnabled?.('pokemon'))void ensurePokemon().then(p=>p.refresh()).catch(console.warn);else pokemon?.refresh();if(api.isAddonEnabled?.('smartphone'))void ensurePhone().then(p=>p.refresh()).catch(console.warn);else phone?.refresh();const creation={enabled:['death-note','pokemon'].filter(id=>api.isAddonEnabled?.(id)&&api.characterCreationConfiguration?.()?.[id]!==false),deathNote:api.deathNoteConfiguration?.()||{},pokemon:{artStyle:api.pokemonConfiguration?.()?.dexImageMode==='sprite'?'sprite':'artwork'}};const stamp=JSON.stringify(creation);if(stamp!==creationStamp){creationStamp=stamp;creationChanged(creation);}if(api.isAddonEnabled?.('death-note')===true)deathNote||=mountDeathNote({api,dock,enabled:()=>api.isAddonEnabled?.('death-note')===true,busy});deathNote?.refresh();},
+  refreshAddons(){if(api.isAddonEnabled?.('pokemon'))void ensurePokemon().then(p=>p.refresh()).catch(console.warn);else pokemon?.refresh();if(api.isAddonEnabled?.('smartphone'))void ensurePhone().then(p=>p.refresh()).catch(console.warn);else phone?.refresh();const creation={enabled:['death-note','pokemon'].filter(id=>api.isAddonEnabled?.(id)&&api.characterCreationConfiguration?.()?.[id]!==false),deathNote:api.deathNoteConfiguration?.()||{},pokemon:{artStyle:api.pokemonConfiguration?.()?.dexImageMode==='sprite'?'sprite':'artwork',motion:api.pokemonConfiguration?.()?.motion!==false}};const stamp=JSON.stringify(creation);if(stamp!==creationStamp){creationStamp=stamp;creationChanged(creation);}if(api.isAddonEnabled?.('death-note')===true)deathNote||=mountDeathNote({api,dock,enabled:()=>api.isAddonEnabled?.('death-note')===true,busy});deathNote?.refresh();},
   async generate(args){if(busy())throw Error('รอข้อความที่กำลังเจนให้จบก่อน');return requestDataTask(SillyTavern.getContext(),args,{quietPrompt:args.prompt,responseLength:args.responseLength},{task:'Great Sage analysis'});},
   subscribe(listener){
    const c=SillyTavern.getContext(),events=[[c.eventTypes.CHAT_CHANGED,()=>listener('chat').catch(console.warn)],[c.eventTypes.MESSAGE_RECEIVED,()=>listener('reply').catch(console.warn)]];
@@ -29,7 +29,7 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,awa
    return()=>{for(const [type,fn]of events)c.eventSource.removeListener(type,fn);};
   },
  };
- const ensurePokemon=()=>pokemon?Promise.resolve(pokemon):pokemonFlight||=(async()=>{const {mountPokemon}=await import('./pokemon/ui.js?v=0.90.13');const value=await mountPokemon({api,dock,enabled:()=>api.isAddonEnabled?.('pokemon')===true,busy});if(destroyed){value.destroy();throw Error('Workshop closed');}pokemon=value;return value;})().finally(()=>pokemonFlight=null);
+ const ensurePokemon=()=>pokemon?Promise.resolve(pokemon):pokemonFlight||=(async()=>{const {mountPokemon}=await import('./pokemon/ui.js?v=0.90.14');const value=await mountPokemon({api,dock,enabled:()=>api.isAddonEnabled?.('pokemon')===true,busy});if(destroyed){value.destroy();throw Error('Workshop closed');}pokemon=value;return value;})().finally(()=>pokemonFlight=null);
  const ensurePhone=()=>phone?Promise.resolve(phone):phoneFlight||=(async()=>{const {mountSmartphone}=await import('./smartphone/runtime.js?v=0.90.0');phone=await mountSmartphone({api,enabled:()=>api.isAddonEnabled?.('smartphone')===true,busy});return phone;})().finally(()=>phoneFlight=null);
  const ensure=()=>{
   if(destroyed)return Promise.reject(Error('ปิด Workshop แล้ว'));

@@ -1,8 +1,8 @@
-import {battleSpriteCandidates} from './workshop/pokemon/battle-sprites.js?v=0.90.13';
+import {battleSpriteCandidates} from './workshop/pokemon/battle-sprites.js?v=0.90.14';
 import {mountForgeChoices} from './forge-choices.js?v=0.90.0';
 import {CREATION_REGIONS,CREATION_STARTERS,normalizeForgeAddon} from './forge-addons.js?v=0.90.0';
 const root=document.getElementById('trapp'),content=document.getElementById('forge-content'),variant=new URL(location.href).searchParams.get('variant')||'choose';
-let pokemonArtStyle='artwork',pokemonSprites,pokemonSpriteFlight;const failedPokemonSprites=new Set();
+let pokemonArtStyle='artwork',pokemonMotion=true,pokemonSprites,pokemonSpriteFlight;const failedPokemonSprites=new Set(),pokemonReducedMotion=matchMedia('(prefers-reduced-motion: reduce)');pokemonReducedMotion.addEventListener('change',()=>render());
 let language='th',step=0,pending=false,error='',available=['death-note','pokemon'],eyeSource='none',hydrated=false;
 let profile={version:2,variant,fields:{fName:'',fGender:'',fAge:'',fRace:'Human',fProf:'',fCont:variant==='death-note'?'Japan':'Kanto'},addon:normalizeForgeAddon({},variant),originEnabled:false,power:[],ab:[],it:[],cf:[]};
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),t=(th,en)=>language==='th'?th:en;
@@ -10,13 +10,14 @@ const send=(type,data)=>parent.postMessage({source:'tretaresia-rpg-forge',type,d
 const nameMap={1:'Bulbasaur',4:'Charmander',7:'Squirtle',152:'Chikorita',155:'Cyndaquil',158:'Totodile',252:'Treecko',255:'Torchic',258:'Mudkip',387:'Turtwig',390:'Chimchar',393:'Piplup',495:'Snivy',498:'Tepig',501:'Oshawott',650:'Chespin',653:'Fennekin',656:'Froakie',722:'Rowlet',725:'Litten',728:'Popplio',810:'Grookey',813:'Scorbunny',816:'Sobble',906:'Sprigatito',909:'Fuecoco',912:'Quaxly'};
 function preparePokemonSprites(){
  if(variant!=='pokemon'||pokemonArtStyle!=='sprite'||pokemonSpriteFlight)return;
- pokemonSpriteFlight=fetch(new URL('workshop/pokemon/data/battle-sprites.json?v=0.90.13',import.meta.url)).then(r=>{if(!r.ok)throw Error('Sprite index unavailable');return r.json();}).then(index=>{pokemonSprites=index;render();}).catch(()=>{});
+ pokemonSpriteFlight=fetch(new URL('workshop/pokemon/data/battle-sprites.json?v=0.90.14',import.meta.url)).then(r=>{if(!r.ok)throw Error('Sprite index unavailable');return r.json();}).then(index=>{pokemonSprites=index;render();}).catch(()=>{});
 }
+function pokemonSprite(id){return pokemonArtStyle==='sprite'?battleSpriteCandidates({key:nameMap[id]?.toLowerCase()},null,pokemonSprites,{side:'front',motion:pokemonMotion&&!pokemonReducedMotion.matches}).find(v=>!failedPokemonSprites.has(v.url)):null;}
 function pokemonImage(id,extra=''){
- const artwork=new URL('workshop/pokemon/assets/'+id+'.png',import.meta.url).href,candidate=pokemonArtStyle==='sprite'?battleSpriteCandidates({key:nameMap[id]?.toLowerCase()},null,pokemonSprites,{side:'front',motion:false}).find(v=>!failedPokemonSprites.has(v.url)):null;
- return `<img class="${extra}${candidate?' creation-pokemon-sprite':''}" data-creation-pokemon data-style="${candidate?'sprite':'artwork'}" data-artwork="${esc(artwork)}" src="${esc(candidate?.url||artwork)}" alt="${esc(nameMap[id])}" decoding="async" referrerpolicy="no-referrer">`;
+ const artwork=new URL('workshop/pokemon/assets/'+id+'.png',import.meta.url).href,candidate=pokemonSprite(id);
+ return `<img class="${extra}${candidate?' creation-pokemon-sprite'+(pokemonMotion&&!pokemonReducedMotion.matches&&!candidate.animated?' creation-sprite-idle':''):''}" data-creation-pokemon="${id}" data-animated="${Boolean(candidate?.animated)}" data-style="${candidate?'sprite':'artwork'}" data-artwork="${esc(artwork)}" src="${esc(candidate?.url||artwork)}" alt="${esc(nameMap[id])}" decoding="async" referrerpolicy="no-referrer">`;
 }
-content.addEventListener('error',event=>{const img=event.target;if(!img.matches?.('[data-creation-pokemon]'))return;if(img.src!==img.dataset.artwork){failedPokemonSprites.add(img.src);img.src=img.dataset.artwork;img.classList.remove('creation-pokemon-sprite');img.dataset.style='artwork';}else{img.replaceWith(document.createTextNode(img.alt));}},true);
+content.addEventListener('error',event=>{const img=event.target;if(!img.matches?.('[data-creation-pokemon]'))return;if(img.src!==img.dataset.artwork){failedPokemonSprites.add(img.src);const next=pokemonSprite(Number(img.dataset.creationPokemon));if(next){img.src=next.url;img.dataset.animated=String(next.animated);img.classList.toggle('creation-sprite-idle',pokemonMotion&&!pokemonReducedMotion.matches&&!next.animated);return;}img.src=img.dataset.artwork;img.dataset.animated='false';img.classList.remove('creation-pokemon-sprite','creation-sprite-idle');img.dataset.style='artwork';}else{img.replaceWith(document.createTextNode(img.alt));}},true);
 const button=(text,action,extra='',cls='')=>`<button type="button" class="${cls}" data-creation-action="${action}" ${extra}>${text}</button>`;
 function field(id,label,placeholder='',area=false){return `<label class="creation-field${area?' wide':''}"><span>${label}${id==='fName'?'<em> *</em>':''}</span>${area?`<textarea id="${id}" data-field="${id}" rows="3" maxlength="8000" placeholder="${esc(placeholder)}">${esc(profile.fields[id]||'')}</textarea>`:`<input id="${id}" data-field="${id}" value="${esc(profile.fields[id]||'')}" maxlength="${id==='fName'?100:500}" autocomplete="off" placeholder="${esc(placeholder)}">`}</label>`;}
 function select(key,label,options,scope='addon'){const value=scope==='fields'?profile.fields[key]:profile.addon[key];return `<label class="creation-field"><span>${label}</span><select id="creation-${key}" data-${scope==='fields'?'field':'addon'}="${key}" aria-label="${esc(label)}">${options.map(([id,label])=>`<option value="${id}"${id===value?' selected':''}>${label}</option>`).join('')}</select></label>`;}
@@ -41,7 +42,7 @@ window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==parent||event.data?.source!=='tretaresia-rpg-forge')return;
  const m=event.data;let changed=false;
  if(m.uiLanguage&&m.uiLanguage!==language){language=m.uiLanguage;changed=true;}
- if(m.creationConfig){const next=m.creationConfig.available||available,eyes=m.creationConfig.eyeSource||'none',style=m.creationConfig.pokemonArtStyle==='sprite'?'sprite':'artwork';if(JSON.stringify(next)!==JSON.stringify(available)||eyes!==eyeSource||style!==pokemonArtStyle)changed=true;available=next;eyeSource=eyes;pokemonArtStyle=style;preparePokemonSprites();}
+ if(m.creationConfig){const next=m.creationConfig.available||available,eyes=m.creationConfig.eyeSource||'none',style=m.creationConfig.pokemonArtStyle==='sprite'?'sprite':'artwork',animate=m.creationConfig.pokemonMotion!==false;if(JSON.stringify(next)!==JSON.stringify(available)||eyes!==eyeSource||style!==pokemonArtStyle||animate!==pokemonMotion)changed=true;available=next;eyeSource=eyes;pokemonArtStyle=style;pokemonMotion=animate;preparePokemonSprites();}
  if(m.type==='hydrate'){const saved=m.data||{};profile={...profile,...(saved.variant===variant?saved:{}),variant,fields:{...profile.fields,...saved.fields},addon:normalizeForgeAddon(saved.variant===variant?saved.addon:{},variant)};hydrated=true;root.dataset.hydrated='true';changed=true;}
  if(m.type==='status'){pending=m.working===true;error=m.message||'';changed=true;}
  if(changed)render();

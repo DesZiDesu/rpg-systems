@@ -2,3 +2,6 @@
 
 /* The Pokémon creator shares the character’s addon art preference. */
 img.creation-pokemon-sprite{image-rendering:pixelated;object-fit:contain}
+img.creation-sprite-idle{animation:creation-pokemon-idle 2.2s ease-in-out infinite}
+@keyframes creation-pokemon-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){img.creation-sprite-idle{animation:none!important}}

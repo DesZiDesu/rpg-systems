@@ -1,0 +1,1010 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "browser": "Chromium",
+  "mobileEmulation": true,
+  "liveModel": false,
+  "devices": [
+    {
+      "device": "mobile",
+      "matrix": [
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "adventure",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "team",
+          "portraits": 2
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "storage",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "dex",
+          "portraits": 24
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "bag",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "settings",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "journal",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "services",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "center",
+          "portraits": 2
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "training",
+          "portraits": 3
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "trainers",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "quests",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "sandbox",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "bridge",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "equipment",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "coverage",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "sandbox-spawn",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "sandbox-edit",
+          "portraits": 3
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "sandbox-items",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "adventure",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "team",
+          "portraits": 2
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "storage",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "dex",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "bag",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "settings",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "journal",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "services",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "center",
+          "portraits": 2
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "training",
+          "portraits": 3
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "trainers",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "quests",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "sandbox",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "bridge",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "equipment",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "coverage",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "sandbox-spawn",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "sandbox-edit",
+          "portraits": 3
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "sandbox-items",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "adventure",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "team",
+          "portraits": 2
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "storage",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "dex",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "bag",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "settings",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "journal",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "services",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "center",
+          "portraits": 2
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "training",
+          "portraits": 3
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "trainers",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "quests",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "sandbox",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "bridge",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "equipment",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "coverage",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "sandbox-spawn",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "sandbox-edit",
+          "portraits": 3
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "sandbox-items",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "adventure",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "team",
+          "portraits": 2
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "storage",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "dex",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "bag",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "settings",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "journal",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "services",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "center",
+          "portraits": 2
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "training",
+          "portraits": 3
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "trainers",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "quests",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "sandbox",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "bridge",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "equipment",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "coverage",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "sandbox-spawn",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "sandbox-edit",
+          "portraits": 3
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "sandbox-items",
+          "portraits": 0
+        },
+        {
+          "mode": "artwork",
+          "page": "battle-commands"
+        },
+        {
+          "mode": "artwork",
+          "page": "battle-moves"
+        },
+        {
+          "mode": "artwork",
+          "page": "battle-bag"
+        },
+        {
+          "mode": "artwork",
+          "page": "battle-party"
+        },
+        {
+          "mode": "sprite",
+          "page": "battle-commands"
+        },
+        {
+          "mode": "sprite",
+          "page": "battle-moves"
+        },
+        {
+          "mode": "sprite",
+          "page": "battle-bag"
+        },
+        {
+          "mode": "sprite",
+          "page": "battle-party"
+        }
+      ],
+      "starter": true,
+      "creatorSetup": true,
+      "creatorReview": true,
+      "creatorLivePreference": true,
+      "creatorDraftPreserved": true,
+      "battleMenu": true,
+      "directionalBattlePreserved": true
+    },
+    {
+      "device": "desktop",
+      "matrix": [
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "adventure",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "team",
+          "portraits": 2
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "storage",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "dex",
+          "portraits": 24
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "bag",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "settings",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "journal",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "services",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "center",
+          "portraits": 2
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "training",
+          "portraits": 3
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "trainers",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "quests",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "sandbox",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "bridge",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "equipment",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "coverage",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "sandbox-spawn",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "sandbox-edit",
+          "portraits": 3
+        },
+        {
+          "theme": "original",
+          "mode": "artwork",
+          "page": "sandbox-items",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "adventure",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "team",
+          "portraits": 2
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "storage",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "dex",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "bag",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "settings",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "journal",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "services",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "center",
+          "portraits": 2
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "training",
+          "portraits": 3
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "trainers",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "quests",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "sandbox",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "bridge",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "equipment",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "coverage",
+          "portraits": 0
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "sandbox-spawn",
+          "portraits": 1
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "sandbox-edit",
+          "portraits": 3
+        },
+        {
+          "theme": "original",
+          "mode": "sprite",
+          "page": "sandbox-items",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "adventure",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "team",
+          "portraits": 2
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "storage",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "dex",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "bag",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "settings",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "journal",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "services",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "center",
+          "portraits": 2
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "training",
+          "portraits": 3
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "trainers",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "quests",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "sandbox",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "bridge",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "equipment",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "coverage",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "sandbox-spawn",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "sandbox-edit",
+          "portraits": 3
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "artwork",
+          "page": "sandbox-items",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "adventure",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "team",
+          "portraits": 2
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "storage",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "dex",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "bag",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "settings",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "journal",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "services",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "center",
+          "portraits": 2
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "training",
+          "portraits": 3
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "trainers",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "quests",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "sandbox",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "bridge",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "equipment",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "coverage",
+          "portraits": 0
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "sandbox-spawn",
+          "portraits": 1
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "sandbox-edit",
+          "portraits": 3
+        },
+        {
+          "theme": "classic-dark",
+          "mode": "sprite",
+          "page": "sandbox-items",
+          "portraits": 0
+        },
+        {
+          "mode": "artwork",
+          "page": "battle-commands"
+        },
+        {
+          "mode": "artwork",
+          "page": "battle-moves"
+        },
+        {
+          "mode": "artwork",
+          "page": "battle-bag"
+        },
+        {
+          "mode": "artwork",
+          "page": "battle-party"
+        },
+        {
+          "mode": "sprite",
+          "page": "battle-commands"
+        },
+        {
+          "mode": "sprite",
+          "page": "battle-moves"
+        },
+        {
+          "mode": "sprite",
+          "page": "battle-bag"
+        },
+        {
+          "mode": "sprite",
+          "page": "battle-party"
+        }
+      ],
+      "starter": true,
+      "creatorSetup": true,
+      "creatorReview": true,
+      "creatorLivePreference": true,
+      "creatorDraftPreserved": true,
+      "battleMenu": true,
+      "directionalBattlePreserved": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

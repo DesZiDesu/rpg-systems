@@ -1,0 +1,290 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "browser": "Chromium",
+  "mobileEmulation": true,
+  "liveModel": false,
+  "devices": [
+    {
+      "device": "mobile",
+      "surfaces": [
+        {
+          "theme": "original",
+          "page": "adventure",
+          "motion": true,
+          "sprites": 1
+        },
+        {
+          "theme": "original",
+          "page": "team",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "dex",
+          "motion": true,
+          "sprites": 24
+        },
+        {
+          "theme": "original",
+          "page": "center",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "training",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "adventure",
+          "motion": false,
+          "sprites": 1
+        },
+        {
+          "theme": "original",
+          "page": "team",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "dex",
+          "motion": false,
+          "sprites": 24
+        },
+        {
+          "theme": "original",
+          "page": "center",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "training",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "adventure",
+          "motion": true,
+          "sprites": 1
+        },
+        {
+          "theme": "classic-dark",
+          "page": "team",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "dex",
+          "motion": true,
+          "sprites": 24
+        },
+        {
+          "theme": "classic-dark",
+          "page": "center",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "training",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "adventure",
+          "motion": false,
+          "sprites": 1
+        },
+        {
+          "theme": "classic-dark",
+          "page": "team",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "dex",
+          "motion": false,
+          "sprites": 24
+        },
+        {
+          "theme": "classic-dark",
+          "page": "center",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "training",
+          "motion": false,
+          "sprites": 3
+        }
+      ],
+      "actualFramesAdvance": true,
+      "staticFallbackIdle": true,
+      "reducedMotionStops": true,
+      "dockFollows": true,
+      "creatorFollows": true,
+      "creatorFailureUsesStaticSprite": true,
+      "volumePersists": true,
+      "mixPersists": true,
+      "newChatPersists": true,
+      "localVideo": {
+        "paused": false,
+        "pauses": 0,
+        "frames": 56,
+        "buttonMediaStarts": 0
+      }
+    },
+    {
+      "device": "desktop",
+      "surfaces": [
+        {
+          "theme": "original",
+          "page": "adventure",
+          "motion": true,
+          "sprites": 1
+        },
+        {
+          "theme": "original",
+          "page": "team",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "dex",
+          "motion": true,
+          "sprites": 24
+        },
+        {
+          "theme": "original",
+          "page": "center",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "training",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "adventure",
+          "motion": false,
+          "sprites": 1
+        },
+        {
+          "theme": "original",
+          "page": "team",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "dex",
+          "motion": false,
+          "sprites": 24
+        },
+        {
+          "theme": "original",
+          "page": "center",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "original",
+          "page": "training",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "adventure",
+          "motion": true,
+          "sprites": 1
+        },
+        {
+          "theme": "classic-dark",
+          "page": "team",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "dex",
+          "motion": true,
+          "sprites": 24
+        },
+        {
+          "theme": "classic-dark",
+          "page": "center",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "training",
+          "motion": true,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "adventure",
+          "motion": false,
+          "sprites": 1
+        },
+        {
+          "theme": "classic-dark",
+          "page": "team",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "dex",
+          "motion": false,
+          "sprites": 24
+        },
+        {
+          "theme": "classic-dark",
+          "page": "center",
+          "motion": false,
+          "sprites": 3
+        },
+        {
+          "theme": "classic-dark",
+          "page": "training",
+          "motion": false,
+          "sprites": 3
+        }
+      ],
+      "actualFramesAdvance": true,
+      "staticFallbackIdle": true,
+      "reducedMotionStops": true,
+      "dockFollows": true,
+      "creatorFollows": true,
+      "creatorFailureUsesStaticSprite": true,
+      "volumePersists": true,
+      "mixPersists": true,
+      "newChatPersists": true,
+      "localVideo": {
+        "paused": false,
+        "pauses": 0,
+        "frames": 73,
+        "buttonMediaStarts": 0
+      }
+    }
+  ],
+  "errors": [],
+  "pass": true
+}
