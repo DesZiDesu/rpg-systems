@@ -1,7 +1,7 @@
-import {identityBound} from './identity.js?v=0.90.0';
+import {identityBound} from './identity.js?v=0.90.16';
 // A scrap is physical writing material, never a separate human ownership right.
-import {localId} from '../core.js?v=0.90.0';
-import {notebookInScene} from './location.js?v=0.90.0';
+import {localId} from '../core.js?v=0.90.16';
+import {notebookInScene} from './location.js?v=0.90.16';
 const safe=id=>typeof id==='string'&&id.length>0&&id.length<180&&!['__proto__','prototype','constructor'].includes(id);
 export const fragmentItem=i=>i?.quantity>0&&i.properties?.includes('roleforge:addon:death-note-fragment');
 export const writingMaterials=w=>[...Object.values(w.books||{}),...Object.values(w.fragments||{}).filter(f=>!f.destroyed)];

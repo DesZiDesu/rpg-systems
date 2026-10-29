@@ -1,5 +1,5 @@
-import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.90.0';
-import {dialogueFrame,illustratedChatTheme} from './chat-folio.js?v=0.90.0';
+import {normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.90.16';
+import {dialogueFrame,illustratedChatTheme} from './chat-folio.js?v=0.90.16';
 // This shorthand is a player display convention, never an assistant protocol.
 const escaped=(source,index)=>{let slashes=0;while(index>0&&source[--index]==='\\')slashes++;return slashes%2===1;};
 export function thoughtDots(doc=globalThis.document){

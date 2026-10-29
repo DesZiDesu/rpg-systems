@@ -1,6 +1,6 @@
-import {battleSpriteCandidates} from './workshop/pokemon/battle-sprites.js?v=0.90.15';
-import {mountForgeChoices} from './forge-choices.js?v=0.90.0';
-import {CREATION_REGIONS,CREATION_STARTERS,normalizeForgeAddon} from './forge-addons.js?v=0.90.0';
+import {battleSpriteCandidates} from './workshop/pokemon/battle-sprites.js?v=0.90.16';
+import {mountForgeChoices} from './forge-choices.js?v=0.90.16';
+import {CREATION_REGIONS,CREATION_STARTERS,normalizeForgeAddon} from './forge-addons.js?v=0.90.16';
 const root=document.getElementById('trapp'),content=document.getElementById('forge-content'),variant=new URL(location.href).searchParams.get('variant')||'choose';
 let pokemonArtStyle='artwork',pokemonMotion=true,pokemonSprites,pokemonSpriteFlight;const failedPokemonSprites=new Set(),pokemonReducedMotion=matchMedia('(prefers-reduced-motion: reduce)');pokemonReducedMotion.addEventListener('change',()=>render());
 let language='th',step=0,pending=false,error='',available=['death-note','pokemon'],eyeSource='none',hydrated=false;
@@ -10,7 +10,7 @@ const send=(type,data)=>parent.postMessage({source:'tretaresia-rpg-forge',type,d
 const nameMap={1:'Bulbasaur',4:'Charmander',7:'Squirtle',152:'Chikorita',155:'Cyndaquil',158:'Totodile',252:'Treecko',255:'Torchic',258:'Mudkip',387:'Turtwig',390:'Chimchar',393:'Piplup',495:'Snivy',498:'Tepig',501:'Oshawott',650:'Chespin',653:'Fennekin',656:'Froakie',722:'Rowlet',725:'Litten',728:'Popplio',810:'Grookey',813:'Scorbunny',816:'Sobble',906:'Sprigatito',909:'Fuecoco',912:'Quaxly'};
 function preparePokemonSprites(){
  if(variant!=='pokemon'||pokemonArtStyle!=='sprite'||pokemonSpriteFlight)return;
- pokemonSpriteFlight=fetch(new URL('workshop/pokemon/data/battle-sprites.json?v=0.90.15',import.meta.url)).then(r=>{if(!r.ok)throw Error('Sprite index unavailable');return r.json();}).then(index=>{pokemonSprites=index;render();}).catch(()=>{});
+ pokemonSpriteFlight=fetch(new URL('workshop/pokemon/data/battle-sprites.json?v=0.90.16',import.meta.url)).then(r=>{if(!r.ok)throw Error('Sprite index unavailable');return r.json();}).then(index=>{pokemonSprites=index;render();}).catch(()=>{});
 }
 function pokemonSprite(id){return pokemonArtStyle==='sprite'?battleSpriteCandidates({key:nameMap[id]?.toLowerCase()},null,pokemonSprites,{side:'front',motion:pokemonMotion&&!pokemonReducedMotion.matches}).find(v=>!failedPokemonSprites.has(v.url)):null;}
 function pokemonImage(id,extra=''){

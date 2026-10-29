@@ -1,4 +1,4 @@
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.90.0';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.90.16';
 
 export const PHONE_FIELD='roleforge_smartphone';
 export const PHONE_PROMPT='roleforge_smartphone_context';

@@ -1530,6 +1530,13 @@ test('production asset references and release version stay in sync',()=>{
  const manifest=JSON.parse(readFileSync(new URL('../manifest.json',import.meta.url)));assert.equal(manifest.version,JSON.parse(readFileSync(new URL('../package.json',import.meta.url))).version);
  for(const file of ['index.js','npc-workspace.js','npc-chat.js','npc-portraits.js','npc-media.js','npc-scopes.js']){const s=readFileSync(new URL(`../${file === 'index.js' ? file : 'src/' + file}`,import.meta.url),'utf8');const refs=[...s.matchAll(/\/(?:src\/)?npc-[a-z]+\.(?:js|css)\?v=([\d.]+)/g)];assert.ok(refs.length);for(const ref of refs)assert.equal(ref[1],manifest.version);}
 });
+test('Pokémon speaker IDs never become human NPC dossiers, including before addon startup',()=>{
+ const state={...host.defaultState(),npcs:[]};
+ assert.equal(host.registerStorySpeakers(state,{mes:'<tr-header name="pokemon:initial-0"/><tr-dialogue name="pokemon:initial-0">Pika!</tr-dialogue>'},context),0);
+ assert.equal(state.npcs.length,0);
+ sandbox.RoleForgePokemon={chatProfiles:()=>[{id:'pokemon:initial-0',name:'Pikachu',aliases:['Spark']}]};
+ try{assert.equal(host.registerStorySpeakers(state,{mes:'<tr-dialogue name="Pikachu">Pika!</tr-dialogue><tr-dialogue name="Spark">Pika!</tr-dialogue><tr-dialogue name="Lira">Hello.</tr-dialogue>'},context),1);assert.deepEqual([...state.npcs.map(n=>n.name)],['Lira']);}finally{delete sandbox.RoleForgePokemon;}
+});
 test('host getState merges only the current card library and leaves legacy NPCs Chat-scoped',()=>{
  context.characters=[{name:'Same display name',avatar:'first.png'},{name:'Same display name',avatar:'second.png'}];context.characterId=0;
  host.getSettings().npcCharacterLibraries={'card:first.png':[host.npcProfile({id:'shared',name:'Shared',background:'Card history'})]};

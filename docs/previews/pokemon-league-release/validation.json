@@ -1,0 +1,428 @@
+{
+  "release": "0.90.16",
+  "pokemon": "1.7.1",
+  "host": "SillyTavern 1.19.0",
+  "liveModel": false,
+  "browser": "Chromium",
+  "mobileEmulation": true,
+  "devices": [
+    {
+      "device": "desktop",
+      "avatar": "Pokémon · League Circuit4.png",
+      "checks": [
+        {
+          "theme": "roleforge",
+          "bits": 0
+        },
+        {
+          "theme": "roleforge",
+          "bits": 1
+        },
+        {
+          "theme": "roleforge",
+          "bits": 2
+        },
+        {
+          "theme": "roleforge",
+          "bits": 3
+        },
+        {
+          "theme": "roleforge",
+          "bits": 4
+        },
+        {
+          "theme": "roleforge",
+          "bits": 5
+        },
+        {
+          "theme": "roleforge",
+          "bits": 6
+        },
+        {
+          "theme": "roleforge",
+          "bits": 7
+        },
+        {
+          "theme": "folio",
+          "bits": 0
+        },
+        {
+          "theme": "folio",
+          "bits": 1
+        },
+        {
+          "theme": "folio",
+          "bits": 2
+        },
+        {
+          "theme": "folio",
+          "bits": 3
+        },
+        {
+          "theme": "folio",
+          "bits": 4
+        },
+        {
+          "theme": "folio",
+          "bits": 5
+        },
+        {
+          "theme": "folio",
+          "bits": 6
+        },
+        {
+          "theme": "folio",
+          "bits": 7
+        },
+        {
+          "theme": "chapter",
+          "bits": 0
+        },
+        {
+          "theme": "chapter",
+          "bits": 1
+        },
+        {
+          "theme": "chapter",
+          "bits": 2
+        },
+        {
+          "theme": "chapter",
+          "bits": 3
+        },
+        {
+          "theme": "chapter",
+          "bits": 4
+        },
+        {
+          "theme": "chapter",
+          "bits": 5
+        },
+        {
+          "theme": "chapter",
+          "bits": 6
+        },
+        {
+          "theme": "chapter",
+          "bits": 7
+        },
+        {
+          "theme": "codex",
+          "bits": 0
+        },
+        {
+          "theme": "codex",
+          "bits": 1
+        },
+        {
+          "theme": "codex",
+          "bits": 2
+        },
+        {
+          "theme": "codex",
+          "bits": 3
+        },
+        {
+          "theme": "codex",
+          "bits": 4
+        },
+        {
+          "theme": "codex",
+          "bits": 5
+        },
+        {
+          "theme": "codex",
+          "bits": 6
+        },
+        {
+          "theme": "codex",
+          "bits": 7
+        },
+        {
+          "theme": "aincrad",
+          "bits": 0
+        },
+        {
+          "theme": "aincrad",
+          "bits": 1
+        },
+        {
+          "theme": "aincrad",
+          "bits": 2
+        },
+        {
+          "theme": "aincrad",
+          "bits": 3
+        },
+        {
+          "theme": "aincrad",
+          "bits": 4
+        },
+        {
+          "theme": "aincrad",
+          "bits": 5
+        },
+        {
+          "theme": "aincrad",
+          "bits": 6
+        },
+        {
+          "theme": "aincrad",
+          "bits": 7
+        }
+      ],
+      "modes": [
+        {
+          "name": "Pikachu",
+          "owner": "ไค",
+          "hp": "33 / 33",
+          "level": "Lv. 12",
+          "gender": "female",
+          "mode": "artwork",
+          "animated": "false",
+          "height": 214.796875
+        },
+        {
+          "name": "Pikachu",
+          "owner": "ไค",
+          "hp": "33 / 33",
+          "level": "Lv. 12",
+          "gender": "female",
+          "mode": "sprite",
+          "animated": "false",
+          "height": 214.796875
+        },
+        {
+          "name": "Pikachu",
+          "owner": "ไค",
+          "hp": "33 / 33",
+          "level": "Lv. 12",
+          "gender": "female",
+          "mode": "sprite",
+          "animated": "true",
+          "height": 214.796875
+        }
+      ],
+      "squareCorners": true,
+      "realNamesAndStats": true,
+      "realHeaderDetailAndRename": true,
+      "reload": true,
+      "deleteRollback": true,
+      "sharedNativeListenerPreserved": true,
+      "wildOwner": true,
+      "disableEnablePreservesGame": true,
+      "noNpcPollution": true,
+      "sourceGameDraftPreserved": true
+    },
+    {
+      "device": "mobile",
+      "avatar": "Pokémon · League Circuit5.png",
+      "checks": [
+        {
+          "theme": "roleforge",
+          "bits": 0
+        },
+        {
+          "theme": "roleforge",
+          "bits": 1
+        },
+        {
+          "theme": "roleforge",
+          "bits": 2
+        },
+        {
+          "theme": "roleforge",
+          "bits": 3
+        },
+        {
+          "theme": "roleforge",
+          "bits": 4
+        },
+        {
+          "theme": "roleforge",
+          "bits": 5
+        },
+        {
+          "theme": "roleforge",
+          "bits": 6
+        },
+        {
+          "theme": "roleforge",
+          "bits": 7
+        },
+        {
+          "theme": "folio",
+          "bits": 0
+        },
+        {
+          "theme": "folio",
+          "bits": 1
+        },
+        {
+          "theme": "folio",
+          "bits": 2
+        },
+        {
+          "theme": "folio",
+          "bits": 3
+        },
+        {
+          "theme": "folio",
+          "bits": 4
+        },
+        {
+          "theme": "folio",
+          "bits": 5
+        },
+        {
+          "theme": "folio",
+          "bits": 6
+        },
+        {
+          "theme": "folio",
+          "bits": 7
+        },
+        {
+          "theme": "chapter",
+          "bits": 0
+        },
+        {
+          "theme": "chapter",
+          "bits": 1
+        },
+        {
+          "theme": "chapter",
+          "bits": 2
+        },
+        {
+          "theme": "chapter",
+          "bits": 3
+        },
+        {
+          "theme": "chapter",
+          "bits": 4
+        },
+        {
+          "theme": "chapter",
+          "bits": 5
+        },
+        {
+          "theme": "chapter",
+          "bits": 6
+        },
+        {
+          "theme": "chapter",
+          "bits": 7
+        },
+        {
+          "theme": "codex",
+          "bits": 0
+        },
+        {
+          "theme": "codex",
+          "bits": 1
+        },
+        {
+          "theme": "codex",
+          "bits": 2
+        },
+        {
+          "theme": "codex",
+          "bits": 3
+        },
+        {
+          "theme": "codex",
+          "bits": 4
+        },
+        {
+          "theme": "codex",
+          "bits": 5
+        },
+        {
+          "theme": "codex",
+          "bits": 6
+        },
+        {
+          "theme": "codex",
+          "bits": 7
+        },
+        {
+          "theme": "aincrad",
+          "bits": 0
+        },
+        {
+          "theme": "aincrad",
+          "bits": 1
+        },
+        {
+          "theme": "aincrad",
+          "bits": 2
+        },
+        {
+          "theme": "aincrad",
+          "bits": 3
+        },
+        {
+          "theme": "aincrad",
+          "bits": 4
+        },
+        {
+          "theme": "aincrad",
+          "bits": 5
+        },
+        {
+          "theme": "aincrad",
+          "bits": 6
+        },
+        {
+          "theme": "aincrad",
+          "bits": 7
+        }
+      ],
+      "modes": [
+        {
+          "name": "Pikachu",
+          "owner": "ไค",
+          "hp": "33 / 33",
+          "level": "Lv. 12",
+          "gender": "female",
+          "mode": "artwork",
+          "animated": "false",
+          "height": 109.5
+        },
+        {
+          "name": "Pikachu",
+          "owner": "ไค",
+          "hp": "33 / 33",
+          "level": "Lv. 12",
+          "gender": "female",
+          "mode": "sprite",
+          "animated": "false",
+          "height": 109.5
+        },
+        {
+          "name": "Pikachu",
+          "owner": "ไค",
+          "hp": "33 / 33",
+          "level": "Lv. 12",
+          "gender": "female",
+          "mode": "sprite",
+          "animated": "true",
+          "height": 109.5
+        }
+      ],
+      "squareCorners": true,
+      "realNamesAndStats": true,
+      "realHeaderDetailAndRename": true,
+      "reload": true,
+      "deleteRollback": true,
+      "sharedNativeListenerPreserved": true,
+      "wildOwner": true,
+      "disableEnablePreservesGame": true,
+      "noNpcPollution": true,
+      "sourceGameDraftPreserved": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

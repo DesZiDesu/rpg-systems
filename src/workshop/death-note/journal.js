@@ -1,4 +1,4 @@
-import {storySeconds} from './core.js?v=0.90.0';
+import {storySeconds} from './core.js?v=0.90.16';
 export function inscriptionProgress(entry,state,language='th'){
  const t=(th,en)=>language==='en'?en:th;
  if(entry.status==='resolved')return {code:'resolved',label:t('เกิดผลแล้ว','Resolved'),detail:t('เรื่องราวยืนยันการเสียชีวิตแล้ว','The story confirms the completed death.'),fraction:1};

@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.16",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.7.1",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon dialogue — League Circuit",
+      "text": "Pokémon-only square League Circuit nameplates, dialogue and narration in main chat. Compact mobile headers show actual HP, level, gender and current owner. Display nicknames first, otherwise Pokédex names. Artwork/Sprite and animation follow the existing character settings. Stable individual speaker IDs separate identical species and Trainers from wild Pokémon; no Pokémon NPC dossiers are created. Uses the selected RoleForge theme fonts and its independent Header/Dialogue/Narrative switches. Works with shared Regex presentation and follows swipe/delete/reload state."
+    }
+  ]
+}

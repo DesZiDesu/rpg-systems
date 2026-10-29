@@ -1,7 +1,7 @@
 // Compose with the host's already formatted DOM. Never run regex per block or
 // recreate another extension's card with innerHTML/clones.
-import {parseUserMessage} from './user-chat.js?v=0.90.0';
-import {cleanChatProse} from './foreign-chat.js?v=0.90.0';
+import {parseUserMessage} from './user-chat.js?v=0.90.16';
+import {cleanChatProse} from './foreign-chat.js?v=0.90.16';
 export function chatPresentationMode(settings = {}) {
     return ['shared','native','roleforge'].includes(settings.chatRegexMode)
         ? settings.chatRegexMode : settings.preserveNativeChat === true ? 'native' : 'shared';
@@ -300,7 +300,7 @@ export function mountSharedStory({host,nodes,blocks,header,narrative,dialogue,th
         shell.dataset.roleforgeMount='shared';
         shell.classList.add('rf-shared-block');shell.querySelector('.trpg-user-header')?.remove();
         const name=nativeName || block.name || currentName || fallbackName;
-        const body=user?shell.querySelector(block.type==='thought'?'.trpg-user-thought':`.trpg-${block.type}`):block.type === 'narrative' ? narrative('') : block.type==='thought'&&thought ? thought(name) : block.type==='dialogue'&&dialogue ? dialogue(name) : create('div',block.type === 'dialogue' ? 'trpg-dialogue' : 'trpg-plain');
+        const body=user?shell.querySelector(block.type==='thought'?'.trpg-user-thought':`.trpg-${block.type}`):block.type === 'narrative' ? narrative('',name) : block.type==='thought'&&thought ? thought(name) : block.type==='dialogue'&&dialogue ? dialogue(name) : create('div',block.type === 'dialogue' ? 'trpg-dialogue' : 'trpg-plain');
         if(!body)continue;
         if(block.type==='dialogue'&&!dialogueEnabled)body.classList.add('trpg-unframed');
         let content=block.type === 'narrative' ? body.querySelector('.trpg-prose-copy') : block.type==='thought'?body.querySelector('p'):block.type==='dialogue'?body.querySelector('.trpg-dialogue-copy'):body;

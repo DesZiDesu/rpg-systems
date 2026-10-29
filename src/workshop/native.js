@@ -1,9 +1,9 @@
-import {CREATION_RECORD,registrationRules} from '../forge-addons.js?v=0.90.0';
-import {npcCanonContext} from '../npc-generation.js?v=0.90.0';
-import {mountWorkshop,icon} from './ui.js?v=0.90.15';
-import {requestDataTask} from '../task-generation.js?v=0.90.0';
-import {mountDeathNote} from './death-note/ui.js?v=0.90.0';
-import {readCharacterExtension} from '../character-archive.js?v=0.90.0';
+import {CREATION_RECORD,registrationRules} from '../forge-addons.js?v=0.90.16';
+import {npcCanonContext} from '../npc-generation.js?v=0.90.16';
+import {mountWorkshop,icon} from './ui.js?v=0.90.16';
+import {requestDataTask} from '../task-generation.js?v=0.90.16';
+import {mountDeathNote} from './death-note/ui.js?v=0.90.16';
+import {readCharacterExtension} from '../character-archive.js?v=0.90.16';
 
 // Keep the native entry points available even if optional storage cannot open.
 export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,awaitTimeline=()=>Promise.resolve(),awaitReplyState=()=>Promise.resolve(),relationshipTrackingEnabled=()=>true,relationshipSource=()=>'',refreshHost,visible=value=>String(value||''),npcReferences=()=>[],prepareNpcs=async()=>{},creationChanged=()=>{}}={}){
@@ -29,13 +29,13 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,awa
    return()=>{for(const [type,fn]of events)c.eventSource.removeListener(type,fn);};
   },
  };
- const ensurePokemon=()=>pokemon?Promise.resolve(pokemon):pokemonFlight||=(async()=>{const {mountPokemon}=await import('./pokemon/ui.js?v=0.90.15');const value=await mountPokemon({api,dock,enabled:()=>api.isAddonEnabled?.('pokemon')===true,busy});if(destroyed){value.destroy();throw Error('Workshop closed');}pokemon=value;return value;})().finally(()=>pokemonFlight=null);
- const ensurePhone=()=>phone?Promise.resolve(phone):phoneFlight||=(async()=>{const {mountSmartphone}=await import('./smartphone/runtime.js?v=0.90.0');phone=await mountSmartphone({api,enabled:()=>api.isAddonEnabled?.('smartphone')===true,busy});return phone;})().finally(()=>phoneFlight=null);
+ const ensurePokemon=()=>pokemon?Promise.resolve(pokemon):pokemonFlight||=(async()=>{const {mountPokemon}=await import('./pokemon/ui.js?v=0.90.16');const value=await mountPokemon({api,dock,enabled:()=>api.isAddonEnabled?.('pokemon')===true,busy});if(destroyed){value.destroy();throw Error('Workshop closed');}pokemon=value;queueMicrotask(()=>{if(!destroyed)api.refreshHost?.();});return value;})().finally(()=>pokemonFlight=null);
+ const ensurePhone=()=>phone?Promise.resolve(phone):phoneFlight||=(async()=>{const {mountSmartphone}=await import('./smartphone/runtime.js?v=0.90.16');phone=await mountSmartphone({api,enabled:()=>api.isAddonEnabled?.('smartphone')===true,busy});return phone;})().finally(()=>phoneFlight=null);
  const ensure=()=>{
   if(destroyed)return Promise.reject(Error('ปิด Workshop แล้ว'));
   if(app)return Promise.resolve(app);
   return mounting||= (async()=>{
-   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.90.0',base);
+   style=document.createElement('link');style.rel='stylesheet';style.href=new URL('../../styles/workshop.css?v=0.90.16',base);
    await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ')),15000);
     style.onload=()=>{clearTimeout(timer);resolve();};style.onerror=()=>{clearTimeout(timer);reject(Error('โหลดหน้าตา Workshop ไม่สำเร็จ'));};document.head.append(style);
@@ -52,5 +52,5 @@ export function mountNativeWorkshop({dock,state,owner,busy,voice,commitState,awa
  wand.onclick=()=>{document.querySelector('#extensionsMenuButton')?.click();open();};wand.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();wand.click();}};document.getElementById('extensionsMenu')?.append(wand);
  // Restore installed addon shortcuts without requiring the user to open Workshop.
  void ensure().catch(error=>console.warn('[RoleForge] Workshop preparation failed',error));
- return{open,async prepareGeneration(type){if(!app)return;await app.ready();if(api.isAddonEnabled?.('pokemon'))await(await ensurePokemon()).prepareGeneration(type);return deathNote?.prepareGeneration(type);},async ready(){const value=await ensure();await value.ready();},destroy(){destroyed=true;pokemon?.destroy();phone?.destroy();deathNote?.destroy();app?.destroy();style?.remove();launch.remove();wand.remove();if(globalThis.RoleForgeWorkshop===app)delete globalThis.RoleForgeWorkshop;}};
+ return{open,presentationNpcs:reserved=>pokemon?.chatProfiles?.(reserved)||[],async prepareGeneration(type){if(!app)return;await app.ready();if(api.isAddonEnabled?.('pokemon'))await(await ensurePokemon()).prepareGeneration(type);return deathNote?.prepareGeneration(type);},async ready(){const value=await ensure();await value.ready();},destroy(){destroyed=true;pokemon?.destroy();phone?.destroy();deathNote?.destroy();app?.destroy();style?.remove();launch.remove();wand.remove();if(globalThis.RoleForgeWorkshop===app)delete globalThis.RoleForgeWorkshop;}};
 }

@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.15",
+      "minimumRoleForge": "0.90.16",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -579,6 +579,18 @@
             "97 Mega and 34 Gigantamax forms, Primal, Ultra, Tera/Stellar, Z-Moves, six fusion routes and species-specific forms",
             "Atomic transformation and attack, real battle effects, individual-safe reversion, main-chat context and swipe/delete/reload replay",
             "Incremental Pokédex search without rebuilding the input, mobile overflow fixes and legible dark-theme evolution cards"
+          ]
+        },
+        {
+          "version": "1.7.1",
+          "path": "packs/pokemon-1.7.1.json",
+          "bytes": 978,
+          "sha256": "91786112b72a28243144204f1c7795e1c03223c882b9587af44fb6496c8f0765",
+          "changes": [
+            "Approved League Circuit Pokémon dialogue, narration and four-square-corner nameplates",
+            "Compact mobile HP, Lv, gender and owner from live game data; nickname first, otherwise Pokédex name",
+            "Shared Artwork/Sprite and animation preferences, RoleForge theme fonts and existing frame toggles",
+            "Stable Pokémon speaker IDs, human name protection, shared Regex rendering and replay-safe updates"
           ]
         }
       ]
