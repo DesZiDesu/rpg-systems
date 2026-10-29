@@ -101,3 +101,12 @@ test('an unresponsive Worker times out and is terminated',async()=>{
  });
 
 test('addon creator preferences default on, persist independently and retain addon settings',()=>{const old=normalizeProfile({enabled:['death-note'],launchers:{x:.4},sage:{theme:'azure'}},'character');assert.deepEqual(old.characterCreation,{'death-note':true,pokemon:true});const changed=normalizeProfile({...old,characterCreation:{'death-note':false,pokemon:true,invalid:false}},'character');assert.deepEqual(changed.characterCreation,{'death-note':false,pokemon:true});assert.deepEqual(changed.enabled,['death-note']);assert.equal(changed.sage.theme,'azure');assert.equal(changed.launchers.x,.4);assert.deepEqual(normalizeProfile(JSON.parse(JSON.stringify(changed)),'another-chat').characterCreation,changed.characterCreation);assert.deepEqual(normalizeProfile(null,'fresh').characterCreation,{'death-note':true,pokemon:true});});
+
+test('Pokédex image mode persists with character preferences and keeps legacy defaults',()=>{
+ const raw={enabled:['pokemon'],pokemon:{theme:'classic-dark',sound:false,motion:true,dexImageMode:'sprite'}};
+ const p=normalizeProfile(raw,'character');assert.equal(p.pokemon.dexImageMode,'sprite');assert.equal(p.pokemon.theme,'classic-dark');assert.equal(p.pokemon.sound,false);
+ assert.equal(normalizeProfile(JSON.parse(JSON.stringify(p)),'same-character').pokemon.dexImageMode,'sprite');
+ assert.equal(normalizeProfile({...p,pokemon:{...p.pokemon,dexImageMode:'artwork'}},'character').pokemon.dexImageMode,'artwork');
+ assert.equal(normalizeProfile({pokemon:{dexImageMode:'unexpected'}},'character').pokemon.dexImageMode,undefined);
+ assert.equal(normalizeProfile({pokemon:{sound:false}},'legacy').pokemon.dexImageMode,undefined);
+});

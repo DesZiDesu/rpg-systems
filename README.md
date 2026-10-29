@@ -1,6 +1,8 @@
 # RoleForge
 
-**Pokémon — 1.6.1 / RoleForge 0.90.11.** A 16:9 desktop window, grouped settings and square Dossier composer panels in both themes. New battles open the full window automatically, even with Motion off, while ordinary replies and history navigation respect manual closing. [UI investigation, page audit and captures](docs/pokemon-ui-v0.90.11.th.md).
+**Pokémon — 1.6.2 / RoleForge 0.90.12.** Choose Artwork or static front Sprite images in Settings → Appearance for the Pokédex list, details and forms. The preference belongs to the character and survives new chats and reloads. [Image preference and captures](docs/pokemon-dex-images-v0.90.12.th.md).
+
+**Unified Pokémon interface.** A 16:9 desktop window, grouped settings and square Dossier composer panels in both themes. New battles open the full window automatically, even with Motion off, while ordinary replies and history navigation respect manual closing. [UI investigation, page audit and captures](docs/pokemon-ui-v0.90.11.th.md).
 
 **Battle sprites.** Battles now use genuine rear-view player sprites and front-view opponents, with paired pixel/model GIFs and direction-correct static fallbacks. All 1,025 base species have animated pairs; 1,570 of 1,579 form entries have paired animations; all forms have static front/back fallbacks. Motion off and reduced motion also stop GIFs and animated WebP. [Sprite release and coverage](docs/pokemon-facing-v0.90.10.md) · [Dossier layout](docs/pokemon-dossier-v0.90.9.md) · [Install and play](docs/pokemon-release/INSTALL.md).
 

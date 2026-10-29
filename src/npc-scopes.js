@@ -1,5 +1,5 @@
-import { keyName, resolveNpc } from './npc-core.js?v=0.90.11';
-import {hasNpcCapacity} from './npc-capacity.js?v=0.90.11';
+import { keyName, resolveNpc } from './npc-core.js?v=0.90.12';
+import {hasNpcCapacity} from './npc-capacity.js?v=0.90.12';
 import {hydrateSparseNpcs,packSparseNpcs,sparseNpcScope,inheritNpcBaselines} from './sparse-npc-state.js?v=0.90.2';
 
 const clone = value => JSON.parse(JSON.stringify(value));

@@ -1,0 +1,10 @@
+{
+  "command": "node --test tests/pokemon*.test.mjs tests/workshop.test.mjs tests/media-loader.test.mjs tests/host-integration.test.mjs",
+  "tests": 371,
+  "passed": 371,
+  "failed": 0,
+  "syntaxCheck": "npm run check",
+  "syntaxPassed": true,
+  "indexedForms": 1579,
+  "missingStaticFrontEntries": 0
+}

@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.11",
+      "minimumRoleForge": "0.90.12",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -534,6 +534,17 @@
             "16:9 desktop window, grouped settings and Poké Ball headers in both Dossier themes",
             "Square composer companion with separated move/action rows and readable HP controls",
             "Automatically open the full window for new saved battles; preserve manual closing, draft text and history navigation"
+          ]
+        },
+        {
+          "version": "1.6.2",
+          "path": "packs/pokemon-1.6.2.json",
+          "bytes": 793,
+          "sha256": "178d84de809100a2d970eff2073f1539693489b0ec2ae02a35c350b87f131a12",
+          "changes": [
+            "Choose Artwork or static front Sprite images for Pokédex entries, details and form references",
+            "Character-owned image preference survives replies, new chats and reloads",
+            "Indexed exact-form sprites with artwork fallback; party portraits and battle selection remain independent"
           ]
         }
       ]

@@ -1,0 +1,37 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "mobileEmulation": true,
+  "liveModel": false,
+  "devices": [
+    {
+      "device": "mobile",
+      "themes": 2,
+      "staticSprites": true,
+      "exactForms": true,
+      "detailAndForms": true,
+      "partyUnchanged": true,
+      "progressUnchanged": true,
+      "replyPersists": true,
+      "newChatPersists": true,
+      "characterIsolated": true,
+      "reloadPersists": true,
+      "artworkFallback": true
+    },
+    {
+      "device": "desktop",
+      "themes": 2,
+      "staticSprites": true,
+      "exactForms": true,
+      "detailAndForms": true,
+      "partyUnchanged": true,
+      "progressUnchanged": true,
+      "replyPersists": true,
+      "newChatPersists": true,
+      "characterIsolated": true,
+      "reloadPersists": true,
+      "artworkFallback": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

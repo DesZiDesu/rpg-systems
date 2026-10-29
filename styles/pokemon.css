@@ -642,3 +642,13 @@
  #roleforge-pokemon .pk-counter{display:flex;align-items:baseline;gap:6px;font-size:23px}
 }
 #roleforge-pokemon :is(.pk-equipment-card h2,.pk-battle-party-member strong){overflow-wrap:anywhere;max-width:100%}
+
+/* Character-owned Pokédex illustration preference; other portraits keep their artwork. */
+#roleforge-pokemon img.pk-dex-sprite{image-rendering:pixelated;object-fit:contain}
+#roleforge-pokemon .pk-dex-image-setting{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--pk-line)}
+#roleforge-pokemon .pk-dex-image-setting h3{font-family:inherit;font-size:13px;font-weight:600;line-height:1.5}
+#roleforge-pokemon .pk-dex-image-setting p{font-size:12px;line-height:1.6;color:var(--pk-muted);margin-top:4px}
+#roleforge-pokemon .pk-image-mode{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#roleforge-pokemon button.pk-image-mode-option{min-height:42px;padding:9px 12px;font-size:12px;border:1px solid var(--pk-line);background:var(--pk-bg);color:var(--pk-text);box-shadow:none}
+#roleforge-pokemon button.pk-image-mode-option[aria-pressed=true]{border-color:var(--pk-gold);background:color-mix(in srgb,var(--pk-gold) 10%,var(--pk-panel));color:var(--pk-gold);font-weight:650}
+@media(max-width:700px){#roleforge-pokemon .pk-dex-image-setting{grid-template-columns:minmax(0,1fr);gap:11px}#roleforge-pokemon button.pk-image-mode-option{min-height:44px}}

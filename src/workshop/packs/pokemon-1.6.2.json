@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.12",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.6.2",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Pokémon adventure — Pokédex image preference",
+      "text": "Choose Artwork or Sprite in Pokémon Settings → Appearance. Static front sprites apply to the Pokédex list, species details and form references; party portraits and battle image selection stay independent. The preference belongs to the character and survives new chats, replies and reloads. Uses indexed exact-form front sprites, with exact artwork fallback on image failures."
+    }
+  ]
+}
