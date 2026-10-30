@@ -1,15 +1,15 @@
-import {formAction,transformationConfig,transformationHeldItem,transformationOptions,transformBattle,automaticForm,switchForm,clearTransformations,restoreBattleForm,finishTransformationTurn,battleMove,battleTypes,baseKey,syncEquipmentForm,copyBattleForm} from './transformations.js?v=0.90.17';
-import {parsePokemonStory} from './story.js?v=0.90.17';
-import {chooseAbility,abilityOf,itemOf,enterBattle,leaveBattle,moveAllowed,endTurn,normalizeWeather,fieldWeather,HELD_ITEMS} from './mechanics.js?v=0.90.17';
-import {applyStatus} from './battle-rules.js?v=0.90.17';
-import {traitsFor,specimenStats,refreshStats,awardEVs} from './specimens.js?v=0.90.17';
-import {supportedMove,executeMove,effectiveStat,residual} from './battle-rules.js?v=0.90.17';
-import {BALLS,ballChance,useMedicine} from './items.js?v=0.90.17';
-import {expansionAction} from './game-actions.js?v=0.90.17';
-import {trainerDefinition,gymAvailable,isCenter,regionalPool} from './adventure-rules.js?v=0.90.17';
-import {resolveTerrain} from './terrains.js?v=0.90.17';
-import {validTerrain} from './terrains.js?v=0.90.17';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.90.17';
+import {formAction,transformationConfig,transformationHeldItem,transformationOptions,transformBattle,automaticForm,switchForm,clearTransformations,restoreBattleForm,finishTransformationTurn,battleMove,battleTypes,baseKey,syncEquipmentForm,copyBattleForm} from './transformations.js?v=0.90.18';
+import {parsePokemonStory} from './story.js?v=0.90.18';
+import {chooseAbility,abilityOf,itemOf,enterBattle,leaveBattle,moveAllowed,endTurn,normalizeWeather,fieldWeather,HELD_ITEMS} from './mechanics.js?v=0.90.18';
+import {applyStatus} from './battle-rules.js?v=0.90.18';
+import {traitsFor,specimenStats,refreshStats,awardEVs} from './specimens.js?v=0.90.18';
+import {supportedMove,executeMove,effectiveStat,residual} from './battle-rules.js?v=0.90.18';
+import {BALLS,ballChance,useMedicine} from './items.js?v=0.90.18';
+import {expansionAction} from './game-actions.js?v=0.90.18';
+import {trainerDefinition,gymAvailable,isCenter,regionalPool} from './adventure-rules.js?v=0.90.18';
+import {resolveTerrain} from './terrains.js?v=0.90.18';
+import {validTerrain} from './terrains.js?v=0.90.18';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.90.18';
 // Pokémon preview: immutable, replayable game state. No network or host globals.
 export const JOURNAL='roleforge_pokemon_v1',PROMPT='roleforge_pokemon_world',ACTION_PROMPT='roleforge_pokemon_action';
 export const newActionId=()=>globalThis.crypto?.randomUUID?.()||'pk-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);

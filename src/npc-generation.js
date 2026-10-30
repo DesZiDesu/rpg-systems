@@ -1,8 +1,66 @@
-import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.90.17';
+import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.90.18';
+import {FIELDS,STATS,RELATIONS,ROLE_ICONS,usable,usableNpcName} from './npc-core.js?v=0.90.18';
 export const canGenerateNpcDraft=hasTaskGeneration;
-export function requestNpcDraft(context,prompt,responseLength){
- return requestDataTask(context,{systemPrompt:'Reply with one concise valid JSON object. No markdown, explanation or hidden reasoning.',prompt,responseLength,trimNames:false},
+// Generation is a complete form transaction. Do not treat a valid JSON object
+// as a complete NPC, or silently substitute generic attribute defaults.
+export const NPC_DRAFT_TOKENS=8192;
+export const NPC_DRAFT_SHAPE={
+ ...Object.fromEntries(Object.keys(FIELDS).map(k=>[k,k==='name'?'proper personal name':'nonempty short text'])),
+ aliases:[],abilities:[{name:'skill name',category:'skill category',level:'starting rank',description:'short description',proficiency:10}],
+ ...Object.fromEntries(RELATIONS.map(k=>[k,k==='trust'?10:0])),
+ stats:{level:1,rank:'Unranked',hp:100,mp:0,stamina:100,strength:10,agility:10,intelligence:10,endurance:10},
+ isHostile:false,identityColor:'#6d9b84',roleIcon:'healer',
+};
+export const NPC_COMPLETE_INSTRUCTIONS=`COMPLETE NPC FORM: Return every key in this JSON shape, with actual character-specific values: ${JSON.stringify(NPC_DRAFT_SHAPE)}. Every textual field must be nonempty. For original fictional NPCs, design consistent details for all fields. For established canon or deliberately undisclosed facts, write "ยังไม่เปิดเผย" in Thai or "Not established" in English instead of inventing facts. Never assume no spouse/children from missing information. lastSeen may say not yet met. No aliases/abilities is valid: use [] when none apply. Numeric attributes and six relationship meters are mandatory numbers; preserve intentional zero for no magic, death, or no relationship. Do not copy the example's stats without considering the concept. No player decisions, invented intimacy, IDs, image URLs or storage metadata. roleIcon must be one of ${Object.keys(ROLE_ICONS).join(', ')}. Keep concise, but NEVER omit form fields to shorten the response. No planning blocks or story prose.`;
+
+export function normalizeNpcDraftResponse(raw){
+ if(!raw||typeof raw!=='object'||Array.isArray(raw))return raw;
+ const next={...raw,stats:raw.stats&&typeof raw.stats==='object'&&!Array.isArray(raw.stats)?{...raw.stats}:raw.stats};
+ const number=v=>typeof v==='string'&&v.trim()!==''&&Number.isFinite(Number(v))?Number(v):v;
+ for(const key of RELATIONS)if(Object.hasOwn(next,key))next[key]=number(next[key]);
+ if(next.stats&&typeof next.stats==='object')for(const key of STATS)if(Object.hasOwn(next.stats,key))next.stats[key]=number(next.stats[key]);
+ if(Array.isArray(next.abilities))next.abilities=next.abilities.map(v=>v&&typeof v==='object'?{...v,proficiency:number(v.proficiency)}:v);
+ return next;
+}
+export function missingNpcDraftFields(raw,current={},full=true){
+ const value=normalizeNpcDraftResponse(raw)||{},missing=[];
+ for(const key of Object.keys(FIELDS))if((full||!usable(current[key]))&&!(key==='name'?usableNpcName(value[key]):usable(value[key])))missing.push(key);
+ if(!full)return missing;
+ missing.push(...missingNpcAttributeFields(value));
+ if(!Array.isArray(value.aliases)||value.aliases.some(v=>typeof v!=='string'))missing.push('aliases');
+ if(!Array.isArray(value.abilities)||value.abilities.some(v=>!v||!['name','category','level','description'].every(k=>usable(v[k]))||!Number.isFinite(v.proficiency)))missing.push('abilities');
+ if(typeof value.isHostile!=='boolean')missing.push('isHostile');
+ if(!/^#[0-9a-f]{6}$/iu.test(value.identityColor))missing.push('identityColor');
+ if(!Object.hasOwn(ROLE_ICONS,value.roleIcon))missing.push('roleIcon');
+ return missing;
+}
+export function missingNpcAttributeFields(raw){
+ const value=normalizeNpcDraftResponse(raw)||{},missing=[];
+ for(const key of RELATIONS)if(!Number.isFinite(value[key]))missing.push(key);
+ for(const key of STATS)if(!Number.isFinite(value.stats?.[key]))missing.push('stats.'+key);
+ if(!usable(value.stats?.rank))missing.push('stats.rank');
+ if(STATS.every(k=>Number(value.stats?.[k])===0))missing.push('stats');
+ return missing;
+}
+export function mergeNpcDraftRepair(first,repair,missing){
+ const next=structuredClone(first||{}),allowed=new Set(missing);
+ for(const key of allowed){if(key.startsWith('stats.')){const field=key.slice(6);if(repair?.stats?.[field]!==undefined)next.stats={...next.stats,[field]:repair.stats[field]};}
+  else if(Object.hasOwn(repair||{},key))next[key]=repair[key];}
+ return next;
+}
+export function npcDraftResponseText(value,context={}){
+ if(typeof value!=='string')return value;
+ let text=value.replace(/<(planning|think|thinking|analysis|reasoning)\b[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/giu,'').trim();
+ const {prefix,suffix}=context.powerUserSettings?.reasoning||{};
+ if(typeof prefix==='string'&&prefix&&typeof suffix==='string'&&suffix){
+  while(text.startsWith(prefix)){const end=text.indexOf(suffix,prefix.length);text=end<0?'':text.slice(end+suffix.length).trim();}
+ }
+ return text;
+}
+export async function requestNpcDraft(context,prompt,responseLength){
+ const value=await requestDataTask(context,{systemPrompt:'Return one complete valid JSON object matching the requested NPC fields. Never omit required fields to shorten the answer. No markdown, story prose, planning tags or hidden reasoning.',prompt,responseLength,trimNames:false},
   {quietPrompt:prompt,skipWIAN:true,removeReasoning:true},{task:'NPC draft'});
+ return npcDraftResponseText(value,context);
 }
 // Only an explicit Generate action sends the portrait to the user's AI provider.
 // Never persist the data URL in extension settings, prompts or chat metadata.

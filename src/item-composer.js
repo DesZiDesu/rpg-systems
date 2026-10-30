@@ -1,10 +1,10 @@
-import {composerIcon} from './composer-icons.js?v=0.90.17';
-import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.90.17';
-import {completeItemDefinition} from './item-definition.js?v=0.90.17';
-import {itemStatOptions,itemStatSummary,itemStatLabel} from './item-effects.js?v=0.90.17';
-import {commerceIconMarkup as icon} from './commerce-icons.js?v=0.90.17';
-import {normalizeItemUsage,itemAvailability,itemReserved,itemRecord,missingInventoryDetails} from './item-core.js?v=0.90.17';
-import {itemSaleBlocked} from './commerce-rights.js?v=0.90.17';
+import {composerIcon} from './composer-icons.js?v=0.90.18';
+import {itemLearningSummary,itemLearningDetails} from './item-learning.js?v=0.90.18';
+import {completeItemDefinition} from './item-definition.js?v=0.90.18';
+import {itemStatOptions,itemStatSummary,itemStatLabel} from './item-effects.js?v=0.90.18';
+import {commerceIconMarkup as icon} from './commerce-icons.js?v=0.90.18';
+import {normalizeItemUsage,itemAvailability,itemReserved,itemRecord,missingInventoryDetails} from './item-core.js?v=0.90.18';
+import {itemSaleBlocked} from './commerce-rights.js?v=0.90.18';
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function createItemComposer({dock,document:doc=globalThis.document,language=()=> 'en',perform,inspect=()=>{},cancel=()=>{},clearResult=()=>{}}){
  const itemPanel=doc.createElement('section'),lootPanel=doc.createElement('section');itemPanel.className=lootPanel.className='rf-item-panel';

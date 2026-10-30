@@ -1,6 +1,6 @@
 // Frozen v1.6 engine: replay pre-1.7 journals without changing their outcomes.
-import {POWDER_MOVES} from './move-flags.js?v=0.90.17';
-import {abilityOf,itemOf,statusAllowed,statMultiplier,changeStage,moveAllowed,fieldWeather,preDamage,damageModifier,afterDamage,WEATHER_MOVES,setWeather} from './legacy-mechanics.js?v=0.90.17';
+import {POWDER_MOVES} from './move-flags.js?v=0.90.18';
+import {abilityOf,itemOf,statusAllowed,statMultiplier,changeStage,moveAllowed,fieldWeather,preDamage,damageModifier,afterDamage,WEATHER_MOVES,setWeather} from './legacy-mechanics.js?v=0.90.18';
 export const STATUS_NAMES={paralysis:['อัมพาต','Paralysis'],sleep:['หลับ','Sleep'],freeze:['แช่แข็ง','Freeze'],burn:['ไหม้','Burn'],poison:['พิษ','Poison']};
 const ailments={1:'paralysis',2:'sleep',3:'freeze',4:'burn',5:'poison'};
 const special=new Set([150,182,197,203,...Object.keys(WEATHER_MOVES).map(Number)]);

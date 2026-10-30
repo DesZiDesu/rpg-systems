@@ -1,5 +1,7 @@
 # RoleForge
 
+**RoleForge 0.90.18 — complete NPC generation.** Validates all NPC form fields, repairs only omissions once, preserves reference appearance and intentional zero stats, and handles planning wrappers before parsing. Tested all four provider Gemini 3.8 aliases with the supplied Omega preset in real SillyTavern. [API findings and validation](docs/npc-completion-api-v0.90.18.th.md).
+
 **Pokémon — 1.7.2 / RoleForge 0.90.17.** Forced Trainer encounters can start the battle and open the full window directly from main chat. [Usage and validation](docs/pokemon-immediate-trainer-v0.90.17.th.md).
 
 **Pokémon — 1.7.1 / RoleForge 0.90.16.** Approved League Circuit chat headers, dialogue and narration with square corners. Compact mobile nameplates show live HP, Lv, gender and owner; nicknames take priority over Pokédex names. Follows existing Artwork/Sprite, animation and RoleForge font/frame settings. [Usage and validation](docs/pokemon-chat-v0.90.16.th.md). All transformation systems from 1.7.0 remain available: [transformation guide](docs/pokemon-transformations-v0.90.15.th.md).

@@ -1,4 +1,4 @@
-import {paintSageOrb} from './orb.js?v=0.90.17';
+import {paintSageOrb} from './orb.js?v=0.90.18';
 // Motion, response framing and actual playback activity share one small loop.
 export function createSageScene({config=()=>({}),activity=()=>({}),onResult=()=>{}}={}){
  const reduced=matchMedia('(prefers-reduced-motion: reduce)'),views=new Map();let phase='ready',text='มีสิ่งใดให้ข้าวิเคราะห์?',disposed=false,raf=0,last=0,revision=0;

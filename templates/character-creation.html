@@ -164,7 +164,7 @@ html,body{height:100%;overflow:hidden;background:transparent;-webkit-tap-highlig
 #trapp .add-btn{width:100%;margin-top:11px;padding:12px;background:transparent;border:1px dashed var(--line);color:var(--gold);font:inherit;cursor:pointer}
 #trapp button.chip{font:inherit;background:var(--field);color:var(--dim)}
 </style>
-<link rel="stylesheet" href="../styles/forge-choices.css?v=0.90.17">
+<link rel="stylesheet" href="../styles/forge-choices.css?v=0.90.18">
 </head>
 <body>
 <div id="trapp">
@@ -579,7 +579,7 @@ html,body{height:100%;overflow:hidden;background:transparent;-webkit-tap-highlig
 })();
 </script>
 <script type="module">
-import {mountForgeChoices} from '../src/forge-choices.js?v=0.90.17';
+import {mountForgeChoices} from '../src/forge-choices.js?v=0.90.18';
 const choices=mountForgeChoices(document.getElementById('trapp'));
 window.addEventListener('message',()=>queueMicrotask(()=>choices.refresh()));
 </script>

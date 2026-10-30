@@ -1,14 +1,14 @@
-import {validateRelationshipPreset,applyRelationshipPreset} from './relationship-core.js?v=0.90.17';
-import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.90.17';
-import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.90.17';
-import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.90.17';
-import {normalizeStatTraining} from './stat-training.js?v=0.90.17';
-import {writeLoreOptions} from './lore-core.js?v=0.90.17';
-import {validateChatAppearance} from './chat-themes.js?v=0.90.17';
-import {validateNpcOptions} from './npc-capacity.js?v=0.90.17';
-import {validateStoryPack,importStoryPack} from './story-core.js?v=0.90.17';
+import {validateRelationshipPreset,applyRelationshipPreset} from './relationship-core.js?v=0.90.18';
+import {validatePowerConfig, importPowerPreset} from './power-presets.js?v=0.90.18';
+import {validateForgePreset, importForgePreset} from './forge-presets.js?v=0.90.18';
+import {validateCurrencyScheme, currencyScheme, reconfigureCurrencyWallet, MONEY_ICON_SETS} from './currency-config.js?v=0.90.18';
+import {normalizeStatTraining} from './stat-training.js?v=0.90.18';
+import {writeLoreOptions} from './lore-core.js?v=0.90.18';
+import {validateChatAppearance} from './chat-themes.js?v=0.90.18';
+import {validateNpcOptions} from './npc-capacity.js?v=0.90.18';
+import {validateStoryPack,importStoryPack} from './story-core.js?v=0.90.18';
 
-import {validateWeaponPreset,assertWeaponPresetCompatible} from './weapon-core.js?v=0.90.17';
+import {validateWeaponPreset,assertWeaponPresetCompatible} from './weapon-core.js?v=0.90.18';
 
 export const CHAT_PRESET_KEY = 'roleforge_chat_presets';
 export const PRESET_LIBRARY_KEY = 'roleforgePresetLibrary';

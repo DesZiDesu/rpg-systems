@@ -8,6 +8,7 @@ import * as vision from '../src/npc-generation.js';
 
 // Execute the actual orchestration with a deliberately contradictory biography
 // response. Image decoding/UI rendering are stubbed; request and merge logic are real.
+const completeReply=(overrides={})=>JSON.stringify({...Object.fromEntries(Object.keys(core.FIELDS).map(k=>[k,k+' detail'])),...core.NPC_STARTING_RELATIONS,stats:{...core.NPC_STARTING_STATS},aliases:[],abilities:[],isHostile:false,identityColor:'#6d9b84',roleIcon:'healer',...overrides});
 const source=readFileSync(new URL('../src/npc-workspace.js',import.meta.url),'utf8');
 const assist=source.slice(source.indexOf("    async function assist(mode='missing')"),source.indexOf('    async function previewImport('));
 function setup({image=true,enabled=true,available=true,retry=false,replies=null,draftName='Original'}={}) {
@@ -17,7 +18,7 @@ function setup({image=true,enabled=true,available=true,retry=false,replies=null,
  let attempts=0,result;
  const context={mainApi:'openai',chat:[],
   async generateQuietPrompt(options){calls.push(options);return available?observed:'IMAGE_UNAVAILABLE';},
-  async generateRaw(options){calls.push(options);if(replies)return replies[Math.min(attempts++,replies.length-1)];if(retry&&attempts++===0)return '{';return JSON.stringify({name:'Lysa',appearance:'Long red hair, blue eyes and golden armor.',background:'A healer'});},
+  async generateRaw(options){calls.push(options);if(replies)return replies[Math.min(attempts++,replies.length-1)];if(retry&&attempts++===0)return '{';return completeReply({name:'Lysa',appearance:'Long red hair, blue eyes and golden armor.',background:'A healer'});},
  };
  const env={...i18n,...core,...vision,Blob,btoa,Uint8Array,console,busy:false,references:[],photoBlob:image?new Blob(['image'],{type:'image/webp'}):null,
   form:{querySelector:()=>checkbox,elements:{namedItem:key=>{if(!fields.has(key))fields.set(key,{value:draft[key]||''});return fields.get(key);}}},
@@ -37,7 +38,7 @@ test('image appearance wins over contradictory generated details and stale draft
 });
 test('NPC draft orchestration bypasses an AI-output regex that would erase its JSON without a retry',async()=>{
  const h=setup({image:false,enabled:false});const context=h.env.api.context();let calls=0;
- context.generateRawData=async()=>{calls++;return{choices:[{message:{content:JSON.stringify({name:'Lysa',appearance:'Short black hair.',background:'A healer'})},finish_reason:'stop'}]};};
+ context.generateRawData=async()=>{calls++;return{choices:[{message:{content:completeReply({name:'Lysa',appearance:'Short black hair.',background:'A healer'})},finish_reason:'stop'}]};};
  context.extractMessageFromData=data=>data.choices[0].message.content;
  context.generateRaw=async()=>assert.fail('Story cleanup must not receive the NPC draft');
  await h.env.run('description');assert.equal(calls,1);assert.equal(h.result().name,'Lysa');assert.equal(h.result().background,'A healer');
@@ -59,11 +60,11 @@ test('explicit image opt-out and no-image drafts still generate from text',async
 });
 
 test('a role-only generated name triggers one compact retry with canon and semantic field rules',async()=>{
- const h=setup({image:false,enabled:false,draftName:'',replies:[JSON.stringify({name:'Father',background:'Farmer'}),JSON.stringify({name:'Arthur',relationship:'Father',background:'Farmer'})]});
+ const h=setup({image:false,enabled:false,draftName:'',replies:[JSON.stringify({name:'Father',background:'Farmer'}),completeReply({name:'Arthur',relationship:'Father',background:'Farmer'})]});
  h.env.api.context().characters=[{name:'World',description:'The player’s father is Arthur.'}];h.env.api.context().characterId=0;
  await h.env.run('description');assert.equal(h.calls.length,2);assert.equal(h.result().name,'Arthur');assert.equal(h.result().relationship,'Father');
- assert.match(h.calls[1].prompt,/Use only these keys/);assert.match(h.calls[1].prompt,/father is Arthur/);
- assert.doesNotMatch(h.calls[1].prompt,/Include aliases as a string array|stats:\{rank/);
+ assert.match(h.calls[1].prompt,/REPAIR REQUEST/);assert.match(h.calls[1].prompt,/father is Arthur/);
+ assert.match(h.calls[1].prompt,/COMPLETE NPC FORM/);
 });
 test('repeated invalid JSON or role names leave the draft unchanged and release the busy state',async()=>{
  for(const reply of ['{',JSON.stringify({name:'Gate Keeper',occupation:'Gate Keeper'})]){
@@ -73,12 +74,12 @@ test('repeated invalid JSON or role names leave the draft unchanged and release 
  }
 });
 test('fill-missing generation repairs a legacy role name without replacing filled appearance',async()=>{
- const h=setup({image:false,enabled:false,draftName:'Father',replies:[JSON.stringify({name:'Arthur',background:'Farmer'})]});
+ const h=setup({image:false,enabled:false,draftName:'Father',replies:[completeReply({name:'Arthur',relationship:undefined,background:'Farmer'})]});
  await h.env.run('missing');assert.equal(h.fields.get('name').value,'Arthur');assert.equal(h.fields.get('relationship').value,'Father');
  assert.equal(h.fields.has('appearance'),false);
 });
 test('fill-missing retries malformed JSON and keeps valid supplied names',async()=>{
- const h=setup({image:false,enabled:false,replies:['{',JSON.stringify({name:'Innkeeper',background:'Farmer'})]});
+ const h=setup({image:false,enabled:false,replies:['{',completeReply({name:'Innkeeper',occupation:undefined,background:'Farmer'})]});
  await h.env.run('missing');assert.equal(h.calls.length,2);assert.equal(h.fields.has('name'),false);
  assert.equal(h.fields.get('occupation').value,'Innkeeper');
 });
@@ -100,4 +101,20 @@ test('leaving the editor after an image reply stops remaining reference requests
 });
 test('image reading can be disabled even when several reference images are attached',async()=>{
  const h=setup({image:false,enabled:false});h.env.references=[{blob:new Blob(['one'],{type:'image/webp'})},{blob:new Blob(['two'],{type:'image/webp'})}];await h.env.run('description');assert.equal(h.calls.length,1);assert.equal(h.calls[0].quietImage,undefined);
+});
+
+// A partial first response is repaired atomically; the patch cannot rename or
+// overwrite fields that were already valid, including image-derived appearance.
+test('valid but incomplete JSON triggers a field repair and retains first-response facts',async()=>{
+ const h=setup({image:false,enabled:false,replies:[JSON.stringify({name:'Lysa',appearance:'Green cloak',background:'Clinic'}),completeReply({name:'Wrong Name',appearance:'Red armor',background:'Wrong clinic'})]});
+ await h.env.run('description');assert.equal(h.calls.length,2);assert.equal(h.result().name,'Lysa');assert.equal(h.result().background,'Clinic');assert.equal(h.result().appearance,'Green cloak');
+ assert.match(h.calls[1].prompt,/REPAIR REQUEST/);assert.match(h.calls[1].prompt,/speechStyle/);assert.equal(h.calls[0].responseLength,8192);
+});
+test('a second incomplete response does not present partial success or replace the draft',async()=>{
+ const h=setup({image:false,enabled:false,replies:[JSON.stringify({name:'Lysa',background:'Clinic'})]});await h.env.run('description');assert.equal(h.calls.length,2);assert.equal(h.result(),undefined);assert.equal(h.env.dirty,false);assert.match(h.env.status,/NPC.*(?:fields|ไม่ครบ)/);
+});
+test('a truncated data response receives one complete retry; transport errors never trigger hidden retries',async()=>{
+ const h=setup({image:false,enabled:false});const c=h.env.api.context();let count=0;c.generateRawData=async()=>++count===1?{choices:[{message:{content:'{'},finish_reason:'length'}]}:{choices:[{message:{content:completeReply({name:'Lysa'})},finish_reason:'stop'}]};c.extractMessageFromData=d=>d.choices[0].message.content;
+ await h.env.run('description');assert.equal(count,2);assert.equal(h.result().name,'Lysa');
+ const failed=setup({image:false,enabled:false});let requests=0;failed.env.api.context().generateRaw=async()=>{requests++;throw Error('HTTP 400: invalid JSON request body');};await failed.env.run('description');assert.equal(requests,1);assert.equal(failed.result(),undefined);
 });

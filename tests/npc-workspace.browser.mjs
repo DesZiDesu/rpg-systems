@@ -29,7 +29,7 @@ window.toggle=on=>{settings.showWandLauncher=on;syncLauncherVisibility()};window
 </script>`;
 const server=http.createServer(async(req,res)=>{
  try{const pathname=new URL(req.url,'http://localhost').pathname;if(pathname==='/'){res.setHeader('content-type','text/html');res.end(fixture);return}
- if(!/^\/(?:src|styles)\/[a-z-]+\.(js|css)$/.test(pathname)){res.writeHead(404).end();return}
+ if(!/^\/(?:src|styles)\/(?:[a-z0-9-]+\/)*[a-z0-9-]+\.(js|css)$/.test(pathname)){res.writeHead(404).end();return}
  const file=await readFile(new URL('..'+pathname,import.meta.url));res.setHeader('content-type',pathname.endsWith('.css')?'text/css':'text/javascript');res.end(file);
  }catch{res.writeHead(404).end()}
 });

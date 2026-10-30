@@ -1,5 +1,5 @@
-import {sha256} from './vendor/js-sha256/index.js?v=0.90.17';
-import {currencyScheme} from './currency-config.js?v=0.90.17';
+import {sha256} from './vendor/js-sha256/index.js?v=0.90.18';
+import {currencyScheme} from './currency-config.js?v=0.90.18';
 
 export const STORY_PACK_FIELD='roleforge_story_pack';
 export const STORY_CONTRACTS_KEY='roleforge_story_contracts';
