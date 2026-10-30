@@ -23,12 +23,20 @@ export function pokemonChatProfiles(game,dex,{playerName='',motion=true}={}){
  if(trainer)for(const mon of trainer.team||[])if(mon?.uid&&!owned.has(mon.uid))entries.push({mon,ownerKind:'trainer',owner:text(trainer.name)});
  const foe=game.battle?.wild;
  if(foe?.uid&&!entries.some(v=>v.mon.uid===foe.uid))entries.push({mon:foe,ownerKind:trainer?'trainer':'wild',owner:text(trainer?.name)});
+ // Earlier messages still name opponents from finished battles. Caught ones
+ // answer to their new record; the rest keep their final state, by ID only.
+ const formerIds=new Map();
+ for(const [uid,mon] of Object.entries(game.former||{}).reverse()){
+  if(entries.some(v=>v.mon.uid===uid))continue;
+  if(mon?.caughtAs&&owned.has(mon.caughtAs)){formerIds.set(mon.caughtAs,[...formerIds.get(mon.caughtAs)||[],pokemonChatId(uid)]);continue;}
+  if(mon?.key)entries.push({mon:{...mon,uid},ownerKind:mon.ownerKind==='trainer'?'trainer':'wild',owner:text(mon.owner),departed:true});
+ }
  const mode=game.settings?.dexImageMode==='sprite'?'sprite':'artwork',animate=game.settings?.motion!==false&&motion;
- return entries.flatMap(({mon,owner,ownerKind})=>{
+ return entries.flatMap(({mon,owner,ownerKind,departed})=>{
   const p=dex.get(mon.key);if(!p)return [];
   const name=text(mon.nickname)||p.name,id=pokemonChatId(mon.uid),qualified=owner?name+' ('+owner+')':'';
-  return [{id,name,aliases:[id,name,p.name,p.key,qualified].filter(Boolean),identityColor:colors[p.types[0]]||'#c4d1dd',race:'Pokémon',
-   pokemon:{uid:mon.uid,key:p.key,speciesId:p.speciesId,name,speciesName:p.name,form:p.form||'',types:p.types,level:number(mon.level),hp:number(mon.hp),maxHp:number(mon.stats?.[0]),gender:['male','female','genderless'].includes(mon.traits?.gender)?mon.traits.gender:'unknown',ownerKind,owner,mode,motion:animate,images:pokemonChatImages(p,mon,dex,{mode,motion:animate})}}];
+  return [{id,name,aliases:departed?[id]:[id,...formerIds.get(mon.uid)||[],name,p.name,p.key,qualified].filter(Boolean),identityColor:colors[p.types[0]]||'#c4d1dd',race:'Pokémon',
+   pokemon:{uid:mon.uid,key:p.key,speciesId:p.speciesId,name,speciesName:p.name,form:p.form||'',types:p.types,level:number(mon.level),hp:number(mon.hp),maxHp:number(mon.stats?.[0]),gender:['male','female','genderless'].includes(mon.traits?.gender)?mon.traits.gender:'unknown',ownerKind,owner,...departed?{departed:true}:{},mode,motion:animate,images:pokemonChatImages(p,mon,dex,{mode,motion:animate})}}];
  });
 }
 
@@ -36,7 +44,7 @@ export function pokemonChatProfiles(game,dex,{playerName='',motion=true}={}){
 // human trainers retain their names even when they coincide with a species.
 export function availablePokemonSpeakers(profiles,reserved=[]){
  const used=new Set(reserved.flatMap(p=>[p.id,p.name,...p.aliases||[]]).filter(Boolean).map(key)),counts=new Map();
- for(const p of profiles)for(const value of new Set([p.name,...p.aliases].map(key)))counts.set(value,(counts.get(value)||0)+1);
- return profiles.map(p=>({...p,name:used.has(key(p.name))||counts.get(key(p.name))>1?p.id:p.name,
+ for(const p of profiles)if(!p.pokemon?.departed)for(const value of new Set([p.name,...p.aliases].map(key)))counts.set(value,(counts.get(value)||0)+1);
+ return profiles.map(p=>(p.pokemon?.departed?{...p,name:p.id,aliases:[p.id]}:{...p,name:used.has(key(p.name))||counts.get(key(p.name))>1?p.id:p.name,
   aliases:[...new Set(p.aliases)].filter(value=>value===p.id||!used.has(key(value))&&counts.get(key(value))===1)}));
 }
