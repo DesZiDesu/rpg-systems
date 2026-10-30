@@ -4,7 +4,7 @@ import {initialGame,replayStep} from './core.js?v=0.90.18';
 // only the suffix; appending a turn resumes from the latest committed checkpoint.
 export function createPokemonReplay(dex){
  let rows=[],rulesKey='',checkpoints=[],state,stats={processed:0,reused:false};
- const signature=m=>[m.is_user,m.is_system,m.swipe_id||0,m.mes,JSON.stringify(m.extra?.roleforge_pokemon_v1||[])];
+ const signature=m=>[m.is_user,m.is_system,m.swipe_id||0,m.mes,JSON.stringify(m.extra?.roleforge_pokemon_v1||[]),m.extra?.roleforge_pokemon_live||0];
  const same=(a,b)=>a?.length===b?.length&&a.every((v,i)=>v===b[i]);
  return{
  read(chat,rules={}){const key=JSON.stringify(rules);let first=0;if(key===rulesKey){while(first<chat.length&&first<rows.length&&same(rows[first],signature(chat[first])))first++;if(first===chat.length&&first===rows.length&&state){stats={processed:0,reused:true};return state;}}else{rows=[];checkpoints=[];rulesKey=key;}

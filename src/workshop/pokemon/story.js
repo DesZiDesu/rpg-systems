@@ -15,7 +15,7 @@ export function parsePokemonStory(source,dex){
  if(!data||typeof data!=='object'){rejected.push('invalid-schema');continue;}
  for(const[i,e]of(Array.isArray(data.events)?data.events:[]).slice(0,8).entries()){
   if(!e||typeof e!=='object'||Array.isArray(e)){rejected.push('invalid-event');continue;}
-  let proof=String(e.evidence||'').trim().replace(/\s+/gu,' ');const modern=Number(data.version)>=2,version=Number(data.version)>=4?4:Number(data.version)>=3?3:modern?2:1;
+  let proof=String(e.evidence||'').trim().replace(/\s+/gu,' ');const modern=Number(data.version)>=2,version=Number(data.version)>=5?5:Number(data.version)>=4?4:Number(data.version)>=3?3:modern?2:1;
   const reject=reason=>rejected.push(reason);if(e.type==='item'&&modern&&!visible.includes(proof)){const recovered=recoverReceipt(visible,e,dex);if(recovered)proof=recovered;}
   if(proof.length<8||proof.length>600||!visible.includes(proof)){reject('missing-visible-evidence');continue;}
   if(/ไม่พบ|ไม่ได้รับ|สมมติ|\b(?:not|would|could|if|might)\b|กำลังจะ|จะได้รับ/iu.test(proof)){reject('hypothetical-or-negative');continue;}
@@ -26,12 +26,20 @@ export function parsePokemonStory(source,dex){
    if(version>=3&&!(typeof e.receipt==='string'&&e.receipt.trim()&&e.receipt.length<=120)){reject('missing-receipt-id');continue;}
    events.push({...common,type:'grant-item',item:item.id,quantity,receipt:typeof e.receipt==='string'&&e.receipt.length<=120?'id:'+e.receipt:'proof:'+sha256(item.id+':'+quantity+':'+proof)});continue;
   }
+  // Protocol 5: a named NPC's fixed team. The NPC must be in the visible scene;
+  // members need not be shown yet, but a known roster only grows from members
+  // the evidence names.
+  if(e.type==='roster'&&version>=5){
+   const name=String(e.name||'').trim(),team=(Array.isArray(e.team)?e.team:[]).slice(0,6).map(mon=>{const p=dex.get(mon?.key||mon?.speciesId),level=Number(mon?.level);return p&&!p.battleOnly&&Number.isInteger(level)&&level>=1&&level<=100?{key:p.key,level,proven:known(proof,p.name,mon),...typeof mon.nickname==='string'&&mon.nickname.trim()?{nickname:mon.nickname.trim().slice(0,36)}:{}}:null;}).filter(Boolean);
+   if(name.length<2||name.length>80||!proof.includes(name)||!team.length){reject('unproven-roster');continue;}
+   events.push({...common,id:'story-'+m.index+'-'+i+'-roster',type:'roster',name,team});continue;
+  }
   if(e.type==='trainer'&&version>=3){
-   const name=String(e.name||'').trim(),place=String(e.place||'').trim(),team=e.team;
-   if(name.length<2||name.length>80||!proof.includes(name)||!/คุณ|ผู้เล่น|\byou\b|\byour\b/iu.test(proof)||!/ท้า|ประลอง|ต่อสู้|challenge|battle/iu.test(proof)||!place||place.length>160||!proof.includes(place)||!Array.isArray(team)||team.length<1||team.length>6){reject('unproven-trainer');continue;}
+   const open=version>=5,name=String(e.name||'').trim(),place=String(e.place||'').trim(),team=open&&e.team===undefined?[]:e.team;
+   if(name.length<2||name.length>80||!proof.includes(name)||!/คุณ|ผู้เล่น|\byou\b|\byour\b/iu.test(proof)||!(open?/ท้า|ประลอง|ต่อสู้|สู้|ดวล|แบทเทิล|challenge|battle|fight|duel|spar/iu:/ท้า|ประลอง|ต่อสู้|challenge|battle/iu).test(proof)||!open&&(!place||!proof.includes(place))||place.length>160||!Array.isArray(team)||!open&&team.length<1||team.length>6){reject('unproven-trainer');continue;}
    const equipment={};let badEquipment=false;if(e.equipment!==undefined){if(!e.equipment||typeof e.equipment!=='object'||Array.isArray(e.equipment)||Object.keys(e.equipment).length>8)badEquipment=true;else for(const[id,n]of Object.entries(e.equipment)){const item=dex.items.get(id);if(!item||!Number.isInteger(n)||n<1||n>10||!proof.toLowerCase().includes(item.name.toLowerCase())){badEquipment=true;break;}equipment[id]=n;}}
    if(badEquipment){reject('unproven-trainer-equipment');continue;}
-   const resolved=team.map(mon=>{const p=dex.get(mon?.key||mon?.speciesId),level=Number(mon?.level);if(!p||p.battleOnly||!Number.isInteger(level)||level<1||level>100||!known(proof,p.name,mon))return null;const entry={key:p.key,level};
+   const resolved=team.map(mon=>{const p=dex.get(mon?.key||mon?.speciesId),level=Number(mon?.level);if(!p||p.battleOnly||!Number.isInteger(level)||level<1||level>100||!open&&!known(proof,p.name,mon))return null;const entry={key:p.key,level,...open?{proven:known(proof,p.name,mon)}:{}};
     if(mon.heldItem!==undefined){const item=dex.items.get(mon.heldItem);if(!item||!proof.toLowerCase().includes(item.name.toLowerCase()))return null;entry.heldItem=item.id;}
     if(mon.teraType!==undefined){if(!TERA_TYPES.includes(mon.teraType)||!proof.toLowerCase().includes(mon.teraType))return null;entry.teraType=mon.teraType;}
     if(mon.transform!==undefined){if(version<4||!mon.transform||!['mega','primal','ultra','dynamax','gigantamax','tera','zmove'].includes(mon.transform.kind))return null;const kind=mon.transform.kind,key=String(mon.transform.key||'');
@@ -43,7 +51,8 @@ export function parsePokemonStory(source,dex){
    if(resolved.some(x=>!x)){reject('unproven-trainer-team');continue;}
    // Immediate battles need an actual start in the visible player scene. A plain
    // invitation (including one mislabeled by the model) remains an offer.
-   const immediate=e.mode==='immediate'&&!/\bwill\b|จะเริ่ม|จะบังคับ|จะรับคำท้า/iu.test(proof)&&/\b(?:battle (?:begins|starts)|forces? you (?:into|to) (?:a )?battle|attacks? you|you accept|you accepted)\b|เริ่ม(?:การ)?(?:ต่อสู้|ประลอง)|(?:การต่อสู้|การประลอง)เริ่ม|บังคับ(?:ให้)?คุณ(?:ต้อง)?(?:ต่อสู้|ประลอง)|คุณ(?:ตอบ)?รับคำท้า/iu.test(proof);
+   const started=open&&/\b(?:sends?|sent|throws?|releases?) out\b|\baccepts? (?:your|the) (?:challenge|battle)\b|\bchallenge accepted\b|\blet'?s (?:battle|go)\b|\bbattle is on\b|ส่ง.{0,40}ออกมา|ปล่อย.{0,40}ออกมา|มา(?:ประลอง|สู้)กัน/iu.test(proof);
+   const immediate=e.mode==='immediate'&&!/\bwill\b|จะเริ่ม|จะบังคับ|จะรับคำท้า/iu.test(proof)&&(started||/\b(?:battle (?:begins|starts)|forces? you (?:into|to) (?:a )?battle|attacks? you|you accept|you accepted)\b|เริ่ม(?:การ)?(?:ต่อสู้|ประลอง)|(?:การต่อสู้|การประลอง)เริ่ม|บังคับ(?:ให้)?คุณ(?:ต้อง)?(?:ต่อสู้|ประลอง)|คุณ(?:ตอบ)?รับคำท้า/iu.test(proof));
    events.push({...common,type:'trainer-offer',trainerKey:'npc-'+sha256(name.toLocaleLowerCase()).slice(0,20),name,place,team:resolved,equipment,...immediate?{mode:'immediate'}:{}});continue;
   }
   const p=dex.get(e.key||e.speciesId);if(!p||!known(proof,p.name,e)){reject('unproven-species');continue;}
