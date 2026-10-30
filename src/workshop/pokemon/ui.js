@@ -52,17 +52,32 @@ export async function mountPokemon({api,dock,enabled,busy=()=>false}){
  function battleImage(p,m,side){const candidate=spriteChoices(p,m,side)[0];return candidate?'<img class="pk-battle-sprite" data-pk-species="'+esc(p.key)+'" data-pk-shiny="'+(m?.shiny?'1':'0')+'" data-pk-gender="'+esc(m?.traits?.gender||'unknown')+'" data-pk-facing="'+side+'" data-pk-sprite-format="'+candidate.format+'" src="'+esc(candidate.url)+'" alt="'+esc(p.name+' · '+(side==='back'?t('หันหลัง','Back view'):t('หันหน้า','Front view')))+'" loading="lazy" decoding="async" crossorigin="anonymous" referrerpolicy="no-referrer">':spriteMissing(p.name,side);}
  function spriteError(event){const img=event.target;if(!img.matches?.('.pk-battle-sprite'))return;failedSprites.add(img.src);const p=dex.get(img.dataset.pkSpecies),side=img.dataset.pkFacing,m={shiny:img.dataset.pkShiny==='1',traits:{gender:img.dataset.pkGender}},next=spriteChoices(p,m,side)[0];if(next){img.dataset.pkSpriteFormat=next.format;img.removeAttribute('style');img.src=next.url;}else{img.outerHTML=spriteMissing(p.name,side);}}
  root.addEventListener('error',spriteError,true);
+ // Fit what is visible, not the canvas: HD models sit in large transparent
+ // frames and would otherwise look tiny next to pixel sprites. Animations are
+ // sampled over their first second and the union is kept, so the Pokémon
+ // neither overflows nor changes size while it moves.
+ function measureSprite(img){
+  try{const size=128,canvas=document.createElement('canvas');canvas.width=canvas.height=size;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,size,size);const pixels=ctx.getImageData(0,0,size,size).data;
+   let left=size,top=size,right=-1,bottom=-1;for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(pixels[(y*size+x)*4+3]>12){left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x);bottom=Math.max(bottom,y);}
+   return right>=left?{x:left/size,y:top/size,w:(right-left+1)/size,h:(bottom-top+1)/size}:null;
+  }catch{return null;/* Keep the complete image when a browser cannot inspect its alpha. */}
+ }
+ const union=(a,b)=>{if(!a)return b;if(!b)return a;const x=Math.min(a.x,b.x),y=Math.min(a.y,b.y);return{x,y,w:Math.max(a.x+a.w,b.x+b.w)-x,h:Math.max(a.y+a.h,b.y+b.h)-y};};
+ // Re-renders replace the element; keep sampling whichever copy is on screen.
+ function sampleSprite(src){let n=0;const tick=()=>{const anchor=groundAnchors.get(src);if(!anchor||++n>6||disposed)return;const shown=[...root.querySelectorAll('.pk-platform .pk-battle-sprite')].filter(i=>i.src===src&&i.complete&&i.naturalWidth);if(shown.length){anchor.bounds=union(anchor.bounds,measureSprite(shown[0]));for(const i of shown)placeSprite(i,anchor.bounds);}setTimeout(tick,220);};setTimeout(tick,220);}
+ // Trimmed sprites would make every Pokémon equally tall. A gentle log scale
+ // of the species' real height keeps a Joltik small and a Giratina imposing
+ // without letting anything become hard to see (55% of the box at least).
+ const sizeFactor=height=>!(height>0)?1:Math.max(.55,Math.min(1,.55+.45*Math.log10(Math.max(1,height*10))/Math.log10(30)));
+ function placeSprite(img,bounds={x:0,y:0,w:1,h:1}){
+  const actor=img.parentElement,w=actor.clientWidth,h=actor.clientHeight,scale=sizeFactor(dex.get(img.dataset.pkSpecies)?.height)*Math.min(w/(bounds.w*img.naturalWidth),h/(bounds.h*img.naturalHeight)),iw=img.naturalWidth*scale,ih=img.naturalHeight*scale;
+  Object.assign(img.style,{position:'absolute',width:iw+'px',height:ih+'px',left:((w-bounds.w*iw)/2-bounds.x*iw)+'px',top:(h-(bounds.y+bounds.h)*ih)+'px',transformOrigin:((bounds.x+bounds.w/2)*100)+'% '+((bounds.y+bounds.h)*100)+'%'});
+ }
  function alignGround(){for(const img of root.querySelectorAll('.pk-platform .pk-battle-sprite')){
   if(!img.complete||!img.naturalWidth)continue;
-  let bounds=groundAnchors.get(img.src);
-  if(!bounds){bounds={x:0,y:0,w:1,h:1};if(img.dataset.pkSpriteFormat==='static')try{
-   const canvas=document.createElement('canvas');canvas.width=canvas.height=96;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,96,96);const pixels=ctx.getImageData(0,0,96,96).data;let left=96,top=96,right=-1,bottom=-1;
-   for(let y=0;y<96;y++)for(let x=0;x<96;x++)if(pixels[(y*96+x)*4+3]>12){left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x);bottom=Math.max(bottom,y);}
-   if(right>=left)bounds={x:left/96,y:top/96,w:(right-left+1)/96,h:(bottom-top+1)/96};
-  }catch{/* Keep the complete image when a browser cannot inspect its alpha. */}
-  groundAnchors.set(img.src,bounds);}
-  const actor=img.parentElement,w=actor.clientWidth,h=actor.clientHeight,scale=Math.min(w/(bounds.w*img.naturalWidth),h/(bounds.h*img.naturalHeight)),iw=img.naturalWidth*scale,ih=img.naturalHeight*scale;
-  Object.assign(img.style,{position:'absolute',width:iw+'px',height:ih+'px',left:((w-bounds.w*iw)/2-bounds.x*iw)+'px',top:(h-(bounds.y+bounds.h)*ih)+'px',transformOrigin:((bounds.x+bounds.w/2)*100)+'% '+((bounds.y+bounds.h)*100)+'%'});
+  let anchor=groundAnchors.get(img.src);
+  if(!anchor){anchor={bounds:measureSprite(img)};groundAnchors.set(img.src,anchor);if(img.dataset.pkSpriteFormat!=='static')sampleSprite(img.src);}
+  placeSprite(img,anchor.bounds||undefined);
  }}
  const groundObserver=new ResizeObserver(alignGround);root.addEventListener('load',event=>{if(event.target.matches?.('.pk-platform img'))alignGround();},true);
  const reducedChanged=()=>{motion.cancel();visualBattle=null;refresh();};reducedMotion.addEventListener('change',reducedChanged);
