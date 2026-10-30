@@ -1,4 +1,4 @@
-import {customIconSource} from './custom-icons.js?v=0.90.16';
+import {customIconSource} from './custom-icons.js?v=0.90.17';
 
 // Portable, image-only updates. Never normalize a profile or merge arbitrary
 // fields from an update file into the character archive.

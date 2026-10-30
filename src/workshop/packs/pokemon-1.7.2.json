@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.90.17",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.7.2",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "trainer",
+      "title": "Immediate story Trainer battles",
+      "text": "Story-grounded forced encounters and accepted challenges can start a Trainer battle and open the full battle window immediately, without the Trainer menu. Ordinary invitations still wait for acceptance. Preserves sequential teams, outcomes and swipe/delete replay; never replaces an active battle or heals an unready party."
+    }
+  ]
+}

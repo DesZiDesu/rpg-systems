@@ -1,6 +1,6 @@
-import {phoneIcon as ico} from './icons.js?v=0.90.16';
-import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.90.16';
-import {currencyScheme} from '../../currency-config.js?v=0.90.16';
+import {phoneIcon as ico} from './icons.js?v=0.90.17';
+import {APPS,SOCIAL_APPS,clean,contactLabel,publicProfile,id,safeImage} from './model.js?v=0.90.17';
+import {currencyScheme} from '../../currency-config.js?v=0.90.17';
 
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const b=(text,action,data='',cls='')=>'<button type="button" class="'+cls+'" data-phone="'+action+'" '+data+'>'+text+'</button>';

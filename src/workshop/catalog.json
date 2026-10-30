@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.16",
+      "minimumRoleForge": "0.90.17",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -591,6 +591,17 @@
             "Compact mobile HP, Lv, gender and owner from live game data; nickname first, otherwise Pokédex name",
             "Shared Artwork/Sprite and animation preferences, RoleForge theme fonts and existing frame toggles",
             "Stable Pokémon speaker IDs, human name protection, shared Regex rendering and replay-safe updates"
+          ]
+        },
+        {
+          "version": "1.7.2",
+          "path": "packs/pokemon-1.7.2.json",
+          "sha256": "7757e56f3284e6940959f546350d02751edf95848de6132c05a7158a417296dd",
+          "bytes": 720,
+          "changes": [
+            "ฉากบังคับประลองเริ่มศึก Trainer และเปิดหน้าสู้ทันที",
+            "คำชวนทั่วไปยังรอรับคำท้า; ไม่ทับศึกเดิมและไม่รักษาทีมเอง",
+            "รองรับทีมหลายตัว ผลการต่อสู้ และย้อนตาม swipe/delete"
           ]
         }
       ]

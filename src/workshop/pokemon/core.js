@@ -1,15 +1,15 @@
-import {formAction,transformationConfig,transformationHeldItem,transformationOptions,transformBattle,automaticForm,switchForm,clearTransformations,restoreBattleForm,finishTransformationTurn,battleMove,battleTypes,baseKey,syncEquipmentForm,copyBattleForm} from './transformations.js?v=0.90.16';
-import {parsePokemonStory} from './story.js?v=0.90.16';
-import {chooseAbility,abilityOf,itemOf,enterBattle,leaveBattle,moveAllowed,endTurn,normalizeWeather,fieldWeather,HELD_ITEMS} from './mechanics.js?v=0.90.16';
-import {applyStatus} from './battle-rules.js?v=0.90.16';
-import {traitsFor,specimenStats,refreshStats,awardEVs} from './specimens.js?v=0.90.16';
-import {supportedMove,executeMove,effectiveStat,residual} from './battle-rules.js?v=0.90.16';
-import {BALLS,ballChance,useMedicine} from './items.js?v=0.90.16';
-import {expansionAction} from './game-actions.js?v=0.90.16';
-import {trainerDefinition,gymAvailable,isCenter,regionalPool} from './adventure-rules.js?v=0.90.16';
-import {resolveTerrain} from './terrains.js?v=0.90.16';
-import {validTerrain} from './terrains.js?v=0.90.16';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.90.16';
+import {formAction,transformationConfig,transformationHeldItem,transformationOptions,transformBattle,automaticForm,switchForm,clearTransformations,restoreBattleForm,finishTransformationTurn,battleMove,battleTypes,baseKey,syncEquipmentForm,copyBattleForm} from './transformations.js?v=0.90.17';
+import {parsePokemonStory} from './story.js?v=0.90.17';
+import {chooseAbility,abilityOf,itemOf,enterBattle,leaveBattle,moveAllowed,endTurn,normalizeWeather,fieldWeather,HELD_ITEMS} from './mechanics.js?v=0.90.17';
+import {applyStatus} from './battle-rules.js?v=0.90.17';
+import {traitsFor,specimenStats,refreshStats,awardEVs} from './specimens.js?v=0.90.17';
+import {supportedMove,executeMove,effectiveStat,residual} from './battle-rules.js?v=0.90.17';
+import {BALLS,ballChance,useMedicine} from './items.js?v=0.90.17';
+import {expansionAction} from './game-actions.js?v=0.90.17';
+import {trainerDefinition,gymAvailable,isCenter,regionalPool} from './adventure-rules.js?v=0.90.17';
+import {resolveTerrain} from './terrains.js?v=0.90.17';
+import {validTerrain} from './terrains.js?v=0.90.17';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.90.17';
 // Pokémon preview: immutable, replayable game state. No network or host globals.
 export const JOURNAL='roleforge_pokemon_v1',PROMPT='roleforge_pokemon_world',ACTION_PROMPT='roleforge_pokemon_action';
 export const newActionId=()=>globalThis.crypto?.randomUUID?.()||'pk-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
@@ -72,7 +72,11 @@ export function transition(current,event,dex,rules={}){
  const s=copy(current),e=event||{},rng=random(e.id);s.quests||=[];s.badges||=[];s.trainerWins||={};assert(typeof e.id==='string'&&e.id.length<160,'Invalid action ID');if(e.engine>=4&&s.battle&&!s.battle.transformRules){s.battle.transformRules=transformationConfig(s.settings.transformations);s.battle.transformUsed={};s.battle.engine=4;for(const m of[s.pokemon[s.battle.activeUid],s.battle.wild])m.battleEngine=4;}
  if(formAction(s,e,dex,log)){if(!['transformation-settings','pokemon-form-settings'].includes(e.type))s.pendingNarration=true;return s;}
  if(expansionAction(s,e,dex,{create:(...args)=>creature(...args,e.engine>=3,undefined,e.engine>=4?4:3),log})){if(!['sandbox-settings'].includes(e.type))s.pendingNarration=true;return s;}
- if(e.type==='trainer-offer'){assert(e.source==='story'&&Array.isArray(e.team)&&e.team.length>=1&&e.team.length<=6,'A trainer needs a story-backed team');s.trainerChallenges||=[];const offer={id:e.trainerKey,name:e.name,place:e.place,team:e.team,equipment:e.equipment||{},status:'offered'};s.trainerChallenges=s.trainerChallenges.filter(v=>v.id!==offer.id).slice(-19);s.trainerChallenges.push(offer);log(s,'trainer-offered',{name:e.name});
+ if(e.type==='trainer-offer'){assert(e.source==='story'&&Array.isArray(e.team)&&e.team.length>=1&&e.team.length<=6,'A trainer needs a story-backed team');s.trainerChallenges||=[];
+  // Repeated narration must not replace an accepted team's state mid-battle.
+  if(s.battle?.trainer?.id===e.trainerKey)return s;
+  const offer={id:e.trainerKey,name:e.name,place:e.place,team:e.team,equipment:e.equipment||{},status:'offered'};s.trainerChallenges=s.trainerChallenges.filter(v=>v.id!==offer.id).slice(-19);s.trainerChallenges.push(offer);log(s,'trainer-offered',{name:e.name});
+  if(e.mode==='immediate'&&s.started&&healthy(s)&&!s.battle)return transition(s,{...e,type:'trainer',challenge:offer.id,context:{place:e.place,weather:s.fieldWeather}},dex,rules);
  }else if(e.type==='starter'){
   assert(!s.started,'A partner has already been chosen');const region=REGIONS.indexOf(e.region),allowed=STARTERS[Math.max(0,region)];assert(allowed.includes(Number(e.speciesId)),'Choose a starter from this region');assert(s.party.length<6,'Party full');const m=creature(dex,e.speciesId,rules.starterLevel||5,e.id,e.engine>=2,e.engine>=3,undefined,e.engine>=4?4:3);s.pokemon[m.uid]=m;s.party.unshift(m.uid);s.started=true;s.region=REGIONS[Math.max(0,region)];mark(s.seen,Number(e.speciesId));mark(s.caught,Number(e.speciesId));log(s,'starter',{name:species(dex,m).name});
  }else if(['encounter','explore','trainer','quest-encounter'].includes(e.type)){
@@ -140,6 +144,6 @@ After visible narration append <!--roleforge_pokemon:{"version":4,"events":[...]
 - Wild Pokémon present before the player now: {"type":"encounter","key":"pidgey","level":3,"place":"Route 1","evidence":"A wild Pidgey appears in front of you on Route 1."}. Emit even without Explore. Never emit player catch, damage or ownership.
 - Item ACTUALLY handed over: {"type":"item","item":"ultra-ball","quantity":3,"receipt":"oak-gift-1","evidence":"Oak gives you Ultra Ball 3."}. Evidence must prove the item and exact quantity (write digits). receipt is a stable unique transaction id: reuse it for the same handover, never regrant an old gift. Purchases must be completed first. Unknown item effects are reference-only.
 - Rare encounter quest offer: {"type":"quest","speciesId":144,"place":"Seafoam Islands","region":"Kanto","wins":2,"evidence":"Oak offers you a quest to find Articuno at Seafoam Islands."}. Player accepts; rare encounters need the quest, wins and destination. Never accept/complete quests yourself.
-- Trainer offer: {"type":"trainer","name":"Mira","place":"Route 1","team":[{"key":"pikachu","level":12}],"evidence":"Mira challenges you at Route 1 with Pikachu."}. Proof must name the trainer, player, place and EVERY team member (1–6). Player accepts; trainer Pokémon are not wild. Optional member loadout: transform:{"kind":"mega","key":"charizard-mega-x"},heldItem:"charizardite-x"; optional trainer equipment:{"key-stone":1}. Proof must explicitly name the transformation, every held item and key item. Other kinds: primal,ultra,dynamax,gigantamax,tera,zmove; teraType also needs proof. Never invent hidden teams or equipment.
+- Trainer: {"type":"trainer","mode":"immediate","name":"Mira","place":"Route 1","team":[{"key":"pikachu","level":12}],"evidence":"Mira forces you to battle at Route 1 with Pikachu; the battle begins."}. Immediate mode opens Battle for grounded forced/accepted battles starting NOW (Thai proof: "Mira บังคับคุณต่อสู้บน Route 1 ด้วย Pikachu และเริ่มการต่อสู้ทันที"). For invitations OMIT mode; player accepts in Trainer menu. Never invent consent, future starts or cutaways. Prove trainer, player, place and EVERY team member (1–6). Cannot replace battles/heal. Trainer Pokémon are not wild. Optional member transform:{"kind":"mega","key":"charizard-mega-x"},heldItem:"charizardite-x"; trainer equipment:{"key-stone":1}. Kinds: primal,ultra,dynamax,gigantamax,tera,zmove; teraType too needs proof. Explicitly prove forms/items; no hidden teams/equipment.
 - Current player weather: {"type":"weather","weather":"rain","evidence":"Rain is falling around you now."}. clear/rain/sun/sand/hail/snow only.
 All transformation systems are enabled by default; player configuration governs equipment, per-system limits, mixed battles and NPC use. Engine resolves Mega, Primal, Ultra, Dynamax/Gigantamax, Tera, Z-Moves, fusion and species forms: never transform the player's Pokémon or grant equipment by narration alone. Active types, abilities and move outcomes are authoritative. Other abilities may be reference-only; never invent effects. PvP and breeding are not simulated. Pokémon Center service requires reaching a Center, Gym challenges require that Gym, tutors require a Tutor/Center. Opening menus never teleports or heals. Legacy Pokémon can reveal their natural ability without changing existing stats.`;}

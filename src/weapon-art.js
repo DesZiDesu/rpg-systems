@@ -1,5 +1,5 @@
-import {weaponModelUrl} from './weapon-catalog.js?v=0.90.16';
-import {createMorganBlade} from './weapon-morgan-art.js?v=0.90.16';
+import {weaponModelUrl} from './weapon-catalog.js?v=0.90.17';
+import {createMorganBlade} from './weapon-morgan-art.js?v=0.90.17';
 // The approved reference art uses separate, state-driven light/rotation layers.
 // Generic and custom art remain ordinary images; only built-in art enters Canvas.
  const TAU=Math.PI*2,WIDTH=2172,HEIGHT=724;

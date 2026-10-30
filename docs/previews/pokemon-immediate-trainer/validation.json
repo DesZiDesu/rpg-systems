@@ -1,0 +1,105 @@
+{
+  "host": "SillyTavern 1.19.0",
+  "release": "0.90.17",
+  "liveModel": false,
+  "storyReplies": "controlled fixtures through native ST rendering/events",
+  "gameplay": "production UI and engine only",
+  "subtitles": false,
+  "audio": false,
+  "cases": [
+    {
+      "device": "desktop",
+      "kind": "immediate-trainer",
+      "start": 23.91959999999404,
+      "end": 65.8805,
+      "rounds": 3,
+      "moves": [
+        {
+          "moveId": 84,
+          "opponent": "pidgey",
+          "hpBefore": 45,
+          "hpAfter": 45
+        },
+        {
+          "moveId": 84,
+          "opponent": "rattata",
+          "hpBefore": 45,
+          "hpAfter": 45
+        },
+        {
+          "moveId": 84,
+          "opponent": "rattata",
+          "hpBefore": 45,
+          "hpAfter": 45
+        }
+      ],
+      "opponents": [
+        "pidgey",
+        "rattata"
+      ],
+      "lastBattle": {
+        "result": "victory",
+        "opponent": "Rattata",
+        "trainer": "Mira",
+        "partner": "Pikachu"
+      },
+      "mainChatWorldContainsResult": true,
+      "stateUnchangedAfterStory": true,
+      "automaticOpen": true,
+      "trainerMenuClicks": 0,
+      "draftPreserved": true,
+      "reload": true,
+      "deleteRollback": true,
+      "swipeRollback": true,
+      "motionOffAutoOpen": true
+    },
+    {
+      "device": "mobile",
+      "kind": "immediate-trainer",
+      "start": 15.079199999988079,
+      "end": 53.68390000000596,
+      "rounds": 3,
+      "moves": [
+        {
+          "moveId": 84,
+          "opponent": "pidgey",
+          "hpBefore": 45,
+          "hpAfter": 45
+        },
+        {
+          "moveId": 84,
+          "opponent": "rattata",
+          "hpBefore": 45,
+          "hpAfter": 45
+        },
+        {
+          "moveId": 84,
+          "opponent": "rattata",
+          "hpBefore": 45,
+          "hpAfter": 45
+        }
+      ],
+      "opponents": [
+        "pidgey",
+        "rattata"
+      ],
+      "lastBattle": {
+        "result": "victory",
+        "opponent": "Rattata",
+        "trainer": "Mira",
+        "partner": "Pikachu"
+      },
+      "mainChatWorldContainsResult": true,
+      "stateUnchangedAfterStory": true,
+      "automaticOpen": true,
+      "trainerMenuClicks": 0,
+      "draftPreserved": true,
+      "reload": true,
+      "deleteRollback": true,
+      "swipeRollback": true,
+      "motionOffAutoOpen": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

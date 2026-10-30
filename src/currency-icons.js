@@ -1,4 +1,4 @@
-import {isCurrencyId} from './currency-config.js?v=0.90.16';
+import {isCurrencyId} from './currency-config.js?v=0.90.17';
 // Pixel currency icons. Existing preset IDs remain stable.
 // All artwork uses integer pixels; animation swaps whole pixel frames.
 export const sets=[

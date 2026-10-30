@@ -1,5 +1,5 @@
-import {CHAT_THEMES,CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.90.16';
-import {element,renderStoryBlocks} from './npc-chat.js?v=0.90.16';
+import {CHAT_THEMES,CHAT_APPEARANCE_KEYS,chatAppearance} from './chat-themes.js?v=0.90.17';
+import {element,renderStoryBlocks} from './npc-chat.js?v=0.90.17';
 
 // Native SillyTavern controls; the expandable sample uses the real renderer.
 export function mountChatAppearanceControls(parent,api) {

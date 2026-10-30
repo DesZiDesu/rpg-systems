@@ -1,5 +1,5 @@
-import {transformationHeldItem,transformationKeyItem} from './transformations.js?v=0.90.16';
-import {HELD_ITEMS} from './mechanics.js?v=0.90.16';
+import {transformationHeldItem,transformationKeyItem} from './transformations.js?v=0.90.17';
+import {HELD_ITEMS} from './mechanics.js?v=0.90.17';
 export const BALLS=['poke-ball','great-ball','ultra-ball','master-ball','premier-ball','luxury-ball','heal-ball','friend-ball','nest-ball','net-ball','dive-ball','dusk-ball','timer-ball','quick-ball','repeat-ball','level-ball','fast-ball','heavy-ball','love-ball','dream-ball','beast-ball','sport-ball','safari-ball'];
 const medical={potion:{hp:20},'super-potion':{hp:60},'hyper-potion':{hp:120},'max-potion':{hp:'full'},'full-restore':{hp:'full',cure:'all'},revive:{revive:.5},'max-revive':{revive:1},antidote:{cure:'poison'},'burn-heal':{cure:'burn'},'ice-heal':{cure:'freeze'},awakening:{cure:'sleep'},'paralyze-heal':{cure:'paralysis'},'full-heal':{cure:'all'},'lum-berry':{cure:'all'},'pecha-berry':{cure:'poison'},'rawst-berry':{cure:'burn'},'aspear-berry':{cure:'freeze'},'chesto-berry':{cure:'sleep'},'cheri-berry':{cure:'paralysis'},'oran-berry':{hp:10},'sitrus-berry':{fraction:.25},ether:{pp:10},'max-ether':{pp:'full'},elixir:{pp:10,allPP:true},'max-elixir':{pp:'full',allPP:true},'leppa-berry':{pp:10}};
 export const STONES=['fire-stone','water-stone','thunder-stone','leaf-stone','moon-stone','sun-stone','shiny-stone','dusk-stone','dawn-stone','ice-stone'];
