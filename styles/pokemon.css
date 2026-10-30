@@ -651,6 +651,10 @@
 #roleforge-pokemon .pk-image-mode{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 #roleforge-pokemon button.pk-image-mode-option{min-height:42px;padding:9px 12px;font-size:12px;border:1px solid var(--pk-line);background:var(--pk-bg);color:var(--pk-text);box-shadow:none}
 #roleforge-pokemon button.pk-image-mode-option[aria-pressed=true]{border-color:var(--pk-gold);background:color-mix(in srgb,var(--pk-gold) 10%,var(--pk-panel));color:var(--pk-gold);font-weight:650}
+/* Game-version sprite styles: the list spans the setting; HD art and 3D models render smoothly. */
+#roleforge-pokemon .pk-dex-image-setting .pk-scenery-label{grid-column:1/-1;display:block;margin:4px 0 -8px;font-size:13px;font-weight:600}
+#roleforge-pokemon #pk-sprite-style{grid-column:1/-1;width:100%;min-height:44px;padding:9px 12px;font:inherit;font-size:12px;color:var(--pk-text);background:var(--pk-bg);border:1px solid var(--pk-line);box-shadow:none}
+.rfpk img.pk-pokemon-sprite.pk-style-hd,#roleforge-pokemon .pk-hero-art:has(.pk-pokemon-sprite)>img.pk-style-hd{image-rendering:auto}
 @media(max-width:700px){#roleforge-pokemon .pk-dex-image-setting{grid-template-columns:minmax(0,1fr);gap:11px}#roleforge-pokemon button.pk-image-mode-option{min-height:44px}}
 
 /* Owned detail actions wrap with a real gap, including the inline nickname editor. */
