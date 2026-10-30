@@ -11,7 +11,10 @@ export function spriteStyleIndex(raw){
  const forms=new Map(raw.forms.map((key,i)=>[key,i])),styles=new Map(raw.styles.map(s=>[s.id,s]));
  // Nearest game of the same family, keeping animated with animated.
  const family=s=>raw.styles.filter(o=>o!==s&&o.family===s.family&&o.fallback!==false).sort((a,b)=>(a.animated!==s.animated)-(b.animated!==s.animated)||Math.abs(a.gen-s.gen)-Math.abs(b.gen-s.gen)||b.gen-a.gen);
- return{commit:raw.commit,views:raw.views,stems:raw.stems,forms,styles,list:raw.styles,chains:new Map(raw.styles.map(s=>[s.id,[s,...family(s)]]))};
+ // Animated pixel games lack many newer Pokémon. Showdown's small animations
+ // keep them moving before any still is used.
+ const chain=s=>{const rest=family(s),motion=styles.get('showdown');if(s.family!=='pixel'||!s.animated||!motion)return[s,...rest];const at=rest.findIndex(o=>!o.animated);return[s,...rest.slice(0,at<0?rest.length:at),motion,...rest.slice(at<0?rest.length:at)];};
+ return{commit:raw.commit,views:raw.views,stems:raw.stems,forms,styles,list:raw.styles,chains:new Map(raw.styles.map(s=>[s.id,chain(s)]))};
 }
 
 export function spriteStyleOptions(index){return index?.list.map(({id,label,labelTh,family,animated,heavy})=>({id,label,labelTh,family,animated,heavy}))||[];}

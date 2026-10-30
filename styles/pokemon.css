@@ -744,3 +744,119 @@
 #roleforge-pokemon .pk-hero-art[data-pk-fainted=true]>img{filter:grayscale(.65) brightness(.8);animation:none}
 #roleforge-pokemon .pk-hero-art:has(.pk-pokemon-sprite)>img{width:88%;height:88%;justify-self:center;align-self:center;image-rendering:pixelated}
 #roleforge-pokemon .pk-battle-powers{margin-top:0;padding-top:0;border-top:0;margin-bottom:12px}
+
+/* Sandbox shiny switch and preview */
+.rfpk .pk-shiny-toggle{position:relative;gap:10px;padding:8px 14px;border:1px solid var(--pk-line);background:var(--pk-bg);cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s}
+.rfpk .pk-shiny-toggle>input{position:absolute;opacity:0;width:1px;height:1px;min-height:0}
+.rfpk .pk-shiny-toggle .pk-shiny-mark{display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--pk-line);color:var(--pk-muted);font-size:15px;transition:color .2s,background .2s,transform .3s}
+.rfpk .pk-shiny-toggle .pk-shiny-state{margin-left:auto;font-size:11px;color:var(--pk-muted)}
+.rfpk .pk-shiny-toggle .pk-shiny-state:after{content:attr(data-off)}
+.rfpk .pk-shiny-toggle:has(input:checked){border-color:var(--pk-gold,#c9a227);background:color-mix(in srgb,var(--pk-gold,#c9a227) 14%,var(--pk-panel,transparent));box-shadow:0 0 0 1px color-mix(in srgb,var(--pk-gold,#c9a227) 40%,transparent)}
+.rfpk .pk-shiny-toggle:has(input:checked) .pk-shiny-mark{color:#fff;background:var(--pk-gold,#c9a227);border-color:var(--pk-gold,#c9a227);transform:rotate(72deg)}
+.rfpk .pk-shiny-toggle:has(input:checked) .pk-shiny-state{color:var(--pk-gold,#c9a227);font-weight:650}
+.rfpk .pk-shiny-toggle:has(input:checked) .pk-shiny-state:after{content:attr(data-on)}
+.rfpk .pk-shiny-toggle:has(input:focus-visible){outline:2px solid var(--pk-gold,#c9a227);outline-offset:2px}
+.rfpk .pk-spawn-preview[data-pk-shiny]{position:relative}
+.rfpk .pk-spawn-preview[data-pk-shiny]>:first-child{filter:drop-shadow(0 0 6px color-mix(in srgb,var(--pk-gold,#c9a227) 70%,transparent))}
+.rfpk .pk-spawn-preview[data-pk-shiny]:after{content:'✦ ✧ ✦';position:absolute;left:8px;top:4px;color:var(--pk-gold,#c9a227);font-size:13px;letter-spacing:4px;animation:pk-shiny-twinkle 1.6s ease-in-out infinite}
+@keyframes pk-shiny-twinkle{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){.rfpk .pk-spawn-preview[data-pk-shiny]:after{animation:none}}
+/* Battle VFX (battle-vfx.js): balls, move impacts by type, status and stat changes. Presentation only. */
+.rfpk .pkv-layer{position:absolute;inset:-22%;pointer-events:none;z-index:6;overflow:visible}
+.rfpk .pkv-layer.pkv-unmirror{transform:scaleX(-1)}
+.rfpk .pkv-layer>*,.rfpk .pkv-hit>*,.rfpk .pkv-heal>*{position:absolute}
+.rfpk .pkv-ball{left:44%;top:62%;width:12%;min-width:18px;max-width:30px;height:auto;image-rendering:pixelated;opacity:0}
+.rfpk .pkv-ball-send-out.pkv-from-ally{animation:pkv-throw-ally .5s cubic-bezier(.3,.6,.4,1) both}
+.rfpk .pkv-ball-send-out.pkv-from-foe{animation:pkv-throw-foe .5s cubic-bezier(.3,.6,.4,1) both}
+.rfpk .pkv-ball-recall,.rfpk .pkv-ball-faint{animation:pkv-ball-return .6s .2s both}
+.rfpk .pkv-ball-faint{animation-delay:.55s}
+@keyframes pkv-throw-ally{0%{opacity:1;transform:translate(-260%,160%) rotate(-540deg) scale(.7)}55%{transform:translate(-90%,-120%) rotate(-200deg) scale(1)}92%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate(0,0) scale(1.4)}}
+@keyframes pkv-throw-foe{0%{opacity:1;transform:translate(240%,-180%) rotate(540deg) scale(.7)}55%{transform:translate(90%,-140%) rotate(200deg)}92%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(0,0) scale(1.4)}}
+@keyframes pkv-ball-return{0%{opacity:0;transform:translateY(20%) scale(.6)}20%{opacity:1;transform:translateY(0) scale(1)}45%{transform:rotate(-14deg)}65%{transform:rotate(12deg)}100%{opacity:0;transform:translate(-180%,140%) rotate(-300deg) scale(.7)}}
+.rfpk .pkv-flash{left:50%;top:58%;width:20%;aspect-ratio:1;margin:-10% 0 0 -10%;border-radius:50%;opacity:0}
+.rfpk .pkv-flash-send-out{background:radial-gradient(#fff 0 30%,#fff0 70%);animation:pkv-pop .55s .45s both}
+.rfpk .pkv-flash-recall,.rfpk .pkv-flash-faint{background:radial-gradient(#ff5a5a 0 25%,#ff3b3b55 45%,#ff3b3b00 70%);animation:pkv-pop .6s .1s both}
+.rfpk .pkv-flash-faint{animation-delay:.5s}
+@keyframes pkv-pop{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(5.5)}}
+.rfpk .pkv-burst-dot{left:50%;top:58%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--c);box-shadow:0 0 6px var(--c);animation:pkv-radiate .55s .47s both}
+@keyframes pkv-radiate{0%{opacity:1;transform:rotate(var(--a)) translateX(0)}100%{opacity:0;transform:rotate(var(--a)) translateX(78px)}}
+.rfpk .pkv-send-out>img{animation:pkv-appear .5s .45s both!important}
+@keyframes pkv-appear{0%{opacity:0;transform:scale(.05);filter:brightness(8) saturate(0)}60%{opacity:1;transform:scale(1.08);filter:brightness(2.6) saturate(.4)}100%{opacity:1;transform:scale(1);filter:none}}
+.rfpk .pkv-recall>img{animation:pkv-absorb .55s .1s forwards!important}
+@keyframes pkv-absorb{0%{filter:none;transform:scale(1)}35%{filter:sepia(1) saturate(7) hue-rotate(-40deg) brightness(1.3)}100%{opacity:0;filter:sepia(1) saturate(7) hue-rotate(-40deg) brightness(2);transform:translateY(22%) scale(.03)}}
+.rfpk .pkv-faint>img{animation:pkv-faint .6s forwards!important}
+.rfpk .pkv-faint-recall>img{animation:pkv-faint-recall .95s forwards!important}
+@keyframes pkv-faint-recall{0%{transform:none;opacity:1;filter:none}45%{transform:translateY(30%);opacity:.75;filter:grayscale(.8) brightness(.75)}60%{transform:translateY(30%);filter:sepia(1) saturate(7) hue-rotate(-40deg) brightness(1.4)}100%{transform:translateY(34%) scale(.03);opacity:0;filter:sepia(1) saturate(7) hue-rotate(-40deg) brightness(2)}}
+@keyframes pkv-faint{0%{transform:translateY(0);opacity:1;filter:none}30%{transform:translateY(-4%)}100%{transform:translateY(38%);opacity:.15;filter:grayscale(.8) brightness(.7)}}
+/* Moves */
+.rfpk .pkv-lunge-ally>img{animation:pkv-lunge-ally .42s both!important}
+.rfpk .pkv-lunge-foe>img{animation:pkv-lunge-foe .42s both!important}
+@keyframes pkv-lunge-ally{40%{transform:translate(calc(var(--pkv-dir,1)*32px),-16px) scale(1.04)}100%{transform:none}}
+@keyframes pkv-lunge-foe{40%{transform:translate(calc(var(--pkv-dir,1)*-32px),14px) scale(1.04)}100%{transform:none}}
+.rfpk .pkv-charge>img{animation:pkv-charge .5s both!important}
+@keyframes pkv-charge{40%{filter:brightness(1.6) drop-shadow(0 0 10px #fff)}100%{filter:none}}
+.rfpk .pkv-aura{left:30%;top:30%;width:40%;height:40%;border-radius:50%;background:radial-gradient(var(--c),transparent 70%);box-shadow:0 0 16px 6px var(--c);opacity:0;animation:pkv-aura .55s both}
+@keyframes pkv-aura{0%{opacity:0;transform:scale(.5)}40%{opacity:.85}100%{opacity:0;transform:scale(1.35)}}
+.rfpk .pkv-hit{left:50%;top:52%;width:0;height:0}
+.rfpk .pkv-core{left:-42px;top:-42px;width:84px;height:84px;border-radius:50%;background:radial-gradient(#fff 0 16%,var(--c) 42%,transparent 70%);opacity:0;animation:pkv-pop-small .45s .22s both}
+@keyframes pkv-pop-small{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(1.9)}}
+.rfpk .pkv-p{left:-5px;top:-5px;width:10px;height:10px;background:var(--c);opacity:0;animation:pkv-burst .55s calc(.22s + var(--i)*12ms) both}
+@keyframes pkv-burst{0%{opacity:1;transform:rotate(var(--a)) translateX(4px) scale(1)}100%{opacity:0;transform:rotate(var(--a)) translateX(64px) scale(.4)}}
+.rfpk .pkv-flame .pkv-p{border-radius:50% 50% 50% 0;width:13px;height:13px;background:linear-gradient(#ffe066,var(--c));animation-name:pkv-flame}
+@keyframes pkv-flame{0%{opacity:1;transform:rotate(calc(var(--a)*.25)) translate(calc((var(--i) - 4)*7px),10px) rotate(-45deg) scale(.6)}100%{opacity:0;transform:rotate(calc(var(--a)*.25)) translate(calc((var(--i) - 4)*9px),-58px) rotate(-45deg) scale(1.3)}}
+.rfpk .pkv-splash .pkv-p{border-radius:0 50% 50% 50%;width:9px;height:12px;animation-name:pkv-splash}
+@keyframes pkv-splash{0%{opacity:1;transform:rotate(var(--a)) translateX(4px)}60%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(58px) translateY(22px)}}
+.rfpk .pkv-bolt .pkv-p{width:5px;height:30px;clip-path:polygon(40% 0,100% 0,55% 45%,100% 45%,0 100%,30% 55%,0 55%);box-shadow:none;animation-name:pkv-bolt;animation-duration:.5s}
+@keyframes pkv-bolt{0%,30%,60%{opacity:1;transform:rotate(var(--a)) translateX(30px)}15%,45%,80%{opacity:.1;transform:rotate(var(--a)) translateX(36px)}100%{opacity:0;transform:rotate(var(--a)) translateX(42px)}}
+.rfpk .pkv-leaf .pkv-p{width:14px;height:7px;border-radius:0 100% 0 100%;animation-name:pkv-leaf}
+@keyframes pkv-leaf{0%{opacity:1;transform:rotate(var(--a)) translateX(4px) rotate(0)}100%{opacity:0;transform:rotate(var(--a)) translateX(62px) rotate(540deg)}}
+.rfpk .pkv-shard .pkv-p{width:6px;height:18px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:linear-gradient(#fff,var(--c));animation-name:pkv-burst}
+.rfpk .pkv-ring .pkv-p{left:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:none;border:2px solid var(--c);animation:pkv-ring .7s calc(.2s + var(--i)*45ms) both}
+@keyframes pkv-ring{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(4.2)}}
+.rfpk .pkv-smoke .pkv-p{left:-16px;top:-16px;width:32px;height:32px;border-radius:50%;filter:blur(5px);animation:pkv-smoke .75s calc(.2s + var(--i)*20ms) both}
+@keyframes pkv-smoke{0%{opacity:.9;transform:rotate(var(--a)) translateX(0) scale(.5)}100%{opacity:0;transform:rotate(var(--a)) translateX(38px) scale(1.8)}}
+.rfpk .pkv-slash .pkv-p{left:-40px;top:-2px;width:80px;height:4px;border-radius:2px;background:linear-gradient(90deg,transparent,#fff,var(--c),transparent);animation:pkv-slash .45s calc(.2s + var(--i)*28ms) both}
+@keyframes pkv-slash{0%{opacity:0;transform:rotate(calc(-35deg + var(--i)*9deg)) translateX(-60px) scaleX(.3)}40%{opacity:1}100%{opacity:0;transform:rotate(calc(-35deg + var(--i)*9deg)) translateX(60px) scaleX(1)}}
+.rfpk .pkv-shake>img{animation:pkv-shake .4s .25s both!important}
+.rfpk .pkv-shake-hard>img{animation:pkv-shake .32s .25s 2 both!important}
+@keyframes pkv-shake{0%,100%{transform:none;filter:none}15%{transform:translateX(-7px);filter:brightness(2.4)}35%{transform:translateX(6px)}55%{transform:translateX(-4px);filter:brightness(2.4)}75%{transform:translateX(3px)}}
+.rfpk .pkv-dodge>img{animation:pkv-dodge .45s .2s both!important}
+@keyframes pkv-dodge{40%{transform:translateX(calc(var(--pkv-dir,1)*-22px));opacity:.6}100%{transform:none;opacity:1}}
+.rfpk .pkv-text{left:50%;top:12%;font:800 15px/1 system-ui,sans-serif;color:#fff;white-space:nowrap;text-shadow:0 1px 0 #000,0 0 6px #000,0 0 12px #000;opacity:0;animation:pkv-text .75s .25s both}
+.rfpk .pkv-crit{color:#ffd43b}
+@keyframes pkv-text{0%{opacity:0;transform:translate(-50%,10px) scale(.7)}25%{opacity:1;transform:translate(-50%,0) scale(1.1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-8px)}}
+.rfpk .pkv-shield{left:22%;top:16%;width:56%;height:66%;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:radial-gradient(#9fe0ff22,#5fb8ff99);border:2px solid #bff;opacity:0;animation:pkv-shield .6s .2s both}
+@keyframes pkv-shield{0%{opacity:0;transform:scale(.6)}30%{opacity:.9;transform:scale(1.05)}100%{opacity:0;transform:scale(1)}}
+/* Status conditions */
+.rfpk .pkv-status{inset:0}
+.rfpk .pkv-status i{position:absolute;opacity:0;font-style:normal}
+.rfpk .pkv-sleep i{left:calc(55% + var(--i)*7%);top:34%;font:800 calc(13px + var(--i)*4px)/1 system-ui,sans-serif;color:#cfe3ff;text-shadow:0 0 4px #2a4b8a,0 1px 0 #000;animation:pkv-float .9s ease-out calc(var(--delay,0ms) + var(--i)*150ms) both}
+.rfpk .pkv-infatuation i{left:calc(32% + var(--i)*12%);top:40%;font-size:calc(14px + var(--i)*2px);color:#ff6fb5;text-shadow:0 0 6px #fff;animation:pkv-float .9s ease-out calc(var(--delay,0ms) + var(--i)*150ms) both}
+.rfpk .pkv-confusion i{left:47%;top:22%;font-size:15px;color:#ffe066;text-shadow:0 0 4px #000;animation:pkv-orbit .9s linear calc(var(--delay,0ms) + var(--i)*-300ms) both}
+.rfpk .pkv-paralysis i{left:calc(22% + var(--i)*13%);top:calc(30% + (var(--i) - 2)*(var(--i) - 2)*4%);width:6px;height:24px;background:#ffe14d;clip-path:polygon(40% 0,100% 0,55% 45%,100% 45%,0 100%,30% 55%,0 55%);filter:drop-shadow(0 0 4px #fff3a0);animation:pkv-flicker .6s steps(2) calc(var(--delay,0ms) + var(--i)*110ms) both}
+.rfpk .pkv-burn i{left:calc(26% + var(--i)*9%);top:62%;width:12px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:linear-gradient(#ffe066,#ff6a2a);animation:pkv-rise .8s ease-out calc(var(--delay,0ms) + var(--i)*110ms) both}
+.rfpk .pkv-poison i{left:calc(28% + var(--i)*9%);top:64%;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#f2c4ff,#a742d1);animation:pkv-rise .85s ease-out calc(var(--delay,0ms) + var(--i)*110ms) both}
+.rfpk .pkv-freeze i{left:calc(26% + var(--i)*11%);top:calc(36% + (var(--i)%2)*18%);width:8px;height:22px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:linear-gradient(#fff,#8ff0ff);animation:pkv-shatter .8s ease-out calc(var(--delay,0ms) + var(--i)*90ms) both}
+@keyframes pkv-float{0%{opacity:0;transform:translateY(8px) scale(.6)}25%{opacity:1}100%{opacity:0;transform:translate(10px,-34px) scale(1.15)}}
+@keyframes pkv-orbit{0%{opacity:1;transform:rotate(0) translateX(26px) rotate(0)}100%{opacity:1;transform:rotate(360deg) translateX(26px) rotate(-360deg)}}
+@keyframes pkv-flicker{0%{opacity:1}50%{opacity:0}100%{opacity:1}}
+@keyframes pkv-rise{0%{opacity:0}20%{opacity:1}100%{opacity:0;transform:translateY(-46px) scale(.6)}}
+@keyframes pkv-shatter{0%{opacity:0;transform:scale(.4)}30%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1) translateY(10px)}}
+.rfpk .pkv-status-pulse>img{animation:pkv-charge .5s both!important}
+.rfpk .pkv-stage{inset:0}
+.rfpk .pkv-stage i{position:absolute;left:calc(24% + var(--i)*12%);font:900 22px/1 system-ui,sans-serif;font-style:normal;opacity:0;animation:pkv-arrow .75s calc(var(--delay,0ms) + var(--i)*70ms) ease-out both}
+.rfpk .pkv-up i{top:62%;color:#ff8a3d;text-shadow:0 0 6px #ffcf99}
+.rfpk .pkv-down i{top:24%;color:#4aa3ff;text-shadow:0 0 6px #bfe0ff;--dy:40px}
+@keyframes pkv-arrow{0%{opacity:0;transform:translateY(0)}25%{opacity:1}100%{opacity:0;transform:translateY(var(--dy,-40px))}}
+.rfpk .pkv-heal{left:50%;top:60%;width:0;height:0}
+.rfpk .pkv-heal .pkv-p{border-radius:50%;width:8px;height:8px;box-shadow:0 0 8px var(--c);animation:pkv-heal .8s calc(var(--i)*60ms) ease-out both}
+@keyframes pkv-heal{0%{opacity:0;transform:translateX(calc((var(--i) - 3)*12px))}25%{opacity:1}100%{opacity:0;transform:translate(calc((var(--i) - 3)*12px),-60px)}}
+@media(prefers-reduced-motion:reduce){.rfpk .pkv-layer{display:none}}
+/* A new battle: the partner stays in its ball until thrown. */
+.rfpk .pkm-encounter .pk-ally-art>img{opacity:0}
+/* Effects keep their round shapes inside the square Dossier frames. */
+#roleforge-pokemon[data-pk-layout=dossier] .pkv-layer .pkv-aura,#roleforge-pokemon[data-pk-layout=dossier] .pkv-layer .pkv-flash,#roleforge-pokemon[data-pk-layout=dossier] .pkv-layer .pkv-core,#roleforge-pokemon[data-pk-layout=dossier] .pkv-layer .pkv-burst-dot,#roleforge-pokemon[data-pk-layout=dossier] .pkv-ring .pkv-p,#roleforge-pokemon[data-pk-layout=dossier] .pkv-smoke .pkv-p,#roleforge-pokemon[data-pk-layout=dossier] .pkv-heal .pkv-p,#roleforge-pokemon[data-pk-layout=dossier] .pkv-poison i{border-radius:50%!important}
+#roleforge-pokemon[data-pk-layout=dossier] .pkv-flame .pkv-p,#roleforge-pokemon[data-pk-layout=dossier] .pkv-burn i{border-radius:50% 50% 50% 0!important}
+#roleforge-pokemon[data-pk-layout=dossier] .pkv-splash .pkv-p{border-radius:0 50% 50% 50%!important}
+#roleforge-pokemon[data-pk-layout=dossier] .pkv-leaf .pkv-p{border-radius:0 100% 0 100%!important}
+.rfpk .pkv-paralysis i{width:9px!important;height:34px!important}
