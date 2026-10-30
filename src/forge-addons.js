@@ -1,4 +1,4 @@
-import {sha256} from './vendor/js-sha256/index.js?v=0.90.18';
+import {sha256} from './vendor/js-sha256/index.js?v=0.91.0';
 // Registration choices are chat-local author decisions, never model commands.
 export const CREATION_RECORD='tretaresia_rpg_character_creation';
 export const DELETED_GREETING='roleforge_creation_after_delete';

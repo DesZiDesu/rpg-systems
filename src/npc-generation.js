@@ -1,5 +1,5 @@
-import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.90.18';
-import {FIELDS,STATS,RELATIONS,ROLE_ICONS,usable,usableNpcName} from './npc-core.js?v=0.90.18';
+import {requestDataTask,hasTaskGeneration} from './task-generation.js?v=0.91.0';
+import {FIELDS,STATS,RELATIONS,ROLE_ICONS,usable,usableNpcName} from './npc-core.js?v=0.91.0';
 export const canGenerateNpcDraft=hasTaskGeneration;
 // Generation is a complete form transaction. Do not treat a valid JSON object
 // as a complete NPC, or silently substitute generic attribute defaults.

@@ -1,15 +1,15 @@
-import {formAction,transformationConfig,transformationHeldItem,transformationOptions,transformBattle,automaticForm,switchForm,clearTransformations,restoreBattleForm,finishTransformationTurn,battleMove,battleTypes,baseKey,syncEquipmentForm,copyBattleForm} from './transformations.js?v=0.90.18';
-import {parsePokemonStory} from './story.js?v=0.90.18';
-import {chooseAbility,abilityOf,itemOf,enterBattle,leaveBattle,moveAllowed,endTurn,normalizeWeather,fieldWeather,HELD_ITEMS} from './mechanics.js?v=0.90.18';
-import {applyStatus} from './battle-rules.js?v=0.90.18';
-import {traitsFor,specimenStats,refreshStats,awardEVs} from './specimens.js?v=0.90.18';
-import {supportedMove,executeMove,effectiveStat,residual} from './battle-rules.js?v=0.90.18';
-import {BALLS,ballChance,useMedicine} from './items.js?v=0.90.18';
-import {expansionAction} from './game-actions.js?v=0.90.18';
-import {trainerDefinition,gymAvailable,isCenter,regionalPool} from './adventure-rules.js?v=0.90.18';
-import {resolveTerrain} from './terrains.js?v=0.90.18';
-import {validTerrain} from './terrains.js?v=0.90.18';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.90.18';
+import {formAction,transformationConfig,transformationHeldItem,transformationOptions,transformBattle,automaticForm,switchForm,clearTransformations,restoreBattleForm,finishTransformationTurn,battleMove,battleTypes,baseKey,syncEquipmentForm,copyBattleForm} from './transformations.js?v=0.91.0';
+import {parsePokemonStory} from './story.js?v=0.91.0';
+import {chooseAbility,abilityOf,itemOf,enterBattle,leaveBattle,moveAllowed,endTurn,normalizeWeather,fieldWeather,HELD_ITEMS} from './mechanics.js?v=0.91.0';
+import {applyStatus} from './battle-rules.js?v=0.91.0';
+import {traitsFor,specimenStats,refreshStats,awardEVs} from './specimens.js?v=0.91.0';
+import {supportedMove,executeMove,effectiveStat,residual} from './battle-rules.js?v=0.91.0';
+import {BALLS,ballChance,useMedicine} from './items.js?v=0.91.0';
+import {expansionAction} from './game-actions.js?v=0.91.0';
+import {trainerDefinition,gymAvailable,isCenter,regionalPool} from './adventure-rules.js?v=0.91.0';
+import {resolveTerrain} from './terrains.js?v=0.91.0';
+import {validTerrain} from './terrains.js?v=0.91.0';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.91.0';
 // Pokémon preview: immutable, replayable game state. No network or host globals.
 export const JOURNAL='roleforge_pokemon_v1',PROMPT='roleforge_pokemon_world',ACTION_PROMPT='roleforge_pokemon_action';
 export const newActionId=()=>globalThis.crypto?.randomUUID?.()||'pk-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
@@ -57,6 +57,9 @@ function closeBattle(s,dex,result,{caughtAs=''}={}){
 // individuals (nature, IVs, ability) return in every battle; levels only rise
 // and a known trainer gains a member only when the story shows it.
 export const LIVE='roleforge_pokemon_live';
+// Wild shiny odds as 1/n. The rate is a journaled setting, so changing it only
+// affects Pokémon met afterwards; earlier encounters replay unchanged.
+export const SHINY_RATES=[8192,4096,1365,512,100,20];
 export const rosterKey=name=>'npc-'+sha256(String(name||'').trim().toLocaleLowerCase()).slice(0,20);
 function keepRoster(s,dex,name,team,source){
  const id=rosterKey(name),old=s.rosters?.[id],members=(old?.team||[]).map(m=>({...m})),used=new Set();
@@ -167,9 +170,9 @@ export function transition(current,event,dex,rules={}){
   if(e.type==='quest-encounter'){const q=s.quests.find(q=>q.id===e.quest&&q.status==='accepted');assert(q&&s.wins>=q.wins&&s.region===q.region&&String(e.context?.place||'').toLowerCase().includes(q.place.toLowerCase()),'Accept the quest and reach its destination first');key=q.speciesId;lvl=Math.max(30,lead.level);}
   else if(e.type==='explore'){if(e.engine>=2)assert(!isCenter(e.context?.place)&&!/gym|ยิม/iu.test(e.context?.place||''),'Leave the Center or Gym before exploring for wild Pokémon');const modern=regionalPool(dex,s.region,terrain,lead.level),pool=e.engine>=2&&modern.length?modern:ENCOUNTERS[Math.max(0,REGIONS.indexOf(s.region))];key=pool[Math.floor(rng()*pool.length)];lvl=Math.max(2,lead.level-2);}
   else{key=e.key||e.speciesId;lvl=limit(e.level,1,100);}
-  const foe=trainer?trainer.team[0]:creature(dex,key,lvl,'wild-'+e.id,e.engine>=2,e.engine>=3,undefined,e.engine>=4?4:3);assert(!species(dex,foe).battleOnly,'Battle-only form cannot appear wild');
+  const foe=trainer?trainer.team[0]:creature(dex,key,lvl,'wild-'+e.id,e.engine>=2,e.engine>=3,undefined,e.engine>=4?4:3);if(!trainer&&e.engine>=2)foe.shiny=random('shiny-'+foe.uid)()<1/(s.settings.shinyRate||4096);assert(!species(dex,foe).battleOnly,'Battle-only form cannot appear wild');
   if(e.engine>=2&&!trainer&&(species(dex,foe).legendary||species(dex,foe).mythical)){const q=s.quests.find(q=>q.speciesId===species(dex,foe).speciesId&&q.status==='accepted');assert(q&&s.wins>=q.wins&&s.region===q.region&&String(e.context?.place||e.place||'').toLowerCase().includes(q.place.toLowerCase()),'This rare encounter requires its accepted quest and destination');assert(!s.caught.includes(q.speciesId),'This rare encounter has already been completed');}
-  for(const mon of Object.values(s.pokemon))mon.stages=Array(8).fill(0);s.battle={id:e.id,engine:e.engine>=4?4:3,place:String(e.place||e.context?.place||'').slice(0,80),wild:foe,activeUid:s.outUid&&s.party.includes(s.outUid)&&s.pokemon[s.outUid]?.hp>0?s.outUid:healthy(s),round:1,...e.engine>=4?{transformRules:transformationConfig(s.settings.transformations),transformUsed:{}}:{},weather:normalizeWeather(e.context?.weather||s.fieldWeather),weatherTurns:0,...trainer?{trainer}:{}};const entrants=[foe,active(s)].sort((a,b)=>effectiveStat(b,5,s.battle,dex,a)-effectiveStat(a,5,s.battle,dex,b));for(const mon of entrants){if(e.engine>=4)automaticForm(s,dex,mon,'entry',log);enterBattle(mon,mon===foe?active(s):foe,s.battle,dex);if(e.engine>=4)primalEntry(s,dex,mon,mon===foe?'opponent':'player');}s.outUid=s.battle.activeUid;s.encounters++;mark(s.seen,species(dex,foe).speciesId);log(s,trainer?'trainer-start':'encounter',{name:trainer?.name||species(dex,foe).name,level:foe.level});
+  for(const mon of Object.values(s.pokemon))mon.stages=Array(8).fill(0);s.battle={id:e.id,engine:e.engine>=4?4:3,place:String(e.place||e.context?.place||'').slice(0,80),wild:foe,activeUid:s.outUid&&s.party.includes(s.outUid)&&s.pokemon[s.outUid]?.hp>0?s.outUid:healthy(s),round:1,...e.engine>=4?{transformRules:transformationConfig(s.settings.transformations),transformUsed:{}}:{},weather:normalizeWeather(e.context?.weather||s.fieldWeather),weatherTurns:0,...trainer?{trainer}:{}};const entrants=[foe,active(s)].sort((a,b)=>effectiveStat(b,5,s.battle,dex,a)-effectiveStat(a,5,s.battle,dex,b));for(const mon of entrants){if(e.engine>=4)automaticForm(s,dex,mon,'entry',log);enterBattle(mon,mon===foe?active(s):foe,s.battle,dex);if(e.engine>=4)primalEntry(s,dex,mon,mon===foe?'opponent':'player');}s.outUid=s.battle.activeUid;s.encounters++;mark(s.seen,species(dex,foe).speciesId);log(s,trainer?'trainer-start':'encounter',{name:trainer?.name||species(dex,foe).name,level:foe.level,...foe.shiny&&!trainer?{shiny:true}:{}});
  }else if(e.type==='attack'){
   assert(s.battle,'No active battle');const a=active(s),foe=s.battle.wild;if(e.engine>=4){if(e.transform)transformBattle(s,dex,a,e.transform,e.moveId,'player',log);prepareTransformations(s,dex,a,foe);}
  const slot=a.moves.find(v=>v.id===Number(e.moveId))||(Number(e.moveId)===165&&!a.moves.some(v=>v.pp>0&&supportedMove(dex,v.id)&&moveAllowed(a,dex.moves[v.id]))?{id:165,pp:1}:null);assert(slot&&slot.pp>0,'This move has no PP');const move=e.engine>=4?battleMove(dex,a,dex.moves[slot.id],s.battle):dex.moves[slot.id],opponentMove=enemyMove(foe,dex,rng),enemyPriority=(e.engine>=4?battleMove(dex,foe,dex.moves[opponentMove.id],s.battle):dex.moves[opponentMove.id]).priority||0,playerPriority=move.priority||0,speedF=effectiveStat(foe,5,s.battle,dex,a),speedA=effectiveStat(a,5,s.battle,dex,foe),enemyFirst=enemyPriority>playerPriority||enemyPriority===playerPriority&&(speedF>speedA||speedF===speedA&&rng()<.5),uid=a.uid;if(enemyFirst)enemyTurn(s,dex,rng,opponentMove);if(s.battle&&s.battle.activeUid===uid&&a.hp){const result=damage(dex,a,foe,slot,rng,s.battle);log(s,'player-hit',{name:species(dex,a).name,target:species(dex,foe).name,...result});if(!foe.hp)finish(s,dex,true);else if(!a.hp){const next=healthy(s);if(next){leaveBattle(a);if(s.battle?.transformRules)switchForm(a,dex);if(!a.hp){restoreBattleForm(a,dex);delete a.tera;}s.battle.activeUid=next;automaticForm(s,dex,s.pokemon[next],'entry',log);enterBattle(s.pokemon[next],foe,s.battle,dex);}else finish(s,dex,false);}else if(!enemyFirst)enemyTurn(s,dex,rng,opponentMove);}if(s.battle)s.battle.round++;
@@ -194,7 +197,7 @@ export function transition(current,event,dex,rules={}){
  }else if(e.type==='lead'){assert(!s.battle&&s.party.includes(e.uid)&&s.pokemon[e.uid].hp>0,'Choose a healthy party member outside battle');s.party=[e.uid,...s.party.filter(id=>id!==e.uid)];log(s,'lead',{name:species(dex,s.pokemon[e.uid]).name});
  }else if(e.type==='nickname'){assert(s.pokemon[e.uid],'Unknown party member');s.pokemon[e.uid].nickname=String(e.name||'').trim().slice(0,36);
  }else if(e.type==='narrated'){s.pendingNarration=false;
- }else if(e.type==='settings'){if(REGIONS.includes(e.region))s.region=e.region;if(typeof e.autoNarrate==='boolean')s.settings.autoNarrate=e.autoNarrate;if(e.terrain!==undefined){assert(validTerrain(e.terrain),'Unknown battle terrain');s.settings.terrain=e.terrain;}
+ }else if(e.type==='settings'){if(REGIONS.includes(e.region))s.region=e.region;if(typeof e.autoNarrate==='boolean')s.settings.autoNarrate=e.autoNarrate;if(e.terrain!==undefined){assert(validTerrain(e.terrain),'Unknown battle terrain');s.settings.terrain=e.terrain;}if(e.shinyRate!==undefined){assert(SHINY_RATES.includes(e.shinyRate),'Unknown shiny rate');s.settings.shinyRate=e.shinyRate;}
  }else throw Error('Unsupported Pokémon action');if(s.battle&&['attack','catch','switch','potion','use-item'].includes(e.type)){const a=active(s),foe=s.battle.wild;for(const m of[a,foe]){if(e.engine>=3){for(const change of endTurn(m,species(dex,m),dex,{...s.battle,combatants:[a,foe]},applyStatus))log(s,'battle-effect',{name:species(dex,m).name,...change});}else{const amount=residual(m);if(amount)log(s,'residual',{name:species(dex,m).name,damage:amount,status:m.status});}m.protected=false;m.maxGuard=false;m.endure=false;}if(!foe.hp)finish(s,dex,true);else if(!a.hp){const next=healthy(s);if(next){leaveBattle(a);if(s.battle?.transformRules)switchForm(a,dex);if(!a.hp){restoreBattleForm(a,dex);delete a.tera;}s.battle.activeUid=next;automaticForm(s,dex,s.pokemon[next],'entry',log);enterBattle(s.pokemon[next],foe,s.battle,dex);}else finish(s,dex,false);}if(e.engine>=4&&s.battle)finishTransformationTurn(s,dex,log);if(s.battle?.weatherTurns>0&&--s.battle.weatherTurns===0){s.battle.weather='clear';log(s,'weather',{weather:'clear'});}}if(s.battle?.transformRules)for(const m of[s.pokemon[s.battle.activeUid],s.battle.wild])automaticForm(s,dex,m,'check',log);
  if(s.battle?.transformRules)for(let i=0;s.battle&&!active(s).hp&&i<6;i++){const uid=healthy(s);if(!uid){finish(s,dex,false);break;}s.battle.activeUid=uid;automaticForm(s,dex,active(s),'entry',log);enterBattle(active(s),s.battle.wild,s.battle,dex);}
  if(s.battle)s.outUid=s.battle.activeUid;if(!s.battle)for(const m of Object.values(s.pokemon)){clearTransformations(m,dex);m.stages=Array(8).fill(0);m.choiceMove=0;m.protected=false;m.endure=false;m.flashFire=false;delete m.battleAbility;}if(!['settings','nickname','narrated'].includes(e.type))s.pendingNarration=true;return s;

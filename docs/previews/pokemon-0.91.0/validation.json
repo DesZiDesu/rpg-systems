@@ -1,0 +1,417 @@
+{
+ "host": "SillyTavern 1.19.0",
+ "release": "RoleForge 0.91.0 / Pokémon 1.8.0",
+ "liveModel": false,
+ "note": "Story replies are controlled fixtures sent through SillyTavern's own chat-completion pipeline; all game actions use the production UI and engine. Mobile is Chromium touch emulation.",
+ "aftermath": [
+  {
+   "device": "desktop",
+   "flow": "run+continue",
+   "wild": "wild-1-story-83-0-fletchling",
+   "duringHeaders": [
+    "Nyaju",
+    "Fletchling"
+   ],
+   "afterHeaders": [
+    "Nyaju",
+    "Fletchling"
+   ],
+   "rawWildLabelsAfterRun": 0,
+   "continueKeptOriginal": true,
+   "continueAppended": true,
+   "swipeMatches": true,
+   "promptHasRunRecord": true,
+   "requests": 1,
+   "errors": []
+  },
+  {
+   "device": "desktop",
+   "flow": "defeat+stream-continue",
+   "result": "defeat",
+   "nyajuHp": 0,
+   "outUid": null,
+   "outsideCompanion": "missing",
+   "faintedParty": [
+    "pokemon:initial-0"
+   ],
+   "canBattle": false,
+   "promptSentHasFaintRule": true,
+   "promptSentHasDefeat": true,
+   "continueKeptOriginal": true,
+   "continueAppended": true,
+   "errors": []
+  },
+  {
+   "device": "mobile",
+   "flow": "run+continue",
+   "wild": "wild-1-story-83-0-fletchling",
+   "duringHeaders": [
+    "Nyaju",
+    "Fletchling"
+   ],
+   "afterHeaders": [
+    "Nyaju",
+    "Fletchling"
+   ],
+   "rawWildLabelsAfterRun": 0,
+   "continueKeptOriginal": true,
+   "continueAppended": true,
+   "swipeMatches": true,
+   "promptHasRunRecord": true,
+   "requests": 1,
+   "errors": []
+  },
+  {
+   "device": "mobile",
+   "flow": "defeat+stream-continue",
+   "result": "defeat",
+   "nyajuHp": 0,
+   "outUid": null,
+   "outsideCompanion": "missing",
+   "faintedParty": [
+    "pokemon:initial-0"
+   ],
+   "canBattle": false,
+   "promptSentHasFaintRule": true,
+   "promptSentHasDefeat": true,
+   "continueKeptOriginal": true,
+   "continueAppended": true,
+   "errors": []
+  }
+ ],
+ "npcBattles": [
+  {
+   "device": "desktop",
+   "label": "metadata",
+   "opened": true,
+   "trainer": "Canari",
+   "team": [
+    "npc-1220e4db572d8bd6878f-0:pikachu:14",
+    "npc-1220e4db572d8bd6878f-1:clefairy:13"
+   ],
+   "stamp": 1,
+   "reloaded": "Canari",
+   "errors": []
+  },
+  {
+   "device": "desktop",
+   "label": "no-metadata",
+   "opened": true,
+   "trainer": "Canari",
+   "team": [
+    "npc-1220e4db572d8bd6878f-0:pikachu:5"
+   ],
+   "stamp": 1,
+   "reloaded": "Canari",
+   "errors": []
+  },
+  {
+   "device": "mobile",
+   "label": "metadata",
+   "opened": true,
+   "trainer": "Canari",
+   "team": [
+    "npc-1220e4db572d8bd6878f-0:pikachu:14",
+    "npc-1220e4db572d8bd6878f-1:clefairy:13"
+   ],
+   "stamp": 1,
+   "reloaded": "Canari",
+   "errors": []
+  },
+  {
+   "device": "mobile",
+   "label": "no-metadata",
+   "opened": true,
+   "trainer": "Canari",
+   "team": [
+    "npc-1220e4db572d8bd6878f-0:pikachu:5"
+   ],
+   "stamp": 1,
+   "reloaded": "Canari",
+   "errors": []
+  }
+ ],
+ "spriteStyles": [
+  {
+   "device": "desktop",
+   "style": "gen1-yellow-gbc",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "static",
+     "src": "versions/generation-iii/ruby-sapphire/shiny/376.png",
+     "size": "64x64"
+    },
+    {
+     "facing": "back",
+     "format": "static",
+     "src": "versions/generation-v/black-white/back/906.png",
+     "size": "96x96"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "style": "gen2-crystal-animated",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "pixel",
+     "src": "versions/generation-iii/emerald/animated/shiny/376.png",
+     "size": "64x64"
+    },
+    {
+     "facing": "back",
+     "format": "static",
+     "src": "versions/generation-v/black-white/back/906.png",
+     "size": "96x96"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "style": "gen3-emerald-animated",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "pixel",
+     "src": "versions/generation-iii/emerald/animated/shiny/376.png",
+     "size": "64x64"
+    },
+    {
+     "facing": "back",
+     "format": "static",
+     "src": "versions/generation-v/black-white/back/906.png",
+     "size": "96x96"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "style": "gen4-platinum-animated",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "pixel",
+     "src": "versions/generation-iv/platinum/animated/shiny/376.png",
+     "size": "80x80"
+    },
+    {
+     "facing": "back",
+     "format": "static",
+     "src": "versions/generation-v/black-white/back/906.png",
+     "size": "96x96"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "style": "gen5-black-white-animated",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "pixel",
+     "src": "versions/generation-v/black-white/animated/shiny/376.gif",
+     "size": "83x58"
+    },
+    {
+     "facing": "back",
+     "format": "static",
+     "src": "versions/generation-v/black-white/back/906.png",
+     "size": "96x96"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "style": "gen6-x-y",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "model",
+     "src": "versions/generation-vi/x-y/shiny/376.png",
+     "size": "142x72"
+    },
+    {
+     "facing": "back",
+     "format": "model",
+     "src": "versions/generation-ix/scarlet-violet/back/906.webp",
+     "size": "512x512"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "style": "gen7-ultra-sun-ultra-moon",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "model",
+     "src": "versions/generation-vii/ultra-sun-ultra-moon/shiny/376.gif",
+     "size": "142x73"
+    },
+    {
+     "facing": "back",
+     "format": "model",
+     "src": "versions/generation-ix/scarlet-violet/back/906.webp",
+     "size": "512x512"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "style": "gen8-sword-shield",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "model",
+     "src": "versions/generation-viii/sword-shield/shiny/376.webp",
+     "size": "512x512"
+    },
+    {
+     "facing": "back",
+     "format": "model",
+     "src": "versions/generation-ix/scarlet-violet/back/906.webp",
+     "size": "512x512"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "style": "gen9-scarlet-violet",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "model",
+     "src": "versions/generation-ix/scarlet-violet/shiny/376.webp",
+     "size": "512x512"
+    },
+    {
+     "facing": "back",
+     "format": "model",
+     "src": "versions/generation-ix/scarlet-violet/back/906.webp",
+     "size": "512x512"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "style": "home",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "model",
+     "src": "other/home/shiny/376.png",
+     "size": "512x512"
+    },
+    {
+     "facing": "back",
+     "format": "model",
+     "src": "versions/generation-ix/scarlet-violet/back/906.webp",
+     "size": "512x512"
+    }
+   ]
+  },
+  {
+   "device": "desktop",
+   "dexImages": [
+    "other/home/1.png",
+    "other/home/2.png",
+    "other/home/3.png",
+    "other/home/4.png",
+    "other/home/5.png",
+    "other/home/6.png"
+   ]
+  },
+  {
+   "device": "desktop",
+   "errors": []
+  },
+  {
+   "device": "mobile",
+   "style": "gen5-black-white-animated",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "pixel",
+     "src": "versions/generation-v/black-white/animated/shiny/376.gif",
+     "size": "83x58"
+    },
+    {
+     "facing": "back",
+     "format": "static",
+     "src": "versions/generation-v/black-white/back/906.png",
+     "size": "96x96"
+    }
+   ]
+  },
+  {
+   "device": "mobile",
+   "style": "gen9-scarlet-violet",
+   "shiny": true,
+   "sprites": [
+    {
+     "facing": "front",
+     "format": "model",
+     "src": "versions/generation-ix/scarlet-violet/shiny/376.webp",
+     "size": "512x512"
+    },
+    {
+     "facing": "back",
+     "format": "model",
+     "src": "versions/generation-ix/scarlet-violet/back/906.webp",
+     "size": "512x512"
+    }
+   ]
+  },
+  {
+   "device": "mobile",
+   "errors": []
+  }
+ ],
+ "shinyOdds": [
+  {
+   "device": "desktop",
+   "release": "0.91.0",
+   "encountersUntilShiny": 22,
+   "found": {
+    "shiny": true,
+    "key": "pidgey"
+   },
+   "message": "✦ Shiny! Pidgey appeared!",
+   "sprite": "versions/generation-v/black-white/animated/shiny/16.gif",
+   "afterReload": {
+    "rate": 20,
+    "shiny": true
+   },
+   "errors": []
+  },
+  {
+   "device": "mobile",
+   "release": "0.91.0",
+   "encountersUntilShiny": 22,
+   "found": {
+    "shiny": true,
+    "key": "pidgey"
+   },
+   "message": "✦ Shiny! Pidgey appeared!",
+   "sprite": "versions/generation-v/black-white/animated/shiny/16.gif",
+   "afterReload": {
+    "rate": 20,
+    "shiny": true
+   },
+   "errors": []
+  }
+ ]
+}

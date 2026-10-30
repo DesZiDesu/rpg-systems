@@ -1,7 +1,7 @@
-import {trueNameOf,localizedNpcName} from './names.js?v=0.90.18';
-import {playerLifespanInfo,playerLifespanEvent} from './lifespan.js?v=0.90.18';
-import {eyeAbility,eyeSourceLabel,isShinigami,isHuman,defaultDeathNoteSettings,actorKey} from './actors.js?v=0.90.18';
-import {originalLifespan} from './eyes.js?v=0.90.18';
+import {trueNameOf,localizedNpcName} from './names.js?v=0.91.0';
+import {playerLifespanInfo,playerLifespanEvent} from './lifespan.js?v=0.91.0';
+import {eyeAbility,eyeSourceLabel,isShinigami,isHuman,defaultDeathNoteSettings,actorKey} from './actors.js?v=0.91.0';
+import {originalLifespan} from './eyes.js?v=0.91.0';
 export const dnText=(th,en,language='th')=>language==='en'?en:th;
 const esc=s=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function deathNoteHelp(language='th'){

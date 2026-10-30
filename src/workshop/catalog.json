@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.90.17",
+      "minimumRoleForge": "0.91.0",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -602,6 +602,17 @@
             "ฉากบังคับประลองเริ่มศึก Trainer และเปิดหน้าสู้ทันที",
             "คำชวนทั่วไปยังรอรับคำท้า; ไม่ทับศึกเดิมและไม่รักษาทีมเอง",
             "รองรับทีมหลายตัว ผลการต่อสู้ และย้อนตาม swipe/delete"
+          ]
+        },
+        {
+          "version": "1.8.0",
+          "path": "packs/pokemon-1.8.0.json",
+          "sha256": "d7ee04729b87b732a1b7616e186f507024df971c49002d0f5800cee45aa9ad09",
+          "bytes": 1229,
+          "changes": [
+            "NPC มีทีมโปเกมอนประจำตัว และขอประลองในโรลแล้วเริ่มศึกได้ทันที",
+            "โปเกมอนที่หมดสภาพกลับเข้าบอล และแชทหลักรู้ผลการต่อสู้ครบ",
+            "เลือกภาพได้ 38 แบบตั้งแต่ Gen I ถึง Scarlet & Violet และปรับโอกาสพบ Shiny"
           ]
         }
       ]

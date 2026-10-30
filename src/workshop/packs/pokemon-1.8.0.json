@@ -1,0 +1,31 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.91.0",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.8.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "rosters",
+      "title": "NPC trainer rosters and story battles",
+      "text": "Named NPC trainers keep one fixed team with stable individuals; species never change and levels only rise. Asking an NPC to battle starts it from the next reply, including replies that narrate the start without metadata."
+    },
+    {
+      "id": "aftermath",
+      "title": "Battle aftermath in the main chat",
+      "text": "Fainted Pokémon return to their balls and cannot act; the finished battle record reaches the main chat; departed opponents keep their chat headers; Continue story no longer replaces the reply."
+    },
+    {
+      "id": "sprites",
+      "title": "Game-version sprites and shiny odds",
+      "text": "Choose any of 38 sprite styles, from Gen I pixels to Scarlet & Violet HD models, for menus, battle and chat. Wild shiny odds are adjustable from 1/8192 to 1/20 and only affect Pokémon met afterwards."
+    }
+  ]
+}

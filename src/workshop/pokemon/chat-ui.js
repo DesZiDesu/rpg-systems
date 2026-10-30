@@ -1,6 +1,6 @@
 // The approved League Circuit design. Native RoleForge copy nodes and theme
 // font selectors are retained; only Pokémon-owned presentation is decorated.
-import {isPokemonSpeaker} from './chat.js?v=0.90.18';
+import {isPokemonSpeaker} from './chat.js?v=0.91.0';
 const make=(doc,tag,cls,text)=>{const node=doc.createElement(tag);node.className=cls;if(text!==undefined)node.textContent=text;return node;};
 const t=(th,en,language)=>language==='th'?th:en;
 function icon(doc,kind='ball'){

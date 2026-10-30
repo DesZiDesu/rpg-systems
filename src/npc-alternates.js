@@ -1,6 +1,6 @@
-import {customIconSource} from './custom-icons.js?v=0.90.18';
-import {embeddedPortraitSource} from './embedded-portrait.js?v=0.90.18';
-import { FIELDS, RELATIONS, STATS, ROLE_ICONS, clean, clamp, profileFields } from './npc-core.js?v=0.90.18';
+import {customIconSource} from './custom-icons.js?v=0.91.0';
+import {embeddedPortraitSource} from './embedded-portrait.js?v=0.91.0';
+import { FIELDS, RELATIONS, STATS, ROLE_ICONS, clean, clamp, profileFields } from './npc-core.js?v=0.91.0';
 
 // Alternate dossiers belong to one NPC identity. Selecting a period is a user
 // action; model patches may update its fields but cannot change that selection.
