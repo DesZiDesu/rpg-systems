@@ -1,8 +1,8 @@
-import {currencyScheme,currencyValue,splitCurrencyValue} from './currency-config.js?v=0.94.1';
-import {debitWallet} from './commerce-currency.js?v=0.94.1';
-import {auctionFundsValid,auctionReserved} from './auction-core.js?v=0.94.1';
-import {commerceFundsValid} from './commerce-engine.js?v=0.94.1';
-import {currentItemNpcs} from './item-core.js?v=0.94.1';
+import {currencyScheme,currencyValue,splitCurrencyValue} from './currency-config.js?v=0.94.2';
+import {debitWallet} from './commerce-currency.js?v=0.94.2';
+import {auctionFundsValid,auctionReserved} from './auction-core.js?v=0.94.2';
+import {commerceFundsValid} from './commerce-engine.js?v=0.94.2';
+import {currentItemNpcs} from './item-core.js?v=0.94.2';
 
 const clean=(v,n=180)=>typeof v==='string'?v.trim().slice(0,n):'';
 export function normalizeMoneyTransfers(raw){

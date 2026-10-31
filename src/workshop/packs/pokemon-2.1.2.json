@@ -1,0 +1,21 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.94.2",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "2.1.2",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "phone-doubles",
+      "title": "Taller field for double battles on phones",
+      "text": "On phones a double battle uses a square field instead of 4:3, the four HP plates sit along the top and bottom edges, and the platforms are drawn back to front so no Pokémon is hidden by another's floor or by a plate."
+    }
+  ]
+}

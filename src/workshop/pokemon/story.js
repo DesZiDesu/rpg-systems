@@ -1,6 +1,6 @@
-import {TRANSFORMATION_SYSTEMS,TERA_TYPES,megaForms} from './transformations.js?v=0.94.1';
-import {normalizeWeather} from './mechanics.js?v=0.94.1';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.94.1';
+import {TRANSFORMATION_SYSTEMS,TERA_TYPES,megaForms} from './transformations.js?v=0.94.2';
+import {normalizeWeather} from './mechanics.js?v=0.94.2';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.94.2';
 const regions=['Kanto','Johto','Hoenn','Sinnoh','Unova','Kalos','Alola','Galar','Paldea'];
 const known=(proof,canonical,e)=>proof.toLocaleLowerCase().includes(canonical.toLocaleLowerCase())||typeof e.displayName==='string'&&e.displayName.length>=2&&e.displayName.length<=100&&/[\u0e00-\u0e7f]/u.test(e.displayName)&&proof.includes(e.displayName);
 const negative=/ไม่พบ|ไม่ได้รับ|สมมติ|\b(?:not|would|could|if|might|will)\b|กำลังจะ|จะได้รับ/iu;

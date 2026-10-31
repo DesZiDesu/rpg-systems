@@ -980,20 +980,30 @@
 .rfpk .pk-platform-foe.pk-platform-b{translate:-58% 2%;scale:.84}
 .rfpk .pk-platform-ally.pk-platform-b{translate:56% -10%;scale:.86}
 .rfpk .pk-platform-b[data-pk-fainted]{opacity:0;transition:opacity .4s}
-/* Phones: the four plates line the top and bottom edges two by two, and the
-   four Pokémon share the open middle of the field. */
+/* Phones: a double battle gets a square field (taller than 4:3), the four
+   HP plates line the top and bottom edges on their own Pokémon's side, and
+   the platforms are drawn back to front so nearer Pokémon are never hidden. */
 @media(max-width:700px){
- #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-battle-status{width:47%!important;max-width:none!important;padding:3px 7px!important;margin:0!important;transform:none!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-view] .pk-arena:has(.pk-platform-b){aspect-ratio:1/1!important;height:auto!important}
+}
+@media(max-width:700px) and (max-height:700px){
+ #roleforge-pokemon[data-pk-layout][data-pk-view] .pk-encounter-layout:has(.pk-platform-b) .pk-battle-message{min-height:0!important;padding:8px 12px!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-view] .pk-encounter-layout:has(.pk-platform-b) .pk-command{min-height:46px!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-view] .pk-encounter-layout:has(.pk-platform-b) :is(.pk-command-grid,.pk-battle-console){gap:6px!important}
+}
+@media(max-width:700px){
+ #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-battle-status{z-index:6!important;width:47%!important;max-width:none!important;padding:3px 7px!important;margin:0!important;transform:none!important}
  #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-foe-status{left:51%!important;right:auto!important;top:2%!important;bottom:auto!important}
  #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-foe-status-b{left:2%!important;right:auto!important;top:2%!important;bottom:auto!important}
  #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-ally-status{left:2%!important;right:auto!important;bottom:2%!important;top:auto!important}
  #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-ally-status-b{right:2%!important;left:auto!important;bottom:2%!important;top:auto!important}
  #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-battle-status :is(.pk-exp,.pk-party-balls,.pk-opponent-balls){display:none!important}
  #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-battle-status h2{font-size:12px!important}
- .rfpk .pk-arena:has(.pk-platform-b) .pk-platform-foe:not(.pk-platform-b){translate:0 14%}
- .rfpk .pk-platform-foe.pk-platform-b{translate:-66% 20%;scale:.78}
- .rfpk .pk-arena:has(.pk-platform-b) .pk-platform-ally:not(.pk-platform-b){translate:0 -16%}
- .rfpk .pk-platform-ally.pk-platform-b{translate:70% -26%;scale:.78}
+ #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-platform{translate:none!important;scale:none!important}
+ #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-platform-foe.pk-platform-b{z-index:1!important;left:6%!important;right:auto!important;top:17%!important;bottom:auto!important;width:44%!important;height:36%!important}
+ #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-platform-foe:not(.pk-platform-b){z-index:2!important;right:2%!important;left:auto!important;top:13%!important;bottom:auto!important;width:46%!important;height:40%!important}
+ #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-platform-ally.pk-platform-b{z-index:3!important;right:2%!important;left:auto!important;bottom:15%!important;top:auto!important;width:46%!important;height:42%!important}
+ #roleforge-pokemon .pk-arena:has(.pk-platform-b) .pk-platform-ally:not(.pk-platform-b){z-index:4!important;left:2%!important;right:auto!important;bottom:13%!important;top:auto!important;width:50%!important;height:46%!important}
 }
 .rfpk .pk-double-status{padding:4px 8px!important}
 .rfpk .pk-double-status h2{font-size:13px!important}

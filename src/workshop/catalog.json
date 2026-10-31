@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.94.1",
+      "minimumRoleForge": "0.94.2",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -657,6 +657,16 @@
             "ศึกคู่: โปเกมอนตัวที่สองยืนกลางฐานบนพื้น และบนมือถือแถบ HP ไม่บังโปเกมอน",
             "เอาลำแสงที่ส่องลงในฉากออก",
             "มือถือ: ภาพไม่ล้นกรอบใน Pokédex และกล่อง แถวสายพันธุ์/ฟอร์มไม่ทับกัน หน้ารายละเอียดมีระยะขอบ"
+          ]
+        },
+        {
+          "version": "2.1.2",
+          "path": "packs/pokemon-2.1.2.json",
+          "sha256": "7dcf05f5c451618e4a81f60bf9d02a186249f817cbfcbccb91d95d7438b8c83f",
+          "bytes": 629,
+          "changes": [
+            "ศึกคู่บนมือถือใช้สนามสี่เหลี่ยมจัตุรัสที่สูงขึ้น",
+            "แถบ HP ไม่บังโปเกมอน และฐานของฝั่งตรงข้ามไม่บังตัวที่อยู่ใกล้กว่า"
           ]
         }
       ]
